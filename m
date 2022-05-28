@@ -4,51 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69B48C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BD72C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 07:03:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bh173wCz3dPq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:33:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9CM932mGz3bs5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 17:03:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9BcL0XNgz3cdF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:30:10 +1000 (AEST)
-Received: from kwepemi500002.china.huawei.com (unknown [172.30.72.55])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4L9BYr1rk3zgY9h;
-	Sat, 28 May 2022 14:28:00 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500002.china.huawei.com (7.221.188.171) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:34 +0800
-Received: from localhost.localdomain (10.175.112.125) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:33 +0800
-From: Tong Tiangen <tongtiangen@huawei.com>
-To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
-	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
-	<bp@alien8.de>, Robin Murphy <robin.murphy@arm.com>, Dave Hansen
-	<dave.hansen@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
-	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v5 6/8] arm64: add support for machine check error safe
-Date: Sat, 28 May 2022 06:50:54 +0000
-Message-ID: <20220528065056.1034168-7-tongtiangen@huawei.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220528065056.1034168-1-tongtiangen@huawei.com>
-References: <20220528065056.1034168-1-tongtiangen@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9CLh4nbWz3057
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 17:03:22 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4L9CLX3CmTz9t11;
+	Sat, 28 May 2022 09:03:16 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 7LIaKILAdhxJ; Sat, 28 May 2022 09:03:16 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4L9CLX2Cbfz9t0t;
+	Sat, 28 May 2022 09:03:16 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 365E58B76D;
+	Sat, 28 May 2022 09:03:16 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id NDa6nzlcDVx0; Sat, 28 May 2022 09:03:16 +0200 (CEST)
+Received: from [192.168.5.182] (unknown [192.168.5.182])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C21CF8B763;
+	Sat, 28 May 2022 09:03:15 +0200 (CEST)
+Message-ID: <b81e1270-2622-da82-43b4-762240a94626@csgroup.eu>
+Date: Sat, 28 May 2022 09:03:14 +0200
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+Subject: Re: [PATCH v4,1/5] powerpc: sysdev: fix compile error for
+ fsl_85xx_l2ctlr
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Wang Wenhu <wenhu.wang@vivo.com>, kernel@vivo.com
+References: <20200424085839.60284-1-wenhu.wang@vivo.com>
+ <20200424085839.60284-2-wenhu.wang@vivo.com>
+ <50ec8577-23a5-cbba-f8d4-a3ca37439298@csgroup.eu>
+In-Reply-To: <50ec8577-23a5-cbba-f8d4-a3ca37439298@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.112.125]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemm600017.china.huawei.com (7.193.23.234)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,130 +63,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Tong Tiangen <tongtiangen@huawei.com>, Guohanjun <guohanjun@huawei.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-During the processing of arm64 kernel hardware memory errors(do_sea()), if
-the errors is consumed in the kernel, the current processing is panic.
-However, it is not optimal.
 
-Take uaccess for example, if the uaccess operation fails due to memory
-error, only the user process will be affected, kill the user process
-and isolate the user page with hardware memory errors is a better choice.
 
-This patch only enable machine error check framework, it add exception
-fixup before kernel panic in do_sea() and only limit the consumption of
-hardware memory errors in kernel mode triggered by user mode processes.
-If fixup successful, panic can be avoided.
+Le 15/03/2022 à 13:45, Christophe Leroy a écrit :
+> 
+> 
+> Le 24/04/2020 à 10:58, Wang Wenhu a écrit :
+>> Include "linux/of_address.h" to fix the compile error for
+>> mpc85xx_l2ctlr_of_probe() when compiling fsl_85xx_cache_sram.c.
+>>
+>>    CC      arch/powerpc/sysdev/fsl_85xx_l2ctlr.o
+>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c: In function 
+>> ‘mpc85xx_l2ctlr_of_probe’:
+>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:11: error: implicit 
+>> declaration of function ‘of_iomap’; did you mean ‘pci_iomap’? 
+>> [-Werror=implicit-function-declaration]
+>>    l2ctlr = of_iomap(dev->dev.of_node, 0);
+>>             ^~~~~~~~
+>>             pci_iomap
+>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c:90:9: error: assignment makes 
+>> pointer from integer without a cast [-Werror=int-conversion]
+>>    l2ctlr = of_iomap(dev->dev.of_node, 0);
+>>           ^
+>> cc1: all warnings being treated as errors
+>> scripts/Makefile.build:267: recipe for target 
+>> 'arch/powerpc/sysdev/fsl_85xx_l2ctlr.o' failed
+>> make[2]: *** [arch/powerpc/sysdev/fsl_85xx_l2ctlr.o] Error 1
+>>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Cc: Scott Wood <oss@buserror.net>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Randy Dunlap <rdunlap@infradead.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Fixes: 6db92cc9d07d ("powerpc/85xx: add cache-sram support")
+>> Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Signed-off-by: Wang Wenhu <wenhu.wang@vivo.com>
+> 
+> Is there still an interest for this series ?
+> 
+> I see there is even a v5 at 
+> https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=172421&state=* 
+> allthough I can't find it in my emails.
+> 
+> If so do you plan to send any update of it at some point ?
+> 
+> Otherwise, as CONFIG_FSL_85XX_CACHE_SRAM is not user selectable and no 
+> driver selects it, I think time has come to remove it completely.
+> 
 
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
----
- arch/arm64/Kconfig               |  1 +
- arch/arm64/include/asm/extable.h |  1 +
- arch/arm64/mm/extable.c          | 17 +++++++++++++++++
- arch/arm64/mm/fault.c            | 27 ++++++++++++++++++++++++++-
- 4 files changed, 45 insertions(+), 1 deletion(-)
+CONFIG_FSL_85XX_CACHE_SRAM has now been removed.
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index aaeb70358979..a3b12ff0cd7f 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -19,6 +19,7 @@ config ARM64
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
- 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_HAS_CACHE_LINE_SIZE
-+	select ARCH_HAS_COPY_MC if ACPI_APEI_GHES
- 	select ARCH_HAS_CURRENT_STACK_POINTER
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEBUG_VM_PGTABLE
-diff --git a/arch/arm64/include/asm/extable.h b/arch/arm64/include/asm/extable.h
-index 72b0e71cc3de..f80ebd0addfd 100644
---- a/arch/arm64/include/asm/extable.h
-+++ b/arch/arm64/include/asm/extable.h
-@@ -46,4 +46,5 @@ bool ex_handler_bpf(const struct exception_table_entry *ex,
- #endif /* !CONFIG_BPF_JIT */
- 
- bool fixup_exception(struct pt_regs *regs);
-+bool fixup_exception_mc(struct pt_regs *regs);
- #endif
-diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 228d681a8715..c301dcf6335f 100644
---- a/arch/arm64/mm/extable.c
-+++ b/arch/arm64/mm/extable.c
-@@ -9,6 +9,7 @@
- 
- #include <asm/asm-extable.h>
- #include <asm/ptrace.h>
-+#include <asm/esr.h>
- 
- static inline unsigned long
- get_ex_fixup(const struct exception_table_entry *ex)
-@@ -76,3 +77,19 @@ bool fixup_exception(struct pt_regs *regs)
- 
- 	BUG();
- }
-+
-+bool fixup_exception_mc(struct pt_regs *regs)
-+{
-+	const struct exception_table_entry *ex;
-+
-+	ex = search_exception_tables(instruction_pointer(regs));
-+	if (!ex)
-+		return false;
-+
-+	/*
-+	 * This is not complete, More Machine check safe extable type can
-+	 * be processed here.
-+	 */
-+
-+	return false;
-+}
-diff --git a/arch/arm64/mm/fault.c b/arch/arm64/mm/fault.c
-index c5e11768e5c1..b262bd282a89 100644
---- a/arch/arm64/mm/fault.c
-+++ b/arch/arm64/mm/fault.c
-@@ -696,6 +696,29 @@ static int do_bad(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 	return 1; /* "fault" */
- }
- 
-+static bool arm64_do_kernel_sea(unsigned long addr, unsigned int esr,
-+				     struct pt_regs *regs, int sig, int code)
-+{
-+	if (!IS_ENABLED(CONFIG_ARCH_HAS_COPY_MC))
-+		return false;
-+
-+	if (user_mode(regs) || !current->mm)
-+		return false;
-+
-+	if (apei_claim_sea(regs) < 0)
-+		return false;
-+
-+	if (!fixup_exception_mc(regs))
-+		return false;
-+
-+	set_thread_esr(0, esr);
-+
-+	arm64_force_sig_fault(sig, code, addr,
-+		"Uncorrected hardware memory error in kernel-access\n");
-+
-+	return true;
-+}
-+
- static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
- {
- 	const struct fault_info *inf;
-@@ -721,7 +744,9 @@ static int do_sea(unsigned long far, unsigned long esr, struct pt_regs *regs)
- 		 */
- 		siaddr  = untagged_addr(far);
- 	}
--	arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
-+
-+	if (!arm64_do_kernel_sea(siaddr, esr, regs, inf->sig, inf->code))
-+		arm64_notify_die(inf->name, regs, inf->sig, inf->code, siaddr, esr);
- 
- 	return 0;
- }
--- 
-2.25.1
-
+See 
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=dc21ed2aef4150fc2fcf58227a4ff24502015c03
