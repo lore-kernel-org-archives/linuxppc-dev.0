@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C17C1C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:30:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79510C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 06:30:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bck1Trhz3c9B
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:30:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9Bd85fKxz3dq3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 16:30:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9Bbr3Tqyz2xXw
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9Bbr3ZHWz2ync
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 16:29:41 +1000 (AEST)
-Received: from kwepemi500003.china.huawei.com (unknown [172.30.72.54])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4L9BZP2g1YzjWx4;
-	Sat, 28 May 2022 14:28:29 +0800 (CST)
+Received: from kwepemi100010.china.huawei.com (unknown [172.30.72.54])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4L9BX92cMNzRhVV;
+	Sat, 28 May 2022 14:26:33 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- kwepemi500003.china.huawei.com (7.221.188.51) with Microsoft SMTP Server
+ kwepemi100010.china.huawei.com (7.221.188.54) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:33 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:36 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 28 May 2022 14:29:31 +0800
+ 15.1.2375.24; Sat, 28 May 2022 14:29:34 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -36,9 +36,9 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
 	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v5 5/8] Add generic fallback version of copy_mc_to_user()
-Date: Sat, 28 May 2022 06:50:53 +0000
-Message-ID: <20220528065056.1034168-6-tongtiangen@huawei.com>
+Subject: [PATCH -next v5 7/8] arm64: add uaccess to machine check safe
+Date: Sat, 28 May 2022 06:50:55 +0000
+Message-ID: <20220528065056.1034168-8-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220528065056.1034168-1-tongtiangen@huawei.com>
 References: <20220528065056.1034168-1-tongtiangen@huawei.com>
@@ -64,62 +64,117 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86/powerpc has it's implementation of copy_mc_to_user(), we add generic
-fallback in include/linux/uaccess.h prepare for other architechures to
-enable CONFIG_ARCH_HAS_COPY_MC.
+If user access fail due to hardware memory error, only the relevant
+processes are affected, so killing the user process and isolate the
+error page with hardware memory errors is a more reasonable choice
+than kernel panic.
 
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/uaccess.h | 1 +
- arch/x86/include/asm/uaccess.h     | 1 +
- include/linux/uaccess.h            | 9 +++++++++
- 3 files changed, 11 insertions(+)
+ arch/arm64/lib/copy_from_user.S | 8 ++++----
+ arch/arm64/lib/copy_to_user.S   | 8 ++++----
+ arch/arm64/mm/extable.c         | 8 ++++----
+ 3 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 9b82b38ff867..58dbe8e2e318 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -358,6 +358,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
+diff --git a/arch/arm64/lib/copy_from_user.S b/arch/arm64/lib/copy_from_user.S
+index 34e317907524..402dd48a4f93 100644
+--- a/arch/arm64/lib/copy_from_user.S
++++ b/arch/arm64/lib/copy_from_user.S
+@@ -25,7 +25,7 @@
+ 	.endm
  
- 	return n;
+ 	.macro strb1 reg, ptr, val
+-	strb \reg, [\ptr], \val
++	USER(9998f, strb \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro ldrh1 reg, ptr, val
+@@ -33,7 +33,7 @@
+ 	.endm
+ 
+ 	.macro strh1 reg, ptr, val
+-	strh \reg, [\ptr], \val
++	USER(9998f, strh \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro ldr1 reg, ptr, val
+@@ -41,7 +41,7 @@
+ 	.endm
+ 
+ 	.macro str1 reg, ptr, val
+-	str \reg, [\ptr], \val
++	USER(9998f, str \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro ldp1 reg1, reg2, ptr, val
+@@ -49,7 +49,7 @@
+ 	.endm
+ 
+ 	.macro stp1 reg1, reg2, ptr, val
+-	stp \reg1, \reg2, [\ptr], \val
++	USER(9998f, stp \reg1, \reg2, [\ptr], \val)
+ 	.endm
+ 
+ end	.req	x5
+diff --git a/arch/arm64/lib/copy_to_user.S b/arch/arm64/lib/copy_to_user.S
+index 802231772608..4134bdb3a8b0 100644
+--- a/arch/arm64/lib/copy_to_user.S
++++ b/arch/arm64/lib/copy_to_user.S
+@@ -20,7 +20,7 @@
+  *	x0 - bytes not copied
+  */
+ 	.macro ldrb1 reg, ptr, val
+-	ldrb  \reg, [\ptr], \val
++	USER(9998f, ldrb  \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro strb1 reg, ptr, val
+@@ -28,7 +28,7 @@
+ 	.endm
+ 
+ 	.macro ldrh1 reg, ptr, val
+-	ldrh  \reg, [\ptr], \val
++	USER(9998f, ldrh  \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro strh1 reg, ptr, val
+@@ -36,7 +36,7 @@
+ 	.endm
+ 
+ 	.macro ldr1 reg, ptr, val
+-	ldr \reg, [\ptr], \val
++	USER(9998f, ldr \reg, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro str1 reg, ptr, val
+@@ -44,7 +44,7 @@
+ 	.endm
+ 
+ 	.macro ldp1 reg1, reg2, ptr, val
+-	ldp \reg1, \reg2, [\ptr], \val
++	USER(9998f, ldp \reg1, \reg2, [\ptr], \val)
+ 	.endm
+ 
+ 	.macro stp1 reg1, reg2, ptr, val
+diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
+index c301dcf6335f..8ca8d9639f9f 100644
+--- a/arch/arm64/mm/extable.c
++++ b/arch/arm64/mm/extable.c
+@@ -86,10 +86,10 @@ bool fixup_exception_mc(struct pt_regs *regs)
+ 	if (!ex)
+ 		return false;
+ 
+-	/*
+-	 * This is not complete, More Machine check safe extable type can
+-	 * be processed here.
+-	 */
++	switch (ex->type) {
++	case EX_TYPE_UACCESS_ERR_ZERO:
++		return ex_handler_uaccess_err_zero(ex, regs);
++	}
+ 
+ 	return false;
  }
-+#define copy_mc_to_user copy_mc_to_user
- #endif
- 
- extern long __copy_from_user_flushcache(void *dst, const void __user *src,
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 35f222aa66bf..b7b1aca5d6cd 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -512,6 +512,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
- 
- unsigned long __must_check
- copy_mc_to_user(void *to, const void *from, unsigned len);
-+#define copy_mc_to_user copy_mc_to_user
- #endif
- 
- /*
-diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-index 5a328cf02b75..07e9faeb14b5 100644
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -174,6 +174,15 @@ copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
- }
- #endif
- 
-+#ifndef copy_mc_to_user
-+static inline unsigned long __must_check
-+copy_mc_to_user(void *dst, const void *src, size_t cnt)
-+{
-+	check_object_size(src, cnt, true);
-+	return raw_copy_to_user(dst, src, cnt);
-+}
-+#endif
-+
- static __always_inline void pagefault_disabled_inc(void)
- {
- 	current->pagefault_disabled++;
 -- 
 2.25.1
 
