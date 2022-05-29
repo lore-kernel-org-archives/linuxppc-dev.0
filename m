@@ -4,58 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30482C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 23:51:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECACBC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 06:57:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L9djq2qnGz3cdF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 09:51:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q0t53M8Y;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:40e1:4800::1; helo=sin.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Q0t53M8Y;
-	dkim-atps=neutral
-Received: from sin.source.kernel.org (sin.source.kernel.org [IPv6:2604:1380:40e1:4800::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4L9q9w2cWlz3cCk
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 16:57:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9Vtc1p0Cz3bdy
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2022 04:43:35 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by sin.source.kernel.org (Postfix) with ESMTPS id 55657CE0B4B;
-	Sat, 28 May 2022 18:43:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B86E2C34113;
-	Sat, 28 May 2022 18:43:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1653763410;
-	bh=+7kC2AqxNFEWnHYokdqvZSMwgZEffYyckONkFhqvmG8=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=Q0t53M8Yu6dY3Q0YywxAg2apTqcn7RG1REtpQ3Ot69izLLJUiRfa4p18Kbkwv1Uy2
-	 uCt7q9k34gDMO1htE4g8GP3I+03w3p9TpDp9CI3DXVHSA8dwnJHWVqUEE/FjXW/WFj
-	 fXXcuJd0w3KkXp6ZrY2g2ZAovvqloINAtinJ9VkW7425BIJdzFUlYPmFGtw/sNOuVF
-	 KXDyghILeSIewZtp37cD/eiXv0g6qF2QbnROC3VzDI3OIbtad0h5pGFmNCrho/xKHP
-	 Er7aOfQcfhnMMguZGBwx9SywTKuZB92XRFMY+gHP9v81MTdOyZy221+GANAWpztXLN
-	 FjNvhyrNHe8cQ==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 954A2E8DBDA;
-	Sat, 28 May 2022 18:43:30 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-5.19-1 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87pmjxlt2s.fsf@mpe.ellerman.id.au>
-References: <87pmjxlt2s.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87pmjxlt2s.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.19-1
-X-PR-Tracked-Commit-Id: dcf280e6f80be280ca7dd1b058f038654e4a18dd
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 6112bd00e84e5dbffebc3c1e908cbe914ca772ee
-Message-Id: <165376341060.28289.278444479927241680.pr-tracker-bot@kernel.org>
-Date: Sat, 28 May 2022 18:43:30 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
-X-Mailman-Approved-At: Sun, 29 May 2022 09:50:12 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4L9q9Q3X5Vz2yny
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 May 2022 16:57:28 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1nvCrD-0001Nl-TF; Sun, 29 May 2022 08:56:59 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1nvCr5-005D0y-Nd; Sun, 29 May 2022 08:56:50 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1nvCr3-00Cp8z-H3; Sun, 29 May 2022 08:56:49 +0200
+Date: Sun, 29 May 2022 08:56:37 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+	Li Zhengyu <lizhengyu3@huawei.com>,
+	Palmer Dabbelt <palmer@rivosinc.com>
+Subject: Re: [PATCH v2] kexec_file: Drop weak attribute from
+ arch_kexec_apply_relocations[_add]
+Message-ID: <20220529065637.xgapqjp2342flbuj@pengutronix.de>
+References: <20220519091237.676736-1-naveen.n.rao@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="kx2r5dh4j5uektvu"
+Content-Disposition: inline
+In-Reply-To: <20220519091237.676736-1-naveen.n.rao@linux.vnet.ibm.com>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,48 +57,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linmq006@gmail.com, rdunlap@infradead.org,
-	jing.yangyang@zte.com.cn, aik@ozlabs.ru, catalin.marinas@arm.com,
-	wangborong@cdjrlc.com, wangqing@vivo.com, wangxiang@cdjrlc.com,
-	oohall@gmail.com, bagasdotme@gmail.com, zou_wei@huawei.com,
-	hbh25y@gmail.com, hegdevasant@linux.vnet.ibm.com,
-	ldufour@linux.ibm.com, baihaowen@meizu.com,
-	krzysztof.kozlowski@canonical.com, zhengzucheng@huawei.com,
-	wangwensheng4@huawei.com, ernel.org@lists.ozlabs.org,
-	haren@linux.ibm.com, chi.minghao@zte.com.cn, yebin10@huawei.com,
-	zhengbin13@huawei.com, yang.guang5@zte.com.cn, joel@jms.id.au,
-	liubo03@inspur.com, kjain@linux.ibm.com, huangfq.daxian@gmail.com,
-	maqianga@uniontech.com, linux-kernel@vger.k, osalvador@suse.de,
-	robh@kernel.org, colin.i.king@gmail.com,
-	naveen.n.rao@linux.vnet.ibm.com, yuehaibing@huawei.com,
-	sohaib.amhmd@gmail.com, ajd@linux.ibm.com, arnd@arndb.de,
-	jiapeng.chong@linux.alibaba.com, yukuai3@huawei.com,
-	alistair@popple.id.au, chenhuang5@huawei.com, zuoqilin@yulong.com,
-	linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, nathan@kernel.org,
-	maddy@linux.ibm.com, clg@kaod.org, vaibhav@linux.ibm.com,
-	bhelgaas@google.com, andriy.shevchenko@linux.intel.com,
-	arbab@linux.ibm.com, heying24@huawei.com, hbathini@linux.ibm.com,
-	dja@axtens.net, vulab@iscas.ac.cn, oss@buserror.net,
-	haokexin@gmail.com, pali@kernel.org, fthain@linux-m68k.org,
-	farosas@linux.ibm.com, wupeng58@huawei.com, dwaipayanray1@gmail.com,
-	lv.ruyi@zte.com.cn, magalilemes00@gmail.com, Julia.Lawall@inria.fr,
-	gpiccoli@igalia.com, xiam0nd.tong@gmail.com, frank.rowand@sony.com,
-	fbarrat@linux.ibm.com, colin.king@canonical.com,
-	akpm@linux-foundation.org, yang.lee@linux.alibaba.com,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	dimitri.ledkov@canonical.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>, kernel@pengutronix.de, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Sat, 28 May 2022 22:50:19 +1000:
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.19-1
+--kx2r5dh4j5uektvu
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/6112bd00e84e5dbffebc3c1e908cbe914ca772ee
+Hello,
 
-Thank you!
+on current linux-next ARCH=3Driscv allmodconfig breaks with:
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+  CC      arch/riscv/kernel/elf_kexec.o
+arch/riscv/kernel/elf_kexec.c:345:5: error: redefinition of =E2=80=98arch_k=
+exec_apply_relocations_add=E2=80=99
+  345 | int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from arch/riscv/kernel/elf_kexec.c:16:
+include/linux/kexec.h:236:1: note: previous definition of =E2=80=98arch_kex=
+ec_apply_relocations_add=E2=80=99 with type =E2=80=98int(struct purgatory_i=
+nfo *, Elf64_Shdr *, const Elf64_Shdr *, const Elf64_Shdr *)=E2=80=99 {aka =
+=E2=80=98int(struct purgatory_info *, struct elf64_shdr *, const struct elf=
+64_shdr *, const struct elf64_shdr *)=E2=80=99}
+  236 | arch_kexec_apply_relocations_add(struct purgatory_info *pi, Elf_Shd=
+r *section,
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(I think) because there is a conflict between the two commits:
+
+233c1e6c319c kexec_file: drop weak attribute from arch_kexec_apply_relocati=
+ons[_add]
+838b3e28488f RISC-V: Load purgatory in kexec_file
+
+And so next is broken starting from
+164a9037b1d33f28ba27671c16ec1c23d4a11acf which merges the riscv tree.
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=C3=B6nig         =
+   |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--kx2r5dh4j5uektvu
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmKTGRsACgkQwfwUeK3K
+7AmDxAf9Ggb6UqEX3OJcHfUAj6XII7Pgm7ANdk/sgjvS9u4KABETUJ4Dub8m44b7
+YzTKjAz6Aoat5x0aX/BoeMEGOLKrO10yBqljertv1U3F28A0fvUejuJJoBHnmQHO
+A2rACjr5HuulnTTeF3vSwtxdKVzyR5bT4ys1ELO0drRWIdeds63oFpM3vg/7Dhkm
+6DGR26o5+bBCUsDlpnNlSTy4bqMaXAtqnImET8yrafbTbDhSXbwO57dOlfT0QmTC
+p2LoUfw5d64itPHNimGmnAJxtoJEET/gGLFzTbZIJk84CEydkc+3/2DyFU3rwHTZ
+DBh5qrnvrwgxqtYd5zu0HPAfvgDQMA==
+=tj8R
+-----END PGP SIGNATURE-----
+
+--kx2r5dh4j5uektvu--
