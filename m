@@ -4,47 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2F88C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 19:43:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34734C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 22:26:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LBm6R0p0Wz3c8p
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 May 2022 05:43:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBm5x2bN2z308y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2022 05:42:43 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1nvlGn-0004LO-Ul; Mon, 30 May 2022 21:41:41 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1nvlGh-005Vep-Cd; Mon, 30 May 2022 21:41:34 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1nvlGf-00D9uL-Eh; Mon, 30 May 2022 21:41:33 +0200
-Date: Mon, 30 May 2022 21:41:33 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Palmer Dabbelt <palmer@rivosinc.com>
-Subject: Re: [PATCH] RISC-V: Prepare dropping week attribute from
- arch_kexec_apply_relocations[_add]
-Message-ID: <20220530194133.udwdjsb2l33hsiil@pengutronix.de>
-References: <20220530074202.pydmbbgvbtaugw5j@pengutronix.de>
- <mhng-5872aea0-6f64-4685-8f8d-fdeb42e4c972@palmer-mbp2014>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LBqkH4QxGz3bmJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 May 2022 08:25:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Unknown mechanism found: ipv4:218.92.28.120) smtp.mailfrom=jari.cn (client-ip=218.92.28.120; helo=jari.cn; envelope-from=chenxuebing@jari.cn; receiver=<UNKNOWN>)
+X-Greylist: delayed 117 seconds by postgrey-1.36 at boromir; Mon, 30 May 2022 01:18:16 AEST
+Received: from jari.cn (unknown [218.92.28.120])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LB2HD2Ffxz2xMS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 01:18:15 +1000 (AEST)
+Received: by ajax-webmail-localhost.localdomain (Coremail) ; Sun, 29 May
+ 2022 23:09:36 +0800 (GMT+08:00)
+X-Originating-IP: [182.148.15.20]
+Date: Sun, 29 May 2022 23:09:36 +0800 (GMT+08:00)
+X-CM-HeaderCharset: UTF-8
+From: "XueBing Chen" <chenxuebing@jari.cn>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org, 
+	npiggin@gmail.com, farosas@linux.ibm.com, bharata@linux.ibm.com, 
+	aneesh.kumar@linux.ibm.com
+Subject: [PATCH] KVM: PPC: Book3S HV Nested: clean up warnings found by
+ checkpatch
+X-Priority: 3
+X-Mailer: Coremail Webmail Server Version XT6.0.1 build 20210329(c53f3fee)
+ Copyright (c) 2002-2022 www.mailtech.cn
+ mispb-4e503810-ca60-4ec8-a188-7102c18937cf-zhkzyfz.cn
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="krrdaxdkw2concro"
-Content-Disposition: inline
-In-Reply-To: <mhng-5872aea0-6f64-4685-8f8d-fdeb42e4c972@palmer-mbp2014>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Message-ID: <45da8ea8.a92.181105d91bc.Coremail.chenxuebing@jari.cn>
+X-Coremail-Locale: zh_CN
+X-CM-TRANSID: AQAAfwAHEW+wjJNinyY6AA--.671W
+X-CM-SenderInfo: hfkh05pxhex0nj6mt2flof0/1tbiAQABCmFEYxsmlgACsl
+X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VWxJw
+	CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
+	daVFxhVjvjDU=
+X-Mailman-Approved-At: Tue, 31 May 2022 08:25:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,105 +51,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, guoren@linux.alibaba.com, sunnanyong@huawei.com, jszhang@kernel.org, mick@ics.forth.gr, linux-riscv@lists.infradead.org, Stephen Rothwell <sfr@canb.auug.org.au>, alex@ghiti.fr, naveen.n.rao@linux.vnet.ibm.com, lizhengyu3@huawei.com, aou@eecs.berkeley.edu, liaochang1@huawei.com, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Topel <bjorn.topel@gmail.com>, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, penberg@kernel.org, ebiederm@xmission.com, kernel@pengutronix.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, nathan@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---krrdaxdkw2concro
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello,
-
-On Mon, May 30, 2022 at 11:58:16AM -0700, Palmer Dabbelt wrote:
-> On Mon, 30 May 2022 00:42:02 PDT (-0700), u.kleine-koenig@pengutronix.de =
-wrote:
-> > Without this change arch/riscv/kernel/elf_kexec.c fails to compile once
-> > commit 233c1e6c319c ("kexec_file: drop weak attribute from
-> > arch_kexec_apply_relocations[_add]") is also contained in the tree.
-> > This currently happens in next-20220527.
-> >=20
-> > Prepare the RISC-V similar to the s390 adaption done in 233c1e6c319c.
-> > This is safe to do on top of the riscv change even without the change to
-> > arch_kexec_apply_relocations.
-> >=20
-> > Fixes: 838b3e28488f ("RISC-V: Load purgatory in kexec_file")
-> > Looks-good-to: liaochang (A) <liaochang1@huawei.com>
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> > ---
-> >=20
-> > On Mon, May 30, 2022 at 09:43:26AM +0800, liaochang (A) wrote:
-> > > > I can confirm that doing
-> > > > > diff --git a/arch/riscv/include/asm/kexec.h
-> > > b/arch/riscv/include/asm/kexec.h
-> > > > index 206217b23301..eee260e8ab30 100644
-> > > > --- a/arch/riscv/include/asm/kexec.h
-> > > > +++ b/arch/riscv/include/asm/kexec.h
-> > > > @@ -55,6 +55,13 @@ extern riscv_kexec_method riscv_kexec_norelocate;
-> > > >  >  #ifdef CONFIG_KEXEC_FILE
-> > > >  extern const struct kexec_file_ops elf_kexec_ops;
-> > > > +
-> > > > +struct purgatory_info;
-> > > > +int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
-> > > > +				     Elf_Shdr *section,
-> > > > +				     const Elf_Shdr *relsec,
-> > > > +				     const Elf_Shdr *symtab);
-> > > > +#define arch_kexec_apply_relocations_add arch_kexec_apply_relocati=
-ons_add
-> > > >  #endif
-> > > >  >  #endif
-> > >=20
-> > > LGTM, you could send a fixup patch to riscv, thanks.
-> > >=20
-> > > > > on top of 838b3e28488f results in a compilable tree. And when
-> > > merging
-> > > > 233c1e6c319c into this, it is still building.
-> > > > > I'm not enough into kexec (and riscv) to judge if this is
-> > > sensible, or
-> > > > create a useful commit log but the obvious way forward is to apply =
-the
-> > > > above patch to the riscv tree before it hits Linus' tree.
-> >=20
-> > Ok, here comes a patch with a generic commit log.
-> >=20
-> > @riscv people: If you prefer, squash it into 838b3e28488f.
->=20
-> Sorry, just saw this after I sent my version of the fix.  They're the sam=
-e,
-> but do you mind sending a full-on patch so I can merge it?
-
-Sorry, I don't understand your request. I found
-https://lore.kernel.org/linux-riscv/20220530180408.16239-1-palmer@rivosinc.=
-com/
-
-but I don't know what a full-on patch is and what stops you merging my
-patch.=20
-
-Is it that it's in reply to a patch series and b4 fails to fetch the
-right patch and you ask to send it in a new thread?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---krrdaxdkw2concro
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmKVHeoACgkQwfwUeK3K
-7AmIjAf/cIdZXzTm8ALuTDgUrKH3cNzpFjQ944mYn/qfLoGkdCnQlYzghw570rDo
-0QKgHNkqRQQ7lgaXGnex5HizEMdc+++QESut+gBcrV92K33EZU3XSXUp+75SE+Jz
-DjRnmCm4xkh/9zZysNW0OXLnjd4AtGMlbzXYFKsKKxtaGgd7+f06D3cTzoVOfLbL
-i0DPa56ftXEmEYl6WpqIg1gb9gQMQx7E9vsscEgoOX6u9AlinTk/cxkDA6lhMNEj
-03qeCXcYyUQtszhTYw3jo8cLqM1KGLVU3i9Blj0mAIQ8DVaXUd3hWx3AFqjeA55K
-bErpEBzedIdALZNq1g3XX9JHLEMP7Q==
-=qw7s
------END PGP SIGNATURE-----
-
---krrdaxdkw2concro--
+CkNsZWFuIHVwIGEgaGFuZGZ1bCBvZiBjaGVja3BhdGNoIHdhcm5pbmdzOgotIFdBUk5JTkc6IFBy
+ZWZlciAnbG9uZycgb3ZlciAnbG9uZyBpbnQnIGFzIHRoZSBpbnQgaXMgdW5uZWNlc3NhcnkKLSBX
+QVJOSU5HOiBNaXNzaW5nIGEgYmxhbmsgbGluZSBhZnRlciBkZWNsYXJhdGlvbnMKLSBXQVJOSU5H
+OiBQcmVmZXIgJ3Vuc2lnbmVkIGludCAqJyB0byBiYXJlIHVzZSBvZiAndW5zaWduZWQgKicKLSBX
+QVJOSU5HOiB1bm5lY2Vzc2FyeSB3aGl0ZXNwYWNlIGJlZm9yZSBhIHF1b3RlZCBuZXdsaW5lCi0g
+V0FSTklORzogcGxlYXNlLCBubyBzcGFjZXMgYXQgdGhlIHN0YXJ0IG9mIGEgbGluZQotIFdBUk5J
+Tkc6IENvbXBhcmlzb25zIHNob3VsZCBwbGFjZSB0aGUgY29uc3RhbnQgb24gdGhlIHJpZ2h0CnNp
+ZGUgb2YgdGhlIHRlc3QKClNpZ25lZC1vZmYtYnk6IFh1ZUJpbmcgQ2hlbiA8Y2hlbnh1ZWJpbmdA
+amFyaS5jbj4KLS0tCiBhcmNoL3Bvd2VycGMva3ZtL2Jvb2szc19odl9uZXN0ZWQuYyB8IDIxICsr
+KysrKysrKysrKy0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKyksIDkg
+ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2t2bS9ib29rM3NfaHZfbmVz
+dGVkLmMgYi9hcmNoL3Bvd2VycGMva3ZtL2Jvb2szc19odl9uZXN0ZWQuYwppbmRleCA5ZDM3M2Y4
+OTYzZWUuLmFmNTY5NThiMGEyOCAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2t2bS9ib29rM3Nf
+aHZfbmVzdGVkLmMKKysrIGIvYXJjaC9wb3dlcnBjL2t2bS9ib29rM3NfaHZfbmVzdGVkLmMKQEAg
+LTI4OCw3ICsyODgsNyBAQCBzdGF0aWMgdm9pZCBsb2FkX2wyX2h2X3JlZ3Moc3RydWN0IGt2bV92
+Y3B1ICp2Y3B1LAogCiBsb25nIGt2bWh2X2VudGVyX25lc3RlZF9ndWVzdChzdHJ1Y3Qga3ZtX3Zj
+cHUgKnZjcHUpCiB7Ci0JbG9uZyBpbnQgZXJyLCByOworCWxvbmcgZXJyLCByOwogCXN0cnVjdCBr
+dm1fbmVzdGVkX2d1ZXN0ICpsMjsKIAlzdHJ1Y3QgcHRfcmVncyBsMl9yZWdzLCBzYXZlZF9sMV9y
+ZWdzOwogCXN0cnVjdCBodl9ndWVzdF9zdGF0ZSBsMl9odiA9IHswfSwgc2F2ZWRfbDFfaHY7CkBA
+IC00MzAsNyArNDMwLDcgQEAgbG9uZyBrdm1odl9lbnRlcl9uZXN0ZWRfZ3Vlc3Qoc3RydWN0IGt2
+bV92Y3B1ICp2Y3B1KQogCiBsb25nIGt2bWh2X25lc3RlZF9pbml0KHZvaWQpCiB7Ci0JbG9uZyBp
+bnQgcHRiX29yZGVyOworCWxvbmcgcHRiX29yZGVyOwogCXVuc2lnbmVkIGxvbmcgcHRjcjsKIAls
+b25nIHJjOwogCkBAIC02NDYsNiArNjQ2LDcgQEAgc3RhdGljIHZvaWQga3ZtaHZfdXBkYXRlX3B0
+YmxfY2FjaGUoc3RydWN0IGt2bV9uZXN0ZWRfZ3Vlc3QgKmdwKQogCXB0YmxfYWRkciA9IChrdm0t
+PmFyY2gubDFfcHRjciAmIFBSVEJfTUFTSykgKyAoZ3AtPmwxX2xwaWQgPDwgNCk7CiAJaWYgKGdw
+LT5sMV9scGlkIDwgKDF1bCA8PCAoKGt2bS0+YXJjaC5sMV9wdGNyICYgUFJUU19NQVNLKSArIDgp
+KSkgewogCQlpbnQgc3JjdV9pZHggPSBzcmN1X3JlYWRfbG9jaygma3ZtLT5zcmN1KTsKKwogCQly
+ZXQgPSBrdm1fcmVhZF9ndWVzdChrdm0sIHB0YmxfYWRkciwKIAkJCQkgICAgICZwdGJsX2VudHJ5
+LCBzaXplb2YocHRibF9lbnRyeSkpOwogCQlzcmN1X3JlYWRfdW5sb2NrKCZrdm0tPnNyY3UsIHNy
+Y3VfaWR4KTsKQEAgLTg0OSw3ICs4NTAsNyBAQCBzdGF0aWMgc3RydWN0IGt2bV9uZXN0ZWRfZ3Vl
+c3QgKmt2bWh2X2ZpbmRfbmVzdGVkKHN0cnVjdCBrdm0gKmt2bSwgaW50IGxwaWQpCiB9CiAKIHB0
+ZV90ICpmaW5kX2t2bV9uZXN0ZWRfZ3Vlc3RfcHRlKHN0cnVjdCBrdm0gKmt2bSwgdW5zaWduZWQg
+bG9uZyBscGlkLAotCQkJCSB1bnNpZ25lZCBsb25nIGVhLCB1bnNpZ25lZCAqaHNoaWZ0KQorCQkJ
+CSB1bnNpZ25lZCBsb25nIGVhLCB1bnNpZ25lZCBpbnQgKmhzaGlmdCkKIHsKIAlzdHJ1Y3Qga3Zt
+X25lc3RlZF9ndWVzdCAqZ3A7CiAJcHRlX3QgKnB0ZTsKQEAgLTg1OSw3ICs4NjAsNyBAQCBwdGVf
+dCAqZmluZF9rdm1fbmVzdGVkX2d1ZXN0X3B0ZShzdHJ1Y3Qga3ZtICprdm0sIHVuc2lnbmVkIGxv
+bmcgbHBpZCwKIAkJcmV0dXJuIE5VTEw7CiAKIAlWTV9XQVJOKCFzcGluX2lzX2xvY2tlZCgma3Zt
+LT5tbXVfbG9jayksCi0JCSIlcyBjYWxsZWQgd2l0aCBrdm0gbW11X2xvY2sgbm90IGhlbGQgXG4i
+LCBfX2Z1bmNfXyk7CisJCSIlcyBjYWxsZWQgd2l0aCBrdm0gbW11X2xvY2sgbm90IGhlbGRcbiIs
+IF9fZnVuY19fKTsKIAlwdGUgPSBfX2ZpbmRfbGludXhfcHRlKGdwLT5zaGFkb3dfcGd0YWJsZSwg
+ZWEsIE5VTEwsIGhzaGlmdCk7CiAKIAlyZXR1cm4gcHRlOwpAQCAtMTAwMyw2ICsxMDA0LDcgQEAg
+dm9pZCBrdm1odl9yZW1vdmVfbmVzdF9ybWFwX3JhbmdlKHN0cnVjdCBrdm0gKmt2bSwKIAogCWZv
+ciAoOyBnZm4gPCBlbmRfZ2ZuOyBnZm4rKykgewogCQl1bnNpZ25lZCBsb25nICpybWFwID0gJm1l
+bXNsb3QtPmFyY2gucm1hcFtnZm5dOworCiAJCWt2bWh2X3JlbW92ZV9uZXN0X3JtYXBfbGlzdChr
+dm0sIHJtYXAsIGhwYSwgYWRkcl9tYXNrKTsKIAl9CiB9CkBAIC0xNDc1LDcgKzE0NzcsNyBAQCBz
+dGF0aWMgaW5saW5lIGludCBrdm1wcGNfcmFkaXhfc2hpZnRfdG9fbGV2ZWwoaW50IHNoaWZ0KQog
+fQogCiAvKiBjYWxsZWQgd2l0aCBncC0+dGxiX2xvY2sgaGVsZCAqLwotc3RhdGljIGxvbmcgaW50
+IF9fa3ZtaHZfbmVzdGVkX3BhZ2VfZmF1bHQoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LAorc3RhdGlj
+IGxvbmcgX19rdm1odl9uZXN0ZWRfcGFnZV9mYXVsdChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsCiAJ
+CQkJCSAgc3RydWN0IGt2bV9uZXN0ZWRfZ3Vlc3QgKmdwKQogewogCXN0cnVjdCBrdm0gKmt2bSA9
+IHZjcHUtPmt2bTsKQEAgLTE0OTEsNyArMTQ5Myw3IEBAIHN0YXRpYyBsb25nIGludCBfX2t2bWh2
+X25lc3RlZF9wYWdlX2ZhdWx0KHN0cnVjdCBrdm1fdmNwdSAqdmNwdSwKIAl1bnNpZ25lZCBpbnQg
+c2hpZnQsIGwxX3NoaWZ0LCBsZXZlbDsKIAlib29sIHdyaXRpbmcgPSAhIShkc2lzciAmIERTSVNS
+X0lTU1RPUkUpOwogCWJvb2wga3ZtX3JvID0gZmFsc2U7Ci0JbG9uZyBpbnQgcmV0OworCWxvbmcg
+cmV0OwogCiAJaWYgKCFncC0+bDFfZ3JfdG9faHIpIHsKIAkJa3ZtaHZfdXBkYXRlX3B0YmxfY2Fj
+aGUoZ3ApOwpAQCAtMTYxNCw3ICsxNjE2LDggQEAgc3RhdGljIGxvbmcgaW50IF9fa3ZtaHZfbmVz
+dGVkX3BhZ2VfZmF1bHQoc3RydWN0IGt2bV92Y3B1ICp2Y3B1LAogCWlmIChzaGlmdCA+IGwxX3No
+aWZ0KSB7CiAJCXU2NCBtYXNrOwogCQl1bnNpZ25lZCBpbnQgYWN0dWFsX3NoaWZ0ID0gUEFHRV9T
+SElGVDsKLQkJaWYgKFBNRF9TSElGVCA8IGwxX3NoaWZ0KQorCisJCWlmIChsMV9zaGlmdCA+IFBN
+RF9TSElGVCkKIAkJCWFjdHVhbF9zaGlmdCA9IFBNRF9TSElGVDsKIAkJbWFzayA9ICgxVUwgPDwg
+c2hpZnQpIC0gKDFVTCA8PCBhY3R1YWxfc2hpZnQpOwogCQlwdGUgPSBfX3B0ZShwdGVfdmFsKHB0
+ZSkgfCAoZ3BhICYgbWFzaykpOwpAQCAtMTY0NCwxMCArMTY0NywxMCBAQCBzdGF0aWMgbG9uZyBp
+bnQgX19rdm1odl9uZXN0ZWRfcGFnZV9mYXVsdChzdHJ1Y3Qga3ZtX3ZjcHUgKnZjcHUsCiAJcmV0
+dXJuIFJFU1VNRV9HVUVTVDsKIH0KIAotbG9uZyBpbnQga3ZtaHZfbmVzdGVkX3BhZ2VfZmF1bHQo
+c3RydWN0IGt2bV92Y3B1ICp2Y3B1KQorbG9uZyBrdm1odl9uZXN0ZWRfcGFnZV9mYXVsdChzdHJ1
+Y3Qga3ZtX3ZjcHUgKnZjcHUpCiB7CiAJc3RydWN0IGt2bV9uZXN0ZWRfZ3Vlc3QgKmdwID0gdmNw
+dS0+YXJjaC5uZXN0ZWQ7Ci0JbG9uZyBpbnQgcmV0OworCWxvbmcgcmV0OwogCiAJbXV0ZXhfbG9j
+aygmZ3AtPnRsYl9sb2NrKTsKIAlyZXQgPSBfX2t2bWh2X25lc3RlZF9wYWdlX2ZhdWx0KHZjcHUs
+IGdwKTsKLS0gCjIuMzYuMQo=
