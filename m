@@ -4,42 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24449C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 08:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E21BCC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 10:53:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LBTGW4ZXtz3byl
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 18:34:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=zhangqilong3@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LBXMW0prvz3by6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 20:53:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RCZFhtbc;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBTG04my1z2ypn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 18:33:44 +1000 (AEST)
-Received: from kwepemi100002.china.huawei.com (unknown [172.30.72.54])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LBTD0012Jz1JCSR;
-	Mon, 30 May 2022 16:31:59 +0800 (CST)
-Received: from kwepemm600014.china.huawei.com (7.193.23.54) by
- kwepemi100002.china.huawei.com (7.221.188.188) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Mon, 30 May 2022 16:33:36 +0800
-Received: from huawei.com (10.90.53.225) by kwepemm600014.china.huawei.com
- (7.193.23.54) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Mon, 30 May
- 2022 16:33:36 +0800
-From: zhangqilong <zhangqilong3@huawei.com>
-To: <shengjiu.wang@gmail.com>, <Xiubo.Lee@gmail.com>, <perex@perex.cz>,
-	<tiwai@suse.com>
-Subject: [PATCH V2] ASoC: fsl_xcvr:Fix unbalanced pm_runtime_enable in fsl_xcvr_probe
-Date: Mon, 30 May 2022 16:35:33 +0800
-Message-ID: <20220530083533.52254-1-zhangqilong3@huawei.com>
-X-Mailer: git-send-email 2.26.0.106.g9fadedd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBXLp1ynPz2ywb
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 20:53:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=RCZFhtbc;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LBXLn0P3Yz4xZD;
+	Mon, 30 May 2022 20:53:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1653907986;
+	bh=Dkvi+HFnbDL2DwAp//5yZB70vhuSooWcV247ZK3BH7k=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=RCZFhtbcPhp6Lug7Q3gshleEqDi7ZuvqwB+nM02fddCWX0aDlm65SzHOVqZw86Aj/
+	 4xC3Bt3yfwONnf9sSnPlNSYOUpxKhgjYmfchRALVRMhZP09M51niSbFrWNiiK7dQNd
+	 WMN1UzdHm3Iykv6om8HKrnwF/u8r0QuBoaeGeCaJMG+4hFBZ0jsFaABKvbpwyqNAvE
+	 L9EjjUFZIAM7ouw6qZeT6WRJPYCy+x8D+0q9rLKUllNhJI8C4Rj3GUAPUSmatzOjSt
+	 tfCsdy2vE/Je+vFDDbHqQLdqbZpHo6viU34ODQG6WMYFqhYV+0b3MCakzgqjGljCyu
+	 +nHi3eexEZT/Q==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Petr Mladek <pmladek@suse.com>, Bagas Sanjaya <bagasdotme@gmail.com>
+Subject: Re: dangling pointer to '__str' error on ppc64_defconfig, GCC 12.1.0
+In-Reply-To: <Yo9+fQ32Br9+NpUW@alley>
+References: <Yo9Fm/hdtac1t9sW@debian.me> <Yo9+fQ32Br9+NpUW@alley>
+Date: Mon, 30 May 2022 20:53:01 +1000
+Message-ID: <87k0a3l2b6.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.90.53.225]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- kwepemm600014.china.huawei.com (7.193.23.54)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,64 +57,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, festevam@gmail.com, lgirdwood@gmail.com, nicoleotsuka@gmail.com, broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: John Ogness <john.ogness@linutronix.de>, linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, David Howells <dhowells@redhat.com>, Sergey Senozhatsky <senozhatsky@chromium.org>, Paul Mackerras <paulus@samba.org>, Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-a) Add missing pm_runtime_disable() when probe error out. It could
-avoid pm_runtime implementation complains when removing and probing
-again the driver.
-b) Add remove for missing pm_runtime_disable().
-
-v2: add remove to put PM usage counter.
-
-Fix:c590fa80b3928 ("ASoC: fsl_xcvr: register platform component before registering cpu dai")
-Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
----
- sound/soc/fsl/fsl_xcvr.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
-index d0556c79fdb1..55e640cba87d 100644
---- a/sound/soc/fsl/fsl_xcvr.c
-+++ b/sound/soc/fsl/fsl_xcvr.c
-@@ -1228,6 +1228,7 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 	 */
- 	ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
- 	if (ret) {
-+		pm_runtime_disable(dev);
- 		dev_err(dev, "failed to pcm register\n");
- 		return ret;
- 	}
-@@ -1235,6 +1236,7 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 	ret = devm_snd_soc_register_component(dev, &fsl_xcvr_comp,
- 					      &fsl_xcvr_dai, 1);
- 	if (ret) {
-+		pm_runtime_disable(dev);
- 		dev_err(dev, "failed to register component %s\n",
- 			fsl_xcvr_comp.name);
- 	}
-@@ -1242,6 +1244,12 @@ static int fsl_xcvr_probe(struct platform_device *pdev)
- 	return ret;
- }
+Petr Mladek <pmladek@suse.com> writes:
+> On Thu 2022-05-26 16:17:15, Bagas Sanjaya wrote:
+>> Hi everyone,
+>> 
+>> Attempting to build ppc64_defconfig kernel with powerpc64-unknown-linux-gnu
+>> (GCC 12.1.0) on v5.18, I got build error on ftrace.o:
+>> 
+>>   CC      arch/powerpc/kernel/trace/ftrace.o
+>>   CC      init/init_task.o
+>> In file included from ./include/asm-generic/bug.h:22,
+>>                  from ./arch/powerpc/include/asm/bug.h:156,
+>>                  from ./include/linux/bug.h:5,
+>>                  from ./include/linux/thread_info.h:13,
+>>                  from ./include/asm-generic/preempt.h:5,
+>>                  from ./arch/powerpc/include/generated/asm/preempt.h:1,
+>>                  from ./include/linux/preempt.h:78,
+>>                  from ./include/linux/spinlock.h:55,
+>>                  from arch/powerpc/kernel/trace/ftrace.c:16:
+>> arch/powerpc/kernel/trace/ftrace.c: In function 'ftrace_modify_code':
+>> ./include/linux/printk.h:446:44: error: using a dangling pointer to '__str' [-Werror=dangling-pointer=]
+>>   446 | #define printk(fmt, ...) printk_index_wrap(_printk, fmt, ##__VA_ARGS__)
+>>       |                                            ^
+>> ./include/linux/printk.h:418:17: note: in definition of macro 'printk_index_wrap'
+>>   418 |                 _p_func(_fmt, ##__VA_ARGS__);                           \
+>>       |                 ^~~~~~~
+>> ./include/linux/printk.h:489:9: note: in expansion of macro 'printk'
+>>   489 |         printk(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
+>>       |         ^~~~~~
+>> arch/powerpc/kernel/trace/ftrace.c:75:17: note: in expansion of macro 'pr_err'
+>>    75 |                 pr_err("%p: replaced (%s) != old (%s)",
+>>       |                 ^~~~~~
+>> In file included from ./arch/powerpc/include/asm/code-patching.h:14,
+>>                  from arch/powerpc/kernel/trace/ftrace.c:26:
+>> ./arch/powerpc/include/asm/inst.h:156:14: note: '__str' declared here
+>>   156 |         char __str[PPC_INST_STR_LEN];   \
+>>       |              ^~~~~
+>
+> IMHO, the problem is in the macro:
+>
+> #define ppc_inst_as_str(x)		\
+> ({					\
+> 	char __str[PPC_INST_STR_LEN];	\
+> 	__ppc_inst_as_str(__str, x);	\
+> 	__str;				\
+> })
+>
+> The buffer __str is defined inside the code block {} and
+> the macro passes the pointer to the buffer outside.
+> IMHO, from the compiler POV, the buffer does not exist
+> outside of the code block.
  
-+static int fsl_xcvr_remove(struct platform_device *pdev)
-+{
-+	pm_runtime_disable(&pdev->dev);
-+	return 0;
-+}
-+
- static __maybe_unused int fsl_xcvr_runtime_suspend(struct device *dev)
- {
- 	struct fsl_xcvr *xcvr = dev_get_drvdata(dev);
-@@ -1370,6 +1378,7 @@ static struct platform_driver fsl_xcvr_driver = {
- 		.pm = &fsl_xcvr_pm_ops,
- 		.of_match_table = fsl_xcvr_dt_ids,
- 	},
-+	.remove = fsl_xcvr_remove,
- };
- module_platform_driver(fsl_xcvr_driver);
- 
--- 
-2.31.1
+This warning seems kind of incompatible with statement expressions. But
+I guess the compiler is happy as long as the value returned is not a
+pointer. So I'm not sure I agree with the compiler here, but too bad for
+me I guess.
 
+This macro has always been a bit awkward, I think I'm inclined to just
+get rid of it completely, and print the ulong value. I'll send a patch.
+
+Anyway it's definitely not your problem, sorry you ended up on Cc.
+
+cheers
