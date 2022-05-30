@@ -4,60 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCF05C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 May 2022 21:14:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31986C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 04:04:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LBBB04CZ0z3bsh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 07:14:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LBMHp3CqCz3bTR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 14:04:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WU1siCUX;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UCycBCGZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WU1siCUX;
-	dkim-atps=neutral
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBB8c5Jkzz2yV6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 07:13:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1653858784; x=1685394784;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=lVQZENgjdyQuoHD2ZdB7NWFOxeEaDLnh72CTMU9d364=;
-  b=WU1siCUX3nCrYN+30B4d1ixaIcd55KIilEFg+7yPDIxEUu7VlgIG18IS
-   8eF6os9HSJroq91S2fq9kUpMNOI4CD8rk+3bMknFa4PrHqtkg8TrgfqsU
-   csiqypJ4wrr+BfSflSrGg+afiMBZpoveUMbCuZARti9m6DAq6TT9vOQAl
-   zRE8uGWVDdEXxh9dC2hJNIy5YYSTNMRZO0tRvXOHBVHhLOJ3+07ya0cHC
-   4WXm47BeT2V2LMfnDEyjnc9SpStIsPcAtXr1swwc5LaTJzgMSC+3S0+13
-   lTxWunJnjJ35Soc99mderpLxYL6erdst+ZuLb7+rq1OBp3BjDTo90hvf2
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10362"; a="255331275"
-X-IronPort-AV: E=Sophos;i="5.91,261,1647327600"; 
-   d="scan'208";a="255331275"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 May 2022 14:12:00 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,261,1647327600"; 
-   d="scan'208";a="678868761"
-Received: from lkp-server01.sh.intel.com (HELO 60dabacc1df6) ([10.239.97.150])
-  by fmsmga002.fm.intel.com with ESMTP; 29 May 2022 14:11:59 -0700
-Received: from kbuild by 60dabacc1df6 with local (Exim 4.95)
-	(envelope-from <lkp@intel.com>)
-	id 1nvQCc-0001FE-C2;
-	Sun, 29 May 2022 21:11:58 +0000
-Date: Mon, 30 May 2022 05:11:39 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:merge] BUILD SUCCESS
- 16332b7fbbe46581ddac80c6d32834c1269bc450
-Message-ID: <6293e18b.9xVPcFrroYjqkIxB%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBMH55hm1z2xXV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 14:04:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=UCycBCGZ;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LBMH50Q5zz4xD2;
+	Mon, 30 May 2022 14:04:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1653883457;
+	bh=x0svsTO+jOFwH/KVWpk821pyzNznqc/zH685jsc3xAo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=UCycBCGZN4FwwG9NtPjTOTY9Z6WdyBcbaCY1PV8XmA12shhVCHuzIe5pdqh2qYFyk
+	 PvtxE+XWmWXjkR889bgopN8vT1jB3UHEMi7kCJEHHylLZwHJy4YWI6hcRkKXK3da3R
+	 kqDNRTvZol2gq/YWneJ5EK/RWA4uYCtAO1l2ZY3ixLtsy3wr87J4ZWsCsNQDfZ8MJk
+	 qQTb9AyVIt7AFnTWq0hZOGBdZY0as/KlU0ZmYbT6HjW2OB2YKu0E8IB1/VqHkWB0z6
+	 u6COQPyxQl+Wdp58uKjrK4Dj8FYXNKb93F/LQ7zUWabwIGqegG1utiF9qIwyF5SzSU
+	 a+TD/72hO8qWA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Peter Xu <peterx@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH v4] mm: Avoid unnecessary page fault retires on shared
+ memory types
+In-Reply-To: <20220527193936.30678-1-peterx@redhat.com>
+References: <20220527193936.30678-1-peterx@redhat.com>
+Date: Mon, 30 May 2022 14:04:12 +1000
+Message-ID: <87mtezll8j.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,150 +63,17 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 16332b7fbbe46581ddac80c6d32834c1269bc450  Automatic merge of 'master' into merge (2022-05-29 10:31)
+Peter Xu <peterx@redhat.com> writes:
+> I observed that for each of the shared file-backed page faults, we're very
+> likely to retry one more time for the 1st write fault upon no page.  It's
+> because we'll need to release the mmap lock for dirty rate limit purpose
+> with balance_dirty_pages_ratelimited() (in fault_dirty_shared_page()).
+>
+...
 
-elapsed time: 725m
+>  arch/powerpc/mm/copro_fault.c |  5 +++++
+>  arch/powerpc/mm/fault.c       |  5 +++++
 
-configs tested: 126
-configs skipped: 3
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                              allmodconfig
-arm                              allyesconfig
-arm                                 defconfig
-arm64                               defconfig
-arm64                            allyesconfig
-i386                          randconfig-c001
-mips                     decstation_defconfig
-powerpc                 mpc834x_mds_defconfig
-arm                           stm32_defconfig
-arm                            xcep_defconfig
-xtensa                           alldefconfig
-powerpc                     sequoia_defconfig
-m68k                        m5407c3_defconfig
-powerpc                 mpc8540_ads_defconfig
-mips                        bcm47xx_defconfig
-arc                           tb10x_defconfig
-powerpc                     pq2fads_defconfig
-arm                      footbridge_defconfig
-arm                           h3600_defconfig
-mips                     loongson1b_defconfig
-powerpc                        cell_defconfig
-sh                           se7750_defconfig
-m68k                          amiga_defconfig
-arc                                 defconfig
-parisc                           allyesconfig
-arm                       aspeed_g5_defconfig
-powerpc                     tqm8541_defconfig
-m68k                          atari_defconfig
-sh                          r7785rp_defconfig
-powerpc                      pcm030_defconfig
-sh                     magicpanelr2_defconfig
-sh                           se7619_defconfig
-arc                              alldefconfig
-m68k                          multi_defconfig
-arm                  randconfig-c002-20220529
-x86_64                        randconfig-c001
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-alpha                               defconfig
-csky                                defconfig
-alpha                            allyesconfig
-nios2                            allyesconfig
-h8300                            allyesconfig
-sh                               allmodconfig
-xtensa                           allyesconfig
-parisc                              defconfig
-s390                             allmodconfig
-s390                                defconfig
-s390                             allyesconfig
-parisc64                            defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-i386                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-sparc                            allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-x86_64                        randconfig-a006
-i386                          randconfig-a001
-i386                          randconfig-a003
-i386                          randconfig-a005
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-i386                          randconfig-a014
-i386                          randconfig-a012
-i386                          randconfig-a016
-arc                  randconfig-r043-20220529
-riscv                             allnoconfig
-riscv                            allyesconfig
-riscv                            allmodconfig
-riscv                    nommu_k210_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_virt_defconfig
-riscv                               defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-syz
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
-x86_64                              defconfig
-x86_64                                  kexec
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-
-clang tested configs:
-powerpc              randconfig-c003-20220529
-x86_64                        randconfig-c007
-arm                  randconfig-c002-20220529
-mips                 randconfig-c004-20220529
-riscv                randconfig-c006-20220529
-i386                          randconfig-c001
-s390                 randconfig-c005-20220529
-arm                      tct_hammer_defconfig
-mips                         tb0219_defconfig
-arm                         hackkit_defconfig
-x86_64                           allyesconfig
-mips                           ip22_defconfig
-arm                        neponset_defconfig
-mips                          rm200_defconfig
-powerpc                    socrates_defconfig
-mips                  cavium_octeon_defconfig
-x86_64                        randconfig-a001
-x86_64                        randconfig-a003
-x86_64                        randconfig-a005
-i386                          randconfig-a002
-i386                          randconfig-a004
-i386                          randconfig-a006
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-i386                          randconfig-a013
-i386                          randconfig-a011
-i386                          randconfig-a015
-hexagon              randconfig-r041-20220529
-hexagon              randconfig-r045-20220529
-s390                 randconfig-r044-20220529
-riscv                randconfig-r042-20220529
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+cheers
