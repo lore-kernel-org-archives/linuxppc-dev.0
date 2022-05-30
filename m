@@ -4,45 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D80DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 22:27:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58097C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 22:32:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LBqlS566Sz3cjM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 May 2022 08:27:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=liaochang1@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LBqsb6YN3z3dvQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 May 2022 08:32:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=G2A0nuMR;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::535; helo=mail-pg1-x535.google.com; envelope-from=palmer@rivosinc.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=G2A0nuMR;
+	dkim-atps=neutral
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBJ8q1ZDSz2xss
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 11:43:35 +1000 (AEST)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.56])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LBJ7K4K7JzjX0y;
-	Mon, 30 May 2022 09:42:21 +0800 (CST)
-Received: from [10.67.110.108] (10.67.110.108) by
- kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Mon, 30 May 2022 09:43:27 +0800
-Message-ID: <59e8faec-05fd-805d-7de0-4b0508f8467f@huawei.com>
-Date: Mon, 30 May 2022 09:43:26 +0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.4.0
-Subject: Re: [PATCH v2] kexec_file: Drop weak attribute from
- arch_kexec_apply_relocations[_add]
-To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <20220519091237.676736-1-naveen.n.rao@linux.vnet.ibm.com>
- <20220529065637.xgapqjp2342flbuj@pengutronix.de>
- <264786d9-7756-19e0-2742-8b8d17f5ace5@csgroup.eu>
- <20220529140655.bnd4fgggccrorj4t@pengutronix.de>
-From: "liaochang (A)" <liaochang1@huawei.com>
-In-Reply-To: <20220529140655.bnd4fgggccrorj4t@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBl6k1m0nz3015
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 May 2022 04:58:19 +1000 (AEST)
+Received: by mail-pg1-x535.google.com with SMTP id 137so10808846pgb.5
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 11:58:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20210112.gappssmtp.com; s=20210112;
+        h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
+         :content-transfer-encoding;
+        bh=FFd5J9hlrCh2QSfJ0U9Wq/vsfh13pMH0ZkFo1eZIXtA=;
+        b=G2A0nuMRKJztXPtT1GUrPx85rUqGPGHpsq6URvVAWa2fAqIkqlfU4RngPrGYBoa1Ni
+         M6NJlw8gvJTBgkCc39LSTpamjbz9roIDkZlQnC9RO7k8Rc/xTX31a3GgYujadTBpfIga
+         JQwSMuZ1HKoUjn6bSrBPFJvBaAnJAoYYH3EqEdZ9ex71cFuQ884I0tNEZG45hvUsKFSe
+         SdW5ZEoZd6rbSNFsE45uC0UD8kqMIeKOTMqVLl/EmGGsbxPQhZqogmDjAeWQ19R+ngDM
+         5BxwPho/sCen5YkWBuTX+8h/WXJiDTTq1gmrRwjtIax6oHnLs3pgInlqG/tnWA3am8JP
+         E8ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
+         :mime-version:content-transfer-encoding;
+        bh=FFd5J9hlrCh2QSfJ0U9Wq/vsfh13pMH0ZkFo1eZIXtA=;
+        b=n/hoybmYq7TqGPGGrJwvO0rI0Xc880S98b5IrMKm9crHTnrn5+SXEFM4HM2q+jisNp
+         YywgbyxyK9H1nx3F+2Yssa2sdWBaQgSRenbzR+8sYgF2GTBPw3mDUjAqYncY7+XQM2G0
+         mQmB11hUPWQ1NTYPcS2m09keUhz8RBe5leQ0XOm/7pVSOcdNn3bQYaxo5Yj4tSqCbb11
+         1jzRyrpAQXixE9vGyf5zEVsdNlctDYZ9q9lkWC86FyZbZ46w/W7hrIBrr//reFrKpps8
+         DyQmMR6whYOG8DYgi2rx5P8uzi1fcVgf5RHj1sBhOu8PEbIiPv7/JrWSgUlEnGkSodwk
+         vegQ==
+X-Gm-Message-State: AOAM530rprYEhmKtvdIR8ivk6BrWpSrXgqkRKYdfg7C3q4nf/XFUnYZz
+	osicKGrRP2bAdojRX9aJKgkhwg==
+X-Google-Smtp-Source: ABdhPJxxJ8lgOI/t/BS91nMmuF/AA3XEFbCsJdbzVlMXQCjM93kfvxRGwUywbXar5ejrleDbO2A5Hg==
+X-Received: by 2002:a63:2026:0:b0:3fa:cefb:e408 with SMTP id g38-20020a632026000000b003facefbe408mr25103264pgg.57.1653937096823;
+        Mon, 30 May 2022 11:58:16 -0700 (PDT)
+Received: from localhost (76-210-143-223.lightspeed.sntcca.sbcglobal.net. [76.210.143.223])
+        by smtp.gmail.com with ESMTPSA id n16-20020aa79050000000b00518c6887217sm9107889pfo.58.2022.05.30.11.58.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 30 May 2022 11:58:16 -0700 (PDT)
+Date: Mon, 30 May 2022 11:58:16 -0700 (PDT)
+X-Google-Original-Date: Mon, 30 May 2022 11:58:13 PDT (-0700)
+Subject: Re: [PATCH] RISC-V: Prepare dropping week attribute from arch_kexec_apply_relocations[_add]
+In-Reply-To: <20220530074202.pydmbbgvbtaugw5j@pengutronix.de>
+From: Palmer Dabbelt <palmer@rivosinc.com>
+To: u.kleine-koenig@pengutronix.de
+Message-ID: <mhng-5872aea0-6f64-4685-8f8d-fdeb42e4c972@palmer-mbp2014>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.110.108]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemi500012.china.huawei.com (7.221.188.12)
-X-CFilter-Loop: Reflected
 X-Mailman-Approved-At: Tue, 31 May 2022 08:25:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,62 +77,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andrew Morton <akpm@linux-foundation.org>, "kexec@lists.infradead.org" <kexec@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Palmer Dabbelt <palmer@rivosinc.com>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Eric Biederman <ebiederm@xmission.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Li Zhengyu <lizhengyu3@huawei.com>
+Cc: wangkefeng.wang@huawei.com, guoren@linux.alibaba.com, sunnanyong@huawei.com, jszhang@kernel.org, mick@ics.forth.gr, linux-riscv@lists.infradead.org, Stephen Rothwell <sfr@canb.auug.org.au>, alex@ghiti.fr, naveen.n.rao@linux.vnet.ibm.com, lizhengyu3@huawei.com, aou@eecs.berkeley.edu, liaochang1@huawei.com, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Topel <bjorn.topel@gmail.com>, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, penberg@kernel.org, ebiederm@xmission.com, kernel@pengutronix.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, 30 May 2022 00:42:02 PDT (-0700), u.kleine-koenig@pengutronix.de wrote:
+> Without this change arch/riscv/kernel/elf_kexec.c fails to compile once
+> commit 233c1e6c319c ("kexec_file: drop weak attribute from
+> arch_kexec_apply_relocations[_add]") is also contained in the tree.
+> This currently happens in next-20220527.
+>
+> Prepare the RISC-V similar to the s390 adaption done in 233c1e6c319c.
+> This is safe to do on top of the riscv change even without the change to
+> arch_kexec_apply_relocations.
+>
+> Fixes: 838b3e28488f ("RISC-V: Load purgatory in kexec_file")
+> Looks-good-to: liaochang (A) <liaochang1@huawei.com>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+>
+> On Mon, May 30, 2022 at 09:43:26AM +0800, liaochang (A) wrote:
+>> > I can confirm that doing
+>> > 
+>> > diff --git a/arch/riscv/include/asm/kexec.h b/arch/riscv/include/asm/kexec.h
+>> > index 206217b23301..eee260e8ab30 100644
+>> > --- a/arch/riscv/include/asm/kexec.h
+>> > +++ b/arch/riscv/include/asm/kexec.h
+>> > @@ -55,6 +55,13 @@ extern riscv_kexec_method riscv_kexec_norelocate;
+>> >  
+>> >  #ifdef CONFIG_KEXEC_FILE
+>> >  extern const struct kexec_file_ops elf_kexec_ops;
+>> > +
+>> > +struct purgatory_info;
+>> > +int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
+>> > +				     Elf_Shdr *section,
+>> > +				     const Elf_Shdr *relsec,
+>> > +				     const Elf_Shdr *symtab);
+>> > +#define arch_kexec_apply_relocations_add arch_kexec_apply_relocations_add
+>> >  #endif
+>> >  
+>> >  #endif
+>> 
+>> LGTM, you could send a fixup patch to riscv, thanks.
+>> 
+>> > 
+>> > on top of 838b3e28488f results in a compilable tree. And when merging
+>> > 233c1e6c319c into this, it is still building.
+>> > 
+>> > I'm not enough into kexec (and riscv) to judge if this is sensible, or
+>> > create a useful commit log but the obvious way forward is to apply the
+>> > above patch to the riscv tree before it hits Linus' tree.
+>
+> Ok, here comes a patch with a generic commit log. 
+>
+> @riscv people: If you prefer, squash it into 838b3e28488f.
 
+Sorry, just saw this after I sent my version of the fix.  They're the 
+same, but do you mind sending a full-on patch so I can merge it?
 
-在 2022/5/29 22:06, Uwe Kleine-König 写道:
-> Hello,
-> 
-> On Sun, May 29, 2022 at 09:46:47AM +0000, Christophe Leroy wrote:
->> Le 29/05/2022 à 08:56, Uwe Kleine-König a écrit :
->>> Hello,
->>>
->>> on current linux-next ARCH=riscv allmodconfig breaks with:
->>>
->>>    CC      arch/riscv/kernel/elf_kexec.o
->>> arch/riscv/kernel/elf_kexec.c:345:5: error: redefinition of ‘arch_kexec_apply_relocations_add’
->>>    345 | int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
->>>        |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>> In file included from arch/riscv/kernel/elf_kexec.c:16:
->>> include/linux/kexec.h:236:1: note: previous definition of ‘arch_kexec_apply_relocations_add’ with type ‘int(struct purgatory_info *, Elf64_Shdr *, const Elf64_Shdr *, const Elf64_Shdr *)’ {aka ‘int(struct purgatory_info *, struct elf64_shdr *, const struct elf64_shdr *, const struct elf64_shdr *)’}
->>>    236 | arch_kexec_apply_relocations_add(struct purgatory_info *pi, Elf_Shdr *section,
->>>        | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>
->>> (I think) because there is a conflict between the two commits:
->>>
->>> 233c1e6c319c kexec_file: drop weak attribute from arch_kexec_apply_relocations[_add]
->>> 838b3e28488f RISC-V: Load purgatory in kexec_file
->>>
->>> And so next is broken starting from
->>> 164a9037b1d33f28ba27671c16ec1c23d4a11acf which merges the riscv tree.
->>>
->>
->> In arch/riscv/include/asm/kexec.h, do the same as s390 did in commit 
->> 233c1e6c319c:
->>
->> diff --git a/arch/s390/include/asm/kexec.h b/arch/s390/include/asm/kexec.h
->> index 7f3c9ac34bd8..540dd469b088 100644
->> --- a/arch/s390/include/asm/kexec.h
->> +++ b/arch/s390/include/asm/kexec.h
->> @@ -83,4 +83,12 @@ struct kimage_arch {
->>   extern const struct kexec_file_ops s390_kexec_image_ops;
->>   extern const struct kexec_file_ops s390_kexec_elf_ops;
->>
->> +#ifdef CONFIG_KEXEC_FILE
->> +struct purgatory_info;
->> +int arch_kexec_apply_relocations_add(struct purgatory_info *pi,
->> +				     Elf_Shdr *section,
->> +				     const Elf_Shdr *relsec,
->> +				     const Elf_Shdr *symtab);
->> +#define arch_kexec_apply_relocations_add arch_kexec_apply_relocations_add
->> +#endif
->>   #endif /*_S390_KEXEC_H */
-> 
-> I can confirm that doing
-> 
+>
+> Best regards
+> Uwe
+>
+>  arch/riscv/include/asm/kexec.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
 > diff --git a/arch/riscv/include/asm/kexec.h b/arch/riscv/include/asm/kexec.h
 > index 206217b23301..eee260e8ab30 100644
 > --- a/arch/riscv/include/asm/kexec.h
@@ -129,26 +160,11 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 >  #endif
 >  
 >  #endif
-
-LGTM, you could send a fixup patch to riscv, thanks.
-
-> 
-> on top of 838b3e28488f results in a compilable tree. And when merging
-> 233c1e6c319c into this, it is still building.
-> 
-> I'm not enough into kexec (and riscv) to judge if this is sensible, or
-> create a useful commit log but the obvious way forward is to apply the
-> above patch to the riscv tree before it hits Linus' tree.
-> 
-> Best regards
-> Uwe
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
-
--- 
-BR,
-Liao, Chang
+>
+> base-commit: 838b3e28488f702e2b5477b393f009b2639d2b1a
+> -- 
+> 2.36.1
+>
+> -- 
+> Pengutronix e.K.                           | Uwe Kleine-König            |
+> Industrial Linux Solutions                 | https://www.pengutronix.de/ |
