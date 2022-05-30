@@ -4,90 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A1B0C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 May 2022 22:27:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49673C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 13:40:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4L8zvp0mptz3c8T
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 May 2022 08:27:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LBc4B3RkWz3bq7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 May 2022 23:40:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZUWXkMma;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZUWXkMma;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=cSzwr5IN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d2b; helo=mail-io1-xd2b.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZUWXkMma;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZUWXkMma;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=cSzwr5IN;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-xd2b.google.com (mail-io1-xd2b.google.com [IPv6:2607:f8b0:4864:20::d2b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4L8nqz71Z7z3bNk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 May 2022 00:53:49 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1653663225;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uLEQbfXieXddbws3ZtMPUo3kSGjUH1tIUFKal4fFd0k=;
-	b=ZUWXkMmaLR/WV6SaN23An4IjuzAIza1QX1t8JzsMALCVYB77n5xLXUBVTeDmXG4i9Rz8In
-	93SdTNCn3lvYQKzM1zI+gr5m3+U3u6Q3xuOoj9aE3GpQX8tvfmVao021lGneA/iU37e0Wi
-	G7M7d7KrJBIJ1UlhRAr3ZuYKmDOg12A=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1653663225;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=uLEQbfXieXddbws3ZtMPUo3kSGjUH1tIUFKal4fFd0k=;
-	b=ZUWXkMmaLR/WV6SaN23An4IjuzAIza1QX1t8JzsMALCVYB77n5xLXUBVTeDmXG4i9Rz8In
-	93SdTNCn3lvYQKzM1zI+gr5m3+U3u6Q3xuOoj9aE3GpQX8tvfmVao021lGneA/iU37e0Wi
-	G7M7d7KrJBIJ1UlhRAr3ZuYKmDOg12A=
-Received: from mail-io1-f71.google.com (mail-io1-f71.google.com
- [209.85.166.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-621-_R4PRIgzMd2vhXDKeuKxjg-1; Fri, 27 May 2022 10:53:44 -0400
-X-MC-Unique: _R4PRIgzMd2vhXDKeuKxjg-1
-Received: by mail-io1-f71.google.com with SMTP id z19-20020a05660200d300b0066583f8cf2eso2922573ioe.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 May 2022 07:53:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LBc3X2b8kz2yL2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 23:40:07 +1000 (AEST)
+Received: by mail-io1-xd2b.google.com with SMTP id s23so11323538iog.13
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 May 2022 06:40:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=gIwe3AKRbCHeJRE3dPTatS7K/6ILlXUNL6T/HNDhAhU=;
+        b=cSzwr5INM0XMJMTjfBIFqC6i5S58eV8gcJa/64rR0gDugFmRTU5nQgL16eOHpgeMFI
+         7AfIC/ykpu26A1o3tWj6uRAXJg8F8QVvcvAIxqOgTwk//2oTGuNDuWVqcGupsqpPcM6T
+         ZRAJqMTcOk2f0Pg5Sqy8051E3rZJH3I33bcAioIyj1QEd+htYi69FlxTGKOOn4GcVjjE
+         pEirF1LZJZUjhxfS+0GnGmUhc97QLgfasJMGHXk9cu2E+2pU6QcPUuPNv5BRpstZpwXX
+         9NoZsAOpE0EVU3IryTlU5mkC2xM3qI4IbFyk9WdwRkwSVZe45lL2Nx+m0vwWNHCFkswg
+         kaCg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=uLEQbfXieXddbws3ZtMPUo3kSGjUH1tIUFKal4fFd0k=;
-        b=nb7ptcH25tU8nX8PjO4Vxp4bM6hEDzj86jeBNKlcmF9zQJhH4p3FhqScXF2VncrI1W
-         EqBt2ZO+eqO3FWnxaZwR2Y86qHW+hqZSz9FhFvUwgTenPp3iyMkyMTcoV3VOK76Amgam
-         uH34TdRxqXvKIeOzN6PiUvZMgik9c03/DUJezgH8N4evvLiYEVhS6/4ip+TzjoOsoqL4
-         P3xj1hmUXD6raxQqbyXMQQNeWxN6klOxg3XnDBL1NG4v/18c/+bdulGL0DTmQIylPdDc
-         b5e7ZZwLqg4tZRQiju8Lemi4lDVAEKCJeYGaxs8dC/8eS+pSwuUz0g3iFKrGNRsBGbw7
-         lvJg==
-X-Gm-Message-State: AOAM532Mj4r7uGxPoz5OMQhswHlCw0ehYpeBMmHsW91q7qzI3EHg7N0W
-	NnLoKymzCL0VZAQcl174ADnigBNAnvD3gMhnaqsIhwPq9u9pvhUlBVTaLFojHhm5idgzqYty4RX
-	Dj0W6IkMWC/iCMCYVfdVT82jiCw==
-X-Received: by 2002:a05:6e02:1a61:b0:2cf:8a90:7396 with SMTP id w1-20020a056e021a6100b002cf8a907396mr22761923ilv.256.1653663223402;
-        Fri, 27 May 2022 07:53:43 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJxG97+4KBIU6l93iytV0+qRm43dQQLHa2a/K8HbhfEtxo7G4J9rDpss95rHRYaCYZkQNmDyjQ==
-X-Received: by 2002:a05:6e02:1a61:b0:2cf:8a90:7396 with SMTP id w1-20020a056e021a6100b002cf8a907396mr22761868ilv.256.1653663222806;
-        Fri, 27 May 2022 07:53:42 -0700 (PDT)
-Received: from xz-m1.local (cpec09435e3e0ee-cmc09435e3e0ec.cpe.net.cable.rogers.com. [99.241.198.116])
-        by smtp.gmail.com with ESMTPSA id d6-20020a023f06000000b00330efaf1161sm596380jaa.148.2022.05.27.07.53.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 May 2022 07:53:42 -0700 (PDT)
-Date: Fri, 27 May 2022 10:53:36 -0400
-From: Peter Xu <peterx@redhat.com>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3] mm: Avoid unnecessary page fault retires on shared
- memory types
-Message-ID: <YpDl8IM0FF6GeJ4B@xz-m1.local>
-References: <20220524234531.1949-1-peterx@redhat.com>
- <YpCsBwFArieTpvg2@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=gIwe3AKRbCHeJRE3dPTatS7K/6ILlXUNL6T/HNDhAhU=;
+        b=4lUZUBduQoxqRyZ0Tojud+fVoVx0HNsWYHWUYoK3xnjsd3gONiUiW6Wd7gX4ZermWs
+         d/joU/4HGo1xvqK03HKh8V8togcPRVRkAT53OhtR2qhY8K1/Wir48ZLWKYXWE9o91gI2
+         Mw14cOWtGJq8MqKuScGNlBIjy6K4HpKFwbMXtzY37Pqcuw2VUi52KGtIoVjEvNpjkBqu
+         Ha8KcQUefkxu+N0PZLzxBvn1aAXT/bC92PzN+2pG94M7kWiUFzABmv07jtD1Kh9jAS/r
+         oxALikABo4egZ0Bvhha1X0ZyBgk1FVnAxE+IilwEHsZps8cijAL6tbdjR9RQYKAdHlN1
+         7DbA==
+X-Gm-Message-State: AOAM531Yv85A8LHEELhgcLT6MElUxugtQPteDS9Uudyqc8EZa2MQH3/i
+	T1/mIrrnYLsXL2ohEkEYwQWk7GLZD61NTKfcUiY=
+X-Google-Smtp-Source: ABdhPJynB3luYlUIXTTDca8c2gxMygZVtlz0csg40D16eodRT8Q+xqzjGbylbRXxbzD+mvxPI5WGRexbTj0PrTzr1DM=
+X-Received: by 2002:a05:6638:f89:b0:32e:89f4:e150 with SMTP id
+ h9-20020a0566380f8900b0032e89f4e150mr27799661jal.308.1653918002647; Mon, 30
+ May 2022 06:40:02 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <YpCsBwFArieTpvg2@gmail.com>
-Authentication-Results: relay.mimecast.com;
-	auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=peterx@redhat.com
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-Mailman-Approved-At: Sat, 28 May 2022 08:25:59 +1000
+References: <20220523020209.11810-1-ojeda@kernel.org> <20220523020209.11810-22-ojeda@kernel.org>
+ <CAKwvOdn+9qORm8UpDGnPXxiK7B7P_TW5CtXv1+8qkv7UvQr3hQ@mail.gmail.com>
+In-Reply-To: <CAKwvOdn+9qORm8UpDGnPXxiK7B7P_TW5CtXv1+8qkv7UvQr3hQ@mail.gmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Mon, 30 May 2022 15:39:51 +0200
+Message-ID: <CANiq72n2bU3LSGu-4v66nif_95EVq--z2X_F2V7JBPU8v=h8EA@mail.gmail.com>
+Subject: Re: [PATCH v7 21/25] Kbuild: add Rust support
+To: Nick Desaulniers <ndesaulniers@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,82 +73,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, Catalin Marinas <catalin.marinas@arm.com>, David Hildenbrand <david@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, linux-mm@kvack.org, Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-riscv@lists.infradead.org, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-xtensa@linux-xtensa.org, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, Alistair Popple <apopple@nvidia.com>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, linux-sh@vger.ke
- rnel.org, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.infradead.org, Vineet Gupta <vgupta@kernel.org>, Stafford Horne <shorne@gmail.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Andrea Arcangeli <aarcange@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Brian Cain <bcain@quicinc.com>, Heiko Carstens <hca@linux.ibm.com>, Johannes Weiner <hannes@cmpxchg.org>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Al Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Bab
- ka <vbabka@suse.cz>, Richard Henderson <rth@twiddle.n
-
-et>, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Guo Ren <guoren@kernel.org>, Borislav Petkov <bp@alien8.de>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Sven Van Asbroeck <thesven73@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Miguel Cano <macanroj@gmail.com>, Paul Mackerras <paulus@samba.org>, Gary Guo <gary@garyguo.net>, Douglas Su <d0u9.su@outlook.com>, Borislav Petkov <bp@alien8.de>, linux-riscv <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, "H. Peter Anvin" <hpa@zytor.com>, Masahiro Yamada <masahiroy@kernel.org>, "maintainer:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Wedson Almeida Filho <wedsonaf@google.com>, Alex Gaynor <alex.gaynor@gmail.com>, Antonio Terceiro <antonio.terceiro@linaro.org>, Miguel Ojeda <ojeda@kernel.org>, Adam Bratschi-Kaye <ark.email@gmail.com>, Albert Ou <aou@eecs.berkeley.edu>, rust-for-linux <rust-for-linux@vger.kernel.org>, Linux Kbuild mailing list <linux-kbui
+ ld@vger.kernel.org>, Boqun Feng <boqun.feng@gmail.com>, linux-um@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Xu <dxu@dxuuu.xyz>, David Gow <davidgow@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, Dariusz Sosnowski <dsosnowski@dsosnowski.pl>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Michal Marek <michal.lkml@markovi.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel <linux-kernel@vger.kernel.org>, Boris-Chengbiao Zhou <bobo1239@web.de>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, Finn Behrens <me@kloenk.de>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, May 27, 2022 at 12:46:31PM +0200, Ingo Molnar wrote:
-> 
-> * Peter Xu <peterx@redhat.com> wrote:
-> 
-> > This patch provides a ~12% perf boost on my aarch64 test VM with a simple
-> > program sequentially dirtying 400MB shmem file being mmap()ed and these are
-> > the time it needs:
-> >
-> >   Before: 650.980 ms (+-1.94%)
-> >   After:  569.396 ms (+-1.38%)
-> 
-> Nice!
-> 
-> >  arch/x86/mm/fault.c           |  4 ++++
-> 
-> Reviewed-by: Ingo Molnar <mingo@kernel.org>
-> 
-> Minor comment typo:
-> 
-> > +		/*
-> > +		 * We should do the same as VM_FAULT_RETRY, but let's not
-> > +		 * return -EBUSY since that's not reflecting the reality on
-> > +		 * what has happened - we've just fully completed a page
-> > +		 * fault, with the mmap lock released.  Use -EAGAIN to show
-> > +		 * that we want to take the mmap lock _again_.
-> > +		 */
-> 
-> s/reflecting the reality on what has happened
->  /reflecting the reality of what has happened
+On Thu, May 26, 2022 at 12:25 AM Nick Desaulniers
+<ndesaulniers@google.com> wrote:
+>
+> Is there a reason to not just turn clippy on always? Might be nicer to
+> start off with good practices by default. :^)
 
-Will fix.
+The idea crossed my mind too [1], but sadly Clippy disables some
+optimizations and in general is not intended to be used for normal
+compilation [2].
 
-> 
-> >  	ret = handle_mm_fault(vma, address, fault_flags, NULL);
-> > +
-> > +	if (ret & VM_FAULT_COMPLETED) {
-> > +		/*
-> > +		 * NOTE: it's a pity that we need to retake the lock here
-> > +		 * to pair with the unlock() in the callers. Ideally we
-> > +		 * could tell the callers so they do not need to unlock.
-> > +		 */
-> > +		mmap_read_lock(mm);
-> > +		*unlocked = true;
-> > +		return 0;
-> 
-> Indeed that's a pity - I guess more performance could be gained here, 
-> especially in highly parallel threaded workloads?
+[1] https://github.com/rust-lang/rust-clippy/issues/8035
+[2] https://github.com/rust-lang/rust-clippy/pull/8037
 
-Yes I think so.
+> Are there *.rmeta directories that we _don't_ want to remove via `make
+> mrproper`? I'm curious why *.rmeta isn't just part of MRPROPER_FILES?
 
-The patch avoids the page fault retry, including the mmap lock/unlock side.
-Now if we retake the lock for fixup_user_fault() we still safe time for
-pgtable walks but the lock overhead will be somehow kept, just with smaller
-critical sections.
+Putting them in `MRPROPER_FILES` would mean only those in a given
+directory are removed (e.g. the root one), but the idea here is to
+find them anywhere in the tree, since in the future we may have
+library crates in different parts of the tree.
 
-Some fixup_user_fault() callers won't be affected as long as unlocked==NULL
-is passed - e.g. the futex code path (fault_in_user_writeable).  After all
-they never needed to retake the lock before/after this patch.
+However, I am not sure I understand your first question in relation
+with the second one -- if we put them in `MRPROPER_FILES`, that would
+remove less, not more.
 
-It's about the other callers, and they may need some more touch-ups case by
-case.  Examples are follow_fault_pfn() in vfio and hva_to_pfn_remapped() in
-KVM: both of them returns -EAGAIN when *unlocked==true.  We need to teach
-them to know "*unlocked==true" does not necessarily mean a retry attempt.
+> I don't think we need to repeat dir/* here again for rust. The
+> existing targets listed above (outside this hunk) make sense in both
+> contexts.
 
-I think I can look into them if this patch can be accepted as a follow up.
+The idea here is to document the differences (e.g. `RUSTFMT`) and that
+we may have other targets in the future that do not apply to C (e.g.
+MIR dump, if that happens to be useful).
 
-Thanks for taking a look!
+But maybe I can fit that in the normal place and make it still look
+good... I will give it a try.
 
--- 
-Peter Xu
+> Does rustc really use .i as a conventional suffix for macro expanded
+> sources? (The C compiler might use the -x flag to override the guess
 
+It is not a conventional suffix at all as far as I am aware.
+
+Maybe we should use a different one to aid editors and users anyway,
+e.g. `.rsi`, similar to `.mi` for Objective-C `.m` files.
+
+> it would make based on the file extension; I'm curious if rustc can
+> ingest .i files or will it warn?)
+
+The macro expanded output is not intended to be used as a compilable
+input, but as a debugging aid only. I can note this there.
+
+Having said that, `rustc` accepts the "preprocessed" output in the
+sense that it will just treat them as normal source files (no flag
+needed, and e.g. both `.i` and `.rsi` work); however, it may give new
+diagnostics or may require extra flags to enable some compiler
+features.
+
+From a quick test, I managed to compile a "preprocessed" Rust kernel
+module with only command-line changes. But if we really wanted to
+support this, we would need to ask upstream Rust to actually support
+it.
+
+> Are these two kconfigs used anywhere?
+
+Not for the moment, but it could still be useful when getting
+`.config` reports (and we could add it to `LINUX_COMPILER` etc. in the
+future).
+
+> How does enabling or disabling debug info work for rustc? I may have
+> missed it, but I was surprised to see no additional flags getting
+> passed to rustc based on CONFIG_DEBUG info.
+
+`-Cdebuginfo=` is the one; by default there is no debug info and that
+option enables it (i.e. it is not just the level but the enablement
+too).
+
+(Note that in userspace, when compiling a common program, you will get
+some debug info coming from the standard library and other
+dependencies).
+
+> Ah, that explains the host rust build infra.  Bravo! Hard coding the
+> target files was my major concern last I looked at the series. I'm
+> very happy to see it be generated properly from .config!
+>
+> I haven't actually reviewed this yet, but it makes me significantly
+> more confident in the series to see this approach added. Good job
+> whoever wrote this.
+
+Thanks! I thought Rust would be a nice option for writing hostprogs,
+though of course for the moment only programs that can assume Rust is
+there may use it.
+
+Note that non-x86 specific options need to be handled properly still
+(e.g. move things between the arch Makefiles and the hostprog as
+needed).
+
+I would still want to see compilers come to some kind of common format
+for this as we discussed other times, but... :)
+
+> Does `$(READELF) -p .comment foo.o` print anything about which
+> compiler was used? That seems less brittle IMO.
+
+Currently, `rustc` does not add a `.comment` section; but we could
+ask, I sent [3].
+
+If debug info is enabled, another way is using the `DW_AT_language`
+attribute, like `pahole` will be doing for a new option we need [4].
+However, we would still need a way for the other case.
+
+In any case, I am not sure something like `.comment` is less or more
+brittle -- compilers could in theory change it (e.g. not emitting it),
+while adding a symbol is something we control. So different kinds of
+brittleness.
+
+[3] https://github.com/rust-lang/rust/pull/97550
+[4] https://git.kernel.org/pub/scm/devel/pahole/pahole.git/commit/?id=8ee363790b7437283c53090a85a9fec2f0b0fbc4
+
+Cheers,
+Miguel
