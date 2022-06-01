@@ -4,56 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47DFFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jun 2022 18:12:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0615EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Jun 2022 18:21:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LCy174vJDz3bpX
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 04:12:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LCyBx4pf1z3bnT
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 04:21:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kBs/HAWx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=sDGsn6ME;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=softfail (domain owner discourages use of this host) smtp.mailfrom=kernel.org (client-ip=210.131.2.74; helo=conuserg-07.nifty.com; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kBs/HAWx;
+	dkim=pass (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=sDGsn6ME;
 	dkim-atps=neutral
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Received: from conuserg-07.nifty.com (conuserg-07.nifty.com [210.131.2.74])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LCy0N5g24z3blC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2022 04:12:04 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by sin.source.kernel.org (Postfix) with ESMTPS id 9BED2CE1D21;
-	Wed,  1 Jun 2022 18:12:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BDA63C385A5;
-	Wed,  1 Jun 2022 18:11:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1654107120;
-	bh=XyRtnaG4f6v1X+0b1Icwpx1CnomvwrWKo4GYEBNHb+8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kBs/HAWx4uM3HDoEzXU7+T8V9lyNwNqn4zd6Uh/AJGNo4QD8EzwUXHg8SF5aQu/eR
-	 anmAddXVYpYTPQXJYiVXSgAM6oeXwkinLakcGmSyuAZtpT4Gg5dXcDILW5BYrqp6yC
-	 vfOgfDXfoYgyw9l9+lVWSvldxx5jHryrGn/d5UzcJCJjQVQvAnn5PGnRbongr5jgLY
-	 JziHqqThI4bmA2WwIpuZHilJdJjc4uSPMPWYG0WUdO4ZhUny70sDURv0RtrDDn5Tm8
-	 XZjMRYHCt4Yp4VSnSP3UbNmDy1oSOc8nqKRVMKzHpT2VEuCPCTYpdk41t0XRp7VTN5
-	 o4MHC+cQamxCw==
-Date: Wed, 1 Jun 2022 11:11:57 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 09/15] swiotlb: make the swiotlb_init interface more
- useful
-Message-ID: <Yper7agk7XfCCQNa@dev-arch.thelio-3990X>
-References: <20220404050559.132378-1-hch@lst.de>
- <20220404050559.132378-10-hch@lst.de>
- <YpehC7BwBlnuxplF@dev-arch.thelio-3990X>
- <20220601173441.GB27582@lst.de>
- <YpemDuzdoaO3rijX@Ryzen-9-3900X.>
- <20220601175743.GA28082@lst.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LCyBG5tLDz3blH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2022 04:20:38 +1000 (AEST)
+Received: from grover.sesame (133-32-177-133.west.xps.vectant.ne.jp [133.32.177.133]) (authenticated)
+	by conuserg-07.nifty.com with ESMTP id 251IJkAS014364;
+	Thu, 2 Jun 2022 03:19:49 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-07.nifty.com 251IJkAS014364
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+	s=dec2015msa; t=1654107589;
+	bh=tMDyL0rhu7Lqq/KCehxyT1DbD+leBMoEySfqxZD7ygQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=sDGsn6MEry3DL/7zDaFzQ2QZabJwFxfQ6mpizg+eOuNIRBtdbJ15ceBfgtQ//brQH
+	 C3Q5eGNxQ0LksIrSZf1e2eNInc+GtM6eFsCVl6/hF2Mq1pThTUORjMmQN9mjCubPKy
+	 47b7vxX+yXHt5OdijhmwhmpRa/umFL1PGMcI5NedbEx7g5reM3v6NDomzyiAtBawvS
+	 4CYFTabJoLGXJba0xqScxZ9MiLUHucMH/xjk9X23i5zpe6BQDLVBtxu7Jr7JK5AN9b
+	 NDWvn5tvA/DOV7zQ4oKXD2ZnWUWwHDDToVFJ83wFsb8hLBVHcYvoQ4BiJgpNwCuDSR
+	 YycShFfIOMI5A==
+X-Nifty-SrcIP: [133.32.177.133]
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 2/3] powerpc: use __kernel_{uid,gid}32_t in uapi/asm/stat.h
+Date: Thu,  2 Jun 2022 03:19:40 +0900
+Message-Id: <20220601181941.3706832-3-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220601181941.3706832-1-masahiroy@kernel.org>
+References: <20220601181941.3706832-1-masahiroy@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220601175743.GA28082@lst.de>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,44 +57,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hyperv@vger.kernel.org, x86@kernel.org, linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, Joerg Roedel <joro@8bytes.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, tboot-devel@lists.sourceforge.net, xen-devel@lists.xenproject.org, David Woodhouse <dwmw2@infradead.org>, Tom Lendacky <thomas.lendacky@amd.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org, Robin Murphy <robin.murphy@arm.com>, Lu Baolu <baolu.lu@linux.intel.com>
+Cc: Todd Kjos <tkjos@android.com>, Masahiro Yamada <masahiroy@kernel.org>, Carlos Llamas <cmllamas@google.com>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Christopher Ferris <cferris@google.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jun 01, 2022 at 07:57:43PM +0200, Christoph Hellwig wrote:
-> On Wed, Jun 01, 2022 at 10:46:54AM -0700, Nathan Chancellor wrote:
-> > On Wed, Jun 01, 2022 at 07:34:41PM +0200, Christoph Hellwig wrote:
-> > > Can you send me the full dmesg and the content of
-> > > /sys/kernel/debug/swiotlb/io_tlb_nslabs for a good and a bad boot?
-> > 
-> > Sure thing, they are attached! If there is anything else I can provide
-> > or test, I am more than happy to do so.
-> 
-> Nothing interesting.  But the performance numbers almost look like
-> swiotlb=force got ignored before (even if I can't explain why).
+Commit c01013a2f8dd ("powerpc: add asm/stat.h to UAPI compile-test
+coverage") converted as follows:
 
-I was able to get my performance back with this diff but I don't know if
-this is a hack or a proper fix in the context of the series.
+  uid_t  -->  __kernel_uid_t
+  gid_t  -->  __kernel_gid_t
 
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index dfa1de89dc94..0bfb2fe3d8c5 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -276,7 +276,7 @@ void __init swiotlb_init_remap(bool addressing_limit, unsigned int flags,
- 		      __func__, alloc_size, PAGE_SIZE);
- 
- 	swiotlb_init_io_tlb_mem(mem, __pa(tlb), nslabs, false);
--	mem->force_bounce = flags & SWIOTLB_FORCE;
-+	mem->force_bounce = swiotlb_force_bounce || (flags & SWIOTLB_FORCE);
- 
- 	if (flags & SWIOTLB_VERBOSE)
- 		swiotlb_print_info();
+The bit width of __kernel_{uid,gid}_t is 16 or 32-bits depending on
+architectures.
 
-> Do you get a similar performance with the new kernel without
-> swiotlb=force as the old one with that argument by any chance?
+PPC uses 32-bits for them as in include/uapi/asm-generic/posix_types.h,
+so the previous conversion is probably fine, but let's stick to the
+arch-independent conversion just in case.
 
-I'll see if I can test that, as I am not sure I have control over those
-cmdline arguments.
+The safe replacements across all architectures are:
 
-Cheers,
-Nathan
+  uid_t  -->  __kernel_uid32_t
+  gid_t  -->  __kernel_gid32_t
+
+as defined in include/linux/types.h.
+
+A similar issue was reported for the android binder. [1]
+
+[1]: https://lore.kernel.org/all/20220601010017.2639048-1-cmllamas@google.com/
+
+Fixes: c01013a2f8dd ("powerpc: add asm/stat.h to UAPI compile-test coverage")
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
+
+ arch/powerpc/include/uapi/asm/stat.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/uapi/asm/stat.h b/arch/powerpc/include/uapi/asm/stat.h
+index a28c9a1201fa..d50901664239 100644
+--- a/arch/powerpc/include/uapi/asm/stat.h
++++ b/arch/powerpc/include/uapi/asm/stat.h
+@@ -37,8 +37,8 @@ struct stat {
+ 	__kernel_mode_t	st_mode;
+ 	unsigned short	st_nlink;
+ #endif
+-	__kernel_uid_t	st_uid;
+-	__kernel_gid_t	st_gid;
++	__kernel_uid32_t st_uid;
++	__kernel_gid32_t st_gid;
+ 	unsigned long	st_rdev;
+ 	long		st_size;
+ 	unsigned long	st_blksize;
+-- 
+2.32.0
+
