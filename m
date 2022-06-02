@@ -4,75 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65404C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 04:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1557C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 06:11:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LDCfx3kRjz3c7H
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 14:27:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LDFz00hNZz3bk7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 16:11:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20210112.gappssmtp.com header.i=@ozlabs-ru.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=MNWTl4nT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DLVEVzwa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20210112.gappssmtp.com header.i=@ozlabs-ru.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=MNWTl4nT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DLVEVzwa;
 	dkim-atps=neutral
-Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
+Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LDCf71pvXz3bcW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2022 14:27:09 +1000 (AEST)
-Received: by mail-pl1-x62f.google.com with SMTP id i1so3532002plg.7
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jun 2022 21:27:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LD9XJ4f8Mz30DC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jun 2022 12:52:00 +1000 (AEST)
+Received: by mail-lj1-x22d.google.com with SMTP id o15so3862229ljp.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Jun 2022 19:52:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ozlabs-ru.20210112.gappssmtp.com; s=20210112;
-        h=message-id:date:mime-version:user-agent:subject:content-language:to
-         :cc:references:from:in-reply-to:content-transfer-encoding;
-        bh=vHmChKavm1p/nSaJkER/ldmkeQxkuFGCFwSsH6fcxnA=;
-        b=MNWTl4nTaLObQ/XS7bQFPRlnIn2Lpswe3ZM2M3HdzXya3DUJ7n9JQ3RdWkgAn0n4k8
-         77pe6wzuUDyv8unJhZ1GGj8DY6y0bwp0iKzJ3bO0/1veieR8TC++PvECrsbVtE2zmt09
-         ng2oGNdhbw9jfKBbUMdhhvESlg8VEep2ShxjCqlCjpuQPpNNPnMQz7IFKRjrUCvB9Gm2
-         uf3jum8+GnERnBzYP+AN4TQom24AZsSeWPCCmnxtE6B3p79FYDfVGMbUjw/l8l4d440S
-         d4WjdeTLedPfL3fD0uHae6J2he6HDPCBgOY2gzMAStz2wPZ0qxxqn+ND9qvnZfOvUmQ8
-         hzJQ==
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=TpNrFeAUHEiuJn5JqT+slz/uAK22wiMfabJQ1vnT0bM=;
+        b=DLVEVzwa87pZn7j1l6lEeNeQ4lgELbwBF/l6k+A5J2pWd2zKMHwqusGX84wUNeL21l
+         kBF3aI64Z8tl6v4MVsVhUMs4QOuUSEylg7huxH6jiIuwRAOG6gNnceakYL6L9VvjaYRC
+         GHkY3dZ9OJfktSVKLTCQTjx3IuanijUi5YXkSfVeeLwWasVA4IWYThwiZhXjantCCe4W
+         +/pfzMlSHeTV3LnemtdbIf3E5mP+HHgPhPw35a62/P/6chXu7sVPh+CJUpIWn95LeNj5
+         kaH8N1dghdAEBj1l6GBLzNbcYtswK/ZvgZYQ7I9AAug1nvNcj2GbJsqcjnOYqFE0cIcj
+         S/KQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
-         :content-language:to:cc:references:from:in-reply-to
-         :content-transfer-encoding;
-        bh=vHmChKavm1p/nSaJkER/ldmkeQxkuFGCFwSsH6fcxnA=;
-        b=N2lyXnUVWbMRZ44nQWPHl+okGXipqUiPlnbdWmCsQL7cCpHiYoY/SMtL2f4wMFZpdx
-         +0vHAhyxRxGfljkiileh1COeRby2B9oJbRnF1w9sLz4oIT6mSRdOo05NRP8yBdMh8jLJ
-         E3wuJLWPdQkeolw+t5DwDOEZrYCSVVBqXAahpi2N8zVVp73BPkPOJnwg+wnrolLQM/qI
-         6o4nMKxFrZr428hGrRvB3oNySBm+tE68mdzVeQDWW/o/DFd8Bx1esOC69x+S2o9bB5ER
-         W5uSEvPMrZhDfw4QOaJrKy4ZDzx3qPs8sZqG4ym+0w/2LMJNBQ6iBUzKVdntoVeHlRH6
-         S12A==
-X-Gm-Message-State: AOAM530j0g9ra250xiNx6mqLt+DLQSMLk8EuSMIwQ6Y2shnv2DpkgmGE
-	4NOcyj+B9oAv4kjB6NUvAhI1Dg==
-X-Google-Smtp-Source: ABdhPJxKwTRASU2yTEK8qB92H0EGvDPDLSiYUmrDaBk+fs5gQBo0Kp/8OOTCSCCc51dmuMuO2wTVgg==
-X-Received: by 2002:a17:90b:4a8e:b0:1e4:e2bd:7ff1 with SMTP id lp14-20020a17090b4a8e00b001e4e2bd7ff1mr6848590pjb.58.1654144026533;
-        Wed, 01 Jun 2022 21:27:06 -0700 (PDT)
-Received: from [10.61.2.177] (110-175-254-242.static.tpgi.com.au. [110.175.254.242])
-        by smtp.gmail.com with ESMTPSA id l187-20020a6225c4000000b0051b97714703sm2250635pfl.187.2022.06.01.21.27.02
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 01 Jun 2022 21:27:05 -0700 (PDT)
-Message-ID: <c5dfebba-4252-3d7f-7a6a-533c846c3034@ozlabs.ru>
-Date: Thu, 2 Jun 2022 14:27:00 +1000
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=TpNrFeAUHEiuJn5JqT+slz/uAK22wiMfabJQ1vnT0bM=;
+        b=OBBh5MXAj/cQPfJdSbxgqFO31BQFvCbLTjY2U/UMlFXgF0BvwKA/T+/5zAvOryF/QF
+         evw5/8CGnUyOS+pqHp8wNIXNV8l9s2K3hABkrX1IEEzLxlVoVGUPXKLcasZs3aVfQjLr
+         jcK1F3UgpX7buUuXrRFmnZw4UdAmAjU++8sTHNVnlhQHCvanPcZy7XRt2yml9TPw6TNO
+         7i1r8p4bUCsbZArJNpS5iZGK1bOahKNz6W5TahyYWl2nYxiETl9mgcu9u90AdpJ/ilqv
+         0Kqhdz3q+zn9Z2zicYSDFtaxaaWTCbFDYunjcES3jKu33G4puGZFN31QjMeC95frXtVi
+         ZA1A==
+X-Gm-Message-State: AOAM531DN+QgMr6NxZAQGzmVB83ZnnhLOgFKRnfvzuJQKE870LEefqEl
+	2lbtdIpYryiz8zZffOrxxPL5+AlCohwQeqXJeyY=
+X-Google-Smtp-Source: ABdhPJzemaRDxlsjG76/OUGceBVlHUFJwXleU0oYwHmcIUAwSqYDpFWZm5Xu0bQKxO44fiBRTnOLgCzLlVs2JIF0qQw=
+X-Received: by 2002:a05:651c:1792:b0:235:1df3:7b8e with SMTP id
+ bn18-20020a05651c179200b002351df37b8emr40560873ljb.464.1654138315702; Wed, 01
+ Jun 2022 19:51:55 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:101.0) Gecko/20100101
- Thunderbird/101.0
-Subject: Re: [PATCH v1 4/4] watchdog/pseries-wdt: initial support for PAPR
- H_WATCHDOG timers
-Content-Language: en-US
-To: Scott Cheloha <cheloha@linux.ibm.com>
-References: <20220520183552.33426-1-cheloha@linux.ibm.com>
- <20220520183552.33426-5-cheloha@linux.ibm.com>
- <74498c4b-7b6a-3864-1ae8-57e848a1254c@ozlabs.ru>
- <Ypd8VFZhgEIWbv1P@rascal-austin-ibm-com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <Ypd8VFZhgEIWbv1P@rascal-austin-ibm-com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20220530083533.52254-1-zhangqilong3@huawei.com>
+In-Reply-To: <20220530083533.52254-1-zhangqilong3@huawei.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Thu, 2 Jun 2022 10:51:44 +0800
+Message-ID: <CAA+D8AMuZx0CT6GVVh5AhrAKJEFSumFPpAXkNnCdLX5FiwuFFw@mail.gmail.com>
+Subject: Re: [PATCH V2] ASoC: fsl_xcvr:Fix unbalanced pm_runtime_enable in fsl_xcvr_probe
+To: zhangqilong <zhangqilong3@huawei.com>
+Content-Type: multipart/alternative; boundary="000000000000b7894305e06e16b7"
+X-Mailman-Approved-At: Thu, 02 Jun 2022 16:11:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,323 +73,178 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, wvoigt@us.ibm.com, linux-watchdog@vger.kernel.org, vaishnavi@linux.ibm.com, npiggin@gmail.com, tzungbi@kernel.org, brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net
+Cc: alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+--000000000000b7894305e06e16b7
+Content-Type: text/plain; charset="UTF-8"
+
+On Mon, May 30, 2022 at 4:33 PM zhangqilong <zhangqilong3@huawei.com> wrote:
+
+> a) Add missing pm_runtime_disable() when probe error out. It could
+> avoid pm_runtime implementation complains when removing and probing
+> again the driver.
+> b) Add remove for missing pm_runtime_disable().
+>
+> v2: add remove to put PM usage counter.
 
 
-On 6/2/22 00:48, Scott Cheloha wrote:
-> On Wed, May 25, 2022 at 04:35:11PM +1000, Alexey Kardashevskiy wrote:
->>
->> On 5/21/22 04:35, Scott Cheloha wrote:
->>> PAPR v2.12 defines a new hypercall, H_WATCHDOG.  The hypercall permits
->>> guest control of one or more virtual watchdog timers.  The timers have
->>> millisecond granularity.  The guest is terminated when a timer
->>> expires.
->>>
->>> This patch adds a watchdog driver for these timers, "pseries-wdt".
->>>
->>> pseries_wdt_probe() currently assumes the existence of only one
->>> platform device and always assigns it watchdogNumber 1.  If we ever
->>> expose more than one timer to userspace we will need to devise a way
->>> to assign a distinct watchdogNumber to each platform device at device
->>> registration time.
->>
->> This one should go before 4/4 in the series for bisectability.
->>
->> What is platform_device_register_simple("pseries-wdt",...) going to do
->> without the driver?
-> 
-> This is a chicken-and-egg problem without an obvious solution.  A
-> device without a driver is a body without a soul.  A driver without a
-> device is a ghost without a machine.
-> 
-> ... or something like that, don't quote me :)
-> 
-> Absent some very compelling reasoning, I would like to keep the
-> current order.  It feels logical to me to keep the powerpc/pseries
-> patches adjacent and prior to the watchdog driver patch.
-> 
->>> Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
->>> ---
->>>    .../watchdog/watchdog-parameters.rst          |  12 +
->>>    drivers/watchdog/Kconfig                      |   8 +
->>>    drivers/watchdog/Makefile                     |   1 +
->>>    drivers/watchdog/pseries-wdt.c                | 337 ++++++++++++++++++
->>>    4 files changed, 358 insertions(+)
->>>    create mode 100644 drivers/watchdog/pseries-wdt.c
->>>
->>> diff --git a/Documentation/watchdog/watchdog-parameters.rst b/Documentation/watchdog/watchdog-parameters.rst
->>> index 223c99361a30..4ffe725e796c 100644
->>> --- a/Documentation/watchdog/watchdog-parameters.rst
->>> +++ b/Documentation/watchdog/watchdog-parameters.rst
->>> @@ -425,6 +425,18 @@ pnx833x_wdt:
->>>    -------------------------------------------------
->>> +pseries-wdt:
->>> +    action:
->>> +	Action taken when watchdog expires: 1 (power off), 2 (restart),
->>> +	3 (dump and restart). (default=2)
->>> +    timeout:
->>> +	Initial watchdog timeout in seconds. (default=60)
->>> +    nowayout:
->>> +	Watchdog cannot be stopped once started.
->>> +	(default=kernel config parameter)
->>> +
->>> +-------------------------------------------------
->>> +
->>>    rc32434_wdt:
->>>        timeout:
->>>    	Watchdog timeout value, in seconds (default=20)
->>> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
->>> index c4e82a8d863f..06b412603f3e 100644
->>> --- a/drivers/watchdog/Kconfig
->>> +++ b/drivers/watchdog/Kconfig
->>> @@ -1932,6 +1932,14 @@ config MEN_A21_WDT
->>>    # PPC64 Architecture
->>> +config PSERIES_WDT
->>> +	tristate "POWER Architecture Platform Watchdog Timer"
->>> +	depends on PPC_PSERIES
->>> +	select WATCHDOG_CORE
->>> +	help
->>> +	  Driver for virtual watchdog timers provided by PAPR
->>> +	  hypervisors (e.g. PowerVM, KVM).
->>> +
->>>    config WATCHDOG_RTAS
->>>    	tristate "RTAS watchdog"
->>>    	depends on PPC_RTAS
->>> diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
->>> index f7da867e8782..f35660409f17 100644
->>> --- a/drivers/watchdog/Makefile
->>> +++ b/drivers/watchdog/Makefile
->>> @@ -184,6 +184,7 @@ obj-$(CONFIG_BOOKE_WDT) += booke_wdt.o
->>>    obj-$(CONFIG_MEN_A21_WDT) += mena21_wdt.o
->>>    # PPC64 Architecture
->>> +obj-$(CONFIG_PSERIES_WDT) += pseries-wdt.o
->>>    obj-$(CONFIG_WATCHDOG_RTAS) += wdrtas.o
->>>    # S390 Architecture
->>> diff --git a/drivers/watchdog/pseries-wdt.c b/drivers/watchdog/pseries-wdt.c
->>> new file mode 100644
->>> index 000000000000..f41bc4d3b7a2
->>> --- /dev/null
->>> +++ b/drivers/watchdog/pseries-wdt.c
->>> @@ -0,0 +1,337 @@
->>> +// SPDX-License-Identifier: GPL-2.0-or-later
->>> +/*
->>> + * Copyright (c) 2022 International Business Machines, Inc.
->>> + */
->>> +
->>> +#include <linux/bitops.h>
->>> +#include <linux/kernel.h>
->>> +#include <linux/limits.h>
->>> +#include <linux/mod_devicetable.h>
->>> +#include <linux/module.h>
->>> +#include <linux/moduleparam.h>
->>> +#include <linux/platform_device.h>
->>> +#include <linux/watchdog.h>
->>> +
->>> +#define DRV_NAME "pseries-wdt"
->>> +
->>> +/*
->>> + * The PAPR's MSB->LSB bit ordering is 0->63.  These macros simplify
->>> + * defining bitfields as described in the PAPR without needing to
->>> + * transpose values to the more C-like 63->0 ordering.
->>> + */
->>> +#define SETFIELD(_v, _b, _e)	\
->>> +	(((unsigned long)(_v) << PPC_BITLSHIFT(_e)) & PPC_BITMASK((_b), (_e)))
->>> +#define GETFIELD(_v, _b, _e)	\
->>> +	(((unsigned long)(_v) & PPC_BITMASK((_b), (_e))) >> PPC_BITLSHIFT(_e))
->>> +
->>> +/*
->>> + * H_WATCHDOG Hypercall Input
->>> + *
->>> + * R4: "flags":
->>> + *
->>> + *     A 64-bit value structured as follows:
->>> + *
->>> + *         Bits 0-46: Reserved (must be zero).
->>> + */
->>> +#define PSERIES_WDTF_RESERVED	PPC_BITMASK(0, 46)
->>> +
->>> +/*
->>> + *         Bit 47: "leaveOtherWatchdogsRunningOnTimeout"
->>> + *
->>> + *             0  Stop outstanding watchdogs on timeout.
->>> + *             1  Leave outstanding watchdogs running on timeout.
->>> + */
->>> +#define PSERIES_WDTF_LEAVE_OTHER	PPC_BIT(47)
->>> +
->>> +/*
->>> + *         Bits 48-55: "operation"
->>> + *
->>> + *             0x01  Start Watchdog
->>> + *             0x02  Stop Watchdog
->>> + *             0x03  Query Watchdog Capabilities
->>> + *             0x04  Query Watchdog LPM Requirement
->>> + */
->>> +#define PSERIES_WDTF_OP(op)		SETFIELD((op), 48, 55)
->>> +#define PSERIES_WDTF_OP_START		PSERIES_WDTF_OP(0x1)
->>> +#define PSERIES_WDTF_OP_STOP		PSERIES_WDTF_OP(0x2)
->>> +#define PSERIES_WDTF_OP_QUERY		PSERIES_WDTF_OP(0x3)
->>> +#define PSERIES_WDTF_OP_QUERY_LPM	PSERIES_WDTF_OP(0x4)
->>> +
->>> +/*
->>> + *         Bits 56-63: "timeoutAction"
->>> + *
->>> + *             0x01  Hard poweroff
->>> + *             0x02  Hard restart
->>> + *             0x03  Dump restart
->>> + */
->>> +#define PSERIES_WDTF_ACTION(ac)			SETFIELD(ac, 56, 63)
->>> +#define PSERIES_WDTF_ACTION_HARD_POWEROFF	PSERIES_WDTF_ACTION(0x1)
->>> +#define PSERIES_WDTF_ACTION_HARD_RESTART	PSERIES_WDTF_ACTION(0x2)
->>> +#define PSERIES_WDTF_ACTION_DUMP_RESTART	PSERIES_WDTF_ACTION(0x3)
->>
->>> +
->>> +/*
->>> + * R5: "watchdogNumber":
->>> + *
->>> + *     The target watchdog.  Watchdog numbers are 1-based.  The
->>> + *     maximum supported watchdog number may be obtained via the
->>> + *     "Query Watchdog Capabilities" operation.
->>> + *
->>> + *     This input is ignored for the "Query Watchdog Capabilities"
->>> + *     operation.
->>> + *
->>> + * R6: "timeoutInMs":
->>> + *
->>> + *     The timeout in milliseconds.  The minimum supported timeout may
->>> + *     be obtained via the "Query Watchdog Capabilities" operation.
->>> + *
->>> + *     This input is ignored for the "Stop Watchdog", "Query Watchdog
->>> + *     Capabilities", and "Query Watchdog LPM Requirement" operations.
->>> + */
->>> +
->>> +/*
->>> + * H_WATCHDOG Hypercall Output
->>> + *
->>> + * R3: Return code
->>> + *
->>> + *     H_SUCCESS    The operation completed.
->>> + *
->>> + *     H_BUSY	    The hypervisor is too busy; retry the operation.
->>> + *
->>> + *     H_PARAMETER  The given "flags" are somehow invalid.  Either the
->>> + *                  "operation" or "timeoutAction" is invalid, or a
->>> + *                  reserved bit is set.
->>> + *
->>> + *     H_P2         The given "watchdogNumber" is zero or exceeds the
->>> + *                  supported maximum value.
->>> + *
->>> + *     H_P3         The given "timeoutInMs" is below the supported
->>> + *                  minimum value.
->>> + *
->>> + *     H_NOOP       The given "watchdogNumber" is already stopped.
->>> + *
->>> + *     H_HARDWARE   The operation failed for ineffable reasons.
->>> + *
->>> + *     H_FUNCTION   The H_WATCHDOG hypercall is not supported by this
->>> + *                  hypervisor.
->>> + *
->>> + * R4:
->>> + *
->>> + * - For the "Query Watchdog Capabilities" operation, a 64-bit
->>> + *   value structured as follows:
->>> + *
->>> + *       Bits  0-15: The minimum supported timeout in milliseconds.
->>> + *       Bits 16-31: The number of watchdogs supported.
->>> + *       Bits 32-63: Reserved.
->>> + */
->>> +#define PSERIES_WDTQ_MIN_TIMEOUT(cap)	GETFIELD((cap), 0, 15)
->>> +#define PSERIES_WDTQ_MAX_NUMBER(cap)	GETFIELD((cap), 16, 31)
->>> +#define PSERIES_WDTQ_RESERVED		PPC_BITMASK(32, 63)
->>
->> PSERIES_WDTQ_RESERVED is not needed as there is a comment above.
-> 
-> The *_RESERVED macros are from your draft patch.  I will remove them,
-> though, we aren't actually using them.
+> Fix:c590fa80b3928 ("ASoC: fsl_xcvr: register platform component before
+> registering cpu dai")
+> Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
+> ---
+>
 
+ The changelog should be in the place after "---"
 
-Well, I was thinking of testing the reserved bits to be all zero but the 
-interface may grow so yeah, drop it.
+Best regards
+Wang shengjiu
 
+ sound/soc/fsl/fsl_xcvr.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c
+> index d0556c79fdb1..55e640cba87d 100644
+> --- a/sound/soc/fsl/fsl_xcvr.c
+> +++ b/sound/soc/fsl/fsl_xcvr.c
+> @@ -1228,6 +1228,7 @@ static int fsl_xcvr_probe(struct platform_device
+> *pdev)
+>          */
+>         ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
+>         if (ret) {
+> +               pm_runtime_disable(dev);
+>                 dev_err(dev, "failed to pcm register\n");
+>                 return ret;
+>         }
+> @@ -1235,6 +1236,7 @@ static int fsl_xcvr_probe(struct platform_device
+> *pdev)
+>         ret = devm_snd_soc_register_component(dev, &fsl_xcvr_comp,
+>                                               &fsl_xcvr_dai, 1);
+>         if (ret) {
+> +               pm_runtime_disable(dev);
+>                 dev_err(dev, "failed to register component %s\n",
+>                         fsl_xcvr_comp.name);
+>         }
+> @@ -1242,6 +1244,12 @@ static int fsl_xcvr_probe(struct platform_device
+> *pdev)
+>         return ret;
+>  }
+>
+> +static int fsl_xcvr_remove(struct platform_device *pdev)
+> +{
+> +       pm_runtime_disable(&pdev->dev);
+> +       return 0;
+> +}
+> +
+>  static __maybe_unused int fsl_xcvr_runtime_suspend(struct device *dev)
+>  {
+>         struct fsl_xcvr *xcvr = dev_get_drvdata(dev);
+> @@ -1370,6 +1378,7 @@ static struct platform_driver fsl_xcvr_driver = {
+>                 .pm = &fsl_xcvr_pm_ops,
+>                 .of_match_table = fsl_xcvr_dt_ids,
+>         },
+> +       .remove = fsl_xcvr_remove,
+>  };
+>  module_platform_driver(fsl_xcvr_driver);
+>
+> --
+> 2.31.1
+>
+>
 
-> I will trim up the big comment for v2, too.  It's just going to rot
-> otherwise.  You need to read the PAPR to review the hypercalls,
-> anyway.
-> 
->>> +
->>> +/*
->>> + * - For the "Query Watchdog LPM Requirement" operation:
->>> + *
->>> + *       1  The given "watchdogNumber" must be stopped prior to
->>> + *          suspending.
->>> + *
->>> + *       2  The given "watchdogNumber" does not have to be stopped
->>> + *          prior to suspending.
->>> + */
->>> +#define PSERIES_WDTQL_MUST_STOP		1
->>> +#define PSERIES_WDTQL_NEED_NOT_STOP	2
->>> +
->>> +static unsigned long action = PSERIES_WDTF_ACTION_HARD_RESTART;
->>> +
->>> +static int action_get(char *buf, const struct kernel_param *kp)
->>> +{
->>> +	int val;
->>> +
->>> +	switch (action) {
->>> +	case PSERIES_WDTF_ACTION_HARD_POWEROFF:
->>> +		val = 1;
->>> +		break;
->>> +	case PSERIES_WDTF_ACTION_HARD_RESTART:
->>> +		val = 2;
->>> +		break;
->>> +	case PSERIES_WDTF_ACTION_DUMP_RESTART:
->>> +		val = 3;
->>> +		break;
->>> +	default:
->>> +		return -EINVAL;
->>> +	}
->>> +	return sprintf(buf, "%d\n", val);
->>> +}
->>> +
->>> +static int action_set(const char *val, const struct kernel_param *kp)
->>> +{
->>> +	int choice;
->>> +
->>> +	if (kstrtoint(val, 10, &choice))
->>> +		return -EINVAL;
->>> +	switch (choice) {
->>> +	case 1:
->>> +		action = PSERIES_WDTF_ACTION_HARD_POWEROFF;
->>> +		return 0;
->>> +	case 2:
->>> +		action = PSERIES_WDTF_ACTION_HARD_RESTART;
->>> +		return 0;
->>> +	case 3:
->>> +		action = PSERIES_WDTF_ACTION_DUMP_RESTART;
->>> +		return 0;
->>> +	}
->>> +	return -EINVAL;
->>> +}
->>> +
->>> +static const struct kernel_param_ops action_ops = {
->>> +	.get = action_get,
->>> +	.set = action_set,
->>> +};
->>> +module_param_cb(action, &action_ops, NULL, 0444);
->>
->> 0644 here and below?
-> 
-> I do not want these changing at runtime.  0444 is the right thing.
+--000000000000b7894305e06e16b7
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Mon, May 30, 2022 at 4:33 PM zhang=
+qilong &lt;<a href=3D"mailto:zhangqilong3@huawei.com">zhangqilong3@huawei.c=
+om</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote" style=3D"margi=
+n:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex=
+">a) Add missing pm_runtime_disable() when probe error out. It could<br>
+avoid pm_runtime implementation complains when removing and probing<br>
+again the driver.<br>
+b) Add remove for missing pm_runtime_disable().<br>
+<br>
+v2: add remove to put PM usage counter.</blockquote><blockquote class=3D"gm=
+ail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,=
+204,204);padding-left:1ex">
+<br>
+Fix:c590fa80b3928 (&quot;ASoC: fsl_xcvr: register platform component before=
+ registering cpu dai&quot;)<br>
+Signed-off-by: Zhang Qilong &lt;<a href=3D"mailto:zhangqilong3@huawei.com" =
+target=3D"_blank">zhangqilong3@huawei.com</a>&gt;<br>
+---<br></blockquote><div><br></div><div>=C2=A0The changelog should be in th=
+e place after &quot;---&quot;=C2=A0</div><div><br></div><div>Best regards</=
+div><div>Wang shengjiu</div><div><br></div><blockquote class=3D"gmail_quote=
+" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);=
+padding-left:1ex">
+=C2=A0sound/soc/fsl/fsl_xcvr.c | 9 +++++++++<br>
+=C2=A01 file changed, 9 insertions(+)<br>
+<br>
+diff --git a/sound/soc/fsl/fsl_xcvr.c b/sound/soc/fsl/fsl_xcvr.c<br>
+index d0556c79fdb1..55e640cba87d 100644<br>
+--- a/sound/soc/fsl/fsl_xcvr.c<br>
++++ b/sound/soc/fsl/fsl_xcvr.c<br>
+@@ -1228,6 +1228,7 @@ static int fsl_xcvr_probe(struct platform_device *pde=
+v)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0*/<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_dmaengine_pcm_register(dev, NU=
+LL, 0);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret) {<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pm_runtime_disable(=
+dev);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(dev, &quot;=
+failed to pcm register\n&quot;);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return ret;<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+@@ -1235,6 +1236,7 @@ static int fsl_xcvr_probe(struct platform_device *pde=
+v)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_soc_register_component(dev, &a=
+mp;fsl_xcvr_comp,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 &amp;fsl_xcvr_dai, 1);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret) {<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pm_runtime_disable(=
+dev);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(dev, &quot;=
+failed to register component %s\n&quot;,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 <a href=3D"http://fsl_xcvr_comp.name" rel=3D"noreferrer" target=
+=3D"_blank">fsl_xcvr_comp.name</a>);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+@@ -1242,6 +1244,12 @@ static int fsl_xcvr_probe(struct platform_device *pd=
+ev)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return ret;<br>
+=C2=A0}<br>
+<br>
++static int fsl_xcvr_remove(struct platform_device *pdev)<br>
++{<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0pm_runtime_disable(&amp;pdev-&gt;dev);<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;<br>
++}<br>
++<br>
+=C2=A0static __maybe_unused int fsl_xcvr_runtime_suspend(struct device *dev=
+)<br>
+=C2=A0{<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct fsl_xcvr *xcvr =3D dev_get_drvdata(dev);=
+<br>
+@@ -1370,6 +1378,7 @@ static struct platform_driver fsl_xcvr_driver =3D {<b=
+r>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .pm =3D &amp;fsl_xc=
+vr_pm_ops,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .of_match_table =3D=
+ fsl_xcvr_dt_ids,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 },<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0.remove =3D fsl_xcvr_remove,<br>
+=C2=A0};<br>
+=C2=A0module_platform_driver(fsl_xcvr_driver);<br>
+<br>
+-- <br>
+2.31.1<br>
+<br>
+</blockquote></div></div>
 
-If the driver is compiled into vmlinux, then I'll have to have stuff in 
-/etc/modprobe.d (or kernel cmdline) and reboot the kernel, annoying for 
-testing/debugging. Not a big deal but I just do not see what 0444 buys 
-compared to 0644 or (mostly used for watchdogs) 0.
-
-
-
--- 
-Alexey
+--000000000000b7894305e06e16b7--
