@@ -4,86 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49975C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 17:57:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62828C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Jun 2022 17:59:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LDYdD63zHz3bwb
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jun 2022 03:57:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LDYgG6vzCz3chn
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Jun 2022 03:59:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SbZn7Tjf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FQy1yTco;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=cheloha@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SbZn7Tjf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FQy1yTco;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LDYYq1Nwxz3bvH
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2022 03:54:38 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 252HFfFl021859;
-	Thu, 2 Jun 2022 17:54:30 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LDYfW0W2Qz2xKq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jun 2022 03:58:42 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 252F2SSS013568;
+	Thu, 2 Jun 2022 17:58:35 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=+7Sg7OMtej89Qmdgkmlvd2xMwnmgEYj7txYo6rDcbjg=;
- b=SbZn7TjfHddLya4f0Vv8Aiz/wu5SqmcVNbXCl/t5eKACgTm16ogrNtXatzduZlV9r6dv
- 7wEVyrSXFoPGA7Eo8LV2tUN2z8QOpbEyVIQY/82p4Ivgjy96WGooBNnAIZyHJhIo3ftr
- v76vIYqLoFeTmvpm72oOYV61qHD8nKuQ3gw+Xco0YSqQG/evceO1PHd1zmJhIHkcjWE3
- cynvt8Md5OjHYqyVpLPmr/8UdyQS7HvZmR0xMIidMRSBKJr+PvHc2q9iqSu0vTmYCv3a
- LWkdRYLetUBdJommK7zzYSQoRxy4QdUR93HYIHVgKfLUvER/CJwQIGG+j64OXNmZfW7I 5Q== 
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=xUuCcQqlY4f7d4geq8tgWU8nwAKebEBknQg7K+tn22c=;
+ b=FQy1yTcoDacZpryheHI+ghM6HfpskVJTRPY6C7+i92D8vmeYWjsTahlpR67mXWSgIWm7
+ Iih1q2vA8/3l2d+HL9S3HJulHqOX/cWjustqANsysYwwk+fiaJ64NMEIxNW0UYracPsc
+ 61jYTwNXQ5S7Hm08wkLovQLaGHtkJbBmqDzfdp3Mkch3hIHK89MBkm6xdcnKp1fx2LdM
+ ma8A+KqRvRkvXhZ2/yCa/D6W919JKKzs/5dKYm3zmQEYjSl/ULr7TGLQN7hxsUXJgITf
+ p5SCLAAGZw1SIFuJavvRM6pK2zL08yq2vc1dWWe8oXMvwKk1vGnoE52ftcHOYeOcujJ9 oQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gew9cnydr-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3geyg6u1sg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jun 2022 17:54:29 +0000
-Received: from m0098393.ppops.net (m0098393.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 252HbCii013883;
-	Thu, 2 Jun 2022 17:54:29 GMT
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gew9cnydq-1
+	Thu, 02 Jun 2022 17:58:35 +0000
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 252HkRl5005700;
+	Thu, 2 Jun 2022 17:58:35 GMT
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com [169.55.91.170])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3geyg6u1s3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jun 2022 17:54:29 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
-	by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 252Ho3rd008515;
-	Thu, 2 Jun 2022 17:54:28 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com [9.57.198.27])
-	by ppma01dal.us.ibm.com with ESMTP id 3gcxt5v40w-1
+	Thu, 02 Jun 2022 17:58:34 +0000
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+	by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 252Ho2Df012943;
+	Thu, 2 Jun 2022 17:58:33 GMT
+Received: from b03cxnp07027.gho.boulder.ibm.com (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
+	by ppma02wdc.us.ibm.com with ESMTP id 3gbc9343nk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Jun 2022 17:54:28 +0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com [9.57.199.110])
-	by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 252HsQVY27263450
+	Thu, 02 Jun 2022 17:58:33 +0000
+Received: from b03ledav002.gho.boulder.ibm.com (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+	by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 252HwWRR32047428
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 2 Jun 2022 17:54:26 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2DB70AE05C;
-	Thu,  2 Jun 2022 17:54:26 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 09251AE063;
-	Thu,  2 Jun 2022 17:54:26 +0000 (GMT)
-Received: from localhost (unknown [9.41.178.126])
-	by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
-	Thu,  2 Jun 2022 17:54:25 +0000 (GMT)
-From: Scott Cheloha <cheloha@linux.ibm.com>
-To: linux-watchdog@vger.kernel.org
-Subject: [PATCH v2 3/4] powerpc/pseries: register pseries-wdt device with platform bus
-Date: Thu,  2 Jun 2022 12:53:52 -0500
-Message-Id: <20220602175353.68942-4-cheloha@linux.ibm.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20220602175353.68942-1-cheloha@linux.ibm.com>
-References: <20220602175353.68942-1-cheloha@linux.ibm.com>
+	Thu, 2 Jun 2022 17:58:32 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6438813604F;
+	Thu,  2 Jun 2022 17:58:32 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3E6EF136051;
+	Thu,  2 Jun 2022 17:58:32 +0000 (GMT)
+Received: from localhost (unknown [9.41.178.242])
+	by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+	Thu,  2 Jun 2022 17:58:32 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH 0/2] Disabling NMI watchdog during LPM's memory transfer
+In-Reply-To: <20220601155315.35109-1-ldufour@linux.ibm.com>
+References: <20220601155315.35109-1-ldufour@linux.ibm.com>
+Date: Thu, 02 Jun 2022 12:58:31 -0500
+Message-ID: <87a6av0wxk.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: t_2Utd-fSi2URAwB81AuFp11Qj-PUZ5R
-X-Proofpoint-ORIG-GUID: 6lNjq6fiwRbaHfcdv992gnTBQEFjG_85
+X-Proofpoint-GUID: vBiR_e7qqRwY_Se2lNxko1RNIf57vRhj
+X-Proofpoint-ORIG-GUID: A9afMTaJmbDkyXUnXbHk-183ld65fIWV
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.517,FMLib:17.11.64.514
  definitions=2022-06-02_05,2022-06-02_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
- priorityscore=1501 lowpriorityscore=0 phishscore=0 spamscore=0
- impostorscore=0 malwarescore=0 mlxlogscore=999 bulkscore=0 suspectscore=0
- mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 spamscore=0 mlxlogscore=999 bulkscore=0 clxscore=1011
+ phishscore=0 mlxscore=0 adultscore=0 lowpriorityscore=0 impostorscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2204290000 definitions=main-2206020073
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -96,65 +94,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, wvoigt@us.ibm.com, aik@ozlabs.ru, Scott Cheloha <cheloha@linux.ibm.com>, vaishnavi@linux.ibm.com, npiggin@gmail.com, tzungbi@kernel.org, brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, haren@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PAPR v2.12 defines a new hypercall, H_WATCHDOG.  The hypercall permits
-guest control of one or more virtual watchdog timers.
+Laurent Dufour <ldufour@linux.ibm.com> writes:
+> When a partition is transferred, once it arrives at the destination node,
+> the partition is active but much of its memory must be transferred from the
+> start node.
+>
+> It depends on the activity in the partition, but the more CPU the partition
+> has, the more memory to be transferred is likely to be. This causes latency
+> when accessing pages that need to be transferred, and often, for large
+> partitions, it triggers the NMI watchdog.
 
-These timers do not conform to PowerPC device conventions.  They are
-not affixed to any extant bus, nor do they have full representation in
-the device tree.
+It also triggers warnings from other watchdogs and subsystems that
+have soft latency requirements  - softlockup, RCU, workqueue. The issue
+is more general than the NMI watchdog.
 
-As a workaround we represent them as platform devices.
+> The NMI watchdog causes the CPU stack to dump where it appears to be
+> stuck. In this case, it does not bring much information since it can happen
+> during any memory access of the kernel.
 
-This patch registers a single platform device, "pseries-wdt", with the
-platform bus if the FW_FEATURE_WATCHDOG flag is set.
+When the site of a watchdog backtrace shows a thread stuck on a routine
+memory access as opposed to something like a lock acquisition, that is
+actually useful information that shouldn't be discarded. It tells us the
+platform is failing to adequately virtualize partition memory. This
+isn't a benign situation and it's likely to unacceptably affect real
+workloads. The kernel is ideally situated to detect and warn about this.
 
-A driver for this device, "pseries-wdt", will be introduced in a
-subsequent patch.
+> In addition, the NMI interrupt mechanism is not secure and can generate a
+> dump system in the event that the interruption is taken while
+> MSR[RI]=0.
 
-Signed-off-by: Scott Cheloha <cheloha@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/setup.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+This sounds like a general problem with that facility that isn't
+specific to partition migration? Maybe it should be disabled altogether
+until that can be fixed?
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index afb074269b42..233c64f59815 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/cpu.h>
- #include <linux/errno.h>
-+#include <linux/platform_device.h>
- #include <linux/sched.h>
- #include <linux/kernel.h>
- #include <linux/mm.h>
-@@ -169,6 +170,22 @@ static void __init fwnmi_init(void)
- #endif
- }
- 
-+/*
-+ * Affix a device for the first timer to the platform bus if
-+ * we have firmware support for the H_WATCHDOG hypercall.
-+ */
-+static struct platform_device *pseries_wdt_pdev;
-+
-+static __init int pseries_wdt_init(void)
-+{
-+	if (!firmware_has_feature(FW_FEATURE_WATCHDOG))
-+		return 0;
-+	pseries_wdt_pdev = platform_device_register_simple("pseries-wdt",
-+							   0, NULL, 0);
-+	return 0;
-+}
-+machine_subsys_initcall(pseries, pseries_wdt_init);
-+
- static void pseries_8259_cascade(struct irq_desc *desc)
- {
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
--- 
-2.27.0
+> Given how often hard lockups are detected when transferring large
+> partitions, it seems best to disable the watchdog NMI until the memory
+> transfer from the start node is complete.
 
+At this time, I'm far from convinced. Disabling the watchdog is going to
+make the underlying problems in the platform and/or network harder to
+understand.
