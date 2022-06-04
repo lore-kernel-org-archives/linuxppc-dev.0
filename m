@@ -4,70 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71EA3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 06:52:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74949C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 09:38:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LG6kD5hWMz3bpX
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 16:52:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LGBPv37Q9z3bpH
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 19:38:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=etC4GCey;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PPCbCe1C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=linmq006@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72d; helo=mail-qk1-x72d.google.com; envelope-from=kent.overstreet@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=etC4GCey;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PPCbCe1C;
 	dkim-atps=neutral
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
+Received: from mail-qk1-x72d.google.com (mail-qk1-x72d.google.com [IPv6:2607:f8b0:4864:20::72d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LG6jT5FjSz3bhB
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 16:51:40 +1000 (AEST)
-Received: by mail-pj1-x1035.google.com with SMTP id j7so10439975pjn.4
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jun 2022 23:51:40 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LFqcq5tWYz3bXR
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 05:31:37 +1000 (AEST)
+Received: by mail-qk1-x72d.google.com with SMTP id k6so5324745qkf.4
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jun 2022 12:31:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WgLvepossqYxUVw9ClZad/mto5k7o8Anzm/y5Yj+fuA=;
-        b=etC4GCeyd4d0cZcDWCELzE23ufOSBZ/Ogr0TO86ojbcgGscfaGC6SDrMeeSwcFjqGZ
-         TpaKCFYcoR99z6vef37qqqJBvTX7jjM60fsMiO0tp/MRAvWIwix1gfChvOCq9/pWd+kN
-         xvP/18vCCsPHDOhOjRiYZUIh0u0YbE9fwRcIPLswHhFO8nZIGAj/74XxtvUmieilR+4X
-         foxckJGbCC+Gd+YHoTvZ3Ph402WEWV/Pr9ILFj7Xu74YUGyEHKeEeEayd4eFfX5eMlqV
-         BkmH81FCAUEFVjUQRL7Ycsp6GWQbloIcCFqBZll3abLesa88xwhHeZj55EAIn4YScCl9
-         NVOA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NlNl9OvEp4IMCqcRwg89/P60FLQNHXpSzQS3N1mbD9I=;
+        b=PPCbCe1Cn5gxAVLp4/Tq89fTjn8y2mOUnl72vTehGJMskf+QM8QpgwisaBl2Q2Xu0L
+         pcxb6StUmBT+NNKdGZ5Xtxds8951aeo7IWGcXVWYG54c4AnIkcrcXd+x/vxeG+lGqSts
+         whMfrQQRkM7J7Q/HvLxmXgt1KpVkYaBWbq7Wz+QDmkF96YDxViWGXgMm+JdGvvOufjTv
+         PODs0z/cH21o09MpkkWPj+1bL5uwG24sb4I5HW9Xx6mE6W7S2HwkP104pyS1a/pbWECy
+         5j/vOr1LKSNkyOpkxSwZziKo9ljKu6nIu7YJMEK2c4q8vEb7IoclRdSArDqNWUAQ1quX
+         K24Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WgLvepossqYxUVw9ClZad/mto5k7o8Anzm/y5Yj+fuA=;
-        b=ZBHJWxytiMBdZeY2LtbTR/EkIgS6qUSNOEhgALozRHojZcjDvsT4gQgg0MBRUQwexC
-         WnaMddlBjZlVy6OjqO2SMenAGs/lNYkDk8Yiv6i2uRDXrchPfXaPoSVx0O23WGLpEMIZ
-         QxyY1WSfrNfo7oDitPxww9HeGfmxPi2qTlDIULrejy9Zhsg9wvYIqRe9chRVgZVjH8i4
-         afvVmKRsr/357Si1cH9DID9bdHR6UiW3lzc3AmG3WVnMTFoIbI+LXkQImAZcaNdNRMIr
-         /88AvE5XBUbR/3/EUWTJADGSBVKdvDrDjPXHvsN2h/CKOwmXTU4Az5kTEL/KHecig1GK
-         o1VA==
-X-Gm-Message-State: AOAM533vsH6H/X9b7ORrFUvOxY6HRUsg80DN+lqiLISQdk9pOHqzcBcb
-	yPFwWecwUvc7tswh5BOv2+4=
-X-Google-Smtp-Source: ABdhPJzVgwC+hEi6kwStpzn4oICo4kcq38lduufTqJH4dyo3N8ef1ZJFOaUBSHXH0ob6imm9qSJoqA==
-X-Received: by 2002:a17:90a:c202:b0:1e2:e772:5f0a with SMTP id e2-20020a17090ac20200b001e2e7725f0amr19758314pjt.109.1654411898813;
-        Sat, 04 Jun 2022 23:51:38 -0700 (PDT)
-Received: from localhost.localdomain ([202.120.234.246])
-        by smtp.googlemail.com with ESMTPSA id r6-20020a170902be0600b00162037fbacdsm8194582pls.187.2022.06.04.23.51.35
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NlNl9OvEp4IMCqcRwg89/P60FLQNHXpSzQS3N1mbD9I=;
+        b=JNQ8a6tmrmk6ZcZ8eTb7pKXWXG7FNFutcv5HL8KC4teaKEXkG4Dd0WO6VWudh7F+i8
+         yFYAn9Tg3eVlGRWW7oFKbUtkELAKiSEqCX0+trbIzsuC3cnlCmzwxS6l9fbsKjYIk1tD
+         lxd7t7uiPoOTxWQzfVafesP4rS/EmDXnI8GQn0F8VsAPR/8G9ijB3sCUK3GwbsLuOwf9
+         N6kDmDUW/KfEUcF0NobRg/gXZFBAq1VurmBqiCUZ1UfXbhpgQx+5R13gGXX8UEBR3Kwa
+         a8w1trW1FwtpOyDYMjPLtDrg4En3wz9Mumtilc5chb6GYly4aMbNEgjhZme/4ElTuJgy
+         VM2A==
+X-Gm-Message-State: AOAM5300HRaInAVM8CejXjzg/JWANwAHByB9yK0ua/6GB9pjr1MD9ba+
+	7eYN95hbObpZYWkiX5E8Ug==
+X-Google-Smtp-Source: ABdhPJzBRRjsEOdO/xHzCjiPIQRTFX3synBXQ85mW+EUDqbdptxp9HspSHmKHy7HY89aSSnWUYLjfQ==
+X-Received: by 2002:a05:620a:2943:b0:6a3:ac4d:5a4f with SMTP id n3-20020a05620a294300b006a3ac4d5a4fmr10776147qkp.159.1654371091071;
+        Sat, 04 Jun 2022 12:31:31 -0700 (PDT)
+Received: from moria.home.lan (c-73-219-103-14.hsd1.vt.comcast.net. [73.219.103.14])
+        by smtp.gmail.com with ESMTPSA id o17-20020ac84291000000b00304defdb1b3sm3537426qtl.85.2022.06.04.12.31.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 04 Jun 2022 23:51:38 -0700 (PDT)
-From: Miaoqian Lin <linmq006@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/cell/axon_msi: Fix refcount leak in setup_msi_msg_address
-Date: Sun,  5 Jun 2022 10:51:29 +0400
-Message-Id: <20220605065129.63906-1-linmq006@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        Sat, 04 Jun 2022 12:31:30 -0700 (PDT)
+From: Kent Overstreet <kent.overstreet@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 27/33] powerpc: Convert to printbuf
+Date: Sat,  4 Jun 2022 15:30:36 -0400
+Message-Id: <20220604193042.1674951-28-kent.overstreet@gmail.com>
+X-Mailer: git-send-email 2.36.0
+In-Reply-To: <20220604193042.1674951-1-kent.overstreet@gmail.com>
+References: <20220604193042.1674951-1-kent.overstreet@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Sun, 05 Jun 2022 19:37:51 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,32 +77,316 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linmq006@gmail.com
+Cc: pmladek@suse.com, linuxppc-dev@lists.ozlabs.org, Kent Overstreet <kent.overstreet@gmail.com>, rostedt@goodmis.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_get_next_parent() returns a node pointer with refcount incremented,
-we should use of_node_put() on it when not need anymore.
-Add missing of_node_put() in the error path to avoid refcount leak.
+This converts from seq_buf to printbuf. We're using printbuf in external
+buffer mode, so it's a direct conversion, aside from some trivial
+refactoring in cpu_show_meltdown() to make the code more consistent.
 
-Fixes: ce21b3c9648a ("[CELL] add support for MSI on Axon-based Cell systems")
-Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
+Signed-off-by: Kent Overstreet <kent.overstreet@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/cell/axon_msi.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/process.c             | 16 +++--
+ arch/powerpc/kernel/security.c            | 75 ++++++++++-------------
+ arch/powerpc/platforms/pseries/papr_scm.c | 34 +++++-----
+ 3 files changed, 57 insertions(+), 68 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index f3291e957a19..5b012abca773 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -223,6 +223,7 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
- 	if (!prop) {
- 		dev_dbg(&dev->dev,
- 			"axon_msi: no msi-address-(32|64) properties found\n");
-+		of_node_put(dn);
- 		return -ENOENT;
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 984813a4d5..fb8ba50223 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -39,7 +39,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/elf-randomize.h>
+ #include <linux/pkeys.h>
+-#include <linux/seq_buf.h>
++#include <linux/printbuf.h>
+ 
+ #include <asm/interrupt.h>
+ #include <asm/io.h>
+@@ -1399,32 +1399,30 @@ void show_user_instructions(struct pt_regs *regs)
+ {
+ 	unsigned long pc;
+ 	int n = NR_INSN_TO_PRINT;
+-	struct seq_buf s;
+ 	char buf[96]; /* enough for 8 times 9 + 2 chars */
++	struct printbuf s = PRINTBUF_EXTERN(buf, sizeof(buf));
+ 
+ 	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+ 
+-	seq_buf_init(&s, buf, sizeof(buf));
+-
+ 	while (n) {
+ 		int i;
+ 
+-		seq_buf_clear(&s);
++		printbuf_reset(&s);
+ 
+ 		for (i = 0; i < 8 && n; i++, n--, pc += sizeof(int)) {
+ 			int instr;
+ 
+ 			if (copy_from_user_nofault(&instr, (void __user *)pc,
+ 					sizeof(instr))) {
+-				seq_buf_printf(&s, "XXXXXXXX ");
++				prt_printf(&s, "XXXXXXXX ");
+ 				continue;
+ 			}
+-			seq_buf_printf(&s, regs->nip == pc ? "<%08x> " : "%08x ", instr);
++			prt_printf(&s, regs->nip == pc ? "<%08x> " : "%08x ", instr);
+ 		}
+ 
+-		if (!seq_buf_has_overflowed(&s))
++		if (printbuf_remaining(&s))
+ 			pr_info("%s[%d]: code: %s\n", current->comm,
+-				current->pid, s.buffer);
++				current->pid, s.buf);
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index d96fd14bd7..b34de62e65 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -10,7 +10,7 @@
+ #include <linux/memblock.h>
+ #include <linux/nospec.h>
+ #include <linux/prctl.h>
+-#include <linux/seq_buf.h>
++#include <linux/printbuf.h>
+ #include <linux/debugfs.h>
+ 
+ #include <asm/asm-prototypes.h>
+@@ -144,31 +144,28 @@ void __init setup_spectre_v2(void)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
++	struct printbuf s = PRINTBUF_EXTERN(buf, PAGE_SIZE);
+ 	bool thread_priv;
+ 
+ 	thread_priv = security_ftr_enabled(SEC_FTR_L1D_THREAD_PRIV);
+ 
+ 	if (rfi_flush) {
+-		struct seq_buf s;
+-		seq_buf_init(&s, buf, PAGE_SIZE - 1);
+ 
+-		seq_buf_printf(&s, "Mitigation: RFI Flush");
++		prt_printf(&s, "Mitigation: RFI Flush");
+ 		if (thread_priv)
+-			seq_buf_printf(&s, ", L1D private per thread");
+-
+-		seq_buf_printf(&s, "\n");
+-
+-		return s.len;
++			prt_printf(&s, ", L1D private per thread");
++
++		prt_printf(&s, "\n");
++	} else if (thread_priv) {
++		prt_printf(&s, "Vulnerable: L1D private per thread\n");
++	} else if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
++		   !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)) {
++		prt_printf(&s, "Not affected\n");
++	} else {
++		prt_printf(&s, "Vulnerable\n");
  	}
  
+-	if (thread_priv)
+-		return sprintf(buf, "Vulnerable: L1D private per thread\n");
+-
+-	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
+-	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
+-		return sprintf(buf, "Not affected\n");
+-
+-	return sprintf(buf, "Vulnerable\n");
++	return printbuf_written(&s);
+ }
+ 
+ ssize_t cpu_show_l1tf(struct device *dev, struct device_attribute *attr, char *buf)
+@@ -179,70 +176,66 @@ ssize_t cpu_show_l1tf(struct device *dev, struct device_attribute *attr, char *b
+ 
+ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	struct seq_buf s;
+-
+-	seq_buf_init(&s, buf, PAGE_SIZE - 1);
++	struct printbuf s = PRINTBUF_EXTERN(buf, PAGE_SIZE);
+ 
+ 	if (security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) {
+ 		if (barrier_nospec_enabled)
+-			seq_buf_printf(&s, "Mitigation: __user pointer sanitization");
++			prt_printf(&s, "Mitigation: __user pointer sanitization");
+ 		else
+-			seq_buf_printf(&s, "Vulnerable");
++			prt_printf(&s, "Vulnerable");
+ 
+ 		if (security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31))
+-			seq_buf_printf(&s, ", ori31 speculation barrier enabled");
++			prt_printf(&s, ", ori31 speculation barrier enabled");
+ 
+-		seq_buf_printf(&s, "\n");
++		prt_printf(&s, "\n");
+ 	} else
+-		seq_buf_printf(&s, "Not affected\n");
++		prt_printf(&s, "Not affected\n");
+ 
+-	return s.len;
++	return printbuf_written(&s);
+ }
+ 
+ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+-	struct seq_buf s;
++	struct printbuf s = PRINTBUF_EXTERN(buf, PAGE_SIZE);
+ 	bool bcs, ccd;
+ 
+-	seq_buf_init(&s, buf, PAGE_SIZE - 1);
+-
+ 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
+ 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
+ 
+ 	if (bcs || ccd) {
+-		seq_buf_printf(&s, "Mitigation: ");
++		prt_printf(&s, "Mitigation: ");
+ 
+ 		if (bcs)
+-			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
++			prt_printf(&s, "Indirect branch serialisation (kernel only)");
+ 
+ 		if (bcs && ccd)
+-			seq_buf_printf(&s, ", ");
++			prt_printf(&s, ", ");
+ 
+ 		if (ccd)
+-			seq_buf_printf(&s, "Indirect branch cache disabled");
++			prt_printf(&s, "Indirect branch cache disabled");
+ 
+ 	} else if (count_cache_flush_type != BRANCH_CACHE_FLUSH_NONE) {
+-		seq_buf_printf(&s, "Mitigation: Software count cache flush");
++		prt_printf(&s, "Mitigation: Software count cache flush");
+ 
+ 		if (count_cache_flush_type == BRANCH_CACHE_FLUSH_HW)
+-			seq_buf_printf(&s, " (hardware accelerated)");
++			prt_printf(&s, " (hardware accelerated)");
+ 
+ 	} else if (btb_flush_enabled) {
+-		seq_buf_printf(&s, "Mitigation: Branch predictor state flush");
++		prt_printf(&s, "Mitigation: Branch predictor state flush");
+ 	} else {
+-		seq_buf_printf(&s, "Vulnerable");
++		prt_printf(&s, "Vulnerable");
+ 	}
+ 
+ 	if (bcs || ccd || count_cache_flush_type != BRANCH_CACHE_FLUSH_NONE) {
+ 		if (link_stack_flush_type != BRANCH_CACHE_FLUSH_NONE)
+-			seq_buf_printf(&s, ", Software link stack flush");
++			prt_printf(&s, ", Software link stack flush");
+ 		if (link_stack_flush_type == BRANCH_CACHE_FLUSH_HW)
+-			seq_buf_printf(&s, " (hardware accelerated)");
++			prt_printf(&s, " (hardware accelerated)");
+ 	}
+ 
+-	seq_buf_printf(&s, "\n");
++	prt_printf(&s, "\n");
+ 
+-	return s.len;
++	return printbuf_written(&s);
+ }
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 39962c9055..317d4513db 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -12,7 +12,7 @@
+ #include <linux/libnvdimm.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+-#include <linux/seq_buf.h>
++#include <linux/printbuf.h>
+ #include <linux/nd.h>
+ 
+ #include <asm/plpar_wrappers.h>
+@@ -1145,7 +1145,7 @@ static ssize_t perf_stats_show(struct device *dev,
+ {
+ 	int index;
+ 	ssize_t rc;
+-	struct seq_buf s;
++	struct printbuf s = PRINTBUF_EXTERN(buf, PAGE_SIZE);
+ 	struct papr_scm_perf_stat *stat;
+ 	struct papr_scm_perf_stats *stats;
+ 	struct nvdimm *dimm = to_nvdimm(dev);
+@@ -1168,18 +1168,17 @@ static ssize_t perf_stats_show(struct device *dev,
+ 	 * values. Since stat_id is essentially a char string of
+ 	 * 8 bytes, simply use the string format specifier to print it.
+ 	 */
+-	seq_buf_init(&s, buf, PAGE_SIZE);
+ 	for (index = 0, stat = stats->scm_statistic;
+ 	     index < be32_to_cpu(stats->num_statistics);
+ 	     ++index, ++stat) {
+-		seq_buf_printf(&s, "%.8s = 0x%016llX\n",
+-			       stat->stat_id,
+-			       be64_to_cpu(stat->stat_val));
++		prt_printf(&s, "%.8s = 0x%016llX\n",
++		       stat->stat_id,
++		       be64_to_cpu(stat->stat_val));
+ 	}
+ 
+ free_stats:
+ 	kfree(stats);
+-	return rc ? rc : (ssize_t)seq_buf_used(&s);
++	return rc ?: printbuf_written(&s);
+ }
+ static DEVICE_ATTR_ADMIN_RO(perf_stats);
+ 
+@@ -1188,7 +1187,7 @@ static ssize_t flags_show(struct device *dev,
+ {
+ 	struct nvdimm *dimm = to_nvdimm(dev);
+ 	struct papr_scm_priv *p = nvdimm_provider_data(dimm);
+-	struct seq_buf s;
++	struct printbuf s = PRINTBUF_EXTERN(buf, PAGE_SIZE);
+ 	u64 health;
+ 	int rc;
+ 
+@@ -1199,29 +1198,28 @@ static ssize_t flags_show(struct device *dev,
+ 	/* Copy health_bitmap locally, check masks & update out buffer */
+ 	health = READ_ONCE(p->health_bitmap);
+ 
+-	seq_buf_init(&s, buf, PAGE_SIZE);
+ 	if (health & PAPR_PMEM_UNARMED_MASK)
+-		seq_buf_printf(&s, "not_armed ");
++		prt_printf(&s, "not_armed ");
+ 
+ 	if (health & PAPR_PMEM_BAD_SHUTDOWN_MASK)
+-		seq_buf_printf(&s, "flush_fail ");
++		prt_printf(&s, "flush_fail ");
+ 
+ 	if (health & PAPR_PMEM_BAD_RESTORE_MASK)
+-		seq_buf_printf(&s, "restore_fail ");
++		prt_printf(&s, "restore_fail ");
+ 
+ 	if (health & PAPR_PMEM_ENCRYPTED)
+-		seq_buf_printf(&s, "encrypted ");
++		prt_printf(&s, "encrypted ");
+ 
+ 	if (health & PAPR_PMEM_SMART_EVENT_MASK)
+-		seq_buf_printf(&s, "smart_notify ");
++		prt_printf(&s, "smart_notify ");
+ 
+ 	if (health & PAPR_PMEM_SCRUBBED_AND_LOCKED)
+-		seq_buf_printf(&s, "scrubbed locked ");
++		prt_printf(&s, "scrubbed locked ");
+ 
+-	if (seq_buf_used(&s))
+-		seq_buf_printf(&s, "\n");
++	if (printbuf_written(&s))
++		prt_printf(&s, "\n");
+ 
+-	return seq_buf_used(&s);
++	return printbuf_written(&s);
+ }
+ DEVICE_ATTR_RO(flags);
+ 
 -- 
-2.25.1
+2.36.0
 
