@@ -4,42 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC5D3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 02:25:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05FE0C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 05:33:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LG0nw6wltz3bmw
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 12:25:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 2305 seconds by postgrey-1.36 at boromir; Sun, 05 Jun 2022 12:24:41 AEST
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LG4z71PLQz3c7q
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 15:33:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DC8iPQcO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=linmq006@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DC8iPQcO;
+	dkim-atps=neutral
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LG0nP3df3z302N
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 12:24:41 +1000 (AEST)
-Received: from [2601:449:8480:af0::de51]
-	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <oss@buserror.net>)
-	id 1nxfJ4-00D9V8-IG; Sat, 04 Jun 2022 20:43:54 -0500
-Message-ID: <198e1080c142048ce6c8705a569fe0a0461e3682.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Masahiro Yamada <masahiroy@kernel.org>, Michael Ellerman
-	 <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Sat, 04 Jun 2022 20:43:53 -0500
-In-Reply-To: <20220604085050.4078927-1-masahiroy@kernel.org>
-References: <20220604085050.4078927-1-masahiroy@kernel.org>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.40.4-1ubuntu2 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LG4yR5F4Qz3bkC
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 15:32:45 +1000 (AEST)
+Received: by mail-pj1-x102a.google.com with SMTP id j7so10367679pjn.4
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jun 2022 22:32:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=0nS6GixGg0X/K0hARwKVVjwZtlk3sOYNjMOr3Fp274I=;
+        b=DC8iPQcOCYF6u8bsWeP5y1eXm1SdBW9Xw5KxTrNQ36MGP6Qt6ueiiKz4w4P48A8oQ4
+         iFLNeAxpdqoDvVEmlnJgh6N5A7fhMwvDu/rkFdS6ahCREBeMIh09E+vnIN6ICfjCrmry
+         Xy6N0MxWc3yJvleJzGu3TLOJwKKXxCGqdDneF8aXiV1zZO5h0jXdHR7RlAIvzE09hkKe
+         0jvtAROlvxBa9WmV+WuvzCP3JSMpFuLrs6c+hkvGuhO2od7sgYNXH8pBCHuDp27QDopt
+         TZeDTykzML5stnA1b925cRN4L81egGsUINn8VJ9mUgZnpB9Chj/Af2MsfYD8TjJ14BpJ
+         +37w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=0nS6GixGg0X/K0hARwKVVjwZtlk3sOYNjMOr3Fp274I=;
+        b=O8BzfQl5DM2QMIkiBncgnshV0we+rjCjo5PAlbXeJKYHiJKxqC0cEghV3NJt8RXUck
+         DBpNU++sHzyXs5gjSbARpxEm7vATQk88t13EB7U4Kj7bXN+xNbmdRBmedadWkQjlfIRS
+         yVazR6dNtjNhXb8QfZ6H8cgfNk4my+m/hQhuMKLX4V3C02KrO09TMg8ZazGR374OkW2q
+         cIvB5twu/1evIi4qWzUC/e8fZpjA7oHIOSwSiek2mI+OIfprMtnh92jYFwFSX1NLIGaJ
+         PdAbw7Wx5HVcVcbSTvB08z6TE0dbGGVWxwjVM0sF8M5RRgeQC5PDYewlaji6O3TRRPCm
+         8g5A==
+X-Gm-Message-State: AOAM530Me7GwcgZTwMDtiAFZMaSvpl32L/lVibu4FF96Q98vN50Pe7yL
+	i9vZiNcUflcQo52NC8fVaCY=
+X-Google-Smtp-Source: ABdhPJy8kLoluj27W3hJN/R+Mte0wZHenNHtyFccibnXmjSpD+q7PklVpGrImgzUnmAOhCUDR0wgrw==
+X-Received: by 2002:a17:902:e1cc:b0:164:1517:e8bf with SMTP id t12-20020a170902e1cc00b001641517e8bfmr18236330pla.98.1654407160432;
+        Sat, 04 Jun 2022 22:32:40 -0700 (PDT)
+Received: from localhost.localdomain ([202.120.234.246])
+        by smtp.googlemail.com with ESMTPSA id m6-20020a1709026bc600b0016370e1af6bsm5262068plt.128.2022.06.04.22.32.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 04 Jun 2022 22:32:39 -0700 (PDT)
+From: Miaoqian Lin <linmq006@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+	Miaoqian Lin <linmq006@gmail.com>,
+	Ammar Faizi <ammarfaizi2@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+	Nick Child <nick.child@ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/xive: Fix refcount leak in xive_get_max_prio
+Date: Sun,  5 Jun 2022 09:32:23 +0400
+Message-Id: <20220605053225.56125-1-linmq006@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2601:449:8480:af0::de51
-X-SA-Exim-Rcpt-To: masahiroy@kernel.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org, christophe.leroy@csgroup.eu, diana.craciun@nxp.com, frank.rowand@sony.com, yanaijie@huawei.com, robh@kernel.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc: get rid of #include <generated/compile.h>
-X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,43 +84,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Jason Yan <yanaijie@huawei.com>, linux-kernel@vger.kernel.org, Diana Craciun <diana.craciun@nxp.com>, Paul Mackerras <paulus@samba.org>, Frank Rowand <frank.rowand@sony.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2022-06-04 at 17:50 +0900, Masahiro Yamada wrote:
-> You cannot include <generated/compile.h> here because it is generated
-> in init/Makefile but there is no guarantee that it happens before
-> arch/powerpc/mm/nohash/kaslr_booke.c is compiled for parallel builds.
-> 
-> The places where you can reliably include <generated/compile.h> are:
-> 
->   - init/          (because init/Makefile can specify the dependency)
->   - arch/*/boot/   (because it is compiled after vmlinux)
-> 
-> Commit f231e4333312 ("hexagon: get rid of #include <generated/compile.h>")
-> fixed the last breakage at that time, but powerpc re-added this.
-> 
-> <genearated/compile.h> was unneeded because 'build_str' is almost the
-> same as 'linux_banner' defined in init/version.c
-> 
-> Let's copy the solution from MIPS.
-> (get_random_boot() in arch/mips/kernel/relocate.c)
-> 
-> Fixes: 6a38ea1d7b94 ("powerpc/fsl_booke/32: randomize the kernel image
-> offset")
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
-> 
-> If this gets into the mainline before -rc2 or -rc3,
-> I will base my kbuild work on top of this.
-> 
-> 
->  arch/powerpc/mm/nohash/kaslr_booke.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
+of_find_node_by_path() returns a node pointer with
+refcount incremented, we should use of_node_put() on it when done.
+Add missing of_node_put() to avoid refcount leak.
 
-Acked-by: Scott Wood <oss@buserror.net>
+Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
+---
+ arch/powerpc/sysdev/xive/spapr.c | 1 +
+ 1 file changed, 1 insertion(+)
 
--Scott
-
+diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+index 7d5128676e83..d398823d138e 100644
+--- a/arch/powerpc/sysdev/xive/spapr.c
++++ b/arch/powerpc/sysdev/xive/spapr.c
+@@ -717,6 +717,7 @@ static bool __init xive_get_max_prio(u8 *max_prio)
+ 	}
+ 
+ 	reg = of_get_property(rootdn, "ibm,plat-res-int-priorities", &len);
++	of_node_put(rootdn);
+ 	if (!reg) {
+ 		pr_err("Failed to read 'ibm,plat-res-int-priorities' property\n");
+ 		return false;
+-- 
+2.25.1
 
