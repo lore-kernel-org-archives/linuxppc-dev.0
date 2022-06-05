@@ -4,64 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87964C43334
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Jun 2022 20:31:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6688C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 02:02:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LFrxR56WGz3c8S
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 06:31:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LG0HM0KpCz3brl
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Jun 2022 12:02:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google header.b=P9CwzByv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SKhU/q9W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=purestorage.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=mkhalfella@purestorage.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google header.b=P9CwzByv;
-	dkim-atps=neutral
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LFrwr0k5tz30JK
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 06:30:31 +1000 (AEST)
-Received: by mail-pj1-x1036.google.com with SMTP id 3-20020a17090a174300b001e426a02ac5so11551997pjm.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jun 2022 13:30:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=purestorage.com; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=/HBb0ZDkKChS7u7W92q6z+RJ56Q8ZTddXO5nLVdm7Ds=;
-        b=P9CwzByv7YgasmohkFwhBdbjzvwEj+asz8ddZId+WOAo1rW80xt71SlfNQjChfKryA
-         wsOQcEWIagvMoLVuqx/Wl04bzWcJiucwtVHxpf+pl+ZTjtZY57pdASshNB27LMmG+Zjx
-         uWQ1GkoBKbMEn58u3OWvQ2kPRb7gAZzYQXH8Y=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=/HBb0ZDkKChS7u7W92q6z+RJ56Q8ZTddXO5nLVdm7Ds=;
-        b=WElzD4R+g7NoF+kA0QNZal4/q+yeEHDNP9JauXDDHezDDBExNFZy20OpmOP7tj8eLV
-         ZoiUaX0FbZj2VOtHD8X7yVyZJ9oxEp1Mmuv3kytTdezcsNa0Z3kJe1MrDjz+YYFdnkvj
-         0Z99xrmWr1Oy1WvenH6erCg2ZrSKBmbTrTCx6TmhlNckZQEn/IOG9NmvFQGIHJW8vLzr
-         EMVfKimKcHwMuV9kl24bgdbNNwlkVmfqDLgO/8J9aiVcN7pMVxhf1xiLJG4auNaU+4jN
-         l8tp3Y/R+zm/6GShXPlQAcE5FAwoQMgfJnNuTSaPSbLcnQMA6pWd0RhtzOB2G5LKFdOi
-         igDw==
-X-Gm-Message-State: AOAM5326JK1Df4cFMaF1yxDuJTmhinuWWF/aPNQYsuQ2n53j0oI9NrZ1
-	q9XScNkeTAmW1YTGKwy3KWVB7w==
-X-Google-Smtp-Source: ABdhPJwtXs6I68jQqRzep0xqec3GlALJ3iL77SWf2Owq4SCVbCGHKE8Dm7lcxheeLXbH6VLIAOVrIw==
-X-Received: by 2002:a17:902:eccc:b0:167:5c6e:31e4 with SMTP id a12-20020a170902eccc00b001675c6e31e4mr5543306plh.90.1654374628607;
-        Sat, 04 Jun 2022 13:30:28 -0700 (PDT)
-Received: from irdv-mkhalfella.dev.purestorage.com ([208.88.158.128])
-        by smtp.googlemail.com with ESMTPSA id l63-20020a638842000000b003f61c311e79sm6530196pgd.56.2022.06.04.13.30.26
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sat, 04 Jun 2022 13:30:27 -0700 (PDT)
-From: Mohamed Khalfella <mkhalfella@purestorage.com>
-To: helgaas@kernel.org
-Subject: Re: [PATCH] PCI/AER: Iterate over error counters instead of error
-Date: Sat,  4 Jun 2022 20:30:21 +0000
-Message-Id: <20220604203021.10663-1-mkhalfella@purestorage.com>
-X-Mailer: git-send-email 2.29.0
-In-Reply-To: <20220603235856.GA117911@bhelgaas>
-References: <20220603235856.GA117911@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LG0Gg32zfz2ywR
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jun 2022 12:01:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=SKhU/q9W;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LG0GZ74KWz4xD8;
+	Sun,  5 Jun 2022 12:01:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1654394487;
+	bh=ZebXCvVgYyoDD7R+hexZUA6pHVkZP2KZ/lhCRG9v1Nw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=SKhU/q9WEzDGPnswYIpnFpNztIfIGHL0Vw9SnjJGCGwl4292sdSAj+JPj4A5xkzQb
+	 B+y7yf7HOYRhAFgS4FVK1Tub7rZqA/nsXwbNOsJFgdbfvBM7sIZHD4SD7kFL0RzFkh
+	 4LAZuDBJ2i+GfAD0qdoBjleSWz7y3T0/nVDNPuVFtorZf3m6oBOfj9s66A2CtkfvCC
+	 W1+3qpbYbqxrMo+T6K2Yxddet2CdAE2SRRRfV3eF8sxv1HkTH+reURjf75ivPf0bqu
+	 Q0yL9l09vNrOMBoVQI5ppwupEBNnxca/NZZL6J6wgQOW+K2G2tsvoHRJ8kqMmlDtuR
+	 Ikh4iERgGVRCA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dmitry Osipenko <dmitry.osipenko@collabora.com>, "Rafael J . Wysocki"
+ <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: Re: [PATCH v1] kernel/reboot: Change registration order of legacy
+ power-off handler
+In-Reply-To: <20220524212118.425702-1-dmitry.osipenko@collabora.com>
+References: <20220524212118.425702-1-dmitry.osipenko@collabora.com>
+Date: Sun, 05 Jun 2022 12:01:22 +1000
+Message-ID: <8735gjq365.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,62 +59,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, msaggi@purestorage.com, ebadger@purestorage.com, oohall@gmail.com, stable@vger.kernel.org, mkhalfella@purestorage.com, bhelgaas@google.com, rajatja@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/3/22 16:58, Bjorn Helgaas wrote:
-> On Fri, Jun 03, 2022 at 10:12:47PM +0000, Mohamed Khalfella wrote:
->> Is there any chance for this to land in 5.19?
+Dmitry Osipenko <dmitry.osipenko@collabora.com> writes:
+> We're unconditionally registering sys-off handler for the legacy
+> pm_power_off() callback, this causes problem for platforms that don't
+> use power-off handlers at all and should be halted. Now reboot syscall
+> assumes that there is a power-off handler installed and tries to power
+> off system instead of halting it.
 >
-> Too late for v5.19, since the merge window will end in a couple days.
-> Remind me again if you don't see it in -next by v5.20-rc5 or so.
->
+> To fix the trouble, move the handler's registration to the reboot syscall
+> and check the pm_power_off() presence.
 
-Thank you. I will keep an eye on -next.
+I'm seeing a qemu virtual machine (ppce500) fail to power off using the
+gpio-poweroff driver. I bisected it to this commit.
 
->> On 5/10/22 14:17, Mohamed Khalfella wrote:
->>>> Thanks for catching this; it definitely looks like a real issue!  I
->>>> guess you're probably seeing junk in the sysfs files?
->>>
->>> That is correct. The initial report was seeing junk when reading sysfs
->>> files. As descibed, this is happening because we reading data past the
->>> end of the stats counters array.
->>>
->>>
->>>> I think maybe we should populate the currently NULL entries in the
->>>> string[] arrays and simplify the code here, e.g.,
->>>>
->>>> static const char *aer_correctable_error_string[] = {
->>>>        "RxErr",                        /* Bit Position 0       */
->>>>        "dev_cor_errs_bit[1]",
->>>> 	...
->>>>
->>>>  if (stats[i])
->>>>    len += sysfs_emit_at(buf, len, "%s %llu\n", strings_array[i], stats[i]);
->>>
->>> Doing it this way will change the output format. In this case we will show
->>> stats only if their value is greater than zero. The current code shows all the
->>> stats those have names (regardless of their value) plus those have non-zero
->>> values.
->>>
->>>>> @@ -1342,6 +1342,11 @@ static int aer_probe(struct pcie_device *dev)
->>>>>  	struct device *device = &dev->device;
->>>>>  	struct pci_dev *port = dev->port;
->>>>>
->>>>> +	BUILD_BUG_ON(ARRAY_SIZE(aer_correctable_error_string) <
->>>>> +		     AER_MAX_TYPEOF_COR_ERRS);
->>>>> +	BUILD_BUG_ON(ARRAY_SIZE(aer_uncorrectable_error_string) <
->>>>> +		     AER_MAX_TYPEOF_UNCOR_ERRS);
->>>>
->>>> And make these check for "!=" instead of "<".
->>
->> I am happy to remove these BUILD_BUG_ON() if you think it is a good
->> idea to do so.
+I think the problem is that the machine is going via kernel_power_off(),
+not sys_reboot(), and so legacy_pm_power_off() has not been registered.
+
+If I just put the core_initcall back then it works as before. Not sure
+if that's a safe change in general though.
+
+cheers
+
+
+
+> Fixes: 0e2110d2e910 ("kernel/reboot: Add kernel_can_power_off()")
+> Reported-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+> ---
+>  kernel/reboot.c | 33 +++++++++++++++++----------------
+>  1 file changed, 17 insertions(+), 16 deletions(-)
 >
-> I think it's good to enforce correctness there somehow, so let's leave
-> them there unless somebody has a better idea.
->
->>> This will require unnecessarily extending stats arrays to have 32 entries
->>> in order to match names arrays. If you don't feel strogly about changing
->>> "<" to "!=", I prefer to keep the code as it is. 
+> diff --git a/kernel/reboot.c b/kernel/reboot.c
+> index 0bdc64ecf4f6..a091145ee710 100644
+> --- a/kernel/reboot.c
+> +++ b/kernel/reboot.c
+> @@ -569,22 +569,6 @@ static int legacy_pm_power_off(struct sys_off_data *data)
+>  	return NOTIFY_DONE;
+>  }
+>  
+> -/*
+> - * Register sys-off handlers for legacy PM callbacks. This allows legacy
+> - * PM callbacks co-exist with the new sys-off API.
+> - *
+> - * TODO: Remove legacy handlers once all legacy PM users will be switched
+> - *       to the sys-off based APIs.
+> - */
+> -static int __init legacy_pm_init(void)
+> -{
+> -	register_sys_off_handler(SYS_OFF_MODE_POWER_OFF, SYS_OFF_PRIO_DEFAULT,
+> -				 legacy_pm_power_off, NULL);
+> -
+> -	return 0;
+> -}
+> -core_initcall(legacy_pm_init);
+> -
+>  static void do_kernel_power_off_prepare(void)
+>  {
+>  	blocking_notifier_call_chain(&power_off_prep_handler_list, 0, NULL);
+> @@ -646,6 +630,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>  		void __user *, arg)
+>  {
+>  	struct pid_namespace *pid_ns = task_active_pid_ns(current);
+> +	struct sys_off_handler *sys_off = NULL;
+>  	char buffer[256];
+>  	int ret = 0;
+>  
+> @@ -670,6 +655,21 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>  	if (ret)
+>  		return ret;
+>  
+> +	/*
+> +	 * Register sys-off handlers for legacy PM callback. This allows
+> +	 * legacy PM callbacks temporary co-exist with the new sys-off API.
+> +	 *
+> +	 * TODO: Remove legacy handlers once all legacy PM users will be
+> +	 *       switched to the sys-off based APIs.
+> +	 */
+> +	if (pm_power_off) {
+> +		sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
+> +						   SYS_OFF_PRIO_DEFAULT,
+> +						   legacy_pm_power_off, NULL);
+> +		if (IS_ERR(sys_off))
+> +			return PTR_ERR(sys_off);
+> +	}
+> +
+>  	/* Instead of trying to make the power_off code look like
+>  	 * halt when pm_power_off is not set do it the easy way.
+>  	 */
+> @@ -727,6 +727,7 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+>  		break;
+>  	}
+>  	mutex_unlock(&system_transition_mutex);
+> +	unregister_sys_off_handler(sys_off);
+>  	return ret;
+>  }
+>  
+> -- 
+> 2.35.3
