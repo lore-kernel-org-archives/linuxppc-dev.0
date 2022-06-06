@@ -4,63 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39D01C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 01:43:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926B2C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 03:37:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LGbqD3Qd5z3bnd
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 11:43:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LGfMS09Bkz3bp3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 13:37:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TkvpOq9I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=dZc4jxqz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=cgel.zte@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TkvpOq9I;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=dZc4jxqz;
 	dkim-atps=neutral
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGbpX3ZR6z30F8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2022 11:42:36 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654479764; x=1686015764;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=89fRXrMCu5gUf0qTnTDqrSzw14ZMCulzmcEHQKRg2Kw=;
-  b=TkvpOq9IaBz7TMR9RdHdeOLDtXxG9jWCzbNqDvUAW32iLb46lXASJ2m1
-   2iKoTg3mAblAJAOZ8KF5OL/AYj4/4CmeJrhuDhS39iyHwZO85uUQl8cLT
-   0BCN5GOgLCDaCfgNWzuvqu+bktA1ecrxzYXr0Nc2LQARlAzV7chuJ0Tzb
-   QhpWxG8we/eKZIZ47RWtd9y+OCtGbQbWf0kltNZLJ3Ir654tuD1RbEm7y
-   uojv4yelQDf/oax4hrCzRSLk/sPjEwsiJ6XGFER1ZbA1EUrj3dUqXTo5G
-   h1biUPHu4l48f7P05gyfRx+JN4Hk7aI6HZVT5gHfIQxbJyRhvsbtjUMXl
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10369"; a="274147325"
-X-IronPort-AV: E=Sophos;i="5.91,280,1647327600"; 
-   d="scan'208";a="274147325"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Jun 2022 18:42:06 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,280,1647327600"; 
-   d="scan'208";a="564665634"
-Received: from lkp-server01.sh.intel.com (HELO 60dabacc1df6) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 05 Jun 2022 18:42:03 -0700
-Received: from kbuild by 60dabacc1df6 with local (Exim 4.95)
-	(envelope-from <lkp@intel.com>)
-	id 1ny1ko-000COk-QU;
-	Mon, 06 Jun 2022 01:42:02 +0000
-Date: Mon, 6 Jun 2022 09:41:56 +0800
-From: kernel test robot <lkp@intel.com>
-To: Laurent Dufour <ldufour@linux.ibm.com>, mpe@ellerman.id.au,
-	benh@kernel.crashing.org, paulus@samba.org, nathanl@linux.ibm.com,
-	haren@linux.vnet.ibm.com, npiggin@gmail.com
-Subject: Re: [PATCH 2/2] powerpc/mobility: disabling hard lockup watchdog
- during LPM
-Message-ID: <202206060910.rYNTFqdI-lkp@intel.com>
-References: <20220601155315.35109-3-ldufour@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGfLh435Dz30Bl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2022 13:37:15 +1000 (AEST)
+Received: by mail-pj1-x1033.google.com with SMTP id o6-20020a17090a0a0600b001e2c6566046so16812984pjo.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jun 2022 20:37:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=NLfIMDkhs8AhvETPVq+iAr24dyts/oFKMffXp6KK4SA=;
+        b=dZc4jxqzQaYU6bNMX/oVrNpUuokhFNbSbjUF4Y4tn2uSgQi1wHF3KHqBN33PkyCgaC
+         o7U9LIU2UUUYS1Pwu0A3M3cuGouUxUjzLuVyKc2wAC54r9ZJ8Qgx8S58EbPPGJTvhzj2
+         nM+BTiEUYm/8FsYSHj5CvG3sdN4NGKGAJeNOc9EHx1kAgnAMadQUI/OAyMHosvsUiC4p
+         kClEL8slmh2XMxZ29Y2e2BTs8KFlRoBq+prV65AP55IP0m7I35s3Bm5wtM/92RllXP24
+         kp7BPPoNdsdSCvD05MwhaiAEesC289nQTsRnpEfyn7OLr+2a6MPp+7gehUyVtKnVbNn0
+         mf/A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=NLfIMDkhs8AhvETPVq+iAr24dyts/oFKMffXp6KK4SA=;
+        b=juXdAaawR1Lp1nm6UDdn/BsKKw8hjN0bv0X0FYEOJp3b2BiqhI4vV+lvZhg77rfTsI
+         y+bGesUNED4Zhcz88sKuUlGxfn2ExFtk4QJtMmO16DfqXdSsOLAcX/XyebIaCEv/b0CC
+         X1xiGO7k9bf0qApYRwrceKm7DqwIUtIZSxFwjrD5LzQtg2B04rfYBW1R9EpMFlFRMi0h
+         thT3Yl7eoPndhwbVeaHKE7vu5IULM8MR/NnLu9NJMDmood2EWuNZnmMtZ7lo6eoMx+j2
+         eqqJUL5PVHmpl33tX20wFsxfTcMFfd2kUzZ81Hs2Uh/7o17X/SCEqaLC5Itvp6jfbFkj
+         2LpQ==
+X-Gm-Message-State: AOAM533+EjuEbKNW2PEdVm+U8LT/IujbItlQyC3Dg8J+IsY7Y/WH2vvE
+	orCf6z9hwqmg77wx89obwjY=
+X-Google-Smtp-Source: ABdhPJzHskn/0nDuJUNh+kkv/i2TwqL9zwM4+pDSLRb9NT1RjQFYEHsVEWABjF0pgTAaI31VavBwGw==
+X-Received: by 2002:a17:90b:4b4b:b0:1dc:8724:3f75 with SMTP id mi11-20020a17090b4b4b00b001dc87243f75mr58394066pjb.178.1654486630864;
+        Sun, 05 Jun 2022 20:37:10 -0700 (PDT)
+Received: from localhost.localdomain ([193.203.214.57])
+        by smtp.gmail.com with ESMTPSA id m10-20020a170902db0a00b0015ee985999dsm9443596plx.97.2022.06.05.20.37.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 05 Jun 2022 20:37:10 -0700 (PDT)
+From: cgel.zte@gmail.com
+X-Google-Original-From: chi.minghao@zte.com.cn
+To: shengjiu.wang@gmail.com
+Subject: [PATCH V2] ASoC: imx-audmux: remove unnecessary check of clk_disable_unprepare/clk_prepare_enable
+Date: Mon,  6 Jun 2022 03:37:05 +0000
+Message-Id: <20220606033705.291048-1-chi.minghao@zte.com.cn>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220601155315.35109-3-ldufour@linux.ibm.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,82 +75,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@lists.01.org, linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Xiubo.Lee@gmail.com, linuxppc-dev@lists.ozlabs.org, Zeal Robot <zealci@zte.com.cn>, lgirdwood@gmail.com, Minghao Chi <chi.minghao@zte.com.cn>, perex@perex.cz, nicoleotsuka@gmail.com, broonie@kernel.org, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Laurent,
+From: Minghao Chi <chi.minghao@zte.com.cn>
 
-Thank you for the patch! Yet something to improve:
+Because clk_disable_unprepare/clk_prepare_enable already checked NULL clock
+parameter, so the additional checks are unnecessary, just remove them.
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v5.18 next-20220603]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch]
+Reported-by: Zeal Robot <zealci@zte.com.cn>
+Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+---
+v1->v2:
+	remove the check of audmux_clk before "clk_prepare_enable"
+ sound/soc/fsl/imx-audmux.c | 22 ++++++++--------------
+ 1 file changed, 8 insertions(+), 14 deletions(-)
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Laurent-Dufour/Disabling-NMI-watchdog-during-LPM-s-memory-transfer/20220601-235741
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc64-randconfig-r002-20220605 (https://download.01.org/0day-ci/archive/20220606/202206060910.rYNTFqdI-lkp@intel.com/config)
-compiler: powerpc64-linux-gcc (GCC) 11.3.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/d409d8549db37257e33691523100679a23cfd887
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Laurent-Dufour/Disabling-NMI-watchdog-during-LPM-s-memory-transfer/20220601-235741
-        git checkout d409d8549db37257e33691523100679a23cfd887
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.3.0 make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag where applicable
-Reported-by: kernel test robot <lkp@intel.com>
-
-All errors (new ones prefixed by >>):
-
-   powerpc64-linux-ld: warning: discarding dynamic section .glink
-   powerpc64-linux-ld: warning: discarding dynamic section .plt
-   powerpc64-linux-ld: linkage table error against `watchdog_nmi_stop'
-   powerpc64-linux-ld: stubs don't match calculated size
-   powerpc64-linux-ld: can not build stubs: bad value
-   powerpc64-linux-ld: arch/powerpc/platforms/pseries/mobility.o: in function `.pseries_migrate_partition':
->> arch/powerpc/platforms/pseries/mobility.c:705: undefined reference to `.watchdog_nmi_stop'
->> powerpc64-linux-ld: arch/powerpc/platforms/pseries/mobility.c:715: undefined reference to `.watchdog_nmi_start'
-
-
-vim +705 arch/powerpc/platforms/pseries/mobility.c
-
-   693	
-   694	static int pseries_migrate_partition(u64 handle)
-   695	{
-   696		int ret;
-   697	
-   698		ret = wait_for_vasi_session_suspending(handle);
-   699		if (ret)
-   700			return ret;
-   701	
-   702		vas_migration_handler(VAS_SUSPEND);
-   703	
-   704		pr_debug("Disabling the NMI watchdog\n");
- > 705		watchdog_nmi_stop();
-   706	
-   707		ret = pseries_suspend(handle);
-   708		if (ret == 0) {
-   709			post_mobility_fixup();
-   710			wait_for_vasi_session_completed(handle);
-   711		} else
-   712			pseries_cancel_migration(handle, ret);
-   713	
-   714		pr_debug("Enabling the NMI watchdog again\n");
- > 715		watchdog_nmi_start();
-   716	
-   717		vas_migration_handler(VAS_RESUME);
-   718	
-   719		return ret;
-   720	}
-   721	
-
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index dfa05d40b276..3ba82adace42 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -62,17 +62,14 @@ static ssize_t audmux_read_file(struct file *file, char __user *user_buf,
+ 	uintptr_t port = (uintptr_t)file->private_data;
+ 	u32 pdcr, ptcr;
+ 
+-	if (audmux_clk) {
+-		ret = clk_prepare_enable(audmux_clk);
+-		if (ret)
+-			return ret;
+-	}
++	ret = clk_prepare_enable(audmux_clk);
++	if (ret)
++		return ret;
+ 
+ 	ptcr = readl(audmux_base + IMX_AUDMUX_V2_PTCR(port));
+ 	pdcr = readl(audmux_base + IMX_AUDMUX_V2_PDCR(port));
+ 
+-	if (audmux_clk)
+-		clk_disable_unprepare(audmux_clk);
++	clk_disable_unprepare(audmux_clk);
+ 
+ 	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+ 	if (!buf)
+@@ -209,17 +206,14 @@ int imx_audmux_v2_configure_port(unsigned int port, unsigned int ptcr,
+ 	if (!audmux_base)
+ 		return -ENOSYS;
+ 
+-	if (audmux_clk) {
+-		ret = clk_prepare_enable(audmux_clk);
+-		if (ret)
+-			return ret;
+-	}
++	ret = clk_prepare_enable(audmux_clk);
++	if (ret)
++		return ret;
+ 
+ 	writel(ptcr, audmux_base + IMX_AUDMUX_V2_PTCR(port));
+ 	writel(pdcr, audmux_base + IMX_AUDMUX_V2_PDCR(port));
+ 
+-	if (audmux_clk)
+-		clk_disable_unprepare(audmux_clk);
++	clk_disable_unprepare(audmux_clk);
+ 
+ 	return 0;
+ }
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.25.1
+
+
