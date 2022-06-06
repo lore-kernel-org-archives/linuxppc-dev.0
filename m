@@ -4,53 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16E67C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 08:47:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CD21C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 08:49:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LGnDd4VZ8z3cF8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 18:47:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LGnH16skLz3bp5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 18:49:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=mNWUkWHT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=a+vuSOi6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=clement.leger@bootlin.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=mNWUkWHT;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=a+vuSOi6;
 	dkim-atps=neutral
-Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::227])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGnCv5Y9yz2xtt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2022 18:46:48 +1000 (AEST)
-Received: (Authenticated sender: clement.leger@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPSA id F32042000A;
-	Mon,  6 Jun 2022 08:46:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1654505199;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=75qgHKwIKgnIiICyryatdq8N2BG0ZYToQkeJFKYpOyQ=;
-	b=mNWUkWHTOojrTe6HLV5mYj/qDyPD6Vjoj1Th6VxIj0hphRoWzffGlNykUXVPF6H2qtdv2x
-	ZWZJvlotPhnOqS+XIidmjHGe5FlnuRprs++sr89G5cCNuleyoMKzZ4d2ak9ajaNdWx6PX6
-	IR1Ne6HRAJXVFlXplfiU7z83IfU4d0HdTXDlNgdS+mdlHnw4z6/wdTgOE9UbvAC6O7BCBS
-	cwAxCXdwozmZYTkHroRsjoradSXM9mog5qt7rSSZ2E8hkT13/hce1tI/r1jsu06ZqqsivV
-	m+ufnT/aWk27MkbiBzwPIBhm8bmow8PpVH1RDlp2ZDA6xz4B5i7getTbRKJTgA==
-Date: Mon, 6 Jun 2022 10:45:31 +0200
-From: =?UTF-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <clement.leger@bootlin.com>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 4/4] powerpc/pseries: use of_property_alloc/free()
- and of_node_alloc()
-Message-ID: <20220606104531.6ec997ef@fixe.home>
-In-Reply-To: <20220603201407.GA688883-robh@kernel.org>
-References: <20220601081801.348571-1-clement.leger@bootlin.com>
-	<20220601081801.348571-5-clement.leger@bootlin.com>
-	<20220603201407.GA688883-robh@kernel.org>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.1.0 (GTK 3.24.34; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGcJl50N7z304G
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jun 2022 12:05:25 +1000 (AEST)
+Received: by mail-lf1-x12d.google.com with SMTP id j10so21116580lfe.12
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Jun 2022 19:05:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=usJf20AAKPNtkFpO9IZiGVXBDrUnP/ALbP63KHhfdLQ=;
+        b=a+vuSOi68MhI1PKcYt3CMKt9Uf57841GUcl9gCLFK4tfHAJN48nnCmiwniiVs9BuRd
+         yVZLjQ2Kr/LDR1XsRn/V22KGLrjUEHH+ZzYFAg/O8jSBgnHWPPFak/0ZzhGp6h8a14x3
+         2HV9wB1P5QXJi9QpbM6nc4o9wKsQc+NUvZSdGTSsYleyR2MdLV/vcPErSZC9yXqqZ01v
+         xVBKscWN7yNui6uyk4VDE1KLEOt3PZUkjDphq1o4N5ZDjk3eetObHHVfXgJF3IAEapY7
+         QElmOyA0NIFyWqHrxSklUCgxVvhL2tGqDDU6+oGP7ACSFDt6zgNt3fq1XBNo0ZHKkWo4
+         Zhsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=usJf20AAKPNtkFpO9IZiGVXBDrUnP/ALbP63KHhfdLQ=;
+        b=hhDp3hpDHLcbvydL9rx1yS/95JWi2iiXVln5io8Enw6Bc41ZEzOZ8Pg+MFl2sdkWgR
+         aQnWgAi8IEbtTHJFtUqyI4y9K8NKCHpPptOu9MYKACmdcTUiK/4P/p6AitFwun5JvN88
+         csxSZIsOxF0eQgQfpYf56WrJWDDulnY1J8kHC+26n44I64iuXThlwzveTupzcPfd8L+a
+         esPJrWp9dXclOoOcjbYv30IxDbbSgAhx479G9wEHQ2oIbKr7o8nibV2wSOS5Qjeapy3A
+         AAvcsqkO1ybJEOMCtw6Tlz5DaDfzBzyCZ7FexkwHAuke4IoFSkkm1X0vtEQsKttktP5k
+         uglw==
+X-Gm-Message-State: AOAM530IZMTQAs/j+6bjpCXdcDYnC7BSkkJ2n2LtreQhslE1qs2Xr0mE
+	SII5940Zin7ZqStTgnRnWegKArMiJ4gTczjVb0Q=
+X-Google-Smtp-Source: ABdhPJwBmXnUl2NGPk5lZ8R0xen/iXYV2x5d7WrIVpi6p25LtCkBtFqrb5Op3lqB6XE56tNT16CkC2WEnU654rAl2JY=
+X-Received: by 2002:a19:6445:0:b0:479:141c:cb5b with SMTP id
+ b5-20020a196445000000b00479141ccb5bmr11724447lfj.280.1654481121323; Sun, 05
+ Jun 2022 19:05:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+References: <20220602071448.277968-1-chi.minghao@zte.com.cn>
+In-Reply-To: <20220602071448.277968-1-chi.minghao@zte.com.cn>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Mon, 6 Jun 2022 10:05:10 +0800
+Message-ID: <CAA+D8ANagLtpLHP7PpqoSEHkNkCg+Xq-j1QNzoL2SWw1ko_r5g@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: imx-audmux: remove unnecessary check of clk_disable_unprepare
+To: cgel.zte@gmail.com
+Content-Type: multipart/alternative; boundary="000000000000863c1105e0bde762"
+X-Mailman-Approved-At: Mon, 06 Jun 2022 18:49:00 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,171 +73,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Hildenbrand <david@redhat.com>, Paul Mackerras <paulus@samba.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Ohhoon Kwon <ohoono.kwon@samsung.com>, Frank Rowand <frowand.list@gmail.com>, Horatiu Vultur <horatiu.vultur@microchip.com>, Steen Hegelund <steen.hegelund@microchip.com>, Daniel Henrique Barboza <danielhb413@gmail.com>, YueHaibing <yuehaibing@huawei.com>, Bjorn Helgaas <helgaas@kernel.org>, Nathan Lynch <nathanl@linux.ibm.com>, devicetree@vger.kernel.org, Allan Nielsen <allan.nielsen@microchip.com>, Laurent Dufour <ldufour@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>, linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Lizhi Hou <lizhi.hou@xilinx.com>
+Cc: alsa-devel@alsa-project.org, linux-kernel <linux-kernel@vger.kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Zeal Robot <zealci@zte.com.cn>, Liam Girdwood <lgirdwood@gmail.com>, Minghao Chi <chi.minghao@zte.com.cn>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le Fri, 3 Jun 2022 15:14:07 -0500,
-Rob Herring <robh@kernel.org> a =C3=A9crit :
+--000000000000863c1105e0bde762
+Content-Type: text/plain; charset="UTF-8"
 
-> >  static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccw=
-a)
-> >  {
-> > -	struct device_node *dn;
-> >  	const char *name;
-> > =20
-> > -	dn =3D kzalloc(sizeof(*dn), GFP_KERNEL);
-> > -	if (!dn)
-> > -		return NULL;
-> > -
-> >  	name =3D (const char *)ccwa + be32_to_cpu(ccwa->name_offset);
-> > -	dn->full_name =3D kstrdup(name, GFP_KERNEL);
-> > -	if (!dn->full_name) {
-> > -		kfree(dn);
-> > -		return NULL;
-> > -	}
-> > =20
-> > -	of_node_set_flag(dn, OF_DYNAMIC);
-> > -	of_node_init(dn);
-> > -
-> > -	return dn;
-> > +	return of_node_alloc(name, GFP_KERNEL); =20
->=20
-> Do you have any need for different flags? I can't really see a need for=20
-> atomic or dma allocs or ???, so drop it I think.
+On Thu, Jun 2, 2022 at 3:14 PM <cgel.zte@gmail.com> wrote:
 
-Hum no, i copied this behavior from an existing function. I'll remove
-that.
+> From: Minghao Chi <chi.minghao@zte.com.cn>
+>
+> Because clk_disable_unprepare already checked NULL clock
+> parameter, so the additional checks are unnecessary, just remove them.
+>
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: Minghao Chi <chi.minghao@zte.com.cn>
+> ---
+>  sound/soc/fsl/imx-audmux.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+> index dfa05d40b276..f434fa7decc1 100644
+> --- a/sound/soc/fsl/imx-audmux.c
+> +++ b/sound/soc/fsl/imx-audmux.c
+> @@ -71,8 +71,7 @@ static ssize_t audmux_read_file(struct file *file, char
+> __user *user_buf,
+>         ptcr = readl(audmux_base + IMX_AUDMUX_V2_PTCR(port));
+>         pdcr = readl(audmux_base + IMX_AUDMUX_V2_PDCR(port));
+>
+> -       if (audmux_clk)
+> -               clk_disable_unprepare(audmux_clk);
+> +       clk_disable_unprepare(audmux_clk);
+>
 
->=20
-> >  }
-> > =20
-> >  static void dlpar_free_one_cc_node(struct device_node *dn)
-> > @@ -102,11 +66,10 @@ static void dlpar_free_one_cc_node(struct device_n=
-ode *dn)
-> >  	while (dn->properties) {
-> >  		prop =3D dn->properties;
-> >  		dn->properties =3D prop->next;
-> > -		dlpar_free_cc_property(prop);
-> > +		of_property_free(prop); =20
->=20
-> We should be able to just put the node and all the properties already=20
-> attached will be freed.
-
-Indeed !
-
->=20
-> Looking at the history of this code, it originally did the kref_init=20
-> much later in dlpar_attach_node(). So there was a window of allocating=20
-> the node and adding properties where you'd need to manually free=20
-> everything. Now that the node is referenced from the start, a put should=
-=20
-> free everything.
->=20
-> > @@ -91,9 +82,7 @@ static void release_prop_list(const struct property *=
-prop)
-> >  	struct property *next;
-> >  	for (; prop; prop =3D next) {
-> >  		next =3D prop->next;
-> > -		kfree(prop->name);
-> > -		kfree(prop->value);
-> > -		kfree(prop);
-> > +		of_property_free(prop); =20
->=20
-> Looks like you need this because code does: alloc properties, alloc=20
-> node, add properties, attach node. It would need to be refactored to=20
-> alloc the node first, but that's a bit more complex needing someone to=20
-> test on pSeries.
-
-Acked.
-
->=20
-> >  	}
-> > =20
-> >  }
-> > @@ -167,27 +156,17 @@ static char * parse_next_property(char *buf, char=
- *end, char **name, int *length
-> >  static struct property *new_property(const char *name, const int lengt=
-h,
-> >  				     const unsigned char *value, struct property *last)
-> >  {
-> > -	struct property *new =3D kzalloc(sizeof(*new), GFP_KERNEL);
-> > +	struct property *prop;
-> > =20
-> > -	if (!new)
-> > +	prop =3D of_property_alloc(name, NULL, length + 1, GFP_KERNEL);
-> > +	if (!prop)
-> >  		return NULL;
-> > =20
-> > -	if (!(new->name =3D kstrdup(name, GFP_KERNEL)))
-> > -		goto cleanup;
-> > -	if (!(new->value =3D kmalloc(length + 1, GFP_KERNEL)))
-> > -		goto cleanup;
-> > -
-> > -	memcpy(new->value, value, length);
-> > -	*(((char *)new->value) + length) =3D 0;
-> > -	new->length =3D length;
-> > -	new->next =3D last;
-> > -	return new;
-> > -
-> > -cleanup:
-> > -	kfree(new->name);
-> > -	kfree(new->value);
-> > -	kfree(new);
-> > -	return NULL;
-> > +	memcpy(prop->value, value, length);
-> > +	*(((char *)prop->value) + length) =3D 0; =20
->=20
-> Looks to me like this could be avoided with this change:
->=20
-> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/pla=
-tforms/pseries/reconfig.c
-> index cad7a0c93117..614753fc5f27 100644
-> --- a/arch/powerpc/platforms/pseries/reconfig.c
-> +++ b/arch/powerpc/platforms/pseries/reconfig.c
-> @@ -148,7 +148,7 @@ static char * parse_next_property(char *buf, char *en=
-d, char **name, int *length
->         /* now we're on the value */
->         *value =3D tmp;
->         tmp +=3D *length;
-> -       if (tmp > end) {
-> +       if (tmp >=3D end) {
->                 printk(KERN_ERR "property parse failed in %s at line %d\n=
-",
->                        __func__, __LINE__);
->                 return NULL;
-> @@ -158,6 +158,7 @@ static char * parse_next_property(char *buf, char *en=
-d, char **name, int *length
->                        __func__, __LINE__);
->                 return NULL;
->         }
-> +       *tmp =3D '\0';
->         tmp++;
-> =20
->         /* and now we should be on the next name, or the end */
->=20
->=20
-> Based on the comments, 'buf' should be nul terminated, so I would think=20
-> that tmp =3D=3D end would be an error. But I really don't know.
->=20
-> Really need some pSeries people to comment on all this.
->=20
-> Another option is if value is NULL, then of_property_alloc() should=20
-> ensure the buffer is zeroed. Then you just need the memcpy.
-
-Probably looks like a safe behavior anyway to zero the value buffer.
-I'll add that.
-
-Thanks,
-
-Cl=C3=A9ment
-
->=20
-> Rob
+I think the check of audmux_clk before "clk_prepare_enable"  also
+can be removed?
 
 
 
---=20
-Cl=C3=A9ment L=C3=A9ger,
-Embedded Linux and Kernel engineer at Bootlin
-https://bootlin.com
+>         buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>         if (!buf)
+> @@ -218,8 +217,7 @@ int imx_audmux_v2_configure_port(unsigned int port,
+> unsigned int ptcr,
+>         writel(ptcr, audmux_base + IMX_AUDMUX_V2_PTCR(port));
+>         writel(pdcr, audmux_base + IMX_AUDMUX_V2_PDCR(port));
+>
+> -       if (audmux_clk)
+> -               clk_disable_unprepare(audmux_clk);
+> +       clk_disable_unprepare(audmux_clk);
+>
+
+ditto
+
+best regards
+wang shengjiu
+
+>
+>         return 0;
+>  }
+> --
+> 2.25.1
+>
+>
+>
+
+--000000000000863c1105e0bde762
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Thu, Jun 2, 2022 at 3:14 PM &lt;<a=
+ href=3D"mailto:cgel.zte@gmail.com">cgel.zte@gmail.com</a>&gt; wrote:<br></=
+div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;bor=
+der-left:1px solid rgb(204,204,204);padding-left:1ex">From: Minghao Chi &lt=
+;<a href=3D"mailto:chi.minghao@zte.com.cn" target=3D"_blank">chi.minghao@zt=
+e.com.cn</a>&gt;<br>
+<br>
+Because clk_disable_unprepare already checked NULL clock<br>
+parameter, so the additional checks are unnecessary, just remove them.<br>
+<br>
+Reported-by: Zeal Robot &lt;<a href=3D"mailto:zealci@zte.com.cn" target=3D"=
+_blank">zealci@zte.com.cn</a>&gt;<br>
+Signed-off-by: Minghao Chi &lt;<a href=3D"mailto:chi.minghao@zte.com.cn" ta=
+rget=3D"_blank">chi.minghao@zte.com.cn</a>&gt;<br>
+---<br>
+=C2=A0sound/soc/fsl/imx-audmux.c | 6 ++----<br>
+=C2=A01 file changed, 2 insertions(+), 4 deletions(-)<br>
+<br>
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c<br>
+index dfa05d40b276..f434fa7decc1 100644<br>
+--- a/sound/soc/fsl/imx-audmux.c<br>
++++ b/sound/soc/fsl/imx-audmux.c<br>
+@@ -71,8 +71,7 @@ static ssize_t audmux_read_file(struct file *file, char _=
+_user *user_buf,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 ptcr =3D readl(audmux_base + IMX_AUDMUX_V2_PTCR=
+(port));<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 pdcr =3D readl(audmux_base + IMX_AUDMUX_V2_PDCR=
+(port));<br>
+<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0if (audmux_clk)<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0clk_disable_unprepa=
+re(audmux_clk);<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0clk_disable_unprepare(audmux_clk);<br></blockqu=
+ote><div><br></div><div>I think the check of audmux_clk before &quot;clk_pr=
+epare_enable&quot;=C2=A0 also<br></div><div>can be removed?</div><div><br><=
+/div><div><br></div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0=
+px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 buf =3D kmalloc(PAGE_SIZE, GFP_KERNEL);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (!buf)<br>
+@@ -218,8 +217,7 @@ int imx_audmux_v2_configure_port(unsigned int port, uns=
+igned int ptcr,<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 writel(ptcr, audmux_base + IMX_AUDMUX_V2_PTCR(p=
+ort));<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 writel(pdcr, audmux_base + IMX_AUDMUX_V2_PDCR(p=
+ort));<br>
+<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0if (audmux_clk)<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0clk_disable_unprepa=
+re(audmux_clk);<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0clk_disable_unprepare(audmux_clk);<br></blockqu=
+ote><div><br></div><div>ditto</div><div><br></div><div><div>best regards</d=
+iv><div>wang shengjiu</div></div><blockquote class=3D"gmail_quote" style=3D=
+"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-le=
+ft:1ex">
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 return 0;<br>
+=C2=A0}<br>
+-- <br>
+2.25.1<br>
+<br>
+<br>
+</blockquote></div></div>
+
+--000000000000863c1105e0bde762--
