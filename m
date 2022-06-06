@@ -4,87 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7EC3C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 20:01:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4FBAC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 23:14:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LH49t6SThz30Dp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 06:01:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JOBaYIR4;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JOBaYIR4;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LH8TF1XPFz3brd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 09:14:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gonehiking.org (client-ip=64.68.200.34; helo=mailout.easymail.ca; envelope-from=khalid@gonehiking.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 323 seconds by postgrey-1.36 at boromir; Tue, 07 Jun 2022 02:40:58 AEST
+Received: from mailout.easymail.ca (mailout.easymail.ca [64.68.200.34])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LH4954nYvz2yn3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 06:00:24 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 256JTG2Z007427;
-	Mon, 6 Jun 2022 20:00:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=fXuykce64vZlAH9rivZ/1ZhrX5e9mctMF0eKqPMr4c8=;
- b=JOBaYIR4v+UriCinwnJVhpv+NHj8b+pbQ9/XKSqo1zaF80LU8Sei4gMdRBJEwxV1P50h
- +nx3veULXfThfv7+y5pSCZ2bWNl4BfB1t7UsIz4MaeakVM8jr82uRI4AA/E/3vyCPBZT
- qrZwwEKdTKNIf0qrycHUhnQZI86JVsgJg6Z/Avh8PnxT28UhoNL0CwYI6WdY+4YRGKpj
- JGozGTss4Tl9bVyxi+xdW0wJ6zKUmg5NG3VZlDLXOjAC/uO7kJmVpTlY1Zlg4OE8jEeu
- OLxvl38RKQbg83SrUUdburxvy0aDQ8I0c4H683y20DbXoTPJC/8pQqm/2coBDeiIATKo ow== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ghqsjgfhv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jun 2022 20:00:17 +0000
-Received: from m0098414.ppops.net (m0098414.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 256JnXUr014489;
-	Mon, 6 Jun 2022 20:00:16 GMT
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ghqsjgfhf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jun 2022 20:00:16 +0000
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
-	by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 256JZIT8020556;
-	Mon, 6 Jun 2022 20:00:16 GMT
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com [9.57.198.23])
-	by ppma02dal.us.ibm.com with ESMTP id 3gfy1abhe9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 06 Jun 2022 20:00:16 +0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com [9.57.199.109])
-	by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 256K0FCD34930984
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 6 Jun 2022 20:00:15 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 56DBB112062;
-	Mon,  6 Jun 2022 20:00:15 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 18A06112063;
-	Mon,  6 Jun 2022 20:00:15 +0000 (GMT)
-Received: from localhost (unknown [9.211.52.224])
-	by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
-	Mon,  6 Jun 2022 20:00:14 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH 0/2] Disabling NMI watchdog during LPM's memory transfer
-In-Reply-To: <666cedea-2dbc-254e-467b-c02a3a2d8795@linux.ibm.com>
-References: <20220601155315.35109-1-ldufour@linux.ibm.com>
- <87a6av0wxk.fsf@linux.ibm.com>
- <666cedea-2dbc-254e-467b-c02a3a2d8795@linux.ibm.com>
-Date: Mon, 06 Jun 2022 15:00:14 -0500
-Message-ID: <874k0x1s1d.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGzky4127z2ygC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 02:40:56 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailout.easymail.ca (Postfix) with ESMTP id F0673E0E57;
+	Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at emo08-pco.easydns.vpn
+Received: from mailout.easymail.ca ([127.0.0.1])
+	by localhost (emo08-pco.easydns.vpn [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id hhyNN48mX6Hb; Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
+Received: from mail.gonehiking.org (unknown [38.15.45.1])
+	by mailout.easymail.ca (Postfix) with ESMTPA id 87721E0E2D;
+	Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
+Received: from [192.168.1.4] (internal [192.168.1.4])
+	by mail.gonehiking.org (Postfix) with ESMTP id 689583EF5B;
+	Mon,  6 Jun 2022 10:35:28 -0600 (MDT)
+Message-ID: <d39fc9bb-07c1-ad74-1e89-d2aa80578cd4@gonehiking.org>
+Date: Mon, 6 Jun 2022 10:35:28 -0600
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 9IDLFr5SyVgxc0RzNaHPUDmncQtpI5jI
-X-Proofpoint-ORIG-GUID: EmlhjjKCEEcdrMs65C76h5sxpgN6s-ub
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.517,FMLib:17.11.64.514
- definitions=2022-06-06_06,2022-06-03_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 clxscore=1015
- adultscore=0 mlxscore=0 bulkscore=0 phishscore=0 spamscore=0
- malwarescore=0 priorityscore=1501 lowpriorityscore=0 mlxlogscore=999
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2206060079
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.1
+Subject: Re: [PATCH 5/6] scsi: remove stale BusLogic driver
+Content-Language: en-US
+To: Arnd Bergmann <arnd@kernel.org>
+References: <20220606084109.4108188-1-arnd@kernel.org>
+ <20220606084109.4108188-6-arnd@kernel.org>
+From: Khalid Aziz <khalid@gonehiking.org>
+In-Reply-To: <20220606084109.4108188-6-arnd@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Tue, 07 Jun 2022 09:14:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,149 +56,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, haren@linux.vnet.ibm.com, paulus@samba.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
+Reply-To: khalid@gonehiking.org
+Cc: linux-arch@vger.kernel.org, linux-scsi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-m68k@lists.linux-m68k.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Martyn Welch <martyn@welchs.me.uk>, Manohar Vanga <manohar.vanga@gmail.com>, linuxppc-dev@lists.ozlabs.org, Denis Efremov <efremov@linux.com>, Christoph Hellwig <hch@infradead.org>, iommu@lists.linux-foundation.org, Matt Wang <wwentao@vmware.com>, linux-parisc@vger.kernel.org, linux-alpha@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, "Maciej W . Rozycki" <macro@orcam.me.uk>, Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Laurent Dufour <ldufour@linux.ibm.com> writes:
-> On 02/06/2022, 19:58:31, Nathan Lynch wrote:
->> Laurent Dufour <ldufour@linux.ibm.com> writes:
->>> When a partition is transferred, once it arrives at the destination node,
->>> the partition is active but much of its memory must be transferred from the
->>> start node.
->>>
->>> It depends on the activity in the partition, but the more CPU the partition
->>> has, the more memory to be transferred is likely to be. This causes latency
->>> when accessing pages that need to be transferred, and often, for large
->>> partitions, it triggers the NMI watchdog.
->> 
->> It also triggers warnings from other watchdogs and subsystems that
->> have soft latency requirements  - softlockup, RCU, workqueue. The issue
->> is more general than the NMI watchdog.
->
-> I agree, but, as you can read in the title, this series is focusing on the
-> NMI watchdog which may have some dangerous side effects.
+On 6/6/22 02:41, Arnd Bergmann wrote:
+> From: Arnd Bergmann<arnd@arndb.de>
+> 
+> The BusLogic driver is the last remaining driver that relies on the
+> deprecated bus_to_virt() function, which in turn only works on a few
+> architectures, and is incompatible with both swiotlb and iommu support.
+> 
+> Before commit 391e2f25601e ("[SCSI] BusLogic: Port driver to 64-bit."),
+> the driver had a dependency on x86-32, presumably because of this
+> problem. However, the change introduced another bug that made it still
+> impossible to use the driver on any 64-bit machine.
+> 
+> This was in turn fixed in commit 56f396146af2 ("scsi: BusLogic: Fix
+> 64-bit system enumeration error for Buslogic"), 8 years later.
+> 
+> The fact that this was found at all is an indication that there are
+> users, and it seems that Maciej, Matt and Khalid all have access to
+> this hardware, but if it took eight years to find the problem,
+> it's likely that nobody actually relies on it.
+> 
+> Remove it as part of the global virt_to_bus()/bus_to_virt() removal.
+> If anyone is still interested in keeping this driver, the alternative
+> is to stop it from using bus_to_virt(), possibly along the lines of
+> how dpt_i2o gets around the same issue.
+> 
+> Cc: Maciej W. Rozycki<macro@orcam.me.uk>
+> Cc: Matt Wang<wwentao@vmware.com>
+> Cc: Khalid Aziz<khalid@gonehiking.org>
+> Signed-off-by: Arnd Bergmann<arnd@arndb.de>
+> ---
+>   Documentation/scsi/BusLogic.rst   |  581 ---
+>   Documentation/scsi/FlashPoint.rst |  176 -
+>   MAINTAINERS                       |    7 -
+>   drivers/scsi/BusLogic.c           | 3727 --------------
+>   drivers/scsi/BusLogic.h           | 1284 -----
+>   drivers/scsi/FlashPoint.c         | 7560 -----------------------------
+>   drivers/scsi/Kconfig              |   24 -
+>   7 files changed, 13359 deletions(-)
+>   delete mode 100644 Documentation/scsi/BusLogic.rst
+>   delete mode 100644 Documentation/scsi/FlashPoint.rst
+>   delete mode 100644 drivers/scsi/BusLogic.c
+>   delete mode 100644 drivers/scsi/BusLogic.h
+>   delete mode 100644 drivers/scsi/FlashPoint.c
 
-Sure, I read the subject line. I'm saying that focus may be too narrow.
+I would say no to removing BusLogic driver. Virtualbox is another 
+consumer of this driver. This driver is very old but I would rather fix 
+the issues than remove it until we do not have any users.
 
->
->>> The NMI watchdog causes the CPU stack to dump where it appears to be
->>> stuck. In this case, it does not bring much information since it can happen
->>> during any memory access of the kernel.
->> 
->> When the site of a watchdog backtrace shows a thread stuck on a routine
->> memory access as opposed to something like a lock acquisition, that is
->> actually useful information that shouldn't be discarded. It tells us the
->> platform is failing to adequately virtualize partition memory. This
->> isn't a benign situation and it's likely to unacceptably affect real
->> workloads. The kernel is ideally situated to detect and warn about this.
->> 
->
-> I agree, but the information provided are most of the time misleading,
-> pointing to various part in the kernel where the last page fault of a
-> series generated by the kernel happened. There is no real added value,
-> since this is well known that the memory transfer is introducing latency
-> that is detected by the kernel.
-
-Hmm, I don't understand why it would be considered misleading when the
-stack trace shows where the thread has been stuck. And this behavior of
-the platform, where resolving post-resume memory accesses takes multiple
-seconds under certain conditions has not been well-understood by us
-until recently.
-
-> Furthermore, soft lockups are still
-> triggered and report as well this latency without any side effect.
-
-It's fair to say that the softlockup watchdog does not panic in the
-configurations that our internal test environments happen to use. But
-real users can (and do) enable these:
-
-/proc/sys/kernel/hardlockup_panic
-/proc/sys/kernel/hung_task_panic
-/proc/sys/kernel/panic_on_rcu_stall
-/proc/sys/kernel/softlockup_panic
-
-And if so, they likely expect that the OS will simply panic and reboot
-when a condition arises that causes memory access times to exceed the
-corresponding timeout or threshold. Even during a partition migration.
-
-
->>> In addition, the NMI interrupt mechanism is not secure and can generate a
->>> dump system in the event that the interruption is taken while
->>> MSR[RI]=0.
->> 
->> This sounds like a general problem with that facility that isn't
->> specific to partition migration? Maybe it should be disabled altogether
->> until that can be fixed?
->
-> We already discuss that with Nick and it sounds that it is not so easy to
-> fix that. Furthermore, the NMI watchdog is considered as last option for
-> analyzing a potential dying system. So taking the risk of generating a
-> crash because of the NMI interrupt looks acceptable. But disabling it
-> totally because of that is not the right option.
-
-OK.
-
-> In the LPM's case, the system is dependent on the LPM's latency, it is not
-> really dying or in a really bad shape, so that risk is too expansive.
-
-I would say the partition OS is actually in very bad shape if memory
-accesses are taking dozens of seconds or more. Any real workload is
-likely to be affected to an unacceptable degree. It depends on the
-situation, but some users may prefer a panic+reboot to waiting for the
-situation to resolve. And this change would effectively prevent the
-kernel from carrying out that policy.
-
-> Fixing the latency at the source is definitively the best option, and the
-> PHYP team is already investigating that. But, in the meantime, there is a
-> way to prevent the system to die because of that side effect by disabling
-> the NMI watchdog during the memory transfer.
->
->> 
->>> Given how often hard lockups are detected when transferring large
->>> partitions, it seems best to disable the watchdog NMI until the memory
->>> transfer from the start node is complete.
->> 
->> At this time, I'm far from convinced. Disabling the watchdog is going to
->> make the underlying problems in the platform and/or network harder to
->> understand.
->
-> I was also reluctant, and would like the NMI watchdog to remain active
-> during LPM. But there is currently no other way to work around the LPM's
-> latency, and its potential risk of system crash.
->
-> I've spent a lot of time analyzing many crashes happening during LPM and
-> all of them are now pointing to the NMI watchdog issue. Furthermore, on a
-> system with thousands of CPUs, I saw a system crash because a CPU was not
-> able to respond in time (1s) to the NMI interrupt and thus generate
-> the panic.
->
-> In addition, we now know that a RTAS call, made right after the system is
-> running again on the arrival side, is taking ages and is most of the time
-> triggering the NMI watchdog.
-
-That's good to know.
-
-> There are  ongoing investigations to clarify where and how this latency is
-> happening. I'm not excluding any other issue in the Linux kernel, but right
-> now, this looks to be the best option to prevent system crash during
-> LPM.
-
-It will prevent the likely crash mode for enterprise distros with
-default watchdog tunables that our internal test environments happen to
-use. But if someone were to run the same scenario with softlockup_panic
-enabled, or with the RCU stall timeout lower than the watchdog
-threshold, the failure mode would be different.
-
-Basically I'm saying:
-* Some users may actually want the OS to panic when it's in this state,
-  because their applications can't work correctly.
-* But if we're going to inhibit one watchdog, we should inhibit them
-  all.
-
-I wonder if we should freeze processes across the suspend, thawing them
-on the destination only after the device tree update is complete,
-perhaps even waiting until the VASI state transitions to "Completed".
-Suspending the workload for some time after resume would reduce the
-number of demand faults that have to be serviced. If that provides
-better overall behavior then we could avoid disabling watchdogs.
+Thanks,
+Khalid
