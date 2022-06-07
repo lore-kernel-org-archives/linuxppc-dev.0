@@ -4,47 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5338C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 17:45:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D7FCC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 19:08:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LHd6j5MKlz3bqp
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 03:45:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.176; helo=mail-yw1-f176.google.com; envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-yw1-f176.google.com (mail-yw1-f176.google.com [209.85.128.176])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LHfyN0TLqz3c9Z
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 05:08:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.44; helo=mail-io1-f44.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-io1-f44.google.com (mail-io1-f44.google.com [209.85.166.44])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHd6D1dP5z2xMS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 03:44:51 +1000 (AEST)
-Received: by mail-yw1-f176.google.com with SMTP id 00721157ae682-3135519f95fso13838847b3.6
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2022 10:44:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHfxv4dDcz3bfC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 05:07:46 +1000 (AEST)
+Received: by mail-io1-f44.google.com with SMTP id a10so16502842ioe.9
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jun 2022 12:07:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=W+PiNQ7Ke1EDMoHaTdFM09JbhwxFO++lctg5sJwbwR4=;
-        b=vw1nAjGimq3IFCg3t1vr6tbf4ES9noWeez53LmsRjqtsKy/WZaCEl64MgH0uzO/1ei
-         5LHy9GNX37Q7mdkRlwmAmgnvarWQqQP/iyqRLD3lOtfzYb8/LdqoC5tNvaiP4mmVEpOP
-         3ElhKunacnXkrp6x7XNekAH5oNFQX+4LcLRiyMn4ueLrNdP7zPtr/wgszyUqIC4QXUQI
-         l6i7A34ygGUCAe5iakbtvlju0c9zG3nZkkdVkY0vKDL58uEQk/pewGrXD4VBAwn/LTL1
-         tUz8lc9PAfS5vDKn81cC+FwUkP5aYemziZnvOjW/+uO4bRUzeVOy8es2DXoaPnzUFpkU
-         GIgg==
-X-Gm-Message-State: AOAM5321kO6Hf8ck1DEapKIinqH7c3Sob4NUuBaMj6+vdkx1TkefhtTq
-	BLTFjbXTW0frx+N5s8GIolySw796OUw5xoHTIQ8=
-X-Google-Smtp-Source: ABdhPJwzutUKNflb7PpXgywg1Uv/bvtdxWRNOeG6nVPsQilGXkeQttAkd8clvXym4gpzSPRzewnvcZZ1/ttEcYpnDSk=
-X-Received: by 2002:a05:690c:28b:b0:30c:bcc2:240d with SMTP id
- bf11-20020a05690c028b00b0030cbcc2240dmr34156080ywb.19.1654623888166; Tue, 07
- Jun 2022 10:44:48 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=FfDC8OCE89M5DmQOiwz11rqXI91cPiUhxnizP3Vecs4=;
+        b=19I1I5mvwXv5syYH+DxCyfgfzlWU49q4L0Us3vXO4zxMUwBcmu0DKb6nGK1ZXgWhhH
+         6P0pGaWD3hgVc6hayXnmoZyu6jacsyBUlVC3v+7vExcBN1uyUS6gkdcJjzHj5fmaayxw
+         Ex9i6LkLyrly6WF2KToe1/R0bDExEd5yaJIKRJ066dGiQqSZMRhJihjtznGz/9k+Tus5
+         vltLGlZLG90+n7rtU7M7YIm3Zl4/QCM1d0E2a3w7p8Pm5mLxg7pfTBpUeVmQsLV9Y2/V
+         zz3MkMVhb6fBGXCpoAlolIV3GLi0i7NlCGkrtNFXBqfCDXpG8Qr/L2ueo17en1QZN4pK
+         Retg==
+X-Gm-Message-State: AOAM530b4uQbfmy7nNF5nOxttUzB5WgGOuG0uCi9yuh7f4gBiwydhehh
+	fBIzckdTlW1ETy5xY4nh9g==
+X-Google-Smtp-Source: ABdhPJyXN4BjBm3eZUFDX9fHMePl6YzIdSCERXPSC3Ydq6geCntnC7mEUdXSSQ2BbAKOjP5dYeuqbQ==
+X-Received: by 2002:a05:6638:160a:b0:330:f07b:7c5d with SMTP id x10-20020a056638160a00b00330f07b7c5dmr17052629jas.222.1654628863838;
+        Tue, 07 Jun 2022 12:07:43 -0700 (PDT)
+Received: from robh.at.kernel.org ([64.188.179.251])
+        by smtp.gmail.com with ESMTPSA id k4-20020a926f04000000b002d52f2f5a97sm3143012ilc.35.2022.06.07.12.07.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 07 Jun 2022 12:07:43 -0700 (PDT)
+Received: (nullmailer pid 3646440 invoked by uid 1000);
+	Tue, 07 Jun 2022 19:07:41 -0000
+Date: Tue, 7 Jun 2022 13:07:41 -0600
+From: Rob Herring <robh@kernel.org>
+To: Vaibhav Jain <vaibhav@linux.ibm.com>
+Subject: Re: [PATCH v3] of: check previous kernel's ima-kexec-buffer against
+ memory bounds
+Message-ID: <20220607190741.GA3644258-robh@kernel.org>
+References: <20220531041446.3334259-1-vaibhav@linux.ibm.com>
 MIME-Version: 1.0
-References: <20220606165640.634811-1-dmitry.osipenko@collabora.com>
-In-Reply-To: <20220606165640.634811-1-dmitry.osipenko@collabora.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Tue, 7 Jun 2022 19:44:37 +0200
-Message-ID: <CAJZ5v0icfqdOiPottyc=h6VyagynkbV7-0EqrC+5PZMKV5s6Lg@mail.gmail.com>
-Subject: Re: [PATCH v1] kernel/reboot: Fix powering off using a non-syscall
- code paths
-To: Dmitry Osipenko <dmitry.osipenko@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220531041446.3334259-1-vaibhav@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,135 +62,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>, Ritesh Harjani <ritesh.list@gmail.com>, linux-kernel@vger.kernel.org, Prakhar Srivastava <prsriva@linux.microsoft.com>, Lakshmi Ramasubramanian <nramas@linux.microsoft.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Thiago Jung Bauermann <bauerman@linux.ibm.com>, Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jun 6, 2022 at 6:57 PM Dmitry Osipenko
-<dmitry.osipenko@collabora.com> wrote:
->
-> There are other methods of powering off machine than the reboot syscall.
-> Previously we missed to coved those methods and it created power-off
-> regression for some machines, like the PowerPC e500. Fix this problem
-> by moving the legacy sys-off handler registration to the latest phase
-> of power-off process and making the kernel_can_power_off() to check the
-> legacy pm_power_off presence.
->
-> Tested-by: Michael Ellerman <mpe@ellerman.id.au> # ppce500
-> Reported-by: Michael Ellerman <mpe@ellerman.id.au> # ppce500
-> Fixes: da007f171fc9 ("kernel/reboot: Change registration order of legacy power-off handler")
-> Signed-off-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
+On Tue, 31 May 2022 09:44:46 +0530, Vaibhav Jain wrote:
+> Presently ima_get_kexec_buffer() doesn't check if the previous kernel's
+> ima-kexec-buffer lies outside the addressable memory range. This can result
+> in a kernel panic if the new kernel is booted with 'mem=X' arg and the
+> ima-kexec-buffer was allocated beyond that range by the previous kernel.
+> The panic is usually of the form below:
+> 
+> $ sudo kexec --initrd initrd vmlinux --append='mem=16G'
+> 
+> <snip>
+>  BUG: Unable to handle kernel data access on read at 0xc000c01fff7f0000
+>  Faulting instruction address: 0xc000000000837974
+>  Oops: Kernel access of bad area, sig: 11 [#1]
+> <snip>
+>  NIP [c000000000837974] ima_restore_measurement_list+0x94/0x6c0
+>  LR [c00000000083b55c] ima_load_kexec_buffer+0xac/0x160
+>  Call Trace:
+>  [c00000000371fa80] [c00000000083b55c] ima_load_kexec_buffer+0xac/0x160
+>  [c00000000371fb00] [c0000000020512c4] ima_init+0x80/0x108
+>  [c00000000371fb70] [c0000000020514dc] init_ima+0x4c/0x120
+>  [c00000000371fbf0] [c000000000012240] do_one_initcall+0x60/0x2c0
+>  [c00000000371fcc0] [c000000002004ad0] kernel_init_freeable+0x344/0x3ec
+>  [c00000000371fda0] [c0000000000128a4] kernel_init+0x34/0x1b0
+>  [c00000000371fe10] [c00000000000ce64] ret_from_kernel_thread+0x5c/0x64
+>  Instruction dump:
+>  f92100b8 f92100c0 90e10090 910100a0 4182050c 282a0017 3bc00000 40810330
+>  7c0802a6 fb610198 7c9b2378 f80101d0 <a1240000> 2c090001 40820614 e9240010
+>  ---[ end trace 0000000000000000 ]---
+> 
+> Fix this issue by checking returned PFN range of previous kernel's
+> ima-kexec-buffer with page_is_ram() to ensure correct memory bounds.
+> 
+> Fixes: 467d27824920 ("powerpc: ima: get the kexec buffer passed by the previous kernel")
+> Cc: Frank Rowand <frowand.list@gmail.com>
+> Cc: Prakhar Srivastava <prsriva@linux.microsoft.com>
+> Cc: Lakshmi Ramasubramanian <nramas@linux.microsoft.com>
+> Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: Ritesh Harjani <ritesh.list@gmail.com>
+> Cc: Robin Murphy <robin.murphy@arm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 > ---
->  kernel/reboot.c | 46 ++++++++++++++++++++++++++--------------------
->  1 file changed, 26 insertions(+), 20 deletions(-)
->
-> diff --git a/kernel/reboot.c b/kernel/reboot.c
-> index 3b19b123efec..b5a71d1ff603 100644
-> --- a/kernel/reboot.c
-> +++ b/kernel/reboot.c
-> @@ -320,6 +320,7 @@ static struct sys_off_handler platform_sys_off_handler;
->  static struct sys_off_handler *alloc_sys_off_handler(int priority)
->  {
->         struct sys_off_handler *handler;
-> +       gfp_t flags;
->
->         /*
->          * Platforms like m68k can't allocate sys_off handler dynamically
-> @@ -330,7 +331,12 @@ static struct sys_off_handler *alloc_sys_off_handler(int priority)
->                 if (handler->cb_data)
->                         return ERR_PTR(-EBUSY);
->         } else {
-> -               handler = kzalloc(sizeof(*handler), GFP_KERNEL);
-> +               if (system_state > SYSTEM_RUNNING)
-> +                       flags = GFP_ATOMIC;
-> +               else
-> +                       flags = GFP_KERNEL;
-> +
-> +               handler = kzalloc(sizeof(*handler), flags);
->                 if (!handler)
->                         return ERR_PTR(-ENOMEM);
->         }
-> @@ -440,7 +446,7 @@ void unregister_sys_off_handler(struct sys_off_handler *handler)
->  {
->         int err;
->
-> -       if (!handler)
-> +       if (IS_ERR_OR_NULL(handler))
->                 return;
->
->         if (handler->blocking)
-> @@ -615,7 +621,23 @@ static void do_kernel_power_off_prepare(void)
->   */
->  void do_kernel_power_off(void)
->  {
-> +       struct sys_off_handler *sys_off = NULL;
-> +
-> +       /*
-> +        * Register sys-off handlers for legacy PM callback. This allows
-> +        * legacy PM callbacks temporary co-exist with the new sys-off API.
-> +        *
-> +        * TODO: Remove legacy handlers once all legacy PM users will be
-> +        *       switched to the sys-off based APIs.
-> +        */
-> +       if (pm_power_off)
-> +               sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
-> +                                                  SYS_OFF_PRIO_DEFAULT,
-> +                                                  legacy_pm_power_off, NULL);
-> +
->         atomic_notifier_call_chain(&power_off_handler_list, 0, NULL);
-> +
-> +       unregister_sys_off_handler(sys_off);
->  }
->
->  /**
-> @@ -626,7 +648,8 @@ void do_kernel_power_off(void)
->   */
->  bool kernel_can_power_off(void)
->  {
-> -       return !atomic_notifier_call_chain_is_empty(&power_off_handler_list);
-> +       return !atomic_notifier_call_chain_is_empty(&power_off_handler_list) ||
-> +               pm_power_off;
->  }
->  EXPORT_SYMBOL_GPL(kernel_can_power_off);
->
-> @@ -661,7 +684,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
->                 void __user *, arg)
->  {
->         struct pid_namespace *pid_ns = task_active_pid_ns(current);
-> -       struct sys_off_handler *sys_off = NULL;
->         char buffer[256];
->         int ret = 0;
->
-> @@ -686,21 +708,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
->         if (ret)
->                 return ret;
->
-> -       /*
-> -        * Register sys-off handlers for legacy PM callback. This allows
-> -        * legacy PM callbacks temporary co-exist with the new sys-off API.
-> -        *
-> -        * TODO: Remove legacy handlers once all legacy PM users will be
-> -        *       switched to the sys-off based APIs.
-> -        */
-> -       if (pm_power_off) {
-> -               sys_off = register_sys_off_handler(SYS_OFF_MODE_POWER_OFF,
-> -                                                  SYS_OFF_PRIO_DEFAULT,
-> -                                                  legacy_pm_power_off, NULL);
-> -               if (IS_ERR(sys_off))
-> -                       return PTR_ERR(sys_off);
-> -       }
-> -
->         /* Instead of trying to make the power_off code look like
->          * halt when pm_power_off is not set do it the easy way.
->          */
-> @@ -758,7 +765,6 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
->                 break;
->         }
->         mutex_unlock(&system_transition_mutex);
-> -       unregister_sys_off_handler(sys_off);
->         return ret;
->  }
->
-> --
+> Changelog
+> ==========
+> v3:
+> * change the type for {start,end}_pfn to unsigned long [ Ritesh ]
+> * Switched to page_is_ram() from pfn_vaild() [ Rob ]
+> 
+> v2:
+> * Instead of using memblock to determine the valid bounds use pfn_valid() to do
+> so since memblock may not be available late after the kernel init. [ Mpe ]
+> * Changed the patch prefix from 'powerpc' to 'of' [ Mpe ]
+> * Updated the 'Fixes' tag to point to correct commit that introduced this
+> function. [ Rob ]
+> * Fixed some whitespace/tab issues in the patch description [ Rob ]
+> * Added another check for checking ig 'tmp_size' for ima-kexec-buffer is > 0
+> ---
+>  drivers/of/kexec.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
 
-Applied (with a couple of edits in the changelog), thanks!
+Applied, thanks!
