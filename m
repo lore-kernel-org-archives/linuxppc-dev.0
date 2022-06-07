@@ -4,64 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96E77C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 22:43:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7DCAC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 23:23:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LHllJ0vqFz3cSh
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 08:43:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256 header.s=ti-com-17Q1 header.b=k3vx5fmY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ti.com (client-ip=198.47.19.142; helo=fllv0016.ext.ti.com; envelope-from=p.yadav@ti.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ti.com header.i=@ti.com header.a=rsa-sha256 header.s=ti-com-17Q1 header.b=k3vx5fmY;
-	dkim-atps=neutral
-X-Greylist: delayed 922 seconds by postgrey-1.36 at boromir; Tue, 07 Jun 2022 19:48:48 AEST
-Received: from fllv0016.ext.ti.com (fllv0016.ext.ti.com [198.47.19.142])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LHmdT09G2z3bqC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 09:23:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org (client-ip=188.165.56.124; helo=13.mo582.mail-out.ovh.net; envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 16203 seconds by postgrey-1.36 at boromir; Wed, 08 Jun 2022 09:23:31 AEST
+Received: from 13.mo582.mail-out.ovh.net (13.mo582.mail-out.ovh.net [188.165.56.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHQXw1s9dz308b;
-	Tue,  7 Jun 2022 19:48:46 +1000 (AEST)
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-	by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 2579Wc0I091949;
-	Tue, 7 Jun 2022 04:32:38 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-	s=ti-com-17Q1; t=1654594358;
-	bh=4gEuMclZBhRQsDp0tvKaU3YrWccQZAGJURM8nh1W4Dc=;
-	h=Date:From:To:CC:Subject:References:In-Reply-To;
-	b=k3vx5fmY3w2g9Kjy9vS3FS56toxZSl4jg/ajU1hdRRImusYUUI39kNg2qhLfeXCDd
-	 F7OzJAHN5T4gAJh/8Fu9mAhSWZ+FGGvj2oIwfhncphIoKXvPIxSBH/WdWhJW7XynOc
-	 YBUg7FOlGe/94JgUoQ+dgpWXspuXRavwoYOd/Kzs=
-Received: from DLEE105.ent.ti.com (dlee105.ent.ti.com [157.170.170.35])
-	by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 2579WcaD112036
-	(version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-	Tue, 7 Jun 2022 04:32:38 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE105.ent.ti.com
- (157.170.170.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14; Tue, 7
- Jun 2022 04:32:37 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.2308.14 via
- Frontend Transport; Tue, 7 Jun 2022 04:32:37 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-	by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 2579WbvB057541;
-	Tue, 7 Jun 2022 04:32:37 -0500
-Date: Tue, 7 Jun 2022 15:02:36 +0530
-From: Pratyush Yadav <p.yadav@ti.com>
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH 00/14] mtd: Fix platform remove callbacks to always
- return 0
-Message-ID: <20220607093236.67txulke76mi6t75@ti.com>
-References: <20220603210758.148493-1-u.kleine-koenig@pengutronix.de>
- <20220606151841.682a5939@xps-13>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHmcz4gPLz2yn5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 09:23:29 +1000 (AEST)
+Received: from player746.ha.ovh.net (unknown [10.109.138.157])
+	by mo582.mail-out.ovh.net (Postfix) with ESMTP id 299AB2408F
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 18:34:27 +0000 (UTC)
+Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
+	(Authenticated sender: steve@sk2.org)
+	by player746.ha.ovh.net (Postfix) with ESMTPSA id 6A0ED1DF14EEC;
+	Tue,  7 Jun 2022 18:34:21 +0000 (UTC)
+Authentication-Results: garm.ovh; auth=pass (GARM-108S002f51240c6-cd04-485d-92a4-59fa50673865,
+                    38FB55E0ED6224772C245AF554E1AE62085133ED) smtp.auth=steve@sk2.org
+X-OVh-ClientIp: 82.65.25.201
+From: Stephen Kitt <steve@sk2.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] backlight: Use backlight helper
+Date: Tue,  7 Jun 2022 20:34:11 +0200
+Message-Id: <20220607183411.1125030-1-steve@sk2.org>
+X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220606151841.682a5939@xps-13>
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
-X-Mailman-Approved-At: Wed, 08 Jun 2022 08:42:57 +1000
+X-Ovh-Tracer-Id: 11111224708588406284
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedguddvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeelgeetueejffejfeejvefhtddufeejgfetleegtddukeelieelvddvteduveejtdenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejgeeirdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdfovfetjfhoshhtpehmohehkedv
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,87 +52,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Lucas Stach <dev@lynxeye.de>, Vignesh Raghavendra <vigneshr@ti.com>, linux-aspeed@lists.ozlabs.org, Neil Armstrong <narmstrong@baylibre.com>, Stefan Agner <stefan@agner.ch>, Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org, Jerome Brunet <jbrunet@baylibre.com>, Jonathan Hunter <jonathanh@nvidia.com>, Joel Stanley <joel@jms.id.au>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Kevin Hilman <khilman@baylibre.com>, Tudor Ambarus <tudor.ambarus@microchip.com>, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Andrew Jeffery <andrew@aj.id.au>, Nicolas Ferre <nicolas.ferre@microchip.com>, Michael Walle <michael@walle.cc>, Liang Yang <liang.yang@amlogic.com>, kernel@pengutronix.de, Richard Weinberger <richard@nod.at>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, 
- Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Miquel,
+backlight_properties.fb_blank is deprecated. The states it represents
+are handled by other properties; but instead of accessing those
+properties directly, drivers should use the helpers provided by
+backlight.h.
 
-On 06/06/22 03:18PM, Miquel Raynal wrote:
-> Hi Folks,
-> 
-> u.kleine-koenig@pengutronix.de wrote on Fri,  3 Jun 2022 23:07:44 +0200:
-> 
-> > Hello,
-> > 
-> > this series prepares to make platform remove callbacks return void.
-> > Therefor first update them to always return 0. The rationale is that the
-> > Linux device model doesn't handle failures on remove and if a remove
-> > callback returns an error, it just emits a quite generic error message
-> > and still removes the device.
-> 
-> Tudor, Pratyush, Richard, Vignesh,
-> 
-> The series looks good to me (besides the atmel patch), I think it's
-> best to take it directly through mtd/next instead of going through all
-> the different internal branches, please let me know if you disagree
-> with the idea.
+Instead of retrieving the backlight brightness in struct
+backlight_properties manually, and then checking whether the backlight
+should be on at all, use backlight_get_brightness() which does all
+this and insulates this from future changes.
 
-Patch 2 does not look good to me. It modifies the aspeed-smc driver in 
-drivers/mtd/spi-nor/controllers/ but the driver has been moved to 
-drivers/spi/ in Mark's next branch [0]. The patch would likely conflict 
-with that.
+Signed-off-by: Stephen Kitt <steve@sk2.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/macintosh/via-pmu-backlight.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit?id=9c63b846e6df43e5b3d31263f7db545f32deeda3
+diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
+index 2194016122d2..c2d87e7fa85b 100644
+--- a/drivers/macintosh/via-pmu-backlight.c
++++ b/drivers/macintosh/via-pmu-backlight.c
+@@ -71,12 +71,7 @@ static int pmu_backlight_get_level_brightness(int level)
+ static int __pmu_backlight_update_status(struct backlight_device *bd)
+ {
+ 	struct adb_request req;
+-	int level = bd->props.brightness;
+-
+-
+-	if (bd->props.power != FB_BLANK_UNBLANK ||
+-	    bd->props.fb_blank != FB_BLANK_UNBLANK)
+-		level = 0;
++	int level = backlight_get_brightness(bd);
+ 
+ 	if (level > 0) {
+ 		int pmulevel = pmu_backlight_get_level_brightness(level);
 
-> 
-> Cheers,
-> Miquèl
-> 
-> > 
-> > Best regards
-> > Uwe
-> > 
-> > Uwe Kleine-König (14):
-> >   mtd: hyperbus: Make hyperbus_unregister_device() return void
-> >   mtd: spi-nor: aspeed-smc: Make aspeed_smc_unregister() return void
-> >   mtd: powernv_flash: Warn about failure to unregister mtd device
-> >   mtd: st-spi_fsm: Warn about failure to unregister mtd device
-> >   mtd: lpddr2_nvm: Warn about failure to unregister mtd device
-> >   mtd: spear_smi: Don't skip cleanup after mtd_device_unregister()
-> >     failed
-> >   mtd: spear_smi: Drop if with an always false condition
-> >   mtd: rawnand: atmel: Warn about failure to unregister mtd device
-> >   mtd: rawnand: omap2: Suppress error message after WARN in .remove()
-> >   mtd: rawnand: tegra: Don't skip cleanup after mtd_device_unregister()
-> >     failed
-> >   mtd: rawnand: meson: Don't skip cleanup after mtd_device_unregister()
-> >     failed
-> >   mtd: rawnand: meson: Drop cleaning platform data in .remove()
-> >   mtd: physmap: Don't skip cleanup after mtd_device_unregister() failed
-> >   mtd: physmap: Drop if with an always false condition
-> > 
-> >  drivers/mtd/devices/powernv_flash.c          |  4 +++-
-> >  drivers/mtd/devices/spear_smi.c              | 10 ++--------
-> >  drivers/mtd/devices/st_spi_fsm.c             |  4 +++-
-> >  drivers/mtd/hyperbus/hbmc-am654.c            |  6 +++---
-> >  drivers/mtd/hyperbus/hyperbus-core.c         |  8 ++------
-> >  drivers/mtd/hyperbus/rpc-if.c                |  5 +++--
-> >  drivers/mtd/lpddr/lpddr2_nvm.c               |  4 +++-
-> >  drivers/mtd/maps/physmap-core.c              | 13 +++----------
-> >  drivers/mtd/nand/raw/atmel/nand-controller.c |  5 ++++-
-> >  drivers/mtd/nand/raw/meson_nand.c            | 16 +++-------------
-> >  drivers/mtd/nand/raw/omap2.c                 |  6 ++----
-> >  drivers/mtd/nand/raw/tegra_nand.c            |  5 +----
-> >  drivers/mtd/spi-nor/controllers/aspeed-smc.c |  8 ++++----
-> >  include/linux/mtd/hyperbus.h                 |  4 +---
-> >  14 files changed, 37 insertions(+), 61 deletions(-)
-> > 
-> > base-commit: 4b0986a3613c92f4ec1bdc7f60ec66fea135991f
-> 
-
+base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
 -- 
-Regards,
-Pratyush Yadav
-Texas Instruments Inc.
+2.30.2
+
