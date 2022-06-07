@@ -4,47 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4FBAC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Jun 2022 23:14:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24703C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 02:06:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LH8TF1XPFz3brd
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 09:14:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gonehiking.org (client-ip=64.68.200.34; helo=mailout.easymail.ca; envelope-from=khalid@gonehiking.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 323 seconds by postgrey-1.36 at boromir; Tue, 07 Jun 2022 02:40:58 AEST
-Received: from mailout.easymail.ca (mailout.easymail.ca [64.68.200.34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LHDGy19zqz3bnd
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 12:06:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W1DZDLCw;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LGzky4127z2ygC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 02:40:56 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailout.easymail.ca (Postfix) with ESMTP id F0673E0E57;
-	Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
-X-Virus-Scanned: Debian amavisd-new at emo08-pco.easydns.vpn
-Received: from mailout.easymail.ca ([127.0.0.1])
-	by localhost (emo08-pco.easydns.vpn [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hhyNN48mX6Hb; Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
-Received: from mail.gonehiking.org (unknown [38.15.45.1])
-	by mailout.easymail.ca (Postfix) with ESMTPA id 87721E0E2D;
-	Mon,  6 Jun 2022 16:35:29 +0000 (UTC)
-Received: from [192.168.1.4] (internal [192.168.1.4])
-	by mail.gonehiking.org (Postfix) with ESMTP id 689583EF5B;
-	Mon,  6 Jun 2022 10:35:28 -0600 (MDT)
-Message-ID: <d39fc9bb-07c1-ad74-1e89-d2aa80578cd4@gonehiking.org>
-Date: Mon, 6 Jun 2022 10:35:28 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHDGJ0PLkz2ygC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 12:05:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=W1DZDLCw;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LHDG95Jvpz4xZ7;
+	Tue,  7 Jun 2022 12:05:21 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1654567524;
+	bh=8PBLOfNNVcxe/BchOfdldd1aRlQCoiHtBdRm4jougLQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=W1DZDLCw0u7bl+3KdOLO3E4JCzPchbpIy2zcqZPBay4042yh5i4ln0MRuWhSVJOz2
+	 2NQIfrMEG6mCS3D7pkm1LGyYEetCH5E+BXMC2ZinYQisMrh760p1W9D2oby2EJ4svT
+	 rU2MA1wyPZgnSUgVia4gzfTVQ1Mvz7nSTVPJXwPWMq1llrJ1XXP05ANpImpq6wQ5yQ
+	 Lh0JyAAMcC8WaWw4phBmpH4xvWZ25nLntkYEKfN1zsar9homM2jZ6wFG5h8jX9rxwO
+	 PSniNMuQSbyQE4kTCn0rSFx3K9c5w9+f0tbWdUkjL2eAZpj+Xlu9yn1f8j9FkuFoGR
+	 5Kr/n2q7FTVtA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Bagas Sanjaya <bagasdotme@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: outside array bounds error on ppc64_defconfig, GCC 12.1.0
+In-Reply-To: <YpbUcPrm61RLIiZF@debian.me>
+References: <YpbUcPrm61RLIiZF@debian.me>
+Date: Tue, 07 Jun 2022 12:05:18 +1000
+Message-ID: <87mtepns81.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH 5/6] scsi: remove stale BusLogic driver
-Content-Language: en-US
-To: Arnd Bergmann <arnd@kernel.org>
-References: <20220606084109.4108188-1-arnd@kernel.org>
- <20220606084109.4108188-6-arnd@kernel.org>
-From: Khalid Aziz <khalid@gonehiking.org>
-In-Reply-To: <20220606084109.4108188-6-arnd@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Tue, 07 Jun 2022 09:14:18 +1000
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,58 +57,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: khalid@gonehiking.org
-Cc: linux-arch@vger.kernel.org, linux-scsi@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-m68k@lists.linux-m68k.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Martyn Welch <martyn@welchs.me.uk>, Manohar Vanga <manohar.vanga@gmail.com>, linuxppc-dev@lists.ozlabs.org, Denis Efremov <efremov@linux.com>, Christoph Hellwig <hch@infradead.org>, iommu@lists.linux-foundation.org, Matt Wang <wwentao@vmware.com>, linux-parisc@vger.kernel.org, linux-alpha@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, "Maciej W . Rozycki" <macro@orcam.me.uk>, Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Anders Roxell <anders.roxell@linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>, Yang Li <yang.lee@linux.alibaba.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/6/22 02:41, Arnd Bergmann wrote:
-> From: Arnd Bergmann<arnd@arndb.de>
-> 
-> The BusLogic driver is the last remaining driver that relies on the
-> deprecated bus_to_virt() function, which in turn only works on a few
-> architectures, and is incompatible with both swiotlb and iommu support.
-> 
-> Before commit 391e2f25601e ("[SCSI] BusLogic: Port driver to 64-bit."),
-> the driver had a dependency on x86-32, presumably because of this
-> problem. However, the change introduced another bug that made it still
-> impossible to use the driver on any 64-bit machine.
-> 
-> This was in turn fixed in commit 56f396146af2 ("scsi: BusLogic: Fix
-> 64-bit system enumeration error for Buslogic"), 8 years later.
-> 
-> The fact that this was found at all is an indication that there are
-> users, and it seems that Maciej, Matt and Khalid all have access to
-> this hardware, but if it took eight years to find the problem,
-> it's likely that nobody actually relies on it.
-> 
-> Remove it as part of the global virt_to_bus()/bus_to_virt() removal.
-> If anyone is still interested in keeping this driver, the alternative
-> is to stop it from using bus_to_virt(), possibly along the lines of
-> how dpt_i2o gets around the same issue.
-> 
-> Cc: Maciej W. Rozycki<macro@orcam.me.uk>
-> Cc: Matt Wang<wwentao@vmware.com>
-> Cc: Khalid Aziz<khalid@gonehiking.org>
-> Signed-off-by: Arnd Bergmann<arnd@arndb.de>
-> ---
->   Documentation/scsi/BusLogic.rst   |  581 ---
->   Documentation/scsi/FlashPoint.rst |  176 -
->   MAINTAINERS                       |    7 -
->   drivers/scsi/BusLogic.c           | 3727 --------------
->   drivers/scsi/BusLogic.h           | 1284 -----
->   drivers/scsi/FlashPoint.c         | 7560 -----------------------------
->   drivers/scsi/Kconfig              |   24 -
->   7 files changed, 13359 deletions(-)
->   delete mode 100644 Documentation/scsi/BusLogic.rst
->   delete mode 100644 Documentation/scsi/FlashPoint.rst
->   delete mode 100644 drivers/scsi/BusLogic.c
->   delete mode 100644 drivers/scsi/BusLogic.h
->   delete mode 100644 drivers/scsi/FlashPoint.c
+Bagas Sanjaya <bagasdotme@gmail.com> writes:
+> Hi,
+>
+> I'm trying to verify Drop ppc_inst_as_str() patch on [1] by performing
+> ppc64_defconfig build with powerpc64-unknown-linux-gnu-gcc (GCC 12.1.0).
+> The patch is applied on top of powerpc tree, next branch.
 
-I would say no to removing BusLogic driver. Virtualbox is another 
-consumer of this driver. This driver is very old but I would rather fix 
-the issues than remove it until we do not have any users.
+Yeah I see it too.
 
-Thanks,
-Khalid
+> I got outside array bounds error:
+>
+>   CC      arch/powerpc/kernel/dbell.o
+> In function 'do_byte_reverse',
+>     inlined from 'do_vec_store' at arch/powerpc/lib/sstep.c:722:3,
+>     inlined from 'emulate_loadstore' at arch/powerpc/lib/sstep.c:3509:9:
+> arch/powerpc/lib/sstep.c:286:25: error: array subscript [3, 4] is outside array bounds of 'union <anonymous>[1]' [-Werror=array-bounds]
+>   286 |                 up[0] = byterev_8(up[3]);
+>       |                         ^~~~~~~~~~~~~~~~
+>
+> arch/owerpc/lib/sstep.c: In function 'emulate_loadstore':
+> arch/powerpc/lib/sstep.c:708:11: note: at offset [24, 39] into object 'u' of size 16
+>   708 |         } u;
+>       |           ^
+> In function 'do_byte_reverse',
+>     inlined from 'do_vec_store' at arch/powerpc/lib/sstep.c:722:3,
+>     inlined from 'emulate_loadstore' at arch/powerpc/lib/sstep.c:3509:9:
+> arch/powerpc/lib/sstep.c:287:23: error: array subscript [3, 4] is outside array bounds of 'union <anonymous>[1]' [-Werror=array-bounds]
+>   287 |                 up[3] = tmp;
+>       |                 ~~~~~~^~~~~
+
+This happens because we have a generic byte reverse function
+(do_byte_reverse()), that takes a size as a parameter. So it will
+reverse 8, 16, 32 bytes etc.
+
+In some cases the compiler can see that we're passing a pointer to
+storage that is smaller than 32 bytes, but it isn't convinced that the
+size parameter is also smaller than 32 bytes.
+
+Which I think is reasonable, the code that sets the size is separate
+from this code, so the compiler can't really deduce that it's safe.
+
+I don't see a really simple fix. I tried clamping the size parameter to
+do_byte_reverse() with max(), but that didn't work :/
+
+cheers
