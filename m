@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9931BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61D8EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:09:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPZR1Z1Gz3g26
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:08:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPb40ggrz3g6Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:09:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=sA+18VAK;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=tPPYeAWP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=sA+18VAK;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=tPPYeAWP;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96w2LwPz3bdj
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96x1H0Yz3bkm
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:20 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=HzY3jBvKRSGcnvMJEPYny4/0n/oTUbqDiv/WYyIgET0=; b=sA+18VAK88SPXdLOpMza+rOEfP
-	LIZ49BFC7l9BHr/9lFK8wXWo46KZqkiByud1HSMZeZ+BUYAV1ia+Yhjd7ltAYMQ5wWfxb2f6aW9XN
-	LaYbqONFU5epqLIj3qUQtYBecrUdqqZByYp3TXTApbtEn9PG18xAyF+bW9M0QZ0Hl1P3HfTU4flDJ
-	/60dHZ76Xt7rMxgX4MVdhQrPOIHu7jlHBXo6lM/0rE/s1QqIBAAOq4lIO8uNFmK6Mus0AzeHFEaFf
-	95DVCFKqB4yKLaIMK8VXS/RFhvqO+ARWFtTz41dKNkpurhwu+bIx/YcQ0H56dkcHsKj/6fk/1/KoL
-	4ucMtSnA==;
+	bh=4bele9ejzKzNd9pnJzXay06BR+7LKyo/8SDE7WF3xHo=; b=tPPYeAWPLLomHQyMVLJ5rPzsHQ
+	RWGF7M0Mce61MT+ddmgb9LEMNk1WL5mudqg073VXtHlq00DAzt78HxCsBAEtKRxkcXavO/85/VZxk
+	St2GqSY9qsP+Xr58sUTFba5HKXMa5app75CuJy9Gj6wZChoH6jBqlb60S6+uDOQ/9uA1CHpCagvMO
+	PjB4e4NnxbHKE12LCbxTxFaNyJdX+xa1TwHy0IYtSD8fTskaneE8elW12I3edyD9ShjEHISc8iDZ4
+	GRPIMTpQEWgfRfkgST/ySyn1wwEnoM5Cgrw7tfhziDkregbr3JBwLs34aQW7JRzuCY0Omo+qRiaQF
+	AQ82XnZw==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywx6-00ChZr-Mr; Wed, 08 Jun 2022 14:46:32 +0000
+	id 1nywwz-00ChWm-Uq; Wed, 08 Jun 2022 14:46:26 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0C581302F55;
-	Wed,  8 Jun 2022 16:46:24 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 48773302E6B;
+	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id C77CE20C119BA; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144518.136731332@infradead.org>
+	id 812DB20C10ECA; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144517.061583457@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:58 +0200
+Date: Wed, 08 Jun 2022 16:27:41 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 35/36] cpuidle,powerdomain: Remove trace_.*_rcuidle()
+Subject: [PATCH 18/36] cpuidle: Annotate poll_idle()
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,149 +73,35 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-OMAP was the one and only user.
+The __cpuidle functions will become a noinstr class, as such they need
+explicit annotations.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm/mach-omap2/powerdomain.c |   10 +++++-----
- drivers/base/power/runtime.c      |   24 ++++++++++++------------
- 2 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/cpuidle/poll_state.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/arch/arm/mach-omap2/powerdomain.c
-+++ b/arch/arm/mach-omap2/powerdomain.c
-@@ -187,9 +187,9 @@ static int _pwrdm_state_switch(struct po
- 			trace_state = (PWRDM_TRACE_STATES_FLAG |
- 				       ((next & OMAP_POWERSTATE_MASK) << 8) |
- 				       ((prev & OMAP_POWERSTATE_MASK) << 0));
--			trace_power_domain_target_rcuidle(pwrdm->name,
--							  trace_state,
--							  raw_smp_processor_id());
-+			trace_power_domain_target(pwrdm->name,
-+						  trace_state,
-+						  raw_smp_processor_id());
- 		}
- 		break;
- 	default:
-@@ -541,8 +541,8 @@ int pwrdm_set_next_pwrst(struct powerdom
+--- a/drivers/cpuidle/poll_state.c
++++ b/drivers/cpuidle/poll_state.c
+@@ -13,7 +13,10 @@
+ static int __cpuidle poll_idle(struct cpuidle_device *dev,
+ 			       struct cpuidle_driver *drv, int index)
+ {
+-	u64 time_start = local_clock();
++	u64 time_start;
++
++	instrumentation_begin();
++	time_start = local_clock();
  
- 	if (arch_pwrdm && arch_pwrdm->pwrdm_set_next_pwrst) {
- 		/* Trace the pwrdm desired target state */
--		trace_power_domain_target_rcuidle(pwrdm->name, pwrst,
--						  raw_smp_processor_id());
-+		trace_power_domain_target(pwrdm->name, pwrst,
-+					  raw_smp_processor_id());
- 		/* Program the pwrdm desired target state */
- 		ret = arch_pwrdm->pwrdm_set_next_pwrst(pwrdm, pwrst);
- 	}
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -442,7 +442,7 @@ static int rpm_idle(struct device *dev,
- 	int (*callback)(struct device *);
- 	int retval;
+ 	dev->poll_time_limit = false;
  
--	trace_rpm_idle_rcuidle(dev, rpmflags);
-+	trace_rpm_idle(dev, rpmflags);
- 	retval = rpm_check_suspend_allowed(dev);
- 	if (retval < 0)
- 		;	/* Conditions are wrong. */
-@@ -481,7 +481,7 @@ static int rpm_idle(struct device *dev,
- 			dev->power.request_pending = true;
- 			queue_work(pm_wq, &dev->power.work);
- 		}
--		trace_rpm_return_int_rcuidle(dev, _THIS_IP_, 0);
-+		trace_rpm_return_int(dev, _THIS_IP_, 0);
- 		return 0;
- 	}
+@@ -39,6 +42,7 @@ static int __cpuidle poll_idle(struct cp
+ 	raw_local_irq_disable();
  
-@@ -493,7 +493,7 @@ static int rpm_idle(struct device *dev,
- 	wake_up_all(&dev->power.wait_queue);
+ 	current_clr_polling();
++	instrumentation_end();
  
-  out:
--	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
-+	trace_rpm_return_int(dev, _THIS_IP_, retval);
- 	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
+ 	return index;
  }
- 
-@@ -557,7 +557,7 @@ static int rpm_suspend(struct device *de
- 	struct device *parent = NULL;
- 	int retval;
- 
--	trace_rpm_suspend_rcuidle(dev, rpmflags);
-+	trace_rpm_suspend(dev, rpmflags);
- 
-  repeat:
- 	retval = rpm_check_suspend_allowed(dev);
-@@ -708,7 +708,7 @@ static int rpm_suspend(struct device *de
- 	}
- 
-  out:
--	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
-+	trace_rpm_return_int(dev, _THIS_IP_, retval);
- 
- 	return retval;
- 
-@@ -760,7 +760,7 @@ static int rpm_resume(struct device *dev
- 	struct device *parent = NULL;
- 	int retval = 0;
- 
--	trace_rpm_resume_rcuidle(dev, rpmflags);
-+	trace_rpm_resume(dev, rpmflags);
- 
-  repeat:
- 	if (dev->power.runtime_error) {
-@@ -925,7 +925,7 @@ static int rpm_resume(struct device *dev
- 		spin_lock_irq(&dev->power.lock);
- 	}
- 
--	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
-+	trace_rpm_return_int(dev, _THIS_IP_, retval);
- 
- 	return retval;
- }
-@@ -1081,7 +1081,7 @@ int __pm_runtime_idle(struct device *dev
- 		if (retval < 0) {
- 			return retval;
- 		} else if (retval > 0) {
--			trace_rpm_usage_rcuidle(dev, rpmflags);
-+			trace_rpm_usage(dev, rpmflags);
- 			return 0;
- 		}
- 	}
-@@ -1119,7 +1119,7 @@ int __pm_runtime_suspend(struct device *
- 		if (retval < 0) {
- 			return retval;
- 		} else if (retval > 0) {
--			trace_rpm_usage_rcuidle(dev, rpmflags);
-+			trace_rpm_usage(dev, rpmflags);
- 			return 0;
- 		}
- 	}
-@@ -1202,7 +1202,7 @@ int pm_runtime_get_if_active(struct devi
- 	} else {
- 		retval = atomic_inc_not_zero(&dev->power.usage_count);
- 	}
--	trace_rpm_usage_rcuidle(dev, 0);
-+	trace_rpm_usage(dev, 0);
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- 
- 	return retval;
-@@ -1566,7 +1566,7 @@ void pm_runtime_allow(struct device *dev
- 	if (ret == 0)
- 		rpm_idle(dev, RPM_AUTO | RPM_ASYNC);
- 	else if (ret > 0)
--		trace_rpm_usage_rcuidle(dev, RPM_AUTO | RPM_ASYNC);
-+		trace_rpm_usage(dev, RPM_AUTO | RPM_ASYNC);
- 
-  out:
- 	spin_unlock_irq(&dev->power.lock);
-@@ -1635,7 +1635,7 @@ static void update_autosuspend(struct de
- 			atomic_inc(&dev->power.usage_count);
- 			rpm_resume(dev, 0);
- 		} else {
--			trace_rpm_usage_rcuidle(dev, 0);
-+			trace_rpm_usage(dev, 0);
- 		}
- 	}
- 
 
 
