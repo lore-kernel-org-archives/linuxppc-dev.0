@@ -4,43 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7DCAC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Jun 2022 23:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0934CC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 05:03:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LHmdT09G2z3bqC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 09:23:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org (client-ip=188.165.56.124; helo=13.mo582.mail-out.ovh.net; envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 16203 seconds by postgrey-1.36 at boromir; Wed, 08 Jun 2022 09:23:31 AEST
-Received: from 13.mo582.mail-out.ovh.net (13.mo582.mail-out.ovh.net [188.165.56.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LHw991jWDz3bqC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 15:03:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cr5puc8g;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cr5puc8g;
+	dkim-atps=neutral
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHmcz4gPLz2yn5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 09:23:29 +1000 (AEST)
-Received: from player746.ha.ovh.net (unknown [10.109.138.157])
-	by mo582.mail-out.ovh.net (Postfix) with ESMTP id 299AB2408F
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jun 2022 18:34:27 +0000 (UTC)
-Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
-	(Authenticated sender: steve@sk2.org)
-	by player746.ha.ovh.net (Postfix) with ESMTPSA id 6A0ED1DF14EEC;
-	Tue,  7 Jun 2022 18:34:21 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-108S002f51240c6-cd04-485d-92a4-59fa50673865,
-                    38FB55E0ED6224772C245AF554E1AE62085133ED) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-From: Stephen Kitt <steve@sk2.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH] backlight: Use backlight helper
-Date: Tue,  7 Jun 2022 20:34:11 +0200
-Message-Id: <20220607183411.1125030-1-steve@sk2.org>
-X-Mailer: git-send-email 2.30.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LHw8J2fTGz3084
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 15:02:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1654664560; x=1686200560;
+  h=message-id:date:mime-version:from:subject:to:cc:
+   references:in-reply-to:content-transfer-encoding;
+  bh=hOvb8EnSwhwz1MQxZk+3Gaho/Oq120JSHbvTq7OuOuA=;
+  b=Cr5puc8g04AJRklsQtmxYE62Xbw/IUM5sWwidFtArY49vfl6O3F3lt1S
+   EWrs8vkmb/ceJZSI/wqYJZ5t48jFM8ycffiqo2oO6DmKObNmjR+hMMk2Q
+   Ukk8Wwp3EK5fqYreJxGiMBFi4zHGP+syVv92h5AtwYkAqqPYDcCnooadJ
+   O/m8w0H4duToaMcmx+TIoF2LEgxwpFT6EbFe5ugVUIVQ04v83wNH/2lKk
+   0mbRCIViwdZKs00y9I5lVnFzOCKsNKlgqRAuaJobOU/MAXTtIUCN6Gyd6
+   +NQmqnxrh4wLl+fCUoVb1ntShp8pVmay2JKopzX6Wt9QC/5HQT6SqdIo0
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10371"; a="257228701"
+X-IronPort-AV: E=Sophos;i="5.91,285,1647327600"; 
+   d="scan'208";a="257228701"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jun 2022 22:02:33 -0700
+X-IronPort-AV: E=Sophos;i="5.91,285,1647327600"; 
+   d="scan'208";a="759318766"
+Received: from jmferrel-mobl1.amr.corp.intel.com (HELO [10.209.73.187]) ([10.209.73.187])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jun 2022 22:02:33 -0700
+Message-ID: <7830b6ca-a653-867f-813e-be980bad8141@linux.intel.com>
+Date: Tue, 7 Jun 2022 22:02:32 -0700
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11111224708588406284
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddthedguddvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeelgeetueejffejfeejvefhtddufeejgfetleegtddukeelieelvddvteduveejtdenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejgeeirdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdfovfetjfhoshhtpehmohehkedv
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Firefox/91.0 Thunderbird/91.9.1
+From: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
+Subject: Re: [PATCH] PCI/ERR: handle disconnected devices in
+ report_error_detected
+To: Christoph Hellwig <hch@lst.de>, ruscur@russell.cc, oohall@gmail.com,
+ bhelgaas@google.com
+References: <20220601074024.3481035-1-hch@lst.de>
+Content-Language: en-US
+In-Reply-To: <20220601074024.3481035-1-hch@lst.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,49 +69,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Stephen Kitt <steve@sk2.org>, linux-kernel@vger.kernel.org
+Cc: kbusch@kernel.org, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-backlight_properties.fb_blank is deprecated. The states it represents
-are handled by other properties; but instead of accessing those
-properties directly, drivers should use the helpers provided by
-backlight.h.
+Hi,
 
-Instead of retrieving the backlight brightness in struct
-backlight_properties manually, and then checking whether the backlight
-should be on at all, use backlight_get_brightness() which does all
-this and insulates this from future changes.
+On 6/1/22 12:40 AM, Christoph Hellwig wrote:
+> When a device is already unplugged by pciehp by the time that the AER
+> handler is invoked, the PCIe device will lready be in the
 
-Signed-off-by: Stephen Kitt <steve@sk2.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/macintosh/via-pmu-backlight.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+/s/lready/already
 
-diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
-index 2194016122d2..c2d87e7fa85b 100644
---- a/drivers/macintosh/via-pmu-backlight.c
-+++ b/drivers/macintosh/via-pmu-backlight.c
-@@ -71,12 +71,7 @@ static int pmu_backlight_get_level_brightness(int level)
- static int __pmu_backlight_update_status(struct backlight_device *bd)
- {
- 	struct adb_request req;
--	int level = bd->props.brightness;
--
--
--	if (bd->props.power != FB_BLANK_UNBLANK ||
--	    bd->props.fb_blank != FB_BLANK_UNBLANK)
--		level = 0;
-+	int level = backlight_get_brightness(bd);
- 
- 	if (level > 0) {
- 		int pmulevel = pmu_backlight_get_level_brightness(level);
+> pci_channel_io_perm_failure state.  In that case we should simply
+> return PCI_ERS_RESULT_DISCONNECT instead of trying to do a state
+> transition that will fail.
+> 
+> Also untangle the state transition failure from the lack of methods to
+> improve the debugging output in case it will happen ever again.
 
-base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
+Otherwise, it looks good to me.
+
+Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+
+
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   drivers/pci/pcie/err.c | 12 ++++++++----
+>   1 file changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+> index 0c5a143025af4..59c90d04a609a 100644
+> --- a/drivers/pci/pcie/err.c
+> +++ b/drivers/pci/pcie/err.c
+> @@ -55,10 +55,14 @@ static int report_error_detected(struct pci_dev *dev,
+>   
+>   	device_lock(&dev->dev);
+>   	pdrv = dev->driver;
+> -	if (!pci_dev_set_io_state(dev, state) ||
+> -		!pdrv ||
+> -		!pdrv->err_handler ||
+> -		!pdrv->err_handler->error_detected) {
+> +	if (pci_dev_is_disconnected(dev)) {
+> +		vote = PCI_ERS_RESULT_DISCONNECT;
+> +	} else if (!pci_dev_set_io_state(dev, state)) {
+> +		pci_info(dev, "can't recover (state transition %u -> %u invalid)\n",
+> +			dev->error_state, state);
+> +		vote = PCI_ERS_RESULT_NONE;
+> +	} else if (!pdrv || !pdrv->err_handler ||
+> +		   !pdrv->err_handler->error_detected) {
+>   		/*
+>   		 * If any device in the subtree does not have an error_detected
+>   		 * callback, PCI_ERS_RESULT_NO_AER_DRIVER prevents subsequent
+
 -- 
-2.30.2
-
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
