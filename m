@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA3EBC43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:12:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44FD5C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:13:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPgX3Hvyz3gQt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:12:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPh95c8Zz3gT8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:13:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=EIStTNEv;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=OVXFxuuc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=EIStTNEv;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=OVXFxuuc;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ9742qW4z3bkk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ9753dVjz3bkZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:29 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=72Sb3LM19KDQn37emviwOKsQWcEROOYn6vEWI6g4O0g=; b=EIStTNEvIWCOhCtVS6i/K7y72k
-	Z2/y8QVivxbrQMzv70rV/xYI1TqoeKXswIk5VnUpw0+4RhgOORQAEqSaWWFcpGN/Ozze52Ug5i0sI
-	TleRT/9YHz6wiGFbGNdRNWgltUsVvJQ/VjZwME/1FoaZpc7a2ndwOU/eD8GtMnigWvtYOtoQbNZbT
-	YAEGoBE1YPDvgKLkfYqGdKYI7530FqsneWIVYclJ5CEXvPE38a9eC2TbKb0SOYjj+vs7v40/yoQE7
-	k4NN68jbT7q4/PIwEPV2vzemhXOOO98Uy9H+Lq6ErhVJIdH1jDJG5a7zOOPhARBO9XvArNFyyMFwC
-	hXw9kkBw==;
+	bh=OtG2eksypqTPnibPh4fnaffiD2hY+EVznlbJ2kHLrow=; b=OVXFxuucL+euI7qJ0DHWP+HSd+
+	K0Ja573cJSNgJwZfmTV/5FSX0IvQJrgOo9v/0uLAq5TdSmJQtXAZyIW9o/35yTdAOleYqjANFEm+E
+	l56+S1viwHvjXO62dxEnDYPCdtMwVOYv/k+oP4A2fDyCb6sOHq4kRNEOvqcsJ/5x/Zoh6zkng8v4u
+	/0d1tlL+++2dqJwM54DkEmGHC+DPLj6jQdLOk++gXXVkvZXV4HarSMkLWNk/RWR6rJjZ3hTgPD+7o
+	fRFAUGoXS/CQX8DE/ix3aPY/jnZckpcWrGai1TDNvAnceUPXNMM/pOlZZ/Tt52+3oavm+6TFmtcmc
+	EkhLqJ7w==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywx6-00ChZS-6w; Wed, 08 Jun 2022 14:46:32 +0000
+	by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1nywwy-0066BS-W1; Wed, 08 Jun 2022 14:46:25 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E2347302F4B;
-	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A8FF730008D;
+	Wed,  8 Jun 2022 16:46:22 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id C09F920C119B6; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144518.010587032@infradead.org>
+	id 5313720C0F9B9; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144516.362668063@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:56 +0200
+Date: Wed, 08 Jun 2022 16:27:30 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 33/36] cpuidle,omap3: Use WFI for omap3_pm_idle()
+Subject: [PATCH 07/36] cpuidle,tegra: Push RCU-idle into driver
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,29 +73,82 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-arch_cpu_idle() is a very simple idle interface and exposes only a
-single idle state and is expected to not require RCU and not do any
-tracing/instrumentation.
-
-As such, omap_sram_idle() is not a valid implementation. Replace it
-with the simple (shallow) omap3_do_wfi() call. Leaving the more
-complicated idle states for the cpuidle driver.
+Doing RCU-idle outside the driver, only to then temporarily enable it
+again, at least twice, before going idle is daft.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm/mach-omap2/pm34xx.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpuidle/cpuidle-tegra.c |   21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
 
---- a/arch/arm/mach-omap2/pm34xx.c
-+++ b/arch/arm/mach-omap2/pm34xx.c
-@@ -294,7 +294,7 @@ static void omap3_pm_idle(void)
- 	if (omap_irq_pending())
- 		return;
+--- a/drivers/cpuidle/cpuidle-tegra.c
++++ b/drivers/cpuidle/cpuidle-tegra.c
+@@ -180,9 +180,11 @@ static int tegra_cpuidle_state_enter(str
+ 	}
  
--	omap_sram_idle();
-+	omap3_do_wfi();
- }
+ 	local_fiq_disable();
+-	RCU_NONIDLE(tegra_pm_set_cpu_in_lp2());
++	tegra_pm_set_cpu_in_lp2();
+ 	cpu_pm_enter();
  
- #ifdef CONFIG_SUSPEND
++	rcu_idle_enter();
++
+ 	switch (index) {
+ 	case TEGRA_C7:
+ 		err = tegra_cpuidle_c7_enter();
+@@ -197,8 +199,10 @@ static int tegra_cpuidle_state_enter(str
+ 		break;
+ 	}
+ 
++	rcu_idle_exit();
++
+ 	cpu_pm_exit();
+-	RCU_NONIDLE(tegra_pm_clear_cpu_in_lp2());
++	tegra_pm_clear_cpu_in_lp2();
+ 	local_fiq_enable();
+ 
+ 	return err ?: index;
+@@ -226,6 +230,7 @@ static int tegra_cpuidle_enter(struct cp
+ 			       struct cpuidle_driver *drv,
+ 			       int index)
+ {
++	bool do_rcu = drv->states[index].flags & CPUIDLE_FLAG_RCU_IDLE;
+ 	unsigned int cpu = cpu_logical_map(dev->cpu);
+ 	int ret;
+ 
+@@ -233,9 +238,13 @@ static int tegra_cpuidle_enter(struct cp
+ 	if (dev->states_usage[index].disable)
+ 		return -1;
+ 
+-	if (index == TEGRA_C1)
++	if (index == TEGRA_C1) {
++		if (do_rcu)
++			rcu_idle_enter();
+ 		ret = arm_cpuidle_simple_enter(dev, drv, index);
+-	else
++		if (do_rcu)
++			rcu_idle_exit();
++	} else
+ 		ret = tegra_cpuidle_state_enter(dev, index, cpu);
+ 
+ 	if (ret < 0) {
+@@ -285,7 +294,8 @@ static struct cpuidle_driver tegra_idle_
+ 			.exit_latency		= 2000,
+ 			.target_residency	= 2200,
+ 			.power_usage		= 100,
+-			.flags			= CPUIDLE_FLAG_TIMER_STOP,
++			.flags			= CPUIDLE_FLAG_TIMER_STOP |
++						  CPUIDLE_FLAG_RCU_IDLE,
+ 			.name			= "C7",
+ 			.desc			= "CPU core powered off",
+ 		},
+@@ -295,6 +305,7 @@ static struct cpuidle_driver tegra_idle_
+ 			.target_residency	= 10000,
+ 			.power_usage		= 0,
+ 			.flags			= CPUIDLE_FLAG_TIMER_STOP |
++						  CPUIDLE_FLAG_RCU_IDLE   |
+ 						  CPUIDLE_FLAG_COUPLED,
+ 			.name			= "CC6",
+ 			.desc			= "CPU cluster powered off",
 
 
