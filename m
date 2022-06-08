@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A506DC43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:03:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55CAEC43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:03:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPS41pSvz3fSM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:03:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPSh587Mz3fX4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:03:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PcbQR+3s;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XCDVN9tj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PcbQR+3s;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XCDVN9tj;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96r0GhBz3bkY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96s10lHz3bkx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=Gj+eSw46X5SDCGNw8cDv0ubviLBcGEVy5VW0lj+ATKg=; b=PcbQR+3su0P/C8pc1s793bBA2j
-	ktQ235pkDlbAkwOAsWLsW7DM1mrfh1vhIzRbfNYR5F+8ain6CH9jgWYuoxYcl9uL+ocL0b+8XEOXt
-	24PIItx96i9m0jKeLIwsBN7wi+qRRuwgHbXmsn9vkkOSl/hQ6c9MO4xk/n4kODjnZxuF/ldFEvFng
-	RKNgnZ2b45WmOjCX7CJ/vNjd9ZJz2ATMfgbLbqDohT3ILrAVWpvPd1p1QwjA2MxqCCmR1M8FMqgQ/
-	/DAneELoezzt6eDUpdwXCRtAQhyWretA4G2ZWAYAHTi4PqTwawLXUc26HjQgfO3qwapWqCjS2Q5FP
-	3sSC5Q9g==;
+	bh=YOWU43M4IjsvcmJXQwOIFJh+WuCbnSytdcIdnv65DkY=; b=XCDVN9tj9Nd6cCt5yPaK9O3amI
+	ci7YUUM2v+28cn8J99wm4KhjbAdAoCxm0ZkgOdpCkJChjzfZ+C735h+hlVrx0OpQ7Sz06hLL2cROZ
+	Bv8WVo508YV6l6eZBA29iCGnbSDF9FtDcrv+aceuzuJTig8MZggSg4i4uwwpFk8A3wQMqX47uf/mT
+	8zfnGc1VxoVB+WmWEDtxTYLuSF41PTkkxW16U+FTxE7204ryh1jVbHwBdUZ4quIaNuIHjqbsN+C7n
+	+Iep3h1zsyXP0xbxfqaVi9r1Yzcival+fbwxlxbx1qrowfPg2m7YfJQdX7yj+Cn50NoW7JIOu6shq
+	BsRPsiUA==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywx6-00ChZl-GY; Wed, 08 Jun 2022 14:46:32 +0000
+	id 1nywww-00ChVp-CO; Wed, 08 Jun 2022 14:46:22 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id D4501302F3F;
-	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 5CD17300779;
+	Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id BC41C20C119B1; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144517.948600553@infradead.org>
+	id 36D1B20C0F9A1; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144515.984413284@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:55 +0200
+Date: Wed, 08 Jun 2022 16:27:24 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 32/36] ftrace: WARN on rcuidle
+Subject: [PATCH 01/36] x86/perf/amd: Remove tracing from perf_lopwr_cb()
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,59 +73,59 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_GENERIC_ENTRY disallows any and all tracing when RCU isn't
-enabled.
-
-XXX if s390 (the only other GENERIC_ENTRY user as of this writing)
-isn't comfortable with this, we could switch to
-HAVE_NOINSTR_VALIDATION which is x86_64 only atm.
+The perf_lopwr_cb() is called from the idle routines; there is no RCU
+there, we must not enter tracing.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- include/linux/tracepoint.h |   13 ++++++++++++-
- kernel/trace/trace.c       |    3 +++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ arch/x86/events/amd/brs.c         |   13 +++++--------
+ arch/x86/include/asm/perf_event.h |    2 +-
+ 2 files changed, 6 insertions(+), 9 deletions(-)
 
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -178,6 +178,16 @@ static inline struct tracepoint *tracepo
- #endif /* CONFIG_HAVE_STATIC_CALL */
+--- a/arch/x86/events/amd/brs.c
++++ b/arch/x86/events/amd/brs.c
+@@ -41,18 +41,15 @@ static inline unsigned int brs_to(int id
+ 	return MSR_AMD_SAMP_BR_FROM + 2 * idx + 1;
+ }
  
- /*
-+ * CONFIG_GENERIC_ENTRY archs are expected to have sanitized entry and idle
-+ * code that disallow any/all tracing/instrumentation when RCU isn't watching.
-+ */
-+#ifdef CONFIG_GENERIC_ENTRY
-+#define RCUIDLE_COND(rcuidle)	(rcuidle)
-+#else
-+#define RCUIDLE_COND(rcuidle)	(rcuidle && in_nmi())
-+#endif
-+
-+/*
-  * it_func[0] is never NULL because there is at least one element in the array
-  * when the array itself is non NULL.
+-static inline void set_debug_extn_cfg(u64 val)
++static __always_inline void set_debug_extn_cfg(u64 val)
+ {
+ 	/* bits[4:3] must always be set to 11b */
+-	wrmsrl(MSR_AMD_DBG_EXTN_CFG, val | 3ULL << 3);
++	__wrmsr(MSR_AMD_DBG_EXTN_CFG, val | 3ULL << 3, val >> 32);
+ }
+ 
+-static inline u64 get_debug_extn_cfg(void)
++static __always_inline u64 get_debug_extn_cfg(void)
+ {
+-	u64 val;
+-
+-	rdmsrl(MSR_AMD_DBG_EXTN_CFG, val);
+-	return val;
++	return __rdmsr(MSR_AMD_DBG_EXTN_CFG);
+ }
+ 
+ static bool __init amd_brs_detect(void)
+@@ -338,7 +335,7 @@ void amd_pmu_brs_sched_task(struct perf_
+  * called from ACPI processor_idle.c or acpi_pad.c
+  * with interrupts disabled
   */
-@@ -189,7 +199,8 @@ static inline struct tracepoint *tracepo
- 			return;						\
- 									\
- 		/* srcu can't be used from NMI */			\
--		WARN_ON_ONCE(rcuidle && in_nmi());			\
-+		if (WARN_ON_ONCE(RCUIDLE_COND(rcuidle)))		\
-+			return;						\
- 									\
- 		/* keep srcu and sched-rcu usage consistent */		\
- 		preempt_disable_notrace();				\
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3104,6 +3104,9 @@ void __trace_stack(struct trace_array *t
- 		return;
- 	}
+-void perf_amd_brs_lopwr_cb(bool lopwr_in)
++void noinstr perf_amd_brs_lopwr_cb(bool lopwr_in)
+ {
+ 	struct cpu_hw_events *cpuc = this_cpu_ptr(&cpu_hw_events);
+ 	union amd_debug_extn_cfg cfg;
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -554,7 +554,7 @@ extern void perf_amd_brs_lopwr_cb(bool l
  
-+	if (WARN_ON_ONCE(IS_ENABLED(CONFIG_GENERIC_ENTRY)))
-+		return;
-+
- 	/*
- 	 * When an NMI triggers, RCU is enabled via rcu_nmi_enter(),
- 	 * but if the above rcu_is_watching() failed, then the NMI
+ DECLARE_STATIC_CALL(perf_lopwr_cb, perf_amd_brs_lopwr_cb);
+ 
+-static inline void perf_lopwr_cb(bool lopwr_in)
++static __always_inline void perf_lopwr_cb(bool lopwr_in)
+ {
+ 	static_call_mod(perf_lopwr_cb)(lopwr_in);
+ }
 
 
