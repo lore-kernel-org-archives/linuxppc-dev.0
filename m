@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8F310C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 766F8C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:15:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPjR6h8kz3gXy
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:14:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPk40wjsz3fck
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:15:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ZOVRlbbc;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=rY0rNdii;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ZOVRlbbc;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=rY0rNdii;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ9784Rfjz3bkx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ97D0nwFz3bl6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:36 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
+	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=ou5L3Xuucqh3BNNcA7ggTsb03AZP3YIS722c+bYuzBQ=; b=ZOVRlbbcCEg9f9+zDw+TPOkCoQ
-	YJOgWW3oEH82SS8Z2FuffbgfBl054sk+t6H+Rq2XeLma5kdCxwidap5S0SZ5XeVfGdfVdMbLJNNYL
-	YUDo3thSb7yxZHil5mYZUWfLcklav/WCfqY6rCjeC6qjU/nBlQDhK0klBgJnBPATP+T0eekHb57DV
-	a3IWCjoXGGJg+fXRaT0EhRgSMGXmbiPtijG31E8mGH/ZwdblFIuXh+Nuag7Qs6bhdIVEIHdhVu5Sn
-	PQkbZTtx/1Knxx/UHPMcT1MX5UDbBTRBJAIWXT2/zN4xQTriACukwHXtewsvKWBQBXC/Te1fEdWnC
-	dD2IBCDQ==;
+	bh=nZ3sIP+AfjwnKNI5o4cLuwY0yE/41XdF+GjWsz9OuTg=; b=rY0rNdiivLzvGTKxHIjKArJtGv
+	JQMkawTJj8SQEqtEJ3xPCf08PRNkIpqEuLBTMQig+GuhSmxqEeLxY3bBYBSL1InjLeSRd7FuiBfFT
+	ff8s0zfY7cn4ya1+C/p5LG6pommI01eYjXpKZ5a0O8ke3WwQmE3MEvmTU5SP1xjU/1b8dlkt8zdBB
+	dfl1YfdLv5JzxR/V9IHBzV1JRXdilUsvPgqYGue8e4FFC4bu+f9F4ROYoUtE/n02AU4fyepgF1L3B
+	VBo784ESh/4eySw45ErTG5Vm1/QFi4Ovz8KTGnWPg9jP5ZuBq92Wq48RzyoKTm6W2zDIfJ6TRHldf
+	0pxIbpdQ==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywwz-00ChWh-QV; Wed, 08 Jun 2022 14:46:25 +0000
+	by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1nywx6-0066DZ-9s; Wed, 08 Jun 2022 14:46:33 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id D9E26302E26;
-	Wed,  8 Jun 2022 16:46:22 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id D3AE2302F39;
+	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 6DFDD20C10EA7; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144516.743744529@infradead.org>
+	id B05F720C119A8; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144517.759631860@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:36 +0200
+Date: Wed, 08 Jun 2022 16:27:52 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 13/36] cpuidle,dt: Push RCU-idle into driver
+Subject: [PATCH 29/36] cpuidle,xenpv: Make more PARAVIRT_XXL noinstr clean
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,143 +73,138 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Doing RCU-idle outside the driver, only to then temporarily enable it
-again before going idle is daft.
-
-Notably: this converts all dt_init_idle_driver() and
-__CPU_PM_CPU_IDLE_ENTER() users for they are inextrably intertwined.
+vmlinux.o: warning: objtool: acpi_idle_enter_s2idle+0xde: call to wbinvd() leaves .noinstr.text section
+vmlinux.o: warning: objtool: default_idle+0x4: call to arch_safe_halt() leaves .noinstr.text section
+vmlinux.o: warning: objtool: xen_safe_halt+0xa: call to HYPERVISOR_sched_op.constprop.0() leaves .noinstr.text section
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/arm/mach-omap2/cpuidle34xx.c    |    4 ++--
- drivers/acpi/processor_idle.c        |    2 ++
- drivers/cpuidle/cpuidle-arm.c        |    1 +
- drivers/cpuidle/cpuidle-big_little.c |    8 ++++++--
- drivers/cpuidle/cpuidle-psci.c       |    1 +
- drivers/cpuidle/cpuidle-qcom-spm.c   |    1 +
- drivers/cpuidle/cpuidle-riscv-sbi.c  |    1 +
- drivers/cpuidle/dt_idle_states.c     |    2 +-
- include/linux/cpuidle.h              |    4 ++++
- 9 files changed, 19 insertions(+), 5 deletions(-)
+ arch/x86/include/asm/paravirt.h      |    6 ++++--
+ arch/x86/include/asm/special_insns.h |    4 ++--
+ arch/x86/include/asm/xen/hypercall.h |    2 +-
+ arch/x86/kernel/paravirt.c           |   14 ++++++++++++--
+ arch/x86/xen/enlighten_pv.c          |    2 +-
+ arch/x86/xen/irq.c                   |    2 +-
+ 6 files changed, 21 insertions(+), 9 deletions(-)
 
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -1200,6 +1200,8 @@ static int acpi_processor_setup_lpi_stat
- 		state->target_residency = lpi->min_residency;
- 		if (lpi->arch_flags)
- 			state->flags |= CPUIDLE_FLAG_TIMER_STOP;
-+		if (lpi->entry_method == ACPI_CSTATE_FFH)
-+			state->flags |= CPUIDLE_FLAG_RCU_IDLE;
- 		state->enter = acpi_idle_lpi_enter;
- 		drv->safe_state_index = i;
- 	}
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -53,6 +53,7 @@ static struct cpuidle_driver arm_idle_dr
- 	 * handler for idle state index 0.
- 	 */
- 	.states[0] = {
-+		.flags			= CPUIDLE_FLAG_RCU_IDLE,
- 		.enter                  = arm_enter_idle_state,
- 		.exit_latency           = 1,
- 		.target_residency       = 1,
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -64,7 +64,8 @@ static struct cpuidle_driver bl_idle_lit
- 		.enter			= bl_enter_powerdown,
- 		.exit_latency		= 700,
- 		.target_residency	= 2500,
--		.flags			= CPUIDLE_FLAG_TIMER_STOP,
-+		.flags			= CPUIDLE_FLAG_TIMER_STOP |
-+					  CPUIDLE_FLAG_RCU_IDLE,
- 		.name			= "C1",
- 		.desc			= "ARM little-cluster power down",
- 	},
-@@ -85,7 +86,8 @@ static struct cpuidle_driver bl_idle_big
- 		.enter			= bl_enter_powerdown,
- 		.exit_latency		= 500,
- 		.target_residency	= 2000,
--		.flags			= CPUIDLE_FLAG_TIMER_STOP,
-+		.flags			= CPUIDLE_FLAG_TIMER_STOP |
-+					  CPUIDLE_FLAG_RCU_IDLE,
- 		.name			= "C1",
- 		.desc			= "ARM big-cluster power down",
- 	},
-@@ -124,11 +126,13 @@ static int bl_enter_powerdown(struct cpu
- 				struct cpuidle_driver *drv, int idx)
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -168,7 +168,7 @@ static inline void __write_cr4(unsigned
+ 	PVOP_VCALL1(cpu.write_cr4, x);
+ }
+ 
+-static inline void arch_safe_halt(void)
++static __always_inline void arch_safe_halt(void)
  {
- 	cpu_pm_enter();
-+	rcu_idle_enter();
+ 	PVOP_VCALL0(irq.safe_halt);
+ }
+@@ -178,7 +178,9 @@ static inline void halt(void)
+ 	PVOP_VCALL0(irq.halt);
+ }
  
- 	cpu_suspend(0, bl_powerdown_finisher);
+-static inline void wbinvd(void)
++extern noinstr void pv_native_wbinvd(void);
++
++static __always_inline void wbinvd(void)
+ {
+ 	PVOP_ALT_VCALL0(cpu.wbinvd, "wbinvd", ALT_NOT(X86_FEATURE_XENPV));
+ }
+--- a/arch/x86/include/asm/special_insns.h
++++ b/arch/x86/include/asm/special_insns.h
+@@ -115,7 +115,7 @@ static inline void wrpkru(u32 pkru)
+ }
+ #endif
  
- 	/* signals the MCPM core that CPU is out of low power state */
- 	mcpm_cpu_powered_up();
-+	rcu_idle_exit();
+-static inline void native_wbinvd(void)
++static __always_inline void native_wbinvd(void)
+ {
+ 	asm volatile("wbinvd": : :"memory");
+ }
+@@ -179,7 +179,7 @@ static inline void __write_cr4(unsigned
+ 	native_write_cr4(x);
+ }
  
- 	cpu_pm_exit();
+-static inline void wbinvd(void)
++static __always_inline void wbinvd(void)
+ {
+ 	native_wbinvd();
+ }
+--- a/arch/x86/include/asm/xen/hypercall.h
++++ b/arch/x86/include/asm/xen/hypercall.h
+@@ -382,7 +382,7 @@ MULTI_stack_switch(struct multicall_entr
+ }
+ #endif
  
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -357,6 +357,7 @@ static int psci_idle_init_cpu(struct dev
- 	 * PSCI idle states relies on architectural WFI to be represented as
- 	 * state index 0.
- 	 */
-+	drv->states[0].flags = CPUIDLE_FLAG_RCU_IDLE;
- 	drv->states[0].enter = psci_enter_idle_state;
- 	drv->states[0].exit_latency = 1;
- 	drv->states[0].target_residency = 1;
---- a/drivers/cpuidle/cpuidle-qcom-spm.c
-+++ b/drivers/cpuidle/cpuidle-qcom-spm.c
-@@ -72,6 +72,7 @@ static struct cpuidle_driver qcom_spm_id
- 	.owner = THIS_MODULE,
- 	.states[0] = {
- 		.enter			= spm_enter_idle_state,
-+		.flags			= CPUIDLE_FLAG_RCU_IDLE,
- 		.exit_latency		= 1,
- 		.target_residency	= 1,
- 		.power_usage		= UINT_MAX,
---- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-+++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-@@ -332,6 +332,7 @@ static int sbi_cpuidle_init_cpu(struct d
- 	drv->cpumask = (struct cpumask *)cpumask_of(cpu);
+-static inline int
++static __always_inline int
+ HYPERVISOR_sched_op(int cmd, void *arg)
+ {
+ 	return _hypercall2(int, sched_op, cmd, arg);
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -233,6 +233,11 @@ static noinstr void pv_native_set_debugr
+ 	native_set_debugreg(regno, val);
+ }
  
- 	/* RISC-V architectural WFI to be represented as state index 0. */
-+	drv->states[0].flags = CPUIDLE_FLAG_RCU_IDLE;
- 	drv->states[0].enter = sbi_cpuidle_enter_state;
- 	drv->states[0].exit_latency = 1;
- 	drv->states[0].target_residency = 1;
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -77,7 +77,7 @@ static int init_state_node(struct cpuidl
- 	if (err)
- 		desc = state_node->name;
++noinstr void pv_native_wbinvd(void)
++{
++	native_wbinvd();
++}
++
+ static noinstr void pv_native_irq_enable(void)
+ {
+ 	native_irq_enable();
+@@ -242,6 +247,11 @@ static noinstr void pv_native_irq_disabl
+ {
+ 	native_irq_disable();
+ }
++
++static noinstr void pv_native_safe_halt(void)
++{
++	native_safe_halt();
++}
+ #endif
  
--	idle_state->flags = 0;
-+	idle_state->flags = CPUIDLE_FLAG_RCU_IDLE;
- 	if (of_property_read_bool(state_node, "local-timer-stop"))
- 		idle_state->flags |= CPUIDLE_FLAG_TIMER_STOP;
- 	/*
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -282,14 +282,18 @@ extern s64 cpuidle_governor_latency_req(
- 	int __ret = 0;							\
- 									\
- 	if (!idx) {							\
-+		rcu_idle_enter();					\
- 		cpu_do_idle();						\
-+		rcu_idle_exit();					\
- 		return idx;						\
- 	}								\
- 									\
- 	if (!is_retention)						\
- 		__ret =  cpu_pm_enter();				\
- 	if (!__ret) {							\
-+		rcu_idle_enter();					\
- 		__ret = low_level_idle_enter(state);			\
-+		rcu_idle_exit();					\
- 		if (!is_retention)					\
- 			cpu_pm_exit();					\
- 	}								\
+ enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
+@@ -273,7 +283,7 @@ struct paravirt_patch_template pv_ops =
+ 	.cpu.read_cr0		= native_read_cr0,
+ 	.cpu.write_cr0		= native_write_cr0,
+ 	.cpu.write_cr4		= native_write_cr4,
+-	.cpu.wbinvd		= native_wbinvd,
++	.cpu.wbinvd		= pv_native_wbinvd,
+ 	.cpu.read_msr		= native_read_msr,
+ 	.cpu.write_msr		= native_write_msr,
+ 	.cpu.read_msr_safe	= native_read_msr_safe,
+@@ -307,7 +317,7 @@ struct paravirt_patch_template pv_ops =
+ 	.irq.save_fl		= __PV_IS_CALLEE_SAVE(native_save_fl),
+ 	.irq.irq_disable	= __PV_IS_CALLEE_SAVE(pv_native_irq_disable),
+ 	.irq.irq_enable		= __PV_IS_CALLEE_SAVE(pv_native_irq_enable),
+-	.irq.safe_halt		= native_safe_halt,
++	.irq.safe_halt		= pv_native_safe_halt,
+ 	.irq.halt		= native_halt,
+ #endif /* CONFIG_PARAVIRT_XXL */
+ 
+--- a/arch/x86/xen/enlighten_pv.c
++++ b/arch/x86/xen/enlighten_pv.c
+@@ -1019,7 +1019,7 @@ static const typeof(pv_ops) xen_cpu_ops
+ 
+ 		.write_cr4 = xen_write_cr4,
+ 
+-		.wbinvd = native_wbinvd,
++		.wbinvd = pv_native_wbinvd,
+ 
+ 		.read_msr = xen_read_msr,
+ 		.write_msr = xen_write_msr,
+--- a/arch/x86/xen/irq.c
++++ b/arch/x86/xen/irq.c
+@@ -24,7 +24,7 @@ noinstr void xen_force_evtchn_callback(v
+ 	(void)HYPERVISOR_xen_version(0, NULL);
+ }
+ 
+-static void xen_safe_halt(void)
++static noinstr void xen_safe_halt(void)
+ {
+ 	/* Blocking includes an implicit local_irq_enable(). */
+ 	if (HYPERVISOR_sched_op(SCHEDOP_block, NULL) != 0)
 
 
