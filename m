@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 766F8C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60C70C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:15:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPk40wjsz3fck
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:15:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPkh6w2fz3ghc
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:15:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=rY0rNdii;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=K8Ynm/sv;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=rY0rNdii;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=K8Ynm/sv;
 	dkim-atps=neutral
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ97D0nwFz3bl6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ97G1klxz3blR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:38 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=nZ3sIP+AfjwnKNI5o4cLuwY0yE/41XdF+GjWsz9OuTg=; b=rY0rNdiivLzvGTKxHIjKArJtGv
-	JQMkawTJj8SQEqtEJ3xPCf08PRNkIpqEuLBTMQig+GuhSmxqEeLxY3bBYBSL1InjLeSRd7FuiBfFT
-	ff8s0zfY7cn4ya1+C/p5LG6pommI01eYjXpKZ5a0O8ke3WwQmE3MEvmTU5SP1xjU/1b8dlkt8zdBB
-	dfl1YfdLv5JzxR/V9IHBzV1JRXdilUsvPgqYGue8e4FFC4bu+f9F4ROYoUtE/n02AU4fyepgF1L3B
-	VBo784ESh/4eySw45ErTG5Vm1/QFi4Ovz8KTGnWPg9jP5ZuBq92Wq48RzyoKTm6W2zDIfJ6TRHldf
-	0pxIbpdQ==;
+	bh=Ae56F2/vHSxAMY+0KpLDtlvNNteu31Pblave+ocppBw=; b=K8Ynm/svRXkkOXUoDfBvEs9ZFK
+	qWXYZy+/5CqUIjZ31FPJ7xPNOIntKDH8NSfrS8D9IkyLAoFrHvJMHJIL/IcnOIM7nqISgd0gcoDeE
+	M8QwoOkYRBsSJ6LT9EQT7VUIsk+Z6r7wIXAFTOjV+qSGSdym/gNXacQGPlu5y6oCjnxUFjzOxnG6i
+	Qnh3s+Cj3bWdVkKJ0fKWJQJeEH2PS1tbGo8HnFfis2/BavxNxwTBZTq7iTayiBsKwAc/kQ4fijj9Z
+	RSxzjU7orl0A9t/vtgrMCy+RX4IT1VlY5omzQIH8HgAO6TFwqNP7RiyW7pf7sKmhryRMbaaQJQ5W8
+	0pAFiEvA==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
 	by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywx6-0066DZ-9s; Wed, 08 Jun 2022 14:46:33 +0000
+	id 1nywwz-0066Bg-PM; Wed, 08 Jun 2022 14:46:26 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id D3AE2302F39;
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 0F8EC302E4E;
 	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id B05F720C119A8; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144517.759631860@infradead.org>
+	id 7A4C620C10EC5; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144516.935970247@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:52 +0200
+Date: Wed, 08 Jun 2022 16:27:39 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 29/36] cpuidle,xenpv: Make more PARAVIRT_XXL noinstr clean
+Subject: [PATCH 16/36] rcu: Fix rcu_idle_exit()
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,138 +73,44 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vmlinux.o: warning: objtool: acpi_idle_enter_s2idle+0xde: call to wbinvd() leaves .noinstr.text section
-vmlinux.o: warning: objtool: default_idle+0x4: call to arch_safe_halt() leaves .noinstr.text section
-vmlinux.o: warning: objtool: xen_safe_halt+0xa: call to HYPERVISOR_sched_op.constprop.0() leaves .noinstr.text section
+Current rcu_idle_exit() is terminally broken because it uses
+local_irq_{save,restore}(), which are traced which uses RCU.
+
+However, now that all the callers are sure to have IRQs disabled, we
+can remove these calls.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Acked-by: Paul E. McKenney <paulmck@kernel.org>
 ---
- arch/x86/include/asm/paravirt.h      |    6 ++++--
- arch/x86/include/asm/special_insns.h |    4 ++--
- arch/x86/include/asm/xen/hypercall.h |    2 +-
- arch/x86/kernel/paravirt.c           |   14 ++++++++++++--
- arch/x86/xen/enlighten_pv.c          |    2 +-
- arch/x86/xen/irq.c                   |    2 +-
- 6 files changed, 21 insertions(+), 9 deletions(-)
+ kernel/rcu/tree.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -168,7 +168,7 @@ static inline void __write_cr4(unsigned
- 	PVOP_VCALL1(cpu.write_cr4, x);
- }
- 
--static inline void arch_safe_halt(void)
-+static __always_inline void arch_safe_halt(void)
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -659,7 +659,7 @@ static noinstr void rcu_eqs_enter(bool u
+  * If you add or remove a call to rcu_idle_enter(), be sure to test with
+  * CONFIG_RCU_EQS_DEBUG=y.
+  */
+-void rcu_idle_enter(void)
++void noinstr rcu_idle_enter(void)
  {
- 	PVOP_VCALL0(irq.safe_halt);
- }
-@@ -178,7 +178,9 @@ static inline void halt(void)
- 	PVOP_VCALL0(irq.halt);
- }
- 
--static inline void wbinvd(void)
-+extern noinstr void pv_native_wbinvd(void);
-+
-+static __always_inline void wbinvd(void)
+ 	lockdep_assert_irqs_disabled();
+ 	rcu_eqs_enter(false);
+@@ -896,13 +896,10 @@ static void noinstr rcu_eqs_exit(bool us
+  * If you add or remove a call to rcu_idle_exit(), be sure to test with
+  * CONFIG_RCU_EQS_DEBUG=y.
+  */
+-void rcu_idle_exit(void)
++void noinstr rcu_idle_exit(void)
  {
- 	PVOP_ALT_VCALL0(cpu.wbinvd, "wbinvd", ALT_NOT(X86_FEATURE_XENPV));
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
++	lockdep_assert_irqs_disabled();
+ 	rcu_eqs_exit(false);
+-	local_irq_restore(flags);
  }
---- a/arch/x86/include/asm/special_insns.h
-+++ b/arch/x86/include/asm/special_insns.h
-@@ -115,7 +115,7 @@ static inline void wrpkru(u32 pkru)
- }
- #endif
+ EXPORT_SYMBOL_GPL(rcu_idle_exit);
  
--static inline void native_wbinvd(void)
-+static __always_inline void native_wbinvd(void)
- {
- 	asm volatile("wbinvd": : :"memory");
- }
-@@ -179,7 +179,7 @@ static inline void __write_cr4(unsigned
- 	native_write_cr4(x);
- }
- 
--static inline void wbinvd(void)
-+static __always_inline void wbinvd(void)
- {
- 	native_wbinvd();
- }
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -382,7 +382,7 @@ MULTI_stack_switch(struct multicall_entr
- }
- #endif
- 
--static inline int
-+static __always_inline int
- HYPERVISOR_sched_op(int cmd, void *arg)
- {
- 	return _hypercall2(int, sched_op, cmd, arg);
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -233,6 +233,11 @@ static noinstr void pv_native_set_debugr
- 	native_set_debugreg(regno, val);
- }
- 
-+noinstr void pv_native_wbinvd(void)
-+{
-+	native_wbinvd();
-+}
-+
- static noinstr void pv_native_irq_enable(void)
- {
- 	native_irq_enable();
-@@ -242,6 +247,11 @@ static noinstr void pv_native_irq_disabl
- {
- 	native_irq_disable();
- }
-+
-+static noinstr void pv_native_safe_halt(void)
-+{
-+	native_safe_halt();
-+}
- #endif
- 
- enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
-@@ -273,7 +283,7 @@ struct paravirt_patch_template pv_ops =
- 	.cpu.read_cr0		= native_read_cr0,
- 	.cpu.write_cr0		= native_write_cr0,
- 	.cpu.write_cr4		= native_write_cr4,
--	.cpu.wbinvd		= native_wbinvd,
-+	.cpu.wbinvd		= pv_native_wbinvd,
- 	.cpu.read_msr		= native_read_msr,
- 	.cpu.write_msr		= native_write_msr,
- 	.cpu.read_msr_safe	= native_read_msr_safe,
-@@ -307,7 +317,7 @@ struct paravirt_patch_template pv_ops =
- 	.irq.save_fl		= __PV_IS_CALLEE_SAVE(native_save_fl),
- 	.irq.irq_disable	= __PV_IS_CALLEE_SAVE(pv_native_irq_disable),
- 	.irq.irq_enable		= __PV_IS_CALLEE_SAVE(pv_native_irq_enable),
--	.irq.safe_halt		= native_safe_halt,
-+	.irq.safe_halt		= pv_native_safe_halt,
- 	.irq.halt		= native_halt,
- #endif /* CONFIG_PARAVIRT_XXL */
- 
---- a/arch/x86/xen/enlighten_pv.c
-+++ b/arch/x86/xen/enlighten_pv.c
-@@ -1019,7 +1019,7 @@ static const typeof(pv_ops) xen_cpu_ops
- 
- 		.write_cr4 = xen_write_cr4,
- 
--		.wbinvd = native_wbinvd,
-+		.wbinvd = pv_native_wbinvd,
- 
- 		.read_msr = xen_read_msr,
- 		.write_msr = xen_write_msr,
---- a/arch/x86/xen/irq.c
-+++ b/arch/x86/xen/irq.c
-@@ -24,7 +24,7 @@ noinstr void xen_force_evtchn_callback(v
- 	(void)HYPERVISOR_xen_version(0, NULL);
- }
- 
--static void xen_safe_halt(void)
-+static noinstr void xen_safe_halt(void)
- {
- 	/* Blocking includes an implicit local_irq_enable(). */
- 	if (HYPERVISOR_sched_op(SCHEDOP_block, NULL) != 0)
 
 
