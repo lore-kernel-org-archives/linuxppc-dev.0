@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A760AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:04:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31B9EC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:04:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPTK2YWnz3f2g
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:04:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPTx3vGqz3fgZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:04:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PSLeO/yN;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PMRi03XW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PSLeO/yN;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=PMRi03XW;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96r2tNQz3bkh
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ96r1Qxjz3bkg
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 00:47:15 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=cRgbn3QvpupGZaeUDgwKs7FEGzBWq3dUbK0A/YX8NGM=; b=PSLeO/yNb1FdwotZ74TIoxbYsI
-	soiM9zNMO7t19/qdX6p+jhtYuw+jlgRDVggbwYw5y93wJ9B0AEFFNitZiOLiLqvrO6WYzTd3Ks6/N
-	j6ONiLqH02pSUgCxo2FohIp7YpPnZGRJFJTWnKXkMEaG1p9PIY+g1hJZEWjA2DvWqfDzZ864CPgsH
-	JZUmgyUVfTzWlN2taLJ537IYJBncAgv7L7CMo71dRetIsfM+fYr9nFmmPfnAie7VS2DskPrxSiIFO
-	ifFfahGR54R38dhYOg0BWoewZIQRuCcVUmaPuAuM9Fgo4uTkuRaQcDupqqv1VST4cbPCmhIiOv9NB
-	7YdXlpfg==;
+	bh=/sqr2RkpmWV4/QsFh9IpMWbDQxRkD/xb8LFsX6prmG0=; b=PMRi03XWoXclDviRUqbE/MtOjq
+	BctQuAYPZxOMxsfOMiyem28bAW8AVWTyoJEScncE3ewsqlmC44gesqRRvD3B8d2x2o6Oa3YKdgS6F
+	N/lpBgDl9rG8Y87zQ9aXv0X/K3/i3SOyjl709wqIh2P8wY30DT3oxZsmJJDGR2d7YpL64XTDbtm0N
+	5k00Y596qRpvXjB0UkiaqAr3svE1BP55qX4/b4iH3/3A6gQNxBZUjoJBg6kVeAr1y4s/o8S9iW+rn
+	f/uMfy6If6inoLAxZq0GFvTDrpfPEwMlmkj+swzSpz+tgCObUk3HyahRZMsXvA5vHVxaf8AvbHklN
+	HHoVukvQ==;
 Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nywwy-00ChW2-V1; Wed, 08 Jun 2022 14:46:25 +0000
+	id 1nywx4-00ChZ5-S9; Wed, 08 Jun 2022 14:46:30 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9A5BD302D93;
-	Wed,  8 Jun 2022 16:46:22 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id CF56C302F2D;
+	Wed,  8 Jun 2022 16:46:23 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 4EAD120C0F9B6; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
-Message-ID: <20220608144516.297980240@infradead.org>
+	id ACED020C119A6; Wed,  8 Jun 2022 16:46:18 +0200 (CEST)
+Message-ID: <20220608144517.696962976@infradead.org>
 User-Agent: quilt/0.66
-Date: Wed, 08 Jun 2022 16:27:29 +0200
+Date: Wed, 08 Jun 2022 16:27:51 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH 06/36] cpuidle,riscv: Push RCU-idle into driver
+Subject: [PATCH 28/36] cpuidle,tdx: Make tdx noinstr clean
 References: <20220608142723.103523089@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -73,53 +73,48 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Doing RCU-idle outside the driver, only to then temporarily enable it
-again, at least twice, before going idle is daft.
+vmlinux.o: warning: objtool: __halt+0x2c: call to hcall_func.constprop.0() leaves .noinstr.text section
+vmlinux.o: warning: objtool: __halt+0x3f: call to __tdx_hypercall() leaves .noinstr.text section
+vmlinux.o: warning: objtool: __tdx_hypercall+0x66: call to __tdx_hypercall_failed() leaves .noinstr.text section
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/cpuidle/cpuidle-riscv-sbi.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/x86/coco/tdx/tdcall.S |    2 ++
+ arch/x86/coco/tdx/tdx.c    |    5 +++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
---- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-+++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-@@ -116,12 +116,12 @@ static int __sbi_enter_domain_idle_state
- 		return -1;
+--- a/arch/x86/coco/tdx/tdcall.S
++++ b/arch/x86/coco/tdx/tdcall.S
+@@ -31,6 +31,8 @@
+ 					  TDX_R12 | TDX_R13 | \
+ 					  TDX_R14 | TDX_R15 )
  
- 	/* Do runtime PM to manage a hierarchical CPU toplogy. */
--	rcu_irq_enter_irqson();
- 	if (s2idle)
- 		dev_pm_genpd_suspend(pd_dev);
- 	else
- 		pm_runtime_put_sync_suspend(pd_dev);
--	rcu_irq_exit_irqson();
++.section .noinstr.text, "ax"
 +
-+	rcu_idle_enter();
+ /*
+  * __tdx_module_call()  - Used by TDX guests to request services from
+  * the TDX module (does not include VMM services) using TDCALL instruction.
+--- a/arch/x86/coco/tdx/tdx.c
++++ b/arch/x86/coco/tdx/tdx.c
+@@ -53,8 +53,9 @@ static inline u64 _tdx_hypercall(u64 fn,
+ }
  
- 	if (sbi_is_domain_state_available())
- 		state = sbi_get_domain_state();
-@@ -130,12 +130,12 @@ static int __sbi_enter_domain_idle_state
+ /* Called from __tdx_hypercall() for unrecoverable failure */
+-void __tdx_hypercall_failed(void)
++noinstr void __tdx_hypercall_failed(void)
+ {
++	instrumentation_begin();
+ 	panic("TDVMCALL failed. TDX module bug?");
+ }
  
- 	ret = sbi_suspend(state) ? -1 : idx;
- 
--	rcu_irq_enter_irqson();
-+	rcu_idle_exit();
-+
- 	if (s2idle)
- 		dev_pm_genpd_resume(pd_dev);
- 	else
- 		pm_runtime_get_sync(pd_dev);
--	rcu_irq_exit_irqson();
- 
- 	cpu_pm_exit();
- 
-@@ -246,6 +246,7 @@ static int sbi_dt_cpu_init_topology(stru
- 	 * of a shared state for the domain, assumes the domain states are all
- 	 * deeper states.
- 	 */
-+	drv->states[state_count - 1].flags |= CPUIDLE_FLAG_RCU_IDLE;
- 	drv->states[state_count - 1].enter = sbi_enter_domain_idle_state;
- 	drv->states[state_count - 1].enter_s2idle =
- 					sbi_enter_s2idle_domain_idle_state;
+@@ -64,7 +65,7 @@ void __tdx_hypercall_failed(void)
+  * Reusing the KVM EXIT_REASON macros makes it easier to connect the host and
+  * guest sides of these calls.
+  */
+-static u64 hcall_func(u64 exit_reason)
++static __always_inline u64 hcall_func(u64 exit_reason)
+ {
+ 	return exit_reason;
+ }
 
 
