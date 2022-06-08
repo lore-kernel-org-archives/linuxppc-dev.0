@@ -4,70 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6261C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 23:56:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30074C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:18:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPK53Nxfz3dpl
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 09:56:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPpQ6760z3fs0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:18:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fZyDp39Z;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fZyDp39Z;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bbxN9JJ2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=esyr@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fZyDp39Z;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fZyDp39Z;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=bbxN9JJ2;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ2L21tzhz2yxj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 19:41:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1654681282;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3+IKQAxPaDV1lsEnEpDWXsKDpaqq+QeuuTyOBnuSML8=;
-	b=fZyDp39Z40Cps24sKFz9nGbbcGu125DC1tnBoEtml0A26bizwQg2TP89pLQcVePb6kWiQ5
-	xTuiA1A0A/X2H7SjB86YVTMXtjbmZ2wcmMZUTD+rQ7nM/xR1j3evNvOTUOO7y+YxGdS4O9
-	2dR2Iwjbu2uKVFgySX+fLJReHI9LMLs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1654681282;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3+IKQAxPaDV1lsEnEpDWXsKDpaqq+QeuuTyOBnuSML8=;
-	b=fZyDp39Z40Cps24sKFz9nGbbcGu125DC1tnBoEtml0A26bizwQg2TP89pLQcVePb6kWiQ5
-	xTuiA1A0A/X2H7SjB86YVTMXtjbmZ2wcmMZUTD+rQ7nM/xR1j3evNvOTUOO7y+YxGdS4O9
-	2dR2Iwjbu2uKVFgySX+fLJReHI9LMLs=
-Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
- [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-615-w3WQnUBOPViMCdoJoJfKsA-1; Wed, 08 Jun 2022 05:41:16 -0400
-X-MC-Unique: w3WQnUBOPViMCdoJoJfKsA-1
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.rdu2.redhat.com [10.11.54.5])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id CA5C61C01B2C;
-	Wed,  8 Jun 2022 09:41:15 +0000 (UTC)
-Received: from asgard.redhat.com (unknown [10.40.208.7])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 0009D9D7F;
-	Wed,  8 Jun 2022 09:41:10 +0000 (UTC)
-Date: Wed, 8 Jun 2022 11:41:08 +0200
-From: Eugene Syromiatnikov <esyr@redhat.com>
-To: guoren@kernel.org, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH V12 02/20] uapi: always define
- F_GETLK64/F_SETLK64/F_SETLKW64 in fcntl.h
-Message-ID: <20220608094108.GA18122@asgard.redhat.com>
-References: <20220405071314.3225832-1-guoren@kernel.org>
- <20220405071314.3225832-3-guoren@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJ9WY62GXz302c
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 01:05:13 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=Ukp02Ivtbnt/qfD+Hr8nM4W5X9OZTZ1VV5qELeaRbZ8=; b=bbxN9JJ2Y40pQW61I7MOn5Xh9V
+	S2c5QQ85ziHXD+1t+vjh+fhEPqK3iKxsEIjt7edJojnVzBl9gYwXvjRIeRNrN7ZibzX36WHLDVayV
+	nInDIdKkQ3BbhSqYmNWsz/BWsnpgq0hnvQFNP0XQXQaQmMCitXKvbycTG4I5w7PN7aMWKy95vrTUX
+	Uzl0vpf81V6OGBp/kwTpeykt3MVn9hantJe3I/I9BoxiPWvicF7AqjWicEUzWX/bGUDW8mfpyxbC/
+	CHmKhktwPRwgpVTZHfY5ORW3ZQsK5N3aBEK/OQ7rkuVgMtsoWyCiQqRvNg8qTMNOWWW7Vr6eX+dTm
+	f13zRk5g==;
+Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1nyxEg-00CjUs-8y; Wed, 08 Jun 2022 15:04:42 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(Client did not present a certificate)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 227AC301BE7;
+	Wed,  8 Jun 2022 17:04:41 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 089E520C0B5D8; Wed,  8 Jun 2022 17:04:41 +0200 (CEST)
+Date: Wed, 8 Jun 2022 17:04:40 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: rth@twiddle.net, ink@jurassic.park.msu.ru, mattst88@gmail.com,
+	vgupta@kernel.org, linux@armlinux.org.uk, ulli.kroll@googlemail.com,
+	linus.walleij@linaro.org, shawnguo@kernel.org,
+	Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de,
+	festevam@gmail.com, linux-imx@nxp.com, tony@atomide.com,
+	khilman@kernel.org, catalin.marinas@arm.com, will@kernel.org,
+	guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
+	kernel@xen0n.name, geert@linux-m68k.org, sammy@sammy.net,
+	monstr@monstr.eu, tsbogend@alpha.franken.de, dinguyen@kernel.org,
+	jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
+	shorne@gmail.com, James.Bottomley@hansenpartnership.com,
+	deller@gmx.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
+	paulus@samba.org, paul.walmsley@sifive.com, palmer@dabbelt.com,
+	aou@eecs.berkeley.edu, hca@linux.ibm.com, gor@linux.ibm.com,
+	agordeev@linux.ibm.com, borntraeger@linux.ibm.com,
+	svens@linux.ibm.com, ysato@users.sourceforge.jp, dalias@libc.org,
+	davem@davemloft.net, richard@nod.at,
+	anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+	tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+	dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com,
+	acme@kernel.org, mark.rutland@arm.com,
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+	namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
+	amakhalov@vmware.com, pv-drivers@vmware.com,
+	boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
+	rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
+	gregkh@linuxfoundation.org, mturquette@baylibre.com,
+	sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
+	sudeep.holla@arm.com, agross@kernel.org, bjorn.andersson@linaro.org,
+	anup@brainfault.org, thierry.reding@gmail.com, jonathanh@nvidia.com,
+	jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>,
+	yury.norov@gmail.com, andriy.shevchenko@linux.intel.com,
+	linux@rasmusvillemoes.dk, rostedt@goodmis.org, pmladek@suse.com,
+	senozhatsky@chromium.org, john.ogness@linutronix.de,
+	paulmck@kernel.org, frederic@kernel.org, quic_neeraju@quicinc.com,
+	josh@joshtriplett.org, mathieu.desnoyers@efficios.com,
+	jiangshanlai@gmail.com, joel@joelfernandes.org,
+	juri.lelli@redhat.com, vincent.guittot@linaro.org,
+	dietmar.eggemann@arm.com, bsegall@google.com, mgorman@suse.de,
+	bristot@redhat.com, vschneid@redhat.com, jpoimboe@kernel.org,
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org,
+	linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+	linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
+	virtualization@lists.linux-foundation.org,
+	xen-devel@lists.xenproject.org, linux-xtensa@linux-xtensa.org,
+	linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-tegra@vger.kernel.org, linux-arch@vger.kernel.org,
+	rcu@vger.kernel.org
+Subject: Re: [PATCH 34/36] cpuidle,omap3: Push RCU-idle into omap_sram_idle()
+Message-ID: <YqC6iJx4ygSmry0G@hirez.programming.kicks-ass.net>
+References: <20220608142723.103523089@infradead.org>
+ <20220608144518.073801916@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220405071314.3225832-3-guoren@kernel.org>
-User-Agent: Mutt/1.5.23 (2014-03-12)
-X-Scanned-By: MIMEDefang 2.79 on 10.11.54.5
+In-Reply-To: <20220608144518.073801916@infradead.org>
 X-Mailman-Approved-At: Thu, 09 Jun 2022 09:55:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -80,27 +121,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-parisc@vger.kernel.org, arnd@arndb.de, gregkh@linuxfoundation.org, naresh.kamboju@linaro.org, x86@kernel.org, linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org, nathan@kernel.org, palmer@dabbelt.com, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, ldv@strace.io, linuxppc-dev@lists.ozlabs.org, hch@lst.de, linux-arm-kernel@lists.infradead.org, heiko@sntech.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 05, 2022 at 03:12:56PM +0800, guoren@kernel.org wrote:
-> From: Christoph Hellwig <hch@lst.de>
-> 
-> Note that before this change they were never visible to userspace due
-> to the fact that CONFIG_64BIT is only set for kernel builds.
+On Wed, Jun 08, 2022 at 04:27:57PM +0200, Peter Zijlstra wrote:
+> @@ -254,11 +255,18 @@ void omap_sram_idle(void)
+>  	 */
+>  	if (save_state)
+>  		omap34xx_save_context(omap3_arm_context);
+> +
+> +	if (rcuidle)
+> +		cpuidle_rcu_enter();
+> +
+>  	if (save_state == 1 || save_state == 3)
+>  		cpu_suspend(save_state, omap34xx_do_sram_idle);
+>  	else
+>  		omap34xx_do_sram_idle(save_state);
+>  
+> +	if (rcuidle)
+> +		rcuidle_rcu_exit();
 
-> -#ifndef CONFIG_64BIT
-> +#if __BITS_PER_LONG == 32 || defined(__KERNEL__)
-
-Actually, it's quite the opposite: "ifndef" usage made it vailable at all times
-to the userspace, and this change has actually broken building strace
-with the latest kernel headers[1][2].  There could be some debate
-whether having these F_*64 definitions exposed to the user space 64-bit
-applications, but it seems that were no harm (as they were exposed already
-for quite some time), and they are useful at least for strace for compat
-application tracing purposes.
-
-[1] https://github.com/strace/strace/runs/6779763146?check_suite_focus=true#step:4:3222
-[2] https://pipelines.actions.githubusercontent.com/serviceHosts/e5309ebd-8a2f-43f4-a212-b52080275b5d/_apis/pipelines/1/runs/1473/signedlogcontent/12?urlExpires=2022-06-08T09%3A37%3A13.9248496Z&urlSigningMethod=HMACV1&urlSignature=fIT7vd0O4NNRwzwKWLXY4UVZBIIF3XiVI9skAsGvV0I%3D
-
+*sigh* so much for this having been exposed to the robots for >2 days :/
