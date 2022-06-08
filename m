@@ -4,50 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DBF2C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 20:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 323DDC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Jun 2022 22:23:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJK630xZCz3bpY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 06:47:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJMFf3v1Vz3c87
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 08:23:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CyRadPHN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Td2tdE9Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CyRadPHN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Td2tdE9Q;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJK5P2M8kz30Dp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 06:46:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJMDp3vsGz2yL6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 08:23:06 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 81A2A61CDB;
-	Wed,  8 Jun 2022 20:46:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC211C34116;
-	Wed,  8 Jun 2022 20:46:28 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 6D4FB61632
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 22:23:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D50E1C34116
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jun 2022 22:23:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1654721190;
-	bh=VRhhu9ajunTB2Jx0vvHFFqmQHOkemsXwtxpkKIgAyvU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=CyRadPHNy9qJDKi909xbwJHRtHy9LOPH1UB/XMc4YIkIoxj5GPLO4+jXZ5k0GDyPG
-	 jUTR5qxBF/ixGEDHDMCIfF1yM5KllXhXse9Zktz0nHDxheMS1cIpEyfxX9yj0+ZaeO
-	 kc8oWsL74MoSdJcqY+chAg2Jkg3qE1BPYXQnD5rRWERQsMK75RjFl9Wv0m4VQSOcso
-	 MJ6xIKSE0+tQJz79yqrs7jIPqIIdT/OY9shzL3ClwkV/6Uxa4u5oABW0+otiDPpagu
-	 a0sce2j99mYvQCVNBgbsbsTFPs/ezvJ1el/zguUqdeR24bfEO8lspctJNhhhY5RNr6
-	 Bb7ygD5dmSniw==
-From: Mark Brown <broonie@kernel.org>
-To: festevam@gmail.com, shengjiu.wang@gmail.com, alsa-devel@alsa-project.org, Xiubo.Lee@gmail.com, lgirdwood@gmail.com, shengjiu.wang@nxp.com, nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.com
-In-Reply-To: <1652963808-14515-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1652963808-14515-1-git-send-email-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Enable MCTL_MCLK_EN bit for master mode
-Message-Id: <165472118853.3018072.13972119584766008524.b4-ty@kernel.org>
-Date: Wed, 08 Jun 2022 21:46:28 +0100
+	s=k20201202; t=1654726982;
+	bh=sy0BOvZM72VeFVcrkmFH+VeqIYAdkdPsbjEcMvNzvrc=;
+	h=From:To:Subject:Date:From;
+	b=Td2tdE9Q9EwxlIo0B6ii8bRg2YNMBUw33NARmzQY4cIe9zlUkfjw/oFqJy2UZlGUT
+	 7YmkY7v/T973HzRu2rqOoYsZp2wzPndhjptM4ETx8HvNM/yjTdrRcQx+tewEl3U9bj
+	 7tNS6+9W7KVfiDaZ/EsGvdraLXBAxHdRnbgQp7sMVb987KWBLgY/OEHhhFKerJYsaJ
+	 5gQOAasbZiU/gg+UhvrZfzlHRCJ8AkgJw/L8VKKPOnaLHXNQc7gh/MyydScCC1DRcq
+	 RZkchd05Ts2DWHv1CjDXn+uTR4oS0F5b6ufjd6gY335cNJyAnRP0++h7piWQqe85KN
+	 vMRKwuwUFtdHA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id B50CBC05FD5; Wed,  8 Jun 2022 22:23:02 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 216095] New: sysfs: cannot create duplicate filename
+ '/devices/platform/of-display'
+Date: Wed, 08 Jun 2022 22:23:02 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: new
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_id short_desc product version
+ cf_kernel_version rep_platform op_sys cf_tree bug_status bug_severity
+ priority component assigned_to reporter cf_regression attachments.created
+Message-ID: <bug-216095-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,42 +79,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 19 May 2022 20:36:48 +0800, Shengjiu Wang wrote:
-> On i.MX8MM, the MCTL_MCLK_EN bit it is not only the gate
-> for MCLK output to PAD, but also the gate bit between
-> root clock and SAI module, So it is need to be enabled
-> for master mode, otherwise there is no bclk generated.
-> 
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=3D216095
 
-Applied to
+            Bug ID: 216095
+           Summary: sysfs: cannot create duplicate filename
+                    '/devices/platform/of-display'
+           Product: Platform Specific/Hardware
+           Version: 2.5
+    Kernel Version: 5.19-rc1
+          Hardware: PPC-32
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: PPC-32
+          Assignee: platform_ppc-32@kernel-bugs.osdl.org
+          Reporter: erhard_f@mailbox.org
+        Regression: No
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Created attachment 301127
+  --> https://bugzilla.kernel.org/attachment.cgi?id=3D301127&action=3Dedit
+dmesg (5.19-rc1, PowerMac G4 DP)
 
-Thanks!
+[...]
+sysfs: cannot create duplicate filename '/devices/platform/of-display'
+CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.19.0-rc1-PMacG4+ #3
+Call Trace:
+[e9025cc0] [c05984d0] dump_stack_lvl+0x60/0x90 (unreliable)
+[e9025ce0] [c02f043c] sysfs_warn_dup+0x64/0x84
+[e9025d00] [c02f05cc] sysfs_create_dir_ns+0xfc/0x118
+[e9025d30] [c059ffa4] kobject_add_internal+0x114/0x2f0
+[e9025d60] [c05a0790] kobject_add+0x80/0xf0
+[e9025da0] [c064c3d8] device_add+0x114/0x94c
+[e9025e10] [c06f197c] of_platform_device_create_pdata+0xb8/0x144
+[e9025e40] [c0c43bb4] of_platform_default_populate_init+0x284/0x2f4
+[e9025e70] [c0007a94] do_one_initcall+0x50/0x294
+[e9025ee0] [c0c03ff0] kernel_init_freeable+0x228/0x334
+[e9025f20] [c0007efc] kernel_init+0x28/0x144
+[e9025f40] [c0019334] ret_from_kernel_thread+0x5c/0x64
+kobject_add_internal failed for of-display with -EEXIST, don't try to regis=
+ter
+things with the same name in the same directory.
 
-[1/1] ASoC: fsl_sai: Enable MCTL_MCLK_EN bit for master mode
-      commit: ff87d619ac180444db297f043962a5c325ded47b
+--=20
+You may reply to this email to add a comment.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+You are receiving this mail because:
+You are watching the assignee of the bug.=
