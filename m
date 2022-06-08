@@ -4,58 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2361C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:24:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A2C3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:24:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPwY2wCNz3f5n
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:24:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=217.72.192.73; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPx05ptPz3hnB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:24:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=212.227.126.135; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJKn60M1Yz3bnT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 07:17:28 +1000 (AEST)
-Received: from mail-yb1-f181.google.com ([209.85.219.181]) by
- mrelayeu.kundenserver.de (mreue107 [213.165.67.113]) with ESMTPSA (Nemesis)
- id 1M9Evp-1o4oLt43br-006OjQ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun
- 2022 23:17:23 +0200
-Received: by mail-yb1-f181.google.com with SMTP id r1so10034937ybd.4
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2022 14:17:22 -0700 (PDT)
-X-Gm-Message-State: AOAM5316hyzNvNU4qsLv91eRc+Q1u23lv6Py0FEhJmpJlyKpHePIVXz8
-	CHA7LJVomJc4gvVodyM3YSbbGIc4sxYnr3iacnk=
-X-Google-Smtp-Source: ABdhPJzNVjvOg+I4TKoqtI9Mj5r7eGnKl4yZEYVHLzTr22uimte8bgKc1nTgREfDsecVqzQDeuxH8v8jGezndj85u8s=
-X-Received: by 2002:a25:e64b:0:b0:663:ffad:eac5 with SMTP id
- d72-20020a25e64b000000b00663ffadeac5mr3789690ybh.550.1654705730388; Wed, 08
- Jun 2022 09:28:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJLhT1930z3blw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 07:58:31 +1000 (AEST)
+Received: from mail-ot1-f53.google.com ([209.85.210.53]) by
+ mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1MfbwW-1nWZVT13RA-00g2vU for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun
+ 2022 23:58:27 +0200
+Received: by mail-ot1-f53.google.com with SMTP id a8-20020a05683012c800b0060c027c8afdso5826979otq.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2022 14:58:26 -0700 (PDT)
+X-Gm-Message-State: AOAM533EQBFb0KS0Ylsfbola1Tl3zK7Z3dAz5mq53RLAiMRNn7AjS5sC
+	zc+QorcJjHN6Dutlfa+atyBjjSCOa3mEtJqc8U4=
+X-Google-Smtp-Source: ABdhPJzN5kbTwiXruPcKSpnmqojFIl1cGQUBuhNCCdRneCrpSwm0deMOGKvKLmavgOJ05DHkpAoCHNV4Fm5CQu/QOU4=
+X-Received: by 2002:a0d:efc2:0:b0:2fe:d2b7:da8 with SMTP id
+ y185-20020a0defc2000000b002fed2b70da8mr36982567ywe.42.1654705351589; Wed, 08
+ Jun 2022 09:22:31 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220608142723.103523089@infradead.org> <20220608144518.010587032@infradead.org>
-In-Reply-To: <20220608144518.010587032@infradead.org>
+References: <20220608142723.103523089@infradead.org> <20220608144517.188449351@infradead.org>
+In-Reply-To: <20220608144517.188449351@infradead.org>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 8 Jun 2022 18:28:33 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a0g-fNu9=BUECSXcNeWT7XWHQMnSXZE-XYE+5eakHxKxA@mail.gmail.com>
-Message-ID: <CAK8P3a0g-fNu9=BUECSXcNeWT7XWHQMnSXZE-XYE+5eakHxKxA@mail.gmail.com>
-Subject: Re: [PATCH 33/36] cpuidle,omap3: Use WFI for omap3_pm_idle()
+Date: Wed, 8 Jun 2022 18:22:12 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a2y5+nrQFzhjrTTZe+d57Ug261J3kwLNe8Mu8i2qxtG2w@mail.gmail.com>
+Message-ID: <CAK8P3a2y5+nrQFzhjrTTZe+d57Ug261J3kwLNe8Mu8i2qxtG2w@mail.gmail.com>
+Subject: Re: [PATCH 20/36] arch/idle: Change arch_cpu_idle() IRQ behaviour
 To: Peter Zijlstra <peterz@infradead.org>
 Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:m9UWrk2ovY8IvKWEHnjPOjIc39/BhpwP8Qo6mY+xLyeSzKd/3O2
- tdP3xI869VXjvE655MYG1j3+NUeBTpZlJnO+ZKeIWVm8IUsRO7QYRvO3jSz6BRFtZs4M6p6
- mfaPEUfGA2xSV7WcQL1BBm3PqmJR2FIdCKhGQLw/65X7OSUCCGiRJrzfUBnvtorOd8jFcJQ
- daN/QkU4Ncw/7lrqwxSuQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:hOqurvyl6/Y=:yMtyWxdlaIIlqg5e0aR9/W
- 2SnhoHfuHKaiW8JmUwsORomP3So1pMIduz+usCHyLLYjrnUh/ZSBlnpHg90GDDWDUy+cyQ8Ug
- fGmRvzhFH3rYUtil3PG1EoHe/TE4l/h6KI3p/X5FecZtBZrrYQWKMKnmdRFwxBfAnHULdRUSB
- ctrY5LD6MJOrQs2EbpZHGDFbw4LLBQC9J7D0RzvJhH3jhMZowL1fSKmGSpl94ZHsmfqxc3Uz9
- KYUR1QvVv++Y5tj3XCIZ1PEo2T6sIUMLEDRy+8HKt7LKElG2UR0XE9r3rvLJqWjIOsRDQoL2Y
- csmk6hFK3FLJby31WkmhcwUCQkzgbfbR0eZL4eO5NX6danNr11G6im85Y3unq4y3eMMiGnTqH
- mQnfuniDzYIiIAdyV7cb3EjdvY5yucjWnF95zM6sEcMKOk4/utya8amdjp9xsKuZn/9Vl3ei8
- YUh3znnYn5PMw+NLGOM9kY7llv/ycQuOjA18RgCmp1AbALz+ZWuCFnzccV2MWJ0BuFDvy3OHW
- CSfZ5WMVk6ILsPXAaLolWa9UbbOXifpsnO7518DCYMyUJMD4/fTXdVwASJ9cfwPd/ZSWWImQQ
- aJbW+F0Oda63rwaXop2yzBMmvyDhAShCJ0tNqsSwStdYvcWW5Po8LU2y5e3/IU995r7YGSvFa
- H3E9DJUcBFlWLTBKudqTWAQX0jZoE4ccYlbh1UYJsQ69WYqFCBhQLd2+pHbpiWoiiywnrBYXs
- YeGa3FcEWEOQ/9RlyLKlpySAdKLx7vMwGd/tgDPJ1KlWOYMuilFIdb41F9GaSYGq4jdq4vcpL
- bNGGUteUYVmMZ7zKqDr8VOrQVQKaTbLIY/DVys4o/vc7X8L02GCRm1ETwQS/APrYD0W1EMlVS
- 2HerG5cQc8z+dDesYtoEmcxDMPsNBrI70H3fy+q+g=
+X-Provags-ID: V03:K1:jhsOR2OLfEmtFaGCck8aElezQtAMAi/hp+7qXSaB7Z4R8W6cVKU
+ RgDhJc+l4tbYnMAolFNf26sMPZWodHmepks0bpyhsqzSLZYwZ6g3kIJcH3mouFTkTmqNQU6
+ B6OWadRb41yTO4udEW+Zf99UGMn247cYioL9kHQFGFXVAhEabMbxU+30/bVV/7GjZUcqaJi
+ NHquoaXYq/R1JbiRYoN6A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:BvwcjheZQHU=:dK57Ic+Qi5v+yeD8gmMa54
+ PVKCuMuFDO8RVNeOEMLtuZzcnhqZ+DKLFFRj8tPEx9rtFatctgh6U29DJ9IrAovFObYnu2FdX
+ 6y/g8UTRl7fhCOianzyyDdab2KoERSUlBLqaKjBC4un+RbqZdcMcX0nUhH+Jocm5VGz88YkV2
+ sfb+DNNW12jDKZUej4cjJpyU+ztG0OhBxi44LFa8/MWW0XLOvyEjy1SJKvCKo6zFJNQfUCm8D
+ kHt5q8ccSS4azAyW8xvNDg3GlXfiH9JnH/jyP/Jx6Deqf0yLNGNpIY5TZCI15t9usxDHClIH6
+ 4WLdylDRssRBUkzDdz7IR4T5aC0JeTqX65WjGr/MufFgMA2nC/lvsYBzrXajjHRrbkey51pIN
+ CkA/QAbVqNN1yibOMLpW3JbQNazlfdH7OL3CK6Sm5n5G+gg90lB1hlyeJqLLBcW0kt9dms+q5
+ Vfo3mmWnZwrTmwhL8b4NQuEZa5fIu5MwhuFvE1BU6Nsc95WQg//T8MUx7FB4+fUJmHnVzzPPH
+ 88gtm6zvnBxb9aJ+s8wF/EEHJCdLtl8di0v4cNBbB64yOUfr5wawt4DODacUAtPJ26OKFWniB
+ tkcCE0euO+82/kGJ4DcDjx2bbeDh4tfHhIVcrvldZM0L3PHzGLR9jatQXoVy4B64+6ClimXb+
+ eHwnGlYSKmyGojCvNT5/06i4NijIhPuGBKZJiDgEWLa7H+mIGDJe5ZxrlH1OXA5LSRv1O6uUD
+ z44mV+9SM1CoWrFUA3N/1/a85lPYrJ8u2wP7rYetNqQwl5SG+rNYaow8AiFyKQiW9kKq+Lxrk
+ Vy7ETR8+Ikv7Uf/aM7NLxWvtddHMu9ikyPPZkq0J7z8Zh4WrYVproxd8yFeM17WToL3S20Lu3
+ iLCdWtU3Vs+0/Av5ljAF0efMuZRQ2d1QMI8oqRD6r4WRE8ni/FG9McfSfkI0LYdIeKG/mjHu9
+ U7PnABqgBH1OdwhxSGWgg6bSfTFQcv11UWu+A203ScM49+1kzR7ei
 X-Mailman-Approved-At: Thu, 09 Jun 2022 09:55:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,22 +83,20 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 On Wed, Jun 8, 2022 at 4:27 PM Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> arch_cpu_idle() is a very simple idle interface and exposes only a
-> single idle state and is expected to not require RCU and not do any
-> tracing/instrumentation.
+> Current arch_cpu_idle() is called with IRQs disabled, but will return
+> with IRQs enabled.
 >
-> As such, omap_sram_idle() is not a valid implementation. Replace it
-> with the simple (shallow) omap3_do_wfi() call. Leaving the more
-> complicated idle states for the cpuidle driver.
+> However, the very first thing the generic code does after calling
+> arch_cpu_idle() is raw_local_irq_disable(). This means that
+> architectures that can idle with IRQs disabled end up doing a
+> pointless 'enable-disable' dance.
+>
+> Therefore, push this IRQ disabling into the idle function, meaning
+> that those architectures can avoid the pointless IRQ state flipping.
 >
 > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-I see similar code in omap2:
+I think you now need to add the a raw_local_irq_disable(); in loongarch
+as well.
 
-omap2_pm_idle()
- -> omap2_enter_full_retention()
-     -> omap2_sram_suspend()
-
-Is that code path safe to use without RCU or does it need a similar change?
-
-        Arnd
+       Arnd
