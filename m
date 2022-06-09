@@ -4,60 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A2C3C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 00:24:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 679E9C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 05:57:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJPx05ptPz3hnB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:24:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=212.227.126.135; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJYKK4GkLz3c8M
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 15:57:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=<UNKNOWN>)
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJLhT1930z3blw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 07:58:31 +1000 (AEST)
-Received: from mail-ot1-f53.google.com ([209.85.210.53]) by
- mrelayeu.kundenserver.de (mreue012 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1MfbwW-1nWZVT13RA-00g2vU for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun
- 2022 23:58:27 +0200
-Received: by mail-ot1-f53.google.com with SMTP id a8-20020a05683012c800b0060c027c8afdso5826979otq.10
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jun 2022 14:58:26 -0700 (PDT)
-X-Gm-Message-State: AOAM533EQBFb0KS0Ylsfbola1Tl3zK7Z3dAz5mq53RLAiMRNn7AjS5sC
-	zc+QorcJjHN6Dutlfa+atyBjjSCOa3mEtJqc8U4=
-X-Google-Smtp-Source: ABdhPJzN5kbTwiXruPcKSpnmqojFIl1cGQUBuhNCCdRneCrpSwm0deMOGKvKLmavgOJ05DHkpAoCHNV4Fm5CQu/QOU4=
-X-Received: by 2002:a0d:efc2:0:b0:2fe:d2b7:da8 with SMTP id
- y185-20020a0defc2000000b002fed2b70da8mr36982567ywe.42.1654705351589; Wed, 08
- Jun 2022 09:22:31 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJVSw0Vnjz304r
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 13:49:03 +1000 (AEST)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id EFD956732D; Thu,  9 Jun 2022 05:48:52 +0200 (CEST)
+Date: Thu, 9 Jun 2022 05:48:52 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Luis Chamberlain <mcgrof@kernel.org>
+Subject: Re: [PATCH] kprobes: Enable tracing for mololithic kernel images
+Message-ID: <20220609034852.GA30873@lst.de>
+References: <20220608000014.3054333-1-jarkko@profian.com> <CAJF2gTQgCn2CyZ4+VBqEEBT2b4+1KxoEXxrd+Ritk=58+U8EFA@mail.gmail.com> <YqAy0qjI4Lktk/uJ@iki.fi> <20220608232115.ccd4399f4a1d133e9b65c2a9@kernel.org> <CAPhsuW6iUieQvA6KqzSLgtxmjkVSWCuVwNA338DATb_myHxo7w@mail.gmail.com> <CAPhsuW6BzUtqnjvaGJScXRpghs0_V_phpdyd4_oAKhvmkX-GFw@mail.gmail.com> <YqEF6+YKqCHsWZJW@bombadil.infradead.org>
 MIME-Version: 1.0
-References: <20220608142723.103523089@infradead.org> <20220608144517.188449351@infradead.org>
-In-Reply-To: <20220608144517.188449351@infradead.org>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 8 Jun 2022 18:22:12 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2y5+nrQFzhjrTTZe+d57Ug261J3kwLNe8Mu8i2qxtG2w@mail.gmail.com>
-Message-ID: <CAK8P3a2y5+nrQFzhjrTTZe+d57Ug261J3kwLNe8Mu8i2qxtG2w@mail.gmail.com>
-Subject: Re: [PATCH 20/36] arch/idle: Change arch_cpu_idle() IRQ behaviour
-To: Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Provags-ID: V03:K1:jhsOR2OLfEmtFaGCck8aElezQtAMAi/hp+7qXSaB7Z4R8W6cVKU
- RgDhJc+l4tbYnMAolFNf26sMPZWodHmepks0bpyhsqzSLZYwZ6g3kIJcH3mouFTkTmqNQU6
- B6OWadRb41yTO4udEW+Zf99UGMn247cYioL9kHQFGFXVAhEabMbxU+30/bVV/7GjZUcqaJi
- NHquoaXYq/R1JbiRYoN6A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:BvwcjheZQHU=:dK57Ic+Qi5v+yeD8gmMa54
- PVKCuMuFDO8RVNeOEMLtuZzcnhqZ+DKLFFRj8tPEx9rtFatctgh6U29DJ9IrAovFObYnu2FdX
- 6y/g8UTRl7fhCOianzyyDdab2KoERSUlBLqaKjBC4un+RbqZdcMcX0nUhH+Jocm5VGz88YkV2
- sfb+DNNW12jDKZUej4cjJpyU+ztG0OhBxi44LFa8/MWW0XLOvyEjy1SJKvCKo6zFJNQfUCm8D
- kHt5q8ccSS4azAyW8xvNDg3GlXfiH9JnH/jyP/Jx6Deqf0yLNGNpIY5TZCI15t9usxDHClIH6
- 4WLdylDRssRBUkzDdz7IR4T5aC0JeTqX65WjGr/MufFgMA2nC/lvsYBzrXajjHRrbkey51pIN
- CkA/QAbVqNN1yibOMLpW3JbQNazlfdH7OL3CK6Sm5n5G+gg90lB1hlyeJqLLBcW0kt9dms+q5
- Vfo3mmWnZwrTmwhL8b4NQuEZa5fIu5MwhuFvE1BU6Nsc95WQg//T8MUx7FB4+fUJmHnVzzPPH
- 88gtm6zvnBxb9aJ+s8wF/EEHJCdLtl8di0v4cNBbB64yOUfr5wawt4DODacUAtPJ26OKFWniB
- tkcCE0euO+82/kGJ4DcDjx2bbeDh4tfHhIVcrvldZM0L3PHzGLR9jatQXoVy4B64+6ClimXb+
- eHwnGlYSKmyGojCvNT5/06i4NijIhPuGBKZJiDgEWLa7H+mIGDJe5ZxrlH1OXA5LSRv1O6uUD
- z44mV+9SM1CoWrFUA3N/1/a85lPYrJ8u2wP7rYetNqQwl5SG+rNYaow8AiFyKQiW9kKq+Lxrk
- Vy7ETR8+Ikv7Uf/aM7NLxWvtddHMu9ikyPPZkq0J7z8Zh4WrYVproxd8yFeM17WToL3S20Lu3
- iLCdWtU3Vs+0/Av5ljAF0efMuZRQ2d1QMI8oqRD6r4WRE8ni/FG9McfSfkI0LYdIeKG/mjHu9
- U7PnABqgBH1OdwhxSGWgg6bSfTFQcv11UWu+A203ScM49+1kzR7ei
-X-Mailman-Approved-At: Thu, 09 Jun 2022 09:55:19 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <YqEF6+YKqCHsWZJW@bombadil.infradead.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Mailman-Approved-At: Thu, 09 Jun 2022 15:57:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,34 +40,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Rafael Wysocki <rafael@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Ben Segall <bsegall@google.com>, Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>, srivatsa@csail.mit.edu, linux-arch <linux-arch@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andy Gross <agross@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, NXP Linux Team <linux-imx@nxp.com>, Catalin Marinas <catalin.marinas@arm.com>, xen-devel <xen-devel@lists.xenproject.org>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Michael Turquette <mturquette@baylibre.com>, Sam Creasey <sammy@sammy.net>, Petr Mladek <pmladek@suse.com>, Linux PM list <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, linux-um <linux-um@lists.infrade
- ad.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Richard Henderson <rth@twiddle.net>, gregkh <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org, Sergey Senozhatsky <senozhatsky@chromium.org>, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, Paul Mackerras <paulus@samba.org>, Mark Rutland <mark.rutland@arm.com>, "open list:IA64 \(Itanium\) PLATFORM" <linux-ia64@vger.kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, "open list:DRM DRIVER FOR QEMU'S CIRRUS DEVICE" <virtualization@lists.linux-foundation.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Xuerui Wang <kernel@xen0n.name>, quic_neeraju@quicinc.com, linux-s390 <linux-s390@vger.kernel.org>, vschneid@redhat.com, John Ogn
- ess <john.ogness@linutronix.de>, Yoshinori Sato <ysat
+Cc: Dan Li <ashimida@linux.alibaba.com>, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, Guo Ren <guoren@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Christoph Hellwig <hch@lst.de>, Javier Martinez Canillas <javierm@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Catalin Marinas <catalin.marinas@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Guenter Roeck <linux@roeck-us.net>, =?iso-8859-1?Q?Andr=E9?= Almeida <andrealmeid@igalia.com>, Michael Roth <michael.roth@amd.com>, Nicholas Piggin <npiggin@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Andrey Konovalov <andreyknvl@gmail.com>, Nick Desaulniers <ndesaulniers@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sven Schnelle <svens@linux.ibm.com>, Wu Caize <zepan@sipeed.com>, Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Rutland <mark.rutland@arm.com>, Luis Machado <luis.machado@linaro.org>, Atsushi Nemoto <anemo
+ @mba.ocn.ne.jp>, Dave Hansen <dave.hansen@linux.intel.com>, Joey Gouly <joey.gouly@arm.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Song Liu <song@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Ilya Leoshkevich <iii@linux.ibm.com>, Anup Patel <anup@brainfault.org>, Helge Deller <deller@gmx.de>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Masami Hiramatsu <mhiramat@kernel.org>, Tom Lendacky <thomas.lendacky@amd.com>, Vasily Gorbik <gor@linux.ibm.com>, Philipp Tomsich <philipp.tomsich@vrull.eu>, Dave Anglin <dave.anglin@bell.net>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Daniel Axtens <dja@axtens.net>, Nicolas Pitre <nico@fluxnic.net>, Jarkko Sakkinen <jarkko@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Daniel Bristot de Oliveira <bristot@redhat.com>, Kefeng Wang <wangkefeng.wang@huawei.com>, Emil Renner Berthing <kernel@esmil.dk>, Jordan Niethe <jniethe5@gmail.com>, Atish
+  Patra <atishp@atishpatra.org>, Alexei Starovoitov <a
 
-o@users.sourceforge.jp>, Linux-sh list <linux-sh@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Helge Deller <deller@gmx.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <frederic@kernel.org>, Len Brown <lenb@kernel.org>, "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>, Sascha Hauer <kernel@pengutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, alpha <linux-alpha@vger.kernel.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Stafford Horne <shorne@gmail.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Chris Zankel <chris@zankel.net>, Stephen Boyd <sboyd@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Daniel Bristot de Oliveira <bristot@redhat.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, lpieralisi@kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Joel Fernandes <
- joel@joelfernandes.org>, Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Kevin Hilman <khilman@kernel.org>, linux-csky@vger.kernel.org, Pv-drivers <pv-drivers@vmware.com>, "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>, Mel Gorman <mgorman@suse.de>, jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, Vineet Gupta <vgupta@kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>, rcu@vger.kernel.org, Borislav Petkov <bp@alien8.de>, bcain@quicinc.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Parisc List <linux-parisc@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Shawn Guo <shawnguo@kernel.org>, David Miller <davem@davemloft.net>, Rich Felker <dalias@libc.org>, Tony Lindgren <tony@atomide.com>, amakhalov@vmware.com, Bjorn Andersson <bjorn.andersson@linaro.org>, "H. Peter Anvin" <hpa@zytor.c
- om>, sparclinux <sparclinux@vger.kernel.org>, "open l
-ist:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>, linux-riscv <linux-riscv@lists.infradead.org>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, Yury Norov <yury.norov@gmail.com>, Richard Weinberger <richard@nod.at>, the arch/x86 maintainers <x86@kernel.org>, Russell King - ARM Linux <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Openrisc <openrisc@lists.librecores.org>, Paul Walmsley <paul.walmsley@sifive.com>, "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>, Namhyung Kim <namhyung@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jpoimboe@kernel.org, Juergen Gross <jgross@suse.com>, Michal Simek <monstr@monstr.eu>, "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Anup Patel <anu
- p@brainfault.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+st@kernel.org>, Will Deacon <will@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>, Jarkko Sakkinen <jarkko@profian.com>, Sami Tolvanen <samitolvanen@google.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>, Steven Rostedt <rostedt@goodmis.org>, Nathan Chancellor <nathan@kernel.org>, "Russell King \(Oracle\)" <rmk+kernel@armlinux.org.uk>, Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>, Alexander Egorenkov <egorenar@linux.ibm.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Parisc List <linux-parisc@vger.kernel.org>, Nathaniel McCallum <nathaniel@profian.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Tobias Huschle <huschle@linux.ibm.com>, "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>, Tiezhu Yang <yangtiezhu@loongs
+ on.cn>, Miroslav Benes <mbenes@suse.cz>, Chen Zhongjin <chenzhongjin@huawei.com>, Ard Biesheuvel <ardb@kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-riscv <linux-riscv@lists.infradead.org>, Ingo Molnar <mingo@redhat.com>, Aaron Tomlin <atomlin@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, Heiko Carstens <hca@linux.ibm.com>, Liao Chang <liaochang1@huawei.com>, Paul Walmsley <paul.walmsley@sifive.com>, Josh Poimboeuf <jpoimboe@kernel.org>, Thomas Richter <tmricht@linux.ibm.com>, "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Changbin Du <changbin.du@intel.com>, Palmer Dabbelt <palmer@dabbelt.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jun 8, 2022 at 4:27 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> Current arch_cpu_idle() is called with IRQs disabled, but will return
-> with IRQs enabled.
->
-> However, the very first thing the generic code does after calling
-> arch_cpu_idle() is raw_local_irq_disable(). This means that
-> architectures that can idle with IRQs disabled end up doing a
-> pointless 'enable-disable' dance.
->
-> Therefore, push this IRQ disabling into the idle function, meaning
-> that those architectures can avoid the pointless IRQ state flipping.
->
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+On Wed, Jun 08, 2022 at 01:26:19PM -0700, Luis Chamberlain wrote:
+> No, that was removed because it has only one user.
 
-I think you now need to add the a raw_local_irq_disable(); in loongarch
-as well.
+That is only part of the story.  The other part is that the overall
+kernel simply does not have any business allocating exutable memory.
+Executable memory is a very special concept for modules or module-like
+code like kprobes, and should not be exposed as a general concept.
 
-       Arnd
+Especially as executable memory really should not also be writable
+for security reasons.  In other words, we should actually never
+allocate executable memory, every.  We might seal memory and then
+mark it executable after having written to it, which is how modules
+and kprobes are implemented on all modern Linux ports anyway.
