@@ -4,58 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBADEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:17:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDEB6C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:18:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJg5P63c5z3cCC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 20:17:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJg5q1R0sz3cFW
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 20:18:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJg4x5w5Pz3blY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:17:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJg526QbWz3bqx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:17:26 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LJg4n2cjVz9tJH;
-	Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4LJg4p0fyjz9tJB;
+	Thu,  9 Jun 2022 12:17:14 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CquQaKZpF0QP; Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
+	with ESMTP id CwCJpVoUbHxB; Thu,  9 Jun 2022 12:17:14 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LJg4n1rgVz9tJB;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4LJg4n1zxpz9tJF;
 	Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C5888B77E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 334D88B779;
 	Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 9m_gcIdVOhYL; Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
+	with ESMTP id yeryjKyfAtDF; Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.129])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D2ADB8B779;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D58CA8B77D;
 	Thu,  9 Jun 2022 12:17:12 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 259AH7eB133875
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 259AH37n133866
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 9 Jun 2022 12:17:07 +0200
+	Thu, 9 Jun 2022 12:17:03 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 259AH7Et133874;
-	Thu, 9 Jun 2022 12:17:07 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 259AH0PB133864;
+	Thu, 9 Jun 2022 12:17:00 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 3/3] powerpc/irq: Simplify __do_irq()
-Date: Thu,  9 Jun 2022 12:16:42 +0200
-Message-Id: <5a3b21311191f1240850db6ab29b19ac7885fe03.1654769775.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 1/3] powerpc/irq: Make __do_irq() static
+Date: Thu,  9 Jun 2022 12:16:40 +0200
+Message-Id: <adbe1c8315ec2d63259f41468e82e51677bb1eda.1654769775.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.35.3
-In-Reply-To: <adbe1c8315ec2d63259f41468e82e51677bb1eda.1654769775.git.christophe.leroy@csgroup.eu>
-References: <adbe1c8315ec2d63259f41468e82e51677bb1eda.1654769775.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1654769796; l=977; s=20211009; h=from:subject:message-id; bh=xPwNVe000eN2DJVt6xZCsdQz6hHo3NPxzkYNOYjA61w=; b=2GsZPo4SfVOte/difHxgCcuUUYr7GCKFeyh2awhrz+t7BYYbg7DTK3LUREljdSFkogHE1P7KiMmw Scln8xAYCi/jtTgZxT3P/eSt1q3q1U+jzYrvAFfkOdeOTyfyViLy
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1654769796; l=2894; s=20211009; h=from:subject:message-id; bh=D/YnwbpsLRuA5tJYiZC5RVaVHXgdTEiVTKEkUJ95FSE=; b=Qaamowtk+TMggMfh9IooX3NDV7HcTwS5pRTBwM545kHOyAZIfRv/2JfrVcBW0Q0rQk6Eg6D69om/ KWZy4d24C/wDwabcvEioa17SkELs5MmrwFwMcMgUbPCZpTJ7hv5N
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,36 +71,96 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove duplicated code by implementing a proper if/else.
+Since commit 48cf12d88969 ("powerpc/irq: Inline call_do_irq() and
+call_do_softirq()"), __do_irq() is not used outside irq.c
+
+Reorder functions and make __do_irq() static and
+drop the declaration in irq.h.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/irq.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/irq.h |  1 -
+ arch/powerpc/kernel/irq.c      | 46 +++++++++++++++++-----------------
+ 2 files changed, 23 insertions(+), 24 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+index 13f0409dd617..5c1516a5ba8f 100644
+--- a/arch/powerpc/include/asm/irq.h
++++ b/arch/powerpc/include/asm/irq.h
+@@ -54,7 +54,6 @@ extern void *softirq_ctx[NR_CPUS];
+ 
+ void __do_IRQ(struct pt_regs *regs);
+ extern void __init init_IRQ(void);
+-extern void __do_irq(struct pt_regs *regs);
+ 
+ int irq_choose_cpu(const struct cpumask *mask);
+ 
 diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index e5b7fb5282ee..b007f16ccbd3 100644
+index 873e6dffb868..370434f6c316 100644
 --- a/arch/powerpc/kernel/irq.c
 +++ b/arch/powerpc/kernel/irq.c
-@@ -280,14 +280,11 @@ void __do_IRQ(struct pt_regs *regs)
- 	irqsp = hardirq_ctx[raw_smp_processor_id()];
- 	sirqsp = softirq_ctx[raw_smp_processor_id()];
- 
--	/* Already there ? */
--	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
-+	/* Already there ? If not switch stack and call */
-+	if (unlikely(cursp == irqsp || cursp == sirqsp))
- 		__do_irq(regs, current_stack_pointer);
--		set_irq_regs(old_regs);
--		return;
--	}
--	/* Switch stack and call */
--	call_do_irq(regs, irqsp);
-+	else
-+		call_do_irq(regs, irqsp);
- 
- 	set_irq_regs(old_regs);
+@@ -219,31 +219,9 @@ static __always_inline void call_do_softirq(const void *sp)
+ 	);
  }
+ 
+-static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
+-{
+-	register unsigned long r3 asm("r3") = (unsigned long)regs;
+-
+-	/* Temporarily switch r1 to sp, call __do_irq() then restore r1. */
+-	asm volatile (
+-		 PPC_STLU "	%%r1, %[offset](%[sp])	;"
+-		"mr		%%r1, %[sp]		;"
+-		"bl		%[callee]		;"
+-		 PPC_LL "	%%r1, 0(%%r1)		;"
+-		 : // Outputs
+-		   "+r" (r3)
+-		 : // Inputs
+-		   [sp] "b" (sp), [offset] "i" (THREAD_SIZE - STACK_FRAME_OVERHEAD),
+-		   [callee] "i" (__do_irq)
+-		 : // Clobbers
+-		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
+-		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
+-		   "r11", "r12"
+-	);
+-}
+-
+ DEFINE_STATIC_CALL_RET0(ppc_get_irq, *ppc_md.get_irq);
+ 
+-void __do_irq(struct pt_regs *regs)
++static void __do_irq(struct pt_regs *regs)
+ {
+ 	unsigned int irq;
+ 
+@@ -269,6 +247,28 @@ void __do_irq(struct pt_regs *regs)
+ 	trace_irq_exit(regs);
+ }
+ 
++static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
++{
++	register unsigned long r3 asm("r3") = (unsigned long)regs;
++
++	/* Temporarily switch r1 to sp, call __do_irq() then restore r1. */
++	asm volatile (
++		 PPC_STLU "	%%r1, %[offset](%[sp])	;"
++		"mr		%%r1, %[sp]		;"
++		"bl		%[callee]		;"
++		 PPC_LL "	%%r1, 0(%%r1)		;"
++		 : // Outputs
++		   "+r" (r3)
++		 : // Inputs
++		   [sp] "b" (sp), [offset] "i" (THREAD_SIZE - STACK_FRAME_OVERHEAD),
++		   [callee] "i" (__do_irq)
++		 : // Clobbers
++		   "lr", "xer", "ctr", "memory", "cr0", "cr1", "cr5", "cr6",
++		   "cr7", "r0", "r4", "r5", "r6", "r7", "r8", "r9", "r10",
++		   "r11", "r12"
++	);
++}
++
+ void __do_IRQ(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
 -- 
 2.35.3
 
