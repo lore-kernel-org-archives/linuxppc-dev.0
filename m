@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7FF7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 434E8C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:47:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn4M3vYcz3cg0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:47:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn4n5sYgz3f23
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:47:37 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2H63p2z3bmQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2J0HDCz3bmQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:28 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn286JLLz4xD5;
-	Fri, 10 Jun 2022 00:45:20 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn2D62bSz4xZ0;
+	Fri, 10 Jun 2022 00:45:24 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: catalin.marinas@arm.com, keescook@chromium.org, mpe@ellerman.id.au, He Ying <heying24@huawei.com>, npiggin@gmail.com, peterz@infradead.org, christophe.leroy@csgroup.eu, benh@kernel.crashing.org, paulus@samba.org, sxwjean@gmail.com
-In-Reply-To: <20220121014418.155675-1-heying24@huawei.com>
-References: <20220119015025.136902-1-heying24@huawei.com> <20220121014418.155675-1-heying24@huawei.com>
-Subject: Re: [PATCH -v2] powerpc/process, kasan: Silence KASAN warnings in __get_wchan()
-Message-Id: <165478587162.589231.6430852932301326942.b4-ty@ellerman.id.au>
-Date: Fri, 10 Jun 2022 00:44:31 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>, Masahiro Yamada <masahiroy@kernel.org>
+In-Reply-To: <20220604085050.4078927-1-masahiroy@kernel.org>
+References: <20220604085050.4078927-1-masahiroy@kernel.org>
+Subject: Re: [PATCH] powerpc: get rid of #include <generated/compile.h>
+Message-Id: <165478587541.589231.1462511723617855253.b4-ty@ellerman.id.au>
+Date: Fri, 10 Jun 2022 00:44:35 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,37 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chenjingwen6@huawei.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, huwanming@huaweil.com
+Cc: Rob Herring <robh@kernel.org>, Jason Yan <yanaijie@huawei.com>, linux-kernel@vger.kernel.org, Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>, Frank Rowand <frank.rowand@sony.com>, Diana Craciun <diana.craciun@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 20 Jan 2022 20:44:18 -0500, He Ying wrote:
-> The following KASAN warning was reported in our kernel.
+On Sat, 4 Jun 2022 17:50:50 +0900, Masahiro Yamada wrote:
+> You cannot include <generated/compile.h> here because it is generated
+> in init/Makefile but there is no guarantee that it happens before
+> arch/powerpc/mm/nohash/kaslr_booke.c is compiled for parallel builds.
 > 
->   BUG: KASAN: stack-out-of-bounds in get_wchan+0x188/0x250
->   Read of size 4 at addr d216f958 by task ps/14437
+> The places where you can reliably include <generated/compile.h> are:
 > 
->   CPU: 3 PID: 14437 Comm: ps Tainted: G           O      5.10.0 #1
->   Call Trace:
->   [daa63858] [c0654348] dump_stack+0x9c/0xe4 (unreliable)
->   [daa63888] [c035cf0c] print_address_description.constprop.3+0x8c/0x570
->   [daa63908] [c035d6bc] kasan_report+0x1ac/0x218
->   [daa63948] [c00496e8] get_wchan+0x188/0x250
->   [daa63978] [c0461ec8] do_task_stat+0xce8/0xe60
->   [daa63b98] [c0455ac8] proc_single_show+0x98/0x170
->   [daa63bc8] [c03cab8c] seq_read_iter+0x1ec/0x900
->   [daa63c38] [c03cb47c] seq_read+0x1dc/0x290
->   [daa63d68] [c037fc94] vfs_read+0x164/0x510
->   [daa63ea8] [c03808e4] ksys_read+0x144/0x1d0
->   [daa63f38] [c005b1dc] ret_from_syscall+0x0/0x38
->   --- interrupt: c00 at 0x8fa8f4
->       LR = 0x8fa8cc
+>   - init/          (because init/Makefile can specify the dependency)
+>   - arch/*/boot/   (because it is compiled after vmlinux)
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/process, kasan: Silence KASAN warnings in __get_wchan()
-      https://git.kernel.org/powerpc/c/a1b29ba2f2c171b9bea73be993bfdf0a62d37d15
+[1/1] powerpc: get rid of #include <generated/compile.h>
+      https://git.kernel.org/powerpc/c/7ad4bd887d27c6b6ffbef216f19c19f8fe2b8f52
 
 cheers
