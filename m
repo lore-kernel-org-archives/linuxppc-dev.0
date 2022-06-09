@@ -4,123 +4,104 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C43A2C43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 11:14:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6853DC43334
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 11:15:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LKJJb3Fcwz3dQY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 21:14:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LKJKz6kWTz3fF7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 21:15:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=belden.com header.i=@belden.com header.a=rsa-sha256 header.s=podpps1 header.b=q0tizpIe;
+	dkim=pass (2048-bit key; unprotected) header.d=hotmail.com header.i=@hotmail.com header.a=rsa-sha256 header.s=selector1 header.b=QU5y3jf9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=belden.com (client-ip=205.220.178.250; helo=mx0b-00015a02.pphosted.com; envelope-from=prvs=7159c858d4=ariel.miculas@belden.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hotmail.com (client-ip=2a01:111:f400:feae::803; helo=apc01-psa-obe.outbound.protection.outlook.com; envelope-from=wenhu.wang@hotmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=belden.com header.i=@belden.com header.a=rsa-sha256 header.s=podpps1 header.b=q0tizpIe;
+	dkim=pass (2048-bit key; unprotected) header.d=hotmail.com header.i=@hotmail.com header.a=rsa-sha256 header.s=selector1 header.b=QU5y3jf9;
 	dkim-atps=neutral
-X-Greylist: delayed 859 seconds by postgrey-1.36 at boromir; Thu, 09 Jun 2022 20:11:02 AEST
-Received: from mx0b-00015a02.pphosted.com (mx0b-00015a02.pphosted.com [205.220.178.250])
+Received: from APC01-PSA-obe.outbound.protection.outlook.com (mail-psaapc01olkn20803.outbound.protection.outlook.com [IPv6:2a01:111:f400:feae::803])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJfxf6kMFz3blW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:10:56 +1000 (AEST)
-Received: from pps.filterd (m0264210.ppops.net [127.0.0.1])
-	by mx0a-00015a02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2598qmLj025059
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jun 2022 04:56:34 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=belden.com; h=from : to : cc :
- subject : date : message-id : content-transfer-encoding : content-type :
- mime-version; s=podpps1; bh=WFpyIfR/JFvLg7ap/w5QXz8ahJGkfTDNeujkdOlJpFE=;
- b=q0tizpIeYL0jTTvxkD4XbLItuketVrAlxpvbgCmtqqCm6JRuteNF6MVCv+pry1UhGmL6
- ekibkRnQLaodcuIS+kv87bALAh7v0ZMy1mtbjVF6Il5EoqIIIcNBdYxUwn9qIN0gGDMN
- wLqMUTHmVrIQ8/eOAfY8RgI7fCGhKEdPujx4d1VHBYBtFOPeMQeNb55HSq5N8dwLqC0F
- D9CGOO9bXhr2wRxzwCaT+i3RrunagTTX41Jqv5JFbqtexes4W9YmG3UHw/xDb170rmSy
- 1rKoRn5T4sSlTa7GoBJGwNyQ6lEsvJLXyRfI16b65c6GP7Tiqo70vUY1MqeaWp3hxm0B ow== 
-Received: from nam11-bn8-obe.outbound.protection.outlook.com (mail-bn8nam11lp2175.outbound.protection.outlook.com [104.47.58.175])
-	by mx0a-00015a02.pphosted.com (PPS) with ESMTPS id 3gjuft3mhe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jun 2022 04:56:34 -0500
-Received: from PH0PR18MB5069.namprd18.prod.outlook.com (2603:10b6:510:169::8)
- by CY4PR1801MB1992.namprd18.prod.outlook.com (2603:10b6:910:78::36) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5314.19; Thu, 9 Jun
- 2022 09:53:01 +0000
-Received: from PH0PR18MB5069.namprd18.prod.outlook.com
- ([fe80::f5ab:d45e:69de:f99c]) by PH0PR18MB5069.namprd18.prod.outlook.com
- ([fe80::f5ab:d45e:69de:f99c%3]) with mapi id 15.20.5332.013; Thu, 9 Jun 2022
- 09:53:01 +0000
-From: Ariel Miculas <ariel.miculas@belden.com>
-To: linuxppc-dev@lists.ozlabs.org, christian.johannes@belden.com
-Subject: [PATCH] powerpc/ptrace: Fix buffer overflow when handling PTRACE_PEEKUSER and PTRACE_POKEUSER
-Date: Thu,  9 Jun 2022 12:52:35 +0300
-Message-Id: <20220609095235.37863-1-ariel.miculas@belden.com>
-X-Mailer: git-send-email 2.36.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJgNK16gsz3bjX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:30:39 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=S8i4Re1EoJeWuL1mYdy4xJ2JwCwr1SfaVSoeArM2Hn2yaDsz5A8aXE/5flKi/jQDqHyYCw6P5bNpm4AWIOcZm5yJlACkmlhNXzJeKyiPjcOqv4MORjfZ8m1VccIp1t/zGEUTilZ+K/SSWCrVo2GdIKAbTwyjIFtkURwPZFeiY9xENjro/izolZuyeM+jy9l/9iNMbJ1wX8T2NM7nsNoiP8PmD+aKubrXw0tjmtqsJjKmlHb+P8IrsgagYZ12mEqbwC9q2ik5+H69DcnB6HbQiplNAKna80aIomOD/b8bsJwdjSFBcGcMQFx8uZcP88wfnoywXrUvMKPqeqiC3/OdBw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=BvgOYuOPv2moA19OINoxDOjiZIr8ezSiG6KJfoBeH44=;
+ b=JtN0pqUITyQYyyYpZwGrNgTwdjrFBfkoj2QYUhQ0qKbXS4ZbNgJMEtj+kuvxkfTBxtC544qHRu+sHCid7x2Hf4Qelxh5/GnsyHmvvrk+Q/7RGtTWNligV1FId2ryoXsL3cjzlt5TOJgLUs8N/7G4ZyMFnVVVEo9PgsP4FUYghpIA07F1xQqKQS9ogIg6i6cS1CX0U2R3kV23X6I3L3oW23sd9ROWJD05SjjZTfBQq6+rQFkpG1z2JZgaLZ/YQndO7zqboxh65CLxxZWCzHSS0O1ljgN3oYyHoQBjE+m4KnEnagp8ACOVqzQIxfO0fxWW2YhO/S6ahKB/qwCP1ZYEqg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BvgOYuOPv2moA19OINoxDOjiZIr8ezSiG6KJfoBeH44=;
+ b=QU5y3jf9Mec32A+ahiMK5rFe/JYMPxEzu6Uq6xhyeV+4vUzBJHp0Lpbeom07A4nkgAWjujB+eEwya9VU+pGxXKho3qekZTEbLCclWX5oNzDYEPoolT055C1CszgQ574cbVUiw7Xx4z0agUxAyVIMynqMDFyMEOkmk8mK9puRfYWZv5K3Zkf20B/rwpm3k6Zjv2nDLq6vIvJCSM6SWShAzgb/mIaGJi0iOAf8zYlcx0dYFvXUUjXVeGkEvHx6A9fGzmNlM7hyBsLpNZWxCO+pkvTlSvxn0u1MKMRaD81rEJlxfwEBuwcSCDxsJamvY6kfACcPzR31duRNAHKb+ijm+g==
+Received: from SG2PR01MB2951.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:76::15) by TY2PR0101MB2607.apcprd01.prod.exchangelabs.com
+ (2603:1096:404:b6::14) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5332.12; Thu, 9 Jun
+ 2022 10:30:16 +0000
+Received: from SG2PR01MB2951.apcprd01.prod.exchangelabs.com
+ ([fe80::a1f7:b32:baa1:3d12]) by SG2PR01MB2951.apcprd01.prod.exchangelabs.com
+ ([fe80::a1f7:b32:baa1:3d12%7]) with mapi id 15.20.5332.013; Thu, 9 Jun 2022
+ 10:30:16 +0000
+From: Wang Wenhu <wenhu.wang@hotmail.com>
+To: gregkh@linuxfoundation.org,
+	christophe.leroy@csgroup.eu
+Subject: [PATCH 0/2] uio:ppc: cache-sram driver implementation
+Date: Thu,  9 Jun 2022 03:28:53 -0700
+Message-ID:  <SG2PR01MB2951A22F0FB4B17E284898B19FA79@SG2PR01MB2951.apcprd01.prod.exchangelabs.com>
+X-Mailer: git-send-email 2.25.1
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-ClientProxiedBy: VI1PR09CA0079.eurprd09.prod.outlook.com
- (2603:10a6:802:29::23) To PH0PR18MB5069.namprd18.prod.outlook.com
- (2603:10b6:510:169::8)
+X-TMN: [1NoisRLF5HCMdrjJSB3qNTU1k+sQDIVr]
+X-ClientProxiedBy: OS3PR01CA0025.jpnprd01.prod.outlook.com
+ (2603:1096:604:db::12) To SG2PR01MB2951.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:76::15)
+X-Microsoft-Original-Message-ID:  <20220609102855.272270-1-wenhu.wang@hotmail.com>
 MIME-Version: 1.0
+X-MS-Exchange-MessageSentRepresentingType: 1
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: c4af59e0-d7ed-48ac-0335-08da49fdd71c
-X-MS-TrafficTypeDiagnostic: CY4PR1801MB1992:EE_
-X-Microsoft-Antispam-PRVS: 	<CY4PR1801MB19927EF244C34FB19BE0E5AE80A79@CY4PR1801MB1992.namprd18.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
+X-MS-Office365-Filtering-Correlation-Id: 10846fc5-e50f-4555-4d86-08da4a03094f
+X-MS-Exchange-SLBlob-MailProps: 	EpEO96k6WonAGWAYIHxzt372mDgmmxv3apB7nGlCULGCj68c1CUhNkYVlEMpm0/HC6qtSlQRwOuTlOIrvKMbVfMI5vDXOkpC7dXGopjFNb5Deog2oGYXQnuLpFbYJy8cqJxPJ4vkzSQK7JD6uSfSlLcf3SMeMudGSP9Di8+6R71LG7bvHJwwPWTiwAldqWfzkea93MobM7sLodLSZgv7g4b9JhskPM0jnqPZSEtpRjgdQlAVkwIkufAK2Ru8nIMw+39p8LXKY1LIsejwYBtjjFt97Ml5ICq/u4PsrOxc9xFJ2LB3zI8fm71YrK9CiN3xuJB9kkLPaTkBptcCAokKtdKTKfLay0BzL3X0sJu5ebRVDoys9sbLyajBWWcEhhIlt7cIEvyJVWjLMY2YJ/DtUR7OfdvvjjN8yg8Vdo2tW2GvZGs38KArWr3QPe4nbgG79fmx5cpBUWuyr2MNFq5hXjAjF44CzMzuAkdztRYtBwmO/C3ta/REuNTs5o+tVuyAS6hdQzbO0doJbjcoM+NCey8dv/v0SjM9Ipwk/aHKPNrU3HEHlCfHf4q4zXHz9XXyW8y+REUppJ140I/6UGcun+yiECdySts6MiMUZBe4SSb/q9NSlJ/THhrQ/ySmw3F23MmMCcT1d5cfwnoGUhbh6n0BdrSePrfsIVz8J6FKeoQHUMQBhMzVqfKRrPlDBGQidsHboi94oSyj87dTPL89uEeEig2jJvNq1WEhN+dU7FnTg92w3KmiETHiIZgodZEB5lZm/IVrlM0=
+X-MS-TrafficTypeDiagnostic: TY2PR0101MB2607:EE_
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	KFYk2m0J5O5//E/0yLPDjUT9MB7WvGIerIlPAj+Oe2kH8PRVB5UQD35gJWOsMThVwLOljQCXGSMP20I1jj5asvnPiH4Gq1Qqd1EIGAJOat0WWMPT2Eipbd7IR8UWXAEkwu5RYSlhZU+ok5wcy7yFtNyV5ghS/Q9UhP7lauxZI/fN5PVFH6cqPYOadnhhLktIjKgqgiMSFowSIG/WiGPx9l1XXyML3+wSCVloVKAM9xdDt17Y8KPz4aDbkfey3rEOLcnuxgt/W5+o9HdttEi3ibLkOQ3BIy2+vu+5GiA4MUqFbR2P0xreOB6eCisVGlS6K1+zdeUyvQK4pUn6fO0TeNp2CN35uCfkDzJVcEhXvC5xGUvFxgCUkfBy6kbxU8ZggRVdkMLigFKhA3VnLjcEJuGnaHDTpLiPlo0W3UqHBdyDw0SO1lcKs1/Xznc3waVAOJzfYKM/5atFloY+a/spQIB4akKVrw0XHxcOP8FXShFTwmHVLsteZ53DbP9DXXIy9eZul+He3NEAvI9Iq1Vlx9dO1/NQMKZqsYVUf+iQrIDh/x1lBrpFl2fDLV7oDJmbgJLKYweSnsducpSwWyw7/sRs2LBjNUHi/FWD2fwoQQ/TxvUOjcv7KEM/+Jt9Kj0qYPE6vNh9VQxA5dqCcTbL2PYzE4OMSJarx/SFx7+nDuF/nszU3txhK78Wjx1al+fEyNbEHd0kRaw/c8q0hzTvt+HNdHQ9MJ69JI9aYez5exA=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR18MB5069.namprd18.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230001)(4636009)(366004)(66946007)(966005)(6486002)(186003)(66556008)(5660300002)(508600001)(4326008)(66476007)(2616005)(8676002)(107886003)(1076003)(2906002)(52116002)(8936002)(6666004)(6636002)(316002)(86362001)(83380400001)(36756003)(44832011)(6512007)(6506007)(38100700002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 2
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?cXFkStdnL/xcWRspjSrRZk3cg50bJQ3035NM0wLYv4pE4faqHeTcg8z2PBd/?=
- =?us-ascii?Q?ssTUKEEQGq9S7p1xvZTZ5KCr9RNIP5OIbbMHaUhCRTDxmFv7jO/16L98Kc6V?=
- =?us-ascii?Q?ZfyEo2zBqHbcFRMkZ0Whd4NPV3SzooSglGKeI+YbVF9kUQ1GwPmjVk6nXK4f?=
- =?us-ascii?Q?lZ4hHE6mBkRw7x0lBpK7AxXg9miZP7OGzCBoh6TYRKHhlL+ohE14LVn5m3HV?=
- =?us-ascii?Q?Gvzx11lEwCXc68TdMUncd5qJXuhAv90RIECb2chnXeDlsyzB/P274IBYLe3q?=
- =?us-ascii?Q?HmLhhqFx25/y73Uhx66e39EWBHetszL6TI/PBYtCLUoHkRRUVeG3Ky/lGe7Y?=
- =?us-ascii?Q?ZA/MvADAOTynbIct/s/i+j9wkihf+bIAGJ7nozbsu4zAcexWkLrHMYCwqwoe?=
- =?us-ascii?Q?lFWS98Yl0AwIFd3Vlg1Prx+jqZhfb3IJF1q3BGcwF1T6gjCTqtI/dgDqC/Tb?=
- =?us-ascii?Q?LMj+K9i6kpVmDIT9n1ad78tocoFzKPHvXi/e742KmktqRoUDKjijmZ3Y/9v2?=
- =?us-ascii?Q?Mla2CEFPb9XQftD5/Gy6LTWD9YSi+z0sY+MKqGdHyqsEJnoQqpS+LuIJkTGV?=
- =?us-ascii?Q?iOkANZM/BMrwSrZjSdx3zCzfi70fYxtj+v+0UOlVJTA3jETp+VwGAQr9pIsp?=
- =?us-ascii?Q?fdhqX3pLppQSANz5k0ukOOmbzDYRpfLMxYhuVfXSCBo2b/IyzfeuhQ/s8JbZ?=
- =?us-ascii?Q?xWSbyR6O3TwqOE7id30zTjkH+xn4uZnlfGvqLVXn1hqa1hCljcmvmVsDh8V9?=
- =?us-ascii?Q?7Mw2eJYYOKmsx37yJBVqFmiIxd/kuLDcchsbZc+hMue6OiTK+6pvp1OhC4Wu?=
- =?us-ascii?Q?lzbdU52f2ndjtwORNuoQJPBtQ2sXdjwO4dlmcc9OzljhV2LNOx+LWnPTetrr?=
- =?us-ascii?Q?iDfxtQUTJq026ixbAx+DT+J5o/zpA+jlnU/jONvmMw8Lg3qLsA3jIGmxei7S?=
- =?us-ascii?Q?riJ87qU5BSZEzZuQwD8u5jvk3RwiPZYYN4JkraQqiUtg5JEzL16mqWvT5l88?=
- =?us-ascii?Q?3tdvQ1Qa4Al9VQNZ5Vgm/kst0m/T3Kmf0+UGQPFF1GEujGHlw/TN15ZpfxyB?=
- =?us-ascii?Q?/rPG9mUn0HO+eKCAo3xvU6fkI0bsXWcojsCDmZo6FMvs277ivdBqEJEdBE/S?=
- =?us-ascii?Q?PHNd35CEbprHGLrxRugUIvjDLaBN5u3EtySNypmLfgkxvuz8gkN6ej96P/pp?=
- =?us-ascii?Q?dZiXK+m+p39TWVMgtK7DT7mmEhQ6CgKIHCWCsdye+8+znZwWbr2DYqMecZ65?=
- =?us-ascii?Q?QMaEpJPvwHvvOtHnycoeShUVIF5xZmYuxZwTT5DeiShvMLM9BZ4t8i/zQ2Tu?=
- =?us-ascii?Q?9RXDffuoYAsNbGZ0AFpf/EYNGdJyTB1VjW8EVbHgwpdwRKbCvi79dxq/mDR9?=
- =?us-ascii?Q?u1EaQfUanONPpqA+A3tg5vi6DXL7x+SschilnIn6GcLrNX3+XT8TOGa2alPF?=
- =?us-ascii?Q?+93+UZDveXqUokqss2USSRblSfRoKiTnXWtcwEEUZOUharb3Ei7z/F16yje/?=
- =?us-ascii?Q?souerHK1+uZ9aBrQVwRNd+X+kIgI4bHmYEcw8oWfXV49VdsRHZnqv5m2uqEZ?=
- =?us-ascii?Q?OYG9g6mOSCdv3ha+3kKA4w431+y0FMZTQv0zBmKHFmKbgeP5CMixxHmvl4kK?=
- =?us-ascii?Q?GA13957pH5yvt4RNuvXCyYK5bgXDsI9M4Rba8uB3fbz1Nhs/H369N+/aflz5?=
- =?us-ascii?Q?I5x6y91/cSLCvJ8+wDysZE7f9PskEYaKFi6bY6aDoQuHzTId71gYyX43EJNc?=
- =?us-ascii?Q?HoavGU1e/7nvhrLiibSvrJm9YOTuTUFRn2dYXHHOTaL2nuv3vlMEa2GjCFkp?=
-X-MS-Exchange-AntiSpam-MessageData-1: lniP5uw6C8ftRzxYISK4x66iZpPCQVWd/LQ=
-X-OriginatorOrg: belden.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c4af59e0-d7ed-48ac-0335-08da49fdd71c
-X-MS-Exchange-CrossTenant-AuthSource: PH0PR18MB5069.namprd18.prod.outlook.com
+X-Microsoft-Antispam-Message-Info: 	5YkcuhvbyQzp9LCwX2j5227vRL9gi4gfBgXxXq+7jqRVGtAQVPIWxc29UWA2bPyortbrki26sQRYI6vFPz3lpQl4/OO5Kls2jt7KWqdZ8brPQXQ7gKaqR5sn9VYJyNrJNU+maN7Yioidpwrao2qEwC3XHAfyezNm5B5wN/lUM2/TDs9eYW6t56eL5Bxkvb79kNC4zmMAD8hxvOY3Vk2egHcqSPbIsGimXhk1wzec9HBCW3aLD0g2cvCc3FmUuNrHixAu9Ggzqd0A0KalpmjOuvFdKFfBcvxAW4iJIli0VQh0M81ZsuyvHTedq9bEUuB5WCCKSMAz//lwoCmVVWqXHAM7pu24EkqMIP1ldyDJCadJfyoIemFAPyLANr93a9ta3kevCtowOE7IN9b3+Zw0ltpGu3DW2EB3ya+StfhIIjefk3hLv/aWvqHAmcaRRYHuaqMQddcj2tSrF6A7gJAJlWs8r/qJzauTtlLkfDg6hOio1ZE7YuNKv4ONAprYy3YljPOqYeXa6ITV6Do035Cv2GZYi81Ibt2tZZA/bMa56QS6QteOWw6qEGuj33RII/iqtMkg40uAkGOQS+h2ZSPVIQ==
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?oHO8dDJuazR/jVZI0t6wRNY6QBcMywnE39UjsJBD9R4v6fA2GI9nXl6zb7fm?=
+ =?us-ascii?Q?GNURr2VnYURTiWUjacGSWwOleNxVVXhU3l0V4xqVAu91DOxmUgfGKujOaSxL?=
+ =?us-ascii?Q?0f75U5AcNyW2XqQmHfp+sWE9zIXz+rmi/kEfElC1ssvy61qA/f5GsRPzx3O6?=
+ =?us-ascii?Q?ZfihzJej3fnxSlaEzoC0pO2E5sito5kJiwSXr6/CpplnoTjH7nCCnLkPwWoe?=
+ =?us-ascii?Q?foerHybU6DsicclVEK5nwP3A5sRhw3PlOP0ko1xD2lHyjyeyLHMwNQha/8Mq?=
+ =?us-ascii?Q?yDBXvQquZ32N7LgPOSxdi24sys7lEYqa/tOsxlfws/Dmo0pDyJv3wHKpCB9z?=
+ =?us-ascii?Q?muG1WS/1nbwyz0REKAkDDllWgOsFdksqKv2DuRTF3MX4bm8QzWejWmIVQwqi?=
+ =?us-ascii?Q?VSIjdnyQSkVViC0/DAG3Wcj5tI8J2/GrC13Dl4S3XgrngfRXUuGSYr5tFsq3?=
+ =?us-ascii?Q?8t6RFRwSNIaaZBXZXxLuKjvzBpNgvra9nWPK4VyonNdAFKMybRSNPvw0/UOM?=
+ =?us-ascii?Q?eUM2Y+Q8h1O+2xZNQW1b1OCzwsb9qQ4Trl6ftByfvd1LHaslDwh0dSYyq37N?=
+ =?us-ascii?Q?RccGWf/i4uIot7qte2PAvjvNGtyuhVC0olMmeNgE969+KKyK+jpnLd0SkyR+?=
+ =?us-ascii?Q?sEWl+ShnvCJ86JkI8TSgJ6otZO2h55+njY/sM7mTIW8OwBBBmjGi8cHBBFe/?=
+ =?us-ascii?Q?CrEm0ZvK8oJTfxuJ9YS40TBIwdTwwr2mfSz7hhDS+Lt6WlHsdRK0aRy0CPmE?=
+ =?us-ascii?Q?H4IT3wwHwH6feR7yrs7UXLyWDQf6R0T6OUtWZaqFRv5gSiFaUHKewjU20rVm?=
+ =?us-ascii?Q?csGIUX+y43djbXj52rs3SN81d3fMzbEESGwMCpHcNqp8jehTx0fUw+4f8zUa?=
+ =?us-ascii?Q?iApd4+6+xLrwaasCx2C17VCLVZiNtdlmypRkuVHTGAW/RnfFNHigTHZWFF/G?=
+ =?us-ascii?Q?H9HImyusF1q+cF3JzhWtuq+fDhiRti60Tj3yySznyJYKbVbFaq0Lg/3AsyYN?=
+ =?us-ascii?Q?H/Na2kVbAGc3oX07jvRepgrB2YO8kkA0WTeL+ufrwzmeBzfKQzWksEPQxFFe?=
+ =?us-ascii?Q?AKIUbxb2E2bASfsoiJSAEFeMKbphSjMCktI2Gu6RqAY6VomWzvxs+jJZKAZK?=
+ =?us-ascii?Q?c2cGeK2WatshsCLVnFDN0wVxdT/TwSVsHUx4qDHrusl0hSVGGb9E5HinniaN?=
+ =?us-ascii?Q?Cu4nSCw/oad+ObtP7wRa/JjgCTqUPcspVqQuyytJL+Y/+vsoanRNMsKDf2cf?=
+ =?us-ascii?Q?ynazAXvCqpgEjKGb/lGJ33aMKwN2Rq2pxtB9mV0Nnr+Y9U5TrO7748BRV47v?=
+ =?us-ascii?Q?yI9JvR688PJiZYcrXT64UBylnmlOXxs44FZCpHUVERMoCwtHv+oPaIVeTnlM?=
+ =?us-ascii?Q?uwymY84NC9klrCR/ctf7dQLP9EtTGP/HQl/fdD1pS5aF74xXhSDxOMhyulLn?=
+ =?us-ascii?Q?qM15r7jj2cQ=3D?=
+X-OriginatorOrg: sct-15-20-4755-11-msonline-outlook-d8e84.templateTenant
+X-MS-Exchange-CrossTenant-Network-Message-Id: 10846fc5-e50f-4555-4d86-08da4a03094f
+X-MS-Exchange-CrossTenant-AuthSource: SG2PR01MB2951.apcprd01.prod.exchangelabs.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2022 09:53:01.2868
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Jun 2022 10:30:15.6018
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 0f7367b1-44f7-45a7-bb10-563965c5f2e5
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 38AB/tNOdZfkC8mCfyc2YjXYQoUEQJMOt9E85IJZ1hJQhUmfdnRyPuQdVIAvrHt5NhNd6ijnQZ3za2mmV0iE2FhQGU9Pjg5lzQ1pDtejwXI=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR1801MB1992
-X-Proofpoint-GUID: 4DpmvFxzoGB_H_qySdgU3-2fOQkshwsN
-X-Proofpoint-ORIG-GUID: 4DpmvFxzoGB_H_qySdgU3-2fOQkshwsN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.517,FMLib:17.11.64.514
- definitions=2022-06-09_08,2022-06-07_02,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- mlxlogscore=575 clxscore=1011 spamscore=0 impostorscore=0 malwarescore=0
- priorityscore=1501 adultscore=0 phishscore=0 suspectscore=0 bulkscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2206090040
-X-Proofpoint-TriggeredRule: module.spam.rule.outbound_notspam
+X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 	00000000-0000-0000-0000-000000000000
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: TY2PR0101MB2607
 X-Mailman-Approved-At: Fri, 10 Jun 2022 21:09:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -133,116 +114,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ariel Miculas <ariel.miculas@belden.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Wang Wenhu <wenhu.wang@hotmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This fixes the gdbserver issue on PPC32 described here:
-Link: https://linuxppc-dev.ozlabs.narkive.com/C46DRek4/debug-problems-on-ppc-83xx-target-due-to-changed-struct-task-struct
+Patch 1 exports the symbol ioremap_coherent which is used by the driver.
+Patch 2 is the implementation of uio driver for freescale mpc85xx.
 
-On PPC32, the user space code considers the floating point to be an
-array of unsigned int (32 bits) - the index passed in is based on
-this assumption.
+Wang Wenhu (2):
+  powerpc:mm: export symbol ioremap_coherent
+  uio:powerpc:mpc85xx: l2-cache-sram uio driver implementation
 
-fp_state is a matrix consisting of 32 lines
-/* FP and VSX 0-31 register set /
-struct thread_fp_state {
-u64 fpr[32][TS_FPRWIDTH] attribute((aligned(16)));
-u64 fpscr; / Floating point status */
-};
+ arch/powerpc/mm/ioremap.c             |   1 +
+ drivers/uio/Kconfig                   |  10 +
+ drivers/uio/Makefile                  |   1 +
+ drivers/uio/uio_fsl_85xx_cache_sram.c | 286 ++++++++++++++++++++++++++
+ 4 files changed, 298 insertions(+)
+ create mode 100644 drivers/uio/uio_fsl_85xx_cache_sram.c
 
-On PPC32, PT_FPSCR is defined as: (PT_FPR0 + 2*32 + 1)
-
-This means the fpr index validation allows a range from 0 to 65, leading
-to out-of-bounds array access. This ends up corrupting
-threads_struct->state, which holds the state of the task. Thus, threads
-incorrectly transition from a running state to a traced state and get
-stuck in that state.
-
-On PPC32 it's ok to assume that TS_FPRWIDTH is 1 because CONFIG_VSX is
-PPC64 specific. TS_FPROFFSET can be safely ignored, thus the assumption
-that fpr is an array of 32 elements of type u64 holds true.
-
-Solution taken from arch/powerpc/kernel/ptrace32.c
-
-Signed-off-by: Ariel Miculas <ariel.miculas@belden.com>
----
- arch/powerpc/kernel/ptrace/ptrace-fpu.c | 31 +++++++++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-fpu.c b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-index 5dca19361316..93695abbbdfb 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-@@ -6,9 +6,16 @@
- 
- #include "ptrace-decl.h"
- 
-+#ifdef CONFIG_PPC32
-+/* Macros to workout the correct index for the FPR in the thread struct */
-+#define FPRNUMBER(i) (((i) - PT_FPR0) >> 1)
-+#define FPRHALF(i) (((i) - PT_FPR0) & 1)
-+#define FPRINDEX(i) TS_FPRWIDTH * FPRNUMBER(i) * 2 + FPRHALF(i)
-+#endif
-+
- int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
- {
--#ifdef CONFIG_PPC_FPU_REGS
-+#if defined(CONFIG_PPC_FPU_REGS) && !defined(CONFIG_PPC32)
- 	unsigned int fpidx = index - PT_FPR0;
- #endif
- 
-@@ -17,10 +24,20 @@ int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
- 
- #ifdef CONFIG_PPC_FPU_REGS
- 	flush_fp_to_thread(child);
-+#ifdef CONFIG_PPC32
-+	/*
-+	 * the user space code considers the floating point
-+	 * to be an array of unsigned int (32 bits) - the
-+	 * index passed in is based on this assumption.
-+	 */
-+	*data = ((unsigned int *)child->thread.fp_state.fpr)
-+		[FPRINDEX(index)];
-+#else
- 	if (fpidx < (PT_FPSCR - PT_FPR0))
- 		memcpy(data, &child->thread.TS_FPR(fpidx), sizeof(long));
- 	else
- 		*data = child->thread.fp_state.fpscr;
-+#endif
- #else
- 	*data = 0;
- #endif
-@@ -30,7 +47,7 @@ int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
- 
- int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data)
- {
--#ifdef CONFIG_PPC_FPU_REGS
-+#if defined(CONFIG_PPC_FPU_REGS) && !defined(CONFIG_PPC32)
- 	unsigned int fpidx = index - PT_FPR0;
- #endif
- 
-@@ -39,10 +56,20 @@ int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data)
- 
- #ifdef CONFIG_PPC_FPU_REGS
- 	flush_fp_to_thread(child);
-+#ifdef CONFIG_PPC32
-+	/*
-+	 * the user space code considers the floating point
-+	 * to be an array of unsigned int (32 bits) - the
-+	 * index passed in is based on this assumption.
-+	 */
-+	((unsigned int *)child->thread.fp_state.fpr)
-+		[FPRINDEX(index)] = data;
-+#else
- 	if (fpidx < (PT_FPSCR - PT_FPR0))
- 		memcpy(&child->thread.TS_FPR(fpidx), &data, sizeof(long));
- 	else
- 		child->thread.fp_state.fpscr = data;
-+#endif
- #endif
- 
- 	return 0;
 -- 
-2.36.1
+2.25.1
 
