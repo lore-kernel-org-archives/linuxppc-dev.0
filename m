@@ -4,60 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 924F0C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:18:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C08BC43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 10:19:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJg6G0gJCz3dq1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 20:18:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJg7j0mpjz3000
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 20:19:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DedjmhJq;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DedjmhJq;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJg572Sz6z3bwb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:17:31 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LJg4q6RDnz9tJF;
-	Thu,  9 Jun 2022 12:17:15 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lEgh6cbHBrAe; Thu,  9 Jun 2022 12:17:15 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LJg4n2Dvhz9tJG;
-	Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3706B8B780;
-	Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id MllpezV2mLak; Thu,  9 Jun 2022 12:17:13 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.6.129])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D2C7E8B77C;
-	Thu,  9 Jun 2022 12:17:12 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 259AH6Yo133871
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 9 Jun 2022 12:17:06 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 259AH5FK133870;
-	Thu, 9 Jun 2022 12:17:05 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 2/3] powerpc/irq: Perform stack_overflow detection after switching to IRQ stack
-Date: Thu,  9 Jun 2022 12:16:41 +0200
-Message-Id: <c215d714329f475b431a6193369035aadfc0d182.1654769775.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <adbe1c8315ec2d63259f41468e82e51677bb1eda.1654769775.git.christophe.leroy@csgroup.eu>
-References: <adbe1c8315ec2d63259f41468e82e51677bb1eda.1654769775.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJg6z60PNz3blp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 20:19:07 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1D23361D3A;
+	Thu,  9 Jun 2022 10:19:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 30D6DC34114;
+	Thu,  9 Jun 2022 10:19:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1654769944;
+	bh=uzPikX2THTK5NJble8/MGat+cjp0fuITixxMVZ87XsI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DedjmhJqLlPHYRTeoNYcnbmYd6yCjMl++K8S09eX05G4PZQ+RqTHlbKVazj0lEuiE
+	 yfc4jTWQ4CVWXhk32r9851cK9caXd/kEajKIcRu+O6rQlUkJQsk98cgYuqZntDFH3b
+	 fKWcPa9dUj/Dst3qMkgaoZPFpVLUT4r86niaa0tskDifCibtFpS2gjMv4foPFnaCGS
+	 AhaaYjOw6iIRzE8g3wwkdQ3tjcJLO1p+KMU9HgyQXxgVA5ohb95QUy1U4tMVT4LBKe
+	 CdrLDKoa9Qaps7p3fqXVccHltm2GWuldlC2kUivYCfptodE9NTUmLTeHlMx188tWP7
+	 Tx15jb6TQAkQQ==
+Received: by pali.im (Postfix)
+	id 6E82A2104; Thu,  9 Jun 2022 12:19:00 +0200 (CEST)
+Date: Thu, 9 Jun 2022 12:19:00 +0200
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To: Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: dts: Add DTS file for CZ.NIC Turris 1.x routers
+Message-ID: <20220609101900.ie5hki3ojeyvcnsz@pali>
+References: <20220511143712.22550-1-pali@kernel.org>
+ <20220524092332.dgbgti5d2lyh4g32@pali>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1654769796; l=4702; s=20211009; h=from:subject:message-id; bh=NqVoMFvytvTJdyhLcGNtzlmb8EGevi3W6Q9/TsUDtvM=; b=ypmTQesfpqLPJaQDeApEa5yMYEsk5uejPsNh+NsYVtKJvVUvHjgjowyDrURQ+RcVXWMJ6LkpuuYD ME/FGmn+Dn1Ebv9aV9qWBW+TlENWqcVWacuvUdYMgo8nabEKN0Nd
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220524092332.dgbgti5d2lyh4g32@pali>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,124 +64,506 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Josef Schlehofer <josef.schlehofer@nic.cz>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Marek Behun <marek.behun@nic.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When KASAN is enabled, as shown by the Oops below, the 2k limit is not
-enough to allow stack dump after a stack overflow detection when
-CONFIG_DEBUG_STACKOVERFLOW is selected:
+On Tuesday 24 May 2022 11:23:32 Pali Rohár wrote:
+> On Wednesday 11 May 2022 16:37:12 Pali Rohár wrote:
+> > CZ.NIC Turris 1.0 and 1.1 are open source routers, they have dual-core
+> > PowerPC Freescale P2020 CPU and are based on Freescale P2020RDB-PC-A board.
+> > Hardware design is fully open source, all firmware and hardware design
+> > files are available at Turris project website:
+> > 
+> > https://docs.turris.cz/hw/turris-1x/turris-1x/
+> > https://project.turris.cz/en/hardware.html
+> > 
+> > Signed-off-by: Pali Rohár <pali@kernel.org>
+> > ---
+> >  arch/powerpc/boot/dts/turris1x.dts | 470 +++++++++++++++++++++++++++++
+> >  1 file changed, 470 insertions(+)
+> >  create mode 100644 arch/powerpc/boot/dts/turris1x.dts
+> 
+> Michael, Rob: PING?
 
-	do_IRQ: stack overflow: 1984
-	CPU: 0 PID: 126 Comm: systemd-udevd Not tainted 5.18.0-gentoo-PMacG4 #1
-	Call Trace:
-	Oops: Kernel stack overflow, sig: 11 [#1]
-	BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
-	Modules linked in: sr_mod cdrom radeon(+) ohci_pci(+) hwmon i2c_algo_bit drm_ttm_helper ttm drm_dp_helper snd_aoa_i2sbus snd_aoa_soundbus snd_pcm ehci_pci snd_timer ohci_hcd snd ssb ehci_hcd 8250_pci soundcore drm_kms_helper pcmcia 8250 pcmcia_core syscopyarea usbcore sysfillrect 8250_base sysimgblt serial_mctrl_gpio fb_sys_fops usb_common pkcs8_key_parser fuse drm drm_panel_orientation_quirks configfs
-	CPU: 0 PID: 126 Comm: systemd-udevd Not tainted 5.18.0-gentoo-PMacG4 #1
-	NIP:  c02e5558 LR: c07eb3bc CTR: c07f46a8
-	REGS: e7fe9f50 TRAP: 0000   Not tainted  (5.18.0-gentoo-PMacG4)
-	MSR:  00001032 <ME,IR,DR,RI>  CR: 44a14824  XER: 20000000
+PING?
 
-	GPR00: c07eb3bc eaa1c000 c26baea0 eaa1c0a0 00000008 00000000 c07eb3bc eaa1c010
-	GPR08: eaa1c0a8 04f3f3f3 f1f1f1f1 c07f4c84 44a14824 0080f7e4 00000005 00000010
-	GPR16: 00000025 eaa1c154 eaa1c158 c0dbad64 00000020 fd543810 eaa1c0a0 eaa1c29e
-	GPR24: c0dbad44 c0db8740 05ffffff fd543802 eaa1c150 c0c9a3c0 eaa1c0a0 c0c9a3c0
-	NIP [c02e5558] kasan_check_range+0xc/0x2b4
-	LR [c07eb3bc] format_decode+0x80/0x604
-	Call Trace:
-	[eaa1c000] [c07eb3bc] format_decode+0x80/0x604 (unreliable)
-	[eaa1c070] [c07f4dac] vsnprintf+0x128/0x938
-	[eaa1c110] [c07f5788] sprintf+0xa0/0xc0
-	[eaa1c180] [c0154c1c] __sprint_symbol.constprop.0+0x170/0x198
-	[eaa1c230] [c07ee71c] symbol_string+0xf8/0x260
-	[eaa1c430] [c07f46d0] pointer+0x15c/0x710
-	[eaa1c4b0] [c07f4fbc] vsnprintf+0x338/0x938
-	[eaa1c550] [c00e8fa0] vprintk_store+0x2a8/0x678
-	[eaa1c690] [c00e94e4] vprintk_emit+0x174/0x378
-	[eaa1c6d0] [c00ea008] _printk+0x9c/0xc0
-	[eaa1c750] [c000ca94] show_stack+0x21c/0x260
-	[eaa1c7a0] [c07d0bd4] dump_stack_lvl+0x60/0x90
-	[eaa1c7c0] [c0009234] __do_IRQ+0x170/0x174
-	[eaa1c800] [c0009258] do_IRQ+0x20/0x34
-	[eaa1c820] [c00045b4] HardwareInterrupt_virt+0x108/0x10c
-...
-
-As the detection is asynchronously performed at IRQs, we could be long
-after the limit has been crossed, so increasing the limit would not
-solve the problem completely.
-
-In order to be sure that there is enough stack space for the stack
-dump, do it after the switch to the IRQ stack. That way it is sure
-that the stack is large enough, unless the IRQ stack has been
-overfilled in which case the end of life is close.
-
-Reported-by: Erhard Furtner <erhard_f@mailbox.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v2: Use provided 'sp' instead of overwritting it with current stack pointer
----
- arch/powerpc/kernel/irq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 370434f6c316..e5b7fb5282ee 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -184,14 +184,12 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	return sum;
- }
- 
--static inline void check_stack_overflow(void)
-+static inline void check_stack_overflow(unsigned long sp)
- {
--	long sp;
--
- 	if (!IS_ENABLED(CONFIG_DEBUG_STACKOVERFLOW))
- 		return;
- 
--	sp = current_stack_pointer & (THREAD_SIZE - 1);
-+	sp &= THREAD_SIZE - 1;
- 
- 	/* check for stack overflow: is there less than 2KB free? */
- 	if (unlikely(sp < 2048)) {
-@@ -221,12 +219,14 @@ static __always_inline void call_do_softirq(const void *sp)
- 
- DEFINE_STATIC_CALL_RET0(ppc_get_irq, *ppc_md.get_irq);
- 
--static void __do_irq(struct pt_regs *regs)
-+static void __do_irq(struct pt_regs *regs, unsigned long oldsp)
- {
- 	unsigned int irq;
- 
- 	trace_irq_entry(regs);
- 
-+	check_stack_overflow(oldsp);
-+
- 	/*
- 	 * Query the platform PIC for the interrupt & ack it.
- 	 *
-@@ -254,6 +254,7 @@ static __always_inline void call_do_irq(struct pt_regs *regs, void *sp)
- 	/* Temporarily switch r1 to sp, call __do_irq() then restore r1. */
- 	asm volatile (
- 		 PPC_STLU "	%%r1, %[offset](%[sp])	;"
-+		"mr		%%r4, %%r1		;"
- 		"mr		%%r1, %[sp]		;"
- 		"bl		%[callee]		;"
- 		 PPC_LL "	%%r1, 0(%%r1)		;"
-@@ -279,11 +280,9 @@ void __do_IRQ(struct pt_regs *regs)
- 	irqsp = hardirq_ctx[raw_smp_processor_id()];
- 	sirqsp = softirq_ctx[raw_smp_processor_id()];
- 
--	check_stack_overflow();
--
- 	/* Already there ? */
- 	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
--		__do_irq(regs);
-+		__do_irq(regs, current_stack_pointer);
- 		set_irq_regs(old_regs);
- 		return;
- 	}
--- 
-2.35.3
-
+> > diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
+> > new file mode 100644
+> > index 000000000000..2a624f117586
+> > --- /dev/null
+> > +++ b/arch/powerpc/boot/dts/turris1x.dts
+> > @@ -0,0 +1,470 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
+> > +/*
+> > + * Turris 1.x Device Tree Source
+> > + *
+> > + * Copyright 2013 - 2022 CZ.NIC z.s.p.o. (http://www.nic.cz/)
+> > + *
+> > + * Pinout, Schematics and Altium hardware design files are open source
+> > + * and available at: https://docs.turris.cz/hw/turris-1x/turris-1x/
+> > + */
+> > +
+> > +#include <dt-bindings/gpio/gpio.h>
+> > +#include <dt-bindings/interrupt-controller/irq.h>
+> > +#include <dt-bindings/leds/common.h>
+> > +/include/ "fsl/p2020si-pre.dtsi"
+> > +
+> > +/ {
+> > +	model = "Turris 1.x";
+> > +	compatible = "cznic,turris1x", "fsl,P2020RDB-PC"; /* fsl,P2020RDB-PC is required for booting Linux */
+> > +
+> > +	aliases {
+> > +		ethernet0 = &enet0;
+> > +		ethernet1 = &enet1;
+> > +		ethernet2 = &enet2;
+> > +		serial0 = &serial0;
+> > +		serial1 = &serial1;
+> > +		pci0 = &pci0;
+> > +		pci1 = &pci1;
+> > +		pci2 = &pci2;
+> > +		spi0 = &spi0;
+> > +	};
+> > +
+> > +	memory {
+> > +		device_type = "memory";
+> > +	};
+> > +
+> > +	soc: soc@ffe00000 {
+> > +		ranges = <0x0 0x0 0xffe00000 0x00100000>;
+> > +
+> > +		i2c@3000 {
+> > +			/* PCA9557PW GPIO controller for boot config */
+> > +			gpio-controller@18 {
+> > +				compatible = "nxp,pca9557";
+> > +				label = "bootcfg";
+> > +				reg = <0x18>;
+> > +				#gpio-cells = <2>;
+> > +				gpio-controller;
+> > +				polarity = <0x00>;
+> > +			};
+> > +
+> > +			/* STM32F030R8T6 MCU for power control */
+> > +			power-control@32 {
+> > +				/*
+> > +				 * Turris Power Control firmware runs on STM32F0 MCU.
+> > +				 * This firmware is open source and available at:
+> > +				 * https://gitlab.nic.cz/turris/hw/turris_power_control
+> > +				 */
+> > +				reg = <0x32>;
+> > +			};
+> > +
+> > +			/* SA56004ED temperature control */
+> > +			temperature-sensor@4c {
+> > +				compatible = "nxp,sa56004";
+> > +				reg = <0x4c>;
+> > +				interrupt-parent = <&gpio>;
+> > +				interrupts = <12 IRQ_TYPE_LEVEL_LOW>, /* GPIO12 - ALERT pin */
+> > +					     <13 IRQ_TYPE_LEVEL_LOW>; /* GPIO13 - CRIT pin */
+> > +			};
+> > +
+> > +			/* DDR3 SPD/EEPROM */
+> > +			eeprom@52 {
+> > +				compatible = "atmel,spd";
+> > +				reg = <0x52>;
+> > +			};
+> > +
+> > +			/* ATSHA204-TH-DA-T crypto module */
+> > +			crypto@64 {
+> > +				compatible = "atmel,atsha204";
+> > +				reg = <0x64>;
+> > +			};
+> > +
+> > +			/* IDT6V49205BNLGI clock generator */
+> > +			clock-generator@69 {
+> > +				compatible = "idt,6v49205b";
+> > +				reg = <0x69>;
+> > +			};
+> > +
+> > +			/* MCP79402-I/ST Protected EEPROM */
+> > +			eeprom@57 {
+> > +				reg = <0x57>;
+> > +			};
+> > +
+> > +			/* MCP79402-I/ST RTC */
+> > +			rtc@6f {
+> > +				compatible = "microchip,mcp7940x";
+> > +				reg = <0x6f>;
+> > +				interrupt-parent = <&gpio>;
+> > +				interrupts = <14 0>; /* GPIO14 - MFP pin */
+> > +			};
+> > +		};
+> > +
+> > +		/* SPI on connector P1 */
+> > +		spi0: spi@7000 {
+> > +		};
+> > +
+> > +		gpio: gpio-controller@fc00 {
+> > +			#interrupt-cells = <2>;
+> > +			interrupt-controller;
+> > +		};
+> > +
+> > +		/* Connected to SMSC USB2412-DZK 2-Port USB 2.0 Hub Controller */
+> > +		usb@22000 {
+> > +			phy_type = "ulpi";
+> > +			dr_mode = "host";
+> > +		};
+> > +
+> > +		enet0: ethernet@24000 {
+> > +			/* Connected to port 6 of QCA8337N-AL3C switch */
+> > +			phy-connection-type = "rgmii-id";
+> > +
+> > +			fixed-link {
+> > +				speed = <1000>;
+> > +				full-duplex;
+> > +			};
+> > +		};
+> > +
+> > +		mdio@24520 {
+> > +			/* QCA8337N-AL3C switch with integrated ethernet PHYs for LAN ports */
+> > +			switch@10 {
+> > +				compatible = "qca,qca8337";
+> > +				interrupts = <2 1 0 0>;
+> > +				reg = <0x10>;
+> > +
+> > +				ports {
+> > +					#address-cells = <1>;
+> > +					#size-cells = <0>;
+> > +
+> > +					port@0 {
+> > +						reg = <0>;
+> > +						label = "cpu1";
+> > +						ethernet = <&enet1>;
+> > +						phy-mode = "rgmii-id";
+> > +
+> > +						fixed-link {
+> > +							speed = <1000>;
+> > +							full-duplex;
+> > +						};
+> > +					};
+> > +
+> > +					port@1 {
+> > +						reg = <1>;
+> > +						label = "lan5";
+> > +					};
+> > +
+> > +					port@2 {
+> > +						reg = <2>;
+> > +						label = "lan4";
+> > +					};
+> > +
+> > +					port@3 {
+> > +						reg = <3>;
+> > +						label = "lan3";
+> > +					};
+> > +
+> > +					port@4 {
+> > +						reg = <4>;
+> > +						label = "lan2";
+> > +					};
+> > +
+> > +					port@5 {
+> > +						reg = <5>;
+> > +						label = "lan1";
+> > +					};
+> > +
+> > +					port@6 {
+> > +						reg = <6>;
+> > +						label = "cpu0";
+> > +						ethernet = <&enet0>;
+> > +						phy-mode = "rgmii-id";
+> > +
+> > +						fixed-link {
+> > +							speed = <1000>;
+> > +							full-duplex;
+> > +						};
+> > +					};
+> > +				};
+> > +			};
+> > +
+> > +			/* KSZ9031RNXCA ethernet phy for WAN port */
+> > +			phy: ethernet-phy@7 {
+> > +				interrupts = <3 1 0 0>;
+> > +				reg = <0x7>;
+> > +			};
+> > +		};
+> > +
+> > +		ptp_clock@24e00 {
+> > +			fsl,tclk-period = <5>;
+> > +			fsl,tmr-prsc = <200>;
+> > +			fsl,tmr-add = <0xcccccccd>;
+> > +			fsl,tmr-fiper1 = <0x3b9ac9fb>;
+> > +			fsl,tmr-fiper2 = <0x0001869b>;
+> > +			fsl,max-adj = <249999999>;
+> > +		};
+> > +
+> > +		enet1: ethernet@25000 {
+> > +			/* Connected to port 0 of QCA8337N-AL3C switch */
+> > +			phy-connection-type = "rgmii-id";
+> > +
+> > +			fixed-link {
+> > +				speed = <1000>;
+> > +				full-duplex;
+> > +			};
+> > +		};
+> > +
+> > +		mdio@25520 {
+> > +			status = "disabled";
+> > +		};
+> > +
+> > +		enet2: ethernet@26000 {
+> > +			/* Connected to KSZ9031RNXCA ethernet phy (WAN port) */
+> > +			label = "wan";
+> > +			phy-handle = <&phy>;
+> > +			phy-connection-type = "rgmii-id";
+> > +		};
+> > +
+> > +		mdio@26520 {
+> > +			status = "disabled";
+> > +		};
+> > +
+> > +		sdhc@2e000 {
+> > +			bus-width = <4>;
+> > +			cd-gpios = <&gpio 8 GPIO_ACTIVE_LOW>;
+> > +		};
+> > +	};
+> > +
+> > +	lbc: localbus@ffe05000 {
+> > +		reg = <0 0xffe05000 0 0x1000>;
+> > +
+> > +		ranges = <0x0 0x0 0x0 0xef000000 0x01000000>, /* NOR */
+> > +			 <0x1 0x0 0x0 0xff800000 0x00040000>, /* NAND */
+> > +			 <0x3 0x0 0x0 0xffa00000 0x00020000>; /* CPLD */
+> > +
+> > +		/* S29GL128P90TFIR10 NOR */
+> > +		nor@0,0 {
+> > +			compatible = "cfi-flash";
+> > +			reg = <0x0 0x0 0x01000000>;
+> > +			bank-width = <2>;
+> > +			device-width = <1>;
+> > +
+> > +			partitions {
+> > +				compatible = "fixed-partitions";
+> > +				#address-cells = <1>;
+> > +				#size-cells = <1>;
+> > +
+> > +				partition@0 {
+> > +					/* 128 kB for Device Tree Blob */
+> > +					reg = <0x00000000 0x00020000>;
+> > +					label = "dtb";
+> > +				};
+> > +
+> > +				partition@20000 {
+> > +					/* 1.7 MB for Rescue Linux Kernel Image */
+> > +					reg = <0x00020000 0x001a0000>;
+> > +					label = "rescue-kernel";
+> > +				};
+> > +
+> > +				partition@1c0000 {
+> > +					/* 1.5 MB for Rescue JFFS2 Root File System */
+> > +					reg = <0x001c0000 0x00180000>;
+> > +					label = "rescue-rootfs";
+> > +				};
+> > +
+> > +				partition@340000 {
+> > +					/* 11 MB for TAR.XZ Backup with content of NAND Root File System */
+> > +					reg = <0x00340000 0x00b00000>;
+> > +					label = "backup-rootfs";
+> > +				};
+> > +
+> > +				partition@e40000 {
+> > +					/* 768 kB for Certificates JFFS2 File System */
+> > +					reg = <0x00e40000 0x000c0000>;
+> > +					label = "certificates";
+> > +				};
+> > +
+> > +				/* free unused space 0x00f00000-0x00f20000 */
+> > +
+> > +				partition@f20000 {
+> > +					/* 128 kB for U-Boot Environment Variables */
+> > +					reg = <0x00f20000 0x00020000>;
+> > +					label = "u-boot-env";
+> > +				};
+> > +
+> > +				partition@f40000 {
+> > +					/* 768 kB for U-Boot Bootloader Image */
+> > +					reg = <0x00f40000 0x000c0000>;
+> > +					label = "u-boot";
+> > +				};
+> > +			};
+> > +		};
+> > +
+> > +		/* MT29F2G08ABAEAWP:E NAND */
+> > +		nand@1,0 {
+> > +			compatible = "fsl,p2020-fcm-nand", "fsl,elbc-fcm-nand";
+> > +			reg = <0x1 0x0 0x00040000>;
+> > +			nand-ecc-mode = "soft";
+> > +			nand-ecc-algo = "bch";
+> > +
+> > +			partitions {
+> > +				compatible = "fixed-partitions";
+> > +				#address-cells = <1>;
+> > +				#size-cells = <1>;
+> > +
+> > +				partition@0 {
+> > +					/* 256 MB for UBI with one volume: UBIFS Root File System */
+> > +					reg = <0x00000000 0x10000000>;
+> > +					label = "rootfs";
+> > +				};
+> > +			};
+> > +		};
+> > +
+> > +		/* LCMXO1200C-3FTN256C FPGA */
+> > +		cpld@3,0 {
+> > +			/*
+> > +			 * Turris CPLD firmware which runs on this Lattice FPGA,
+> > +			 * is extended version of P1021RDB-PC CPLD v4.1 firmware.
+> > +			 * It is backward compatible with its original version
+> > +			 * and the only extension is support for Turris LEDs.
+> > +			 * Turris CPLD firmware is open source and available at:
+> > +			 * https://gitlab.nic.cz/turris/hw/turris_cpld/-/blob/master/CZ_NIC_Router_CPLD.v
+> > +			 */
+> > +			compatible = "cznic,turris1x-cpld", "fsl,p1021rdb-pc-cpld", "simple-bus";
+> > +			reg = <0x3 0x0 0x30>;
+> > +			#address-cells = <1>;
+> > +			#size-cells = <1>;
+> > +			ranges = <0x0 0x3 0x0 0x00020000>;
+> > +
+> > +			/* MAX6370KA+T watchdog */
+> > +			watchdog@2 {
+> > +				/*
+> > +				 * CPLD firmware maps SET0, SET1 and SET2
+> > +				 * input logic of MAX6370KA+T chip to CPLD
+> > +				 * memory space at byte offset 0x2. WDI
+> > +				 * input logic is outside of the CPLD and
+> > +				 * connected via external GPIO.
+> > +				 */
+> > +				compatible = "maxim,max6370";
+> > +				reg = <0x02 0x01>;
+> > +				gpios = <&gpio 11 GPIO_ACTIVE_LOW>;
+> > +			};
+> > +
+> > +			led-controller@13 {
+> > +				/*
+> > +				 * LEDs are controlled by CPLD firmware.
+> > +				 * All five LAN LEDs share common RGB settings
+> > +				 * and so it is not possible to set different
+> > +				 * colors on different LAN ports.
+> > +				 */
+> > +				compatible = "cznic,turris1x-leds";
+> > +				reg = <0x13 0x1d>;
+> > +				#address-cells = <1>;
+> > +				#size-cells = <0>;
+> > +
+> > +				multi-led@0 {
+> > +					reg = <0x0>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_WAN;
+> > +				};
+> > +
+> > +				multi-led@1 {
+> > +					reg = <0x1>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_LAN;
+> > +					function-enumerator = <5>;
+> > +				};
+> > +
+> > +				multi-led@2 {
+> > +					reg = <0x2>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_LAN;
+> > +					function-enumerator = <4>;
+> > +				};
+> > +
+> > +				multi-led@3 {
+> > +					reg = <0x3>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_LAN;
+> > +					function-enumerator = <3>;
+> > +				};
+> > +
+> > +				multi-led@4 {
+> > +					reg = <0x4>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_LAN;
+> > +					function-enumerator = <2>;
+> > +				};
+> > +
+> > +				multi-led@5 {
+> > +					reg = <0x5>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_LAN;
+> > +					function-enumerator = <1>;
+> > +				};
+> > +
+> > +				multi-led@6 {
+> > +					reg = <0x6>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_WLAN;
+> > +				};
+> > +
+> > +				multi-led@7 {
+> > +					reg = <0x7>;
+> > +					color = <LED_COLOR_ID_RGB>;
+> > +					function = LED_FUNCTION_POWER;
+> > +				};
+> > +			};
+> > +		};
+> > +	};
+> > +
+> > +	pci2: pcie@ffe08000 {
+> > +		/*
+> > +		 * PCIe bus for on-board TUSB7340RKM USB 3.0 xHCI controller.
+> > +		 * This xHCI controller is available only on Turris 1.1 boards.
+> > +		 * Turris 1.0 boards have nothing connected to this PCIe bus,
+> > +		 * so system would see only PCIe Root Port of this PCIe Root
+> > +		 * Complex. TUSB7340RKM xHCI controller has four SuperSpeed
+> > +		 * channels. Channel 0 is connected to the front USB 3.0 port,
+> > +		 * channel 1 (but only USB 2.0 subset) to USB 2.0 pins on mPCIe
+> > +		 * slot 1 (CN5), channels 2 and 3 to connector P600.
+> > +		 *
+> > +		 * P2020 PCIe Root Port uses 1MB of PCIe MEM and xHCI controller
+> > +		 * uses 64kB + 8kB of PCIe MEM. No PCIe IO is used or required.
+> > +		 * So allocate 2MB of PCIe MEM for this PCIe bus.
+> > +		 */
+> > +		reg = <0 0xffe08000 0 0x1000>;
+> > +		ranges = <0x02000000 0x0 0xc0000000 0 0xc0000000 0x0 0x00200000>, /* MEM */
+> > +			 <0x01000000 0x0 0x00000000 0 0xffc20000 0x0 0x00010000>; /* IO */
+> > +
+> > +		pcie@0 {
+> > +			ranges;
+> > +		};
+> > +	};
+> > +
+> > +	pci1: pcie@ffe09000 {
+> > +		/* PCIe bus on mPCIe slot 2 (CN6) for expansion mPCIe card */
+> > +		reg = <0 0xffe09000 0 0x1000>;
+> > +		ranges = <0x02000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000>, /* MEM */
+> > +			 <0x01000000 0x0 0x00000000 0 0xffc10000 0x0 0x00010000>; /* IO */
+> > +
+> > +		pcie@0 {
+> > +			ranges;
+> > +		};
+> > +	};
+> > +
+> > +	pci0: pcie@ffe0a000 {
+> > +		/*
+> > +		 * PCIe bus on mPCIe slot 1 (CN5) for expansion mPCIe card.
+> > +		 * Turris 1.1 boards have in this mPCIe slot additional USB 2.0
+> > +		 * pins via channel 1 of TUSB7340RKM xHCI controller and also
+> > +		 * additional SIM card slot, both for USB-based WWAN cards.
+> > +		 */
+> > +		reg = <0 0xffe0a000 0 0x1000>;
+> > +		ranges = <0x02000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000>, /* MEM */
+> > +			 <0x01000000 0x0 0x00000000 0 0xffc00000 0x0 0x00010000>; /* IO */
+> > +
+> > +		pcie@0 {
+> > +			ranges;
+> > +		};
+> > +	};
+> > +};
+> > +
+> > +/include/ "fsl/p2020si-post.dtsi"
+> > -- 
+> > 2.20.1
+> > 
