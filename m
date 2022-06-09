@@ -4,60 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0F4DC43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 16:55:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBC70C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 11:09:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LKRsk21gCz3cDt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jun 2022 02:55:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=H5asr9xB;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=H5asr9xB;
-	dkim-atps=neutral
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LKRr111RNz3c8S
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jun 2022 02:53:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1654880033; x=1686416033;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=nH17wHmmgK4AW9BFRmJhaKFr6+yy+wV2Bt5AEZddqa8=;
-  b=H5asr9xB5ckE73U+YMUe/xt4qrZNuyIPMot7qcG/xnyMcpHzLd8dvnDP
-   AXVMmAVrR1krrfZltshHfPdUSTA//8RTY2Igi3u4ki40i+oFP7cNsBBi0
-   wysip+tY1v7MYqr8SF247R1g0O72fTeSkbysE4Zr1/OUZoHb9B2I/5YNB
-   PT4cTris4pU6lFChCAdBYWikG8W9TKndnnEnB3YurxHPck/AMygFbMU9e
-   aGNZBlJ3GlI+N0YzXMPjoCb2837agcmfd+Xsf/ynZscPbE2Fz6ukbH0rS
-   kHd5mwmU2inaL/ZB6HFJGv0l1hfcH6I6uzHykNi7gNyZSVKWffam2eORR
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10374"; a="257513461"
-X-IronPort-AV: E=Sophos;i="5.91,290,1647327600"; 
-   d="scan'208";a="257513461"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 09:53:47 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,290,1647327600"; 
-   d="scan'208";a="638213707"
-Received: from lkp-server01.sh.intel.com (HELO 60dabacc1df6) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 10 Jun 2022 09:53:46 -0700
-Received: from kbuild by 60dabacc1df6 with local (Exim 4.95)
-	(envelope-from <lkp@intel.com>)
-	id 1nzhtJ-000I85-Jl;
-	Fri, 10 Jun 2022 16:53:45 +0000
-Date: Sat, 11 Jun 2022 00:53:07 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 8e1278444446fc97778a5e5c99bca1ce0bbc5ec9
-Message-ID: <62a376f3.cuf2xko2DINN/q1O%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LKJBr68FWz3cH1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 21:09:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=atomide.com (client-ip=72.249.23.125; helo=muru.com; envelope-from=tony@atomide.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 435 seconds by postgrey-1.36 at boromir; Thu, 09 Jun 2022 17:46:44 AEST
+Received: from muru.com (muru.com [72.249.23.125])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJbl807TCz3bn4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 17:46:43 +1000 (AEST)
+Received: from localhost (localhost [127.0.0.1])
+	by muru.com (Postfix) with ESMTPS id 88FEF80F1;
+	Thu,  9 Jun 2022 07:34:50 +0000 (UTC)
+Date: Thu, 9 Jun 2022 10:39:22 +0300
+From: Tony Lindgren <tony@atomide.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 33/36] cpuidle,omap3: Use WFI for omap3_pm_idle()
+Message-ID: <YqGjqgSrTRseJW6M@atomide.com>
+References: <20220608142723.103523089@infradead.org>
+ <20220608144518.010587032@infradead.org>
+ <CAK8P3a0g-fNu9=BUECSXcNeWT7XWHQMnSXZE-XYE+5eakHxKxA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <CAK8P3a0g-fNu9=BUECSXcNeWT7XWHQMnSXZE-XYE+5eakHxKxA@mail.gmail.com>
+X-Mailman-Approved-At: Fri, 10 Jun 2022 21:09:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,89 +41,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Juri Lelli <juri.lelli@redhat.com>, Rafael Wysocki <rafael@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Ben Segall <bsegall@google.com>, Guo Ren <guoren@kernel.org>, Pavel Machek <pavel@ucw.cz>, Alexander Gordeev <agordeev@linux.ibm.com>, srivatsa@csail.mit.edu, linux-arch <linux-arch@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Huacai Chen <chenhuacai@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Andy Gross <agross@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, NXP Linux Team <linux-imx@nxp.com>, Catalin Marinas <catalin.marinas@arm.com>, xen-devel <xen-devel@lists.xenproject.org>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Michael Turquette <mturquette@baylibre.com>, Sam Creasey <sammy@sammy.net>, Petr Mladek <pmladek@suse.com>, Linux PM list <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, linux-um <linux-um@lists.infrade
+ ad.org>, Arnaldo Carvalho de Melo <acme@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-omap <linux-omap@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Richard Henderson <rth@twiddle.net>, gregkh <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-perf-users@vger.kernel.org, Sergey Senozhatsky <senozhatsky@chromium.org>, Sven Schnelle <svens@linux.ibm.com>, Jiri Olsa <jolsa@kernel.org>, Paul Mackerras <paulus@samba.org>, Mark Rutland <mark.rutland@arm.com>, "open list:IA64 \(Itanium\) PLATFORM" <linux-ia64@vger.kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, "open list:DRM DRIVER FOR QEMU'S CIRRUS DEVICE" <virtualization@lists.linux-foundation.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Xuerui Wang <kernel@xen0n.name>, quic_neeraju@quicinc.com, linux-s390 <linux-s390@vger.kernel.org>, vschneid@redhat.com, John Ogn
+ ess <john.ogness@linutronix.de>, Yoshinori Sato <ysat
+
+o@users.sourceforge.jp>, Linux-sh list <linux-sh@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Helge Deller <deller@gmx.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Jonathan Hunter <jonathanh@nvidia.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Frederic Weisbecker <frederic@kernel.org>, Len Brown <lenb@kernel.org>, "open list:TENSILICA XTENSA PORT \(xtensa\)" <linux-xtensa@linux-xtensa.org>, Sascha Hauer <kernel@pengutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, alpha <linux-alpha@vger.kernel.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Stafford Horne <shorne@gmail.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Chris Zankel <chris@zankel.net>, Stephen Boyd <sboyd@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Daniel Bristot de Oliveira <bristot@redhat.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, lpieralisi@kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Joel Fernandes <
+ joel@joelfernandes.org>, Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Kevin Hilman <khilman@kernel.org>, linux-csky@vger.kernel.org, Pv-drivers <pv-drivers@vmware.com>, "open list:SYNOPSYS ARC ARCHITECTURE" <linux-snps-arc@lists.infradead.org>, Mel Gorman <mgorman@suse.de>, jacob.jun.pan@linux.intel.com, Yury Norov <yury.norov@gmail.com>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, Vineet Gupta <vgupta@kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>, rcu@vger.kernel.org, Borislav Petkov <bp@alien8.de>, bcain@quicinc.com, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Parisc List <linux-parisc@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Shawn Guo <shawnguo@kernel.org>, David Miller <davem@davemloft.net>, Rich Felker <dalias@libc.org>, Peter Zijlstra <peterz@infradead.org>, amakhalov@vmware.com, Bjorn Andersson <bjorn.andersson@linaro.org>, "H. Peter Anvin" <hp
+ a@zytor.com>, sparclinux <sparclinux@vger.kernel.org>
+, "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>, linux-riscv <linux-riscv@lists.infradead.org>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, Richard Weinberger <richard@nod.at>, the arch/x86 maintainers <x86@kernel.org>, Russell King - ARM Linux <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, "Paul E. McKenney" <paulmck@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Openrisc <openrisc@lists.librecores.org>, Paul Walmsley <paul.walmsley@sifive.com>, "open list:TEGRA ARCHITECTURE SUPPORT" <linux-tegra@vger.kernel.org>, Namhyung Kim <namhyung@kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, jpoimboe@kernel.org, Juergen Gross <jgross@suse.com>, Michal Simek <monstr@monstr.eu>, "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Anup Patel <anup@brainfault.org>, Ivan Ko
+ kshaysky <ink@jurassic.park.msu.ru>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 8e1278444446fc97778a5e5c99bca1ce0bbc5ec9  powerpc/32: Fix overread/overwrite of thread_struct via ptrace
+* Arnd Bergmann <arnd@arndb.de> [220608 18:18]:
+> On Wed, Jun 8, 2022 at 4:27 PM Peter Zijlstra <peterz@infradead.org> wrote:
+> >
+> > arch_cpu_idle() is a very simple idle interface and exposes only a
+> > single idle state and is expected to not require RCU and not do any
+> > tracing/instrumentation.
+> >
+> > As such, omap_sram_idle() is not a valid implementation. Replace it
+> > with the simple (shallow) omap3_do_wfi() call. Leaving the more
+> > complicated idle states for the cpuidle driver.
 
-elapsed time: 1543m
+Agreed it makes sense to limit deeper idle states to cpuidle. Hopefully
+there is some informative splat for attempting to use arch_cpu_ide()
+for deeper idle states :)
 
-configs tested: 64
-configs skipped: 101
+> I see similar code in omap2:
+> 
+> omap2_pm_idle()
+>  -> omap2_enter_full_retention()
+>      -> omap2_sram_suspend()
+> 
+> Is that code path safe to use without RCU or does it need a similar change?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Seems like a similar change should be done for omap2. Then anybody who
+cares to implement a minimal cpuidle support can do so.
 
-gcc tested configs:
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allmodconfig
-arm                                 defconfig
-arm                              allyesconfig
-m68k                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-h8300                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-s390                                defconfig
-s390                             allmodconfig
-parisc                              defconfig
-parisc64                            defconfig
-parisc                           allyesconfig
-s390                             allyesconfig
-sparc                               defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-i386                                defconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-powerpc                          allyesconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                        randconfig-a006
-x86_64                        randconfig-a004
-x86_64                        randconfig-a002
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-arc                  randconfig-r043-20220608
-s390                 randconfig-r044-20220608
-riscv                randconfig-r042-20220608
-riscv                               defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-riscv                            allmodconfig
-riscv                            allyesconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                                  kexec
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                          rhel-8.3-func
-x86_64                           rhel-8.3-syz
-x86_64                    rhel-8.3-kselftests
-x86_64                         rhel-8.3-kunit
+Regards,
 
-clang tested configs:
-x86_64                        randconfig-a005
-x86_64                        randconfig-a003
-x86_64                        randconfig-a001
-hexagon              randconfig-r045-20220609
-s390                 randconfig-r044-20220609
-riscv                randconfig-r042-20220609
-hexagon              randconfig-r041-20220609
-hexagon              randconfig-r045-20220608
-hexagon              randconfig-r041-20220608
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Tony
