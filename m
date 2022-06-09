@@ -4,30 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AAC8C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 476C0C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:46:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn3W0TwBz3drD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:46:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn3x5nctz3dvP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:46:53 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2G6QVlz3bmQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2H3Nlfz3bmQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:27 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4LJn2H3Ctgz4xZB; Fri, 10 Jun 2022 00:45:27 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn2G5dSGz4xZ5;
-	Fri, 10 Jun 2022 00:45:26 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn2H2M9rz4xZ8;
+	Fri, 10 Jun 2022 00:45:27 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220601143114.133524-1-mpe@ellerman.id.au>
-References: <20220601143114.133524-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/kasan: Force thread size increase with KASAN
-Message-Id: <165478587448.589231.13218184704753997512.b4-ty@ellerman.id.au>
-Date: Fri, 10 Jun 2022 00:44:34 +1000
+To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
+In-Reply-To: <YoX1kZPnmUX4RZEK@cleo>
+References: <YoX1kZPnmUX4RZEK@cleo>
+Subject: Re: [PATCH] powerpc/kasan: Mark more real-mode code as not to be instrumented
+Message-Id: <165478587050.589231.13160965405188733708.b4-ty@ellerman.id.au>
+Date: Fri, 10 Jun 2022 00:44:30 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +44,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Nageswara R Sastry <rnsastry@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2 Jun 2022 00:31:14 +1000, Michael Ellerman wrote:
-> KASAN causes increased stack usage, which can lead to stack overflows.
+On Thu, 19 May 2022 17:45:21 +1000, Paul Mackerras wrote:
+> This marks more files and functions that can possibly be called in
+> real mode as not to be instrumented by KASAN.  Most were found by
+> inspection, except for get_pseries_errorlog() which was reported as
+> causing a crash in testing.
 > 
-> The logic in Kconfig to suggest a larger default doesn't work if a user
-> has CONFIG_EXPERT enabled and has an existing .config with a smaller
-> value.
 > 
-> Follow the lead of x86 and arm64, and force the thread size to be
-> increased when KASAN is enabled.
-> 
-> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/kasan: Force thread size increase with KASAN
-      https://git.kernel.org/powerpc/c/3e8635fb2e072672cbc650989ffedf8300ad67fb
+[1/1] powerpc/kasan: Mark more real-mode code as not to be instrumented
+      https://git.kernel.org/powerpc/c/743cdb7bd0f1cb32c03680c8b38257957db2e692
 
 cheers
