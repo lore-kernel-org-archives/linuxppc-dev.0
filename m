@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 164E6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 052E1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 14:46:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn2h2z0Zz3bv8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:45:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJn355259z3chV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 00:46:09 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2F6gyPz3bmQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJn2G1vtxz3bmQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jun 2022 00:45:26 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn2F4PkVz4xD1;
-	Fri, 10 Jun 2022 00:45:25 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LJn2G1Cncz4xZ4;
+	Fri, 10 Jun 2022 00:45:26 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220609133245.573565-1-mpe@ellerman.id.au>
-References: <20220609133245.573565-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/32: Fix overread/overwrite of thread_struct via ptrace
-Message-Id: <165478587632.589231.14367330461176321926.b4-ty@ellerman.id.au>
-Date: Fri, 10 Jun 2022 00:44:36 +1000
+In-Reply-To: <20220525032639.1947280-1-mpe@ellerman.id.au>
+References: <20220525032639.1947280-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Don't select HAVE_IRQ_EXIT_ON_IRQ_STACK
+Message-Id: <165478587253.589231.16242247816940188081.b4-ty@ellerman.id.au>
+Date: Fri, 10 Jun 2022 00:44:32 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ariel.miculas@belden.com
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 9 Jun 2022 23:32:45 +1000, Michael Ellerman wrote:
-> The ptrace PEEKUSR/POKEUSR (aka PEEKUSER/POKEUSER) API allows a process
-> to read/write registers of another process.
+On Wed, 25 May 2022 13:26:39 +1000, Michael Ellerman wrote:
+> The HAVE_IRQ_EXIT_ON_IRQ_STACK option tells generic code that irq_exit()
+> is called while still running on the hard irq stack (hardirq_ctx[] in
+> the powerpc code).
 > 
-> To get/set a register, the API takes an index into an imaginary address
-> space called the "USER area", where the registers of the process are
-> laid out in some fashion.
+> Selecting the option means the generic code will *not* switch to the
+> softirq stack before running softirqs, because the code is already
+> running on the (mostly empty) hard irq stack.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/32: Fix overread/overwrite of thread_struct via ptrace
-      https://git.kernel.org/powerpc/c/8e1278444446fc97778a5e5c99bca1ce0bbc5ec9
+[1/1] powerpc: Don't select HAVE_IRQ_EXIT_ON_IRQ_STACK
+      https://git.kernel.org/powerpc/c/1346d00e1bdfd4067f92bc14e8a6131a01de4190
 
 cheers
