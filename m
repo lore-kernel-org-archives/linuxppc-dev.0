@@ -4,47 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 751D6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 05:06:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84C3DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 05:07:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LJXBQ6zmPz3c4h
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 15:06:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LJXC41tTkz3blC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Jun 2022 15:07:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=kyhL2c0f;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=iYQQqCAP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+a39afe573ddbd6ff3389+6864+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=kyhL2c0f;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=iYQQqCAP;
 	dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJX9k59b9z30Dp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 15:06:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LJXBF1sYRz3c7L
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jun 2022 15:06:29 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
 	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=lSjKiwGQP2bLdZmsJuNaLJfxZDGjC6fCq2g/NdyMPNA=; b=kyhL2c0fixHav+CSRIiyWMtFN7
-	AtDNsnF/9FvWJ9TIx9fua/CrNv5rR8a9O7oji3ME60GbokDgdhgvD0ea2XdXEW/L1DOT//y9eaYzo
-	JnuI00fO4ezPxNMBvHkQYYI5xIPoHzR9wnf4anfLqVEwyENKdzkr/7GIIOrh15zyrv+YMfLMdP9s5
-	6Rvc7JdDtTpL7W2pcS0iqoBpYYs8PLlaD0HauJabPoVr7WpXOlJQlGsGN0JStdxSNMixCdQE7blhE
-	RaUJDr2rfJW4kg5HofoJ8jqgC2HUgKr4MOCFxVgU1Mt6OJy/VvcugFl1p5U4yhYTwg9+HBWpohhZ5
-	n20MR6mw==;
+	bh=d9gxlHADcAR3dZ8bJB1PHcB/bh00hLGGE8frKxME3zs=; b=iYQQqCAPXVCNNcBSd6/LN/ZjOV
+	4Alol9GUeSmGyzdwdlE2wivpQEGbeGaFCez4O4B9XQgEFOhzNeD6JL12swx/rzZWvXefaKapSNw1m
+	PlpQsdA2Rbx6KyzlL0eEyHocUVn+n7Msu0brZwHLrA+TYfR25AGMrAH+zJOkn4YHdPffVSr4AWcvr
+	Ogo5wx4xPZPyn4DuIRkgBiWhIA1AUImP/tMbpPGYEGa8/IWmqJcC1Dvbs8BRthWMT3KabUBUsh/qY
+	1CnWC/FK2QJFrR/WIBhNFqsuku35MV9OojHHBK1lVY21/f4WGxtvUD/SrGBFPoqGneEadMZp6sovO
+	C4iNnF2w==;
 Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1nzAMl-00Gn4g-0a; Thu, 09 Jun 2022 05:05:55 +0000
-Date: Wed, 8 Jun 2022 22:05:54 -0700
+	id 1nzANC-00GnAv-9y; Thu, 09 Jun 2022 05:06:22 +0000
+Date: Wed, 8 Jun 2022 22:06:22 -0700
 From: Christoph Hellwig <hch@infradead.org>
 To: Dongli Zhang <dongli.zhang@oracle.com>
-Subject: Re: [PATCH RFC v1 4/7] swiotlb: to implement io_tlb_high_mem
-Message-ID: <YqF/sphJj6n+22Si@infradead.org>
+Subject: Re: [PATCH RFC v1 5/7] swiotlb: add interface to set
+ dev->dma_io_tlb_mem
+Message-ID: <YqF/zrqYtjPS9cvF@infradead.org>
 References: <20220609005553.30954-1-dongli.zhang@oracle.com>
- <20220609005553.30954-5-dongli.zhang@oracle.com>
+ <20220609005553.30954-6-dongli.zhang@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220609005553.30954-5-dongli.zhang@oracle.com>
+In-Reply-To: <20220609005553.30954-6-dongli.zhang@oracle.com>
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,4 +62,4 @@ Cc: jgross@suse.com, dave.hansen@linux.intel.com, mst@redhat.com, konrad.wilk@or
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All this really needs to be hidden under the hood.
+This should be handled under the hood without the driver even knowing.
