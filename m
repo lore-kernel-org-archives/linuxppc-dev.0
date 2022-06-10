@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 937DECCA47B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 23:36:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429CDCCA47D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 23:37:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LKcn20dwBz3dQJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jun 2022 09:36:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LKcnh602Dz3drY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jun 2022 09:37:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Du1hwDz4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WX+rCHJ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Du1hwDz4;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WX+rCHJ8;
 	dkim-atps=neutral
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LKclg4fkNz3brd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LKclg432hz2yyh
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jun 2022 09:35:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1654904143; x=1686440143;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=E0S7lAVxIGr1gPnTIVSUeXKWXCH1YKeQN7klBTJ1vLE=;
-  b=Du1hwDz4O4Pbao+KCYxLbOm02gHBA/Q0EIpiQOsPyyJeg23DqldjzMB5
-   xgSOp6czBX3qu7PcRztbODCYfqPTH/IyfY9g+3Krz76TXsNqQGAC59yAR
-   idxwFWVFnJ60e+Lf/U01PRBotIuCY3+wOhR8acJHkaMVwYhbQwIFmvp9l
-   k1WDE82UKH3ys060e4sT6JTsGrftSb243u1zQ2eBe0IxL2EXHfknxHHFX
-   UqHm5uxfvecqP7TM57dP2AyaiwIWQg6NmNuYIboLg4ROfbLUb9cXjFoDS
-   1JTIYdNO3m++QSXKXfVTsMF83o+DEKLvtaxp9GCqIwkUs0CGTCBxdnCt0
-   g==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10374"; a="278579385"
+  bh=ERLwkkEZpG4vAVBowWhSWiEDw3prKfNk8Uv0IINg8GY=;
+  b=WX+rCHJ8T17ccRs67MMlFE+gKNULayHb+A1OVyWk0joHn1BV59SgpyqE
+   r6GFHASp57j99Q+IRRAZ7i7be0Eb6v/8wF8XaIRLUOWJgbz0DsudXllWO
+   AroDeLgHN8UOtwNnexEe5ppVwciCr21URkSZj9iMw83ODC4b9HqR5ANcO
+   m4bYO0LvqfvmtWdefBjojsFEm5SUr5dyWrcpb1LxE8X74UMwHUb66hDwv
+   ap7clIDkYUXt2UpFkwlJtFh4FZiLeA2DXcpTu7H+JyvaYjE1lMcxD9czR
+   /pRFd6u7VXgVn+Yz07mq5Yf2HTnVdWPg4P/jTtsS4X9vvK9QZ1r8DBDkw
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10374"; a="278909244"
 X-IronPort-AV: E=Sophos;i="5.91,291,1647327600"; 
-   d="scan'208";a="278579385"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:40 -0700
+   d="scan'208";a="278909244"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:36 -0700
 X-IronPort-AV: E=Sophos;i="5.91,291,1647327600"; 
-   d="scan'208";a="909166943"
+   d="scan'208";a="760716836"
 Received: from pleung-mobl1.amr.corp.intel.com (HELO localhost) ([10.212.33.34])
-  by fmsmga005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:40 -0700
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:36 -0700
 From: ira.weiny@intel.com
 To: linux-api@vger.kernel.org
-Subject: [RFC PATCH 5/6] pkeys: Up level pkey_free() checks
-Date: Fri, 10 Jun 2022 16:35:32 -0700
-Message-Id: <20220610233533.3649584-6-ira.weiny@intel.com>
+Subject: [RFC PATCH 1/6] testing/pkeys: Add command line options
+Date: Fri, 10 Jun 2022 16:35:28 -0700
+Message-Id: <20220610233533.3649584-2-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20220610233533.3649584-1-ira.weiny@intel.com>
 References: <20220610233533.3649584-1-ira.weiny@intel.com>
@@ -64,101 +64,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Florian Weimer <fweimer@redhat.com>, x86@kernel.org, clemensb@chromium.org, jkummerow@chromium.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, ahaas@chromium.org, linux-kernel@vger.kernel.org, gdeepti@chromium.org, linux-mm@kvack.org, linux-kselftest@vger.kernel.org, Sohil Mehta <sohil.mehta@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Ira Weiny <ira.weiny@intel.com>, manoskouk@chromium.org, thibaudm@chromium.org
+Cc: x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-kselftest@vger.kernel.org, Sohil Mehta <sohil.mehta@intel.com>, Ira Weiny <ira.weiny@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-x86 is missing a hardware check for pkey support in pkey_free().  While
-the net result is the same (-EINVAL returned), pkey_free() has well
-defined behavior which will be easier to maintain in one place.
+It is more convenient to use command line options for debug and
+iterations vs changing the code and recompiling.
 
-For powerpc the return code is -1 rather than -EINVAL.  This changes
-that behavior slightly but this is very unlikely to break any user
-space.
+Add command line options for debug level and number of iterations.
 
-Lift the checks for pkey_free() to the core mm code and ensure
-consistency with returning -EINVAL.
+$ ./protection_keys_64 -h
+Usage: ./protection_keys_64 [-h,-d,-i <iter>]
+        --help,-h   This help
+	--debug,-d  Increase debug level for each -d
+	--iterations,-i <iter>  repeate test <iter> times
+		default: 22
 
-Cc: ahaas@chromium.org
-Cc: clemensb@chromium.org
-Cc: gdeepti@chromium.org
-Cc: jkummerow@chromium.org
-Cc: manoskouk@chromium.org
-Cc: thibaudm@chromium.org
-Cc: Florian Weimer <fweimer@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-api@vger.kernel.org
-Cc: Sohil Mehta <sohil.mehta@intel.com>
 Cc: Dave Hansen <dave.hansen@linux.intel.com>
 Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
-
 ---
-Thanks to Sohil for suggesting I mention the powerpc return value in the
-commit message.
+ tools/testing/selftests/vm/pkey-helpers.h    |  7 +--
+ tools/testing/selftests/vm/protection_keys.c | 59 +++++++++++++++++---
+ 2 files changed, 55 insertions(+), 11 deletions(-)
 
-Also Sohil suggested changing mm_pkey_free() from int to void.  This is
-added as a separate patch with his suggested by.
----
- arch/powerpc/include/asm/pkeys.h | 6 ------
- arch/x86/include/asm/pkeys.h     | 3 ---
- mm/mprotect.c                    | 8 ++++++--
- 3 files changed, 6 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 2c8351248793..e96aa91f817b 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -107,12 +107,6 @@ static inline int mm_pkey_alloc(struct mm_struct *mm)
+diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
+index 92f3be3dd8e5..7aaac1c8ebca 100644
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -23,9 +23,8 @@
  
- static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
- {
--	if (!mmu_has_feature(MMU_FTR_PKEY))
--		return -1;
--
--	if (!mm_pkey_is_allocated(mm, pkey))
--		return -EINVAL;
--
- 	__mm_pkey_free(mm, pkey);
+ #define PTR_ERR_ENOTSUP ((void *)-ENOTSUP)
  
- 	return 0;
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index 2e6c04d8a45b..da02737cc4d1 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -107,9 +107,6 @@ int mm_pkey_alloc(struct mm_struct *mm)
- static inline
- int mm_pkey_free(struct mm_struct *mm, int pkey)
- {
--	if (!mm_pkey_is_allocated(mm, pkey))
--		return -EINVAL;
--
- 	mm_set_pkey_free(mm, pkey);
- 
- 	return 0;
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 56d35de33725..41458e729c27 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -803,10 +803,14 @@ SYSCALL_DEFINE2(pkey_alloc, unsigned long, flags, unsigned long, init_val)
- 
- SYSCALL_DEFINE1(pkey_free, int, pkey)
- {
--	int ret;
-+	int ret = -EINVAL;
+-#ifndef DEBUG_LEVEL
+-#define DEBUG_LEVEL 0
+-#endif
++extern int debug_level;
 +
-+	if (!arch_pkeys_enabled())
-+		return ret;
+ #define DPRINT_IN_SIGNAL_BUF_SIZE 4096
+ extern int dprint_in_signal;
+ extern char dprint_in_signal_buffer[DPRINT_IN_SIGNAL_BUF_SIZE];
+@@ -58,7 +57,7 @@ static inline void sigsafe_printf(const char *format, ...)
+ 	}
+ }
+ #define dprintf_level(level, args...) do {	\
+-	if (level <= DEBUG_LEVEL)		\
++	if (level <= debug_level)		\
+ 		sigsafe_printf(args);		\
+ } while (0)
+ #define dprintf0(args...) dprintf_level(0, args)
+diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+index 291bc1e07842..d0183c381859 100644
+--- a/tools/testing/selftests/vm/protection_keys.c
++++ b/tools/testing/selftests/vm/protection_keys.c
+@@ -44,9 +44,13 @@
+ #include <unistd.h>
+ #include <sys/ptrace.h>
+ #include <setjmp.h>
++#include <getopt.h>
  
- 	mmap_write_lock(current->mm);
--	ret = mm_pkey_free(current->mm, pkey);
-+	if (mm_pkey_is_allocated(current->mm, pkey))
-+		ret = mm_pkey_free(current->mm, pkey);
- 	mmap_write_unlock(current->mm);
+ #include "pkey-helpers.h"
  
- 	/*
++#define DEFAULT_ITERATIONS 22
++
++int debug_level;
+ int iteration_nr = 1;
+ int test_nr;
+ 
+@@ -361,7 +365,7 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+ 	 * here.
+ 	 */
+ 	dprintf1("pkey_reg_xstate_offset: %d\n", pkey_reg_xstate_offset());
+-	if (DEBUG_LEVEL > 4)
++	if (debug_level > 4)
+ 		dump_mem(pkey_reg_ptr - 128, 256);
+ 	pkey_assert(*pkey_reg_ptr);
+ #endif /* arch */
+@@ -480,7 +484,7 @@ int sys_mprotect_pkey(void *ptr, size_t size, unsigned long orig_prot,
+ 		dprintf2("SYS_mprotect_key sret: %d\n", sret);
+ 		dprintf2("SYS_mprotect_key prot: 0x%lx\n", orig_prot);
+ 		dprintf2("SYS_mprotect_key failed, errno: %d\n", errno);
+-		if (DEBUG_LEVEL >= 2)
++		if (debug_level >= 2)
+ 			perror("SYS_mprotect_pkey");
+ 	}
+ 	return sret;
+@@ -1116,7 +1120,7 @@ void test_kernel_write_of_write_disabled_region(int *ptr, u16 pkey)
+ 	pkey_write_deny(pkey);
+ 	ret = read(test_fd, ptr, 100);
+ 	dprintf1("read ret: %d\n", ret);
+-	if (ret < 0 && (DEBUG_LEVEL > 0))
++	if (ret < 0 && (debug_level > 0))
+ 		perror("verbose read result (OK for this to be bad)");
+ 	pkey_assert(ret);
+ }
+@@ -1155,7 +1159,7 @@ void test_kernel_gup_write_to_write_disabled_region(int *ptr, u16 pkey)
+ 	pkey_write_deny(pkey);
+ 	futex_ret = syscall(SYS_futex, ptr, FUTEX_WAIT, some_int-1, NULL,
+ 			&ignored, ignored);
+-	if (DEBUG_LEVEL > 0)
++	if (debug_level > 0)
+ 		perror("futex");
+ 	dprintf1("futex() ret: %d\n", futex_ret);
+ }
+@@ -1626,11 +1630,52 @@ void pkey_setup_shadow(void)
+ 	shadow_pkey_reg = __read_pkey_reg();
+ }
+ 
+-int main(void)
++static void print_help_and_exit(char *argv0)
++{
++	printf("Usage: %s [-h,-d,-i <iter>]\n", argv0);
++	printf("	--help,-h   This help\n");
++	printf("	--debug,-d  Increase debug level for each -d\n");
++	printf("	--iterations,-i <iter>  repeate test <iter> times\n");
++	printf("		default: %d\n", DEFAULT_ITERATIONS);
++	printf("\n");
++}
++
++int main(int argc, char *argv[])
+ {
+-	int nr_iterations = 22;
+-	int pkeys_supported = is_pkeys_supported();
++	int nr_iterations = DEFAULT_ITERATIONS;
++	int pkeys_supported;
++
++	while (1) {
++		static struct option long_options[] = {
++			{"help",	no_argument,		0,	'h' },
++			{"debug",	no_argument,		0,	'd' },
++			{"iterations",	required_argument,	0,	'i' },
++			{0,		0,			0,	0 }
++		};
++		int option_index = 0;
++		int c;
++
++		c = getopt_long(argc, argv, "hdi:", long_options, &option_index);
++		if (c == -1)
++			break;
++
++		switch (c) {
++		case 'h':
++			print_help_and_exit(argv[0]);
++			return 0;
++		case 'd':
++			debug_level++;
++			break;
++		case 'i':
++			nr_iterations = strtoul(optarg, NULL, 0);
++			break;
++		default:
++			print_help_and_exit(argv[0]);
++			exit(-1);
++		}
++	}
+ 
++	pkeys_supported = is_pkeys_supported();
+ 	srand((unsigned int)time(NULL));
+ 
+ 	setup_handlers();
 -- 
 2.35.1
 
