@@ -4,46 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C391C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 22:44:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BEB4CCA483
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Jun 2022 23:36:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LKbd32L2xz3cdv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jun 2022 08:44:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LKcmN41BVz3cf8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Jun 2022 09:36:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=odvOjgG1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DOhUJJ9+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LKbcM4LtCz3bm9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jun 2022 08:44:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=odvOjgG1;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DOhUJJ9+;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LKbcK4QC5z4xZ4;
-	Sat, 11 Jun 2022 08:44:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1654901057;
-	bh=5NlNhUrggI6y4thnepq778xkltxmDRahIYixN/3Gg/k=;
-	h=From:To:Cc:Subject:Date:From;
-	b=odvOjgG1y0xrW1wOKg/qtjgqOx9MCB2SQooHcmvVWPGC05oolojpFviMwEyw/CrGc
-	 ozlsRxsAT3ySyJy4rn7ur0/qAU7BbYZpmElBxU8Scjqawuj8ZfA+H5xx6ZCGOnr/lo
-	 6/N6oYHiayNrfoPK2zP6EyMo83O2lLEkZyQG01NJsMa+o10/LJlgMHiNEICKUoN6JP
-	 sthcd2MxummU1km2fOsBGvjAYS+ie+3uthNZGnEMQt/+7rXsd8woTD4zoc7jKJSJGV
-	 wKZT4P8FySmkgUx5WtgCL7ttm68xDxDldnselfLsRul5m3RKWbmFZvkoybDmCJWjvK
-	 EdmNE9Z8Mf15w==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <stable@vger.kernel.org>,
-	<gregkh@linuxfoundation.org>
-Subject: [PATCH v5.18] powerpc/32: Fix overread/overwrite of thread_struct via ptrace
-Date: Sat, 11 Jun 2022 08:44:11 +1000
-Message-Id: <20220610224411.926565-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.35.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LKclg36Z7z2yyS
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jun 2022 09:35:43 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1654904143; x=1686440143;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=dcKqMrWYeQV/7jbUzKkDrJIenL/1HTp7HjU/MpsQUU0=;
+  b=DOhUJJ9+4DIpyc8cYtcpyY2YU5suOYcDI0D9KD3/Vi1PudA99HlPNIjo
+   0HlCIjWh1hhzvNaeguzHYopJUyuEs55xfokd561cYrhMJNDGOVlMrsxk/
+   kft4/QwkG+dEBrZmLoe5U6wL/chEUkzjgMh+KSUvYiyqoD2dQsNTZvAmg
+   PnMC3LLAckOtSmtK/d7QCErgnPjA6Ht6N02eQzSir1IwCRymAOSSOj99j
+   JPn4n6nlYc+X9SVgOKwMyr/Ku1talsuRhPB+LzypxvHubqj8EnRk1foTi
+   xHKHuOUCjT/btaWmjNFpjs+yIE+vNqCfskiddJyHB2uZ+dtyZjOFE4+TW
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10374"; a="303159750"
+X-IronPort-AV: E=Sophos;i="5.91,291,1647327600"; 
+   d="scan'208";a="303159750"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:38 -0700
+X-IronPort-AV: E=Sophos;i="5.91,291,1647327600"; 
+   d="scan'208";a="586450901"
+Received: from pleung-mobl1.amr.corp.intel.com (HELO localhost) ([10.212.33.34])
+  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jun 2022 16:35:37 -0700
+From: ira.weiny@intel.com
+To: linux-api@vger.kernel.org
+Subject: [RFC PATCH 2/6] testing/pkeys: Don't use uninitialized variable
+Date: Fri, 10 Jun 2022 16:35:29 -0700
+Message-Id: <20220610233533.3649584-3-ira.weiny@intel.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220610233533.3649584-1-ira.weiny@intel.com>
+References: <20220610233533.3649584-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -57,125 +64,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sashal@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-kselftest@vger.kernel.org, Sohil Mehta <sohil.mehta@intel.com>, Ira Weiny <ira.weiny@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-commit 8e1278444446fc97778a5e5c99bca1ce0bbc5ec9 upstream.
+From: Ira Weiny <ira.weiny@intel.com>
 
-The ptrace PEEKUSR/POKEUSR (aka PEEKUSER/POKEUSER) API allows a process
-to read/write registers of another process.
+err was being used in test_pkey_alloc_exhaust() prior to being assigned.
+errno is useful to know after a failed alloc_pkey() call.
 
-To get/set a register, the API takes an index into an imaginary address
-space called the "USER area", where the registers of the process are
-laid out in some fashion.
+Change err to errno in the debug print.
 
-The kernel then maps that index to a particular register in its own data
-structures and gets/sets the value.
-
-The API only allows a single machine-word to be read/written at a time.
-So 4 bytes on 32-bit kernels and 8 bytes on 64-bit kernels.
-
-The way floating point registers (FPRs) are addressed is somewhat
-complicated, because double precision float values are 64-bit even on
-32-bit CPUs. That means on 32-bit kernels each FPR occupies two
-word-sized locations in the USER area. On 64-bit kernels each FPR
-occupies one word-sized location in the USER area.
-
-Internally the kernel stores the FPRs in an array of u64s, or if VSX is
-enabled, an array of pairs of u64s where one half of each pair stores
-the FPR. Which half of the pair stores the FPR depends on the kernel's
-endianness.
-
-To handle the different layouts of the FPRs depending on VSX/no-VSX and
-big/little endian, the TS_FPR() macro was introduced.
-
-Unfortunately the TS_FPR() macro does not take into account the fact
-that the addressing of each FPR differs between 32-bit and 64-bit
-kernels. It just takes the index into the "USER area" passed from
-userspace and indexes into the fp_state.fpr array.
-
-On 32-bit there are 64 indexes that address FPRs, but only 32 entries in
-the fp_state.fpr array, meaning the user can read/write 256 bytes past
-the end of the array. Because the fp_state sits in the middle of the
-thread_struct there are various fields than can be overwritten,
-including some pointers. As such it may be exploitable.
-
-It has also been observed to cause systems to hang or otherwise
-misbehave when using gdbserver, and is probably the root cause of this
-report which could not be easily reproduced:
-  https://lore.kernel.org/linuxppc-dev/dc38afe9-6b78-f3f5-666b-986939e40fc6@keymile.com/
-
-Rather than trying to make the TS_FPR() macro even more complicated to
-fix the bug, or add more macros, instead add a special-case for 32-bit
-kernels. This is more obvious and hopefully avoids a similar bug
-happening again in future.
-
-Note that because 32-bit kernels never have VSX enabled the code doesn't
-need to consider TS_FPRWIDTH/OFFSET at all. Add a BUILD_BUG_ON() to
-ensure that 32-bit && VSX is never enabled.
-
-Fixes: 87fec0514f61 ("powerpc: PTRACE_PEEKUSR/PTRACE_POKEUSER of FPR registers in little endian builds")
-Cc: stable@vger.kernel.org # v3.13+
-Reported-by: Ariel Miculas <ariel.miculas@belden.com>
-Tested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20220609133245.573565-1-mpe@ellerman.id.au
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- arch/powerpc/kernel/ptrace/ptrace-fpu.c | 20 ++++++++++++++------
- arch/powerpc/kernel/ptrace/ptrace.c     |  3 +++
- 2 files changed, 17 insertions(+), 6 deletions(-)
+ tools/testing/selftests/vm/protection_keys.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-fpu.c b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-index 5dca19361316..09c49632bfe5 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-fpu.c
-@@ -17,9 +17,13 @@ int ptrace_get_fpr(struct task_struct *child, int index, unsigned long *data)
- 
- #ifdef CONFIG_PPC_FPU_REGS
- 	flush_fp_to_thread(child);
--	if (fpidx < (PT_FPSCR - PT_FPR0))
--		memcpy(data, &child->thread.TS_FPR(fpidx), sizeof(long));
--	else
-+	if (fpidx < (PT_FPSCR - PT_FPR0)) {
-+		if (IS_ENABLED(CONFIG_PPC32))
-+			// On 32-bit the index we are passed refers to 32-bit words
-+			*data = ((u32 *)child->thread.fp_state.fpr)[fpidx];
-+		else
-+			memcpy(data, &child->thread.TS_FPR(fpidx), sizeof(long));
-+	} else
- 		*data = child->thread.fp_state.fpscr;
- #else
- 	*data = 0;
-@@ -39,9 +43,13 @@ int ptrace_put_fpr(struct task_struct *child, int index, unsigned long data)
- 
- #ifdef CONFIG_PPC_FPU_REGS
- 	flush_fp_to_thread(child);
--	if (fpidx < (PT_FPSCR - PT_FPR0))
--		memcpy(&child->thread.TS_FPR(fpidx), &data, sizeof(long));
--	else
-+	if (fpidx < (PT_FPSCR - PT_FPR0)) {
-+		if (IS_ENABLED(CONFIG_PPC32))
-+			// On 32-bit the index we are passed refers to 32-bit words
-+			((u32 *)child->thread.fp_state.fpr)[fpidx] = data;
-+		else
-+			memcpy(&child->thread.TS_FPR(fpidx), &data, sizeof(long));
-+	} else
- 		child->thread.fp_state.fpscr = data;
- #endif
- 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
-index 6d5026a9db4f..eab6fa59d9d2 100644
---- a/arch/powerpc/kernel/ptrace/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace.c
-@@ -450,4 +450,7 @@ void __init pt_regs_check(void)
- #else
- 	BUILD_BUG_ON(IS_ENABLED(CONFIG_HAVE_FUNCTION_DESCRIPTORS));
- #endif
-+
-+	// ptrace_get/put_fpr() rely on PPC32 and VSX being incompatible
-+	BUILD_BUG_ON(IS_ENABLED(CONFIG_PPC32) && IS_ENABLED(CONFIG_VSX));
- }
+diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+index d0183c381859..43e47de19c0d 100644
+--- a/tools/testing/selftests/vm/protection_keys.c
++++ b/tools/testing/selftests/vm/protection_keys.c
+@@ -1225,9 +1225,9 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
+ 		int new_pkey;
+ 		dprintf1("%s() alloc loop: %d\n", __func__, i);
+ 		new_pkey = alloc_pkey();
+-		dprintf4("%s()::%d, err: %d pkey_reg: 0x%016llx"
++		dprintf4("%s()::%d, errno: %d pkey_reg: 0x%016llx"
+ 				" shadow: 0x%016llx\n",
+-				__func__, __LINE__, err, __read_pkey_reg(),
++				__func__, __LINE__, errno, __read_pkey_reg(),
+ 				shadow_pkey_reg);
+ 		read_pkey_reg(); /* for shadow checking */
+ 		dprintf2("%s() errno: %d ENOSPC: %d\n", __func__, errno, ENOSPC);
 -- 
-2.35.3
+2.35.1
 
