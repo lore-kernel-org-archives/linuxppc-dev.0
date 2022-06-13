@@ -4,58 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0136C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 16:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A59B2C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 22:02:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LNVmK6KmDz3cGf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 02:16:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LN2Tn5WfPz3bsB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 08:02:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csail.mit.edu (client-ip=128.30.2.210; helo=outgoing-stata.csail.mit.edu; envelope-from=srivatsa@csail.mit.edu; receiver=<UNKNOWN>)
+X-Greylist: delayed 1964 seconds by postgrey-1.36 at boromir; Tue, 14 Jun 2022 05:23:11 AEST
+Received: from outgoing-stata.csail.mit.edu (outgoing-stata.csail.mit.edu [128.30.2.210])
+	(using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNVlq2XyVz3blh
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2022 02:15:49 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LNVlj0ys5z9t9B;
-	Wed, 15 Jun 2022 18:15:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id m8iRP6BVB3VD; Wed, 15 Jun 2022 18:15:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LNVlj017Cz9t97;
-	Wed, 15 Jun 2022 18:15:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E4E128B781;
-	Wed, 15 Jun 2022 18:15:44 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id cUVnCcrq-hje; Wed, 15 Jun 2022 18:15:44 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.202.102])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9E5AC8B763;
-	Wed, 15 Jun 2022 18:15:44 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25FGFMtW366790
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 15 Jun 2022 18:15:22 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25FGFIr9366775;
-	Wed, 15 Jun 2022 18:15:18 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Merge hardirq stack and softirq stack
-Date: Wed, 15 Jun 2022 18:15:09 +0200
-Message-Id: <b684cd5c9a6f98f8ab9a2ca3431d9a4065e07f38.1655309696.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.36.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMM0v3D8Kz2ywl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 05:23:09 +1000 (AEST)
+Received: from [77.23.249.31] (helo=srivatsab-a02.vmware.com)
+	by outgoing-stata.csail.mit.edu with esmtpsa (TLS1.2:RSA_AES_128_CBC_SHA1:128)
+	(Exim 4.82)
+	(envelope-from <srivatsa@csail.mit.edu>)
+	id 1o0p7j-0002lx-0j; Mon, 13 Jun 2022 14:49:15 -0400
+Subject: Re: [PATCH 29/36] cpuidle,xenpv: Make more PARAVIRT_XXL noinstr clean
+To: Peter Zijlstra <peterz@infradead.org>
+References: <20220608142723.103523089@infradead.org>
+ <20220608144517.759631860@infradead.org>
+From: "Srivatsa S. Bhat" <srivatsa@csail.mit.edu>
+Message-ID: <510b9b68-7d53-7d4d-5a05-37fbd199eb4b@csail.mit.edu>
+Date: Mon, 13 Jun 2022 20:48:49 +0200
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.12.0
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1655309708; l=4828; s=20211009; h=from:subject:message-id; bh=IxZGcSZLaOsSuMMfNuONYPIsJXKwVaC5dmV8z+ZWEWU=; b=Fg3n8XdaxBDwLeCOfuoCMm3CiFNqlLuMm8iWw3vMFevBGm0gvsYZw2IL2gV1iJKRQSRqWs+vc0FW Sb4UR0r2DWCstTflycqj9MWD7ofBwBdA438QP34IQxkClZ5Mfp58
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220608144517.759631860@infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Wed, 15 Jun 2022 08:01:46 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,152 +47,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@google.com, guoren@kernel.org, pavel@ucw.cz, agordeev@linux.ibm.com, linux-clk@vger.kernel.org, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, chenhuacai@kernel.org, linux-acpi@vger.kernel.org, agross@kernel.org, geert@linux-m68k.org, linux-imx@nxp.com, catalin.marinas@arm.com, xen-devel@lists.xenproject.org, mattst88@gmail.com, borntraeger@linux.ibm.com, mturquette@baylibre.com, sammy@sammy.net, pmladek@suse.com, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, acme@kernel.org, tglx@linutronix.de, linux-omap@vger.kernel.org, dietmar.eggemann@arm.com, rth@twiddle.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, senozhatsky@chromium.org, svens@linux.ibm.com, jolsa@kernel.org, paulus@samba.org, mark.rutland@arm.com, linux-ia64@vger.kernel.org, dave.hansen@linux.intel.com, virtualiza
+ tion@lists.linux-foundation.org, James.Bottomley@HansenPartnership.com, jcmvbkbc@gmail.com, thierry.reding@gmail.com, kernel@xen0n.name, quic_neeraju@quicinc.com, linux-s390@vger.kernel.org, vschneid@redhat.com, john.ogness@linutronix.de, ysato@users.sourceforge.jp, linux-sh@vger.kernel.org, festevam@gmail.com, deller@gmx.de, daniel.lezcano@linaro.org, jonathanh@nvidia.com, mathieu.desnoyers@efficios.com, frederic@kernel.org, lenb@kernel.org, linux-xtensa@linux-xtensa.org, kernel@pengutronix.de, gor@linux.ibm.com, linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-m68k@lists.linux-m68k.org, shorne@gmail.com, linux-arm-kernel@lists.infradead.org, chris@zankel.net, sboyd@kernel.org, dinguyen@kernel.org, bristot@redhat.com, alexander.shishkin@linux.intel.com, lpieralisi@kernel.org, linux@rasmusvillemoes.dk, joel@joelfernandes.org, will@kernel.org, boris.ostrovsky@oracle.com, khilman@kernel.org, linux-csky@vger.kernel.org, pv-drivers@vmware.com, linux-snps-arc@lists.infra
+ dead.org, mgorman@suse.de, jacob.jun.pan@linux.intel.
+
+com, Arnd Bergmann <arnd@arndb.de>, ulli.kroll@googlemail.com, vgupta@kernel.org, josh@joshtriplett.org, rostedt@goodmis.org, rcu@vger.kernel.org, bp@alien8.de, bcain@quicinc.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, sudeep.holla@arm.com, shawnguo@kernel.org, davem@davemloft.net, dalias@libc.org, tony@atomide.com, amakhalov@vmware.com, bjorn.andersson@linaro.org, hpa@zytor.com, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, anton.ivanov@cambridgegreys.com, jonas@southpole.se, yury.norov@gmail.com, richard@nod.at, x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, aou@eecs.berkeley.edu, paulmck@kernel.org, hca@linux.ibm.com, stefan.kristiansson@saunalahti.fi, openrisc@lists.librecores.org, paul.walmsley@sifive.com, linux-tegra@vger.kernel.org, namhyung@kernel.org, andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org, jgross@suse.com, monstr@monstr.eu, linux-mips@vger.kernel.org, palmer@dabbelt.com, anup@brainfaul
+ t.org, ink@jurassic.park.msu.ru, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-__do_IRQ() doesn't switch on hardirq stack if we are on softirq stack.
+On 6/8/22 4:27 PM, Peter Zijlstra wrote:
+> vmlinux.o: warning: objtool: acpi_idle_enter_s2idle+0xde: call to wbinvd() leaves .noinstr.text section
+> vmlinux.o: warning: objtool: default_idle+0x4: call to arch_safe_halt() leaves .noinstr.text section
+> vmlinux.o: warning: objtool: xen_safe_halt+0xa: call to HYPERVISOR_sched_op.constprop.0() leaves .noinstr.text section
+> 
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-do_softirq() bail out early without doing anything when already in
-an interrupt.
+Reviewed-by: Srivatsa S. Bhat (VMware) <srivatsa@csail.mit.edu>
 
-invoke_softirq() is on task_stack when it calls do_softirq_own_stack().
 
-So there are neither situation where we switch from hardirq stack to
-softirq stack nor from softirq stack to hardirq stack.
+Regards,
+Srivatsa
+VMware Photon OS
 
-It is therefore not necessary to have two stacks because they are
-never used at the same time.
-
-Merge both stacks into a new one called normirq_ctx.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/irq.h |  3 +--
- arch/powerpc/kernel/irq.c      | 18 +++++++-----------
- arch/powerpc/kernel/process.c  |  6 +-----
- arch/powerpc/kernel/setup_32.c |  6 ++----
- arch/powerpc/kernel/setup_64.c |  6 ++----
- 5 files changed, 13 insertions(+), 26 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index 13f0409dd617..03de3fe3488c 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -49,8 +49,7 @@ extern void *mcheckirq_ctx[NR_CPUS];
- /*
-  * Per-cpu stacks for handling hard and soft interrupts.
-  */
--extern void *hardirq_ctx[NR_CPUS];
--extern void *softirq_ctx[NR_CPUS];
-+extern void *normirq_ctx[NR_CPUS];
- 
- void __do_IRQ(struct pt_regs *regs);
- extern void __init init_IRQ(void);
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index dd09919c3c66..7c0455cd7aae 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -683,17 +683,16 @@ void __do_irq(struct pt_regs *regs)
- void __do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	void *cursp, *irqsp, *sirqsp;
-+	void *cursp, *irqsp;
- 
- 	/* Switch to the irq stack to handle this */
- 	cursp = (void *)(current_stack_pointer & ~(THREAD_SIZE - 1));
--	irqsp = hardirq_ctx[raw_smp_processor_id()];
--	sirqsp = softirq_ctx[raw_smp_processor_id()];
-+	irqsp = normirq_ctx[raw_smp_processor_id()];
- 
- 	check_stack_overflow();
- 
- 	/* Already there ? */
--	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
-+	if (unlikely(cursp == irqsp)) {
- 		__do_irq(regs);
- 		set_irq_regs(old_regs);
- 		return;
-@@ -719,10 +718,8 @@ static void __init vmap_irqstack_init(void)
- {
- 	int i;
- 
--	for_each_possible_cpu(i) {
--		softirq_ctx[i] = alloc_vm_stack();
--		hardirq_ctx[i] = alloc_vm_stack();
--	}
-+	for_each_possible_cpu(i)
-+		normirq_ctx[i] = alloc_vm_stack();
- }
- 
- 
-@@ -744,12 +741,11 @@ void    *dbgirq_ctx[NR_CPUS] __read_mostly;
- void *mcheckirq_ctx[NR_CPUS] __read_mostly;
- #endif
- 
--void *softirq_ctx[NR_CPUS] __read_mostly;
--void *hardirq_ctx[NR_CPUS] __read_mostly;
-+void *normirq_ctx[NR_CPUS] __read_mostly;
- 
- void do_softirq_own_stack(void)
- {
--	call_do_softirq(softirq_ctx[smp_processor_id()]);
-+	call_do_softirq(normirq_ctx[smp_processor_id()]);
- }
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ee0433809621..4b724d86ed9d 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -2089,11 +2089,7 @@ static inline int valid_irq_stack(unsigned long sp, struct task_struct *p,
- 	unsigned long stack_page;
- 	unsigned long cpu = task_cpu(p);
- 
--	stack_page = (unsigned long)hardirq_ctx[cpu];
--	if (sp >= stack_page && sp <= stack_page + THREAD_SIZE - nbytes)
--		return 1;
--
--	stack_page = (unsigned long)softirq_ctx[cpu];
-+	stack_page = (unsigned long)normirq_ctx[cpu];
- 	if (sp >= stack_page && sp <= stack_page + THREAD_SIZE - nbytes)
- 		return 1;
- 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 813261789303..cad0e4fbdd4b 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -158,10 +158,8 @@ void __init irqstack_early_init(void)
- 
- 	/* interrupt stacks must be in lowmem, we get that for free on ppc32
- 	 * as the memblock is limited to lowmem by default */
--	for_each_possible_cpu(i) {
--		softirq_ctx[i] = alloc_stack();
--		hardirq_ctx[i] = alloc_stack();
--	}
-+	for_each_possible_cpu(i)
-+		normirq_ctx[i] = alloc_stack();
- }
- 
- #ifdef CONFIG_VMAP_STACK
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 5761f08dae95..70ba227d13fc 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -718,10 +718,8 @@ void __init irqstack_early_init(void)
- 	 * cannot afford to take SLB misses on them. They are not
- 	 * accessed in realmode.
- 	 */
--	for_each_possible_cpu(i) {
--		softirq_ctx[i] = alloc_stack(limit, i);
--		hardirq_ctx[i] = alloc_stack(limit, i);
--	}
-+	for_each_possible_cpu(i)
-+		normirq_ctx[i] = alloc_stack(limit, i);
- }
- 
- #ifdef CONFIG_PPC_BOOK3E
--- 
-2.36.1
-
+> ---
+>  arch/x86/include/asm/paravirt.h      |    6 ++++--
+>  arch/x86/include/asm/special_insns.h |    4 ++--
+>  arch/x86/include/asm/xen/hypercall.h |    2 +-
+>  arch/x86/kernel/paravirt.c           |   14 ++++++++++++--
+>  arch/x86/xen/enlighten_pv.c          |    2 +-
+>  arch/x86/xen/irq.c                   |    2 +-
+>  6 files changed, 21 insertions(+), 9 deletions(-)
+> 
+> --- a/arch/x86/include/asm/paravirt.h
+> +++ b/arch/x86/include/asm/paravirt.h
+> @@ -168,7 +168,7 @@ static inline void __write_cr4(unsigned
+>  	PVOP_VCALL1(cpu.write_cr4, x);
+>  }
+>  
+> -static inline void arch_safe_halt(void)
+> +static __always_inline void arch_safe_halt(void)
+>  {
+>  	PVOP_VCALL0(irq.safe_halt);
+>  }
+> @@ -178,7 +178,9 @@ static inline void halt(void)
+>  	PVOP_VCALL0(irq.halt);
+>  }
+>  
+> -static inline void wbinvd(void)
+> +extern noinstr void pv_native_wbinvd(void);
+> +
+> +static __always_inline void wbinvd(void)
+>  {
+>  	PVOP_ALT_VCALL0(cpu.wbinvd, "wbinvd", ALT_NOT(X86_FEATURE_XENPV));
+>  }
+> --- a/arch/x86/include/asm/special_insns.h
+> +++ b/arch/x86/include/asm/special_insns.h
+> @@ -115,7 +115,7 @@ static inline void wrpkru(u32 pkru)
+>  }
+>  #endif
+>  
+> -static inline void native_wbinvd(void)
+> +static __always_inline void native_wbinvd(void)
+>  {
+>  	asm volatile("wbinvd": : :"memory");
+>  }
+> @@ -179,7 +179,7 @@ static inline void __write_cr4(unsigned
+>  	native_write_cr4(x);
+>  }
+>  
+> -static inline void wbinvd(void)
+> +static __always_inline void wbinvd(void)
+>  {
+>  	native_wbinvd();
+>  }
+> --- a/arch/x86/include/asm/xen/hypercall.h
+> +++ b/arch/x86/include/asm/xen/hypercall.h
+> @@ -382,7 +382,7 @@ MULTI_stack_switch(struct multicall_entr
+>  }
+>  #endif
+>  
+> -static inline int
+> +static __always_inline int
+>  HYPERVISOR_sched_op(int cmd, void *arg)
+>  {
+>  	return _hypercall2(int, sched_op, cmd, arg);
+> --- a/arch/x86/kernel/paravirt.c
+> +++ b/arch/x86/kernel/paravirt.c
+> @@ -233,6 +233,11 @@ static noinstr void pv_native_set_debugr
+>  	native_set_debugreg(regno, val);
+>  }
+>  
+> +noinstr void pv_native_wbinvd(void)
+> +{
+> +	native_wbinvd();
+> +}
+> +
+>  static noinstr void pv_native_irq_enable(void)
+>  {
+>  	native_irq_enable();
+> @@ -242,6 +247,11 @@ static noinstr void pv_native_irq_disabl
+>  {
+>  	native_irq_disable();
+>  }
+> +
+> +static noinstr void pv_native_safe_halt(void)
+> +{
+> +	native_safe_halt();
+> +}
+>  #endif
+>  
+>  enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
+> @@ -273,7 +283,7 @@ struct paravirt_patch_template pv_ops =
+>  	.cpu.read_cr0		= native_read_cr0,
+>  	.cpu.write_cr0		= native_write_cr0,
+>  	.cpu.write_cr4		= native_write_cr4,
+> -	.cpu.wbinvd		= native_wbinvd,
+> +	.cpu.wbinvd		= pv_native_wbinvd,
+>  	.cpu.read_msr		= native_read_msr,
+>  	.cpu.write_msr		= native_write_msr,
+>  	.cpu.read_msr_safe	= native_read_msr_safe,
+> @@ -307,7 +317,7 @@ struct paravirt_patch_template pv_ops =
+>  	.irq.save_fl		= __PV_IS_CALLEE_SAVE(native_save_fl),
+>  	.irq.irq_disable	= __PV_IS_CALLEE_SAVE(pv_native_irq_disable),
+>  	.irq.irq_enable		= __PV_IS_CALLEE_SAVE(pv_native_irq_enable),
+> -	.irq.safe_halt		= native_safe_halt,
+> +	.irq.safe_halt		= pv_native_safe_halt,
+>  	.irq.halt		= native_halt,
+>  #endif /* CONFIG_PARAVIRT_XXL */
+>  
+> --- a/arch/x86/xen/enlighten_pv.c
+> +++ b/arch/x86/xen/enlighten_pv.c
+> @@ -1019,7 +1019,7 @@ static const typeof(pv_ops) xen_cpu_ops
+>  
+>  		.write_cr4 = xen_write_cr4,
+>  
+> -		.wbinvd = native_wbinvd,
+> +		.wbinvd = pv_native_wbinvd,
+>  
+>  		.read_msr = xen_read_msr,
+>  		.write_msr = xen_write_msr,
+> --- a/arch/x86/xen/irq.c
+> +++ b/arch/x86/xen/irq.c
+> @@ -24,7 +24,7 @@ noinstr void xen_force_evtchn_callback(v
+>  	(void)HYPERVISOR_xen_version(0, NULL);
+>  }
+>  
+> -static void xen_safe_halt(void)
+> +static noinstr void xen_safe_halt(void)
+>  {
+>  	/* Blocking includes an implicit local_irq_enable(). */
+>  	if (HYPERVISOR_sched_op(SCHEDOP_block, NULL) != 0)
+> 
+> 
