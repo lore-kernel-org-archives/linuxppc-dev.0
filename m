@@ -4,84 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88C8CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 13:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE3B0C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 13:58:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMqkz0qlDz3dpp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 23:57:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LMqls3m6Qz3f0G
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 23:58:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gBY40d4E;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iFdnXNH1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gBY40d4E;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iFdnXNH1;
 	dkim-atps=neutral
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMqgF5NZ0z3brk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 23:54:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMqkv4PTlz3dvT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 23:57:43 +1000 (AEST)
 Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25EDBlGm007090;
-	Tue, 14 Jun 2022 13:54:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=mdqeng1MZ6SvkLF1dQ4hAkSq2bHcezRfYJOljLAu0r0=;
- b=gBY40d4EdEZbKP6QQPiGoIOzzs9YHgr53DflXKVCqRwMRvUfyItI1nUwTQdZI4pTb0ZI
- JCSSUVso15qiPAJR34lhfZcO08HOTq/GoAKkEQuiYMNE+Q8InL7NRkK9dwVhocQJx1NC
- 4D/oWnJcMuJKR9drwFYvIUazWblFx1z6Rpk8NJe5/u97rtR3kQ/8s8rByqR5lO8PzLAW
- Z7VU45BIY0fXZ0DVTOT3L961u060eFF/sZfHMxATIWFfkCZPEsxrXa051zVUw7MSjoMH
- K588D468OkFp8gAJLaCogXC8wsli1sxkG2vYSvYhib2+vcxEZxFXNbDt6Yszsl54nh1/ iA== 
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25EDBlRm007102;
+	Tue, 14 Jun 2022 13:57:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=w+9akwkFHTiQ67uemYwVl8Xj4ZU6Hq+lsYsJB/kAb3Y=;
+ b=iFdnXNH1IYmid/rV1sAkwR0vY4XC1y4tlxjoLgnfUciadudDfXyFuax+qzIZBGP/sjBJ
+ edlx3eRKiN4O5DRHGQBMdXScYpL8Zr7iFwT7FBXla7qLiI2iJLLrwFQW54v6Vxm1zlpv
+ WGh7E0KyEed2Supu9r9iWXq+RzGt8sCnesOP8GsFZYlSgGAgWB+VFW2SHFker0o5Acm/
+ lwOSflhTtT1OilYBIXx1jE4gp2Q+ZGwzZrLTXjOKfLdlagAI2D9Amyt+EQEJS7wqJmLz
+ EXwsXn81BBJ1d2yCDPFeQH9uK5CjfXmsqDe+JbMoXaV2OC/B5fef7KxSLHi5fcGJRNMo HA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gppbr1kn8-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gppbr1sey-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jun 2022 13:54:22 +0000
+	Tue, 14 Jun 2022 13:57:38 +0000
 Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 25EDZ45m008863;
-	Tue, 14 Jun 2022 13:54:22 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gppbr1kj9-1
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 25EDF6Y2020296;
+	Tue, 14 Jun 2022 13:57:38 GMT
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gppbr1sed-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jun 2022 13:54:22 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25EDp3SD024254;
-	Tue, 14 Jun 2022 13:54:20 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma01fra.de.ibm.com with ESMTP id 3gmjp8uer9-1
+	Tue, 14 Jun 2022 13:57:38 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25EDpP2G007434;
+	Tue, 14 Jun 2022 13:57:36 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma04ams.nl.ibm.com with ESMTP id 3gmjp94dpe-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 14 Jun 2022 13:54:20 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25EDrlC314483732
+	Tue, 14 Jun 2022 13:57:36 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25EDvYI919661178
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 14 Jun 2022 13:53:47 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 91D8EAE04D;
-	Tue, 14 Jun 2022 13:54:17 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 27C9DAE045;
-	Tue, 14 Jun 2022 13:54:17 +0000 (GMT)
-Received: from pomme.tlslab.ibm.com (unknown [9.101.4.33])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Tue, 14 Jun 2022 13:54:17 +0000 (GMT)
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
-        nathanl@linux.ibm.com, haren@linux.vnet.ibm.com, npiggin@gmail.com
-Subject: [PATCH v2 2/4] watchdog: export watchdog_mutex and lockup_detector_reconfigure
-Date: Tue, 14 Jun 2022 15:54:12 +0200
-Message-Id: <20220614135414.37746-3-ldufour@linux.ibm.com>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220614135414.37746-1-ldufour@linux.ibm.com>
-References: <20220614135414.37746-1-ldufour@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	Tue, 14 Jun 2022 13:57:34 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 195AA11C04A;
+	Tue, 14 Jun 2022 13:57:34 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B830D11C052;
+	Tue, 14 Jun 2022 13:57:33 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Tue, 14 Jun 2022 13:57:33 +0000 (GMT)
+Received: from [9.43.195.101] (unknown [9.43.195.101])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 08AD660236;
+	Tue, 14 Jun 2022 23:57:29 +1000 (AEST)
+Message-ID: <8de471d6c779dde1124d58c5ddd993d62a479763.camel@linux.ibm.com>
+Subject: Re: [PATCH 2/6] powerpc: Provide syscall wrapper
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Rohan McLure
+	 <rmclure@linux.ibm.com>,
+        "linuxppc-dev@lists.ozlabs.org"
+	 <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 14 Jun 2022 23:57:26 +1000
+In-Reply-To: <8e7f310d-00bd-7b49-32a4-af33dd124b25@csgroup.eu>
+References: <20220601054850.250287-1-rmclure@linux.ibm.com>
+	 <20220601054850.250287-2-rmclure@linux.ibm.com>
+	 <d5a2d52a-a74b-3df8-8772-f37d61d47641@csgroup.eu>
+	 <4900183A-EABD-427D-A930-F2D44DD59C94@linux.ibm.com>
+	 <6683e7913a993251de2c491ece0879cae74d4402.camel@linux.ibm.com>
+	 <8e7f310d-00bd-7b49-32a4-af33dd124b25@csgroup.eu>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.3-1 
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: qh2EeZ6fVZ2q05MROgmq4hAdL4D_fSI0
-X-Proofpoint-ORIG-GUID: 0g9wm5Gv3lGY_t7E5aLOeEgg91uF0NUI
+X-Proofpoint-GUID: BoDlOLwQZtJT73Ulc12ULgS7NgI-9V6Y
+X-Proofpoint-ORIG-GUID: orfmNS8LoawqxdviJ2tTxxnwjPw18EG6
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.517,FMLib:17.11.64.514
  definitions=2022-06-14_04,2022-06-13_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=680
  priorityscore=1501 suspectscore=0 impostorscore=0 adultscore=0
  phishscore=0 bulkscore=0 mlxscore=0 malwarescore=0 clxscore=1015
  lowpriorityscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
@@ -97,74 +112,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "npiggin@gmail.com" <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In some cricunstances it may be interesting to reconfigure the watchdog
-from inside the kernel.
+On Fri, 2022-06-03 at 08:39 +0000, Christophe Leroy wrote:
+> 
+> 
+> Le 03/06/2022 à 09:09, Andrew Donnellan a écrit :
+> > On Fri, 2022-06-03 at 13:24 +1000, Rohan McLure wrote:
+> > > The implementation of ppc_personality can be immediately reworked
+> > > to
+> > > call ksys_personality, but I can’t do the same for sys_old_select
+> > > for
+> > > example, which is required to implement ppc_select. As such we
+> > > emit
+> > > both
+> > 
+> > For ppc_select, I suggest we resurrect
+> >  
+> > https://lore.kernel.org/lkml/5811950d-ef14-d416-35e6-d694ef920a7d@csgroup.eu/T/#u
+> > and just get rid of the hack.
+> > 
+> 
+> Not sure I understand, what would you like to resurrect ? You want to
+> resurrect the discussion, or revert commit fd69d544b0e7 
+> ("powerpc/syscalls: Use sys_old_select() in ppc_select()") ?
 
-On PowerPC, this may helpful before and after a LPAR migration (LPM) is
-initiated, because it implies some latencies, watchdog, and especially NMI
-watchdog is expected to be triggered during this operation. Reconfiguring
-the watchdog, would prevent it to happen too frequently during LPM.
+We should get rid of ppc_select(), if we can. If Arnd's history is
+correct, there's little reason to keep it around and we should just get
+rid of it.
 
-The watchdog_mutex is exported to allow some variable to be changed under
-its protection and prevent any conflict.
-The lockup_detector_reconfigure() function is exported and is expected to
-be called under the protection of watchdog_mutex.
 
-Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
----
- include/linux/nmi.h | 3 +++
- kernel/watchdog.c   | 6 +++---
- 2 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/nmi.h b/include/linux/nmi.h
-index 750c7f395ca9..84300fb0f90a 100644
---- a/include/linux/nmi.h
-+++ b/include/linux/nmi.h
-@@ -122,6 +122,9 @@ int watchdog_nmi_probe(void);
- int watchdog_nmi_enable(unsigned int cpu);
- void watchdog_nmi_disable(unsigned int cpu);
- 
-+extern struct mutex watchdog_mutex;
-+void lockup_detector_reconfigure(void);
-+
- /**
-  * touch_nmi_watchdog - restart NMI watchdog timeout.
-  *
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 20a7a55e62b6..0a67a2dd1258 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -27,7 +27,7 @@
- #include <asm/irq_regs.h>
- #include <linux/kvm_para.h>
- 
--static DEFINE_MUTEX(watchdog_mutex);
-+DEFINE_MUTEX(watchdog_mutex);
- 
- #if defined(CONFIG_HARDLOCKUP_DETECTOR) || defined(CONFIG_HAVE_NMI_WATCHDOG)
- # define WATCHDOG_DEFAULT	(SOFT_WATCHDOG_ENABLED | NMI_WATCHDOG_ENABLED)
-@@ -541,7 +541,7 @@ int lockup_detector_offline_cpu(unsigned int cpu)
- 	return 0;
- }
- 
--static void lockup_detector_reconfigure(void)
-+void lockup_detector_reconfigure(void)
- {
- 	cpus_read_lock();
- 	watchdog_nmi_stop();
-@@ -583,7 +583,7 @@ static __init void lockup_detector_setup(void)
- }
- 
- #else /* CONFIG_SOFTLOCKUP_DETECTOR */
--static void lockup_detector_reconfigure(void)
-+void lockup_detector_reconfigure(void)
- {
- 	cpus_read_lock();
- 	watchdog_nmi_stop();
 -- 
-2.36.1
+Andrew Donnellan    OzLabs, ADL Canberra
+ajd@linux.ibm.com   IBM Australia Limited
 
