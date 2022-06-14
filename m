@@ -4,70 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A817C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 03:21:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AFEAC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 04:25:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMYcT1xX2z3cdN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 13:21:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bVQerjGJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bVQerjGJ;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LMb374n9nz3ch6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 14:25:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMYbd5wcTz303k
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 13:20:29 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 126C0615BD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 03:20:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 79FE9C3411B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 03:20:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1655176826;
-	bh=ux+b6vefVy0L1zPe9/XKHo9Yu4T2T2h6oe6+sIkfZfw=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=bVQerjGJAAsA1dzerRNTnO9K2efK0A/KZb9bZT/jzNGTX3cVHgoVWpzlcbZrW1fiE
-	 9F/FXSnAJYFx7TUdonNsl3+OWZlvD8vg38OscM6khiQ/WtSxFcQ7krG0n5iR0FgvT/
-	 2UxeFGJ9S2/pf7h1A2THFWGp31FFMDzGZtZ5UeTtMyGTDcsmXejJCxCvjIxPm5arSD
-	 0FgYXuElVZgK777E12cGM0l1T1J5nU+Tt2yYrX2HmSy7imrbMYRaGcqguJsM7cvr86
-	 C3t9Bij8C4o721GKpqfpkhPjPDT5EE/+SR1J8ezCOzU3ipw5dKs8UoRRjzPIKqmE2P
-	 KBesr7Vy6oHbA==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 5673EC05FF5; Tue, 14 Jun 2022 03:20:26 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 203699] Kernel 5.2-rc1 fails to boot on a Mac Mini G4:
- dt_headr_start=0x01501000
-Date: Tue, 14 Jun 2022 03:20:26 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: blocking
-X-Bugzilla-Who: michael@ellerman.id.au
-X-Bugzilla-Status: CLOSED
-X-Bugzilla-Resolution: CODE_FIX
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-203699-206035-6Lty9bG8nt@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-203699-206035@https.bugzilla.kernel.org/>
-References: <bug-203699-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMb2k33t4z30D8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 14:25:32 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3DB13202719;
+	Tue, 14 Jun 2022 06:25:30 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E85B8202718;
+	Tue, 14 Jun 2022 06:25:29 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 0E88B180219B;
+	Tue, 14 Jun 2022 12:25:27 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: nicoleotsuka@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	shengjiu.wang@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org,
+	robh+dt@kernel.org,
+	krzk+dt@kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH 1/7] ASoC: fsl_sai: Add PDM daifmt support
+Date: Tue, 14 Jun 2022 12:11:18 +0800
+Message-Id: <1655179884-12278-2-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1655179884-12278-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1655179884-12278-1-git-send-email-shengjiu.wang@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,25 +55,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D203699
+PDM format is used for 1-bit stream, so clear the FBT and SYWD,
+and the each dataline only has one channel data.
 
-Michael Ellerman (michael@ellerman.id.au) changed:
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+ sound/soc/fsl/fsl_sai.c | 17 +++++++++++++++--
+ sound/soc/fsl/fsl_sai.h |  1 +
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
-         Resolution|---                         |CODE_FIX
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 4f5bd9597c74..d11ee3b6f163 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -224,6 +224,7 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 	if (!sai->is_lsb_first)
+ 		val_cr4 |= FSL_SAI_CR4_MF;
+ 
++	sai->is_pdm_mode = false;
+ 	/* DAI mode */
+ 	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
+ 	case SND_SOC_DAIFMT_I2S:
+@@ -262,6 +263,11 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		val_cr2 |= FSL_SAI_CR2_BCP;
+ 		sai->is_dsp_mode = true;
+ 		break;
++	case SND_SOC_DAIFMT_PDM:
++		val_cr2 |= FSL_SAI_CR2_BCP;
++		val_cr4 &= ~FSL_SAI_CR4_MF;
++		sai->is_pdm_mode = true;
++		break;
+ 	case SND_SOC_DAIFMT_RIGHT_J:
+ 		/* To be done */
+ 	default:
+@@ -470,6 +476,13 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 
+ 	pins = DIV_ROUND_UP(channels, slots);
+ 
++	/*
++	 * PDM mode, channels are independent
++	 * each channels are on one dataline/FIFO.
++	 */
++	if (sai->is_pdm_mode)
++		pins = channels;
++
+ 	if (!sai->is_consumer_mode) {
+ 		if (sai->bclk_ratio)
+ 			ret = fsl_sai_set_bclk(cpu_dai, tx,
+@@ -492,13 +505,13 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 		}
+ 	}
+ 
+-	if (!sai->is_dsp_mode)
++	if (!sai->is_dsp_mode && !sai->is_pdm_mode)
+ 		val_cr4 |= FSL_SAI_CR4_SYWD(slot_width);
+ 
+ 	val_cr5 |= FSL_SAI_CR5_WNW(slot_width);
+ 	val_cr5 |= FSL_SAI_CR5_W0W(slot_width);
+ 
+-	if (sai->is_lsb_first)
++	if (sai->is_lsb_first || sai->is_pdm_mode)
+ 		val_cr5 |= FSL_SAI_CR5_FBT(0);
+ 	else
+ 		val_cr5 |= FSL_SAI_CR5_FBT(word_width - 1);
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 1c8f5ca07f9d..bc2a86a413e1 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -259,6 +259,7 @@ struct fsl_sai {
+ 	bool is_consumer_mode;
+ 	bool is_lsb_first;
+ 	bool is_dsp_mode;
++	bool is_pdm_mode;
+ 	bool synchronous[2];
+ 
+ 	unsigned int mclk_id[2];
+-- 
+2.17.1
 
---- Comment #3 from Michael Ellerman (michael@ellerman.id.au) ---
-v5.19-rc2 is booting on my mac mini with KASAN enabled, so I'm going to clo=
-se
-this as fixed.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
