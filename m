@@ -4,33 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAEF6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 11:47:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7536BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 13:26:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMmrc0kPWz3bwg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 21:47:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMmr76cShz301N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 21:47:02 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 25EBhmhF018248;
-	Tue, 14 Jun 2022 06:43:48 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 25EBhlHZ018247;
-	Tue, 14 Jun 2022 06:43:47 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 14 Jun 2022 06:43:47 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/6] powerpc: Add ZERO_GPRS macros for register clears
-Message-ID: <20220614114347.GX25951@gate.crashing.org>
-References: <20220601054850.250287-1-rmclure@linux.ibm.com> <20220601160023.GV25951@gate.crashing.org> <88BD925A-D6A8-4983-A573-7D9CEE51CDE7@linux.ibm.com> <d79992ce-d49b-314a-cb64-8804f43f6c03@csgroup.eu> <20220613184830.GW25951@gate.crashing.org> <875yl3dfy2.fsf@mpe.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LMq2t5Xcrz3bt2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 23:26:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Aqgy5qT7;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=EBE7d9+U;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Aqgy5qT7;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=EBE7d9+U;
+	dkim-atps=neutral
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMq2C3QDCz3bl4
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 23:25:55 +1000 (AEST)
+Date: Tue, 14 Jun 2022 15:25:37 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1655213138;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HgXa9L+iV+7zBfhKa3Rr0XV93bVTAQjox2YJMz4AHCM=;
+	b=Aqgy5qT7mH48G22oPeVFUFgifa/KQqsaUyJQtY9dpXLWEPFTOvW4WqCjf3DvJcs8Gy27q2
+	MEw27SJcu7teRJpWbVvSKDJU7s6Ft94EnzU1BPdJ5b0CvVE7WF9L+LJcaurg3TZOm+hRvC
+	GNKUYFHgApG36uqPj/xkJANXu0b4bQWYMZfgMaMRZXz9l/rC9nFzTKv8Vw2c638s65E2WB
+	8IlQBIil0o5Kl13wODCSU209ePbs7jrmGUqtt9BYn5vHMHIqDKJB7udj4S7RKvLs7/r1Od
+	kL+T17cI6y1H9IOUkuuzDKMo0kbIIvL5BEHNhJkm9uF0Odf3D1guIOhyH60nBA==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1655213138;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=HgXa9L+iV+7zBfhKa3Rr0XV93bVTAQjox2YJMz4AHCM=;
+	b=EBE7d9+UYA5E++I4PSONdHMe8+Fit1/L+J9Q/EsQAzlhNCZCT47ZWw1HksPr1cDxxU/Qua
+	YSVyfNd8EOeK/ACw==
+From: 'Sebastian Andrzej Siewior' <bigeasy@linutronix.de>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH 09/10] scsi/ibmvscsi: Replace srp tasklet with work
+Message-ID: <YqiMUS0IGtMgyQ6q@linutronix.de>
+References: <20220530231512.9729-1-dave@stgolabs.net>
+ <20220530231512.9729-10-dave@stgolabs.net>
+ <YqILmd/WnNT/zYrf@linutronix.de>
+ <7faa88aaf7554545a60561d73597dc4f@AcuMS.aculab.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <875yl3dfy2.fsf@mpe.ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <7faa88aaf7554545a60561d73597dc4f@AcuMS.aculab.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,34 +67,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "npiggin@gmail.com" <npiggin@gmail.com>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Davidlohr Bueso <dave@stgolabs.net>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "ejb@linux.ibm.com" <ejb@linux.ibm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 14, 2022 at 02:31:01PM +1000, Michael Ellerman wrote:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
-> > On Sat, Jun 11, 2022 at 08:42:27AM +0000, Christophe Leroy wrote:
-> >> I'd have a preference for using a verb, for instance ZEROISE_REGS or 
-> >> CLEAR_REGS
-> >
-> > "Zero" is a verb as well (as well as a noun and an adjective) :-)
+On 2022-06-09 15:46:04 [+0000], David Laight wrote:
+> From: Sebastian Andrzej Siewior
+> > Sent: 09 June 2022 16:03
+> > 
+> > On 2022-05-30 16:15:11 [-0700], Davidlohr Bueso wrote:
+> > > Tasklets have long been deprecated as being too heavy on the system
+> > > by running in irq context - and this is not a performance critical
+> > > path. If a higher priority process wants to run, it must wait for
+> > > the tasklet to finish before doing so.
+> > >
+> > > Process srps asynchronously in process context in a dedicated
+> > > single threaded workqueue.
+> > 
+> > I would suggest threaded interrupts instead. The pattern here is the
+> > same as in the previous driver except here is less locking.
 > 
-> And "clear" is also a verb and an adjective, though helpfully the noun
-> is "clearing" :D
+> How long do these actions runs for, and what is waiting for
+> them to finish?
 
-Yeah.  I don't like "clear" here because it isn't as clear what it
-actually will do.  The purpose here is to actually makes those registers
-hold the number zero, it isn't just to make it harmless some way.  Which
-btw is the context in which "zeroisation" is normally used: in crypto
-and other security stuff.
+That is something that one with hardware and workload can answer.
 
-But "zero_regs" can be confusing in other ways, like, if it isn't clear
-to the reader it is a verb here.
+> These changes seem to drop the priority from above that of the
+> highest priority RT process down to that of a default priority
+> user process.
+> There is no real guarantee that the latter will run 'any time soon'.
 
-> We could use "nullify", that has some existing usage in the kernel,
-> although I don't really mind, "zeroise" sounds kind of cool :)
+Not sure I can follow. Using threaded interrupts will run at FIFO-50 by
+default. Workqueue however is SCHED_OTHER. But then it is not bound to
+any CPU so it will run on an available CPU.
 
-That is a benefit yes :-)  And it won't be confusing what it does.
+> Consider some workloads I'm setting up where most of the cpu are
+> likely to spend 90%+ of the time running processes under the RT
+> scheduler that are processing audio.
+> 
+> It is quite likely that a non-RT thread (especially one bound
+> to a specific cpu) won't run for several milliseconds.
+> (We have to go through 'hoops' to avoid dropping ethernet frames.)
+> 
+> I'd have thought that some of these kernel threads really
+> need to run at a 'middling' RT priority.
 
+The threaded interrupts do this by default. If you run your own RT
+threads you need to decide if they are more or less important than the
+interrupts.
 
-Segher
+> 	David
+
+Sebastian
