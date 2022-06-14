@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2C08C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 10:34:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE03CCA47A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 10:35:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMlD418Q3z3dw6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 20:34:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LMlF53CRRz3cDf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 20:35:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMlBp0wftz3bsk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 20:33:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMlDf1XRSz3059
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 20:34:41 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LMlBY4xxqz9tNV;
-	Tue, 14 Jun 2022 12:32:53 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4LMlDZ55Ysz9tNV;
+	Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 739G6TW791JM; Tue, 14 Jun 2022 12:32:53 +0200 (CEST)
+	with ESMTP id HmOK5EWRTWTv; Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LMlBW0LqHz9tNb;
-	Tue, 14 Jun 2022 12:32:51 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4LMlDZ3y1Vz9tNR;
+	Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id ECB258B766;
-	Tue, 14 Jun 2022 12:32:50 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 704C68B766;
+	Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id kBMfXW1hW2PA; Tue, 14 Jun 2022 12:32:50 +0200 (CEST)
+	with ESMTP id viGlSsPwX9aF; Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.204.246])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8901D8B763;
-	Tue, 14 Jun 2022 12:32:50 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 21BB38B763;
+	Tue, 14 Jun 2022 12:34:38 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25EAWadQ197829
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25EAYR2H198169
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 14 Jun 2022 12:32:36 +0200
+	Tue, 14 Jun 2022 12:34:27 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25EAWXIO197826;
-	Tue, 14 Jun 2022 12:32:33 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25EAYLaA198135;
+	Tue, 14 Jun 2022 12:34:21 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/3] powerpc/32: Remove the 'nobats' kernel parameter
-Date: Tue, 14 Jun 2022 12:32:23 +0200
-Message-Id: <6977314c823cfb728bc0273cea634b41807bfb64.1655202721.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 1/2] powerpc/32: Call mmu_mark_initmem_nx() regardless of data block mapping.
+Date: Tue, 14 Jun 2022 12:34:08 +0200
+Message-Id: <db3fc14f3bfa6215b0786ef58a6e2bc1e1f964d7.1655202804.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1655202743; l=3841; s=20211009; h=from:subject:message-id; bh=IiaF52/FDSDDBtd97L//SRzTyeW6WkyJUVTUP66wmv0=; b=/ykhu+crlrXjZrZ3viYs2Rbz6JWrH9qomYmJt7dM6AaRcP4jDWyUo7GRZoqQRNRwL74IWPkFFcuL Ny2WqnexBIZ1paRBSuXmTMi3U42pNBZCKMvufm6FpacgjSGujI40
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1655202848; l=2629; s=20211009; h=from:subject:message-id; bh=CWIqUkDIpE0cTlWDObjuQQ9rCQCZ66wP1qn7E4f2HIU=; b=o4yZQIyM+TiCgO+EiPa4v7u+AtxpOfdZOftncIiUapJHJkXdLISDQwKbkXI/1PVyRODuQWUXGIa/ YGeActtVAtZWj4SFPH5la/D66PoFg8FRYbCsWKVxxDFrIWEdmiM6
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,119 +67,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Maxime Bizon <mbizon@freebox.fr>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mapping without BATs doesn't bring any added value to the user.
+mark_initmem_nx() calls either mmu_mark_initmem_nx() or
+set_memory_attr() based on return from v_block_mapped()
+of _sinittext.
 
-Remove that option.
+But we can now handle text and data independently, so that
+text may be mapped by block even when data is mapped by pages.
 
+On the 8xx for instance, at startup 32Mbytes of memory are
+pinned in TLB. So the pinned entries need to go away for sinittext.
+
+In next patch a BAT will be set to also covers sinittext on book3s/32.
+So it will also be needed to call mmu_mark_initmem_nx() even when
+data above sinittext is not mapped with BATs.
+
+As this is highly dependent on the platform, call mmu_mark_initmem_nx()
+regardless of data block mapping. Then the platform will know what to
+do.
+
+Modify 8xx mmu_mark_initmem_nx() so that inittext mapping is modified
+only when pagealloc debug and kfence are not active, otherwise inittext
+is mapped with standard pages. And don't do anything on kernel text
+which is already mapped with PAGE_KERNEL_TEXT.
+
+Cc: Maxime Bizon <mbizon@freebox.fr>
+Fixes: da1adea07576 ("powerpc/8xx: Allow STRICT_KERNEL_RwX with pinned TLB")
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- Documentation/admin-guide/kernel-parameters.txt |  3 ---
- arch/powerpc/mm/book3s32/mmu.c                  |  2 +-
- arch/powerpc/mm/init_32.c                       | 11 -----------
- arch/powerpc/mm/mmu_decl.h                      |  1 -
- arch/powerpc/platforms/83xx/misc.c              | 14 ++++++--------
- 5 files changed, 7 insertions(+), 24 deletions(-)
+ arch/powerpc/mm/nohash/8xx.c | 4 ++--
+ arch/powerpc/mm/pgtable_32.c | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 8090130b544b..96de3f1ece00 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3495,9 +3495,6 @@
+diff --git a/arch/powerpc/mm/nohash/8xx.c b/arch/powerpc/mm/nohash/8xx.c
+index 27f9186ae374..1ee08c3efe5b 100644
+--- a/arch/powerpc/mm/nohash/8xx.c
++++ b/arch/powerpc/mm/nohash/8xx.c
+@@ -179,8 +179,8 @@ void mmu_mark_initmem_nx(void)
+ 	unsigned long boundary = strict_kernel_rwx_enabled() ? sinittext : etext8;
+ 	unsigned long einittext8 = ALIGN(__pa(_einittext), SZ_8M);
  
- 	noautogroup	Disable scheduler automatic task group creation.
+-	mmu_mapin_ram_chunk(0, boundary, PAGE_KERNEL_TEXT, false);
+-	mmu_mapin_ram_chunk(boundary, einittext8, PAGE_KERNEL, false);
++	if (!debug_pagealloc_enabled_or_kfence())
++		mmu_mapin_ram_chunk(boundary, einittext8, PAGE_KERNEL, false);
  
--	nobats		[PPC] Do not use BATs for mapping kernel lowmem
--			on "Classic" PPC cores.
--
- 	nocache		[ARM]
- 
- 	nodsp		[SH] Disable hardware DSP at boot time.
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 49a737fbbd18..1794132db31e 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -161,7 +161,7 @@ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- 	unsigned long border = (unsigned long)__init_begin - PAGE_OFFSET;
- 
- 
--	if (debug_pagealloc_enabled_or_kfence() || __map_without_bats) {
-+	if (debug_pagealloc_enabled_or_kfence()) {
- 		pr_debug_once("Read-Write memory mapped without BATs\n");
- 		if (base >= border)
- 			return base;
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 693a3a7a9463..321794747ea1 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -69,12 +69,6 @@ EXPORT_SYMBOL(agp_special_page);
- 
- void MMU_init(void);
- 
--/*
-- * this tells the system to map all of ram with the segregs
-- * (i.e. page tables) instead of the bats.
-- * -- Cort
-- */
--int __map_without_bats;
- int __map_without_ltlbs;
- 
- /* max amount of low RAM to map in */
-@@ -85,11 +79,6 @@ unsigned long __max_low_memory = MAX_LOW_MEM;
-  */
- static void __init MMU_setup(void)
- {
--	/* Check for nobats option (used in mapin_ram). */
--	if (strstr(boot_command_line, "nobats")) {
--		__map_without_bats = 1;
--	}
--
- 	if (strstr(boot_command_line, "noltlbs")) {
- 		__map_without_ltlbs = 1;
- 	}
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 63c4b1a4d435..229c72e49198 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -92,7 +92,6 @@ extern void mapin_ram(void);
- extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 		   unsigned int size, pgprot_t prot);
- 
--extern int __map_without_bats;
- extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-index 3285dabcf923..2fb2a85d131f 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -121,17 +121,15 @@ void __init mpc83xx_setup_pci(void)
- 
- void __init mpc83xx_setup_arch(void)
- {
-+	phys_addr_t immrbase = get_immrbase();
-+	int immrsize = IS_ALIGNED(immrbase, SZ_2M) ? SZ_2M : SZ_1M;
-+	unsigned long va = fix_to_virt(FIX_IMMR_BASE);
-+
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc83xx_setup_arch()", 0);
- 
--	if (!__map_without_bats) {
--		phys_addr_t immrbase = get_immrbase();
--		int immrsize = IS_ALIGNED(immrbase, SZ_2M) ? SZ_2M : SZ_1M;
--		unsigned long va = fix_to_virt(FIX_IMMR_BASE);
--
--		setbat(-1, va, immrbase, immrsize, PAGE_KERNEL_NCG);
--		update_bats();
--	}
-+	setbat(-1, va, immrbase, immrsize, PAGE_KERNEL_NCG);
-+	update_bats();
+ 	mmu_pin_tlb(block_mapped_ram, false);
  }
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index a56ade39dc68..3ac73f9fb5d5 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -135,9 +135,9 @@ void mark_initmem_nx(void)
+ 	unsigned long numpages = PFN_UP((unsigned long)_einittext) -
+ 				 PFN_DOWN((unsigned long)_sinittext);
  
- int machine_check_83xx(struct pt_regs *regs)
+-	if (v_block_mapped((unsigned long)_sinittext)) {
+-		mmu_mark_initmem_nx();
+-	} else {
++	mmu_mark_initmem_nx();
++
++	if (!v_block_mapped((unsigned long)_sinittext)) {
+ 		set_memory_nx((unsigned long)_sinittext, numpages);
+ 		set_memory_rw((unsigned long)_sinittext, numpages);
+ 	}
 -- 
 2.36.1
 
