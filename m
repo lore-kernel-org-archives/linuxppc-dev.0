@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0173C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 02:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 105B8C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 02:09:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LMX140Pqcz3bv2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 12:08:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LMX1x40FXz3bs5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 12:09:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sM/XUZR9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XnddG+eq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sM/XUZR9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XnddG+eq;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMX0P31q5z3bbv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 12:08:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMX1G4g2Tz308C
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 12:09:06 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 84B5560F13;
-	Tue, 14 Jun 2022 02:08:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AB5CDC34114;
-	Tue, 14 Jun 2022 02:08:17 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id F29EB60B6B;
+	Tue, 14 Jun 2022 02:09:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1E49EC34114;
+	Tue, 14 Jun 2022 02:09:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1655172498;
-	bh=/vjGhyLueArMtEbakrva+JGX2QQuO3e9IE4CZatHnM4=;
+	s=k20201202; t=1655172543;
+	bh=PnwFDSr0QbHhkvmwmnkK4Kuu2ybmHtpHvkQaBoGakRs=;
 	h=From:To:Cc:Subject:Date:From;
-	b=sM/XUZR9nPFVYzhEOIsZzIin8UWYEpz6Wy8W0fU5oj99731CKlmyJgJgpbWdwdqEI
-	 QwKkEtXiHOsgWdTjyLFSmHdWeTbEkg/5JQjxmWPRHL5WZxRD81ZzLKIfkHAOXCCX9q
-	 3UxdUKkLtB2PbalG9w+OZSFQtm4Q194LEZZumQP41WYHEBG5JuNuqqE8URx6oX5q3P
-	 O7/wtJiVaXsCIZAyecG2iLWtbKKo08QhNhMFjHDiVj9oFMqOvFdboT0zCZlhDd51xl
-	 EUYMdJRrOBwdayO6QD+3kW+DlPVQsVYtmndbf0ewNgS4n3GR+F/d/LnhbTpw/iyHh2
-	 Uq7XInqN3vU7g==
+	b=XnddG+eqPhyZ6nZ0oU1zK4gzhwC0xvkVtbRvu6iwTVfe9795wbD4pCljtWFr90LrP
+	 /5AUSJL5piglDvtnCcjyBt0r9Bbol4jTYaMS0stjD4S/n0DikfOC5WrCb6THmW3DI7
+	 RlS903sEX0WiiY5CfJiV0VAxTorRrykJinBgHPCqsk6gDwflbeZ5T7itUtzC2KwGTw
+	 +yFMZEwBos3n4Cq+bra5sVUMVrNgx2FZsHeN1iPThKo5FZiCwAamp8+H7oA1Xj7VLr
+	 BcBbqlDqbhRE7ZubvCY3RggKpsW0jmdP44MLoIEbEPSdS2BZlQkIgp/d5eO1i8BJ1o
+	 ep7GH+zASUg/w==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 01/29] powerpc/kasan: Silence KASAN warnings in __get_wchan()
-Date: Mon, 13 Jun 2022 22:07:47 -0400
-Message-Id: <20220614020815.1099999-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 01/23] powerpc/kasan: Silence KASAN warnings in __get_wchan()
+Date: Mon, 13 Jun 2022 22:08:37 -0400
+Message-Id: <20220614020900.1100401-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 X-stable: review
@@ -129,10 +129,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3064694afea1..cfb8fd76afb4 100644
+index c94bba9142e7..832663f21422 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -2108,12 +2108,12 @@ static unsigned long __get_wchan(struct task_struct *p)
+@@ -2001,12 +2001,12 @@ static unsigned long __get_wchan(struct task_struct *p)
  		return 0;
  
  	do {
