@@ -4,162 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8322CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Jun 2022 22:07:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E91F8C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 01:48:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LN2bw0TZTz3fNS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 08:07:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LN7WF1CKHz3bry
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 11:48:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AzE47z98;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UAwhROCz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=sohil.mehta@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AzE47z98;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UAwhROCz;
 	dkim-atps=neutral
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LMRZg3rS2z2ywc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jun 2022 08:49:09 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1655160555; x=1686696555;
-  h=message-id:date:subject:to:cc:references:from:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=c0Nu7zmbgOfZ6os748hsNHhjt7hWIrwvsvJvi+oScNo=;
-  b=AzE47z98zwoU6KvBPN7ywradaD6EUDxJRoJS/5q0i1GWJ9bVMiZqTJjP
-   5v0oLhxRdMOA7omu72jD0VedyzGFj5uhfkaPmWFJhYK9V+4HvyiNk8Wr0
-   h1VS6Y+bjl0kZKu5GdTIGAz9C/InON2fCyGEjdtQjEIhps91iSMGfHOBP
-   gx72fAHdPN8PAQxAlORcImJA5+1+4l2Umjs4S0o/DtO3flEVAABd8ILKj
-   xAmS2R7Y8lfmLTvOE075i7tVJ+MbLLyIzE8v80hSMEI7xelx/YGQwM59+
-   j9zAgF52thi4S8zTM+KOLCjjX4w8zfqwD7nGmMFyLOkcGjYYF8Lq9rWwQ
-   w==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10377"; a="267125246"
-X-IronPort-AV: E=Sophos;i="5.91,298,1647327600"; 
-   d="scan'208";a="267125246"
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jun 2022 15:49:05 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.91,298,1647327600"; 
-   d="scan'208";a="712215590"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
-  by orsmga004.jf.intel.com with ESMTP; 13 Jun 2022 15:49:05 -0700
-Received: from orsmsx611.amr.corp.intel.com (10.22.229.24) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Mon, 13 Jun 2022 15:49:04 -0700
-Received: from orsmsx609.amr.corp.intel.com (10.22.229.22) by
- ORSMSX611.amr.corp.intel.com (10.22.229.24) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27; Mon, 13 Jun 2022 15:49:04 -0700
-Received: from ORSEDG601.ED.cps.intel.com (10.7.248.6) by
- orsmsx609.amr.corp.intel.com (10.22.229.22) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2308.27 via Frontend Transport; Mon, 13 Jun 2022 15:49:04 -0700
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.172)
- by edgegateway.intel.com (134.134.137.102) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2308.27; Mon, 13 Jun 2022 15:49:04 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=GeGQifwoxsj3kZx2pLei0IZetFsVGu30m8XnvvHBUokjQXVKKnXnz2veLdOwUxNdyHz91BkjbtFewlpysTGg+1cjTNUy62IDbF7ZOpWDmqrPpp2A10ApvAi6eGiIPgLM2xw4+kqjFdvgBJOF+pTtT7QUx/5jxrfb122uTjyfml/PfA3m/uoskK5AeWWdC0AyPkYM9j6F/ELWk2/++uCQtThyfLNlB8lRb/xPBzEvp3X4YaRa7+ZKuXiXbEFCkSVAF6wYZK7+vmtk/lSghUiu5iVGJAyQoryTXfU6GPMt/QB1XO5XlhVzncxLisQLWh545vT0JWYYLRdRCwSppspwug==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NV7OtwJOcryd6HENj2hlm4j6DsoF1nF9iQADpf5kNT8=;
- b=URoBuiMA3s6u56mlJsgLIvfI+sl60UQRKtHIDAl9BHCpiJiPGUlAKSF+c6rwJaoo490R4wRUMoks1QNH+qLH34Fe3SGiAZ5mzAMM2wqJIbvei86Yqjjr0nXXrJdEro7vJj3SqqLraAuxHXT31pNMqsKirRzqwUO99ggSvu/vB37Y5v1sCzuQlAKudPu/cf3u0mWYJsSB++JrCiL2yX+NZCnP3f1qsMgD/+ywXnMa9yvyVkstg9OV0SoV4DL15UiMphYCk46fYPZ/YldomOEfCo0vIlA8TdIkcZOQq7d8SYbyOYpsEeTYyvxvrCLqJzbqt6GNLDELRFMbeLivG7Lrkg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=intel.com;
-Received: from BYAPR11MB3320.namprd11.prod.outlook.com (2603:10b6:a03:18::25)
- by SN6PR11MB2944.namprd11.prod.outlook.com (2603:10b6:805:cd::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5332.20; Mon, 13 Jun
- 2022 22:48:58 +0000
-Received: from BYAPR11MB3320.namprd11.prod.outlook.com
- ([fe80::a4e0:2e7e:45de:a62]) by BYAPR11MB3320.namprd11.prod.outlook.com
- ([fe80::a4e0:2e7e:45de:a62%6]) with mapi id 15.20.5332.020; Mon, 13 Jun 2022
- 22:48:58 +0000
-Message-ID: <86c1b1fe-0dca-ce26-874e-aa83e3c77e6e@intel.com>
-Date: Mon, 13 Jun 2022 15:48:56 -0700
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [RFC PATCH 2/6] testing/pkeys: Don't use uninitialized variable
-Content-Language: en-US
-To: <ira.weiny@intel.com>, <linux-api@vger.kernel.org>
-References: <20220610233533.3649584-1-ira.weiny@intel.com>
- <20220610233533.3649584-3-ira.weiny@intel.com>
-From: Sohil Mehta <sohil.mehta@intel.com>
-In-Reply-To: <20220610233533.3649584-3-ira.weiny@intel.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BY3PR05CA0038.namprd05.prod.outlook.com
- (2603:10b6:a03:39b::13) To BYAPR11MB3320.namprd11.prod.outlook.com
- (2603:10b6:a03:18::25)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 62fffc41-0e53-43ef-8062-08da4d8ee6c4
-X-MS-TrafficTypeDiagnostic: SN6PR11MB2944:EE_
-X-Microsoft-Antispam-PRVS: <SN6PR11MB29441FB84FE1EB693A696D6DE5AB9@SN6PR11MB2944.namprd11.prod.outlook.com>
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: NWBeoKqMXCJLDNBZNJ1dqNPHYvPmhjvVHgs8mLmypr2jbmIeP2o2vtE/up3SeSSeu8/028ahIPpXY9YmE3j4tlRT0zrchRWTr12R2qVdm/WveH9zp9l8uyvm7zhamepppUseqAiYGvUCb26m4zaGZL8dzshSKm57R1C3etGLXdi5ueryTAqTf6COivOlMqEOwuUDUUXeR8VOI0KEZ4U41DBqjD8GjCxIZtmSZS4sS9p3U0x9HkUW5nUO70y0eXl2mRhHJy/FUpZRdxRUL/gyJ/3DKiJa13F3aTeEiKlaEKpe3erQYzVXh8hz/b6rw/cwFM6eCBiYTlUojAVWqgh6kDIqqNSSnyaWpKeJA7K/gDjb2WUJx6UdmuHE3KwAbLOX1rQYwaZtmrRqm8WBAPQjL5G2VqR+rqkS1GvVdAEqhL+xM9hPDnyRh8Xv0xMPo4k+dBjsdy9tu7yXhlCCR+ri6+e7sBi7I1Vg++Sg6oT+nJ6xN9UF9DtRkYmzpGo7M9CkhUITg/bVzo3Vqu6GApXo3uuNEC9tJNb/Bh/4Mwrb0Ox23DosuN3ZptPJrNsqfeyGMwRFwptWL3TWHMQWmdrcsDNhdzK1Wv6WLzJxJWjx7whf7FAbfzGT5tWRGNzS0ULrPCOuK5yvTVjIe7Ui1EGZVVPT5V+kuELk8HJh7o+cSoQVCmf0jrKUSuhPIaP6V3P1v/SlMttZFtsJOhD0C3IwUfQrpsoDF0w91HBQd/9HWtxzTyzcHXo5j4LSHt44t/6D
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR11MB3320.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(366004)(8936002)(5660300002)(2906002)(86362001)(82960400001)(38100700002)(316002)(6506007)(54906003)(53546011)(26005)(6512007)(44832011)(6486002)(4326008)(66476007)(8676002)(66556008)(66946007)(2616005)(186003)(31696002)(508600001)(36756003)(31686004)(45980500001)(43740500002);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: =?utf-8?B?UTZSaVZUcmFFUWtSeXlFQXVMbVNXcGx4UU14akNNWnd2RXNzVFdiYlp5WE0z?=
- =?utf-8?B?ZWw3ZzkvaTVRZ1p4WnhWSE56WUVrcnpvSHNKdEFVQnYyQ2NZQnBzTjhBRVh1?=
- =?utf-8?B?a1Q5ejZKRXBEc3E5QnhpSXg3TFpHNVRqeGQ2b3JucUNyKzFGSlNtTFp6WldD?=
- =?utf-8?B?UnZVTmEwWjk3bm5NelVPZjFoYU1sZFF2VENCRUg2YlpaZE9kQURCbEd1dHQx?=
- =?utf-8?B?dHZXbk5kQmMwMm84WFkrb0Z6bENKTFk3QVpzNzc3OXFPcHJHclJnaEZvekxJ?=
- =?utf-8?B?ai9tUXJsZkRPdGIxdHBHSVNIVndTQ0NLK0h5UHVCQWx3SEVaL2grR1ZNVU8v?=
- =?utf-8?B?d3RxZFI0UVcvT3BPay9NZjdyV25UZmNkQ24rRktXakYwd0REVi9iQ0t3VnMr?=
- =?utf-8?B?QjlXSkR4Tk5qRnJXWm9KRHpOZWNTOG1YL2NFdE4vYzZldXVJNUU3ZHdleVF6?=
- =?utf-8?B?Q3VmczFzTmFpUldyRmhVYW5SZVZjdnJ1WjJ2Y3RjWUdESDRNbUtoMVQ4VlBL?=
- =?utf-8?B?cXYvbmhPMENsNC8zRDlRRnFOMjdSNGxqV0xOSUpGeXZRdUJqU2I4TjUya2tp?=
- =?utf-8?B?WjMzZ2hvMmExOFB3dEdBSzZ5VmJhUXRUT0liRjhRMmtDVDhRZm5FQTlHQ2dL?=
- =?utf-8?B?aDJzT21kVjFPYWlzZ3d3QmE0MUV5eW1jdGJyK1lhOGJGeWdzekJJWDFPSHdB?=
- =?utf-8?B?R2piYkNZMnAvN2p1SG5OeFhXQTVtSDFocE1nNE9RMEtDcEJySnNFbkU2VzFD?=
- =?utf-8?B?TWI2NGNaajMrOEtJYU9BSzhFRHh0M3piaFZkVmg1ZHgxVUxYWDJxYjVyOW1m?=
- =?utf-8?B?UEF2Y1dDbEJmMEs0VDh5UVFybUdTSzVidUYvQldFNFJyemI2NUtjWTN1VXM0?=
- =?utf-8?B?UE1RM0JwZGVETzNBZXQ0TjFOdW16R0w2NGJUQUJ5M0N5RVIvRFBadmU3enl4?=
- =?utf-8?B?U3BScm5OTmdKcWZOMVZQMFN2d2RpeWl6VjdvWm1mMXg4a0RsR2taUDVpaXZS?=
- =?utf-8?B?UVdyQ3JtRzB1bUZiQlNtS1JuSXd2eDhnZGlEbnJzdWZCVWxoQkp3QWlNa3Nh?=
- =?utf-8?B?MzJmdVQrVXpKNXJxYm9DYTFjeUpkLzBTYmNpVlpDaFRwODBWUjRmWERmVHN3?=
- =?utf-8?B?eUhKNlNaV1ZLU1l5bGpMMk5DcUZ3ZFdmM1dwUVZiK3h6MzJaTlEwZGFXekhJ?=
- =?utf-8?B?d0lFeHdqUzNra1J0TXZZQzBBRzBZQUNHUjN2WVRqYmJJRE9jWm81eGdpSHAv?=
- =?utf-8?B?dlVWd0FTSFE3MThja3lNdEhSZkR5eW1vQU11VEEwMnVTTjFGRFZmRDNsOEt3?=
- =?utf-8?B?Qk5vbVZhTXlxWnhUNzZNcks1N3Vkcm84eU03TEhnZW9oWVVhR1dKNUlYYVJ3?=
- =?utf-8?B?VDdlRy9ISTFtbTQxTXU2WTZRNi9qeTVLWVJaR3RVckUxVTRLaDVUb2xGQUY2?=
- =?utf-8?B?QklFdVZld3FYNk94MUVjS29rbnVlRUhYUU5tc0dQVXZadHJTSTB2VXRLVkdo?=
- =?utf-8?B?a2JKR212RVc2Ly8yR0picURKQTdVUytjcHNYY2luUVpPT0dXdlZPVFEzRnpL?=
- =?utf-8?B?a2ZnQklqS3VNNm9iS0NhZElZSDZvQ2xJMGErdFRzb1BoZ0haU3Q0RVQwQkg3?=
- =?utf-8?B?eFBRbXAzU3J2Nk82NjIvQldITUl5U1JMYktQUi8vV3NCY1Vxc2lwUkZHV25H?=
- =?utf-8?B?ZXUveFhSN2Rud1VZN0JVSVVTa245TUx1MHdJRGU4NEo2ZlNTcDBwVmV5VEoy?=
- =?utf-8?B?YndZQXN0ZUZKQjdHaUFxdTdrRkY3bDJ5eFFFNVJLTnI5YzBpSjlyc1MvSmJQ?=
- =?utf-8?B?TlRQd3V1ZnplVWtJelg3M1pwTGFETnFudFZ1SVpKOXlwQ1FFN21wRk5PNHcz?=
- =?utf-8?B?d2JTQXllajh0MmdNd1Y4YXBzV1FqcklFdGtQR3B1TEx4cm1MRnkwNXdFVFZ2?=
- =?utf-8?B?K1NoSDhkYk5kMUlCYlh6aUZpcjBWU1I0R3ROK25tRmxaWlpHTnAzMzc0d0wz?=
- =?utf-8?B?V3dJSk9uelFYOUZEb20vNXFJRGNnK09rZ0tpTzBac0FwdGxuVk45MzI4ZTRv?=
- =?utf-8?B?a2NzOHhVaEVLMXExSnNHTzhjMDdFWTBQMzg2YWNMWDErUWttam10ZVMzb25S?=
- =?utf-8?B?M2ZEZ0tJZFVHSkJIcXVYY3RrUFJEQzVWbnRReitxczZZUHZyakZiemNBaGk0?=
- =?utf-8?B?am85SXZQUG5FcE5VN1BQOWIxN0lvY01oaHZKRUFFa015amIzNjJTS1V6OFow?=
- =?utf-8?B?L0xjMzJ0WmRyNFQ5dmJVV2czekJvQkJSbTRHYktBcEtScDFvSUtIRkNZWmt4?=
- =?utf-8?B?Ry9RRExwSHhNNzhSNVdQL2RsQ0VyMkZ6b0lONFpoWUNLOFZwVWhxS0l2NThM?=
- =?utf-8?Q?NHDwXg6jAwJ7isaE=3D?=
-X-MS-Exchange-CrossTenant-Network-Message-Id: 62fffc41-0e53-43ef-8062-08da4d8ee6c4
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR11MB3320.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Jun 2022 22:48:58.0085
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JtomSMUwSO+jHBtFyjqj9HySN7Vl/n4ymb2oPVbx3CYGmXzLBPbEIZb+tvpu0H23RnaKtXkMut2hVXcs+8BOBA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR11MB2944
-X-OriginatorOrg: intel.com
-X-Mailman-Approved-At: Wed, 15 Jun 2022 08:01:46 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LN7VP4Bjyz3bm5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 11:47:56 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25F09bEd015403;
+	Wed, 15 Jun 2022 01:47:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=AvB6z0pX/ML68WVK1mUyVq/qy5lExESPnp3K5RUkCSI=;
+ b=UAwhROCzLLX1Lfs1s7f+TMbd0WwRcZb8gHrYCnpyylE5T4rQediN2GCOJnj6y81nVz8T
+ PNYRnopIl74hIzWPHpJZE8lSI92qe9ZTjUAA49OWR9sUpnVgz1Tslb70sSwqADS8Ierf
+ /bJJwrRFs90zgLk8zdCmT6Q1HOXjYV+BveW9+kfCATiQz65L3slgeLKDOmysZq47CBpR
+ 4wpvshdl9w8Hj0nBPzopfqnoTaZgnp/QJpw1lsClAfCFlUTceqyytjrpRVlUF6TPMIka
+ kmNQcngbP2mykTMFkqvk9ZmUtTvXC/4RZ5nVFLrDTOAlOEm45p8TpoFDVhxaahhpxBLc Nw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3gpqmw8sq6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jun 2022 01:47:50 +0000
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 25F1eOUU003338;
+	Wed, 15 Jun 2022 01:47:50 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3gpqmw8spp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jun 2022 01:47:50 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25F1aG2q007455;
+	Wed, 15 Jun 2022 01:47:48 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+	by ppma05fra.de.ibm.com with ESMTP id 3gmjp93wxg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 15 Jun 2022 01:47:48 +0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com [9.149.105.60])
+	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25F1lnEC14549502
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 15 Jun 2022 01:47:49 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B879B42041;
+	Wed, 15 Jun 2022 01:47:45 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 27F954203F;
+	Wed, 15 Jun 2022 01:47:44 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.192.255.94])
+	by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+	Wed, 15 Jun 2022 01:47:43 +0000 (GMT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3696.100.31\))
+Subject: Re: [PATCH 2/6] powerpc: Provide syscall wrapper
+From: Rohan McLure <rmclure@linux.ibm.com>
+In-Reply-To: <CAK8P3a3jm=02geTcJcfLNpshx1bR1jAnLTzimaaAhB=mGHfJzg@mail.gmail.com>
+Date: Wed, 15 Jun 2022 11:47:41 +1000
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <494F2A0A-1C03-4A5A-8BC1-92ACCE34AFE4@linux.ibm.com>
+References: <20220601054850.250287-1-rmclure@linux.ibm.com>
+ <20220601054850.250287-2-rmclure@linux.ibm.com>
+ <CAK8P3a3jm=02geTcJcfLNpshx1bR1jAnLTzimaaAhB=mGHfJzg@mail.gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+X-Mailer: Apple Mail (2.3696.100.31)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: IaznAoPWEkZiq-lxV0spF1_hpO_7YdGk
+X-Proofpoint-ORIG-GUID: vvg-51kGnbXC3SSxaWosPMma7dVc1lB4
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.874,Hydra:6.0.517,FMLib:17.11.64.514
+ definitions=2022-06-14_10,2022-06-13_01,2022-02-23_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=814 spamscore=0
+ adultscore=0 impostorscore=0 mlxscore=0 lowpriorityscore=0 bulkscore=0
+ priorityscore=1501 suspectscore=0 phishscore=0 malwarescore=0
+ clxscore=1011 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2204290000 definitions=main-2206150002
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -171,34 +100,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Donnellan <ajd@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 6/10/2022 4:35 PM, ira.weiny@intel.com wrote:
-> diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-> index d0183c381859..43e47de19c0d 100644
-> --- a/tools/testing/selftests/vm/protection_keys.c
-> +++ b/tools/testing/selftests/vm/protection_keys.c
-> @@ -1225,9 +1225,9 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
->   		int new_pkey;
->   		dprintf1("%s() alloc loop: %d\n", __func__, i);
->   		new_pkey = alloc_pkey();
-> -		dprintf4("%s()::%d, err: %d pkey_reg: 0x%016llx"
-> +		dprintf4("%s()::%d, errno: %d pkey_reg: 0x%016llx"
+> On 3 Jun 2022, at 7:04 pm, Arnd Bergmann <arnd@arndb.de> wrote:
+>=20
+> On Wed, Jun 1, 2022 at 7:48 AM Rohan McLure <rmclure@linux.ibm.com> =
+wrote:
+>>=20
+>> Syscall wrapper implemented as per s390, x86, arm64, providing the
+>> option for gprs to be cleared on entry to the kernel, reducing caller
+>> influence influence on speculation within syscall routine. The =
+wrapper
+>> is a macro that emits syscall handler implementations with parameters
+>> passed by stack pointer.
+>>=20
+>> For platforms supporting this syscall wrapper, emit symbols with =
+usual
+>> in-register parameters (`sys...`) to support calls to syscall =
+handlers
+>> from within the kernel.
+>=20
+> Nice work!
+>=20
+>> Syscalls are wrapped on all platforms except Cell processor. SPUs =
+require
+>> access syscall prototypes which are omitted with =
+ARCH_HAS_SYSCALL_WRAPPER
+>> enabled.
+>=20
+> Right, I think it's ok to leave out the SPU side. In the long run, I
+> would like to
+> go back to requiring the prototypes for everything on all =
+architectures, to
+> enforce type checking, but that's a separate piece of work.
+>=20
+>> +/*
+>> + * For PowerPC specific syscall implementations, wrapper takes exact =
+name and
+>> + * return type for a given function.
+>> + */
+>> +
+>> +#ifdef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+>> +#define PPC_SYSCALL_DEFINE(x, type, name, ...)                       =
+          \
+>> +       asmlinkage type __powerpc_##name(const struct pt_regs *regs); =
+          \
+>> +       ALLOW_ERROR_INJECTION(__powerpc_##name, ERRNO);               =
+          \
+>> +       type sys_##name(__MAP(x,__SC_DECL,__VA_ARGS__));              =
+          \
+>> +       static type __se_##name(__MAP(x,__SC_LONG,__VA_ARGS__));      =
+          \
+>> +       static inline type =
+__do_##name(__MAP(x,__SC_DECL,__VA_ARGS__));         \
+>=20
+> What is the benefit of having a separate set of macros for this? I =
+think that
+> adds more complexity than it saves in the end.
+>=20
+>> @@ -68,52 +69,63 @@ unsigned long compat_sys_mmap2(unsigned long =
+addr, size_t len,
+>> #define merge_64(high, low) ((u64)high << 32) | low
+>> #endif
+>>=20
+>> -compat_ssize_t compat_sys_pread64(unsigned int fd, char __user =
+*ubuf, compat_size_t count,
+>> -                            u32 reg6, u32 pos1, u32 pos2)
+>> +PPC_SYSCALL_DEFINE(6, compat_ssize_t, compat_sys_pread64,
+>> +                  unsigned int, fd,
+>> +                  char __user *, ubuf, compat_size_t, count,
+>> +                  u32, reg6, u32, pos1, u32, pos2)
+>> {
+>>       return ksys_pread64(fd, ubuf, count, merge_64(pos1, pos2));
+>> }
+>=20
+> We now have generalized versions of most of these system calls, as of =
+5.19-rc1
+> with the addition of the riscv compat support. I think it would be
+> best to try removing
+> the powerpc private versions wherever possible and use the common =
+version,
+> modifying it further where necessary.
+>=20
+> If this doesn't work for some of the syscalls, can you use the
+> COMPAT_SYSCALL_DEFINE for those in place of PPC_SYSCALL_DEFINE?
+>=20
+>    Arnd
 
-What is errno referring to over here? There are a few things happening 
-in alloc_pkey(). I guess it would show the latest error that happened. 
-Does errno need to be set to 0 before the call?
+Hi Arnd,
 
-Also, would it be useful to print the return value (new_pkey) from 
-alloc_pkey() here?
+Thanks for your comments.=20
 
->   				" shadow: 0x%016llx\n",
-> -				__func__, __LINE__, err, __read_pkey_reg(),
-> +				__func__, __LINE__, errno, __read_pkey_reg(),
->   				shadow_pkey_reg);
->   		read_pkey_reg(); /* for shadow checking */
->   		dprintf2("%s() errno: %d ENOSPC: %d\n", __func__, errno, ENOSPC);
+> What is the benefit of having a separate set of macros for this? I =
+think that
+> adds more complexity than it saves in the end.
 
-Sohil
+I was unsure whether the exact return types needed to be respected for =
+syscall
+handlers or not. I realise that under the existing behaviour,
+system_call_exception performs an indirect call, the return type of =
+which is
+interpreted as a long, so the return type should be irrelevant. On =
+inspection
+PPC_SYSCALL_DEFINE is readily replacable with COMPAT_SYSCALL_DEFINE as =
+you
+have suggested.
+
+Before resubmitting this series, I will try for a patch series which =
+modernises
+syscall handlers in arch/powerpc, and inspect where powerpc private =
+versions
+are strictly necessary, using __ARCH_WANT_... wherever possible.
+
+Rohan=
