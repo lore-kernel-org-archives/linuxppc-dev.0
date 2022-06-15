@@ -4,61 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70E5AC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 01:56:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 157B9C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 01:58:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LNldQ152tz3chV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 11:56:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LNlgc4YK9z3f5h
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 11:58:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.beauty header.i=me@linux.beauty header.a=rsa-sha256 header.s=zmail header.b=EzFGn9ZZ;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=jtp6v+PU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.beauty (client-ip=136.143.188.15; helo=sender4-op-o15.zoho.com; envelope-from=me@linux.beauty; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=220.181.15.112; helo=m15112.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.beauty header.i=me@linux.beauty header.a=rsa-sha256 header.s=zmail header.b=EzFGn9ZZ;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=jtp6v+PU;
 	dkim-atps=neutral
-X-Greylist: delayed 908 seconds by postgrey-1.36 at boromir; Wed, 15 Jun 2022 15:19:30 AEST
-Received: from sender4-op-o15.zoho.com (sender4-op-o15.zoho.com [136.143.188.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNDBV3NFXz3blj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 15:19:30 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1655269456; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=GStgrThw5Q1PYhP2rqVOLN+xNONSuVpVddY5wEoNn17HWe9f2QpXEN4SDyOplftORljOEprEXaqOOv9nnr4IdtGU+l7aKVgm1W7d21TkgTTe9e15hzqGTBF/+VRnYbnLpAtJcF9Wt+uD/FG0emiBzjQhmeprMR7UMyPA9vNL15E=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1655269456; h=Content-Type:Content-Transfer-Encoding:Date:From:MIME-Version:Message-ID:Subject:To; 
-	bh=6AXqsZRZTIdCcWnehBkb22k+2EJQJqXdSCOuqmc+0cA=; 
-	b=HPPgmyMSpBa2cPCkImcJLax4TEinX1hjH1SKUomMbcEuHrt7GJqB0G1+oNuSVGqR61GkxyPVI9RjsI5bFKh88EDlXZolHOTTNzez4r9+mPz9pdTYuegcKSqa2/g1LCqHrUmTC077uTNVXfvCPHPcHHPUV8EhorjnaqPqjPbmEKY=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=linux.beauty;
-	spf=pass  smtp.mailfrom=me@linux.beauty;
-	dmarc=pass header.from=<me@linux.beauty>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1655269456;
-	s=zmail; d=linux.beauty; i=me@linux.beauty;
-	h=Date:Date:From:From:To:To:Message-ID:In-Reply-To:Subject:Subject:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To:Cc;
-	bh=6AXqsZRZTIdCcWnehBkb22k+2EJQJqXdSCOuqmc+0cA=;
-	b=EzFGn9ZZDInsOx6IO3038aT/FAhNsF8FNVmRFcFiZuIsEqFtzpZhhMS4rKA/KVNf
-	Ab2AHkP/ig76zEKdscfU0ejtP/RPBRDGID4oGaWKX/Z/WUHCgSihZo0xW1jSB5wBfVr
-	l3q3b2iWhxa5NnlGzBJVcsxaFqfKrlfVdexHezFw=
-Received: from mail.zoho.com by mx.zohomail.com
-	with SMTP id 1655269454510361.39947610994113; Tue, 14 Jun 2022 22:04:14 -0700 (PDT)
-Date: Tue, 14 Jun 2022 22:04:14 -0700
-From: Li Chen <me@linux.beauty>
-To: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>,
-	"Michael Ellerman" <mpe@ellerman.id.au>,
-	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>,
-	"Eric Biederman" <ebiederm@xmission.com>,
-	"kexec" <kexec@lists.infradead.org>
-Message-ID: <18165bf7271.d72aa7571639569.7041635736718062250@linux.beauty>
-In-Reply-To: 
-Subject: [PATCH] kexec: replace crash_mem_range with range
+X-Greylist: delayed 1882 seconds by postgrey-1.36 at boromir; Wed, 15 Jun 2022 22:39:37 AEST
+Received: from m15112.mail.126.com (m15112.mail.126.com [220.181.15.112])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LNPyK1jJ5z2xDY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 22:39:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=58oAQ
+	UJN8JUwGFEUGf4YZNmf+AqCGHJHSJulELfzgaU=; b=jtp6v+PUhO9GNmrF3z/lh
+	0YvwA/qXsvMuR21y9cY0bfot3aw8wi2eiEyEFMCr4ZAoCAp8shH7dwgsnkp/X9cS
+	JZENlIEfTmg6Q6SjQbpMi3Dr2de3eKq1qIwcayjuzFAnJjdSlP5q4bmNykTOvCLh
+	pf/4HcfWS+IXJ+a+BIQH+U=
+Received: from localhost.localdomain (unknown [124.16.139.61])
+	by smtp2 (Coremail) with SMTP id DMmowABnegV1y6liCKo0DQ--.43270S2;
+	Wed, 15 Jun 2022 20:07:18 +0800 (CST)
+From: Liang He <windhl@126.com>
+To: oss@buserror.net,
+	mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH] arch: powerpc: platforms: 85xx: Add missing of_node_put in sgy_cts1000.c
+Date: Wed, 15 Jun 2022 20:07:17 +0800
+Message-Id: <20220615120717.3965164-1-windhl@126.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Importance: Medium
-User-Agent: Zoho Mail
-X-Mailer: Zoho Mail
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DMmowABnegV1y6liCKo0DQ--.43270S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7KF4DZF45Cw48ur1rAr1UKFg_yoW8XFykpF
+	s0kayfCFsrWryxGasrtas8CFy7t3W0qay7Jw1akws7C3W8X39Fvry8ZF4xXrn3uFW8G3yr
+	Jr1ayayq9FsFv3JanT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRT7KfUUUUU=
+X-Originating-IP: [124.16.139.61]
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/xtbBGgchF1-HZTZrDwAAsE
 X-Mailman-Approved-At: Thu, 16 Jun 2022 11:54:30 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,116 +59,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Liang He <windhl@126.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Li Chen <lchen@ambarella.com>
-
-We already have struct range, so just use it.
-
-Signed-off-by: Li Chen <lchen@ambarella.com>
+Signed-off-by: Liang He <windhl@126.com>
 ---
- arch/powerpc/kexec/file_load_64.c | 2 +-
- arch/powerpc/kexec/ranges.c       | 8 ++++----
- include/linux/kexec.h             | 7 ++-----
- kernel/kexec_file.c               | 2 +-
- 4 files changed, 8 insertions(+), 11 deletions(-)
+ arch/powerpc/platforms/85xx/sgy_cts1000.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index b4981b651d9a..583b7fc478f2 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -34,7 +34,7 @@ struct umem_info {
+diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+index 98ae64075193..2a45b30852b2 100644
+--- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
++++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+@@ -85,17 +85,24 @@ static int gpio_halt_probe(struct platform_device *pdev)
+ 	/* Technically we could just read the first one, but punish
+ 	 * DT writers for invalid form. */
+ 	if (of_gpio_count(halt_node) != 1)
++	{
++		of_node_put(halt_node);
+ 		return -EINVAL;
++	}
  
- 	/* usable memory ranges to look up */
- 	unsigned int nr_ranges;
--	const struct crash_mem_range *ranges;
-+	const struct range *ranges;
- };
+ 	/* Get the gpio number relative to the dynamic base. */
+ 	gpio = of_get_gpio_flags(halt_node, 0, &flags);
+ 	if (!gpio_is_valid(gpio))
++	{
++		of_node_put(halt_node);
+ 		return -EINVAL;
++	}
  
- const struct kexec_file_ops * const kexec_file_loaders[] = {
-diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
-index 563e9989a5bf..5fc53a5fcfdf 100644
---- a/arch/powerpc/kexec/ranges.c
-+++ b/arch/powerpc/kexec/ranges.c
-@@ -33,7 +33,7 @@
- static inline unsigned int get_max_nr_ranges(size_t size)
- {
- 	return ((size - sizeof(struct crash_mem)) /
--		sizeof(struct crash_mem_range));
-+		sizeof(struct range));
+ 	err = gpio_request(gpio, "gpio-halt");
+ 	if (err) {
+ 		printk(KERN_ERR "gpio-halt: error requesting GPIO %d.\n",
+ 		       gpio);
++		of_node_put(halt_node);
+ 		halt_node = NULL;
+ 		return err;
+ 	}
+@@ -112,6 +119,7 @@ static int gpio_halt_probe(struct platform_device *pdev)
+ 		printk(KERN_ERR "gpio-halt: error requesting IRQ %d for "
+ 		       "GPIO %d.\n", irq, gpio);
+ 		gpio_free(gpio);
++		of_node_put(halt_node);
+ 		halt_node = NULL;
+ 		return err;
+ 	}
+@@ -123,6 +131,8 @@ static int gpio_halt_probe(struct platform_device *pdev)
+ 	printk(KERN_INFO "gpio-halt: registered GPIO %d (%d trigger, %d"
+ 	       " irq).\n", gpio, trigger, irq);
+ 
++	of_node_put(halt_node);
++
+ 	return 0;
  }
  
- /**
-@@ -51,7 +51,7 @@ static inline size_t get_mem_rngs_size(struct crash_mem *mem_rngs)
- 		return 0;
- 
- 	size = (sizeof(struct crash_mem) +
--		(mem_rngs->max_nr_ranges * sizeof(struct crash_mem_range)));
-+		(mem_rngs->max_nr_ranges * sizeof(struct range)));
- 
- 	/*
- 	 * Memory is allocated in size multiple of MEM_RANGE_CHUNK_SZ.
-@@ -98,7 +98,7 @@ static int __add_mem_range(struct crash_mem **mem_ranges, u64 base, u64 size)
-  */
- static void __merge_memory_ranges(struct crash_mem *mem_rngs)
- {
--	struct crash_mem_range *ranges;
-+	struct range *ranges;
- 	int i, idx;
- 
- 	if (!mem_rngs)
-@@ -123,7 +123,7 @@ static void __merge_memory_ranges(struct crash_mem *mem_rngs)
- /* cmp_func_t callback to sort ranges with sort() */
- static int rngcmp(const void *_x, const void *_y)
- {
--	const struct crash_mem_range *x = _x, *y = _y;
-+	const struct range *x = _x, *y = _y;
- 
- 	if (x->start > y->start)
- 		return 1;
-diff --git a/include/linux/kexec.h b/include/linux/kexec.h
-index 58d1b58a971e..d7ab4ad4c619 100644
---- a/include/linux/kexec.h
-+++ b/include/linux/kexec.h
-@@ -17,6 +17,7 @@
- 
- #include <linux/crash_core.h>
- #include <asm/io.h>
-+#include <linux/range.h>
- 
- #include <uapi/linux/kexec.h>
- 
-@@ -214,14 +215,10 @@ int kexec_locate_mem_hole(struct kexec_buf *kbuf);
- /* Alignment required for elf header segment */
- #define ELF_CORE_HEADER_ALIGN   4096
- 
--struct crash_mem_range {
--	u64 start, end;
--};
--
- struct crash_mem {
- 	unsigned int max_nr_ranges;
- 	unsigned int nr_ranges;
--	struct crash_mem_range ranges[];
-+	struct range ranges[];
- };
- 
- extern int crash_exclude_mem_range(struct crash_mem *mem,
-diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
-index 8347fc158d2b..f2758af86b93 100644
---- a/kernel/kexec_file.c
-+++ b/kernel/kexec_file.c
-@@ -1183,7 +1183,7 @@ int crash_exclude_mem_range(struct crash_mem *mem,
- {
- 	int i, j;
- 	unsigned long long start, end, p_start, p_end;
--	struct crash_mem_range temp_range = {0, 0};
-+	struct range temp_range = {0, 0};
- 
- 	for (i = 0; i < mem->nr_ranges; i++) {
- 		start = mem->ranges[i].start;
 -- 
-2.36.1
-
+2.25.1
 
