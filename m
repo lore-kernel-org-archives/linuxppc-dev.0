@@ -4,47 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8DA7C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 06:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C6E3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 10:14:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LNGND302Kz3cfM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 16:58:04 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=SUzqfrnD;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+cd04db8a85bff7cd13dc+6870+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=SUzqfrnD;
-	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LNLlH56Ctz3bvd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 20:14:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=212.227.126.135; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNGMZ6ssWz2xZB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 16:57:30 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=qNXVqmxSpUOvgxRgQ5LFOcNQ8o56Uupm2hxFNDJ6o4A=; b=SUzqfrnDPOqROLEVY4dilVwjsT
-	s9dP7gDfSz1s87ZFKwdNfBnEewrk82sE2kWW7HUPeBdmZD7XbyasqPcpEYzajrJBLt68yaVxCDfBu
-	UNem7+Sxy8d99R6ehfS/E6jHiusjLHaURpRKNfXf5kIA//DAh+Gto+PBjdDVl6ji8fn/89/M5NgWl
-	3X0Sy1Tj0NYy26foekGpjmpddeZF7GqsS+PMyZW8F1rJbbyhlfI9GfqsfcJaIewJe+VYjImM2MIor
-	ytGxwg4TKaKAj9wJIEfIf1F0+q3bG6igtjekGb7zpOkUNgpd53WvF/HcJXKP3H8rfkrCXq8YzeYkW
-	T67SvWwg==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1o1Mxx-00CxiS-1O; Wed, 15 Jun 2022 06:57:25 +0000
-Date: Tue, 14 Jun 2022 23:57:25 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH] arch/*: Disable softirq stacks on PREEMPT_RT.
-Message-ID: <YqmC1aAm+O7RD2IH@infradead.org>
-References: <YqjQ5kso7czrmYPW@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNLkm2Mp8z302S
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 20:14:22 +1000 (AEST)
+Received: from mail-yw1-f171.google.com ([209.85.128.171]) by
+ mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
+ 1N3bjH-1nbC8p3qD5-010boy for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun
+ 2022 12:14:17 +0200
+Received: by mail-yw1-f171.google.com with SMTP id 00721157ae682-31756c8143aso7519207b3.12
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 03:14:16 -0700 (PDT)
+X-Gm-Message-State: AJIora8C6nPk192HcraqL1H8IfjjNjM4WvswjNhDIRbcS2xb6abBqE7p
+	qWKJRNvBt7KB8YWFK+l9kl7vJQs/naEhOWQGtrw=
+X-Google-Smtp-Source: AGRyM1tc1CD3T/V75mltml1RV/EGtx7dMWBJywlVPeKFkpX86eLC6Kc+nnj6VAXLovfPFbFMwM4QIhFnRV8Dvewvij8=
+X-Received: by 2002:a81:6ac5:0:b0:317:5299:523d with SMTP id
+ f188-20020a816ac5000000b003175299523dmr2197082ywc.249.1655288055350; Wed, 15
+ Jun 2022 03:14:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <YqjQ5kso7czrmYPW@linutronix.de>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
+References: <20220601054850.250287-1-rmclure@linux.ibm.com>
+ <20220601054850.250287-2-rmclure@linux.ibm.com> <CAK8P3a3jm=02geTcJcfLNpshx1bR1jAnLTzimaaAhB=mGHfJzg@mail.gmail.com>
+ <494F2A0A-1C03-4A5A-8BC1-92ACCE34AFE4@linux.ibm.com>
+In-Reply-To: <494F2A0A-1C03-4A5A-8BC1-92ACCE34AFE4@linux.ibm.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 15 Jun 2022 12:13:58 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a29aV9NNHqhv2n6DP=nwT-M0yoVMzQyCnxOBMhxePfFSQ@mail.gmail.com>
+Message-ID: <CAK8P3a29aV9NNHqhv2n6DP=nwT-M0yoVMzQyCnxOBMhxePfFSQ@mail.gmail.com>
+Subject: Re: [PATCH 2/6] powerpc: Provide syscall wrapper
+To: Rohan McLure <rmclure@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:WKvxUTnjNieDPc9zuP7IiW1krNW8txDOaSC4km0nyzxbmR+kYo6
+ QzGEfjphf7r0ccaz2Lt3MBtdaK3aTMN+Q74k2XEGD2LTo5yrMTUyMSURlVai9m9jEjVOxRW
+ pV3rqUgmdZWbl2CT4Dw33ceK5jQF7IMnANMq54YujlD7snB6Pcs9PGdsjw01npbzrJ3+Ckn
+ +VSccJ2YAD1Kjxt3lWXsg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:F9qImbYIZgE=:9ygXqbC+dlI1L9OASL1v13
+ B07HeoMSOLAJWL+5DshMVFt6AnxmpYWolPo8o+IlK9dBAUTgfYBtpslY9fp9tZH/SE/W5zK8f
+ EHX73NLfrpg4eD041OBq374NMbINUQfrGUZmQ+Ghj5IGTUUz2WEh7NJWvaRESN2/os7itxuC2
+ LDQRso62/bOnVmbl6xbOFXV8SneQsmGfNrOqWZReEl9YXph8kDF9/EOLJ2kKqtsrnserCwBNu
+ icMZdlvo2EmCM09z20Gu4IifTuGpM9Y04XbM9DnNR3mwErflP8vZcUOAB3XVySqiasDau/3n2
+ A6myS7kRSjPlejJr83LCtewJ8945wSLSQl4miMAjcpzSQ2FcCZO7HUGtk9HpidACBDS0njlDJ
+ W4yGZePWRrGfeMxvz0S9+Awi034+OS+KjBbOjvUtCOkQt7cMBxk+i8CIL6BWL4LDoInksk/N8
+ FEf23+FsemM8AHiXc09vP9hfZqS5SqN8DKT+Ofi5jM2z+d89/3B5Rjvo7pv//pDLAeFsm0+bo
+ BlilSk14G+usN2B3Q6+LEgtbEXQVEPhAmhNjgPoNDeV3s2XdUsUTL5qjjj7pbEiNhAnANs+Mb
+ pRAOF4z7ccCICRdmWkKExNRkm3an8q5VL34fKT5pUAf5Znw5UPW/C+rUWIkXb+ddOCaNnvTMF
+ mN/H+23jTg3AJZTXPxV3oUpR/qq+w9YWFqjGPSygUMJkYuR3VP+A3JmakoPevnV1x6Zy3wQZD
+ IR2kVtvtwq6SizTpRnyaN6uAyFJ/kA1pSILnlQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,11 +67,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Christian Borntraeger <borntraeger@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, Sven Schnelle <svens@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 14, 2022 at 08:18:14PM +0200, Sebastian Andrzej Siewior wrote:
-> Disable the unused softirqs stacks on PREEMPT_RT to safe some memory and
+On Wed, Jun 15, 2022 at 3:47 AM Rohan McLure <rmclure@linux.ibm.com> wrote:
+> > On 3 Jun 2022, at 7:04 pm, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Wed, Jun 1, 2022 at 7:48 AM Rohan McLure <rmclure@linux.ibm.com> wrote:
 
-s/safe/save/
+> > What is the benefit of having a separate set of macros for this? I think that
+> > adds more complexity than it saves in the end.
+>
+> I was unsure whether the exact return types needed to be respected for syscall
+> handlers or not. I realise that under the existing behaviour,
+> system_call_exception performs an indirect call, the return type of which is
+> interpreted as a long, so the return type should be irrelevant. On inspection
+> PPC_SYSCALL_DEFINE is readily replacable with COMPAT_SYSCALL_DEFINE as you
+> have suggested.
+>
+> Before resubmitting this series, I will try for a patch series which modernises
+> syscall handlers in arch/powerpc, and inspect where powerpc private versions
+> are strictly necessary, using __ARCH_WANT_... wherever possible.
+
+Ok, great! The parameter ordering is a bit tricky for some of them. I think
+in most cases the version used by risc-v now should be the same as what
+you need for powerpc (with the appropriate compat_arg_u64_dual()).
+If some don't work, I would suggest modifying the common code so it can
+handle both riscv and powerpc instead of keeping a private copy.
+
+       Arnd
