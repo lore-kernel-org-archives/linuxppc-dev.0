@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80A9CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 14:38:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 269D2C43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Jun 2022 15:42:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LNSbk4jC7z3cgJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 00:38:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=kAIWl67V;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=igalia.com (client-ip=178.60.130.6; helo=fanzine2.igalia.com; envelope-from=gpiccoli@igalia.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=igalia.com header.i=@igalia.com header.a=rsa-sha256 header.s=20170329 header.b=kAIWl67V;
-	dkim-atps=neutral
-Received: from fanzine2.igalia.com (fanzine.igalia.com [178.60.130.6])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LNV1S682Lz3chS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 01:42:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=212.227.17.10; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNSb16wCcz306l
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2022 00:38:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=igalia.com;
-	s=20170329; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:From:
-	References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender:Reply-To:
-	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-	Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-	List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=75kgVCcqOPOLeu4JBiLLFab/dM4uNZ1dcLuvpDx9ZCg=; b=kAIWl67VuUe8cBDkmFOZTh4b+J
-	Uy6PgE2+CwIEzhFEfsXCTAadcMkk5TefuTIBHvgzxNrjmUz+/r/f3fMBR5i8mMC7UweLMh9MkeJoD
-	97gkOJRUGibA77qDy9s4vL7NkQkS1Sv+TX4WpruLFHmbGvImVgE9LeYadgdIraA8AGxMlB+PxaWy/
-	1adKvJuvvpCbTsZosCqi5SMDlMupfKEgEY7JpKMS8HhvbF7gyowCTheRqW0YX0S9D05qpW9G1fKLt
-	DJUWQ6k8Tz/HxaHb6kuJRSWnDBXrsJA/DQco3hh/lFSm8XLWvSeNFNfH2bKr+ugXM0hH/Gw2zl2s+
-	laFslj7w==;
-Received: from 179.red-81-39-194.dynamicip.rima-tde.net ([81.39.194.179] helo=[192.168.15.167])
-	by fanzine2.igalia.com with esmtpsa 
-	(Cipher TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_128_GCM:128) (Exim)
-	id 1o1U8m-002LYs-SW; Wed, 15 Jun 2022 16:37:04 +0200
-Message-ID: <362f6520-8209-1721-823c-11928338f57d@igalia.com>
-Date: Wed, 15 Jun 2022 11:36:39 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LNV0x2qW2z3blm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2022 01:42:07 +1000 (AEST)
+Received: from mail-yw1-f170.google.com ([209.85.128.170]) by
+ mrelayeu.kundenserver.de (mreue106 [213.165.67.113]) with ESMTPSA (Nemesis)
+ id 1Ml72g-1nIDeZ2Rsy-00lSPE for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun
+ 2022 17:42:03 +0200
+Received: by mail-yw1-f170.google.com with SMTP id 00721157ae682-3137c877092so64919817b3.13
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jun 2022 08:42:02 -0700 (PDT)
+X-Gm-Message-State: AJIora/O/pC7YPxHyBIocmhlqE92cZIxiEC9/GL7TIvaYbq7pEIL/Ox2
+	z6MRaoQPTRpj/s2aWu/qo25WcFtyspu3kDpql9A=
+X-Google-Smtp-Source: AGRyM1tvSYqmEMcQOHNj9RHGvPD3N77JHNbv7mv6qEA4arhJQHb8/8PCIV9TGNOQcD+GB1sbS5DvpPMqr/97f5KSeYo=
+X-Received: by 2002:a81:2f84:0:b0:314:2bfd:bf1f with SMTP id
+ v126-20020a812f84000000b003142bfdbf1fmr292750ywv.320.1655307721907; Wed, 15
+ Jun 2022 08:42:01 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.0
-Subject: Re: [PATCH 24/30] panic: Refactor the panic path
-Content-Language: en-US
-To: Petr Mladek <pmladek@suse.com>
-References: <20220427224924.592546-1-gpiccoli@igalia.com>
- <20220427224924.592546-25-gpiccoli@igalia.com>
- <87fskzuh11.fsf@email.froward.int.ebiederm.org>
- <0d084eed-4781-c815-29c7-ac62c498e216@igalia.com> <Yqic0R8/UFqTbbMD@alley>
-From: "Guilherme G. Piccoli" <gpiccoli@igalia.com>
-In-Reply-To: <Yqic0R8/UFqTbbMD@alley>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <YqjQ5kso7czrmYPW@linutronix.de> <YqmC1aAm+O7RD2IH@infradead.org>
+In-Reply-To: <YqmC1aAm+O7RD2IH@infradead.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 15 Jun 2022 17:41:45 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1QmeAscV-Ory-Dae4RoLvDSPEjEgFGQHR9U8jUervGuA@mail.gmail.com>
+Message-ID: <CAK8P3a1QmeAscV-Ory-Dae4RoLvDSPEjEgFGQHR9U8jUervGuA@mail.gmail.com>
+Subject: Re: [PATCH] arch/*: Disable softirq stacks on PREEMPT_RT.
+To: Christoph Hellwig <hch@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Provags-ID: V03:K1:UI07zVXfHHb+NU5Bi0E4g8IMmUBpRSDcK25MOwUK1l+U0ChhBzh
+ F5Mu7VDZxZnaH5YeqeiblZJcwlSVpP0Ox4dxnYHJAGE4y3FEjWoysBFQ6oTT9T5c6NzyUlv
+ 2CURsKocpi9YXucJdxRsSmmIVb1CqIhQuREHxPeBc28lg0iTi1vLngfLciyG41NDYuSX1Dl
+ lYaSF27nn4y4bqIT6mxvw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UHqSmZX+yWE=:K7hdAcojtrg+7HBleUhjEC
+ 2Aud02IWkqP5DTuQiIWSYabZ+4cImEX0x/ZdH+aNtor16TzpZu4xiWqDrGuKheb7kL7XGdODb
+ UnAfWbpNFn1nSs1Y/mHu2HzwdJqiUShYmuH/BOT7xP/uE2YMvqPUjNRFjN8nzpREUkhx0gxDk
+ sxplBQjgPS+Od/F1UCyJ9oAhdT1p8KY28+lR27F1ssbb0ehb6iGEG/O5LkKrj/URN4IStWG6K
+ KPqUT1pohXbIXUnaAKFahKPEFg3Xq1+xqMr6Vhd9oEd5p1fnQTiH4F/fogLiJ4f+Ome8F5AKf
+ xN4aGV2a7D0JrTfmWaJv/S8OXTsnZ9tHrGLv1vaIiMNYBijobZ8LVV5E3qkrXO377iIC6Ks4s
+ C9IeN3Hhep4Ml9mFx+iZcnOl7gdndCqSqy14wHtTL6Rdq655u6tJdrOgs3CGjAW14EKFs2ITg
+ agJiR3avR3VyjsLycdu/8haDun33QeCg/3N/UBm3Sb6VvXXyE9LIWsXcZ55fF2a8E40bL9QW0
+ 6pnKYkUTeBiVxaWVGufgqpBIktNyVZGe1mm8tCP0tPhEx9uzBoCqLmaaaGrgWiUHRZT5dcyQh
+ Qj1KTC9np2O2fcFZeVjIJHsEF83wTZlgQkR7LXXW+qtFY+5jd/E/q8ZG5gHiqxaQ+Wqij60pi
+ HBmAGwhABgpTyvOcoHH1Y1SrdfIHZh4CNLUEIg1LIakqWOKzts35Xyy1MbW+qWL5woLV8dZzw
+ uThlI32FLx+EFbKZhgG6e2SHE3cMcLjMdvhhpQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,25 +65,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-hyperv@vger.kernel.org, halves@canonical.com, gregkh@linuxfoundation.org, peterz@infradead.org, alejandro.j.jimenez@oracle.com, linux-remoteproc@vger.kernel.org, feng.tang@intel.com, mikelley@microsoft.com, hidehiro.kawai.ez@hitachi.com, sparclinux@vger.kernel.org, will@kernel.org, tglx@linutronix.de, linux-leds@vger.kernel.org, linux-s390@vger.kernel.org, john.ogness@linutronix.de, bhe@redhat.com, corbet@lwn.net, paulmck@kernel.org, fabiomirmar@gmail.com, x86@kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, xen-devel@lists.xenproject.org, linux-mips@vger.kernel.org, dyoung@redhat.com, vgoyal@redhat.com, mhiramat@kernel.org, linux-xtensa@linux-xtensa.org, dave.hansen@linux.intel.com, keescook@chromium.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux-um@lists.infradead.org, rostedt@goodmis.org, rcu@vger.kernel.org, bp@alien8.de, luto@kernel.org, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, 
- andriy.shevchenko@linux.intel.com, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org, linux-edac@vger.kernel.org, jgross@suse.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, kernel@gpiccoli.net, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, senozhatsky@chromium.org, d.hatayama@jp.fujitsu.com, "Eric W. Biederman" <ebiederm@xmission.com>, kernel-dev@igalia.com, linux-alpha@vger.kernel.org, vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, Linux-sh list <linux-sh@vger.kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Paul Mackerras <paulus@samba.org>, sparclinux <sparclinux@vger.kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, linux-arch <linux-arch@vger.kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Christian Borntraeger <borntraeger@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <hca@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Parisc List <linux-parisc@vger.kernel.org>, Sven Schnelle <svens@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Perfect Petr, thanks for your feedback!
-
-I'll be out for some weeks, but after that what I'm doing is to split
-the series in 2 parts:
-
-(a) The general fixes, which should be reviewed by subsystem maintainers
-and even merged individually by them.
-
-(b) The proper panic refactor, which includes the notifiers list split,
-etc. I'll think about what I consider the best solution for the
-crash_dump required ones, and will try to split in very simple patches
-to make it easier to review.
-
-Cheers,
+On Wed, Jun 15, 2022 at 8:57 AM Christoph Hellwig <hch@infradead.org> wrote:
+>
+> On Tue, Jun 14, 2022 at 08:18:14PM +0200, Sebastian Andrzej Siewior wrote:
+> > Disable the unused softirqs stacks on PREEMPT_RT to safe some memory and
+>
+> s/safe/save/
 
 
-Guilherme
+Applied to the asm-generic tree with the above fixup, thanks!
+
+      Arnd
