@@ -4,79 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DBB4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jun 2022 14:35:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EC4AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jun 2022 13:46:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LPhQr4zV5z3bsv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 00:35:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LPgLj1pYlz3dQd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jun 2022 23:46:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VIxono7Y;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y1GXD3WW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=jacob.jun.pan@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VIxono7Y;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Y1GXD3WW;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LPhQ56rhYz3bl5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2022 00:34:37 +1000 (AEST)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25HEGLsU013788;
-	Fri, 17 Jun 2022 14:34:30 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-type :
- content-transfer-encoding; s=pp1;
- bh=11/7WVhePdiAUod4P0hDDDAUuVYmrH+ISXkj25QkLQk=;
- b=VIxono7Y+V1nDYl15usemNszbxICgvBZPuLcOutib2k1mYbI8kvuP1cVFXNd1abOq4MV
- xT0cV7CNrvSa29st5IXaOXbxaeypgXNLPIo8YJUFMb4LM6DzPfjdn0vVVaS6+WRn2Zfc
- 84AjcnZI0ZSKA4cVmeY3fyIXn0u5LsXuuejudnpvpFYHS2sH8Sly8YG1rG/z+yRxk2na
- lJQknFLBaxMVoNDMQgrDwtj7gnFPH0UUAkwa529APNDhjp2WS1R1WRG9cOG9oB9KTYSl
- hEckWMfRKcicFJkHsYLghWk46zTUCox9DDobZdYWjTcaR3R5/W7rT/Ji8OuUZkuhF/X4 Vg== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3grtjdsnra-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 Jun 2022 14:34:30 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25HEJevu005926;
-	Fri, 17 Jun 2022 14:34:28 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma03fra.de.ibm.com with ESMTP id 3gmjp8xyhm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 17 Jun 2022 14:34:28 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25HEYQxk19333392
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 17 Jun 2022 14:34:26 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 19F1DAE045;
-	Fri, 17 Jun 2022 14:34:26 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BC6F6AE051;
-	Fri, 17 Jun 2022 14:34:24 +0000 (GMT)
-Received: from li-NotSettable.ibm.com.com (unknown [9.43.107.233])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Fri, 17 Jun 2022 14:34:24 +0000 (GMT)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH powerpc] powerpc/bpf: Fix use of user_pt_regs in uapi
-Date: Fri, 17 Jun 2022 20:04:04 +0530
-Message-Id: <20220617143404.158097-1-naveen.n.rao@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.27.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LPFWh6l3vz2ywc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2022 07:22:55 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1655414577; x=1686950577;
+  h=date:from:to:cc:subject:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=eIVB2Wcg0d4KNkOlM5BOJs0iOIDhUm5jxxQVobMAAIM=;
+  b=Y1GXD3WWR6fcp3/eCpz94SudXsMJn0b0VlCOOzHzLTdRbjSbq9AhireY
+   TZjD0FjSoTQETPBeQrHzfqt4L20q64ccVd9qEUhMUMdcMAz6MyMFJQc8p
+   O81ArSjk8a3AQSGZhFbbA2T0Mp1Lzj05aDGJJ3/zMCL6lQ3pv9J+l2GvH
+   BMM5teejQ8ZQlAk5ootQFYq/UWlzHeuold7XzfFuEMp1dw00ChDkE7XP0
+   Htye3nQzy/4WBwlV4U3L6c4ALELunvdlhiafMG1aRwIeVPy6/NwtY9tum
+   0ObLbNpB+Ptdp5UU9Xf9q2jb7GDrWQeRvSvJMBc46yT9Adtxku5P3ZwJC
+   w==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10380"; a="304803259"
+X-IronPort-AV: E=Sophos;i="5.92,306,1650956400"; 
+   d="scan'208";a="304803259"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jun 2022 14:22:52 -0700
+X-IronPort-AV: E=Sophos;i="5.92,306,1650956400"; 
+   d="scan'208";a="560027674"
+Received: from jacob-builder.jf.intel.com (HELO jacob-builder) ([10.7.198.157])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Jun 2022 14:22:51 -0700
+Date: Thu, 16 Jun 2022 14:26:56 -0700
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 04/36] cpuidle,intel_idle: Fix CPUIDLE_FLAG_IRQ_ENABLE
+Message-ID: <20220616142656.4b1acc4a@jacob-builder>
+In-Reply-To: <Yqb45vclY2KVL0wZ@hirez.programming.kicks-ass.net>
+References: <20220608142723.103523089@infradead.org>
+	<20220608144516.172460444@infradead.org>
+	<20220609164921.5e61711d@jacob-builder>
+	<Yqb45vclY2KVL0wZ@hirez.programming.kicks-ass.net>
+Organization: OTC
+X-Mailer: Claws Mail 3.17.5 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Qfumgx9qVeoKTBlWrN3-GWKpJg8rN7qg
-X-Proofpoint-ORIG-GUID: Qfumgx9qVeoKTBlWrN3-GWKpJg8rN7qg
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.64.514
- definitions=2022-06-17_08,2022-06-17_01,2022-02-23_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- priorityscore=1501 lowpriorityscore=0 phishscore=0 suspectscore=0
- adultscore=0 bulkscore=0 impostorscore=0 malwarescore=0 clxscore=1011
- mlxscore=0 mlxlogscore=877 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2206170061
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 17 Jun 2022 23:45:29 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,56 +70,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: juri.lelli@redhat.com, rafael@kernel.org, linus.walleij@linaro.org, bsegall@google.com, guoren@kernel.org, pavel@ucw.cz, agordeev@linux.ibm.com, srivatsa@csail.mit.edu, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, chenhuacai@kernel.org, linux-acpi@vger.kernel.org, agross@kernel.org, geert@linux-m68k.org, linux-imx@nxp.com, catalin.marinas@arm.com, xen-devel@lists.xenproject.org, mattst88@gmail.com, borntraeger@linux.ibm.com, mturquette@baylibre.com, sammy@sammy.net, pmladek@suse.com, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, acme@kernel.org, tglx@linutronix.de, linux-omap@vger.kernel.org, dietmar.eggemann@arm.com, rth@twiddle.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, senozhatsky@chromium.org, svens@linux.ibm.com, jolsa@kernel.org, paulus@samba.org, mark.rutland@arm.com, linux-ia64@vger.kernel.org, dave.hansen@linux.intel.com, virtualizatio
+ n@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, jcmvbkbc@gmail.com, thierry.reding@gmail.com, kernel@xen0n.name, quic_neeraju@quicinc.com, linux-s390@vger.kernel.org, vschneid@redhat.com, john.ogness@linutronix.de, ysato@users.sourceforge.jp, linux-sh@vger.kernel.org, festevam@gmail.com, deller@gmx.de, daniel.lezcano@linaro.org, jonathanh@nvidia.com, mathieu.desnoyers@efficios.com, frederic@kernel.org, lenb@kernel.org, linux-xtensa@linux-xtensa.org, kernel@pengutronix.de, gor@linux.ibm.com, linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-m68k@lists.linux-m68k.org, shorne@gmail.com, linux-arm-kernel@lists.infradead.org, chris@zankel.net, sboyd@kernel.org, dinguyen@kernel.org, bristot@redhat.com, alexander.shishkin@linux.intel.com, lpieralisi@kernel.org, linux@rasmusvillemoes.dk, joel@joelfernandes.org, will@kernel.org, boris.ostrovsky@oracle.com, khilman@kernel.org, linux-csky@vger.kernel.org, pv-drivers@vmware.com, linux-snps-arc@lists.infradea
+ d.org, mgorman@suse.de, jacob.jun.pan@linux.intel.com
+
+, Arnd Bergmann <arnd@arndb.de>, ulli.kroll@googlemail.com, vgupta@kernel.org, linux-clk@vger.kernel.org, josh@joshtriplett.org, rostedt@goodmis.org, rcu@vger.kernel.org, bp@alien8.de, bcain@quicinc.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, sudeep.holla@arm.com, shawnguo@kernel.org, davem@davemloft.net, dalias@libc.org, tony@atomide.com, amakhalov@vmware.com, bjorn.andersson@linaro.org, hpa@zytor.com, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, anton.ivanov@cambridgegreys.com, jonas@southpole.se, yury.norov@gmail.com, richard@nod.at, x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, aou@eecs.berkeley.edu, paulmck@kernel.org, hca@linux.ibm.com, stefan.kristiansson@saunalahti.fi, openrisc@lists.librecores.org, paul.walmsley@sifive.com, linux-tegra@vger.kernel.org, namhyung@kernel.org, andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org, jgross@suse.com, monstr@monstr.eu, linux-mips@vger.kernel.org, palmer@dab
+ belt.com, anup@brainfault.org, ink@jurassic.park.msu.ru, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a partial revert of commit a6460b03f945ee ("powerpc/bpf: Fix
-broken uapi for BPF_PROG_TYPE_PERF_EVENT").
+Hi Peter,
 
-Unlike x86, powerpc has both pt_regs and user_pt_regs structures. As
-such, we still need to override perf_arch_bpf_user_pt_regs() so that the
-correct user_regs structure is used.
+On Mon, 13 Jun 2022 10:44:22 +0200, Peter Zijlstra <peterz@infradead.org>
+wrote:
 
-However, unlike arm64 and s390, we expose user_pt_regs to userspace as
-just 'pt_regs'. Due to this, trying to #include <linux/bpf_perf_event.h>
-throws the below error:
-  /usr/include/linux/bpf_perf_event.h:14:28: error: field ‘regs’ has incomplete type
-     14 |         bpf_user_pt_regs_t regs;
-	|                            ^~~~
+> On Thu, Jun 09, 2022 at 04:49:21PM -0700, Jacob Pan wrote:
+> > Hi Peter,
+> > 
+> > On Wed, 08 Jun 2022 16:27:27 +0200, Peter Zijlstra
+> > <peterz@infradead.org> wrote:
+> >   
+> > > Commit c227233ad64c ("intel_idle: enable interrupts before C1 on
+> > > Xeons") wrecked intel_idle in two ways:
+> > > 
+> > >  - must not have tracing in idle functions
+> > >  - must return with IRQs disabled
+> > > 
+> > > Additionally, it added a branch for no good reason.
+> > > 
+> > > Fixes: c227233ad64c ("intel_idle: enable interrupts before C1 on
+> > > Xeons") Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> > > ---
+> > >  drivers/idle/intel_idle.c |   48
+> > > +++++++++++++++++++++++++++++++++++----------- 1 file changed, 37
+> > > insertions(+), 11 deletions(-)
+> > > 
+> > > --- a/drivers/idle/intel_idle.c
+> > > +++ b/drivers/idle/intel_idle.c
+> > > @@ -129,21 +137,37 @@ static unsigned int mwait_substates __in
+> > >   *
+> > >   * Must be called under local_irq_disable().
+> > >   */  
+> > nit: this comment is no long true, right?  
+> 
+> It still is, all the idle routines are called with interrupts disabled,
+> but must also exit with interrupts disabled.
+> 
+> If the idle method requires interrupts to be enabled, it must be sure to
+> disable them again before returning. Given all the RCU/tracing concerns
+> it must use raw_local_irq_*() for this though.
+Makes sense, it is just little confusing when the immediate caller does
+raw_local_irq_enable() which does not cancel out local_irq_disable().
 
-Note that this was not showing up with the bpf selftest build since
-tools/include/uapi/asm/bpf_perf_event.h didn't include the powerpc
-variant.
+Thanks,
 
-Fix this by removing arch/powerpc/include/uapi/asm/bpf_perf_event.h,
-allowing fallback to the asm-generic version.
-
-Fixes: a6460b03f945ee ("powerpc/bpf: Fix broken uapi for BPF_PROG_TYPE_PERF_EVENT")
-Cc: stable@vger.kernel.org # v4.20+
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/include/uapi/asm/bpf_perf_event.h | 9 ---------
- 1 file changed, 9 deletions(-)
- delete mode 100644 arch/powerpc/include/uapi/asm/bpf_perf_event.h
-
-diff --git a/arch/powerpc/include/uapi/asm/bpf_perf_event.h b/arch/powerpc/include/uapi/asm/bpf_perf_event.h
-deleted file mode 100644
-index 5e1e648aeec4c8..00000000000000
---- a/arch/powerpc/include/uapi/asm/bpf_perf_event.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _UAPI__ASM_BPF_PERF_EVENT_H__
--#define _UAPI__ASM_BPF_PERF_EVENT_H__
--
--#include <asm/ptrace.h>
--
--typedef struct user_pt_regs bpf_user_pt_regs_t;
--
--#endif /* _UAPI__ASM_BPF_PERF_EVENT_H__ */
-
-base-commit: bcd1c02813b8ab4ae019c65ffb716c9f579868e7
--- 
-2.36.1
-
+Jacob
