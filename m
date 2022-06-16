@@ -4,41 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9591C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 23:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B241BC43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Jun 2022 23:37:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LPHlt6xFFz3byW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jun 2022 09:03:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org (client-ip=87.98.179.66; helo=19.mo584.mail-out.ovh.net; envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 19198 seconds by postgrey-1.36 at boromir; Fri, 17 Jun 2022 09:03:14 AEST
-Received: from 19.mo584.mail-out.ovh.net (19.mo584.mail-out.ovh.net [87.98.179.66])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LPJWG5bWnz3cdH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Jun 2022 09:37:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=e+FtTJHd;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LPHlQ3ZYKz3bc9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2022 09:03:11 +1000 (AEST)
-Received: from player760.ha.ovh.net (unknown [10.110.171.96])
-	by mo584.mail-out.ovh.net (Postfix) with ESMTP id 376F22513C
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jun 2022 17:04:55 +0000 (UTC)
-Received: from sk2.org (82-65-25-201.subs.proxad.net [82.65.25.201])
-	(Authenticated sender: steve@sk2.org)
-	by player760.ha.ovh.net (Postfix) with ESMTPSA id 69C3F2BA93F59;
-	Thu, 16 Jun 2022 17:04:46 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-109S00346fcc5bb-3e02-4ca4-bc11-402143604e80,
-                    EEA695ED62D0B30D35F9F30395731DD21189161B) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-From: Stephen Kitt <steve@sk2.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] macintosh: via-pmu-backlight: Use backlight helper
-Date: Thu, 16 Jun 2022 19:04:24 +0200
-Message-Id: <20220616170425.1346081-1-steve@sk2.org>
-X-Mailer: git-send-email 2.30.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LPJVZ32cbz3bm1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jun 2022 09:37:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=e+FtTJHd;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LPJVX2vwnz4xYC;
+	Fri, 17 Jun 2022 09:37:07 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1655422629;
+	bh=5ZijR6qhFWh0lRMpvzqsTTnbgZItQhaW+1KLIE/u2wI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=e+FtTJHdDti39wtJq9ITPB9zrxjfh5agOaV73vFdXYjyub2PNJy7K3h84ileNQrsU
+	 VF0EYukCElU6zzhizqVlHUA0NhQ2EOqMhpqzID2DSqQbIetjUeGMshLohNpTbMxwg3
+	 pIhyr992cx1vYgNvwRYTQlDYMTEnHn4+ArgixcamUwMs6kbdrwVm9fi/4TPDZfvTv8
+	 FYfVMWb6ymNLGj5qsiLVMIL3czDzlrTF49XaAaUIjg5m2b3DaZRKmlFjuK3dE67HZ1
+	 CiNyic4V/ZpwZ7JZuKr7SG1VjAg/UulvpLHcTYJ2giajTX5IyAs2ijafC+aj2cBz7a
+	 +4GHrqo6+gw3A==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Liang He
+ <windhl@126.com>, oss@buserror.net, paulus@samba.org,
+ christophe.leroy@csgroup.eu, nixiaoming@huawei.com
+Subject: Re: [PATCH v2] arch: powerpc: platforms: 85xx: Add missing
+ of_node_put in sgy_cts1000.c
+In-Reply-To: <bc6eaf7e-ff88-9b82-eae7-7e6902c33a10@wanadoo.fr>
+References: <20220616151901.3989078-1-windhl@126.com>
+ <bc6eaf7e-ff88-9b82-eae7-7e6902c33a10@wanadoo.fr>
+Date: Fri, 17 Jun 2022 09:37:06 +1000
+Message-ID: <87o7ysb2ot.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 7112872661861631707
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedruddvfedguddtfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeelgeetueejffejfeejvefhtddufeejgfetleegtddukeelieelvddvteduveejtdenucfkpheptddrtddrtddrtddpkedvrdeihedrvdehrddvtddunecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehplhgrhigvrhejiedtrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomhepshhtvghvvgesshhkvddrohhrghdpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdfovfetjfhoshhtpehmohehkeeg
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,51 +62,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Stephen Kitt <steve@sk2.org>, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-backlight_properties.fb_blank is deprecated. The states it represents
-are handled by other properties; but instead of accessing those
-properties directly, drivers should use the helpers provided by
-backlight.h.
+Christophe JAILLET <christophe.jaillet@wanadoo.fr> writes:
+> Le 16/06/2022 =C3=A0 17:19, Liang He a =C3=A9crit=C2=A0:
+>> In gpio_halt_probe(), of_find_matching_node() will return a node pointer=
+ with
+>> refcount incremented. We should use of_node_put() in each fail path or w=
+hen it
+>> is not used anymore.
+>>=20
+>> Signed-off-by: Liang He <windhl@126.com>
+>> ---
+>>   changelog:
+>>=20
+>>   v2: use goto-label patch style advised by Christophe.
+>>   v1: add of_node_put() before each exit.
+>>=20
+>>   arch/powerpc/platforms/85xx/sgy_cts1000.c | 27 +++++++++++++++--------
+>>   1 file changed, 18 insertions(+), 9 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/pl=
+atforms/85xx/sgy_cts1000.c
+>> index 98ae64075193..e280f963d88c 100644
+>> --- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
+>> +++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+>> @@ -73,6 +73,7 @@ static int gpio_halt_probe(struct platform_device *pde=
+v)
+...
+>> @@ -122,8 +127,12 @@ static int gpio_halt_probe(struct platform_device *=
+pdev)
+>>=20=20=20
+>>   	printk(KERN_INFO "gpio-halt: registered GPIO %d (%d trigger, %d"
+>>   	       " irq).\n", gpio, trigger, irq);
+>> +	ret =3D 0;
+>>=20=20=20
+>> -	return 0;
+>> +err_put:
+>> +	of_node_put(halt_node);
+>> +	halt_node =3D NULL;
+>
+> Hi,
+> so now we set 'halt_node' to NULL even in the normal case.
+> This is really spurious.
+>
+> Look at gpio_halt_cb(), but I think that this is just wrong and badly=20
+> breaks this driver.
 
-Instead of retrieving the backlight brightness in struct
-backlight_properties manually, and then checking whether the backlight
-should be on at all, use backlight_get_brightness() which does all
-this and insulates this from future changes.
+I agree, thanks for reviewing.
 
-Signed-off-by: Stephen Kitt <steve@sk2.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
----
-Changes since v2: clarified commit title
----
- drivers/macintosh/via-pmu-backlight.c | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+I think the cleanest solution is to use a local variable for the node in
+the body of gpio_halt_probe(), and only assign to halt_node once all the
+checks have passed.
 
-diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
-index 2194016122d2..c2d87e7fa85b 100644
---- a/drivers/macintosh/via-pmu-backlight.c
-+++ b/drivers/macintosh/via-pmu-backlight.c
-@@ -71,12 +71,7 @@ static int pmu_backlight_get_level_brightness(int level)
- static int __pmu_backlight_update_status(struct backlight_device *bd)
- {
- 	struct adb_request req;
--	int level = bd->props.brightness;
--
--
--	if (bd->props.power != FB_BLANK_UNBLANK ||
--	    bd->props.fb_blank != FB_BLANK_UNBLANK)
--		level = 0;
-+	int level = backlight_get_brightness(bd);
- 
- 	if (level > 0) {
- 		int pmulevel = pmu_backlight_get_level_brightness(level);
+So something like:
 
-base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
--- 
-2.30.2
+        struct device_node *child_node;
 
+	child_node =3D of_find_matching_node(node, child_match);
+        ...
+
+	printk(KERN_INFO "gpio-halt: registered GPIO %d (%d trigger, %d"
+	       " irq).\n", gpio, trigger, irq);
+        ret =3D 0;
+        halt_node =3D of_node_get(child_node);
+
+out_put:
+        of_node_put(child_node);
+=20=20=20=20=20=20=20=20
+	return ret;
+}
+
+
+cheers
