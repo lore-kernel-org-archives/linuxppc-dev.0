@@ -4,38 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25CE4C43334
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 03:33:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56B97C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 03:53:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ1j54Pn1z3dpC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 13:33:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.43; helo=out30-43.freemail.mail.aliyun.com; envelope-from=baolin.wang@linux.alibaba.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 305 seconds by postgrey-1.36 at boromir; Sat, 18 Jun 2022 13:33:09 AEST
-Received: from out30-43.freemail.mail.aliyun.com (out30-43.freemail.mail.aliyun.com [115.124.30.43])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQ1hP3Mnxz3cCP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2022 13:33:08 +1000 (AEST)
-X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R131e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=ay29a033018046049;MF=baolin.wang@linux.alibaba.com;NM=1;PH=DS;RN=24;SR=0;TI=SMTPD_---0VGi1ydh_1655522870;
-Received: from 30.13.184.185(mailfrom:baolin.wang@linux.alibaba.com fp:SMTPD_---0VGi1ydh_1655522870)
-          by smtp.aliyun-inc.com;
-          Sat, 18 Jun 2022 11:27:51 +0800
-Message-ID: <e8cb00ab-f617-de14-9e5c-883f56da0b5f@linux.alibaba.com>
-Date: Sat, 18 Jun 2022 11:27:59 +0800
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ27h6DrCz3cBj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 13:53:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=HciIVu+E;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=220.181.15.113; helo=m15113.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=HciIVu+E;
+	dkim-atps=neutral
+Received: from m15113.mail.126.com (m15113.mail.126.com [220.181.15.113])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ26y2kzxz303t
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2022 13:52:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=B5LgJ
+	wZ+mPjWqyMswOQulY2y3abQQoRCtFlG8faFEGc=; b=HciIVu+Ell31IepjGrn5u
+	YjpWgrElOwmr2apsZpgr2i8vWcESlPeufQOX5cTAQ5/Z4/dIKxLM7aFQpAddXgY3
+	M+mKcE718LFuHLklYMXdJLmciBlDnq3Jt+uCCp7sI3LuypnAm+LJoGA2cNxfsjVi
+	EnQir5HGUqpT83LeERjD5E=
+Received: from localhost.localdomain (unknown [124.16.139.61])
+	by smtp3 (Coremail) with SMTP id DcmowAA3R5_kS61isxLFDg--.40406S2;
+	Sat, 18 Jun 2022 11:52:06 +0800 (CST)
+From: Liang He <windhl@126.com>
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org,
+	christophe.leroy@csgroup.eu,
+	nick.child@ibm.com,
+	npiggin@gmail.com
+Subject: [PATCH] powerpc: embedded6xx: Fix refcount leak bug in holly.c
+Date: Sat, 18 Jun 2022 11:52:04 +0800
+Message-Id: <20220618035204.4057698-1-windhl@126.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH 1/4] hugetlb: skip to end of PT page mapping when pte not
- present
-To: Mike Kravetz <mike.kravetz@oracle.com>, Peter Xu <peterx@redhat.com>
-References: <20220616210518.125287-1-mike.kravetz@oracle.com>
- <20220616210518.125287-2-mike.kravetz@oracle.com>
- <YqyMhmAjrQ4C+EyA@xz-m1.local> <Yqy3LZUOdH5GsZ9j@monkey>
-From: Baolin Wang <baolin.wang@linux.alibaba.com>
-In-Reply-To: <Yqy3LZUOdH5GsZ9j@monkey>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: DcmowAA3R5_kS61isxLFDg--.40406S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7XFWruF43WryrCr13KrWDtwb_yoWfJrb_Xw
+	n7Aan7Cr4Fqa1DZr1DZ3W3XFW8A3s5Gr4xGrnYqa12v3WfJa13Wr45tFy8uay8WrWYy398
+	Ga1ktFWjkaySyjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUjksqtUUUUU==
+X-Originating-IP: [124.16.139.61]
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbi7QckF1pEAOPbAAAAs-
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,70 +59,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com, Muchun Song <songmuchun@bytedance.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, James Houghton <jthoughton@google.com>, sparclinux@vger.kernel.org, will@kernel.org, Mina Almasry <almasrymina@google.com>, linux-s390@vger.kernel.org, Christian Borntraeger <borntraeger@linux.ibm.com>, Anshuman Khandual <anshuman.khandual@arm.com>, Paul Walmsley <paul.walmsley@sifive.com>, Naoya Horiguchi <naoya.horiguchi@linux.dev>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, windhl@126.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In holly_init_pci(), of_find_node_by_type() will return a node
+pointer with refcount incremented. We should use of_node_put()
+when it is not used anymore.
 
+Signed-off-by: Liang He <windhl@126.com>
+---
+ arch/powerpc/platforms/embedded6xx/holly.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On 6/18/2022 1:17 AM, Mike Kravetz wrote:
-> On 06/17/22 10:15, Peter Xu wrote:
->> Hi, Mike,
->>
->> On Thu, Jun 16, 2022 at 02:05:15PM -0700, Mike Kravetz wrote:
->>> @@ -6877,6 +6896,39 @@ pte_t *huge_pte_offset(struct mm_struct *mm,
->>>   	return (pte_t *)pmd;
->>>   }
->>>   
->>> +/*
->>> + * Return a mask that can be used to update an address to the last huge
->>> + * page in a page table page mapping size.  Used to skip non-present
->>> + * page table entries when linearly scanning address ranges.  Architectures
->>> + * with unique huge page to page table relationships can define their own
->>> + * version of this routine.
->>> + */
->>> +unsigned long hugetlb_mask_last_page(struct hstate *h)
->>> +{
->>> +	unsigned long hp_size = huge_page_size(h);
->>> +
->>> +	switch (hp_size) {
->>> +	case P4D_SIZE:
->>> +		return PGDIR_SIZE - P4D_SIZE;
->>> +	case PUD_SIZE:
->>> +		return P4D_SIZE - PUD_SIZE;
->>> +	case PMD_SIZE:
->>> +		return PUD_SIZE - PMD_SIZE;
->>> +	default:
->>
->> Should we add a WARN_ON_ONCE() if it should never trigger?
->>
-> 
-> Sure.  I will add this.
-> 
->>> +		break; /* Should never happen */
->>> +	}
->>> +
->>> +	return ~(0UL);
->>> +}
->>> +
->>> +#else
->>> +
->>> +/* See description above.  Architectures can provide their own version. */
->>> +__weak unsigned long hugetlb_mask_last_page(struct hstate *h)
->>> +{
->>> +	return ~(0UL);
->>
->> I'm wondering whether it's better to return 0 rather than ~0 by default.
->> Could an arch with !CONFIG_ARCH_WANT_GENERAL_HUGETLB wrongly skip some
->> valid address ranges with ~0, or perhaps I misread?
-> 
-> Thank you, thank you, thank you Peter!
-> 
-> Yes, the 'default' return for hugetlb_mask_last_page() should be 0.  If
-> there is no 'optimization', we do not want to modify the address so we
-> want to OR with 0 not ~0.  My bad, I must have been thinking AND instead
-> of OR.
-> 
-> I will change here as well as in Baolin's patch.
+diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
+index 78f2378d9223..a4938505e89a 100644
+--- a/arch/powerpc/platforms/embedded6xx/holly.c
++++ b/arch/powerpc/platforms/embedded6xx/holly.c
+@@ -122,6 +122,7 @@ static void __init holly_init_pci(void)
+ 	np = of_find_node_by_type(NULL, "pci");
+ 	if (np)
+ 		tsi108_setup_pci(np, HOLLY_PCI_CFG_PHYS, 1);
++	of_node_put(np);
+ 
+ 	ppc_md.pci_exclude_device = holly_exclude_device;
+ 	if (ppc_md.progress)
+-- 
+2.25.1
 
-Ah, I also overlooked this. Thanks Peter, and thanks Mike for updating.
