@@ -4,47 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94515C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 03:27:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1435FC43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 03:33:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ1YW6RdQz3bnR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 13:27:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQ1Y24M3Qz3bm2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2022 13:26:43 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.55])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LQ1Sw4DW3zBrnv;
-	Sat, 18 Jun 2022 11:23:12 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 18 Jun 2022 11:26:33 +0800
-Received: from [10.174.179.234] (10.174.179.234) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Sat, 18 Jun 2022 11:26:31 +0800
-Message-ID: <4371a7c9-8766-9fee-2558-e6f43f06ad19@huawei.com>
-Date: Sat, 18 Jun 2022 11:26:30 +0800
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ1hf41jdz3bv3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Jun 2022 13:33:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=FIZb4tzA;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=123.126.96.4; helo=mail-m964.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=FIZb4tzA;
+	dkim-atps=neutral
+Received: from mail-m964.mail.126.com (mail-m964.mail.126.com [123.126.96.4])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQ1gz4Zwxz3000
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jun 2022 13:32:45 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=YG6dR
+	e/hH640v9iwqegEl+qUfUjOQngoEiIIerWSUzc=; b=FIZb4tzAYeyqgHmXnBp45
+	ryDHiBl2oQ+0QIOePtw3m5xcmKG1Ga3zLzRw2jGmNNL00rQeVOFAdjaV2oHdatEF
+	D591kucTfAeUXr5TaQW4YjRuJl/jmgK0qflJiVhhFyBRyr4qAtARRaMU5NRivh2W
+	S8W0j4uECveZcRXTFqhil4=
+Received: from localhost.localdomain (unknown [124.16.139.61])
+	by smtp9 (Coremail) with SMTP id NeRpCgDnStM4R61iQDkAFA--.33191S2;
+	Sat, 18 Jun 2022 11:32:09 +0800 (CST)
+From: Liang He <windhl@126.com>
+To: mpe@ellerman.id.au,
+	paulus@samba.org,
+	christophe.leroy@csgroup.eu,
+	nick.child@ibm.com,
+	pali@kernel.org,
+	npiggin@gmail.com
+Subject: [PATCH] powerpc: sysdev: Fix refcount leak bug in fsl_pci.c
+Date: Sat, 18 Jun 2022 11:32:07 +0800
+Message-Id: <20220618033207.4057410-1-windhl@126.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH -next v5 2/8] arm64: extable: make uaaccess helper use
- extable type EX_TYPE_UACCESS_ERR_ZERO
-To: Mark Rutland <mark.rutland@arm.com>
-References: <20220528065056.1034168-1-tongtiangen@huawei.com>
- <20220528065056.1034168-3-tongtiangen@huawei.com>
- <Yqw6TP3MhEqnQ+2o@FVFF77S0Q05N>
-From: Tong Tiangen <tongtiangen@huawei.com>
-In-Reply-To: <Yqw6TP3MhEqnQ+2o@FVFF77S0Q05N>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.179.234]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemm600017.china.huawei.com (7.193.23.234)
-X-CFilter-Loop: Reflected
+X-CM-TRANSID: NeRpCgDnStM4R61iQDkAFA--.33191S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7GF1kCryrtFyxJw43trW7CFg_yoWDJrg_Xw
+	1xu3WDZ395Ja1furs3Ca93t3sakw48WayqgFn2gay7Ja4Yg3y7Ja17Zr98XrW7ur4SyrWY
+	kr95XrWYka4IvjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xRMxhLDUUUUU==
+X-Originating-IP: [124.16.139.61]
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbiuBkkF2JVj6vE7wAAsq
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,108 +59,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, Guohanjun <guohanjun@huawei.com>, Will Deacon <will@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Ingo
- Molnar <mingo@redhat.com>, Catalin
- Marinas <catalin.marinas@arm.com>, Xie XiuQi <xiexiuqi@huawei.com>, Borislav Petkov <bp@alien8.de>, Alexander
- Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, windhl@126.com, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In is_kdump(), we need a of_node_put() to dec the refcount which is
+incremented by of_find_node_by_type().
 
+Signed-off-by: Liang He <windhl@126.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-在 2022/6/17 16:24, Mark Rutland 写道:
-> On Sat, May 28, 2022 at 06:50:50AM +0000, Tong Tiangen wrote:
->> Currnetly, the extable type used by __arch_copy_from/to_user() is
->> EX_TYPE_FIXUP. In fact, It is more clearly to use meaningful
->> EX_TYPE_UACCESS_*.
->>
->> Suggested-by: Mark Rutland <mark.rutland@arm.com>
->> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
->> ---
->>   arch/arm64/include/asm/asm-extable.h |  8 ++++++++
->>   arch/arm64/include/asm/asm-uaccess.h | 12 ++++++------
->>   2 files changed, 14 insertions(+), 6 deletions(-)
->>
->> diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
->> index 56ebe183e78b..9c94ac1f082c 100644
->> --- a/arch/arm64/include/asm/asm-extable.h
->> +++ b/arch/arm64/include/asm/asm-extable.h
->> @@ -28,6 +28,14 @@
->>   	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_FIXUP, 0)
->>   	.endm
->>   
->> +/*
->> + * Create an exception table entry for uaccess `insn`, which will branch to `fixup`
->> + * when an unhandled fault is taken.
->> + * ex->data = ~0 means both reg_err and reg_zero is set to wzr(x31).
->> + */
->> +	.macro          _asm_extable_uaccess, insn, fixup
->> +	__ASM_EXTABLE_RAW(\insn, \fixup, EX_TYPE_UACCESS_ERR_ZERO, ~0)
->> +	.endm
-> 
-> I'm not too keen on using `~0` here, since that also sets other bits in the
-> data field, and its somewhat opaque.
-> 
-> How painful is it to generate the data fields as with the C version of this
-> macro, so that we can pass in wzr explciitly for the two sub-fields?
-> 
-> Other than that, this looks good to me.
-> 
-> Thanks,
-> Mark.
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 1011cfea2e32..4c986c955951 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -180,6 +180,7 @@ static int setup_one_atmu(struct ccsr_pci __iomem *pci,
+ static bool is_kdump(void)
+ {
+ 	struct device_node *node;
++	bool ret;
+ 
+ 	node = of_find_node_by_type(NULL, "memory");
+ 	if (!node) {
+@@ -187,7 +188,10 @@ static bool is_kdump(void)
+ 		return false;
+ 	}
+ 
+-	return of_property_read_bool(node, "linux,usable-memory");
++	ret = of_property_read_bool(node, "linux,usable-memory");
++	of_node_put(node);
++
++	return ret;
+ }
+ 
+ /* atmu setup for fsl pci/pcie controller */
+-- 
+2.25.1
 
-ok, will fix next version.
-
-Thanks,
-Tong.
-
-> 
->>   /*
->>    * Create an exception table entry for `insn` if `fixup` is provided. Otherwise
->>    * do nothing.
->> diff --git a/arch/arm64/include/asm/asm-uaccess.h b/arch/arm64/include/asm/asm-uaccess.h
->> index 0557af834e03..75b211c98dea 100644
->> --- a/arch/arm64/include/asm/asm-uaccess.h
->> +++ b/arch/arm64/include/asm/asm-uaccess.h
->> @@ -61,7 +61,7 @@ alternative_else_nop_endif
->>   
->>   #define USER(l, x...)				\
->>   9999:	x;					\
->> -	_asm_extable	9999b, l
->> +	_asm_extable_uaccess	9999b, l
->>   
->>   /*
->>    * Generate the assembly for LDTR/STTR with exception table entries.
->> @@ -73,8 +73,8 @@ alternative_else_nop_endif
->>   8889:		ldtr	\reg2, [\addr, #8];
->>   		add	\addr, \addr, \post_inc;
->>   
->> -		_asm_extable	8888b,\l;
->> -		_asm_extable	8889b,\l;
->> +		_asm_extable_uaccess	8888b, \l;
->> +		_asm_extable_uaccess	8889b, \l;
->>   	.endm
->>   
->>   	.macro user_stp l, reg1, reg2, addr, post_inc
->> @@ -82,14 +82,14 @@ alternative_else_nop_endif
->>   8889:		sttr	\reg2, [\addr, #8];
->>   		add	\addr, \addr, \post_inc;
->>   
->> -		_asm_extable	8888b,\l;
->> -		_asm_extable	8889b,\l;
->> +		_asm_extable_uaccess	8888b,\l;
->> +		_asm_extable_uaccess	8889b,\l;
->>   	.endm
->>   
->>   	.macro user_ldst l, inst, reg, addr, post_inc
->>   8888:		\inst		\reg, [\addr];
->>   		add		\addr, \addr, \post_inc;
->>   
->> -		_asm_extable	8888b,\l;
->> +		_asm_extable_uaccess	8888b, \l;
->>   	.endm
->>   #endif
->> -- 
->> 2.25.1
->>
-> .
