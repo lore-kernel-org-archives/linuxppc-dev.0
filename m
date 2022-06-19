@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A086C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 11:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD371C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 11:57:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LQrqX08BTz3c8B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 21:57:12 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQrqx4630z3059
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 21:57:33 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQrpk6ByCz3059
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jun 2022 21:56:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQrpp39lMz3059
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jun 2022 21:56:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LQrpk3P3mz4xYD;
-	Sun, 19 Jun 2022 21:56:30 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LQrpj696vz4xXg;
+	Sun, 19 Jun 2022 21:56:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220609103328.41306-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20220609103328.41306-1-naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Enable execve syscall exit tracepoint
-Message-Id: <165563974778.2516477.17102529346167041855.b4-ty@ellerman.id.au>
-Date: Sun, 19 Jun 2022 21:55:47 +1000
+To: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, "Jason A. Donenfeld" <Jason@zx2c4.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220611151015.548325-1-Jason@zx2c4.com>
+References: <20220611151015.548325-1-Jason@zx2c4.com>
+Subject: Re: [PATCH v3 0/3] powerpc: wire up rng during setup_arch
+Message-Id: <165563974695.2516477.14135241088366642761.b4-ty@ellerman.id.au>
+Date: Sun, 19 Jun 2022 21:55:46 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,32 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 9 Jun 2022 16:03:28 +0530, Naveen N. Rao wrote:
-> On execve[at], we are zero'ing out most of the thread register state
-> including gpr[0], which contains the syscall number. Due to this, we
-> fail to trigger the syscall exit tracepoint properly. Fix this by
-> retaining gpr[0] in the thread register state.
+On Sat, 11 Jun 2022 17:10:12 +0200, Jason A. Donenfeld wrote:
+> The platform's RNG must be available before random_init() in order to be
+> useful for initial seeding, which in turn means that it needs to be
+> called from setup_arch(), rather than from an init call. This series
+> wires that up properly on the three platforms that currently initialize
+> the RNG from the wrong place.
 > 
-> Before this patch:
->   # tail /sys/kernel/debug/tracing/trace
-> 	       cat-123     [000] .....    61.449351: sys_execve(filename:
->   7fffa6b23448, argv: 7fffa6b233e0, envp: 7fffa6b233f8)
-> 	       cat-124     [000] .....    62.428481: sys_execve(filename:
->   7fffa6b23448, argv: 7fffa6b233e0, envp: 7fffa6b233f8)
-> 	      echo-125     [000] .....    65.813702: sys_execve(filename:
->   7fffa6b23378, argv: 7fffa6b233a0, envp: 7fffa6b233b0)
-> 	      echo-125     [000] .....    65.822214: sys_execveat(fd: 0,
->   filename: 1009ac48, argv: 7ffff65d0c98, envp: 7ffff65d0ca8, flags: 0)
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Patches 1 & 3 applied to powerpc/fixes.
 
-[1/1] powerpc: Enable execve syscall exit tracepoint
-      https://git.kernel.org/powerpc/c/ec6d0dde71d760aa60316f8d1c9a1b0d99213529
+[1/3] powerpc/microwatt: wire up rng during setup_arch
+      https://git.kernel.org/powerpc/c/20a9689b3607456d92c6fb764501f6a95950b098
+[3/3] powerpc/pseries: wire up rng during setup_arch
+      https://git.kernel.org/powerpc/c/e561e472a3d441753bd012333b057f48fef1045b
 
 cheers
