@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EA7BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 11:56:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A086C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 11:57:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LQrq63n5mz3bsl
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 21:56:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LQrqX08BTz3c8B
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 19 Jun 2022 21:57:12 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQrpj3L2Zz3059
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jun 2022 21:56:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LQrpk6ByCz3059
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jun 2022 21:56:30 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LQrph6qrqz4xXF;
-	Sun, 19 Jun 2022 21:56:28 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LQrpk3P3mz4xYD;
+	Sun, 19 Jun 2022 21:56:30 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>
-In-Reply-To: <20220614134952.156010-1-ajd@linux.ibm.com>
-References: <20220614134952.156010-1-ajd@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/rtas: Allow ibm,platform-dump RTAS call with null buffer address
-Message-Id: <165563974889.2516477.9308896620875536366.b4-ty@ellerman.id.au>
-Date: Sun, 19 Jun 2022 21:55:48 +1000
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20220609103328.41306-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20220609103328.41306-1-naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Enable execve syscall exit tracepoint
+Message-Id: <165563974778.2516477.17102529346167041855.b4-ty@ellerman.id.au>
+Date: Sun, 19 Jun 2022 21:55:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, stable@vger.kernel.org, Sathvika Vasireddy <sathvika@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jun 2022 23:49:52 +1000, Andrew Donnellan wrote:
-> Add a special case to block_rtas_call() to allow the ibm,platform-dump RTAS
-> call through the RTAS filter if the buffer address is 0.
+On Thu, 9 Jun 2022 16:03:28 +0530, Naveen N. Rao wrote:
+> On execve[at], we are zero'ing out most of the thread register state
+> including gpr[0], which contains the syscall number. Due to this, we
+> fail to trigger the syscall exit tracepoint properly. Fix this by
+> retaining gpr[0] in the thread register state.
 > 
-> According to PAPR, ibm,platform-dump is called with a null buffer address
-> to notify the platform firmware that processing of a particular dump is
-> finished.
+> Before this patch:
+>   # tail /sys/kernel/debug/tracing/trace
+> 	       cat-123     [000] .....    61.449351: sys_execve(filename:
+>   7fffa6b23448, argv: 7fffa6b233e0, envp: 7fffa6b233f8)
+> 	       cat-124     [000] .....    62.428481: sys_execve(filename:
+>   7fffa6b23448, argv: 7fffa6b233e0, envp: 7fffa6b233f8)
+> 	      echo-125     [000] .....    65.813702: sys_execve(filename:
+>   7fffa6b23378, argv: 7fffa6b233a0, envp: 7fffa6b233b0)
+> 	      echo-125     [000] .....    65.822214: sys_execveat(fd: 0,
+>   filename: 1009ac48, argv: 7ffff65d0c98, envp: 7ffff65d0ca8, flags: 0)
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/rtas: Allow ibm,platform-dump RTAS call with null buffer address
-      https://git.kernel.org/powerpc/c/7bc08056a6dabc3a1442216daf527edf61ac24b6
+[1/1] powerpc: Enable execve syscall exit tracepoint
+      https://git.kernel.org/powerpc/c/ec6d0dde71d760aa60316f8d1c9a1b0d99213529
 
 cheers
