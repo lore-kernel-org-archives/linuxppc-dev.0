@@ -4,49 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98741C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jun 2022 15:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26B48C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Jun 2022 17:39:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LRY8D27qRz3dQw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 01:14:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LRcNC3B0Pz3bxZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 03:39:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=fvhvw7BS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a2q2bkio;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=220.181.15.113; helo=m15113.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=fvhvw7BS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a2q2bkio;
 	dkim-atps=neutral
-Received: from m15113.mail.126.com (m15113.mail.126.com [220.181.15.113])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LRY7T1nYyz3cgJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2022 01:13:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=FzbEm
-	dFdPL73KnSUrc2WOTvSmbGHmx084UiTS3b2xYw=; b=fvhvw7BSyi5V3Q6YO6IDw
-	uI7VmE/xGn8ZUgXJxDtmNHo/PJ+Bhw/UHnR6VkHMfJNdgnp+/zWYiWXIt/jM6ez/
-	/SK4iXEp83pWZKLQngO9cRvQVhR05jHm39iAwNOmZ8ntSDzC0CH+WqTk4l5P8k0f
-	yiHjZckWFv2avhsuhFWXyQ=
-Received: from localhost.localdomain (unknown [124.16.139.61])
-	by smtp3 (Coremail) with SMTP id DcmowAA305RCjrBiduIVDw--.52838S2;
-	Mon, 20 Jun 2022 23:12:02 +0800 (CST)
-From: Liang He <windhl@126.com>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org,
-	paulus@samba.org,
-	clg@kaod.org,
-	christophe.leroy@csgroup.eu
-Subject: [PATCH] powerpc/pasemi: Fix refcount leak bug
-Date: Mon, 20 Jun 2022 23:12:02 +0800
-Message-Id: <20220620151202.4075170-1-windhl@126.com>
-X-Mailer: git-send-email 2.25.1
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LRcMT06b8z3bkQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2022 03:39:00 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 22CD0B812A8;
+	Mon, 20 Jun 2022 17:38:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84FF1C3411B;
+	Mon, 20 Jun 2022 17:38:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1655746734;
+	bh=jCwwSbElt83m1PQ7z2IHVu8qIm0sTyIZfWwdyaDXEQY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=a2q2bkioPo6HKogBWHFyliQxaUyYq4YadB4+we/O/kmjDp2ubf8jEByZzv2C1QZeg
+	 hrO8b1Tzg74CpGc68N9s8iDq6ieZyCQT1QkyAMjcBQZ4Y3DAKcu7akqiN6I+fn/U86
+	 NTHNCRCwRQwl8V9dLT2oQ0VoUib8vhdriDganxqrsl10KvsvypFY4QO1+j1AurQ62U
+	 56raSyAcpfFlQk4E7TbEJSGMydpmzHHI68czU4V/IoOWkyuupgdgnBVNShYSda2idy
+	 Gqum8+7O+1hv8lzELpb3UQQ+2fMw9sWBn0h5KgZEnHECBVoIldbeAxre/5y3xmJKUu
+	 OrcId64AICnaw==
+Date: Mon, 20 Jun 2022 18:38:48 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Pierluigi Passaro <pierluigi.p@variscite.com>
+Subject: Re: [PATCH 4/4] ASoC: wm8904: add DMIC support
+Message-ID: <YrCwqKeHQJe/Tzzi@sirena.org.uk>
+References: <AM6PR08MB437600972B26E3A56E1190C0FFB09@AM6PR08MB4376.eurprd08.prod.outlook.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DcmowAA305RCjrBiduIVDw--.52838S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrKr48WF15Cry7ur4DKF15urg_yoW3JrbEy3
-	97uan7AayfGrsrJa9Fva1rGr1UC395Wr4UKr1I93W2v3W3Aay7KFnxJrW8G3y5ury2vrW3
-	Can3JayDZa4SyjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUjjg4PUUUUU==
-X-Originating-IP: [124.16.139.61]
-X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbiuAMmF2JVj813ngAAsW
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="fom1qi4IkRF41iWN"
+Content-Disposition: inline
+In-Reply-To: <AM6PR08MB437600972B26E3A56E1190C0FFB09@AM6PR08MB4376.eurprd08.prod.outlook.com>
+X-Cookie: Good day to avoid cops.  Crawl to work.
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,30 +61,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, windhl@126.com
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>, "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "shengjiu.wang@gmail.com" <shengjiu.wang@gmail.com>, "tiwai@suse.com" <tiwai@suse.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lgirdwood@gmail.com" <lgirdwood@gmail.com>, Eran Matityahu <eran.m@variscite.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, Alifer Willians de Moraes <alifer.m@variscite.com>, "patches@opensource.cirrus.com" <patches@opensource.cirrus.com>, "perex@perex.cz" <perex@perex.cz>, "festevam@gmail.com" <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In pas_pci_init(), we need one of_node_put() for of_find_node_by_path()
-to keep refcount balance.
 
-Signed-off-by: Liang He <windhl@126.com>
----
- arch/powerpc/platforms/pasemi/pci.c | 1 +
- 1 file changed, 1 insertion(+)
+--fom1qi4IkRF41iWN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index 55f0160910bf..4b371fb0d9aa 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -282,6 +282,7 @@ void __init pas_pci_init(void)
- 	pci_set_flags(PCI_SCAN_ALL_PCIE_DEVS);
- 
- 	np = of_find_compatible_node(root, NULL, "pasemi,rootbus");
-+	of_node_put(root);
- 	if (np) {
- 		res = pas_add_bridge(np);
- 		of_node_put(np);
--- 
-2.25.1
+On Mon, Jun 20, 2022 at 03:30:45PM +0000, Pierluigi Passaro wrote:
 
+> Just for my understanding, are you suggesting to set a device tree property to force a fixed behavior in the driver ?
+
+Yes.
+
+> WM8904 allows using both a DMIC and LINEIN, switching between one or the other and this is how we currently use it.
+> Why the user should not be allowed to switch between DMIC and LINEIN ?
+
+The device shares pins between the line inputs and the DMIC inputs so at
+least some of the configuration is going to be determinted at system
+design time, that will fix the usable values of at least one of the
+controls which ought to be reflected in the runtime behaviour.
+
+Please fix your mail client to word wrap within paragraphs at something
+substantially less than 80 columns.  Doing this makes your messages much
+easier to read and reply to.
+
+--fom1qi4IkRF41iWN
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmKwsKcACgkQJNaLcl1U
+h9CUdwf+JtglBbVYwWNdDwBJD3f6LDH+Nl/J2ZnnHyJ6UdOmqtk7L+sj0nDb4Q/U
+2syrbcHJ/dHoJMRrdT/UXGhbeWCeZ4eQIbkY8hR8cRZQUteNZI73B9ccXbhMDAhf
+GHiJAE4dQWqj0ziFIGLbR9uhsOL26AYd65dgKRDOnSvA1kyWM6f+UwvGH3Xs2Rfd
+I8Ni+NwD2VBKJCzINFsEFqecPl7885vtD95jTnqu2eeDysBbEQ/Iuyh8h2G407gv
+gSy6lMRRQUAHu8lX5vOOWKgAXi/5rv9jy+gI89b8iehRkMreEZ78kBHtIU6FnCMf
+RPkRUcBSL7sTTTErsDGRhSUDVJmYBw==
+=1FAH
+-----END PGP SIGNATURE-----
+
+--fom1qi4IkRF41iWN--
