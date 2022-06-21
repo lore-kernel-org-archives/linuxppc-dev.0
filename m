@@ -4,28 +4,28 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E63C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 07:28:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7A94C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 07:28:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LRymD3FDvz3dw1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 17:28:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LRymf3JYPz3dwm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Jun 2022 17:28:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LRyl44lhGz3c7w
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2022 17:27:12 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.54])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LRyhY2zmvz1KC8N;
-	Tue, 21 Jun 2022 15:25:01 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LRylB31XXz3brp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jun 2022 17:27:18 +1000 (AEST)
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.55])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LRygB2V2KzSh6N;
+	Tue, 21 Jun 2022 15:23:50 +0800 (CST)
 Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
  dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 21 Jun 2022 15:26:52 +0800
+ 15.1.2375.24; Tue, 21 Jun 2022 15:26:56 +0800
 Received: from localhost.localdomain (10.175.112.125) by
  kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 21 Jun 2022 15:26:50 +0800
+ 15.1.2375.24; Tue, 21 Jun 2022 15:26:55 +0800
 From: Tong Tiangen <tongtiangen@huawei.com>
 To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
@@ -36,9 +36,9 @@ To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
 	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
 	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v6 02/10] arm64: asm-extable: move data fields
-Date: Tue, 21 Jun 2022 07:26:30 +0000
-Message-ID: <20220621072638.1273594-3-tongtiangen@huawei.com>
+Subject: [PATCH -next v6 05/10] arm64: extable: move _cond_extable to _cond_uaccess_extable
+Date: Tue, 21 Jun 2022 07:26:33 +0000
+Message-ID: <20220621072638.1273594-6-tongtiangen@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220621072638.1273594-1-tongtiangen@huawei.com>
 References: <20220621072638.1273594-1-tongtiangen@huawei.com>
@@ -64,66 +64,58 @@ Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In subsequent patches we'll need to fill in extable data fields in
-regular assembly files. In preparation for this, move the definitions of
-the extable data fields earlier in asm-extable.h so that they are
-defined for both assembly and C files.
+Currently, We use _cond_extable for cache maintenance uaccess helper
+caches_clean_inval_user_pou(), so this should be moved over to
+EX_TYPE_UACCESS_ERR_ZERO and rename _cond_extable to _cond_uaccess_extable
+for clarity.
 
-There should be no functional change as a result of this patch.
-
-Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
 ---
- arch/arm64/include/asm/asm-extable.h | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ arch/arm64/include/asm/asm-extable.h | 6 +++---
+ arch/arm64/include/asm/assembler.h   | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm64/include/asm/asm-extable.h b/arch/arm64/include/asm/asm-extable.h
-index 1717fc4cfeb5..204b30bf78b3 100644
+index 73266553f8a2..b97213d292ce 100644
 --- a/arch/arm64/include/asm/asm-extable.h
 +++ b/arch/arm64/include/asm/asm-extable.h
-@@ -9,6 +9,18 @@
- #define EX_TYPE_KACCESS_ERR_ZERO	4
- #define EX_TYPE_LOAD_UNALIGNED_ZEROPAD	5
+@@ -75,9 +75,9 @@
+  * Create an exception table entry for `insn` if `fixup` is provided. Otherwise
+  * do nothing.
+  */
+-	.macro		_cond_extable, insn, fixup
+-	.ifnc		\fixup,
+-	_asm_extable	\insn, \fixup
++	.macro		_cond_uaccess_extable, insn, fixup
++	.ifnc			\fixup,
++	_asm_extable_uaccess	\insn, \fixup
+ 	.endif
+ 	.endm
  
-+/* Data fields for EX_TYPE_UACCESS_ERR_ZERO */
-+#define EX_DATA_REG_ERR_SHIFT	0
-+#define EX_DATA_REG_ERR		GENMASK(4, 0)
-+#define EX_DATA_REG_ZERO_SHIFT	5
-+#define EX_DATA_REG_ZERO	GENMASK(9, 5)
-+
-+/* Data fields for EX_TYPE_LOAD_UNALIGNED_ZEROPAD */
-+#define EX_DATA_REG_DATA_SHIFT	0
-+#define EX_DATA_REG_DATA	GENMASK(4, 0)
-+#define EX_DATA_REG_ADDR_SHIFT	5
-+#define EX_DATA_REG_ADDR	GENMASK(9, 5)
-+
- #ifdef __ASSEMBLY__
+diff --git a/arch/arm64/include/asm/assembler.h b/arch/arm64/include/asm/assembler.h
+index 8c5a61aeaf8e..dc422fa437c2 100644
+--- a/arch/arm64/include/asm/assembler.h
++++ b/arch/arm64/include/asm/assembler.h
+@@ -423,7 +423,7 @@ alternative_endif
+ 	b.lo	.Ldcache_op\@
+ 	dsb	\domain
  
- #define __ASM_EXTABLE_RAW(insn, fixup, type, data)	\
-@@ -57,11 +69,6 @@
- #define _ASM_EXTABLE(insn, fixup) \
- 	__ASM_EXTABLE_RAW(#insn, #fixup, __stringify(EX_TYPE_FIXUP), "0")
+-	_cond_extable .Ldcache_op\@, \fixup
++	_cond_uaccess_extable .Ldcache_op\@, \fixup
+ 	.endm
  
--#define EX_DATA_REG_ERR_SHIFT	0
--#define EX_DATA_REG_ERR		GENMASK(4, 0)
--#define EX_DATA_REG_ZERO_SHIFT	5
--#define EX_DATA_REG_ZERO	GENMASK(9, 5)
--
- #define EX_DATA_REG(reg, gpr)						\
- 	"((.L__gpr_num_" #gpr ") << " __stringify(EX_DATA_REG_##reg##_SHIFT) ")"
+ /*
+@@ -462,7 +462,7 @@ alternative_endif
+ 	dsb	ish
+ 	isb
  
-@@ -89,11 +96,6 @@
- #define _ASM_EXTABLE_KACCESS_ERR(insn, fixup, err)			\
- 	_ASM_EXTABLE_KACCESS_ERR_ZERO(insn, fixup, err, wzr)
+-	_cond_extable .Licache_op\@, \fixup
++	_cond_uaccess_extable .Licache_op\@, \fixup
+ 	.endm
  
--#define EX_DATA_REG_DATA_SHIFT	0
--#define EX_DATA_REG_DATA	GENMASK(4, 0)
--#define EX_DATA_REG_ADDR_SHIFT	5
--#define EX_DATA_REG_ADDR	GENMASK(9, 5)
--
- #define _ASM_EXTABLE_LOAD_UNALIGNED_ZEROPAD(insn, fixup, data, addr)		\
- 	__DEFINE_ASM_GPR_NUMS							\
- 	__ASM_EXTABLE_RAW(#insn, #fixup,					\
+ /*
 -- 
 2.25.1
 
