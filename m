@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7E9ACCA486
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD8EC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnwT3cv1z3c1d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnwq1VXxz3bw6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw35jlYz307g
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:49 +1000 (AEST)
-Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnsz1NGzzkWNw;
-	Wed, 22 Jun 2022 23:51:03 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw402Smz3bmY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:50 +1000 (AEST)
+Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.55])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnqy1ptczSgwk;
+	Wed, 22 Jun 2022 23:49:18 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:42 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:42 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 14/33] objtool: arm64: Add annotate_reachable() for objtools
-Date: Wed, 22 Jun 2022 23:49:01 +0800
-Message-ID: <20220622154920.95075-15-chenzhongjin@huawei.com>
+Subject: [PATCH v5 04/33] objtool: arm64: Decode jump and call related instructions
+Date: Wed, 22 Jun 2022 23:48:51 +0800
+Message-ID: <20220622154920.95075-5-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,44 +57,46 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86 removed annotate_reachable and replaced it with ASM_REACHABLE
-which is not suitable for arm64 micro because there are some cases
-GCC will merge duplicate inline asm.
+Decode branch, branch and link (aarch64's call) and return instructions.
 
-Re-add annotation_reachable() for arm64.
-
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- include/linux/compiler.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ tools/objtool/arch/arm64/decode.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 01ce94b58b42..c8bce9421fa7 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -117,6 +117,14 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
-  */
- #define __stringify_label(n) #n
- 
-+#define __annotate_reachable(c) ({					\
-+	asm volatile(__stringify_label(c) ":\n\t"			\
-+			".pushsection .discard.reachable\n\t"		\
-+			".long " __stringify_label(c) "b - .\n\t"		\
-+			".popsection\n\t");				\
-+})
-+#define annotate_reachable() __annotate_reachable(__COUNTER__)
-+
- #define __annotate_unreachable(c) ({					\
- 	asm volatile(__stringify_label(c) ":\n\t"			\
- 		     ".pushsection .discard.unreachable\n\t"		\
-@@ -129,6 +137,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
- #define __annotate_jump_table __section(".rodata..c_jump_table")
- 
- #else /* !CONFIG_OBJTOOL */
-+#define annotate_reachable()
- #define annotate_unreachable()
- #define __annotate_jump_table
- #endif /* CONFIG_OBJTOOL */
+diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
+index d8c32703874d..40ada17d0842 100644
+--- a/tools/objtool/arch/arm64/decode.c
++++ b/tools/objtool/arch/arm64/decode.c
+@@ -212,6 +212,27 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
+ 			}
+ 		}
+ 		break;
++	case AARCH64_INSN_CLS_BR_SYS:
++		if (aarch64_insn_is_ret(insn) &&
++		    aarch64_insn_decode_register(AARCH64_INSN_REGTYPE_RN, insn)
++			== AARCH64_INSN_REG_LR) {
++			*type = INSN_RETURN;
++		} else if (aarch64_insn_is_bl(insn)) {
++			*type = INSN_CALL;
++			*immediate = aarch64_get_branch_offset(insn);
++		} else if (aarch64_insn_is_blr(insn)) {
++			*type = INSN_CALL_DYNAMIC;
++		} else if (aarch64_insn_is_b(insn)) {
++			*type = INSN_JUMP_UNCONDITIONAL;
++			*immediate = aarch64_get_branch_offset(insn);
++		} else if (aarch64_insn_is_br(insn)) {
++			*type = INSN_JUMP_DYNAMIC;
++		} else if (aarch64_insn_is_branch_imm(insn)) {
++			/* Remaining branch opcodes are conditional */
++			*type = INSN_JUMP_CONDITIONAL;
++			*immediate = aarch64_get_branch_offset(insn);
++		}
++		break;
+ 	default:
+ 		break;
+ 	}
 -- 
 2.17.1
 
