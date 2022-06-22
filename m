@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD8EC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A941BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnwq1VXxz3bw6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnx91LtSz3cdw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw402Smz3bmY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw41ZRCz3bqN
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:50 +1000 (AEST)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.55])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnqy1ptczSgwk;
-	Wed, 22 Jun 2022 23:49:18 +0800 (CST)
+Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.54])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LSnsV3B2Zz1KC5l;
+	Wed, 22 Jun 2022 23:50:38 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
  dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:42 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:42 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 04/33] objtool: arm64: Decode jump and call related instructions
-Date: Wed, 22 Jun 2022 23:48:51 +0800
-Message-ID: <20220622154920.95075-5-chenzhongjin@huawei.com>
+Subject: [PATCH v5 20/33] arm64: entry: Annotate unwind_hint for entry
+Date: Wed, 22 Jun 2022 23:49:07 +0800
+Message-ID: <20220622154920.95075-21-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,46 +57,54 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Decode branch, branch and link (aarch64's call) and return instructions.
+When taking an exception/interrupt, add UNWIND_HINT_REGS to indicate
+from which point the pt_regs is on stack.
+
+Whether returning to userland or creating a new task, sp is
+pointing to a pt_regs frame, add UNWIND_HINT_REGS after that.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- tools/objtool/arch/arm64/decode.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/arm64/kernel/entry.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
-index d8c32703874d..40ada17d0842 100644
---- a/tools/objtool/arch/arm64/decode.c
-+++ b/tools/objtool/arch/arm64/decode.c
-@@ -212,6 +212,27 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
- 			}
- 		}
- 		break;
-+	case AARCH64_INSN_CLS_BR_SYS:
-+		if (aarch64_insn_is_ret(insn) &&
-+		    aarch64_insn_decode_register(AARCH64_INSN_REGTYPE_RN, insn)
-+			== AARCH64_INSN_REG_LR) {
-+			*type = INSN_RETURN;
-+		} else if (aarch64_insn_is_bl(insn)) {
-+			*type = INSN_CALL;
-+			*immediate = aarch64_get_branch_offset(insn);
-+		} else if (aarch64_insn_is_blr(insn)) {
-+			*type = INSN_CALL_DYNAMIC;
-+		} else if (aarch64_insn_is_b(insn)) {
-+			*type = INSN_JUMP_UNCONDITIONAL;
-+			*immediate = aarch64_get_branch_offset(insn);
-+		} else if (aarch64_insn_is_br(insn)) {
-+			*type = INSN_JUMP_DYNAMIC;
-+		} else if (aarch64_insn_is_branch_imm(insn)) {
-+			/* Remaining branch opcodes are conditional */
-+			*type = INSN_JUMP_CONDITIONAL;
-+			*immediate = aarch64_get_branch_offset(insn);
-+		}
-+		break;
- 	default:
- 		break;
- 	}
+diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
+index 3bd11101e79d..bbc440379304 100644
+--- a/arch/arm64/kernel/entry.S
++++ b/arch/arm64/kernel/entry.S
+@@ -120,6 +120,7 @@
+ alternative_cb	spectre_v4_patch_fw_mitigation_enable
+ 	b	.L__asm_ssbd_skip\@		// Patched to NOP
+ alternative_cb_end
++	UNWIND_HINT_REGS
+ 	ldr_this_cpu	\tmp2, arm64_ssbd_callback_required, \tmp1
+ 	cbz	\tmp2,	.L__asm_ssbd_skip\@
+ 	ldr	\tmp2, [tsk, #TSK_TI_FLAGS]
+@@ -218,6 +219,7 @@ alternative_cb_end
+ 	stp	x24, x25, [sp, #16 * 12]
+ 	stp	x26, x27, [sp, #16 * 13]
+ 	stp	x28, x29, [sp, #16 * 14]
++	UNWIND_HINT_REGS
+ 
+ 	.if	\el == 0
+ 	clear_gp_regs
+@@ -601,6 +603,7 @@ SYM_CODE_START_LOCAL(ret_to_kernel)
+ SYM_CODE_END(ret_to_kernel)
+ 
+ SYM_CODE_START_LOCAL(ret_to_user)
++	UNWIND_HINT_REGS
+ 	ldr	x19, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
+ 	enable_step_tsk x19, x2
+ #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
+@@ -872,6 +875,7 @@ NOKPROBE(cpu_switch_to)
+  * This is how we return from a fork.
+  */
+ SYM_CODE_START(ret_from_fork)
++	UNWIND_HINT_REGS
+ 	bl	schedule_tail
+ 	cbz	x19, 1f				// not a kernel thread
+ 	mov	x0, x20
 -- 
 2.17.1
 
