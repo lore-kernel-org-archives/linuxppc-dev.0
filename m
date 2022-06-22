@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E872C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE002C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:00:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp405S7Lz3dqp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:59:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp4Q3b53z3dqB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:00:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw85XYzz3brF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw871Kdz2yLX
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:56 +1000 (AEST)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.56])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4LSnvK3frHzDsH4;
-	Wed, 22 Jun 2022 23:52:13 +0800 (CST)
+Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.53])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnt21Mv0zkWPy;
+	Wed, 22 Jun 2022 23:51:06 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
+ dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
  15.1.2375.24; Wed, 22 Jun 2022 23:52:47 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:46 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:47 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 26/33] arm64: crypto: Remove unnecessary stackframe
-Date: Wed, 22 Jun 2022 23:49:13 +0800
-Message-ID: <20220622154920.95075-27-chenzhongjin@huawei.com>
+Subject: [PATCH v5 29/33] arm64: compat: Move VDSO code to .rodata section
+Date: Wed, 22 Jun 2022 23:49:16 +0800
+Message-ID: <20220622154920.95075-30-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,41 +57,42 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The way sha256_block_neon restore the stackframe confuses objtool.
-But it turns out this function is a leaf function and does not use
-FP nor LR as scratch register.
+VDSO code should be inside .rodata.
 
-Do not create a stackframe in this function as it is not necessary.
+Now code in kuser32.S and sigreturn32.S are inside .text section and never
+executed.
+Move them to .rodata.
 
-Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/crypto/sha512-armv8.pl | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ arch/arm64/kernel/kuser32.S     | 1 +
+ arch/arm64/kernel/sigreturn32.S | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/arch/arm64/crypto/sha512-armv8.pl b/arch/arm64/crypto/sha512-armv8.pl
-index 1882c4110026..6e2a96e05c5a 100644
---- a/arch/arm64/crypto/sha512-armv8.pl
-+++ b/arch/arm64/crypto/sha512-armv8.pl
-@@ -648,8 +648,6 @@ $code.=<<___;
- .align	4
- sha256_block_neon:
- .Lneon_entry:
--	stp	x29, x30, [sp, #-16]!
--	mov	x29, sp
- 	sub	sp,sp,#16*4
+diff --git a/arch/arm64/kernel/kuser32.S b/arch/arm64/kernel/kuser32.S
+index 42bd8c0c60e0..692e9d2e31e5 100644
+--- a/arch/arm64/kernel/kuser32.S
++++ b/arch/arm64/kernel/kuser32.S
+@@ -15,6 +15,7 @@
  
- 	adr	$Ktbl,K256
-@@ -736,8 +734,7 @@ $code.=<<___;
- 	 mov	$Xfer,sp
- 	b.ne	.L_00_48
+ #include <asm/unistd.h>
  
--	ldr	x29,[x29]
--	add	sp,sp,#16*4+16
-+	add	sp,sp,#16*4
- 	ret
- .size	sha256_block_neon,.-sha256_block_neon
- ___
++	.section .rodata
+ 	.align	5
+ 	.globl	__kuser_helper_start
+ __kuser_helper_start:
+diff --git a/arch/arm64/kernel/sigreturn32.S b/arch/arm64/kernel/sigreturn32.S
+index 475d30d471ac..ccbd4aab4ba4 100644
+--- a/arch/arm64/kernel/sigreturn32.S
++++ b/arch/arm64/kernel/sigreturn32.S
+@@ -15,6 +15,7 @@
+ 
+ #include <asm/unistd.h>
+ 
++	.section .rodata
+ 	.globl __aarch32_sigret_code_start
+ __aarch32_sigret_code_start:
+ 
 -- 
 2.17.1
 
