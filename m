@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A941BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9B34C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:54:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnx91LtSz3cdw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnxb2xPzz3f0m
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw41ZRCz3bqN
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:50 +1000 (AEST)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.54])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LSnsV3B2Zz1KC5l;
-	Wed, 22 Jun 2022 23:50:38 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw368Wkz3bhm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:49 +1000 (AEST)
+Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.56])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnsy1QBQzkWNh;
+	Wed, 22 Jun 2022 23:51:02 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
+ dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:43 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:43 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 20/33] arm64: entry: Annotate unwind_hint for entry
-Date: Wed, 22 Jun 2022 23:49:07 +0800
-Message-ID: <20220622154920.95075-21-chenzhongjin@huawei.com>
+Subject: [PATCH v5 09/33] objtool: check: Support data in text section
+Date: Wed, 22 Jun 2022 23:48:56 +0800
+Message-ID: <20220622154920.95075-10-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,54 +57,93 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When taking an exception/interrupt, add UNWIND_HINT_REGS to indicate
-from which point the pt_regs is on stack.
-
-Whether returning to userland or creating a new task, sp is
-pointing to a pt_regs frame, add UNWIND_HINT_REGS after that.
+Arm64 assembly code can mix code and data in text sections through the use
+of SYM_DATA_*() macros. Skip the content of these symbols when decoding
+instructions of text sections.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/kernel/entry.S | 4 ++++
- 1 file changed, 4 insertions(+)
+ tools/objtool/check.c               | 13 +++++++++++--
+ tools/objtool/elf.c                 | 14 ++++++++++++++
+ tools/objtool/include/objtool/elf.h |  1 +
+ 3 files changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
-index 3bd11101e79d..bbc440379304 100644
---- a/arch/arm64/kernel/entry.S
-+++ b/arch/arm64/kernel/entry.S
-@@ -120,6 +120,7 @@
- alternative_cb	spectre_v4_patch_fw_mitigation_enable
- 	b	.L__asm_ssbd_skip\@		// Patched to NOP
- alternative_cb_end
-+	UNWIND_HINT_REGS
- 	ldr_this_cpu	\tmp2, arm64_ssbd_callback_required, \tmp1
- 	cbz	\tmp2,	.L__asm_ssbd_skip\@
- 	ldr	\tmp2, [tsk, #TSK_TI_FLAGS]
-@@ -218,6 +219,7 @@ alternative_cb_end
- 	stp	x24, x25, [sp, #16 * 12]
- 	stp	x26, x27, [sp, #16 * 13]
- 	stp	x28, x29, [sp, #16 * 14]
-+	UNWIND_HINT_REGS
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index c0feb6db7c6d..77911ca9cfff 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -359,7 +359,7 @@ static int decode_instructions(struct objtool_file *file)
+ {
+ 	struct section *sec;
+ 	struct symbol *func;
+-	unsigned long offset;
++	unsigned long offset, next_offset;
+ 	struct instruction *insn;
+ 	int ret;
  
- 	.if	\el == 0
- 	clear_gp_regs
-@@ -601,6 +603,7 @@ SYM_CODE_START_LOCAL(ret_to_kernel)
- SYM_CODE_END(ret_to_kernel)
+@@ -377,7 +377,14 @@ static int decode_instructions(struct objtool_file *file)
+ 		    !strcmp(sec->name, ".entry.text"))
+ 			sec->noinstr = true;
  
- SYM_CODE_START_LOCAL(ret_to_user)
-+	UNWIND_HINT_REGS
- 	ldr	x19, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
- 	enable_step_tsk x19, x2
- #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
-@@ -872,6 +875,7 @@ NOKPROBE(cpu_switch_to)
-  * This is how we return from a fork.
-  */
- SYM_CODE_START(ret_from_fork)
-+	UNWIND_HINT_REGS
- 	bl	schedule_tail
- 	cbz	x19, 1f				// not a kernel thread
- 	mov	x0, x20
+-		for (offset = 0; offset < sec->sh.sh_size; offset += insn->len) {
++		for (offset = 0; offset < sec->sh.sh_size; offset = next_offset) {
++			struct symbol *obj_sym = find_object_containing(sec, offset);
++			if (obj_sym) {
++				/* This is data in the middle of text section, skip it */
++				next_offset = obj_sym->offset + obj_sym->len;
++				continue;
++			}
++
+ 			insn = malloc(sizeof(*insn));
+ 			if (!insn) {
+ 				WARN("malloc failed");
+@@ -410,6 +417,8 @@ static int decode_instructions(struct objtool_file *file)
+ 			hash_add(file->insn_hash, &insn->hash, sec_offset_hash(sec, insn->offset));
+ 			list_add_tail(&insn->list, &file->insn_list);
+ 			nr_insns++;
++
++			next_offset = offset + insn->len;
+ 		}
+ 
+ 		list_for_each_entry(func, &sec->symbol_list, list) {
+diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
+index c25e957c1e52..d7304e39f6b6 100644
+--- a/tools/objtool/elf.c
++++ b/tools/objtool/elf.c
+@@ -236,6 +236,20 @@ struct symbol *find_func_containing(struct section *sec, unsigned long offset)
+ 	return NULL;
+ }
+ 
++struct symbol *find_object_containing(const struct section *sec, unsigned long offset)
++{
++	struct rb_node *node;
++
++	rb_for_each(node, &offset, &sec->symbol_tree, symbol_by_offset) {
++		struct symbol *s = rb_entry(node, struct symbol, node);
++
++		if (s->type == STT_OBJECT)
++			return s;
++	}
++
++	return NULL;
++}
++
+ struct symbol *find_symbol_by_name(const struct elf *elf, const char *name)
+ {
+ 	struct symbol *sym;
+diff --git a/tools/objtool/include/objtool/elf.h b/tools/objtool/include/objtool/elf.h
+index adebfbc2b518..8b0896935af1 100644
+--- a/tools/objtool/include/objtool/elf.h
++++ b/tools/objtool/include/objtool/elf.h
+@@ -167,6 +167,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
+ struct reloc *find_reloc_by_dest_range(const struct elf *elf, struct section *sec,
+ 				     unsigned long offset, unsigned int len);
+ struct symbol *find_func_containing(struct section *sec, unsigned long offset);
++struct symbol *find_object_containing(const struct section *sec, unsigned long offset);
+ 
+ #define for_each_sec(file, sec)						\
+ 	list_for_each_entry(sec, &file->elf->sections, list)
 -- 
 2.17.1
 
