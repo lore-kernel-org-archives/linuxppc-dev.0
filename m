@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE002C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:00:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AE80C43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:00:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp4Q3b53z3dqB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:00:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp4r4qNjz3f8p
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:00:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw871Kdz2yLX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:56 +1000 (AEST)
-Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnt21Mv0zkWPy;
-	Wed, 22 Jun 2022 23:51:06 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw92JkRz3btQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:57 +1000 (AEST)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.56])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnsz5tRnzkWPF;
+	Wed, 22 Jun 2022 23:51:03 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:47 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:47 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 29/33] arm64: compat: Move VDSO code to .rodata section
-Date: Wed, 22 Jun 2022 23:49:16 +0800
-Message-ID: <20220622154920.95075-30-chenzhongjin@huawei.com>
+Subject: [PATCH v5 17/33] objtool: arm64: Add unwind_hint support
+Date: Wed, 22 Jun 2022 23:49:04 +0800
+Message-ID: <20220622154920.95075-18-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,42 +57,114 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-VDSO code should be inside .rodata.
+Provide unwind hint defines for arm64 and objtool hint decoding.
 
-Now code in kuser32.S and sigreturn32.S are inside .text section and never
-executed.
-Move them to .rodata.
-
+Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/kernel/kuser32.S     | 1 +
- arch/arm64/kernel/sigreturn32.S | 1 +
- 2 files changed, 2 insertions(+)
+ arch/arm64/include/asm/unwind_hints.h       | 26 +++++++++++++++++++++
+ tools/arch/arm64/include/asm/unwind_hints.h | 26 +++++++++++++++++++++
+ tools/objtool/arch/arm64/decode.c           | 14 ++++++++++-
+ 3 files changed, 65 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/include/asm/unwind_hints.h
+ create mode 100644 tools/arch/arm64/include/asm/unwind_hints.h
 
-diff --git a/arch/arm64/kernel/kuser32.S b/arch/arm64/kernel/kuser32.S
-index 42bd8c0c60e0..692e9d2e31e5 100644
---- a/arch/arm64/kernel/kuser32.S
-+++ b/arch/arm64/kernel/kuser32.S
-@@ -15,6 +15,7 @@
+diff --git a/arch/arm64/include/asm/unwind_hints.h b/arch/arm64/include/asm/unwind_hints.h
+new file mode 100644
+index 000000000000..ffee9472b30d
+--- /dev/null
++++ b/arch/arm64/include/asm/unwind_hints.h
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef __ASM_UNWIND_HINTS_H
++#define __ASM_UNWIND_HINTS_H
++
++#include <linux/objtool.h>
++
++#include "orc_types.h"
++
++#ifdef __ASSEMBLY__
++
++.macro UNWIND_HINT_EMPTY
++	UNWIND_HINT sp_reg=ORC_REG_UNDEFINED type=UNWIND_HINT_TYPE_CALL end=1
++.endm
++
++.macro UNWIND_HINT_FUNC sp_offset=0
++	UNWIND_HINT sp_reg=ORC_REG_SP sp_offset=\sp_offset type=UNWIND_HINT_TYPE_CALL
++.endm
++
++.macro UNWIND_HINT_REGS base=ORC_REG_SP offset=0
++	UNWIND_HINT sp_reg=\base sp_offset=\offset type=UNWIND_HINT_TYPE_REGS
++.endm
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __ASM_UNWIND_HINTS_H */
+diff --git a/tools/arch/arm64/include/asm/unwind_hints.h b/tools/arch/arm64/include/asm/unwind_hints.h
+new file mode 100644
+index 000000000000..ffee9472b30d
+--- /dev/null
++++ b/tools/arch/arm64/include/asm/unwind_hints.h
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef __ASM_UNWIND_HINTS_H
++#define __ASM_UNWIND_HINTS_H
++
++#include <linux/objtool.h>
++
++#include "orc_types.h"
++
++#ifdef __ASSEMBLY__
++
++.macro UNWIND_HINT_EMPTY
++	UNWIND_HINT sp_reg=ORC_REG_UNDEFINED type=UNWIND_HINT_TYPE_CALL end=1
++.endm
++
++.macro UNWIND_HINT_FUNC sp_offset=0
++	UNWIND_HINT sp_reg=ORC_REG_SP sp_offset=\sp_offset type=UNWIND_HINT_TYPE_CALL
++.endm
++
++.macro UNWIND_HINT_REGS base=ORC_REG_SP offset=0
++	UNWIND_HINT sp_reg=\base sp_offset=\offset type=UNWIND_HINT_TYPE_REGS
++.endm
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* __ASM_UNWIND_HINTS_H */
+diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
+index 37e42148dbe0..aa8d27c2bac9 100644
+--- a/tools/objtool/arch/arm64/decode.c
++++ b/tools/objtool/arch/arm64/decode.c
+@@ -5,6 +5,7 @@
+ #include <stdint.h>
  
- #include <asm/unistd.h>
+ #include <asm/insn.h>
++#include <asm/unwind_hints.h>
  
-+	.section .rodata
- 	.align	5
- 	.globl	__kuser_helper_start
- __kuser_helper_start:
-diff --git a/arch/arm64/kernel/sigreturn32.S b/arch/arm64/kernel/sigreturn32.S
-index 475d30d471ac..ccbd4aab4ba4 100644
---- a/arch/arm64/kernel/sigreturn32.S
-+++ b/arch/arm64/kernel/sigreturn32.S
-@@ -15,6 +15,7 @@
+ #include <objtool/check.h>
+ #include <objtool/arch.h>
+@@ -176,7 +177,18 @@ static int is_arm64(const struct elf *elf)
  
- #include <asm/unistd.h>
+ int arch_decode_hint_reg(u8 sp_reg, int *base)
+ {
+-	return -1;
++	switch (sp_reg) {
++	case ORC_REG_UNDEFINED:
++		*base = CFI_UNDEFINED;
++		break;
++	case ORC_REG_SP:
++		*base = CFI_SP;
++		break;
++	default:
++		return -1;
++	}
++
++	return 0;
+ }
  
-+	.section .rodata
- 	.globl __aarch32_sigret_code_start
- __aarch32_sigret_code_start:
- 
+ static inline void make_add_op(enum aarch64_insn_register dest,
 -- 
 2.17.1
 
