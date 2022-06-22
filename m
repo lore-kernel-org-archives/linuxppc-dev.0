@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF0DFC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:02:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 820B1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:03:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp7f4sdpz3fLf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:02:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp840ycrz3gp0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:03:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnwG289Xz3cdB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:53:02 +1000 (AEST)
-Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.54])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnr14GrszSh5g;
-	Wed, 22 Jun 2022 23:49:21 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnwb2qtxz3cdB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:53:19 +1000 (AEST)
+Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.53])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4LSntV4jblzkWN0;
+	Wed, 22 Jun 2022 23:51:30 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
+ dggpemm500024.china.huawei.com (7.185.36.203) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:43 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:43 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 21/33] arm64: kvm: Annotate unwind_hint for hyp entry
-Date: Wed, 22 Jun 2022 23:49:08 +0800
-Message-ID: <20220622154920.95075-22-chenzhongjin@huawei.com>
+Subject: [PATCH v5 08/33] objtool: arm64: Accept non-instruction data in code sections
+Date: Wed, 22 Jun 2022 23:48:55 +0800
+Message-ID: <20220622154920.95075-9-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,92 +57,42 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Symbol __guest_enter and kvm_hyp_vector saved x0, x1 on stack.
+The compiler can generate some '0x0' words in code sections to pad the
+end of functions. Also some pesudo-instructions can generate data in
+code sections. Mark them as INSN_NOP.
 
-Symbol __guest_exit and __guest_exit_panic is reached when resuming
-EL2 execution, and the previous stack pointer gets restored.
+If there are other undecoded instructions, just record and remove them
+from validation list.
 
-Add adequate unwind hints.
+These doesn't influence check and orc generation because these undecoded
+instructions also won't be excuted.
 
-Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/kvm/hyp/entry.S     | 5 +++++
- arch/arm64/kvm/hyp/hyp-entry.S | 3 +++
- 2 files changed, 8 insertions(+)
+ tools/objtool/arch/arm64/decode.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/kvm/hyp/entry.S b/arch/arm64/kvm/hyp/entry.S
-index 045d4481c820..81e30d56bf28 100644
---- a/arch/arm64/kvm/hyp/entry.S
-+++ b/arch/arm64/kvm/hyp/entry.S
-@@ -15,6 +15,7 @@
- #include <asm/kvm_mmu.h>
- #include <asm/kvm_mte.h>
- #include <asm/kvm_ptrauth.h>
-+#include <asm/unwind_hints.h>
+diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
+index 9bdd59e0d11d..37e42148dbe0 100644
+--- a/tools/objtool/arch/arm64/decode.c
++++ b/tools/objtool/arch/arm64/decode.c
+@@ -347,8 +347,15 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
  
- 	.text
- 
-@@ -22,6 +23,7 @@
-  * u64 __guest_enter(struct kvm_vcpu *vcpu);
-  */
- SYM_CODE_START(__guest_enter)
-+	UNWIND_HINT_FUNC
- 	// x0: vcpu
- 	// x1-x17: clobbered by macros
- 	// x29: guest context
-@@ -88,6 +90,7 @@ SYM_INNER_LABEL(__guest_exit_panic, SYM_L_GLOBAL)
- 	// vcpu x0-x1 on the stack
- 
- 	// If the hyp context is loaded, go straight to hyp_panic
-+	UNWIND_HINT_FUNC
- 	get_loaded_vcpu x0, x1
- 	cbnz	x0, 1f
- 	b	hyp_panic
-@@ -110,6 +113,7 @@ SYM_INNER_LABEL(__guest_exit, SYM_L_GLOBAL)
- 	// x1: vcpu
- 	// x2-x29,lr: vcpu regs
- 	// vcpu x0-x1 on the stack
-+	UNWIND_HINT_FUNC sp_offset=16
- 
- 	add	x1, x1, #VCPU_CONTEXT
- 
-@@ -199,6 +203,7 @@ abort_guest_exit_end:
- 	msr	daifset, #4	// Mask aborts
- 	ret
- 
-+	UNWIND_HINT_FUNC
- 	_kvm_extable	abort_guest_exit_start, 9997f
- 	_kvm_extable	abort_guest_exit_end, 9997f
- 9997:
-diff --git a/arch/arm64/kvm/hyp/hyp-entry.S b/arch/arm64/kvm/hyp/hyp-entry.S
-index 4a65262a4f3a..d72143c59707 100644
---- a/arch/arm64/kvm/hyp/hyp-entry.S
-+++ b/arch/arm64/kvm/hyp/hyp-entry.S
-@@ -151,6 +151,7 @@ SYM_CODE_END(\label)
- 
- .macro valid_vect target
- 	.align 7
-+	UNWIND_HINT_FUNC
- 661:
- 	esb
- 	stp	x0, x1, [sp, #-16]!
-@@ -162,6 +163,7 @@ check_preamble_length 661b, 662b
- 
- .macro invalid_vect target
- 	.align 7
-+	UNWIND_HINT_FUNC
- 661:
- 	nop
- 	stp	x0, x1, [sp, #-16]!
-@@ -209,6 +211,7 @@ SYM_CODE_END(__kvm_hyp_vector)
- .macro hyp_ventry	indirect, spectrev2
- 	.align	7
- 1:	esb
-+	UNWIND_HINT_FUNC
- 	.if \spectrev2 != 0
- 	spectrev2_smccc_wa1_smc
- 	.else
+ 	switch (aarch64_get_insn_class(insn)) {
+ 	case AARCH64_INSN_CLS_UNKNOWN:
+-		WARN("can't decode instruction at %s:0x%lx", sec->name, offset);
+-		return -1;
++		if (insn == 0x0) {
++			*type = INSN_NOP;
++		} else {
++			WARN("undecoded insn at %s:0x%lx", sec->name, offset);
++			return record_invalid_insn(sec, offset);
++		}
++
++		break;
+ 	case AARCH64_INSN_CLS_DP_IMM:
+ 		/* Mov register to and from SP are aliases of add_imm */
+ 		if (aarch64_insn_is_add_imm(insn) ||
 -- 
 2.17.1
 
