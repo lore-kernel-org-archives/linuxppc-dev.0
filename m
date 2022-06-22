@@ -4,104 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68A3AC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7E9ACCA486
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:53:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnWK4ZyWz3cBm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:34:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cH4t9swp;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnVX5WtTz30QW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:34:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cH4t9swp;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4LSnVX3WrTz4xZl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:34:12 +1000 (AEST)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4LSnVX3RwLz4xZp; Thu, 23 Jun 2022 01:34:12 +1000 (AEST)
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cH4t9swp;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnwT3cv1z3c1d
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4LSnVX1CHJz4xZl
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Jun 2022 01:34:12 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25MEpKDF018624;
-	Wed, 22 Jun 2022 15:34:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=fXnI9BJ+eT4kh1Bl1pOj1MQY0/BIJ1rTZJngWBFMbjw=;
- b=cH4t9swpy0/cajQ9OIUQmbYcxrxG6GedvGGEccZuMucM8Hh6VbpfynEOIO9RFEuMscyp
- qcW8EI/2p6Z/ZmF3UhTspCoNqNBaeNN3I3EXgC9dBrVvXZFHHsalUkta5o6LLb80n8rx
- p4Tx+jLu9u72ujF89JIFf0PXH1lJJPU9/h1GB0P6JdOZ6P9e8ZmLx/750v18IhnmQtWH
- vA9rC4F4ll8GcKLYf0VDnIxuq5CuO6c8Uwu5iCy3Jkxnin+CbXA+rn0lXsKtZ+L+tS82
- AzqkbNGjJx6BIegb2hkfoRD5XrwWtwlfIMEt23PMfjybdYRXgM0+lOJNhoLBLXtEYOVw SA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gv56x98e2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jun 2022 15:34:04 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 25MEptuh020382;
-	Wed, 22 Jun 2022 15:34:03 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gv56x98cv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jun 2022 15:34:03 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25MFM6L2009056;
-	Wed, 22 Jun 2022 15:34:01 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma04fra.de.ibm.com with ESMTP id 3gs6b8vk8t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 22 Jun 2022 15:34:01 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25MFXwNB19005880
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 22 Jun 2022 15:33:58 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1D5815204F;
-	Wed, 22 Jun 2022 15:33:58 +0000 (GMT)
-Received: from [9.145.21.142] (unknown [9.145.21.142])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id B93245204E;
-	Wed, 22 Jun 2022 15:33:57 +0000 (GMT)
-Message-ID: <ca1f9857-e3f6-6beb-2419-91a5865f2953@linux.ibm.com>
-Date: Wed, 22 Jun 2022 17:33:57 +0200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0)
- Gecko/20100101 Thunderbird/91.10.0
-Subject: Re: [PATCH v5 5/5] powerpc/crash hp: add crash page helper functions
-Content-Language: fr
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org,
-        mpe@ellerman.id.au
-References: <20220620070106.93141-1-sourabhjain@linux.ibm.com>
- <20220620070106.93141-6-sourabhjain@linux.ibm.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20220620070106.93141-6-sourabhjain@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: lhuxE-aTjfBmZgMQ9nmcC_cNHdFP4Tv_
-X-Proofpoint-GUID: 7bEHyUCfQKV93meI1lJGZzZz1DGdyoxA
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw35jlYz307g
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:49 +1000 (AEST)
+Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.53])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnsz1NGzzkWNw;
+	Wed, 22 Jun 2022 23:51:03 +0800 (CST)
+Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
+ dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
+Received: from ubuntu1804.huawei.com (10.67.175.36) by
+ dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
+Subject: [PATCH v5 14/33] objtool: arm64: Add annotate_reachable() for objtools
+Date: Wed, 22 Jun 2022 23:49:01 +0800
+Message-ID: <20220622154920.95075-15-chenzhongjin@huawei.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
+References: <20220622154920.95075-1-chenzhongjin@huawei.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-06-22_04,2022-06-22_03,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- spamscore=0 clxscore=1015 impostorscore=0 mlxlogscore=999 bulkscore=0
- lowpriorityscore=0 adultscore=0 mlxscore=0 phishscore=0 malwarescore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2206220077
+Content-Type: text/plain
+X-Originating-IP: [10.67.175.36]
+X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
+ dggpemm500013.china.huawei.com (7.185.36.172)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,47 +53,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.vnet.ibm.com, eric.devolder@oracle.com, kexec@lists.infradead.org, bhe@redhat.com, hbathini@linux.ibm.com
+Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net, pasha.tatashin@soleen.com, peterz@infradead.org, catalin.marinas@arm.com, masahiroy@kernel.org, ndesaulniers@google.com, chenzhongjin@huawei.com, rmk+kernel@armlinux.org.uk, broonie@kernel.org, will@kernel.org, jpoimboe@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 20/06/2022, 09:01:06, Sourabh Jain wrote:
-> Define arch_[un]map_crash_pages functions to avoid build issues due to
-> undefined arch specific function to access crash memory pages.
-> 
-> A temporary patch to avoid build issues may need some changes in
-> generic code to avoid this.
-> 
-> The issue is under discussion:
-> https://lkml.org/lkml/2022/6/20/22
-> 
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
->  arch/powerpc/kexec/core_64.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-> index 373cb46bcc0e..d833fa96dcfa 100644
-> --- a/arch/powerpc/kexec/core_64.c
-> +++ b/arch/powerpc/kexec/core_64.c
-> @@ -492,6 +492,13 @@ int update_cpus_node(void *fdt)
->  
->  #if defined(CONFIG_HOTPLUG_CPU)
->  
-> +void *arch_map_crash_pages(unsigned long paddr, unsigned long size)
-> +{
-> +	return __va(paddr);
-> +}
+x86 removed annotate_reachable and replaced it with ASM_REACHABLE
+which is not suitable for arm64 micro because there are some cases
+GCC will merge duplicate inline asm.
 
-Why not define this as an inline in the appropriate PowerPC header file?
+Re-add annotation_reachable() for arm64.
 
-> +
-> +void arch_unmap_crash_pages(void **ptr) { }
+Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+---
+ include/linux/compiler.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-same here
-
-> +
->  int crash_hotplug_support(void) { return 1; }
->  
->  /**
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 01ce94b58b42..c8bce9421fa7 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -117,6 +117,14 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+  */
+ #define __stringify_label(n) #n
+ 
++#define __annotate_reachable(c) ({					\
++	asm volatile(__stringify_label(c) ":\n\t"			\
++			".pushsection .discard.reachable\n\t"		\
++			".long " __stringify_label(c) "b - .\n\t"		\
++			".popsection\n\t");				\
++})
++#define annotate_reachable() __annotate_reachable(__COUNTER__)
++
+ #define __annotate_unreachable(c) ({					\
+ 	asm volatile(__stringify_label(c) ":\n\t"			\
+ 		     ".pushsection .discard.unreachable\n\t"		\
+@@ -129,6 +137,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+ #define __annotate_jump_table __section(".rodata..c_jump_table")
+ 
+ #else /* !CONFIG_OBJTOOL */
++#define annotate_reachable()
+ #define annotate_unreachable()
+ #define __annotate_jump_table
+ #endif /* CONFIG_OBJTOOL */
+-- 
+2.17.1
 
