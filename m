@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8EAAC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:01:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0060C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 16:02:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp671stDz3gRb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:01:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSp6g48f1z3fHp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 02:02:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnwB3h2lz3c7p
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:58 +1000 (AEST)
-Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.54])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnr21Sq8zSh5v;
-	Wed, 22 Jun 2022 23:49:22 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnwF5ZGQz3cCh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:53:01 +1000 (AEST)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.54])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnr363QWzSh6d;
+	Wed, 22 Jun 2022 23:49:23 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:46 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:48 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:46 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:47 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 24/33] arm64: proc: Mark constant as data
-Date: Wed, 22 Jun 2022 23:49:11 +0800
-Message-ID: <20220622154920.95075-25-chenzhongjin@huawei.com>
+Subject: [PATCH v5 32/33] arm64: irq-gic: Replace unreachable() with -EINVAL
+Date: Wed, 22 Jun 2022 23:49:19 +0800
+Message-ID: <20220622154920.95075-33-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,30 +57,74 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Label __idmap_kpti_flag represents the location of a constant.
-Mark it as data symbol.
+Using unreachable() at default of switch generates an extra branch at
+end of the function, and compiler won't generate a ret to close this
+branch because it knows it's unreachable.
 
-Signed-off-by: Julien Thierry <jthierry@redhat.com>
+If there's no instruction in this branch, compiler will generate a NOP,
+And it will confuse objtool to warn this NOP as a fall through branch.
+
+In fact these branches are actually unreachable, so we can replace
+unreachable() with returning a -EINVAL value.
+
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/mm/proc.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm64/kvm/hyp/vgic-v3-sr.c | 7 +++----
+ drivers/irqchip/irq-gic-v3.c    | 2 +-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
-index 50bbed947bec..c34ea1778b1e 100644
---- a/arch/arm64/mm/proc.S
-+++ b/arch/arm64/mm/proc.S
-@@ -222,8 +222,8 @@ SYM_FUNC_END(idmap_cpu_replace_ttbr1)
-  *
-  * Called exactly once from stop_machine context by each CPU found during boot.
-  */
--__idmap_kpti_flag:
--	.long	1
-+SYM_DATA_LOCAL(__idmap_kpti_flag, .long	1)
-+
- SYM_FUNC_START(idmap_kpti_install_ng_mappings)
- 	cpu		.req	w0
- 	num_cpus	.req	w1
+diff --git a/arch/arm64/kvm/hyp/vgic-v3-sr.c b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+index 4fb419f7b8b6..f3cee92c3038 100644
+--- a/arch/arm64/kvm/hyp/vgic-v3-sr.c
++++ b/arch/arm64/kvm/hyp/vgic-v3-sr.c
+@@ -6,7 +6,6 @@
+ 
+ #include <hyp/adjust_pc.h>
+ 
+-#include <linux/compiler.h>
+ #include <linux/irqchip/arm-gic-v3.h>
+ #include <linux/kvm_host.h>
+ 
+@@ -55,7 +54,7 @@ static u64 __gic_v3_get_lr(unsigned int lr)
+ 		return read_gicreg(ICH_LR15_EL2);
+ 	}
+ 
+-	unreachable();
++	return -EINVAL;
+ }
+ 
+ static void __gic_v3_set_lr(u64 val, int lr)
+@@ -166,7 +165,7 @@ static u32 __vgic_v3_read_ap0rn(int n)
+ 		val = read_gicreg(ICH_AP0R3_EL2);
+ 		break;
+ 	default:
+-		unreachable();
++		val = -EINVAL;
+ 	}
+ 
+ 	return val;
+@@ -190,7 +189,7 @@ static u32 __vgic_v3_read_ap1rn(int n)
+ 		val = read_gicreg(ICH_AP1R3_EL2);
+ 		break;
+ 	default:
+-		unreachable();
++		val = -EINVAL;
+ 	}
+ 
+ 	return val;
+diff --git a/drivers/irqchip/irq-gic-v3.c b/drivers/irqchip/irq-gic-v3.c
+index b252d5534547..2ef98e32d257 100644
+--- a/drivers/irqchip/irq-gic-v3.c
++++ b/drivers/irqchip/irq-gic-v3.c
+@@ -475,7 +475,7 @@ static u32 __gic_get_ppi_index(irq_hw_number_t hwirq)
+ 	case EPPI_RANGE:
+ 		return hwirq - EPPI_BASE_INTID + 16;
+ 	default:
+-		unreachable();
++		return -EINVAL;
+ 	}
+ }
+ 
 -- 
 2.17.1
 
