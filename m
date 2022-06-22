@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89E3DCCA481
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B0A6C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:55:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnys2Kt3z3fDG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:55:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnzH0dHwz3dtb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:55:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw40PhQz3bq2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:49 +1000 (AEST)
-Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.54])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4LSnvD5W9HzDsH1;
-	Wed, 22 Jun 2022 23:52:08 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw40vqVz3bqG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:50 +1000 (AEST)
+Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.57])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LSnsx6L4tzkWLx;
+	Wed, 22 Jun 2022 23:51:01 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
  dggpemm500024.china.huawei.com (7.185.36.203) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:42 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:43 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
@@ -30,9 +30,9 @@ From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 02/33] objtool: arm64: Add base definition for arm64 backend
-Date: Wed, 22 Jun 2022 23:48:49 +0800
-Message-ID: <20220622154920.95075-3-chenzhongjin@huawei.com>
+Subject: [PATCH v5 07/33] objtool: arm64: Decode LDR instructions
+Date: Wed, 22 Jun 2022 23:48:54 +0800
+Message-ID: <20220622154920.95075-8-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,310 +57,167 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide needed definitions for a new architecture instruction decoder.
-No proper decoding is done yet.
+Load literal instructions can generate constants inside code sections.
+Record the locations of the constants in order to be able to remove
+their corresponding "struct instruction".
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- tools/objtool/Makefile                        |   4 +
- tools/objtool/arch/arm64/Build                |   8 +
- tools/objtool/arch/arm64/decode.c             | 138 ++++++++++++++++++
- .../arch/arm64/include/arch/cfi_regs.h        |  14 ++
- tools/objtool/arch/arm64/include/arch/elf.h   |  12 ++
- .../arch/arm64/include/arch/endianness.h      |   9 ++
- .../objtool/arch/arm64/include/arch/special.h |  22 +++
- tools/objtool/arch/arm64/special.c            |  21 +++
- 8 files changed, 228 insertions(+)
- create mode 100644 tools/objtool/arch/arm64/Build
- create mode 100644 tools/objtool/arch/arm64/decode.c
- create mode 100644 tools/objtool/arch/arm64/include/arch/cfi_regs.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/elf.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/endianness.h
- create mode 100644 tools/objtool/arch/arm64/include/arch/special.h
- create mode 100644 tools/objtool/arch/arm64/special.c
+ tools/objtool/arch/arm64/decode.c    | 87 +++++++++++++++++++++++++++-
+ tools/objtool/arch/x86/decode.c      |  5 ++
+ tools/objtool/check.c                |  3 +
+ tools/objtool/include/objtool/arch.h |  2 +
+ 4 files changed, 96 insertions(+), 1 deletion(-)
 
-diff --git a/tools/objtool/Makefile b/tools/objtool/Makefile
-index 2b97720ab608..3f7c7b54c741 100644
---- a/tools/objtool/Makefile
-+++ b/tools/objtool/Makefile
-@@ -45,6 +45,10 @@ ifeq ($(SRCARCH),x86)
- 	BUILD_ORC := y
- endif
- 
-+ifeq ($(SRCARCH),arm64)
-+	CFLAGS  += -Wno-nested-externs
-+endif
-+
- export BUILD_ORC
- export srctree OUTPUT CFLAGS SRCARCH AWK
- include $(srctree)/tools/build/Makefile.include
-diff --git a/tools/objtool/arch/arm64/Build b/tools/objtool/arch/arm64/Build
-new file mode 100644
-index 000000000000..f3de3a50d541
---- /dev/null
-+++ b/tools/objtool/arch/arm64/Build
-@@ -0,0 +1,8 @@
-+objtool-y += special.o
-+objtool-y += decode.o
-+
-+objtool-y += libhweight.o
-+
-+$(OUTPUT)arch/arm64/libhweight.o: ../lib/hweight.c FORCE
-+	$(call rule_mkdir)
-+	$(call if_changed_dep,cc_o_c)
 diff --git a/tools/objtool/arch/arm64/decode.c b/tools/objtool/arch/arm64/decode.c
-new file mode 100644
-index 000000000000..afe22c4593c8
---- /dev/null
+index c8d50d041889..9bdd59e0d11d 100644
+--- a/tools/objtool/arch/arm64/decode.c
 +++ b/tools/objtool/arch/arm64/decode.c
-@@ -0,0 +1,138 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
+@@ -31,6 +31,64 @@ static unsigned long sign_extend(unsigned long x, int nbits)
+ 	return ((~0UL + (sign_bit ^ 1)) << nbits) | x;
+ }
+ 
++struct insn_loc {
++	const struct section *sec;
++	unsigned long offset;
++	struct hlist_node hnode;
++};
 +
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <stdint.h>
++DEFINE_HASHTABLE(invalid_insns, 16);
 +
-+#include <asm/insn.h>
-+
-+#include <objtool/check.h>
-+#include <objtool/arch.h>
-+#include <objtool/elf.h>
-+#include <objtool/warn.h>
-+#include <objtool/builtin.h>
-+#include <arch/cfi_regs.h>
-+
-+#include "../../../arch/arm64/lib/insn.c"
-+
-+bool arch_callee_saved_reg(unsigned char reg)
++static int record_invalid_insn(const struct section *sec,
++			       unsigned long offset)
 +{
-+	switch (reg) {
-+	case AARCH64_INSN_REG_19:
-+	case AARCH64_INSN_REG_20:
-+	case AARCH64_INSN_REG_21:
-+	case AARCH64_INSN_REG_22:
-+	case AARCH64_INSN_REG_23:
-+	case AARCH64_INSN_REG_24:
-+	case AARCH64_INSN_REG_25:
-+	case AARCH64_INSN_REG_26:
-+	case AARCH64_INSN_REG_27:
-+	case AARCH64_INSN_REG_28:
-+	case AARCH64_INSN_REG_FP:
-+	case AARCH64_INSN_REG_LR:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
++	struct insn_loc *loc;
++	struct hlist_head *l;
 +
-+void arch_initial_func_cfi_state(struct cfi_init_state *state)
-+{
-+	int i;
-+
-+	for (i = 0; i < CFI_NUM_REGS; i++) {
-+		state->regs[i].base = CFI_UNDEFINED;
-+		state->regs[i].offset = 0;
-+	}
-+
-+	/* initial CFA (call frame address) */
-+	state->cfa.base = CFI_SP;
-+	state->cfa.offset = 0;
-+}
-+
-+unsigned long arch_dest_reloc_offset(int addend)
-+{
-+	return addend;
-+}
-+
-+unsigned long arch_jump_destination(struct instruction *insn)
-+{
-+	return insn->offset + insn->immediate;
-+}
-+
-+const char *arch_nop_insn(int len)
-+{
-+	static u32 nop;
-+
-+	if (len != AARCH64_INSN_SIZE)
-+		WARN("invalid NOP size: %d\n", len);
-+
-+	if (!nop)
-+		nop = aarch64_insn_gen_nop();
-+
-+	return (const char *)&nop;
-+}
-+
-+const char *arch_ret_insn(int len)
-+{
-+	static u32 ret;
-+
-+	if (len != AARCH64_INSN_SIZE)
-+		WARN("invalid RET size: %d\n", len);
-+
-+	if (!ret) {
-+		ret = aarch64_insn_gen_branch_reg(AARCH64_INSN_REG_LR,
-+				AARCH64_INSN_BRANCH_RETURN);
-+	}
-+
-+	return (const char *)&ret;
-+}
-+
-+static int is_arm64(const struct elf *elf)
-+{
-+	switch (elf->ehdr.e_machine) {
-+	case EM_AARCH64: //0xB7
-+		return 1;
-+	default:
-+		WARN("unexpected ELF machine type %x",
-+		     elf->ehdr.e_machine);
++	l = &invalid_insns[hash_min(offset, HASH_BITS(invalid_insns))];
++	if (!hlist_empty(l)) {
++		loc = hlist_entry(l->first, struct insn_loc, hnode);
 +		return 0;
 +	}
-+}
 +
-+int arch_decode_hint_reg(u8 sp_reg, int *base)
-+{
-+	return -1;
-+}
-+
-+int arch_decode_instruction(struct objtool_file *file, const struct section *sec,
-+			    unsigned long offset, unsigned int maxlen,
-+			    unsigned int *len, enum insn_type *type,
-+			    unsigned long *immediate,
-+			    struct list_head *ops_list)
-+{
-+	const struct elf *elf = file->elf;
-+	u32 insn;
-+
-+	if (!is_arm64(elf))
++	loc = malloc(sizeof(*loc));
++	if (!loc) {
++		WARN("malloc failed");
 +		return -1;
-+
-+	if (maxlen < AARCH64_INSN_SIZE)
-+		return 0;
-+
-+	*len = AARCH64_INSN_SIZE;
-+	*immediate = 0;
-+	*type = INSN_OTHER;
-+
-+	insn = *(u32 *)(sec->data->d_buf + offset);
-+
-+	switch (aarch64_get_insn_class(insn)) {
-+	case AARCH64_INSN_CLS_UNKNOWN:
-+		WARN("can't decode instruction at %s:0x%lx", sec->name, offset);
-+		return -1;
-+	default:
-+		break;
 +	}
++
++	loc->sec = sec;
++	loc->offset = offset;
++
++	hash_add(invalid_insns, &loc->hnode, loc->offset);
 +
 +	return 0;
 +}
-diff --git a/tools/objtool/arch/arm64/include/arch/cfi_regs.h b/tools/objtool/arch/arm64/include/arch/cfi_regs.h
-new file mode 100644
-index 000000000000..a5185649686b
---- /dev/null
-+++ b/tools/objtool/arch/arm64/include/arch/cfi_regs.h
-@@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
 +
-+#ifndef _OBJTOOL_CFI_REGS_H
-+#define _OBJTOOL_CFI_REGS_H
-+
-+#include <asm/insn.h>
-+
-+#define CFI_BP			AARCH64_INSN_REG_FP
-+#define CFI_RA			AARCH64_INSN_REG_LR
-+#define CFI_SP			AARCH64_INSN_REG_SP
-+
-+#define CFI_NUM_REGS		32
-+
-+#endif /* _OBJTOOL_CFI_REGS_H */
-diff --git a/tools/objtool/arch/arm64/include/arch/elf.h b/tools/objtool/arch/arm64/include/arch/elf.h
-new file mode 100644
-index 000000000000..a59888a906b5
---- /dev/null
-+++ b/tools/objtool/arch/arm64/include/arch/elf.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0 */
-+
-+#ifndef _OBJTOOL_ARCH_ELF
-+#define _OBJTOOL_ARCH_ELF
-+
-+#define R_NTYPE	-1
-+#define R_NONE	R_AARCH64_NONE
-+#define R_ABS64	R_AARCH64_ABS64
-+#define R_REL32	R_AARCH64_PREL32
-+#define R_PLT32	R_NTYPE
-+
-+#endif /* _OBJTOOL_ARCH_ELF */
-diff --git a/tools/objtool/arch/arm64/include/arch/endianness.h b/tools/objtool/arch/arm64/include/arch/endianness.h
-new file mode 100644
-index 000000000000..7c362527da20
---- /dev/null
-+++ b/tools/objtool/arch/arm64/include/arch/endianness.h
-@@ -0,0 +1,9 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+#ifndef _ARCH_ENDIANNESS_H
-+#define _ARCH_ENDIANNESS_H
-+
-+#include <endian.h>
-+
-+#define __TARGET_BYTE_ORDER __LITTLE_ENDIAN
-+
-+#endif /* _ARCH_ENDIANNESS_H */
-diff --git a/tools/objtool/arch/arm64/include/arch/special.h b/tools/objtool/arch/arm64/include/arch/special.h
-new file mode 100644
-index 000000000000..63a705c622a4
---- /dev/null
-+++ b/tools/objtool/arch/arm64/include/arch/special.h
-@@ -0,0 +1,22 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+
-+#ifndef _ARM64_ARCH_SPECIAL_H
-+#define _ARM64_ARCH_SPECIAL_H
-+
-+#define EX_ENTRY_SIZE		12
-+#define EX_ORIG_OFFSET		0
-+#define EX_NEW_OFFSET		4
-+
-+#define JUMP_ENTRY_SIZE		16
-+#define JUMP_ORIG_OFFSET	0
-+#define JUMP_NEW_OFFSET		4
-+#define JUMP_KEY_OFFSET		8
-+
-+#define ALT_ENTRY_SIZE		12
-+#define ALT_ORIG_OFFSET		0
-+#define ALT_NEW_OFFSET		4
-+#define ALT_FEATURE_OFFSET	8
-+#define ALT_ORIG_LEN_OFFSET	10
-+#define ALT_NEW_LEN_OFFSET	11
-+
-+#endif /* _ARM64_ARCH_SPECIAL_H */
-diff --git a/tools/objtool/arch/arm64/special.c b/tools/objtool/arch/arm64/special.c
-new file mode 100644
-index 000000000000..45f283283091
---- /dev/null
-+++ b/tools/objtool/arch/arm64/special.c
-@@ -0,0 +1,21 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+
-+#include <objtool/special.h>
-+
-+void arch_handle_alternative(unsigned short feature, struct special_alt *alt)
++int arch_post_process_instructions(struct objtool_file *file)
 +{
++	struct hlist_node *tmp;
++	struct insn_loc *loc;
++	unsigned int bkt;
++	int res = 0;
++
++	hash_for_each_safe(invalid_insns, bkt, tmp, loc, hnode) {
++		struct instruction *insn;
++
++		insn = find_insn(file, (struct section *) loc->sec, loc->offset);
++		if (insn) {
++			list_del(&insn->list);
++			hash_del(&insn->hash);
++			free(insn);
++		}
++
++		hash_del(&loc->hnode);
++		free(loc);
++	}
++
++	return res;
 +}
 +
-+bool arch_support_alt_relocation(struct special_alt *special_alt,
-+				 struct instruction *insn,
-+				 struct reloc *reloc)
+ bool arch_callee_saved_reg(unsigned char reg)
+ {
+ 	switch (reg) {
+@@ -351,7 +409,34 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
+ 		break;
+ 	case AARCH64_INSN_CLS_LDST:
+ 	{
+-		return decode_load_store(insn, immediate, ops_list);
++		int ret;
++
++		ret = decode_load_store(insn, immediate, ops_list);
++		if (ret <= 0)
++			return ret;
++
++		/*
++		 * For LDR ops, assembler can generate the data to be
++		 * loaded in the code section
++		 * Record and remove these data because they
++		 * are never excuted
++		 */
++		if (aarch64_insn_is_ldr_lit(insn)) {
++			long pc_offset;
++
++			pc_offset = insn & GENMASK(23, 5);
++			/* Sign extend and multiply by 4 */
++			pc_offset = (pc_offset << (64 - 23));
++			pc_offset = ((pc_offset >> (64 - 23)) >> 5) << 2;
++
++			ret = record_invalid_insn(sec, offset + pc_offset);
++
++			/* 64-bit literal */
++			if (insn & BIT(30))
++				ret = record_invalid_insn(sec, offset + pc_offset + 4);
++
++			return ret;
++		}
+ 		break;
+ 	}
+ 	default:
+diff --git a/tools/objtool/arch/x86/decode.c b/tools/objtool/arch/x86/decode.c
+index 8b990a52aada..081b5e72f8df 100644
+--- a/tools/objtool/arch/x86/decode.c
++++ b/tools/objtool/arch/x86/decode.c
+@@ -693,6 +693,11 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
+ 	return 0;
+ }
+ 
++int arch_post_process_instructions(struct objtool_file *file)
 +{
-+	return false;
++	return 0;
 +}
 +
+ void arch_initial_func_cfi_state(struct cfi_init_state *state)
+ {
+ 	int i;
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 35d0a1bc4279..c0feb6db7c6d 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -439,6 +439,9 @@ static int decode_instructions(struct objtool_file *file)
+ 	if (opts.stats)
+ 		printf("nr_insns: %lu\n", nr_insns);
+ 
++	if (arch_post_process_instructions(file))
++		return -1;
 +
-+struct reloc *arch_find_switch_table(struct objtool_file *file,
-+				     struct instruction *insn)
-+{
-+	return NULL;
-+}
+ 	return 0;
+ 
+ err:
+diff --git a/tools/objtool/include/objtool/arch.h b/tools/objtool/include/objtool/arch.h
+index 9b19cc304195..651262af2655 100644
+--- a/tools/objtool/include/objtool/arch.h
++++ b/tools/objtool/include/objtool/arch.h
+@@ -77,6 +77,8 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
+ 			    unsigned long *immediate,
+ 			    struct list_head *ops_list);
+ 
++int arch_post_process_instructions(struct objtool_file *file);
++
+ bool arch_callee_saved_reg(unsigned char reg);
+ 
+ unsigned long arch_jump_destination(struct instruction *insn);
 -- 
 2.17.1
 
