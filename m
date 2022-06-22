@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A2E7C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:54:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4410C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Jun 2022 15:54:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LSny14l2fz3dpL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LSnyS02kmz3f8W
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw42d4Hz3bqf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:50 +1000 (AEST)
-Received: from dggpemm500024.china.huawei.com (unknown [172.30.72.53])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LSnsW0Lrvz1KC5C;
-	Wed, 22 Jun 2022 23:50:39 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LSnw43HkKz3bqg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 01:52:49 +1000 (AEST)
+Received: from dggpemm500022.china.huawei.com (unknown [172.30.72.54])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4LSnvH50j1zDsKj;
+	Wed, 22 Jun 2022 23:52:11 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500024.china.huawei.com (7.185.36.203) with Microsoft SMTP Server
+ dggpemm500022.china.huawei.com (7.185.36.162) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:46 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:45 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Wed, 22 Jun 2022 23:52:46 +0800
+ 15.1.2375.24; Wed, 22 Jun 2022 23:52:44 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v5 23/33] arm64: head: Mark constants as data
-Date: Wed, 22 Jun 2022 23:49:10 +0800
-Message-ID: <20220622154920.95075-24-chenzhongjin@huawei.com>
+Subject: [PATCH v5 16/33] arm64: kgdb: Add reachable annotation after kgdb brk
+Date: Wed, 22 Jun 2022 23:49:03 +0800
+Message-ID: <20220622154920.95075-17-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220622154920.95075-1-chenzhongjin@huawei.com>
 References: <20220622154920.95075-1-chenzhongjin@huawei.com>
@@ -57,40 +57,27 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, michal.lkml@markovi.net,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add data annotations to constants part of the image header.
+In the general use case, KGDB breakpoint handler should return normally
+to the instruction following the brk.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/kernel/head.S | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/kgdb.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm64/kernel/head.S b/arch/arm64/kernel/head.S
-index 2a66d18091eb..71580eb1fd51 100644
---- a/arch/arm64/kernel/head.S
-+++ b/arch/arm64/kernel/head.S
-@@ -63,10 +63,11 @@
- 	/*
- 	 * DO NOT MODIFY. Image header expected by Linux boot-loaders.
- 	 */
--	efi_signature_nop			// special NOP to identity as PE/COFF executable
-+SYM_DATA_LOCAL(efi_nop, efi_signature_nop)	// special NOP to identity as PE/COFF executable
- 	UNWIND_HINT_EMPTY
- 	b	primary_entry			// branch to kernel start, magic
--	.quad	0				// Image load offset from start of RAM, little-endian
-+SYM_DATA_LOCAL(_zero_reserved, .quad	0)	// Image load offset from start of RAM, little-endian
-+SYM_DATA_START_LOCAL(_arm64_common_header)
- 	le64sym	_kernel_size_le			// Effective size of kernel image, little-endian
- 	le64sym	_kernel_flags_le		// Informative flags, little-endian
- 	.quad	0				// reserved
-@@ -74,6 +75,7 @@
- 	.quad	0				// reserved
- 	.ascii	ARM64_IMAGE_MAGIC		// Magic number
- 	.long	.Lpe_header_offset		// Offset to the PE header.
-+SYM_DATA_END(_arm64_common_header)
+diff --git a/arch/arm64/include/asm/kgdb.h b/arch/arm64/include/asm/kgdb.h
+index 21fc85e9d2be..a8cb91d8d59b 100644
+--- a/arch/arm64/include/asm/kgdb.h
++++ b/arch/arm64/include/asm/kgdb.h
+@@ -19,6 +19,7 @@
+ static inline void arch_kgdb_breakpoint(void)
+ {
+ 	asm ("brk %0" : : "I" (KGDB_COMPILED_DBG_BRK_IMM));
++	annotate_reachable();
+ }
  
- 	__EFI_PE_HEADER
- 
+ extern void kgdb_handle_bus_error(void);
 -- 
 2.17.1
 
