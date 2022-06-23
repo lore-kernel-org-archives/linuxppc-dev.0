@@ -4,58 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23747C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 10:09:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC8FBC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 12:30:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LTGFV3GmCz3bvZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 20:09:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LTKN41STvz3bt4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 22:30:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q1gl5buX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q1gl5buX;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LTGDz36rjz3bqR
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 20:09:04 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LTGDr5885z9t7p;
-	Thu, 23 Jun 2022 12:09:00 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id vntViZZ-_Zqc; Thu, 23 Jun 2022 12:09:00 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LTGDq4HsQz9t7Z;
-	Thu, 23 Jun 2022 12:08:59 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8446B8B786;
-	Thu, 23 Jun 2022 12:08:59 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id K2dNwoA-VKlO; Thu, 23 Jun 2022 12:08:59 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.34])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4A9D68B763;
-	Thu, 23 Jun 2022 12:08:59 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25NA8ivA1209344
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 23 Jun 2022 12:08:44 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25NA8ggc1209341;
-	Thu, 23 Jun 2022 12:08:42 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/powermac: Remove empty function note_scsi_host()
-Date: Thu, 23 Jun 2022 12:08:36 +0200
-Message-Id: <26f8b72a4276c0bd8ed63860c7316f6361c351b4.1655978907.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LTKML4Trlz3bk7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 22:29:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25NAQYEA027943;
+	Thu, 23 Jun 2022 12:29:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Qj3YNZEYqlTD/obmc7ResKquiY/z5yJ+P0dEzb2i7Cg=;
+ b=q1gl5buXMVaxxsHqdY3Ym9rlpLP6rgMoOeYXApIXYZ9IODId3HlkoHZCgct6ADyfo014
+ lOvH6zGHcn3JX48ajmlV1PsAfBiMSnunIc8FDtJgJxbvIxJys88zvUpzb7a5bdW2R1Kc
+ rPy9qX8aGZiMv0KF2HgrUEQ8tCsi2PgN0DQtkBpHJu9FtG0riUjCc7spKQIt9dJZkY0+
+ ve0NTK++q8k5/PK/3Q35IKvwD5WzzkYdc1p6UwVSNs9/7PdBt9VVJUAI64QTHdRdaCGD
+ O0SWbTpzeBgBLrjlvznsl3ywAuPHwoHogf0WdANg5UrLR0K+Uyvdv1ZiBZXwYQ/IbES9 0Q== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3gvmfhpqxp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Jun 2022 12:29:42 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+	by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25NCKT23028658;
+	Thu, 23 Jun 2022 12:29:41 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
+	by ppma01dal.us.ibm.com with ESMTP id 3guk92mjub-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Jun 2022 12:29:41 +0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com [9.57.199.106])
+	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25NCTelF39911920
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 23 Jun 2022 12:29:40 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8E3AD2805E;
+	Thu, 23 Jun 2022 12:29:40 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7B57728059;
+	Thu, 23 Jun 2022 12:29:38 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.43.18.68])
+	by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+	Thu, 23 Jun 2022 12:29:38 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: [PATCH 2/3] powerpc/mm: Update max/min_low_pfn in the same function
+Date: Thu, 23 Jun 2022 17:59:21 +0530
+Message-Id: <20220623122922.640980-2-aneesh.kumar@linux.ibm.com>
 X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220623122922.640980-1-aneesh.kumar@linux.ibm.com>
+References: <20220623122922.640980-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1655978915; l=2083; s=20211009; h=from:subject:message-id; bh=PdnNcP7zieVTyswgbCfJHTxp8O+UOgulPpTHBsScjg0=; b=vUQkW6U5O2rm42ZnOAxvu0c7tzgjshQbKHb0OWQFayobFQkndBCQhqYuFHiE+mY7rP+PGfGmxrNn 8OGjcF0GBuOstmuGAYhjG2Zl8ggAEPw12EshB0V168Tk03o+BK89
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: W38rCs6DVUqOFs3BtnxNiVpGY2-S6j3Z
+X-Proofpoint-ORIG-GUID: W38rCs6DVUqOFs3BtnxNiVpGY2-S6j3Z
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-06-23_05,2022-06-23_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 clxscore=1015
+ priorityscore=1501 spamscore=0 mlxlogscore=935 suspectscore=0
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 malwarescore=0 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2204290000 definitions=main-2206230049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,70 +89,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Cc: linux-mm@kvack.org, Michal Hocko <mhocko@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-note_scsi_host() has been an empty function since
-commit 6ee0d9f744d4 ("[POWERPC] Remove unused old code
-from powermac setup code").
+For both CONFIG_NUMA enabled/disabled use mem_topology_setup to
+update max/min_low_pfn.
 
-Remove it.
+This also add min_low_pfn update to CONFIG_NUMA which was initialized
+to zero before.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/setup.h        | 1 -
- arch/powerpc/platforms/powermac/setup.c | 7 -------
- drivers/scsi/mesh.c                     | 5 -----
- 3 files changed, 13 deletions(-)
+ arch/powerpc/mm/numa.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 8fa37ef5da4d..07b487896c27 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -12,7 +12,6 @@ extern unsigned long long memory_limit;
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0801b2ce9b7d..b44ce71917d7 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1160,6 +1160,9 @@ void __init mem_topology_setup(void)
+ {
+ 	int cpu;
  
- struct device_node;
--extern void note_scsi_host(struct device_node *, void *);
++	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
++	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
++
+ 	/*
+ 	 * Linux/mm assumes node 0 to be online at boot. However this is not
+ 	 * true on PowerPC, where node 0 is similar to any other node, it
+@@ -1204,9 +1207,6 @@ void __init initmem_init(void)
+ {
+ 	int nid;
  
- /* Used in very early kernel initialization. */
- extern unsigned long reloc_offset(void);
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index f71735ec449f..04daa7f0a03c 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -320,13 +320,6 @@ static void __init pmac_setup_arch(void)
- #endif /* CONFIG_ADB */
- }
- 
--#ifdef CONFIG_SCSI
--void note_scsi_host(struct device_node *node, void *host)
--{
--}
--EXPORT_SYMBOL(note_scsi_host);
--#endif
+-	max_low_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
+-	max_pfn = max_low_pfn;
 -
- static int initializing = 1;
+ 	memblock_dump_all();
  
- static int pmac_late_init(void)
-diff --git a/drivers/scsi/mesh.c b/drivers/scsi/mesh.c
-index 322d3ad38159..1f8e240592a9 100644
---- a/drivers/scsi/mesh.c
-+++ b/drivers/scsi/mesh.c
-@@ -1882,11 +1882,6 @@ static int mesh_probe(struct macio_dev *mdev, const struct of_device_id *match)
- 		goto out_release;
- 	}
- 	
--	/* Old junk for root discovery, that will die ultimately */
--#if !defined(MODULE)
--       	note_scsi_host(mesh, mesh_host);
--#endif
--
- 	mesh_host->base = macio_resource_start(mdev, 0);
- 	mesh_host->irq = macio_irq(mdev, 0);
-        	ms = (struct mesh_state *) mesh_host->hostdata;
+ 	for_each_online_node(nid) {
 -- 
 2.36.1
 
