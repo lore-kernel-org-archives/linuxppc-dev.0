@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1537ACCA49D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:53:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27778C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3FW4Ss6z3fB1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:53:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3Fx4x61z3cd5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:54:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CC3DxRz3bsB
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 11:51:51 +1000 (AEST)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.56])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LT37B6smnzShC4;
-	Thu, 23 Jun 2022 09:48:22 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CD5NLtz3bq3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 11:51:52 +1000 (AEST)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.53])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LT39C0y0fzkWSs;
+	Thu, 23 Jun 2022 09:50:07 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Thu, 23 Jun 2022 09:51:47 +0800
+ 15.1.2375.24; Thu, 23 Jun 2022 09:51:49 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Thu, 23 Jun 2022 09:51:47 +0800
+ 15.1.2375.24; Thu, 23 Jun 2022 09:51:48 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v6 09/33] objtool: check: Support data in text section
-Date: Thu, 23 Jun 2022 09:48:53 +0800
-Message-ID: <20220623014917.199563-10-chenzhongjin@huawei.com>
+Subject: [PATCH v6 16/33] arm64: kgdb: Add reachable annotation after kgdb brk
+Date: Thu, 23 Jun 2022 09:49:00 +0800
+Message-ID: <20220623014917.199563-17-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220623014917.199563-1-chenzhongjin@huawei.com>
 References: <20220623014917.199563-1-chenzhongjin@huawei.com>
@@ -57,94 +57,27 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, daniel.thompson@linaro.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Arm64 assembly code can mix code and data in text sections through the use
-of SYM_DATA_*() macros. Skip the content of these symbols when decoding
-instructions of text sections.
+In the general use case, KGDB breakpoint handler should return normally
+to the instruction following the brk.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- tools/objtool/check.c               | 14 ++++++++++++--
- tools/objtool/elf.c                 | 14 ++++++++++++++
- tools/objtool/include/objtool/elf.h |  1 +
- 3 files changed, 27 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/kgdb.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index c0feb6db7c6d..f19ea3fc1e6b 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -359,7 +359,7 @@ static int decode_instructions(struct objtool_file *file)
+diff --git a/arch/arm64/include/asm/kgdb.h b/arch/arm64/include/asm/kgdb.h
+index 21fc85e9d2be..a8cb91d8d59b 100644
+--- a/arch/arm64/include/asm/kgdb.h
++++ b/arch/arm64/include/asm/kgdb.h
+@@ -19,6 +19,7 @@
+ static inline void arch_kgdb_breakpoint(void)
  {
- 	struct section *sec;
- 	struct symbol *func;
--	unsigned long offset;
-+	unsigned long offset, next_offset;
- 	struct instruction *insn;
- 	int ret;
- 
-@@ -377,7 +377,15 @@ static int decode_instructions(struct objtool_file *file)
- 		    !strcmp(sec->name, ".entry.text"))
- 			sec->noinstr = true;
- 
--		for (offset = 0; offset < sec->sh.sh_size; offset += insn->len) {
-+		for (offset = 0; offset < sec->sh.sh_size; offset = next_offset) {
-+			struct symbol *obj_sym = find_object_containing(sec, offset);
-+
-+			if (obj_sym) {
-+				/* This is data in the middle of text section, skip it */
-+				next_offset = obj_sym->offset + obj_sym->len;
-+				continue;
-+			}
-+
- 			insn = malloc(sizeof(*insn));
- 			if (!insn) {
- 				WARN("malloc failed");
-@@ -410,6 +418,8 @@ static int decode_instructions(struct objtool_file *file)
- 			hash_add(file->insn_hash, &insn->hash, sec_offset_hash(sec, insn->offset));
- 			list_add_tail(&insn->list, &file->insn_list);
- 			nr_insns++;
-+
-+			next_offset = offset + insn->len;
- 		}
- 
- 		list_for_each_entry(func, &sec->symbol_list, list) {
-diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
-index c25e957c1e52..d7304e39f6b6 100644
---- a/tools/objtool/elf.c
-+++ b/tools/objtool/elf.c
-@@ -236,6 +236,20 @@ struct symbol *find_func_containing(struct section *sec, unsigned long offset)
- 	return NULL;
+ 	asm ("brk %0" : : "I" (KGDB_COMPILED_DBG_BRK_IMM));
++	annotate_reachable();
  }
  
-+struct symbol *find_object_containing(const struct section *sec, unsigned long offset)
-+{
-+	struct rb_node *node;
-+
-+	rb_for_each(node, &offset, &sec->symbol_tree, symbol_by_offset) {
-+		struct symbol *s = rb_entry(node, struct symbol, node);
-+
-+		if (s->type == STT_OBJECT)
-+			return s;
-+	}
-+
-+	return NULL;
-+}
-+
- struct symbol *find_symbol_by_name(const struct elf *elf, const char *name)
- {
- 	struct symbol *sym;
-diff --git a/tools/objtool/include/objtool/elf.h b/tools/objtool/include/objtool/elf.h
-index adebfbc2b518..8b0896935af1 100644
---- a/tools/objtool/include/objtool/elf.h
-+++ b/tools/objtool/include/objtool/elf.h
-@@ -167,6 +167,7 @@ struct reloc *find_reloc_by_dest(const struct elf *elf, struct section *sec, uns
- struct reloc *find_reloc_by_dest_range(const struct elf *elf, struct section *sec,
- 				     unsigned long offset, unsigned int len);
- struct symbol *find_func_containing(struct section *sec, unsigned long offset);
-+struct symbol *find_object_containing(const struct section *sec, unsigned long offset);
- 
- #define for_each_sec(file, sec)						\
- 	list_for_each_entry(sec, &file->elf->sections, list)
+ extern void kgdb_handle_bus_error(void);
 -- 
 2.17.1
 
