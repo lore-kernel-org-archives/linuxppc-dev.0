@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44B32C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4553DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:55:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3GV6ymjz3fL2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:54:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3Gw6zjgz3fQR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:55:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CF1xxsz3bsv
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CF3xqtz3c6F
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 11:51:53 +1000 (AEST)
-Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.55])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4LT3BX0LctzDsNM;
-	Thu, 23 Jun 2022 09:51:16 +0800 (CST)
+Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.57])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LT38h68Xpz1KBY6;
+	Thu, 23 Jun 2022 09:49:40 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
  dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Thu, 23 Jun 2022 09:51:49 +0800
+ 15.1.2375.24; Thu, 23 Jun 2022 09:51:48 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Thu, 23 Jun 2022 09:51:49 +0800
+ 15.1.2375.24; Thu, 23 Jun 2022 09:51:48 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v6 20/33] arm64: entry: Annotate unwind_hint for entry
-Date: Thu, 23 Jun 2022 09:49:04 +0800
-Message-ID: <20220623014917.199563-21-chenzhongjin@huawei.com>
+Subject: [PATCH v6 14/33] objtool: arm64: Add annotate_reachable() for objtools
+Date: Thu, 23 Jun 2022 09:48:58 +0800
+Message-ID: <20220623014917.199563-15-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220623014917.199563-1-chenzhongjin@huawei.com>
 References: <20220623014917.199563-1-chenzhongjin@huawei.com>
@@ -57,54 +57,44 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, daniel.thompson@linaro.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When taking an exception/interrupt, add UNWIND_HINT_REGS to indicate
-from which point the pt_regs is on stack.
+x86 removed annotate_reachable and replaced it with ASM_REACHABLE
+which is not suitable for arm64 micro because there are some cases
+GCC will merge duplicate inline asm.
 
-Whether returning to userland or creating a new task, sp is
-pointing to a pt_regs frame, add UNWIND_HINT_REGS after that.
+Re-add annotation_reachable() for arm64.
 
-Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/kernel/entry.S | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/compiler.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
-index 3bd11101e79d..bbc440379304 100644
---- a/arch/arm64/kernel/entry.S
-+++ b/arch/arm64/kernel/entry.S
-@@ -120,6 +120,7 @@
- alternative_cb	spectre_v4_patch_fw_mitigation_enable
- 	b	.L__asm_ssbd_skip\@		// Patched to NOP
- alternative_cb_end
-+	UNWIND_HINT_REGS
- 	ldr_this_cpu	\tmp2, arm64_ssbd_callback_required, \tmp1
- 	cbz	\tmp2,	.L__asm_ssbd_skip\@
- 	ldr	\tmp2, [tsk, #TSK_TI_FLAGS]
-@@ -218,6 +219,7 @@ alternative_cb_end
- 	stp	x24, x25, [sp, #16 * 12]
- 	stp	x26, x27, [sp, #16 * 13]
- 	stp	x28, x29, [sp, #16 * 14]
-+	UNWIND_HINT_REGS
- 
- 	.if	\el == 0
- 	clear_gp_regs
-@@ -601,6 +603,7 @@ SYM_CODE_START_LOCAL(ret_to_kernel)
- SYM_CODE_END(ret_to_kernel)
- 
- SYM_CODE_START_LOCAL(ret_to_user)
-+	UNWIND_HINT_REGS
- 	ldr	x19, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
- 	enable_step_tsk x19, x2
- #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
-@@ -872,6 +875,7 @@ NOKPROBE(cpu_switch_to)
-  * This is how we return from a fork.
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 01ce94b58b42..c8bce9421fa7 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -117,6 +117,14 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
   */
- SYM_CODE_START(ret_from_fork)
-+	UNWIND_HINT_REGS
- 	bl	schedule_tail
- 	cbz	x19, 1f				// not a kernel thread
- 	mov	x0, x20
+ #define __stringify_label(n) #n
+ 
++#define __annotate_reachable(c) ({					\
++	asm volatile(__stringify_label(c) ":\n\t"			\
++			".pushsection .discard.reachable\n\t"		\
++			".long " __stringify_label(c) "b - .\n\t"		\
++			".popsection\n\t");				\
++})
++#define annotate_reachable() __annotate_reachable(__COUNTER__)
++
+ #define __annotate_unreachable(c) ({					\
+ 	asm volatile(__stringify_label(c) ":\n\t"			\
+ 		     ".pushsection .discard.unreachable\n\t"		\
+@@ -129,6 +137,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
+ #define __annotate_jump_table __section(".rodata..c_jump_table")
+ 
+ #else /* !CONFIG_OBJTOOL */
++#define annotate_reachable()
+ #define annotate_unreachable()
+ #define __annotate_jump_table
+ #endif /* CONFIG_OBJTOOL */
 -- 
 2.17.1
 
