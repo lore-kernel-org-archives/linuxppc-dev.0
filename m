@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27778C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44B32C43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 01:54:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3Fx4x61z3cd5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:54:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LT3GV6ymjz3fL2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Jun 2022 11:54:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CD5NLtz3bq3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 11:51:52 +1000 (AEST)
-Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4LT39C0y0fzkWSs;
-	Thu, 23 Jun 2022 09:50:07 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LT3CF1xxsz3bsv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jun 2022 11:51:53 +1000 (AEST)
+Received: from dggpemm500020.china.huawei.com (unknown [172.30.72.55])
+	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4LT3BX0LctzDsNM;
+	Thu, 23 Jun 2022 09:51:16 +0800 (CST)
 Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
- dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
+ dggpemm500020.china.huawei.com (7.185.36.49) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
  15.1.2375.24; Thu, 23 Jun 2022 09:51:49 +0800
 Received: from ubuntu1804.huawei.com (10.67.175.36) by
  dggpemm500013.china.huawei.com (7.185.36.172) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Thu, 23 Jun 2022 09:51:48 +0800
+ 15.1.2375.24; Thu, 23 Jun 2022 09:51:49 +0800
 From: Chen Zhongjin <chenzhongjin@huawei.com>
 To: <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
 	<linux-kbuild@vger.kernel.org>, <live-patching@vger.kernel.org>
-Subject: [PATCH v6 16/33] arm64: kgdb: Add reachable annotation after kgdb brk
-Date: Thu, 23 Jun 2022 09:49:00 +0800
-Message-ID: <20220623014917.199563-17-chenzhongjin@huawei.com>
+Subject: [PATCH v6 20/33] arm64: entry: Annotate unwind_hint for entry
+Date: Thu, 23 Jun 2022 09:49:04 +0800
+Message-ID: <20220623014917.199563-21-chenzhongjin@huawei.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20220623014917.199563-1-chenzhongjin@huawei.com>
 References: <20220623014917.199563-1-chenzhongjin@huawei.com>
@@ -57,27 +57,54 @@ Cc: mark.rutland@arm.com, madvenka@linux.microsoft.com, daniel.thompson@linaro.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the general use case, KGDB breakpoint handler should return normally
-to the instruction following the brk.
+When taking an exception/interrupt, add UNWIND_HINT_REGS to indicate
+from which point the pt_regs is on stack.
+
+Whether returning to userland or creating a new task, sp is
+pointing to a pt_regs frame, add UNWIND_HINT_REGS after that.
 
 Signed-off-by: Julien Thierry <jthierry@redhat.com>
 Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
 ---
- arch/arm64/include/asm/kgdb.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm64/kernel/entry.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm64/include/asm/kgdb.h b/arch/arm64/include/asm/kgdb.h
-index 21fc85e9d2be..a8cb91d8d59b 100644
---- a/arch/arm64/include/asm/kgdb.h
-+++ b/arch/arm64/include/asm/kgdb.h
-@@ -19,6 +19,7 @@
- static inline void arch_kgdb_breakpoint(void)
- {
- 	asm ("brk %0" : : "I" (KGDB_COMPILED_DBG_BRK_IMM));
-+	annotate_reachable();
- }
+diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
+index 3bd11101e79d..bbc440379304 100644
+--- a/arch/arm64/kernel/entry.S
++++ b/arch/arm64/kernel/entry.S
+@@ -120,6 +120,7 @@
+ alternative_cb	spectre_v4_patch_fw_mitigation_enable
+ 	b	.L__asm_ssbd_skip\@		// Patched to NOP
+ alternative_cb_end
++	UNWIND_HINT_REGS
+ 	ldr_this_cpu	\tmp2, arm64_ssbd_callback_required, \tmp1
+ 	cbz	\tmp2,	.L__asm_ssbd_skip\@
+ 	ldr	\tmp2, [tsk, #TSK_TI_FLAGS]
+@@ -218,6 +219,7 @@ alternative_cb_end
+ 	stp	x24, x25, [sp, #16 * 12]
+ 	stp	x26, x27, [sp, #16 * 13]
+ 	stp	x28, x29, [sp, #16 * 14]
++	UNWIND_HINT_REGS
  
- extern void kgdb_handle_bus_error(void);
+ 	.if	\el == 0
+ 	clear_gp_regs
+@@ -601,6 +603,7 @@ SYM_CODE_START_LOCAL(ret_to_kernel)
+ SYM_CODE_END(ret_to_kernel)
+ 
+ SYM_CODE_START_LOCAL(ret_to_user)
++	UNWIND_HINT_REGS
+ 	ldr	x19, [tsk, #TSK_TI_FLAGS]	// re-check for single-step
+ 	enable_step_tsk x19, x2
+ #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
+@@ -872,6 +875,7 @@ NOKPROBE(cpu_switch_to)
+  * This is how we return from a fork.
+  */
+ SYM_CODE_START(ret_from_fork)
++	UNWIND_HINT_REGS
+ 	bl	schedule_tail
+ 	cbz	x19, 1f				// not a kernel thread
+ 	mov	x0, x20
 -- 
 2.17.1
 
