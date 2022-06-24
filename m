@@ -4,78 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCEEBC43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 08:51:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 252E3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 09:11:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LTrT525cxz3cgt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 18:51:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LTrwM3V9xz3cg3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 19:11:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rKzMkQ+u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DujAp35g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rKzMkQ+u;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DujAp35g;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LTrSL2HwVz3bcZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 18:50:58 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25O8LqK3028681;
-	Fri, 24 Jun 2022 08:50:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
- subject : message-id : reply-to : references : mime-version : content-type
- : in-reply-to; s=pp1; bh=rngDtFENuGkx0GYDUV7i3vYrJGUSJwBrV1rhM4c78Wo=;
- b=rKzMkQ+umLwuQozRQCt57urFM17FedEfNGSHtYS0wgyvMw1/zP+8eblkw4W0Mp6Qwpm5
- E9FvlB6nhmd7rFp7oSCCZnpvM6d6PzFMfazXkYQf+ve0UEBIXv2EBDDgYPJDBbsGdKYp
- 2VLqQQ/tBalib8s5kQdEf04YeIaM02N5prNsKTAWkfES8y3wDARzSj8ZBOGgp59+mQA+
- pWtB2SrueuhbSJL3zDInnxXkRpiGmQ+2zuvixRJM3gVQqjlQI6fH7mNNYfihkOwL1vaQ
- +Gx8AxRCENBbwrrH8QfgHqriE3MzmudIZtdNJ1qjBszzwa5U7UVByWSc6+56tutEIUdF KQ== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3gw9perkj7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Jun 2022 08:50:53 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25O8M8sN026680;
-	Fri, 24 Jun 2022 08:50:51 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma04ams.nl.ibm.com with ESMTP id 3gs6b98pmh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 24 Jun 2022 08:50:51 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25O8nwDp16646508
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Jun 2022 08:49:58 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DBFE352050;
-	Fri, 24 Jun 2022 08:50:48 +0000 (GMT)
-Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with SMTP id E963D5204F;
-	Fri, 24 Jun 2022 08:50:47 +0000 (GMT)
-Date: Fri, 24 Jun 2022 14:20:47 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/numa: Return the first online node if device
- tree mapping returns a not online node
-Message-ID: <20220624085047.GB145013@linux.vnet.ibm.com>
-References: <20220623125442.645240-1-aneesh.kumar@linux.ibm.com>
- <20220623125442.645240-2-aneesh.kumar@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LTrvg4FBkz3bl8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 19:11:11 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by sin.source.kernel.org (Postfix) with ESMTPS id 010A5CE2903
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 09:11:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 708DCC341CC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 09:11:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656061867;
+	bh=QZAJaXcIRADU/xKJ+9ztqTuLJLuzfPWx4kL+CXKUusE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=DujAp35gBkJI0ojh8Z4cz2WNMnPVa8X09AjvGzpyvg1W3zpRtikVU8S1p5YzkeFQn
+	 lyqUI2IK/TRwsZ6Fphm5Gnrx8o8G+PE51sAvsFnYOkkSigRwkL7Ti34QY5mgrVlD4K
+	 q87W/nor5rNmj3N+qIRXTKGiC0CtdvN0KmhO4zeDIsbYYD8QC1BFTaduxwig96j3Pp
+	 tKSojB4iYnI/xdxLhYubiYytYTgX6J2RKt1/59qilMZK37CJaHmf49rGGpZzrmzm5C
+	 vXPE3OAWpxbhgHGBmdLEkg9vKAPO5+PD+s0ZO+euAV2nmh7i/+PPY0rPFj46LXVDDi
+	 0tE0Cc0wwED0w==
+Received: by mail-yb1-f173.google.com with SMTP id o79so3487963ybc.4
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 02:11:07 -0700 (PDT)
+X-Gm-Message-State: AJIora8rc6ky/mXhyPh/qPZpkZGNwJtHnGV8WCAafEjQDnZlPgjbUOIS
+	L/8il5rzn5D1wM/pPyVs6bfRKANLyRRiFK3NFPg=
+X-Google-Smtp-Source: AGRyM1thOWm6xvviAmnNqulTm+G1aNh8sMElBL34hFaSX/cB93p4OtnA8uz/osirQ5xn1zAs3G7Hy/thW2fsxExc9gs=
+X-Received: by 2002:a05:6902:120f:b0:668:2228:9627 with SMTP id
+ s15-20020a056902120f00b0066822289627mr14111407ybu.134.1656061866469; Fri, 24
+ Jun 2022 02:11:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20220623125442.645240-2-aneesh.kumar@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: n5AYZ0aL210nc82cr2OGEP4nPrOt0gDq
-X-Proofpoint-ORIG-GUID: n5AYZ0aL210nc82cr2OGEP4nPrOt0gDq
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-06-24_05,2022-06-23_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
- impostorscore=0 suspectscore=0 clxscore=1015 spamscore=0 adultscore=0
- lowpriorityscore=0 malwarescore=0 priorityscore=1501 bulkscore=0
- mlxscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2206240032
+References: <20220617125750.728590-1-arnd@kernel.org> <20220617125750.728590-4-arnd@kernel.org>
+ <6ba86afe-bf9f-1aca-7af1-d0d348d75ffc@gmail.com>
+In-Reply-To: <6ba86afe-bf9f-1aca-7af1-d0d348d75ffc@gmail.com>
+From: Arnd Bergmann <arnd@kernel.org>
+Date: Fri, 24 Jun 2022 11:10:49 +0200
+X-Gmail-Original-Message-ID: <CAK8P3a1XfwkTOV7qOs1fTxf4vthNBRXKNu8A5V7TWnHT081NGA@mail.gmail.com>
+Message-ID: <CAK8P3a1XfwkTOV7qOs1fTxf4vthNBRXKNu8A5V7TWnHT081NGA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] arch/*/: remove CONFIG_VIRT_TO_BUS
+To: Michael Schmitz <schmitzmic@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,56 +68,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, Miquel van Smoorenburg <mikevs@xs4all.net>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-scsi <linux-scsi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-m68k <linux-m68k@lists.linux-m68k.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Maciej W . Rozycki" <macro@orcam.me.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Denis Efremov <efremov@linux.com>, Mark Salyzyn <salyzyn@android.com>, Christoph Hellwig <hch@infradead.org>, "open list:IOMMU DRIVERS" <iommu@lists.linux-foundation.org>, Matt Wang <wwentao@vmware.com>, Parisc List <linux-parisc@vger.kernel.org>, alpha <linux-alpha@vger.kernel.org>, Jakub Kicinski <kuba@kernel.org>, Khalid Aziz <khalid@gonehiking.org>, Robin Murphy <robin.murphy@arm.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-* Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> [2022-06-23 18:24:42]:
+On Sat, Jun 18, 2022 at 3:06 AM Michael Schmitz <schmitzmic@gmail.com> wrote:
+> Am 18.06.2022 um 00:57 schrieb Arnd Bergmann:
+> >
+> > All architecture-independent users of virt_to_bus() and bus_to_virt()
+> > have been fixed to use the dma mapping interfaces or have been
+> > removed now.  This means the definitions on most architectures, and the
+> > CONFIG_VIRT_TO_BUS symbol are now obsolete and can be removed.
+> >
+> > The only exceptions to this are a few network and scsi drivers for m68k
+> > Amiga and VME machines and ppc32 Macintosh. These drivers work correctly
+> > with the old interfaces and are probably not worth changing.
+>
+> The Amiga SCSI drivers are all old WD33C93 ones, and replacing
+> virt_to_bus by virt_to_phys in the dma_setup() function there would
+> cause no functional change at all.
 
-> While building the cpu_to_node map make sure we always use the online node
-> to build the mapping table. In general this should not be an issue
-> because the kernel use similar lookup mechanism (vphn_get_nid()) to mark
-> nodes online (setup_node_data()). Hence NUMA nodes we find during
-> lookup in numa_setup_cpu() will always be found online.
-> 
-> To keep logic simpler/correct, make sure that if the hypervisor
-> or device tree returned a not online node, don't use that to build
-> the map table. Instead, use the first_online_node.
+Ok, thanks for taking a look here.
 
-Why should the returned nid be already online. Are we facing any problem
-with the current code?
+> drivers/vme/bridges/vme_ca91cx42.c hasn't been used at all on m68k (it
+> is a PCI-to-VME bridge chipset driver that would be needed on
+> architectures that natively use a PCI bus). I haven't found anything
+> that selects that driver, so not sure it is even still in use??
 
-Since general idea is to keep cpu_to_node constant, By assigining it the
-first_online_node, we may be ending up assigning a wrong node, resulting a
-performance penalty later on. i.e CPU may actually belong to node 4 but we
-assigned it to node 1. Also the coregroup id is derived from associavity
-array. If there is a mismatch between the coregroup id and nid,
-scheduler will crib.
+It's gone now, Greg has already taken my patches for this through
+the staging tree.
 
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 0801b2ce9b7d..f387b9eb9dc9 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -741,7 +741,7 @@ static int numa_setup_cpu(unsigned long lcpu)
->  	of_node_put(cpu);
-> 
->  out_present:
-> -	if (nid < 0 || !node_possible(nid))
-> +	if (nid < 0 || !node_online(nid))
->  		nid = first_online_node;
-> 
->  	/*
-> -- 
-> 2.36.1
-> 
+> That would allow you to drop the remaining virt_to_bus define from
+> arch/m68k/include/asm/virtconvert.h.
+>
+> I could submit a patch to convert the Amiga SCSI drivers to use
+> virt_to_phys if Geert and the SCSI maintainers think it's worth the churn.
 
--- 
-Thanks and Regards
-Srikar Dronamraju
+I don't think using virt_to_phys() is an improvement here, as
+virt_to_bus() was originally meant as a better abstraction to
+replace the use of virt_to_phys() to make drivers portable, before
+it got replaced by the dma-mapping interface in turn.
+
+It looks like the Amiga SCSI drivers have an open-coded version of
+what dma_map_single() does, to do bounce buffering and cache
+management. The ideal solution would be to convert the drivers
+actually use the appropriate dma-mapping interfaces and remove
+this custom code.
+
+The same could be done for the two vme drivers (scsi/mvme147.c
+and ethernet/82596.c), which do the cache management but
+apparently don't need swiotlb bounce buffering.
+
+Rewriting the drivers to modern APIs is of course non-trivial,
+and if you want a shortcut here, I would suggest introducing
+platform specific helpers similar to isa_virt_to_bus() and call
+them amiga_virt_to_bus() and vme_virt_to_bus, respectively.
+
+Putting these into a platform specific header file at least helps
+clarify that both the helper functions and the drivers using them
+are non-portable.
+
+> 32bit powerpc is a different matter though.
+
+It's similar, but unrelated. The two apple ethernet drivers
+(bmac and mace) can again either get changed to use the
+dma-mapping interfaces, or get a custom pmac_virt_to_bus()/
+pmac_bus_to_virt() helper.
+
+There is also drivers/tty/serial/cpm_uart/cpm_uart_cpm2.c,
+which I think just needs a trivial change, but I'm not sure
+how to do it correctly.
+
+      Arnd
