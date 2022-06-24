@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A1C2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 04:51:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C880C43334
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 04:52:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LTl8Q4Mqcz3g6L
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 14:51:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LTl8r6gTBz3fCQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Jun 2022 14:52:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LTl2Z38Znz3f9p
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 14:46:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LTl2c0TH1z3f92
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jun 2022 14:46:47 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3DEEE16F3;
-	Thu, 23 Jun 2022 21:46:15 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 67BA71758;
+	Thu, 23 Jun 2022 21:46:47 -0700 (PDT)
 Received: from a077893.blr.arm.com (unknown [10.162.41.7])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id BDFBE3F66F;
-	Thu, 23 Jun 2022 21:46:06 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 854F93F66F;
+	Thu, 23 Jun 2022 21:46:39 -0700 (PDT)
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH V4 17/26] csky/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Date: Fri, 24 Jun 2022 10:13:30 +0530
-Message-Id: <20220624044339.1533882-18-anshuman.khandual@arm.com>
+Subject: [PATCH V4 21/26] m68k/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
+Date: Fri, 24 Jun 2022 10:13:34 +0530
+Message-Id: <20220624044339.1533882-22-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220624044339.1533882-1-anshuman.khandual@arm.com>
 References: <20220624044339.1533882-1-anshuman.khandual@arm.com>
@@ -40,7 +40,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -49,83 +49,278 @@ vm_get_page_prot() implementation via DECLARE_VM_GET_PAGE_PROT, which looks
 up a private and static protection_map[] array. Subsequently all __SXXX and
 __PXXX macros can be dropped which are no longer needed.
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-csky@vger.kernel.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: linux-m68k@lists.linux-m68k.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/csky/Kconfig               |  1 +
- arch/csky/include/asm/pgtable.h | 18 ------------------
- arch/csky/mm/init.c             | 20 ++++++++++++++++++++
- 3 files changed, 21 insertions(+), 18 deletions(-)
+ arch/m68k/Kconfig                        |  1 +
+ arch/m68k/include/asm/mcf_pgtable.h      | 54 -----------------------
+ arch/m68k/include/asm/motorola_pgtable.h | 22 ----------
+ arch/m68k/include/asm/sun3_pgtable.h     | 17 --------
+ arch/m68k/mm/mcfmmu.c                    | 55 ++++++++++++++++++++++++
+ arch/m68k/mm/motorola.c                  | 20 +++++++++
+ arch/m68k/mm/sun3mmu.c                   | 20 +++++++++
+ 7 files changed, 96 insertions(+), 93 deletions(-)
 
-diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
-index 21d72b078eef..588b8a9c68ed 100644
---- a/arch/csky/Kconfig
-+++ b/arch/csky/Kconfig
-@@ -6,6 +6,7 @@ config CSKY
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_SYNC_DMA_FOR_CPU
- 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 936cce42ae9a..49aa0cf13e96 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -7,6 +7,7 @@ config M68K
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DMA_PREP_COHERENT if HAS_DMA && MMU && !COLDFIRE
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE if HAS_DMA
 +	select ARCH_HAS_VM_GET_PAGE_PROT
- 	select ARCH_USE_BUILTIN_BSWAP
- 	select ARCH_USE_QUEUED_RWLOCKS
- 	select ARCH_WANT_FRAME_POINTERS if !CPU_CK610 && $(cc-option,-mbacktrace)
-diff --git a/arch/csky/include/asm/pgtable.h b/arch/csky/include/asm/pgtable.h
-index bbe245117777..229a5f4ad7fc 100644
---- a/arch/csky/include/asm/pgtable.h
-+++ b/arch/csky/include/asm/pgtable.h
-@@ -77,24 +77,6 @@
- #define MAX_SWAPFILES_CHECK() \
- 		BUILD_BUG_ON(MAX_SWAPFILES_SHIFT != 5)
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG if RMW_INSNS
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT if ISA
+ 	select ARCH_NO_PREEMPT if !COLDFIRE
+diff --git a/arch/m68k/include/asm/mcf_pgtable.h b/arch/m68k/include/asm/mcf_pgtable.h
+index 94f38d76e278..0e9c1b28dcab 100644
+--- a/arch/m68k/include/asm/mcf_pgtable.h
++++ b/arch/m68k/include/asm/mcf_pgtable.h
+@@ -91,60 +91,6 @@
+  * for use. In general, the bit positions are xwr, and P-items are
+  * private, the S-items are shared.
+  */
+-#define __P000		PAGE_NONE
+-#define __P001		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE)
+-#define __P010		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_WRITABLE)
+-#define __P011		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE \
+-				 | CF_PAGE_WRITABLE)
+-#define __P100		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_EXEC)
+-#define __P101		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE \
+-				 | CF_PAGE_EXEC)
+-#define __P110		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_WRITABLE \
+-				 | CF_PAGE_EXEC)
+-#define __P111		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE \
+-				 | CF_PAGE_WRITABLE \
+-				 | CF_PAGE_EXEC)
+-
+-#define __S000		PAGE_NONE
+-#define __S001		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE)
+-#define __S010		PAGE_SHARED
+-#define __S011		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_SHARED \
+-				 | CF_PAGE_READABLE)
+-#define __S100		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_EXEC)
+-#define __S101		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_READABLE \
+-				 | CF_PAGE_EXEC)
+-#define __S110		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_SHARED \
+-				 | CF_PAGE_EXEC)
+-#define __S111		__pgprot(CF_PAGE_VALID \
+-				 | CF_PAGE_ACCESSED \
+-				 | CF_PAGE_SHARED \
+-				 | CF_PAGE_READABLE \
+-				 | CF_PAGE_EXEC)
+-
+ #define PTE_MASK	PAGE_MASK
+ #define CF_PAGE_CHG_MASK (PTE_MASK | CF_PAGE_ACCESSED | CF_PAGE_DIRTY)
  
+diff --git a/arch/m68k/include/asm/motorola_pgtable.h b/arch/m68k/include/asm/motorola_pgtable.h
+index 7c9b56e2a750..63aaece0722f 100644
+--- a/arch/m68k/include/asm/motorola_pgtable.h
++++ b/arch/m68k/include/asm/motorola_pgtable.h
+@@ -83,28 +83,6 @@ extern unsigned long mm_cachebits;
+ #define PAGE_COPY_C	__pgprot(_PAGE_PRESENT | _PAGE_RONLY | _PAGE_ACCESSED)
+ #define PAGE_READONLY_C	__pgprot(_PAGE_PRESENT | _PAGE_RONLY | _PAGE_ACCESSED)
+ 
+-/*
+- * The m68k can't do page protection for execute, and considers that the same are read.
+- * Also, write permissions imply read permissions. This is the closest we can get..
+- */
+-#define __P000	PAGE_NONE_C
+-#define __P001	PAGE_READONLY_C
+-#define __P010	PAGE_COPY_C
+-#define __P011	PAGE_COPY_C
+-#define __P100	PAGE_READONLY_C
+-#define __P101	PAGE_READONLY_C
+-#define __P110	PAGE_COPY_C
+-#define __P111	PAGE_COPY_C
+-
+-#define __S000	PAGE_NONE_C
+-#define __S001	PAGE_READONLY_C
+-#define __S010	PAGE_SHARED_C
+-#define __S011	PAGE_SHARED_C
+-#define __S100	PAGE_READONLY_C
+-#define __S101	PAGE_READONLY_C
+-#define __S110	PAGE_SHARED_C
+-#define __S111	PAGE_SHARED_C
+-
+ #define pmd_pgtable(pmd) ((pgtable_t)pmd_page_vaddr(pmd))
+ 
+ /*
+diff --git a/arch/m68k/include/asm/sun3_pgtable.h b/arch/m68k/include/asm/sun3_pgtable.h
+index 5e4e753f0d24..9d919491765b 100644
+--- a/arch/m68k/include/asm/sun3_pgtable.h
++++ b/arch/m68k/include/asm/sun3_pgtable.h
+@@ -71,23 +71,6 @@
+  * protection settings, valid (implying read and execute) and writeable. These
+  * are as close as we can get...
+  */
 -#define __P000	PAGE_NONE
--#define __P001	PAGE_READ
--#define __P010	PAGE_READ
--#define __P011	PAGE_READ
--#define __P100	PAGE_READ
--#define __P101	PAGE_READ
--#define __P110	PAGE_READ
--#define __P111	PAGE_READ
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY
+-#define __P101	PAGE_READONLY
+-#define __P110	PAGE_COPY
+-#define __P111	PAGE_COPY
 -
 -#define __S000	PAGE_NONE
--#define __S001	PAGE_READ
--#define __S010	PAGE_WRITE
--#define __S011	PAGE_WRITE
--#define __S100	PAGE_READ
--#define __S101	PAGE_READ
--#define __S110	PAGE_WRITE
--#define __S111	PAGE_WRITE
--
- extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
- #define ZERO_PAGE(vaddr)	(virt_to_page(empty_zero_page))
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY
+-#define __S101	PAGE_READONLY
+-#define __S110	PAGE_SHARED
+-#define __S111	PAGE_SHARED
  
-diff --git a/arch/csky/mm/init.c b/arch/csky/mm/init.c
-index bf2004aa811a..1bf7b2a748fd 100644
---- a/arch/csky/mm/init.c
-+++ b/arch/csky/mm/init.c
-@@ -197,3 +197,23 @@ void __init fixaddr_init(void)
- 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
- 	fixrange_init(vaddr, vaddr + PMD_SIZE, swapper_pg_dir);
+ /* Use these fake page-protections on PMDs. */
+ #define SUN3_PMD_VALID	(0x00000001)
+diff --git a/arch/m68k/mm/mcfmmu.c b/arch/m68k/mm/mcfmmu.c
+index 6f1f25125294..45d1964301f4 100644
+--- a/arch/m68k/mm/mcfmmu.c
++++ b/arch/m68k/mm/mcfmmu.c
+@@ -234,3 +234,58 @@ void steal_context(void)
+ 	destroy_context(mm);
+ }
+ 
++static pgprot_t protection_map[16] __ro_after_init = {
++	[VM_NONE]					= PAGE_NONE,
++	[VM_READ]					= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE),
++	[VM_WRITE]					= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_WRITABLE),
++	[VM_WRITE | VM_READ]				= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE |
++								   CF_PAGE_WRITABLE),
++	[VM_EXEC]					= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_EXEC),
++	[VM_EXEC | VM_READ]				= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE |
++								   CF_PAGE_EXEC),
++	[VM_EXEC | VM_WRITE]				= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_WRITABLE |
++								   CF_PAGE_EXEC),
++	[VM_EXEC | VM_WRITE | VM_READ]			=  __pgprot(CF_PAGE_VALID |
++								    CF_PAGE_ACCESSED |
++								    CF_PAGE_READABLE |
++								    CF_PAGE_WRITABLE |
++								    CF_PAGE_EXEC),
++	[VM_SHARED]					= PAGE_NONE,
++	[VM_SHARED | VM_READ]				= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE),
++	[VM_SHARED | VM_WRITE]				= PAGE_SHARED,
++	[VM_SHARED | VM_WRITE | VM_READ]		= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE |
++								   CF_PAGE_SHARED),
++	[VM_SHARED | VM_EXEC]				= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_EXEC),
++	[VM_SHARED | VM_EXEC | VM_READ]			= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE |
++								   CF_PAGE_EXEC),
++	[VM_SHARED | VM_EXEC | VM_WRITE]		= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_SHARED |
++								   CF_PAGE_EXEC),
++	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= __pgprot(CF_PAGE_VALID |
++								   CF_PAGE_ACCESSED |
++								   CF_PAGE_READABLE |
++								   CF_PAGE_SHARED |
++								   CF_PAGE_EXEC)
++};
++DECLARE_VM_GET_PAGE_PROT
+diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
+index df7f797c908a..31fba64bc530 100644
+--- a/arch/m68k/mm/motorola.c
++++ b/arch/m68k/mm/motorola.c
+@@ -382,6 +382,26 @@ static void __init map_node(int node)
+ #endif
+ }
+ 
++static pgprot_t protection_map[16] __ro_after_init = {
++	[VM_NONE]					= PAGE_NONE_C,
++	[VM_READ]					= PAGE_READONLY_C,
++	[VM_WRITE]					= PAGE_COPY_C,
++	[VM_WRITE | VM_READ]				= PAGE_COPY_C,
++	[VM_EXEC]					= PAGE_READONLY_C,
++	[VM_EXEC | VM_READ]				= PAGE_READONLY_C,
++	[VM_EXEC | VM_WRITE]				= PAGE_COPY_C,
++	[VM_EXEC | VM_WRITE | VM_READ]			= PAGE_COPY_C,
++	[VM_SHARED]					= PAGE_NONE_C,
++	[VM_SHARED | VM_READ]				= PAGE_READONLY_C,
++	[VM_SHARED | VM_WRITE]				= PAGE_SHARED_C,
++	[VM_SHARED | VM_WRITE | VM_READ]		= PAGE_SHARED_C,
++	[VM_SHARED | VM_EXEC]				= PAGE_READONLY_C,
++	[VM_SHARED | VM_EXEC | VM_READ]			= PAGE_READONLY_C,
++	[VM_SHARED | VM_EXEC | VM_WRITE]		= PAGE_SHARED_C,
++	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_SHARED_C
++};
++DECLARE_VM_GET_PAGE_PROT
++
+ /*
+  * paging_init() continues the virtual memory environment setup which
+  * was begun by the code in arch/head.S.
+diff --git a/arch/m68k/mm/sun3mmu.c b/arch/m68k/mm/sun3mmu.c
+index dad494224497..ef0baea67ea2 100644
+--- a/arch/m68k/mm/sun3mmu.c
++++ b/arch/m68k/mm/sun3mmu.c
+@@ -95,3 +95,23 @@ void __init paging_init(void)
+ 
+ 
  }
 +
 +static pgprot_t protection_map[16] __ro_after_init = {
 +	[VM_NONE]					= PAGE_NONE,
-+	[VM_READ]					= PAGE_READ,
-+	[VM_WRITE]					= PAGE_READ,
-+	[VM_WRITE | VM_READ]				= PAGE_READ,
-+	[VM_EXEC]					= PAGE_READ,
-+	[VM_EXEC | VM_READ]				= PAGE_READ,
-+	[VM_EXEC | VM_WRITE]				= PAGE_READ,
-+	[VM_EXEC | VM_WRITE | VM_READ]			= PAGE_READ,
++	[VM_READ]					= PAGE_READONLY,
++	[VM_WRITE]					= PAGE_COPY,
++	[VM_WRITE | VM_READ]				= PAGE_COPY,
++	[VM_EXEC]					= PAGE_READONLY,
++	[VM_EXEC | VM_READ]				= PAGE_READONLY,
++	[VM_EXEC | VM_WRITE]				= PAGE_COPY,
++	[VM_EXEC | VM_WRITE | VM_READ]			= PAGE_COPY,
 +	[VM_SHARED]					= PAGE_NONE,
-+	[VM_SHARED | VM_READ]				= PAGE_READ,
-+	[VM_SHARED | VM_WRITE]				= PAGE_WRITE,
-+	[VM_SHARED | VM_WRITE | VM_READ]		= PAGE_WRITE,
-+	[VM_SHARED | VM_EXEC]				= PAGE_READ,
-+	[VM_SHARED | VM_EXEC | VM_READ]			= PAGE_READ,
-+	[VM_SHARED | VM_EXEC | VM_WRITE]		= PAGE_WRITE,
-+	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_WRITE
++	[VM_SHARED | VM_READ]				= PAGE_READONLY,
++	[VM_SHARED | VM_WRITE]				= PAGE_SHARED,
++	[VM_SHARED | VM_WRITE | VM_READ]		= PAGE_SHARED,
++	[VM_SHARED | VM_EXEC]				= PAGE_READONLY,
++	[VM_SHARED | VM_EXEC | VM_READ]			= PAGE_READONLY,
++	[VM_SHARED | VM_EXEC | VM_WRITE]		= PAGE_SHARED,
++	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_SHARED
 +};
 +DECLARE_VM_GET_PAGE_PROT
 -- 
