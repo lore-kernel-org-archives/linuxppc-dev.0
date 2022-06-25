@@ -4,35 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E67FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jun 2022 09:57:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73C00C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jun 2022 11:48:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LVTtm6T9dz3dpf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jun 2022 19:57:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wanadoo.fr (client-ip=80.12.242.128; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=<UNKNOWN>)
-Received: from smtp.smtpout.orange.fr (smtp06.smtpout.orange.fr [80.12.242.128])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LVXLk5gM8z3dpR
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Jun 2022 21:48:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=188.165.49.222; helo=6.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Received: from 6.mo552.mail-out.ovh.net (6.mo552.mail-out.ovh.net [188.165.49.222])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LVTtL0JZdz3bm7
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jun 2022 19:57:11 +1000 (AEST)
-Received: from pop-os.home ([90.11.190.129])
-	by smtp.orange.fr with ESMTPA
-	id 52Q2oyvoAP8Ap52Q2oqOnW; Sat, 25 Jun 2022 11:49:36 +0200
-X-ME-Helo: pop-os.home
-X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
-X-ME-Date: Sat, 25 Jun 2022 11:49:36 +0200
-X-ME-IP: 90.11.190.129
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	=?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-Subject: [PATCH] powerpc/xive: Fix some incorrect memory allocation
-Date: Sat, 25 Jun 2022 11:49:31 +0200
-Message-Id: <2ebb28e9de76d35b75c137f9944c2dfd893d34fa.1656150559.git.christophe.jaillet@wanadoo.fr>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LVXLC70bZz3bkV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jun 2022 21:48:00 +1000 (AEST)
+Received: from mxplan5.mail.ovh.net (unknown [10.109.143.118])
+	by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 2B89624A8F;
+	Sat, 25 Jun 2022 11:29:37 +0000 (UTC)
+Received: from kaod.org (37.59.142.107) by DAG4EX1.mxp5.local (172.16.2.31)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.9; Sat, 25 Jun
+ 2022 13:29:36 +0200
+Authentication-Results: garm.ovh; auth=pass (GARM-107S001e52cdebf-f225-43ef-b594-73954c12a390,
+                    4F3A6162F3CBF85AFED954EB26FB80209C915413) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <d48bcb6b-41f7-8243-6094-cf80beffe68a@kaod.org>
+Date: Sat, 25 Jun 2022 13:29:35 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+Subject: Re: [PATCH] powerpc/xive: Fix some incorrect memory allocation
+Content-Language: en-US
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Michael Ellerman
+	<mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
+ Mackerras <paulus@samba.org>
+References: <2ebb28e9de76d35b75c137f9944c2dfd893d34fa.1656150559.git.christophe.jaillet@wanadoo.fr>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <2ebb28e9de76d35b75c137f9944c2dfd893d34fa.1656150559.git.christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [37.59.142.107]
+X-ClientProxiedBy: DAG6EX2.mxp5.local (172.16.2.52) To DAG4EX1.mxp5.local
+ (172.16.2.31)
+X-Ovh-Tracer-GUID: 8095d44e-4afb-4333-bd47-84e426c9d3f6
+X-Ovh-Tracer-Id: 17411197634755070825
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvfedrudeguddggedvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfuffvvehfhfgjtgfgihesthejredttdefjeenucfhrhhomhepveorughrihgtpgfnvggpifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeifeehtdevfeeuhfelheekkeefieeivdfhgeevueeijeetjeekueeggedujeeiieenucffohhmrghinhepohiilhgrsghsrdhorhhgnecukfhppedtrddtrddtrddtpdefjedrheelrddugedvrddutdejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmohguvgepshhmthhpohhuthdphhgvlhhopehmgihplhgrnhehrdhmrghilhdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheptghlgheskhgrohgurdhorhhgpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdpoffvtefjohhsthepmhhoheehvd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,46 +60,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-'xibm->count' really looks like a number of bits (see how it is used in
-__xive_irq_bitmap_alloc()), so use the bitmap API to allocate and free this
-bitmap.
+Hello Christophe,
 
-This improves semantic and potentially avoids some over memory allocation.
+On 6/25/22 11:49, Christophe JAILLET wrote:
+> 'xibm->count' really looks like a number of bits (see how it is used in
+> __xive_irq_bitmap_alloc()), so use the bitmap API to allocate and free this
+> bitmap.
+> 
+> This improves semantic and potentially avoids some over memory allocation.
 
-Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-I don't cross compile, so this patch is NOT compile-tested.
----
- arch/powerpc/sysdev/xive/spapr.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This is correct and
+  
+> Fixes: eac1e731b59e ("powerpc/xive: guest exploitation of the XIVE interrupt controller")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> ---
+> I don't cross compile, so this patch is NOT compile-tested.
 
-diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
-index 7d5128676e83..fdbebb14b7de 100644
---- a/arch/powerpc/sysdev/xive/spapr.c
-+++ b/arch/powerpc/sysdev/xive/spapr.c
-@@ -57,7 +57,7 @@ static int __init xive_irq_bitmap_add(int base, int count)
- 	spin_lock_init(&xibm->lock);
- 	xibm->base = base;
- 	xibm->count = count;
--	xibm->bitmap = kzalloc(xibm->count, GFP_KERNEL);
-+	xibm->bitmap = bitmap_zalloc(xibm->count, GFP_KERNEL);
- 	if (!xibm->bitmap) {
- 		kfree(xibm);
- 		return -ENOMEM;
-@@ -75,7 +75,7 @@ static void xive_irq_bitmap_remove_all(void)
- 
- 	list_for_each_entry_safe(xibm, tmp, &xive_irq_bitmaps, list) {
- 		list_del(&xibm->list);
--		kfree(xibm->bitmap);
-+		bitmap_free(xibm->bitmap);
- 		kfree(xibm);
- 	}
- }
--- 
-2.34.1
+
+Nathan provided a fix for it already :
+
+  http://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220623182509.3985625-1-nathanl@linux.ibm.com/
+
+Thanks,
+
+C.
+
+> ---
+>   arch/powerpc/sysdev/xive/spapr.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+> index 7d5128676e83..fdbebb14b7de 100644
+> --- a/arch/powerpc/sysdev/xive/spapr.c
+> +++ b/arch/powerpc/sysdev/xive/spapr.c
+> @@ -57,7 +57,7 @@ static int __init xive_irq_bitmap_add(int base, int count)
+>   	spin_lock_init(&xibm->lock);
+>   	xibm->base = base;
+>   	xibm->count = count;
+> -	xibm->bitmap = kzalloc(xibm->count, GFP_KERNEL);
+> +	xibm->bitmap = bitmap_zalloc(xibm->count, GFP_KERNEL);
+>   	if (!xibm->bitmap) {
+>   		kfree(xibm);
+>   		return -ENOMEM;
+> @@ -75,7 +75,7 @@ static void xive_irq_bitmap_remove_all(void)
+>   
+>   	list_for_each_entry_safe(xibm, tmp, &xive_irq_bitmaps, list) {
+>   		list_del(&xibm->list);
+> -		kfree(xibm->bitmap);
+> +		bitmap_free(xibm->bitmap);
+>   		kfree(xibm);
+>   	}
+>   }
 
