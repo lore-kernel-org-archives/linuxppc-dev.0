@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A50CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jun 2022 00:29:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A500BC43334
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jun 2022 00:29:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LVsDw5rT7z3cCc
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jun 2022 10:29:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LVsFL054nz3dy2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Jun 2022 10:29:58 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LVsD66LSTz3bYG
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2022 10:28:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LVsD70BrXz3bYG
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jun 2022 10:28:55 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LVsD336rPz4xZj;
-	Sun, 26 Jun 2022 10:28:51 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LVsD05Fn4z4xNm;
+	Sun, 26 Jun 2022 10:28:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220616120033.1976732-1-mpe@ellerman.id.au>
-References: <20220616120033.1976732-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm: Move CMA reservations after initmem_init()
-Message-Id: <165620330544.1934578.7070887522186510241.b4-ty@ellerman.id.au>
-Date: Sun, 26 Jun 2022 10:28:25 +1000
+To: Paul Mackerras <paulus@samba.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <3802811f7cf94f730be44688539c01bba3a3b5c0.1654875808.git.christophe.leroy@csgroup.eu>
+References: <3802811f7cf94f730be44688539c01bba3a3b5c0.1654875808.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/prom_init: Fix build failure with GCC_PLUGIN_STRUCTLEAK_BYREF_ALL and KASAN
+Message-Id: <165620330350.1934578.13931347836016733313.b4-ty@ellerman.id.au>
+Date: Sun, 26 Jun 2022 10:28:23 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, ziy@nvidia.com, linux-mm@kvack.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 16 Jun 2022 22:00:33 +1000, Michael Ellerman wrote:
-> After commit 11ac3e87ce09 ("mm: cma: use pageblock_order as the single
-> alignment") there is an error at boot about the KVM CMA reservation
-> failing, eg:
+On Fri, 10 Jun 2022 17:43:43 +0200, Christophe Leroy wrote:
+> When CONFIG_KASAN is selected, we expect prom_init to use __memset()
+> because it is too early to use memset().
 > 
->   kvm_cma_reserve: reserving 6553 MiB for global area
->   cma: Failed to reserve 6553 MiB
+> But with CONFIG_GCC_PLUGIN_STRUCTLEAK_BYREF_ALL, the compiler adds calls
+> to memset() to clear objects on stack, hence the following failure:
+> 
+> 	  PROMCHK arch/powerpc/kernel/prom_init_check
+> 	Error: External symbol 'memset' referenced from prom_init.c
+> 	make[2]: *** [arch/powerpc/kernel/Makefile:204 : arch/powerpc/kernel/prom_init_check] Erreur 1
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/mm: Move CMA reservations after initmem_init()
-      https://git.kernel.org/powerpc/c/6cf06c17e94f26c290fd3370a5c36514ae15ac43
+[1/1] powerpc/prom_init: Fix build failure with GCC_PLUGIN_STRUCTLEAK_BYREF_ALL and KASAN
+      https://git.kernel.org/powerpc/c/ca5dabcff1df6bc8c413922b5fa63cc602858803
 
 cheers
