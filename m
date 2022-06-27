@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2648C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 05:04:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D605C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 05:04:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LWbHR3SR2z3ftQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 15:04:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LWbHs0ZnPz3g0X
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 15:04:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LWbCT1zJbz3f47
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 15:00:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LWbCV5FQBz3f35
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 15:00:54 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F2DD615DB;
-	Sun, 26 Jun 2022 22:00:21 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 56FD41684;
+	Sun, 26 Jun 2022 22:00:54 -0700 (PDT)
 Received: from a077893.blr.arm.com (unknown [10.162.42.6])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 14D433F5A1;
-	Sun, 26 Jun 2022 22:00:13 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D073D3F5A1;
+	Sun, 26 Jun 2022 22:00:46 -0700 (PDT)
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH V5 11/26] xtensa/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Date: Mon, 27 Jun 2022 10:28:18 +0530
-Message-Id: <20220627045833.1590055-12-anshuman.khandual@arm.com>
+Subject: [PATCH V5 15/26] nios2/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
+Date: Mon, 27 Jun 2022 10:28:22 +0530
+Message-Id: <20220627045833.1590055-16-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220627045833.1590055-1-anshuman.khandual@arm.com>
 References: <20220627045833.1590055-1-anshuman.khandual@arm.com>
@@ -40,7 +40,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -49,85 +49,82 @@ vm_get_page_prot() implementation via DECLARE_VM_GET_PAGE_PROT, which looks
 up a private and static protection_map[] array. Subsequently all __SXXX and
 __PXXX macros can be dropped which are no longer needed.
 
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Guo Ren <guoren@kernel.org>
-Cc: linux-xtensa@linux-xtensa.org
-Cc: linux-csky@vger.kernel.org
+Cc: Dinh Nguyen <dinguyen@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/xtensa/Kconfig               |  1 +
- arch/xtensa/include/asm/pgtable.h | 18 ------------------
- arch/xtensa/mm/init.c             | 20 ++++++++++++++++++++
- 3 files changed, 21 insertions(+), 18 deletions(-)
+ arch/nios2/Kconfig               |  1 +
+ arch/nios2/include/asm/pgtable.h | 16 ----------------
+ arch/nios2/mm/init.c             | 20 ++++++++++++++++++++
+ 3 files changed, 21 insertions(+), 16 deletions(-)
 
-diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index 0b0f0172cced..4c0d83520ff1 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -11,6 +11,7 @@ config XTENSA
- 	select ARCH_HAS_DMA_SET_UNCACHED if MMU
- 	select ARCH_HAS_STRNCPY_FROM_USER if !KASAN
- 	select ARCH_HAS_STRNLEN_USER
+diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
+index 4167f1eb4cd8..e0459dffd218 100644
+--- a/arch/nios2/Kconfig
++++ b/arch/nios2/Kconfig
+@@ -6,6 +6,7 @@ config NIOS2
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+ 	select ARCH_HAS_DMA_SET_UNCACHED
 +	select ARCH_HAS_VM_GET_PAGE_PROT
- 	select ARCH_USE_MEMTEST
- 	select ARCH_USE_QUEUED_RWLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS
-diff --git a/arch/xtensa/include/asm/pgtable.h b/arch/xtensa/include/asm/pgtable.h
-index 0a91376131c5..e0d5531ae00d 100644
---- a/arch/xtensa/include/asm/pgtable.h
-+++ b/arch/xtensa/include/asm/pgtable.h
-@@ -200,24 +200,6 @@
-  * What follows is the closest we can get by reasonable means..
-  * See linux/mm/mmap.c for protection_map[] array that uses these definitions.
+ 	select ARCH_NO_SWAP
+ 	select COMMON_CLK
+ 	select TIMER_OF
+diff --git a/arch/nios2/include/asm/pgtable.h b/arch/nios2/include/asm/pgtable.h
+index 262d0609268c..470516d4555e 100644
+--- a/arch/nios2/include/asm/pgtable.h
++++ b/arch/nios2/include/asm/pgtable.h
+@@ -40,24 +40,8 @@ struct mm_struct;
   */
--#define __P000	PAGE_NONE		/* private --- */
--#define __P001	PAGE_READONLY		/* private --r */
--#define __P010	PAGE_COPY		/* private -w- */
--#define __P011	PAGE_COPY		/* private -wr */
--#define __P100	PAGE_READONLY_EXEC	/* private x-- */
--#define __P101	PAGE_READONLY_EXEC	/* private x-r */
--#define __P110	PAGE_COPY_EXEC		/* private xw- */
--#define __P111	PAGE_COPY_EXEC		/* private xwr */
--
--#define __S000	PAGE_NONE		/* shared  --- */
--#define __S001	PAGE_READONLY		/* shared  --r */
--#define __S010	PAGE_SHARED		/* shared  -w- */
--#define __S011	PAGE_SHARED		/* shared  -wr */
--#define __S100	PAGE_READONLY_EXEC	/* shared  x-- */
--#define __S101	PAGE_READONLY_EXEC	/* shared  x-r */
--#define __S110	PAGE_SHARED_EXEC	/* shared  xw- */
--#define __S111	PAGE_SHARED_EXEC	/* shared  xwr */
--
- #ifndef __ASSEMBLY__
  
- #define pte_ERROR(e) \
-diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
-index 6a32b2cf2718..fb830ec8183c 100644
---- a/arch/xtensa/mm/init.c
-+++ b/arch/xtensa/mm/init.c
-@@ -216,3 +216,23 @@ static int __init parse_memmap_opt(char *str)
- 	return 0;
+ /* Remove W bit on private pages for COW support */
+-#define __P000	MKP(0, 0, 0)
+-#define __P001	MKP(0, 0, 1)
+-#define __P010	MKP(0, 0, 0)	/* COW */
+-#define __P011	MKP(0, 0, 1)	/* COW */
+-#define __P100	MKP(1, 0, 0)
+-#define __P101	MKP(1, 0, 1)
+-#define __P110	MKP(1, 0, 0)	/* COW */
+-#define __P111	MKP(1, 0, 1)	/* COW */
+ 
+ /* Shared pages can have exact HW mapping */
+-#define __S000	MKP(0, 0, 0)
+-#define __S001	MKP(0, 0, 1)
+-#define __S010	MKP(0, 1, 0)
+-#define __S011	MKP(0, 1, 1)
+-#define __S100	MKP(1, 0, 0)
+-#define __S101	MKP(1, 0, 1)
+-#define __S110	MKP(1, 1, 0)
+-#define __S111	MKP(1, 1, 1)
+ 
+ /* Used all over the kernel */
+ #define PAGE_KERNEL __pgprot(_PAGE_PRESENT | _PAGE_CACHED | _PAGE_READ | \
+diff --git a/arch/nios2/mm/init.c b/arch/nios2/mm/init.c
+index 613fcaa5988a..ae24687d12ad 100644
+--- a/arch/nios2/mm/init.c
++++ b/arch/nios2/mm/init.c
+@@ -124,3 +124,23 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ {
+ 	return (vma->vm_start == KUSER_BASE) ? "[kuser]" : NULL;
  }
- early_param("memmap", parse_memmap_opt);
 +
 +static const pgprot_t protection_map[16] = {
-+	[VM_NONE]					= PAGE_NONE,
-+	[VM_READ]					= PAGE_READONLY,
-+	[VM_WRITE]					= PAGE_COPY,
-+	[VM_WRITE | VM_READ]				= PAGE_COPY,
-+	[VM_EXEC]					= PAGE_READONLY_EXEC,
-+	[VM_EXEC | VM_READ]				= PAGE_READONLY_EXEC,
-+	[VM_EXEC | VM_WRITE]				= PAGE_COPY_EXEC,
-+	[VM_EXEC | VM_WRITE | VM_READ]			= PAGE_COPY_EXEC,
-+	[VM_SHARED]					= PAGE_NONE,
-+	[VM_SHARED | VM_READ]				= PAGE_READONLY,
-+	[VM_SHARED | VM_WRITE]				= PAGE_SHARED,
-+	[VM_SHARED | VM_WRITE | VM_READ]		= PAGE_SHARED,
-+	[VM_SHARED | VM_EXEC]				= PAGE_READONLY_EXEC,
-+	[VM_SHARED | VM_EXEC | VM_READ]			= PAGE_READONLY_EXEC,
-+	[VM_SHARED | VM_EXEC | VM_WRITE]		= PAGE_SHARED_EXEC,
-+	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_SHARED_EXEC
++	[VM_NONE]					= MKP(0, 0, 0),
++	[VM_READ]					= MKP(0, 0, 1),
++	[VM_WRITE]					= MKP(0, 0, 0),
++	[VM_WRITE | VM_READ]				= MKP(0, 0, 1),
++	[VM_EXEC]					= MKP(1, 0, 0),
++	[VM_EXEC | VM_READ]				= MKP(1, 0, 1),
++	[VM_EXEC | VM_WRITE]				= MKP(1, 0, 0),
++	[VM_EXEC | VM_WRITE | VM_READ]			= MKP(1, 0, 1),
++	[VM_SHARED]					= MKP(0, 0, 0),
++	[VM_SHARED | VM_READ]				= MKP(0, 0, 1),
++	[VM_SHARED | VM_WRITE]				= MKP(0, 1, 0),
++	[VM_SHARED | VM_WRITE | VM_READ]		= MKP(0, 1, 1),
++	[VM_SHARED | VM_EXEC]				= MKP(1, 0, 0),
++	[VM_SHARED | VM_EXEC | VM_READ]			= MKP(1, 0, 1),
++	[VM_SHARED | VM_EXEC | VM_WRITE]		= MKP(1, 1, 0),
++	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= MKP(1, 1, 1)
 +};
 +DECLARE_VM_GET_PAGE_PROT
 -- 
