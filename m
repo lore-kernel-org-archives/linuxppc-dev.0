@@ -4,45 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F63EC43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 14:04:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27958C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 14:04:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LWqGc35pKz3dx8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:04:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LWqHD3qm7z3drK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:04:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T5IhEEoR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kA9rVluo;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWqDx6NpHz3bl7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWqDx6S0Mz3blb
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 00:02:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T5IhEEoR;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kA9rVluo;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LWqDv2b7Bz4xR1;
-	Tue, 28 Jun 2022 00:02:55 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LWqDx0BMrz4xXF;
+	Tue, 28 Jun 2022 00:02:57 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1656338575;
-	bh=ajWUqcvZYmYVomcTNyNSA15VhTkG64wTvAnc+OnegGY=;
-	h=From:To:Subject:Date:From;
-	b=T5IhEEoRnBLSyjK70bjNec4Jt1Wf8irt9zd1y+HaOdbs21ZXM3DrKI5iYZbFSWdjd
-	 0PDPSulT9fMhlS2futCmrf46dtfEa3QOWILq/x7JLuhMkU0X88ijmqlFxaPliBfW1j
-	 kWFOBlflztPgAQaYl5zMA8imwvdlaq4SKkgKqgv3q8sAQQzavoacfktU458ZiDrnoa
-	 tN30NYu+0H4ra2gIjte9LM203nS2HYgV/opbKyFgdMZk2o576ckumHL37r5kl+F1jN
-	 UEAsxoJPOEG5aE+JhKtxee9CkQRCGjBzmTGNtdIkjDUD6QGrLsVYQJsltzLBlG/wZn
-	 EFjcJBSO55J2Q==
+	s=201909; t=1656338577;
+	bh=zaUbu1aiCdwqKEIfcp6pk83OR9ldpaQds3tCBfTYaK4=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=kA9rVluoEOkOyGrit2CE9qiZGsdZACQCzEvWtGs1+qP1HFIL6mpbJFU0lfyf2IDHS
+	 U39UNJYAPtq6yJecatn0lu1LqezU9fJN8WVjQLh0gzM54evr5hNOmg87yKXmxibQ9U
+	 9+OdfD+4dvsWglpYRe+I4eVGOIlUwMZ3M29T1mz1jbmZMfVXftI9ovNOBI7KsiH0B3
+	 iFnrWA26eR/galWlGeJedsWKdkvmzZ8uLTq2eVYuatYBpfwUpIdvqzSKbXDqPtKO57
+	 6xZE0ZmufW5MxgrUCqZy3zyweG4tSLoLFHe1qSVax5J9XxT+PA2KTYYSnU5DVwrCQH
+	 nu8nDDZX6Excw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 01/13] selftests/powerpc: Ensure 16-byte stack pointer alignment
-Date: Tue, 28 Jun 2022 00:02:27 +1000
-Message-Id: <20220627140239.2464900-1-mpe@ellerman.id.au>
+Subject: [PATCH 04/13] selftests/powerpc: Don't save CR by default in asm helpers
+Date: Tue, 28 Jun 2022 00:02:30 +1000
+Message-Id: <20220627140239.2464900-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20220627140239.2464900-1-mpe@ellerman.id.au>
+References: <20220627140239.2464900-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,42 +61,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The PUSH/POP_BASIC_STACK helpers in basic_asm.h do not ensure that the
-stack pointer is always 16-byte aligned, which is required per the ABI.
-
-Fix the macros to do the alignment if the caller fails to.
-
-Currently only one caller passes a non-aligned size, tm_signal_self(),
-which hasn't been caught in testing, presumably because it's a leaf
-function.
+Thare are some asm helpers for creating/popping stack frames in
+basic_asm.h. They always save/restore CR, but none of the selftests
+tests touch non-volatile CR fields, so it's unnecessary to save them by
+default.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/include/basic_asm.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ tools/testing/selftests/powerpc/include/basic_asm.h | 4 ----
+ 1 file changed, 4 deletions(-)
 
 diff --git a/tools/testing/selftests/powerpc/include/basic_asm.h b/tools/testing/selftests/powerpc/include/basic_asm.h
-index 886dc026fe7a..807e83e821ec 100644
+index 807e83e821ec..faec7b11c041 100644
 --- a/tools/testing/selftests/powerpc/include/basic_asm.h
 +++ b/tools/testing/selftests/powerpc/include/basic_asm.h
-@@ -58,7 +58,7 @@
- #define PUSH_BASIC_STACK(_extra) \
+@@ -59,14 +59,10 @@
  	mflr	r0; \
  	std	r0, STACK_FRAME_LR_POS(%r1); \
--	stdu	%r1, -(_extra + STACK_FRAME_MIN_SIZE)(%r1); \
-+	stdu	%r1, -(((_extra + 15) & ~15) + STACK_FRAME_MIN_SIZE)(%r1); \
- 	mfcr	r0; \
- 	stw	r0, STACK_FRAME_CR_POS(%r1); \
+ 	stdu	%r1, -(((_extra + 15) & ~15) + STACK_FRAME_MIN_SIZE)(%r1); \
+-	mfcr	r0; \
+-	stw	r0, STACK_FRAME_CR_POS(%r1); \
  	std	%r2, STACK_FRAME_TOC_POS(%r1);
-@@ -67,7 +67,7 @@
+ 
+ #define POP_BASIC_STACK(_extra) \
  	ld	%r2, STACK_FRAME_TOC_POS(%r1); \
- 	lwz	r0, STACK_FRAME_CR_POS(%r1); \
- 	mtcr	r0; \
--	addi	%r1, %r1, (_extra + STACK_FRAME_MIN_SIZE); \
-+	addi	%r1, %r1, (((_extra + 15) & ~15) + STACK_FRAME_MIN_SIZE); \
+-	lwz	r0, STACK_FRAME_CR_POS(%r1); \
+-	mtcr	r0; \
+ 	addi	%r1, %r1, (((_extra + 15) & ~15) + STACK_FRAME_MIN_SIZE); \
  	ld	r0, STACK_FRAME_LR_POS(%r1); \
  	mtlr	r0;
- 
 -- 
 2.35.3
 
