@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4A44C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 14:06:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A92FFC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 14:06:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LWqJS48vzz3f7m
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:06:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LWqK52j1pz3dxh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:06:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Grj1ql59;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nshnNZis;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWqDy5ZXwz3bbv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 00:02:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWqDz050sz3bbv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 00:02:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Grj1ql59;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nshnNZis;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LWqDy4ktRz4xNm;
-	Tue, 28 Jun 2022 00:02:58 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LWqDw3WFPz4xLX;
+	Tue, 28 Jun 2022 00:02:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1656338578;
-	bh=vh4Ew12gG7EVqT6LbBCqMvdPPAzncK7Cu0dxXfSw6xk=;
+	s=201909; t=1656338576;
+	bh=9I/Ufeg6ZpmNhZJ/VWsUrmlZIUdCqelfr9av5KPilHE=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Grj1ql59Q56/svfJmlPjRCD3PICroZO2U/bLwah3PMpIsSu+taBzsPosk357FgmTe
-	 LU1fJWPwndUHdbBuJ34X85Dr9ecuIzyhtYOj/1h9N/4ao8wtp/YoPGjqQwxorGf8F2
-	 /EQZHLqa92HqDe8vuuPsLCQX67GI6QVaSgLofGgPtwHUpVVif2XaANZPmWkEfEwehC
-	 Cbz15BC+Yr+974ZyrLvfOckwWzNppW/G7usNhHk94E+ZNmW+LldcOwPCnBXfPmD67w
-	 l4NVOckUMVUB4rhiH+4Fz07BHd99XekDHO/HDb1KJRJ9m/Vaij7LtDeLi+8j+Hs5YP
-	 zXAm1MwvgsyQA==
+	b=nshnNZisfVtB5mTKpQKZ5XL2jPHHmxTQ8rLMM8wGQntvQXkfvc8bSitm0qDr/naFJ
+	 pobGV604tpJPAszduF/YgijaweFDZ08sKBwNxEpRYGXJaTapxg3wwLrzIReWUnU/fV
+	 Czqy/iNe0m5a0nNdYbrWoWDh+gtnqirQ2Yw/kWnM6XB7N617KAoE6tirinDGwIdxve
+	 2zzDizuyySroICVQ0djEgebVCR7aJcmbOuzwQje0mqZKO3o+JUU811Gplvgd6fDYNv
+	 HRXci19jvz+pJ1unB2GYYZue0iOUXfNeqeTxuEr8Q74T/BCIHAAaG0bv63Yt9qRSY/
+	 uOoK1iBjW7c9A==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 07/13] selftests/powerpc/ptrace: Drop unused load_fpr_single_precision()
-Date: Tue, 28 Jun 2022 00:02:33 +1000
-Message-Id: <20220627140239.2464900-7-mpe@ellerman.id.au>
+Subject: [PATCH 03/13] selftests/powerpc/ptrace: Split CFLAGS better
+Date: Tue, 28 Jun 2022 00:02:29 +1000
+Message-Id: <20220627140239.2464900-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.35.3
 In-Reply-To: <20220627140239.2464900-1-mpe@ellerman.id.au>
 References: <20220627140239.2464900-1-mpe@ellerman.id.au>
@@ -61,74 +61,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This function is never called, drop it.
+Currently all ptrace tests are built 64-bit and with TM enabled.
+
+Only the TM tests need TM enabled, so split those out into a separate
+variable so that can be specified precisely.
+
+Split the rest of the tests into a variable, and add -m64 to CFLAGS for
+those tests, so that in a subsequent patch some tests can be made to
+build 32-bit.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/include/reg.h |  1 -
- tools/testing/selftests/powerpc/lib/reg.S     | 37 -------------------
- 2 files changed, 38 deletions(-)
+ .../testing/selftests/powerpc/ptrace/Makefile | 33 ++++++++++++++++---
+ 1 file changed, 28 insertions(+), 5 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
-index c422be8a42b2..bc7f610c2c6d 100644
---- a/tools/testing/selftests/powerpc/include/reg.h
-+++ b/tools/testing/selftests/powerpc/include/reg.h
-@@ -160,7 +160,6 @@
- #ifndef __ASSEMBLER__
- void store_gpr(unsigned long *addr);
- void load_gpr(unsigned long *addr);
--void load_fpr_single_precision(float *addr);
- void store_fpr_single_precision(float *addr);
- #endif /* end of __ASSEMBLER__ */
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+index 0b0652d88b1b..8611b0670587 100644
+--- a/tools/testing/selftests/powerpc/ptrace/Makefile
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -1,15 +1,38 @@
+ # SPDX-License-Identifier: GPL-2.0
+-TEST_GEN_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
+-              ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
+-              ptrace-tm-spd-vsx ptrace-tm-spr ptrace-hwbreak ptrace-pkey core-pkey \
+-              perf-hwbreak ptrace-syscall ptrace-perf-hwbreak
++
++TM_TESTS := ptrace-tm-gpr
++TM_TESTS += ptrace-tm-spd-gpr
++TM_TESTS += ptrace-tm-spd-tar
++TM_TESTS += ptrace-tm-spd-vsx
++TM_TESTS += ptrace-tm-spr
++TM_TESTS += ptrace-tm-tar
++TM_TESTS += ptrace-tm-vsx
++
++TESTS_64 := $(TM_TESTS)
++TESTS_64 += core-pkey
++TESTS_64 += perf-hwbreak
++TESTS_64 += ptrace-gpr
++TESTS_64 += ptrace-hwbreak
++TESTS_64 += ptrace-perf-hwbreak
++TESTS_64 += ptrace-pkey
++TESTS_64 += ptrace-syscall
++TESTS_64 += ptrace-tar
++TESTS_64 += ptrace-vsx
++
++TEST_GEN_PROGS := $(TESTS_64)
  
-diff --git a/tools/testing/selftests/powerpc/lib/reg.S b/tools/testing/selftests/powerpc/lib/reg.S
-index 9304ea7d59b9..dd37b8e6f84c 100644
---- a/tools/testing/selftests/powerpc/lib/reg.S
-+++ b/tools/testing/selftests/powerpc/lib/reg.S
-@@ -53,43 +53,6 @@ FUNC_START(store_gpr)
- 	blr
- FUNC_END(store_gpr)
+ LOCAL_HDRS += $(patsubst %,$(selfdir)/powerpc/ptrace/%,$(wildcard *.h))
  
--/* Single Precision Float - float buf[32] */
--FUNC_START(load_fpr_single_precision)
--	lfs 0, 0*4(3)
--	lfs 1, 1*4(3)
--	lfs 2, 2*4(3)
--	lfs 3, 3*4(3)
--	lfs 4, 4*4(3)
--	lfs 5, 5*4(3)
--	lfs 6, 6*4(3)
--	lfs 7, 7*4(3)
--	lfs 8, 8*4(3)
--	lfs 9, 9*4(3)
--	lfs 10, 10*4(3)
--	lfs 11, 11*4(3)
--	lfs 12, 12*4(3)
--	lfs 13, 13*4(3)
--	lfs 14, 14*4(3)
--	lfs 15, 15*4(3)
--	lfs 16, 16*4(3)
--	lfs 17, 17*4(3)
--	lfs 18, 18*4(3)
--	lfs 19, 19*4(3)
--	lfs 20, 20*4(3)
--	lfs 21, 21*4(3)
--	lfs 22, 22*4(3)
--	lfs 23, 23*4(3)
--	lfs 24, 24*4(3)
--	lfs 25, 25*4(3)
--	lfs 26, 26*4(3)
--	lfs 27, 27*4(3)
--	lfs 28, 28*4(3)
--	lfs 29, 29*4(3)
--	lfs 30, 30*4(3)
--	lfs 31, 31*4(3)
--	blr
--FUNC_END(load_fpr_single_precision)
--
- /* Single Precision Float - float buf[32] */
- FUNC_START(store_fpr_single_precision)
- 	stfs 0, 0*4(3)
+ top_srcdir = ../../../../..
+ include ../../lib.mk
+ 
+-CFLAGS += -m64 -I../../../../../usr/include -I../tm -mhtm -fno-pie
++TM_TESTS := $(patsubst %,$(OUTPUT)/%,$(TM_TESTS))
++TESTS_64 := $(patsubst %,$(OUTPUT)/%,$(TESTS_64))
++
++$(TESTS_64): CFLAGS += -m64
++$(TM_TESTS): CFLAGS += -I../tm -mhtm
++
++CFLAGS += -I../../../../../usr/include -fno-pie
+ 
+ $(OUTPUT)/ptrace-pkey $(OUTPUT)/core-pkey: LDLIBS += -pthread
+ 
 -- 
 2.35.3
 
