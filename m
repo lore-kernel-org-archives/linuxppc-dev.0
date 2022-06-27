@@ -4,54 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DD13C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Jun 2022 23:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96BA1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:29:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LX39R4hFfz3dQM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 09:00:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.166.172; helo=mail-il1-f172.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-il1-f172.google.com (mail-il1-f172.google.com [209.85.166.172])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LX5835gGxz3cCV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 10:29:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=axis-central1 header.b=S/iODZvh;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=axis.com (client-ip=195.60.68.17; helo=smtp1.axis.com; envelope-from=jesper.nilsson@axis.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=axis.com header.i=@axis.com header.a=rsa-sha256 header.s=axis-central1 header.b=S/iODZvh;
+	dkim-atps=neutral
+Received: from smtp1.axis.com (smtp1.axis.com [195.60.68.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX38y6T07z3bnn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 09:00:17 +1000 (AEST)
-Received: by mail-il1-f172.google.com with SMTP id f15so6572519ilj.11
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 16:00:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=BBFolvCCjJnxhxohRNSfL/AQrqOPHqKgSw2LBcN2NnQ=;
-        b=klWXZvKJoMO1MZk2ebLIFH4EjXxOP3gY6HHglsS2yStUPld64DX6t10syRpQe77U9f
-         DEwhgsnXhnwB2iRR5UeXNSPTqjJIljDXlHmLUwGKvVFhGxrofmiz16ICxlk3627JgzNb
-         weDVsY6yK8oUiGIzFhEHtC81BHizbFRXDAKxomZOqupewUSr88AMJ/im6/yjAJVXguL6
-         htIR6u5RZ/F07i/pwgDFIML7LR5gMiQY3x+K0AWIxvai8QbSIvkgY1DJmv8WlJ3pKuSV
-         uFR7RJE8yyhW4q9zD+P2pe3SVD5pn9L8hcHp/WHuixsjlfd70SdASV2etaUACgAvaM6+
-         lieg==
-X-Gm-Message-State: AJIora/wD8b+xA8NwHuTDQMAvbOCL9RIlL8M5EWeGvEmDa94CL1fUSrJ
-	nR4x5YSwWwRXhWO9+8zanA==
-X-Google-Smtp-Source: AGRyM1s3mDmWtHR9KacZ3brBzVulekXmlkOSi7niZLvqZ3o/vbqhjQZ0fgaGh7zEyYExAh29I7iuRQ==
-X-Received: by 2002:a05:6e02:154d:b0:2da:9539:3093 with SMTP id j13-20020a056e02154d00b002da95393093mr4813252ilu.131.1656370814723;
-        Mon, 27 Jun 2022 16:00:14 -0700 (PDT)
-Received: from robh.at.kernel.org ([64.188.179.253])
-        by smtp.gmail.com with ESMTPSA id u18-20020a92ccd2000000b002d8d813892csm5083745ilq.8.2022.06.27.16.00.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jun 2022 16:00:14 -0700 (PDT)
-Received: (nullmailer pid 3126600 invoked by uid 1000);
-	Mon, 27 Jun 2022 23:00:12 -0000
-Date: Mon, 27 Jun 2022 17:00:12 -0600
-From: Rob Herring <robh@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH v2 6/7] ASoC: dt-bindings: fsl-sai: Add new property to
- configure dataline
-Message-ID: <20220627230012.GA3122063-robh@kernel.org>
-References: <1655451877-16382-1-git-send-email-shengjiu.wang@nxp.com>
- <1655451877-16382-7-git-send-email-shengjiu.wang@nxp.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWmDr1jZBz2xbY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 21:47:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=axis.com; q=dns/txt; s=axis-central1; t=1656330461;
+  x=1687866461;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=HvYHOeFy99wGwq/w2fx0FEcTo66gkhtePc7lFcpF/fs=;
+  b=S/iODZvht98C4u69EXSfAaC4sMgtoPaKaoi+UA1oX1vqT1pQjHBJkJL6
+   DUn5H+vnRjzISY4c9fSw6MQmI1b0fpMlmPKzlSkV7n9iTsNqPPUbTCuEa
+   DVeah8uq6hKHOi3jXRRTbC84h+e6vq0Sz5J5SUOsxSdRJQm0qnz+6MrNZ
+   pfcDroaiRkjyaPQEa6UtJo0rjZHklOm+IbGpHx0hkN/WUd67Kd8dW5e9g
+   qosoaIlLq87YyS61hF30K/4RSeOGzoLfxd0N6fv9Cp+a+1wtCmh4B2pqf
+   LMM5noDpcBJY0tE2aD82R0hx2S/ngDJpzGe/g2iBoG83S5Vlcyl/1S630
+   A==;
+Date: Mon, 27 Jun 2022 13:47:33 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Subject: Re: [PATCH RESEND v5 15/18] PCI: dwc: Add dw_ prefix to the
+ pcie_port structure name
+Message-ID: <20220627114733.GG13332@axis.com>
+References: <20220624143428.8334-1-Sergey.Semin@baikalelectronics.ru>
+ <20220624143428.8334-16-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1655451877-16382-7-git-send-email-shengjiu.wang@nxp.com>
+In-Reply-To: <20220624143428.8334-16-Sergey.Semin@baikalelectronics.ru>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Mailman-Approved-At: Tue, 28 Jun 2022 10:29:05 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,44 +59,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, Xiubo.Lee@gmail.com, festevam@gmail.com, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, broonie@kernel.org, krzk+dt@kernel.org, shengjiu.wang@gmail.com, linux-kernel@vger.kernel.org
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Neil Armstrong <narmstrong@baylibre.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Binghui Wang <wangbinghui@hisilicon.com>, Frank Li <Frank.Li@nxp.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Thierry
+ Reding <thierry.reding@gmail.com>, Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>, Alim Akhtar <alim.akhtar@samsung.com>, Jonathan Chocron <jonnyc@amazon.com>, Nobuhiro Iwamatsu <nobuhiro1.iwamatsu@toshiba.co.jp>, Jonathan Hunter <jonathanh@nvidia.com>, Fabio Estevam <festevam@gmail.com>, Jerome Brunet <jbrunet@baylibre.com>, Rob Herring <robh@kernel.org>, Jesper
+ Nilsson <Jesper.Nilsson@axis.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Kevin
+ Hilman <khilman@baylibre.com>, Pratyush Anand <pratyush.anand@gmail.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@axis.com>, Kishon Vijay Abraham I <kishon@ti.com>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, Rahul Tanwar <rtanwar@maxlinear.com>, Andy Gross <agross@kernel.org>, NXP Linux Team <linux-imx@nxp.com>, Xiaowei Song <songxiaowei@hisilicon.com>, Greentime Hu <greentime.hu@sifive.com>, Richard Zhu <hongxing.zhu@nxp.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Srikanth Thokala <srikanth.thokala@intel.com>, Martin
+ Blumenstingl <martin.blumenstingl@googlemail.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, Yue Wang <yue.wang@Amlogic.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Paul
+ Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>, "linux-amlogic@lists.infradead.org" <linux-amlogic@lists.infradead.org>, Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>, Mingkai Hu <mingkai.hu@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Roy Zang <roy.zang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Heiko Stuebner <heiko@sntech.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Serge Semin <fancer.lancer@gmail.com>, Stanimir Varbanov <svarbanov@mm-sol.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 17, 2022 at 03:44:36PM +0800, Shengjiu Wang wrote:
-> "fsl,dataline" is added to configure the dataline of SAI.
-> It has 3 value for each configuration, first one means the type:
-> I2S(1) or PDM(2), second one is dataline mask for 'rx', third one is
-> dataline mask for 'tx'. for example:
+On Fri, Jun 24, 2022 at 04:34:25PM +0200, Serge Semin wrote:
+> All of the DW PCIe core driver entities have names with the dw_ prefix in
+> order to easily distinguish local and common PCIe name spaces. All except
+> the pcie_port structure which contains the DW PCIe Root Port descriptor.
+> For historical reason the structure has retained the original name since
+> commit 340cba6092c2 ("pci: Add PCIe driver for Samsung Exynos") when
+> the DW PCIe IP-core support was added to the kernel. Let's finally fix
+> that by adding the dw_ prefix to the structure name and by adding the _rp
+> suffix to be similar to the EP counterpart. Thus the name will be coherent
+> with the common driver naming policy. It shall make the driver code more
+> readable eliminating visual confusion between the local and generic PCI
+> name spaces.
 > 
-> fsl,dataline = <1 0xff 0xff 2 0xff 0x11>,
-> 
-> it means I2S type rx mask is 0xff, tx mask is 0xff, PDM type
-> rx mask is 0xff, tx mask is 0x11 (dataline 1 and 4 enabled).
-> 
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  Documentation/devicetree/bindings/sound/fsl-sai.txt | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> index c71c5861d787..4c66e6a1a533 100644
-> --- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> +++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-> @@ -49,6 +49,14 @@ Required properties:
->  			  receive data by following their own bit clocks and
->  			  frame sync clocks separately.
->  
-> +  - fsl,dataline        : configure the dataline. it has 3 value for each configuration
-> +                          first one means the type: I2S(1) or PDM(2)
-> +                          second one is dataline mask for 'rx'
-> +                          third one is dataline mask for 'tx'.
-> +                          for example: fsl,dataline = <1 0xff 0xff 2 0xff 0x11>;
-> +                          it means I2S type rx mask is 0xff, tx mask is 0xff, PDM type
-> +                          rx mask is 0xff, tx mask is 0x11 (dataline 1 and 4 enabled).
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-You mean 0 and 4 enabled? Or 1 and 4?
+Sorry, I never replied in the thread for the last patch,
+your reasoning for not changing the parameter name made sense.
 
-How many 3 cell entries can you have?
+For the ARTPEC-6 parts,
 
-Rob
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
