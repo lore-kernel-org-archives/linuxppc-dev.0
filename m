@@ -4,95 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B253C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 15:33:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B692C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 15:42:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXTCM5KhPz3cKp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 01:33:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXTP556sjz3cht
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 01:42:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=kK5YSzrs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=tixw4tZb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=stgolabs.net (client-ip=23.83.209.151; helo=quail.birch.relay.mailchannels.net; envelope-from=dave@stgolabs.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::22f; helo=mail-lj1-x22f.google.com; envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=kK5YSzrs;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=tixw4tZb;
 	dkim-atps=neutral
-Received: from quail.birch.relay.mailchannels.net (quail.birch.relay.mailchannels.net [23.83.209.151])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXTBX5kQVz3bnR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 01:33:06 +1000 (AEST)
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-	by relay.mailchannels.net (Postfix) with ESMTP id 50FBA1224C9;
-	Tue, 28 Jun 2022 15:33:01 +0000 (UTC)
-Received: from pdx1-sub0-mail-a228.dreamhost.com (unknown [127.0.0.6])
-	(Authenticated sender: dreamhost)
-	by relay.mailchannels.net (Postfix) with ESMTPA id 8E89212159D;
-	Tue, 28 Jun 2022 15:33:00 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1656430380; a=rsa-sha256;
-	cv=none;
-	b=yKBrzsWJ5dPoyqUvCFyC4mfxLsZdHCe6PzQfeJMTmbYRxL04gVJO2jRgACRXDCIOhsk1hT
-	quq3hAZEM8KV9cL4fRdMVgwPeJVJrEMeRUqi9pNvcaB52PJI+m7GZfIB+sD7kO61zUFCH1
-	DBHXMaxa6oXbFyRLpb+10WjUlDe4eSEcAQa15hL9cPSbvLmH4Lt085G77O3d2Ev2RUremv
-	sMaM6S+vdj1uHrEepmtblz4ZWFRU7pL3sVf73KPpBUgy9V1MQOuObNpBFajQRPj+CgO1Gi
-	KGcDLJpwczwZxjDh7eSY0IrRCE2vWqR5WHIH6iQEzMIPilBycGTJHW4WHkQCjA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-	s=arc-2022; t=1656430380;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=6PaLg0zce8LMNs1lHt4RTUDAxY3qsfhOcGADLKrynS8=;
-	b=NSSOgRu8sh0Wyzm784OxYgEUjtabMPRwkzOam8zhEpghfUZ/kGLvuct4FRCk2B1XmH8Sdo
-	Xk2YlLMCyXgNV+un6S3z3ISGc1O1fnD4pLcuw7ggZBCIprpzA4eg7D3MOXTv01fJc/D9bY
-	Ss8uYiKw0uK2jLb4SwXpK2VvjOfr0cDh+aHlHUMaKBPeqiIgeO9QxS1lUwfdVS3MS4L1wl
-	A9mroy7Iy/tQxGa93Q73+nWWrXXDDVNkKTAOKmFiRLbIttIjVuwYjFcSkJj9WuAFip9JVk
-	gL6vpsAn8T+76TvkMnfuvkXQFlgzY2CSzJsChFUBd6umfrLRk6DkBwO9dQkegQ==
-ARC-Authentication-Results: i=1;
-	rspamd-674ffb986c-zqpf8;
-	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
-X-MailChannels-Auth-Id: dreamhost
-X-Wide-Eyed-Decisive: 3880163f225d940e_1656430380886_3243346417
-X-MC-Loop-Signature: 1656430380886:3079928529
-X-MC-Ingress-Time: 1656430380885
-Received: from pdx1-sub0-mail-a228.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-	by 100.124.238.92 (trex/6.7.1);
-	Tue, 28 Jun 2022 15:33:00 +0000
-Received: from offworld (unknown [104.36.31.105])
+Received: from mail-lj1-x22f.google.com (mail-lj1-x22f.google.com [IPv6:2a00:1450:4864:20::22f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: dave@stgolabs.net)
-	by pdx1-sub0-mail-a228.dreamhost.com (Postfix) with ESMTPSA id 4LXTBM5vx0zLL;
-	Tue, 28 Jun 2022 08:32:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
-	s=dreamhost; t=1656430380;
-	bh=6PaLg0zce8LMNs1lHt4RTUDAxY3qsfhOcGADLKrynS8=;
-	h=Date:From:To:Cc:Subject:Content-Type;
-	b=kK5YSzrsWQ9cQbjKuxowUWgzzeGmgepLWF5PgQj7/M2xckOLlma1s4hsLATiRxyrA
-	 3uXY1P/avJhWWsSgnuxM6ElADUMdhadVAOqEFRVi6bKzgHmtsUdWjm0LGEUHra//FM
-	 5LIDXTHkgb1GsxBvVj0giWrkqOa6I5QwP1tOf1cCEdY6DfYfZjtXK6yfoflKF3miVz
-	 IBzgq3yZjY+lqULPPh1WNR1kdv21xlV98o7Pd4NLmyO6qjvvNb05q5xu6GeLKJmFt9
-	 NeI0pG/PyV3lEKB2we3YcXjK08kYyjoohxicdQohG/t4Z0yrcYTaGh4pxcfkrZKgvw
-	 iPwZ1QKp5LLQg==
-Date: Tue, 28 Jun 2022 08:18:07 -0700
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 08/10] scsi/ibmvfc: Replace tasklet with work
-Message-ID: <20220628151807.trtkagucvdmywisx@offworld>
-References: <20220530231512.9729-1-dave@stgolabs.net>
- <20220530231512.9729-9-dave@stgolabs.net>
- <YqHn2Rn5nePSJ0PG@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXTNS624bz3btG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 01:41:43 +1000 (AEST)
+Received: by mail-lj1-x22f.google.com with SMTP id a11so15398172ljb.5
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 08:41:43 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=45OuMvop0l12Xy16UbND2bLY50+0LD4yzVw7v19VYg8=;
+        b=tixw4tZb7j9f6SMyAeckCFJC+hYJd8xNh7Rx6rUbM/t0yc2+e7419dt2uO+oMHq+zO
+         40DQhCgjRzBC8jIJwc5wNZx9n+3dWDxXOv6J405pFrtubNVZkW8D05c4a+3QB2iU1cKU
+         PaVPtDne0KNJrhAdHohNCk8fWX5rX9alPL+j7ZBAp1p52k5MI//Ox0NugOMeBvPEqgcJ
+         HLIqAy91EnzZgcBxfKGKD9e47TCc4mOEgCkI2sb4rxFOermX2xYbCZXKe9g+ZsvmQVFX
+         00l/SHC+TEHX9UHONQpmON3QI6MWzbaUxPMzJN/IMUE/oQY9kXWVIvrpK2EK+4V7H6H1
+         xpTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=45OuMvop0l12Xy16UbND2bLY50+0LD4yzVw7v19VYg8=;
+        b=qk0hPR9Hc4UanqhWp6nvSwqiPr86V3iv8mmeP9kYXUyXIm/gd4VOlMJX8rsufFTOBa
+         yCNIsFBm28YDDQ1dsfS3/aZwtsNNZBx2Yycpbml3Hcg28iG+B7k9PFyUHMP768UzxbXh
+         CjSG1c8NwegkDYu3v5xjJmnR+dFzl0RjHkqJaurfILc0S3HzLQ/xjs+t295f2Z1aUk7W
+         +rkH6KSZgI5LfdJC6BjxVhJnqvcNICiOmvFgxGlGz8apFBeOqItxSYeDnuk75q5jJs9V
+         aWerhuJQhvZZjKh0iXBYAO8vnHcQnyWqGj9dAKDTRGaW9x4S/zw/YBJvqHVCdY543xBU
+         d7QA==
+X-Gm-Message-State: AJIora/y7VOjhKF1NwAOOYcIfhePD3k+gwcf1xwB258HryguzYzTGCPd
+	cMUNB4B/HUICfhjA1kWREZCs9Uk/WjX+SikFYXYGdA==
+X-Google-Smtp-Source: AGRyM1t8CoDJ/rKg0rWWuralRxMR0DkCBugAQ7kbwNId8MGTrF8HS9iDshsoR/7Luv6iaWw7wW9bZcNDAn9f5DsvrJE=
+X-Received: by 2002:a2e:998c:0:b0:25b:b2ae:b2 with SMTP id w12-20020a2e998c000000b0025bb2ae00b2mr8470900lji.92.1656430899134;
+ Tue, 28 Jun 2022 08:41:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <YqHn2Rn5nePSJ0PG@linutronix.de>
-User-Agent: NeoMutt/20220429
+References: <20220628095833.2579903-1-elver@google.com> <20220628095833.2579903-13-elver@google.com>
+In-Reply-To: <20220628095833.2579903-13-elver@google.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Tue, 28 Jun 2022 17:41:27 +0200
+Message-ID: <CACT4Y+ZAjQa4rh-kq8h+wOmfaURvz+cV2LeU5SHj34OMtMMfow@mail.gmail.com>
+Subject: Re: [PATCH v2 12/13] perf/hw_breakpoint: Optimize max_bp_pinned_slots()
+ for CPU-independent task targets
+To: Marco Elver <elver@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,31 +72,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, ejb@linux.ibm.com, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Alexander Shishkin <alexander.shishkin@linux.intel.com>, kasan-dev@googlegroups.com, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 09 Jun 2022, Sebastian Andrzej Siewior wrote:
-
->On 2022-05-30 16:15:10 [-0700], Davidlohr Bueso wrote:
->> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
->> index d0eab5700dc5..31b1900489e7 100644
->> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
->> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
->> @@ -891,7 +891,7 @@ static void ibmvfc_release_crq_queue(struct ibmvfc_host *vhost)
->>
->>	ibmvfc_dbg(vhost, "Releasing CRQ\n");
->>	free_irq(vdev->irq, vhost);
->> -	tasklet_kill(&vhost->tasklet);
->> +        cancel_work_sync(&vhost->work);
->s/ {8}/\t/
+On Tue, 28 Jun 2022 at 11:59, Marco Elver <elver@google.com> wrote:
 >
->is there a reason not to use threaded interrupts?
+> Running the perf benchmark with (note: more aggressive parameters vs.
+> preceding changes, but same 256 CPUs host):
+>
+>  | $> perf bench -r 100 breakpoint thread -b 4 -p 128 -t 512
+>  | # Running 'breakpoint/thread' benchmark:
+>  | # Created/joined 100 threads with 4 breakpoints and 128 parallelism
+>  |      Total time: 1.989 [sec]
+>  |
+>  |       38.854160 usecs/op
+>  |     4973.332500 usecs/op/cpu
+>
+>     20.43%  [kernel]       [k] queued_spin_lock_slowpath
+>     18.75%  [kernel]       [k] osq_lock
+>     16.98%  [kernel]       [k] rhashtable_jhash2
+>      8.34%  [kernel]       [k] task_bp_pinned
+>      4.23%  [kernel]       [k] smp_cfm_core_cond
+>      3.65%  [kernel]       [k] bcmp
+>      2.83%  [kernel]       [k] toggle_bp_slot
+>      1.87%  [kernel]       [k] find_next_bit
+>      1.49%  [kernel]       [k] __reserve_bp_slot
+>
+> We can see that a majority of the time is now spent hashing task
+> pointers to index into task_bps_ht in task_bp_pinned().
+>
+> Obtaining the max_bp_pinned_slots() for CPU-independent task targets
+> currently is O(#cpus), and calls task_bp_pinned() for each CPU, even if
+> the result of task_bp_pinned() is CPU-independent.
+>
+> The loop in max_bp_pinned_slots() wants to compute the maximum slots
+> across all CPUs. If task_bp_pinned() is CPU-independent, we can do so by
+> obtaining the max slots across all CPUs and adding task_bp_pinned().
+>
+> To do so in O(1), use a bp_slots_histogram for CPU-pinned slots.
+>
+> After this optimization:
+>
+>  | $> perf bench -r 100 breakpoint thread -b 4 -p 128 -t 512
+>  | # Running 'breakpoint/thread' benchmark:
+>  | # Created/joined 100 threads with 4 breakpoints and 128 parallelism
+>  |      Total time: 1.930 [sec]
+>  |
+>  |       37.697832 usecs/op
+>  |     4825.322500 usecs/op/cpu
+>
+>     19.13%  [kernel]       [k] queued_spin_lock_slowpath
+>     18.21%  [kernel]       [k] rhashtable_jhash2
+>     15.46%  [kernel]       [k] osq_lock
+>      6.27%  [kernel]       [k] toggle_bp_slot
+>      5.91%  [kernel]       [k] task_bp_pinned
+>      5.05%  [kernel]       [k] smp_cfm_core_cond
+>      1.78%  [kernel]       [k] update_sg_lb_stats
+>      1.36%  [kernel]       [k] llist_reverse_order
+>      1.34%  [kernel]       [k] find_next_bit
+>      1.19%  [kernel]       [k] bcmp
+>
+> Suggesting that time spent in task_bp_pinned() has been reduced.
+> However, we're still hashing too much, which will be addressed in the
+> subsequent change.
+>
+> Signed-off-by: Marco Elver <elver@google.com>
 
-I went with a workqueue here because the resume from suspend also schedules
-async processing, so threaded irqs didn't seem like a good fit. This is also
-similar to patch 2 (but in that case I overlooked the resume caller which you
-pointed out).
+Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
 
-Thanks,
-Davidlohr
+> ---
+> v2:
+> * New patch.
+> ---
+>  kernel/events/hw_breakpoint.c | 45 +++++++++++++++++++++++++++++++----
+>  1 file changed, 41 insertions(+), 4 deletions(-)
+>
+> diff --git a/kernel/events/hw_breakpoint.c b/kernel/events/hw_breakpoint.c
+> index 18886f115abc..b5180a2ccfbf 100644
+> --- a/kernel/events/hw_breakpoint.c
+> +++ b/kernel/events/hw_breakpoint.c
+> @@ -64,6 +64,9 @@ static struct bp_cpuinfo *get_bp_info(int cpu, enum bp_type_idx type)
+>         return per_cpu_ptr(bp_cpuinfo + type, cpu);
+>  }
+>
+> +/* Number of pinned CPU breakpoints globally. */
+> +static struct bp_slots_histogram cpu_pinned[TYPE_MAX];
+> +
+>  /* Keep track of the breakpoints attached to tasks */
+>  static struct rhltable task_bps_ht;
+>  static const struct rhashtable_params task_bps_ht_params = {
+> @@ -194,6 +197,10 @@ static __init int init_breakpoint_slots(void)
+>                                 goto err;
+>                 }
+>         }
+> +       for (i = 0; i < TYPE_MAX; i++) {
+> +               if (!bp_slots_histogram_alloc(&cpu_pinned[i], i))
+> +                       goto err;
+> +       }
+>
+>         return 0;
+>  err:
+> @@ -203,6 +210,8 @@ static __init int init_breakpoint_slots(void)
+>                 if (err_cpu == cpu)
+>                         break;
+>         }
+> +       for (i = 0; i < TYPE_MAX; i++)
+> +               bp_slots_histogram_free(&cpu_pinned[i]);
+>
+>         return -ENOMEM;
+>  }
+> @@ -270,6 +279,9 @@ static unsigned int max_task_bp_pinned(int cpu, enum bp_type_idx type)
+>  /*
+>   * Count the number of breakpoints of the same type and same task.
+>   * The given event must be not on the list.
+> + *
+> + * If @cpu is -1, but the result of task_bp_pinned() is not CPU-independent,
+> + * returns a negative value.
+>   */
+>  static int task_bp_pinned(int cpu, struct perf_event *bp, enum bp_type_idx type)
+>  {
+> @@ -288,9 +300,18 @@ static int task_bp_pinned(int cpu, struct perf_event *bp, enum bp_type_idx type)
+>                 goto out;
+>
+>         rhl_for_each_entry_rcu(iter, pos, head, hw.bp_list) {
+> -               if (find_slot_idx(iter->attr.bp_type) == type &&
+> -                   (iter->cpu < 0 || cpu == iter->cpu))
+> -                       count += hw_breakpoint_weight(iter);
+> +               if (find_slot_idx(iter->attr.bp_type) != type)
+> +                       continue;
+> +
+> +               if (iter->cpu >= 0) {
+> +                       if (cpu == -1) {
+> +                               count = -1;
+> +                               goto out;
+> +                       } else if (cpu != iter->cpu)
+> +                               continue;
+> +               }
+> +
+> +               count += hw_breakpoint_weight(iter);
+>         }
+>
+>  out:
+> @@ -316,6 +337,19 @@ max_bp_pinned_slots(struct perf_event *bp, enum bp_type_idx type)
+>         int pinned_slots = 0;
+>         int cpu;
+>
+> +       if (bp->hw.target && bp->cpu < 0) {
+> +               int max_pinned = task_bp_pinned(-1, bp, type);
+> +
+> +               if (max_pinned >= 0) {
+> +                       /*
+> +                        * Fast path: task_bp_pinned() is CPU-independent and
+> +                        * returns the same value for any CPU.
+> +                        */
+> +                       max_pinned += bp_slots_histogram_max(&cpu_pinned[type], type);
+> +                       return max_pinned;
+> +               }
+> +       }
+> +
+>         for_each_cpu(cpu, cpumask) {
+>                 struct bp_cpuinfo *info = get_bp_info(cpu, type);
+>                 int nr;
+> @@ -366,8 +400,11 @@ toggle_bp_slot(struct perf_event *bp, bool enable, enum bp_type_idx type,
+>
+>         /* Pinned counter cpu profiling */
+>         if (!bp->hw.target) {
+> +               struct bp_cpuinfo *info = get_bp_info(bp->cpu, type);
+> +
+>                 lockdep_assert_held_write(&bp_cpuinfo_sem);
+> -               get_bp_info(bp->cpu, type)->cpu_pinned += weight;
+> +               bp_slots_histogram_add(&cpu_pinned[type], info->cpu_pinned, weight);
+> +               info->cpu_pinned += weight;
+>                 return 0;
+>         }
+>
+> --
+> 2.37.0.rc0.161.g10f37bed90-goog
+>
