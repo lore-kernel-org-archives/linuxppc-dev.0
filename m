@@ -4,123 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40314C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:31:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1960DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 06:59:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LX59b3BVzz3dsm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 10:30:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXFnr3g6xz3chl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 16:59:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qccesdkim1 header.b=gWVql1TE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=WOYPYkzc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=quicinc.com (client-ip=216.71.142.165; helo=esa.hc3962-90.iphmx.com; envelope-from=bcain@quicinc.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--saravanak.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3w2g6ygkkdcqsaravanakgoogle.comlinuxppc-devlists.ozlabs.org@flex--saravanak.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=quicinc.com header.i=@quicinc.com header.a=rsa-sha256 header.s=qccesdkim1 header.b=gWVql1TE;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=WOYPYkzc;
 	dkim-atps=neutral
-X-Greylist: delayed 64 seconds by postgrey-1.36 at boromir; Tue, 28 Jun 2022 00:33:49 AEST
-Received: from esa.hc3962-90.iphmx.com (esa.hc3962-90.iphmx.com [216.71.142.165])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWqwY48Zmz3bhf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 00:33:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX7Cz5lGTz30Hf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 12:03:10 +1000 (AEST)
+Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-317b370cec1so91731297b3.19
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 19:03:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=quicinc.com; i=@quicinc.com; q=dns/txt; s=qccesdkim1;
-  t=1656340429; x=1656945229;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=eYXH/ctB6v6XAcg42LM5ozEFN2HdhzgzZ+oK7wTjzCM=;
-  b=gWVql1TEj4RO2BWs+7qcoGqClWACNI1nXWVUzc+8t3i3M45kPhEh/Yln
-   FlnaW4Ez94dJgeZegO3Mm900+pflRl2wJgQLRc4aVVXU+HvIlPZ9glzb3
-   1k+J0ozN8IXtGGiXybUVdIRSiSE97jjw+C78/1hk7PQAkgDjQY4uNkPl8
-   0=;
-Received: from mail-bn8nam11lp2168.outbound.protection.outlook.com (HELO NAM11-BN8-obe.outbound.protection.outlook.com) ([104.47.58.168])
-  by ob1.hc3962-90.iphmx.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Jun 2022 14:32:34 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=cGOW8HUQIVaBTKpLWO+C4aPx6X9Xj3tooAfUWy+sPob781xwBfm+C7JsnAksVL3znA9fm8u9Q75Yeyd1o3Tge/tgaB1QffUppb747SaJw7lnJLJEB2Xolc+JaNjb7JGObqPkaNoXE5DSopsiW9Mz+IgZg7Q6LgK8dem1EfY/Dom8edgAwsjSPNiacB+Hm2wzLwIUdwES/SUxe7yPv5rnwHaMz/wspCxkPKRIaycwdqM2wHSk9mY5u492fZdBRANCSJlUmUMbcg8VJ4szN2By0Hj7ofjbjGE+lD1M2HU+LUA6MB3sN16m1uRBbHyqicSMhC2JSQuKZ7BagnmJAqeNhw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=eYXH/ctB6v6XAcg42LM5ozEFN2HdhzgzZ+oK7wTjzCM=;
- b=NZV31S8FY6LC+g0g4cS2e7+2EXToeuvX68UC8oiP7n15GL6EZoAyZ1Mk1LHHX6fJX7VbAv+uimUrpPyQNsAC0kPaga/El4ds1wJy/cUhoO9f/AUWI9p0aAw7xE0g616srjc8/TO5zPLlR3p3S5f1GWXxGuJrdLgScP+KM8s9alFA7vwQIrE/EWOEIOGH6W24mSg5e2A4jrxGMnrxSVeZBY3/bdNKpW6zIyQUWeApbFkcPIz5rVzVthWopVzFqCLjm8u8BWNFFMjxBwObIj6EtyDtdfBdxIB5F+UnczM9fuBx4/wn2aVBgcNsgo2gZa+FV5t69Qn33EI2GYHVUGr4hg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=quicinc.com; dmarc=pass action=none header.from=quicinc.com;
- dkim=pass header.d=quicinc.com; arc=none
-Received: from SN6PR02MB4205.namprd02.prod.outlook.com (2603:10b6:805:35::17)
- by DM6PR02MB6138.namprd02.prod.outlook.com (2603:10b6:5:1fd::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5373.18; Mon, 27 Jun
- 2022 14:32:29 +0000
-Received: from SN6PR02MB4205.namprd02.prod.outlook.com
- ([fe80::f4c0:89e2:789d:ceb1]) by SN6PR02MB4205.namprd02.prod.outlook.com
- ([fe80::f4c0:89e2:789d:ceb1%7]) with mapi id 15.20.5373.016; Mon, 27 Jun 2022
- 14:32:29 +0000
-From: Brian Cain <bcain@quicinc.com>
-To: Anshuman Khandual <anshuman.khandual@arm.com>, "linux-mm@kvack.org"
-	<linux-mm@kvack.org>
-Subject: RE: [PATCH V5 12/26] hexagon/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Thread-Topic: [PATCH V5 12/26] hexagon/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Thread-Index: AQHYieNaF68nviM9AEWMdUsq7TAcg61jUU0Q
-Date: Mon, 27 Jun 2022 14:32:29 +0000
-Message-ID:  <SN6PR02MB4205D2460F6DB1F3C82999BDB8B99@SN6PR02MB4205.namprd02.prod.outlook.com>
-References: <20220627045833.1590055-1-anshuman.khandual@arm.com>
- <20220627045833.1590055-13-anshuman.khandual@arm.com>
-In-Reply-To: <20220627045833.1590055-13-anshuman.khandual@arm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=quicinc.com;
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: d4ab36eb-bfe6-4b73-98a3-08da5849dd6d
-x-ms-traffictypediagnostic: DM6PR02MB6138:EE_
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info:  6LCBwa4CDTnSlgl6CnuvSHylK43fGHMLoBG839b+bXfVd5N7nYAqXddIKZqfMqXLDn6rdkMCP1/tZanVPeTPStEENKwpoEwvg8a0U6B/0/Ru8PHLp8EMwwlxlorNMwaAPhooSIHXe7nn8Z1ShjJ0dbEY2E3yX75YVCgoONo8/wT4Yp6zLqRil2kKMbKONi36XpqRJ62+CwUUA0rs8EYeg183Y/Nnzo8iYxACJkCAvv6uMW4GQlZO+IT8CgIrtpAaFh8vh4oq3k8339e0GqYlzOjkOwDqIfJDV4g3950HVCaF7gJRK8W/YV4c/M2sTtKAnZAzAp8OJnCivz55DqELuL+WRsKJOQvqZmwJdVdEcUS6HnSuyQZEjzX5c2CuBF6vVaMKBpkmRnBRlZn7mQhLMmQIGEtZhKClBhltEqaQAUMuE6h2rHsyU/HNe6/zj7Pniiyg77NtFG695+ENaEfPLLX8eBmdMPen7Wsl95DYcmW5egsFZmfXQ3rmNkz7xZxIotgUiku9DQAVGXvhGg6rFa8TTWNy7DcQXB5Hq57Qi/2nig5m7DruO8mx/x339XgDAo+wpIhkdysR0Xb3viQDLPnLEFX/NFqwRO8f6S1hJLGrZtxw3nCBuS7djTB/OYrEh0bRQbCS+XpS+5u74i+LLi89/GWkJbV0rSokF7YMuKyr2wfVZbnYPBfFLPEMyl/NZ8/npwsOHL3S22bC/riomYaiHfFjkhVIB3H8V/MO4W1u+CO6mrQ6oqQ+S6hzCuM98onf4SChF/QNMNhu2JlgX6H5pEuPIykBm/FLc1PIeTw=
-x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR02MB4205.namprd02.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(346002)(136003)(376002)(396003)(366004)(39860400002)(7696005)(64756008)(7416002)(66556008)(83380400001)(76116006)(71200400001)(66946007)(41300700001)(110136005)(8676002)(38100700002)(122000001)(316002)(5660300002)(26005)(54906003)(9686003)(86362001)(186003)(55016003)(2906002)(33656002)(4326008)(66446008)(66476007)(38070700005)(52536014)(6506007)(478600001)(8936002);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:  =?us-ascii?Q?fjdQUrKtASc2PpuHSL32JID+E3A8OdplJEurfWMCyWe1Ev0UAJb0kdJj2NuG?=
- =?us-ascii?Q?TlHv362lWxFoa5ALdsalq6xQWXSkO1YHoSJZY1k/rgx3J9dRCpUpxJtleWXj?=
- =?us-ascii?Q?ODdcjBHLqnp8WDg5wZVvpSO+GL8oXGAHwTr/ZjunTHyCIIEI/9QixrMCTsHp?=
- =?us-ascii?Q?7c5StcktmyuahjQeoeWVM/YQY8NsrQovteH2B/LvMZ6KGp024b0F7uUisWfq?=
- =?us-ascii?Q?+qQB1c1bIgNNH1WqYoZcu5gHJp337FDnuLe4nTqkDp3+cY42e2lP7jx6P9YY?=
- =?us-ascii?Q?GhUh5g+n8x8YRQt8Mpul/tlamczbwc/Dwh4pMotReDzXA8otSpw7fHIgqXj+?=
- =?us-ascii?Q?P7RlC0kVsZ7z5Az84FNGanwqy/bzikZoZYizroHVA/rmaC8EOzC2Rk4CkyXv?=
- =?us-ascii?Q?bZ8kSJGpToeh8O0GmHov5z2+/y3o2y0WWRvHOajDZXYB/5DpQZml+CgrN7Hs?=
- =?us-ascii?Q?Ou7iPMNFH+llQl3dtFofdGRcVZgRRKlKlNZvlTdLRUHpOwDGNi0x4k1zyEWN?=
- =?us-ascii?Q?TF6mzhZU4b3NFyGD/uG4/FWlbwgB4dV/IAL5MjjYug+4Z6P3IHUynKxDFbKz?=
- =?us-ascii?Q?ld/E9TkW1XZdKvkO805FstbIC4WtHsR0/erVsqP5MBSsRIJ7vfXLHYU284GL?=
- =?us-ascii?Q?kdVdT4aFiZsFORwOYvCuACAo9COWGeNV3AvFy+QxZwnsExzUgKcqqFc/wnRS?=
- =?us-ascii?Q?GQV6446YR4t9ooSnxQksthTEWeRWBNqkPTXe030jVc4yT5zeAXe5X6aGyEBN?=
- =?us-ascii?Q?VI6sPh+1rOEjS2/J4/GyFcbxW36qPqW4WWtKI1CL5lCH8A2N764ShZOKmoJx?=
- =?us-ascii?Q?IT0TMj8HZaeNiFuU5jCbUTJZPm6ARtU4eRp8rJdPWp0mCzU48npI4j0ga/bT?=
- =?us-ascii?Q?ns61D7TIBY98KX+NRDwu9anufHWBA8F45bVSPmvVsqouV9T0cN2z8tRtILcN?=
- =?us-ascii?Q?YBWCpGRq6B53gAqpAP6ERpRWDnbmS3zzNz4gElNUQsUiiyE62DhXwx4eoerU?=
- =?us-ascii?Q?3tClec7saJePlwbyuI+e7R5ysSR0cNnqLnHZtSU5Oa6iJpykIqtef0MYYRvE?=
- =?us-ascii?Q?p/wuhHMG5ys9bOxu3CpQudb2iDo7EvXruu0mrNxQVkF0f3sSBvgIRwQZH/3S?=
- =?us-ascii?Q?4eGoZhjEfrowgTio9EVAdKZ9FsSLrTfax+q5bW6C3PSaZB5F3Qv6ki+OZD9a?=
- =?us-ascii?Q?cnSVWsU72bjIXvLVSmM8lepIJhvSBbsCMXg1MaBU86su0Ipiqyzwh0IoO+SU?=
- =?us-ascii?Q?hm0J0op3lWe/SWrxgDhzur+2KBstLAH5JpBTlQ6tlwaY1xSc4UbI1eslgG6Y?=
- =?us-ascii?Q?WQEZ8lV1EFXR1uWVEJVZCI+SE98u4nI7h1aEw2t8DqveVLGyxF19c9SCNhJD?=
- =?us-ascii?Q?Oeflzg69bdYlLrdLheBQyDg5nnoRfnNJneD0CpPbrXYWggRXTSRPXggodcn3?=
- =?us-ascii?Q?N9RgBCFjUkp8ohtO/cnQgW1IdvFSX31rCJuDpOsg3nf7aFjqVYxX8wYadu2Q?=
- =?us-ascii?Q?XngHluuV8mZbArW9Q+q6i7T3IuXo9L920bB2loJhgUKHY6vu6HLBscmSIbM+?=
- =?us-ascii?Q?uA7yYrM07LaCL9dzQfTN1fZctgrOxlZODvGqAb+s?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-OriginatorOrg: quicinc.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR02MB4205.namprd02.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d4ab36eb-bfe6-4b73-98a3-08da5849dd6d
-X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Jun 2022 14:32:29.6681
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 98e9ba89-e1a1-4e38-9007-8bdabc25de1d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: yz3IG0XM+MN1EUq2d+bRK8OLWKZV1yEnYf/4cni8BG9mK0RhLJTaLfTZn2doXORgMtR06QceXTPWnrNZpZNkrw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR02MB6138
-X-Mailman-Approved-At: Tue, 28 Jun 2022 10:29:05 +1000
+        d=google.com; s=20210112;
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=YzHIr0V9HMEpxWmEi0Xj1DJ+4d2XCpwecNoe7o3TDGc=;
+        b=WOYPYkzcX52RhlZvpifs4I6lPFXV+5C99yJcPGn4swZ412myqZhpEpJGG6JT8I+diP
+         wmRTXCjvAFpcr/KomN65nvaJHvYHD4UymktEo8kdn5KBIufKB90oBi6uJgpha1QorqN4
+         FoHUev8RwrPNG+R9y5XCbQZGHm1ydbiuEHKmkqJMqr5AQVuz0Cn/swj+fCPxGk277wcm
+         FeyAuVEaB9fajv1pTRajXKWxqwQb5RRy57WkXDveO+g9jxpPIug/uOD6UHEfjE7VM4eE
+         2vOtDCyMr9g/g/WN/lFcVpdMLesGVIWYzLk/qWic19C/MVsZG3elryvTosIN7O8GZ4ml
+         x6ow==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=YzHIr0V9HMEpxWmEi0Xj1DJ+4d2XCpwecNoe7o3TDGc=;
+        b=Dob2MjyVJeblYMhmMzCjTNvxcrl4UEHBuwbyGjeFqdt8am25LBiAsO0lPOXYKlUdUU
+         gLEUjnkmkizRVfAAunb+d0LBowKI0WWA2LmIkQMvw+rmSKzzp4jhXANdb1j8CDhmUqgc
+         1gYprLAFouBtQm2eGC912pCnfpPQ6tecPM3vQ/8A7FV4y+dsYjqzEpzgkXJISPDc4Afs
+         x2Uq4QVLcFnYm9tpPhcUUU9oWJ09BpXN4+eiD/96/U46XNTBjDY5+wwTTAQIDavcL5DV
+         rE3qqHBVAIqJDVRZ/Ilgo5+NXRwoJKzOoigJJxkwdVzGeutZSdBgBtkQJ1tlWf+SC6Lc
+         MApQ==
+X-Gm-Message-State: AJIora+dKB2BM4zznTmHt6KkNda3X9rLOcg36vsvufUekGBFk7tSIdCe
+	FJM1UK0BvI2QUa8swYqXOwnhEDj1fq6VyFc=
+X-Google-Smtp-Source: AGRyM1u1CI3RZWjDOxskNtWWSrcYu4D2aM8Nq4tr5iOtzOleCFvS4Q121j5zvIY5WKw81S4m4Q0aaxhGddgoJuc=
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:1f27:a302:2101:1c82])
+ (user=saravanak job=sendgmr) by 2002:a81:12d3:0:b0:317:aa20:e4eb with SMTP id
+ 202-20020a8112d3000000b00317aa20e4ebmr18821146yws.352.1656381787829; Mon, 27
+ Jun 2022 19:03:07 -0700 (PDT)
+Date: Mon, 27 Jun 2022 19:01:02 -0700
+In-Reply-To: <20220628020110.1601693-1-saravanak@google.com>
+Message-Id: <20220628020110.1601693-2-saravanak@google.com>
+Mime-Version: 1.0
+References: <20220628020110.1601693-1-saravanak@google.com>
+X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
+Subject: [PATCH v1 1/2] driver core: Add probe_no_timeout flag for drivers
+From: Saravana Kannan <saravanak@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Laurentiu Tudor <laurentiu.tudor@nxp.com>, Jiri Slaby <jirislaby@kernel.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+	Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, 
+	Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Nicolas Saenz Julienne <nsaenz@kernel.org>, Al Cooper <alcooperx@gmail.com>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Paul Cercueil <paul@crapouillou.net>, 
+	Vladimir Zapolskiy <vz@mleia.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Tobias Klauser <tklauser@distanz.ch>, Russell King <linux@armlinux.org.uk>, 
+	Vineet Gupta <vgupta@kernel.org>, Richard Genoud <richard.genoud@gmail.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@microchip.com>, Alexander Shiyan <shc_work@mail.ru>, 
+	Baruch Siach <baruch@tkos.co.il>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, 
+	Karol Gugala <kgugala@antmicro.com>, Mateusz Holenko <mholenko@antmicro.com>, 
+	Gabriel Somlo <gsomlo@gmail.com>, Neil Armstrong <narmstrong@baylibre.com>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+	Taichi Sugaya <sugaya.taichi@socionext.com>, Takao Orito <orito.takao@socionext.com>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Andy Gross <agross@kernel.org>, 
+	Bjorn Andersson <bjorn.andersson@linaro.org>, Pali Rohar <pali@kernel.org>, 
+	Andreas Farber <afaerber@suse.de>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Laxman Dewangan <ldewangan@nvidia.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Orson Zhai <orsonzhai@gmail.com>, 
+	Baolin Wang <baolin.wang7@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
+	Patrice Chotard <patrice.chotard@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, "David S. Miller" <davem@davemloft.net>, 
+	Hammer Hsieh <hammerh0314@gmail.com>, Peter Korsgaard <jacmet@sunsite.dk>, Timur Tabi <timur@kernel.org>, 
+	Michal Simek <michal.simek@xilinx.com>, Saravana Kannan <saravanak@google.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Tue, 28 Jun 2022 16:58:59 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,190 +111,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Brian Cain <bcain@codeaurora.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "hch@infradead.org" <hch@infradead.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@l
- ists.infradead.org>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, linux-aspeed@lists.ozlabs.org, linus walleij <linus.walleij@linaro.org>, ulf hansson <ulf.hansson@linaro.org>, linux-mips@vger.kernel.org, eric dumazet <edumazet@google.com>, pavel machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, will deacon <will@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, sascha hauer <sha@pengutronix.de>, Rob Herring <robh@kernel.org>, linux-samsung-soc@vger.kernel.org, Ahmad Fatoum <a.fatoum@pengutronix.de>, kevin hilman <khilman@kernel.org>, joerg roedel <joro@8bytes.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, paolo abeni <pabeni@redhat.com>, kernel-team@android.com, len brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlog
+ ic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-unisoc@lists.infradead.org, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org, heiner kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> -----Original Message-----
-> From: Anshuman Khandual <anshuman.khandual@arm.com>
-...
-> WARNING: This email originated from outside of Qualcomm. Please be wary
-> of any links or attachments, and do not enable macros.
->=20
-> This enables ARCH_HAS_VM_GET_PAGE_PROT on the platform and exports
-> standard
-> vm_get_page_prot() implementation via DECLARE_VM_GET_PAGE_PROT,
-> which looks
-> up a private and static protection_map[] array. Subsequently all __SXXX a=
-nd
-> __PXXX macros can be dropped which are no longer needed.
->=20
-> Cc: Brian Cain <bcain@codeaurora.org>
-> Cc: linux-hexagon@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
->  arch/hexagon/Kconfig               |  1 +
->  arch/hexagon/include/asm/pgtable.h | 27 -------------------
->  arch/hexagon/mm/init.c             | 42 ++++++++++++++++++++++++++++++
->  3 files changed, 43 insertions(+), 27 deletions(-)
->=20
-> diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
-> index 54eadf265178..bc4ceecd0588 100644
-> --- a/arch/hexagon/Kconfig
-> +++ b/arch/hexagon/Kconfig
-> @@ -6,6 +6,7 @@ config HEXAGON
->         def_bool y
->         select ARCH_32BIT_OFF_T
->         select ARCH_HAS_SYNC_DMA_FOR_DEVICE
-> +       select ARCH_HAS_VM_GET_PAGE_PROT
->         select ARCH_NO_PREEMPT
->         select DMA_GLOBAL_POOL
->         # Other pending projects/to-do items.
-> diff --git a/arch/hexagon/include/asm/pgtable.h
-> b/arch/hexagon/include/asm/pgtable.h
-> index 0610724d6a28..f7048c18b6f9 100644
-> --- a/arch/hexagon/include/asm/pgtable.h
-> +++ b/arch/hexagon/include/asm/pgtable.h
-> @@ -126,33 +126,6 @@ extern unsigned long _dflt_cache_att;
->   */
->  #define CACHEDEF       (CACHE_DEFAULT << 6)
->=20
-> -/* Private (copy-on-write) page protections. */
-> -#define __P000 __pgprot(_PAGE_PRESENT | _PAGE_USER | CACHEDEF)
-> -#define __P001 __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_READ |
-> CACHEDEF)
-> -#define __P010 __P000  /* Write-only copy-on-write */
-> -#define __P011 __P001  /* Read/Write copy-on-write */
-> -#define __P100 __pgprot(_PAGE_PRESENT | _PAGE_USER | \
-> -                       _PAGE_EXECUTE | CACHEDEF)
-> -#define __P101 __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> _PAGE_EXECUTE | \
-> -                       _PAGE_READ | CACHEDEF)
-> -#define __P110 __P100  /* Write/execute copy-on-write */
-> -#define __P111 __P101  /* Read/Write/Execute, copy-on-write */
-> -
-> -/* Shared page protections. */
-> -#define __S000 __P000
-> -#define __S001 __P001
-> -#define __S010 __pgprot(_PAGE_PRESENT | _PAGE_USER | \
-> -                       _PAGE_WRITE | CACHEDEF)
-> -#define __S011 __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_READ |
-> \
-> -                       _PAGE_WRITE | CACHEDEF)
-> -#define __S100 __pgprot(_PAGE_PRESENT | _PAGE_USER | \
-> -                       _PAGE_EXECUTE | CACHEDEF)
-> -#define __S101 __P101
-> -#define __S110 __pgprot(_PAGE_PRESENT | _PAGE_USER | \
-> -                       _PAGE_EXECUTE | _PAGE_WRITE | CACHEDEF)
-> -#define __S111 __pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_READ |
-> \
-> -                       _PAGE_EXECUTE | _PAGE_WRITE | CACHEDEF)
-> -
->  extern pgd_t swapper_pg_dir[PTRS_PER_PGD];  /* located in head.S */
->=20
->  /*  HUGETLB not working currently  */
-> diff --git a/arch/hexagon/mm/init.c b/arch/hexagon/mm/init.c
-> index 3167a3b5c97b..146115c9de61 100644
-> --- a/arch/hexagon/mm/init.c
-> +++ b/arch/hexagon/mm/init.c
-> @@ -234,3 +234,45 @@ void __init setup_arch_memory(void)
->          *  which is called by start_kernel() later on in the process
->          */
->  }
-> +
-> +static const pgprot_t protection_map[16] =3D {
-> +       [VM_NONE]                                       =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  CACHED=
-EF),
-> +       [VM_READ]                                       =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-READ | CACHEDEF),
-> +       [VM_WRITE]                                      =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  CACHED=
-EF),
-> +       [VM_WRITE | VM_READ]                            =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-READ | CACHEDEF),
-> +       [VM_EXEC]                                       =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | CACHEDEF),
-> +       [VM_EXEC | VM_READ]                             =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | _PAGE_READ |
-> +                                                                  CACHED=
-EF),
-> +       [VM_EXEC | VM_WRITE]                            =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | CACHEDEF),
-> +       [VM_EXEC | VM_WRITE | VM_READ]                  =3D
-> __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | _PAGE_READ |
-> +                                                                  CACHED=
-EF),
-> +       [VM_SHARED]                                     =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  CACHED=
-EF),
-> +       [VM_SHARED | VM_READ]                           =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-READ | CACHEDEF),
-> +       [VM_SHARED | VM_WRITE]                          =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-WRITE | CACHEDEF),
-> +       [VM_SHARED | VM_WRITE | VM_READ]                =3D
-> __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> +                                                                  _PAGE_=
-READ | _PAGE_WRITE |
-> +                                                                  CACHED=
-EF),
-> +       [VM_SHARED | VM_EXEC]                           =3D __pgprot(_PAG=
-E_PRESENT |
-> _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | CACHEDEF),
-> +       [VM_SHARED | VM_EXEC | VM_READ]                 =3D
-> __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | _PAGE_READ |
-> +                                                                  CACHED=
-EF),
-> +       [VM_SHARED | VM_EXEC | VM_WRITE]                =3D
-> __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> +                                                                  _PAGE_=
-EXECUTE | _PAGE_WRITE |
-> +                                                                  CACHED=
-EF),
-> +       [VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]      =3D
-> __pgprot(_PAGE_PRESENT | _PAGE_USER |
-> +                                                                  _PAGE_=
-READ | _PAGE_EXECUTE |
-> +                                                                  _PAGE_=
-WRITE | CACHEDEF)
-> +};
-> +DECLARE_VM_GET_PAGE_PROT
-> --
-> 2.25.1
+This flag only needs to be set for drivers of devices that meet all the
+following conditions:
+- Need to probe successfully before userspace init in started
+- Have optional suppliers
+- Can't wait for deferred_probe_timeout to expire
 
-Acked-by: Brian Cain <bcain@quicinc.com>
+fw_devlink=on uses this info, as needed, to ignore dependencies on supplier
+devices that have not been added or supplier devices that don't have any
+drivers.  It's still up to the driver to decide which of the missing
+suppliers are optional or not.
+
+Fixes: 71066545b48e ("driver core: Set fw_devlink.strict=1 by default")
+Reported-by: Sascha Hauer <sha@pengutronix.de>
+Reported-by: Peng Fan <peng.fan@nxp.com>
+Reported-by: Fabio Estevam <festevam@gmail.com>
+Reported-by: Ahmad Fatoum <a.fatoum@pengutronix.de>
+Signed-off-by: Saravana Kannan <saravanak@google.com>
+---
+ drivers/base/base.h           |  1 +
+ drivers/base/core.c           |  7 +++++++
+ drivers/base/dd.c             |  3 +++
+ include/linux/device.h        |  7 +++++++
+ include/linux/device/driver.h | 11 +++++++++++
+ 5 files changed, 29 insertions(+)
+
+diff --git a/drivers/base/base.h b/drivers/base/base.h
+index b3a43a164dcd..149822d2086f 100644
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -193,6 +193,7 @@ extern void device_links_no_driver(struct device *dev);
+ extern bool device_links_busy(struct device *dev);
+ extern void device_links_unbind_consumers(struct device *dev);
+ extern void fw_devlink_drivers_done(void);
++extern void fw_devlink_probe_no_timeout(void);
+ 
+ /* device pm support */
+ void device_pm_move_to_tail(struct device *dev);
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index ccdd5b4295de..8e18904a1584 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -54,6 +54,7 @@ static unsigned int defer_sync_state_count = 1;
+ static DEFINE_MUTEX(fwnode_link_lock);
+ static bool fw_devlink_is_permissive(void);
+ static bool fw_devlink_drv_reg_done;
++static bool fw_devlink_no_timeout;
+ static bool fw_devlink_best_effort;
+ 
+ /**
+@@ -969,6 +970,7 @@ static void device_links_missing_supplier(struct device *dev)
+ static bool dev_is_best_effort(struct device *dev)
+ {
+ 	return (fw_devlink_best_effort && dev->can_match) ||
++		(fw_devlink_no_timeout && dev->probe_no_timeout) ||
+ 		(dev->fwnode && (dev->fwnode->flags & FWNODE_FLAG_BEST_EFFORT));
+ }
+ 
+@@ -1688,6 +1690,11 @@ void fw_devlink_drivers_done(void)
+ 	device_links_write_unlock();
+ }
+ 
++void fw_devlink_probe_no_timeout(void)
++{
++	fw_devlink_no_timeout = true;
++}
++
+ /**
+  * wait_for_init_devices_probe - Try to probe any device needed for init
+  *
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index e600dd2afc35..9b0ef2b6a058 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -324,6 +324,8 @@ static int deferred_probe_initcall(void)
+ 
+ 	if (!IS_ENABLED(CONFIG_MODULES))
+ 		fw_devlink_drivers_done();
++	else
++		fw_devlink_probe_no_timeout();
+ 
+ 	/*
+ 	 * Trigger deferred probe again, this time we won't defer anything
+@@ -734,6 +736,7 @@ static int __driver_probe_device(struct device_driver *drv, struct device *dev)
+ 		return -EBUSY;
+ 
+ 	dev->can_match = true;
++	dev->probe_no_timeout = drv->probe_no_timeout;
+ 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+ 		 drv->bus->name, __func__, dev_name(dev), drv->name);
+ 
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 424b55df0272..e6246b6cf6cf 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -536,6 +536,12 @@ struct device_physical_location {
+  * @can_match:	The device has matched with a driver at least once or it is in
+  *		a bus (like AMBA) which can't check for matching drivers until
+  *		other devices probe successfully.
++ * @probe_no_timeout: Set by driver core to indicate that this device's probe
++ *		can't wait till driver_probe_timeout expires. This information
++ *		is used by fw_devlink=on to avoid deferring the probe of this
++ *		device to wait on supplier devices that haven't been added or
++ *		probed successfully.
++ *		See also: probe_no_timeout in struct driver.
+  * @dma_coherent: this particular device is dma coherent, even if the
+  *		architecture supports non-coherent devices.
+  * @dma_ops_bypass: If set to %true then the dma_ops are bypassed for the
+@@ -642,6 +648,7 @@ struct device {
+ 	bool			of_node_reused:1;
+ 	bool			state_synced:1;
+ 	bool			can_match:1;
++	bool			probe_no_timeout:1;
+ #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+index 7acaabde5396..2ce60e511504 100644
+--- a/include/linux/device/driver.h
++++ b/include/linux/device/driver.h
+@@ -55,6 +55,15 @@ enum probe_type {
+  * @owner:	The module owner.
+  * @mod_name:	Used for built-in modules.
+  * @suppress_bind_attrs: Disables bind/unbind via sysfs.
++ * @probe_no_timeout: Set to true by drivers that bind to devices that meet all
++ *		these conditions:
++ *		- Need to probe successfully before userspace init in started
++ *		- Have optional suppliers
++ *		- Can't wait for deferred_probe_timeout to expire
++ *		fw_devlink=on uses this info, as needed, to ignore dependencies
++ *		on supplier devices that have not been added or supplier devices
++ *		that don't have any drivers. It's still up to the driver to
++ *		decide which of the missing suppliers are optional or not.
+  * @probe_type:	Type of the probe (synchronous or asynchronous) to use.
+  * @of_match_table: The open firmware table.
+  * @acpi_match_table: The ACPI match table.
+@@ -101,6 +110,8 @@ struct device_driver {
+ 	const char		*mod_name;	/* used for built-in modules */
+ 
+ 	bool suppress_bind_attrs;	/* disables bind/unbind via sysfs */
++	bool probe_no_timeout;
++
+ 	enum probe_type probe_type;
+ 
+ 	const struct of_device_id	*of_match_table;
+-- 
+2.37.0.rc0.161.g10f37bed90-goog
+
