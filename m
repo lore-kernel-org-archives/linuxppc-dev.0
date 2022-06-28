@@ -4,60 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5AC1C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:51:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC9BFC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:53:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSGv202Kz3fDM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:51:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSK52wDZz3dxx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:53:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=CK+v3yJg;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=CK+v3yJg;
+	dkim-atps=neutral
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSDY5Nlxz3dR9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:49:49 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LXSD20w20z9tV9;
-	Tue, 28 Jun 2022 16:49:22 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id pmtXh_qfM3gG; Tue, 28 Jun 2022 16:49:22 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LXSCy59Zsz9tVB;
-	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 93C5A8B788;
-	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id xt-MdVA7bk3j; Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.132])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 29DB08B787;
-	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25SEnDQn2928214
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 28 Jun 2022 16:49:13 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25SEnDXK2928198;
-	Tue, 28 Jun 2022 16:49:13 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, dja@axtens.net
-Subject: [PATCH v1 4/6] powerpc/64e: Move virtual memory closer to linear memory
-Date: Tue, 28 Jun 2022 16:48:57 +0200
-Message-Id: <4b225168031449fc34fc7132f3923cc8dc54af60.1656427701.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
-References: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSJQ63WWz3bmG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:53:09 +1000 (AEST)
+Received: by mail-lf1-x12b.google.com with SMTP id y32so22724642lfa.6
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 07:53:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=YTlupDxR0VuIlLuxHDuN5QQVbAsill4fsciLPt4itQQ=;
+        b=CK+v3yJgQ6tqQ6GDj03fYUW2dSNd/lPiUr2/BoPpFuw76C7+8vo6ZiXT7YBCj+y0BX
+         I8rPJGnGimDE+jY5GN+SXOoMAXMozLWKwSAHu2kVTE/9KyQ2S0/2Y9u2ZI5GNCLZqf63
+         ROjWdqrK+0mlaO/QmzEZWTqhfv03RSKOp6ZWWBugRAMKFpvDRfz3wbDAF3Jlt4VLNQiK
+         qyX+0r5YBMz3rdZeuU7U1AZHOdH6V1elOMC1LsqXZnGW4Li7eeVVqQHZ85SQnwuQgsJR
+         5FNm51BQjf+ru4edKuxfPbmSFpAK9ULRaCqsALBctVOe2vPi8iFXwhQLGbofAg3npGeN
+         kGRw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=YTlupDxR0VuIlLuxHDuN5QQVbAsill4fsciLPt4itQQ=;
+        b=dD2azMwirQZ+MQdttS/2HaUgAOkFetIVIkfC23InFBIMBzY2uokDtbwlYKwXkU2cxr
+         mx46rMw+egGyUiqN7RIqfBzoxpV/UnCIQ/vmxNXsZxYeH9xX+GRWXh9yb8Wkl6yqFfbL
+         nMMeXulNFaUaLipiNqQGgsD2nBZCmzEs4LGRN6em6FJGXkU2XAoFJ5eaC4LV2Fve1FO8
+         8OF1VUVR5t08tgtt9qbltoYr4YbEg+jS0FPoLO+oyzECR7tymbV0M3PPM1BhPm2stJ/s
+         KNSAW0EuCf3LPUTaoxHkTes5PPqiazOglfpgE5EBAXITdbPq/g8A/K5HDf+GngamJ2uC
+         u6/w==
+X-Gm-Message-State: AJIora/hrHXEkp80VFCdt6jIDbM2F/+qzEODgtAaPvvj6HARRwfX28+Z
+	19aQ0YKeZWTE1zr2purHPzLsEpRUBPqi/NdsbdweGg==
+X-Google-Smtp-Source: AGRyM1vkpEV6l5ncNBuwoJTHSw7hdq0PUPHxE7ZvWBHFWAQusvLqPE8bfvDu0rO5nfpTbV2ylARwqgHtko8nyWD1E0w=
+X-Received: by 2002:a05:6512:39ce:b0:481:31e4:1e06 with SMTP id
+ k14-20020a05651239ce00b0048131e41e06mr2071928lfu.376.1656427985930; Tue, 28
+ Jun 2022 07:53:05 -0700 (PDT)
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1656427736; l=8104; s=20211009; h=from:subject:message-id; bh=rLHlD8KkBGgAnEOoljlDdEz+yunGULO/PeDHpayEOqk=; b=pcuy21y/eihMnBI9prpxklfcd/xmg2wfzANO9ltHP9zxCz2pDMkhlUQywHPAoVkrT3wul6E+fZsE hRvlPsaQCHnZX4PxbP3y7/QolECrYgb2MLR1Gwz/MqD4KfrfPFDd
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+References: <20220628095833.2579903-1-elver@google.com> <20220628095833.2579903-12-elver@google.com>
+In-Reply-To: <20220628095833.2579903-12-elver@google.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Tue, 28 Jun 2022 16:52:54 +0200
+Message-ID: <CACT4Y+Y+NRKVbL3E8ctrgWh0H4hyHLoZryXN8V-qyB0bCfA1Xw@mail.gmail.com>
+Subject: Re: [PATCH v2 11/13] perf/hw_breakpoint: Introduce bp_slots_histogram
+To: Marco Elver <elver@google.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,241 +72,201 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Alexander Shishkin <alexander.shishkin@linux.intel.com>, kasan-dev@googlegroups.com, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Today nohash/64 have linear memory based at 0xc000000000000000 and
-virtual memory based at 0x8000000000000000.
+On Tue, 28 Jun 2022 at 11:59, Marco Elver <elver@google.com> wrote:
+>
+> Factor out the existing `atomic_t count[N]` into its own struct called
+> 'bp_slots_histogram', to generalize and make its intent clearer in
+> preparation of reusing elsewhere. The basic idea of bucketing "total
+> uses of N slots" resembles a histogram, so calling it such seems most
+> intuitive.
+>
+> No functional change.
+>
+> Signed-off-by: Marco Elver <elver@google.com>
 
-In order to implement KASAN, we need to regroup both areas.
+Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
 
-Move virtual memmory at 0xc000100000000000.
-
-This complicates a bit TLB miss handlers. Until now, memory region
-was easily identified with the 4 higher bits of address:
-- 0 ==> User
-- c ==> Linear Memory
-- 8 ==> Virtual Memory
-
-Now we need to rely on the 20 higher bits, with:
-- 0xxxx ==> User
-- c0000 ==> Linear Memory
-- c0001 ==> Virtual Memory
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/nohash/64/pgtable.h |  2 +-
- arch/powerpc/mm/nohash/tlb_low_64e.S         | 64 +++++++++++---------
- 2 files changed, 38 insertions(+), 28 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index db9770995f7c..76a144b58f9b 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -25,7 +25,7 @@
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
--#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
-+#define KERN_VIRT_START ASM_CONST(0xc000100000000000)
- #define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
- 
- /*
-diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
-index a59485c549a7..68ffbfdba894 100644
---- a/arch/powerpc/mm/nohash/tlb_low_64e.S
-+++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
-@@ -213,10 +213,11 @@ itlb_miss_kernel_bolted:
- tlb_miss_kernel_bolted:
- 	mfspr	r10,SPRN_MAS1
- 	ld	r14,PACA_KERNELPGD(r13)
--	cmpldi	cr0,r15,8		/* Check for vmalloc region */
-+	srdi	r15,r16,44		/* get kernel region */
-+	andi.	r15,r15,1		/* Check for vmalloc region */
- 	rlwinm	r10,r10,0,16,1		/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
--	beq+	tlb_miss_common_bolted
-+	bne+	tlb_miss_common_bolted
- 
- tlb_miss_fault_bolted:
- 	/* We need to check if it was an instruction miss */
-@@ -498,7 +499,9 @@ tlb_miss_huge_e6500:
- 
- tlb_miss_kernel_e6500:
- 	ld	r14,PACA_KERNELPGD(r13)
--	cmpldi	cr1,r15,8		/* Check for vmalloc region */
-+	srdi	r15,r16,44		/* get kernel region */
-+	xoris	r15,r15,0xc		/* Check for vmalloc region */
-+	cmplwi	cr1,r15,1
- 	beq+	cr1,tlb_miss_common_e6500
- 
- tlb_miss_fault_e6500:
-@@ -532,16 +535,18 @@ itlb_miss_fault_e6500:
- 	 */
- 	mfspr	r14,SPRN_ESR
- 	mfspr	r16,SPRN_DEAR		/* get faulting address */
--	srdi	r15,r16,60		/* get region */
--	cmpldi	cr0,r15,0xc		/* linear mapping ? */
-+	srdi	r15,r16,44		/* get region */
-+	xoris	r15,r15,0xc
-+	cmpldi	cr0,r15,0		/* linear mapping ? */
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
-+	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
- 
- 	/* The page tables are mapped virtually linear. At this point, though,
- 	 * we don't know whether we are trying to fault in a first level
- 	 * virtual address or a virtual page table address. We can get that
- 	 * from bit 0x1 of the region ID which we have set for a page table
- 	 */
--	andi.	r10,r15,0x1
-+	andis.	r10,r15,0x1
- 	bne-	virt_page_table_tlb_miss
- 
- 	std	r14,EX_TLB_ESR(r12);	/* save ESR */
-@@ -553,7 +558,7 @@ itlb_miss_fault_e6500:
- 
- 	/* We do the user/kernel test for the PID here along with the RW test
- 	 */
--	cmpldi	cr0,r15,0		/* Check for user region */
-+	srdi.	r15,r16,60		/* Check for user region */
- 
- 	/* We pre-test some combination of permissions to avoid double
- 	 * faults:
-@@ -577,10 +582,9 @@ itlb_miss_fault_e6500:
- 	beq	normal_tlb_miss_user
- 	/* XXX replace the RMW cycles with immediate loads + writes */
- 1:	mfspr	r10,SPRN_MAS1
--	cmpldi	cr0,r15,8		/* Check for vmalloc region */
- 	rlwinm	r10,r10,0,16,1		/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
--	beq+	normal_tlb_miss
-+	beq+	cr1,normal_tlb_miss
- 
- 	/* We got a crappy address, just fault with whatever DEAR and ESR
- 	 * are here
-@@ -606,16 +610,18 @@ itlb_miss_fault_e6500:
- 	 *
- 	 * Faulting address is SRR0 which is already in r16
- 	 */
--	srdi	r15,r16,60		/* get region */
--	cmpldi	cr0,r15,0xc		/* linear mapping ? */
-+	srdi	r15,r16,44		/* get region */
-+	xoris	r15,r15,0xc
-+	cmpldi	cr0,r15,0		/* linear mapping ? */
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
-+	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
- 
- 	/* We do the user/kernel test for the PID here along with the RW test
- 	 */
- 	li	r11,_PAGE_PRESENT|_PAGE_BAP_UX	/* Base perm */
- 	oris	r11,r11,_PAGE_ACCESSED@h
- 
--	cmpldi	cr0,r15,0			/* Check for user region */
-+	srdi.	r15,r16,60			/* Check for user region */
- 	std	r14,EX_TLB_ESR(r12)		/* write crazy -1 to frame */
- 	beq	normal_tlb_miss_user
- 
-@@ -623,10 +629,9 @@ itlb_miss_fault_e6500:
- 	oris	r11,r11,_PAGE_ACCESSED@h
- 	/* XXX replace the RMW cycles with immediate loads + writes */
- 	mfspr	r10,SPRN_MAS1
--	cmpldi	cr0,r15,8			/* Check for vmalloc region */
- 	rlwinm	r10,r10,0,16,1			/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
--	beq+	normal_tlb_miss
-+	beq+	cr1,normal_tlb_miss
- 
- 	/* We got a crappy address, just fault */
- 	TLB_MISS_EPILOG_ERROR
-@@ -659,10 +664,11 @@ normal_tlb_miss:
- 	 * NOTE: For 64K pages, we do things slightly differently in
- 	 * order to handle the weird page table format used by linux
- 	 */
--	ori	r10,r15,0x1
-+	srdi	r15,r16,44
-+	oris	r10,r15,0x1
- 	rldicl	r14,r16,64-(PAGE_SHIFT-3),PAGE_SHIFT-3+4
--	sldi	r15,r10,60
--	clrrdi	r14,r14,3
-+	sldi	r15,r10,44
-+	clrrdi	r14,r14,19
- 	or	r10,r15,r14
- 
- 	ld	r14,0(r10)
-@@ -763,6 +769,7 @@ normal_tlb_miss_access_fault:
-  */
- virt_page_table_tlb_miss:
- 	/* Are we hitting a kernel page table ? */
-+	srdi	r15,r16,60
- 	andi.	r10,r15,0x8
- 
- 	/* The cool thing now is that r10 contains 0 for user and 8 for kernel,
-@@ -791,7 +798,8 @@ virt_page_table_tlb_miss:
- 	/* Now, we need to walk the page tables. First check if we are in
- 	 * range.
- 	 */
--	rldicl.	r10,r16,64-(VPTE_INDEX_SIZE+3),VPTE_INDEX_SIZE+3+4
-+	rldicl	r10,r16,64-(VPTE_INDEX_SIZE+3),VPTE_INDEX_SIZE+3+4
-+	cmpldi	r10,0x80
- 	bne-	virt_page_table_tlb_miss_fault
- 
- 	/* Get the PGD pointer */
-@@ -910,23 +918,24 @@ virt_page_table_tlb_miss_whacko_fault:
- 	 */
- 	mfspr	r14,SPRN_ESR
- 	mfspr	r16,SPRN_DEAR		/* get faulting address */
--	srdi	r11,r16,60		/* get region */
--	cmpldi	cr0,r11,0xc		/* linear mapping ? */
-+	srdi	r11,r16,44		/* get region */
-+	xoris	r11,r11,0xc
-+	cmpldi	cr0,r11,0		/* linear mapping ? */
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
-+	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
- 
- 	/* We do the user/kernel test for the PID here along with the RW test
- 	 */
--	cmpldi	cr0,r11,0		/* Check for user region */
-+	srdi.	r11,r16,60		/* Check for user region */
- 	ld	r15,PACAPGD(r13)	/* Load user pgdir */
- 	beq	htw_tlb_miss
- 
- 	/* XXX replace the RMW cycles with immediate loads + writes */
- 1:	mfspr	r10,SPRN_MAS1
--	cmpldi	cr0,r11,8		/* Check for vmalloc region */
- 	rlwinm	r10,r10,0,16,1		/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
- 	ld	r15,PACA_KERNELPGD(r13)	/* Load kernel pgdir */
--	beq+	htw_tlb_miss
-+	beq+	cr1,htw_tlb_miss
- 
- 	/* We got a crappy address, just fault with whatever DEAR and ESR
- 	 * are here
-@@ -952,19 +961,20 @@ virt_page_table_tlb_miss_whacko_fault:
- 	 *
- 	 * Faulting address is SRR0 which is already in r16
- 	 */
--	srdi	r11,r16,60		/* get region */
--	cmpldi	cr0,r11,0xc		/* linear mapping ? */
-+	srdi	r11,r16,44		/* get region */
-+	xoris	r11,r11,0xc
-+	cmpldi	cr0,r11,0		/* linear mapping ? */
- 	beq	tlb_load_linear		/* yes -> go to linear map load */
-+	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
- 
- 	/* We do the user/kernel test for the PID here along with the RW test
- 	 */
--	cmpldi	cr0,r11,0			/* Check for user region */
-+	srdi.	r11,r16,60		/* Check for user region */
- 	ld	r15,PACAPGD(r13)		/* Load user pgdir */
- 	beq	htw_tlb_miss
- 
- 	/* XXX replace the RMW cycles with immediate loads + writes */
- 1:	mfspr	r10,SPRN_MAS1
--	cmpldi	cr0,r11,8			/* Check for vmalloc region */
- 	rlwinm	r10,r10,0,16,1			/* Clear TID */
- 	mtspr	SPRN_MAS1,r10
- 	ld	r15,PACA_KERNELPGD(r13)		/* Load kernel pgdir */
--- 
-2.36.1
-
+> ---
+> v2:
+> * New patch.
+> ---
+>  kernel/events/hw_breakpoint.c | 94 +++++++++++++++++++++++------------
+>  1 file changed, 62 insertions(+), 32 deletions(-)
+>
+> diff --git a/kernel/events/hw_breakpoint.c b/kernel/events/hw_breakpoint.c
+> index 128ba3429223..18886f115abc 100644
+> --- a/kernel/events/hw_breakpoint.c
+> +++ b/kernel/events/hw_breakpoint.c
+> @@ -36,19 +36,27 @@
+>  #include <linux/slab.h>
+>
+>  /*
+> - * Constraints data
+> + * Datastructure to track the total uses of N slots across tasks or CPUs;
+> + * bp_slots_histogram::count[N] is the number of assigned N+1 breakpoint slots.
+>   */
+> -struct bp_cpuinfo {
+> -       /* Number of pinned cpu breakpoints in a cpu */
+> -       unsigned int    cpu_pinned;
+> -       /* tsk_pinned[n] is the number of tasks having n+1 breakpoints */
+> +struct bp_slots_histogram {
+>  #ifdef hw_breakpoint_slots
+> -       atomic_t        tsk_pinned[hw_breakpoint_slots(0)];
+> +       atomic_t count[hw_breakpoint_slots(0)];
+>  #else
+> -       atomic_t        *tsk_pinned;
+> +       atomic_t *count;
+>  #endif
+>  };
+>
+> +/*
+> + * Per-CPU constraints data.
+> + */
+> +struct bp_cpuinfo {
+> +       /* Number of pinned CPU breakpoints in a CPU. */
+> +       unsigned int                    cpu_pinned;
+> +       /* Histogram of pinned task breakpoints in a CPU. */
+> +       struct bp_slots_histogram       tsk_pinned;
+> +};
+> +
+>  static DEFINE_PER_CPU(struct bp_cpuinfo, bp_cpuinfo[TYPE_MAX]);
+>
+>  static struct bp_cpuinfo *get_bp_info(int cpu, enum bp_type_idx type)
+> @@ -159,6 +167,18 @@ static inline int hw_breakpoint_slots_cached(int type)
+>         return __nr_bp_slots[type];
+>  }
+>
+> +static __init bool
+> +bp_slots_histogram_alloc(struct bp_slots_histogram *hist, enum bp_type_idx type)
+> +{
+> +       hist->count = kcalloc(hw_breakpoint_slots_cached(type), sizeof(*hist->count), GFP_KERNEL);
+> +       return hist->count;
+> +}
+> +
+> +static __init void bp_slots_histogram_free(struct bp_slots_histogram *hist)
+> +{
+> +       kfree(hist->count);
+> +}
+> +
+>  static __init int init_breakpoint_slots(void)
+>  {
+>         int i, cpu, err_cpu;
+> @@ -170,8 +190,7 @@ static __init int init_breakpoint_slots(void)
+>                 for (i = 0; i < TYPE_MAX; i++) {
+>                         struct bp_cpuinfo *info = get_bp_info(cpu, i);
+>
+> -                       info->tsk_pinned = kcalloc(__nr_bp_slots[i], sizeof(atomic_t), GFP_KERNEL);
+> -                       if (!info->tsk_pinned)
+> +                       if (!bp_slots_histogram_alloc(&info->tsk_pinned, i))
+>                                 goto err;
+>                 }
+>         }
+> @@ -180,7 +199,7 @@ static __init int init_breakpoint_slots(void)
+>  err:
+>         for_each_possible_cpu(err_cpu) {
+>                 for (i = 0; i < TYPE_MAX; i++)
+> -                       kfree(get_bp_info(err_cpu, i)->tsk_pinned);
+> +                       bp_slots_histogram_free(&get_bp_info(err_cpu, i)->tsk_pinned);
+>                 if (err_cpu == cpu)
+>                         break;
+>         }
+> @@ -189,6 +208,34 @@ static __init int init_breakpoint_slots(void)
+>  }
+>  #endif
+>
+> +static inline void
+> +bp_slots_histogram_add(struct bp_slots_histogram *hist, int old, int val)
+> +{
+> +       const int old_idx = old - 1;
+> +       const int new_idx = old_idx + val;
+> +
+> +       if (old_idx >= 0)
+> +               atomic_dec(&hist->count[old_idx]);
+> +       if (new_idx >= 0)
+> +               atomic_inc(&hist->count[new_idx]);
+> +}
+> +
+> +static int
+> +bp_slots_histogram_max(struct bp_slots_histogram *hist, enum bp_type_idx type)
+> +{
+> +       for (int i = hw_breakpoint_slots_cached(type) - 1; i >= 0; i--) {
+> +               const int count = atomic_read(&hist->count[i]);
+> +
+> +               /* Catch unexpected writers; we want a stable snapshot. */
+> +               ASSERT_EXCLUSIVE_WRITER(hist->count[i]);
+> +               if (count > 0)
+> +                       return i + 1;
+> +               WARN(count < 0, "inconsistent breakpoint slots histogram");
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+>  #ifndef hw_breakpoint_weight
+>  static inline int hw_breakpoint_weight(struct perf_event *bp)
+>  {
+> @@ -205,13 +252,11 @@ static inline enum bp_type_idx find_slot_idx(u64 bp_type)
+>  }
+>
+>  /*
+> - * Report the maximum number of pinned breakpoints a task
+> - * have in this cpu
+> + * Return the maximum number of pinned breakpoints a task has in this CPU.
+>   */
+>  static unsigned int max_task_bp_pinned(int cpu, enum bp_type_idx type)
+>  {
+> -       atomic_t *tsk_pinned = get_bp_info(cpu, type)->tsk_pinned;
+> -       int i;
+> +       struct bp_slots_histogram *tsk_pinned = &get_bp_info(cpu, type)->tsk_pinned;
+>
+>         /*
+>          * At this point we want to have acquired the bp_cpuinfo_sem as a
+> @@ -219,14 +264,7 @@ static unsigned int max_task_bp_pinned(int cpu, enum bp_type_idx type)
+>          * toggle_bp_task_slot() to tsk_pinned, and we get a stable snapshot.
+>          */
+>         lockdep_assert_held_write(&bp_cpuinfo_sem);
+> -
+> -       for (i = hw_breakpoint_slots_cached(type) - 1; i >= 0; i--) {
+> -               ASSERT_EXCLUSIVE_WRITER(tsk_pinned[i]); /* Catch unexpected writers. */
+> -               if (atomic_read(&tsk_pinned[i]) > 0)
+> -                       return i + 1;
+> -       }
+> -
+> -       return 0;
+> +       return bp_slots_histogram_max(tsk_pinned, type);
+>  }
+>
+>  /*
+> @@ -300,8 +338,7 @@ max_bp_pinned_slots(struct perf_event *bp, enum bp_type_idx type)
+>  static void toggle_bp_task_slot(struct perf_event *bp, int cpu,
+>                                 enum bp_type_idx type, int weight)
+>  {
+> -       atomic_t *tsk_pinned = get_bp_info(cpu, type)->tsk_pinned;
+> -       int old_idx, new_idx;
+> +       struct bp_slots_histogram *tsk_pinned = &get_bp_info(cpu, type)->tsk_pinned;
+>
+>         /*
+>          * If bp->hw.target, tsk_pinned is only modified, but not used
+> @@ -311,14 +348,7 @@ static void toggle_bp_task_slot(struct perf_event *bp, int cpu,
+>          * bp_cpuinfo_sem as a writer to stabilize tsk_pinned's value.
+>          */
+>         lockdep_assert_held_read(&bp_cpuinfo_sem);
+> -
+> -       old_idx = task_bp_pinned(cpu, bp, type) - 1;
+> -       new_idx = old_idx + weight;
+> -
+> -       if (old_idx >= 0)
+> -               atomic_dec(&tsk_pinned[old_idx]);
+> -       if (new_idx >= 0)
+> -               atomic_inc(&tsk_pinned[new_idx]);
+> +       bp_slots_histogram_add(tsk_pinned, task_bp_pinned(cpu, bp, type), weight);
+>  }
+>
+>  /*
+> --
+> 2.37.0.rc0.161.g10f37bed90-goog
+>
