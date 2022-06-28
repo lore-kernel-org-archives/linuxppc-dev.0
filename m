@@ -4,65 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF64AC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 10:55:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 525B1C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 11:16:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXM2W1rgvz3c8W
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 20:55:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXMTv63m2z3cjJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 21:16:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=SgjVnFGo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N70eu5en;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1130; helo=mail-yw1-x1130.google.com; envelope-from=elver@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=will@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=SgjVnFGo;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N70eu5en;
 	dkim-atps=neutral
-Received: from mail-yw1-x1130.google.com (mail-yw1-x1130.google.com [IPv6:2607:f8b0:4864:20::1130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXM1t26kbz302N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 20:55:12 +1000 (AEST)
-Received: by mail-yw1-x1130.google.com with SMTP id 00721157ae682-31772f8495fso112658057b3.4
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 03:55:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Bx+nn3bN9pkcTAPrSO8SXuVhJpjdYzH6Wim9ZDKKiAY=;
-        b=SgjVnFGomlUOotY/gew1wOdWrD475NDkUK1mb2rUT0EFvD8XhhNOIIykcSWEEL6YxM
-         jJinJuo/gJhCW+dtmxOqBXMPReGrI3zwNRZ+WxliSN7Qpbi3jNvVW6ZwIMhSLVwOZY6t
-         ByNEzLBuoiVfE3KB4iqfCywFWucy1UDCjq2jhO+UJZFD+1vUpogEWe/tfIk+C9HEG//B
-         dURvYRrCbZJjIctxYxYIMKq5CBmVom2p/kc915BHwbw1lCKYOEFZKDEsHmdfX9irHD7j
-         F1llsAgUDsNOJIVYDHW7Qal7uXAZjI8v4vAgdaHAB1+k39/T1eUyg4VTTYoCAmCLSqV5
-         va5Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Bx+nn3bN9pkcTAPrSO8SXuVhJpjdYzH6Wim9ZDKKiAY=;
-        b=Ozx/L10wBN96GJu1kaIUK0VzgJkc8HIHepjtqWUg78jxl+wEaTkllvMECwx5rENZUK
-         5YJ2UrbfW4hPAIbL0UwrtkO7OtfrBpvOvNjEoAYEfjQKR8asU5m8QAeC+YrASbX61Uym
-         JtXqf5azxJIdWxDGe/dd4sKNWiAKAeWsqWBSDprmu33PMevwZYC/iBpNsfvvrszAFTRg
-         lkPpK91kckQCTSHrmVUms8EfqpkkzuH+KSrm24pwLKWLGZ9ZAln8E0Grm61u0ksigAC9
-         w2yeVo8UmwbDPA1ZOEoCfpoFF0iYuknRHSZomUZtSsWSrqQhg74+XqbytUcS9TFKguGh
-         DwTg==
-X-Gm-Message-State: AJIora9Gd1fa78dctYEFGvIh4RilT9kuzTliGIOQDias10J5ug1dt8Y+
-	D4QFfcMxi+8HSyagjfNFPxLgsSwoBJRVOWES3wX/eg==
-X-Google-Smtp-Source: AGRyM1vz2ZG/AOoQ4vBN8VmbUXJLQvwRbaY4tA5etmPkx+EhZBLBb/NNp85KWwxKWmdK+O/VbOcVkqR614Ti4viQrKI=
-X-Received: by 2002:a81:1a42:0:b0:318:3915:57d7 with SMTP id
- a63-20020a811a42000000b00318391557d7mr19561304ywa.327.1656413708510; Tue, 28
- Jun 2022 03:55:08 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXMTF688kz3bq2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 21:15:29 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id C53AB61A78;
+	Tue, 28 Jun 2022 11:15:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E243BC36AE2;
+	Tue, 28 Jun 2022 11:15:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656414927;
+	bh=mvtI/btKWfnTj6WXNoVCJqoXnRiwk3z7k27yaBrHk6c=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=N70eu5enrxm4OiBTiSAzky1+jssaY1i3TRwY+QbOROq19VdriskmFaEvqP85ZzqfP
+	 6qq/4zdDHuwpse8fQj+G22hgEoNyy+zmmFrhKeIUq6rS2LSzwiewGVn6u0EQWMHAHc
+	 lQv0de9YCL/4tlYXZnL/5ty4nBMsWSiCPjoLT5NevrNiaC9KcXrZsAeuEeqdCMsMtg
+	 4nHXglGzIHK2evVEkRuYL9a4ZKsoMckT9CdYW0rohjKedWtBAsZ3xdFu5IN6+EsnF6
+	 0PrD1rJAs6gNPi9tz+I0vwpVnXTojbzLDaRO/bS+rdTiW5LGU3b9/kZGxu/9Q3gp2Q
+	 FQJK6B45L/mXg==
+Date: Tue, 28 Jun 2022 12:15:15 +0100
+From: Will Deacon <will@kernel.org>
+To: Tong Tiangen <tongtiangen@huawei.com>
+Subject: Re: [PATCH -next v6 02/10] arm64: asm-extable: move data fields
+Message-ID: <20220628111514.GB23703@willie-the-truck>
+References: <20220621072638.1273594-1-tongtiangen@huawei.com>
+ <20220621072638.1273594-3-tongtiangen@huawei.com>
 MIME-Version: 1.0
-References: <20220628095833.2579903-1-elver@google.com> <20220628095833.2579903-14-elver@google.com>
-In-Reply-To: <20220628095833.2579903-14-elver@google.com>
-From: Marco Elver <elver@google.com>
-Date: Tue, 28 Jun 2022 12:54:32 +0200
-Message-ID: <CANpmjNPapZ9p3dSB1RC-cBoJ588XkRxJRzbhxx4THLZ9aWsx=A@mail.gmail.com>
-Subject: Re: [PATCH v2 13/13] perf/hw_breakpoint: Optimize toggle_bp_slot()
- for CPU-independent task targets
-To: elver@google.com, Peter Zijlstra <peterz@infradead.org>, 
-	Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220621072638.1273594-3-tongtiangen@huawei.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,14 +61,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-sh@vger.kernel.org, Alexander Shishkin <alexander.shishkin@linux.intel.com>, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, kasan-dev@googlegroups.com, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Olsa <jolsa@redhat.com>, Dmitry Vyukov <dvyukov@google.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Kefeng Wang <wangkefeng.wang@huawei.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>, Guohanjun <guohanjun@huawei.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, Xie XiuQi <xiexiuqi@huawei.com>, Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Robin Murphy <robin.murphy@arm.com>, linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Jun 2022 at 11:59, Marco Elver <elver@google.com> wrote:
-[...]
-> +       /*
-> +        * Update the pinned task slots, in per-CPU bp_cpuinfo and in the global
-> +        * histogram. We need to take care of 5 cases:
+On Tue, Jun 21, 2022 at 07:26:30AM +0000, Tong Tiangen wrote:
+> In subsequent patches we'll need to fill in extable data fields in
+> regular assembly files. In preparation for this, move the definitions of
+> the extable data fields earlier in asm-extable.h so that they are
+> defined for both assembly and C files.
+> 
+> There should be no functional change as a result of this patch.
+> 
+> Signed-off-by: Mark Rutland <mark.rutland@arm.com>
+> Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+> ---
+>  arch/arm64/include/asm/asm-extable.h | 22 ++++++++++++----------
+>  1 file changed, 12 insertions(+), 10 deletions(-)
 
-This is a typo: "5 cases" -> "4 cases".
+This (and the following) patch should retain Mark's authorship information
+as they are taken from his git tree:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/mark/linux.git/log/?h=arm64/extable/asm-uaccess
+
+I plan to apply the first six patches for now, so I'll fix that up at the
+same time.
+
+Will
