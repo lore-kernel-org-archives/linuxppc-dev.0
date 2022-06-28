@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 482A2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5AC1C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:51:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSGK61zqz3f6k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:51:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSGv202Kz3fDM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:51:51 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSDN1brKz3cj2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:49:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSDY5Nlxz3dR9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:49:49 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LXSD11fkkz9tV1;
-	Tue, 28 Jun 2022 16:49:21 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4LXSD20w20z9tV9;
+	Tue, 28 Jun 2022 16:49:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ThIv8D9eJ7Sb; Tue, 28 Jun 2022 16:49:21 +0200 (CEST)
+	with ESMTP id pmtXh_qfM3gG; Tue, 28 Jun 2022 16:49:22 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LXSCy4y3mz9tV9;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4LXSCy59Zsz9tVB;
 	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8DDA48B765;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 93C5A8B788;
 	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 0R73OtiY-WK7; Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
+	with ESMTP id xt-MdVA7bk3j; Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.132])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2B8AE8B788;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 29DB08B787;
 	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25SEnDlX2928222
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25SEnDQn2928214
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Tue, 28 Jun 2022 16:49:13 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25SEnDQo2928221;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25SEnDXK2928198;
 	Tue, 28 Jun 2022 16:49:13 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         Michael Ellerman <mpe@ellerman.id.au>, dja@axtens.net
-Subject: [PATCH v1 6/6] powerpc/64e: KASAN Full support for BOOK3E/64
-Date: Tue, 28 Jun 2022 16:48:59 +0200
-Message-Id: <0bef8beda27baf71e3b9e8b13e620fba6e19499b.1656427701.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 4/6] powerpc/64e: Move virtual memory closer to linear memory
+Date: Tue, 28 Jun 2022 16:48:57 +0200
+Message-Id: <4b225168031449fc34fc7132f3923cc8dc54af60.1656427701.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
 References: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1656427736; l=9788; s=20211009; h=from:subject:message-id; bh=Gfb5DiMGf8A/YXE2AuL5mqn+J9pDlEkBdl34V/dhsQU=; b=fnUvlqwkF9jIuOrxJdaVA8KZ7vC48RNYFLcz/Ok/tIibw9YITKvMXo+TsYLg6HhY1pIsX4rfivbQ 5mFT3pCSDfGGrTEiYsA9liRJRzHLJbo2wLIBQu8dEY9yHpN1LrSw
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1656427736; l=8104; s=20211009; h=from:subject:message-id; bh=rLHlD8KkBGgAnEOoljlDdEz+yunGULO/PeDHpayEOqk=; b=pcuy21y/eihMnBI9prpxklfcd/xmg2wfzANO9ltHP9zxCz2pDMkhlUQywHPAoVkrT3wul6E+fZsE hRvlPsaQCHnZX4PxbP3y7/QolECrYgb2MLR1Gwz/MqD4KfrfPFDd
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,297 +73,237 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We now have memory organised in a way that allows
-implementing KASAN.
+Today nohash/64 have linear memory based at 0xc000000000000000 and
+virtual memory based at 0x8000000000000000.
 
-Unlike book3s/64, book3e always has translation active so the only
-thing needed to use KASAN is to setup an early zero shadow mapping
-just after setting a stack pointer and before calling early_setup().
+In order to implement KASAN, we need to regroup both areas.
 
-The memory layout is now as follows
+Move virtual memmory at 0xc000100000000000.
 
-   +------------------------+  Kernel virtual map end (0xc000200000000000)
-   |                        |
-   |    16TB of KASAN map   |
-   |                        |
-   +------------------------+  Kernel KASAN shadow map start
-   |                        |
-   |    16TB of IO map      |
-   |                        |
-   +------------------------+  Kernel IO map start
-   |                        |
-   |    16TB of vmemmap     |
-   |                        |
-   +------------------------+  Kernel vmemmap start
-   |                        |
-   |    16TB of vmap        |
-   |                        |
-   +------------------------+  Kernel virt start (0xc000100000000000)
-   |                        |
-   |    64TB of linear mem  |
-   |                        |
-   +------------------------+  Kernel linear (0xc.....)
+This complicates a bit TLB miss handlers. Until now, memory region
+was easily identified with the 4 higher bits of address:
+- 0 ==> User
+- c ==> Linear Memory
+- 8 ==> Virtual Memory
+
+Now we need to rely on the 20 higher bits, with:
+- 0xxxx ==> User
+- c0000 ==> Linear Memory
+- c0001 ==> Virtual Memory
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig                   |   2 +
- arch/powerpc/Kconfig.debug             |   3 +-
- arch/powerpc/include/asm/kasan.h       |  13 ++-
- arch/powerpc/kernel/head_64.S          |   3 +
- arch/powerpc/mm/kasan/Makefile         |   1 +
- arch/powerpc/mm/kasan/init_book3e_64.c | 133 +++++++++++++++++++++++++
- arch/powerpc/mm/kasan/init_book3s_64.c |   2 +
- arch/powerpc/platforms/Kconfig.cputype |   1 -
- 8 files changed, 155 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/mm/kasan/init_book3e_64.c
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  2 +-
+ arch/powerpc/mm/nohash/tlb_low_64e.S         | 64 +++++++++++---------
+ 2 files changed, 38 insertions(+), 28 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c2ce2e60c8f0..92e0cad7752d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -193,6 +193,7 @@ config PPC
- 	select HAVE_ARCH_JUMP_LABEL_RELATIVE
- 	select HAVE_ARCH_KASAN			if PPC32 && PPC_PAGE_SHIFT <= 14
- 	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
-+	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
- 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
- 	select HAVE_ARCH_KFENCE			if PPC_BOOK3S_32 || PPC_8xx || 40x
- 	select HAVE_ARCH_KGDB
-@@ -254,6 +255,7 @@ config PPC
- 	select IOMMU_HELPER			if PPC64
- 	select IRQ_DOMAIN
- 	select IRQ_FORCED_THREADING
-+	select KASAN_VMALLOC			if KASAN && MODULES
- 	select MMU_GATHER_PAGE_SIZE
- 	select MMU_GATHER_RCU_TABLE_FREE
- 	select MODULES_USE_ELF_RELA
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 9f363c143d86..6a8855d45af7 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -375,4 +375,5 @@ config KASAN_SHADOW_OFFSET
- 	hex
- 	depends on KASAN
- 	default 0xe0000000 if PPC32
--	default 0xa80e000000000000 if PPC64
-+	default 0xa80e000000000000 if PPC_BOOK3S_64
-+	default 0xa8001c0000000000 if PPC_BOOK3E_64
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index a6be4025cba2..92a968202ba7 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -19,7 +19,7 @@
- 
- #define KASAN_SHADOW_SCALE_SHIFT	3
- 
--#ifdef CONFIG_MODULES
-+#if defined(CONFIG_MODULES) && defined(CONFIG_PPC32)
- #define KASAN_KERN_START	ALIGN_DOWN(PAGE_OFFSET - SZ_256M, SZ_256M)
- #else
- #define KASAN_KERN_START	PAGE_OFFSET
-@@ -39,6 +39,17 @@
-  * c00e000000000000 << 3 + a80e000000000000 = c00fc00000000000
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index db9770995f7c..76a144b58f9b 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -25,7 +25,7 @@
+ /*
+  * Define the address range of the kernel non-linear virtual area
   */
- #define KASAN_SHADOW_END 0xc00fc00000000000UL
-+
-+#else
-+
-+/*
-+ * The shadow ends before the highest accessible address
-+ * because we don't need a shadow for the shadow.
-+ * But it doesn't hurt to have a shadow for the shadow,
-+ * keep shadow end aligned eases things.
-+ */
-+#define KASAN_SHADOW_END 0xc000200000000000UL
-+
- #endif
+-#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
++#define KERN_VIRT_START ASM_CONST(0xc000100000000000)
+ #define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
  
- #ifdef CONFIG_KASAN
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index d3eea633d11a..cf2c08902c05 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -965,6 +965,9 @@ start_here_multiplatform:
- 	 * and SLB setup before we turn on relocation.
+ /*
+diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
+index a59485c549a7..68ffbfdba894 100644
+--- a/arch/powerpc/mm/nohash/tlb_low_64e.S
++++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
+@@ -213,10 +213,11 @@ itlb_miss_kernel_bolted:
+ tlb_miss_kernel_bolted:
+ 	mfspr	r10,SPRN_MAS1
+ 	ld	r14,PACA_KERNELPGD(r13)
+-	cmpldi	cr0,r15,8		/* Check for vmalloc region */
++	srdi	r15,r16,44		/* get kernel region */
++	andi.	r15,r15,1		/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1		/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+-	beq+	tlb_miss_common_bolted
++	bne+	tlb_miss_common_bolted
+ 
+ tlb_miss_fault_bolted:
+ 	/* We need to check if it was an instruction miss */
+@@ -498,7 +499,9 @@ tlb_miss_huge_e6500:
+ 
+ tlb_miss_kernel_e6500:
+ 	ld	r14,PACA_KERNELPGD(r13)
+-	cmpldi	cr1,r15,8		/* Check for vmalloc region */
++	srdi	r15,r16,44		/* get kernel region */
++	xoris	r15,r15,0xc		/* Check for vmalloc region */
++	cmplwi	cr1,r15,1
+ 	beq+	cr1,tlb_miss_common_e6500
+ 
+ tlb_miss_fault_e6500:
+@@ -532,16 +535,18 @@ itlb_miss_fault_e6500:
  	 */
+ 	mfspr	r14,SPRN_ESR
+ 	mfspr	r16,SPRN_DEAR		/* get faulting address */
+-	srdi	r15,r16,60		/* get region */
+-	cmpldi	cr0,r15,0xc		/* linear mapping ? */
++	srdi	r15,r16,44		/* get region */
++	xoris	r15,r15,0xc
++	cmpldi	cr0,r15,0		/* linear mapping ? */
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
++	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
  
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	/* Restore parameters passed from prom_init/kexec */
- 	mr	r3,r31
- 	LOAD_REG_ADDR(r12, DOTSYM(early_setup))
-diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-index 4999aadb1867..699eeffd9f55 100644
---- a/arch/powerpc/mm/kasan/Makefile
-+++ b/arch/powerpc/mm/kasan/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_PPC32)		+= init_32.o
- obj-$(CONFIG_PPC_8xx)		+= 8xx.o
- obj-$(CONFIG_PPC_BOOK3S_32)	+= book3s_32.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= init_book3s_64.o
-+obj-$(CONFIG_PPC_BOOK3E_64)	+= init_book3e_64.o
-diff --git a/arch/powerpc/mm/kasan/init_book3e_64.c b/arch/powerpc/mm/kasan/init_book3e_64.c
-new file mode 100644
-index 000000000000..11519e88dc6b
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/init_book3e_64.c
-@@ -0,0 +1,133 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * KASAN for 64-bit Book3e powerpc
-+ *
-+ * Copyright 2022, Christophe Leroy, CS GROUP France
-+ */
-+
-+#define DISABLE_BRANCH_PROFILING
-+
-+#include <linux/kasan.h>
-+#include <linux/printk.h>
-+#include <linux/memblock.h>
-+#include <linux/set_memory.h>
-+
-+#include <asm/pgalloc.h>
-+
-+static inline bool kasan_pud_table(p4d_t p4d)
-+{
-+	return p4d_page(p4d) == virt_to_page(lm_alias(kasan_early_shadow_pud));
-+}
-+
-+static inline bool kasan_pmd_table(pud_t pud)
-+{
-+	return pud_page(pud) == virt_to_page(lm_alias(kasan_early_shadow_pmd));
-+}
-+
-+static inline bool kasan_pte_table(pmd_t pmd)
-+{
-+	return pmd_page(pmd) == virt_to_page(lm_alias(kasan_early_shadow_pte));
-+}
-+
-+static int __init kasan_map_kernel_page(unsigned long ea, unsigned long pa, pgprot_t prot)
-+{
-+	pgd_t *pgdp;
-+	p4d_t *p4dp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+
-+	pgdp = pgd_offset_k(ea);
-+	p4dp = p4d_offset(pgdp, ea);
-+	if (kasan_pud_table(*p4dp)) {
-+		pudp = memblock_alloc(PUD_TABLE_SIZE, PUD_TABLE_SIZE);
-+		memcpy(pudp, kasan_early_shadow_pud, PUD_TABLE_SIZE);
-+		p4d_populate(&init_mm, p4dp, pudp);
-+	}
-+	pudp = pud_offset(p4dp, ea);
-+	if (kasan_pmd_table(*pudp)) {
-+		pmdp = memblock_alloc(PMD_TABLE_SIZE, PMD_TABLE_SIZE);
-+		memcpy(pmdp, kasan_early_shadow_pmd, PMD_TABLE_SIZE);
-+		pud_populate(&init_mm, pudp, pmdp);
-+	}
-+	pmdp = pmd_offset(pudp, ea);
-+	if (kasan_pte_table(*pmdp)) {
-+		ptep = memblock_alloc(PTE_TABLE_SIZE, PTE_TABLE_SIZE);
-+		memcpy(ptep, kasan_early_shadow_pte, PTE_TABLE_SIZE);
-+		pmd_populate_kernel(&init_mm, pmdp, ptep);
-+	}
-+	ptep = pte_offset_kernel(pmdp, ea);
-+
-+	__set_pte_at(&init_mm, ea, ptep, pfn_pte(pa >> PAGE_SHIFT, prot), 0);
-+
-+	return 0;
-+}
-+
-+static void __init kasan_init_phys_region(void *start, void *end)
-+{
-+	unsigned long k_start, k_end, k_cur;
-+	void *va;
-+
-+	if (start >= end)
-+		return;
-+
-+	k_start = ALIGN_DOWN((unsigned long)kasan_mem_to_shadow(start), PAGE_SIZE);
-+	k_end = ALIGN((unsigned long)kasan_mem_to_shadow(end), PAGE_SIZE);
-+
-+	va = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE, va += PAGE_SIZE)
-+		kasan_map_kernel_page(k_cur, __pa(va), PAGE_KERNEL);
-+}
-+
-+void __init kasan_early_init(void)
-+{
-+	int i;
-+	unsigned long addr;
-+	pgd_t *pgd = pgd_offset_k(KASAN_SHADOW_START);
-+	pte_t zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL);
-+
-+	BUILD_BUG_ON(!IS_ALIGNED(KASAN_SHADOW_START, PGDIR_SIZE));
-+	BUILD_BUG_ON(!IS_ALIGNED(KASAN_SHADOW_END, PGDIR_SIZE));
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++)
-+		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-+			     &kasan_early_shadow_pte[i], zero_pte, 0);
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++)
-+		pmd_populate_kernel(&init_mm, &kasan_early_shadow_pmd[i],
-+				    kasan_early_shadow_pte);
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++)
-+		pud_populate(&init_mm, &kasan_early_shadow_pud[i],
-+			     kasan_early_shadow_pmd);
-+
-+	for (addr = KASAN_SHADOW_START; addr != KASAN_SHADOW_END; addr += PGDIR_SIZE)
-+		p4d_populate(&init_mm, p4d_offset(pgd++, addr), kasan_early_shadow_pud);
-+}
-+
-+void __init kasan_init(void)
-+{
-+	phys_addr_t start, end;
-+	u64 i;
-+	pte_t zero_pte = pfn_pte(virt_to_pfn(kasan_early_shadow_page), PAGE_KERNEL_RO);
-+
-+	for_each_mem_range(i, &start, &end)
-+		kasan_init_phys_region((void *)start, (void *)end);
-+
-+	if (IS_ENABLED(CONFIG_KASAN_VMALLOC))
-+		kasan_remove_zero_shadow((void *)VMALLOC_START, VMALLOC_SIZE);
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++)
-+		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-+			     &kasan_early_shadow_pte[i], zero_pte, 0);
-+
-+	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
-+
-+	memset(kasan_early_shadow_page, 0, PAGE_SIZE);
-+
-+	/* Enable error messages */
-+	init_task.kasan_depth = 0;
-+	pr_info("KASAN init done\n");
-+}
-+
-+void __init kasan_late_init(void) { }
-diff --git a/arch/powerpc/mm/kasan/init_book3s_64.c b/arch/powerpc/mm/kasan/init_book3s_64.c
-index 0da5566d6b84..9300d641cf9a 100644
---- a/arch/powerpc/mm/kasan/init_book3s_64.c
-+++ b/arch/powerpc/mm/kasan/init_book3s_64.c
-@@ -99,4 +99,6 @@ void __init kasan_init(void)
- 	pr_info("KASAN init done\n");
- }
+ 	/* The page tables are mapped virtually linear. At this point, though,
+ 	 * we don't know whether we are trying to fault in a first level
+ 	 * virtual address or a virtual page table address. We can get that
+ 	 * from bit 0x1 of the region ID which we have set for a page table
+ 	 */
+-	andi.	r10,r15,0x1
++	andis.	r10,r15,0x1
+ 	bne-	virt_page_table_tlb_miss
  
-+void __init kasan_early_init(void) { }
-+
- void __init kasan_late_init(void) { }
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 9e2df4b66478..383ed4fe6013 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -2,7 +2,6 @@
- config PPC32
- 	bool
- 	default y if !PPC64
--	select KASAN_VMALLOC if KASAN && MODULES
+ 	std	r14,EX_TLB_ESR(r12);	/* save ESR */
+@@ -553,7 +558,7 @@ itlb_miss_fault_e6500:
  
- config PPC64
- 	bool "64-bit kernel"
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+-	cmpldi	cr0,r15,0		/* Check for user region */
++	srdi.	r15,r16,60		/* Check for user region */
+ 
+ 	/* We pre-test some combination of permissions to avoid double
+ 	 * faults:
+@@ -577,10 +582,9 @@ itlb_miss_fault_e6500:
+ 	beq	normal_tlb_miss_user
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+ 1:	mfspr	r10,SPRN_MAS1
+-	cmpldi	cr0,r15,8		/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1		/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+-	beq+	normal_tlb_miss
++	beq+	cr1,normal_tlb_miss
+ 
+ 	/* We got a crappy address, just fault with whatever DEAR and ESR
+ 	 * are here
+@@ -606,16 +610,18 @@ itlb_miss_fault_e6500:
+ 	 *
+ 	 * Faulting address is SRR0 which is already in r16
+ 	 */
+-	srdi	r15,r16,60		/* get region */
+-	cmpldi	cr0,r15,0xc		/* linear mapping ? */
++	srdi	r15,r16,44		/* get region */
++	xoris	r15,r15,0xc
++	cmpldi	cr0,r15,0		/* linear mapping ? */
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
++	cmpldi	cr1,r15,1		/* vmalloc mapping ? */
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+ 	li	r11,_PAGE_PRESENT|_PAGE_BAP_UX	/* Base perm */
+ 	oris	r11,r11,_PAGE_ACCESSED@h
+ 
+-	cmpldi	cr0,r15,0			/* Check for user region */
++	srdi.	r15,r16,60			/* Check for user region */
+ 	std	r14,EX_TLB_ESR(r12)		/* write crazy -1 to frame */
+ 	beq	normal_tlb_miss_user
+ 
+@@ -623,10 +629,9 @@ itlb_miss_fault_e6500:
+ 	oris	r11,r11,_PAGE_ACCESSED@h
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+ 	mfspr	r10,SPRN_MAS1
+-	cmpldi	cr0,r15,8			/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1			/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+-	beq+	normal_tlb_miss
++	beq+	cr1,normal_tlb_miss
+ 
+ 	/* We got a crappy address, just fault */
+ 	TLB_MISS_EPILOG_ERROR
+@@ -659,10 +664,11 @@ normal_tlb_miss:
+ 	 * NOTE: For 64K pages, we do things slightly differently in
+ 	 * order to handle the weird page table format used by linux
+ 	 */
+-	ori	r10,r15,0x1
++	srdi	r15,r16,44
++	oris	r10,r15,0x1
+ 	rldicl	r14,r16,64-(PAGE_SHIFT-3),PAGE_SHIFT-3+4
+-	sldi	r15,r10,60
+-	clrrdi	r14,r14,3
++	sldi	r15,r10,44
++	clrrdi	r14,r14,19
+ 	or	r10,r15,r14
+ 
+ 	ld	r14,0(r10)
+@@ -763,6 +769,7 @@ normal_tlb_miss_access_fault:
+  */
+ virt_page_table_tlb_miss:
+ 	/* Are we hitting a kernel page table ? */
++	srdi	r15,r16,60
+ 	andi.	r10,r15,0x8
+ 
+ 	/* The cool thing now is that r10 contains 0 for user and 8 for kernel,
+@@ -791,7 +798,8 @@ virt_page_table_tlb_miss:
+ 	/* Now, we need to walk the page tables. First check if we are in
+ 	 * range.
+ 	 */
+-	rldicl.	r10,r16,64-(VPTE_INDEX_SIZE+3),VPTE_INDEX_SIZE+3+4
++	rldicl	r10,r16,64-(VPTE_INDEX_SIZE+3),VPTE_INDEX_SIZE+3+4
++	cmpldi	r10,0x80
+ 	bne-	virt_page_table_tlb_miss_fault
+ 
+ 	/* Get the PGD pointer */
+@@ -910,23 +918,24 @@ virt_page_table_tlb_miss_whacko_fault:
+ 	 */
+ 	mfspr	r14,SPRN_ESR
+ 	mfspr	r16,SPRN_DEAR		/* get faulting address */
+-	srdi	r11,r16,60		/* get region */
+-	cmpldi	cr0,r11,0xc		/* linear mapping ? */
++	srdi	r11,r16,44		/* get region */
++	xoris	r11,r11,0xc
++	cmpldi	cr0,r11,0		/* linear mapping ? */
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
++	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+-	cmpldi	cr0,r11,0		/* Check for user region */
++	srdi.	r11,r16,60		/* Check for user region */
+ 	ld	r15,PACAPGD(r13)	/* Load user pgdir */
+ 	beq	htw_tlb_miss
+ 
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+ 1:	mfspr	r10,SPRN_MAS1
+-	cmpldi	cr0,r11,8		/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1		/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+ 	ld	r15,PACA_KERNELPGD(r13)	/* Load kernel pgdir */
+-	beq+	htw_tlb_miss
++	beq+	cr1,htw_tlb_miss
+ 
+ 	/* We got a crappy address, just fault with whatever DEAR and ESR
+ 	 * are here
+@@ -952,19 +961,20 @@ virt_page_table_tlb_miss_whacko_fault:
+ 	 *
+ 	 * Faulting address is SRR0 which is already in r16
+ 	 */
+-	srdi	r11,r16,60		/* get region */
+-	cmpldi	cr0,r11,0xc		/* linear mapping ? */
++	srdi	r11,r16,44		/* get region */
++	xoris	r11,r11,0xc
++	cmpldi	cr0,r11,0		/* linear mapping ? */
+ 	beq	tlb_load_linear		/* yes -> go to linear map load */
++	cmpldi	cr1,r11,1		/* vmalloc mapping ? */
+ 
+ 	/* We do the user/kernel test for the PID here along with the RW test
+ 	 */
+-	cmpldi	cr0,r11,0			/* Check for user region */
++	srdi.	r11,r16,60		/* Check for user region */
+ 	ld	r15,PACAPGD(r13)		/* Load user pgdir */
+ 	beq	htw_tlb_miss
+ 
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+ 1:	mfspr	r10,SPRN_MAS1
+-	cmpldi	cr0,r11,8			/* Check for vmalloc region */
+ 	rlwinm	r10,r10,0,16,1			/* Clear TID */
+ 	mtspr	SPRN_MAS1,r10
+ 	ld	r15,PACA_KERNELPGD(r13)		/* Load kernel pgdir */
 -- 
 2.36.1
 
