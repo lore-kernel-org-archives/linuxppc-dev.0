@@ -4,33 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFFA6C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 03:12:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9939DC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 03:13:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXmjb41WFz3cjD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 13:12:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=sym.noone.org (client-ip=2a01:4f8:120:4161::3; helo=sym2.noone.org; envelope-from=tklauser@sym.noone.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 499 seconds by postgrey-1.36 at boromir; Wed, 29 Jun 2022 00:08:58 AEST
-Received: from sym2.noone.org (sym.noone.org [IPv6:2a01:4f8:120:4161::3])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXmkD132Fz3dww
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 13:13:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=svPPiUXm;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b33; helo=mail-yb1-xb33.google.com; envelope-from=saravanak@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=svPPiUXm;
+	dkim-atps=neutral
+Received: from mail-yb1-xb33.google.com (mail-yb1-xb33.google.com [IPv6:2607:f8b0:4864:20::b33])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXRKQ0C3Fz3bsS;
-	Wed, 29 Jun 2022 00:08:57 +1000 (AEST)
-Received: by sym2.noone.org (Postfix, from userid 1002)
-	id 4LXR7Z2Gb9zvjfm; Tue, 28 Jun 2022 16:00:26 +0200 (CEST)
-Date: Tue, 28 Jun 2022 16:00:26 +0200
-From: Tobias Klauser <tklauser@distanz.ch>
-To: Saravana Kannan <saravanak@google.com>
-Subject: Re: [PATCH v1 2/2] serial: Set probe_no_timeout for all DT based
- drivers
-Message-ID: <20220628140025.qpom64ptru4ub6fu@distanz.ch>
-References: <20220628020110.1601693-1-saravanak@google.com>
- <20220628020110.1601693-3-saravanak@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXV9D3P3Bz3c1b
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 02:17:04 +1000 (AEST)
+Received: by mail-yb1-xb33.google.com with SMTP id r3so23073429ybr.6
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 09:17:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=a+P6wSeN2x0ZvD2/JjzHKyqS9/n/5A6tY5jiA6Lhnb8=;
+        b=svPPiUXmjLu4A2+b3rJgoCqrzxWVmAH7KXTvVP4AwaLTDrIN9AN3BtNG2XiV2ycJ8x
+         6Y9oMX5BQlCl6K+KL9J1KxqNRcb1MdTb/c18nJgwvmc5rVyOe8EKUyj+KrCbNC70iJoL
+         OlJOsi9x5Scvw9W8cP8d/OYBAk6luTiA/PE8w/jzj7tOJ+ICpHFzyCnfh2xqrRn3YVLo
+         nvgpT4pJzONw4hikJOgq/y8DRHjrG2lOfrc2hEWRc02ovhuxlfgkK9/gOnTwVGME5DOU
+         4AXMX65QfUYiz76GEkrT/465op3M51kj45IkhJmeQobRe1+J32FVHZumFFaJBd9Gan88
+         /wYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=a+P6wSeN2x0ZvD2/JjzHKyqS9/n/5A6tY5jiA6Lhnb8=;
+        b=rTBIM22QtYjQ3lnykni4PPrcJRRsShvsGP8Xxn+h/BxmvBkKSrKrWs46klFipbTBbD
+         KmoEj6QVwN/hhoYfUnabTH5dwZysSf8s1by6QrlyRI0zysCdZGg/jkzwA/SHqHDqgWJW
+         y4fG2Eaf6fC/7eQu7v6Nt00rIfRt/dbFgSRjazobY4yxBwcEWvP4e0nTcgSpTGl+2YN0
+         r6xiGrUlSZGSpED6Hvoardb3Rgl8uBcpqaO6oqsAK1lfXsa3XX6xRkvGoFs+usNw9UvA
+         ZAUap+1A5zAc6YVMTShdWKK3iaAXvI5dV1t0kTpyKZ7L7yQSnGzp4dif8/S8zEmjBWPM
+         7POQ==
+X-Gm-Message-State: AJIora/qyBcChCcb2W+6mLapT47RiZiSa3n4WzJsVaILh/7cRe9vYL+I
+	kCJiQnEXXc8Q60HxjKSEzhxU1Mkt7UWxSyE0EGqZyA==
+X-Google-Smtp-Source: AGRyM1vHa4WRnJlk4sln0xuJGdVhcpu8QS15R2N9PrbVvkglI7Nzwr0PBFdp1lTun6HJ/nUSS1O/TmeoEjFZPidRK0U=
+X-Received: by 2002:a25:5bc3:0:b0:669:b722:beb8 with SMTP id
+ p186-20020a255bc3000000b00669b722beb8mr20258885ybb.447.1656433020483; Tue, 28
+ Jun 2022 09:17:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220628020110.1601693-3-saravanak@google.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
+References: <20220628020110.1601693-1-saravanak@google.com>
+ <20220628020110.1601693-3-saravanak@google.com> <20220628140025.qpom64ptru4ub6fu@distanz.ch>
+In-Reply-To: <20220628140025.qpom64ptru4ub6fu@distanz.ch>
+From: Saravana Kannan <saravanak@google.com>
+Date: Tue, 28 Jun 2022 09:16:24 -0700
+Message-ID: <CAGETcx_7jS3H2cphiXdk=NBfmuPzsusEwPBx75n3PrP6YTnjnA@mail.gmail.com>
+Subject: Re: [PATCH v1 2/2] serial: Set probe_no_timeout for all DT based drivers
+To: Tobias Klauser <tklauser@distanz.ch>
+Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Wed, 29 Jun 2022 13:09:16 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -53,17 +84,23 @@ l Cooper <alcooperx@gmail.com>, linux-tegra@vger.kernel.org, Jiri Slaby <jirisla
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2022-06-28 at 04:01:03 +0200, Saravana Kannan <saravanak@google.com> wrote:
-> diff --git a/drivers/tty/serial/8250/8250_acorn.c b/drivers/tty/serial/8250/8250_acorn.c
-> index 758c4aa203ab..5a6f2f67de4f 100644
-> --- a/drivers/tty/serial/8250/8250_acorn.c
-> +++ b/drivers/tty/serial/8250/8250_acorn.c
-> @@ -114,7 +114,6 @@ static const struct ecard_id serial_cids[] = {
->  static struct ecard_driver serial_card_driver = {
->  	.probe		= serial_card_probe,
->  	.remove		= serial_card_remove,
-> -	.id_table	= serial_cids,
+On Tue, Jun 28, 2022 at 7:00 AM Tobias Klauser <tklauser@distanz.ch> wrote:
+>
+> On 2022-06-28 at 04:01:03 +0200, Saravana Kannan <saravanak@google.com> wrote:
+> > diff --git a/drivers/tty/serial/8250/8250_acorn.c b/drivers/tty/serial/8250/8250_acorn.c
+> > index 758c4aa203ab..5a6f2f67de4f 100644
+> > --- a/drivers/tty/serial/8250/8250_acorn.c
+> > +++ b/drivers/tty/serial/8250/8250_acorn.c
+> > @@ -114,7 +114,6 @@ static const struct ecard_id serial_cids[] = {
+> >  static struct ecard_driver serial_card_driver = {
+> >       .probe          = serial_card_probe,
+> >       .remove         = serial_card_remove,
+> > -     .id_table       = serial_cids,
+>
+> Is this change intentional? All other drivers are only changed to set
+> .probe_no_time and I don't see anything mentioned in the commit message
+> re. this driver's change.
 
-Is this change intentional? All other drivers are only changed to set
-.probe_no_time and I don't see anything mentioned in the commit message
-re. this driver's change.
+No, that's a mistake. Thanks for catching it! I'll check this patch again.
+
+-Saravana
