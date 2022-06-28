@@ -4,45 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED767C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:09:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4647BC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:28:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXRL42Ngsz3dq8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:09:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=yangyingliang@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 955 seconds by postgrey-1.36 at boromir; Wed, 29 Jun 2022 00:09:07 AEST
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXRlZ43ybz3dQv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:28:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=CT1XHrct;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=walle.cc (client-ip=176.9.125.105; helo=ssl.serverraum.org; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2016061301 header.b=CT1XHrct;
+	dkim-atps=neutral
+Received: from ssl.serverraum.org (ssl.serverraum.org [176.9.125.105])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXRks1tRVz3brm
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:27:32 +1000 (AEST)
+Received: from ssl.serverraum.org (web.serverraum.org [172.16.0.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXRKb55XRz3btG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:09:04 +1000 (AEST)
-Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.57])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4LXQwN0hKQz1L8k5;
-	Tue, 28 Jun 2022 21:50:44 +0800 (CST)
-Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
- dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 28 Jun 2022 21:52:59 +0800
-Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
- (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Tue, 28 Jun
- 2022 21:52:58 +0800
-From: Yang Yingliang <yangyingliang@huawei.com>
-To: <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH -next 2/2] soc: fsl: guts: check return value after calling of_iomap() in fsl_guts_get_soc_uid()
-Date: Tue, 28 Jun 2022 22:02:49 +0800
-Message-ID: <20220628140249.1073809-2-yangyingliang@huawei.com>
-X-Mailer: git-send-email 2.25.1
+	by ssl.serverraum.org (Postfix) with ESMTPSA id 4498222246;
+	Tue, 28 Jun 2022 16:27:23 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2016061301;
+	t=1656426446;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=JHFbXd+WNtNIJszeKeAq0pw48IrQ1dnM0j78sJ1LNLI=;
+	b=CT1XHrctn/p9QrSCpS0yYSjSmCtZ/F8BJDs5EhDC57YFKCtnE0lH9vNzjaDEpHUM7sXzrI
+	HiLecE56ocS4JE0BIx06jXp+yzJatOIsntln1TlfUqUzqizz1rMVzIlLn/if3Uq13lWVj6
+	N6iWnX086nc/79yXg2u4WAFqgky5EoA=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Date: Tue, 28 Jun 2022 16:27:23 +0200
+From: Michael Walle <michael@walle.cc>
+To: Yang Yingliang <yangyingliang@huawei.com>
+Subject: Re: [PATCH -next 1/2] soc: fsl: guts: fix return value check in
+ fsl_guts_init()
 In-Reply-To: <20220628140249.1073809-1-yangyingliang@huawei.com>
 References: <20220628140249.1073809-1-yangyingliang@huawei.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.103.91]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- dggpemm500007.china.huawei.com (7.185.36.183)
-X-CFilter-Loop: Reflected
+User-Agent: Roundcube Webmail/1.4.13
+Message-ID: <42601e860097651547fb9baecd660b5c@walle.cc>
+X-Sender: michael@walle.cc
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,34 +62,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michael@walle.cc, shawnguo@kernel.org, arnd@arndb.de
+Cc: arnd@arndb.de, shawnguo@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-of_iomap() may return NULL, so we need check the return value.
+Am 2022-06-28 16:02, schrieb Yang Yingliang:
+> In case of error, of_iomap() returns NULL pointer not ERR_PTR().
+> The IS_ERR() test in the return value check should be replaced
+> with NULL test and return -ENOMEM as error value.
+> 
+> Fixes: ab4988d6a393 ("soc: fsl: guts: embed fsl_guts_get_svr() in 
+> probe()")
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
-Fixes: 786dde1e59d7 ("soc: fsl: guts: add serial_number support")
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
----
- drivers/soc/fsl/guts.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Thanks!
 
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 8038c599ad83..6bf3e6a980ff 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -126,6 +126,10 @@ static u64 fsl_guts_get_soc_uid(const char *compat, unsigned int offset)
- 		return 0;
- 
- 	sfp_base = of_iomap(np, 0);
-+	if (!sfp_base) {
-+		of_node_put(np);
-+		return 0;
-+	}
- 
- 	uid = ioread32(sfp_base + offset);
- 	uid <<= 32;
--- 
-2.25.1
-
+Reviewed-by: Michael Walle <michael@walle.cc>
