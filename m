@@ -4,71 +4,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC9B6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 06:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7585FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 07:00:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXFS22K8kz3c7h
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 16:44:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXFpV17Hdz3dqC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 17:00:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=k1iqEHVE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XSa6BG9j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--saravanak.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3wgg6ygkkdcep7o7s7k7hdlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--saravanak.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=k1iqEHVE;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XSa6BG9j;
 	dkim-atps=neutral
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXFRJ2KtLz30F8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 16:43:21 +1000 (AEST)
-Received: by mail-pj1-x102b.google.com with SMTP id w19-20020a17090a8a1300b001ec79064d8dso14869226pjn.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 23:43:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX7Cz6GQ6z3bY8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 12:03:09 +1000 (AEST)
+Received: by mail-yb1-xb4a.google.com with SMTP id r6-20020a5b06c6000000b006693f6a6d67so9702577ybq.7
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 19:03:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=s9TUIBPvRcRxZmOZ/UKmL2STsX4RkuAASajSfCd6Jwo=;
-        b=k1iqEHVEnLSQedel9PTf1jmE6vwsF2fufvd423d/FatBfr62j4GLx9uTphZocJsD2X
-         t9swjbnwfX2TYX27zr3ExGrxMmK6Yvst1YES64DfOUgIubs/+txIaKhbyqxG04K4FF32
-         10unYr7lRp3R7tg3DDTOtumvwvuyZbRNtksC4lFzOTu0xPWjZqRYTS2KfjTK9CjrIGVW
-         uA/9lK6N0wmW0pEi7MOamzht9CHaRTqaerW6wnyLSGMdmjRzZVzf6eB6UYFvHffKP214
-         QELFv2nXLIvPtMH6YFSUzGXvLnbXg8285mEbfXLR7Sb4QuxDCXYTf1q9QBcKe+46I1zx
-         CLBQ==
+        d=google.com; s=20210112;
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=/OuahP8oPHDxIXADrtMOHzHvbE6HS+PoE4WDHegn+rY=;
+        b=XSa6BG9j+Us6qSO6vPHqc2TVfQxumnU0pAOfjBJHFlWcIck0At2n2mfq5tAA7z3Bx5
+         PD0vlBv1k9Q/E/30MAFFG1P5OxPr5/WK6+axB0HoavtP7KnHzjHkg1qUFmVSky1XYmCE
+         keKg7zc6YYKZDYEnwk3qbSxvFO3Xk4Y8/tdDX97msFctgpLZBdPkJDnH5LbWzXx7pTZH
+         CgzyIamG5okMqCh9aY8wAvuFixrOfwL/UhwfbnX/7paM2krnQNZDjv67WdvSzvvMWo7D
+         m5fFpT4ZoMrA6AasD66OkuDUwH3oHEeuCSo5kX9VLcSW8/gQ+X2898P5YGyQhyrYIK8G
+         Aulw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=s9TUIBPvRcRxZmOZ/UKmL2STsX4RkuAASajSfCd6Jwo=;
-        b=mYM1qUtAnQnFLa+rBhiRisdgKxdAeppKQhZLK2iPyNx5X3d55OdsfpLxuFbj/XhwXJ
-         JHU+xH0opoNYgdoEX85n86TAsaESPan6Qg1wkVjieyMcpgvlX7UXJI497LG7NU5W8oJt
-         lKUlcFzB4a4JaqpMF8nadHIny3v84fpQ/jUu228Bhj+zPcW7UgKz5ISibBaI5+RFmHO8
-         nasmrmtTvTkkMEVLPzSNNrNcLFMZW3FYCmGBT0kk9M50vHV6FCfsKEMNMP/jxFi/uxxM
-         fgs4K9zWmDVSnlbeIjudekmIspGttinYw9IG3dKKipsKnQQZtHr1vDOR6QZyp3f0KqXY
-         dQvw==
-X-Gm-Message-State: AJIora+c5lF8zhp9FqcLKudLSxariOO5HoZjhtAyIBpnqFOHvKZ35yEr
-	+3tET7a6t2aLknT7Ft6IOMvq
-X-Google-Smtp-Source: AGRyM1vZCMBeqIqeJwz0Z/dkETp7U0TOTadYMxdCF6m7UB503Afk9laZJZeM1ax4GiQzFjSdh7PBsg==
-X-Received: by 2002:a17:902:f543:b0:16a:54c6:78d0 with SMTP id h3-20020a170902f54300b0016a54c678d0mr2183859plf.28.1656398599724;
-        Mon, 27 Jun 2022 23:43:19 -0700 (PDT)
-Received: from thinkpad ([27.111.75.159])
-        by smtp.gmail.com with ESMTPSA id u2-20020a170902714200b0016a522915e5sm8376804plm.83.2022.06.27.23.43.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 27 Jun 2022 23:43:19 -0700 (PDT)
-Date: Tue, 28 Jun 2022 12:13:13 +0530
-From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Subject: Re: [PATCH RESEND v5 13/18] PCI: dwc: Add start_link/stop_link
- inliners
-Message-ID: <20220628064313.GF23601@thinkpad>
-References: <20220624143428.8334-1-Sergey.Semin@baikalelectronics.ru>
- <20220624143428.8334-14-Sergey.Semin@baikalelectronics.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20220624143428.8334-14-Sergey.Semin@baikalelectronics.ru>
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=/OuahP8oPHDxIXADrtMOHzHvbE6HS+PoE4WDHegn+rY=;
+        b=idLQP5uySdl7hL2lwlPBstesF0EZIuTN4owyI5olijr/GClg028IMucXEeeePUbw1H
+         DZYNeATsS0RyVtljgJcKZXenwhaVOMy9ylHrzBeN+hN1jLD8nahUvP1R7i3HhvAnCdFs
+         x3fsPAQAkwbDvgWzPeGC6XQk7brtBuLmT++z9jGJu3ECIQL1D271n1yRpWPEw/P+wC+9
+         rTrTkQK86MMeZvi+yB4XkQ/O2SH3byZ3+TGokWTBT9DKqdSYTPMDUIZgcwja9R25efTi
+         mpziKg159i2XisvvPlRKLqCJTGSlbBJpzJOk17npEToOpVUl3R6CGpYHGfdrNnYIs3cz
+         PdZg==
+X-Gm-Message-State: AJIora/DwlUm8eLihVdpV0xZx9zZ4KeFnHrHASeowE7qByP0cBik6Oef
+	3nZAGHEIt+A7WVEC5EIMU4tn3qmQiDbVG2o=
+X-Google-Smtp-Source: AGRyM1s6TFssoICBD8dW4KaHJ9QFnbGLouWSVAgJ1icUDVgZq5pRLN92A6h2ACkaFVoX2i0qb9ktR7y39ECy36c=
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:1f27:a302:2101:1c82])
+ (user=saravanak job=sendgmr) by 2002:a81:9292:0:b0:317:dd64:5adc with SMTP id
+ j140-20020a819292000000b00317dd645adcmr19123629ywg.145.1656381784427; Mon, 27
+ Jun 2022 19:03:04 -0700 (PDT)
+Date: Mon, 27 Jun 2022 19:01:01 -0700
+Message-Id: <20220628020110.1601693-1-saravanak@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
+Subject: [PATCH v1 0/2] Fix console probe delay when stdout-path isn't set
+From: Saravana Kannan <saravanak@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Laurentiu Tudor <laurentiu.tudor@nxp.com>, Jiri Slaby <jirislaby@kernel.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+	Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, 
+	Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Nicolas Saenz Julienne <nsaenz@kernel.org>, Al Cooper <alcooperx@gmail.com>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Paul Cercueil <paul@crapouillou.net>, 
+	Vladimir Zapolskiy <vz@mleia.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Tobias Klauser <tklauser@distanz.ch>, Russell King <linux@armlinux.org.uk>, 
+	Vineet Gupta <vgupta@kernel.org>, Richard Genoud <richard.genoud@gmail.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@microchip.com>, Alexander Shiyan <shc_work@mail.ru>, 
+	Baruch Siach <baruch@tkos.co.il>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, 
+	Karol Gugala <kgugala@antmicro.com>, Mateusz Holenko <mholenko@antmicro.com>, 
+	Gabriel Somlo <gsomlo@gmail.com>, Neil Armstrong <narmstrong@baylibre.com>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+	Taichi Sugaya <sugaya.taichi@socionext.com>, Takao Orito <orito.takao@socionext.com>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Andy Gross <agross@kernel.org>, 
+	Bjorn Andersson <bjorn.andersson@linaro.org>, Pali Rohar <pali@kernel.org>, 
+	Andreas Farber <afaerber@suse.de>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Laxman Dewangan <ldewangan@nvidia.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Orson Zhai <orsonzhai@gmail.com>, 
+	Baolin Wang <baolin.wang7@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
+	Patrice Chotard <patrice.chotard@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, "David S. Miller" <davem@davemloft.net>, 
+	Hammer Hsieh <hammerh0314@gmail.com>, Peter Korsgaard <jacmet@sunsite.dk>, Timur Tabi <timur@kernel.org>, 
+	Michal Simek <michal.simek@xilinx.com>, Saravana Kannan <saravanak@google.com>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Tue, 28 Jun 2022 16:58:59 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,203 +107,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, Rob Herring <robh@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Roy Zang <roy.zang@nxp.com>, linux-pci@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, linux-kernel@vger.kernel.org, Serge Semin <fancer.lancer@gmail.com>, Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>, Minghuan Lian <minghuan.Lian@nxp.com>, Pavel Parkhomenko <Pavel.Parkhomenko@baikalelectronics.ru>, Frank Li <Frank.Li@nxp.com>, Gustavo Pimentel <gustavo.pimentel@synopsys.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org, Mingkai Hu <mingkai.hu@nxp.com>
+Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, linux-aspeed@lists.ozlabs.org, linus walleij <linus.walleij@linaro.org>, ulf hansson <ulf.hansson@linaro.org>, linux-mips@vger.kernel.org, eric dumazet <edumazet@google.com>, pavel machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, will deacon <will@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, sascha hauer <sha@pengutronix.de>, Rob Herring <robh@kernel.org>, linux-samsung-soc@vger.kernel.org, kevin hilman <khilman@kernel.org>, joerg roedel <joro@8bytes.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, paolo abeni <pabeni@redhat.com>, kernel-team@android.com, len brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel
+ @lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-unisoc@lists.infradead.org, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org, heiner kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jun 24, 2022 at 05:34:23PM +0300, Serge Semin wrote:
-> There are several places in the generic DW PCIe code where the
-> platform-specific PCIe link start/stop methods are called after making
-> sure the ops handler and the callbacks are specified. Instead of repeating
-> the same pattern over and over let's define the static-inline methods in
-> the DW PCIe header file and use them in the relevant parts of the driver.
-> 
-> Note returning a negative error from the EP link start procedure if the
-> start_link pointer isn't specified doesn't really make much sense since
-> it's perfectly normal to have such a platform. Moreover even
-> pci_epc_start() doesn't fail if no epc->ops->start callback is spotted. As
-> a side-effect of this modification we can set the generic DW PCIe and
-> Layerscape EP platform drivers free from the empty start_link callbacks
-> and as such entirely dummy dw_pcie_ops instances.
-> 
-> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Since the series that fixes console probe delay based on stdout-path[1] got
+pulled into driver-core-next, I made these patches on top of them.
 
-Reviewed-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Even if stdout-path isn't set in DT, this patch should take console
+probe times back to how they were before the deferred_probe_timeout
+clean up series[2].
+
+Fabio/Ahmad/Sascha,
+
+Can you give this a shot please?
+
+[1] - https://lore.kernel.org/lkml/20220623080344.783549-1-saravanak@google.com/
+[2] - https://lore.kernel.org/lkml/20220601070707.3946847-1-saravanak@google.com/
 
 Thanks,
-Mani
+Saravana
 
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> 
-> ---
-> 
-> Changelog v4:
-> - This is a new patch created on the v4 lap of the series.
-> ---
->  drivers/pci/controller/dwc/pci-layerscape-ep.c    | 12 ------------
->  drivers/pci/controller/dwc/pcie-designware-ep.c   |  8 ++------
->  drivers/pci/controller/dwc/pcie-designware-host.c | 10 ++++------
->  drivers/pci/controller/dwc/pcie-designware-plat.c | 10 ----------
->  drivers/pci/controller/dwc/pcie-designware.h      | 14 ++++++++++++++
->  5 files changed, 20 insertions(+), 34 deletions(-)
-> 
-> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> index 39f4664bd84c..ad99707b3b99 100644
-> --- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> @@ -32,15 +32,6 @@ struct ls_pcie_ep {
->  	const struct ls_pcie_ep_drvdata *drvdata;
->  };
->  
-> -static int ls_pcie_establish_link(struct dw_pcie *pci)
-> -{
-> -	return 0;
-> -}
-> -
-> -static const struct dw_pcie_ops dw_ls_pcie_ep_ops = {
-> -	.start_link = ls_pcie_establish_link,
-> -};
-> -
->  static const struct pci_epc_features*
->  ls_pcie_ep_get_features(struct dw_pcie_ep *ep)
->  {
-> @@ -106,19 +97,16 @@ static const struct dw_pcie_ep_ops ls_pcie_ep_ops = {
->  
->  static const struct ls_pcie_ep_drvdata ls1_ep_drvdata = {
->  	.ops = &ls_pcie_ep_ops,
-> -	.dw_pcie_ops = &dw_ls_pcie_ep_ops,
->  };
->  
->  static const struct ls_pcie_ep_drvdata ls2_ep_drvdata = {
->  	.func_offset = 0x20000,
->  	.ops = &ls_pcie_ep_ops,
-> -	.dw_pcie_ops = &dw_ls_pcie_ep_ops,
->  };
->  
->  static const struct ls_pcie_ep_drvdata lx2_ep_drvdata = {
->  	.func_offset = 0x8000,
->  	.ops = &ls_pcie_ep_ops,
-> -	.dw_pcie_ops = &dw_ls_pcie_ep_ops,
->  };
->  
->  static const struct of_device_id ls_pcie_ep_of_match[] = {
-> diff --git a/drivers/pci/controller/dwc/pcie-designware-ep.c b/drivers/pci/controller/dwc/pcie-designware-ep.c
-> index 7ad349c32082..15b8059544e3 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware-ep.c
-> +++ b/drivers/pci/controller/dwc/pcie-designware-ep.c
-> @@ -435,8 +435,7 @@ static void dw_pcie_ep_stop(struct pci_epc *epc)
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  
-> -	if (pci->ops && pci->ops->stop_link)
-> -		pci->ops->stop_link(pci);
-> +	dw_pcie_stop_link(pci);
->  }
->  
->  static int dw_pcie_ep_start(struct pci_epc *epc)
-> @@ -444,10 +443,7 @@ static int dw_pcie_ep_start(struct pci_epc *epc)
->  	struct dw_pcie_ep *ep = epc_get_drvdata(epc);
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
->  
-> -	if (!pci->ops || !pci->ops->start_link)
-> -		return -EINVAL;
-> -
-> -	return pci->ops->start_link(pci);
-> +	return dw_pcie_start_link(pci);
->  }
->  
->  static const struct pci_epc_features*
-> diff --git a/drivers/pci/controller/dwc/pcie-designware-host.c b/drivers/pci/controller/dwc/pcie-designware-host.c
-> index 2f13eec4812d..c49a3bde7a2a 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware-host.c
-> +++ b/drivers/pci/controller/dwc/pcie-designware-host.c
-> @@ -409,8 +409,8 @@ int dw_pcie_host_init(struct pcie_port *pp)
->  
->  	dw_pcie_setup_rc(pp);
->  
-> -	if (!dw_pcie_link_up(pci) && pci->ops && pci->ops->start_link) {
-> -		ret = pci->ops->start_link(pci);
-> +	if (!dw_pcie_link_up(pci)) {
-> +		ret = dw_pcie_start_link(pci);
->  		if (ret)
->  			goto err_free_msi;
->  	}
-> @@ -427,8 +427,7 @@ int dw_pcie_host_init(struct pcie_port *pp)
->  	return 0;
->  
->  err_stop_link:
-> -	if (pci->ops && pci->ops->stop_link)
-> -		pci->ops->stop_link(pci);
-> +	dw_pcie_stop_link(pci);
->  
->  err_free_msi:
->  	if (pp->has_msi_ctrl)
-> @@ -444,8 +443,7 @@ void dw_pcie_host_deinit(struct pcie_port *pp)
->  	pci_stop_root_bus(pp->bridge->bus);
->  	pci_remove_root_bus(pp->bridge->bus);
->  
-> -	if (pci->ops && pci->ops->stop_link)
-> -		pci->ops->stop_link(pci);
-> +	dw_pcie_stop_link(pci);
->  
->  	if (pp->has_msi_ctrl)
->  		dw_pcie_free_msi(pp);
-> diff --git a/drivers/pci/controller/dwc/pcie-designware-plat.c b/drivers/pci/controller/dwc/pcie-designware-plat.c
-> index 0c5de87d3cc6..abf1afac6064 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware-plat.c
-> +++ b/drivers/pci/controller/dwc/pcie-designware-plat.c
-> @@ -36,15 +36,6 @@ static const struct of_device_id dw_plat_pcie_of_match[];
->  static const struct dw_pcie_host_ops dw_plat_pcie_host_ops = {
->  };
->  
-> -static int dw_plat_pcie_establish_link(struct dw_pcie *pci)
-> -{
-> -	return 0;
-> -}
-> -
-> -static const struct dw_pcie_ops dw_pcie_ops = {
-> -	.start_link = dw_plat_pcie_establish_link,
-> -};
-> -
->  static void dw_plat_pcie_ep_init(struct dw_pcie_ep *ep)
->  {
->  	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> @@ -140,7 +131,6 @@ static int dw_plat_pcie_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  
->  	pci->dev = dev;
-> -	pci->ops = &dw_pcie_ops;
->  
->  	dw_plat_pcie->pci = pci;
->  	dw_plat_pcie->mode = mode;
-> diff --git a/drivers/pci/controller/dwc/pcie-designware.h b/drivers/pci/controller/dwc/pcie-designware.h
-> index 7d6e9b7576be..8ba239292634 100644
-> --- a/drivers/pci/controller/dwc/pcie-designware.h
-> +++ b/drivers/pci/controller/dwc/pcie-designware.h
-> @@ -365,6 +365,20 @@ static inline void dw_pcie_dbi_ro_wr_dis(struct dw_pcie *pci)
->  	dw_pcie_writel_dbi(pci, reg, val);
->  }
->  
-> +static inline int dw_pcie_start_link(struct dw_pcie *pci)
-> +{
-> +	if (pci->ops && pci->ops->start_link)
-> +		return pci->ops->start_link(pci);
-> +
-> +	return 0;
-> +}
-> +
-> +static inline void dw_pcie_stop_link(struct dw_pcie *pci)
-> +{
-> +	if (pci->ops && pci->ops->stop_link)
-> +		pci->ops->stop_link(pci);
-> +}
-> +
->  #ifdef CONFIG_PCIE_DW_HOST
->  irqreturn_t dw_handle_msi_irq(struct pcie_port *pp);
->  void dw_pcie_setup_rc(struct pcie_port *pp);
-> -- 
-> 2.35.1
-> 
+cc: Rob Herring <robh@kernel.org>
+cc: sascha hauer <sha@pengutronix.de>
+cc: peng fan <peng.fan@nxp.com>
+cc: kevin hilman <khilman@kernel.org>
+cc: ulf hansson <ulf.hansson@linaro.org>
+cc: len brown <len.brown@intel.com>
+cc: pavel machek <pavel@ucw.cz>
+cc: joerg roedel <joro@8bytes.org>
+cc: will deacon <will@kernel.org>
+cc: andrew lunn <andrew@lunn.ch>
+cc: heiner kallweit <hkallweit1@gmail.com>
+cc: russell king <linux@armlinux.org.uk>
+cc: "david s. miller" <davem@davemloft.net>
+cc: eric dumazet <edumazet@google.com>
+cc: jakub kicinski <kuba@kernel.org>
+cc: paolo abeni <pabeni@redhat.com>
+cc: linus walleij <linus.walleij@linaro.org>
+cc: hideaki yoshifuji <yoshfuji@linux-ipv6.org>
+cc: david ahern <dsahern@kernel.org>
+cc: kernel-team@android.com
+cc: linux-kernel@vger.kernel.org
+cc: linux-pm@vger.kernel.org
+cc: iommu@lists.linux-foundation.org
+cc: netdev@vger.kernel.org
+cc: linux-gpio@vger.kernel.org
+Cc: kernel@pengutronix.de
+
+Saravana Kannan (2):
+  driver core: Add probe_no_timeout flag for drivers
+  serial: Set probe_no_timeout for all DT based drivers
+
+ drivers/base/base.h                         |  1 +
+ drivers/base/core.c                         |  7 +++++++
+ drivers/base/dd.c                           |  3 +++
+ drivers/tty/ehv_bytechan.c                  |  1 +
+ drivers/tty/goldfish.c                      |  1 +
+ drivers/tty/hvc/hvc_opal.c                  |  1 +
+ drivers/tty/serial/8250/8250_acorn.c        |  1 -
+ drivers/tty/serial/8250/8250_aspeed_vuart.c |  1 +
+ drivers/tty/serial/8250/8250_bcm2835aux.c   |  1 +
+ drivers/tty/serial/8250/8250_bcm7271.c      |  1 +
+ drivers/tty/serial/8250/8250_dw.c           |  1 +
+ drivers/tty/serial/8250/8250_em.c           |  1 +
+ drivers/tty/serial/8250/8250_ingenic.c      |  1 +
+ drivers/tty/serial/8250/8250_lpc18xx.c      |  1 +
+ drivers/tty/serial/8250/8250_mtk.c          |  1 +
+ drivers/tty/serial/8250/8250_of.c           |  1 +
+ drivers/tty/serial/8250/8250_omap.c         |  1 +
+ drivers/tty/serial/8250/8250_pxa.c          |  1 +
+ drivers/tty/serial/8250/8250_tegra.c        |  1 +
+ drivers/tty/serial/8250/8250_uniphier.c     |  1 +
+ drivers/tty/serial/altera_jtaguart.c        |  1 +
+ drivers/tty/serial/altera_uart.c            |  1 +
+ drivers/tty/serial/amba-pl011.c             |  1 +
+ drivers/tty/serial/apbuart.c                |  1 +
+ drivers/tty/serial/ar933x_uart.c            |  1 +
+ drivers/tty/serial/arc_uart.c               |  1 +
+ drivers/tty/serial/atmel_serial.c           |  1 +
+ drivers/tty/serial/bcm63xx_uart.c           |  1 +
+ drivers/tty/serial/clps711x.c               |  1 +
+ drivers/tty/serial/cpm_uart/cpm_uart_core.c |  1 +
+ drivers/tty/serial/digicolor-usart.c        |  1 +
+ drivers/tty/serial/fsl_linflexuart.c        |  1 +
+ drivers/tty/serial/fsl_lpuart.c             |  1 +
+ drivers/tty/serial/imx.c                    |  1 +
+ drivers/tty/serial/lantiq.c                 |  1 +
+ drivers/tty/serial/liteuart.c               |  1 +
+ drivers/tty/serial/lpc32xx_hs.c             |  1 +
+ drivers/tty/serial/max310x.c                |  1 +
+ drivers/tty/serial/meson_uart.c             |  1 +
+ drivers/tty/serial/milbeaut_usio.c          |  1 +
+ drivers/tty/serial/mpc52xx_uart.c           |  1 +
+ drivers/tty/serial/mps2-uart.c              |  1 +
+ drivers/tty/serial/msm_serial.c             |  1 +
+ drivers/tty/serial/mvebu-uart.c             |  1 +
+ drivers/tty/serial/mxs-auart.c              |  1 +
+ drivers/tty/serial/omap-serial.c            |  1 +
+ drivers/tty/serial/owl-uart.c               |  1 +
+ drivers/tty/serial/pic32_uart.c             |  1 +
+ drivers/tty/serial/pmac_zilog.c             |  1 +
+ drivers/tty/serial/pxa.c                    |  1 +
+ drivers/tty/serial/qcom_geni_serial.c       |  1 +
+ drivers/tty/serial/rda-uart.c               |  1 +
+ drivers/tty/serial/samsung_tty.c            |  1 +
+ drivers/tty/serial/sc16is7xx.c              |  1 +
+ drivers/tty/serial/serial-tegra.c           |  1 +
+ drivers/tty/serial/sh-sci.c                 |  1 +
+ drivers/tty/serial/sifive.c                 |  1 +
+ drivers/tty/serial/sprd_serial.c            |  1 +
+ drivers/tty/serial/st-asc.c                 |  1 +
+ drivers/tty/serial/stm32-usart.c            |  1 +
+ drivers/tty/serial/sunhv.c                  |  1 +
+ drivers/tty/serial/sunplus-uart.c           |  1 +
+ drivers/tty/serial/sunsab.c                 |  1 +
+ drivers/tty/serial/sunsu.c                  |  1 +
+ drivers/tty/serial/sunzilog.c               |  1 +
+ drivers/tty/serial/tegra-tcu.c              |  1 +
+ drivers/tty/serial/uartlite.c               |  1 +
+ drivers/tty/serial/ucc_uart.c               |  1 +
+ drivers/tty/serial/vt8500_serial.c          |  1 +
+ drivers/tty/serial/xilinx_uartps.c          |  1 +
+ include/linux/device.h                      |  7 +++++++
+ include/linux/device/driver.h               | 11 +++++++++++
+ 72 files changed, 95 insertions(+), 1 deletion(-)
 
 -- 
-மணிவண்ணன் சதாசிவம்
+2.37.0.rc0.161.g10f37bed90-goog
+
