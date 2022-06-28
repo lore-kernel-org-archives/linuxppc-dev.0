@@ -4,64 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A218C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 00:32:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0419FCCA47B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 02:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LX5C44qvKz3dyZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 10:32:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LX7c50Cwjz3cf4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 12:20:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=Ps3wGEfs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iltKlKlp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.co.jp (client-ip=99.78.197.218; helo=smtp-fw-80007.amazon.com; envelope-from=prvs=170e7b5d7=kuniyu@amazon.co.jp; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=Ps3wGEfs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iltKlKlp;
 	dkim-atps=neutral
-Received: from smtp-fw-80007.amazon.com (smtp-fw-80007.amazon.com [99.78.197.218])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LWv794TFnz3bfc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 02:58:12 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1656349093; x=1687885093;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=Y6XvG9/U51igKius4IaKDqx8Gy6lPi0Xal5PaG7hwgI=;
-  b=Ps3wGEfsMotlnYCdBNy1p4HuqqVp8zdWff7hUvzf2Sg22GMaUt1fvi1I
-   USE4t+ua2LX4zDp3Ujqs3InpiJLXLpvp83wY0rS/Qyc0hj5Sm01Z3p7F5
-   a7DKLqO9lk2URTeXhn/v5Jox4YBXg65HC2jb27bKBJHP7FzdshLgDJGll
-   M=;
-X-IronPort-AV: E=Sophos;i="5.92,226,1650931200"; 
-   d="scan'208";a="102367407"
-Received: from pdx4-co-svc-p1-lb2-vlan3.amazon.com (HELO email-inbound-relay-pdx-2a-2dbf0206.us-west-2.amazon.com) ([10.25.36.214])
-  by smtp-border-fw-80007.pdx80.corp.amazon.com with ESMTP; 27 Jun 2022 16:36:54 +0000
-Received: from EX13MTAUWB001.ant.amazon.com (pdx1-ws-svc-p6-lb9-vlan2.pdx.amazon.com [10.236.137.194])
-	by email-inbound-relay-pdx-2a-2dbf0206.us-west-2.amazon.com (Postfix) with ESMTPS id 7A9C4A2BB3;
-	Mon, 27 Jun 2022 16:36:52 +0000 (UTC)
-Received: from EX13D04ANC001.ant.amazon.com (10.43.157.89) by
- EX13MTAUWB001.ant.amazon.com (10.43.161.207) with Microsoft SMTP Server (TLS)
- id 15.0.1497.36; Mon, 27 Jun 2022 16:36:51 +0000
-Received: from 88665a182662.ant.amazon.com.com (10.43.160.124) by
- EX13D04ANC001.ant.amazon.com (10.43.157.89) with Microsoft SMTP Server (TLS)
- id 15.0.1497.36; Mon, 27 Jun 2022 16:36:49 +0000
-From: Kuniyuki Iwashima <kuniyu@amazon.com>
-To: <sachinp@linux.ibm.com>
-Subject: Re: [powerpc] Fingerprint systemd service fails to start (next-20220624)
-Date: Mon, 27 Jun 2022 09:36:40 -0700
-Message-ID: <20220627163640.74890-1-kuniyu@amazon.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <B2AA3091-796D-475E-9A11-0021996E1C00@linux.ibm.com>
-References: <B2AA3091-796D-475E-9A11-0021996E1C00@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX7bM28G8z3bdy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 12:19:59 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 21CF8617CE;
+	Tue, 28 Jun 2022 02:19:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CDD03C341CA;
+	Tue, 28 Jun 2022 02:19:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656382795;
+	bh=/gJvyO5O8HTEYVncAVjLK1PO5Gj08W/ajlEtsPFvjo4=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=iltKlKlpGRsen0Bi7NfPrfVRi/Pj1QjywEboEycXad6S6ZpoZnt9Cxg9rf4VkKHpd
+	 dKcrYAgleIvK7pqXlVPiahBWUsPKiL49AONyC4KbvnIdhMyyyuyhKMw8EhhLb/+lMr
+	 j66QkuC+i/huoOf6AFyNMyRWsAlYDPnaZW6tiNHMAA1YTViquI+/j/RNzNxqPkNGL7
+	 Xm+mSTy54UvddOAZ2JtfYPb2seq4pvPAXviWVellKlxgIir+8lJ49ncApS+LEF2yoZ
+	 XsU9nUa548jwcrjvZAgzBz5tC4qlSFm1LQ39IyoRWToxdr1F7aDw9n8Ocood3a67JD
+	 OLCPjby4j3t+A==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.18 25/53] powerpc/prom_init: Fix build failure with GCC_PLUGIN_STRUCTLEAK_BYREF_ALL and KASAN
+Date: Mon, 27 Jun 2022 22:18:11 -0400
+Message-Id: <20220628021839.594423-25-sashal@kernel.org>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220628021839.594423-1-sashal@kernel.org>
+References: <20220628021839.594423-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.43.160.124]
-X-ClientProxiedBy: EX13D07UWB001.ant.amazon.com (10.43.161.238) To
- EX13D04ANC001.ant.amazon.com (10.43.157.89)
-Precedence: Bulk
-X-Mailman-Approved-At: Tue, 28 Jun 2022 10:29:05 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -70,95 +62,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, kuniyu@amazon.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, netdev@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, jlu.hpw@foxmail.com, nick.child@ibm.com, rafael.j.wysocki@intel.com, Julia.Lawall@inria.fr, joel@jms.id.au, aneesh.kumar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, adobriyan@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sachin,
-Thanks for the report.
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-From:   Sachin Sant <sachinp@linux.ibm.com>
-Date:   Mon, 27 Jun 2022 10:28:27 +0530
-> With the latest -next I have observed a peculiar issue on IBM Power
-> server running -next(5.19.0-rc3-next-20220624) .
-> 
-> Fingerprint authentication systemd service (fprintd) fails to start while
-> attempting OS login after kernel boot. There is a visible delay of 18-20
-> seconds before being prompted for OS login password.
-> 
-> Kernel 5.19.0-rc3-next-20220624 on an ppc64le
-> 
-> ltcden8-lp6 login: root
-> <<=======.  delay of 18-20 seconds
-> Password: 
-> 
-> Following messages(fprintd service) are seen in /var/log/messages:
-> 
-> systemd[1]: Startup finished in 1.842s (kernel) + 1.466s (initrd) + 29.230s (userspace) = 32.540s.
+[ Upstream commit ca5dabcff1df6bc8c413922b5fa63cc602858803 ]
 
-It seems the kernel finishes its job immediately but userspace takes more
-time on retrying or something.  The service_start_timeout seems to be the
-timeout period.
+When CONFIG_KASAN is selected, we expect prom_init to use __memset()
+because it is too early to use memset().
 
+But with CONFIG_GCC_PLUGIN_STRUCTLEAK_BYREF_ALL, the compiler adds calls
+to memset() to clear objects on stack, hence the following failure:
 
-> NetworkManager[1100]: <info>  [1656304146.6686] manager: startup complete
-> dbus-daemon[1027]: [system] Activating via systemd: service name='net.reactivated.Fprint' unit='fprintd.service' requested by ':1.21' (uid=0 pid=1502 comm="/bin/login -p --      ")
-> systemd[1]: Starting Fingerprint Authentication Daemon...
-> fprintd[2521]: (fprintd:2521): fprintd-WARNING **: 00:29:08.568: Failed to open connection to bus: Could not connect: Connection refused
+	  PROMCHK arch/powerpc/kernel/prom_init_check
+	Error: External symbol 'memset' referenced from prom_init.c
+	make[2]: *** [arch/powerpc/kernel/Makefile:204 : arch/powerpc/kernel/prom_init_check] Erreur 1
 
-I think this message comes from here.
-https://github.com/freedesktop/libfprint-fprintd/blob/master/src/main.c#L183-L189
+prom_find_machine_type() is called from prom_init() and is called only
+once, so lets put compat[] in BSS instead of stack to avoid that.
 
-I'm not sure what the program does though, I guess it failed to find a peer
-socket in the hash table while calling connect()/sendmsg() syscalls and got
--ECONNREFUSED in unix_find_bsd() or unix_find_abstract().
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/3802811f7cf94f730be44688539c01bba3a3b5c0.1654875808.git.christophe.leroy@csgroup.eu
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/kernel/prom_init.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-> systemd[1]: fprintd.service: Main process exited, code=exited, status=1/FAILURE
-> systemd[1]: fprintd.service: Failed with result 'exit-code'.
-> systemd[1]: Failed to start Fingerprint Authentication Daemon.
-> dbus-daemon[1027]: [system] Failed to activate service 'net.reactivated.Fprint': timed out (service_start_timeout=25000ms)
-> 
-> Mainline (5.19.0-rc3) or older -next does not have this problem.
-> 
-> Git bisect between mainline & -next points to the following patch:
-> 
-> # git bisect bad
-> cf2f225e2653734e66e91c09e1cbe004bfd3d4a7 is the first bad commit
-> commit cf2f225e2653734e66e91c09e1cbe004bfd3d4a7
-> 
-> Date:   Tue Jun 21 10:19:12 2022 -0700
-> 
->     af_unix: Put a socket into a per-netns hash table.
-> 
-> I don’t know how the above identified patch is related to the failure,
-> but given that I can consistently recreate the issue assume the bisect
-> result can be trusted.
-
-Before the commit, all of sockets on the host are linked in a global hash
-table, and after the commit, they are linked in their network namespace's
-hash table.  So, I believe there is no change visible to userspace.
-
-
-> I have attached dmesg log for reference. Let me know if any additional
-> Information is required.
-
-* Could you provide
-  * dmesg and /var/log/messages on a successful case? (without the commit)
-  * Unit file
-  * repro steps
-
-* Is it reproducible after login? (e.g. systemctl restart)
-  * If so, please provide
-    * the result of strace -t -ff
-
-* Does it happen on only powerpc? How about x86 or arm64?
-
-* What does the service does?
-  * connect() or sendmsg()
-  * protocol family
-  * abstract or BSD socket
-
-Best regards,
-Kuniyuki
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 0ac5faacc909..46247645c134 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2300,7 +2300,7 @@ static void __init prom_init_stdout(void)
+ 
+ static int __init prom_find_machine_type(void)
+ {
+-	char compat[256];
++	static char compat[256] __prombss;
+ 	int len, i = 0;
+ #ifdef CONFIG_PPC64
+ 	phandle rtas;
+-- 
+2.35.1
 
