@@ -4,60 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B99FFC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 02:54:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CA7FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 03:11:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXmJs5dPmz3cgn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 12:54:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXmhb0Nd8z3f6f
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 13:11:43 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iARWl/iy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LyA4r1T6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.115; helo=mga14.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=brauner@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iARWl/iy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LyA4r1T6;
 	dkim-atps=neutral
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXmJ66PPcz3br0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 12:53:51 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1656471239; x=1688007239;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=BjhJgPr/kupD10bp+i5U72h80M292wRoEtENX3e0nR8=;
-  b=iARWl/iy2kgAlzLuWs0sa8/PUhOsmB7SRgQycZZsBxOUE3LtHn26HFqa
-   yz3Ggv9wBi9nhX/3WqW0zYcl3in3jdOE6SS1Hj1bx1CGsbIbEXwISsywA
-   kA4bYOQYCNuFaXEOyksXcJyi+2QaXGcjGgglVXVKRs50GpuYpGErsi8fZ
-   HdwxzMKVsXrwQ0kPKllIau1Kbd1FM9uJ5ADRUVJJUC2xsOdG2LYu/3DwA
-   G7Ji1iEIQL7woNEa5f4LCDRG5Rjtq8N7A4j6kHlFtWy77FT+OSscnzCOD
-   dKjJYcgeh9gMbJru9kUlWURzPRLhilY8dKD3ObTylx4dZxF9SiGddqTpK
-   A==;
-X-IronPort-AV: E=McAfee;i="6400,9594,10392"; a="281938981"
-X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
-   d="scan'208";a="281938981"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2022 19:53:46 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.92,230,1650956400"; 
-   d="scan'208";a="836935739"
-Received: from lkp-server01.sh.intel.com (HELO 68b931ab7ac1) ([10.239.97.150])
-  by fmsmga006.fm.intel.com with ESMTP; 28 Jun 2022 19:53:45 -0700
-Received: from kbuild by 68b931ab7ac1 with local (Exim 4.95)
-	(envelope-from <lkp@intel.com>)
-	id 1o6Npo-000Aqo-Su;
-	Wed, 29 Jun 2022 02:53:44 +0000
-Date: Wed, 29 Jun 2022 10:53:08 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next-test] BUILD SUCCESS
- cdd235a67deef0ebec5f50928fcf6cf9d48de993
-Message-ID: <62bbbe94.x3igGCSOw++Jzm+b%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXQMw0vHSz2xBV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 23:26:04 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id D4904B81E2F;
+	Tue, 28 Jun 2022 13:26:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D94BAC3411D;
+	Tue, 28 Jun 2022 13:25:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656422759;
+	bh=zWipI4/HuL6mWJ9CnZHWaGr7nNngJkU/KjLz7LVeqGc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=LyA4r1T6XCkyVvzyhKhyQMp7L5HID1ud7C12uE5pFDCd96vOprVyNXKl5FyR600E5
+	 eswmsaZ1tY1GFkcMyaGqPnoXa6Rn7o1iU/4pnlRAdUZ2GwwBliWT00an7Yfy1tO0qb
+	 TlE1Dy5EVSW6hmqCGiMg5+hldWvAlmMUI1E8xcBYt5XpQpTu2x3osanq1HzPrzl7gy
+	 YlaJDQTOV5qASJUR2ySS9rEL/TuWKeof3HP4eqCQMayUDLwxwy26PEgNPId7Dquqm1
+	 lkr9NFgj7OdCWAb7uIOiqxvoLiqBz6sirG1ckL1m971PqsAe3eS+JUZp3fVRfwb6sR
+	 ZyCQ0PBQmMf3g==
+Date: Tue, 28 Jun 2022 15:25:52 +0200
+From: Christian Brauner <brauner@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFC PATCH v2 2/3] fs: define a firmware security filesystem
+ named fwsecurityfs
+Message-ID: <20220628132552.ryjlz2dou52sghhr@wittgenstein>
+References: <20220622215648.96723-1-nayna@linux.ibm.com>
+ <20220622215648.96723-3-nayna@linux.ibm.com>
+ <YrQqPhi4+jHZ1WJc@kroah.com>
+ <41ca51e8db9907d9060cc38adb59a66dcae4c59b.camel@HansenPartnership.com>
+ <54af4a92356090d88639531413ea8cb46837bd18.camel@linux.ibm.com>
+ <YrleOHmEbpLPZ1n8@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <YrleOHmEbpLPZ1n8@kroah.com>
+X-Mailman-Approved-At: Wed, 29 Jun 2022 13:09:16 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,95 +66,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Dov Murik <dovmurik@linux.ibm.com>, linux-efi@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>, Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org, Mimi Zohar <zohar@linux.ibm.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Dave Hansen <dave.hansen@intel.com>, linux-security-module <linux-security-module@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org, George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, gjoyce@ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-branch HEAD: cdd235a67deef0ebec5f50928fcf6cf9d48de993  selftests/powerpc/pmu: Add test for hardware cache events
+On Mon, Jun 27, 2022 at 09:37:28AM +0200, Greg Kroah-Hartman wrote:
+> On Sun, Jun 26, 2022 at 11:48:06AM -0400, Mimi Zohar wrote:
+> > On Thu, 2022-06-23 at 09:23 -0400, James Bottomley wrote:
+> > > On Thu, 2022-06-23 at 10:54 +0200, Greg Kroah-Hartman wrote:
+> > > [...]
+> > > > > diff --git a/fs/fwsecurityfs/inode.c b/fs/fwsecurityfs/inode.c
+> > > > > new file mode 100644
+> > > > > index 000000000000..5d06dc0de059
+> > > > > --- /dev/null
+> > > > > +++ b/fs/fwsecurityfs/inode.c
+> > > > > @@ -0,0 +1,159 @@
+> > > > > +// SPDX-License-Identifier: GPL-2.0-only
+> > > > > +/*
+> > > > > + * Copyright (C) 2022 IBM Corporation
+> > > > > + * Author: Nayna Jain <nayna@linux.ibm.com>
+> > > > > + */
+> > > > > +
+> > > > > +#include <linux/sysfs.h>
+> > > > > +#include <linux/kobject.h>
+> > > > > +#include <linux/fs.h>
+> > > > > +#include <linux/fs_context.h>
+> > > > > +#include <linux/mount.h>
+> > > > > +#include <linux/pagemap.h>
+> > > > > +#include <linux/init.h>
+> > > > > +#include <linux/namei.h>
+> > > > > +#include <linux/security.h>
+> > > > > +#include <linux/lsm_hooks.h>
+> > > > > +#include <linux/magic.h>
+> > > > > +#include <linux/ctype.h>
+> > > > > +#include <linux/fwsecurityfs.h>
+> > > > > +
+> > > > > +#include "internal.h"
+> > > > > +
+> > > > > +int fwsecurityfs_remove_file(struct dentry *dentry)
+> > > > > +{
+> > > > > +	drop_nlink(d_inode(dentry));
+> > > > > +	dput(dentry);
+> > > > > +	return 0;
+> > > > > +};
+> > > > > +EXPORT_SYMBOL_GPL(fwsecurityfs_remove_file);
+> > > > > +
+> > > > > +int fwsecurityfs_create_file(const char *name, umode_t mode,
+> > > > > +					u16 filesize, struct dentry
+> > > > > *parent,
+> > > > > +					struct dentry *dentry,
+> > > > > +					const struct file_operations
+> > > > > *fops)
+> > > > > +{
+> > > > > +	struct inode *inode;
+> > > > > +	int error;
+> > > > > +	struct inode *dir;
+> > > > > +
+> > > > > +	if (!parent)
+> > > > > +		return -EINVAL;
+> > > > > +
+> > > > > +	dir = d_inode(parent);
+> > > > > +	pr_debug("securityfs: creating file '%s'\n", name);
+> > > > 
+> > > > Did you forget to call simple_pin_fs() here or anywhere else?
+> > > > 
+> > > > And this can be just one function with the directory creation file,
+> > > > just check the mode and you will be fine.  Look at securityfs as an
+> > > > example of how to make this simpler.
+> > > 
+> > > Actually, before you go down this route can you consider the namespace
+> > > ramifications.  In fact we're just having to rework securityfs to pull
+> > > out all the simple_pin_... calls because simple_pin_... is completely
+> > > inimical to namespaces.
 
-elapsed time: 746m
+I described this at length in the securityfs namespacing thread at
+various points. simple_pin_*() should be avoided if possible. Ideally
+the filesystem will just be cleaned up on umount. There might be a
+reason to make it survive umounts if you have state that stays around
+and somehow is intimately tied to that filesystem.
 
-configs tested: 70
-configs skipped: 2
+> > > 
+> > > The first thing to consider is if you simply use securityfs you'll
+> > > inherit all the simple_pin_... removal work and be namespace ready.  It
+> > > could be that creating a new filesystem that can't be namespaced is the
+> > > right thing to do here, but at least ask the question: would we ever
+> > > want any of these files to be presented selectively inside containers? 
+> > > If the answer is "yes" then simple_pin_... is the wrong interface.
+> > 
+> > Greg, the securityfs changes James is referring to are part of the IMA
+> > namespacing patch set:
+> > https://lore.kernel.org/linux-integrity/20220420140633.753772-1-stefanb@linux.ibm.com/
+> > 
+> > I'd really appreciate your reviewing the first two patches:
+> > [PATCH v12 01/26] securityfs: rework dentry creation
+> > [PATCH v12 02/26] securityfs: Extend securityfs with namespacing
+> > support
+> 
+> Looks like others have already reviewed them, they seem sane to me if
+> they past testing.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm                              allyesconfig
-arm64                            allyesconfig
-i386                 randconfig-c001-20220627
-powerpc                      ppc40x_defconfig
-arm                        realview_defconfig
-arm                            pleb_defconfig
-parisc64                            defconfig
-arm                          pxa910_defconfig
-ia64                         bigsur_defconfig
-arm                       aspeed_g5_defconfig
-sh                   sh7770_generic_defconfig
-arc                            hsdk_defconfig
-arm                         cm_x300_defconfig
-riscv                            allyesconfig
-ia64                             allmodconfig
-x86_64               randconfig-k001-20220627
-arc                              allyesconfig
-alpha                            allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-powerpc                           allnoconfig
-mips                             allyesconfig
-powerpc                          allmodconfig
-sh                               allmodconfig
-i386                                defconfig
-i386                             allyesconfig
-x86_64               randconfig-a015-20220627
-x86_64               randconfig-a012-20220627
-x86_64               randconfig-a016-20220627
-x86_64               randconfig-a011-20220627
-x86_64               randconfig-a013-20220627
-x86_64               randconfig-a014-20220627
-i386                 randconfig-a014-20220627
-i386                 randconfig-a011-20220627
-i386                 randconfig-a012-20220627
-i386                 randconfig-a015-20220627
-i386                 randconfig-a016-20220627
-i386                 randconfig-a013-20220627
-arc                  randconfig-r043-20220627
-s390                 randconfig-r044-20220627
-riscv                randconfig-r042-20220627
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                           allyesconfig
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-syz
-x86_64                          rhel-8.3-func
-x86_64                    rhel-8.3-kselftests
-
-clang tested configs:
-arm                      pxa255-idp_defconfig
-arm                            dove_defconfig
-x86_64               randconfig-a004-20220627
-x86_64               randconfig-a006-20220627
-x86_64               randconfig-a001-20220627
-x86_64               randconfig-a005-20220627
-x86_64               randconfig-a002-20220627
-x86_64               randconfig-a003-20220627
-i386                 randconfig-a005-20220627
-i386                 randconfig-a001-20220627
-i386                 randconfig-a006-20220627
-i386                 randconfig-a004-20220627
-i386                 randconfig-a003-20220627
-i386                 randconfig-a002-20220627
-x86_64                        randconfig-a012
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-hexagon              randconfig-r041-20220627
-hexagon              randconfig-r045-20220627
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Thanks for taking a look.
