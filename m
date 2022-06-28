@@ -4,97 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7585FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 07:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8037DC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 07:01:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXFpV17Hdz3dqC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 17:00:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXFrV0btSz3f3d
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 17:01:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XSa6BG9j;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=HI/Mpzhe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--saravanak.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3wgg6ygkkdcep7o7s7k7hdlldib.9ljifkrumm9-absifpqp.lwi78p.lod@flex--saravanak.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::133; helo=mail-lf1-x133.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XSa6BG9j;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=HI/Mpzhe;
 	dkim-atps=neutral
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX7Cz6GQ6z3bY8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 12:03:09 +1000 (AEST)
-Received: by mail-yb1-xb4a.google.com with SMTP id r6-20020a5b06c6000000b006693f6a6d67so9702577ybq.7
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 19:03:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LX7gy6dXDz3c7H
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 12:23:58 +1000 (AEST)
+Received: by mail-lf1-x133.google.com with SMTP id y32so19785500lfa.6
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jun 2022 19:23:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=/OuahP8oPHDxIXADrtMOHzHvbE6HS+PoE4WDHegn+rY=;
-        b=XSa6BG9j+Us6qSO6vPHqc2TVfQxumnU0pAOfjBJHFlWcIck0At2n2mfq5tAA7z3Bx5
-         PD0vlBv1k9Q/E/30MAFFG1P5OxPr5/WK6+axB0HoavtP7KnHzjHkg1qUFmVSky1XYmCE
-         keKg7zc6YYKZDYEnwk3qbSxvFO3Xk4Y8/tdDX97msFctgpLZBdPkJDnH5LbWzXx7pTZH
-         CgzyIamG5okMqCh9aY8wAvuFixrOfwL/UhwfbnX/7paM2krnQNZDjv67WdvSzvvMWo7D
-         m5fFpT4ZoMrA6AasD66OkuDUwH3oHEeuCSo5kX9VLcSW8/gQ+X2898P5YGyQhyrYIK8G
-         Aulw==
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=dB8dhmVX1CwoFsrikItOoVuCqHYJQooSwxGeDKLgNT8=;
+        b=HI/MpzheOO9DP7JyzGl+a3bFkcCKHo9eJPYaBisaK2S3Fn1+vKOWsg3egyhpj4t+X9
+         Ly8V293IFYftR/AAlBeN8H9KAD9y6KCgtQMAUnYUe28Dc8vM6igE7FXTlTi9PVRbVRHY
+         /OZO5DXqKIXo6Cyn6fQuvi35s3H9dzGaAASC0c/sKd5x7BR9GBn8chU7pAwDGDTwFUb/
+         JSRO8+fqFxOOhRDy03Uz/Un3n5q9iY7e7pmnkB4KUqqzZnNgnKxbsDd0DnSXAXgQkGZB
+         1SD405ytXODk1lf1KctejXodNqpiGHftSF4wPsmPnr+kAWBCE+p3az2KFA6I2/8Ea6hz
+         Ir9w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=/OuahP8oPHDxIXADrtMOHzHvbE6HS+PoE4WDHegn+rY=;
-        b=idLQP5uySdl7hL2lwlPBstesF0EZIuTN4owyI5olijr/GClg028IMucXEeeePUbw1H
-         DZYNeATsS0RyVtljgJcKZXenwhaVOMy9ylHrzBeN+hN1jLD8nahUvP1R7i3HhvAnCdFs
-         x3fsPAQAkwbDvgWzPeGC6XQk7brtBuLmT++z9jGJu3ECIQL1D271n1yRpWPEw/P+wC+9
-         rTrTkQK86MMeZvi+yB4XkQ/O2SH3byZ3+TGokWTBT9DKqdSYTPMDUIZgcwja9R25efTi
-         mpziKg159i2XisvvPlRKLqCJTGSlbBJpzJOk17npEToOpVUl3R6CGpYHGfdrNnYIs3cz
-         PdZg==
-X-Gm-Message-State: AJIora/DwlUm8eLihVdpV0xZx9zZ4KeFnHrHASeowE7qByP0cBik6Oef
-	3nZAGHEIt+A7WVEC5EIMU4tn3qmQiDbVG2o=
-X-Google-Smtp-Source: AGRyM1s6TFssoICBD8dW4KaHJ9QFnbGLouWSVAgJ1icUDVgZq5pRLN92A6h2ACkaFVoX2i0qb9ktR7y39ECy36c=
-X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:1f27:a302:2101:1c82])
- (user=saravanak job=sendgmr) by 2002:a81:9292:0:b0:317:dd64:5adc with SMTP id
- j140-20020a819292000000b00317dd645adcmr19123629ywg.145.1656381784427; Mon, 27
- Jun 2022 19:03:04 -0700 (PDT)
-Date: Mon, 27 Jun 2022 19:01:01 -0700
-Message-Id: <20220628020110.1601693-1-saravanak@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
-Subject: [PATCH v1 0/2] Fix console probe delay when stdout-path isn't set
-From: Saravana Kannan <saravanak@google.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
-	Laurentiu Tudor <laurentiu.tudor@nxp.com>, Jiri Slaby <jirislaby@kernel.org>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
-	Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, 
-	Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, 
-	Scott Branden <sbranden@broadcom.com>, 
-	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
-	Nicolas Saenz Julienne <nsaenz@kernel.org>, Al Cooper <alcooperx@gmail.com>, 
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Paul Cercueil <paul@crapouillou.net>, 
-	Vladimir Zapolskiy <vz@mleia.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
-	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
-	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	Tobias Klauser <tklauser@distanz.ch>, Russell King <linux@armlinux.org.uk>, 
-	Vineet Gupta <vgupta@kernel.org>, Richard Genoud <richard.genoud@gmail.com>, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Claudiu Beznea <claudiu.beznea@microchip.com>, Alexander Shiyan <shc_work@mail.ru>, 
-	Baruch Siach <baruch@tkos.co.il>, Shawn Guo <shawnguo@kernel.org>, 
-	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
-	Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, 
-	Karol Gugala <kgugala@antmicro.com>, Mateusz Holenko <mholenko@antmicro.com>, 
-	Gabriel Somlo <gsomlo@gmail.com>, Neil Armstrong <narmstrong@baylibre.com>, 
-	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
-	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
-	Taichi Sugaya <sugaya.taichi@socionext.com>, Takao Orito <orito.takao@socionext.com>, 
-	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
-	Lorenzo Pieralisi <lpieralisi@kernel.org>, Andy Gross <agross@kernel.org>, 
-	Bjorn Andersson <bjorn.andersson@linaro.org>, Pali Rohar <pali@kernel.org>, 
-	Andreas Farber <afaerber@suse.de>, Manivannan Sadhasivam <mani@kernel.org>, 
-	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
-	Laxman Dewangan <ldewangan@nvidia.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
-	Paul Walmsley <paul.walmsley@sifive.com>, Orson Zhai <orsonzhai@gmail.com>, 
-	Baolin Wang <baolin.wang7@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
-	Patrice Chotard <patrice.chotard@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
-	Alexandre Torgue <alexandre.torgue@foss.st.com>, "David S. Miller" <davem@davemloft.net>, 
-	Hammer Hsieh <hammerh0314@gmail.com>, Peter Korsgaard <jacmet@sunsite.dk>, Timur Tabi <timur@kernel.org>, 
-	Michal Simek <michal.simek@xilinx.com>, Saravana Kannan <saravanak@google.com>
-Content-Type: text/plain; charset="UTF-8"
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=dB8dhmVX1CwoFsrikItOoVuCqHYJQooSwxGeDKLgNT8=;
+        b=1/b6LgG/cfZjtWzOs8FFq5CO7coBzV6Yt4dRK2MEkxj1IX8kOh3g7bBN0idYGgFBeg
+         a593RBt9OhX5FFtR8rYLtJSZjkztBX48nHy8cJgOIeEFqEynpeU2Pw2bOjzvEkzw03Qr
+         1iM1VpCO3MygIr6glq+WY7fSJN7ah+mQF8J4tkSiIxKS1BIWRPraypVW8f6xHzet9FC+
+         6YTdsIZCQyJugxDVtU0YTznTMk5bnO39Ljp1kMxtyt97Tt52Gg0qGCZWDm7VWFe+txZi
+         bbNC3ewo5JmMftI2WMg+pwlLJqo20cmMKeFlHkuKHW6evzYnvqyy65Wn7FeTbpXTKQNe
+         LrPQ==
+X-Gm-Message-State: AJIora9k24Un5o10VecWNneyB8tkEu6OB7g6GhbfYu01V47hlaIyIANH
+	b9BbBSTgtmxdPedZoMfJE4sOiNIHuI1cE14rtqI=
+X-Google-Smtp-Source: AGRyM1syY2dmaaVRNUkd92rc/WKV+t3bEdWPEIjpTq4DEE+vBn3CEoNLNHFJUDvccvB2BWZBas+iOknsVfcuCT6oFQY=
+X-Received: by 2002:ac2:4e0f:0:b0:481:df0:94a with SMTP id e15-20020ac24e0f000000b004810df0094amr7365079lfr.655.1656383035352;
+ Mon, 27 Jun 2022 19:23:55 -0700 (PDT)
+MIME-Version: 1.0
+References: <1655451877-16382-1-git-send-email-shengjiu.wang@nxp.com>
+ <1655451877-16382-7-git-send-email-shengjiu.wang@nxp.com> <20220627230012.GA3122063-robh@kernel.org>
+In-Reply-To: <20220627230012.GA3122063-robh@kernel.org>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 28 Jun 2022 10:23:43 +0800
+Message-ID: <CAA+D8AOHu4Wvt4gkUCu7NaT_aNcwWbp1c2KNy7WTLnKvtzZ4jA@mail.gmail.com>
+Subject: Re: [PATCH v2 6/7] ASoC: dt-bindings: fsl-sai: Add new property to
+ configure dataline
+To: Rob Herring <robh@kernel.org>
+Content-Type: multipart/alternative; boundary="0000000000006f2a6a05e278bafa"
 X-Mailman-Approved-At: Tue, 28 Jun 2022 16:58:59 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -107,133 +74,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, linux-aspeed@lists.ozlabs.org, linus walleij <linus.walleij@linaro.org>, ulf hansson <ulf.hansson@linaro.org>, linux-mips@vger.kernel.org, eric dumazet <edumazet@google.com>, pavel machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, will deacon <will@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, sascha hauer <sha@pengutronix.de>, Rob Herring <robh@kernel.org>, linux-samsung-soc@vger.kernel.org, kevin hilman <khilman@kernel.org>, joerg roedel <joro@8bytes.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, paolo abeni <pabeni@redhat.com>, kernel-team@android.com, len brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel
- @lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-unisoc@lists.infradead.org, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org, heiner kallweit <hkallweit1@gmail.com>
+Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Shengjiu Wang <shengjiu.wang@nxp.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Fabio Estevam <festevam@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since the series that fixes console probe delay based on stdout-path[1] got
-pulled into driver-core-next, I made these patches on top of them.
+--0000000000006f2a6a05e278bafa
+Content-Type: text/plain; charset="UTF-8"
 
-Even if stdout-path isn't set in DT, this patch should take console
-probe times back to how they were before the deferred_probe_timeout
-clean up series[2].
+On Tue, Jun 28, 2022 at 7:00 AM Rob Herring <robh@kernel.org> wrote:
 
-Fabio/Ahmad/Sascha,
+> On Fri, Jun 17, 2022 at 03:44:36PM +0800, Shengjiu Wang wrote:
+> > "fsl,dataline" is added to configure the dataline of SAI.
+> > It has 3 value for each configuration, first one means the type:
+> > I2S(1) or PDM(2), second one is dataline mask for 'rx', third one is
+> > dataline mask for 'tx'. for example:
+> >
+> > fsl,dataline = <1 0xff 0xff 2 0xff 0x11>,
+> >
+> > it means I2S type rx mask is 0xff, tx mask is 0xff, PDM type
+> > rx mask is 0xff, tx mask is 0x11 (dataline 1 and 4 enabled).
+> >
+> > Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> > ---
+> >  Documentation/devicetree/bindings/sound/fsl-sai.txt | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> > index c71c5861d787..4c66e6a1a533 100644
+> > --- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> > +++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
+> > @@ -49,6 +49,14 @@ Required properties:
+> >                         receive data by following their own bit clocks
+> and
+> >                         frame sync clocks separately.
+> >
+> > +  - fsl,dataline        : configure the dataline. it has 3 value for
+> each configuration
+> > +                          first one means the type: I2S(1) or PDM(2)
+> > +                          second one is dataline mask for 'rx'
+> > +                          third one is dataline mask for 'tx'.
+> > +                          for example: fsl,dataline = <1 0xff 0xff 2
+> 0xff 0x11>;
+> > +                          it means I2S type rx mask is 0xff, tx mask is
+> 0xff, PDM type
+> > +                          rx mask is 0xff, tx mask is 0x11 (dataline 1
+> and 4 enabled).
+>
+> You mean 0 and 4 enabled? Or 1 and 4?
+>
 
-Can you give this a shot please?
+Should be 'dataline 1 and 5 enabled, index start from 1'.  I will fix it.
 
-[1] - https://lore.kernel.org/lkml/20220623080344.783549-1-saravanak@google.com/
-[2] - https://lore.kernel.org/lkml/20220601070707.3946847-1-saravanak@google.com/
+>
+> How many 3 cell entries can you have?
+>
 
-Thanks,
-Saravana
+There is no limitation for entries,  the code in the driver will query the
+length first
+by of_property_count_u32_elems() then read the values.
 
-cc: Rob Herring <robh@kernel.org>
-cc: sascha hauer <sha@pengutronix.de>
-cc: peng fan <peng.fan@nxp.com>
-cc: kevin hilman <khilman@kernel.org>
-cc: ulf hansson <ulf.hansson@linaro.org>
-cc: len brown <len.brown@intel.com>
-cc: pavel machek <pavel@ucw.cz>
-cc: joerg roedel <joro@8bytes.org>
-cc: will deacon <will@kernel.org>
-cc: andrew lunn <andrew@lunn.ch>
-cc: heiner kallweit <hkallweit1@gmail.com>
-cc: russell king <linux@armlinux.org.uk>
-cc: "david s. miller" <davem@davemloft.net>
-cc: eric dumazet <edumazet@google.com>
-cc: jakub kicinski <kuba@kernel.org>
-cc: paolo abeni <pabeni@redhat.com>
-cc: linus walleij <linus.walleij@linaro.org>
-cc: hideaki yoshifuji <yoshfuji@linux-ipv6.org>
-cc: david ahern <dsahern@kernel.org>
-cc: kernel-team@android.com
-cc: linux-kernel@vger.kernel.org
-cc: linux-pm@vger.kernel.org
-cc: iommu@lists.linux-foundation.org
-cc: netdev@vger.kernel.org
-cc: linux-gpio@vger.kernel.org
-Cc: kernel@pengutronix.de
+best regards
+wang shengjiu
 
-Saravana Kannan (2):
-  driver core: Add probe_no_timeout flag for drivers
-  serial: Set probe_no_timeout for all DT based drivers
+--0000000000006f2a6a05e278bafa
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
- drivers/base/base.h                         |  1 +
- drivers/base/core.c                         |  7 +++++++
- drivers/base/dd.c                           |  3 +++
- drivers/tty/ehv_bytechan.c                  |  1 +
- drivers/tty/goldfish.c                      |  1 +
- drivers/tty/hvc/hvc_opal.c                  |  1 +
- drivers/tty/serial/8250/8250_acorn.c        |  1 -
- drivers/tty/serial/8250/8250_aspeed_vuart.c |  1 +
- drivers/tty/serial/8250/8250_bcm2835aux.c   |  1 +
- drivers/tty/serial/8250/8250_bcm7271.c      |  1 +
- drivers/tty/serial/8250/8250_dw.c           |  1 +
- drivers/tty/serial/8250/8250_em.c           |  1 +
- drivers/tty/serial/8250/8250_ingenic.c      |  1 +
- drivers/tty/serial/8250/8250_lpc18xx.c      |  1 +
- drivers/tty/serial/8250/8250_mtk.c          |  1 +
- drivers/tty/serial/8250/8250_of.c           |  1 +
- drivers/tty/serial/8250/8250_omap.c         |  1 +
- drivers/tty/serial/8250/8250_pxa.c          |  1 +
- drivers/tty/serial/8250/8250_tegra.c        |  1 +
- drivers/tty/serial/8250/8250_uniphier.c     |  1 +
- drivers/tty/serial/altera_jtaguart.c        |  1 +
- drivers/tty/serial/altera_uart.c            |  1 +
- drivers/tty/serial/amba-pl011.c             |  1 +
- drivers/tty/serial/apbuart.c                |  1 +
- drivers/tty/serial/ar933x_uart.c            |  1 +
- drivers/tty/serial/arc_uart.c               |  1 +
- drivers/tty/serial/atmel_serial.c           |  1 +
- drivers/tty/serial/bcm63xx_uart.c           |  1 +
- drivers/tty/serial/clps711x.c               |  1 +
- drivers/tty/serial/cpm_uart/cpm_uart_core.c |  1 +
- drivers/tty/serial/digicolor-usart.c        |  1 +
- drivers/tty/serial/fsl_linflexuart.c        |  1 +
- drivers/tty/serial/fsl_lpuart.c             |  1 +
- drivers/tty/serial/imx.c                    |  1 +
- drivers/tty/serial/lantiq.c                 |  1 +
- drivers/tty/serial/liteuart.c               |  1 +
- drivers/tty/serial/lpc32xx_hs.c             |  1 +
- drivers/tty/serial/max310x.c                |  1 +
- drivers/tty/serial/meson_uart.c             |  1 +
- drivers/tty/serial/milbeaut_usio.c          |  1 +
- drivers/tty/serial/mpc52xx_uart.c           |  1 +
- drivers/tty/serial/mps2-uart.c              |  1 +
- drivers/tty/serial/msm_serial.c             |  1 +
- drivers/tty/serial/mvebu-uart.c             |  1 +
- drivers/tty/serial/mxs-auart.c              |  1 +
- drivers/tty/serial/omap-serial.c            |  1 +
- drivers/tty/serial/owl-uart.c               |  1 +
- drivers/tty/serial/pic32_uart.c             |  1 +
- drivers/tty/serial/pmac_zilog.c             |  1 +
- drivers/tty/serial/pxa.c                    |  1 +
- drivers/tty/serial/qcom_geni_serial.c       |  1 +
- drivers/tty/serial/rda-uart.c               |  1 +
- drivers/tty/serial/samsung_tty.c            |  1 +
- drivers/tty/serial/sc16is7xx.c              |  1 +
- drivers/tty/serial/serial-tegra.c           |  1 +
- drivers/tty/serial/sh-sci.c                 |  1 +
- drivers/tty/serial/sifive.c                 |  1 +
- drivers/tty/serial/sprd_serial.c            |  1 +
- drivers/tty/serial/st-asc.c                 |  1 +
- drivers/tty/serial/stm32-usart.c            |  1 +
- drivers/tty/serial/sunhv.c                  |  1 +
- drivers/tty/serial/sunplus-uart.c           |  1 +
- drivers/tty/serial/sunsab.c                 |  1 +
- drivers/tty/serial/sunsu.c                  |  1 +
- drivers/tty/serial/sunzilog.c               |  1 +
- drivers/tty/serial/tegra-tcu.c              |  1 +
- drivers/tty/serial/uartlite.c               |  1 +
- drivers/tty/serial/ucc_uart.c               |  1 +
- drivers/tty/serial/vt8500_serial.c          |  1 +
- drivers/tty/serial/xilinx_uartps.c          |  1 +
- include/linux/device.h                      |  7 +++++++
- include/linux/device/driver.h               | 11 +++++++++++
- 72 files changed, 95 insertions(+), 1 deletion(-)
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Tue, Jun 28, 2022 at 7:00 AM Rob H=
+erring &lt;<a href=3D"mailto:robh@kernel.org">robh@kernel.org</a>&gt; wrote=
+:<br></div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.=
+8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">On Fri, Jun 17=
+, 2022 at 03:44:36PM +0800, Shengjiu Wang wrote:<br>
+&gt; &quot;fsl,dataline&quot; is added to configure the dataline of SAI.<br=
+>
+&gt; It has 3 value for each configuration, first one means the type:<br>
+&gt; I2S(1) or PDM(2), second one is dataline mask for &#39;rx&#39;, third =
+one is<br>
+&gt; dataline mask for &#39;tx&#39;. for example:<br>
+&gt; <br>
+&gt; fsl,dataline =3D &lt;1 0xff 0xff 2 0xff 0x11&gt;,<br>
+&gt; <br>
+&gt; it means I2S type rx mask is 0xff, tx mask is 0xff, PDM type<br>
+&gt; rx mask is 0xff, tx mask is 0x11 (dataline 1 and 4 enabled).<br>
+&gt; <br>
+&gt; Signed-off-by: Shengjiu Wang &lt;<a href=3D"mailto:shengjiu.wang@nxp.c=
+om" target=3D"_blank">shengjiu.wang@nxp.com</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 Documentation/devicetree/bindings/sound/fsl-sai.txt | 8 ++++++++=
+<br>
+&gt;=C2=A0 1 file changed, 8 insertions(+)<br>
+&gt; <br>
+&gt; diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Doc=
+umentation/devicetree/bindings/sound/fsl-sai.txt<br>
+&gt; index c71c5861d787..4c66e6a1a533 100644<br>
+&gt; --- a/Documentation/devicetree/bindings/sound/fsl-sai.txt<br>
+&gt; +++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt<br>
+&gt; @@ -49,6 +49,14 @@ Required properties:<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0receive data by following their own bit clocks and<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0frame sync clocks separately.<br>
+&gt;=C2=A0 <br>
+&gt; +=C2=A0 - fsl,dataline=C2=A0 =C2=A0 =C2=A0 =C2=A0 : configure the data=
+line. it has 3 value for each configuration<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 first one means the type: I2S(1) or PDM(2)<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 second one is dataline mask for &#39;rx&#39;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 third one is dataline mask for &#39;tx&#39;.<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 for example: fsl,dataline =3D &lt;1 0xff 0xff 2 0xff =
+0x11&gt;;<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 it means I2S type rx mask is 0xff, tx mask is 0xff, P=
+DM type<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 rx mask is 0xff, tx mask is 0x11 (dataline 1 and 4 en=
+abled).<br>
+<br>
+You mean 0 and 4 enabled? Or 1 and 4?<br></blockquote><div><br></div><div>S=
+hould be &#39;dataline 1 and 5 enabled, index start from 1&#39;.=C2=A0 I wi=
+ll fix it.=C2=A0</div><blockquote class=3D"gmail_quote" style=3D"margin:0px=
+ 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);padding-left:1ex">
+<br>
+How many 3 cell entries can you have?<br></blockquote><div>=C2=A0<br></div>=
+<div>There is no limitation for entries,=C2=A0 the code in the driver will =
+query the length first</div><div>by of_property_count_u32_elems() then read=
+ the values.</div><div><br></div><div>best regards</div><div>wang shengjiu<=
+/div></div></div>
 
--- 
-2.37.0.rc0.161.g10f37bed90-goog
-
+--0000000000006f2a6a05e278bafa--
