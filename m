@@ -4,58 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BF6EC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F18CCC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 14:50:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSDT56Vcz3dqH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:49:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXSF12R2sz3chm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 00:50:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSD32XQRz3bsl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:49:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXSD831Z5z3ccy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 00:49:28 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4LXSCx5Zh9z9tV3;
-	Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4LXSCy3XXsz9tTw;
+	Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wHtOy6VykHm6; Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
+	with ESMTP id 2UtnhNzopbXw; Tue, 28 Jun 2022 16:49:18 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4LXSCx4mBkz9tTw;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4LXSCx4ylfz9tV1;
 	Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 81D788B78B;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8770A8B787;
 	Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id DuvdrfC0SIld; Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
+	with ESMTP id 3e92SFMNOl1c; Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.132])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3D5AA8B787;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 38FB28B765;
 	Tue, 28 Jun 2022 16:49:17 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25SEn7Nc2928195
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 25SEn7C32928187
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Tue, 28 Jun 2022 16:49:07 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25SEn7Pr2928194;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 25SEn70V2928183;
 	Tue, 28 Jun 2022 16:49:07 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
         Michael Ellerman <mpe@ellerman.id.au>, dja@axtens.net
-Subject: [PATCH v1 3/6] powerpc/64e: Remove unused REGION related macros
-Date: Tue, 28 Jun 2022 16:48:56 +0200
-Message-Id: <f0efde8cee0924c3991790042b176ac77ad35e1f.1656427701.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 1/6] powerpc/64e: Fix early TLB miss with KUAP
+Date: Tue, 28 Jun 2022 16:48:54 +0200
+Message-Id: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.36.1
-In-Reply-To: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
-References: <8d6c5859a45935d6e1a336da4dc20be421e8cea7.1656427701.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1656427736; l=1121; s=20211009; h=from:subject:message-id; bh=/6lgIkH0a+sUp+GzEVjVZdUOy9sJhPb83Ia6EKSIxX0=; b=DwRDBItJQIBz5QscbzVye4Pj29cLL+cBC0X5q6ss9OeH3RmxWP7gKkWWKI/kp+YLADuUsvQzq2wq 4eqEv0iGCLBJsGWfBU4osrcI8hc4nto/Xp2G12TD+eU/3auuSVBS
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1656427736; l=2726; s=20211009; h=from:subject:message-id; bh=4c9cq6TjMjaZsHx8VkXNUgeyvb6bfH74ZSSKL8bYUs8=; b=SF5iSK7Ye4Q+8F6+uETerT8Y4xg2atv7a8xzA5RRwjQ0BieTWvBNamBMtM+PUxwpJNgV2/V66k4c 5FFHmehFB3AzouAMpaZRrZAJixojUdOLIqZyHGkcfVsUoae0itdr
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -69,41 +67,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Those macros are not used anywhere. Remove them as they are soon
-going to be wrong and are not worth modifying as they are not used.
+With KUAP, the TLB miss handler bails out when an access to user
+memory is performed with a nul TID.
 
+But the normal TLB miss routine which is only used early during boot
+does the check regardless for all memory areas, not only user memory.
+
+By chance there is no early IO or vmalloc access, but when KASAN
+come we will start having early TLB misses.
+
+Fix it by creating a special branch for user accesses similar to the
+one in the 'bolted' TLB miss handlers. Unfortunately SPRN_MAS1 is
+now read too early and there are no registers available to preserve
+it so it will be read a second time.
+
+Fixes: 57bc963837f5 ("powerpc/kuap: Wire-up KUAP on book3e/64")
+Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/nohash/64/pgtable.h | 12 ------------
- 1 file changed, 12 deletions(-)
+ arch/powerpc/mm/nohash/tlb_low_64e.S | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 57083f95e82b..db9770995f7c 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -57,18 +57,6 @@
- #define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE - FIXADDR_SIZE)
- #define FIXADDR_SIZE	SZ_32M
+diff --git a/arch/powerpc/mm/nohash/tlb_low_64e.S b/arch/powerpc/mm/nohash/tlb_low_64e.S
+index 8b97c4acfebf..9e9ab3803fb2 100644
+--- a/arch/powerpc/mm/nohash/tlb_low_64e.S
++++ b/arch/powerpc/mm/nohash/tlb_low_64e.S
+@@ -583,7 +583,7 @@ itlb_miss_fault_e6500:
+ 	 */
+ 	rlwimi	r11,r14,32-19,27,27
+ 	rlwimi	r11,r14,32-16,19,19
+-	beq	normal_tlb_miss
++	beq	normal_tlb_miss_user
+ 	/* XXX replace the RMW cycles with immediate loads + writes */
+ 1:	mfspr	r10,SPRN_MAS1
+ 	cmpldi	cr0,r15,8		/* Check for vmalloc region */
+@@ -626,7 +626,7 @@ itlb_miss_fault_e6500:
  
--
--/*
-- * Region IDs
-- */
--#define REGION_SHIFT		60UL
--#define REGION_MASK		(0xfUL << REGION_SHIFT)
--#define REGION_ID(ea)		(((unsigned long)(ea)) >> REGION_SHIFT)
--
--#define VMALLOC_REGION_ID	(REGION_ID(VMALLOC_START))
--#define KERNEL_REGION_ID	(REGION_ID(PAGE_OFFSET))
--#define USER_REGION_ID		(0UL)
--
- /*
-  * Defines the address of the vmemap area, in its own region on
-  * after the vmalloc space on Book3E
+ 	cmpldi	cr0,r15,0			/* Check for user region */
+ 	std	r14,EX_TLB_ESR(r12)		/* write crazy -1 to frame */
+-	beq	normal_tlb_miss
++	beq	normal_tlb_miss_user
+ 
+ 	li	r11,_PAGE_PRESENT|_PAGE_BAP_SX	/* Base perm */
+ 	oris	r11,r11,_PAGE_ACCESSED@h
+@@ -653,6 +653,12 @@ itlb_miss_fault_e6500:
+  * r11 = PTE permission mask
+  * r10 = crap (free to use)
+  */
++normal_tlb_miss_user:
++#ifdef CONFIG_PPC_KUAP
++	mfspr	r14,SPRN_MAS1
++	rlwinm.	r14,r14,0,0x3fff0000
++	beq-	normal_tlb_miss_access_fault /* KUAP fault */
++#endif
+ normal_tlb_miss:
+ 	/* So we first construct the page table address. We do that by
+ 	 * shifting the bottom of the address (not the region ID) by
+@@ -683,11 +689,6 @@ finish_normal_tlb_miss:
+ 	/* Check if required permissions are met */
+ 	andc.	r15,r11,r14
+ 	bne-	normal_tlb_miss_access_fault
+-#ifdef CONFIG_PPC_KUAP
+-	mfspr	r11,SPRN_MAS1
+-	rlwinm.	r10,r11,0,0x3fff0000
+-	beq-	normal_tlb_miss_access_fault /* KUAP fault */
+-#endif
+ 
+ 	/* Now we build the MAS:
+ 	 *
+@@ -709,9 +710,7 @@ finish_normal_tlb_miss:
+ 	rldicl	r10,r14,64-8,64-8
+ 	cmpldi	cr0,r10,BOOK3E_PAGESZ_4K
+ 	beq-	1f
+-#ifndef CONFIG_PPC_KUAP
+ 	mfspr	r11,SPRN_MAS1
+-#endif
+ 	rlwimi	r11,r14,31,21,24
+ 	rlwinm	r11,r11,0,21,19
+ 	mtspr	SPRN_MAS1,r11
 -- 
 2.36.1
 
