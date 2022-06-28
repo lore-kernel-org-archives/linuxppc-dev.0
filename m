@@ -4,65 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A5B2C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 16:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C07C2C43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Jun 2022 16:59:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXTqc40Zmz3c8X
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 02:01:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXW5w6xLMz3dpx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 02:59:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=dD7Wqxrx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PfowYJaW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b32; helo=mail-yb1-xb32.google.com; envelope-from=elver@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=dD7Wqxrx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PfowYJaW;
 	dkim-atps=neutral
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXTpy5X1Rz2ypf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 02:01:14 +1000 (AEST)
-Received: by mail-yb1-xb32.google.com with SMTP id i15so23060595ybp.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 09:01:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=JSgkWuUAADlOM6Jw2JGSpNYb73+UZZR8Ny928REi7Do=;
-        b=dD7WqxrxIulFXhD/bExMZnWi60wwO8Kj+M+kIed6KYNLHB0WWLvTKi3YQglVoCYW4P
-         +nCIP4SR+cwnQqQfuATDns64AdE53d0F59geSv0p/m5YXnhqp4LycwIMn8fTF4Q77Gv9
-         JOpUOTuY3a9w8gtDFPgVQ2AYVTdCpBjjnDrH38boB6yaYsKF0FG2/J9PB7qqpl9vKHJa
-         5PbEManR+KQaodnyqs64a5Pz/K9SPx1dRdNN2bbRiZzRZ65LxBDyShencH0aKN3YaGNN
-         DodJhWIcA2oLlhzqE0ACp0cNtsDgcWQAS9pfcEWt337XNT7UXLPRvQp9CgVf6ZrMiAkK
-         tJBA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=JSgkWuUAADlOM6Jw2JGSpNYb73+UZZR8Ny928REi7Do=;
-        b=6RHMEBN8BXHi91ThOOondSIR9weItagGR/+OkK/2Fco8UltTPXM/EWFDJLRgIs0u5p
-         lTqis2+8I/kx11LqRE9hOct2i0pk5YHk6Vvf7DOg/JXIHvrl6Nb3rwi8Mk2Vtf9A+K+3
-         NrYvwCYHgPH8VgD+2Oun81gYLS3t3w3tYYcPzZWFJsaoJX6MbXOElkyDYV5ge6SIlZqE
-         K729TVvCJGaTLN+F+5FoMiZrtuQQ7CsF+1JyzM/zpcNqwymCF29J90BIyjWNTFqNY92c
-         6nzSnp2qs0krQvkdnfYLlSnZUnZ2Q/5a9ABmVGqrF/tieX9E41Q0wSdVNVtqJryPJ1dm
-         T+Xg==
-X-Gm-Message-State: AJIora+amfeYXLZyyxp9r+kjRX3nLtqFZC0hm7pg5Kq4FC4fTl7bqMv4
-	paEabSywORID4uKZNSTCvgx5+CtBO/lVbXqaIEBUVA==
-X-Google-Smtp-Source: AGRyM1sZ36lYEgCFXIjvvLhfzCJJ1REYB15gJrq5Pp+y7LUoSX97r40Vy8EqU/H/mu0brC3/C7znR71H1FQdTL/t3qo=
-X-Received: by 2002:a25:cc56:0:b0:66c:d0f6:2f0e with SMTP id
- l83-20020a25cc56000000b0066cd0f62f0emr12156904ybf.168.1656432071758; Tue, 28
- Jun 2022 09:01:11 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXW5B3bFwz3bw4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 02:58:37 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25SGl9Ww011924;
+	Tue, 28 Jun 2022 16:58:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=f4B1ImZ7XM6K5BfXq7KonhhMPz+AJbwRUxuww96TMQo=;
+ b=PfowYJaW8i8D21QiK+Wiqnx22mBSt6CMeOWjS0FGcT5z3GXZvYUoKxYLkz9I8bRB7+9i
+ IXPJvsDK5Nc3XCwj9/nomvldWPdVTDrUuf7Cue0bS8hskpjIvZKsDsJsgNaAM4W3/BEe
+ 6QSgDiX/cFeQ6v7lRANZVtUbdOyBw16K4e0lwSJzK3XZk4gyf2iem+8gJO5XGBYdV2EU
+ aEgez3Jx4vk1YyHR7mO2/qf9o0jLbss0VZhuMciLm5HPMwwmvMifrfQKTbn74YK+y4nh
+ rE6m1a/BOTfX4LPSR/FWqmy5E5hpw7RN7Gysi0Jq1cJkNcH3Sqmj5MoRAOW9MFmshZE4 1w== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h05fh0968-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Jun 2022 16:58:26 +0000
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+	by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25SGpCrM004960;
+	Tue, 28 Jun 2022 16:58:26 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+	by ppma04wdc.us.ibm.com with ESMTP id 3gwt09prnr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 28 Jun 2022 16:58:26 +0000
+Received: from b03ledav004.gho.boulder.ibm.com (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+	by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25SGwPbu36700590
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 28 Jun 2022 16:58:25 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3483578063;
+	Tue, 28 Jun 2022 16:58:25 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9DDB27805F;
+	Tue, 28 Jun 2022 16:58:24 +0000 (GMT)
+Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
+	by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+	Tue, 28 Jun 2022 16:58:24 +0000 (GMT)
+From: Stefan Berger <stefanb@linux.ibm.com>
+To: kexec@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/3] tpm: Preserve TPM measurement log across kexec (ppc64)
+Date: Tue, 28 Jun 2022 12:58:17 -0400
+Message-Id: <20220628165820.883222-1-stefanb@linux.ibm.com>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-References: <20220628095833.2579903-1-elver@google.com> <20220628095833.2579903-14-elver@google.com>
- <CACT4Y+aJZzkYHc+YJRApOLG-NYe8zXMaqxpQgQQFAy5WY97Ttg@mail.gmail.com>
-In-Reply-To: <CACT4Y+aJZzkYHc+YJRApOLG-NYe8zXMaqxpQgQQFAy5WY97Ttg@mail.gmail.com>
-From: Marco Elver <elver@google.com>
-Date: Tue, 28 Jun 2022 18:00:34 +0200
-Message-ID: <CANpmjNOh9gzzC7sOOOk1q7Ssj2dFxczj1bmufarYS2KupZQthg@mail.gmail.com>
-Subject: Re: [PATCH v2 13/13] perf/hw_breakpoint: Optimize toggle_bp_slot()
- for CPU-independent task targets
-To: Dmitry Vyukov <dvyukov@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: wh3F66djYth6a8xOx_jH1HsxXCNGeG_H
+X-Proofpoint-GUID: wh3F66djYth6a8xOx_jH1HsxXCNGeG_H
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-06-28_09,2022-06-28_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
+ priorityscore=1501 phishscore=0 lowpriorityscore=0 mlxlogscore=705
+ malwarescore=0 clxscore=1011 spamscore=0 adultscore=0 suspectscore=0
+ impostorscore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2204290000 definitions=main-2206280065
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,88 +88,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Alexander Shishkin <alexander.shishkin@linux.intel.com>, kasan-dev@googlegroups.com, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@kernel.org>
+Cc: nayna@linux.ibm.com, nasastry@in.ibm.com, Stefan Berger <stefanb@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Jun 2022 at 17:45, Dmitry Vyukov <dvyukov@google.com> wrote:
->
-> On Tue, 28 Jun 2022 at 11:59, Marco Elver <elver@google.com> wrote:
-> >
-> > We can still see that a majority of the time is spent hashing task pointers:
-> >
-> >     ...
-> >     16.98%  [kernel]       [k] rhashtable_jhash2
-> >     ...
-> >
-> > Doing the bookkeeping in toggle_bp_slots() is currently O(#cpus),
-> > calling task_bp_pinned() for each CPU, even if task_bp_pinned() is
-> > CPU-independent. The reason for this is to update the per-CPU
-> > 'tsk_pinned' histogram.
-> >
-> > To optimize the CPU-independent case to O(1), keep a separate
-> > CPU-independent 'tsk_pinned_all' histogram.
-> >
-> > The major source of complexity are transitions between "all
-> > CPU-independent task breakpoints" and "mixed CPU-independent and
-> > CPU-dependent task breakpoints". The code comments list all cases that
-> > require handling.
-> >
-> > After this optimization:
-> >
-> >  | $> perf bench -r 100 breakpoint thread -b 4 -p 128 -t 512
-> >  |      Total time: 1.758 [sec]
-> >  |
-> >  |       34.336621 usecs/op
-> >  |     4395.087500 usecs/op/cpu
-> >
-> >     38.08%  [kernel]       [k] queued_spin_lock_slowpath
-> >     10.81%  [kernel]       [k] smp_cfm_core_cond
-> >      3.01%  [kernel]       [k] update_sg_lb_stats
-> >      2.58%  [kernel]       [k] osq_lock
-> >      2.57%  [kernel]       [k] llist_reverse_order
-> >      1.45%  [kernel]       [k] find_next_bit
-> >      1.21%  [kernel]       [k] flush_tlb_func_common
-> >      1.01%  [kernel]       [k] arch_install_hw_breakpoint
-> >
-> > Showing that the time spent hashing keys has become insignificant.
-> >
-> > With the given benchmark parameters, that's an improvement of 12%
-> > compared with the old O(#cpus) version.
-> >
-> > And finally, using the less aggressive parameters from the preceding
-> > changes, we now observe:
-> >
-> >  | $> perf bench -r 30 breakpoint thread -b 4 -p 64 -t 64
-> >  |      Total time: 0.067 [sec]
-> >  |
-> >  |       35.292187 usecs/op
-> >  |     2258.700000 usecs/op/cpu
-> >
-> > Which is an improvement of 12% compared to without the histogram
-> > optimizations (baseline is 40 usecs/op). This is now on par with the
-> > theoretical ideal (constraints disabled), and only 12% slower than no
-> > breakpoints at all.
-> >
-> > Signed-off-by: Marco Elver <elver@google.com>
->
-> Reviewed-by: Dmitry Vyukov <dvyukov@google.com>
->
-> I don't see any bugs. But the code is quite complex. Does it make
-> sense to add some asserts to the histogram type? E.g. counters don't
-> underflow, weight is not negative (e.g. accidentally added -1 returned
-> from task_bp_pinned()). Not sure if it will be enough to catch all
-> types of bugs, though.
-> Could kunit tests check that histograms are all 0's at the end?
->
-> I am not just about the current code (which may be correct), but also
-> future modifications to this code.
+The of-tree subsystem does not currently preserve the IBM vTPM 1.2 and
+vTPM 2.0 measurement logs across a kexec on ppc64. This series fixes this
+for the kexec_file_load() syscall using the flattened device tree (fdt) to
+carry the measurement log's buffer across kexec.
 
-I'll think of some more options.
+   Stefan
 
-bp_slots_histogram_max*() already has asserts (WARN about underflow;
-some with KCSAN help).
+Stefan Berger (3):
+  tpm: of: Make of-tree specific function commonly available
+  of: kexec: Refactor IMA buffer related functions to make them reusable
+  tpm/kexec: Duplicate TPM measurement log in of-tree for kexec
 
-The main thing I did to raise my own confidence in the code is inject
-bugs and see if the KUnit test catches it. If it didn't I extended the
-tests. I'll do that some more maybe.
+ drivers/char/Makefile              |   1 +
+ drivers/char/tpm/Makefile          |   1 +
+ drivers/char/tpm/eventlog/of.c     |  31 +--
+ drivers/char/tpm/eventlog/tpm_of.c |  27 +++
+ drivers/of/kexec.c                 | 293 +++++++++++++++++++++++++----
+ include/linux/kexec.h              |   6 +
+ include/linux/of.h                 |   8 +-
+ include/linux/tpm.h                |   5 +
+ kernel/kexec_file.c                |   6 +
+ 9 files changed, 315 insertions(+), 63 deletions(-)
+ create mode 100644 drivers/char/tpm/eventlog/tpm_of.c
+
+-- 
+2.35.1
+
