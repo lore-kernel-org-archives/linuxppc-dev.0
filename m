@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4D6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 12:18:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EB47C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 12:18:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LY0q1524rz3fCV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:18:05 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LY0qR4pPCz3fJ7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:18:27 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY0n55Sn2z3dpn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 22:16:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY0n62B2dz3dqF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 22:16:26 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LY0n54sczz4xZf;
-	Wed, 29 Jun 2022 22:16:25 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LY0n61XH8z4xZg;
+	Wed, 29 Jun 2022 22:16:26 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220617080243.2177583-1-mpe@ellerman.id.au>
-References: <20220617080243.2177583-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerc: Update asm-prototypes.h comment
-Message-Id: <165650492912.3004956.13660425903131502030.b4-ty@ellerman.id.au>
-Date: Wed, 29 Jun 2022 22:15:29 +1000
+In-Reply-To: <20220619233103.2666171-1-mpe@ellerman.id.au>
+References: <20220619233103.2666171-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests/powerpc: Skip energy_scale_info test on older firmware
+Message-Id: <165650492809.3004956.3891863380142289739.b4-ty@ellerman.id.au>
+Date: Wed, 29 Jun 2022 22:15:28 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: psampat@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 17 Jun 2022 18:02:43 +1000, Michael Ellerman wrote:
-> This header was recently cleaned up in commit 76222808fc25 ("powerpc:
-> Move C prototypes out of asm-prototypes.h"), update the comment to
-> reflect it's proper purpose.
+On Mon, 20 Jun 2022 09:31:03 +1000, Michael Ellerman wrote:
+> Older machines don't have the firmware feature that enables the code
+> this test is testing. Skip the test if the sysfs directory doesn't
+> exist. Also use the FAIL_IF() macro to provide more verbose error
+> reporting if an error is encountered.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerc: Update asm-prototypes.h comment
-      https://git.kernel.org/powerpc/c/2d386769753a71e57a1a38c7fb79013d3ac451e9
+[1/1] selftests/powerpc: Skip energy_scale_info test on older firmware
+      https://git.kernel.org/powerpc/c/4228a996b072d36f3baafb4afdc2d2d66d2cbadf
 
 cheers
