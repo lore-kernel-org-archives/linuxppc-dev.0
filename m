@@ -4,63 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CF83C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 17:49:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DCBCC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 17:52:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LY89d2t1fz3dsV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 03:49:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LY8DN5HzLz3ch9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 03:52:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=D+k/1aYC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Eq0sZBQP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amazon.co.jp (client-ip=207.171.190.10; helo=smtp-fw-33001.amazon.com; envelope-from=prvs=172ca6553=kuniyu@amazon.co.jp; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amazon.com header.i=@amazon.com header.a=rsa-sha256 header.s=amazon201209 header.b=D+k/1aYC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Eq0sZBQP;
 	dkim-atps=neutral
-Received: from smtp-fw-33001.amazon.com (smtp-fw-33001.amazon.com [207.171.190.10])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY88s6CS4z308w
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 03:49:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1656524942; x=1688060942;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=ZQt8BrZncvEXonYqD8ln2HEUss6QJGKaiw+Ny1S0QT4=;
-  b=D+k/1aYCsgR0fX+reSQr5qgjcOaAvaLnxO9S3DRkpc4RbDa13iVvHs+o
-   unYQe1phXbLpFhQm1DC6TMsha7jZqDTPUADm2AlYkb/bxezVMHHnrCFio
-   VuxfA5sfs3unzO4A9HGV+QHkjXvV/ROH7hZx6eHk8qBXRFQlgPEl4MOpg
-   M=;
-X-IronPort-AV: E=Sophos;i="5.92,231,1650931200"; 
-   d="scan'208";a="206136409"
-Received: from iad12-co-svc-p1-lb1-vlan2.amazon.com (HELO email-inbound-relay-pdx-2a-5bed4ba5.us-west-2.amazon.com) ([10.43.8.2])
-  by smtp-border-fw-33001.sea14.amazon.com with ESMTP; 29 Jun 2022 17:47:42 +0000
-Received: from EX13MTAUWB001.ant.amazon.com (pdx1-ws-svc-p6-lb9-vlan3.pdx.amazon.com [10.236.137.198])
-	by email-inbound-relay-pdx-2a-5bed4ba5.us-west-2.amazon.com (Postfix) with ESMTPS id 37F4B91D4A;
-	Wed, 29 Jun 2022 17:47:40 +0000 (UTC)
-Received: from EX13D04ANC001.ant.amazon.com (10.43.157.89) by
- EX13MTAUWB001.ant.amazon.com (10.43.161.249) with Microsoft SMTP Server (TLS)
- id 15.0.1497.36; Wed, 29 Jun 2022 17:47:39 +0000
-Received: from 88665a182662.ant.amazon.com (10.43.160.95) by
- EX13D04ANC001.ant.amazon.com (10.43.157.89) with Microsoft SMTP Server (TLS)
- id 15.0.1497.36; Wed, 29 Jun 2022 17:47:37 +0000
-From: Kuniyuki Iwashima <kuniyu@amazon.com>
-To: <sachinp@linux.ibm.com>
-Subject: Re: [powerpc] Fingerprint systemd service fails to start (next-20220624)
-Date: Wed, 29 Jun 2022 10:47:29 -0700
-Message-ID: <20220629174729.6744-1-kuniyu@amazon.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <FAA64E21-B3FE-442A-BA6B-D865006CBE3E@linux.ibm.com>
-References: <FAA64E21-B3FE-442A-BA6B-D865006CBE3E@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY8Cb3tQ4z3bYl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 03:51:23 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 25TGvGv1025924;
+	Wed, 29 Jun 2022 17:51:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=vBUcMt5cqEV7cz/TSthtdULowgi4k+W8CQo7rfLqebo=;
+ b=Eq0sZBQPustl16esBJAhTdTrSV08N3Wm0wGaSKWORDZdZTxm05DRkc4UDIcqjUHZmZfO
+ 4ZKo+W8VX877eu5aE1oJIUBgY8ZK/6TFpLdQtwn34x8ce+16SwFjumC/MOqY+EtKNcsb
+ QTrrtj7O2z5swF0Y3tl1cI2XcLjF6K/ReyQrlST2fplyS67PGc65ep5Hg76yjE9IplrU
+ rBfOHyxsxE1syyunOH0FKxuaRp7k8yiYnUHW400+r/Wzs/YM341b40qx1APq3g94LM/G
+ 6MwOxoLvD2emz0IpgdZX6CNKHcsv7usSfr8Bt/mlvQDNwZT+WQ8pPDRtH5h1Xlf0Rudf iQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h0tg31xwn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 Jun 2022 17:51:16 +0000
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 25THK9kZ025518;
+	Wed, 29 Jun 2022 17:51:16 GMT
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com [169.55.91.170])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h0tg31xw8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 Jun 2022 17:51:16 +0000
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+	by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 25THanFT009607;
+	Wed, 29 Jun 2022 17:51:14 GMT
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
+	by ppma02wdc.us.ibm.com with ESMTP id 3gwt0a1s6c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 29 Jun 2022 17:51:14 +0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com [9.57.199.111])
+	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 25THpEAK39518712
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 29 Jun 2022 17:51:14 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 72EE3AC05F;
+	Wed, 29 Jun 2022 17:51:14 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3AAFFAC05B;
+	Wed, 29 Jun 2022 17:51:14 +0000 (GMT)
+Received: from localhost (unknown [9.211.129.69])
+	by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+	Wed, 29 Jun 2022 17:51:14 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/smp: poll cpu_callin_map more aggressively in
+ __cpu_up()
+In-Reply-To: <87wncz3jzu.fsf@mpe.ellerman.id.au>
+References: <20220125072103.70715-1-nathanl@linux.ibm.com>
+ <87wncz3jzu.fsf@mpe.ellerman.id.au>
+Date: Wed, 29 Jun 2022 12:51:13 -0500
+Message-ID: <87letfmk8e.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.43.160.95]
-X-ClientProxiedBy: EX13D48UWA001.ant.amazon.com (10.43.163.52) To
- EX13D04ANC001.ant.amazon.com (10.43.157.89)
-Precedence: Bulk
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: nKw5FiMra3Ixu7c9WT61jhRFZakowdmI
+X-Proofpoint-GUID: M4YNkMBvAt8IExSKdOh5ZcuvBNUv3xJa
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-06-29_18,2022-06-28_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ adultscore=0 spamscore=0 lowpriorityscore=0 phishscore=0 mlxlogscore=543
+ clxscore=1015 impostorscore=0 priorityscore=1501 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2204290000 definitions=main-2206290063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
+Precedence: list
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -69,86 +96,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, kuniyu@amazon.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, netdev@vger.kernel.org
+Cc: brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From:   Sachin Sant <sachinp@linux.ibm.com>
-Date:   Tue, 28 Jun 2022 12:41:35 +0530
->>> I have attached dmesg log for reference. Let me know if any additional
->>> Information is required.
->> 
->> * Could you provide
->> * dmesg and /var/log/messages on a successful case? (without the commit)
->> * Unit file
->> * repro steps
-> 
-> I have attached the relevant log files. The attached tarball contains
-> dmesg, /var/log/messages and strace o/p for fprintd service collected
-> for working case and failure case.
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-Thanks for your help!
+> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>> Replace the outdated iteration and timeout calculations here with
+>> indefinite spin_until_cond()-wrapped poll of cpu_callin_map. __cpu_up()
+>> already does this when waiting for the cpu to set its online bit before
+>> returning, so this change is not really making the function more brittle.
+>
+> I'm not sure I agree that this doesn't make the code more brittle.
+>
+> The existing indefinite wait you mention is later in the function, and
+> happens after the CPU has successfully come into the kernel.
+>
+> I think it's more common that a stuck/borked CPU doesn't come into the
+> kernel at all, rather than comes in and then fails to online.
+>
+> So I think the bail out when the CPU fails to call in is useful, I would
+> guess I see that "Processor x is stuck" message multiple times a year
+> while debugging various things.
 
+Yeah I can see how my claim is too strong here.
 
->> * Is it reproducible after login? (e.g. systemctl restart)
->> * If so, please provide
->> * the result of strace -t -ff
->> 
-> Yes, the problem can be recreated after login. I have collected the strace
-> logs.
+>> Removing the msleep(1) in the hotplug path here reduces the time it takes
+>> to online a CPU on a P9 PowerVM LPAR from about 30ms to 1ms when exercised
+>> via thaw_secondary_cpus().
+>
+> That is a nice improvement.
+>
+> Can we do something that returns quickly in the happy case and still has
+> a timeout when things go wrong? Seems like a busy loop with a
+> time_after() check would do the trick.
 
-I confirmed fprintd failed to launch with this message on failure case.
-
-===
-ltcden8-lp6 fprintd[2516]: (fprintd:2516): fprintd-WARNING **: 01:56:45.705: Failed to open connection to bus: Could not connect: Connection refused
-===
-
-
-But in the strace log of both cases, only one socket is created and
-following connect() completes without an error.  And the peer socket
-does not seem to be d-bus one.
-
-===
-$ cat working-case/strace-fprintd-service.log | grep "socket("
-01:52:08 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
-$ cat working-case/strace-fprintd-service.log | grep "socket(" -A 10
-01:52:08 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
-...
-01:52:08 connect(3, {sa_family=AF_UNIX, sun_path="/run/systemd/private"}, 22) = 0
-...
-$ cat not-working-case/strace-fprintd-service.log | grep "socket("
-01:58:14 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
-$ cat not-working-case/strace-fprintd-service.log | grep "socket(" -A 10
-01:58:14 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
-...
-01:58:14 connect(3, {sa_family=AF_UNIX, sun_path="/run/systemd/private"}, 22) = 0
-===
-
-So I think the error message part is not traced well.
-Could you try to strace directly for the command in ExecStart section of
-its unit file?
-
-
->> * Does it happen on only powerpc? How about x86 or arm64?
->> 
-> I have attempted this only on powerpc. Don’t have access to arm or x86
-> setup to attempt it.
-
-I tried on my machine but fprintd launched successfully in both cases.
-And few minutes later, it exited because there was no dedicated device for
-fprintd, I think.
-
-===
-$ sudo systemctl status fprintd
-● fprintd.service - Fingerprint Authentication Daemon
-   Loaded: loaded (/usr/lib/systemd/system/fprintd.service; static; vendor preset: disabled)
-   Active: inactive (dead)
-     Docs: man:fprintd(1)
-
-Jun 29 05:46:22 ip-10-0-0-163.ap-northeast-1.compute.internal systemd[1]: Starting Fingerprint Authentication Daemon...
-Jun 29 05:46:22 ip-10-0-0-163.ap-northeast-1.compute.internal systemd[1]: Started Fingerprint Authentication Daemon.
-Jun 29 05:46:22 ip-10-0-0-163.ap-northeast-1.compute.internal fprintd[1291]: Launching FprintObject
-Jun 29 05:46:22 ip-10-0-0-163.ap-northeast-1.compute.internal fprintd[1291]: D-Bus service launched with name: net.reactivated.Fprint
-Jun 29 05:46:22 ip-10-0-0-163.ap-northeast-1.compute.internal fprintd[1291]: entering main loop
-Jun 29 05:46:52 ip-10-0-0-163.ap-northeast-1.compute.internal fprintd[1291]: No devices in use, exit
-===
+Yes, I'll rework it like that. Thanks.
