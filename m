@@ -4,26 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3CE2C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 08:30:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7458C43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 09:19:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXvmk61Nqz3dsM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 18:30:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXvmG6FBdz3bmR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 18:30:20 +1000 (AEST)
-Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
-	by ozlabs.ru (Postfix) with ESMTP id 1B7F080474;
-	Wed, 29 Jun 2022 04:30:12 -0400 (EDT)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH llvm v2] powerpc/llvm/lto: Allow LLVM LTO builds
-Date: Wed, 29 Jun 2022 18:30:11 +1000
-Message-Id: <20220629083011.1763768-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.30.2
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXws60MtCz3cdy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 19:19:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MBGFcoYj;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXwrQ42Bpz3cFH
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 19:19:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MBGFcoYj;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LXwrQ0988z4xD7;
+	Wed, 29 Jun 2022 19:19:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1656494342;
+	bh=29PJfeDSMkOLNf2FkZWI9rQBkaWRAs9aho80WSfhaCs=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=MBGFcoYjn2Jfli66pfv4CZB0mz1WUjsFH5XNsjNxXmsIw2ZzCyS/mVWa+Fb8jvRw4
+	 M4RwMT1do9//Tw6q8lrN5Ia3qG5Urb+dd13i666kFmwXPs5CWKuQo20bIOz1p2QrRP
+	 MwHS4Qg3oswg9Cu5QcglLayvEyxxFUMqJqoGe7Hco/EeI1/LN0v4x622MPWfmwBH4v
+	 IymQzdt2Cqj4Nh1ZFc87if+ahpFVYDQRwqJl+aVrF1Tp1uRLEeZuy2uy9IDVxe9umO
+	 +ImAPIgwA1VUhe4mc2hXPbqwGBWIhlG0/irSWIvSosQpVZZFPAJAIM27tHJ3E7zuWk
+	 yqW0JbzkYr+qQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/smp: poll cpu_callin_map more aggressively in
+ __cpu_up()
+In-Reply-To: <20220125072103.70715-1-nathanl@linux.ibm.com>
+References: <20220125072103.70715-1-nathanl@linux.ibm.com>
+Date: Wed, 29 Jun 2022 19:19:01 +1000
+Message-ID: <87wncz3jzu.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -35,179 +58,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: brking@linux.ibm.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, srikar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This enables LTO_CLANG builds on POWER with the upstream version of
-LLVM.
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Replace the outdated iteration and timeout calculations here with
+> indefinite spin_until_cond()-wrapped poll of cpu_callin_map. __cpu_up()
+> already does this when waiting for the cpu to set its online bit before
+> returning, so this change is not really making the function more brittle.
 
-LTO optimizes the output vmlinux binary and this may affect the FTP
-alternative section if alt branches use "bc" (Branch Conditional) which
-is limited by 16 bit offsets. This shows up in errors like:
+Sorry for the glacial response.
 
-ld.lld: error: InputSection too large for range extension thunk vmlinux.o:(__ftr_alt_97+0xF0)
+I'm not sure I agree that this doesn't make the code more brittle.
 
-This works around the issue by replacing "bc" in FTR_SECTION_ELSE with
-"b" which allows 26 bit offsets.
+The existing indefinite wait you mention is later in the function, and
+happens after the CPU has successfully come into the kernel.
 
-This catches the problem instructions in vmlinux.o before it LTO'ed:
+I think it's more common that a stuck/borked CPU doesn't come into the
+kernel at all, rather than comes in and then fails to online.
 
-$ objdump -d -M raw -j __ftr_alt_97 vmlinux.o | egrep '\S+\s*\<bc\>'
-  30:   00 00 82 40     bc      4,eq,30 <__ftr_alt_97+0x30>
-  f0:   00 00 82 40     bc      4,eq,f0 <__ftr_alt_97+0xf0>
+So I think the bail out when the CPU fails to call in is useful, I would
+guess I see that "Processor x is stuck" message multiple times a year
+while debugging various things.
 
-This allows LTO builds for ppc64le_defconfig plus LTO options.
-Note that DYNAMIC_FTRACE/FUNCTION_TRACER is not supported by LTO builds
-but this is not POWERPC-specific.
+> Removing the msleep(1) in the hotplug path here reduces the time it takes
+> to online a CPU on a P9 PowerVM LPAR from about 30ms to 1ms when exercised
+> via thaw_secondary_cpus().
 
-This makes the copy routines slower on POWER6 as this partially reverts
-a4e22f02f5b6 ("powerpc: Update 64bit__copy_tofrom_user() using CPU_FTR_UNALIGNED_LD_STD")
+That is a nice improvement.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* dropped FTR sections which were only meant to improve POWER6 as
-Paul suggested
+Can we do something that returns quickly in the happy case and still has
+a timeout when things go wrong? Seems like a busy loop with a
+time_after() check would do the trick.
 
----
-
-Note 1:
-This is further development of
-https://lore.kernel.org/all/20220211023125.1790960-1-aik@ozlabs.ru/T/
-
-Note 2:
-CONFIG_ZSTD_COMPRESS and CONFIG_ZSTD_DECOMPRESS must be both "m" or "y"
-or it won't link. For details:
-https://lore.kernel.org/lkml/20220428043850.1706973-1-aik@ozlabs.ru/T/
----
- arch/powerpc/Kconfig                   |  2 ++
- arch/powerpc/kernel/exceptions-64s.S   |  4 +++-
- arch/powerpc/lib/copyuser_64.S         | 15 +--------------
- arch/powerpc/lib/feature-fixups-test.S |  3 +--
- arch/powerpc/lib/memcpy_64.S           | 14 +-------------
- 5 files changed, 8 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3eaddb8997a9..35050264ea7b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -162,6 +162,8 @@ config PPC
- 	select ARCH_WANTS_MODULES_DATA_IN_VMALLOC	if PPC_BOOK3S_32 || PPC_8xx
- 	select ARCH_WANTS_NO_INSTR
- 	select ARCH_WEAK_RELEASE_ACQUIRE
-+	select ARCH_SUPPORTS_LTO_CLANG
-+	select ARCH_SUPPORTS_LTO_CLANG_THIN
- 	select BINFMT_ELF
- 	select BUILDTIME_TABLE_SORT
- 	select CLONE_BACKWARDS
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index b66dd6f775a4..5b783bd51260 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -476,9 +476,11 @@ DEFINE_FIXED_SYMBOL(\name\()_common_real, text)
- 		.if IHSRR_IF_HVMODE
- 		BEGIN_FTR_SECTION
- 		bne	masked_Hinterrupt
-+		b	4f
- 		FTR_SECTION_ELSE
--		bne	masked_interrupt
- 		ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
-+		bne	masked_interrupt
-+4:
- 		.elseif IHSRR
- 		bne	masked_Hinterrupt
- 		.else
-diff --git a/arch/powerpc/lib/copyuser_64.S b/arch/powerpc/lib/copyuser_64.S
-index db8719a14846..b914e52ed240 100644
---- a/arch/powerpc/lib/copyuser_64.S
-+++ b/arch/powerpc/lib/copyuser_64.S
-@@ -9,7 +9,7 @@
- #include <asm/feature-fixups.h>
- 
- #ifndef SELFTEST_CASE
--/* 0 == most CPUs, 1 == POWER6, 2 == Cell */
-+/* 0 == most CPUs, 2 == Cell */
- #define SELFTEST_CASE	0
- #endif
- 
-@@ -68,19 +68,6 @@ _GLOBAL(__copy_tofrom_user_base)
- 	andi.	r6,r6,7
- 	PPC_MTOCRF(0x01,r5)
- 	blt	cr1,.Lshort_copy
--/* Below we want to nop out the bne if we're on a CPU that has the
-- * CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
-- * cleared.
-- * At the time of writing the only CPU that has this combination of bits
-- * set is Power6.
-- */
--test_feature = (SELFTEST_CASE == 1)
--BEGIN_FTR_SECTION
--	nop
--FTR_SECTION_ELSE
--	bne	.Ldst_unaligned
--ALT_FTR_SECTION_END(CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_CP_USE_DCBTZ, \
--		    CPU_FTR_UNALIGNED_LD_STD)
- .Ldst_aligned:
- 	addi	r3,r3,-16
- r3_offset = 16
-diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
-index 480172fbd024..2751e42a9fd7 100644
---- a/arch/powerpc/lib/feature-fixups-test.S
-+++ b/arch/powerpc/lib/feature-fixups-test.S
-@@ -145,7 +145,6 @@ BEGIN_FTR_SECTION
- FTR_SECTION_ELSE
- 2:	or	2,2,2
- 	PPC_LCMPI	r3,1
--	beq	3f
- 	blt	2b
- 	b	3f
- 	b	1b
-@@ -160,10 +159,10 @@ globl(ftr_fixup_test6_expected)
- 1:	or	1,1,1
- 2:	or	2,2,2
- 	PPC_LCMPI	r3,1
--	beq	3f
- 	blt	2b
- 	b	3f
- 	b	1b
-+	nop
- 3:	or	1,1,1
- 	or	2,2,2
- 	or	3,3,3
-diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
-index 016c91e958d8..117399dbc891 100644
---- a/arch/powerpc/lib/memcpy_64.S
-+++ b/arch/powerpc/lib/memcpy_64.S
-@@ -10,7 +10,7 @@
- #include <asm/kasan.h>
- 
- #ifndef SELFTEST_CASE
--/* For big-endian, 0 == most CPUs, 1 == POWER6, 2 == Cell */
-+/* For big-endian, 0 == most CPUs, 2 == Cell */
- #define SELFTEST_CASE	0
- #endif
- 
-@@ -44,18 +44,6 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
- 	andi.	r6,r6,7
- 	dcbt	0,r4
- 	blt	cr1,.Lshort_copy
--/* Below we want to nop out the bne if we're on a CPU that has the
--   CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
--   cleared.
--   At the time of writing the only CPU that has this combination of bits
--   set is Power6. */
--test_feature = (SELFTEST_CASE == 1)
--BEGIN_FTR_SECTION
--	nop
--FTR_SECTION_ELSE
--	bne	.Ldst_unaligned
--ALT_FTR_SECTION_END(CPU_FTR_UNALIGNED_LD_STD | CPU_FTR_CP_USE_DCBTZ, \
--                    CPU_FTR_UNALIGNED_LD_STD)
- .Ldst_aligned:
- 	addi	r3,r3,-16
- test_feature = (SELFTEST_CASE == 0)
--- 
-2.30.2
-
+cheers
