@@ -4,36 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 862FEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 06:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59F12C43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 06:36:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXs2z1fpKz3dsM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 16:27:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=nfschina.com (client-ip=2400:dd01:100f:2:72e2:84ff:fe10:5f45; helo=mail.nfschina.com; envelope-from=jiaming@nfschina.com; receiver=<UNKNOWN>)
-Received: from mail.nfschina.com (unknown [IPv6:2400:dd01:100f:2:72e2:84ff:fe10:5f45])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXs2X2J3Lz3bls
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 16:27:27 +1000 (AEST)
-Received: from localhost (unknown [127.0.0.1])
-	by mail.nfschina.com (Postfix) with ESMTP id 35BB01E80D59;
-	Wed, 29 Jun 2022 14:26:13 +0800 (CST)
-X-Virus-Scanned: amavisd-new at test.com
-Received: from mail.nfschina.com ([127.0.0.1])
-	by localhost (mail.nfschina.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jbSZ3cCwngJl; Wed, 29 Jun 2022 14:26:10 +0800 (CST)
-Received: from localhost.localdomain (unknown [180.167.10.98])
-	(Authenticated sender: jiaming@nfschina.com)
-	by mail.nfschina.com (Postfix) with ESMTPA id F0ED51E80D50;
-	Wed, 29 Jun 2022 14:26:09 +0800 (CST)
-From: Zhang Jiaming <jiaming@nfschina.com>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org,
-	paulus@samba.org
-Subject: [PATCH] UAPI: fix a spelling mistake
-Date: Wed, 29 Jun 2022 14:27:17 +0800
-Message-Id: <20220629062717.23027-1-jiaming@nfschina.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXsDk4B9zz3dpJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 16:36:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GkxR5HqD;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GkxR5HqD;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXsCx306mz3bXR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 16:35:41 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 2587C6197B
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 06:35:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8C15DC34114
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 06:35:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656484538;
+	bh=blPzdZjLZe1yfGuta4zKBdGKs6y3oCyGIXU1FxvoQ1s=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=GkxR5HqD08/GPQmq2s2UQ2plaKXNd06GjkRtcE+Z2piQ0yGA5+Laga12Nc1qBdUxB
+	 HXD9lQF3z5bG6lFbdb2xEHpcSLgKroNB8PiYdGNdw+/VLI8duCfgXXjoyken7DsEih
+	 Z1EfEQuvJGftD9TQUDUjOIKKD+ydHRvhtbrYcwKYOaeEcs0eNW/t1i8uh3SsAwuiaT
+	 xPqH0brF5x5KWLzNWLkXcDfT5dKzJRza5fBPheD8HwhJLxJmBvEPKotMiAC6Ywqrpv
+	 Z6BDQkq9xZQ5h3timrJ8bWSBFn6cAvFDQG3eKSqc96z7ptV3l16LDmhaD+lCiEWa/9
+	 HSlTROQEwgkRg==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 7B7BEC05FD2; Wed, 29 Jun 2022 06:35:38 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 216183] Kernel 5.19-rc4 boots ok with CONFIG_PPC_RADIX_MMU=y
+ but fails to boot with CONFIG_PPC_HASH_MMU_NATIVE=y
+Date: Wed, 29 Jun 2022 06:35:38 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-64
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: michael@ellerman.id.au
+X-Bugzilla-Status: ASSIGNED
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: bug_status cc
+Message-ID: <bug-216183-206035-vJFr1J9FWL@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-216183-206035@https.bugzilla.kernel.org/>
+References: <bug-216183-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,30 +79,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: liqiong@nfschina.com, renyu@nfschina.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Zhang Jiaming <jiaming@nfschina.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Change 'informations' to 'information'.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D216183
 
-Signed-off-by: Zhang Jiaming <jiaming@nfschina.com>
----
- arch/powerpc/include/uapi/asm/bootx.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Michael Ellerman (michael@ellerman.id.au) changed:
 
-diff --git a/arch/powerpc/include/uapi/asm/bootx.h b/arch/powerpc/include/uapi/asm/bootx.h
-index 6728c7e24e58..eb0769e50e93 100644
---- a/arch/powerpc/include/uapi/asm/bootx.h
-+++ b/arch/powerpc/include/uapi/asm/bootx.h
-@@ -60,7 +60,7 @@ typedef struct boot_info_map_entry
- } boot_info_map_entry_t;
- 
- 
--/* Here are the boot informations that are passed to the bootstrap
-+/* Here are the boot information that are passed to the bootstrap
-  * Note that the kernel arguments and the device tree are appended
-  * at the end of this structure. */
- typedef struct boot_infos
--- 
-2.34.1
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |ASSIGNED
+                 CC|                            |michael@ellerman.id.au
 
+--- Comment #2 from Michael Ellerman (michael@ellerman.id.au) ---
+I can't repro this on my Talos 2.
+
+I have some different PCI devices, a different GPU and nvme controller. I c=
+an't
+see an obvious reason for this, will require some more digging.
+
+--=20
+You may reply to this email to add a comment.
+
+You are receiving this mail because:
+You are watching the assignee of the bug.=
