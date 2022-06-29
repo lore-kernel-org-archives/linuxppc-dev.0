@@ -4,39 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE26FC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:13:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3351C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:14:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LYG1s19nYz3dQx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 08:13:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LYG2t3L7Nz3f2J
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 08:14:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cdjrlc.com (client-ip=43.154.54.12; helo=smtpbg.qq.com; envelope-from=yuanjilin@cdjrlc.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 315 seconds by postgrey-1.36 at boromir; Wed, 29 Jun 2022 23:01:02 AEST
 Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY1mZ6xp1z3bqN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 23:01:00 +1000 (AEST)
-X-QQ-mid: bizesmtp63t1656507291tfsra6c3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY2GF5Cf0z3bmK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 23:23:02 +1000 (AEST)
+X-QQ-mid: bizesmtp65t1656508939tswi8yzf
 Received: from localhost.localdomain ( [182.148.13.66])
 	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Jun 2022 20:54:48 +0800 (CST)
+	id ; Wed, 29 Jun 2022 21:22:16 +0800 (CST)
 X-QQ-SSF: 0100000000200060C000C00A0000000
-X-QQ-FEAT: xoS364mEyr00dFkTgfgNEjTaoF4BmwMd0CJyYGBO7nG8ghAnd04j3/n2cv+cO
-	+wrHSkmNl3aNXNDMUN9e99ldFJgDUvmcmwIum6NyP7X+i7FA2jTKQgYpOj1j2xucTNyzgq9
-	vJ+a+sqnYHuHkHuVwBM+t0a84XnxTAmTKfj5HULnf06+gYoYZcSdnwY4mNWYeRGnM8A8GCc
-	vh/IbEXoGhH0LRkuVKYm3yPADPKbfXfhn0qV5DS6pd0H9QfkVKG8lMCOfIoAJLxSsgiXlAs
-	zymwHrzeUglHsXnFQiGDwlavaWfVsO1+oTK+ZcFZZc+n+R+qtGp6p4X6mipXeSaZV2tMPN1
-	npWneCq5Y4KttdBBdg=
+X-QQ-FEAT: MYl5Gn9dGPU8YT+5ZkHurVRhLXTgHvFsIdJfTPawL/dHrlkE8qf0Qiniuoycd
+	nNDl6+vehW/6TLBcK88IN1vjdmaoTEnuOdasepYn3sTVu0x/uVnBfLwHZWf9usTRoWObYeT
+	P8Cv66DMwdNgHkvxQ+xA4zhXqh7avupOTHKD7hQ5KBSu0qZK1P43HIPS2pxzj3OXgmvvfJ1
+	e7WgNqIP6wmwUOwXIXhwdFEb8YBcA+c2rlDaIsYY7NXfbvbYrrMF07MNuS7S/4znWoLpyfu
+	vFk5eVQRmbAOh5XgbQJEbtWghHK/+DwVtL1WakZLI9F39JJ+W0gmq92ed19SXuruvprg+52
+	cbCxqNJ
 X-QQ-GoodBg: 0
 From: Jilin Yuan <yuanjilin@cdjrlc.com>
-To: pantelis.antoniou@gmail.com,
-	davem@davemloft.net,
+To: davem@davemloft.net,
 	edumazet@google.com,
 	kuba@kernel.org,
 	pabeni@redhat.com
-Subject: [PATCH] freescale/fs_enet:fix repeated words in comments
-Date: Wed, 29 Jun 2022 20:54:41 +0800
-Message-Id: <20220629125441.62420-1-yuanjilin@cdjrlc.com>
+Subject: [PATCH] ethernet/ibm:fix repeated words in comments
+Date: Wed, 29 Jun 2022 21:22:09 +0800
+Message-Id: <20220629132209.30191-1-yuanjilin@cdjrlc.com>
 X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -54,7 +52,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Jilin Yuan <yuanjilin@cdjrlc.com>, linux-kernel@vger.kernel.org, tlfalcon@linux.ibm.com, paulus@samba.org, drt@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
@@ -62,22 +60,22 @@ Delete the redundant word 'a'.
 
 Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
 ---
- drivers/net/ethernet/freescale/fs_enet/fs_enet.h | 2 +-
+ drivers/net/ethernet/ibm/ibmvnic.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-index 5ff2634bee2f..cb419aef8d1b 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
-@@ -201,7 +201,7 @@ void fs_enet_platform_cleanup(void);
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 7e7fe5bdf1f8..8ab326fdc3f5 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -3073,7 +3073,7 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
  
- /* access macros */
- #if defined(CONFIG_CPM1)
--/* for a a CPM1 __raw_xxx's are sufficient */
-+/* for a CPM1 __raw_xxx's are sufficient */
- #define __cbd_out32(addr, x)	__raw_writel(x, addr)
- #define __cbd_out16(addr, x)	__raw_writew(x, addr)
- #define __cbd_in32(addr)	__raw_readl(addr)
+ 	/* If failover is pending don't schedule any other reset.
+ 	 * Instead let the failover complete. If there is already a
+-	 * a failover reset scheduled, we will detect and drop the
++	 * failover reset scheduled, we will detect and drop the
+ 	 * duplicate reset when walking the ->rwi_list below.
+ 	 */
+ 	if (adapter->state == VNIC_REMOVING ||
 -- 
 2.36.1
 
