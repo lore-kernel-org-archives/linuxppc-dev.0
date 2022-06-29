@@ -4,65 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9939DC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 03:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 884A5C43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 07:24:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LXmkD132Fz3dww
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 13:13:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=svPPiUXm;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b33; helo=mail-yb1-xb33.google.com; envelope-from=saravanak@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=svPPiUXm;
-	dkim-atps=neutral
-Received: from mail-yb1-xb33.google.com (mail-yb1-xb33.google.com [IPv6:2607:f8b0:4864:20::b33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LXtHl1ZHqz3cj4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 17:24:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXV9D3P3Bz3c1b
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 02:17:04 +1000 (AEST)
-Received: by mail-yb1-xb33.google.com with SMTP id r3so23073429ybr.6
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jun 2022 09:17:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=a+P6wSeN2x0ZvD2/JjzHKyqS9/n/5A6tY5jiA6Lhnb8=;
-        b=svPPiUXmjLu4A2+b3rJgoCqrzxWVmAH7KXTvVP4AwaLTDrIN9AN3BtNG2XiV2ycJ8x
-         6Y9oMX5BQlCl6K+KL9J1KxqNRcb1MdTb/c18nJgwvmc5rVyOe8EKUyj+KrCbNC70iJoL
-         OlJOsi9x5Scvw9W8cP8d/OYBAk6luTiA/PE8w/jzj7tOJ+ICpHFzyCnfh2xqrRn3YVLo
-         nvgpT4pJzONw4hikJOgq/y8DRHjrG2lOfrc2hEWRc02ovhuxlfgkK9/gOnTwVGME5DOU
-         4AXMX65QfUYiz76GEkrT/465op3M51kj45IkhJmeQobRe1+J32FVHZumFFaJBd9Gan88
-         /wYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=a+P6wSeN2x0ZvD2/JjzHKyqS9/n/5A6tY5jiA6Lhnb8=;
-        b=rTBIM22QtYjQ3lnykni4PPrcJRRsShvsGP8Xxn+h/BxmvBkKSrKrWs46klFipbTBbD
-         KmoEj6QVwN/hhoYfUnabTH5dwZysSf8s1by6QrlyRI0zysCdZGg/jkzwA/SHqHDqgWJW
-         y4fG2Eaf6fC/7eQu7v6Nt00rIfRt/dbFgSRjazobY4yxBwcEWvP4e0nTcgSpTGl+2YN0
-         r6xiGrUlSZGSpED6Hvoardb3Rgl8uBcpqaO6oqsAK1lfXsa3XX6xRkvGoFs+usNw9UvA
-         ZAUap+1A5zAc6YVMTShdWKK3iaAXvI5dV1t0kTpyKZ7L7yQSnGzp4dif8/S8zEmjBWPM
-         7POQ==
-X-Gm-Message-State: AJIora/qyBcChCcb2W+6mLapT47RiZiSa3n4WzJsVaILh/7cRe9vYL+I
-	kCJiQnEXXc8Q60HxjKSEzhxU1Mkt7UWxSyE0EGqZyA==
-X-Google-Smtp-Source: AGRyM1vHa4WRnJlk4sln0xuJGdVhcpu8QS15R2N9PrbVvkglI7Nzwr0PBFdp1lTun6HJ/nUSS1O/TmeoEjFZPidRK0U=
-X-Received: by 2002:a25:5bc3:0:b0:669:b722:beb8 with SMTP id
- p186-20020a255bc3000000b00669b722beb8mr20258885ybb.447.1656433020483; Tue, 28
- Jun 2022 09:17:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LXtHF3mqRz3bw4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 17:23:36 +1000 (AEST)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1o6S2d-0005UO-4V; Wed, 29 Jun 2022 09:23:15 +0200
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1o6S2S-003M3c-Vk; Wed, 29 Jun 2022 09:23:08 +0200
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1o6S2V-001qeU-Nu; Wed, 29 Jun 2022 09:23:07 +0200
+Date: Wed, 29 Jun 2022 09:23:04 +0200
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Jeremy Kerr <jk@codeconstruct.com.au>
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <20220629072304.qazmloqdi5h5kdre@pengutronix.de>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
+ <60cc6796236f23c028a9ae76dbe00d1917df82a5.camel@codeconstruct.com.au>
 MIME-Version: 1.0
-References: <20220628020110.1601693-1-saravanak@google.com>
- <20220628020110.1601693-3-saravanak@google.com> <20220628140025.qpom64ptru4ub6fu@distanz.ch>
-In-Reply-To: <20220628140025.qpom64ptru4ub6fu@distanz.ch>
-From: Saravana Kannan <saravanak@google.com>
-Date: Tue, 28 Jun 2022 09:16:24 -0700
-Message-ID: <CAGETcx_7jS3H2cphiXdk=NBfmuPzsusEwPBx75n3PrP6YTnjnA@mail.gmail.com>
-Subject: Re: [PATCH v1 2/2] serial: Set probe_no_timeout for all DT based drivers
-To: Tobias Klauser <tklauser@distanz.ch>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 29 Jun 2022 13:09:16 +1000
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="3yzpq2rgg2xm7tqn"
+Content-Disposition: inline
+In-Reply-To: <60cc6796236f23c028a9ae76dbe00d1917df82a5.camel@codeconstruct.com.au>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,33 +56,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linus walleij <linus.walleij@linaro.org>, Paul Mackerras <paulus@samba.org>, Alim Akhtar <alim.akhtar@samsung.com>, Peter Korsgaard <jacmet@sunsite.dk>, linux-stm32@st-md-mailman.stormreply.com, Karol Gugala <kgugala@antmicro.com>, Jerome Brunet <jbrunet@baylibre.com>, linux-samsung-soc@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>, Hammer Hsieh <hammerh0314@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, Vineet Gupta <vgupta@kernel.org>, len brown <len.brown@intel.com>, Nicolas Saenz Julienne <nsaenz@kernel.org>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-unisoc@lists.infradead.org, Scott Branden <sbranden@broadcom.com>, Andrew Jeffery <andrew@aj.id.au>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Richard Genoud <richard.genoud@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kerne
- l@pengutronix.de>, Claudiu Beznea <claudiu.beznea@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, pavel machek <pavel@ucw.cz>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, eric dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, sascha hauer <sha@pengutronix.de>, Chunyan Zhang <zhang.lyra@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Gabriel Somlo <gsomlo@gmail.com>, linux-mips@vger.kernel.org, kernel-team@android.com, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Andreas Farber <afaerber@suse.de>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Kevin Hilman <khilman@baylibre.com>, Pali Rohar <pali@kernel.org>, heiner kallweit <hkallweit1@gmail.com>, ulf hansson <ulf.hansson@linaro.org>, Neil Armstrong <narmstrong@baylib
- re.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, A
-
-l Cooper <alcooperx@gmail.com>, linux-tegra@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>, linux-aspeed@lists.ozlabs.org, Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Mateusz Holenko <mholenko@antmicro.com>, Alexander Shiyan <shc_work@mail.ru>, kevin hilman <khilman@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Joel Stanley <joel@jms.id.au>, Orson Zhai <orsonzhai@gmail.com>, paolo abeni <pabeni@redhat.com>, Patrice Chotard <patrice.chotard@foss.st.com>, Ray Jui <rjui@broadcom.com>, Vladimir Zapolskiy <vz@mleia.com>, linux-snps-arc@lists.infradead.org, Timur Tabi <timur@kernel.org>, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, iommu@lists.linux-foundation.org, Laxman Dewangan <ldewangan@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Baolin Wang <baolin.wang7@gmail.com>, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <davem@davemloft.net>, Baruch Siach <baruch@tkos.co.il>, Liviu Dudau <liviu.dudau@arm.c
- om>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Paul Cercueil <paul@crapouillou.net>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Ahmad Fatoum <a.fatoum@pengutronix.de>, joerg roedel <joro@8bytes.org>, Russell King <linux@armlinux.org.uk>, Andy Gross <agross@kernel.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, will deacon <will@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, linux-mediatek@lists.infradead.org, Fabio Estevam <festevam@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, Matthias Brugger <matthias.bgg@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Taichi Sugaya <sugaya.taichi@socionext.com>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Palmer Dabbelt <palmer@dabbelt.com>, Takao Orito <orito.takao@soc
- ionext.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-iio@vger.kernel.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-staging@lists.linux.dev, kasan-dev@googlegroups.com, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>, netdev@vger.kernel.org, Wolfram Sang <wsa@kerne
+ l.org>, linux-crypto@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, patches@opensource.cirrus.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 28, 2022 at 7:00 AM Tobias Klauser <tklauser@distanz.ch> wrote:
->
-> On 2022-06-28 at 04:01:03 +0200, Saravana Kannan <saravanak@google.com> wrote:
-> > diff --git a/drivers/tty/serial/8250/8250_acorn.c b/drivers/tty/serial/8250/8250_acorn.c
-> > index 758c4aa203ab..5a6f2f67de4f 100644
-> > --- a/drivers/tty/serial/8250/8250_acorn.c
-> > +++ b/drivers/tty/serial/8250/8250_acorn.c
-> > @@ -114,7 +114,6 @@ static const struct ecard_id serial_cids[] = {
-> >  static struct ecard_driver serial_card_driver = {
-> >       .probe          = serial_card_probe,
-> >       .remove         = serial_card_remove,
-> > -     .id_table       = serial_cids,
->
-> Is this change intentional? All other drivers are only changed to set
-> .probe_no_time and I don't see anything mentioned in the commit message
-> re. this driver's change.
 
-No, that's a mistake. Thanks for catching it! I'll check this patch again.
+--3yzpq2rgg2xm7tqn
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Saravana
+Hello,
+
+[I dropped nearly all individuals from the Cc: list because various
+bounces reported to be unhappy about the long (logical) line.]
+
+On Wed, Jun 29, 2022 at 03:03:54PM +0800, Jeremy Kerr wrote:
+> Looks good - just one minor change for the mctp-i2c driver, but only
+> worthwhile if you end up re-rolling this series for other reasons:
+>=20
+> > -static int mctp_i2c_remove(struct i2c_client *client)
+> > +static void mctp_i2c_remove(struct i2c_client *client)
+> > =A0{
+> > =A0=A0=A0=A0=A0=A0=A0=A0struct mctp_i2c_client *mcli =3D i2c_get_client=
+data(client);
+> > =A0=A0=A0=A0=A0=A0=A0=A0struct mctp_i2c_dev *midev =3D NULL, *tmp =3D N=
+ULL;
+> > @@ -1000,7 +1000,6 @@ static int mctp_i2c_remove(struct i2c_client *cli=
+ent)
+> > =A0=A0=A0=A0=A0=A0=A0=A0mctp_i2c_free_client(mcli);
+> > =A0=A0=A0=A0=A0=A0=A0=A0mutex_unlock(&driver_clients_lock);
+> > =A0=A0=A0=A0=A0=A0=A0=A0/* Callers ignore return code */
+> > -=A0=A0=A0=A0=A0=A0=A0return 0;
+> > =A0}
+>=20
+> The comment there no longer makes much sense, I'd suggest removing that
+> too.
+
+Yeah, that was already pointed out to me in a private reply. It's
+already fixed in
+
+	https://git.pengutronix.de/cgit/ukl/linux/log/?h=3Di2c-remove-void
+
+> Either way:
+>=20
+> Reviewed-by: Jeremy Kerr <jk@codeconstruct.com.au>
+
+Added to my tree, too.
+
+Thanks
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--3yzpq2rgg2xm7tqn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmK7/dUACgkQwfwUeK3K
+7AnTJgf9GW2H7fk9/Je11PRlCnUOSZ1sz/49RHAm4xj66pI/hdRP++D8L5o7ntEU
+Hl5hKosR36cUyX12ie+YQtiCRkjhLqUoJnPzJOtcXQNV7mlMt6ds2INSO4iHYtMa
+b2UH+lLQ6K/DO0+1KquElKJhfBOKucYY1WQAVK4cfasBKMR4MtukcHAgcYClRYdj
+Nvvy6bCjqr8M1+uqDTJUUR/d0rWYHxFKygYRUfK7YPpz57gaVgaR9Js9GDGkVFB4
+qVL5x23NzgB/Djr1Ls1F6Z5eFMjbtVb+S1HDRsU+HJOYD6v1LkT2OFx9iFpme+8m
++4HHNR5pxKogz59u4YpP1pIb0MejhA==
+=ibah
+-----END PGP SIGNATURE-----
+
+--3yzpq2rgg2xm7tqn--
