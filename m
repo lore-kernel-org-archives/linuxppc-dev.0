@@ -4,49 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C8DC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 21:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE26FC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:13:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LYFfN0mXrz3cg1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 07:56:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lucaceresoli.net (client-ip=89.40.174.40; helo=hostingweb31-40.netsons.net; envelope-from=luca@lucaceresoli.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 2130 seconds by postgrey-1.36 at boromir; Thu, 30 Jun 2022 07:56:01 AEST
-Received: from hostingweb31-40.netsons.net (hostingweb31-40.netsons.net [89.40.174.40])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LYG1s19nYz3dQx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 08:13:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cdjrlc.com (client-ip=43.154.54.12; helo=smtpbg.qq.com; envelope-from=yuanjilin@cdjrlc.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 315 seconds by postgrey-1.36 at boromir; Wed, 29 Jun 2022 23:01:02 AEST
+Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYFds0TMdz3cBy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 07:55:59 +1000 (AEST)
-Received: from [37.161.29.0] (port=43545 helo=[192.168.131.30])
-	by hostingweb31.netsons.net with esmtpsa  (TLS1.2) tls TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-	(Exim 4.95)
-	(envelope-from <luca@lucaceresoli.net>)
-	id 1o6f6m-000BzC-Qd;
-	Wed, 29 Jun 2022 23:20:25 +0200
-Message-ID: <d682fb60-c254-f89e-5d6d-cdf7aa752939@lucaceresoli.net>
-Date: Wed, 29 Jun 2022 23:20:04 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY1mZ6xp1z3bqN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 23:01:00 +1000 (AEST)
+X-QQ-mid: bizesmtp63t1656507291tfsra6c3
+Received: from localhost.localdomain ( [182.148.13.66])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Wed, 29 Jun 2022 20:54:48 +0800 (CST)
+X-QQ-SSF: 0100000000200060C000C00A0000000
+X-QQ-FEAT: xoS364mEyr00dFkTgfgNEjTaoF4BmwMd0CJyYGBO7nG8ghAnd04j3/n2cv+cO
+	+wrHSkmNl3aNXNDMUN9e99ldFJgDUvmcmwIum6NyP7X+i7FA2jTKQgYpOj1j2xucTNyzgq9
+	vJ+a+sqnYHuHkHuVwBM+t0a84XnxTAmTKfj5HULnf06+gYoYZcSdnwY4mNWYeRGnM8A8GCc
+	vh/IbEXoGhH0LRkuVKYm3yPADPKbfXfhn0qV5DS6pd0H9QfkVKG8lMCOfIoAJLxSsgiXlAs
+	zymwHrzeUglHsXnFQiGDwlavaWfVsO1+oTK+ZcFZZc+n+R+qtGp6p4X6mipXeSaZV2tMPN1
+	npWneCq5Y4KttdBBdg=
+X-QQ-GoodBg: 0
+From: Jilin Yuan <yuanjilin@cdjrlc.com>
+To: pantelis.antoniou@gmail.com,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	pabeni@redhat.com
+Subject: [PATCH] freescale/fs_enet:fix repeated words in comments
+Date: Wed, 29 Jun 2022 20:54:41 +0800
+Message-Id: <20220629125441.62420-1-yuanjilin@cdjrlc.com>
+X-Mailer: git-send-email 2.36.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-From: Luca Ceresoli <luca@lucaceresoli.net>
-Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
-To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
- Wolfram Sang <wsa@kernel.org>
-References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
- <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
-Content-Language: en-US
-In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - hostingweb31.netsons.net
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - lucaceresoli.net
-X-Get-Message-Sender-Via: hostingweb31.netsons.net: authenticated_id: luca@lucaceresoli.net
-X-Authenticated-Sender: hostingweb31.netsons.net: luca@lucaceresoli.net
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
+X-Mailman-Approved-At: Thu, 30 Jun 2022 08:13:02 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,61 +54,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-staging@lists.linux.dev, kasan-dev@googlegroups.com, linux-clk@vger.kernel.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, linux-usb@vger.kernel.org, linux-crypto@vger.kernel.org,
-  netdev@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, Jilin Yuan <yuanjilin@cdjrlc.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Delete the redundant word 'a'.
 
-[keeping only individuals and lists in Cc to avoid bounces]
+Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
+---
+ drivers/net/ethernet/freescale/fs_enet/fs_enet.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On 28/06/22 16:03, Uwe Kleine-K=C3=B6nig wrote:
-> From: Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.org>
->=20
-> The value returned by an i2c driver's remove function is mostly ignored=
-=2E
-> (Only an error message is printed if the value is non-zero that the
-> error is ignored.)
->=20
-> So change the prototype of the remove function to return no value. This=
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+index 5ff2634bee2f..cb419aef8d1b 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet.h
+@@ -201,7 +201,7 @@ void fs_enet_platform_cleanup(void);
+ 
+ /* access macros */
+ #if defined(CONFIG_CPM1)
+-/* for a a CPM1 __raw_xxx's are sufficient */
++/* for a CPM1 __raw_xxx's are sufficient */
+ #define __cbd_out32(addr, x)	__raw_writel(x, addr)
+ #define __cbd_out16(addr, x)	__raw_writew(x, addr)
+ #define __cbd_in32(addr)	__raw_readl(addr)
+-- 
+2.36.1
 
-> way driver authors are not tempted to assume that passing an error to
-> the upper layer is a good idea. All drivers are adapted accordingly.
-> There is no intended change of behaviour, all callbacks were prepared t=
-o
-> return 0 before.
->=20
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-
-For versaclock:
-
-> diff --git a/drivers/clk/clk-versaclock5.c b/drivers/clk/clk-versaclock=
-5.c
-> index e7be3e54b9be..657493ecce4c 100644
-> --- a/drivers/clk/clk-versaclock5.c
-> +++ b/drivers/clk/clk-versaclock5.c
-> @@ -1138,7 +1138,7 @@ static int vc5_probe(struct i2c_client *client)
->  	return ret;
->  }
-> =20
-> -static int vc5_remove(struct i2c_client *client)
-> +static void vc5_remove(struct i2c_client *client)
->  {
->  	struct vc5_driver_data *vc5 =3D i2c_get_clientdata(client);
-> =20
-> @@ -1146,8 +1146,6 @@ static int vc5_remove(struct i2c_client *client)
-> =20
->  	if (vc5->chip_info->flags & VC5_HAS_INTERNAL_XTAL)
->  		clk_unregister_fixed_rate(vc5->pin_xin);
-> -
-> -	return 0;
->  }
-> =20
->  static int __maybe_unused vc5_suspend(struct device *dev)
-
-Reviewed-by: Luca Ceresoli <luca@lucaceresoli.net>
-Reviewed-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
-
---=20
-Luca
