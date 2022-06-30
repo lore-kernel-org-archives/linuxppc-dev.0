@@ -4,43 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3351C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jun 2022 22:14:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7417C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 01:04:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LYG2t3L7Nz3f2J
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 08:14:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cdjrlc.com (client-ip=43.154.54.12; helo=smtpbg.qq.com; envelope-from=yuanjilin@cdjrlc.com; receiver=<UNKNOWN>)
-Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LYKq20ky3z3chX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jun 2022 11:04:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GLoTVF3A;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GLoTVF3A;
+	dkim-atps=neutral
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LY2GF5Cf0z3bmK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jun 2022 23:23:02 +1000 (AEST)
-X-QQ-mid: bizesmtp65t1656508939tswi8yzf
-Received: from localhost.localdomain ( [182.148.13.66])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Wed, 29 Jun 2022 21:22:16 +0800 (CST)
-X-QQ-SSF: 0100000000200060C000C00A0000000
-X-QQ-FEAT: MYl5Gn9dGPU8YT+5ZkHurVRhLXTgHvFsIdJfTPawL/dHrlkE8qf0Qiniuoycd
-	nNDl6+vehW/6TLBcK88IN1vjdmaoTEnuOdasepYn3sTVu0x/uVnBfLwHZWf9usTRoWObYeT
-	P8Cv66DMwdNgHkvxQ+xA4zhXqh7avupOTHKD7hQ5KBSu0qZK1P43HIPS2pxzj3OXgmvvfJ1
-	e7WgNqIP6wmwUOwXIXhwdFEb8YBcA+c2rlDaIsYY7NXfbvbYrrMF07MNuS7S/4znWoLpyfu
-	vFk5eVQRmbAOh5XgbQJEbtWghHK/+DwVtL1WakZLI9F39JJ+W0gmq92ed19SXuruvprg+52
-	cbCxqNJ
-X-QQ-GoodBg: 0
-From: Jilin Yuan <yuanjilin@cdjrlc.com>
-To: davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	pabeni@redhat.com
-Subject: [PATCH] ethernet/ibm:fix repeated words in comments
-Date: Wed, 29 Jun 2022 21:22:09 +0800
-Message-Id: <20220629132209.30191-1-yuanjilin@cdjrlc.com>
-X-Mailer: git-send-email 2.36.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYKpF5KSrz3blt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 11:03:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1656551014; x=1688087014;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=ZgWvdu3Ao/+d5jIADvpPCwoXU16mvZlYR+Bqe08h72k=;
+  b=GLoTVF3Az9WwcEjqjAGHVqvpR5M5Rxw9N4WNHq9cUDj9Nu6rU7TJm/dm
+   oFVHwB1mqo43S2SFVYAAoRB/zNwEkcWQCAJ9PTsRaLAJDOY2/mujHMQV0
+   XQ24M6x5KRgaP74D2AmQDv/e9OowemVQ2KC0p8BwNK6q6ktZjerd8mNSY
+   vI1g81txJFNSGY2SakQVuk2elfq1pqju7pUg+4leULa0TCLx2xqkxA3o3
+   Xs3KQwVwlXPfyH0ggQQoRPv+Z9O01dQ+N0shP191jr0HpsZd00HIX22NJ
+   uzBJl6LmvB7DNzoW+lxSBlk4o3jEsKuMNu3cacpfAHiTDpX38lAJCJzcs
+   A==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10393"; a="343895667"
+X-IronPort-AV: E=Sophos;i="5.92,232,1650956400"; 
+   d="scan'208";a="343895667"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 29 Jun 2022 18:03:20 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,232,1650956400"; 
+   d="scan'208";a="917833820"
+Received: from lkp-server01.sh.intel.com (HELO 68b931ab7ac1) ([10.239.97.150])
+  by fmsmga005.fm.intel.com with ESMTP; 29 Jun 2022 18:03:19 -0700
+Received: from kbuild by 68b931ab7ac1 with local (Exim 4.95)
+	(envelope-from <lkp@intel.com>)
+	id 1o6iaV-000C0E-1j;
+	Thu, 30 Jun 2022 01:03:19 +0000
+Date: Thu, 30 Jun 2022 09:02:54 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ ac790d09885d36143076e7e02825c541e8eee899
+Message-ID: <62bcf63e.IBeBmjIOFy4L9jdT%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr4
-X-Mailman-Approved-At: Thu, 30 Jun 2022 08:13:02 +1000
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,30 +69,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jilin Yuan <yuanjilin@cdjrlc.com>, linux-kernel@vger.kernel.org, tlfalcon@linux.ibm.com, paulus@samba.org, drt@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Delete the redundant word 'a'.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: ac790d09885d36143076e7e02825c541e8eee899  powerpc/memhotplug: Add add_pages override for PPC
 
-Signed-off-by: Jilin Yuan <yuanjilin@cdjrlc.com>
----
- drivers/net/ethernet/ibm/ibmvnic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+elapsed time: 723m
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 7e7fe5bdf1f8..8ab326fdc3f5 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -3073,7 +3073,7 @@ static int ibmvnic_reset(struct ibmvnic_adapter *adapter,
- 
- 	/* If failover is pending don't schedule any other reset.
- 	 * Instead let the failover complete. If there is already a
--	 * a failover reset scheduled, we will detect and drop the
-+	 * failover reset scheduled, we will detect and drop the
- 	 * duplicate reset when walking the ->rwi_list below.
- 	 */
- 	if (adapter->state == VNIC_REMOVING ||
+configs tested: 2
+configs skipped: 102
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+
 -- 
-2.36.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
