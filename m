@@ -4,61 +4,97 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12992C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 07:55:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A875C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 07:57:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ6vY2Lw1z3dtg
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 17:55:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ6wx4QMnz3f1S
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 17:57:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google header.b=nELrPTLQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ZGHrQo8o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cloudflare.com (client-ip=2607:f8b0:4864:20::134; helo=mail-il1-x134.google.com; envelope-from=ignat@cloudflare.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--saravanak.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3w02-ygkkdaw4m3m7mzmws00sxq.o0yxuz6911o-pq7xu454.0bxmn4.03s@flex--saravanak.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=cloudflare.com header.i=@cloudflare.com header.a=rsa-sha256 header.s=google header.b=nELrPTLQ;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ZGHrQo8o;
 	dkim-atps=neutral
-Received: from mail-il1-x134.google.com (mail-il1-x134.google.com [IPv6:2607:f8b0:4864:20::134])
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYnTC4yb7z3c8p
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 04:50:22 +1000 (AEST)
-Received: by mail-il1-x134.google.com with SMTP id h20so12962570ilj.13
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 11:50:22 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYyGl4KNvz3c7r
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 11:26:53 +1000 (AEST)
+Received: by mail-yb1-xb49.google.com with SMTP id r6-20020a5b06c6000000b006693f6a6d67so757612ybq.7
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jun 2022 18:26:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=cloudflare.com; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=DU7Hgm+nVp1BIUlqpLH6JlGDiG0q5vZbfayRIvYvF6M=;
-        b=nELrPTLQzZF251wnx3QqCqNgm0XR67sAmWCe8DzYq5q7MUKYvJX7dj+ezgLS7Qv83u
-         4hrLL5SUmfy6W6Pl8x0j0sp5wU7aoRXC1W5j+JI+r0xbbQXNbxrX7hepRx10dKEaHUdd
-         kvBZ8JddQB1nLzkheFHDDLfeOGrKgVjjogp94=
+        d=google.com; s=20210112;
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=enThZq3GNhnkWKPd/daPanpJOP+0ijq4hNHtFP2b8Uo=;
+        b=ZGHrQo8oKcs/1MxqUV66WuroIOiuRhyDQTe/h9dNu56quZHoJH2GUaDbRl2ttRwgEe
+         SWqVcY/Veo5jphceJDpwMYzMdOJ0QXdCPktWf948t9BiLW5nmwSSwTlpJciNH3VIewIt
+         3ASh6A26F+KmkZttZjFaUnZEb4Vdr+50D/q0gexLqMMmpJA7NpBHgj2jcBkr1ZyXcHXM
+         U6Xnoa3WH+ep5XzMHbrLnEz24W5g5SeejVYD0NuN3ckqaoVAfjVlh+5k/BsS4sAB5hq6
+         ohdGwKO24kRPaNPr4udjwZ2k4/3lgZFaY78w+9+WaY8oo3hWqIQJ8JqaHbOBVz/YVY0e
+         BS/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=DU7Hgm+nVp1BIUlqpLH6JlGDiG0q5vZbfayRIvYvF6M=;
-        b=lQkTEZHt3tW9IHByvKFagt8fvHWmw8WW3dNvB0xZ0KcQLCM9XviUEKIwhJQaK4jXVZ
-         obJjHjFHqj7S9HgAvukLUTeQfnogZphiHA+zl90BRVtSh7yI1Js8os9hVwPmKITbjD7+
-         IQ0ZxzEGLP6JLpLTerItsZ6Omj4yl9TxEdrONJNj/PxwS45b1y/rkUm9u2D20n8iyano
-         Lt+A6U1a+rXdrEI+z+SnuFMVA1clwbmdFRXgo0v4SsNGMrreFA7gio8dSp5OnuasXbFG
-         2JYfwaiTVBjlB/40bqGzBULxJ9kfbpOh2rzPu00zATnE8JeYul8m7ydeOBzF+fEoIQ65
-         oXuA==
-X-Gm-Message-State: AJIora+wwv8VqQFlnbPzQ6ldLIC+KJgUPzpkHR8EcYSkfZWPJsWxX8gA
-	AGZJCXGq1LZdfuCQycmQAyg4dlZ3mrJdzif3UiAKcQ==
-X-Google-Smtp-Source: AGRyM1sg9w7X+FfJWoUYVR7lEmVXNrNLuIAr2Vcc3V5z4leUNdkyv5LtdsqVd9s7Dh5lzHmXkb3sL7+rq9RLqZZ2Yws=
-X-Received: by 2002:a05:6e02:1a29:b0:2da:9310:a5fa with SMTP id
- g9-20020a056e021a2900b002da9310a5famr5833873ile.179.1656615019325; Thu, 30
- Jun 2022 11:50:19 -0700 (PDT)
-MIME-Version: 1.0
-References: <74179C93-0D19-4A8A-81EB-07BD836A3BD3@linux.ibm.com>
-In-Reply-To: <74179C93-0D19-4A8A-81EB-07BD836A3BD3@linux.ibm.com>
-From: Ignat Korchagin <ignat@cloudflare.com>
-Date: Thu, 30 Jun 2022 19:50:08 +0100
-Message-ID: <CALrw=nF6EBFQCc8bn9A_Q0nz2O3TSJKsj=ErZUH37-EzLy-qmQ@mail.gmail.com>
-Subject: Re: WARN at crypto/testmgr.c:5774 (next)
-To: Sachin Sant <sachinp@linux.ibm.com>
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=enThZq3GNhnkWKPd/daPanpJOP+0ijq4hNHtFP2b8Uo=;
+        b=sjS1/XOyN8TlytqiQ8HKMk6JCrZa7egc9idrrQTUfgVjVTCSpRKABd3+JD2OfHypxE
+         nlMQMDP0JIrcMa0Gd1qYUqbMCn+Qc2PcNFA2HNPfbKlgCymHAGswVo1rO9bu3jQi2i8l
+         E9lTfbQ6kHMe37SzPb5icBdg1toZrv6CanHta8yMwLQBTiXpf0nlVB6OuCBO2mieTHO5
+         IMtDrTc7nHn92PARr4DKHWhnjXlxO2Af/sme/sTAv3mSb1pl1dk4vbGU+aEK0Bcvuq7T
+         D5zJ0FrWxzczTpxtQK1PujrxDwZeI1u6QAvVoVmWL/osFrY9pm5bcGyQ8O5sgnL4D3ws
+         5BYQ==
+X-Gm-Message-State: AJIora/Su1Ti4HCpmqAwJvt8D0n7EabXUP8h2xaO8gFhEszzLW2L5NV2
+	dh7+L2dKBQElUgWICoZ8cNGGLH5DGhonkkw=
+X-Google-Smtp-Source: AGRyM1uVtkICZeFb41qzlKfYUlr23L197fZnFh7B1zLJMqch7Nth1saNWtsGGUH9YN1+Q9+ZxuB5n3WOpcD3GoA=
+X-Received: from saravanak.san.corp.google.com ([2620:15c:2d:3:3973:d0f0:34a8:bf61])
+ (user=saravanak job=sendgmr) by 2002:a25:4b02:0:b0:66c:8709:44d1 with SMTP id
+ y2-20020a254b02000000b0066c870944d1mr12352911yba.602.1656638811027; Thu, 30
+ Jun 2022 18:26:51 -0700 (PDT)
+Date: Thu, 30 Jun 2022 18:26:38 -0700
+Message-Id: <20220701012647.2007122-1-saravanak@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
+Subject: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
+From: Saravana Kannan <saravanak@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, 
+	Laurentiu Tudor <laurentiu.tudor@nxp.com>, Jiri Slaby <jirislaby@kernel.org>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
+	Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>, 
+	Nicolas Saenz Julienne <nsaenz@kernel.org>, 
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, 
+	Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, 
+	Scott Branden <sbranden@broadcom.com>, Al Cooper <alcooperx@gmail.com>, 
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Paul Cercueil <paul@crapouillou.net>, 
+	Vladimir Zapolskiy <vz@mleia.com>, Matthias Brugger <matthias.bgg@gmail.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, 
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Tobias Klauser <tklauser@distanz.ch>, Russell King <linux@armlinux.org.uk>, 
+	Vineet Gupta <vgupta@kernel.org>, Richard Genoud <richard.genoud@gmail.com>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, 
+	Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@microchip.com>, Alexander Shiyan <shc_work@mail.ru>, 
+	Baruch Siach <baruch@tkos.co.il>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, 
+	Karol Gugala <kgugala@antmicro.com>, Mateusz Holenko <mholenko@antmicro.com>, 
+	Gabriel Somlo <gsomlo@gmail.com>, Neil Armstrong <narmstrong@baylibre.com>, 
+	Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>, 
+	Martin Blumenstingl <martin.blumenstingl@googlemail.com>, 
+	Taichi Sugaya <sugaya.taichi@socionext.com>, Takao Orito <orito.takao@socionext.com>, 
+	Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Andy Gross <agross@kernel.org>, 
+	Bjorn Andersson <bjorn.andersson@linaro.org>, Pali Rohar <pali@kernel.org>, 
+	Andreas Farber <afaerber@suse.de>, Manivannan Sadhasivam <mani@kernel.org>, 
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Laxman Dewangan <ldewangan@nvidia.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Orson Zhai <orsonzhai@gmail.com>, 
+	Baolin Wang <baolin.wang7@gmail.com>, Chunyan Zhang <zhang.lyra@gmail.com>, 
+	Patrice Chotard <patrice.chotard@foss.st.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
+	Alexandre Torgue <alexandre.torgue@foss.st.com>, "David S. Miller" <davem@davemloft.net>, 
+	Hammer Hsieh <hammerh0314@gmail.com>, Peter Korsgaard <jacmet@sunsite.dk>, Timur Tabi <timur@kernel.org>, 
+	Michal Simek <michal.simek@xilinx.com>, Saravana Kannan <saravanak@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Fri, 01 Jul 2022 17:55:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,76 +107,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-crypto <linux-crypto@vger.kernel.org>
+Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, linux-aspeed@lists.ozlabs.org, linus walleij <linus.walleij@linaro.org>, ulf hansson <ulf.hansson@linaro.org>, linux-mips@vger.kernel.org, eric dumazet <edumazet@google.com>, pavel machek <pavel@ucw.cz>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, will deacon <will@kernel.org>, linux-stm32@st-md-mailman.stormreply.com, sascha hauer <sha@pengutronix.de>, Rob Herring <robh@kernel.org>, linux-samsung-soc@vger.kernel.org, kevin hilman <khilman@kernel.org>, joerg roedel <joro@8bytes.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, paolo abeni <pabeni@redhat.com>, kernel-team@android.com, len brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel
+ @lists.infradead.org, linux-snps-arc@lists.infradead.org, linux-unisoc@lists.infradead.org, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org, heiner kallweit <hkallweit1@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jun 30, 2022 at 7:11 PM Sachin Sant <sachinp@linux.ibm.com> wrote:
->
-> Following warning is seen while booting recent -next kernel on IBM Power =
-server.
->
-> [    1.544420] ------------[ cut here ]------------
-> [    1.544422] alg: self-tests for rsa-generic (rsa) failed (rc=3D-22)
-> [    1.544429] WARNING: CPU: 18 PID: 512 at crypto/testmgr.c:5774 alg_tes=
-t+0x42c/0x850
-> [    1.544437] Modules linked in:
-> [    1.544441] CPU: 18 PID: 512 Comm: cryptomgr_test Not tainted 5.19.0-r=
-c4-next-20220627 #2
-> [    1.544446] NIP:  c0000000006fa76c LR: c0000000006fa768 CTR: c00000000=
-08552e0
-> [    1.544448] REGS: c000000008a27980 TRAP: 0700   Not tainted  (5.19.0-r=
-c4-next-20220627)
-> [    1.544451] MSR:  8000000000029033 <SF,EE,ME,IR,DR,RI,LE>  CR: 2800882=
-2  XER: 20040005
-> [    1.544458] CFAR: c000000000154114 IRQMASK: 0
-> [    1.544458] GPR00: c0000000006fa768 c000000008a27c20 c000000002a8ff00 =
-0000000000000035
-> [    1.544458] GPR04: 00000000ffff7fff c000000008a279e0 c000000008a279d8 =
-0000000000000000
-> [    1.544458] GPR08: 00000000ffff7fff 0000000000000000 c0000000025c6ff8 =
-c000000002947160
-> [    1.544458] GPR12: 0000000000008000 c0000009afff3f00 c00000000018c6f8 =
-c0000000070c5180
-> [    1.544458] GPR16: 0000000000000000 0000000000000000 0000000000000000 =
-0000000000000000
-> [    1.544458] GPR20: 0000000000000000 0000000000000000 0000000000000000 =
-c000000000f1c230
-> [    1.544458] GPR24: 0000000000000000 c00000000e679080 0000000000000400 =
-ffffffffffffffff
-> [    1.544458] GPR28: c00000000e679000 000000000000000d c000000002d814a8 =
-ffffffffffffffea
-> [    1.544491] NIP [c0000000006fa76c] alg_test+0x42c/0x850
-> [    1.544495] LR [c0000000006fa768] alg_test+0x428/0x850
-> [    1.544499] Call Trace:
-> [    1.544500] [c000000008a27c20] [c0000000006fa768] alg_test+0x428/0x850=
- (unreliable)
-> [    1.544505] [c000000008a27d90] [c0000000006f8df0] cryptomgr_test+0x40/=
-0x70
-> [    1.544510] [c000000008a27dc0] [c00000000018c814] kthread+0x124/0x130
-> [    1.544514] [c000000008a27e10] [c00000000000cdf4] ret_from_kernel_thre=
-ad+0x5c/0x64
-> [    1.544518] Instruction dump:
-> [    1.544520] 409e02e0 3d22002f 892915d1 2f890000 409e02d0 3c62fe77 7f25=
-cb78 7f84e378
-> [    1.544526] 7fe6fb78 3863ac78 4ba59949 60000000 <0fe00000> fa2100f8 fa=
-410100 fa610108
-> [    1.544532] ---[ end trace 0000000000000000 ]=E2=80=94
->
-> Git bisect points to the following patch.
->
-> # git bisect bad
-> f145d411a67efacc0731fc3f9c7b2d89fb62523a is the first bad commit
-> commit f145d411a67efacc0731fc3f9c7b2d89fb62523a
->     crypto: rsa - implement Chinese Remainder Theorem for faster private =
-key operations
->
-> Reverting the patch helps avoid this boot time warning.
->
-> - Sachin
+These patches are on top of driver-core-next.
 
-Thanks for the report. I've already submitted a follow up patch:
-https://patchwork.kernel.org/project/linux-crypto/patch/20220630140506.904-=
-1-ignat@cloudflare.com/
+Even if stdout-path isn't set in DT, this patch should take console
+probe times back to how they were before the deferred_probe_timeout
+clean up series[1].
 
-Ignat
+v1->v2:
+- Fixed the accidental change that Tobias pointed out.
+- Added Tested-by tag
+
+[1] - https://lore.kernel.org/lkml/20220601070707.3946847-1-saravanak@google.com/
+
+-Saravana
+
+cc: Rob Herring <robh@kernel.org>
+cc: sascha hauer <sha@pengutronix.de>
+cc: peng fan <peng.fan@nxp.com>
+cc: kevin hilman <khilman@kernel.org>
+cc: ulf hansson <ulf.hansson@linaro.org>
+cc: len brown <len.brown@intel.com>
+cc: pavel machek <pavel@ucw.cz>
+cc: joerg roedel <joro@8bytes.org>
+cc: will deacon <will@kernel.org>
+cc: andrew lunn <andrew@lunn.ch>
+cc: heiner kallweit <hkallweit1@gmail.com>
+cc: russell king <linux@armlinux.org.uk>
+cc: "david s. miller" <davem@davemloft.net>
+cc: eric dumazet <edumazet@google.com>
+cc: jakub kicinski <kuba@kernel.org>
+cc: paolo abeni <pabeni@redhat.com>
+cc: linus walleij <linus.walleij@linaro.org>
+cc: hideaki yoshifuji <yoshfuji@linux-ipv6.org>
+cc: david ahern <dsahern@kernel.org>
+cc: kernel-team@android.com
+cc: linux-kernel@vger.kernel.org
+cc: linux-pm@vger.kernel.org
+cc: iommu@lists.linux-foundation.org
+cc: netdev@vger.kernel.org
+cc: linux-gpio@vger.kernel.org
+Cc: kernel@pengutronix.de
+
+Saravana Kannan (2):
+  driver core: Add probe_no_timeout flag for drivers
+  serial: Set probe_no_timeout for all DT based drivers
+
+ drivers/base/base.h                         |  1 +
+ drivers/base/core.c                         |  7 +++++++
+ drivers/base/dd.c                           |  3 +++
+ drivers/tty/ehv_bytechan.c                  |  1 +
+ drivers/tty/goldfish.c                      |  1 +
+ drivers/tty/hvc/hvc_opal.c                  |  1 +
+ drivers/tty/serial/8250/8250_aspeed_vuart.c |  1 +
+ drivers/tty/serial/8250/8250_bcm2835aux.c   |  1 +
+ drivers/tty/serial/8250/8250_bcm7271.c      |  1 +
+ drivers/tty/serial/8250/8250_dw.c           |  1 +
+ drivers/tty/serial/8250/8250_em.c           |  1 +
+ drivers/tty/serial/8250/8250_ingenic.c      |  1 +
+ drivers/tty/serial/8250/8250_lpc18xx.c      |  1 +
+ drivers/tty/serial/8250/8250_mtk.c          |  1 +
+ drivers/tty/serial/8250/8250_of.c           |  1 +
+ drivers/tty/serial/8250/8250_omap.c         |  1 +
+ drivers/tty/serial/8250/8250_pxa.c          |  1 +
+ drivers/tty/serial/8250/8250_tegra.c        |  1 +
+ drivers/tty/serial/8250/8250_uniphier.c     |  1 +
+ drivers/tty/serial/altera_jtaguart.c        |  1 +
+ drivers/tty/serial/altera_uart.c            |  1 +
+ drivers/tty/serial/amba-pl011.c             |  1 +
+ drivers/tty/serial/apbuart.c                |  1 +
+ drivers/tty/serial/ar933x_uart.c            |  1 +
+ drivers/tty/serial/arc_uart.c               |  1 +
+ drivers/tty/serial/atmel_serial.c           |  1 +
+ drivers/tty/serial/bcm63xx_uart.c           |  1 +
+ drivers/tty/serial/clps711x.c               |  1 +
+ drivers/tty/serial/cpm_uart/cpm_uart_core.c |  1 +
+ drivers/tty/serial/digicolor-usart.c        |  1 +
+ drivers/tty/serial/fsl_linflexuart.c        |  1 +
+ drivers/tty/serial/fsl_lpuart.c             |  1 +
+ drivers/tty/serial/imx.c                    |  1 +
+ drivers/tty/serial/lantiq.c                 |  1 +
+ drivers/tty/serial/liteuart.c               |  1 +
+ drivers/tty/serial/lpc32xx_hs.c             |  1 +
+ drivers/tty/serial/max310x.c                |  1 +
+ drivers/tty/serial/meson_uart.c             |  1 +
+ drivers/tty/serial/milbeaut_usio.c          |  1 +
+ drivers/tty/serial/mpc52xx_uart.c           |  1 +
+ drivers/tty/serial/mps2-uart.c              |  1 +
+ drivers/tty/serial/msm_serial.c             |  1 +
+ drivers/tty/serial/mvebu-uart.c             |  1 +
+ drivers/tty/serial/mxs-auart.c              |  1 +
+ drivers/tty/serial/omap-serial.c            |  1 +
+ drivers/tty/serial/owl-uart.c               |  1 +
+ drivers/tty/serial/pic32_uart.c             |  1 +
+ drivers/tty/serial/pmac_zilog.c             |  1 +
+ drivers/tty/serial/pxa.c                    |  1 +
+ drivers/tty/serial/qcom_geni_serial.c       |  1 +
+ drivers/tty/serial/rda-uart.c               |  1 +
+ drivers/tty/serial/samsung_tty.c            |  1 +
+ drivers/tty/serial/sc16is7xx.c              |  1 +
+ drivers/tty/serial/serial-tegra.c           |  1 +
+ drivers/tty/serial/sh-sci.c                 |  1 +
+ drivers/tty/serial/sifive.c                 |  1 +
+ drivers/tty/serial/sprd_serial.c            |  1 +
+ drivers/tty/serial/st-asc.c                 |  1 +
+ drivers/tty/serial/stm32-usart.c            |  1 +
+ drivers/tty/serial/sunhv.c                  |  1 +
+ drivers/tty/serial/sunplus-uart.c           |  1 +
+ drivers/tty/serial/sunsab.c                 |  1 +
+ drivers/tty/serial/sunsu.c                  |  1 +
+ drivers/tty/serial/sunzilog.c               |  1 +
+ drivers/tty/serial/tegra-tcu.c              |  1 +
+ drivers/tty/serial/uartlite.c               |  1 +
+ drivers/tty/serial/ucc_uart.c               |  1 +
+ drivers/tty/serial/vt8500_serial.c          |  1 +
+ drivers/tty/serial/xilinx_uartps.c          |  1 +
+ include/linux/device.h                      |  7 +++++++
+ include/linux/device/driver.h               | 11 +++++++++++
+ 71 files changed, 95 insertions(+)
+
+-- 
+2.37.0.rc0.161.g10f37bed90-goog
+
