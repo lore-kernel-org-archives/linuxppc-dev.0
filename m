@@ -4,39 +4,37 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B991BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 09:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23B1AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 09:25:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ8nD1sxrz3dvh
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 19:20:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=inspur.com (client-ip=210.51.61.248; helo=ssh248.corpemail.net; envelope-from=wangdeming@inspur.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 126 seconds by postgrey-1.36 at boromir; Fri, 01 Jul 2022 19:20:03 AEST
-Received: from ssh248.corpemail.net (ssh248.corpemail.net [210.51.61.248])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZ8mg2HGdz3cMq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 19:20:02 +1000 (AEST)
-Received: from ([60.208.111.195])
-        by ssh248.corpemail.net ((D)) with ASMTP (SSL) id WIT00036;
-        Fri, 01 Jul 2022 17:17:36 +0800
-Received: from localhost.localdomain (10.200.104.82) by
- jtjnmail201602.home.langchao.com (10.100.2.2) with Microsoft SMTP Server id
- 15.1.2507.9; Fri, 1 Jul 2022 17:17:38 +0800
-From: Deming Wang <wangdeming@inspur.com>
-To: <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/pseries: Add a null judgment after iommu_pseries_alloc_group
-Date: Fri, 1 Jul 2022 05:17:35 -0400
-Message-ID: <20220701091735.1584-1-wangdeming@inspur.com>
-X-Mailer: git-send-email 2.31.1
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ8tv51Tqz3dwD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 19:25:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=nfschina.com (client-ip=2400:dd01:100f:2:72e2:84ff:fe10:5f45; helo=mail.nfschina.com; envelope-from=jiaming@nfschina.com; receiver=<UNKNOWN>)
+Received: from mail.nfschina.com (unknown [IPv6:2400:dd01:100f:2:72e2:84ff:fe10:5f45])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ8tQ2H1Dz3cdp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 19:24:58 +1000 (AEST)
+Received: from localhost (unknown [127.0.0.1])
+	by mail.nfschina.com (Postfix) with ESMTP id 9347F1E80D22;
+	Fri,  1 Jul 2022 17:23:23 +0800 (CST)
+X-Virus-Scanned: amavisd-new at test.com
+Received: from mail.nfschina.com ([127.0.0.1])
+	by localhost (mail.nfschina.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dkXgAtobTfhL; Fri,  1 Jul 2022 17:23:20 +0800 (CST)
+Received: from localhost.localdomain (unknown [112.65.12.78])
+	(Authenticated sender: jiaming@nfschina.com)
+	by mail.nfschina.com (Postfix) with ESMTPA id 97E511E80D21;
+	Fri,  1 Jul 2022 17:23:19 +0800 (CST)
+From: Zhang Jiaming <jiaming@nfschina.com>
+To: oss@buserror.net,
+	mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org
+Subject: [PATCH] powerpc/sgy_cts1000: Fix typo in comments
+Date: Fri,  1 Jul 2022 17:24:45 +0800
+Message-Id: <20220701092445.16871-1-jiaming@nfschina.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.200.104.82]
-tUid: 2022701171736651d1779fff6865ab42eefc41774dda2
-X-Abuse-Reports-To: service@corp-email.com
-Abuse-Reports-To: service@corp-email.com
-X-Complaints-To: service@corp-email.com
-X-Report-Abuse-To: service@corp-email.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,62 +46,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Deming Wang <wangdeming@inspur.com>, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: liqiong@nfschina.com, renyu@nfschina.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Zhang Jiaming <jiaming@nfschina.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We should avoid use the return value directly after  call
-iommu_pseries_alloc_group. Because it_may return a null.
+There is a typo ('wont') in comments.
+Fix it.
 
-Signed-off-by: Deming Wang <wangdeming@inspur.com>
+Signed-off-by: Zhang Jiaming <jiaming@nfschina.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/powerpc/platforms/85xx/sgy_cts1000.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index fba64304e859..801eb9d4bdca 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -649,6 +649,9 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	pci->phb->dma_window_base_cur = 0x8000000ul;
+diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+index 98ae64075193..a920852703ba 100644
+--- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
++++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
+@@ -29,7 +29,7 @@ static const struct of_device_id child_match[] = {
  
- 	pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
-+	if (!pci->table_group)
-+		return;
-+
- 	tbl = pci->table_group->tables[0];
+ static void gpio_halt_wfn(struct work_struct *work)
+ {
+-	/* Likely wont return */
++	/* Likely won't return */
+ 	orderly_poweroff(true);
+ }
+ static DECLARE_WORK(gpio_halt_wq, gpio_halt_wfn);
+@@ -51,7 +51,7 @@ static void __noreturn gpio_halt_cb(void)
  
- 	iommu_table_setparms(pci->phb, dn, tbl);
-@@ -734,6 +737,9 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 	printk(KERN_INFO "gpio-halt: triggering GPIO.\n");
  
- 	if (!ppci->table_group) {
- 		ppci->table_group = iommu_pseries_alloc_group(ppci->phb->node);
-+		if (!ppci->table_group)
-+			return;
-+
- 		tbl = ppci->table_group->tables[0];
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl,
- 				ppci->table_group, dma_window);
-@@ -765,6 +771,9 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+-	/* Probably wont return */
++	/* Probably won't return */
+ 	gpio_set_value(gpio, trigger);
  
- 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
- 		PCI_DN(dn)->table_group = iommu_pseries_alloc_group(phb->node);
-+		if (!PCI_DN(dn)->table_group)
-+			return;
-+
- 		tbl = PCI_DN(dn)->table_group->tables[0];
- 		iommu_table_setparms(phb, dn, tbl);
+ 	panic("Halt failed\n");
+@@ -147,7 +147,7 @@ static int gpio_halt_remove(struct platform_device *pdev)
  
-@@ -1521,6 +1530,9 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 	pci = PCI_DN(pdn);
- 	if (!pci->table_group) {
- 		pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
-+		if (!pci->table_group)
-+			return;
-+
- 		tbl = pci->table_group->tables[0];
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl,
- 				pci->table_group, dma_window);
+ static const struct of_device_id gpio_halt_match[] = {
+ 	/* We match on the gpio bus itself and scan the children since they
+-	 * wont be matched against us. We know the bus wont match until it
++	 * won't be matched against us. We know the bus won't match until it
+ 	 * has been registered too. */
+ 	{
+ 		.compatible = "fsl,qoriq-gpio",
 -- 
-2.27.0
+2.25.1
 
