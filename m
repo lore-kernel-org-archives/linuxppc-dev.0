@@ -4,50 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B89ECC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 13:19:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0099C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 13:32:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZG4P6vHhz3drs
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 23:19:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZGMl6S58z3drs
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 23:32:19 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=Kbv/l59o;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=lIYM+GT+;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=220.181.15.113; helo=m15113.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=Kbv/l59o;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=lIYM+GT+;
 	dkim-atps=neutral
 Received: from m15113.mail.126.com (m15113.mail.126.com [220.181.15.113])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZG3g1ShNz3bpQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 23:18:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZGM42Sgxz3cJC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 23:31:42 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=CRTkJ
-	ijEOepDXCja28s/9wA6YRL6XyV05cqzKL8Tq2U=; b=Kbv/l59ov7eZ+BGiwrAv6
-	Lz2B6U8jqWKM5ggQvPlcA859ywFynlbVfNlZ9Sn6uJB5MGxaEXqwiZ3tC/T5qkJ1
-	8SVaGW0Mq6NJc0syTIBXkEQvl9pObz82iGPIjkexeJT0gMIN97KMPbRkKjLkaMyx
-	hxCVet/Y2mikciZNOKuj14=
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=iyvTE
+	etB4oB0VizdePA1KSoOMFKXF/53ZA6Y8pQPaQs=; b=lIYM+GT+y1Y5SzXq94oyp
+	c1G8SwpXFyirlrwpmTqZBFakUU/jd8GD9xhpNfOWVPmvcd0QJAlKovgflr4w5nRk
+	WnKS+XZvNoUkJcok8evLYesgQ7aF2xjPEeMYRuHQyr/6YA7efYyWhAP8c2JvyRTK
+	0WM6tJ92Uj2cZQtafNvFSo=
 Received: from localhost.localdomain (unknown [124.16.139.61])
-	by smtp3 (Coremail) with SMTP id DcmowAAnB53_875iSLpEEQ--.29620S2;
-	Fri, 01 Jul 2022 21:17:53 +0800 (CST)
+	by smtp3 (Coremail) with SMTP id DcmowAB3E5Uu975idVJFEQ--.54276S2;
+	Fri, 01 Jul 2022 21:31:27 +0800 (CST)
 From: Liang He <windhl@126.com>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org,
 	paulus@samba.org,
 	windhl@126.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linmq006@gmail.com
-Subject: [PATCH] powerpc: kernel: pci_dn: Add missing of_node_put() for of_get_xx API
-Date: Fri,  1 Jul 2022 21:17:50 +0800
-Message-Id: <20220701131750.240170-1-windhl@126.com>
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: 44x: Add of_node_put() when break out from for_each
+Date: Fri,  1 Jul 2022 21:31:26 +0800
+Message-Id: <20220701133126.243102-1-windhl@126.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DcmowAAnB53_875iSLpEEQ--.29620S2
-X-Coremail-Antispam: 1Uf129KBjvdXoW7Xw4fGr4rWrWkGF4UtrW5ZFb_yoWfCrg_ta
-	4xZ3W5ur4kJr4I9Fs8A3yfX3yrA3sYqFyrKw4xuan2y3W5Zr1DJr15Aw17Jr9xWr40qrZ8
-	KayktryDJ3W0yjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7xR_J3v7UUUUU==
+X-CM-TRANSID: DcmowAB3E5Uu975idVJFEQ--.54276S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7GF4UJFWxGr47Ar4xCw4DJwb_yoW3AFc_G3
+	s7Ka1xur4kWr4qv3ZFvF4fKF15A3y5GrWDKFnaq3WIqa45tan5Gr4kZFWUWF4jyF4UtFW3
+	Xr4kJrZ8Aa4FgjkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUU3fH5UUUUU==
 X-Originating-IP: [124.16.139.61]
-X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbi7QExF1pEAUZMXgAAsB
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/xtbBGhAxF1-HZay49QAAsw
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,29 +61,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In pci_add_device_node_info(), we should use of_node_put() for the
-reference 'parent' returned by of_get_parent() to keep refcount
-balance.
+In ppc47x_init_irq(), we need to call of_node_put() when there is
+a break during the iteration of for_each_node_with_property() which
+will automatically increase and decrease the refcount.
 
-Fixes: cca87d303c85 ("powerpc/pci: Refactor pci_dn")
-Co-authored-by: Miaoqian Lin <linmq006@gmail.com>
 Signed-off-by: Liang He <windhl@126.com>
 ---
- arch/powerpc/kernel/pci_dn.c | 1 +
+ arch/powerpc/platforms/44x/ppc476.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 938ab8838ab5..aa221958007e 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -330,6 +330,7 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
- 	INIT_LIST_HEAD(&pdn->list);
- 	parent = of_get_parent(dn);
- 	pdn->parent = parent ? PCI_DN(parent) : NULL;
-+	of_node_put(parent);
- 	if (pdn->parent)
- 		list_add_tail(&pdn->list, &pdn->parent->child_list);
+diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+index 20cc8f80b086..7d9075fb20c9 100644
+--- a/arch/powerpc/platforms/44x/ppc476.c
++++ b/arch/powerpc/platforms/44x/ppc476.c
+@@ -140,6 +140,7 @@ static void __init ppc47x_init_irq(void)
+ 		ppc_md.get_irq = mpic_get_irq;
+ 	} else
+ 		panic("Unrecognized top level interrupt controller");
++	of_node_put(np);
+ }
  
+ #ifdef CONFIG_SMP
 -- 
 2.25.1
 
