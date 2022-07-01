@@ -4,46 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C038FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 09:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B105C43334
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 09:55:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ9RS2VVfz3fSS
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 19:50:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZ9YT6sLTz3dtV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 19:55:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=inspur.com (client-ip=210.51.26.146; helo=unicom146.biz-email.net; envelope-from=wangdeming@inspur.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 517 seconds by postgrey-1.36 at boromir; Fri, 01 Jul 2022 19:54:59 AEST
+Received: from unicom146.biz-email.net (unicom146.biz-email.net [210.51.26.146])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZ9NR6N72z3cdp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 19:47:35 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 59C4420139E;
-	Fri,  1 Jul 2022 11:47:33 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 228FB20139A;
-	Fri,  1 Jul 2022 11:47:33 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 6C0A0181D0CA;
-	Fri,  1 Jul 2022 17:47:31 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: nicoleotsuka@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	shengjiu.wang@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	alsa-devel@alsa-project.org,
-	robh+dt@kernel.org,
-	krzk+dt@kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH v2 6/6] ASoC: dt-bindings: fsl-sai: Add two PLL clock source
-Date: Fri,  1 Jul 2022 17:32:41 +0800
-Message-Id: <1656667961-1799-7-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1656667961-1799-1-git-send-email-shengjiu.wang@nxp.com>
-References: <1656667961-1799-1-git-send-email-shengjiu.wang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZ9Xz1RKhz2xB1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 19:54:55 +1000 (AEST)
+Received: from ([60.208.111.195])
+        by unicom146.biz-email.net ((D)) with ASMTP (SSL) id WIW00101;
+        Fri, 01 Jul 2022 17:46:01 +0800
+Received: from localhost.localdomain (10.200.104.82) by
+ jtjnmail201602.home.langchao.com (10.100.2.2) with Microsoft SMTP Server id
+ 15.1.2507.9; Fri, 1 Jul 2022 17:46:05 +0800
+From: Deming Wang <wangdeming@inspur.com>
+To: <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: Fix formatting problems to make code look more beautiful
+Date: Fri, 1 Jul 2022 05:45:53 -0400
+Message-ID: <20220701094553.1722-1-wangdeming@inspur.com>
+X-Mailer: git-send-email 2.31.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.200.104.82]
+tUid: 20227011746015071030bb3701dfeb457290dce6ab190
+X-Abuse-Reports-To: service@corp-email.com
+Abuse-Reports-To: service@corp-email.com
+X-Complaints-To: service@corp-email.com
+X-Report-Abuse-To: service@corp-email.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,34 +48,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Deming Wang <wangdeming@inspur.com>, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add two PLL clock source, they are the parent clocks of root clock
-one is for 8kHz series rates, another one is for 11kHz series rates.
-They are optional clocks, if there are such clocks, then driver
-can switch between them for supporting more accurate rates.
+Operators should be separated by spaces in tce_buildmulti_pSeriesLP
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Signed-off-by: Deming Wang <wangdeming@inspur.com>
 ---
- Documentation/devicetree/bindings/sound/fsl-sai.txt | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/pseries/iommu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-index 4c66e6a1a533..fbdefc3fade7 100644
---- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-@@ -21,6 +21,9 @@ Required properties:
-   - clock-names		: Must include the "bus" for register access and
- 			  "mclk1", "mclk2", "mclk3" for bit clock and frame
- 			  clock providing.
-+                          "pll8k", "pll11k" are optional, they are the clock
-+                          source for root clock, one is for 8kHz series rates
-+                          another one is for 11kHz series rates.
-   - dmas		: Generic dma devicetree binding as described in
- 			  Documentation/devicetree/bindings/dma/dma.txt.
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index fba64304e859..d09c8bb06e5b 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -248,7 +248,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
+ 		 * Set up the page with TCE data, looping through and setting
+ 		 * the values.
+ 		 */
+-		limit = min_t(long, npages, 4096/TCE_ENTRY_SIZE);
++		limit = min_t(long, npages, 4096 / TCE_ENTRY_SIZE);
  
+ 		for (l = 0; l < limit; l++) {
+ 			tcep[l] = cpu_to_be64(proto_tce | rpn << tceshift);
 -- 
-2.17.1
+2.27.0
 
