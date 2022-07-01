@@ -4,62 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9D61C43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 02:29:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1094C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 02:29:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LYzfT4KMMz3f6q
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 12:29:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LYzgD29Mxz3f1m
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 12:29:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gBNHxEgW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hLEoR4cg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gBNHxEgW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hLEoR4cg;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYzbV0fvPz3cgZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 12:26:29 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2612PH4B024243;
-	Fri, 1 Jul 2022 02:26:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=vEFTiWpv+KzfLSWw6U4rk01lxtQgFs9uuPC1c9upHU4=;
- b=gBNHxEgWEJlzeRydsjdhNiiK4pBJ/pZkPe1VzQJfMv3GYS/DmSb6+6dA+aW4fY2z/uOZ
- JWgPP+Vwg4mCP40jiUkfN4Q9uxrA2KhgD2vEact7GGoUfza1BoQ3zfTloWzxqd8xLGao
- 789RUDR5VJ9ytF60FxxUrPPW8orj2qmlgtrqJY3G7Q0V7TPZStui5pNO8rarUTwj9G0e
- PzncW0XkTZ5pDIMTycCYgIqzHVfcxCicDPllfJ1xvlXo8Xl5DpFy2CZE2MKTt8R8N092
- EDjXMdS+Sd0sKvK36qJKdCwlYzPAHI7q9E6E1cYnkBMXs9aJRcYRsEw+jl2TnqujQ7cg Gw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3h1r4j00ae-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Jul 2022 02:26:17 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2612QGJg027773;
-	Fri, 1 Jul 2022 02:26:16 GMT
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3h1r4j00a6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Jul 2022 02:26:16 +0000
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
-	by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2612KQOX032166;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LYzbV42vcz3cgL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jul 2022 12:26:30 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2612GTRA005358;
 	Fri, 1 Jul 2022 02:26:15 GMT
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com [9.57.198.28])
-	by ppma02dal.us.ibm.com with ESMTP id 3gwt0b7e34-1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=N2tc+pPuppIhXwUrUZlYZv1wqkGyyQ5FbCPl9FV56oU=;
+ b=hLEoR4cgEwOU/FNrWVVEE9hV6o1Jc44DKx9JMvL0dWr2Cdxv9Q+Y1KDo/fglXHXq8T4a
+ UHnjoZDYveHAHnkT9b4lfrxA7AQERaVzFjipNy+HkQhvjmQGPDgBdCeqCX9ciwIDfK4n
+ luDe0lmU/sUq7SNxN8Edl4cUPXFWV4KpU1aOwPRN/huGEX9QAKWMil6/OdYOeu9unO9h
+ krozYZBwZwbctO4qRjzxVleFAB77DmabipD/MSBVtVxFl+CqqSjTasPkDaQr7TrqyX6k
+ T2pSvKT7lzdCs0ekBbaa4Crtmeb73XrFZWfiE59PwRMFwVVoiTTBD8guYIrncEc/CgvE 3Q== 
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h1r06g64w-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 01 Jul 2022 02:26:15 +0000
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+	by ppma04wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2612LM4H009215;
+	Fri, 1 Jul 2022 02:26:14 GMT
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com [9.57.198.28])
+	by ppma04wdc.us.ibm.com with ESMTP id 3gwt0af07c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 01 Jul 2022 02:26:14 +0000
 Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com [9.57.199.107])
-	by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2612QEea40370644
+	by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2612QE9b40370640
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Fri, 1 Jul 2022 02:26:14 GMT
 Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5FC3F124053;
+	by IMSVA (Postfix) with ESMTP id 26691124052;
 	Fri,  1 Jul 2022 02:26:14 +0000 (GMT)
 Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 449E8124052;
+	by IMSVA (Postfix) with ESMTP id 0DD25124055;
 	Fri,  1 Jul 2022 02:26:14 +0000 (GMT)
 Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
 	by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
@@ -68,23 +60,24 @@ From: Stefan Berger <stefanb@linux.ibm.com>
 To: kexec@lists.infradead.org, devicetree@vger.kernel.org,
         linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 3/5] tpm: of: Make of-tree specific function commonly available
-Date: Thu, 30 Jun 2022 22:26:01 -0400
-Message-Id: <20220701022603.31076-4-stefanb@linux.ibm.com>
+Subject: [PATCH v4 1/5] of: check previous kernel's ima-kexec-buffer against memory bounds
+Date: Thu, 30 Jun 2022 22:25:59 -0400
+Message-Id: <20220701022603.31076-2-stefanb@linux.ibm.com>
 X-Mailer: git-send-email 2.36.1
 In-Reply-To: <20220701022603.31076-1-stefanb@linux.ibm.com>
 References: <20220701022603.31076-1-stefanb@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: TyRHDvsGrmBpHn_r30H3qI2yE5jgxPbH
-X-Proofpoint-ORIG-GUID: JJ64SEsBC9PU7O-HZp6fitG2NGmwgd-M
+X-Proofpoint-ORIG-GUID: V7FgybWqf8ab4NwlacdTJfVLcaXWVlX2
+X-Proofpoint-GUID: V7FgybWqf8ab4NwlacdTJfVLcaXWVlX2
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-07-01_01,2022-06-28_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- lowpriorityscore=0 phishscore=0 malwarescore=0 clxscore=1015 mlxscore=0
- priorityscore=1501 spamscore=0 bulkscore=0 adultscore=0 impostorscore=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ spamscore=0 malwarescore=0 suspectscore=0 phishscore=0 lowpriorityscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 clxscore=1015 mlxscore=0
  mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2204290000 definitions=main-2207010003
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -98,124 +91,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, Jason Gunthorpe <jgg@ziepe.ca>, Jarkko Sakkinen <jarkko@kernel.org>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, Frank Rowand <frowand.list@gmail.com>, Stefan Berger <stefanb@linux.ibm.com>
+Cc: nayna@linux.ibm.com, nasastry@in.ibm.com, Vaibhav Jain <vaibhav@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Simplify tpm_read_log_of() by moving reusable parts of the code into
-an inline function that makes it commonly available so it can be
-used also for kexec support. Call the new of_tpm_get_sml_parameters()
-function from the TPM Open Firmware driver.
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
 
-Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
-Cc: Jarkko Sakkinen <jarkko@kernel.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Frank Rowand <frowand.list@gmail.com>
+Presently ima_get_kexec_buffer() doesn't check if the previous kernel's
+ima-kexec-buffer lies outside the addressable memory range. This can result
+in a kernel panic if the new kernel is booted with 'mem=X' arg and the
+ima-kexec-buffer was allocated beyond that range by the previous kernel.
+The panic is usually of the form below:
 
+$ sudo kexec --initrd initrd vmlinux --append='mem=16G'
+
+<snip>
+ BUG: Unable to handle kernel data access on read at 0xc000c01fff7f0000
+ Faulting instruction address: 0xc000000000837974
+ Oops: Kernel access of bad area, sig: 11 [#1]
+<snip>
+ NIP [c000000000837974] ima_restore_measurement_list+0x94/0x6c0
+ LR [c00000000083b55c] ima_load_kexec_buffer+0xac/0x160
+ Call Trace:
+ [c00000000371fa80] [c00000000083b55c] ima_load_kexec_buffer+0xac/0x160
+ [c00000000371fb00] [c0000000020512c4] ima_init+0x80/0x108
+ [c00000000371fb70] [c0000000020514dc] init_ima+0x4c/0x120
+ [c00000000371fbf0] [c000000000012240] do_one_initcall+0x60/0x2c0
+ [c00000000371fcc0] [c000000002004ad0] kernel_init_freeable+0x344/0x3ec
+ [c00000000371fda0] [c0000000000128a4] kernel_init+0x34/0x1b0
+ [c00000000371fe10] [c00000000000ce64] ret_from_kernel_thread+0x5c/0x64
+ Instruction dump:
+ f92100b8 f92100c0 90e10090 910100a0 4182050c 282a0017 3bc00000 40810330
+ 7c0802a6 fb610198 7c9b2378 f80101d0 <a1240000> 2c090001 40820614 e9240010
+ ---[ end trace 0000000000000000 ]---
+
+Fix this issue by checking returned PFN range of previous kernel's
+ima-kexec-buffer with page_is_ram() to ensure correct memory bounds.
+
+Fixes: 467d27824920 ("powerpc: ima: get the kexec buffer passed by the previous kernel")
+[ Several tags removed; for testing by krobot ]
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+Link: https://lore.kernel.org/r/20220531041446.3334259-1-vaibhav@linux.ibm.com
 ---
-v4:
- - converted to inline function
----
- drivers/char/tpm/eventlog/of.c | 31 +++++--------------------------
- include/linux/tpm.h            | 27 +++++++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 26 deletions(-)
+ drivers/of/kexec.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/char/tpm/eventlog/of.c b/drivers/char/tpm/eventlog/of.c
-index a9ce66d09a75..f9462d19632e 100644
---- a/drivers/char/tpm/eventlog/of.c
-+++ b/drivers/char/tpm/eventlog/of.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/slab.h>
- #include <linux/of.h>
-+#include <linux/tpm.h>
- #include <linux/tpm_eventlog.h>
- 
- #include "../tpm.h"
-@@ -20,11 +21,10 @@
- int tpm_read_log_of(struct tpm_chip *chip)
+diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
+index 8d374cc552be..91b04b04eec4 100644
+--- a/drivers/of/kexec.c
++++ b/drivers/of/kexec.c
+@@ -126,6 +126,7 @@ int ima_get_kexec_buffer(void **addr, size_t *size)
  {
- 	struct device_node *np;
--	const u32 *sizep;
--	const u64 *basep;
- 	struct tpm_bios_log *log;
- 	u32 size;
- 	u64 base;
-+	int ret;
+ 	int ret, len;
+ 	unsigned long tmp_addr;
++	unsigned long start_pfn, end_pfn;
+ 	size_t tmp_size;
+ 	const void *prop;
  
- 	log = &chip->log;
- 	if (chip->dev.parent && chip->dev.parent->of_node)
-@@ -35,30 +35,9 @@ int tpm_read_log_of(struct tpm_chip *chip)
- 	if (of_property_read_bool(np, "powered-while-suspended"))
- 		chip->flags |= TPM_CHIP_FLAG_ALWAYS_POWERED;
+@@ -140,6 +141,22 @@ int ima_get_kexec_buffer(void **addr, size_t *size)
+ 	if (ret)
+ 		return ret;
  
--	sizep = of_get_property(np, "linux,sml-size", NULL);
--	basep = of_get_property(np, "linux,sml-base", NULL);
--	if (sizep == NULL && basep == NULL)
--		return -ENODEV;
--	if (sizep == NULL || basep == NULL)
--		return -EIO;
--
--	/*
--	 * For both vtpm/tpm, firmware has log addr and log size in big
--	 * endian format. But in case of vtpm, there is a method called
--	 * sml-handover which is run during kernel init even before
--	 * device tree is setup. This sml-handover function takes care
--	 * of endianness and writes to sml-base and sml-size in little
--	 * endian format. For this reason, vtpm doesn't need conversion
--	 * but physical tpm needs the conversion.
--	 */
--	if (of_property_match_string(np, "compatible", "IBM,vtpm") < 0 &&
--	    of_property_match_string(np, "compatible", "IBM,vtpm20") < 0) {
--		size = be32_to_cpup((__force __be32 *)sizep);
--		base = be64_to_cpup((__force __be64 *)basep);
--	} else {
--		size = *sizep;
--		base = *basep;
--	}
-+	ret = of_tpm_get_sml_parameters(np, &base, &size);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (size == 0) {
- 		dev_warn(&chip->dev, "%s: Event log area empty\n", __func__);
-diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-index dfeb25a0362d..b3dff255bc58 100644
---- a/include/linux/tpm.h
-+++ b/include/linux/tpm.h
-@@ -460,4 +460,31 @@ static inline struct tpm_chip *tpm_default_chip(void)
- 	return NULL;
- }
- #endif
++	/* Do some sanity on the returned size for the ima-kexec buffer */
++	if (!tmp_size)
++		return -ENOENT;
 +
-+#ifdef CONFIG_OF
-+static inline int of_tpm_get_sml_parameters(struct device_node *np,
-+					    u64 *base, u32 *size)
-+{
-+	const u32 *sizep;
-+	const u64 *basep;
-+
-+	sizep = of_get_property(np, "linux,sml-size", NULL);
-+	basep = of_get_property(np, "linux,sml-base", NULL);
-+	if (sizep == NULL && basep == NULL)
-+		return -ENODEV;
-+	if (sizep == NULL || basep == NULL)
-+		return -EIO;
-+
-+	if (of_property_match_string(np, "compatible", "IBM,vtpm") < 0 &&
-+	    of_property_match_string(np, "compatible", "IBM,vtpm20") < 0) {
-+		*size = be32_to_cpup((__force __be32 *)sizep);
-+		*base = be64_to_cpup((__force __be64 *)basep);
-+	} else {
-+		*size = *sizep;
-+		*base = *basep;
++	/*
++	 * Calculate the PFNs for the buffer and ensure
++	 * they are with in addressable memory.
++	 */
++	start_pfn = PHYS_PFN(tmp_addr);
++	end_pfn = PHYS_PFN(tmp_addr + tmp_size - 1);
++	if (!page_is_ram(start_pfn) || !page_is_ram(end_pfn)) {
++		pr_warn("IMA buffer at 0x%lx, size = 0x%zx beyond memory\n",
++			tmp_addr, tmp_size);
++		return -EINVAL;
 +	}
-+	return 0;
-+}
-+#endif
 +
- #endif
+ 	*addr = __va(tmp_addr);
+ 	*size = tmp_size;
+ 
 -- 
 2.35.1
 
