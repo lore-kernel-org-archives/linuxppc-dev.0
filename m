@@ -4,93 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14088C43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Jul 2022 22:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41D76C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 01:03:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZV4Q2d0Pz3dv3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 08:19:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZYjG4kMPz3dvK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 11:03:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NrxLtmx4;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WOVRwA7H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tyreld@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NrxLtmx4;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WOVRwA7H;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZV3Z6NlCz3bll
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2022 08:19:06 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 261IkgDS001983;
-	Fri, 1 Jul 2022 22:18:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : from : to : references : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=rTXd/Nfx35q1CVJpaEMB7ynWyiCtAwlTQmj3Li7FGgM=;
- b=NrxLtmx4uVPseTS0vBhF+SMIuCtEg1fVN12oKkwsH+EdzSJoIQnIVZW5LQWeBMwrs5uE
- MtVMMrnotfDHJfOd3ZKxGPzf+Vt4n9PaDo/LqhqY7r1T0vyTTCEwLuEXA/DQn5ZVm+oq
- XO22cR9Vk02aWnX02vVKjkc1fgztkIgBQDEqSeFocnBzAa5AITtiXh3W0o5KfthS0Zwm
- 6rE4g/BKRcEiZ9L/jzRQ2wkFnkFTmaB2/OyTt2qHXIMmYKbFvhoytHzPbhKMqET6QdPz
- jUXctc5tWgJbxfEACRkZC7NbUESRLTIlv2glQLT4GPvEjqtyuptx979w77bN2WRAA9Dz zQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h26gk55an-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Jul 2022 22:18:55 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 261MItXO037731;
-	Fri, 1 Jul 2022 22:18:55 GMT
-Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com [169.55.91.170])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h26gk55a5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Jul 2022 22:18:55 +0000
-Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
-	by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 261M54LD027157;
-	Fri, 1 Jul 2022 22:18:54 GMT
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com [9.57.198.24])
-	by ppma02wdc.us.ibm.com with ESMTP id 3gwt0ameeu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 01 Jul 2022 22:18:54 +0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com [9.57.199.107])
-	by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 261MIr2h65012018
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 1 Jul 2022 22:18:53 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8B3CF12405C;
-	Fri,  1 Jul 2022 22:18:53 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BF77D124058;
-	Fri,  1 Jul 2022 22:18:52 +0000 (GMT)
-Received: from [9.160.117.63] (unknown [9.160.117.63])
-	by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
-	Fri,  1 Jul 2022 22:18:52 +0000 (GMT)
-Message-ID: <81fa33cc-32ea-4132-6b26-013d19f899c2@linux.ibm.com>
-Date: Fri, 1 Jul 2022 15:18:52 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZYhX59lSz3bnd
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2022 11:02:51 +1000 (AEST)
+Received: by mail-pj1-x102e.google.com with SMTP id w24so4129339pjg.5
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2022 18:02:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=+QLbq0w+CZfYo6/BgLDLv123MX+VJmesqUpPeKC97pk=;
+        b=WOVRwA7HSikldTi++/cqjLgkGyx1K0hCf5nuW4OrFlAXhnRTSF+Y/yNNej6ML6yzcE
+         V6nLGsFv65rOYWATYTvQBSr/zmmYpBIMTmmdr5IW1yWU/C9qqD6ZjH2/SBxE8T2AFOnb
+         kI4fj3fTeYBB7YR2SCUhm9s0bMSGtNGi6k09c=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=+QLbq0w+CZfYo6/BgLDLv123MX+VJmesqUpPeKC97pk=;
+        b=muhafPI10QKhSACYGkCPbryC+DRxNN6rVQOmwlYoa0+WyTfustCdTisjxx1Rl6abWR
+         sKo8cIG/ve5SaCUbjUo1jDJBtcYoL+sc7uW5KGM5G0SdscQ7/hX1uR3Z/kuLRQvf1FSg
+         AWXQLhEL8xHFJOXWeze/gdoRoVNdyfmh5k3BM3L7+y9noXP9/4+jAWK0kgB5m6KPJrZR
+         6IQ4FPy7ZqHsvB9fcTgKCXeb6AuKMjjcN/9zSXMYjkdGbUD7E8CGNUQ7HmAugyvgZJpU
+         yhy9d0FTE+JfZx8xyQ+KduIEv7hvPERhJNFjFH0NzybobmsHT+Z8WtdXIDOBM3JzHx//
+         ljWw==
+X-Gm-Message-State: AJIora84Hptq7gPCcj2mGZ4blGClAi1EYHVdVuWO2aaKcaZ+/RZZFfL6
+	xIHLyNxynby6hcDpQtlbuoLkeQ==
+X-Google-Smtp-Source: AGRyM1vr8gIh5aKj2l7LLWkGGNi1HXOfn7r3prwi2OEXDiHlxyrQv2BZHDG3gbMUAKS+m12eq68kNQ==
+X-Received: by 2002:a17:902:ea07:b0:16a:2833:3207 with SMTP id s7-20020a170902ea0700b0016a28333207mr23231909plg.86.1656723768114;
+        Fri, 01 Jul 2022 18:02:48 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id g10-20020a170902934a00b0016a11b9aeaasm16113169plp.225.2022.07.01.18.02.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 01 Jul 2022 18:02:47 -0700 (PDT)
+From: Kees Cook <keescook@chromium.org>
+To: gongruiqi1@huawei.com,
+	elver@google.com
+Subject: Re: [PATCH v2] stack: Declare {randomize_,}kstack_offset to fix Sparse warnings
+Date: Fri,  1 Jul 2022 18:02:43 -0700
+Message-Id: <165672376092.2486882.1451446093485208376.b4-ty@chromium.org>
+X-Mailer: git-send-email 2.32.0
+In-Reply-To: <20220629060423.2515693-1-gongruiqi1@huawei.com>
+References: <20220629060423.2515693-1-gongruiqi1@huawei.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.10.0
-Subject: Re: [PATCH] powerpc: kernel: pci_dn: Add missing of_node_put() for
- of_get_xx API
-Content-Language: en-US
-From: Tyrel Datwyler <tyreld@linux.ibm.com>
-To: Liang He <windhl@126.com>, mpe@ellerman.id.au, benh@kernel.crashing.org,
-        paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linmq006@gmail.com
-References: <20220701131750.240170-1-windhl@126.com>
- <09bcb7d7-5c27-04cc-6796-cbeb3d0abb14@linux.ibm.com>
-In-Reply-To: <09bcb7d7-5c27-04cc-6796-cbeb3d0abb14@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: IKdlsnwSUKdFh3dZYH_1jTHeaDILN1ib
-X-Proofpoint-GUID: OQq20TtbJkMqQ18PdbBFbmGKURRuHyOu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-07-01_14,2022-06-28_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1015
- mlxscore=0 lowpriorityscore=0 bulkscore=0 spamscore=0 adultscore=0
- priorityscore=1501 suspectscore=0 mlxlogscore=999 phishscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2204290000 definitions=main-2207010088
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,46 +75,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Kees Cook <keescook@chromium.org>, xiujianfeng@huawei.com, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/1/22 12:47, Tyrel Datwyler wrote:
-> On 7/1/22 06:17, Liang He wrote:
->> In pci_add_device_node_info(), we should use of_node_put() for the
->> reference 'parent' returned by of_get_parent() to keep refcount
->> balance.
->>
->> Fixes: cca87d303c85 ("powerpc/pci: Refactor pci_dn")
->> Co-authored-by: Miaoqian Lin <linmq006@gmail.com>
->> Signed-off-by: Liang He <windhl@126.com>
->> ---
->>  arch/powerpc/kernel/pci_dn.c | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->> index 938ab8838ab5..aa221958007e 100644
->> --- a/arch/powerpc/kernel/pci_dn.c
->> +++ b/arch/powerpc/kernel/pci_dn.c
->> @@ -330,6 +330,7 @@ struct pci_dn *pci_add_device_node_info(struct pci_controller *hose,
->>  	INIT_LIST_HEAD(&pdn->list);
->>  	parent = of_get_parent(dn);
->>  	pdn->parent = parent ? PCI_DN(parent) : NULL;
-> NACK
+On Wed, 29 Jun 2022 14:04:23 +0800, GONG, Ruiqi wrote:
+> Fix the following Sparse warnings that got noticed when the PPC-dev
+> patchwork was checking another patch (see the link below):
 > 
-> pdn->parent is now a long term reference so we should not do a put on parent
-> until we pdn->parent is no longer valid.
+> init/main.c:862:1: warning: symbol 'randomize_kstack_offset' was not declared. Should it be static?
+> init/main.c:864:1: warning: symbol 'kstack_offset' was not declared. Should it be static?
+> 
+> Which in fact are triggered on all architectures that have
+> HAVE_ARCH_RANDOMIZE_KSTACK_OFFSET support (for instances x86, arm64
+> etc).
+> 
+> [...]
 
-I withdraw my NACK. On closer inspection pdn->parent is a reference to the
-parent struct pci_dn and not a reference to a parent struct device_node.
+Applied to for-next/hardening, thanks!
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
+[1/1] stack: Declare {randomize_,}kstack_offset to fix Sparse warnings
+      https://git.kernel.org/kees/c/375561bd6195
 
-> 
-> -Tyrel
-> 
->> +	of_node_put(parent);
->>  	if (pdn->parent)
->>  		list_add_tail(&pdn->list, &pdn->parent->child_list);
->>
-> 
+-- 
+Kees Cook
 
