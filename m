@@ -4,66 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41D76C43334
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 01:03:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09244C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 01:38:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LZYjG4kMPz3dvK
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 11:03:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZZTQ2NK4z3dvg
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 11:38:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WOVRwA7H;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=lpnn/Jze;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=123.126.96.3; helo=mail-m963.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=WOVRwA7H;
+	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=lpnn/Jze;
 	dkim-atps=neutral
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LZYhX59lSz3bnd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2022 11:02:51 +1000 (AEST)
-Received: by mail-pj1-x102e.google.com with SMTP id w24so4129339pjg.5
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jul 2022 18:02:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+QLbq0w+CZfYo6/BgLDLv123MX+VJmesqUpPeKC97pk=;
-        b=WOVRwA7HSikldTi++/cqjLgkGyx1K0hCf5nuW4OrFlAXhnRTSF+Y/yNNej6ML6yzcE
-         V6nLGsFv65rOYWATYTvQBSr/zmmYpBIMTmmdr5IW1yWU/C9qqD6ZjH2/SBxE8T2AFOnb
-         kI4fj3fTeYBB7YR2SCUhm9s0bMSGtNGi6k09c=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+QLbq0w+CZfYo6/BgLDLv123MX+VJmesqUpPeKC97pk=;
-        b=muhafPI10QKhSACYGkCPbryC+DRxNN6rVQOmwlYoa0+WyTfustCdTisjxx1Rl6abWR
-         sKo8cIG/ve5SaCUbjUo1jDJBtcYoL+sc7uW5KGM5G0SdscQ7/hX1uR3Z/kuLRQvf1FSg
-         AWXQLhEL8xHFJOXWeze/gdoRoVNdyfmh5k3BM3L7+y9noXP9/4+jAWK0kgB5m6KPJrZR
-         6IQ4FPy7ZqHsvB9fcTgKCXeb6AuKMjjcN/9zSXMYjkdGbUD7E8CGNUQ7HmAugyvgZJpU
-         yhy9d0FTE+JfZx8xyQ+KduIEv7hvPERhJNFjFH0NzybobmsHT+Z8WtdXIDOBM3JzHx//
-         ljWw==
-X-Gm-Message-State: AJIora84Hptq7gPCcj2mGZ4blGClAi1EYHVdVuWO2aaKcaZ+/RZZFfL6
-	xIHLyNxynby6hcDpQtlbuoLkeQ==
-X-Google-Smtp-Source: AGRyM1vr8gIh5aKj2l7LLWkGGNi1HXOfn7r3prwi2OEXDiHlxyrQv2BZHDG3gbMUAKS+m12eq68kNQ==
-X-Received: by 2002:a17:902:ea07:b0:16a:2833:3207 with SMTP id s7-20020a170902ea0700b0016a28333207mr23231909plg.86.1656723768114;
-        Fri, 01 Jul 2022 18:02:48 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
-        by smtp.gmail.com with ESMTPSA id g10-20020a170902934a00b0016a11b9aeaasm16113169plp.225.2022.07.01.18.02.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 Jul 2022 18:02:47 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: gongruiqi1@huawei.com,
-	elver@google.com
-Subject: Re: [PATCH v2] stack: Declare {randomize_,}kstack_offset to fix Sparse warnings
-Date: Fri,  1 Jul 2022 18:02:43 -0700
-Message-Id: <165672376092.2486882.1451446093485208376.b4-ty@chromium.org>
-X-Mailer: git-send-email 2.32.0
-In-Reply-To: <20220629060423.2515693-1-gongruiqi1@huawei.com>
-References: <20220629060423.2515693-1-gongruiqi1@huawei.com>
+Received: from mail-m963.mail.126.com (mail-m963.mail.126.com [123.126.96.3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LZZSl05wTz3bmg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jul 2022 11:37:37 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=0FWxp
+	TmK6PXVG9JTpDy5pHa33XHYcgjGizZxycrlUYg=; b=lpnn/JzeVGVS68CTWjnpX
+	/eLf2LbeFnGwtWXBrZX1/18j0O8knfc3nz6fG9/lMjlmVx7VH7v6ii6xi/H4Ba4p
+	cb7DqF1kP9pVxXUJ109AZTqKciMK8DJli4XYuLukWDbOSFOKaApAJX13xHHrcEWb
+	thOXLMpxcI+iQ7Dix6l6RU=
+Received: from localhost.localdomain (unknown [124.16.139.61])
+	by smtp8 (Coremail) with SMTP id NORpCgAXAmdLob9ijsUTHA--.62583S2;
+	Sat, 02 Jul 2022 09:37:15 +0800 (CST)
+From: Liang He <windhl@126.com>
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org,
+	paulus@samba.org,
+	linuxppc-dev@lists.ozlabs.org,
+	windhl@126.com
+Subject: [PATCH v2] powerpc: kernel: legacy_serial: Fix missing of_node_put() in add_legacy_soc_port()
+Date: Sat,  2 Jul 2022 09:37:14 +0800
+Message-Id: <20220702013714.263614-1-windhl@126.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID: NORpCgAXAmdLob9ijsUTHA--.62583S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Ww1rKF4UAF4rtrWxWF4rZrb_yoW8WFWUpa
+	n0grZ0yayDGrZ7WFy09r15XrWDKw1vk3y5Xw13Ka9Ykwn8Xr47AF1qvw1Yvry5ZFZ7WFyF
+	9r45tF12kw1kGa7anT9S1TB71UUUUUUqnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zRYhF3UUUUU=
+X-Originating-IP: [124.16.139.61]
+X-CM-SenderInfo: hzlqvxbo6rjloofrz/xtbBGgMyF1-HZa7hAgAAsM
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,28 +58,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, xiujianfeng@huawei.com, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Jun 2022 14:04:23 +0800, GONG, Ruiqi wrote:
-> Fix the following Sparse warnings that got noticed when the PPC-dev
-> patchwork was checking another patch (see the link below):
-> 
-> init/main.c:862:1: warning: symbol 'randomize_kstack_offset' was not declared. Should it be static?
-> init/main.c:864:1: warning: symbol 'kstack_offset' was not declared. Should it be static?
-> 
-> Which in fact are triggered on all architectures that have
-> HAVE_ARCH_RANDOMIZE_KSTACK_OFFSET support (for instances x86, arm64
-> etc).
-> 
-> [...]
+We should call of_node_put() for the reference 'tsi' returned by
+of_get_parent() which will increase the refcount.
 
-Applied to for-next/hardening, thanks!
+Signed-off-by: Liang He <windhl@126.com>
+---
+ changelog:
 
-[1/1] stack: Declare {randomize_,}kstack_offset to fix Sparse warnings
-      https://git.kernel.org/kees/c/375561bd6195
+ v2: use more conservative way to call of_node_put()
+ v1: mov 'of_node_put()' into the 'if' condition
 
+ v1 Link: https://lore.kernel.org/all/20220701130203.240023-1-windhl@126.com/
+
+ arch/powerpc/kernel/legacy_serial.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index f048c424c525..cca72081b864 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -166,7 +166,7 @@ static int __init add_legacy_soc_port(struct device_node *np,
+ {
+ 	u64 addr;
+ 	const __be32 *addrp;
+-	struct device_node *tsi = of_get_parent(np);
++	struct device_node *tsi;
+ 
+ 	/* We only support ports that have a clock frequency properly
+ 	 * encoded in the device-tree.
+@@ -194,12 +194,17 @@ static int __init add_legacy_soc_port(struct device_node *np,
+ 	/* Add port, irq will be dealt with later. We passed a translated
+ 	 * IO port value. It will be fixed up later along with the irq
+ 	 */
+-	if (of_node_is_type(tsi, "tsi-bridge"))
++	tsi = of_get_parent(np);
++	if (of_node_is_type(tsi, "tsi-bridge")) {
++		of_node_put(tsi);
+ 		return add_legacy_port(np, -1, UPIO_TSI, addr, addr,
+ 				       0, legacy_port_flags, 0);
+-	else
++	}
++	else {
++		of_node_put(tsi);
+ 		return add_legacy_port(np, -1, UPIO_MEM, addr, addr,
+ 				       0, legacy_port_flags, 0);
++	}
+ }
+ 
+ static int __init add_legacy_isa_port(struct device_node *np,
 -- 
-Kees Cook
+2.25.1
 
