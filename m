@@ -4,49 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3A7EC43334
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Jul 2022 21:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA483C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Jul 2022 21:25:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lb4Tq0hKRz3c5Q
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Jul 2022 07:10:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=stevens-zone.net (client-ip=217.72.192.73; helo=mout.kundenserver.de; envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 332 seconds by postgrey-1.36 at boromir; Sun, 03 Jul 2022 07:09:56 AEST
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lbhmm1DlMz3by8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 07:25:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tpEk31p9;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tpEk31p9;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lb4TJ2vCpz3bdy
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2022 07:09:56 +1000 (AEST)
-Received: from Cyrus.lan ([86.151.31.128]) by mrelayeu.kundenserver.de
- (mreue107 [212.227.15.179]) with ESMTPA (Nemesis) id
- 1Mqrjz-1nlpiW0UXx-00mqvZ; Sat, 02 Jul 2022 23:03:57 +0200
-Date: Sat, 2 Jul 2022 22:03:55 +0100
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org, oss@buserror.net, chzigotzky@xenosoft.de,
- robh@kernel.org, stern@rowland.harvard.edu, linux-usb@vger.kernel.org
-Subject: [PATCH v3] drivers/usb/host/ehci-fsl: Fix interrupt setup in host
- mode.
-Message-ID: <20220702220355.63b36fb8@Cyrus.lan>
-X-Mailer: Claws Mail 3.13.2 (GTK+ 2.24.30; powerpc-unknown-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lbhlv47Pxz2ypV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 07:24:43 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 35795611D0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2022 21:24:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 8129FC341C6
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jul 2022 21:24:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1656883479;
+	bh=WLyqRtbI+VYZPb1jjLztmnmMkwQwPzY1kmon1EVbfcw=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=tpEk31p9VMeJUeeT6KjPsFG9jYtr02CeXapidhFF8gznWuEcdkL0CWhczsRP3slHC
+	 kv5ygC/di9mpcZa6/LqZSi7os3C/2RJyAX3T3TFBGT2WrtnD9pC13svaRdWVZ5hUQS
+	 ai35a3A9BbmuDUy76BwVhmOTBgweFTfEetUyYemqTzhKY/dJwnUa49pfTf4Hx0v7SU
+	 NyGRsdqNLXPSs8QO7kGLevlT6pKqgqHZipIviH5g+PZ/2hpKk7VtoZCtX7dz9dB/d9
+	 WKLjMVfSMsXOHVoJBAokmpW73n/TVqO0XJEpipeaWP4oCLXOuNhlpaf9xZh6WKJvt7
+	 5adbv/W5P/6hA==
+Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
+	id 662BCC05FD6; Sun,  3 Jul 2022 21:24:39 +0000 (UTC)
+From: bugzilla-daemon@kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [Bug 216190] 5.19-rc4 kernel + KASAN fails to boot at very early
+ stage when CONFIG_SMP=y is selected (PowerMac G4 3,6)
+Date: Sun, 03 Jul 2022 21:24:39 +0000
+X-Bugzilla-Reason: None
+X-Bugzilla-Type: changed
+X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Product: Platform Specific/Hardware
+X-Bugzilla-Component: PPC-32
+X-Bugzilla-Version: 2.5
+X-Bugzilla-Keywords: 
+X-Bugzilla-Severity: normal
+X-Bugzilla-Who: erhard_f@mailbox.org
+X-Bugzilla-Status: NEW
+X-Bugzilla-Resolution: 
+X-Bugzilla-Priority: P1
+X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
+X-Bugzilla-Flags: 
+X-Bugzilla-Changed-Fields: 
+Message-ID: <bug-216190-206035-JVZ7ym8CZG@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-216190-206035@https.bugzilla.kernel.org/>
+References: <bug-216190-206035@https.bugzilla.kernel.org/>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Bugzilla-URL: https://bugzilla.kernel.org/
+Auto-Submitted: auto-generated
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:7dP2sXcx+tU1+/TK79yzyTjl/O/pWtJa8WSayWZhp5S7eX3nEwZ
- afTpN6tXjGqRooJMr+bEZLB1jXf7XbtJdJUVXUK3CsI78xgvFzsAkIy1K/wSjWbMTKCOahn
- i1S+CpXI25tmplwOGpNqWt+lC6JWA5SSQ9ihdu+1dhKqHD8JAJPVhgT9caMizZkUGa+zGmc
- TsJ+CfUxgzkQtOoHvGbPA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:1Uoxm6hO9yk=:SF8yDt+syLc9dNQ8MKFiJJ
- CVRJg+0LPKhFHd/1QphF0JTnx45WcwDP9Imw5llosDQ8h6jLOR7sVwBEes1Dl9kWn3wZP8bDU
- ggPo82ITUzQL9u5IZScbnTUnbr0U4ZearbeAGAGuVXrXx1IEfmA6ZmIBNALDGR1+QyjHMUt8j
- OfBeF7m7hh06GQkV+a1ikV3C2eW24ukE1mhxh/Yl8tOqPY6q3yIzXaIhx9YXTSPLYuRagZCQP
- OKQ469RkNrYI3DVESFnTXGULamTBw0RQ1rbA3WOsPqupMFbXUvVA2Z1KFc4O1dlX76xRmIzDU
- h1NFLO0/YFRMPoVfEgR/HdnXILT60gd8nONKjsjP/xHUFT/uNJLshDa4kmvngmMok81Gpxsak
- kwl16wR7bxt61NsXZ9ErwKm6GHlFrYZjp6R4aXz/VpJd65w5om9jV7BOgyO17Phbp105vEP1B
- FavqY9+JTTBEZTAAh5SIx0TtLTRUu2W5P+KKEqnhP1BV5nSylnBZQHtXN3cZL2Tc7Ge6GNd+l
- KdqPjPFOaElVYev97SM1Jihtgs6AphOncn88fsUO8GotZf/tx/n+RG/CG+Nu7GCNHBEJHANK7
- woTIooSbQUXnSqxah4QPJ2I1uoN8RQ5m7HId01/GUAk2ap3OGsHopw1NohCXPgEXJ9pQXh+bo
- VcY6MI/7FbLCKUj1tdIXD5A77VGnpCGhHq0AuPvE7Qd/K9PS4vtW66G+LLr7H79z5SpeLYWsJ
- L2CgtfzHPVqRo4vqn20QBsOILmINwWVERKjXc1h7EAbtIN4pQDm1pOJWcxM=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,62 +79,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: shawnguo@kernel.org, leoyang.li@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In patch a1a2b7125e10 (Drop static setup of IRQ resource from DT
-core) we stopped platform_get_resource() from returning the IRQ, as all
-drivers were supposed to have switched to platform_get_irq()
-Unfortunately the Freescale EHCI driver in host mode got missed. Fix
-it.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D216190
 
-Fixes: a1a2b7125e10 (Drop static setup of IRQ resource from DT core)
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Suggested-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
----
- v3 - Corrected resource allocation in fsl-mph-dr-of.c
+--- Comment #3 from Erhard F. (erhard_f@mailbox.org) ---
+(In reply to Christophe Leroy from comment #2)
+> Problem is likely due to commit 4291d085b0b0 ("powerpc/32s: Make
+> pte_update() non atomic on 603 core")
+>=20
+> kasan_early_init() calls __set_pte_at(), which calls pte_update() if
+> CONFIG_SMP, and pte_update() calls mmu_has_feature() since above commit, =
+but
+> that's too early for calling mmu_has_feature() so mmu_has_feature() tries=
+ to
+> warn using printk(), but that cannot work because the KASAN shadow is not
+> set.
+>=20
+> Can you try with the change below ?
+Applied your patch on top of 5.19-rc4 and can confirm it works. Thanks!
 
- v2 - Fixed coding style, removed a couple of unneeded initializations,
-      cc'd Layerscape maintainers.
+I'll close here as soon it is in the -rcs.
 
-Tested on AmigaOne X5000/20 and X5000/40 Contains code by Rob Herring 
-(in fsl-mph-dr-of.c)
+--=20
+You may reply to this email to add a comment.
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index 385be30..896c0d1 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -76,14 +76,9 @@ static int fsl_ehci_drv_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
--	if (!res) {
--		dev_err(&pdev->dev,
--			"Found HC with no IRQ. Check %s setup!\n",
--			dev_name(&pdev->dev));
--		return -ENODEV;
--	}
--	irq = res->start;
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
- 
- 	hcd = __usb_create_hcd(&fsl_ehci_hc_driver, pdev->dev.parent,
- 			       &pdev->dev, dev_name(&pdev->dev), NULL);
-diff --git a/drivers/usb/host/fsl-mph-dr-of.c b/drivers/usb/host/fsl-mph-dr-of.c
-index 44a7e58..e5df175 100644
---- a/drivers/usb/host/fsl-mph-dr-of.c
-+++ b/drivers/usb/host/fsl-mph-dr-of.c
-@@ -112,6 +112,9 @@ static struct platform_device *fsl_usb2_device_register(
- 			goto error;
- 	}
- 
-+	pdev->dev.of_node = ofdev->dev.of_node;
-+	pdev->dev.of_node_reused = true;
-+
- 	retval = platform_device_add(pdev);
- 	if (retval)
- 		goto error;
+You are receiving this mail because:
+You are watching the assignee of the bug.=
