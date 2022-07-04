@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68036C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:43:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A214C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:43:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3pK74k8z3gRc
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:43:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3pl6cD2z3gWt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:43:27 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fW28zDz3bwX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fX5J6Nz3cDk
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fW11ppz4xtw;
-	Mon,  4 Jul 2022 21:36:19 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fX4D9cz4xYV;
+	Mon,  4 Jul 2022 21:36:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20220523164353.26441-1-ldufour@linux.ibm.com>
-References: <20220523164353.26441-1-ldufour@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/64s: Don't read H_BLOCK_REMOVE characteristics in radix mode
-Message-Id: <165693443133.9954.10851917320089851428.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:51 +1000
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <20210429050208.266619-1-maddy@linux.ibm.com>
+References: <20210429050208.266619-1-maddy@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/perf: Update MMCR2 to support event exclude_idle
+Message-Id: <165693444269.9954.4761798275894011090.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:34:02 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 23 May 2022 18:43:53 +0200, Laurent Dufour wrote:
-> There is no need to read the H_BLOCK_REMOVE characteristics when running in
-> Radix mode because this hcall is never called.
+On Thu, 29 Apr 2021 10:32:08 +0530, Madhavan Srinivasan wrote:
+> struct perf_event_attr supports exclude counting of idle task.
+> This is sent to kernel via perf_event_attr.exclude_idle and
+> in perf tool, user can use ":I" event modifier to enable this
+> for specific event.
 > 
-> Furthermore since the commit 387e220a2e5e ("powerpc/64s: Move hash MMU
-> support code under CONFIG_PPC_64S_HASH_MMU") define
-> pseries_lpar_read_hblkrm_characteristics as un empty function if
-> CONFIG_PPC_64S_HASH_MMU is not set, the #ifdef block can be removed.
+> Monitor Mode Control Register 2 (MMCR2) SPR has control bits
+> for each PMCs to freeze counting based on the Control Register
+> CTRL[RUN] state. CTRL[RUN] is not set when idle task is
+> running. Patch adds a check for event attr.exclude_idle to
+> set MMCR2[FCnWAIT] bit.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: Don't read H_BLOCK_REMOVE characteristics in radix mode
-      https://git.kernel.org/powerpc/c/61bdbca855024997fd8c82dc190f458aa81beca8
+[1/1] powerpc/perf: Update MMCR2 to support event exclude_idle
+      https://git.kernel.org/powerpc/c/5969e0c1c7e2132d8b2cf80168072b1195ddce46
 
 cheers
