@@ -4,58 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C03A5CCA479
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 15:07:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D80C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 15:07:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc8Km1l4Vz3c6V
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 01:07:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc8LQ1STyz3cf6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 01:07:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=HFp/v8d2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=c7LZpgpH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--elver.bounces.google.com (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=30whdygukdp4kr1kxmuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--elver.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--elver.bounces.google.com (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=32qhdygukdaykr1kxmuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--elver.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=HFp/v8d2;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=c7LZpgpH;
 	dkim-atps=neutral
 Received: from mail-ed1-x549.google.com (mail-ed1-x549.google.com [IPv6:2a00:1450:4864:20::549])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc8JT5RBJz30Lp
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 01:05:59 +1000 (AEST)
-Received: by mail-ed1-x549.google.com with SMTP id i9-20020a05640242c900b004373cd1c4d5so7332776edc.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2022 08:05:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc8JX2t9Nz30Lp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 01:06:04 +1000 (AEST)
+Received: by mail-ed1-x549.google.com with SMTP id v16-20020a056402349000b00435a1c942a9so7412410edc.15
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jul 2022 08:06:04 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
-        h=date:message-id:mime-version:subject:from:to:cc;
-        bh=vCw+qYcLfEryg0NCqZvoZGaEOfEUqqIfSJ3H2Y/La+U=;
-        b=HFp/v8d2JOu2HioOUO0UTDm9Zyhs+v2Kftdg2XX6m5HUrg5WguofD2OUwXCJFmS2t5
-         MzJ+MRI0ygIfoJcIf/tMFNJNZbGyjzyrLWGWivMyMHmp8eVi4nsp7ExUK3gmGVz/wyw0
-         7U6+cUacp1FI8hB1JqPYKjF6K/yUIZFAuD4PFsJqvZ864ha8FmfiajnGNjREe9ugM/7A
-         2bwVpugmtHL2oGjoONBY82pn1ytKFJaNZ1V8XrMgfIf418nJTEtcHiaSuoetYrZep8i9
-         0Co/EUanDPBpyvGSg4MjLbGcZRFp1iZpG2VX08sIwcAZPlkaF3A6n4gwMxMPGNYD6Br1
-         yaSg==
+        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
+         :cc;
+        bh=0mVGJO2my8t1HZTqH29Koygvc/XGcDZ6vWpb1jdDT4o=;
+        b=c7LZpgpHCMEBj4kEkGYT6bIghj7rNP9OT0wV7natbn5wuqgLWU/zG9DSmlQ3UoI0nM
+         MI4O6Yh+OcLIuk2ut/UkMTguYgLY7CRzA22Nl6fr3P2zFMYeTmGQmVqsEFwVmEbhQ6OK
+         fzW4NNfl1lbwaGdyJPbQTgrp78RaKY7f6kZBMtyl+6RXzcPxksBXHu63hC9eFKG/bMPV
+         RaIopRqFLF6DUEH5O1JW3to4T/kOCMvFYMeqTdSydrxqLwRnWOFUO0Df8H0K5KNdjHHJ
+         tfKLT8izTPB0q+KzUVb+TsNCU3Ae+1Iq/NAZaHYQYOFNSHtTznzKAwdaMHkQ3wSbp6QS
+         l/fQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
-        bh=vCw+qYcLfEryg0NCqZvoZGaEOfEUqqIfSJ3H2Y/La+U=;
-        b=ez9MwMuhzMfusxWmpZ3N3Eiq/KPYaY3rQOD2d1r8k8/panYjWCN+pM7DIEEFXHcWCi
-         5VI/6VREfmIMsDZuvPTwLlzoXRDaeyKD9tCDdrUiWyksd731pYItaatcNwpUqsAeVaTd
-         lrvOZZg3ETO2WRMt7j77qkc+Dgcc1cGzCEpmGlCP1vh+vKLQQuwtI4lvyxDuSf4V9suw
-         tlCy8j5Dh8BweuSx/K0cAd+Q7gbZ+6lPo+DLnlxorSsmHF3BWL8J+TTJz9E0ohVdCaOL
-         LR4OYfLFsk+F1BPTLfg4JycYR/7O9F+tH8wjP5eQW5vQpw9U7VQ8gYEvvvLTbo1JOQ0R
-         +VFA==
-X-Gm-Message-State: AJIora8J7rLhegu3ccKWKU3GAxKr4C7uZdnDOKGWSTjfMuuEOCQiWHco
-	dtPgZ7EHRg71USfaUPksw1Gs9iAO9g==
-X-Google-Smtp-Source: AGRyM1vcv+ey9wUHmm7mpO7HIaPskiyQmKiaXY4E4O4MknYpkUaDhKf/gg5exg6tZAXZRBybUUWCEVO2Hg==
+        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
+         :references:subject:from:to:cc;
+        bh=0mVGJO2my8t1HZTqH29Koygvc/XGcDZ6vWpb1jdDT4o=;
+        b=BpPy5qgyHTfKApl0Kbic1fFRIym2A397MbooSLwInJcbJNwbC6xPFAA24+tUQVTHha
+         iIu1VkU5Jfex4jngc8qSnXsuMX1bf/JzvfCtonoJFYxxJnxchq028n06qpvJLjuaViQr
+         jBgmhdM3KB6ZeUiNfwkEti7YdIiNX798tUYda2RLW0dHgaiM/ilszomkyXyZOiJkTNpw
+         seum0JRW50JMXN5PMZLi1ppjc38ZtHVXem5hdkV23Z3WnsO1xUt5gg0HWprCl8KaoQ0r
+         hB1YhyUjaYHWQCDg2VaTY97lakeLIhfJgCwQWF2ayfWE529Wd3okxLjaw5ktaFTsilHN
+         zApw==
+X-Gm-Message-State: AJIora8ppQJWLhuRa6Ht7pYi3ggo9UpVUHV95w5QYBVeIDL/ShVsZR5j
+	e4tTuDCqRbblANtX67ry6v8SL3ed6g==
+X-Google-Smtp-Source: AGRyM1u1tV984VAUKT5L9i/jwt0YX43hTGCtQ8Dkdr+VsujPNvT+0VKdHYhVoQYNC2BBRUvkHBjcbLjtmw==
 X-Received: from elver.muc.corp.google.com ([2a00:79e0:9c:201:6edf:e1bc:9a92:4ad0])
- (user=elver job=sendgmr) by 2002:a17:906:9b86:b0:6f8:24e7:af7d with SMTP id
- dd6-20020a1709069b8600b006f824e7af7dmr29696674ejc.295.1656947155542; Mon, 04
- Jul 2022 08:05:55 -0700 (PDT)
-Date: Mon,  4 Jul 2022 17:05:00 +0200
-Message-Id: <20220704150514.48816-1-elver@google.com>
+ (user=elver job=sendgmr) by 2002:aa7:cd17:0:b0:435:bd7e:2efb with SMTP id
+ b23-20020aa7cd17000000b00435bd7e2efbmr40768145edw.180.1656947161289; Mon, 04
+ Jul 2022 08:06:01 -0700 (PDT)
+Date: Mon,  4 Jul 2022 17:05:02 +0200
+In-Reply-To: <20220704150514.48816-1-elver@google.com>
+Message-Id: <20220704150514.48816-3-elver@google.com>
 Mime-Version: 1.0
+References: <20220704150514.48816-1-elver@google.com>
 X-Mailer: git-send-email 2.37.0.rc0.161.g10f37bed90-goog
-Subject: [PATCH v3 00/14] perf/hw_breakpoint: Optimize for thousands of tasks
+Subject: [PATCH v3 02/14] perf/hw_breakpoint: Provide hw_breakpoint_is_used()
+ and use in test
 From: Marco Elver <elver@google.com>
 To: elver@google.com, Peter Zijlstra <peterz@infradead.org>, 
 	Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>
@@ -75,120 +80,113 @@ Cc: Mark Rutland <mark.rutland@arm.com>, linux-sh@vger.kernel.org, Alexander Shi
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The hw_breakpoint subsystem's code has seen little change in over 10
-years. In that time, systems with >100s of CPUs have become common,
-along with improvements to the perf subsystem: using breakpoints on
-thousands of concurrent tasks should be a supported usecase.
+Provide hw_breakpoint_is_used() to check if breakpoints are in use on
+the system.
 
-The breakpoint constraints accounting algorithm is the major bottleneck
-in doing so:
+Use it in the KUnit test to verify the global state before and after a
+test case.
 
-  1. toggle_bp_slot() and fetch_bp_busy_slots() are O(#cpus * #tasks):
-     Both iterate through all CPUs and call task_bp_pinned(), which is
-     O(#tasks).
-
-  2. Everything is serialized on a global mutex, 'nr_bp_mutex'.
-
-The series progresses with the simpler optimizations and finishes with
-the more complex optimizations:
-
- 1. We first optimize task_bp_pinned() to only take O(1) on average.
-
- 2. Rework synchronization to allow concurrency when checking and
-    updating breakpoint constraints for tasks.
-
- 3. Eliminate the O(#cpus) loops in the CPU-independent case.
-
-Along the way, smaller micro-optimizations and cleanups are done as they
-seemed obvious when staring at the code (but likely insignificant).
-
-The result is (on a system with 256 CPUs) that we go from:
-
- | $> perf bench -r 30 breakpoint thread -b 4 -p 64 -t 64
-	 	[ ^ more aggressive benchmark parameters took too long ]
- | # Running 'breakpoint/thread' benchmark:
- | # Created/joined 30 threads with 4 breakpoints and 64 parallelism
- |      Total time: 236.418 [sec]
- |
- |   123134.794271 usecs/op
- |  7880626.833333 usecs/op/cpu
-
-... to the following with all optimizations:
-
- | $> perf bench -r 30 breakpoint thread -b 4 -p 64 -t 64
- | # Running 'breakpoint/thread' benchmark:
- | # Created/joined 30 threads with 4 breakpoints and 64 parallelism
- |      Total time: 0.067 [sec]
- |
- |       35.292187 usecs/op
- |     2258.700000 usecs/op/cpu
-
-On the used test system, that's an effective speedup of ~3490x per op.
-
-Which is on par with the theoretical ideal performance through
-optimizations in hw_breakpoint.c (constraints accounting disabled), and
-only 12% slower than no breakpoints at all.
-
-Changelog
----------
-
+Signed-off-by: Marco Elver <elver@google.com>
+---
 v3:
-* Fix typos.
-* Introduce hw_breakpoint_is_used() for the test.
-* Add WARN_ON in bp_blots_histogram_add().
-* Don't use raw_smp_processor_id() in test.
-* Apply Acked-by/Reviewed-by given in v2 for mostly unchanged patches.
+* New patch.
+---
+ include/linux/hw_breakpoint.h      |  3 +++
+ kernel/events/hw_breakpoint.c      | 29 +++++++++++++++++++++++++++++
+ kernel/events/hw_breakpoint_test.c | 12 +++++++++++-
+ 3 files changed, 43 insertions(+), 1 deletion(-)
 
-v2: https://lkml.kernel.org/r/20220628095833.2579903-1-elver@google.com
- * Add KUnit test suite.
- * Remove struct bp_busy_slots and simplify functions.
- * Add "powerpc/hw_breakpoint: Avoid relying on caller synchronization".
- * Add "locking/percpu-rwsem: Add percpu_is_write_locked() and percpu_is_read_locked()".
- * Use percpu-rwsem instead of rwlock.
- * Use task_struct::perf_event_mutex instead of sharded mutex.
- * Drop v1 "perf/hw_breakpoint: Optimize task_bp_pinned() if CPU-independent".
- * Add "perf/hw_breakpoint: Introduce bp_slots_histogram".
- * Add "perf/hw_breakpoint: Optimize max_bp_pinned_slots() for CPU-independent task targets".
- * Add "perf/hw_breakpoint: Optimize toggle_bp_slot() for CPU-independent task targets".
- * Apply Acked-by/Reviewed-by given in v1 for unchanged patches.
-==> Speedup of ~3490x (vs. ~3315x in v1).
-
-v1: https://lore.kernel.org/all/20220609113046.780504-1-elver@google.com/
-
-Marco Elver (14):
-  perf/hw_breakpoint: Add KUnit test for constraints accounting
-  perf/hw_breakpoint: Provide hw_breakpoint_is_used() and use in test
-  perf/hw_breakpoint: Clean up headers
-  perf/hw_breakpoint: Optimize list of per-task breakpoints
-  perf/hw_breakpoint: Mark data __ro_after_init
-  perf/hw_breakpoint: Optimize constant number of breakpoint slots
-  perf/hw_breakpoint: Make hw_breakpoint_weight() inlinable
-  perf/hw_breakpoint: Remove useless code related to flexible
-    breakpoints
-  powerpc/hw_breakpoint: Avoid relying on caller synchronization
-  locking/percpu-rwsem: Add percpu_is_write_locked() and
-    percpu_is_read_locked()
-  perf/hw_breakpoint: Reduce contention with large number of tasks
-  perf/hw_breakpoint: Introduce bp_slots_histogram
-  perf/hw_breakpoint: Optimize max_bp_pinned_slots() for CPU-independent
-    task targets
-  perf/hw_breakpoint: Optimize toggle_bp_slot() for CPU-independent task
-    targets
-
- arch/powerpc/kernel/hw_breakpoint.c  |  53 ++-
- arch/sh/include/asm/hw_breakpoint.h  |   5 +-
- arch/x86/include/asm/hw_breakpoint.h |   5 +-
- include/linux/hw_breakpoint.h        |   4 +-
- include/linux/percpu-rwsem.h         |   6 +
- include/linux/perf_event.h           |   3 +-
- kernel/events/Makefile               |   1 +
- kernel/events/hw_breakpoint.c        | 638 ++++++++++++++++++++-------
- kernel/events/hw_breakpoint_test.c   | 333 ++++++++++++++
- kernel/locking/percpu-rwsem.c        |   6 +
- lib/Kconfig.debug                    |  10 +
- 11 files changed, 885 insertions(+), 179 deletions(-)
- create mode 100644 kernel/events/hw_breakpoint_test.c
-
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 78dd7035d1e5..a3fb846705eb 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -74,6 +74,7 @@ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ extern int register_perf_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events);
++extern bool hw_breakpoint_is_used(void);
+ 
+ extern int dbg_reserve_bp_slot(struct perf_event *bp);
+ extern int dbg_release_bp_slot(struct perf_event *bp);
+@@ -121,6 +122,8 @@ register_perf_hw_breakpoint(struct perf_event *bp)	{ return -ENOSYS; }
+ static inline void unregister_hw_breakpoint(struct perf_event *bp)	{ }
+ static inline void
+ unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)	{ }
++static inline bool hw_breakpoint_is_used(void)		{ return false; }
++
+ static inline int
+ reserve_bp_slot(struct perf_event *bp)			{return -ENOSYS; }
+ static inline void release_bp_slot(struct perf_event *bp) 		{ }
+diff --git a/kernel/events/hw_breakpoint.c b/kernel/events/hw_breakpoint.c
+index f32320ac02fd..fd5cd1f9e7fc 100644
+--- a/kernel/events/hw_breakpoint.c
++++ b/kernel/events/hw_breakpoint.c
+@@ -604,6 +604,35 @@ void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)
+ }
+ EXPORT_SYMBOL_GPL(unregister_wide_hw_breakpoint);
+ 
++/**
++ * hw_breakpoint_is_used - check if breakpoints are currently used
++ *
++ * Returns: true if breakpoints are used, false otherwise.
++ */
++bool hw_breakpoint_is_used(void)
++{
++	int cpu;
++
++	if (!constraints_initialized)
++		return false;
++
++	for_each_possible_cpu(cpu) {
++		for (int type = 0; type < TYPE_MAX; ++type) {
++			struct bp_cpuinfo *info = get_bp_info(cpu, type);
++
++			if (info->cpu_pinned)
++				return true;
++
++			for (int slot = 0; slot < nr_slots[type]; ++slot) {
++				if (info->tsk_pinned[slot])
++					return true;
++			}
++		}
++	}
++
++	return false;
++}
++
+ static struct notifier_block hw_breakpoint_exceptions_nb = {
+ 	.notifier_call = hw_breakpoint_exceptions_notify,
+ 	/* we need to be notified first */
+diff --git a/kernel/events/hw_breakpoint_test.c b/kernel/events/hw_breakpoint_test.c
+index 433c5c45e2a5..5ced822df788 100644
+--- a/kernel/events/hw_breakpoint_test.c
++++ b/kernel/events/hw_breakpoint_test.c
+@@ -294,7 +294,14 @@ static struct kunit_case hw_breakpoint_test_cases[] = {
+ static int test_init(struct kunit *test)
+ {
+ 	/* Most test cases want 2 distinct CPUs. */
+-	return num_online_cpus() < 2 ? -EINVAL : 0;
++	if (num_online_cpus() < 2)
++		return -EINVAL;
++
++	/* Want the system to not use breakpoints elsewhere. */
++	if (hw_breakpoint_is_used())
++		return -EBUSY;
++
++	return 0;
+ }
+ 
+ static void test_exit(struct kunit *test)
+@@ -308,6 +315,9 @@ static void test_exit(struct kunit *test)
+ 		kthread_stop(__other_task);
+ 		__other_task = NULL;
+ 	}
++
++	/* Verify that internal state agrees that no breakpoints are in use. */
++	KUNIT_EXPECT_FALSE(test, hw_breakpoint_is_used());
+ }
+ 
+ static struct kunit_suite hw_breakpoint_test_suite = {
 -- 
 2.37.0.rc0.161.g10f37bed90-goog
 
