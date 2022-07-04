@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44B6DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:38:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A85C9C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:39:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3jF5YGwz3fN8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:38:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3jg2zgxz3fRM
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:39:03 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f63CJGz3c2p
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:35:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f805G7z3c1Y
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:00 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f54rVHz4xYn;
-	Mon,  4 Jul 2022 21:35:57 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f73t78z4xLX;
+	Mon,  4 Jul 2022 21:35:59 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1b416f8a8fe1bc3f4e01175680ce310b7eb3a1e4.1655974565.git.christophe.leroy@csgroup.eu>
-References: <1b416f8a8fe1bc3f4e01175680ce310b7eb3a1e4.1655974565.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/64e: Rewrite p4d_populate() as a static inline function
-Message-Id: <165693441307.9954.9463227776617482295.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:33 +1000
+In-Reply-To: <9f05937d8722ddd2064a7c2362d8f9000e15e1ba.1652863723.git.christophe.leroy@csgroup.eu>
+References: <9f05937d8722ddd2064a7c2362d8f9000e15e1ba.1652863723.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/irq: remove inline assembly in hard_irq_disable macro
+Message-Id: <165693439618.9954.17884981112281314426.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:16 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Mike Rapoport <rppt@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 23 Jun 2022 10:56:57 +0200, Christophe Leroy wrote:
-> Rewrite p4d_populate() as a static inline function instead of
-> a macro.
-> 
-> This change allows typechecking and would have helped detecting
-> a recently found bug in map_kernel_page().
+On Wed, 18 May 2022 10:48:55 +0200, Christophe Leroy wrote:
+> Use WRITE_ONCE() instead of opencoding the saving of current
+> stack pointeur.
 > 
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64e: Rewrite p4d_populate() as a static inline function
-      https://git.kernel.org/powerpc/c/2db2008e636327a3caa648ef1e34a9d501d20e2e
+[1/1] powerpc/irq: remove inline assembly in hard_irq_disable macro
+      https://git.kernel.org/powerpc/c/077fc62b2b66a95af43dbb363fb8e932999812d3
 
 cheers
