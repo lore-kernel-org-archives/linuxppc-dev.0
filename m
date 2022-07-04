@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19D5DC43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:43:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 039C1C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:44:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3q960Cbz3ft0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:43:49 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3qb49Ghz3gg2
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:44:11 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fZ195vz3cFK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fb4Drsz3cdW
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:23 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fY6fL5z4xw8;
-	Mon,  4 Jul 2022 21:36:21 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fb2kCrz4yRF;
+	Mon,  4 Jul 2022 21:36:23 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220531065936.3674348-1-mpe@ellerman.id.au>
-References: <20220531065936.3674348-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64: Drop ppc_inst_as_str()
-Message-Id: <165693442764.9954.8462797726293479330.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:47 +1000
+In-Reply-To: <20220616070705.1941829-1-mpe@ellerman.id.au>
+References: <20220616070705.1941829-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests/powerpc: Add missing files to .gitignores
+Message-Id: <165693442541.9954.3966863084425401597.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:45 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jniethe5@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 31 May 2022 16:59:36 +1000, Michael Ellerman wrote:
-> The ppc_inst_as_str() macro tries to make printing variable length,
-> aka "prefixed", instructions convenient. It mostly succeeds, but it does
-> hide an on-stack buffer, which triggers stack protector.
+On Thu, 16 Jun 2022 17:07:05 +1000, Michael Ellerman wrote:
+> These were missed when the respective tests were added, add them now.
 > 
-> More problematically it doesn't compile at all with GCC 12, due to the
-> fact that it returns the char buffer declared inside the macro:
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: Drop ppc_inst_as_str()
-      https://git.kernel.org/powerpc/c/2a83afe72a2b5760155c2dd840c776aee292dc90
+[1/1] selftests/powerpc: Add missing files to .gitignores
+      https://git.kernel.org/powerpc/c/dd3549c5032d588bf444bc8b8eae5108d0aa055a
 
 cheers
