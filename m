@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C88D6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:37:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D50DC43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:38:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3hH3fYCz3f9V
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:37:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3hj2LYqz3fJV
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:38:13 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f311Dpz3c1x
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:35:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f42vdTz3c2W
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:35:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f23kJnz4xZb;
-	Mon,  4 Jul 2022 21:35:54 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f41FjWz4xDB;
+	Mon,  4 Jul 2022 21:35:56 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <9f1a47de80f78d3dd270a7a72f69f55f581c4054.1652859593.git.christophe.leroy@csgroup.eu>
-References: <9f1a47de80f78d3dd270a7a72f69f55f581c4054.1652859593.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 1/2] powerpc/irq: Split irq.c
-Message-Id: <165693439157.9954.12569794251184438782.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:11 +1000
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <6977314c823cfb728bc0273cea634b41807bfb64.1655202721.git.christophe.leroy@csgroup.eu>
+References: <6977314c823cfb728bc0273cea634b41807bfb64.1655202721.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/3] powerpc/32: Remove the 'nobats' kernel parameter
+Message-Id: <165693440969.9954.7330946300172449990.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,18 +46,20 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 18 May 2022 09:40:15 +0200, Christophe Leroy wrote:
-> More than half of irq.c is dedicated to PPC64.
+On Tue, 14 Jun 2022 12:32:23 +0200, Christophe Leroy wrote:
+> Mapping without BATs doesn't bring any added value to the user.
 > 
-> Move PPC64 code out of irq.c into irq_64.c
+> Remove that option.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/2] powerpc/irq: Split irq.c
-      https://git.kernel.org/powerpc/c/7d7b28b302085e1ec2815bc9f5205af28394c5db
-[2/2] powerpc/irq64: Remove get_irq_happened()
-      https://git.kernel.org/powerpc/c/98552307e3a72d480e72744bf5da2a865822f496
+[1/3] powerpc/32: Remove the 'nobats' kernel parameter
+      https://git.kernel.org/powerpc/c/1ce844973bb516e95d3f2bcb001a3992548def9d
+[2/3] powerpc/32: Remove 'noltlbs' kernel parameter
+      https://git.kernel.org/powerpc/c/56e54b4e6c477b2a7df43f9a320ae5f9a5bfb16c
+[3/3] powerpc/32: Remove __map_without_ltlbs
+      https://git.kernel.org/powerpc/c/513f5bbac7b9ca7046bc350dd6eb39b957e338a7
 
 cheers
