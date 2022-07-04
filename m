@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 633CFC43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:40:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4340C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:40:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3kv6n83z3fgN
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:40:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3lK1y3vz3byP
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:40:29 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fD5Tklz3c1X
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fG37lFz3c5d
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:06 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fD2WDCz4xZj;
-	Mon,  4 Jul 2022 21:36:04 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fG1kp7z4xZp;
+	Mon,  4 Jul 2022 21:36:06 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <98a4c2603bf9e4b776e219f5b8541d23aa24e854.1654930308.git.christophe.leroy@csgroup.eu>
-References: <98a4c2603bf9e4b776e219f5b8541d23aa24e854.1654930308.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Restore CONFIG_DEBUG_INFO in defconfigs
-Message-Id: <165693440488.9954.15240124724285203311.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:24 +1000
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <11956ec181a034b51a881ac9c059eea72c679a73.1651828453.git.christophe.leroy@csgroup.eu>
+References: <11956ec181a034b51a881ac9c059eea72c679a73.1651828453.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 1/2] powerpc: Include asm/firmware.h in all users of firmware_has_feature()
+Message-Id: <165693438809.9954.10973271301245396597.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:08 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Kees Cook <keescook@chromium.org>, stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 11 Jun 2022 08:51:57 +0200, Christophe Leroy wrote:
-> Commit f9b3cd245784 ("Kconfig.debug: make DEBUG_INFO selectable from a
-> choice") broke the selection of CONFIG_DEBUG_INFO by powerpc defconfigs.
+On Fri, 6 May 2022 11:14:24 +0200, Christophe Leroy wrote:
+> Trying to remove asm/ppc_asm.h from all places that don't need it
+> leads to several failures linked to firmware_has_feature().
 > 
-> It is now necessary to select one of the three DEBUG_INFO_DWARF*
-> options to get DEBUG_INFO enabled.
+> To fix it, include asm/firmware.h in all files using
+> firmware_has_feature()
 > 
-> Replace DEBUG_INFO=y by DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT=y in all
-> defconfigs using the following command:
+> All users found with:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Restore CONFIG_DEBUG_INFO in defconfigs
-      https://git.kernel.org/powerpc/c/92f89ec1b534b6eca2b81bae97d30a786932f51a
+[1/2] powerpc: Include asm/firmware.h in all users of firmware_has_feature()
+      https://git.kernel.org/powerpc/c/46d60bdb1283bb0f22d9480e2d6c972623cb4182
+[2/2] powerpc: Don't include asm/ppc_asm.h in other headers
+      https://git.kernel.org/powerpc/c/e93dee186fc95f2058b0c9d2317d8b876b8512db
 
 cheers
