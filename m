@@ -4,55 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1E1EC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:16:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DE77C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:35:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3C638C0z3by9
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:16:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3dH4lB3z3c1S
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:35:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=j16v+wZX;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=TWB6GCLz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=f+vp=xj=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=TWB6GCLz;
+	dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3BL0YBBz3035
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:15:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=SbHD1n8XqP8wGQ3XxCknC9EbZ1/NABCZiXDwJDXdcag=; b=j16v+wZXZzVjoqO5IBM8tZyzfm
-	r3aWHwyq5XtDLX0xcR+zPinVx62H/w9KWuLDJwe0iZFQlSHqC2oJW408VYD5BBeQU1Zub19ahPFKa
-	x2epAN7Roi7fM2acJLCrusgayQB385AUZXJQ7Mqg1EDOX53arvHhpLw2Ul7OEAtOWcHGJCltD6qWM
-	UxUdyzqm7Htiv/7oK7FzBGJ+yyQkt+XdENwO+80QHW8nzf4DlcE6tjDyXnISjD2G9zFR6hvvMfAPm
-	TyWKPfxI5O8PHRIIwafFI+jo8Psau8XPcuONAaW77dd/r+Zh0J6n7ZpgawaV0yzr4eoErGWHJ5pok
-	MAm2hViA==;
-Received: from dhcp-077-249-017-003.chello.nl ([77.249.17.3] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1o8K2e-00HCvW-1b; Mon, 04 Jul 2022 11:15:00 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 1E33830033D;
-	Mon,  4 Jul 2022 13:14:57 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-	id E19402028F029; Mon,  4 Jul 2022 13:14:56 +0200 (CEST)
-Date: Mon, 4 Jul 2022 13:14:56 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sathvika Vasireddy <sv@linux.ibm.com>,
-	g@hirez.programming.kicks-ass.net
-Subject: Re: [RFC PATCH v3 07/12] objtool: Use macros to define arch specific
- reloc types
-Message-ID: <YsLLsE2oajICIYmq@hirez.programming.kicks-ass.net>
-References: <20220624183238.388144-1-sv@linux.ibm.com>
- <20220624183238.388144-8-sv@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3cc3C0yz304n
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:34:40 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 4BB28B80E42;
+	Mon,  4 Jul 2022 11:34:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5459BC3411E;
+	Mon,  4 Jul 2022 11:34:33 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="TWB6GCLz"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1656934471;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=vHntRFwipq72a8KSy9j7yxIpOZ+D7/HXHEnMPcV3cuM=;
+	b=TWB6GCLzv5mEacyen/1txgSWaXkVQc4cF4hOpnOk6tTc1Apy87yZqJbifkEP2ZbOpBKy8V
+	oQQ3rm+r+ME2WBqJDC+TSNVJRHWE2sZ5E+BVeXtRuMezPW7l97r495W7RjWxAvcHtcl/gu
+	EPWeoOv89q+wPzmKssEJdDxp2oPRUgc=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 704fd48c (TLSv1.3:AEAD-AES256-GCM-SHA384:256:NO);
+	Mon, 4 Jul 2022 11:34:31 +0000 (UTC)
+Date: Mon, 4 Jul 2022 13:34:22 +0200
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/powernv: delay rng of node creation until later
+ in boot
+Message-ID: <YsLQPpAY6ZZHCOAI@zx2c4.com>
+References: <Yr2PQSZWVtr+Y7a2@zx2c4.com>
+ <20220630121654.1939181-1-Jason@zx2c4.com>
+ <8A9A296D-D7BD-42BE-AB32-C951C29E4C40@linux.ibm.com>
+ <YsAg/hixHvdxnWNL@zx2c4.com>
+ <2B9FC5ED-D6B8-4632-ACA4-7CF508EE9C46@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20220624183238.388144-8-sv@linux.ibm.com>
+In-Reply-To: <2B9FC5ED-D6B8-4632-ACA4-7CF508EE9C46@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,43 +67,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aik@ozlabs.ru, linux-kernel@vger.kernel.org, mingo@redhat.com, paulus@samba.org, rostedt@goodmis.org, jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz, linuxppc-dev@lists.ozlabs.org
+Cc: stable@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, Sachin Sant <sachinp@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jun 25, 2022 at 12:02:33AM +0530, Sathvika Vasireddy wrote:
-> Make relocation types architecture specific.
-> 
-> Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
-> ---
->  tools/objtool/arch/x86/include/arch/elf.h | 2 ++
->  tools/objtool/check.c                     | 2 +-
->  2 files changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/tools/objtool/arch/x86/include/arch/elf.h b/tools/objtool/arch/x86/include/arch/elf.h
-> index 69cc4264b28a..ac14987cf687 100644
-> --- a/tools/objtool/arch/x86/include/arch/elf.h
-> +++ b/tools/objtool/arch/x86/include/arch/elf.h
-> @@ -2,5 +2,7 @@
->  #define _OBJTOOL_ARCH_ELF
->  
->  #define R_NONE R_X86_64_NONE
-> +#define R_ABS64 R_X86_64_64
-> +#define R_ABS32 R_X86_64_32
->  
->  #endif /* _OBJTOOL_ARCH_ELF */
-> diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-> index 98e869721bc4..88f68269860e 100644
-> --- a/tools/objtool/check.c
-> +++ b/tools/objtool/check.c
-> @@ -834,7 +834,7 @@ static int create_mcount_loc_sections(struct objtool_file *file)
->  		memset(loc, 0, size);
->  
->  		if (elf_add_reloc_to_insn(file->elf, sec, idx,
-> -					  R_X86_64_64,
-> +					  size == sizeof(u64) ? R_ABS64 : R_ABS32,
->  					  insn->sec, insn->offset))
->  			return -1;
->  
+Hi Michael,
 
-Given cross compiles, should this not also be elf dependent?
+On Mon, Jul 04, 2022 at 09:14:32PM +1000, Michael Ellerman wrote:
+> 
+> 
+> On 2 July 2022 8:42:06 pm AEST, "Jason A. Donenfeld" <Jason@zx2c4.com> wrote:
+> >Hi Benjamin, Paul,
+> >
+> >On Thu, Jun 30, 2022 at 07:24:05PM +0530, Sachin Sant wrote:
+> >> > On 30-Jun-2022, at 5:46 PM, Jason A. Donenfeld <Jason@zx2c4.com> wrote:
+> >> > 
+> >> > The of node for the rng must be created much later in boot. Otherwise it
+> >> > tries to connect to a parent that doesn't yet exist, resulting on this
+> >> > splat:
+> >> > 
+> >> > [    0.000478] kobject: '(null)' ((____ptrval____)): is not initialized, yet kobject_get() is being called.
+> >> > [    0.002925] [c000000002a0fb30] [c00000000073b0bc] kobject_get+0x8c/0x100 (unreliable)
+> >> > [    0.003071] [c000000002a0fba0] [c00000000087e464] device_add+0xf4/0xb00
+> >> > [    0.003194] [c000000002a0fc80] [c000000000a7f6e4] of_device_add+0x64/0x80
+> >> > [    0.003321] [c000000002a0fcb0] [c000000000a800d0] of_platform_device_create_pdata+0xd0/0x1b0
+> >> > [    0.003476] [c000000002a0fd00] [c00000000201fa44] pnv_get_random_long_early+0x240/0x2e4
+> >> > [    0.003623] [c000000002a0fe20] [c000000002060c38] random_init+0xc0/0x214
+> >> > 
+> >> > This patch fixes the issue by doing the of node creation inside of
+> >> > machine_subsys_initcall.
+> >> > 
+> >> > Fixes: f3eac426657d ("powerpc/powernv: wire up rng during setup_arch")
+> >> > Cc: stable@vger.kernel.org
+> >> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> >> > Reported-by: Sachin Sant <sachinp@linux.ibm.com>
+> >> > Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+> >> > ---
+> >> 
+> >> Thanks Jason for the patch. This fixes the reported problem for me.
+> >> 
+> >> Tested-by: Sachin Sant <sachinp@linux.ibm.com>
+> >> 
+> >> - Sachin
+> >
+> >It sounds like Michael is on vacation for a few weeks. Think you could
+> >queue this up so we can get POWER8 booting again?
+> 
+> It doesn't break booting for me, but it is an ugly splat.
+> 
+> I'll pick it up into fixes.
+> 
+> I think it's more correct to say the "platform device creation" causes the problem, so I'll update the change log to say that.
+
+Sounds good. Thank you!
+
+Jason
