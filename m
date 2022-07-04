@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F732C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C248C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:41:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3mZ03Gkz3g38
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:41:34 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3mz4lBRz3g8R
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:41:55 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fN57gyz3by6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fQ6Nwgz3c6y
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:14 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fM0X09z4xbT;
-	Mon,  4 Jul 2022 21:36:11 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fP5lSQz4xdP;
+	Mon,  4 Jul 2022 21:36:13 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <e8b4eb82a126c3c6c352173a544fe94609ff660b.1654261687.git.christophe.leroy@csgroup.eu>
-References: <e8b4eb82a126c3c6c352173a544fe94609ff660b.1654261687.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/irq: Increase stack_overflow detection limit when KASAN is enabled
-Message-Id: <165693439802.9954.361439982234083073.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:18 +1000
+To: bpf@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20220610155552.25892-1-hbathini@linux.ibm.com>
+References: <20220610155552.25892-1-hbathini@linux.ibm.com>
+Subject: Re: [PATCH v2 0/5] Atomics support for eBPF on powerpc
+Message-Id: <165693443908.9954.12279962376383575979.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,31 +42,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Jordan Niethe <jniethe5@gmail.com>, John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>, KP Singh <kpsingh@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Yonghong Song <yhs@fb.com>, Martin KaFai Lau <kafai@fb.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 3 Jun 2022 15:08:14 +0200, Christophe Leroy wrote:
-> When KASAN is enabled, as shown by the Oops below, the 2k limit is not
-> enough to allow stack dump after a stack overflow detection when
-> CONFIG_DEBUG_STACKOVERFLOW is selected:
+On Fri, 10 Jun 2022 21:25:47 +0530, Hari Bathini wrote:
+> This patchset adds atomic operations to the eBPF instruction set on
+> powerpc. The instructions that are added here can be summarised with
+> this list of kernel operations for ppc64:
 > 
-> 	do_IRQ: stack overflow: 1984
-> 	CPU: 0 PID: 126 Comm: systemd-udevd Not tainted 5.18.0-gentoo-PMacG4 #1
-> 	Call Trace:
-> 	Oops: Kernel stack overflow, sig: 11 [#1]
-> 	BE PAGE_SIZE=4K MMU=Hash SMP NR_CPUS=2 PowerMac
-> 	Modules linked in: sr_mod cdrom radeon(+) ohci_pci(+) hwmon i2c_algo_bit drm_ttm_helper ttm drm_dp_helper snd_aoa_i2sbus snd_aoa_soundbus snd_pcm ehci_pci snd_timer ohci_hcd snd ssb ehci_hcd 8250_pci soundcore drm_kms_helper pcmcia 8250 pcmcia_core syscopyarea usbcore sysfillrect 8250_base sysimgblt serial_mctrl_gpio fb_sys_fops usb_common pkcs8_key_parser fuse drm drm_panel_orientation_quirks configfs
-> 	CPU: 0 PID: 126 Comm: systemd-udevd Not tainted 5.18.0-gentoo-PMacG4 #1
-> 	NIP:  c02e5558 LR: c07eb3bc CTR: c07f46a8
-> 	REGS: e7fe9f50 TRAP: 0000   Not tainted  (5.18.0-gentoo-PMacG4)
-> 	MSR:  00001032 <ME,IR,DR,RI>  CR: 44a14824  XER: 20000000
+> * atomic[64]_[fetch_]add
+> * atomic[64]_[fetch_]and
+> * atomic[64]_[fetch_]or
+> * atomic[64]_[fetch_]xor
+> * atomic[64]_xchg
+> * atomic[64]_cmpxchg
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/irq: Increase stack_overflow detection limit when KASAN is enabled
-      https://git.kernel.org/powerpc/c/41f20d6db2b64677225bb0b97df956241c353ef8
+[1/5] bpf ppc64: add support for BPF_ATOMIC bitwise operations
+      https://git.kernel.org/powerpc/c/65112709115f48f16d7082bcabf173d08622e69f
+[2/5] bpf ppc64: add support for atomic fetch operations
+      https://git.kernel.org/powerpc/c/dbe6e2456fb0263a5a961a92836d2cebdbca979c
+[3/5] bpf ppc64: Add instructions for atomic_[cmp]xchg
+      https://git.kernel.org/powerpc/c/1e82dfaa7819f03f0b0022be7ca15bbc83090da1
+[4/5] bpf ppc32: add support for BPF_ATOMIC bitwise operations
+      https://git.kernel.org/powerpc/c/aea7ef8a82c0ea13ff20b65ff2edf8a38a17eda8
+[5/5] bpf ppc32: Add instructions for atomic_[cmp]xchg
+      https://git.kernel.org/powerpc/c/2d9206b227434912582049c49af1085660fa1e50
 
 cheers
