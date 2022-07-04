@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A85C9C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:39:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9302C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:39:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3jg2zgxz3fRM
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:39:03 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3k53phtz3fV6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:39:25 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f805G7z3c1Y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3f94Cj1z3c4V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:01 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f73t78z4xLX;
-	Mon,  4 Jul 2022 21:35:59 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3f90WZ5z4xYY;
+	Mon,  4 Jul 2022 21:36:00 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <9f05937d8722ddd2064a7c2362d8f9000e15e1ba.1652863723.git.christophe.leroy@csgroup.eu>
-References: <9f05937d8722ddd2064a7c2362d8f9000e15e1ba.1652863723.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/irq: remove inline assembly in hard_irq_disable macro
-Message-Id: <165693439618.9954.17884981112281314426.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:16 +1000
+In-Reply-To: <0c33b96317811edf691e81698aaee8fa45ec3449.1656427391.git.christophe.leroy@csgroup.eu>
+References: <0c33b96317811edf691e81698aaee8fa45ec3449.1656427391.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/ptdump: Fix display of RW pages on FSL_BOOK3E
+Message-Id: <165693441432.9954.15776721624339561101.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:33:34 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 18 May 2022 10:48:55 +0200, Christophe Leroy wrote:
-> Use WRITE_ONCE() instead of opencoding the saving of current
-> stack pointeur.
+On Tue, 28 Jun 2022 16:43:35 +0200, Christophe Leroy wrote:
+> On FSL_BOOK3E, _PAGE_RW is defined with two bits, one for user and one
+> for supervisor. As soon as one of the two bits is set, the page has
+> to be display as RW. But the way it is implemented today requires both
+> bits to be set in order to display it as RW.
 > 
+> Instead of display RW when _PAGE_RW bits are set and R otherwise,
+> reverse the logic and display R when _PAGE_RW bits are all 0 and
+> RW otherwise.
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/irq: remove inline assembly in hard_irq_disable macro
-      https://git.kernel.org/powerpc/c/077fc62b2b66a95af43dbb363fb8e932999812d3
+[1/1] powerpc/ptdump: Fix display of RW pages on FSL_BOOK3E
+      https://git.kernel.org/powerpc/c/dd8de84b57b02ba9c1fe530a6d916c0853f136bd
 
 cheers
