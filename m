@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C248C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:41:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9475CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 11:42:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3mz4lBRz3g8R
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:41:55 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lc3nW1QvNz3gFt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 21:42:23 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fQ6Nwgz3c6y
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lc3fS4lJ2z3c1X
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 21:36:16 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fP5lSQz4xdP;
-	Mon,  4 Jul 2022 21:36:13 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lc3fS0gLKz4xn1;
+	Mon,  4 Jul 2022 21:36:16 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: bpf@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-In-Reply-To: <20220610155552.25892-1-hbathini@linux.ibm.com>
-References: <20220610155552.25892-1-hbathini@linux.ibm.com>
-Subject: Re: [PATCH v2 0/5] Atomics support for eBPF on powerpc
-Message-Id: <165693443908.9954.12279962376383575979.b4-ty@ellerman.id.au>
-Date: Mon, 04 Jul 2022 21:33:59 +1000
+To: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, Juerg Haefliger <juerg.haefliger@canonical.com>, benh@kernel.crashing.org, mpe@ellerman.id.au
+In-Reply-To: <20220526065737.86370-1-juerg.haefliger@canonical.com>
+References: <20220526065737.86370-1-juerg.haefliger@canonical.com>
+Subject: Re: [PATCH 0/2] powerpc: Kconfig cleanups
+Message-Id: <165693444574.9954.3298717136812564151.b4-ty@ellerman.id.au>
+Date: Mon, 04 Jul 2022 21:34:05 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,35 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Jordan Niethe <jniethe5@gmail.com>, John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>, KP Singh <kpsingh@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, Paul Mackerras <paulus@samba.org>, netdev@vger.kernel.org, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Yonghong Song <yhs@fb.com>, Martin KaFai Lau <kafai@fb.com>
+Cc: linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 10 Jun 2022 21:25:47 +0530, Hari Bathini wrote:
-> This patchset adds atomic operations to the eBPF instruction set on
-> powerpc. The instructions that are added here can be summarised with
-> this list of kernel operations for ppc64:
+On Thu, 26 May 2022 08:57:35 +0200, Juerg Haefliger wrote:
+> Replace some stray tabs with whitespaces and remove an extra empty
+> line.
 > 
-> * atomic[64]_[fetch_]add
-> * atomic[64]_[fetch_]and
-> * atomic[64]_[fetch_]or
-> * atomic[64]_[fetch_]xor
-> * atomic[64]_xchg
-> * atomic[64]_cmpxchg
+> Juerg Haefliger (2):
+>   powerpc: Kconfig: Replace tabs with whitespaces
+>   powerpc: Kconfig.debug: Remove extra empty line
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/5] bpf ppc64: add support for BPF_ATOMIC bitwise operations
-      https://git.kernel.org/powerpc/c/65112709115f48f16d7082bcabf173d08622e69f
-[2/5] bpf ppc64: add support for atomic fetch operations
-      https://git.kernel.org/powerpc/c/dbe6e2456fb0263a5a961a92836d2cebdbca979c
-[3/5] bpf ppc64: Add instructions for atomic_[cmp]xchg
-      https://git.kernel.org/powerpc/c/1e82dfaa7819f03f0b0022be7ca15bbc83090da1
-[4/5] bpf ppc32: add support for BPF_ATOMIC bitwise operations
-      https://git.kernel.org/powerpc/c/aea7ef8a82c0ea13ff20b65ff2edf8a38a17eda8
-[5/5] bpf ppc32: Add instructions for atomic_[cmp]xchg
-      https://git.kernel.org/powerpc/c/2d9206b227434912582049c49af1085660fa1e50
+[1/2] powerpc: Kconfig: Replace tabs with whitespaces
+      https://git.kernel.org/powerpc/c/cea9d62b64c981b2a72e7166b21ba413fea16c83
+[2/2] powerpc: Kconfig.debug: Remove extra empty line
+      https://git.kernel.org/powerpc/c/d60cb5010cafc7889384ce49292a320f5bcd56ff
 
 cheers
