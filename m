@@ -4,70 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6ADD4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Jul 2022 20:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9398AC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 00:43:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LcHgN3807z3br1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 06:37:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LcP6g6nFtz3bxH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 10:43:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NMU/eX/3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cML8F2/r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NMU/eX/3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cML8F2/r;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LcHfX5f1Pz3bXw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 06:37:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LcP614YBFz2yh9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 10:42:49 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 73CA0616F8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 20:37:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D7977C341CE
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jul 2022 20:37:04 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 592FAB810AC;
+	Tue,  5 Jul 2022 00:42:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA609C3411E;
+	Tue,  5 Jul 2022 00:42:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1656967024;
-	bh=5U+PrR1MDWVfWAhgbieOgVSr8KORdHwT34UMh4ky7MQ=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=NMU/eX/3nShdd1CjrC6NnpwRflg1rahnB+Jny6GFZVd+6pJ4Wg21NDNN0IKZ+rRQW
-	 m4cZdej2gAZ/umAWBkO7R5QtANfvtH6YR2ObI3Nu9LUHCWzb2f3moZ7JmSWiPL23F3
-	 8ij+nqqZPnDRGhslEuPs9hIdv7hcGmjb3M1ca952nnTPWY98UoORUPASEY3WNcMhzw
-	 D76MA+AUKQB5GOTQ/r9FI94AbmVo20oSPCUm42wAvl3ANbPZS+1QIA2m48TeI8Wx6u
-	 jl3f+1lHWzXJHqltjQhJWBRl/t2egqtZjD3mxBKf2Ep7rIGwYfXv+ZuF0bwJ51OQcH
-	 BhTl5Q53+SFMw==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id B6E02C05FD2; Mon,  4 Jul 2022 20:37:04 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 213733] Kernel NULL pointer dereference on read (Oops: Kernel
- access of bad area, sig: 7 [#1]) at systemctl poweroff
-Date: Mon, 04 Jul 2022 20:37:04 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-64
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: erhard_f@mailbox.org
-X-Bugzilla-Status: RESOLVED
-X-Bugzilla-Resolution: OBSOLETE
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-64@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status resolution
-Message-ID: <bug-213733-206035-nQEH4Rk3ot@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-213733-206035@https.bugzilla.kernel.org/>
-References: <bug-213733-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	s=k20201202; t=1656981763;
+	bh=NH5c7njVSOspj3x3CMKvmR0zmbbUmwx4E9ZZYbEUmyw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=cML8F2/rNnHbks8e7CnqUhOmIdkzwwsccL1VmbQy1N2i896KnOAyzzcV3IQUw1bun
+	 j4wTeQLNJ9g/xMhFZUcxNQ+dywd34+nYX2acDwVvOMgiInFIKtXsefmpSyizqVknnM
+	 b7hftZlzd3RUANdcMcdUiaB/qXh3GqfM5UdNLZnt3l1astEM0M8K5ny93L1nZHmdtH
+	 WeRFtSh7WOBl/Hl/Vfpay2u18ChiFwaXNlOg9VgXlLpXvH1+HuHeiIaDWTUrspVb7m
+	 p2gnRyMtBxZuJJGAX3yv9ZbePsBuE8dM/atdGFhOYKu0YROHQovEZ1YP5l+yyLiPih
+	 WoRW00tur0vZA==
+Date: Tue, 5 Jul 2022 08:42:37 +0800
+From: Shawn Guo <shawnguo@kernel.org>
+To: Yang Yingliang <yangyingliang@huawei.com>
+Subject: Re: [PATCH -next 1/2] soc: fsl: guts: fix return value check in
+ fsl_guts_init()
+Message-ID: <20220705004237.GP819983@dragon>
+References: <20220628140249.1073809-1-yangyingliang@huawei.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220628140249.1073809-1-yangyingliang@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,25 +60,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: arnd@arndb.de, michael@walle.cc, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D213733
+On Tue, Jun 28, 2022 at 10:02:48PM +0800, Yang Yingliang wrote:
+> In case of error, of_iomap() returns NULL pointer not ERR_PTR().
+> The IS_ERR() test in the return value check should be replaced
+> with NULL test and return -ENOMEM as error value.
+> 
+> Fixes: ab4988d6a393 ("soc: fsl: guts: embed fsl_guts_get_svr() in probe()")
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
 
-Erhard F. (erhard_f@mailbox.org) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEW                         |RESOLVED
-         Resolution|---                         |OBSOLETE
-
---- Comment #2 from Erhard F. (erhard_f@mailbox.org) ---
-Have not seen this since quite some stable releases, nor on 5.19-rcs.
-
-Closing for now as obsolete.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Applied both, thanks!
