@@ -4,51 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9398AC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 00:43:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8340BC43334
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 00:48:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LcP6g6nFtz3bxH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 10:43:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LcPDH0cDvz3c29
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Jul 2022 10:48:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cML8F2/r;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ezAddjP9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cML8F2/r;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ezAddjP9;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LcP614YBFz2yh9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 10:42:49 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 592FAB810AC;
-	Tue,  5 Jul 2022 00:42:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DA609C3411E;
-	Tue,  5 Jul 2022 00:42:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1656981763;
-	bh=NH5c7njVSOspj3x3CMKvmR0zmbbUmwx4E9ZZYbEUmyw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=cML8F2/rNnHbks8e7CnqUhOmIdkzwwsccL1VmbQy1N2i896KnOAyzzcV3IQUw1bun
-	 j4wTeQLNJ9g/xMhFZUcxNQ+dywd34+nYX2acDwVvOMgiInFIKtXsefmpSyizqVknnM
-	 b7hftZlzd3RUANdcMcdUiaB/qXh3GqfM5UdNLZnt3l1astEM0M8K5ny93L1nZHmdtH
-	 WeRFtSh7WOBl/Hl/Vfpay2u18ChiFwaXNlOg9VgXlLpXvH1+HuHeiIaDWTUrspVb7m
-	 p2gnRyMtBxZuJJGAX3yv9ZbePsBuE8dM/atdGFhOYKu0YROHQovEZ1YP5l+yyLiPih
-	 WoRW00tur0vZA==
-Date: Tue, 5 Jul 2022 08:42:37 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Yang Yingliang <yangyingliang@huawei.com>
-Subject: Re: [PATCH -next 1/2] soc: fsl: guts: fix return value check in
- fsl_guts_init()
-Message-ID: <20220705004237.GP819983@dragon>
-References: <20220628140249.1073809-1-yangyingliang@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LcPCZ4cJPz2yZc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jul 2022 10:47:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1656982058; x=1688518058;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=KSEKsG3nliwY8rsCJE3ag18nNEmHKIE097KKGu5iRJA=;
+  b=ezAddjP9d+oRndqkfGgpCgpxPsfgzPdm0iaHt8FvxKhSgYfeErwyGvcA
+   UrosOCzkFIX+O4e3OwZZAb4nIa3chqdwJUARKZx6KDNqKey47wtJKWEEz
+   uVJlWhZbV10sx5UowRUhHfy6h9ra5U33CCIaZ8A5CIxS/0/oAknbRLc3Z
+   QPeDVNzS85P9vb3LdFKh15HMNxpPScg5RndeLrpzI/bbgIMxyFuDC31X0
+   cTk79noLWOLzFcG8FblaIX+wzH5sfiCUuRizanYYqegWy9s3kHddZ45AM
+   BBTjhNpkTgbvXIR9xTv8yJzRbUCWUmtM07ZRSdwVfbpuf+FtVvHKEg68n
+   Q==;
+X-IronPort-AV: E=McAfee;i="6400,9594,10398"; a="284328204"
+X-IronPort-AV: E=Sophos;i="5.92,245,1650956400"; 
+   d="scan'208";a="284328204"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jul 2022 17:47:33 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.92,245,1650956400"; 
+   d="scan'208";a="619553231"
+Received: from lkp-server01.sh.intel.com (HELO 68b931ab7ac1) ([10.239.97.150])
+  by orsmga008.jf.intel.com with ESMTP; 04 Jul 2022 17:47:32 -0700
+Received: from kbuild by 68b931ab7ac1 with local (Exim 4.95)
+	(envelope-from <lkp@intel.com>)
+	id 1o8Wix-000IVz-To;
+	Tue, 05 Jul 2022 00:47:31 +0000
+Date: Tue, 05 Jul 2022 08:47:04 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS
+ 2de1dc71f21dda721fe9a4608d417aa9006ed92b
+Message-ID: <62c38a08.wZcSDD0P3yv8XwhJ%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220628140249.1073809-1-yangyingliang@huawei.com>
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,17 +69,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, michael@walle.cc, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jun 28, 2022 at 10:02:48PM +0800, Yang Yingliang wrote:
-> In case of error, of_iomap() returns NULL pointer not ERR_PTR().
-> The IS_ERR() test in the return value check should be replaced
-> with NULL test and return -ENOMEM as error value.
-> 
-> Fixes: ab4988d6a393 ("soc: fsl: guts: embed fsl_guts_get_svr() in probe()")
-> Reported-by: Hulk Robot <hulkci@huawei.com>
-> Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 2de1dc71f21dda721fe9a4608d417aa9006ed92b  Automatic merge of 'next' into merge (2022-07-04 21:48)
 
-Applied both, thanks!
+elapsed time: 752m
+
+configs tested: 52
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm                              allyesconfig
+arm64                            allyesconfig
+ia64                             allmodconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+alpha                            allyesconfig
+powerpc                           allnoconfig
+mips                             allyesconfig
+powerpc                          allmodconfig
+sh                               allmodconfig
+i386                             allyesconfig
+i386                                defconfig
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+x86_64                        randconfig-a006
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+riscv                randconfig-r042-20220703
+arc                  randconfig-r043-20220703
+s390                 randconfig-r044-20220703
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                           allyesconfig
+x86_64                          rhel-8.3-func
+x86_64                           rhel-8.3-syz
+x86_64                    rhel-8.3-kselftests
+x86_64                         rhel-8.3-kunit
+
+clang tested configs:
+x86_64                        randconfig-a005
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+hexagon              randconfig-r045-20220703
+hexagon              randconfig-r041-20220703
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
