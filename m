@@ -4,39 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFAABC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 08:34:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE3A4CCA489
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 09:14:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LdCWT0KDbz3cC1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 18:34:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LdCW227wJz3blQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2022 18:33:47 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 546F11596;
-	Wed,  6 Jul 2022 01:33:15 -0700 (PDT)
-Received: from [10.163.43.16] (unknown [10.163.43.16])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E08113F792;
-	Wed,  6 Jul 2022 01:33:07 -0700 (PDT)
-Message-ID: <ced30a7d-b3a0-d98f-08cf-f59dbfe3d229@arm.com>
-Date: Wed, 6 Jul 2022 14:03:05 +0530
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LdDPX1mRPz3c69
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 19:14:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=UyINPEp8;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=olteanv@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=UyINPEp8;
+	dkim-atps=neutral
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LdDNp5Tyhz3bl8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2022 19:13:28 +1000 (AEST)
+Received: by mail-ed1-x530.google.com with SMTP id r6so7012283edd.7
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2022 02:13:28 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=WKlacHhWVR2IblvCAgYMcCw7cvtmo7gBzlhxFpijOWM=;
+        b=UyINPEp8aUU7+iO4UvYReAysG8acJi4s0lW7fYS990hIHuI2KgReqshlPjlC0FcdQX
+         RWLEJ1iagzj5JHTLAwg1Tfl34CjKErUg06qCwRi5FpbuqXpIfRK0B8kuUc2l5x+40o+8
+         2YldATzAdsq2GhIZIL2D0cZi8oKOkVG5Y5xLvvP4kajNiX5yCXAJSyEYBx1RvA9W9SdO
+         piij5Lfa0VXVwqnHofYdHxRPOmYTBO/NXTATLm6C9JRKYr2iRvgzlsZTZRGqO8gtc9pI
+         zkPBxco6Fa5B8qkZy3WblPhpXY+1PsQ3ol/zLxC+L8wAov5SdI1JA4byrn/VHyXJavbs
+         ZPkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=WKlacHhWVR2IblvCAgYMcCw7cvtmo7gBzlhxFpijOWM=;
+        b=bRXPX+Wn1VZs0ATKJshsytf/RBnmpT7KdD1rRl+eoUWeqzx+3APyUgJohSH5AE0CAO
+         4Zas/jv8aHwfLvjKHg74ALSniZEm3DjURil7X18GLb8n3LOoHsGM4EDEasHAAxbMW0Tz
+         IM4ImFGq+KeOjRvH5i7IDcHCRe02dR6HyZZLoGDE5lcx7PsBoZijIx3WPhNI5Z8fjOlv
+         ZOsXdUY7Mm88ZlzvGKqqUU1gFhae/Bj/V346t1nfglIE6TekMDqrhvV48MdjM9j1YHfW
+         a0T/z8Lg5YOSa+9piRMWut5bZA66eThmJdvRWgVquJQS5dGzKSjAm5pwxI6XLzflxYtE
+         zryw==
+X-Gm-Message-State: AJIora9bLED8pTcnQx7rkVOXHG38BPI/zic11EWlxLa4MpyJkb92r9zS
+	6WwyK67H4MlCcQI5+SXoKgA=
+X-Google-Smtp-Source: AGRyM1tgzHocOxIjG9HexS+g9z9ap2nsem/HblqVyMjIbl5ZbLhG8nAvflW5PCvUObUWjIPHfLadCA==
+X-Received: by 2002:a05:6402:350a:b0:435:df44:30aa with SMTP id b10-20020a056402350a00b00435df4430aamr51209856edd.403.1657098799156;
+        Wed, 06 Jul 2022 02:13:19 -0700 (PDT)
+Received: from skbuf ([188.26.185.61])
+        by smtp.gmail.com with ESMTPSA id er13-20020a056402448d00b0043a5bcf80a2sm6350790edb.60.2022.07.06.02.13.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 06 Jul 2022 02:13:18 -0700 (PDT)
+Date: Wed, 6 Jul 2022 12:13:15 +0300
+From: Vladimir Oltean <olteanv@gmail.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 6/6] i2c: Make remove callback return void
+Message-ID: <20220706091315.p5k2jck3rmyjhvqw@skbuf>
+References: <20220628140313.74984-1-u.kleine-koenig@pengutronix.de>
+ <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH V6 00/26] mm/mmap: Drop __SXXX/__PXXX macros from across
- platforms
-Content-Language: en-US
-To: Arnd Bergmann <arnd@arndb.de>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <20220630051630.1718927-1-anshuman.khandual@arm.com>
- <8a6ccbae-7d7c-6e08-cc28-eeb649f86112@arm.com>
- <85fff3f6-373f-3e6a-325e-0fa8ad46273a@csgroup.eu>
- <CAK8P3a1gb1Xrg4AGnncFpN=aDxVKfjkt1TmSvZXXADZTv7eE-g@mail.gmail.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-In-Reply-To: <CAK8P3a1gb1Xrg4AGnncFpN=aDxVKfjkt1TmSvZXXADZTv7eE-g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220628140313.74984-7-u.kleine-koenig@pengutronix.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,30 +79,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, "hch@infradead.org" <hch@infradead.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, "linux-um@lists.infradead.org" <linux-um@lists.infradead.org>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-
- kernel@lists.infradead.org>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: alsa-devel@alsa-project.org, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-staging@lists.linux.dev, kasan-dev@googlegroups.com, linux-clk@vger.kernel.org, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, linux-watchdog@vger.kernel.org, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, linux-pm@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-gpio@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, patches@opensource.cirrus.co
+ m, linux-usb@vger.kernel.org, Wolfram Sang <wsa@kernel.org>, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 7/6/22 12:34, Arnd Bergmann wrote:
-> On Wed, Jul 6, 2022 at 8:33 AM Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
+On Tue, Jun 28, 2022 at 04:03:12PM +0200, Uwe Kleine-König wrote:
+> From: Uwe Kleine-König <uwe@kleine-koenig.org>
 > 
->> As far as I can see in Kconfig, CONFIG_MMU is user selectable on the
->> following architectures:
->> - ARM
->> - M68K
->> - RISCV
->> - SH
->>
->> And is disabled by default on XTENSA.
+> The value returned by an i2c driver's remove function is mostly ignored.
+> (Only an error message is printed if the value is non-zero that the
+> error is ignored.)
 > 
-> Right, the list is complete, though it's also default-enabled for
-> every CPU core on xtensa, and you can only disable it for
-> "custom" CPU cores.
+> So change the prototype of the remove function to return no value. This
+> way driver authors are not tempted to assume that passing an error to
+> the upper layer is a good idea. All drivers are adapted accordingly.
+> There is no intended change of behaviour, all callbacks were prepared to
+> return 0 before.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
 
-ARM, M68K, RISCV all have got them inside wrapper or files which are
-not built, without CONFIG_MMU. With build fixes for SH and XTENSA on
-linux-next, I guess we are good.
+Assuming you remove the spurious kasan change:
+
+Reviewed-by: Vladimir Oltean <olteanv@gmail.com>
