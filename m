@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACDF3C43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 22:19:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 676CFC43334
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Jul 2022 22:20:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LdYqr1hpDz3dsm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 08:19:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.219.182; helo=mail-yb1-f182.google.com; envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-yb1-f182.google.com (mail-yb1-f182.google.com [209.85.219.182])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LdYrG6Rz6z3f53
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 08:19:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.128.177; helo=mail-yw1-f177.google.com; envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-yw1-f177.google.com (mail-yw1-f177.google.com [209.85.128.177])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LdLdK6nMyz2xrY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2022 23:54:45 +1000 (AEST)
-Received: by mail-yb1-f182.google.com with SMTP id i7so27427745ybe.11
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2022 06:54:45 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LdLkv2xCQz2xSN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jul 2022 23:59:34 +1000 (AEST)
+Received: by mail-yw1-f177.google.com with SMTP id 00721157ae682-31c86fe1dddso93337537b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jul 2022 06:59:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=nGlq0tAOl9peVDy+2hDU8oij0psSLrDezDLIhvJH3CU=;
-        b=5XEub1nH9ppwGDJgFniEYI6buoBAd1S697zRMNsrLZtJGyFbqM2TUEWaFrRDm6Nohx
-         VQmaBbzfkQ2/yL5D530FatnLVSBUyU84Izm7D21z3tbOISfOboXj4R9DKP+6GteQYGcn
-         UlA3kXnK+3GHk55T0vkk2jZtQVyYND+qbheVO6Gak8DJda+WDdm3gNqWEu7X5I6/UJQe
-         e9h6HDjNTXBHYLpLOzcP217iOFiwuMdVHfEELPtFPuwanzfFM33L4RyTJFR8yKJi//3k
-         154MJvD6UEHVyVPoLotD82OskfhuyWONs/Pt5B1aWz6aoBDqQrqDUNPrAjsJrCGOKxC4
-         xhaw==
-X-Gm-Message-State: AJIora981bUOoDUVBJMiPKZ3MBr2ED525KOSVQ0kZQ3xq2mo5QDYUL3b
-	nNRZNMTx3ykYi5CTDokdco+DGRIKkCtfbHgc6Pg=
-X-Google-Smtp-Source: AGRyM1tDetZqwrRScub6Y4Pn1s0tSkry0FvKlyTlHU1qOUr14WujFHx6NLxGPd7DkQtOavHEbmevSefDFcyAl6P8ZZY=
-X-Received: by 2002:a25:fb02:0:b0:66e:3db9:5d49 with SMTP id
- j2-20020a25fb02000000b0066e3db95d49mr20145358ybe.137.1657115683016; Wed, 06
- Jul 2022 06:54:43 -0700 (PDT)
+        bh=Onduqp6mjVbUTy8onn0jWt/mqpI9kGBQEYh+QUeZcBU=;
+        b=c9i0dJbH0r4ZDTgSiYIwowUP1VSHeOpCPFt67t3gGTS1xoLf/4Waf3VYNBNHTRJAON
+         fLKzAampd1HE2WKGMlfaZD7InKml9W70taSLjvz1wEDKASnK+fSK224V+Fu6TyJnU4go
+         ky0KYOFIxQRB/pXg+yGwPkD5MWVxrt30QixgpMgvkp+8F9dKP5lp3BFRcGs3bKa1B6Zk
+         CestSH7bep8O8d6/6QS/A9LTMppYPJfKiiYVO9oukwFZNRdN3MdNTzd1PDlxCnL4YeEA
+         xnMBm7qaDd7bKNosTTfTwztxdCErMG/dYPO5xeyNzlrZvCQQTQOhl2Wg70hYVoSXlkWR
+         g2Gw==
+X-Gm-Message-State: AJIora9ySdHiRy/AR+9xfWdtPgjxfIIxGNg1ji3/uSpbjxH0Y0GzCeyz
+	fK775rs6czDKfNjoqlF4Jo77Qku28ufwSJdABC4=
+X-Google-Smtp-Source: AGRyM1tNbC/Hml4tsQcA7xFkjwPTBe4V9sculTi4g4WqVg8ltnNA+flCFfg0CHpb2ZdV5OvqewQ30xyxgoEo0qXCWHo=
+X-Received: by 2002:a81:1b97:0:b0:2db:640f:49d8 with SMTP id
+ b145-20020a811b97000000b002db640f49d8mr45117410ywb.326.1657115972382; Wed, 06
+ Jul 2022 06:59:32 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220608142723.103523089@infradead.org> <20220608144516.235041924@infradead.org>
-In-Reply-To: <20220608144516.235041924@infradead.org>
+References: <20220608142723.103523089@infradead.org> <20220608144516.998681585@infradead.org>
+In-Reply-To: <20220608144516.998681585@infradead.org>
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 6 Jul 2022 15:54:32 +0200
-Message-ID: <CAJZ5v0g0fCNxsc1mg9aL+ieQ1uMVS+RWqesHKoZ_zeL7cx655A@mail.gmail.com>
-Subject: Re: [PATCH 05/36] cpuidle: Move IRQ state validation
+Date: Wed, 6 Jul 2022 15:59:21 +0200
+Message-ID: <CAJZ5v0jSfvUoReFHjA5A+brExnnEKidak-GnjTbY0CKoaWpGVQ@mail.gmail.com>
+Subject: Re: [PATCH 17/36] acpi_idle: Remove tracing
 To: Peter Zijlstra <peterz@infradead.org>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Thu, 07 Jul 2022 08:18:29 +1000
@@ -69,49 +69,80 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 On Wed, Jun 8, 2022 at 4:47 PM Peter Zijlstra <peterz@infradead.org> wrote:
 >
-> Make cpuidle_enter_state() consistent with the s2idle variant and
-> verify ->enter() always returns with interrupts disabled.
+> All the idle routines are called with RCU disabled, as such there must
+> not be any tracing inside.
 >
 > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> ---
->  drivers/cpuidle/cpuidle.c |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -234,7 +234,11 @@ int cpuidle_enter_state(struct cpuidle_d
->         stop_critical_timings();
->         if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
->                 rcu_idle_enter();
-> +
->         entered_state = target_state->enter(dev, drv, index);
-> +       if (WARN_ONCE(!irqs_disabled(), "%ps leaked IRQ state", target_state->enter))
 
-I'm not sure if dumping a call trace here is really useful and
-WARN_ON() often gets converted to panic().
-
-I would print an error message with pr_warn_once().
+This actually does some additional code duplication cleanup which
+would be good to mention in the changelog.  Or even move to a separate
+patch for that matter.
 
 Otherwise LGTM.
 
+> ---
+>  drivers/acpi/processor_idle.c |   24 +++++++++++++-----------
+>  1 file changed, 13 insertions(+), 11 deletions(-)
+>
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -108,8 +108,8 @@ static const struct dmi_system_id proces
+>  static void __cpuidle acpi_safe_halt(void)
+>  {
+>         if (!tif_need_resched()) {
+> -               safe_halt();
+> -               local_irq_disable();
+> +               raw_safe_halt();
 > +               raw_local_irq_disable();
+>         }
+>  }
+>
+> @@ -524,16 +524,21 @@ static int acpi_idle_bm_check(void)
+>         return bm_status;
+>  }
+>
+> -static void wait_for_freeze(void)
+> +static __cpuidle void io_idle(unsigned long addr)
+>  {
+> +       /* IO port based C-state */
+> +       inb(addr);
 > +
->         if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
->                 rcu_idle_exit();
->         start_critical_timings();
-> @@ -246,12 +250,8 @@ int cpuidle_enter_state(struct cpuidle_d
->         /* The cpu is no longer idle or about to enter idle. */
->         sched_idle_set_state(NULL);
+>  #ifdef CONFIG_X86
+>         /* No delay is needed if we are in guest */
+>         if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
+>                 return;
+>  #endif
+> -       /* Dummy wait op - must do something useless after P_LVL2 read
+> -          because chipsets cannot guarantee that STPCLK# signal
+> -          gets asserted in time to freeze execution properly. */
+> +       /*
+> +        * Dummy wait op - must do something useless after P_LVL2 read
+> +        * because chipsets cannot guarantee that STPCLK# signal
+> +        * gets asserted in time to freeze execution properly.
+> +        */
+>         inl(acpi_gbl_FADT.xpm_timer_block.address);
+>  }
 >
-> -       if (broadcast) {
-> -               if (WARN_ON_ONCE(!irqs_disabled()))
-> -                       local_irq_disable();
-> -
-> +       if (broadcast)
->                 tick_broadcast_exit();
-> -       }
+> @@ -553,9 +558,7 @@ static void __cpuidle acpi_idle_do_entry
+>         } else if (cx->entry_method == ACPI_CSTATE_HALT) {
+>                 acpi_safe_halt();
+>         } else {
+> -               /* IO port based C-state */
+> -               inb(cx->address);
+> -               wait_for_freeze();
+> +               io_idle(cx->address);
+>         }
 >
->         if (!cpuidle_state_is_coupled(drv, index))
->                 local_irq_enable();
+>         perf_lopwr_cb(false);
+> @@ -577,8 +580,7 @@ static int acpi_idle_play_dead(struct cp
+>                 if (cx->entry_method == ACPI_CSTATE_HALT)
+>                         safe_halt();
+>                 else if (cx->entry_method == ACPI_CSTATE_SYSTEMIO) {
+> -                       inb(cx->address);
+> -                       wait_for_freeze();
+> +                       io_idle(cx->address);
+>                 } else
+>                         return -ENODEV;
+>
 >
 >
