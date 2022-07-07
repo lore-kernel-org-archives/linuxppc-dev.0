@@ -4,46 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7CA3CCA479
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 06:16:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 196D6C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 07:36:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LdmQJ0P0Pz3c81
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 16:16:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LdpBf4SNXz3cBF
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Jul 2022 17:36:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=gHtGI2X0;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LdmNw6Wf0z3btl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2022 16:15:26 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1o9Kn5-0005KC-8s; Thu, 07 Jul 2022 08:15:07 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1o9Kmu-004u7B-Tt; Thu, 07 Jul 2022 08:15:00 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1o9Kmx-003Vh2-NK; Thu, 07 Jul 2022 08:14:59 +0200
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Scott Wood <oss@buserror.net>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 1/3] powerpc/platforms/83xx/suspend: Reorder to get rid of a forward declaration
-Date: Thu,  7 Jul 2022 08:14:39 +0200
-Message-Id: <20220707061441.193869-1-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.36.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LdpB10bQqz3btr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jul 2022 17:36:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=gHtGI2X0;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Ldp9x3mG9z4xbm;
+	Thu,  7 Jul 2022 17:36:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=201702; t=1657179366;
+	bh=vJnXxPcjofl/dIJrG3s69roSNP0Kb5CB+IRWv7rORRU=;
+	h=Date:From:To:Cc:Subject:From;
+	b=gHtGI2X0vmZHZixH4ZZI+WRrjaGc64TL9zROPmNVrw30p9Y1UVdbPUlajGvYhwCjv
+	 m86XwVgMJ4whkOqsU2S8nMlVOUJk2I/6+0IbydzL8efm0z45dTGdkfmrN2HDci05iT
+	 I4p447ZUA8xXIQkhwVo8U3tHfUfv8cFB9HMO9el6ENsal+PFQkD6SFPpGHQLSTIrYY
+	 JfytQO4kmg8BtO6UqgAdN/NuZ94GSuiZhOKSLnHMzgYQuO9rIMs3MEruV/a/F+Dn1r
+	 Lji6kxxSEBuYjmZMFDwb5rY86N+0TtTyjasZOP62RNfdlQjfIjFH/PzmlREdL4sP0W
+	 7BuqNfOZOFVjA==
+Date: Thu, 7 Jul 2022 17:32:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Theodore Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: linux-next: manual merge of the random tree with the powerpc tree
+Message-ID: <20220707173252.5fff21f2@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1728; h=from:subject; bh=HMffZNI4XQPXeJaGgzoz2/GNi3XCTP3KJXHFqUGCfCQ=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBixnnGM3zx4xFctkRxBs6fL9m6HE4cl8Gmgkn2RMSj aFx0I9qJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCYsZ5xgAKCRDB/BR4rcrsCc5lB/ 4+5yatNEHw7V45EjN7p3F7geZNj4gcBvVDKPemndR54DnRJRqnbUI8zgKx2u1uBZU/8bHcnJR1pgnM KBDq5yQ1DyPYMKw6wntayr/fNoqBLPU+Aoc5FYY8Uu7qaF9vnHSLRFIWqjEbheW9sew5pkIhNw+B1m dmwZOGNXfq/knVkrjTweqAwSBRnAs37VLqtE+qLM0zNc1bxbPiYyRoRMSK3Gc+NqwKnVQSSlWKMeUr w1foklGXrI9nXZXmrPDYrYBoD7zfSjdCfuUy/e6nk/wZUwHNW9lamea8/tQl+RRfRqJc+KbCNe33fP c8dCjBt7bsiwxu0ZFHwuIBI4532+pv
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; boundary="Sig_/e5AqtJECmuDQE_Wb4bb0LJU";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,81 +57,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@pengturonix.de, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Juerg Haefliger <juerg.haefliger@canonical.com>, Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-By moving up pmc_types and pmc_match, the forward declaration for pmc_match
-can be dropped.
+--Sig_/e5AqtJECmuDQE_Wb4bb0LJU
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- arch/powerpc/platforms/83xx/suspend.c | 43 +++++++++++++--------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
+Hi all,
 
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index 6d47a5b81485..30b7700a2c98 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -319,7 +319,27 @@ static const struct platform_suspend_ops mpc83xx_suspend_ops = {
- 	.end = mpc83xx_suspend_end,
- };
- 
--static const struct of_device_id pmc_match[];
-+static struct pmc_type pmc_types[] = {
-+	{
-+		.has_deep_sleep = 1,
-+	},
-+	{
-+		.has_deep_sleep = 0,
-+	}
-+};
-+
-+static const struct of_device_id pmc_match[] = {
-+	{
-+		.compatible = "fsl,mpc8313-pmc",
-+		.data = &pmc_types[0],
-+	},
-+	{
-+		.compatible = "fsl,mpc8349-pmc",
-+		.data = &pmc_types[1],
-+	},
-+	{}
-+};
-+
- static int pmc_probe(struct platform_device *ofdev)
- {
- 	struct device_node *np = ofdev->dev.of_node;
-@@ -406,27 +426,6 @@ static int pmc_remove(struct platform_device *ofdev)
- 	return -EPERM;
- };
- 
--static struct pmc_type pmc_types[] = {
--	{
--		.has_deep_sleep = 1,
--	},
--	{
--		.has_deep_sleep = 0,
--	}
--};
--
--static const struct of_device_id pmc_match[] = {
--	{
--		.compatible = "fsl,mpc8313-pmc",
--		.data = &pmc_types[0],
--	},
--	{
--		.compatible = "fsl,mpc8349-pmc",
--		.data = &pmc_types[1],
--	},
--	{}
--};
--
- static struct platform_driver pmc_driver = {
- 	.driver = {
- 		.name = "mpc83xx-pmc",
+Today's linux-next merge of the random tree got a conflict in:
 
-base-commit: f2906aa863381afb0015a9eb7fefad885d4e5a56
--- 
-2.36.1
+  arch/powerpc/Kconfig
 
+between commit:
+
+  cea9d62b64c9 ("powerpc: Kconfig: Replace tabs with whitespaces")
+
+from the powerpc tree and commit:
+
+  a2ff4b7600cd ("random: remove CONFIG_ARCH_RANDOM")
+
+from the random tree.
+
+I fixed it up (the latter removed some lines updated by the former) and
+can carry the fix as necessary. This is now fixed as far as linux-next
+is concerned, but any non trivial conflicts should be mentioned to your
+upstream maintainer when your tree is submitted for merging.  You may
+also want to consider cooperating with the maintainer of the conflicting
+tree to minimise any particularly complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/e5AqtJECmuDQE_Wb4bb0LJU
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmLGjCUACgkQAVBC80lX
+0Gzc1wf9Ecu/28vZactDStc5fH3/HRfTbzKkFbYUF1KJILODaEiaY2CQpOsiD9OP
+gfgbJbZzimGQJXXsQef2Q8PFaZB54zryJIJz6NQmLOke380U7EFETj5uEPlhDP6i
+gahF6cUCQVq9UZvwd5dq38ZmeBW+xBQ3RYv0juOwphXzJuD40a98/yuaXUGgAaRA
+A+awkuyzhI+FiAPLHvyQOH5SC5fMgJYBEfJhnxBED3ciZ9xZ4V63352XhxU5cIyO
+QgLfcvXiviRQKWgklcBITAcmgmisf3RYytJAkzGoJ2Lh19fUlNl9wkztgCNrqQ94
+wpsHrq5MDnbLKNC6hY5OO0143Y5j0A==
+=fyUJ
+-----END PGP SIGNATURE-----
+
+--Sig_/e5AqtJECmuDQE_Wb4bb0LJU--
