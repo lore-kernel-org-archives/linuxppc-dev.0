@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC147C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 10:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B2D6C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 10:19:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lg5jg1qmgz3f8X
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 20:19:35 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lg5k46XnRz3fDB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 20:19:56 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lg5h14WGYz30Lp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lg5h15wbbz30Lp
 	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2022 20:18:09 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lg5h12vQYz4xvW;
-	Sat,  9 Jul 2022 20:18:09 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lg5h01cmVz4xvG;
+	Sat,  9 Jul 2022 20:18:08 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Fabiano Rosas <farosas@linux.ibm.com>
-In-Reply-To: <20220624142712.790491-1-farosas@linux.ibm.com>
-References: <20220624142712.790491-1-farosas@linux.ibm.com>
-Subject: Re: [PATCH v2] KVM: PPC: Align pt_regs in kvm_vcpu_arch structure
-Message-Id: <165736167068.12236.7214130104736401975.b4-ty@ellerman.id.au>
-Date: Sat, 09 Jul 2022 20:14:30 +1000
+In-Reply-To: <20220614165204.549229-1-farosas@linux.ibm.com>
+References: <20220614165204.549229-1-farosas@linux.ibm.com>
+Subject: Re: [PATCH] KVM: PPC: Book3S HV: tracing: Add missing hcall names
+Message-Id: <165736166961.12236.1738268896946645042.b4-ty@ellerman.id.au>
+Date: Sat, 09 Jul 2022 20:14:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, npiggin@gmail.com, muriloo@linux.ibm.com
+Cc: kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Jun 2022 11:27:12 -0300, Fabiano Rosas wrote:
-> The H_ENTER_NESTED hypercall receives as second parameter the address
-> of a region of memory containing the values for the nested guest
-> privileged registers. We currently use the pt_regs structure contained
-> within kvm_vcpu_arch for that end.
+On Tue, 14 Jun 2022 13:52:04 -0300, Fabiano Rosas wrote:
+> The kvm_trace_symbol_hcall macro is missing several of the hypercalls
+> defined in hvcall.h.
 > 
-> Most hypercalls that receive a memory address expect that region to
-> not cross a 4K page boundary. We would want H_ENTER_NESTED to follow
-> the same pattern so this patch ensures the pt_regs structure sits
-> within a page.
+> Add the most common ones that are issued during guest lifetime,
+> including the ones that are only used by QEMU and SLOF.
+> 
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Align pt_regs in kvm_vcpu_arch structure
-      https://git.kernel.org/powerpc/c/f5c847ea19d323974d6f7c7e9fa4858ce0727096
+[1/1] KVM: PPC: Book3S HV: tracing: Add missing hcall names
+      https://git.kernel.org/powerpc/c/0df01238b8aa300cbc736e7ec433d201a76036f3
 
 cheers
