@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B2D6C43334
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 10:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F32AC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 10:20:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lg5k46XnRz3fDB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 20:19:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lg5kT67GPz3c8M
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Jul 2022 20:20:17 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lg5h15wbbz30Lp
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2022 20:18:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lg5h33zLvz30Lp
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Jul 2022 20:18:11 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lg5h01cmVz4xvG;
-	Sat,  9 Jul 2022 20:18:08 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lg5h245XKz4xXD;
+	Sat,  9 Jul 2022 20:18:10 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Fabiano Rosas <farosas@linux.ibm.com>
-In-Reply-To: <20220614165204.549229-1-farosas@linux.ibm.com>
-References: <20220614165204.549229-1-farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: tracing: Add missing hcall names
-Message-Id: <165736166961.12236.1738268896946645042.b4-ty@ellerman.id.au>
-Date: Sat, 09 Jul 2022 20:14:29 +1000
+To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au, Juerg Haefliger <juerg.haefliger@canonical.com>, paulus@samba.org
+In-Reply-To: <20220520115431.147593-1-juergh@canonical.com>
+References: <20220520115431.147593-1-juergh@canonical.com>
+Subject: Re: [PATCH] KVM: PPC: Kconfig: Fix indentation
+Message-Id: <165736167288.12236.9958189155534556825.b4-ty@ellerman.id.au>
+Date: Sat, 09 Jul 2022 20:14:32 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org
+Cc: Juerg Haefliger <juergh@canonical.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Jun 2022 13:52:04 -0300, Fabiano Rosas wrote:
-> The kvm_trace_symbol_hcall macro is missing several of the hypercalls
-> defined in hvcall.h.
-> 
-> Add the most common ones that are issued during guest lifetime,
-> including the ones that are only used by QEMU and SLOF.
+On Fri, 20 May 2022 13:54:31 +0200, Juerg Haefliger wrote:
+> The convention for indentation seems to be a single tab. Help text is
+> further indented by an additional two whitespaces. Fix the lines that
+> violate these rules.
 > 
 > 
-> [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: Book3S HV: tracing: Add missing hcall names
-      https://git.kernel.org/powerpc/c/0df01238b8aa300cbc736e7ec433d201a76036f3
+[1/1] KVM: PPC: Kconfig: Fix indentation
+      https://git.kernel.org/powerpc/c/81e9685dd41384a39adda823df8b4f6e16ec2898
 
 cheers
