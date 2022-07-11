@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E164C43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 16:17:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70301C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 16:43:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LhTYl4k16z3c6q
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 02:17:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhV7F6gX4z3cPl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 02:43:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LhTYK0fj9z30Bm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 02:17:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhV6q3c1pz3bk0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 02:42:43 +1000 (AEST)
 Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26BGEhJX006415;
-	Mon, 11 Jul 2022 11:14:43 -0500
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26BGdZSI007170;
+	Mon, 11 Jul 2022 11:39:35 -0500
 Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26BGEhND006414;
-	Mon, 11 Jul 2022 11:14:43 -0500
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26BGdYRl007169;
+	Mon, 11 Jul 2022 11:39:34 -0500
 X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Mon, 11 Jul 2022 11:14:42 -0500
+Date: Mon, 11 Jul 2022 11:39:34 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: e500: Fix compilation with gcc e500 compiler
-Message-ID: <20220711161442.GD25951@gate.crashing.org>
-References: <20220524093939.30927-1-pali@kernel.org> <20220702094405.tp7eo4df7fjvn2ng@pali> <8D562851-304F-4153-9194-426CC22B7FF2@ellerman.id.au> <20220704103951.nm4m4kpgnus3ucqo@pali> <CAK8P3a2tdny8SA7jcqhUZT13iq1mYqjFueC-gnTUZA1JKCtfgg@mail.gmail.com> <20220708171227.74nbcgsk63y4bdna@pali> <CAK8P3a3YMqGEjRr+ZD4Enm4pnuNNZOaeXqpY=PDXAP7w3P7y4A@mail.gmail.com> <d9339bb9-2410-bea5-7502-1c7839707f4e@csgroup.eu>
+Subject: Re: [PATCH v1 1/5] powerpc/32: Do not allow selection of e5500 or e6500 CPUs on PPC32
+Message-ID: <20220711163934.GE25951@gate.crashing.org>
+References: <8abab4888da69ff78b73a56f64d9678a7bf684e9.1657549153.git.christophe.leroy@csgroup.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <d9339bb9-2410-bea5-7502-1c7839707f4e@csgroup.eu>
+In-Reply-To: <8abab4888da69ff78b73a56f64d9678a7bf684e9.1657549153.git.christophe.leroy@csgroup.eu>
 User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -42,31 +42,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Jul 09, 2022 at 09:26:11AM +0000, Christophe Leroy wrote:
-> If I select the GENERIC_CPU or e5500 (with altivec) I get:
-> 
->    CC      arch/powerpc/kernel/irq.o
-> {standard input}: Assembler messages:
-> {standard input}:3535: Error: unrecognized opcode: `wrteei'
-> {standard input}:5608: Error: unrecognized opcode: `wrteei'
+Hi!
 
-What -mcpu= did it use here?
+On Mon, Jul 11, 2022 at 04:19:29PM +0200, Christophe Leroy wrote:
+> Commit 0e00a8c9fd92 ("powerpc: Allow CPU selection also on PPC32")
+> enlarged the CPU selection logic to PPC32 by removing depend to
+> PPC64, and failed to restrict that depend to E5500_CPU and E6500_CPU.
+> Fortunately that got unnoticed because -mcpu=8540 will override the
+> -mcpu=e500mc64 or -mpcu=e6500 as they are ealier, but that's
+> fragile and may no be right in the future.
 
-wrteei is not a PowerPC insn (it is BookE, instead), so it is not
-recognised without an appropriate -mcpu=.
-
-> If I select the e5500 (without altivec) or e6500 I get:
-> 
->    CC      arch/powerpc/kernel/io.o
-> {standard input}: Assembler messages:
-> {standard input}:381: Error: unrecognized opcode: `eieio'
-
-Same question.  eieio is a base PowerPC instruction, so this one is
-"interesting" :-)
+A later -mcpu= always overrides an earlier one.  This is the same as
+with all other GCC option flags, and will not change in the future.
 
 
 Segher
