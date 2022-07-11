@@ -4,55 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA942C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 20:44:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF538C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 20:52:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LhbTy0qTPz3cCP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 06:44:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aRG3qlu8;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=dinguyen@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aRG3qlu8;
-	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LhbTB438yz3c1s
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 06:43:58 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id E4E43B81217;
-	Mon, 11 Jul 2022 20:43:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C5BBC341C0;
-	Mon, 11 Jul 2022 20:43:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1657572232;
-	bh=cp41t+VP5zpzqWweFhXlDmnM1wrue4Oj0YaNSsnkppo=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=aRG3qlu8UFv6GCt770R2iC1Nn/k2d2ZZkq8YVXrKOSkRIGx/97W21I2Zdpp2kvQZZ
-	 KuyKHJSCwX7fmQ/aRk1bnlNJ8KyGBKAIf6wfLoaj+ZGY/r7YC8F4ZXLbCSIXay8S3U
-	 KO1cCVQmcGHIuoeCVWpgDm8SLn2+onrydiOidsSYmIF+WPeB57GMcSRa0c2AOerTEx
-	 8wJNGlnRymBpEln9x5KoLhRbmS/nGaKmk+GXs/cnV0NfNmMTv8Jcr5e9ZRfkzStYWA
-	 a4l5nSOt+INBze/1hqe2LjRwOeBcCIZslW2jmgjdP8uyldi4q1iH8r9vF36qh/SNmy
-	 6vhOBCbduXcxQ==
-Message-ID: <88328a82-7275-608e-46f2-4203df9d9fe6@kernel.org>
-Date: Mon, 11 Jul 2022 15:43:45 -0500
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhbgP0n6jz3c3Q
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 06:52:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wanadoo.fr (client-ip=80.12.242.22; helo=smtp.smtpout.orange.fr; envelope-from=christophe.jaillet@wanadoo.fr; receiver=<UNKNOWN>)
+X-Greylist: delayed 5405 seconds by postgrey-1.36 at boromir; Tue, 12 Jul 2022 06:52:25 AEST
+Received: from smtp.smtpout.orange.fr (smtp-22.smtpout.orange.fr [80.12.242.22])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lhbfx0xVcz3c1s
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 06:52:22 +1000 (AEST)
+Received: from pop-os.home ([90.11.190.129])
+	by smtp.orange.fr with ESMTPA
+	id AyrgoNRqsm7vsAyrhoPkTU; Mon, 11 Jul 2022 21:14:42 +0200
+X-ME-Helo: pop-os.home
+X-ME-Auth: YWZlNiIxYWMyZDliZWIzOTcwYTEyYzlhMmU3ZiQ1M2U2MzfzZDfyZTMxZTBkMTYyNDBjNDJlZmQ3ZQ==
+X-ME-Date: Mon, 11 Jul 2022 21:14:42 +0200
+X-ME-IP: 90.11.190.129
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Frederic Barrat <fbarrat@linux.ibm.com>,
+	Andrew Donnellan <ajd@linux.ibm.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 1/2] cxl: Use the bitmap API to allocate bitmaps
+Date: Mon, 11 Jul 2022 21:14:38 +0200
+Message-Id: <59010cc7c62443030c69cb1ce0b2b62c5d47e064.1657566849.git.christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.9.1
-Subject: Re: [PATCH V7 15/26] nios2/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Content-Language: en-US
-To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org,
- akpm@linux-foundation.org
-References: <20220711070600.2378316-1-anshuman.khandual@arm.com>
- <20220711070600.2378316-16-anshuman.khandual@arm.com>
-From: Dinh Nguyen <dinguyen@kernel.org>
-In-Reply-To: <20220711070600.2378316-16-anshuman.khandual@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,95 +43,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, hch@infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-csky@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Use bitmap_zalloc()/bitmap_free() instead of hand-writing them.
 
+It is less verbose and it improves the semantic.
 
-On 7/11/22 02:05, Anshuman Khandual wrote:
-> This enables ARCH_HAS_VM_GET_PAGE_PROT on the platform and exports standard
-> vm_get_page_prot() implementation via DECLARE_VM_GET_PAGE_PROT, which looks
-> up a private and static protection_map[] array. Subsequently all __SXXX and
-> __PXXX macros can be dropped which are no longer needed.
-> 
-> Cc: Dinh Nguyen <dinguyen@kernel.org>
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
->   arch/nios2/Kconfig               |  1 +
->   arch/nios2/include/asm/pgtable.h | 16 ----------------
->   arch/nios2/mm/init.c             | 20 ++++++++++++++++++++
->   3 files changed, 21 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
-> index 4167f1eb4cd8..e0459dffd218 100644
-> --- a/arch/nios2/Kconfig
-> +++ b/arch/nios2/Kconfig
-> @@ -6,6 +6,7 @@ config NIOS2
->   	select ARCH_HAS_SYNC_DMA_FOR_CPU
->   	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
->   	select ARCH_HAS_DMA_SET_UNCACHED
-> +	select ARCH_HAS_VM_GET_PAGE_PROT
->   	select ARCH_NO_SWAP
->   	select COMMON_CLK
->   	select TIMER_OF
-> diff --git a/arch/nios2/include/asm/pgtable.h b/arch/nios2/include/asm/pgtable.h
-> index 262d0609268c..470516d4555e 100644
-> --- a/arch/nios2/include/asm/pgtable.h
-> +++ b/arch/nios2/include/asm/pgtable.h
-> @@ -40,24 +40,8 @@ struct mm_struct;
->    */
->   
->   /* Remove W bit on private pages for COW support */
-> -#define __P000	MKP(0, 0, 0)
-> -#define __P001	MKP(0, 0, 1)
-> -#define __P010	MKP(0, 0, 0)	/* COW */
-> -#define __P011	MKP(0, 0, 1)	/* COW */
-> -#define __P100	MKP(1, 0, 0)
-> -#define __P101	MKP(1, 0, 1)
-> -#define __P110	MKP(1, 0, 0)	/* COW */
-> -#define __P111	MKP(1, 0, 1)	/* COW */
->   
->   /* Shared pages can have exact HW mapping */
-> -#define __S000	MKP(0, 0, 0)
-> -#define __S001	MKP(0, 0, 1)
-> -#define __S010	MKP(0, 1, 0)
-> -#define __S011	MKP(0, 1, 1)
-> -#define __S100	MKP(1, 0, 0)
-> -#define __S101	MKP(1, 0, 1)
-> -#define __S110	MKP(1, 1, 0)
-> -#define __S111	MKP(1, 1, 1)
->   
->   /* Used all over the kernel */
->   #define PAGE_KERNEL __pgprot(_PAGE_PRESENT | _PAGE_CACHED | _PAGE_READ | \
-> diff --git a/arch/nios2/mm/init.c b/arch/nios2/mm/init.c
-> index 613fcaa5988a..ae24687d12ad 100644
-> --- a/arch/nios2/mm/init.c
-> +++ b/arch/nios2/mm/init.c
-> @@ -124,3 +124,23 @@ const char *arch_vma_name(struct vm_area_struct *vma)
->   {
->   	return (vma->vm_start == KUSER_BASE) ? "[kuser]" : NULL;
->   }
-> +
-> +static const pgprot_t protection_map[16] = {
-> +	[VM_NONE]					= MKP(0, 0, 0),
-> +	[VM_READ]					= MKP(0, 0, 1),
-> +	[VM_WRITE]					= MKP(0, 0, 0),
-> +	[VM_WRITE | VM_READ]				= MKP(0, 0, 1),
-> +	[VM_EXEC]					= MKP(1, 0, 0),
-> +	[VM_EXEC | VM_READ]				= MKP(1, 0, 1),
-> +	[VM_EXEC | VM_WRITE]				= MKP(1, 0, 0),
-> +	[VM_EXEC | VM_WRITE | VM_READ]			= MKP(1, 0, 1),
-> +	[VM_SHARED]					= MKP(0, 0, 0),
-> +	[VM_SHARED | VM_READ]				= MKP(0, 0, 1),
-> +	[VM_SHARED | VM_WRITE]				= MKP(0, 1, 0),
-> +	[VM_SHARED | VM_WRITE | VM_READ]		= MKP(0, 1, 1),
-> +	[VM_SHARED | VM_EXEC]				= MKP(1, 0, 0),
-> +	[VM_SHARED | VM_EXEC | VM_READ]			= MKP(1, 0, 1),
-> +	[VM_SHARED | VM_EXEC | VM_WRITE]		= MKP(1, 1, 0),
-> +	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= MKP(1, 1, 1)
-> +};
-> +DECLARE_VM_GET_PAGE_PROT
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/misc/cxl/context.c | 2 +-
+ drivers/misc/cxl/guest.c   | 2 +-
+ drivers/misc/cxl/irq.c     | 3 +--
+ drivers/misc/cxl/of.c      | 5 ++---
+ 4 files changed, 5 insertions(+), 7 deletions(-)
 
-Acked-by: Dinh Nguyen <dinguyen@kernel.org>
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index e627b4056623..acaa44809c58 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -331,7 +331,7 @@ static void reclaim_ctx(struct rcu_head *rcu)
+ 		__free_page(ctx->ff_page);
+ 	ctx->sstp = NULL;
+ 
+-	kfree(ctx->irq_bitmap);
++	bitmap_free(ctx->irq_bitmap);
+ 
+ 	/* Drop ref to the afu device taken during cxl_context_init */
+ 	cxl_afu_put(ctx->afu);
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 3321c014913c..375f692ae9d6 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -1053,7 +1053,7 @@ static void free_adapter(struct cxl *adapter)
+ 		if (adapter->guest->irq_avail) {
+ 			for (i = 0; i < adapter->guest->irq_nranges; i++) {
+ 				cur = &adapter->guest->irq_avail[i];
+-				kfree(cur->bitmap);
++				bitmap_free(cur->bitmap);
+ 			}
+ 			kfree(adapter->guest->irq_avail);
+ 		}
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index 5f0e2dcebb34..0ce91d99aead 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -319,8 +319,7 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ 	}
+ 
+ 	ctx->irq_count = count;
+-	ctx->irq_bitmap = kcalloc(BITS_TO_LONGS(count),
+-				  sizeof(*ctx->irq_bitmap), GFP_KERNEL);
++	ctx->irq_bitmap = bitmap_zalloc(count, GFP_KERNEL);
+ 	if (!ctx->irq_bitmap)
+ 		goto out;
+ 
+diff --git a/drivers/misc/cxl/of.c b/drivers/misc/cxl/of.c
+index 1cfecba42d01..25ce725035e7 100644
+--- a/drivers/misc/cxl/of.c
++++ b/drivers/misc/cxl/of.c
+@@ -308,8 +308,7 @@ static int read_adapter_irq_config(struct cxl *adapter, struct device_node *np)
+ 		cur = &adapter->guest->irq_avail[i];
+ 		cur->offset = be32_to_cpu(ranges[i * 2]);
+ 		cur->range  = be32_to_cpu(ranges[i * 2 + 1]);
+-		cur->bitmap = kcalloc(BITS_TO_LONGS(cur->range),
+-				sizeof(*cur->bitmap), GFP_KERNEL);
++		cur->bitmap = bitmap_zalloc(cur->range, GFP_KERNEL);
+ 		if (cur->bitmap == NULL)
+ 			goto err;
+ 		if (cur->offset < adapter->guest->irq_base_offset)
+@@ -326,7 +325,7 @@ static int read_adapter_irq_config(struct cxl *adapter, struct device_node *np)
+ err:
+ 	for (i--; i >= 0; i--) {
+ 		cur = &adapter->guest->irq_avail[i];
+-		kfree(cur->bitmap);
++		bitmap_free(cur->bitmap);
+ 	}
+ 	kfree(adapter->guest->irq_avail);
+ 	adapter->guest->irq_avail = NULL;
+-- 
+2.34.1
+
