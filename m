@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B064CCA47B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 07:09:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD0A2C43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 07:10:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LhFPv56kmz3c8h
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 17:09:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhFQJ3kzhz3fVf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 17:10:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LhFMN0P0Fz3drD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2022 17:07:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhFMT5Mr3z3dq0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jul 2022 17:07:49 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BD592168F;
-	Mon, 11 Jul 2022 00:07:43 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C9FFC1655;
+	Mon, 11 Jul 2022 00:07:18 -0700 (PDT)
 Received: from a077893.arm.com (unknown [10.163.45.183])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C6B083F70D;
-	Mon, 11 Jul 2022 00:07:35 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id CA1053F70D;
+	Mon, 11 Jul 2022 00:07:10 -0700 (PDT)
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org,
 	akpm@linux-foundation.org
-Subject: [PATCH V7 10/26] openrisc/mm: Enable ARCH_HAS_VM_GET_PAGE_PROT
-Date: Mon, 11 Jul 2022 12:35:44 +0530
-Message-Id: <20220711070600.2378316-11-anshuman.khandual@arm.com>
+Subject: [PATCH V7 07/26] mm/mmap: Build protect protection_map[] with ARCH_HAS_VM_GET_PAGE_PROT
+Date: Mon, 11 Jul 2022 12:35:41 +0530
+Message-Id: <20220711070600.2378316-8-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220711070600.2378316-1-anshuman.khandual@arm.com>
 References: <20220711070600.2378316-1-anshuman.khandual@arm.com>
@@ -41,95 +41,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, hch@infradead.org, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Anshuman Khandual <anshuman.khandual@arm.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This enables ARCH_HAS_VM_GET_PAGE_PROT on the platform and exports standard
-vm_get_page_prot() implementation via DECLARE_VM_GET_PAGE_PROT, which looks
-up a private and static protection_map[] array. Subsequently all __SXXX and
-__PXXX macros can be dropped which are no longer needed.
+Now that protection_map[] has been moved inside those platforms that enable
+ARCH_HAS_VM_GET_PAGE_PROT. Hence generic protection_map[] array now can be
+protected with CONFIG_ARCH_HAS_VM_GET_PAGE_PROT intead of __P000.
 
-Cc: Jonas Bonn <jonas@southpole.se>
-Cc: openrisc@lists.librecores.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
-Acked-by: Stafford Horne <shorne@gmail.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/openrisc/Kconfig               |  1 +
- arch/openrisc/include/asm/pgtable.h | 18 ------------------
- arch/openrisc/mm/init.c             | 20 ++++++++++++++++++++
- 3 files changed, 21 insertions(+), 18 deletions(-)
+ include/linux/mm.h | 2 +-
+ mm/mmap.c          | 5 +----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
-index e814df4c483c..fe0dfb50eb86 100644
---- a/arch/openrisc/Kconfig
-+++ b/arch/openrisc/Kconfig
-@@ -10,6 +10,7 @@ config OPENRISC
- 	select ARCH_HAS_DMA_SET_UNCACHED
- 	select ARCH_HAS_DMA_CLEAR_UNCACHED
- 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
-+	select ARCH_HAS_VM_GET_PAGE_PROT
- 	select COMMON_CLK
- 	select OF
- 	select OF_EARLY_FLATTREE
-diff --git a/arch/openrisc/include/asm/pgtable.h b/arch/openrisc/include/asm/pgtable.h
-index c3abbf71e09f..dcae8aea132f 100644
---- a/arch/openrisc/include/asm/pgtable.h
-+++ b/arch/openrisc/include/asm/pgtable.h
-@@ -176,24 +176,6 @@ extern void paging_init(void);
- 	__pgprot(_PAGE_ALL | _PAGE_SRE | _PAGE_SWE \
- 		 | _PAGE_SHARED | _PAGE_DIRTY | _PAGE_EXEC | _PAGE_CI)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0ff0a1bad091..07b56995e0fe 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -424,7 +424,7 @@ extern unsigned int kobjsize(const void *objp);
+  * mapping from the currently active vm_flags protection bits (the
+  * low four bits) to a page protection mask..
+  */
+-#ifdef __P000
++#ifndef CONFIG_ARCH_HAS_VM_GET_PAGE_PROT
+ extern pgprot_t protection_map[16];
+ #endif
  
--#define __P000	PAGE_NONE
--#define __P001	PAGE_READONLY_X
--#define __P010	PAGE_COPY
--#define __P011	PAGE_COPY_X
--#define __P100	PAGE_READONLY
--#define __P101	PAGE_READONLY_X
--#define __P110	PAGE_COPY
--#define __P111	PAGE_COPY_X
+diff --git a/mm/mmap.c b/mm/mmap.c
+index b46d5e931bb3..2cc722e162fa 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -81,7 +81,7 @@ static void unmap_region(struct mm_struct *mm,
+ 		struct vm_area_struct *vma, struct vm_area_struct *prev,
+ 		unsigned long start, unsigned long end);
+ 
+-#ifdef __P000
++#ifndef CONFIG_ARCH_HAS_VM_GET_PAGE_PROT
+ pgprot_t protection_map[16] __ro_after_init = {
+ 	[VM_NONE]					= __P000,
+ 	[VM_READ]					= __P001,
+@@ -100,9 +100,6 @@ pgprot_t protection_map[16] __ro_after_init = {
+ 	[VM_SHARED | VM_EXEC | VM_WRITE]		= __S110,
+ 	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= __S111
+ };
+-#endif
 -
--#define __S000	PAGE_NONE
--#define __S001	PAGE_READONLY_X
--#define __S010	PAGE_SHARED
--#define __S011	PAGE_SHARED_X
--#define __S100	PAGE_READONLY
--#define __S101	PAGE_READONLY_X
--#define __S110	PAGE_SHARED
--#define __S111	PAGE_SHARED_X
--
- /* zero page used for uninitialized stuff */
- extern unsigned long empty_zero_page[2048];
- #define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
-diff --git a/arch/openrisc/mm/init.c b/arch/openrisc/mm/init.c
-index 3a021ab6f1ae..d531ab82be12 100644
---- a/arch/openrisc/mm/init.c
-+++ b/arch/openrisc/mm/init.c
-@@ -208,3 +208,23 @@ void __init mem_init(void)
- 	mem_init_done = 1;
- 	return;
- }
-+
-+static const pgprot_t protection_map[16] = {
-+	[VM_NONE]					= PAGE_NONE,
-+	[VM_READ]					= PAGE_READONLY_X,
-+	[VM_WRITE]					= PAGE_COPY,
-+	[VM_WRITE | VM_READ]				= PAGE_COPY_X,
-+	[VM_EXEC]					= PAGE_READONLY,
-+	[VM_EXEC | VM_READ]				= PAGE_READONLY_X,
-+	[VM_EXEC | VM_WRITE]				= PAGE_COPY,
-+	[VM_EXEC | VM_WRITE | VM_READ]			= PAGE_COPY_X,
-+	[VM_SHARED]					= PAGE_NONE,
-+	[VM_SHARED | VM_READ]				= PAGE_READONLY_X,
-+	[VM_SHARED | VM_WRITE]				= PAGE_SHARED,
-+	[VM_SHARED | VM_WRITE | VM_READ]		= PAGE_SHARED_X,
-+	[VM_SHARED | VM_EXEC]				= PAGE_READONLY,
-+	[VM_SHARED | VM_EXEC | VM_READ]			= PAGE_READONLY_X,
-+	[VM_SHARED | VM_EXEC | VM_WRITE]		= PAGE_SHARED,
-+	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_SHARED_X
-+};
-+DECLARE_VM_GET_PAGE_PROT
+-#ifndef CONFIG_ARCH_HAS_VM_GET_PAGE_PROT
+ DECLARE_VM_GET_PAGE_PROT
+ #endif	/* CONFIG_ARCH_HAS_VM_GET_PAGE_PROT */
+ 
 -- 
 2.25.1
 
