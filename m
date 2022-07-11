@@ -4,34 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95587C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 21:51:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2861AC43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Jul 2022 22:05:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lhcz566jSz3cd6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 07:51:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lhcyb3Xrhz3c1n
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 07:51:02 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26BLmgGA018033;
-	Mon, 11 Jul 2022 16:48:42 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26BLmeGc018032;
-	Mon, 11 Jul 2022 16:48:40 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Mon, 11 Jul 2022 16:48:40 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: e500: Fix compilation with gcc e500 compiler
-Message-ID: <20220711214840.GJ25951@gate.crashing.org>
-References: <20220524093939.30927-1-pali@kernel.org> <20220702094405.tp7eo4df7fjvn2ng@pali> <8D562851-304F-4153-9194-426CC22B7FF2@ellerman.id.au> <20220704103951.nm4m4kpgnus3ucqo@pali> <CAK8P3a2tdny8SA7jcqhUZT13iq1mYqjFueC-gnTUZA1JKCtfgg@mail.gmail.com> <20220708171227.74nbcgsk63y4bdna@pali> <CAK8P3a3YMqGEjRr+ZD4Enm4pnuNNZOaeXqpY=PDXAP7w3P7y4A@mail.gmail.com> <d9339bb9-2410-bea5-7502-1c7839707f4e@csgroup.eu> <20220711161442.GD25951@gate.crashing.org> <2552726a-cca4-ecd4-6fca-4f73bbf7942e@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LhdHW29rKz3cFL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 08:05:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=boELpH/9;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=boELpH/9;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LhdGm1CQ1z2yJL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jul 2022 08:05:03 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26BL1d99026535;
+	Mon, 11 Jul 2022 22:04:51 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=NlUTSrATc/Oo6yFV3itCCCQNw/+QGn98bH6P3kymRIk=;
+ b=boELpH/9bESNN5HeGDDTHPAG+7q5AVBcBL9TDZ5wk4D9Onikl9t5Tul22UP+6Ss8fKFy
+ pUIaDOtuKJGROPWVkiqe+YcuyQz8c/iE3bMf/FMEuCEUhlLiKT9C1OnmcocWUIuI0DwA
+ 5JycdxHbsO1tOKV0Zmx6a/EM+slT4Hff02HZRUrUcZizjqGjNqYUZqv4f2oIMCN2cIXQ
+ 0p6t5Lx8q5zrzKqfM9sbluEpxYb9IOAz8u0r5SKnSRorLx4dDWlTfN2N3vgodqEPtch1
+ D+p4sBpG11y2Vs3N8J8t8fQkgn7otMNJQtKAIb+IF7G08a5bdVj0iYIj1C3qrQdZk3WG rQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h8udv16eg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 11 Jul 2022 22:04:51 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 26BM0GK0026468;
+	Mon, 11 Jul 2022 22:04:51 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3h8udv16dc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 11 Jul 2022 22:04:50 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26BLoD9c008894;
+	Mon, 11 Jul 2022 22:04:48 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma03ams.nl.ibm.com with ESMTP id 3h71a8u8qa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 11 Jul 2022 22:04:48 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26BM4j4H24117732
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 11 Jul 2022 22:04:45 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6481C52050;
+	Mon, 11 Jul 2022 22:04:45 +0000 (GMT)
+Received: from li-f45666cc-3089-11b2-a85c-c57d1a57929f.ibm.com (unknown [9.211.107.19])
+	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2F05D5204E;
+	Mon, 11 Jul 2022 22:04:41 +0000 (GMT)
+Message-ID: <9fc4f6dc2ee497a4d4998df17392ac73ebdf3d63.camel@linux.ibm.com>
+Subject: Re: [PATCH v6 4/6] tpm: of: Make of-tree specific function commonly
+ available
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: Stefan Berger <stefanb@linux.ibm.com>, kexec@lists.infradead.org,
+        devicetree@vger.kernel.org, linux-integrity@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 11 Jul 2022 18:04:41 -0400
+In-Reply-To: <20220707172026.831614-5-stefanb@linux.ibm.com>
+References: <20220707172026.831614-1-stefanb@linux.ibm.com>
+	 <20220707172026.831614-5-stefanb@linux.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2552726a-cca4-ecd4-6fca-4f73bbf7942e@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: gFV0BXBuvKy5jtRQecH9o9Ts7rE2PizX
+X-Proofpoint-ORIG-GUID: ZYsN1Rxnx9KOvVXOzFIN86sR19W3fJPB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-07-11_25,2022-07-08_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
+ lowpriorityscore=0 priorityscore=1501 phishscore=0 suspectscore=0
+ mlxscore=0 mlxlogscore=850 spamscore=0 bulkscore=0 adultscore=0
+ malwarescore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2206140000 definitions=main-2207110089
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -43,48 +98,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: nayna@linux.ibm.com, Jason Gunthorpe <jgg@ziepe.ca>, Jarkko Sakkinen <jarkko@kernel.org>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, Frank Rowand <frowand.list@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi!
+Hi Stefan,
 
-On Mon, Jul 11, 2022 at 05:32:09PM +0000, Christophe Leroy wrote:
-> Le 11/07/2022 à 18:14, Segher Boessenkool a écrit :
-> >>     CC      arch/powerpc/kernel/irq.o
-> >> {standard input}: Assembler messages:
-> >> {standard input}:3535: Error: unrecognized opcode: `wrteei'
-> >> {standard input}:5608: Error: unrecognized opcode: `wrteei'
-> > 
-> > What -mcpu= did it use here?
-> 
-> -mcpu=powerpc64
-> 
-> > wrteei is not a PowerPC insn (it is BookE, instead), so it is not
-> > recognised without an appropriate -mcpu=.
-> > 
-> >> If I select the e5500 (without altivec) or e6500 I get:
-> >>
-> >>     CC      arch/powerpc/kernel/io.o
-> >> {standard input}: Assembler messages:
-> >> {standard input}:381: Error: unrecognized opcode: `eieio'
-> > 
-> > Same question.  eieio is a base PowerPC instruction, so this one is
-> > "interesting" :-)
-> 
-> -mcpu=e500mc64 (for e5500)
-> -mcpu=e6500 (for e6500)
-> 
-> I had to replace 'eieio' instruction by 'mbar' instruction.
+On Thu, 2022-07-07 at 13:20 -0400, Stefan Berger wrote:
+> -       /*
+> -        * For both vtpm/tpm, firmware has log addr and log size in big
+> -        * endian format. But in case of vtpm, there is a method called
+> -        * sml-handover which is run during kernel init even before
+> -        * device tree is setup. This sml-handover function takes care
+> -        * of endianness and writes to sml-base and sml-size in little
+> -        * endian format. For this reason, vtpm doesn't need conversion
+> -        * but physical tpm needs the conversion.
+> -        */
 
-I saw some patches fly by...  you have it all fixed with that?
+This comment is dropped.  Perhaps not in such detail, but shouldn't a
+comment or function description exist in the new function.
 
-> Seems like binutils added 'eieio' to e500 in 2010 via commit 
-> e01d869a3be, but it seems it is only for the 85xx, not for the others.
+Otherwise,
+Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
 
-I believe the eieio instruction is disabled on some e500 models, because
-it does not work correctly, so EIEIO_EN=1 cannot work, something like
-that?
+thanks,
 
+Mimi
 
-Segher
