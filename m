@@ -4,34 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40319C43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 14:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57C44CCA47F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Jul 2022 14:33:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lj2mV5hfNz3c44
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jul 2022 00:13:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lj2m26BdBz30LR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2022 00:13:22 +1000 (AEST)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26CEB93o025896;
-	Tue, 12 Jul 2022 09:11:09 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26CEB7M3025895;
-	Tue, 12 Jul 2022 09:11:07 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Tue, 12 Jul 2022 09:11:07 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: e500: Fix compilation with gcc e500 compiler
-Message-ID: <20220712141107.GM25951@gate.crashing.org>
-References: <8D562851-304F-4153-9194-426CC22B7FF2@ellerman.id.au> <20220704103951.nm4m4kpgnus3ucqo@pali> <CAK8P3a2tdny8SA7jcqhUZT13iq1mYqjFueC-gnTUZA1JKCtfgg@mail.gmail.com> <20220708171227.74nbcgsk63y4bdna@pali> <CAK8P3a3YMqGEjRr+ZD4Enm4pnuNNZOaeXqpY=PDXAP7w3P7y4A@mail.gmail.com> <d9339bb9-2410-bea5-7502-1c7839707f4e@csgroup.eu> <20220711161442.GD25951@gate.crashing.org> <2552726a-cca4-ecd4-6fca-4f73bbf7942e@csgroup.eu> <20220711214840.GJ25951@gate.crashing.org> <aab87b89-3518-f13e-995a-cbe48892e200@csgroup.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lj3Bm4rYzz3cdB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jul 2022 00:33:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kcql+c5v;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Kcql+c5v;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lj39y5P5Dz3c0g
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jul 2022 00:32:22 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26CDBugK007915;
+	Tue, 12 Jul 2022 14:32:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=0DhHvsxCxRfs8ONe0EUj23JBu5ERuQgHbLPOK7uZoz4=;
+ b=Kcql+c5vfVTWypeyQaPJEwNBwFhWg8xSeKuDQiQ0zOyv5VCLVhj2WPmnO9WjMFmsAi3E
+ vpZceXF81G0cm9k3pQy3KNPYRR3cpygpycF7MEOXeWg1OpS7g0B7SDHNBX6UkJmun0nI
+ Wv3jfak+WMfl9bCjASAoaBHZszV8/PpG8N6hC63xk/Z3RFPVrhw70+jHQqTIiQGJRAxy
+ z6Te9FR5jLXp/uWOdlg0nkVgShC7eLRJ93lIuEDvBK89Cr7iEsJSlttG1SAMrQ6zwrzJ
+ NbG7qvL2z1T3GcuBxcM+SEZf6wgyI9TUErFRKZlnH1wgeJcbtZgz03iZDeIJI2f1+xLf kA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3h98jvm1fn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Jul 2022 14:32:08 +0000
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 26CEUH2B029687;
+	Tue, 12 Jul 2022 14:32:08 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3h98jvm1e2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Jul 2022 14:32:08 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26CEKX4u024863;
+	Tue, 12 Jul 2022 14:32:06 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma06ams.nl.ibm.com with ESMTP id 3h70xhvaut-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Jul 2022 14:32:06 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26CEW3tK16253304
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 Jul 2022 14:32:03 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B5417A405F;
+	Tue, 12 Jul 2022 14:32:03 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3C07FA405B;
+	Tue, 12 Jul 2022 14:32:03 +0000 (GMT)
+Received: from pomme.tlslab.ibm.com (unknown [9.101.4.33])
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Tue, 12 Jul 2022 14:32:03 +0000 (GMT)
+From: Laurent Dufour <ldufour@linux.ibm.com>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+        wim@linux-watchdog.org, linux@roeck-us.net, nathanl@linux.ibm.com
+Subject: [PATCH v4 1/4] powerpc/mobility: wait for memory transfer to complete
+Date: Tue, 12 Jul 2022 16:31:59 +0200
+Message-Id: <20220712143202.23144-2-ldufour@linux.ibm.com>
+X-Mailer: git-send-email 2.37.0
+In-Reply-To: <20220712143202.23144-1-ldufour@linux.ibm.com>
+References: <20220712143202.23144-1-ldufour@linux.ibm.com>
+MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <aab87b89-3518-f13e-995a-cbe48892e200@csgroup.eu>
-User-Agent: Mutt/1.4.2.3i
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: tfBTM2f9QAUpjECIqqJp_2ByD9f3wySB
+X-Proofpoint-ORIG-GUID: a9YD_9VNreQoh8r922KXmEml-utvB6L6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-07-12_08,2022-07-12_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ suspectscore=0 adultscore=0 lowpriorityscore=0 mlxlogscore=999
+ impostorscore=0 clxscore=1015 spamscore=0 bulkscore=0 phishscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2206140000 definitions=main-2207120055
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -43,35 +97,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: hch@infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, haren@linux.vnet.ibm.com, linux-watchdog@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 12, 2022 at 09:22:12AM +0000, Christophe Leroy wrote:
-> Le 11/07/2022 à 23:48, Segher Boessenkool a écrit :
-> > I believe the eieio instruction is disabled on some e500 models, because
-> > it does not work correctly, so EIEIO_EN=1 cannot work, something like
-> > that?
-> 
-> Don't know.
-> 
-> It is also disabled on 405 and 440.
+In pseries_migration_partition(), loop until the memory transfer is
+complete. This way the calling drmgr process will not exit earlier,
+allowing callbacks to be run only once the migration is fully completed.
 
-BookE does not have the eieio insn.  Instead, it reuses the same opcode
-for mbar, which has similar but different semantics.
+If reading the VASI state is done after the hypervisor has completed the
+migration, the HCALL is returning H_PARAMETER. We can safely assume that
+the memory transfer is achieved if this happens.
 
-e500 has that EIEIO_EN thing which makes the insn behave like eieio.
+This will also allow to manage the NMI watchdog state in the next commits.
 
-> That's new with GCC 12.
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/mobility.c | 48 ++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 2 deletions(-)
 
-Yup.  In the past we used -many, but that just hides problems in the
-best case, and causes more problems itself :-(
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 78f3f74c7056..6297467072e6 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -427,6 +427,43 @@ static int wait_for_vasi_session_suspending(u64 handle)
+ 	return ret;
+ }
+ 
++static void wait_for_vasi_session_completed(u64 handle)
++{
++	unsigned long state = 0;
++	int ret;
++
++	pr_info("waiting for memory transfer to complete...\n");
++
++	/*
++	 * Wait for transition from H_VASI_RESUMED to H_VASI_COMPLETED.
++	 */
++	while (true) {
++		ret = poll_vasi_state(handle, &state);
++
++		/*
++		 * If the memory transfer is already complete and the migration
++		 * has been cleaned up by the hypervisor, H_PARAMETER is return,
++		 * which is translate in EINVAL by poll_vasi_state().
++		 */
++		if (ret == -EINVAL || (!ret && state == H_VASI_COMPLETED)) {
++			pr_info("memory transfer completed.\n");
++			break;
++		}
++
++		if (ret) {
++			pr_err("H_VASI_STATE return error (%d)\n", ret);
++			break;
++		}
++
++		if (state != H_VASI_RESUMED) {
++			pr_err("unexpected H_VASI_STATE result %lu\n", state);
++			break;
++		}
++
++		msleep(500);
++	}
++}
++
+ static void prod_single(unsigned int target_cpu)
+ {
+ 	long hvrc;
+@@ -673,9 +710,16 @@ static int pseries_migrate_partition(u64 handle)
+ 	vas_migration_handler(VAS_SUSPEND);
+ 
+ 	ret = pseries_suspend(handle);
+-	if (ret == 0)
++	if (ret == 0) {
+ 		post_mobility_fixup();
+-	else
++		/*
++		 * Wait until the memory transfer is complete, so that the user
++		 * space process returns from the syscall after the transfer is
++		 * complete. This allows the user hooks to be executed at the
++		 * right time.
++		 */
++		wait_for_vasi_session_completed(handle);
++	} else
+ 		pseries_cancel_migration(handle, ret);
+ 
+ 	vas_migration_handler(VAS_RESUME);
+-- 
+2.37.0
 
-There are many mnemonics that cause a different instruction to be
-emitted on different targets, and that causes a lot of wasted time
-trying to find and fix the problems this causes.
-
-If you hit any remaining problems related to this, please let me know!
-
-
-Segher
