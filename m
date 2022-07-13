@@ -4,88 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6383AC43334
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jul 2022 15:49:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5DA9CCA479
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Jul 2022 15:49:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ljhr86qD9z3cgP
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 01:49:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ljhrw1GBfz3cCY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 01:49:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yc4o2ac8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qpu8PC9g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yc4o2ac8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qpu8PC9g;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ljhpg13vBz3bwr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2022 01:47:54 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26DFkswm012593;
-	Wed, 13 Jul 2022 15:47:38 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ljhpg4ZsQz2ypZ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2022 01:47:55 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26DFiPJo029438;
+	Wed, 13 Jul 2022 15:47:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=u2K0EugPdrYrrSRtyLhyqh2X5IDubSfltxPB5W0G0Hc=;
- b=Yc4o2ac86q2bLlGE3TreFM5w8V3+cPW5X7B4Zk1q9dkwAp3YCoZwSIZtGGy9EuqFigW3
- l8rLONrQAC0u+fVf4Wi9W79Oinf6XYvnxcTVYUr6iIa2H03JFbzgDP05ktcAutAEqRsr
- M9PXI4f3E4G8+pPYI7xnhKfeQ+fbDs1rbRZkp6yVy8XigQWH/66jPnuyoVFCLCci5Eit
- kVyVtRG+uydW01cNwdomItsuEYZGUAxCwvyWsUc4UBzsoYhNhLgz9HukxpFDgyVO2XY1
- 0eaU+T4b3hp9JZwbn709Njli00O5WG5h/Us10+UJSq2wvX4XuJnH4m+IXcuS16irSyfy Ow== 
+ bh=0DhHvsxCxRfs8ONe0EUj23JBu5ERuQgHbLPOK7uZoz4=;
+ b=qpu8PC9gHTuvYEIiUyzpz7qAFnPoKg2L35yihUdzkR5mm0NMtD2b2gNFddithWI7LiK2
+ E1s4WvIJCL+KiFhKf7WqIQcg/MXnt4LnVD40uOdBTBN+RDv5BQC4FCNpPpOgVHattNP0
+ XGm6c+zD9f6a7kmI+GWrcbJulplPFjyXtpVGXFGfkaPRYR1vDN5qn4VICNb4Tkg9zdgh
+ 67WbPKPkk41FWq1gm1aPrpSVoKpIY1NmqG9KGutm+OjnbSRkMkpnIGlNiObQhrS1pOJJ
+ IcBeEkvAWKkvspHdKMfFUUvdM66NQE5nYDBNFhJMVHxMakB2zHhF/hhbPQbSrYxPAblu Vw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ha108r06q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 Jul 2022 15:47:38 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 26DFlbR7018838;
-	Wed, 13 Jul 2022 15:47:37 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ha108r068-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ha0xxr2ef-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 13 Jul 2022 15:47:37 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26DFO5wb004094;
-	Wed, 13 Jul 2022 15:47:35 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma04ams.nl.ibm.com with ESMTP id 3h8rrn2t3q-1
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 26DFkE9r001922;
+	Wed, 13 Jul 2022 15:47:36 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ha0xxr2dm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 13 Jul 2022 15:47:35 +0000
+	Wed, 13 Jul 2022 15:47:36 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26DFOCM0002503;
+	Wed, 13 Jul 2022 15:47:34 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma06ams.nl.ibm.com with ESMTP id 3h70xhww1x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 Jul 2022 15:47:34 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26DFlh5d33030594
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26DFlVxp12583168
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 13 Jul 2022 15:47:43 GMT
+	Wed, 13 Jul 2022 15:47:31 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8F28EAE045;
-	Wed, 13 Jul 2022 15:47:32 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 69CFBAE051;
+	Wed, 13 Jul 2022 15:47:31 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 183C4AE053;
-	Wed, 13 Jul 2022 15:47:32 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id EA320AE045;
+	Wed, 13 Jul 2022 15:47:30 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.145.2.121])
 	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 13 Jul 2022 15:47:32 +0000 (GMT)
+	Wed, 13 Jul 2022 15:47:30 +0000 (GMT)
 From: Laurent Dufour <ldufour@linux.ibm.com>
 To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
         wim@linux-watchdog.org, linux@roeck-us.net, nathanl@linux.ibm.com,
         rdunlap@infradead.org
-Subject: [PATCH v5 3/4] powerpc/watchdog: introduce a NMI watchdog's factor
-Date: Wed, 13 Jul 2022 17:47:28 +0200
-Message-Id: <20220713154729.80789-4-ldufour@linux.ibm.com>
+Subject: [PATCH v5 1/4] powerpc/mobility: wait for memory transfer to complete
+Date: Wed, 13 Jul 2022 17:47:26 +0200
+Message-Id: <20220713154729.80789-2-ldufour@linux.ibm.com>
 X-Mailer: git-send-email 2.37.0
 In-Reply-To: <20220713154729.80789-1-ldufour@linux.ibm.com>
 References: <20220713154729.80789-1-ldufour@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: fEyRdgusg2_FMGlebhZnWXVajq2vuBp4
-X-Proofpoint-GUID: 5LmUDs6LCrRXURe8OdI7uoTGSyYKtKVJ
+X-Proofpoint-ORIG-GUID: ytPHl0Qilk7Pj133hrPfxl3DPos0mySt
+X-Proofpoint-GUID: XHW1NtzqDq6FFbOrEt6KHMItT1LwnIc7
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-07-13_05,2022-07-13_03,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 bulkscore=0
- suspectscore=0 phishscore=0 adultscore=0 mlxscore=0 mlxlogscore=999
- clxscore=1015 lowpriorityscore=0 impostorscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ suspectscore=0 mlxlogscore=999 lowpriorityscore=0 clxscore=1015
+ priorityscore=1501 spamscore=0 phishscore=0 bulkscore=0 adultscore=0
+ malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2206140000 definitions=main-2207130063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -102,80 +102,90 @@ Cc: hch@infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce a factor which would apply to the NMI watchdog timeout.
+In pseries_migration_partition(), loop until the memory transfer is
+complete. This way the calling drmgr process will not exit earlier,
+allowing callbacks to be run only once the migration is fully completed.
 
-This factor is a percentage added to the watchdog_tresh value. The value is
-set under the watchdog_mutex protection and lockup_detector_reconfigure()
-is called to recompute wd_panic_timeout_tb.
+If reading the VASI state is done after the hypervisor has completed the
+migration, the HCALL is returning H_PARAMETER. We can safely assume that
+the memory transfer is achieved if this happens.
 
-Once the factor is set, it remains until it is set back to 0, which means
-no impact.
+This will also allow to manage the NMI watchdog state in the next commits.
 
+Reviewed-by: Nathan Lynch <nathanl@linux.ibm.com>
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
 ---
- arch/powerpc/include/asm/nmi.h |  2 ++
- arch/powerpc/kernel/watchdog.c | 21 ++++++++++++++++++++-
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/mobility.c | 48 ++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-index ea0e487f87b1..c3c7adef74de 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -5,8 +5,10 @@
- #ifdef CONFIG_PPC_WATCHDOG
- extern void arch_touch_nmi_watchdog(void);
- long soft_nmi_interrupt(struct pt_regs *regs);
-+void watchdog_nmi_set_timeout_pct(u64 pct);
- #else
- static inline void arch_touch_nmi_watchdog(void) {}
-+static inline void watchdog_nmi_set_timeout_pct(u64 pct) {}
- #endif
- 
- #ifdef CONFIG_NMI_IPI
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 7d28b9553654..5d903e63f932 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -91,6 +91,10 @@ static cpumask_t wd_smp_cpus_pending;
- static cpumask_t wd_smp_cpus_stuck;
- static u64 wd_smp_last_reset_tb;
- 
-+#ifdef CONFIG_PPC_PSERIES
-+static u64 wd_timeout_pct;
-+#endif
-+
- /*
-  * Try to take the exclusive watchdog action / NMI IPI / printing lock.
-  * wd_smp_lock must be held. If this fails, we should return and wait
-@@ -527,7 +531,13 @@ static int stop_watchdog_on_cpu(unsigned int cpu)
- 
- static void watchdog_calc_timeouts(void)
- {
--	wd_panic_timeout_tb = watchdog_thresh * ppc_tb_freq;
-+	u64 threshold = watchdog_thresh;
-+
-+#ifdef CONFIG_PPC_PSERIES
-+	threshold += (READ_ONCE(wd_timeout_pct) * threshold) / 100;
-+#endif
-+
-+	wd_panic_timeout_tb = threshold * ppc_tb_freq;
- 
- 	/* Have the SMP detector trigger a bit later */
- 	wd_smp_panic_timeout_tb = wd_panic_timeout_tb * 3 / 2;
-@@ -570,3 +580,12 @@ int __init watchdog_nmi_probe(void)
- 	}
- 	return 0;
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 78f3f74c7056..6297467072e6 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -427,6 +427,43 @@ static int wait_for_vasi_session_suspending(u64 handle)
+ 	return ret;
  }
-+
-+#ifdef CONFIG_PPC_PSERIES
-+void watchdog_nmi_set_timeout_pct(u64 pct)
+ 
++static void wait_for_vasi_session_completed(u64 handle)
 +{
-+	pr_info("Set the NMI watchdog timeout factor to %llu%%\n", pct);
-+	WRITE_ONCE(wd_timeout_pct, pct);
-+	lockup_detector_reconfigure();
++	unsigned long state = 0;
++	int ret;
++
++	pr_info("waiting for memory transfer to complete...\n");
++
++	/*
++	 * Wait for transition from H_VASI_RESUMED to H_VASI_COMPLETED.
++	 */
++	while (true) {
++		ret = poll_vasi_state(handle, &state);
++
++		/*
++		 * If the memory transfer is already complete and the migration
++		 * has been cleaned up by the hypervisor, H_PARAMETER is return,
++		 * which is translate in EINVAL by poll_vasi_state().
++		 */
++		if (ret == -EINVAL || (!ret && state == H_VASI_COMPLETED)) {
++			pr_info("memory transfer completed.\n");
++			break;
++		}
++
++		if (ret) {
++			pr_err("H_VASI_STATE return error (%d)\n", ret);
++			break;
++		}
++
++		if (state != H_VASI_RESUMED) {
++			pr_err("unexpected H_VASI_STATE result %lu\n", state);
++			break;
++		}
++
++		msleep(500);
++	}
 +}
-+#endif
++
+ static void prod_single(unsigned int target_cpu)
+ {
+ 	long hvrc;
+@@ -673,9 +710,16 @@ static int pseries_migrate_partition(u64 handle)
+ 	vas_migration_handler(VAS_SUSPEND);
+ 
+ 	ret = pseries_suspend(handle);
+-	if (ret == 0)
++	if (ret == 0) {
+ 		post_mobility_fixup();
+-	else
++		/*
++		 * Wait until the memory transfer is complete, so that the user
++		 * space process returns from the syscall after the transfer is
++		 * complete. This allows the user hooks to be executed at the
++		 * right time.
++		 */
++		wait_for_vasi_session_completed(handle);
++	} else
+ 		pseries_cancel_migration(handle, ret);
+ 
+ 	vas_migration_handler(VAS_RESUME);
 -- 
 2.37.0
 
