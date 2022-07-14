@@ -4,46 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C87DEC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 21:38:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F5CDC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 22:35:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LkSXW1W7qz3cgC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 07:38:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LkSX22Sb6z3bZP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2022 07:37:51 +1000 (AEST)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1oC6WW-0007X2-CX; Thu, 14 Jul 2022 23:37:28 +0200
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1oC6WS-000zJB-6a; Thu, 14 Jul 2022 23:37:24 +0200
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1oC6WR-005DiY-Af; Thu, 14 Jul 2022 23:37:23 +0200
-Date: Thu, 14 Jul 2022 23:37:20 +0200
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Anatolij Gustschin <agust@denx.de>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/52xx: Mark gpt driver as not removable
-Message-ID: <20220714213720.w7jj3cb64ei3iuoa@pengutronix.de>
-References: <20220612213400.159257-1-u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LkTpt43c4z3ch0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 08:35:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LkTpM4dYKz3bmC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2022 08:35:21 +1000 (AEST)
+Received: from ip6-localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26EMXxH4022156;
+	Thu, 14 Jul 2022 17:34:00 -0500
+Message-ID: <cf219a215b2248d991d16d764212748976b855fa.camel@kernel.crashing.org>
+Subject: Re: [PATCH] macintosh:fix oob read in do_adb_query function
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ning Qiang <sohu0106@126.com>
+Date: Fri, 15 Jul 2022 08:33:58 +1000
+In-Reply-To: <20220713153734.2248-1-sohu0106@126.com>
+References: <20220713153734.2248-1-sohu0106@126.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.36.5-0ubuntu1 
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="z3z6jpv7vkan36ns"
-Content-Disposition: inline
-In-Reply-To: <20220612213400.159257-1-u.kleine-koenig@pengutronix.de>
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,55 +38,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: greg@kroah.com, security@kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, 2022-07-13 at 23:37 +0800, Ning Qiang wrote:
+> In do_adb_query function of drivers/macintosh/adb.c, req->data is
+> copy
+> form userland. the  parameter "req->data[2]" is Missing check, the
+> array size of adb_handler[] is 16, so "adb_handler[
+> req->data[2]].original_address" and "adb_handler[
+> req->data[2]].handler_id" will lead to oob read.
+> 
+> Signed-off-by: Ning Qiang <sohu0106@126.com>
 
---z3z6jpv7vkan36ns
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-hello,
+> ---
+>  drivers/macintosh/adb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+> index 439fab4eaa85..1bbb9ca08d40 100644
+> --- a/drivers/macintosh/adb.c
+> +++ b/drivers/macintosh/adb.c
+> @@ -647,7 +647,7 @@ do_adb_query(struct adb_request *req)
+>  
+>  	switch(req->data[1]) {
+>  	case ADB_QUERY_GETDEVINFO:
+> -		if (req->nbytes < 3)
+> +		if (req->nbytes < 3 || req->data[2] >= 16)
+>  			break;
+>  		mutex_lock(&adb_handler_mutex);
+>  		req->reply[0] = adb_handler[req-
+> >data[2]].original_address;
 
-On Sun, Jun 12, 2022 at 11:34:00PM +0200, Uwe Kleine-K=F6nig wrote:
-> Returning an error code (here -EBUSY) from a remove callback doesn't
-> prevent the driver from being unloaded. The only effect is that an error
-> message is emitted and the driver is removed anyhow.
->=20
-> So instead drop the remove function (which is equivalent to returning zer=
-o)
-> and set the suppress_bind_attrs property to make it impossible to unload
-> the driver via sysfs.
->=20
-> This is a preparation for making platform remove callbacks return void.
->=20
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-
-This patch recived a (positive) review, but it's not included in next
-nor got it any maintainer feedback. Did it fell through the cracks?
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
-
---z3z6jpv7vkan36ns
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmLQjI0ACgkQwfwUeK3K
-7Ak6vwf+M7X8WGeKrZV64VVFXT/K/t9jbKfr3wQxUFASfbbcupt+xvuUbQOBrE47
-hToH14tJfNs37E1e7cyiJplZYAGexBPV91fJLP0/KzduvZCtBAFKtc/fwvozOax3
-6CZ7Y+YKSV7m7QvkRvbwpUqk5efnyz4pyFBRAu5iqT7WTdQPEjPhp87meDP3LA9R
-mV438jK6Xe5paXpwDEFmUJwW3rviQuYYxL8AxP31BijiUnr4tQoKd4lLYX1fxA+e
-2m8aQsmY+BnE8PQ5HV+Rrjx2omva7l/0w2bKPYnn9Y0b5RJpRkhcVe73l4+s+z9e
-Df5MDmbfDJLaw0Ai22eJRyS58CAN6g==
-=X+tq
------END PGP SIGNATURE-----
-
---z3z6jpv7vkan36ns--
