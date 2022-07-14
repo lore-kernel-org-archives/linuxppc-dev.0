@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54F38CCA47B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 08:12:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3A8DC43334
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 08:19:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lk6f95QGQz3cdm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 18:12:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lk6pC3hDVz3cfl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 18:18:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lk6dl3nmBz3bx3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2022 18:11:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lk6np0jk9z3bx3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2022 18:18:36 +1000 (AEST)
 Received: from fstn1-p1.ozlabs.ibm.com. (localhost [IPv6:::1])
-	by ozlabs.ru (Postfix) with ESMTP id E5797804CB;
-	Thu, 14 Jul 2022 04:11:34 -0400 (EDT)
+	by ozlabs.ru (Postfix) with ESMTP id 58DA2804CB;
+	Thu, 14 Jul 2022 04:18:26 -0400 (EDT)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/iommu: Fix iommu_table_in_use for a small default DMA window case
-Date: Thu, 14 Jul 2022 18:11:19 +1000
-Message-Id: <20220714081119.3714605-1-aik@ozlabs.ru>
+Subject: [PATCH kernel 0/3] powerpc/iommu: Add iommu_ops to report capabilities and allow blocking domains
+Date: Thu, 14 Jul 2022 18:18:19 +1000
+Message-Id: <20220714081822.3717693-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.30.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -35,49 +35,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Leonardo Bras <leobras.c@gmail.com>, Fabiano Rosas <farosas@linux.ibm.com>
+Cc: kvm@vger.kernel.org, Fabiano Rosas <farosas@linux.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Daniel Henrique Barboza <danielhb413@gmail.com>, Deming Wang <wangdeming@inspur.com>, kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>, Nicholas Piggin <npiggin@gmail.com>, Jason Gunthorpe <jgg@nvidia.com>, Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, Robin Murphy <robin.murphy@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The existing iommu_table_in_use() helper checks if the kernel is using
-any of TCEs. There are some reserved TCEs:
-1) the very first one if DMA window starts from 0 to avoid having a zero
-but still valid DMA handle;
-2) it_reserved_start..it_reserved_end to exclude MMIO32 window in case
-the default window spans across that - this is the default for the first
-DMA window on PowerNV.
+Here is another take on iommu_ops on POWER to make VFIO work
+again on POWERPC64.
 
-When 1) is the case and 2) is not the helper does not skip 1) and returns
-wrong status.
+The tree with all prerequisites is here:
+https://github.com/aik/linux/tree/kvm-fixes-wip
 
-This only seems occurring when passing through a PCI device to a nested
-guest (not something we support really well) so it has not been seen
-before.
+The previous discussion is here:
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220707135552.3688927-1-aik@ozlabs.ru/
+https://patchwork.ozlabs.org/project/kvm-ppc/patch/20220701061751.1955857-1-aik@ozlabs.ru/
 
-This fixes the bug by adding a special case for no MMIO32 reservation.
+Please comment. Thanks.
 
-Fixes: 3c33066a2190 ("powerpc/kernel/iommu: Add new iommu_table_in_use() helper")
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/kernel/iommu.c | 5 +++++
- 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 7e56ddb3e0b9..caebe1431596 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -775,6 +775,11 @@ bool iommu_table_in_use(struct iommu_table *tbl)
- 	/* ignore reserved bit0 */
- 	if (tbl->it_offset == 0)
- 		start = 1;
-+
-+	/* Simple case with no reserved MMIO32 region */
-+	if (!tbl->it_reserved_start && !tbl->it_reserved_end)
-+		return find_next_bit(tbl->it_map, tbl->it_size, start) != tbl->it_size;
-+
- 	end = tbl->it_reserved_start - tbl->it_offset;
- 	if (find_next_bit(tbl->it_map, end, start) != end)
- 		return true;
+
+Alexey Kardashevskiy (3):
+  powerpc/iommu: Add "borrowing" iommu_table_group_ops
+  powerpc/pci_64: Init pcibios subsys a bit later
+  powerpc/iommu: Add iommu_ops to report capabilities and allow blocking
+    domains
+
+ arch/powerpc/include/asm/iommu.h          |   6 +-
+ arch/powerpc/include/asm/pci-bridge.h     |   7 +
+ arch/powerpc/platforms/pseries/pseries.h  |   5 +
+ arch/powerpc/kernel/iommu.c               | 257 +++++++++++++++++++++-
+ arch/powerpc/kernel/pci_64.c              |   2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |  36 ++-
+ arch/powerpc/platforms/pseries/iommu.c    |  27 +++
+ arch/powerpc/platforms/pseries/setup.c    |   3 +
+ drivers/vfio/vfio_iommu_spapr_tce.c       |  96 ++------
+ 9 files changed, 345 insertions(+), 94 deletions(-)
+
 -- 
 2.30.2
 
