@@ -4,67 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E907C43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Jul 2022 21:48:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A527C43334
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 16:02:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LkSlw3dqGz3c5p
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 07:48:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lkx2r59JVz3cff
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 02:02:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Iaq16OJ+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KQoMl8eY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=shorne@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Iaq16OJ+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KQoMl8eY;
 	dkim-atps=neutral
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LkSlC41h1z3035
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jul 2022 07:47:33 +1000 (AEST)
-Received: by mail-pj1-x1033.google.com with SMTP id s21so3978036pjq.4
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jul 2022 14:47:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Avm3V7XrbXBWkB/qO5JQFtbIFwNLm/HdohUf7P8zkK0=;
-        b=Iaq16OJ+m9XsKv6I0s9ZPBvLNW7lXXnX4Z3CjPsP1fAwoe/Ib4iQoNfMWi+0siMrW/
-         GSq3DRDaezyXT0yWRXlZmjVsZfEzw62WdDXrUIt09lmZWV4BlMkQ/dU82O4vwnrYHmyn
-         o/7v2rh+q4itcE83QbxrK4117t4HFXOzxm4xIM85bfE+dhRtJpHL/5sxbuBxQiwQ4bWT
-         LstUoWuXf0YhZHT/8jF9DdI778Dcii039dDR0k2519afE8PB6ZMc/Q/BS0nO4YTkHa2q
-         1D44TzeeLcnTGS/HGgAZV230igzGnLNL0g6TyDqsIz5qTuDK/SXq1EHrDrrI/yLv49sj
-         Ww3A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Avm3V7XrbXBWkB/qO5JQFtbIFwNLm/HdohUf7P8zkK0=;
-        b=2M7o2WfytXohZshOilSAYoPOyWnuMAK8X5xv5rILGp3Zytft/ZuDWFg52kt5rfXu4Z
-         Gt19leO0M0bR4d+LZdh0jLPKlmvh8ESyptw0WyGb4Gen5VUByBOugG5qNAzNF32h2p1X
-         3sKTyHriC69WVRcb5k+deqoSQ3DTBG9HrsE/udX06Z4d28eKwsZmZgrNPNa4GvuC5aNg
-         s5k99Q/sY+KDiVzpeCuiI1Itcr3vCHGecpvU19xEqTYJu6Q51HLHULlqvyv4wxGJpEcJ
-         yYjDY5c5hXfcDdATudzG+jCLJ5Jq2at0c7Ss8vRTS5c/0LcU11vx0Tf5WPDY9heHeTJw
-         s9bQ==
-X-Gm-Message-State: AJIora/5S+hJxk1xaIbCFPsRfga/oEnIAJfw64FgRfpYtgO9/cJFiYVd
-	Sm8FyTFcinaPK6WNAcLGwBs=
-X-Google-Smtp-Source: AGRyM1u9xSRQV4Gvpyf5VkWOt/x74SDpE1KbsPWlYKaCYfIIrlO2LUPHc/onDI4OYYptIetSW3p0xA==
-X-Received: by 2002:a17:90b:4c91:b0:1ef:f85b:6342 with SMTP id my17-20020a17090b4c9100b001eff85b6342mr18616032pjb.75.1657835247920;
-        Thu, 14 Jul 2022 14:47:27 -0700 (PDT)
-Received: from localhost ([2409:10:24a0:4700:e8ad:216a:2a9d:6d0c])
-        by smtp.gmail.com with ESMTPSA id c20-20020a634e14000000b00411b3d2bcadsm1892918pgb.25.2022.07.14.14.47.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 14 Jul 2022 14:47:27 -0700 (PDT)
-From: Stafford Horne <shorne@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 1/2] asm-generic: Remove pci.h copying code out to architectures
-Date: Fri, 15 Jul 2022 06:46:56 +0900
-Message-Id: <20220714214657.2402250-2-shorne@gmail.com>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20220714214657.2402250-1-shorne@gmail.com>
-References: <20220714214657.2402250-1-shorne@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lkx223KWQz30hw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 02:02:01 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26FFL0YF010551;
+	Fri, 15 Jul 2022 16:01:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=Nc7U3jMNz3s5relVkPSuzWGxkTEQWd++fvh2MPtZbDU=;
+ b=KQoMl8eYhN6d6yRs668JUFyi3p0AiiMq0OLhbenyevAzQ1dRl1Pn2sUWq1EOyxg3GTY+
+ 4vkUAPlwg9vHxfY+YnChBcVItus4fUCjgMg4LnFV7wjc1f6WCKJZnOvT7XdhNwWo0624
+ h6gPlUfhBhSdNzhOf3cIr4OIZHp8q4FBKMmtXQw9Oo9z0reD03HKMe1ex9mItzEqRWFR
+ OfSSo5lIsKPVhkBXSvBHTfOGeG22u/a4lYMx+dzNPeSDwouOzNjbO2kWZg7icVWTTiAy
+ J7rS8n3jKT6NmPVv1HrTgiEyN6SFl2XJI8igH1EN+G25O6BdpC5xtFRm9n0OR19rcZKO 7Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hbat68vfn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Jul 2022 16:01:40 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 26FFkLSm026424;
+	Fri, 15 Jul 2022 16:01:40 GMT
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hbat68vf5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Jul 2022 16:01:39 +0000
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+	by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26FFp5vB021358;
+	Fri, 15 Jul 2022 16:01:39 GMT
+Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+	by ppma02dal.us.ibm.com with ESMTP id 3h9am58svk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 15 Jul 2022 16:01:39 +0000
+Received: from b03ledav002.gho.boulder.ibm.com (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+	by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26FG1bhc35914158
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 15 Jul 2022 16:01:37 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B64D1136053;
+	Fri, 15 Jul 2022 16:01:37 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0F72413604F;
+	Fri, 15 Jul 2022 16:01:36 +0000 (GMT)
+Received: from [9.47.158.152] (unknown [9.47.158.152])
+	by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+	Fri, 15 Jul 2022 16:01:36 +0000 (GMT)
+Message-ID: <3a9196b3-c510-0c32-8b70-572d9c4fe69d@linux.ibm.com>
+Date: Fri, 15 Jul 2022 12:01:36 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.9.0
+Subject: Re: [PATCH v5 4/6] tpm: of: Make of-tree specific function commonly
+ available
+Content-Language: en-US
+To: Jarkko Sakkinen <jarkko@kernel.org>
+References: <20220706152329.665636-1-stefanb@linux.ibm.com>
+ <20220706152329.665636-5-stefanb@linux.ibm.com> <YsuTRny45aBxGjm5@kernel.org>
+From: Stefan Berger <stefanb@linux.ibm.com>
+In-Reply-To: <YsuTRny45aBxGjm5@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Ad0o9E6xukVBHUz222-CjzD2D4HlvqOu
+X-Proofpoint-ORIG-GUID: ZqRm3DHERDE5hNRQwUZcbTuvmXWwlZGl
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-07-15_08,2022-07-15_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
+ lowpriorityscore=0 mlxscore=0 phishscore=0 clxscore=1015
+ priorityscore=1501 impostorscore=0 adultscore=0 bulkscore=0 spamscore=0
+ suspectscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2206140000 definitions=main-2207150068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,188 +102,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Matthew Rosato <mjrosato@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Stafford Horne <shorne@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-riscv@lists.infradead.org, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pci@vger.kernel.org, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>, Vasily Gorbik <gor@linux.ibm.com>, Niklas Schnelle <schnelle@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@goo
- gle.com>, Thomas Gleixner <tglx@linutronix.de>, Richard Henderson <rth@twiddle.net>, Chris Zankel <chris@zankel.net>, Pierre Morel <pmorel@linux.ibm.com>, Nick Child <nick.child@ibm.com>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>, nayna@linux.ibm.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The generic pci.h header provides a definition of pci_get_legacy_ide_irq
-which is used by architectures that use PC-style interrupt numbers.
 
-This patch removes the old pci.h in order to make room for a new
-pci.h to be used by arm64, riscv, openrisc, etc.
 
-The existing code in pci.h is moved out to architectures.
+On 7/10/22 23:04, Jarkko Sakkinen wrote:
+> On Wed, Jul 06, 2022 at 11:23:27AM -0400, Stefan Berger wrote:
+>> Simplify tpm_read_log_of() by moving reusable parts of the code into
+>> an inline function that makes it commonly available so it can be
+>> used also for kexec support. Call the new of_tpm_get_sml_parameters()
+>> function from the TPM Open Firmware driver.
+>>
+>> Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
+>> Cc: Jarkko Sakkinen <jarkko@kernel.org>
+>> Cc: Jason Gunthorpe <jgg@ziepe.ca>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Frank Rowand <frowand.list@gmail.com>
+>>
+>> ---
+>> v4:
+>>   - converted to inline function
+>> ---
+>>   drivers/char/tpm/eventlog/of.c | 31 +++++--------------------------
+>>   include/linux/tpm.h            | 27 +++++++++++++++++++++++++++
+>>   2 files changed, 32 insertions(+), 26 deletions(-)
+>>
+>> diff --git a/drivers/char/tpm/eventlog/of.c b/drivers/char/tpm/eventlog/of.c
+>> index a9ce66d09a75..f9462d19632e 100644
+>> --- a/drivers/char/tpm/eventlog/of.c
+>> +++ b/drivers/char/tpm/eventlog/of.c
+>> @@ -12,6 +12,7 @@
+>>   
+>>   #include <linux/slab.h>
+>>   #include <linux/of.h>
+>> +#include <linux/tpm.h>
+>>   #include <linux/tpm_eventlog.h>
+>>   
+>>   #include "../tpm.h"
+>> @@ -20,11 +21,10 @@
+>>   int tpm_read_log_of(struct tpm_chip *chip)
+>>   {
+>>   	struct device_node *np;
+>> -	const u32 *sizep;
+>> -	const u64 *basep;
+>>   	struct tpm_bios_log *log;
+>>   	u32 size;
+>>   	u64 base;
+>> +	int ret;
+>>   
+>>   	log = &chip->log;
+>>   	if (chip->dev.parent && chip->dev.parent->of_node)
+>> @@ -35,30 +35,9 @@ int tpm_read_log_of(struct tpm_chip *chip)
+>>   	if (of_property_read_bool(np, "powered-while-suspended"))
+>>   		chip->flags |= TPM_CHIP_FLAG_ALWAYS_POWERED;
+>>   
+>> -	sizep = of_get_property(np, "linux,sml-size", NULL);
+>> -	basep = of_get_property(np, "linux,sml-base", NULL);
+>> -	if (sizep == NULL && basep == NULL)
+>> -		return -ENODEV;
+>> -	if (sizep == NULL || basep == NULL)
+>> -		return -EIO;
+>> -
+>> -	/*
+>> -	 * For both vtpm/tpm, firmware has log addr and log size in big
+>> -	 * endian format. But in case of vtpm, there is a method called
+>> -	 * sml-handover which is run during kernel init even before
+>> -	 * device tree is setup. This sml-handover function takes care
+>> -	 * of endianness and writes to sml-base and sml-size in little
+>> -	 * endian format. For this reason, vtpm doesn't need conversion
+>> -	 * but physical tpm needs the conversion.
+>> -	 */
 
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Link: https://lore.kernel.org/lkml/CAK8P3a0JmPeczfmMBE__vn=Jbvf=nkbpVaZCycyv40pZNCJJXQ@mail.gmail.com/
-Signed-off-by: Stafford Horne <shorne@gmail.com>
----
- arch/alpha/include/asm/pci.h   |  1 -
- arch/ia64/include/asm/pci.h    |  1 -
- arch/m68k/include/asm/pci.h    |  7 +++++--
- arch/powerpc/include/asm/pci.h |  1 -
- arch/s390/include/asm/pci.h    |  6 +++++-
- arch/sparc/include/asm/pci.h   |  5 ++++-
- arch/x86/include/asm/pci.h     |  6 ++++--
- arch/xtensa/include/asm/pci.h  |  6 ++++--
- include/asm-generic/pci.h      | 17 -----------------
- 9 files changed, 22 insertions(+), 28 deletions(-)
- delete mode 100644 include/asm-generic/pci.h
 
-diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
-index cf6bc1e64d66..8ac5af0fc4da 100644
---- a/arch/alpha/include/asm/pci.h
-+++ b/arch/alpha/include/asm/pci.h
-@@ -56,7 +56,6 @@ struct pci_controller {
- 
- /* IOMMU controls.  */
- 
--/* TODO: integrate with include/asm-generic/pci.h ? */
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- {
- 	return channel ? 15 : 14;
-diff --git a/arch/ia64/include/asm/pci.h b/arch/ia64/include/asm/pci.h
-index 8c163d1d0189..218412d963c2 100644
---- a/arch/ia64/include/asm/pci.h
-+++ b/arch/ia64/include/asm/pci.h
-@@ -63,7 +63,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
- 	return (pci_domain_nr(bus) != 0);
- }
- 
--#define HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- {
- 	return channel ? isa_irq_to_vector(15) : isa_irq_to_vector(14);
-diff --git a/arch/m68k/include/asm/pci.h b/arch/m68k/include/asm/pci.h
-index 5a4bc223743b..0c272ff515cc 100644
---- a/arch/m68k/include/asm/pci.h
-+++ b/arch/m68k/include/asm/pci.h
-@@ -2,11 +2,14 @@
- #ifndef _ASM_M68K_PCI_H
- #define _ASM_M68K_PCI_H
- 
--#include <asm-generic/pci.h>
--
- #define	pcibios_assign_all_busses()	1
- 
- #define	PCIBIOS_MIN_IO		0x00000100
- #define	PCIBIOS_MIN_MEM		0x02000000
- 
-+static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
-+{
-+	return channel ? 15 : 14;
-+}
-+
- #endif /* _ASM_M68K_PCI_H */
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 915d6ee4b40a..f9da506751bb 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -39,7 +39,6 @@
- #define pcibios_assign_all_busses() \
- 	(pci_has_flag(PCI_REASSIGN_ALL_BUS))
- 
--#define HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
- static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- {
- 	if (ppc_md.pci_get_legacy_ide_irq)
-diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
-index fdb9745ee998..93cd0167f8aa 100644
---- a/arch/s390/include/asm/pci.h
-+++ b/arch/s390/include/asm/pci.h
-@@ -6,7 +6,6 @@
- #include <linux/mutex.h>
- #include <linux/iommu.h>
- #include <linux/pci_hotplug.h>
--#include <asm-generic/pci.h>
- #include <asm/pci_clp.h>
- #include <asm/pci_debug.h>
- #include <asm/sclp.h>
-@@ -233,6 +232,11 @@ int zpci_init_iommu(struct zpci_dev *zdev);
- void zpci_destroy_iommu(struct zpci_dev *zdev);
- 
- #ifdef CONFIG_PCI
-+static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
-+{
-+	return channel ? 15 : 14;
-+}
-+
- static inline bool zpci_use_mio(struct zpci_dev *zdev)
- {
- 	return static_branch_likely(&have_mio) && zdev->mio_capable;
-diff --git a/arch/sparc/include/asm/pci.h b/arch/sparc/include/asm/pci.h
-index 4deddf430e5d..6d283fc7b55b 100644
---- a/arch/sparc/include/asm/pci.h
-+++ b/arch/sparc/include/asm/pci.h
-@@ -46,7 +46,10 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
- 	return PCI_IRQ_NONE;
- }
- #else
--#include <asm-generic/pci.h>
-+static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
-+{
-+	return channel ? 15 : 14;
-+}
- #endif
- 
- #endif /* ___ASM_SPARC_PCI_H */
-diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
-index f3fd5928bcbb..7da27f665cfe 100644
---- a/arch/x86/include/asm/pci.h
-+++ b/arch/x86/include/asm/pci.h
-@@ -105,8 +105,10 @@ static inline void early_quirks(void) { }
- 
- extern void pci_iommu_alloc(void);
- 
--/* generic pci stuff */
--#include <asm-generic/pci.h>
-+static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
-+{
-+	return channel ? 15 : 14;
-+}
- 
- #ifdef CONFIG_NUMA
- /* Returns the node based on pci bus */
-diff --git a/arch/xtensa/include/asm/pci.h b/arch/xtensa/include/asm/pci.h
-index 8e2b48a268db..f57ede61f5db 100644
---- a/arch/xtensa/include/asm/pci.h
-+++ b/arch/xtensa/include/asm/pci.h
-@@ -43,7 +43,9 @@
- #define ARCH_GENERIC_PCI_MMAP_RESOURCE	1
- #define arch_can_pci_mmap_io()		1
- 
--/* Generic PCI */
--#include <asm-generic/pci.h>
-+static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
-+{
-+	return channel ? 15 : 14;
-+}
- 
- #endif	/* _XTENSA_PCI_H */
-diff --git a/include/asm-generic/pci.h b/include/asm-generic/pci.h
-deleted file mode 100644
-index 6bb3cd3d695a..000000000000
---- a/include/asm-generic/pci.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * linux/include/asm-generic/pci.h
-- *
-- *  Copyright (C) 2003 Russell King
-- */
--#ifndef _ASM_GENERIC_PCI_H
--#define _ASM_GENERIC_PCI_H
--
--#ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
--static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
--{
--	return channel ? 15 : 14;
--}
--#endif /* HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ */
--
--#endif /* _ASM_GENERIC_PCI_H */
--- 
-2.36.1
+Jarkko,
 
+  can I apply your R-b tag after putting this lost comment back into the 
+inline function?
+    Stefan
+
+>> -	if (of_property_match_string(np, "compatible", "IBM,vtpm") < 0 &&
+>> -	    of_property_match_string(np, "compatible", "IBM,vtpm20") < 0) {
+>> -		size = be32_to_cpup((__force __be32 *)sizep);
+>> -		base = be64_to_cpup((__force __be64 *)basep);
+>> -	} else {
+>> -		size = *sizep;
+>> -		base = *basep;
+>> -	}
+>> +	ret = of_tpm_get_sml_parameters(np, &base, &size);
+>> +	if (ret < 0)
+>> +		return ret;
+>>   
+>>   	if (size == 0) {
+>>   		dev_warn(&chip->dev, "%s: Event log area empty\n", __func__);
+>> diff --git a/include/linux/tpm.h b/include/linux/tpm.h
+>> index dfeb25a0362d..b3dff255bc58 100644
+>> --- a/include/linux/tpm.h
+>> +++ b/include/linux/tpm.h
+>> @@ -460,4 +460,31 @@ static inline struct tpm_chip *tpm_default_chip(void)
+>>   	return NULL;
+>>   }
+>>   #endif
+>> +
+>> +#ifdef CONFIG_OF
+>> +static inline int of_tpm_get_sml_parameters(struct device_node *np,
+>> +					    u64 *base, u32 *size)
+>> +{
+>> +	const u32 *sizep;
+>> +	const u64 *basep;
+>> +
+>> +	sizep = of_get_property(np, "linux,sml-size", NULL);
+>> +	basep = of_get_property(np, "linux,sml-base", NULL);
+>> +	if (sizep == NULL && basep == NULL)
+>> +		return -ENODEV;
+>> +	if (sizep == NULL || basep == NULL)
+>> +		return -EIO;
+>> +
+>> +	if (of_property_match_string(np, "compatible", "IBM,vtpm") < 0 &&
+>> +	    of_property_match_string(np, "compatible", "IBM,vtpm20") < 0) {
+>> +		*size = be32_to_cpup((__force __be32 *)sizep);
+>> +		*base = be64_to_cpup((__force __be64 *)basep);
+>> +	} else {
+>> +		*size = *sizep;
+>> +		*base = *basep;
+>> +	}
+>> +	return 0;
+>> +}
+>> +#endif
+>> +
+>>   #endif
+>> -- 
+>> 2.35.1
+>>
+> 
+> 
+> Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+> 
+> BR, Jarkko
+> 
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
