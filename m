@@ -4,43 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5F9CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 19:32:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94C97C43334
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 20:03:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ll1hr6f5Tz3cgf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 05:32:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ll1hR2WnFz3bkd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 05:32:07 +1000 (AEST)
-Received: from [2601:449:8480:af0::c75e]
-	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <oss@buserror.net>)
-	id 1oCQFW-000HLf-Vh; Fri, 15 Jul 2022 13:41:14 -0500
-Message-ID: <db14059bfc4f94e7e1812cdba5290da1ad420e92.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, 
-	Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 15 Jul 2022 13:41:12 -0500
-In-Reply-To: <20220707061441.193869-2-u.kleine-koenig@pengutronix.de>
-References: <20220707061441.193869-1-u.kleine-koenig@pengutronix.de>
-	 <20220707061441.193869-2-u.kleine-koenig@pengutronix.de>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.40.4-1ubuntu2 
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2601:449:8480:af0::c75e
-X-SA-Exim-Rcpt-To: u.kleine-koenig@pengutronix.de, mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kernel@pengturonix.de
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH 2/3] powerpc/platforms/83xx/suspend: Prevent unloading
- the driver
-X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ll2Nm61flz3cd6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 06:03:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ll2NC2b1bz2xrY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 06:03:06 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26FJxqhD032654;
+	Fri, 15 Jul 2022 14:59:52 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26FJxp9u032647;
+	Fri, 15 Jul 2022 14:59:51 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Fri, 15 Jul 2022 14:59:51 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Tulio Magno Quites Machado Filho <tuliom@ascii.art.br>
+Subject: Re: [PATCH v2] powerpc: add documentation for HWCAPs
+Message-ID: <20220715195951.GA25951@gate.crashing.org>
+References: <20220715012636.165948-1-npiggin@gmail.com> <877d4euskv.fsf@linux.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <877d4euskv.fsf@linux.ibm.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,29 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel@pengturonix.de, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Florian Weimer <fweimer@redhat.com>, gcc@gcc.gnu.org, libc-alpha@sourceware.org, Nicholas Piggin <npiggin@gmail.com>, Paul E Murphy <murphyp@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2022-07-07 at 08:14 +0200, Uwe Kleine-König wrote:
-> Returning an error in .remove() doesn't prevent a driver from being
-> unloaded. On unbind this only results in an error message, but the
-> device is remove anyhow.
+On Fri, Jul 15, 2022 at 03:41:20PM -0300, Tulio Magno Quites Machado Filho wrote:
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> I guess the author's idea of just returning -EPERM in .remove() was to
-> prevent unbinding a device. To achieve that set the suppress_bind_attrs
-> driver property and drop the useless .remove callback.
+> > +PPC_FEATURE_ARCH_2_05
+> > +    The processor supports the v2.05 userlevel architecture. Processors
+> > +    supporting later architectures also set this feature.
+> 
+> I don't think this bit is enabled when processors support later architectures.
+> In my tests, this behavior started only with v2.06, i.e. processors that
+> support v2.07 enable bit v2.06, but do not enable bit v2.05.
 
-I don't remember if I thought it would prevent removal, or if it was just the
-only thing I could do to signal that removing it would be a bad idea (albeit
-of relatively little consequence since it can't be built as a module).  
+That is a usability problem.  Can it be fixed, or will that create its
+own compatibility problems?  In practice I mean.  If it is, the C
+libraries could fix it up, for new programs, and then after a while the
+kernel can do the sane thing?
 
-suppress_bind_attrs didn't exist back then. :-)
-
-In any case,
-
-Acked-by: Scott Wood <oss@buserror.net>
-
--Scott
+How big is the problem, anyway?  Is it only 2.05, or also 2.04, 2.03?
 
 
+Segher
