@@ -4,42 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C98FC43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 18:47:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5F9CC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Jul 2022 19:32:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ll0jV0cVMz3chd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 04:47:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ll1hr6f5Tz3cgf
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 05:32:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 108 seconds by postgrey-1.36 at boromir; Sat, 16 Jul 2022 04:47:32 AEST
 Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ll0j00Tz1z3c6Y
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 04:47:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ll1hR2WnFz3bkd
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 05:32:07 +1000 (AEST)
 Received: from [2601:449:8480:af0::c75e]
 	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <oss@buserror.net>)
-	id 1oCQHK-000HM6-99; Fri, 15 Jul 2022 13:43:05 -0500
-Message-ID: <794910a5b6902ec637b3341ad19fc9fde9e2d24a.camel@buserror.net>
+	id 1oCQFW-000HLf-Vh; Fri, 15 Jul 2022 13:41:14 -0500
+Message-ID: <db14059bfc4f94e7e1812cdba5290da1ad420e92.camel@buserror.net>
 From: Scott Wood <oss@buserror.net>
-To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Michael Ellerman
-	 <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
-	Paul Mackerras <paulus@samba.org>
-Date: Fri, 15 Jul 2022 13:43:04 -0500
-In-Reply-To: <20220709124305.17559-1-pali@kernel.org>
-References: <20220709124305.17559-1-pali@kernel.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, 
+	Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 15 Jul 2022 13:41:12 -0500
+In-Reply-To: <20220707061441.193869-2-u.kleine-koenig@pengutronix.de>
+References: <20220707061441.193869-1-u.kleine-koenig@pengutronix.de>
+	 <20220707061441.193869-2-u.kleine-koenig@pengutronix.de>
 Organization: Red Hat
 Content-Type: text/plain; charset="UTF-8"
 User-Agent: Evolution 3.40.4-1ubuntu2 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SA-Exim-Connect-IP: 2601:449:8480:af0::c75e
-X-SA-Exim-Rcpt-To: pali@kernel.org, mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+X-SA-Exim-Rcpt-To: u.kleine-koenig@pengutronix.de, mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kernel@pengturonix.de
 X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc/85xx: Fix description of MPC85xx and P1/P2
- boards options
+Subject: Re: [PATCH 2/3] powerpc/platforms/83xx/suspend: Prevent unloading
+ the driver
 X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
 X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -53,18 +52,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kernel@pengturonix.de, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2022-07-09 at 14:43 +0200, Pali Rohár wrote:
-> More MPC85xx and P1/P2 boards options have incorrect description. Fix them
-> to include list of all boards for which they enable/disable support.
+On Thu, 2022-07-07 at 08:14 +0200, Uwe Kleine-König wrote:
+> Returning an error in .remove() doesn't prevent a driver from being
+> unloaded. On unbind this only results in an error message, but the
+> device is remove anyhow.
 > 
-> Signed-off-by: Pali Rohár <pali@kernel.org>
-> ---
->  arch/powerpc/platforms/85xx/Kconfig | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
+> I guess the author's idea of just returning -EPERM in .remove() was to
+> prevent unbinding a device. To achieve that set the suppress_bind_attrs
+> driver property and drop the useless .remove callback.
+
+I don't remember if I thought it would prevent removal, or if it was just the
+only thing I could do to signal that removing it would be a bad idea (albeit
+of relatively little consequence since it can't be built as a module).  
+
+suppress_bind_attrs didn't exist back then. :-)
+
+In any case,
 
 Acked-by: Scott Wood <oss@buserror.net>
 
