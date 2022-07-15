@@ -4,49 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CD20CCA47F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 13:45:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77AA7C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 13:45:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lmjrx54nnz3c6X
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 23:45:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pp5pG25f;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LmjsN03hbz3cft
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 23:45:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cdjrlc.com (client-ip=43.154.54.12; helo=smtpbg.qq.com; envelope-from=wangborong@cdjrlc.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 20908 seconds by postgrey-1.36 at boromir; Mon, 18 Jul 2022 23:45:17 AEST
+Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LmjrL0D88z2xKf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2022 23:44:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=pp5pG25f;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LmjrH1XNRz4xZB;
-	Mon, 18 Jul 2022 23:44:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1658151887;
-	bh=ct7Bb9TEvoCcCMzYFWgojsTrBCyiQvnckSQyh1hVRXk=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=pp5pG25f9wQVNn9FX01c5sgo/IisHcF/8CvZa4R8kaqhPha+c9zSoODzcOqIrsJEL
-	 3H5Gx6FkwDM1wcu3KzoWndoIH1dj5PwXXPbDgJ3X3KSqLraoFK6+t2H/AEsZ4Rmi6l
-	 MGSLSQ3MYkjDvElAC1u/ElxqimB5GsZ7ZMvxTfHcrbIuVw+xg/zVLeiWTK1RBq59uH
-	 dih19E9zzkt2HIi1lwCFgc6Tm2O66He0G6LkHbtHt2QH4/sp9XID2qsmRNPrJJcVZS
-	 /xA4/Q0UTQfkUHm246ns0jMU4EhzEML6WwTs+5XWttr1GiapF6tjxNVSG6xaJJH09m
-	 TwOIO1Tc77JFw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/64s: Disable stack variable initialisation for prom_init
-Date: Mon, 18 Jul 2022 23:44:18 +1000
-Message-Id: <20220718134418.354114-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.35.3
-In-Reply-To: <87cze3docs.fsf@mpe.ellerman.id.au>
-References: <87cze3docs.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lmjrs3l9tz3c4t
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2022 23:45:05 +1000 (AEST)
+X-QQ-mid: bizesmtp78t1658151862t9dksbz6
+Received: from localhost.localdomain ( [171.223.96.21])
+	by bizesmtp.qq.com (ESMTP) with 
+	id ; Mon, 18 Jul 2022 21:44:20 +0800 (CST)
+X-QQ-SSF: 01000000002000E0U000C00A0000020
+X-QQ-FEAT: r/cTxDoDoiEZ/G1/U5cU0y7O5MUHcs2LuTI3rLif/Bz9p+J6ShcQ4p22QeLWx
+	vBP+kG8gouBG1SdX1rQbF4roAPBzqZ+QcH26WsRBFztM8/apUntOm8PZgRNW2irIwSUNgY1
+	2PFKGjhucs5RALQqyp0PTCajdrSsjJ0SW3NYBlfS2ApwB0K2miRZkW5tzH2DLcwd5l+/w3j
+	RxGc/Gp9H81a9WxVxFYoDZBpRGPd+0PuxGus486XaHVPvz5NS+3lgTX3+ynGcfbntUEaVRw
+	EyQzd9MVnu/aWBiI+fMha1lDSK/O2qEurONwbd7j11V+/LgxdlntfOkOC1KeonHXPDLbAof
+	Ry41rUNVS/8XIYfgcqspCmcZRu2cFXL13ttEbA+5iNbr6oJxVfGNQZnWmCtTzGBapZDyxng
+	LJdARLBXg7Y=
+X-QQ-GoodBg: 0
+From: Jason Wang <wangborong@cdjrlc.com>
+To: geoff@infradead.org
+Subject: [PATCH] powerpc/ps3: Fix comment typo
+Date: Fri, 15 Jul 2022 13:42:24 +0800
+Message-Id: <20220715054224.6583-1-wangborong@cdjrlc.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-QQ-SENDSIZE: 520
+Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,51 +50,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, linux-hardening@vger.kernel.org, sudipm.mukherjee@gmail.com, keescook@chromium.org
+Cc: linux-kernel@vger.kernel.org, Jason Wang <wangborong@cdjrlc.com>, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With GCC 12 allmodconfig prom_init fails to build:
+The double `when' is duplicated in line 1069, remove one.
 
-  Error: External symbol 'memset' referenced from prom_init.c
-  make[2]: *** [arch/powerpc/kernel/Makefile:204: arch/powerpc/kernel/prom_init_check] Error 1
-
-The allmodconfig build enables KASAN, so all calls to memset in
-prom_init should be converted to __memset by the #ifdefs in
-asm/string.h, because prom_init must use the non-KASAN instrumented
-versions.
-
-The build failure happens because there's a call to memset that hasn't
-been caught by the pre-processor and converted to __memset. Typically
-that's because it's a memset generated by the compiler itself, and that
-is the case here.
-
-With GCC 12, allmodconfig enables CONFIG_INIT_STACK_ALL_PATTERN, which
-causes the compiler to emit memset calls to initialise on-stack
-variables with a pattern.
-
-Because prom_init is non-user-facing boot-time only code, as a
-workaround just disable stack variable initialisation to unbreak the
-build.
-
-Reported-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
 ---
- arch/powerpc/kernel/Makefile | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/ps3/ps3-lpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index f91f0f29a566..c8cf924bf9c0 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -20,6 +20,7 @@ CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
- CFLAGS_prom_init.o += -fno-stack-protector
- CFLAGS_prom_init.o += -DDISABLE_BRANCH_PROFILING
- CFLAGS_prom_init.o += -ffreestanding
-+CFLAGS_prom_init.o += $(call cc-option, -ftrivial-auto-var-init=uninitialized)
- 
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
+diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
+index 65512b6cc6fd..200ad8751860 100644
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -1066,7 +1066,7 @@ EXPORT_SYMBOL_GPL(ps3_disable_pm_interrupts);
+  *  instance, specified by one of enum ps3_lpm_tb_type.
+  * @tb_cache: Optional user supplied buffer to use as the trace buffer cache.
+  *  If NULL, the driver will allocate and manage an internal buffer.
+- *  Unused when when @tb_type is PS3_LPM_TB_TYPE_NONE.
++ *  Unused when @tb_type is PS3_LPM_TB_TYPE_NONE.
+  * @tb_cache_size: The size in bytes of the user supplied @tb_cache buffer.
+  *  Unused when @tb_cache is NULL or @tb_type is PS3_LPM_TB_TYPE_NONE.
+  */
 -- 
-2.35.3
+2.35.1
 
