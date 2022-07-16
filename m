@@ -4,49 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9578CC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 07:44:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8E84C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 08:58:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LlKxs63QBz3cfS
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 17:44:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LlMZm0qQWz3c74
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 18:58:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=Fn6J41LD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=m7RolDKD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=126.com (client-ip=220.181.15.113; helo=m15113.mail.126.com; envelope-from=windhl@126.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::12c; helo=mail-il1-x12c.google.com; envelope-from=miguel.ojeda.sandonis@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=Fn6J41LD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=m7RolDKD;
 	dkim-atps=neutral
-Received: from m15113.mail.126.com (m15113.mail.126.com [220.181.15.113])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LlKx81zWHz3blB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 17:44:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:Subject:Date:Message-Id:MIME-Version; bh=daD3z
-	6F4O5bsQpLVeqd54p6FD2X/Nnvc9PlZA2au1/g=; b=Fn6J41LDX6W0lHOvZ2O90
-	moOa/S2JvJ0rpRQFalfbnyqK+3LArhhzCRmtAR7mLf4PSIdVUd9KS/0gcklYjueH
-	DtJy8veP25EpXEUjxiMR5xbb1SU+68vpYyuSF0RvA4PJFjpYrX7H26qxHmM+Le2n
-	QTWXNOmuXinLGLBsGgsTE8=
-Received: from localhost.localdomain (unknown [124.16.139.61])
-	by smtp3 (Coremail) with SMTP id DcmowAAXs5QwbNJiPA50FA--.16504S2;
-	Sat, 16 Jul 2022 15:43:45 +0800 (CST)
-From: Liang He <windhl@126.com>
-To: benh@kernel.crashing.org,
-	mpe@ellerman.id.au,
-	paulus@samba.org,
-	linuxppc-dev@lists.ozlabs.org,
-	windhl@126.com
-Subject: [PATCH] powerpc/powermac/udbg_scc: Fix refcount leak bug in udbg_scc_init()
-Date: Sat, 16 Jul 2022 15:43:44 +0800
-Message-Id: <20220716074344.540049-1-windhl@126.com>
-X-Mailer: git-send-email 2.25.1
+Received: from mail-il1-x12c.google.com (mail-il1-x12c.google.com [IPv6:2607:f8b0:4864:20::12c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LlMZ36K5xz2x9v
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 18:57:46 +1000 (AEST)
+Received: by mail-il1-x12c.google.com with SMTP id h16so3613035ila.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 01:57:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=IYks55HxgsoLlm9FNEz/2R9Y4bixjWKaygGPwKIVjx0=;
+        b=m7RolDKDIlPqQgPf5OTP/N6sK1eysv8GJE4Xfn8CjMg0SxwuCaAjEySP55tmXp5JVI
+         UpIwNpbxTFBX8XrQHPTU10osewAMlkpehUSHMxLE/z5AscetNKSTakXBmT4sFuZxvdSj
+         6pLhVxcEz3FFMTM6nM4GdyvOJqmUEFJQCr3AOL0xm1yUFCsUy47Z3rBXZtMZzmMP/h9s
+         7WpW+a65qg8gkRMjnKQbAyPOY44lzJH7wId88CcIuxY+ie25eQBbKgS5dR4nb4qAp0au
+         boOEvL+LfokeBh3nWrS03XXVnUDvFPo3DxazMu+hCulyNuyUUotHieO4rDvfdCn9+u/Z
+         mv8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=IYks55HxgsoLlm9FNEz/2R9Y4bixjWKaygGPwKIVjx0=;
+        b=RnGdy5jnn0344Ev5HAmmYXq5ibXWa9rIGdzhY7j6bIC5Sd6RiZBuO2ReUB17tfQmbb
+         D+LsQujJgU0vci1oE6QM2MppvqTdgFv8PWeUESfS8A8pCW87D3si72MYY/k6J+pxZhme
+         idaf+y7w+TbybDznI+hOn3wzqQY5IuBSNO1bJaL5kIiaCD+e/eF/DD6NVWF45PHn5M/k
+         p7w1riK1HAuuMyde6Ksi8v4lq4o3fjaUJpkDm1it26u0bBxL2XdybUHaS+lbiMLeyv9k
+         O/HNTh5ZMHhUpZGyFDQEnC47+lNB5dsA1iydwJNBbNc8HDExE99oCB9WmXv34Q67cVS6
+         Gl5g==
+X-Gm-Message-State: AJIora+vySW/pYBXOnzNEXWiVbBJCYfmHVlwsaa+T4LJnljX4FoG3ubY
+	Ck8YAFfsoPaoyeH2e1q49UxVbam+zo2LmN2eGF4=
+X-Google-Smtp-Source: AGRyM1upiXNei9Ij258Ho2aijo3CxpUzFbH2CubB6AzfY4tMP/5ochBIlN/TgfrRN46dYIn9zQ7KIb7ZCJ9pwMhj3ew=
+X-Received: by 2002:a05:6e02:1c8d:b0:2dc:8162:282e with SMTP id
+ w13-20020a056e021c8d00b002dc8162282emr8874969ill.5.1657961861953; Sat, 16 Jul
+ 2022 01:57:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID: DcmowAAXs5QwbNJiPA50FA--.16504S2
-X-Coremail-Antispam: 1Uf129KBjvdXoWrtr18Xw4rGw15GFW5CF1kGrg_yoWkWwc_Xw
-	s2gF9rCr48WF4qvFnrZF1rWr1kA3yDWr4UKF1jq3W2qa1Fqas8Gw47JFy3WayUuFW0yrsx
-	JFsYyr98Ga409jkaLaAFLSUrUUUUUb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7IUUyrW3UUUUU==
-X-Originating-IP: [124.16.139.61]
-X-CM-SenderInfo: hzlqvxbo6rjloofrz/1tbizhJAF18RPgQNVQAAsn
+References: <20220523020209.11810-1-ojeda@kernel.org> <20220523020209.11810-22-ojeda@kernel.org>
+ <CAK7LNAQZOTjxJyS3WC1sM7LE-An7DL8xoW=-s1ONe7cq4YukNQ@mail.gmail.com>
+In-Reply-To: <CAK7LNAQZOTjxJyS3WC1sM7LE-An7DL8xoW=-s1ONe7cq4YukNQ@mail.gmail.com>
+From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
+Date: Sat, 16 Jul 2022 10:57:30 +0200
+Message-ID: <CANiq72k1aPQuvAL=TqNQVBZBmxojKfPBKU3v_2_B=731fhuJbQ@mail.gmail.com>
+Subject: Re: [PATCH v7 21/25] Kbuild: add Rust support
+To: Masahiro Yamada <masahiroy@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +73,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Sven Van Asbroeck <thesven73@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Miguel Cano <macanroj@gmail.com>, Paul Mackerras <paulus@samba.org>, Gary Guo <gary@garyguo.net>, Douglas Su <d0u9.su@outlook.com>, Borislav Petkov <bp@alien8.de>, "open list:SIFIVE DRIVERS" <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, "H. Peter Anvin" <hpa@zytor.com>, X86 ML <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Wedson Almeida Filho <wedsonaf@google.com>, Alex Gaynor <alex.gaynor@gmail.com>, Antonio Terceiro <antonio.terceiro@linaro.org>, Miguel Ojeda <ojeda@kernel.org>, Adam Bratschi-Kaye <ark.email@gmail.com>, Albert Ou <aou@eecs.berkeley.edu>, rust-for-linux <rust-for-linux@vger.kernel.org>, Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, Boqun Feng <boqun.feng@gmail.com>, linux-um@lists
+ .infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Daniel Xu <dxu@dxuuu.xyz>, David Gow <davidgow@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, Dariusz Sosnowski <dsosnowski@dsosnowski.pl>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Michal Marek <michal.lkml@markovi.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nick Desaulniers <ndesaulniers@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Boris-Chengbiao Zhou <bobo1239@web.de>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, Finn Behrens <me@kloenk.de>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-During the iteration of for_each_child_of_node(), we need to call
-of_node_put() for the old references stored in to 'ch_def' and 'ch_a'
-as their refcounters have been increased in last iteration.
+Hi Masahiro,
 
-Fixes: 51d3082fe6e5 ("[PATCH] powerpc: Unify udbg (#2)")
-Signed-off-by: Liang He <windhl@126.com>
----
- arch/powerpc/platforms/powermac/udbg_scc.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+On Sat, Jul 16, 2022 at 10:23 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
+>
+> Is it intentional to print the successful message to stderr?
 
-diff --git a/arch/powerpc/platforms/powermac/udbg_scc.c b/arch/powerpc/platforms/powermac/udbg_scc.c
-index 734df5a32f99..1b7c39e841ee 100644
---- a/arch/powerpc/platforms/powermac/udbg_scc.c
-+++ b/arch/powerpc/platforms/powermac/udbg_scc.c
-@@ -81,10 +81,14 @@ void __init udbg_scc_init(int force_scc)
- 	if (path != NULL)
- 		stdout = of_find_node_by_path(path);
- 	for_each_child_of_node(escc, ch) {
--		if (ch == stdout)
-+		if (ch == stdout) {
-+			of_node_put(ch_def);
- 			ch_def = of_node_get(ch);
--		if (of_node_name_eq(ch, "ch-a"))
-+		}
-+		if (of_node_name_eq(ch, "ch-a")) {
-+			of_node_put(ch_a);
- 			ch_a = of_node_get(ch);
-+		}
- 	}
- 	if (ch_def == NULL && !force_scc)
- 		goto bail;
--- 
-2.25.1
+I think it makes sense to change it to `stdout`, given the message is
+the main point of running `rustavailable` for normal users, and those
+that just want the status code may ignore it.
 
+Thanks for taking a look again!
+
+Cheers,
+Miguel
