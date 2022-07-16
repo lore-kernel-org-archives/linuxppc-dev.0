@@ -4,67 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0F71C43334
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jul 2022 13:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A023C43334
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 08:23:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lq9bv6zPlz2xkY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jul 2022 23:42:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LlLpp3rMWz3c1h
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Jul 2022 18:23:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Mav9qQe7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=MAIrldDl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=softfail (domain owner discourages use of this host) smtp.mailfrom=kernel.org (client-ip=210.131.2.80; helo=conssluserg-01.nifty.com; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Mav9qQe7;
+	dkim=pass (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.a=rsa-sha256 header.s=dec2015msa header.b=MAIrldDl;
 	dkim-atps=neutral
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com [210.131.2.80])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lq9bC44jnz2xjk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2022 23:41:58 +1000 (AEST)
-Received: by mail-lj1-x22d.google.com with SMTP id p6so5485396ljc.8
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2022 06:41:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Dx7D0BqkkDvjmBT9gC4DV9N7HZuC2AWyX/zQVsh2Lhg=;
-        b=Mav9qQe7Hay6uovpG8VBsmTfL/xzD90QiB1XmORe5cOsqAXIlePMrDnpAKjk2SPHlU
-         kb5Ut7GMhYSuGugphdGTCzl4QS6dVbBemaHVAe/68tr5YLIdKH+1dl3Be+60VFt6Mw1X
-         89ZZ7H+XeGTtXT+aoENzLnwYujx0UEFEHIllUI+2lj18vV6lg2lkpPDYX2L9dVq8r5Mu
-         ohtc/xno0dA+uaPEz0e57vbqZPXDLbKUqdzl3NXPeMXzZjWy8P656YDqqiKQAcIZgP12
-         9CxD2oRBzvv/UqkEIIr6I79Mj6do1s20CN+FUt2qGuSgsOMDu5gIKWU0Uw89VqdLMCEK
-         WJOw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Dx7D0BqkkDvjmBT9gC4DV9N7HZuC2AWyX/zQVsh2Lhg=;
-        b=ZU0Jd/E6hXEFCQWOvpeNxpStrQCCTxlevIbbPAXu+GMXgQN3C9jqay80UefZOR287h
-         XA1tHxMuSs8VtD9OSgs2SemACLPT//3ip57SwkwWZLUq3AYSMJqRmNesg3ZTUmVhoU//
-         3Rzlf1ANYQHO1J1cG1zW1w6wMg8wMViym7sHw3KduQz70LZ2QVhYBsKQwDXbh3HIFe5K
-         /DLfk/hqeJ9xR3H/FVXNNxe0A6qpnpX7ibPMaitWl6jAmNM6CRWg6YdznCsbQcYCi9Xk
-         UVW2QfX+KUWNTk9xZFhoQguY5J3XuPsfus0PjeKgBA6q9GylXXBP6sX3/BOhKXKT3e+V
-         PA5w==
-X-Gm-Message-State: AJIora+Y/3klNj9KiSNkSOIialD1pxay1NcE033QobnisBCRm+VX/+nv
-	3wPNAI/8FfUMB5j4a2K1u72K0qOgorO9Q944i0ex7w==
-X-Google-Smtp-Source: AGRyM1vqDflld4FdeS1YXh0RjgxlOzCf0nGqPxhUwqvkb5F6yDAk/Z183xcr0L3QZpAS70KrFAFPlj5+eHC8c+4k4GY=
-X-Received: by 2002:a2e:bd0e:0:b0:25a:88b3:9af6 with SMTP id
- n14-20020a2ebd0e000000b0025a88b39af6mr24943ljq.363.1658497309800; Fri, 22 Jul
- 2022 06:41:49 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LlLp32DMNz3bN6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 18:23:06 +1000 (AEST)
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47]) (authenticated)
+	by conssluserg-01.nifty.com with ESMTP id 26G8Mn4X028124
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 17:22:50 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-01.nifty.com 26G8Mn4X028124
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+	s=dec2015msa; t=1657959770;
+	bh=HFhi2GgLg7oEsoRiMqw8ZEkU/FUuixaMOlho3HR5dck=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=MAIrldDlkAxQ+9jjFo7Nu5NUDxzH0dWPflV5pbyCFjtEq20x8ZjRZ98h+FywQYkUP
+	 3MtwQL01lR2NG8aoqcaCF3sQK76GkKxrr41zt8gSw7GdRDp4+BdIiH16V2W4UwoSSC
+	 BZGUlqEZ/gzehulV2LeImlRG4NmVlBQYNStWh/4Yddl/Kh7u63xSXn7aLKmzjqp9qD
+	 rNxWPG0mhgqovU7pY1+rC94/c+AIXxEAKxKWTX/e0tYV0zviAI80PkPshgxcD/t/bH
+	 jOEsLfU9wA+K2BORAWGVW/k8t9+17uh+tVReMp0qVHA7J4tS5MV+k2sDultfrQiytw
+	 lFUab0pqTjBZg==
+X-Nifty-SrcIP: [209.85.128.47]
+Received: by mail-wm1-f47.google.com with SMTP id n185so4053157wmn.4
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jul 2022 01:22:50 -0700 (PDT)
+X-Gm-Message-State: AJIora+MVPr2HtPKbc1SQb1mCCPI3DbSY1PzgOSnBBleGoRGwaAMfR44
+	xq637X1YP/uavOLkEdBZhgxyjEw2q6iNoeIyIAU=
+X-Google-Smtp-Source: AGRyM1uoRO8Qz+FSCXJql+waCGu+mhRlQXVZ1LJNvE9kz6AJllMTUSrTJhZBfuW0GaHnoYXSlaf7O+xxZCeBVPOa6jI=
+X-Received: by 2002:a05:600c:35d6:b0:3a2:e873:6295 with SMTP id
+ r22-20020a05600c35d600b003a2e8736295mr17513065wmq.22.1657959758310; Sat, 16
+ Jul 2022 01:22:38 -0700 (PDT)
 MIME-Version: 1.0
-References: <20220704150514.48816-1-elver@google.com> <20220704150514.48816-2-elver@google.com>
- <Ytl9L0Zn1PVuL1cB@FVFF77S0Q05N.cambridge.arm.com> <20220722091044.GC18125@willie-the-truck>
- <CACT4Y+ZOXXqxhe4U3ZtQPCj2yrf6Qtjg1q0Kfq8+poAOxGgUew@mail.gmail.com>
- <20220722101053.GA18284@willie-the-truck> <CACT4Y+Z0imEHF0jM-f-uYdpfSpfzMpa+bFZfPeQW1ECBDjD9fA@mail.gmail.com>
- <20220722110305.GA18336@willie-the-truck>
-In-Reply-To: <20220722110305.GA18336@willie-the-truck>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Fri, 22 Jul 2022 15:41:38 +0200
-Message-ID: <CACT4Y+aLiNNt3ESZUKHT9U8duN-TMK561nC7Htx9y3R7afCV4g@mail.gmail.com>
-Subject: Re: [PATCH v3 01/14] perf/hw_breakpoint: Add KUnit test for
- constraints accounting
-To: Will Deacon <will@kernel.org>
+References: <20220523020209.11810-1-ojeda@kernel.org> <20220523020209.11810-22-ojeda@kernel.org>
+In-Reply-To: <20220523020209.11810-22-ojeda@kernel.org>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Sat, 16 Jul 2022 17:21:59 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAQZOTjxJyS3WC1sM7LE-An7DL8xoW=-s1ONe7cq4YukNQ@mail.gmail.com>
+Message-ID: <CAK7LNAQZOTjxJyS3WC1sM7LE-An7DL8xoW=-s1ONe7cq4YukNQ@mail.gmail.com>
+Subject: Re: [PATCH v7 21/25] Kbuild: add Rust support
+To: Miguel Ojeda <ojeda@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,55 +65,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Marco Elver <elver@google.com>, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, Alexander Shishkin <alexander.shishkin@linux.intel.com>, kasan-dev@googlegroups.com, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@kernel.org>
+Cc: Sven Van Asbroeck <thesven73@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Miguel Cano <macanroj@gmail.com>, Paul Mackerras <paulus@samba.org>, Gary Guo <gary@garyguo.net>, Douglas Su <d0u9.su@outlook.com>, Borislav Petkov <bp@alien8.de>, "open list:SIFIVE DRIVERS" <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, "H. Peter Anvin" <hpa@zytor.com>, X86 ML <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Wedson Almeida Filho <wedsonaf@google.com>, Alex Gaynor <alex.gaynor@gmail.com>, Antonio Terceiro <antonio.terceiro@linaro.org>, Adam Bratschi-Kaye <ark.email@gmail.com>, Albert Ou <aou@eecs.berkeley.edu>, rust-for-linux@vger.kernel.org, Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, Boqun Feng <boqun.feng@gmail.com>, linux-um@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.o
+ zlabs.org>, Daniel Xu <dxu@dxuuu.xyz>, David Gow <davidgow@google.com>, Paul Walmsley <paul.walmsley@sifive.com>, Dariusz Sosnowski <dsosnowski@dsosnowski.pl>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Michal Marek <michal.lkml@markovi.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nick Desaulniers <ndesaulniers@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Boris-Chengbiao Zhou <bobo1239@web.de>, Jarkko Sakkinen <jarkko@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, Finn Behrens <me@kloenk.de>, Johannes Berg <johannes@sipsolutions.net>, Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 22 Jul 2022 at 13:03, Will Deacon <will@kernel.org> wrote:
-> > > > > > On Mon, Jul 04, 2022 at 05:05:01PM +0200, Marco Elver wrote:
-> > > > > > I'm not immediately sure what would be necessary to support per-task kernel
-> > > > > > breakpoints, but given a lot of that state is currently per-cpu, I imagine it's
-> > > > > > invasive.
-> > > > >
-> > > > > I would actually like to remove HW_BREAKPOINT completely for arm64 as it
-> > > > > doesn't really work and causes problems for other interfaces such as ptrace
-> > > > > and kgdb.
-> > > >
-> > > > Will it be a localized removal of code that will be easy to revert in
-> > > > future? Or will it touch lots of code here and there?
-> > > > Let's say we come up with a very important use case for HW_BREAKPOINT
-> > > > and will need to make it work on arm64 as well in future.
-> > >
-> > > My (rough) plan is to implement a lower-level abstraction for handling the
-> > > underlying hardware resources, so we can layer consumers on top of that
-> > > instead of funneling through hw_breakpoint. So if we figure out how to make
-> > > bits of hw_breakpoint work on arm64, then it should just go on top.
-> > >
-> > > The main pain point for hw_breakpoint is kernel-side {break,watch}points
-> > > and I think there are open design questions about how they should work
-> > > on arm64, particularly when considering the interaction with user
-> > > watchpoints triggering on uaccess routines and the possibility of hitting
-> > > a kernel watchpoint in irq context.
-> >
-> > I see. Our main interest would be break/watchpoints on user addresses
-> > firing from both user-space and kernel (uaccess), so at least on irqs.
+On Mon, May 23, 2022 at 11:04 AM Miguel Ojeda <ojeda@kernel.org> wrote:
 >
-> Interesting. Do other architectures report watchpoint hits on user
-> addresses from kernel uaccess? It feels like this might be surprising to
-> some users, and it opens up questions about accesses using different virtual
-> aliases (e.g. via GUP) or from other entities as well (e.g. firmware,
-> KVM guests, DMA).
+> Having all the new files in place, we now enable Rust support
+> in the build system, including `Kconfig` entries related to Rust,
+> the Rust configuration printer, the target specification
+> generation script, the version detection script and a few
+> other bits.
+>
+> Co-developed-by: Alex Gaynor <alex.gaynor@gmail.com>
+> Signed-off-by: Alex Gaynor <alex.gaynor@gmail.com>
+> Co-developed-by: Finn Behrens <me@kloenk.de>
+> Signed-off-by: Finn Behrens <me@kloenk.de>
+> Co-developed-by: Adam Bratschi-Kaye <ark.email@gmail.com>
+> Signed-off-by: Adam Bratschi-Kaye <ark.email@gmail.com>
+> Co-developed-by: Wedson Almeida Filho <wedsonaf@google.com>
+> Signed-off-by: Wedson Almeida Filho <wedsonaf@google.com>
+> Co-developed-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Co-developed-by: Sven Van Asbroeck <thesven73@gmail.com>
+> Signed-off-by: Sven Van Asbroeck <thesven73@gmail.com>
+> Co-developed-by: Gary Guo <gary@garyguo.net>
+> Signed-off-by: Gary Guo <gary@garyguo.net>
+> Co-developed-by: Boris-Chengbiao Zhou <bobo1239@web.de>
+> Signed-off-by: Boris-Chengbiao Zhou <bobo1239@web.de>
+> Co-developed-by: Boqun Feng <boqun.feng@gmail.com>
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> Co-developed-by: Douglas Su <d0u9.su@outlook.com>
+> Signed-off-by: Douglas Su <d0u9.su@outlook.com>
+> Co-developed-by: Dariusz Sosnowski <dsosnowski@dsosnowski.pl>
+> Signed-off-by: Dariusz Sosnowski <dsosnowski@dsosnowski.pl>
+> Co-developed-by: Antonio Terceiro <antonio.terceiro@linaro.org>
+> Signed-off-by: Antonio Terceiro <antonio.terceiro@linaro.org>
+> Co-developed-by: Daniel Xu <dxu@dxuuu.xyz>
+> Signed-off-by: Daniel Xu <dxu@dxuuu.xyz>
+> Co-developed-by: Miguel Cano <macanroj@gmail.com>
+> Signed-off-by: Miguel Cano <macanroj@gmail.com>
+> Co-developed-by: David Gow <davidgow@google.com>
+> Signed-off-by: David Gow <davidgow@google.com>
+> Signed-off-by: Miguel Ojeda <ojeda@kernel.org>
+> ---
 
-x86 supports this.
-There is that attr.exclude_kernel flag that requires special permissions:
-https://elixir.bootlin.com/linux/v5.19-rc7/source/kernel/events/core.c#L12061
-https://elixir.bootlin.com/linux/v5.19-rc7/source/kernel/events/core.c#L9323
-But if I understand correctly, it only filters out delivery, the HW
-breakpoint fires even if attr.exclude_kernel is set.
 
-We also wanted to relax this permission check somewhat:
-https://lore.kernel.org/all/20220601093502.364142-1-elver@google.com/
 
-Yes, if the kernel maps the page at a different virtual address, then
-the breakpoint won't fire I think.
-Don't know what are the issues with firmware/KVM.
+
+
+> +# Rust targets
+> +# ---------------------------------------------------------------------------
+> +
+> +# "Is Rust available?" target
+> +PHONY += rustavailable
+> +rustavailable:
+> +       $(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust-is-available.sh -v && echo >&2 "Rust is available!"
+> +
+
+Is it intentional to print the successful message to stderr?
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
