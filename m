@@ -4,41 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77AA7C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 13:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D48CAC43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 15:01:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LmjsN03hbz3cft
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 23:45:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cdjrlc.com (client-ip=43.154.54.12; helo=smtpbg.qq.com; envelope-from=wangborong@cdjrlc.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 20908 seconds by postgrey-1.36 at boromir; Mon, 18 Jul 2022 23:45:17 AEST
-Received: from smtpbg.qq.com (biz-43-154-54-12.mail.qq.com [43.154.54.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lmjrs3l9tz3c4t
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2022 23:45:05 +1000 (AEST)
-X-QQ-mid: bizesmtp78t1658151862t9dksbz6
-Received: from localhost.localdomain ( [171.223.96.21])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Mon, 18 Jul 2022 21:44:20 +0800 (CST)
-X-QQ-SSF: 01000000002000E0U000C00A0000020
-X-QQ-FEAT: r/cTxDoDoiEZ/G1/U5cU0y7O5MUHcs2LuTI3rLif/Bz9p+J6ShcQ4p22QeLWx
-	vBP+kG8gouBG1SdX1rQbF4roAPBzqZ+QcH26WsRBFztM8/apUntOm8PZgRNW2irIwSUNgY1
-	2PFKGjhucs5RALQqyp0PTCajdrSsjJ0SW3NYBlfS2ApwB0K2miRZkW5tzH2DLcwd5l+/w3j
-	RxGc/Gp9H81a9WxVxFYoDZBpRGPd+0PuxGus486XaHVPvz5NS+3lgTX3+ynGcfbntUEaVRw
-	EyQzd9MVnu/aWBiI+fMha1lDSK/O2qEurONwbd7j11V+/LgxdlntfOkOC1KeonHXPDLbAof
-	Ry41rUNVS/8XIYfgcqspCmcZRu2cFXL13ttEbA+5iNbr6oJxVfGNQZnWmCtTzGBapZDyxng
-	LJdARLBXg7Y=
-X-QQ-GoodBg: 0
-From: Jason Wang <wangborong@cdjrlc.com>
-To: geoff@infradead.org
-Subject: [PATCH] powerpc/ps3: Fix comment typo
-Date: Fri, 15 Jul 2022 13:42:24 +0800
-Message-Id: <20220715054224.6583-1-wangborong@cdjrlc.com>
-X-Mailer: git-send-email 2.35.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:cdjrlc.com:qybglogicsvr:qybglogicsvr6
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LmlXy21zHz3cd4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jul 2022 01:01:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LmlXW6wXBz3bXZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2022 01:01:15 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26IEu3b6021466;
+	Mon, 18 Jul 2022 09:56:03 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26IEu2Km021465;
+	Mon, 18 Jul 2022 09:56:02 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Mon, 18 Jul 2022 09:56:01 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: mainline build failure of powerpc allmodconfig for prom_init_check
+Message-ID: <20220718145601.GE25951@gate.crashing.org>
+References: <Ys/aDKZNhhsENH9S@debian> <CADVatmO9XzFnX+N0TuOtr0FYyxKr1oe5RAhCEJjmnvjteT5QNw@mail.gmail.com> <CAHk-=whc3Uvhrmrr27xp5=oOhSDjXc5s1ZxC3B7xMYV6oj4WRQ@mail.gmail.com> <20220717195448.GB25951@gate.crashing.org> <87k08bdqm1.fsf@mpe.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87k08bdqm1.fsf@mpe.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,30 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Jason Wang <wangborong@cdjrlc.com>, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Kees Cook <keescook@chromium.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, linux-hardening@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The double `when' is duplicated in line 1069, remove one.
+On Mon, Jul 18, 2022 at 01:52:38PM +1000, Michael Ellerman wrote:
+> Segher Boessenkool <segher@kernel.crashing.org> writes:
+> > Can't we simply have a small simple implementation of these functions in
+> > arch/powerpc/boot/?  This stuff is not performance-critical, and this is
+> > not the first time we hit these problems.
+> 
+> prom_init.c isn't in arch/powerpc/boot :)
 
-Signed-off-by: Jason Wang <wangborong@cdjrlc.com>
----
- drivers/ps3/ps3-lpm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Ah duh :-)
 
-diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
-index 65512b6cc6fd..200ad8751860 100644
---- a/drivers/ps3/ps3-lpm.c
-+++ b/drivers/ps3/ps3-lpm.c
-@@ -1066,7 +1066,7 @@ EXPORT_SYMBOL_GPL(ps3_disable_pm_interrupts);
-  *  instance, specified by one of enum ps3_lpm_tb_type.
-  * @tb_cache: Optional user supplied buffer to use as the trace buffer cache.
-  *  If NULL, the driver will allocate and manage an internal buffer.
-- *  Unused when when @tb_type is PS3_LPM_TB_TYPE_NONE.
-+ *  Unused when @tb_type is PS3_LPM_TB_TYPE_NONE.
-  * @tb_cache_size: The size in bytes of the user supplied @tb_cache buffer.
-  *  Unused when @tb_cache is NULL or @tb_type is PS3_LPM_TB_TYPE_NONE.
-  */
--- 
-2.35.1
+> It's linked into the kernel proper, but we want it to behave like a
+> pre-boot environment (because not all boot paths run it) which is why we
+> restrict what symbols it can call.
+> 
+> We could have a prom_memset() etc. but we'd need to do some tricks to
+> rewrite references to memset() to prom_memset() before linking.
 
+You can do it in its linker script?
+
+
+Segher
