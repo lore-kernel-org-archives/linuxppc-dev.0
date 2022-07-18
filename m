@@ -4,71 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E5C4C433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 19:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20ECBC43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Jul 2022 22:14:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lms145BMbz3c1w
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jul 2022 05:07:52 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=hssRgYLn;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::532; helo=mail-ed1-x532.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=hssRgYLn;
-	dkim-atps=neutral
-Received: from mail-ed1-x532.google.com (mail-ed1-x532.google.com [IPv6:2a00:1450:4864:20::532])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lms0N14FJz3bXZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2022 05:07:14 +1000 (AEST)
-Received: by mail-ed1-x532.google.com with SMTP id r6so16644638edd.7
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2022 12:07:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=dgjsZTbvQJX6D56jQTPEYTM5n0l6iiehUHolgd4Ce9Q=;
-        b=hssRgYLn24Lw3qXe2EwOeLU2rpbVpcrr0gq1fZzk2oT4ZWnhDO4XXWRwks7LbqwMZd
-         i+6c82W3/dvuvhnSYGYsFgmVoj+Cjp0nbYF4M92SjvCJ4Ce5vOdmpXyYQ5OpL8MDtgiw
-         CWUZZi0MogKUpG4gNIMMisxiea+a5zCK8RaBg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=dgjsZTbvQJX6D56jQTPEYTM5n0l6iiehUHolgd4Ce9Q=;
-        b=6VE4o8J27c9UDb9GMY/cfO/vbA2ElgIsLqL1ArgHK79J97pnbcZb5ftl8ZqxC79uR+
-         KHZvQtrFIJuB1wt0mWqFw4B2YmRTWmYHmDYGroT6J9yEa5qQq3a17f1Hc8YgC3SaGnMY
-         KggTmvzZd96e1oDrM6c0TGk7yxBKoJ8HOjl5INcrfE/cBm3EQoZYyv1uOQduK9ZaRqOK
-         wxaar0hlyR9b+pDfnqm0uTe8C0rnI+cVQCR2UbBWfVNZ+kYJ8CuP+DKgrxZJrqgJlmTf
-         P3jO8vx6GJI3JtcoIUN2NwG/TxL/LmHW6bu/+iJ0StITkjyFHAzWzOzNcdaYWFK+ESrf
-         9Oxw==
-X-Gm-Message-State: AJIora8o3qJSqvnNoPB3xO0huE0YqYK51uT+UBydaf0l0YleM6ABMK7Z
-	PbvPjR/Sp/cxT5RezqqZYbJJMQn6iROasdJHLRY=
-X-Google-Smtp-Source: AGRyM1syEz3gArxhdB8k9mgVp62Ui9g/YA1Vxz6fd7eB8gaQZVVWLPdlltYhZNxx49VhxXr75yDnPA==
-X-Received: by 2002:a05:6402:2689:b0:43a:dc35:11bb with SMTP id w9-20020a056402268900b0043adc3511bbmr40464052edd.262.1658171229793;
-        Mon, 18 Jul 2022 12:07:09 -0700 (PDT)
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com. [209.85.128.47])
-        by smtp.gmail.com with ESMTPSA id eq22-20020a056402299600b0043a7134b381sm8943668edb.11.2022.07.18.12.07.08
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 Jul 2022 12:07:08 -0700 (PDT)
-Received: by mail-wm1-f47.google.com with SMTP id f24-20020a1cc918000000b003a30178c022so8454749wmb.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jul 2022 12:07:08 -0700 (PDT)
-X-Received: by 2002:a05:600c:2211:b0:3a3:2149:88e1 with SMTP id
- z17-20020a05600c221100b003a3214988e1mr1387069wml.8.1658171228317; Mon, 18 Jul
- 2022 12:07:08 -0700 (PDT)
-MIME-Version: 1.0
-References: <Ys/aDKZNhhsENH9S@debian> <CADVatmO9XzFnX+N0TuOtr0FYyxKr1oe5RAhCEJjmnvjteT5QNw@mail.gmail.com>
- <87cze3docs.fsf@mpe.ellerman.id.au>
-In-Reply-To: <87cze3docs.fsf@mpe.ellerman.id.au>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 18 Jul 2022 12:06:52 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wgJCTaY5FeNpcw6U-c1Z6c-A2WWQfCVa=1WW3Hdf9_eww@mail.gmail.com>
-Message-ID: <CAHk-=wgJCTaY5FeNpcw6U-c1Z6c-A2WWQfCVa=1WW3Hdf9_eww@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lmx884QVSz3c3y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Jul 2022 08:14:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lmx7g6DSqz2xn5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jul 2022 08:13:51 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26IM8fqS005455;
+	Mon, 18 Jul 2022 17:08:41 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26IM8dBn005451;
+	Mon, 18 Jul 2022 17:08:39 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Mon, 18 Jul 2022 17:08:39 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: mainline build failure of powerpc allmodconfig for prom_init_check
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20220718220839.GF25951@gate.crashing.org>
+References: <Ys/aDKZNhhsENH9S@debian> <CADVatmO9XzFnX+N0TuOtr0FYyxKr1oe5RAhCEJjmnvjteT5QNw@mail.gmail.com> <87cze3docs.fsf@mpe.ellerman.id.au> <CAHk-=wgJCTaY5FeNpcw6U-c1Z6c-A2WWQfCVa=1WW3Hdf9_eww@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHk-=wgJCTaY5FeNpcw6U-c1Z6c-A2WWQfCVa=1WW3Hdf9_eww@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,38 +46,99 @@ Cc: Kees Cook <keescook@chromium.org>, linux-kernel <linux-kernel@vger.kernel.or
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jul 17, 2022 at 9:41 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> >         li 4,254                 #,
->
-> Here we load 254 into r4, which is the 2nd parameter to memset (c).
+On Mon, Jul 18, 2022 at 12:06:52PM -0700, Linus Torvalds wrote:
+> On Sun, Jul 17, 2022 at 9:41 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > >         li 4,254                 #,
+> >
+> > Here we load 254 into r4, which is the 2nd parameter to memset (c).
+> 
+> I love how even powerpc people know that "4" is bogus, and have to
+> make it clear that it means "r4".
 
-I love how even powerpc people know that "4" is bogus, and have to
-make it clear that it means "r4".
+This is compiler output.  Compiler output is mainly meant for the
+assembler to produce object code from.  It isn't meant to be readable
+(and e.g. -fverbose-asm didn't help much here, that's the "#," ;-) ).
 
-I don't understand why the powerpc assembler is so messed up, and uses
-random integer constants for register "names".
+The mnemonic determines what the operands mean.  It is much easier to
+read and write "li 4,254" than "li r4,254" or "li %r4,254", all of which
+are valid.  You can also write "li 3+1,2*127", but not with the other
+forms (this is useful if you use assembler macros, which are way more
+powerful and appropriate than abusing the C preprocessor, when writing
+assembler code).
 
-And it gets even worse, when you start mixing FP, vector and integer "names".
+It matters more if you have three or four or five or six operands to an
+assembler instruction, all the extra line noise makes things illegible.
 
-I've seen many bad assemblers (in fact, I have *written* a couple of
-bad assemblers myself), but I have never seen anything quite that
-broken on any other architecture.
+The "%r4" variant hails from winnt.  It is a bit problematic in inline
+assembler, because you need to escape the % in extended inline asm, but
+not in basic inline asm.  It also is pure line noise to read.
 
-Oddities, yes ("$" as a prefix for register? Alpha asm is also very
-odd), but nothing *quite* as broken as "simple constants have entirely
-different meanings depending on the exact instruction and argument
-position".
+The "r4" variant is problematic if you have symbols named the same.
+When you use the -mregnames assembler option it is taken to mean the
+register; you can write "(r6)" to mean the symbol.  (There also are "sp"
+and "rtos" and "xer" and whatnot, not just "r4").
 
-It's not even an IBM thing. S390 uses perfectly sane register syntax,
-and calls things '%r4" etc.
+> I don't understand why the powerpc assembler is so messed up, and uses
+> random integer constants for register "names".
 
-The human-written asm files have those #define's in headers just to
-make things slightly more legible, because apparently the assembler
-doesn't even *accept* the sane names. So it's not even a "the compiler
-generates this abbreviated illegible mess". It's literally that the
-assembler is so horrid.
+360 was the same.  370 was the same.  390 is the same.  801 was the
+same.  RIOS (aka POWER) was the same.  So yes, PowerPC inherited it, I
+don't know how much thought was put into this, don't change a winning
+team etc.
 
-Why do people put up with that?
+> And it gets even worse, when you start mixing FP, vector and integer "names".
 
-               Linus
+It is clear from the mnemonic what the operands are: some register, an
+immediate, a constant, etc.  An expression (which can include object
+symbols) can be any of those.
+
+Assembler language is unforgiving.  It isn't easy to write, and most
+mistakes will not be diagnosed.  If the assmbler language makes it
+easier to read the code, that makes it more likely correct code will be
+written, and that correct code will be written in less time.
+
+> I've seen many bad assemblers (in fact, I have *written* a couple of
+> bad assemblers myself), but I have never seen anything quite that
+> broken on any other architecture.
+> 
+> Oddities, yes ("$" as a prefix for register? Alpha asm is also very
+> odd), but nothing *quite* as broken as "simple constants have entirely
+> different meanings depending on the exact instruction and argument
+> position".
+
+What is broken about that?  It makes everything very consistent, and
+very readable.  Sigils are just nasty, and having the register names the
+same as valid symbol names is also problematic.
+
+> It's not even an IBM thing. S390 uses perfectly sane register syntax,
+> and calls things '%r4" etc.
+
+s390 has the same syntax, and even inherited the GAS code for this from
+the ppc port.
+
+> The human-written asm files have those #define's in headers just to
+> make things slightly more legible, because apparently the assembler
+> doesn't even *accept* the sane names.
+
+That was true a long time ago.  And the "#define r0 0" thing caused
+quite a few bugs itself btw.
+
+> So it's not even a "the compiler
+> generates this abbreviated illegible mess". It's literally that the
+> assembler is so horrid.
+
+The disassembler has shown "r4" etc. by default since ages.  The
+assembler needs -mregnames to accept it; enabling this by default would
+be a compatibility break, not acceptable.
+
+> Why do people put up with that?
+
+Why are people misinformed?
+
+Is there anything in particular in the documentation we could improve?
+
+
+Hope this helps,
+
+
+Segher
