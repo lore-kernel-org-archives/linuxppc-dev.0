@@ -4,127 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41C2BC43334
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jul 2022 17:52:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 956F2C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Jul 2022 20:16:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LpgBZ3Yfvz3c7H
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jul 2022 03:52:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=oMqU1mE6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=40.107.22.63; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=oMqU1mE6;
-	dkim-atps=neutral
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05on2063.outbound.protection.outlook.com [40.107.22.63])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LpkNf4m2Gz3drV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Jul 2022 06:16:18 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=luna.fluff.org (client-ip=86.15.83.122; helo=luna; envelope-from=ben@luna.fluff.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 1228 seconds by postgrey-1.36 at boromir; Fri, 22 Jul 2022 06:15:52 AEST
+Received: from luna (cpc152649-stkp13-2-0-cust121.10-2.cable.virginm.net [86.15.83.122])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lpg9f25Hxz2xkS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2022 03:51:31 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Tnp0S3oSbNYSEvwjPtKF81mgwYiKhr/00nlF1+YVUyeIsgeRRlaV25g116q8nDABAsM6KJtM1HrWloGPJUGrP4ku1nkntgf8ZGrwbIKmP7yeY0Yj/AhspxUGrajmxj6t+E4CrV4T3KEPcQeqbQYn2K4Jd3WV6WiQR+qY2bUb9ikJp2GP3/h4hL6YFdDQYE659o9eHohK4By6+rZvv73MlAuWxV2o+3Pq9OQJMdIZQfQL5FrFpXNb5gzUN20VMpAiYjlecMthgPLcMrw0JHus7wWs4uHejoicWgwHUhl33fiWoEOEwfDsTUgKwpXVBPjasSs+ZmDMIQ20xOH2T529Aw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=2hqncOF98Bg50ygL/6Z0tNuDX4jxdqJrvDCWsrWjTvo=;
- b=U+64W+dC0OgsZlrjHmbnKU/5mkZDnBlJimSz2YSPrtCJVU5Eb4B4Ew5pS1kdYu7V/FwhkxXGeSaRCi0q+z8XYB5JwjtgDf6NsL5i38BrD7oyDn7gm1a5ZjAUrN6D1qVNrHl0aKGkkV7yW7usCcIKDEJOzOK6vIaJPHMwGpLKImfqy0Sut0c47rGTypG9r6AjkAjUUaoupU3Ru/c6gmqmvNeGSyAoZvZ+fwv0Xv6z1mv+RR0q0MVlQ77ZoroSJUT69YMPwLxLQxiuU5d4T/E2VKOWeShM8ClkbcPoqOQ8gQjMBf9sUPvyKk49+IuC4eZOS/X6tUZ12sdCjrtfKs7HJg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
- dkim=pass header.d=seco.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=2hqncOF98Bg50ygL/6Z0tNuDX4jxdqJrvDCWsrWjTvo=;
- b=oMqU1mE61XvxWnxoGIHIzwWfVx5DYLnrgk86uGx9wMsJ1GmsGgZB1p5qxn81+rw3yJzcrNJ9MRh/8lVw+K5UumXhyXX6XuZiZGKS419SiN/1A7SXSmkxOgOw5IwR1C5rf/RcTa2QdX3J0lQ3vxCwohceSbwuiSUX9GnmPze78qeEsBauK2lhrSxdddXJiIxJ/v5jHd1pQnmcPWMmTYAzJCXCmCTRzM2V2JQhwhhdHOWVHOAwu3QUruguqsFiee4Pp7iB23lDTA02d8r0EbFA1F1XQY1vWsTNNXcM9YBmrQSLzdeQH22ibFnGqWfVQe6kjfbDTZhopljOADge2lA5bw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=seco.com;
-Received: from DB7PR03MB4972.eurprd03.prod.outlook.com (2603:10a6:10:7d::22)
- by DBAPR03MB6664.eurprd03.prod.outlook.com (2603:10a6:10:17d::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5458.19; Thu, 21 Jul
- 2022 17:51:11 +0000
-Received: from DB7PR03MB4972.eurprd03.prod.outlook.com
- ([fe80::59ef:35d2:2f27:e98b]) by DB7PR03MB4972.eurprd03.prod.outlook.com
- ([fe80::59ef:35d2:2f27:e98b%4]) with mapi id 15.20.5458.018; Thu, 21 Jul 2022
- 17:51:11 +0000
-Subject: Re: [PATCH net-next v3 42/47] powerpc: dts: qoriq: Add nodes for
- QSGMII PCSs
-To: Camelia Alexandra Groza <camelia.groza@nxp.com>,
- "David S . Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
- Madalin Bucur <madalin.bucur@nxp.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <20220715215954.1449214-1-sean.anderson@seco.com>
- <20220715215954.1449214-43-sean.anderson@seco.com>
- <VI1PR04MB58079B0A71B13CC3B6D1D289F2919@VI1PR04MB5807.eurprd04.prod.outlook.com>
-From: Sean Anderson <sean.anderson@seco.com>
-Message-ID: <bc2209bd-6b04-1ec1-24e4-5cc095b5df52@seco.com>
-Date: Thu, 21 Jul 2022 13:51:07 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
-In-Reply-To: <VI1PR04MB58079B0A71B13CC3B6D1D289F2919@VI1PR04MB5807.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL0PR03CA0024.namprd03.prod.outlook.com
- (2603:10b6:208:2d::37) To DB7PR03MB4972.eurprd03.prod.outlook.com
- (2603:10a6:10:7d::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LpkN86nZBz3c6g
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2022 06:15:51 +1000 (AEST)
+Received: from ben by luna with local (Exim 4.96)
+	(envelope-from <ben@luna.fluff.org>)
+	id 1oEcGM-001knS-0y;
+	Thu, 21 Jul 2022 20:55:10 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] profile: setup_profiling_timer() is moslty not implemented
+Date: Thu, 21 Jul 2022 20:55:09 +0100
+Message-Id: <20220721195509.418205-1-ben-linux@fluff.org>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 7fa02d9b-8053-48bd-abac-08da6b419925
-X-MS-TrafficTypeDiagnostic: DBAPR03MB6664:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	MQo0jFWt3syZASmgtysfKlXet0zhuZYexnJ0jiSqMYQGWH8Ypp3n6igqxEOqYfZSBfnjwgnaugQKVYXGpi6iPDHtFMkHUcUuwe4hSpUNRmnR7FVZty/fIR3lG7QIfnBkI04EGgxq9Kgq4+n9GpaTUeeJ/oR0ccT6xO7ufnEy+QCYHOG7wceqYnoxDZe1Xua3naowNGnSYDkfbsnHVy+QW3UpCBG3e7IlOc1uqK40JlCvBzpvNzL1YmOGIwRbCB4WpC8SxYx18TKLnDewiJ0iQeSKdeyw+WgeoftE6yDuGMayMMkWsENUXeHC9amKzaAbEK10QPNWjHc5yZ8zUOOFjHhPyr7uywaRXTS/WXcY8WBrjedvwTNsr5ZBWCcgUxpVWCllvq/wtzoDBonMTS8HZh9VHGT371L+moaCU9wh9OeKDe/ntEGuW+EzqSZTW2hAYBf3v7DfSL6aNktEjJcSCuECiY/snU18cy4pf7OBj59w/XCAGNOsgXdFWQpmSDJj0emMoqkXnhtTTf4aPsSGX89wOceCyY1x/Dz3ZySwNOs+o/maPuEd5l/wbGzTeJ8iDaYMmc+C5esmWuC64lgHd52TfiHhhl5Rx8qtgcLslWCLZKQw1wmTkfFDMBBJ28XButQUFrTRcwCECmxKfesl5VlOQMO7jSdUN3nLcyDfoMIbfL/N5mJ5EUP5dKxNZWA2yj98/c4f050ve8akfeWWQT9Km9dcVuUNQSkEcsSi6RNomB01xezC1TywfnuKNVCpKeL5bXSoOKwWWl09SfbcElQkwstlT5+hWGk8y6t0MwzsJCAA7uwWWWKIIx+iJcJsxbulNqqokjFVzeHcEXjBxW13q06kpTCJg4ziuzxjt9I=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR03MB4972.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(136003)(396003)(366004)(346002)(376002)(39850400004)(44832011)(30864003)(6666004)(6506007)(7416002)(2906002)(41300700001)(5660300002)(86362001)(31696002)(2616005)(6486002)(52116002)(53546011)(8936002)(186003)(478600001)(54906003)(26005)(6512007)(110136005)(38100700002)(38350700002)(316002)(31686004)(36756003)(83380400001)(66556008)(66946007)(66476007)(8676002)(4326008)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?SmN3RFNsK3pVV0t2aEc4NmV1MS8veGgraUpZWWhhSy9RMFFhUithbEVRcnNK?=
- =?utf-8?B?VG1lWkgyaXpJYUhkcHhSbGt1UnAyaG1tWE0vUTY5SVBHTHhNVWRKWjVVbU9O?=
- =?utf-8?B?ZEhHSHRmMWxOYmUvdkppeEVGZGxyMUVNZHR0WGdOR1lRU3VOcmVNVUNML2Fa?=
- =?utf-8?B?MXNZVnFEVm5Jam1aZkpFTkh3ZlR1c2p2QmM5ODRnbFBsRm9PTWNGYkF1MXlh?=
- =?utf-8?B?ZlBrNDR2VkNIakV4NE81cG1FRTNaK0xVNTVjMW1qbWFDUDVBaDJhUTZQa1dv?=
- =?utf-8?B?bGM0dTFMb0NrcEFFeFdCbXRkQTFXMHExbmlLV3dETzlCRWh4c09XMHluSitx?=
- =?utf-8?B?NEhnVEhiTCs5ck5zSXNJUThLU1hua24yckJDaVRwQ0dkOE5DOWpaV1NEb1Iv?=
- =?utf-8?B?cm1xQjVDck9ZOEhOa2xGdUVHVjFSNkhqMGNkSndOZEx0TlhrNE1nMGxSdk5N?=
- =?utf-8?B?UkxtYWpmNnJRU3o0T1BOd01nWHdaZ1AyRGlBdjVEeEZYL2FyREd1MDc2dW5T?=
- =?utf-8?B?RU1KTFUwbm9CeVpUemdXK04wZDhOVEJHYUFvaTE5RHIwQU1NWTJDZFhNN09j?=
- =?utf-8?B?QmdDSWxBczRKUVJSb3l3d2RQT09ENVdFR2wxZ2RLcExOMG1UWklpWDlBMldN?=
- =?utf-8?B?WWRmK2FFZTV0dXAzUkFvcXNHbm9pOUwxNVo3SjVCVHdHMVRiak5LbmVLa0lV?=
- =?utf-8?B?bzIxSTZVbkJYU2NodFlzdmc4SmdkV1RFdnB1aHIrUjlKaFdmbkR6SmJZOHlV?=
- =?utf-8?B?QW40NkFpSHJKNTd4bVRYSERmRm1WYzNVd2hKZjl4dXdRMWZVa25SaFB1M0wr?=
- =?utf-8?B?MTREV3VuY0twSjVRUTV6N2gySVF2bGdXRzRFN2tPS3hBdmZ4a1VZazRYdlZo?=
- =?utf-8?B?SmUrOEpNR09qbXpCcHZmSCs2VTJubDArcUNuNGlQKzdsZXJUdXNBMTBTbXFE?=
- =?utf-8?B?bEJGck8xeFlpL2JpQmZmdVQ5NXJ6aTBpTlVNaFRQVDRMUFF2ODZBajFMTlZV?=
- =?utf-8?B?WUFLbjRBQlFkRlBHblRKOC9GV3VtUitGd1FLRFpOaFAyYTYycFBPS0JTSVdz?=
- =?utf-8?B?WU1JbWxveWNIQ2FXS1RZRzNna2xDZUNBeVpZSFlOaWdlbElsYnpoUm8rVnU0?=
- =?utf-8?B?ZTVqckZLR0VCdlgxaWIwOFFkZGpZWlhFRWRQM0FHTE9MelcyNTBHcWkySTZQ?=
- =?utf-8?B?eHZ5ejR2QmZza2xrWmx3WWN5cUtmS1d0MmZpYllzd0lZTlNZWG05b3ZVNmow?=
- =?utf-8?B?eWZhWk9hbXkrM1Fqc09GNTR6alpkZnZxYlhVeFRRMXYyamNreHl0cDlNams0?=
- =?utf-8?B?WVhLRlE2c1lqRll3YkIxaGh0M0N6ZmhObEJ4QUtBVTVJK3ZsQktyUkdKZmc1?=
- =?utf-8?B?MEZjWS9XcWh1VGxic1FzTWlzRXNHL3BqT0JnZ2s5YzFXTmkyRFNNT2FyQTFD?=
- =?utf-8?B?c3paWkdzNmFvLzV5dVlxNFMvamVtL2VYVVhoQmJQUk5EYVdvdTZYU2E0SE4w?=
- =?utf-8?B?bys0SHBTelVJREpBMkR2dlhaQkZXZ3NBRFF0MWJ6MDlPS3Q1UWF5M0ZxQXJ4?=
- =?utf-8?B?N0ZRaVRYVHcrYkg1M1dBNDJ5WlhRR0N6Um5idEQra0pVUEFLWWd0ZTcwREFk?=
- =?utf-8?B?RkQ1MityMmhZaVQxdlBVTEw5Nk9kZktaeUhJQ3U3aWdDNTZCSFRqYlFVOHJ3?=
- =?utf-8?B?TjQ5Z1lwVTBIbUs2enlERlNXbWpwcW4zL1VFbTRFUnZQV3pCWXJlTW5OUlc3?=
- =?utf-8?B?V0N3Y3N4bmhXK3RaMnU5VUxpY3d3MExBejI1SGk3amJ0ck12c01BOEs3K1Qy?=
- =?utf-8?B?MVVQVnpBK2pPS3g3Z2tiblZLSVdwdENDY2I1V3d4L1U1dmNYRG1EVnYvTnZB?=
- =?utf-8?B?Q2gzeXZ2Lzc3YklhTXJNV1l4NDdlaEcydHBWVkZodTdhZHJiSUs5NS9OWjc5?=
- =?utf-8?B?SC9oV3dsYWI1dm9vMW1QdWUxZWRmR2NEN1d1Q3NVUXhDcTJLZWFVWlNTOTc4?=
- =?utf-8?B?TjA0OWE5U0tTdHMwcEdXN3o1eVptY2VZalVhYVVlL0JHQXVLcnM4eXpSempV?=
- =?utf-8?B?dEh6eE5tYmxTZSs3Q1VFb0NFSUZIZy81c2ZOYmxnMjF2ek9rUnkrOFBVaFk2?=
- =?utf-8?B?ckJ0ZmFRMVhheEhoamsxVS9wZjFBOVpCS3ljZld1Nlo2Mng3aHdva0E3Nmkv?=
- =?utf-8?B?M0E9PQ==?=
-X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7fa02d9b-8053-48bd-abac-08da6b419925
-X-MS-Exchange-CrossTenant-AuthSource: DB7PR03MB4972.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 21 Jul 2022 17:51:11.5431
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: N04/tEHdEezRh8GZt0JWl/ty4cJM5YD/3vWQmR1PrZKFKsnd19w0uXacC6dSEANSe6ADzNt9MBJwtPICIZW6hg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR03MB6664
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -136,454 +40,319 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Paolo Abeni <pabeni@redhat.com>, Shawn Guo <shawnguo@kernel.org>, Russell King <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eric Dumazet <edumazet@google.com>, Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Leo Li <leoyang.li@nxp.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-csky@vger.kernel.org, openrisc@lists.librecores.org, Ben Dooks <ben-linux@fluff.org>, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The setup_profiling_timer() is mostly un-implemented by many
+architectures. In many places it isn't guarded by CONFIG_PROFILE
+which is needed for it to be used. Make it a weak symbol in
+kernel/profile.c and remove the 'return -EINVAL' implementations
+from the kenrel.
 
+There are a couple of architectures which do return 0 from
+the setup_profiling_timer() function but they don't seem to
+do anything else with it. To keep the /proc compatibility for
+now, leave these for a future update or removal.
 
-On 7/21/22 9:48 AM, Camelia Alexandra Groza wrote:
->> -----Original Message-----
->> From: Linuxppc-dev <linuxppc-dev-
->> bounces+camelia.groza=nxp.com@lists.ozlabs.org> On Behalf Of Sean
->> Anderson
->> Sent: Saturday, July 16, 2022 1:00
->> To: David S . Miller <davem@davemloft.net>; Jakub Kicinski
->> <kuba@kernel.org>; Madalin Bucur <madalin.bucur@nxp.com>;
->> netdev@vger.kernel.org
->> Cc: devicetree@vger.kernel.org; Leo Li <leoyang.li@nxp.com>; Sean
->> Anderson <sean.anderson@seco.com>; linuxppc-dev@lists.ozlabs.org;
->> Russell King <linux@armlinux.org.uk>; linux-kernel@vger.kernel.org; Eric
->> Dumazet <edumazet@google.com>; Rob Herring <robh+dt@kernel.org>;
->> Paul Mackerras <paulus@samba.org>; Krzysztof Kozlowski
->> <krzysztof.kozlowski+dt@linaro.org>; Paolo Abeni <pabeni@redhat.com>;
->> Shawn Guo <shawnguo@kernel.org>; linux-arm-kernel@lists.infradead.org
->> Subject: [PATCH net-next v3 42/47] powerpc: dts: qoriq: Add nodes for
->> QSGMII PCSs
->> 
->> Now that we actually read registers from QSGMII PCSs, it's important
->> that we have the correct address (instead of hoping that we're the MAC
->> with all the QSGMII PCSs on its bus). This adds nodes for the QSGMII
->> PCSs. They have the same addresses on all SoCs (e.g. if QSGMIIA is
->> present it's used for MACs 1 through 4).
->> 
->> Since the first QSGMII PCSs share an address with the SGMII and XFI
->> PCSs, we only add new nodes for PCSs 2-4. This avoids address conflicts
->> on the bus.
->> 
->> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-> 
-> MAC1 and MAC2 can be XFI on T2080. This needs to be reflected in qoriq-fman3-0-1g-0.dtsi
-> and qoriq-fman3-0-1g-1.dtsi
-> 
-> The two associated netdevs fail to probe on a T2080RDB without "xfi" added to the pcs-names:
-> fsl_dpaa_mac ffe4e0000.ethernet (unnamed net_device) (uninitialized): failed to validate link configuration for in-band status
-> fsl_dpaa_mac ffe4e0000.ethernet: error -EINVAL: Could not create phylink
-> fsl_dpa: probe of dpaa-ethernet.0 failed with error -22
+On ARM, this fixes the following sparse warning:
+arch/arm/kernel/smp.c:793:5: warning: symbol 'setup_profiling_timer' was not declared. Should it be static?
 
-Ah, I missed that this SoC had 10G on MAC1/MAC2. Going with the existing
-naming scheme, these MACs should probably go in DTSs named
-qoriq-fman3-0-1g-2.dtsi and qoriq-fman3-0-1g-3.dtsi. Alternatively, this
-could be done in t2081si-post.dtsi, since it is only for one SoC. I don't
-want to add these to qoriq-fman3-0-1g-0.dtsi and qoriq-fman3-0-1g-1.dtsi
-because they are used on other SoCs which don't have 10G.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+---
+ arch/alpha/kernel/smp.c     | 6 ------
+ arch/arc/kernel/smp.c       | 8 --------
+ arch/arm/kernel/smp.c       | 8 --------
+ arch/arm64/kernel/smp.c     | 8 --------
+ arch/csky/kernel/smp.c      | 5 -----
+ arch/hexagon/kernel/smp.c   | 5 -----
+ arch/ia64/kernel/smp.c      | 6 ------
+ arch/openrisc/kernel/smp.c  | 6 ------
+ arch/parisc/kernel/smp.c    | 7 -------
+ arch/powerpc/kernel/smp.c   | 7 -------
+ arch/riscv/kernel/smp.c     | 6 ------
+ arch/sparc/kernel/smp_32.c  | 5 -----
+ arch/sparc/kernel/smp_64.c  | 6 ------
+ arch/x86/include/asm/apic.h | 2 --
+ arch/x86/kernel/apic/apic.c | 5 -----
+ kernel/profile.c            | 8 ++++++--
+ 16 files changed, 6 insertions(+), 92 deletions(-)
 
---Sean
+diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
+index cb64e4797d2a..f4e20f75438f 100644
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -497,12 +497,6 @@ smp_cpus_done(unsigned int max_cpus)
+ 	       ((bogosum + 2500) / (5000/HZ)) % 100);
+ }
+ 
+-int
+-setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ static void
+ send_ipi_message(const struct cpumask *to_whom, enum ipi_message_type operation)
+ {
+diff --git a/arch/arc/kernel/smp.c b/arch/arc/kernel/smp.c
+index d947473f1e6d..ab9e75e90f72 100644
+--- a/arch/arc/kernel/smp.c
++++ b/arch/arc/kernel/smp.c
+@@ -232,14 +232,6 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
+ 	return 0;
+ }
+ 
+-/*
+- * not supported here
+- */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ /*****************************************************************************/
+ /*              Inter Processor Interrupt Handling                           */
+ /*****************************************************************************/
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index 73fc645fc4c7..978db2d96b44 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -787,14 +787,6 @@ void panic_smp_self_stop(void)
+ 		cpu_relax();
+ }
+ 
+-/*
+- * not supported here
+- */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ #ifdef CONFIG_CPU_FREQ
+ 
+ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index 62ed361a4376..ffc5d76cf695 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -1078,14 +1078,6 @@ bool smp_crash_stop_failed(void)
+ }
+ #endif
+ 
+-/*
+- * not supported here
+- */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ static bool have_cpu_die(void)
+ {
+ #ifdef CONFIG_HOTPLUG_CPU
+diff --git a/arch/csky/kernel/smp.c b/arch/csky/kernel/smp.c
+index 6bb38bc2f39b..4b605aa2e1d6 100644
+--- a/arch/csky/kernel/smp.c
++++ b/arch/csky/kernel/smp.c
+@@ -243,11 +243,6 @@ void __init smp_cpus_done(unsigned int max_cpus)
+ {
+ }
+ 
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ void csky_start_secondary(void)
+ {
+ 	struct mm_struct *mm = &init_mm;
+diff --git a/arch/hexagon/kernel/smp.c b/arch/hexagon/kernel/smp.c
+index 619c56420aa0..4ba93e59370c 100644
+--- a/arch/hexagon/kernel/smp.c
++++ b/arch/hexagon/kernel/smp.c
+@@ -240,11 +240,6 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ 	send_ipi(mask, IPI_CALL_FUNC);
+ }
+ 
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ void smp_start_cpus(void)
+ {
+ 	int i;
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 7b7b64eb3129..e2cc59db86bc 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -333,9 +333,3 @@ smp_send_stop (void)
+ {
+ 	send_IPI_allbutself(IPI_CPU_STOP);
+ }
+-
+-int
+-setup_profiling_timer (unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+diff --git a/arch/openrisc/kernel/smp.c b/arch/openrisc/kernel/smp.c
+index 27041db2c8b0..e1419095a6f0 100644
+--- a/arch/openrisc/kernel/smp.c
++++ b/arch/openrisc/kernel/smp.c
+@@ -197,12 +197,6 @@ void smp_send_stop(void)
+ 	smp_call_function(stop_this_cpu, NULL, 0);
+ }
+ 
+-/* not supported, yet */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ void __init set_smp_cross_call(void (*fn)(const struct cpumask *, unsigned int))
+ {
+ 	smp_cross_call = fn;
+diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+index 24d0744c3b3a..7dbd92cafae3 100644
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -513,10 +513,3 @@ void __cpu_die(unsigned int cpu)
+ 
+ 	pdc_cpu_rendezvous_unlock();
+ }
+-
+-#ifdef CONFIG_PROC_FS
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-#endif
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index bcefab484ea6..c037c26540dd 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1674,13 +1674,6 @@ void start_secondary(void *unused)
+ 	BUG();
+ }
+ 
+-#ifdef CONFIG_PROFILING
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return 0;
+-}
+-#endif
+-
+ static void __init fixup_topology(void)
+ {
+ 	int i;
+diff --git a/arch/riscv/kernel/smp.c b/arch/riscv/kernel/smp.c
+index b5d30ea92292..441d0ceb80ad 100644
+--- a/arch/riscv/kernel/smp.c
++++ b/arch/riscv/kernel/smp.c
+@@ -64,12 +64,6 @@ bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+ 	return phys_id == cpuid_to_hartid_map(cpu);
+ }
+ 
+-/* Unsupported */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ static void ipi_stop(void)
+ {
+ 	set_cpu_online(smp_processor_id(), false);
+diff --git a/arch/sparc/kernel/smp_32.c b/arch/sparc/kernel/smp_32.c
+index 22b148e5a5f8..ad8094d955eb 100644
+--- a/arch/sparc/kernel/smp_32.c
++++ b/arch/sparc/kernel/smp_32.c
+@@ -174,11 +174,6 @@ void smp_call_function_interrupt(void)
+ 	irq_exit();
+ }
+ 
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ void __init smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	int i, cpuid, extra;
+diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
+index a1f78e9ddaf3..a55295d1b924 100644
+--- a/arch/sparc/kernel/smp_64.c
++++ b/arch/sparc/kernel/smp_64.c
+@@ -1186,12 +1186,6 @@ void __irq_entry smp_penguin_jailcell(int irq, struct pt_regs *regs)
+ 	preempt_enable();
+ }
+ 
+-/* /proc/profile writes can call this, don't __init it please. */
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ void __init smp_prepare_cpus(unsigned int max_cpus)
+ {
+ }
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index bd8ae0a7010a..3415321c8240 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -98,8 +98,6 @@ static inline bool apic_from_smp_config(void)
+ #include <asm/paravirt.h>
+ #endif
+ 
+-extern int setup_profiling_timer(unsigned int);
+-
+ static inline void native_apic_mem_write(u32 reg, u32 v)
+ {
+ 	volatile u32 *addr = (volatile u32 *)(APIC_BASE + reg);
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 189d3a5e471a..df764ceac2c8 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1115,11 +1115,6 @@ DEFINE_IDTENTRY_SYSVEC(sysvec_apic_timer_interrupt)
+ 	set_irq_regs(old_regs);
+ }
+ 
+-int setup_profiling_timer(unsigned int multiplier)
+-{
+-	return -EINVAL;
+-}
+-
+ /*
+  * Local APIC start and shutdown
+  */
+diff --git a/kernel/profile.c b/kernel/profile.c
+index 37640a0bd8a3..244aa255c488 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -418,6 +418,12 @@ read_profile(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	return read;
+ }
+ 
++/* default is to not implement this call */
++int __weak setup_profiling_timer(unsigned mult)
++{
++	return -EINVAL;
++}
++
+ /*
+  * Writing to /proc/profile resets the counters
+  *
+@@ -428,8 +434,6 @@ static ssize_t write_profile(struct file *file, const char __user *buf,
+ 			     size_t count, loff_t *ppos)
+ {
+ #ifdef CONFIG_SMP
+-	extern int setup_profiling_timer(unsigned int multiplier);
+-
+ 	if (count == sizeof(int)) {
+ 		unsigned int multiplier;
+ 
+-- 
+2.35.1
 
->> ---
->> 
->> Changes in v3:
->> - Add compatibles for QSGMII PCSs
->> - Split arm and powerpcs dts updates
->> 
->> Changes in v2:
->> - New
->> 
->>  .../boot/dts/fsl/qoriq-fman3-0-10g-0-best-effort.dtsi  |  3 ++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0.dtsi     | 10 +++++++++-
->>  .../boot/dts/fsl/qoriq-fman3-0-10g-1-best-effort.dtsi  | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1.dtsi     | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-0.dtsi      |  3 ++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-1.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-2.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-3.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-4.dtsi      |  3 ++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-5.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-0.dtsi     | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-1.dtsi     | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-0.dtsi      |  3 ++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-1.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-2.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-3.dtsi      | 10 +++++++++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-4.dtsi      |  3 ++-
->>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-5.dtsi      | 10 +++++++++-
->>  18 files changed, 127 insertions(+), 18 deletions(-)
->> 
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0-best-effort.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0-best-effort.dtsi
->> index baa0c503e741..db169d630db3 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0-best-effort.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0-best-effort.dtsi
->> @@ -55,7 +55,8 @@ ethernet@e0000 {
->>  		reg = <0xe0000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x08 &fman0_tx_0x28>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy0>;
->> +		pcsphy-handle = <&pcsphy0>, <&pcsphy0>;
->> +		pcs-names = "sgmii", "qsgmii";
->>  	};
->> 
->>  	mdio@e1000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0.dtsi
->> index 93095600e808..e80ad8675be8 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-0.dtsi
->> @@ -52,7 +52,15 @@ ethernet@f0000 {
->>  		compatible = "fsl,fman-memac";
->>  		reg = <0xf0000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x10 &fman0_tx_0x30>;
->> -		pcsphy-handle = <&pcsphy6>;
->> +		pcsphy-handle = <&pcsphy6>, <&qsgmiib_pcs2>,
->> <&pcsphy6>;
->> +		pcs-names = "sgmii", "qsgmii", "xfi";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiib_pcs2: ethernet-pcs@2 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <2>;
->> +		};
->>  	};
->> 
->>  	mdio@f1000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1-best-effort.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1-best-effort.dtsi
->> index ff4bd38f0645..6a6f51842ad5 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1-best-effort.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1-best-effort.dtsi
->> @@ -55,7 +55,15 @@ ethernet@e2000 {
->>  		reg = <0xe2000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x09 &fman0_tx_0x29>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy1>;
->> +		pcsphy-handle = <&pcsphy1>, <&qsgmiia_pcs1>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiia_pcs1: ethernet-pcs@1 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <1>;
->> +		};
->>  	};
->> 
->>  	mdio@e3000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1.dtsi
->> index 1fa38ed6f59e..543da5493e40 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-10g-1.dtsi
->> @@ -52,7 +52,15 @@ ethernet@f2000 {
->>  		compatible = "fsl,fman-memac";
->>  		reg = <0xf2000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x11 &fman0_tx_0x31>;
->> -		pcsphy-handle = <&pcsphy7>;
->> +		pcsphy-handle = <&pcsphy7>, <&qsgmiib_pcs3>,
->> <&pcsphy7>;
->> +		pcs-names = "sgmii", "qsgmii", "xfi";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiib_pcs3: ethernet-pcs@3 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <3>;
->> +		};
->>  	};
->> 
->>  	mdio@f3000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-0.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-0.dtsi
->> index a8cc9780c0c4..ce76725e6eb2 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-0.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-0.dtsi
->> @@ -51,7 +51,8 @@ ethernet@e0000 {
->>  		reg = <0xe0000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x08 &fman0_tx_0x28>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy0>;
->> +		pcsphy-handle = <&pcsphy0>, <&pcsphy0>;
->> +		pcs-names = "sgmii", "qsgmii";
->>  	};
->> 
->>  	mdio@e1000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-1.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-1.dtsi
->> index 8b8bd70c9382..f3af67df4767 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-1.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-1.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e2000 {
->>  		reg = <0xe2000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x09 &fman0_tx_0x29>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy1>;
->> +		pcsphy-handle = <&pcsphy1>, <&qsgmiia_pcs1>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiia_pcs1: ethernet-pcs@1 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <1>;
->> +		};
->>  	};
->> 
->>  	mdio@e3000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-2.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-2.dtsi
->> index 619c880b54d8..f6d74de84bfe 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-2.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-2.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e4000 {
->>  		reg = <0xe4000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x0a &fman0_tx_0x2a>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy2>;
->> +		pcsphy-handle = <&pcsphy2>, <&qsgmiia_pcs2>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiia_pcs2: ethernet-pcs@2 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <2>;
->> +		};
->>  	};
->> 
->>  	mdio@e5000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-3.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-3.dtsi
->> index d7ebb73a400d..6e091d8ae9e2 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-3.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-3.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e6000 {
->>  		reg = <0xe6000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x0b &fman0_tx_0x2b>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy3>;
->> +		pcsphy-handle = <&pcsphy3>, <&qsgmiia_pcs3>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiia_pcs3: ethernet-pcs@3 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <3>;
->> +		};
->>  	};
->> 
->>  	mdio@e7000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-4.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-4.dtsi
->> index b151d696a069..e2174c0fc841 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-4.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-4.dtsi
->> @@ -51,7 +51,8 @@ ethernet@e8000 {
->>  		reg = <0xe8000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x0c &fman0_tx_0x2c>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy4>;
->> +		pcsphy-handle = <&pcsphy4>, <&pcsphy4>;
->> +		pcs-names = "sgmii", "qsgmii";
->>  	};
->> 
->>  	mdio@e9000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-5.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-5.dtsi
->> index adc0ae0013a3..9106815bd63e 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-5.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0-1g-5.dtsi
->> @@ -51,7 +51,15 @@ ethernet@ea000 {
->>  		reg = <0xea000 0x1000>;
->>  		fsl,fman-ports = <&fman0_rx_0x0d &fman0_tx_0x2d>;
->>  		ptp-timer = <&ptp_timer0>;
->> -		pcsphy-handle = <&pcsphy5>;
->> +		pcsphy-handle = <&pcsphy5>, <&qsgmiib_pcs1>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiib_pcs1: ethernet-pcs@1 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <1>;
->> +		};
->>  	};
->> 
->>  	mdio@eb000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-0.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-0.dtsi
->> index 435047e0e250..a3c1538dfda1 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-0.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-0.dtsi
->> @@ -52,7 +52,15 @@ ethernet@f0000 {
->>  		compatible = "fsl,fman-memac";
->>  		reg = <0xf0000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x10 &fman1_tx_0x30>;
->> -		pcsphy-handle = <&pcsphy14>;
->> +		pcsphy-handle = <&pcsphy14>, <&qsgmiid_pcs2>,
->> <&pcsphy14>;
->> +		pcs-names = "sgmii", "qsgmii", "xfi";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiid_pcs2: ethernet-pcs@2 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <2>;
->> +		};
->>  	};
->> 
->>  	mdio@f1000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-1.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-1.dtsi
->> index c098657cca0a..c024517e70d6 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-1.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-10g-1.dtsi
->> @@ -52,7 +52,15 @@ ethernet@f2000 {
->>  		compatible = "fsl,fman-memac";
->>  		reg = <0xf2000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x11 &fman1_tx_0x31>;
->> -		pcsphy-handle = <&pcsphy15>;
->> +		pcsphy-handle = <&pcsphy15>, <&qsgmiid_pcs3>,
->> <&pcsphy15>;
->> +		pcs-names = "sgmii", "qsgmii", "xfi";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiid_pcs3: ethernet-pcs@3 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <3>;
->> +		};
->>  	};
->> 
->>  	mdio@f3000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-0.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-0.dtsi
->> index 9d06824815f3..16fb299f615a 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-0.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-0.dtsi
->> @@ -51,7 +51,8 @@ ethernet@e0000 {
->>  		reg = <0xe0000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x08 &fman1_tx_0x28>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy8>;
->> +		pcsphy-handle = <&pcsphy8>, <&pcsphy8>;
->> +		pcs-names = "sgmii", "qsgmii";
->>  	};
->> 
->>  	mdio@e1000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-1.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-1.dtsi
->> index 70e947730c4b..75cecbef8469 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-1.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-1.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e2000 {
->>  		reg = <0xe2000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x09 &fman1_tx_0x29>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy9>;
->> +		pcsphy-handle = <&pcsphy9>, <&qsgmiic_pcs1>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiic_pcs1: ethernet-pcs@1 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <1>;
->> +		};
->>  	};
->> 
->>  	mdio@e3000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-2.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-2.dtsi
->> index ad96e6529595..98c1d27f17e7 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-2.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-2.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e4000 {
->>  		reg = <0xe4000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x0a &fman1_tx_0x2a>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy10>;
->> +		pcsphy-handle = <&pcsphy10>, <&qsgmiic_pcs2>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiic_pcs2: ethernet-pcs@2 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <2>;
->> +		};
->>  	};
->> 
->>  	mdio@e5000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-3.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-3.dtsi
->> index 034bc4b71f7a..203a00036f17 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-3.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-3.dtsi
->> @@ -51,7 +51,15 @@ ethernet@e6000 {
->>  		reg = <0xe6000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x0b &fman1_tx_0x2b>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy11>;
->> +		pcsphy-handle = <&pcsphy11>, <&qsgmiic_pcs3>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e1000 {
->> +		qsgmiic_pcs3: ethernet-pcs@3 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <3>;
->> +		};
->>  	};
->> 
->>  	mdio@e7000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-4.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-4.dtsi
->> index 93ca23d82b39..9366935ebc02 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-4.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-4.dtsi
->> @@ -51,7 +51,8 @@ ethernet@e8000 {
->>  		reg = <0xe8000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x0c &fman1_tx_0x2c>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy12>;
->> +		pcsphy-handle = <&pcsphy12>, <&pcsphy12>;
->> +		pcs-names = "sgmii", "qsgmii";
->>  	};
->> 
->>  	mdio@e9000 {
->> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-5.dtsi
->> b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-5.dtsi
->> index 23b3117a2fd2..39f7c6133017 100644
->> --- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-5.dtsi
->> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1-1g-5.dtsi
->> @@ -51,7 +51,15 @@ ethernet@ea000 {
->>  		reg = <0xea000 0x1000>;
->>  		fsl,fman-ports = <&fman1_rx_0x0d &fman1_tx_0x2d>;
->>  		ptp-timer = <&ptp_timer1>;
->> -		pcsphy-handle = <&pcsphy13>;
->> +		pcsphy-handle = <&pcsphy13>, <&qsgmiid_pcs1>;
->> +		pcs-names = "sgmii", "qsgmii";
->> +	};
->> +
->> +	mdio@e9000 {
->> +		qsgmiid_pcs1: ethernet-pcs@1 {
->> +			compatible = "fsl,lynx-pcs";
->> +			reg = <1>;
->> +		};
->>  	};
->> 
->>  	mdio@eb000 {
->> --
->> 2.35.1.1320.gc452695387.dirty
-> 
