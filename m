@@ -4,57 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0234BC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 12:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E08D3C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Jul 2022 01:46:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ls0N33RWyz3by0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 22:53:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lr5cP6Djrz3c1x
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Jul 2022 11:46:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mGeVBIlw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=I3uQFM06;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=shorne@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mGeVBIlw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=I3uQFM06;
 	dkim-atps=neutral
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ls0MP16Ggz30QW
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 22:53:05 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by sin.source.kernel.org (Postfix) with ESMTPS id 25244CE127A;
-	Mon, 25 Jul 2022 12:53:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F43BC341C6;
-	Mon, 25 Jul 2022 12:53:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1658753580;
-	bh=ROkD0ewTSUbH5Y4MAS09LLcGBMU0zKBF8A8Cpc0zxY0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=mGeVBIlwPwUuiYIKxmetHBzzuORpyQ+/K/nyNq4h4UfKwwKj7hMqOb1NUh5oaluGu
-	 86G61mxrV/YqLhdeRjk7VPAvsstG8Ek/Cf6dj3FYts1IhxNF5UyKr7jRgMbU/qTyhQ
-	 xMWzcS+PpkZKLsmgZDKdAsETrB2z19uTMU9A395cu7XCfrN8XpIO50A+RVAbixrBqH
-	 C/eHd+ycnJwgBhy+0lotqrq61oD82iMPOZ3FZevEhEkgWjcbrHtvE+x8PXTTdLilJT
-	 jxXB4dZwXhFsyqc98gwi1qsef+xP5l1ZXggWoHV5u+wFsKf2tXmpkm7TodQKOZrvD/
-	 GEGaHffQBdZ2Q==
-Received: by pali.im (Postfix)
-	id 00CDF793; Mon, 25 Jul 2022 14:52:56 +0200 (CEST)
-Date: Mon, 25 Jul 2022 14:52:56 +0200
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Regression: Linux v5.15+ does not boot on Freescale P2020
-Message-ID: <20220725125256.cg6su4d2ageylvp6@pali>
-References: <20220722090929.mwhmxxdd7yioxqpz@pali>
- <6b227478-73b8-2a97-1c78-89570d928739@csgroup.eu>
- <20220723150702.jecerkhxhy65dgww@pali>
- <875yjld2oe.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LqNQb30qwz304m
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jul 2022 07:50:13 +1000 (AEST)
+Received: by mail-pj1-x1032.google.com with SMTP id t3-20020a17090a3b4300b001f21eb7e8b0so8655858pjf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jul 2022 14:50:13 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=wjHJyqlB7xvMYJ4P8z0LNKc4m/G2i+CAuvB1fgzg9tQ=;
+        b=I3uQFM068MN8Yv6J4Bcyd/2CmkFpWR63aDyt6rjDyZTPxYWrrqT9MUFh5Sqf5qCpRY
+         V4XKdYZTOFZYUfgwJqlE8qoxXz7kv+J0UeD2+F+YHKZLB0HtSGRNb696b1UZh0uZEhLa
+         ZXKJ0AlOFfepAMLr63jG9CLwB89RMTPV+gsoL5VHorQaJbr2w9mDWLJQMAMyh+tCQh8G
+         NrXhQc2lM5D4U0Y0msXE4maaU0ZkEU4R7x6YBuFW81HrwXMk+RVNv8C4+Y0IlzpEDSoZ
+         4Kfl2QvdHNrK2gIPvWpwFjQLrILFrCxuqLVxuTu1idp/Cz+mY9RBy2YccSZRzKa7/M4I
+         unJg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=wjHJyqlB7xvMYJ4P8z0LNKc4m/G2i+CAuvB1fgzg9tQ=;
+        b=AgkF+KKjqLOQrBAb0VUH+xRZb0Moz6vVYp7keifm1uYQMmx33LeceZaxcEU5dEEZVz
+         Xgx2yYRPspVmUrh7YazQxKjspOx14KrO1DYSmhNLFjeFaD9wh7GGqwcbt2F2uqgiiDNc
+         SQhYWJ7T0fzTNNmXpI2WsKmavJfxNDs+hKMrAh9X4lh9gusHGHW5IgFHj00zB3rnBYTB
+         nOiW3bq4vJGem0RZEulWGBkmz+7SpS2ho3lCehCm7bnlU2zUlU4VpxKwhEua7FS8KWQj
+         DRNgvcvgMTpT5sRPW6Cg+vrglNnJM4B5ZAH37gLTy9IZtLZ8Ru2YRnYINqoZpfuF1Ewd
+         LQDg==
+X-Gm-Message-State: AJIora+Veta1yGkDcpms8HU3SrDewgMHLiu61ottz8o0583QVgwley27
+	u8DwP8jZ7lMr4NgN/YWeC8s=
+X-Google-Smtp-Source: AGRyM1t3W0xzljZhFoMx3+yN0InCr+fwdGqjbYXmwzT6n4jdJnrAce5ugPln6547Wbe92G3kdEqYbQ==
+X-Received: by 2002:a17:90a:cb07:b0:1f2:2020:3bf3 with SMTP id z7-20020a17090acb0700b001f220203bf3mr1714757pjt.81.1658526610106;
+        Fri, 22 Jul 2022 14:50:10 -0700 (PDT)
+Received: from localhost ([2409:10:24a0:4700:e8ad:216a:2a9d:6d0c])
+        by smtp.gmail.com with ESMTPSA id c8-20020aa79528000000b0050dc762816asm4386387pfp.68.2022.07.22.14.50.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 22 Jul 2022 14:50:09 -0700 (PDT)
+From: Stafford Horne <shorne@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v6 1/4] PCI: Remove pci_get_legacy_ide_irq and asm-generic/pci.h
+Date: Sat, 23 Jul 2022 06:49:41 +0900
+Message-Id: <20220722214944.831438-2-shorne@gmail.com>
+X-Mailer: git-send-email 2.36.1
+In-Reply-To: <20220722214944.831438-1-shorne@gmail.com>
+References: <20220722214944.831438-1-shorne@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <875yjld2oe.fsf@mpe.ellerman.id.au>
-User-Agent: NeoMutt/20180716
+X-Mailman-Approved-At: Sun, 24 Jul 2022 11:45:40 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,274 +77,343 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Rich Felker <dalias@libc.org>, Thomas Gleixner <tglx@linutronix.de>, Matthew Rosato <mjrosato@linux.ibm.com>, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-pci@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@alien8.de>, linux-ia64@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-acpi@vger.kernel.org, Helge Deller <deller@gmx.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Sergio Paracuellos <sergio.p
+ aracuellos@gmail.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-arm-kernel@lists.infradead.org, Catalin Marinas <catalin.marinas@arm.com>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Niklas Schnelle <schnelle@linux.ibm.com>, linux-um@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, Richard Henderson <richard.henderson@linaro.org>, linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, Tiezhu Yang <yangtiezhu@loongson.cn>, Chris Zankel <chris@zankel.net>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Pierre Morel <pmorel@linux.ibm.com>, Nick Child <nick.child@ibm.com>, Greg Kroah-Hartman <gregkh@linuxfo
+ undation.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, Paul Mackerras <paulus@samba.org>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Monday 25 July 2022 18:20:01 Michael Ellerman wrote:
-> Pali Rohár <pali@kernel.org> writes:
-> > On Saturday 23 July 2022 14:42:22 Christophe Leroy wrote:
-> >> Le 22/07/2022 à 11:09, Pali Rohár a écrit :
-> >> > Trying to boot mainline Linux kernel v5.15+, including current version
-> >> > from master branch, on Freescale P2020 does not work. Kernel does not
-> >> > print anything to serial console, seems that it does not work and after
-> >> > timeout watchdog reset the board.
-> >> 
-> >> Can you provide more information ? Which defconfig or .config, which 
-> >> version of gcc, etc ... ?
-> >
-> > I used default defconfig for mpc85xx with gcc 8, compilation for e500
-> > cores.
-> >
-> > If you need exact .config content I can send it during week.
-> >
-> >> > I run git bisect and it found following commit:
-> >> > 
-> >> > 9401f4e46cf6965e23738f70e149172344a01eef is the first bad commit
-> >> > commit 9401f4e46cf6965e23738f70e149172344a01eef
-> >> > Author: Christophe Leroy <christophe.leroy@csgroup.eu>
-> >> > Date:   Tue Mar 2 08:48:11 2021 +0000
-> >> > 
-> >> >      powerpc: Use lwarx/ldarx directly instead of PPC_LWARX/LDARX macros
-> >> > 
-> >> >      Force the eh flag at 0 on PPC32.
-> >> > 
-> >> >      Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> >> >      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> >> >      Link: https://lore.kernel.org/r/1fc81f07cabebb875b963e295408cc3dd38c8d85.1614674882.git.christophe.leroy@csgroup.eu
-> >> > 
-> >> > :040000 040000 fe6747e45736dfcba74914a9445e5f70f5120600 96358d08b65d3200928a973efb5b969b3d45f2b0 M      arch
-> >> > 
-> >> > 
-> >> > If I revert this commit then kernel boots correctly. It also boots fine
-> >> > if I revert this commit on top of master branch.
-> >> > 
-> >> > Freescale P2020 has two 32-bit e500 powerpc cores.
-> >> > 
-> >> > Any idea why above commit is causing crash of the kernel? And why it is
-> >> > needed? Could eh flag set to 0 cause deadlock?
-> >> 
-> >> Setting the eh flag to 0 is not supposed to be a change introduced by 
-> >> that commit. Indeed that commit is not supposed to change anything at 
-> >> all in the generated code.
-> >
-> > My understanding of that commit is that it changed eh flag parameter
-> > from 1 to 0 for 32-bit powerpc, including also p2020.
-> 
-> Can you compare the disassembly before and after and find a place where
-> an instruction has changed?
-> 
-> cheers
+The definition of the pci header function pci_get_legacy_ide_irq is only
+used in platforms that support PNP.  So many of the architecutres where
+it is defined do not use it.  This also means we can remove
+asm-generic/pci.h as all it provides is a definition of
+pci_get_legacy_ide_irq.
 
-Yes, of course. Here is diff between output from objdump -d vmlinux.
-original version --- is from git master branch and modified version +++
-is the original version with reverted above problematic commit.
-So the +++ version is the one which is working.
+Where referenced, replace the usage of pci_get_legacy_ide_irq with the
+libata.h macros ATA_PRIMARY_IRQ and ATA_SECONDARY_IRQ which provide the
+same functionality.  This allows removing pci_get_legacy_ide_irq from
+headers where it is no longer used.
 
---- vmlinux.master.dump	2022-07-25 14:43:45.922239496 +0200
-+++ vmlinux.revert.dump	2022-07-25 14:43:49.238259296 +0200
-@@ -1,5 +1,5 @@
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Acked-by: Pierre Morel <pmorel@linux.ibm.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Co-developed-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Stafford Horne <shorne@gmail.com>
+---
+ arch/alpha/include/asm/pci.h   |  6 ------
+ arch/arm/include/asm/pci.h     |  5 -----
+ arch/arm64/include/asm/pci.h   |  6 ------
+ arch/csky/include/asm/pci.h    |  6 ------
+ arch/ia64/include/asm/pci.h    |  6 ------
+ arch/m68k/include/asm/pci.h    |  2 --
+ arch/mips/include/asm/pci.h    |  6 ------
+ arch/parisc/include/asm/pci.h  |  5 -----
+ arch/powerpc/include/asm/pci.h |  1 -
+ arch/riscv/include/asm/pci.h   |  6 ------
+ arch/s390/include/asm/pci.h    |  1 -
+ arch/sh/include/asm/pci.h      |  6 ------
+ arch/sparc/include/asm/pci.h   |  9 ---------
+ arch/um/include/asm/pci.h      |  8 --------
+ arch/x86/include/asm/pci.h     |  3 ---
+ arch/xtensa/include/asm/pci.h  |  3 ---
+ drivers/pnp/resource.c         |  5 +++--
+ include/asm-generic/pci.h      | 17 -----------------
+ 18 files changed, 3 insertions(+), 98 deletions(-)
+ delete mode 100644 include/asm-generic/pci.h
+
+diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
+index cf6bc1e64d66..6312656279d7 100644
+--- a/arch/alpha/include/asm/pci.h
++++ b/arch/alpha/include/asm/pci.h
+@@ -56,12 +56,6 @@ struct pci_controller {
  
--vmlinux.master:     file format elf32-powerpc
-+vmlinux.revert:     file format elf32-powerpc
+ /* IOMMU controls.  */
  
+-/* TODO: integrate with include/asm-generic/pci.h ? */
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-
+ #define pci_domain_nr(bus) ((struct pci_controller *)(bus)->sysdata)->index
  
- Disassembly of section .head.text:
-@@ -11213,7 +11213,7 @@ c000b850:	3f a0 c1 0f 	lis     r29,-1611
- c000b854:	81 02 00 04 	lwz     r8,4(r2)
- c000b858:	3b fd 10 68 	addi    r31,r29,4200
- c000b85c:	39 40 00 01 	li      r10,1
--c000b860:	7d 20 f8 29 	lwarx   r9,0,r31,1
-+c000b860:	7d 20 f8 28 	lwarx   r9,0,r31
- c000b864:	2c 09 00 00 	cmpwi   r9,0
- c000b868:	40 82 00 10 	bne     c000b878 <die+0x68>
- c000b86c:	7d 40 f9 2d 	stwcx.  r10,0,r31
-@@ -11227,7 +11227,7 @@ c000b888:	81 3e 00 1c 	lwz     r9,28(r30
- c000b88c:	7f 88 48 00 	cmpw    cr7,r8,r9
- c000b890:	41 9e 00 38 	beq     cr7,c000b8c8 <die+0xb8>
- c000b894:	39 40 00 01 	li      r10,1
--c000b898:	7d 20 f8 29 	lwarx   r9,0,r31,1
-+c000b898:	7d 20 f8 28 	lwarx   r9,0,r31
- c000b89c:	2c 09 00 00 	cmpwi   r9,0
- c000b8a0:	40 82 00 10 	bne     c000b8b0 <die+0xa0>
- c000b8a4:	7d 40 f9 2d 	stwcx.  r10,0,r31
-@@ -186495,7 +186495,7 @@ c00b173c:	3b 40 00 00 	li      r26,0
- c00b1740:	3a e0 00 00 	li      r23,0
- c00b1744:	7e c0 00 a6 	mfmsr   r22
- c00b1748:	7c 00 01 46 	wrteei  0
--c00b174c:	7f a0 c0 29 	lwarx   r29,0,r24,1
-+c00b174c:	7f a0 c0 28 	lwarx   r29,0,r24
- c00b1750:	2c 1d 00 00 	cmpwi   r29,0
- c00b1754:	40 82 00 10 	bne     c00b1764 <rcu_gp_init+0x15c>
- c00b1758:	7f 20 c1 2d 	stwcx.  r25,0,r24
-@@ -187821,7 +187821,7 @@ c00b2b7c:	3f e0 c1 0b 	lis     r31,-1611
- c00b2b80:	38 c0 00 01 	li      r6,1
- c00b2b84:	3b ff c5 20 	addi    r31,r31,-15072
- c00b2b88:	38 ff 02 20 	addi    r7,r31,544
--c00b2b8c:	7d 00 38 29 	lwarx   r8,0,r7,1
-+c00b2b8c:	7d 00 38 28 	lwarx   r8,0,r7
- c00b2b90:	2c 08 00 00 	cmpwi   r8,0
- c00b2b94:	40 82 00 10 	bne     c00b2ba4 <rcu_cpu_starting+0xc0>
- c00b2b98:	7c c0 39 2d 	stwcx.  r6,0,r7
-@@ -187947,7 +187947,7 @@ c00b2d6c:	3f a0 c1 0b 	lis     r29,-1611
- c00b2d70:	39 00 00 01 	li      r8,1
- c00b2d74:	3b bd c5 20 	addi    r29,r29,-15072
- c00b2d78:	39 3d 02 20 	addi    r9,r29,544
--c00b2d7c:	7d 40 48 29 	lwarx   r10,0,r9,1
-+c00b2d7c:	7d 40 48 28 	lwarx   r10,0,r9
- c00b2d80:	2c 0a 00 00 	cmpwi   r10,0
- c00b2d84:	40 82 00 10 	bne     c00b2d94 <rcu_report_dead+0x90>
- c00b2d88:	7d 00 49 2d 	stwcx.  r8,0,r9
-@@ -2527838,7 +2527838,7 @@ c096b0e4:	4e 80 00 20 	blr
- c096b0e8 <_raw_spin_trylock>:
- c096b0e8:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b0ec:	39 40 00 01 	li      r10,1
--c096b0f0:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b0f0:	7d 20 18 28 	lwarx   r9,0,r3
- c096b0f4:	2c 09 00 00 	cmpwi   r9,0
- c096b0f8:	40 82 00 10 	bne     c096b108 <_raw_spin_trylock+0x20>
- c096b0fc:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2527853,7 +2527853,7 @@ c096b11c:	4e 80 00 20 	blr
+ static inline int pci_proc_domain(struct pci_bus *bus)
+diff --git a/arch/arm/include/asm/pci.h b/arch/arm/include/asm/pci.h
+index 68e6f25784a4..5916b88d4c94 100644
+--- a/arch/arm/include/asm/pci.h
++++ b/arch/arm/include/asm/pci.h
+@@ -22,11 +22,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ #define HAVE_PCI_MMAP
+ #define ARCH_GENERIC_PCI_MMAP_RESOURCE
  
- c096b120 <_raw_read_trylock>:
- c096b120:	94 21 ff f0 	stwu    r1,-16(r1)
--c096b124:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b124:	7d 20 18 28 	lwarx   r9,0,r3
- c096b128:	35 29 00 01 	addic.  r9,r9,1
- c096b12c:	40 81 00 10 	ble     c096b13c <_raw_read_trylock+0x1c>
- c096b130:	7d 20 19 2d 	stwcx.  r9,0,r3
-@@ -2527869,7 +2527869,7 @@ c096b150:	4e 80 00 20 	blr
- c096b154 <_raw_write_trylock>:
- c096b154:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b158:	39 40 ff ff 	li      r10,-1
--c096b15c:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b15c:	7d 20 18 28 	lwarx   r9,0,r3
- c096b160:	2c 09 00 00 	cmpwi   r9,0
- c096b164:	40 82 00 10 	bne     c096b174 <_raw_write_trylock+0x20>
- c096b168:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2527888,7 +2527888,7 @@ c096b190:	81 22 00 00 	lwz     r9,0(r2)
- c096b194:	39 29 02 00 	addi    r9,r9,512
- c096b198:	91 22 00 00 	stw     r9,0(r2)
- c096b19c:	39 40 00 01 	li      r10,1
--c096b1a0:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b1a0:	7d 20 18 28 	lwarx   r9,0,r3
- c096b1a4:	2c 09 00 00 	cmpwi   r9,0
- c096b1a8:	40 82 00 10 	bne     c096b1b8 <_raw_spin_lock_bh+0x2c>
- c096b1ac:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2527940,7 +2527940,7 @@ c096b240:	81 22 00 00 	lwz     r9,0(r2)
- c096b244:	39 29 02 00 	addi    r9,r9,512
- c096b248:	91 22 00 00 	stw     r9,0(r2)
- c096b24c:	39 40 00 01 	li      r10,1
--c096b250:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b250:	7d 20 18 28 	lwarx   r9,0,r3
- c096b254:	2c 09 00 00 	cmpwi   r9,0
- c096b258:	40 82 00 10 	bne     c096b268 <_raw_spin_trylock_bh+0x34>
- c096b25c:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2527997,7 +2527997,7 @@ c096b304:	94 21 ff f0 	stwu    r1,-16(r1
- c096b308:	81 22 00 00 	lwz     r9,0(r2)
- c096b30c:	39 29 02 00 	addi    r9,r9,512
- c096b310:	91 22 00 00 	stw     r9,0(r2)
--c096b314:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b314:	7d 20 18 28 	lwarx   r9,0,r3
- c096b318:	35 29 00 01 	addic.  r9,r9,1
- c096b31c:	40 81 00 10 	ble     c096b32c <_raw_read_lock_bh+0x28>
- c096b320:	7d 20 19 2d 	stwcx.  r9,0,r3
-@@ -2528018,7 +2528018,7 @@ c096b350:	81 22 00 00 	lwz     r9,0(r2)
- c096b354:	39 29 02 00 	addi    r9,r9,512
- c096b358:	91 22 00 00 	stw     r9,0(r2)
- c096b35c:	39 40 ff ff 	li      r10,-1
--c096b360:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b360:	7d 20 18 28 	lwarx   r9,0,r3
- c096b364:	2c 09 00 00 	cmpwi   r9,0
- c096b368:	40 82 00 10 	bne     c096b378 <_raw_write_lock_bh+0x2c>
- c096b36c:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528035,7 +2528035,7 @@ c096b394:	4b ff ff f4 	b       c096b388
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-
+ extern void pcibios_report_status(unsigned int status_mask, int warn);
  
- c096b398 <_raw_read_lock>:
- c096b398:	94 21 ff f0 	stwu    r1,-16(r1)
--c096b39c:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b39c:	7d 20 18 28 	lwarx   r9,0,r3
- c096b3a0:	35 29 00 01 	addic.  r9,r9,1
- c096b3a4:	40 81 00 10 	ble     c096b3b4 <_raw_read_lock+0x1c>
- c096b3a8:	7d 20 19 2d 	stwcx.  r9,0,r3
-@@ -2528053,7 +2528053,7 @@ c096b3d0:	4b ff ff f4 	b       c096b3c4
- c096b3d4 <_raw_read_lock_irq>:
- c096b3d4:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b3d8:	7c 00 01 46 	wrteei  0
--c096b3dc:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b3dc:	7d 20 18 28 	lwarx   r9,0,r3
- c096b3e0:	35 29 00 01 	addic.  r9,r9,1
- c096b3e4:	40 81 00 10 	ble     c096b3f4 <_raw_read_lock_irq+0x20>
- c096b3e8:	7d 20 19 2d 	stwcx.  r9,0,r3
-@@ -2528073,7 +2528073,7 @@ c096b414:	94 21 ff f0 	stwu    r1,-16(r1
- c096b418:	7c 6a 1b 78 	mr      r10,r3
- c096b41c:	7c 60 00 a6 	mfmsr   r3
- c096b420:	7c 00 01 46 	wrteei  0
--c096b424:	7d 20 50 29 	lwarx   r9,0,r10,1
-+c096b424:	7d 20 50 28 	lwarx   r9,0,r10
- c096b428:	35 29 00 01 	addic.  r9,r9,1
- c096b42c:	40 81 00 10 	ble     c096b43c <_raw_read_lock_irqsave+0x28>
- c096b430:	7d 20 51 2d 	stwcx.  r9,0,r10
-@@ -2528091,7 +2528091,7 @@ c096b458:	4b ff ff f4 	b       c096b44c
- c096b45c <_raw_spin_lock>:
- c096b45c:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b460:	39 40 00 01 	li      r10,1
--c096b464:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b464:	7d 20 18 28 	lwarx   r9,0,r3
- c096b468:	2c 09 00 00 	cmpwi   r9,0
- c096b46c:	40 82 00 10 	bne     c096b47c <_raw_spin_lock+0x20>
- c096b470:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528110,7 +2528110,7 @@ c096b49c <_raw_spin_lock_irq>:
- c096b49c:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b4a0:	7c 00 01 46 	wrteei  0
- c096b4a4:	39 40 00 01 	li      r10,1
--c096b4a8:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b4a8:	7d 20 18 28 	lwarx   r9,0,r3
- c096b4ac:	2c 09 00 00 	cmpwi   r9,0
- c096b4b0:	40 82 00 10 	bne     c096b4c0 <_raw_spin_lock_irq+0x24>
- c096b4b4:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528131,7 +2528131,7 @@ c096b4e4:	7c 6a 1b 78 	mr      r10,r3
- c096b4e8:	7c 60 00 a6 	mfmsr   r3
- c096b4ec:	7c 00 01 46 	wrteei  0
- c096b4f0:	39 00 00 01 	li      r8,1
--c096b4f4:	7d 20 50 29 	lwarx   r9,0,r10,1
-+c096b4f4:	7d 20 50 28 	lwarx   r9,0,r10
- c096b4f8:	2c 09 00 00 	cmpwi   r9,0
- c096b4fc:	40 82 00 10 	bne     c096b50c <_raw_spin_lock_irqsave+0x2c>
- c096b500:	7d 00 51 2d 	stwcx.  r8,0,r10
-@@ -2528149,7 +2528149,7 @@ c096b528:	4b ff ff f4 	b       c096b51c
- c096b52c <_raw_write_lock_nested>:
- c096b52c:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b530:	39 40 ff ff 	li      r10,-1
--c096b534:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b534:	7d 20 18 28 	lwarx   r9,0,r3
- c096b538:	2c 09 00 00 	cmpwi   r9,0
- c096b53c:	40 82 00 10 	bne     c096b54c <_raw_write_lock_nested+0x20>
- c096b540:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528167,7 +2528167,7 @@ c096b568:	4b ff ff f4 	b       c096b55c
- c096b56c <_raw_write_lock>:
- c096b56c:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b570:	39 40 ff ff 	li      r10,-1
--c096b574:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b574:	7d 20 18 28 	lwarx   r9,0,r3
- c096b578:	2c 09 00 00 	cmpwi   r9,0
- c096b57c:	40 82 00 10 	bne     c096b58c <_raw_write_lock+0x20>
- c096b580:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528186,7 +2528186,7 @@ c096b5ac <_raw_write_lock_irq>:
- c096b5ac:	94 21 ff f0 	stwu    r1,-16(r1)
- c096b5b0:	7c 00 01 46 	wrteei  0
- c096b5b4:	39 40 ff ff 	li      r10,-1
--c096b5b8:	7d 20 18 29 	lwarx   r9,0,r3,1
-+c096b5b8:	7d 20 18 28 	lwarx   r9,0,r3
- c096b5bc:	2c 09 00 00 	cmpwi   r9,0
- c096b5c0:	40 82 00 10 	bne     c096b5d0 <_raw_write_lock_irq+0x24>
- c096b5c4:	7d 40 19 2d 	stwcx.  r10,0,r3
-@@ -2528207,7 +2528207,7 @@ c096b5f4:	7c 6a 1b 78 	mr      r10,r3
- c096b5f8:	7c 60 00 a6 	mfmsr   r3
- c096b5fc:	7c 00 01 46 	wrteei  0
- c096b600:	39 00 ff ff 	li      r8,-1
--c096b604:	7d 20 50 29 	lwarx   r9,0,r10,1
-+c096b604:	7d 20 50 28 	lwarx   r9,0,r10
- c096b608:	2c 09 00 00 	cmpwi   r9,0
- c096b60c:	40 82 00 10 	bne     c096b61c <_raw_write_lock_irqsave+0x2c>
- c096b610:	7d 00 51 2d 	stwcx.  r8,0,r10
+ #endif /* __KERNEL__ */
+diff --git a/arch/arm64/include/asm/pci.h b/arch/arm64/include/asm/pci.h
+index b33ca260e3c9..0aebc3488c32 100644
+--- a/arch/arm64/include/asm/pci.h
++++ b/arch/arm64/include/asm/pci.h
+@@ -23,12 +23,6 @@
+ extern int isa_dma_bridge_buggy;
+ 
+ #ifdef CONFIG_PCI
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	/* no legacy IRQ on arm64 */
+-	return -ENODEV;
+-}
+-
+ static inline int pci_proc_domain(struct pci_bus *bus)
+ {
+ 	return 1;
+diff --git a/arch/csky/include/asm/pci.h b/arch/csky/include/asm/pci.h
+index ebc765b1f78b..0535f1aaae38 100644
+--- a/arch/csky/include/asm/pci.h
++++ b/arch/csky/include/asm/pci.h
+@@ -18,12 +18,6 @@
+ extern int isa_dma_bridge_buggy;
+ 
+ #ifdef CONFIG_PCI
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	/* no legacy IRQ on csky */
+-	return -ENODEV;
+-}
+-
+ static inline int pci_proc_domain(struct pci_bus *bus)
+ {
+ 	/* always show the domain in /proc */
+diff --git a/arch/ia64/include/asm/pci.h b/arch/ia64/include/asm/pci.h
+index 8c163d1d0189..fa8f545c24c9 100644
+--- a/arch/ia64/include/asm/pci.h
++++ b/arch/ia64/include/asm/pci.h
+@@ -63,10 +63,4 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ 	return (pci_domain_nr(bus) != 0);
+ }
+ 
+-#define HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? isa_irq_to_vector(15) : isa_irq_to_vector(14);
+-}
+-
+ #endif /* _ASM_IA64_PCI_H */
+diff --git a/arch/m68k/include/asm/pci.h b/arch/m68k/include/asm/pci.h
+index 5a4bc223743b..ccdfa0dc8413 100644
+--- a/arch/m68k/include/asm/pci.h
++++ b/arch/m68k/include/asm/pci.h
+@@ -2,8 +2,6 @@
+ #ifndef _ASM_M68K_PCI_H
+ #define _ASM_M68K_PCI_H
+ 
+-#include <asm-generic/pci.h>
+-
+ #define	pcibios_assign_all_busses()	1
+ 
+ #define	PCIBIOS_MIN_IO		0x00000100
+diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
+index 9ffc8192adae..3fd6e22c108b 100644
+--- a/arch/mips/include/asm/pci.h
++++ b/arch/mips/include/asm/pci.h
+@@ -139,10 +139,4 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ /* Do platform specific device initialization at pci_enable_device() time */
+ extern int pcibios_plat_dev_init(struct pci_dev *dev);
+ 
+-/* Chances are this interrupt is wired PC-style ...  */
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-
+ #endif /* _ASM_PCI_H */
+diff --git a/arch/parisc/include/asm/pci.h b/arch/parisc/include/asm/pci.h
+index f14465b84de4..127ed5021ae3 100644
+--- a/arch/parisc/include/asm/pci.h
++++ b/arch/parisc/include/asm/pci.h
+@@ -162,11 +162,6 @@ extern void pcibios_init_bridge(struct pci_dev *);
+ #define PCIBIOS_MIN_IO          0x10
+ #define PCIBIOS_MIN_MEM         0x1000 /* NBPG - but pci/setup-res.c dies */
+ 
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-
+ #define HAVE_PCI_MMAP
+ #define ARCH_GENERIC_PCI_MMAP_RESOURCE
+ 
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 915d6ee4b40a..f9da506751bb 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -39,7 +39,6 @@
+ #define pcibios_assign_all_busses() \
+ 	(pci_has_flag(PCI_REASSIGN_ALL_BUS))
+ 
+-#define HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
+ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+ {
+ 	if (ppc_md.pci_get_legacy_ide_irq)
+diff --git a/arch/riscv/include/asm/pci.h b/arch/riscv/include/asm/pci.h
+index 7fd52a30e605..a7b8f0d0df7f 100644
+--- a/arch/riscv/include/asm/pci.h
++++ b/arch/riscv/include/asm/pci.h
+@@ -23,12 +23,6 @@
+ extern int isa_dma_bridge_buggy;
+ 
+ #ifdef CONFIG_PCI
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	/* no legacy IRQ on risc-v */
+-	return -ENODEV;
+-}
+-
+ static inline int pci_proc_domain(struct pci_bus *bus)
+ {
+ 	/* always show the domain in /proc */
+diff --git a/arch/s390/include/asm/pci.h b/arch/s390/include/asm/pci.h
+index fdb9745ee998..5889ddcbc374 100644
+--- a/arch/s390/include/asm/pci.h
++++ b/arch/s390/include/asm/pci.h
+@@ -6,7 +6,6 @@
+ #include <linux/mutex.h>
+ #include <linux/iommu.h>
+ #include <linux/pci_hotplug.h>
+-#include <asm-generic/pci.h>
+ #include <asm/pci_clp.h>
+ #include <asm/pci_debug.h>
+ #include <asm/sclp.h>
+diff --git a/arch/sh/include/asm/pci.h b/arch/sh/include/asm/pci.h
+index ad22e88c6657..54c30126ea17 100644
+--- a/arch/sh/include/asm/pci.h
++++ b/arch/sh/include/asm/pci.h
+@@ -88,10 +88,4 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ 	return hose->need_domain_info;
+ }
+ 
+-/* Chances are this interrupt is wired PC-style ...  */
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-
+ #endif /* __ASM_SH_PCI_H */
+diff --git a/arch/sparc/include/asm/pci.h b/arch/sparc/include/asm/pci.h
+index 4deddf430e5d..0c58f65bd172 100644
+--- a/arch/sparc/include/asm/pci.h
++++ b/arch/sparc/include/asm/pci.h
+@@ -40,13 +40,4 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ #define get_pci_unmapped_area get_fb_unmapped_area
+ #endif /* CONFIG_SPARC64 */
+ 
+-#if defined(CONFIG_SPARC64) || defined(CONFIG_LEON_PCI)
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return PCI_IRQ_NONE;
+-}
+-#else
+-#include <asm-generic/pci.h>
+-#endif
+-
+ #endif /* ___ASM_SPARC_PCI_H */
+diff --git a/arch/um/include/asm/pci.h b/arch/um/include/asm/pci.h
+index da13fd5519ef..26b96c02ef61 100644
+--- a/arch/um/include/asm/pci.h
++++ b/arch/um/include/asm/pci.h
+@@ -11,14 +11,6 @@
+ 
+ extern int isa_dma_bridge_buggy;
+ 
+-#ifdef CONFIG_PCI
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	/* no legacy IRQs */
+-	return -ENODEV;
+-}
+-#endif
+-
+ #ifdef CONFIG_PCI_DOMAINS
+ static inline int pci_proc_domain(struct pci_bus *bus)
+ {
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index f3fd5928bcbb..736793d65bcb 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -105,9 +105,6 @@ static inline void early_quirks(void) { }
+ 
+ extern void pci_iommu_alloc(void);
+ 
+-/* generic pci stuff */
+-#include <asm-generic/pci.h>
+-
+ #ifdef CONFIG_NUMA
+ /* Returns the node based on pci bus */
+ static inline int __pcibus_to_node(const struct pci_bus *bus)
+diff --git a/arch/xtensa/include/asm/pci.h b/arch/xtensa/include/asm/pci.h
+index 8e2b48a268db..b56de9635b6c 100644
+--- a/arch/xtensa/include/asm/pci.h
++++ b/arch/xtensa/include/asm/pci.h
+@@ -43,7 +43,4 @@
+ #define ARCH_GENERIC_PCI_MMAP_RESOURCE	1
+ #define arch_can_pci_mmap_io()		1
+ 
+-/* Generic PCI */
+-#include <asm-generic/pci.h>
+-
+ #endif	/* _XTENSA_PCI_H */
+diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
+index 2fa0f7d55259..8f7695624c8c 100644
+--- a/drivers/pnp/resource.c
++++ b/drivers/pnp/resource.c
+@@ -17,6 +17,7 @@
+ #include <asm/dma.h>
+ #include <asm/irq.h>
+ #include <linux/pci.h>
++#include <linux/libata.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ 
+@@ -322,8 +323,8 @@ static int pci_dev_uses_irq(struct pnp_dev *pnp, struct pci_dev *pci,
+ 		 * treat the compatibility IRQs as busy.
+ 		 */
+ 		if ((progif & 0x5) != 0x5)
+-			if (pci_get_legacy_ide_irq(pci, 0) == irq ||
+-			    pci_get_legacy_ide_irq(pci, 1) == irq) {
++			if (ATA_PRIMARY_IRQ(pci) == irq ||
++			    ATA_SECONDARY_IRQ(pci) == irq) {
+ 				pnp_dbg(&pnp->dev, "  legacy IDE device %s "
+ 					"using irq %d\n", pci_name(pci), irq);
+ 				return 1;
+diff --git a/include/asm-generic/pci.h b/include/asm-generic/pci.h
+deleted file mode 100644
+index 6bb3cd3d695a..000000000000
+--- a/include/asm-generic/pci.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/*
+- * linux/include/asm-generic/pci.h
+- *
+- *  Copyright (C) 2003 Russell King
+- */
+-#ifndef _ASM_GENERIC_PCI_H
+-#define _ASM_GENERIC_PCI_H
+-
+-#ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
+-static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+-{
+-	return channel ? 15 : 14;
+-}
+-#endif /* HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ */
+-
+-#endif /* _ASM_GENERIC_PCI_H */
+-- 
+2.36.1
+
