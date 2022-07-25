@@ -4,68 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F76CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 21:52:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 141DACCA48D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 21:55:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LsDKd2vXJz3cfW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 07:52:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=3zsZRztK;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=chenzhuo.1@bytedance.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=3zsZRztK;
-	dkim-atps=neutral
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ls4Yt68P2z2xn1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 02:02:25 +1000 (AEST)
-Received: by mail-pj1-x1035.google.com with SMTP id t3-20020a17090a3b4300b001f21eb7e8b0so14190129pjf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 09:02:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance-com.20210112.gappssmtp.com; s=20210112;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JKqeLialV+6vbEP9iLh1rw+b+hmjByPHU1zMv6k/ebc=;
-        b=3zsZRztKOEhwhcwxTyuAJc8jmK7Yd5DM5WDlQ8uNoCD0B0JdzO0Zr6i0fvzBbIeHGL
-         K1J9803VZkOtPHjBJjT4QvcPcrBqPmlyBibQFNfoLnJL2nH/8cmJZUl6jIbQx7NGbPNN
-         08+Ll+QxTbHmmBtibJ4KKjfXAbYDVI3PjoT0djdSDPSnUr00wKWUXUem3GEA9s+0sqso
-         vpZFIY0eOy38/uhvApzUMyDSDhHH3jPQ1VTXer2Cyum9Ff5GijNMSLUXAyVfmk/nlRqL
-         c0WLgAt1NLkoXArDAkcdqPEZWBzIV/RYls6whvzrjgsVYeCHBq/VtW9q21vfsycSgx3Y
-         CQZQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JKqeLialV+6vbEP9iLh1rw+b+hmjByPHU1zMv6k/ebc=;
-        b=C5dpiUH7fyirDDyzuYpPW38o6oeNfN6eP+Zuhy8c8HFD8kYdXMJvCcw8PnPfxOnKee
-         FLPW07NNy2541XKQVW++Qx18MQx7tLOno/LJTgyuhP9oHC8JafaXuQYI1Bz8nPgryTz4
-         YGrSpOBP2XliO3c9+z1hsXsHLkyYN8y0nH6xDsEpfR/Jit438mReSfPKwHLNHuDmFyXY
-         P+z/Xr8Lb4ZGeZkDVYbfWJmFMAJIc1farliV5DVtAXydKD5uZQ9dnvsmOpldgjKjVVxi
-         t5dfOUpd0yoNROZpGlcDEYpXJSr8XZ20RLwQi+BUgWcQZ9jqHtqTjNrnKHzucMPs9ouT
-         Mk+g==
-X-Gm-Message-State: AJIora+9PNcFlDZaXaBvDr20Fca79R4pzsUwQuK7xbHzUhOkPYmTNg+q
-	2Pj6GT+nXD204Mw+jaz6eZ5QAw==
-X-Google-Smtp-Source: AGRyM1tqvaWk/DDOXJIx1or0Y+22nYb/JgOeC2l2098PgfKLfLZkKZF0XasYDv3WsyNFz03m/6wFVA==
-X-Received: by 2002:a17:90b:3ec5:b0:1f0:3986:4502 with SMTP id rm5-20020a17090b3ec500b001f039864502mr15647381pjb.6.1658764940683;
-        Mon, 25 Jul 2022 09:02:20 -0700 (PDT)
-Received: from C02F63J9MD6R.bytedance.net ([61.120.150.78])
-        by smtp.gmail.com with ESMTPSA id o6-20020a1709026b0600b0015e8d4eb2easm9273441plk.308.2022.07.25.09.02.15
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 25 Jul 2022 09:02:19 -0700 (PDT)
-From: Zhuo Chen <chenzhuo.1@bytedance.com>
-To: ruscur@russell.cc,
-	oohall@gmail.com,
-	bhelgaas@google.com
-Subject: [PATCH] PCI/ERR: Use pcie_aer_is_native() to judge whether OS owns AER
-Date: Tue, 26 Jul 2022 00:01:31 +0800
-Message-Id: <20220725160131.83687-1-chenzhuo.1@bytedance.com>
-X-Mailer: git-send-email 2.30.1 (Apple Git-130)
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LsDPf42Hdz3c6y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 07:55:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LsDPC1XHqz2xjm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 07:55:26 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 26PLsH2x002031;
+	Mon, 25 Jul 2022 16:54:17 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 26PLsGqG002027;
+	Mon, 25 Jul 2022 16:54:16 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Mon, 25 Jul 2022 16:54:16 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>
+Subject: Re: Regression: Linux v5.15+ does not boot on Freescale P2020
+Message-ID: <20220725215416.GV25951@gate.crashing.org>
+References: <20220722090929.mwhmxxdd7yioxqpz@pali> <6b227478-73b8-2a97-1c78-89570d928739@csgroup.eu> <20220723150702.jecerkhxhy65dgww@pali> <875yjld2oe.fsf@mpe.ellerman.id.au> <20220725125256.cg6su4d2ageylvp6@pali> <e2487668-b6d9-9ddb-1bb4-9f4d37fae1a7@csgroup.eu> <20220725201009.gwuchzswcqaxntrk@pali>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 26 Jul 2022 07:51:48 +1000
+In-Reply-To: <20220725201009.gwuchzswcqaxntrk@pali>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,75 +43,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lukas@wunner.de, linux-pci@vger.kernel.org, chenzhuo.1@bytedance.com, linux-kernel@vger.kernel.org, stuart.w.hayes@gmail.com, jan.kiszka@siemens.com, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After commit 7d7cbeaba5b7 ("PCI/ERR: Clear status of the reporting
-device"), the AER status of the device that reported the error
-rather than the first downstream port is cleared. So the problem
-in commit aa344bc8b727 ("PCI/ERR: Clear AER status only when we
-control AER") is no longer existent, and we change to use
-pcie_aer_is_native() here.
+On Mon, Jul 25, 2022 at 10:10:09PM +0200, Pali Rohár wrote:
+> On Monday 25 July 2022 16:20:49 Christophe Leroy wrote:
+> Now I did again clean test with same Debian 10 cross compiler.
+> 
+> $ git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git && cd linux
+> $ git checkout v5.15
+> $ make mpc85xx_smp_defconfig ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnuspe-
+> $ make vmlinux ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnuspe-
+> $ cp -a vmlinux vmlinux.v5.15
+> $ git revert 9401f4e46cf6965e23738f70e149172344a01eef
+> $ make vmlinux ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnuspe-
+> $ cp -a vmlinux vmlinux.revert
+> $ powerpc-linux-gnuspe-objdump -d vmlinux.revert > vmlinux.revert.dump
+> $ powerpc-linux-gnuspe-objdump -d vmlinux.v5.15 > vmlinux.v5.15.dump
+> $ diff -Naurp vmlinux.v5.15.dump vmlinux.revert.dump
+> 
+> And there are:
+> 
+> -c000c304:      7d 20 f8 29     lwarx   r9,0,r31,1
+> +c000c304:      7d 20 f8 28     lwarx   r9,0,r31
+> 
+> I guess it must be reproducible this issue as I'm using regular
+> toolchain from distribution.
 
-pci_aer_clear_nonfatal_status() already has pcie_aer_is_native(),
-so we move pci_aer_clear_nonfatal_status() out of
-pcie_aer_is_native().
+The kernel had
 
-Replace statements that judge whether OS owns AER in
-get_port_device_capability() with pcie_aer_is_native().
+#define PPC_RAW_LWARX(t, a, b, eh)       (0x7c000028 | ___PPC_RT(t) | ___PPC_RA(a) | ___PPC_RB(b) | __PPC_EH(eh))
 
-Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
----
- drivers/pci/pcie/err.c          | 12 ++----------
- drivers/pci/pcie/portdrv_core.c |  3 +--
- 2 files changed, 3 insertions(+), 12 deletions(-)
+and
 
-diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-index 0c5a143025af..28339c741555 100644
---- a/drivers/pci/pcie/err.c
-+++ b/drivers/pci/pcie/err.c
-@@ -184,7 +184,6 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
- 	int type = pci_pcie_type(dev);
- 	struct pci_dev *bridge;
- 	pci_ers_result_t status = PCI_ERS_RESULT_CAN_RECOVER;
--	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
- 
- 	/*
- 	 * If the error was detected by a Root Port, Downstream Port, RCEC,
-@@ -237,16 +236,9 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
- 	pci_dbg(bridge, "broadcast resume message\n");
- 	pci_walk_bridge(bridge, report_resume, &status);
- 
--	/*
--	 * If we have native control of AER, clear error status in the device
--	 * that detected the error.  If the platform retained control of AER,
--	 * it is responsible for clearing this status.  In that case, the
--	 * signaling device may not even be visible to the OS.
--	 */
--	if (host->native_aer || pcie_ports_native) {
-+	if (pcie_aer_is_native(dev))
- 		pcie_clear_device_status(dev);
--		pci_aer_clear_nonfatal_status(dev);
--	}
-+	pci_aer_clear_nonfatal_status(dev);
- 	pci_info(bridge, "device recovery successful\n");
- 	return status;
- 
-diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index 604feeb84ee4..98c18f4a01b2 100644
---- a/drivers/pci/pcie/portdrv_core.c
-+++ b/drivers/pci/pcie/portdrv_core.c
-@@ -221,8 +221,7 @@ static int get_port_device_capability(struct pci_dev *dev)
- 	}
- 
- #ifdef CONFIG_PCIEAER
--	if (dev->aer_cap && pci_aer_available() &&
--	    (pcie_ports_native || host->native_aer)) {
-+	if (pcie_aer_is_native(dev) && pci_aer_available()) {
- 		services |= PCIE_PORT_SERVICE_AER;
- 
- 		/*
--- 
-2.30.1 (Apple Git-130)
+#define PPC_LWARX(t, a, b, eh) stringify_in_c(.long PPC_RAW_LWARX(t, a, b, eh))
 
+and
+
+#ifdef CONFIG_PPC64
+#define __PPC_EH(eh)    (((eh) & 0x1) << 0)
+#else
+#define __PPC_EH(eh)    0
+#endif
+
+but Christophe's 9401f4e46cf6 changed
+
+-"1:    " PPC_LWARX(%0,0,%2,1) "\n\
++"1:    lwarx           %0,0,%2,1\n\
+
+no longer checking CONFIG_PPC64.  That appears to be the bug.
+
+The EH field in larx insns is new since ISA 2.05, and some ISA 1.x cpu
+implementations actually raise an illegal insn exception on EH=1.  It
+appears P2020 is one of those.
+
+
+Segher
