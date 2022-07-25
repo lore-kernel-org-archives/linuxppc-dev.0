@@ -4,47 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91F5DC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 12:25:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBD07C433EF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 12:25:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LrzlG0Jhxz3c8V
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 22:25:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Z1DvviqP;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lrzlq3dPnz3bw7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 22:25:43 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lrzkb53l2z2xD4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 22:24:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Z1DvviqP;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LrzlQ53CDz306K
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 22:25:22 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Lrzkb3ML7z4x1N;
-	Mon, 25 Jul 2022 22:24:39 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1658751879;
-	bh=y+UzVL8kGSqCUz9xn5lz5WfJemKYihBdD0xz8EVTC0o=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=Z1DvviqPDZM3kXdh6qx5DKZLAJwkCLKRe6kMJcBt6Dgy3QOS3nKZEToJrFofWf6Be
-	 Dsz2gLQz+XA2Shv1fQQoZCrpOK7vFZugs4ixemxh0eaKul3nKFHz5/8KsepR/Ne78d
-	 /Ff1pNZTj3LH6VVMa0kGIGGnpxPP9ybGDfc3r/uSXqlflQIhav7gL6q70jUOI3/SsN
-	 Q+q1lNadpqFZ0f6UixOZh2vc53xVdJl8gOPVmHv4K/TwRhqVAzztUBNqLX3uSxejZD
-	 0theMhbpkPIjw+f0bvlYVQctYSQa7uFW6B0NKBeMgM4Cc9DlH/6CWhgm7ZCDDO8Du5
-	 rfznUEDWqDjMA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, Pali =?utf-8?Q?Roh=C3=A1r?=
- <pali@kernel.org>
-Subject: Re: [PATCH] powerpc/fsl-pci: Fix Class Code of PCIe Root Port
-In-Reply-To: <20220722194226.GA1927257@bhelgaas>
-References: <20220722194226.GA1927257@bhelgaas>
-Date: Mon, 25 Jul 2022 22:24:39 +1000
-Message-ID: <87r129bcs8.fsf@mpe.ellerman.id.au>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LrzlP5kY6z4x1V;
+	Mon, 25 Jul 2022 22:25:20 +1000 (AEST)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Dan =?utf-8?Q?Hor=C3=A1k?= <dan@danny.cz>
+Subject: Re: [PATCH] amdgpu: re-enable DCN for ppc64le
+In-Reply-To: <20220722145453.eb37bd3a99c4b738ed2e26b9@danny.cz>
+References: <20220722082122.571974-1-dan@danny.cz>
+ <87o7xhcoqh.fsf@mpe.ellerman.id.au>
+ <20220722145453.eb37bd3a99c4b738ed2e26b9@danny.cz>
+Date: Mon, 25 Jul 2022 22:25:19 +1000
+Message-ID: <87pmhtbcr4.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
@@ -59,53 +44,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, Alex Deucher <alexdeucher@gmail.com>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
-> On Wed, Jul 06, 2022 at 12:10:43PM +0200, Pali Roh=C3=A1r wrote:
->> By default old pre-3.0 Freescale PCIe controllers reports invalid PCI Cl=
-ass
->> Code 0x0b20 for PCIe Root Port. It can be seen by lspci -b output on P20=
-20
->> board which has this pre-3.0 controller:
+Dan Hor=C3=A1k <dan@danny.cz> writes:
+> On Fri, 22 Jul 2022 22:32:06 +1000
+> Michael Ellerman <michael@ellerman.id.au> wrote:
+>> Dan Hor=C3=A1k <dan@danny.cz> writes:
+>> > Commit d11219ad53dc disabled the DCN driver for all platforms that
+>> > define PPC64 due long build issues during "make allmodconfig" using
+>> > cross-compilation. Cross-compilation defaults to the ppc64_defconfig
+>> > and thus big-endian toolchain configuration. The ppc64le platform uses=
+ a
+>> > different ABI and doesn't suffer from the build issues.
 >>=20
->>   $ lspci -bvnn
->>   00:00.0 Power PC [0b20]: Freescale Semiconductor Inc P2020E [1957:0070=
-] (rev 21)
->>           !!! Invalid class 0b20 for header type 01
->>           Capabilities: [4c] Express Root Port (Slot-), MSI 00
+>> Unfortunately it's a bit messier than that.
 >>=20
->> Fix this issue by programming correct PCI Class Code 0x0604 for PCIe Root
->> Port to the Freescale specific PCIe register 0x474.
+>> The build error occurs when the compiler is built to use a 64-bit long
+>> double type.
 >>=20
->> With this change lspci -b output is:
+>> The ppc64le ABI document says that long double should be 128-bits, but
+>> there are ppc64le compilers out there that are configured to use 64-bit
+>> long double, notably the kernel.org crosstool compilers.
 >>=20
->>   $ lspci -bvnn
->>   00:00.0 PCI bridge [0604]: Freescale Semiconductor Inc P2020E [1957:00=
-70] (rev 21) (prog-if 00 [Normal decode])
->>           Capabilities: [4c] Express Root Port (Slot-), MSI 00
+>> So just testing for CPU_LITTLE_ENDIAN means we'll still get build errors
+>> on those compilers.
 >>=20
->> Without any "Invalid class" error. So class code was properly reflected
->> into standard (read-only) PCI register 0x08.
+>> But I think we can detect the long double size and key off that. Can you
+>> test the patch below works for you?
 >>=20
->> Same fix is already implemented in U-Boot pcie_fsl.c driver in commit:
->> http://source.denx.de/u-boot/u-boot/-/commit/d18d06ac35229345a0af80977a4=
-08cfbe1d1015b
->>=20
->> Fix activated by U-Boot stay active also after booting Linux kernel.
->> But boards which use older U-Boot version without that fix are affected =
-and
->> still require this fix.
->>=20
->> So implement this class code fix also in kernel fsl_pci.c driver.
->>=20
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Pali Roh=C3=A1r <pali@kernel.org>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 7aa12e88c580..e9f8cd50af99 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -281,6 +281,9 @@ config PPC
+>>  	# Please keep this list sorted alphabetically.
+>>  	#
+>>=20=20
+>> +config PCC_LONG_DOUBLE_128
+>> +	def_bool $(success,test "$(shell,echo __LONG_DOUBLE_128__ | $(CC) -E -=
+P -)" =3D 1)
 >
-> I assume the powerpc folks will take care of this.
+> ^^^ there is a typo s/PCC/PPC/ :-)
 
-Will do.
+Oops, renamed it after testing :}
+
+> with that fixed, it then defines AMD_DC_DCN on Fedora 36 with
+> gcc-12.1.1-1.fc36.ppc64le and we should be OK.
+
+Thanks. I'll send a proper patch.
 
 cheers
