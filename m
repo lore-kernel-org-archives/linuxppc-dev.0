@@ -4,65 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59E5CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 21:41:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F76CC43334
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Jul 2022 21:52:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LsD4V510Xz3c70
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 07:40:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LsDKd2vXJz3cfW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 07:52:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=NfnvoOHS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=3zsZRztK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52f; helo=mail-ed1-x52f.google.com; envelope-from=andy.shevchenko@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=chenzhuo.1@bytedance.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=NfnvoOHS;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=3zsZRztK;
 	dkim-atps=neutral
-Received: from mail-ed1-x52f.google.com (mail-ed1-x52f.google.com [IPv6:2a00:1450:4864:20::52f])
+Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LsD3p1vMSz3blD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 07:40:20 +1000 (AEST)
-Received: by mail-ed1-x52f.google.com with SMTP id m8so15589891edd.9
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 14:40:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ls4Yt68P2z2xn1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 02:02:25 +1000 (AEST)
+Received: by mail-pj1-x1035.google.com with SMTP id t3-20020a17090a3b4300b001f21eb7e8b0so14190129pjf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jul 2022 09:02:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Svnq6PTWJvjcH6wB0IJJSE2qfM0IwlvpgRaFDJ1yXKE=;
-        b=NfnvoOHSP3zZm7efaO0Dl+FOW25HLaRUx8Kdh3kllWums9Bbs8NUJjkiUnkjUrxIIA
-         X9zaEHrUz+7QYLUI3bOPGVcY2IsaQC3L2m+8yJZdgSsR3atszlfcx/eOrCe6eml95156
-         0tPNw/SseoshXxPQHrdnKEeulaYkWUoz6I+Kt2NjvM5RQpTpLYa2K+/Zj8zX+7SjW55n
-         eoa7Tp4iUtFKqaWV+Lnuu2wsARKRh0RTEeuaICnVMjBPCDkTOAhxO6FiAT6/F99cjc4a
-         kPeSnXv2BIa1GcAG0GQvKUZ1E6XH0T0dXM23iSF1ivD8YmQbqtVqV6W5XkX5VJj9yRiY
-         8nYQ==
+        d=bytedance-com.20210112.gappssmtp.com; s=20210112;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=JKqeLialV+6vbEP9iLh1rw+b+hmjByPHU1zMv6k/ebc=;
+        b=3zsZRztKOEhwhcwxTyuAJc8jmK7Yd5DM5WDlQ8uNoCD0B0JdzO0Zr6i0fvzBbIeHGL
+         K1J9803VZkOtPHjBJjT4QvcPcrBqPmlyBibQFNfoLnJL2nH/8cmJZUl6jIbQx7NGbPNN
+         08+Ll+QxTbHmmBtibJ4KKjfXAbYDVI3PjoT0djdSDPSnUr00wKWUXUem3GEA9s+0sqso
+         vpZFIY0eOy38/uhvApzUMyDSDhHH3jPQ1VTXer2Cyum9Ff5GijNMSLUXAyVfmk/nlRqL
+         c0WLgAt1NLkoXArDAkcdqPEZWBzIV/RYls6whvzrjgsVYeCHBq/VtW9q21vfsycSgx3Y
+         CQZQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Svnq6PTWJvjcH6wB0IJJSE2qfM0IwlvpgRaFDJ1yXKE=;
-        b=0Rm5Rgstl+Vfe2PuDnXAJUZ7ZKziqln8NE61G+9JFa5vNJQLk15Z2BW4OpQCgqtBD9
-         ZQDKBzr6/dyoA9lpOybMwMmgFEUyoRFZkaLQf4jiubcF5n7EM9XOR0Vx+L9aVSjBErJU
-         T2ZxTC1AFRzs0OXMkR3SvBTrGOgBq5WhDCzllUOPb/IfXTPnOIS1glFxZQT2/+tPYxLz
-         qEicRncEFXOrbrLAHZUSPoGB8D1TvJ/PYwJ2qI0ziTNUzbQ9KywiDMKDYyFLvu89//d+
-         JA02K08miGH2E4iWqzmclj3DK14kik6zPgpD8o5h6ma3Zbp2Gmrv0biW5FJxyw8AMeLR
-         shfQ==
-X-Gm-Message-State: AJIora9ldS1vN1KgOgb3PY8aZ5TlSvkj3ajIzP751HLNR18g7hwm0/Tk
-	87Z9cw+OOxBcFQ4bUJXbYx5boPlyVrD8ZBpb78E=
-X-Google-Smtp-Source: AGRyM1tfLZqgsFiedCHnAYgm5mfZLxKUiXFOh2IH6B1N1Ehfxj/paKwfZXArGLbbYqi2q6DMTJZheAYu5qUNsUJbA3k=
-X-Received: by 2002:a05:6402:1768:b0:43b:c4b0:ffd3 with SMTP id
- da8-20020a056402176800b0043bc4b0ffd3mr14933861edb.163.1658785216157; Mon, 25
- Jul 2022 14:40:16 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=JKqeLialV+6vbEP9iLh1rw+b+hmjByPHU1zMv6k/ebc=;
+        b=C5dpiUH7fyirDDyzuYpPW38o6oeNfN6eP+Zuhy8c8HFD8kYdXMJvCcw8PnPfxOnKee
+         FLPW07NNy2541XKQVW++Qx18MQx7tLOno/LJTgyuhP9oHC8JafaXuQYI1Bz8nPgryTz4
+         YGrSpOBP2XliO3c9+z1hsXsHLkyYN8y0nH6xDsEpfR/Jit438mReSfPKwHLNHuDmFyXY
+         P+z/Xr8Lb4ZGeZkDVYbfWJmFMAJIc1farliV5DVtAXydKD5uZQ9dnvsmOpldgjKjVVxi
+         t5dfOUpd0yoNROZpGlcDEYpXJSr8XZ20RLwQi+BUgWcQZ9jqHtqTjNrnKHzucMPs9ouT
+         Mk+g==
+X-Gm-Message-State: AJIora+9PNcFlDZaXaBvDr20Fca79R4pzsUwQuK7xbHzUhOkPYmTNg+q
+	2Pj6GT+nXD204Mw+jaz6eZ5QAw==
+X-Google-Smtp-Source: AGRyM1tqvaWk/DDOXJIx1or0Y+22nYb/JgOeC2l2098PgfKLfLZkKZF0XasYDv3WsyNFz03m/6wFVA==
+X-Received: by 2002:a17:90b:3ec5:b0:1f0:3986:4502 with SMTP id rm5-20020a17090b3ec500b001f039864502mr15647381pjb.6.1658764940683;
+        Mon, 25 Jul 2022 09:02:20 -0700 (PDT)
+Received: from C02F63J9MD6R.bytedance.net ([61.120.150.78])
+        by smtp.gmail.com with ESMTPSA id o6-20020a1709026b0600b0015e8d4eb2easm9273441plk.308.2022.07.25.09.02.15
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 25 Jul 2022 09:02:19 -0700 (PDT)
+From: Zhuo Chen <chenzhuo.1@bytedance.com>
+To: ruscur@russell.cc,
+	oohall@gmail.com,
+	bhelgaas@google.com
+Subject: [PATCH] PCI/ERR: Use pcie_aer_is_native() to judge whether OS owns AER
+Date: Tue, 26 Jul 2022 00:01:31 +0800
+Message-Id: <20220725160131.83687-1-chenzhuo.1@bytedance.com>
+X-Mailer: git-send-email 2.30.1 (Apple Git-130)
 MIME-Version: 1.0
-References: <20220723214537.2054208-1-yury.norov@gmail.com>
- <20220723214537.2054208-2-yury.norov@gmail.com> <CAHp75VfOmN=cTEs7gbwxZ7W3hXjBo67N4AmHHiDfcVfFzHkMLA@mail.gmail.com>
- <Yt7CJj8r3eo05pKd@yury-laptop>
-In-Reply-To: <Yt7CJj8r3eo05pKd@yury-laptop>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Mon, 25 Jul 2022 23:39:39 +0200
-Message-ID: <CAHp75VcGPQkY9ApsX2fi6sK5=3U=0vKbrHZZ3x___wUtgrFRSA@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc: drop dependency on <asm/machdep.h> in archrandom.h
-To: Yury Norov <yury.norov@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 26 Jul 2022 07:51:48 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,34 +77,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT" <linuxppc-dev@lists.ozlabs.org>
+Cc: lukas@wunner.de, linux-pci@vger.kernel.org, chenzhuo.1@bytedance.com, linux-kernel@vger.kernel.org, stuart.w.hayes@gmail.com, jan.kiszka@siemens.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jul 25, 2022 at 6:19 PM Yury Norov <yury.norov@gmail.com> wrote:
-> On Mon, Jul 25, 2022 at 09:28:12AM +0200, Andy Shevchenko wrote:
-> > On Sun, Jul 24, 2022 at 12:19 AM Yury Norov <yury.norov@gmail.com> wrote:
+After commit 7d7cbeaba5b7 ("PCI/ERR: Clear status of the reporting
+device"), the AER status of the device that reported the error
+rather than the first downstream port is cleared. So the problem
+in commit aa344bc8b727 ("PCI/ERR: Clear AER status only when we
+control AER") is no longer existent, and we change to use
+pcie_aer_is_native() here.
 
-...
+pci_aer_clear_nonfatal_status() already has pcie_aer_is_native(),
+so we move pci_aer_clear_nonfatal_status() out of
+pcie_aer_is_native().
 
-> > >  EXPORT_SYMBOL_GPL(pm_power_off);
-> >
-> > ^^^ (Note this and read below)
-> >
-> > ...
-> >
-> > > +EXPORT_SYMBOL(arch_get_random_seed_long);
-> >
-> > It can't be like this. Brief browsing of the callees shows that.
->
-> Is my understanding correct that you're suggesting to make it GPL?
->
-> ppc_md is exported with EXPORT_SYMBOL(), and the function is in header,
-> so it's available for non-GPL code now. I don't want to change it.
+Replace statements that judge whether OS owns AER in
+get_port_device_capability() with pcie_aer_is_native().
 
-The symbols your function calls are GPL. As far as I understand (not a
-lawyer!) it logically one may not call GPL and pretend to be non-GPL.
+Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
+---
+ drivers/pci/pcie/err.c          | 12 ++----------
+ drivers/pci/pcie/portdrv_core.c |  3 +--
+ 2 files changed, 3 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+index 0c5a143025af..28339c741555 100644
+--- a/drivers/pci/pcie/err.c
++++ b/drivers/pci/pcie/err.c
+@@ -184,7 +184,6 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+ 	int type = pci_pcie_type(dev);
+ 	struct pci_dev *bridge;
+ 	pci_ers_result_t status = PCI_ERS_RESULT_CAN_RECOVER;
+-	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
+ 
+ 	/*
+ 	 * If the error was detected by a Root Port, Downstream Port, RCEC,
+@@ -237,16 +236,9 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+ 	pci_dbg(bridge, "broadcast resume message\n");
+ 	pci_walk_bridge(bridge, report_resume, &status);
+ 
+-	/*
+-	 * If we have native control of AER, clear error status in the device
+-	 * that detected the error.  If the platform retained control of AER,
+-	 * it is responsible for clearing this status.  In that case, the
+-	 * signaling device may not even be visible to the OS.
+-	 */
+-	if (host->native_aer || pcie_ports_native) {
++	if (pcie_aer_is_native(dev))
+ 		pcie_clear_device_status(dev);
+-		pci_aer_clear_nonfatal_status(dev);
+-	}
++	pci_aer_clear_nonfatal_status(dev);
+ 	pci_info(bridge, "device recovery successful\n");
+ 	return status;
+ 
+diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
+index 604feeb84ee4..98c18f4a01b2 100644
+--- a/drivers/pci/pcie/portdrv_core.c
++++ b/drivers/pci/pcie/portdrv_core.c
+@@ -221,8 +221,7 @@ static int get_port_device_capability(struct pci_dev *dev)
+ 	}
+ 
+ #ifdef CONFIG_PCIEAER
+-	if (dev->aer_cap && pci_aer_available() &&
+-	    (pcie_ports_native || host->native_aer)) {
++	if (pcie_aer_is_native(dev) && pci_aer_available()) {
+ 		services |= PCIE_PORT_SERVICE_AER;
+ 
+ 		/*
 -- 
-With Best Regards,
-Andy Shevchenko
+2.30.1 (Apple Git-130)
+
