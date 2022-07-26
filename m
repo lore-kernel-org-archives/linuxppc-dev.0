@@ -4,61 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4B9FC433EF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 09:03:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A94FC433EF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 10:54:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LsWDL1HlVz3chS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 19:03:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=arndb.de (client-ip=212.227.126.131; helo=mout.kundenserver.de; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LsYgd3NXYz3chB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 20:54:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JRrZkDpT;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LsWCt4WL7z3bd5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 19:03:21 +1000 (AEST)
-Received: from mail-ed1-f45.google.com ([209.85.208.45]) by
- mrelayeu.kundenserver.de (mreue011 [213.165.67.97]) with ESMTPSA (Nemesis) id
- 1N8oOk-1nS83x3Thm-015pO0 for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul
- 2022 11:03:15 +0200
-Received: by mail-ed1-f45.google.com with SMTP id p5so5933646edi.12
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 02:03:15 -0700 (PDT)
-X-Gm-Message-State: AJIora9VytC8rZkU8iSQqNx+SyWKSkZe28oTHYwnWGxqJkHcy2+kOjFW
-	31wByS7vXtY+uWTgpGjOdpMAHqx9uqUeKi4Acvs=
-X-Google-Smtp-Source: AGRyM1uM4FGsU1Sfwdcu3eSFPSMGUqP71dbbyYOxhCDhMTwGw3Str5b2UpaCbD8rBQQ/NhAwvtPpctYnLNTq/5Ffs+s=
-X-Received: by 2002:a05:6402:28c4:b0:43a:cdde:e047 with SMTP id
- ef4-20020a05640228c400b0043acddee047mr17514935edb.368.1658826195405; Tue, 26
- Jul 2022 02:03:15 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LsYfx46RLz2xCS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 20:53:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JRrZkDpT;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LsYfq3p2Jz4xD9;
+	Tue, 26 Jul 2022 20:53:23 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1658832805;
+	bh=e0EUedkqhJ1b57DPBaL0yyDtxdDY/BCjyXAIINYG4mw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=JRrZkDpTo9+yy3aaV9r4JdVGbVeLe2ATkOknoJ5+p/Xe1iss0Vn1HHVEpgqWhGt72
+	 mfq3eXbFPINYl3odQGW1kAYXpq4d3Yc2uQRXccgGxOo5C0XNkv+vhZ8faIDlMjX4TT
+	 gdKewLIUoVToLO3HsCtZrKM4gPedk8eb8Sqez4vHeXCV05idChuzR/hBBO3nLPKUw/
+	 o+Wc66sMaC9dW7lQhFWp4x0iKwGhNrSLTTCkThYasHOPMFz1RYQoQ/QBfAy3J4FsCH
+	 oZUiYFaQjZ4IbV//8iHU+MeqnDXbeGk/hMgwxSUA2P85v07bjUi8KUSC8/Jh5aCSxd
+	 LCjhxqr5dSzsQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Laurent Dufour <ldufour@linux.ibm.com>, Randy Dunlap
+ <rdunlap@infradead.org>, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ wim@linux-watchdog.org, linux@roeck-us.net, nathanl@linux.ibm.com
+Subject: Re: [PATCH v5 4/4] pseries/mobility: set NMI watchdog factor during
+ an LPM
+In-Reply-To: <4e366d73-fb9f-bd83-abd0-c624a737a0cd@linux.ibm.com>
+References: <20220713154729.80789-1-ldufour@linux.ibm.com>
+ <20220713154729.80789-5-ldufour@linux.ibm.com>
+ <e6232bb4-a8e5-8f33-e80e-06b1356565b7@infradead.org>
+ <4e366d73-fb9f-bd83-abd0-c624a737a0cd@linux.ibm.com>
+Date: Tue, 26 Jul 2022 20:53:21 +1000
+Message-ID: <878rogb0wu.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20220722090929.mwhmxxdd7yioxqpz@pali> <6b227478-73b8-2a97-1c78-89570d928739@csgroup.eu>
- <20220723150702.jecerkhxhy65dgww@pali> <875yjld2oe.fsf@mpe.ellerman.id.au>
- <20220725125256.cg6su4d2ageylvp6@pali> <e2487668-b6d9-9ddb-1bb4-9f4d37fae1a7@csgroup.eu>
- <20220725201009.gwuchzswcqaxntrk@pali> <20220725215416.GV25951@gate.crashing.org>
- <20220726083406.tcjvny6d2di6q7ar@pali>
-In-Reply-To: <20220726083406.tcjvny6d2di6q7ar@pali>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 26 Jul 2022 11:02:59 +0200
-X-Gmail-Original-Message-ID: <CAK8P3a2iM+RoySWEC2e0==rwBSVrZoRa8c4ADyFNB24JZM=hkw@mail.gmail.com>
-Message-ID: <CAK8P3a2iM+RoySWEC2e0==rwBSVrZoRa8c4ADyFNB24JZM=hkw@mail.gmail.com>
-Subject: Re: Regression: Linux v5.15+ does not boot on Freescale P2020
-To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:COkPKKlQiWR+7ix9LcXgRdvmD06x/4G8BHEqZOG25awsKh5UC8T
- o069RjuCTfg4eQVq+8+n0gDPDq6iXS0lWuwnu/psz/ZzwPrzLxK6jfz6+VxQmWjxyz95Sna
- EUtPcNoHF4roISIAK8h9lv3rjSQmmwRsASVczOJWH2R+KE0eCETish2WZ215DUhbe1f/bVB
- alM8RNMSyBGVdAEk8Tc9w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:LwtL/GPUXhk=:SKs/qNcD802/Ud5M1yVmju
- vMTMb1819jx2rreUVW4xT9Lr6EsJ78gVhe9FvwNV4upwf7MtLvv1pYmsD9RzSBE/97zXmwc9o
- 1DmAas+1oaCzw3F3maBaanyEcSPf5HPeKQ9HQijXPpml6w9aaWkcYIXWySFFpC2YURsGRrg7C
- mNuLP1QkLPRc+m0q3VhM5TN8X4/WDrXP9ndlTg+SWRN1Ni8rcEyv4mIbkEPXS5k+oLWEIaqka
- CVL0HTLllxe+cxbbSh7atxTDxlhebBVfKz8M3/kxpM20rdoRkk5AhApnp0pzVRqCR8BjagvzT
- u+NZw92GeGzXdwfmw6AsYzrUfET2iEoHhLPNUS/RsMYY3qcSyYaW6a+L/3243Sa/QO6PkTH80
- zf1HNxM+xixMQTstPWux/RJbsLPuKZ8y9Uj0NhTLOJofkEIyRq7YzLQ/ADPOBtcMdUm2sRy03
- PII4AMYOgVl/hZo1IbiJmxE2PL67Q1qgF8EVM+IdJGXCWzQKauackSIMMmYfe8xnj4H/ZeOFP
- JA8Y0UNBRFvYNwLy1jpay1WGLAcNYvbLFdWJ486GG40GCq07BxBAChS4M8cRL1o8P90JRKw38
- QoShK8YtLdEQ5TdAivnTMsQw3crQLHvgAXZyA3QNce8ziS0aBV0n5JSFLjnU0+yUhW68+46QR
- 52u0nY+N1J4z1/jLSJWfyT4rpE0ZlwIKhJtytDjTQFfKa3UMW7ZkQNPYPjlltbUcJqR5IJNiJ
- aXnB6lpgGAbVDwQSrPj/csolHFhIYNlTyev6Ng==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,63 +64,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: hch@infradead.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, haren@linux.vnet.ibm.com, linux-watchdog@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jul 26, 2022 at 10:34 AM Pali Roh=C3=A1r <pali@kernel.org> wrote:
-> On Monday 25 July 2022 16:54:16 Segher Boessenkool wrote:
-> > On Mon, Jul 25, 2022 at 10:10:09PM +0200, Pali Roh=C3=A1r wrote:
-> > > On Monday 25 July 2022 16:20:49 Christophe Leroy wrote:
-> > > Now I did again clean test with same Debian 10 cross compiler.
-> > >
-> > > $ git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/=
-linux.git && cd linux
-> > > $ git checkout v5.15
-> > > $ make mpc85xx_smp_defconfig ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-l=
-inux-gnuspe-
-> > > $ make vmlinux ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-gnuspe-
-> > > $ cp -a vmlinux vmlinux.v5.15
-> > > $ git revert 9401f4e46cf6965e23738f70e149172344a01eef
-> > > $ make vmlinux ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-gnuspe-
-> > > $ cp -a vmlinux vmlinux.revert
-> > > $ powerpc-linux-gnuspe-objdump -d vmlinux.revert > vmlinux.revert.dum=
-p
-> > > $ powerpc-linux-gnuspe-objdump -d vmlinux.v5.15 > vmlinux.v5.15.dump
-> > > $ diff -Naurp vmlinux.v5.15.dump vmlinux.revert.dump
-> > >
-> > > And there are:
-> > >
-> > > -c000c304:      7d 20 f8 29     lwarx   r9,0,r31,1
-> > > +c000c304:      7d 20 f8 28     lwarx   r9,0,r31
-> > >
-> > > I guess it must be reproducible this issue as I'm using regular
-> > > toolchain from distribution.
-> >
+Laurent Dufour <ldufour@linux.ibm.com> writes:
+> Le 13/07/2022 =C3=A0 22:17, Randy Dunlap a =C3=A9crit=C2=A0:
+>> Hi Laurent,
+>>=20
+>> On 7/13/22 08:47, Laurent Dufour wrote:
+>>> diff --git a/Documentation/admin-guide/sysctl/kernel.rst b/Documentatio=
+n/admin-guide/sysctl/kernel.rst
+>>> index ddccd1077462..d73faa619c15 100644
+>>> --- a/Documentation/admin-guide/sysctl/kernel.rst
+>>> +++ b/Documentation/admin-guide/sysctl/kernel.rst
+>>> @@ -592,6 +592,18 @@ to the guest kernel command line (see
+>>>  Documentation/admin-guide/kernel-parameters.rst).
+>>>=20=20
+>>>=20=20
+>>> +nmi_wd_lpm_factor (PPC only)
+>>> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+>>> +
+>>> +Factor apply to the NMI watchdog timeout (only when ``nmi_watchdog`` is
+>>=20
+>>    Factor to apply to
 >
-> > The EH field in larx insns is new since ISA 2.05, and some ISA 1.x cpu
-> > implementations actually raise an illegal insn exception on EH=3D1.  It
-> > appears P2020 is one of those.
-> >
+> Thanks, Randy.
 >
-> P2020 has e500 cores. e500 cores uses ISA 2.03. So this may be reason.
-> But in official Freescale/NXP documentation for e500 is documented that
-> lwarx supports also eh=3D1. Maybe it is not really supported.
-> https://www.nxp.com/files-static/32bit/doc/ref_manual/EREF_RM.pdf (page 5=
-62)
-> At least there is NOTE:
-> Some older processors may treat EH=3D1 as an illegal instruction.
+> Michael, could you fix that when applying the series?
 
-In commit d6ccb1f55ddf ("powerpc/85xx: Make sure lwarx hint isn't set on pp=
-c32")
-this was clarified to affect (all?) e500v1/v2, this one apparently
-fixed it before,
-but Christophe's commit effectively reverted that change.
+Yes, I did.
 
-I think only the simple_spinlock.h file actually uses EH=3D1 and this is no=
-t
-included in non-SMP kernels, so presumably the only affected machines were
-the rare dual-core e500v2 ones (p2020, MPC8572, bsc9132), which would
-explain why nobody noticed for the past 9 months.
-
-          Arnd
+cheers
