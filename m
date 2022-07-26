@@ -4,90 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D464CC43334
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 13:39:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13597C00140
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 13:45:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LsdLP2trFz3brF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 23:39:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LsdZk1nsGz3c8T
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Jul 2022 23:50:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RDOWtdst;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fnPNX4CC;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RIJKrKbO;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RIJKrKbO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=javierm@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RDOWtdst;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=fnPNX4CC;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RIJKrKbO;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=RIJKrKbO;
 	dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LsdKd4XTvz3bd5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 23:38:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LsdZ05z35z2xkb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 23:49:28 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1658842722;
+	s=mimecast20190719; t=1658843365;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=+Adj4jrU1SP5osnWw1jwoXpRrBSvPiISvLrv57eggvs=;
-	b=RDOWtdstZoZ5QI2vQ4r6lAtNgf1PnWf1hM0LhDm+hbEJwxCr/qS5CPsml6FpNNQ2/Eq7LQ
-	DOk6WQaJF7BZcCu5l3hFBZinkBBPKTu2F2gHgswyx6qSdAflab2Wv8a4EOzYsaBslcu2SG
-	3soNNh7tRd8gehutGJe2+fJDaygnRnE=
+	bh=Yx+6GZt1MNJVcGz7GTKwesVhWHXoxflnw9Q7t0FYoHA=;
+	b=RIJKrKbOcPKEmzHrB0+llonv03A9LXiZvbdBJNS60d0m190iuYHH5zjIq8xjRD9/fylott
+	2uMgrQviMT5wqVLN+YaOQoqa2jCJTVubvhd9Y1qKe2n/oSu2aboAN0NLxqtThhZodeq7WX
+	ax/DrGJzPOD85c/wrjaf2REKsnSfkA8=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1658842723;
+	s=mimecast20190719; t=1658843365;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=+Adj4jrU1SP5osnWw1jwoXpRrBSvPiISvLrv57eggvs=;
-	b=fnPNX4CCj6+7S4r6/ULLOV79jQE4hmEflgZXvrthOvtecVNMs7jdVIJuSiL0m/SeEd7TPQ
-	BujIcruOzIvnalDj4ZDSgAhBYeQ1EaV9LcqycHGs7DRUhwLOoINZI+B2duJkqr/bZPKDod
-	Xx/m8God8+wDEnTukvfxZOJ5pl2of40=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=Yx+6GZt1MNJVcGz7GTKwesVhWHXoxflnw9Q7t0FYoHA=;
+	b=RIJKrKbOcPKEmzHrB0+llonv03A9LXiZvbdBJNS60d0m190iuYHH5zjIq8xjRD9/fylott
+	2uMgrQviMT5wqVLN+YaOQoqa2jCJTVubvhd9Y1qKe2n/oSu2aboAN0NLxqtThhZodeq7WX
+	ax/DrGJzPOD85c/wrjaf2REKsnSfkA8=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-614-9bWMqnSONDKB7iY2egFo2Q-1; Tue, 26 Jul 2022 09:38:41 -0400
-X-MC-Unique: 9bWMqnSONDKB7iY2egFo2Q-1
-Received: by mail-wr1-f71.google.com with SMTP id c7-20020adfc6c7000000b0021db3d6961bso2138188wrh.23
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 06:38:40 -0700 (PDT)
+ us-mta-674-rWDspRI1PdyvWBPQuEQS1g-1; Tue, 26 Jul 2022 09:49:24 -0400
+X-MC-Unique: rWDspRI1PdyvWBPQuEQS1g-1
+Received: by mail-wr1-f72.google.com with SMTP id t13-20020adfe10d000000b0021bae3def1eso2119973wrz.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jul 2022 06:49:24 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
          :content-language:to:cc:references:from:in-reply-to
          :content-transfer-encoding;
-        bh=+Adj4jrU1SP5osnWw1jwoXpRrBSvPiISvLrv57eggvs=;
-        b=LSuXGwEIT5exSGHJCm0qH5aO8mpkkC1FFG4ymD4ylNE+FWf1dx9M/Sr3HV5W10Q9/I
-         rSByJHT7xZ2sSGOedCyoah0QLiNd47XXdMTnNYW7QsGCt4XRXLYNA0HDyo5C1i6Dusao
-         ez2i4IuwYFbHc93R0HHhMWLzUhBLGmEJ8ymTfyYXwyRHuYCFgaCRF53qGHMQUMYim84m
-         8D8YDB8POyqsxiQY/36Jr+FT5VWlYAcW4v7SQhpXIU5gnpau6rHdZyZRF5vBLwSDgPyo
-         pGp5vTmFwCo+BY2dkwq2HvtnEN0kTdSaarnYUg3+YkcZnFfSVjqzSQ71Bp0L3QvT3Ezn
-         JGzA==
-X-Gm-Message-State: AJIora+XQYxSea4oMnJ11rwBbyOv7X1m6F/YPGxDh9JB4SrVD5Vh3g2l
-	C7cSr2bG8CZpDcZ70y/NqibOd4v+s4h951y8uGkuBdawfnnCKMZ7ERFs2+/K6D7QBsq3hkiG0N+
-	2r+JcHqJPSr12NtCHetVi66V88Q==
-X-Received: by 2002:a05:6000:1541:b0:21d:b298:96be with SMTP id 1-20020a056000154100b0021db29896bemr10656797wry.206.1658842719914;
-        Tue, 26 Jul 2022 06:38:39 -0700 (PDT)
-X-Google-Smtp-Source: AGRyM1vn5gO3Bopg+51fzCZTQS+LUztnjj2PQ5ldn7oubUEVRSuljc6/I3CCwqkTlMx6jNch/xeE8g==
-X-Received: by 2002:a05:6000:1541:b0:21d:b298:96be with SMTP id 1-20020a056000154100b0021db29896bemr10656771wry.206.1658842719436;
-        Tue, 26 Jul 2022 06:38:39 -0700 (PDT)
+        bh=Yx+6GZt1MNJVcGz7GTKwesVhWHXoxflnw9Q7t0FYoHA=;
+        b=Ls6vHQtBRKci3soYWQkluIoaK+25Fh+To9Qmb6qovxBL3eXOL62VTvzombpGAmWear
+         iIv6fjl3eyeunnelntWSYPsqVPalg0Ki6rRhBE9k5cTx23fx8rTGgBUrMvLEgx1birRx
+         7JDKQ5lO23YMRmbBnY88AsOX/YHu56mFjf0FfOJ5qTaRX+drLonYkNfWw2eevMwjh96v
+         syKI2kj3LEH8NP6ypYE1HTSAHaSuArM7YwXuUx9LEqZCiz0D82bJYxBIZehWTUVY/GsC
+         SoR5tJpsTFzlth1vPgs5bIO/Wkiweho2MgjhB/wIGbrDQ6mkXfc8LKWTOM2pDuJuog4N
+         xD5Q==
+X-Gm-Message-State: AJIora+NOMJrZFAVd8rxYvkX6mtY/CFPlxT+c7S6WWe7zs0ut8IcyKo+
+	VOZooJNqxJUsCBxZHKQbHiZRQXyh9FI61SAjVh7qU7PPi7HP2IR74dJ0NKCalRalDqeN+Ona1Mq
+	BishxlU4w+lU968AatJBqqeYtMQ==
+X-Received: by 2002:adf:e19b:0:b0:21e:4bb9:9a14 with SMTP id az27-20020adfe19b000000b0021e4bb99a14mr11108330wrb.354.1658843363204;
+        Tue, 26 Jul 2022 06:49:23 -0700 (PDT)
+X-Google-Smtp-Source: AGRyM1t08UKa6vLvAxqYUWQY3Aj3EC9x4jPF2Jb9qsrCmz2vWnABUqOa3+dDEQyXjEVoWWkYL7yAlA==
+X-Received: by 2002:adf:e19b:0:b0:21e:4bb9:9a14 with SMTP id az27-20020adfe19b000000b0021e4bb99a14mr11108315wrb.354.1658843362891;
+        Tue, 26 Jul 2022 06:49:22 -0700 (PDT)
 Received: from [192.168.1.130] (205.pool92-176-231.dynamic.orange.es. [92.176.231.205])
-        by smtp.gmail.com with ESMTPSA id 5-20020a05600c248500b003a3279b9037sm21045175wms.16.2022.07.26.06.38.38
+        by smtp.gmail.com with ESMTPSA id u16-20020a05600c00d000b003a31c4f6f74sm25502543wmm.32.2022.07.26.06.49.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 26 Jul 2022 06:38:39 -0700 (PDT)
-Message-ID: <7b1a2807-59c7-d524-af8e-1ec634c740a7@redhat.com>
-Date: Tue, 26 Jul 2022 15:38:37 +0200
+        Tue, 26 Jul 2022 06:49:22 -0700 (PDT)
+Message-ID: <abe3fa95-942b-6d2f-7167-83d0cea59444@redhat.com>
+Date: Tue, 26 Jul 2022 15:49:21 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
  Thunderbird/91.11.0
-Subject: Re: [PATCH v2 09/10] drm/ofdrm: Add per-model device function
+Subject: Re: [PATCH v2 10/10] drm/ofdrm: Support color management
 To: Thomas Zimmermann <tzimmermann@suse.de>, airlied@linux.ie,
  daniel@ffwll.ch, deller@gmx.de, maxime@cerno.tech, sam@ravnborg.org,
  msuchanek@suse.de, mpe@ellerman.id.au, benh@kernel.crashing.org,
  paulus@samba.org, geert@linux-m68k.org, mark.cave-ayland@ilande.co.uk
 References: <20220720142732.32041-1-tzimmermann@suse.de>
- <20220720142732.32041-10-tzimmermann@suse.de>
+ <20220720142732.32041-11-tzimmermann@suse.de>
 From: Javier Martinez Canillas <javierm@redhat.com>
-In-Reply-To: <20220720142732.32041-10-tzimmermann@suse.de>
+In-Reply-To: <20220720142732.32041-11-tzimmermann@suse.de>
 Authentication-Results: relay.mimecast.com;
 	auth=pass smtp.auth=CUSA124A263 smtp.mailfrom=javierm@redhat.com
 X-Mimecast-Spam-Score: 0
@@ -111,9 +111,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 7/20/22 16:27, Thomas Zimmermann wrote:
-> Add a per-model device-function structure in preparation of adding
-> color-management support. Detection of the individual models has been
-> taken from fbdev's offb.
+> Support the CRTC's color-management property and implement each model's
+> palette support.
+> 
+> The OF hardware has different methods of setting the palette. The
+> respective code has been taken from fbdev's offb and refactored into
+> per-model device functions. The device functions integrate this
+> functionality into the overall modesetting.
+> 
+> As palette handling is a CRTC property that depends on the primary
+> plane's color format, the plane's atomic_check helper now updates the
+> format field in ofdrm's custom CRTC state. The CRTC's atomic_flush
+> helper updates the palette for the format as needed.
 > 
 > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 > ---
@@ -122,14 +131,56 @@ Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
 
 [...]
 
-> +static bool is_avivo(__be32 vendor, __be32 device)
+> +static void __iomem *ofdrm_mach64_cmap_ioremap(struct ofdrm_device *odev,
+> +					       struct device_node *of_node,
+> +					       u64 fb_base)
 > +{
-> +	/* This will match most R5xx */
-> +	return (vendor == 0x1002) &&
-> +	       ((device >= 0x7100 && device < 0x7800) || (device >= 0x9400));
-> +}
+> +	struct drm_device *dev = &odev->dev;
+> +	u64 address;
+> +	void __iomem *cmap_base;
+> +
+> +	address = fb_base & 0xff000000ul;
+> +	address += 0x7ff000;
+> +
 
-Maybe add some constant macros to not have these magic numbers ?
+It would be good to know where these addresses are coming from. Maybe some
+constant macros or a comment ? Same for the other places where addresses
+and offsets are used.
+
+[...]
+
+>  static struct ofdrm_crtc_state *to_ofdrm_crtc_state(struct drm_crtc_state *base)
+> @@ -376,10 +735,12 @@ static int ofdrm_primary_plane_helper_atomic_check(struct drm_plane *plane,
+>  						   struct drm_atomic_state *new_state)
+>  {
+>  	struct drm_plane_state *new_plane_state = drm_atomic_get_new_plane_state(new_state, plane);
+> +	struct drm_framebuffer *new_fb = new_plane_state->fb;
+>  	struct drm_crtc_state *new_crtc_state;
+> +	struct ofdrm_crtc_state *new_ofdrm_crtc_state;
+>  	int ret;
+>  
+> -	if (!new_plane_state->fb)
+> +	if (!new_fb)
+>  		return 0;
+>  
+>  	new_crtc_state = drm_atomic_get_new_crtc_state(new_state, new_plane_state->crtc);
+> @@ -391,6 +752,14 @@ static int ofdrm_primary_plane_helper_atomic_check(struct drm_plane *plane,
+>  	if (ret)
+>  		return ret;
+>  
+> +	if (!new_plane_state->visible)
+> +		return 0;
+> +
+> +	new_crtc_state = drm_atomic_get_new_crtc_state(new_state, new_plane_state->crtc);
+> +
+> +	new_ofdrm_crtc_state = to_ofdrm_crtc_state(new_crtc_state);
+> +	new_ofdrm_crtc_state->format = new_fb->format;
+> +
+
+Ah, I understand now why you didn't factor out the .atomic_check callbacks
+for the two drivers in a fwfb helper. Maybe you can also add a comment to
+mention that this updates the format so the CRTC palette can be applied in
+the .atomic_flush callback ?
 
 -- 
 Best regards,
