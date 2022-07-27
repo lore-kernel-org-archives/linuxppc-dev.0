@@ -4,85 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FDC3C04A68
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jul 2022 14:21:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B97E7C04A68
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Jul 2022 14:33:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LtGDw0Y29z3cj0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 00:21:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LtGTv6yLSz3c6C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 00:33:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o6fhW9/v;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=juVUzOv+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=o6fhW9/v;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtGD54Bwgz3blX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 00:21:08 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26RECiek008601;
-	Wed, 27 Jul 2022 14:21:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=NNEtgKqQd2Ulg0EEpFDmrESfRAQBHwM464PULugCseQ=;
- b=o6fhW9/vzs/8LNmVT0agAI1yC2FuFhKbEPZxrTSACAUolBQFn4a26A72/go9wRdGchw0
- c8mxQvCGMM1vNgbWmzh7A4fivgMNzPXQie5qZXpO4b0Ncv1ZnSgV5cxHZ2kRehZIXQVt
- ZmMF6YDsWuPaa49w1kDQLqwAldKiGMBDdP3QdUkK4Xtr++ccwAYSMXH9HgCu+QAIbt8h
- c+XItakkXXU2xBNuZTlfGV7E5euww4MYOfaDcc+SkiEEBHsZgScVRp5rqgwdMElhO1xU
- j2KJV5+2I2OuSz003ZldZU3f4Gl2zYxaI4hQjik34C6mDyRKf6P3On1ob7TzkLYP6HWq EQ== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3hk6gf1pw8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 27 Jul 2022 14:21:01 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26RE7xZd019128;
-	Wed, 27 Jul 2022 14:20:58 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma03fra.de.ibm.com with ESMTP id 3hg95ybwca-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 27 Jul 2022 14:20:58 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26REIsPL23658804
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 27 Jul 2022 14:18:54 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E5BF34C040;
-	Wed, 27 Jul 2022 14:20:55 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AA53E4C044;
-	Wed, 27 Jul 2022 14:20:55 +0000 (GMT)
-Received: from [9.145.87.150] (unknown [9.145.87.150])
-	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 27 Jul 2022 14:20:55 +0000 (GMT)
-Message-ID: <4dd9afa4-ddc1-c6c9-1205-bca28a858022@linux.ibm.com>
-Date: Wed, 27 Jul 2022 16:20:55 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtGTD3YyNz3c1S
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 00:32:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=juVUzOv+;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LtGTD2R7Bz4x1c;
+	Thu, 28 Jul 2022 00:32:32 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1658932352;
+	bh=I2mKUA0vOGHWorVUydXGgk+U/Smu/9jI++++jKEemdA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=juVUzOv+5nAU24pzuM5jAuYJNB9gr+Rh1ZbDQXIecpqrmzFvGhYo2yda160BlV0ji
+	 R7TfIY/GPI2cox4fH/r3/O+DDd1HfPO1GjTfzPubvY8iJ3ET0NVWfYsGwfZaPr/yq3
+	 txqmJ/gyXH+t7XzNUoKpW1M9KthQnVyql4tJwXlPE4o0ECFaJHI+CzZ196N0eStNlH
+	 bK3ON4rqNh4sxqpYGEs+G246wUM4OaJJIxhumJTWckoK//G7fSCTaXGQoKtIgfDK+n
+	 Oh0LRVqhEviAH5tovAzWMlIMjpesw6bVhcigLsopdQGufmJzpJSB3OmV6hj/Ksv72z
+	 luBaSr4bt67iw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v6 3/3] powerpc/powernv: rename remaining rng powernv_ functions to pnv_
+Date: Thu, 28 Jul 2022 00:32:19 +1000
+Message-Id: <20220727143219.2684192-3-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.35.3
+In-Reply-To: <20220727143219.2684192-1-mpe@ellerman.id.au>
+References: <20220727143219.2684192-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.0.3
-Subject: Re: [PATCH] watchdog: Fix build error when CONFIG_SOFTLOCKUP_DETECTOR
- is not set
-Content-Language: fr
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <20220727092109.31362-1-ldufour@linux.ibm.com>
- <87sfmmaipn.fsf@mpe.ellerman.id.au>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <87sfmmaipn.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 2bS7xJeYOh8k7OEL6uh4WyRS94ZLkDnt
-X-Proofpoint-ORIG-GUID: 2bS7xJeYOh8k7OEL6uh4WyRS94ZLkDnt
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-07-27_05,2022-07-27_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
- mlxscore=0 mlxlogscore=999 adultscore=0 phishscore=0 lowpriorityscore=0
- spamscore=0 impostorscore=0 priorityscore=1501 bulkscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2206140000
- definitions=main-2207270056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,40 +58,166 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sachin Sant <sachinp@linux.ibm.com>
+Cc: Jason@zx2c4.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 27/07/2022 à 13:38, Michael Ellerman a écrit :
-> Laurent Dufour <ldufour@linux.ibm.com> writes:
->> Sachin reported the following build error when CONFIG_SOFTLOCKUP_DETECTOR
->> is not set:
->>
->> kernel/watchdog.c:597:20: error: static declaration of 'lockup_detector_reconfigure' follows non-static declaration
->>  static inline void lockup_detector_reconfigure(void)
->>                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->> In file included from kernel/watchdog.c:17:
->> ./include/linux/nmi.h:125:6: note: previous declaration of 'lockup_detector_reconfigure' was here
->>  void lockup_detector_reconfigure(void);
->>       ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->>
->> The definition of lockup_detector_reconfigure should be exported even in
->> that case, and __lockup_detector_reconfigure should remain static.
->>
->> Fixes: 24a1260705b7 ("watchdog: export lockup_detector_reconfigure")
->> Reported-by: Sachin Sant <sachinp@linux.ibm.com>
->> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
->> ---
->>  kernel/watchdog.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Thanks.
-> 
-> I'll squash that in to the original commit.
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
 
-Thanks Michael,
+The preferred nomenclature is pnv_, not powernv_, but rng.c used
+powernv_ for some reason, which isn't consistent with the rest. A recent
+commit added a few pnv_ functions to rng.c, making the file a bit of a
+mishmash. This commit just replaces the rest of them.
 
-I was thinking this is too late for such a squash.
+Tested-by: Sachin Sant <sachinp@linux.ibm.com>
+Fixes: f3eac426657d ("powerpc/powernv: wire up rng during setup_arch")
+Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+[mpe: Reorder after bug fix commits]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/archrandom.h |  2 +-
+ arch/powerpc/platforms/powernv/rng.c  | 34 +++++++++++++--------------
+ drivers/char/hw_random/powernv-rng.c  |  2 +-
+ 3 files changed, 19 insertions(+), 19 deletions(-)
 
-Laurent.
+v6: Reorderd after previous two fix commits.
+
+diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+index 258174304904..3af27bb84a3d 100644
+--- a/arch/powerpc/include/asm/archrandom.h
++++ b/arch/powerpc/include/asm/archrandom.h
+@@ -38,7 +38,7 @@ static inline bool __must_check arch_get_random_seed_int(unsigned int *v)
+ #endif /* CONFIG_ARCH_RANDOM */
+ 
+ #ifdef CONFIG_PPC_POWERNV
+-int powernv_get_random_long(unsigned long *v);
++int pnv_get_random_long(unsigned long *v);
+ #endif
+ 
+ #endif /* _ASM_POWERPC_ARCHRANDOM_H */
+diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
+index d19305292e1e..196aa70fe043 100644
+--- a/arch/powerpc/platforms/powernv/rng.c
++++ b/arch/powerpc/platforms/powernv/rng.c
+@@ -21,15 +21,15 @@
+ 
+ #define DARN_ERR 0xFFFFFFFFFFFFFFFFul
+ 
+-struct powernv_rng {
++struct pnv_rng {
+ 	void __iomem *regs;
+ 	void __iomem *regs_real;
+ 	unsigned long mask;
+ };
+ 
+-static DEFINE_PER_CPU(struct powernv_rng *, powernv_rng);
++static DEFINE_PER_CPU(struct pnv_rng *, pnv_rng);
+ 
+-static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
++static unsigned long rng_whiten(struct pnv_rng *rng, unsigned long val)
+ {
+ 	unsigned long parity;
+ 
+@@ -49,7 +49,7 @@ static unsigned long rng_whiten(struct powernv_rng *rng, unsigned long val)
+ 	return val;
+ }
+ 
+-static int powernv_get_random_darn(unsigned long *v)
++static int pnv_get_random_darn(unsigned long *v)
+ {
+ 	unsigned long val;
+ 
+@@ -73,31 +73,31 @@ static int __init initialise_darn(void)
+ 		return -ENODEV;
+ 
+ 	for (i = 0; i < 10; i++) {
+-		if (powernv_get_random_darn(&val)) {
+-			ppc_md.get_random_seed = powernv_get_random_darn;
++		if (pnv_get_random_darn(&val)) {
++			ppc_md.get_random_seed = pnv_get_random_darn;
+ 			return 0;
+ 		}
+ 	}
+ 	return -EIO;
+ }
+ 
+-int powernv_get_random_long(unsigned long *v)
++int pnv_get_random_long(unsigned long *v)
+ {
+-	struct powernv_rng *rng;
++	struct pnv_rng *rng;
+ 
+ 	if (mfmsr() & MSR_DR) {
+-		rng = get_cpu_var(powernv_rng);
++		rng = get_cpu_var(pnv_rng);
+ 		*v = rng_whiten(rng, in_be64(rng->regs));
+ 		put_cpu_var(rng);
+ 	} else {
+-		rng = raw_cpu_read(powernv_rng);
++		rng = raw_cpu_read(pnv_rng);
+ 		*v = rng_whiten(rng, __raw_rm_readq(rng->regs_real));
+ 	}
+ 	return 1;
+ }
+-EXPORT_SYMBOL_GPL(powernv_get_random_long);
++EXPORT_SYMBOL_GPL(pnv_get_random_long);
+ 
+-static __init void rng_init_per_cpu(struct powernv_rng *rng,
++static __init void rng_init_per_cpu(struct pnv_rng *rng,
+ 				    struct device_node *dn)
+ {
+ 	int chip_id, cpu;
+@@ -107,16 +107,16 @@ static __init void rng_init_per_cpu(struct powernv_rng *rng,
+ 		pr_warn("No ibm,chip-id found for %pOF.\n", dn);
+ 
+ 	for_each_possible_cpu(cpu) {
+-		if (per_cpu(powernv_rng, cpu) == NULL ||
++		if (per_cpu(pnv_rng, cpu) == NULL ||
+ 		    cpu_to_chip_id(cpu) == chip_id) {
+-			per_cpu(powernv_rng, cpu) = rng;
++			per_cpu(pnv_rng, cpu) = rng;
+ 		}
+ 	}
+ }
+ 
+ static __init int rng_create(struct device_node *dn)
+ {
+-	struct powernv_rng *rng;
++	struct pnv_rng *rng;
+ 	struct resource res;
+ 	unsigned long val;
+ 
+@@ -142,7 +142,7 @@ static __init int rng_create(struct device_node *dn)
+ 
+ 	rng_init_per_cpu(rng, dn);
+ 
+-	ppc_md.get_random_seed = powernv_get_random_long;
++	ppc_md.get_random_seed = pnv_get_random_long;
+ 
+ 	return 0;
+ }
+@@ -190,7 +190,7 @@ static int __init pnv_rng_late_init(void)
+ 	if (ppc_md.get_random_seed == pnv_get_random_long_early)
+ 		pnv_get_random_long_early(&v);
+ 
+-	if (ppc_md.get_random_seed == powernv_get_random_long) {
++	if (ppc_md.get_random_seed == pnv_get_random_long) {
+ 		for_each_compatible_node(dn, NULL, "ibm,power-rng")
+ 			of_platform_device_create(dn, NULL, NULL);
+ 	}
+diff --git a/drivers/char/hw_random/powernv-rng.c b/drivers/char/hw_random/powernv-rng.c
+index 8da1d7917bdc..429e956f34e1 100644
+--- a/drivers/char/hw_random/powernv-rng.c
++++ b/drivers/char/hw_random/powernv-rng.c
+@@ -23,7 +23,7 @@ static int powernv_rng_read(struct hwrng *rng, void *data, size_t max, bool wait
+ 	buf = (unsigned long *)data;
+ 
+ 	for (i = 0; i < len; i++)
+-		powernv_get_random_long(buf++);
++		pnv_get_random_long(buf++);
+ 
+ 	return len * sizeof(unsigned long);
+ }
+-- 
+2.35.3
 
