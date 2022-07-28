@@ -4,68 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BDE6C04A68
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 03:35:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6329BC04A68
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 03:36:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ltbrr4B2Kz30Qc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 13:35:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LtbsW56Rkz3blY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 13:36:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=WopjFI8t;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=CqnwOOBE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=bagasdotme@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=bagasdotme@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=WopjFI8t;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=CqnwOOBE;
 	dkim-atps=neutral
-Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
+Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtbqR5Jk0z2xHQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtbqR58zBz2xHL
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 13:34:26 +1000 (AEST)
-Received: by mail-pl1-x634.google.com with SMTP id x1so697364plb.3
+Received: by mail-pl1-x62d.google.com with SMTP id x7so683888pll.7
         for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2022 20:34:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=v5iO3DJsdBPM2eAKiUQEswEd2u5joVshDOWMCkBSEWI=;
-        b=WopjFI8tRQsKj7xA9eC0fUlEFtVpR2QGFKPdVL1gXuQFz/suaXcXYnPrqJhZyD/MgM
-         xPzRiKv2v6pruqFlUGtoK/cL3gvLBxtKYOupZ8Hrp0fjirRR1Kxb6diOiS4CwhdCl36x
-         hXl7jt3dOgauNq9ttRk/Pn2iJJ/gJ/7M/6uj4HKWYUwv/29yFPgeXIDCGeBQCerpJegW
-         TlbRGpXiokQGKtPRQQX2ZH6VUz9uW3j5VQ3b35UNwQIBvCUIGTKbkzmmXFC+HJoQt3IY
-         WKFQnNsLkQlJBU9i6/kRoPfhvR5PAJ0DyJOj33iB+6DYmkQ+m7//Ik9S+FeEXisYJe9J
-         OkZw==
+        bh=FCyuMS+MYtaXjHcIxmL31JDLi03JrIO2qsiSj9P1Eho=;
+        b=CqnwOOBEEvCpmhikYJ3JqR5kKGQKEcHIAFmX3WraUqqWfCHTg/3/ho7b2LG1xtN6MW
+         SAxT0lRJ3uJhj3jneu/Bb5Rq+j8+masl2huLxdBwc1ZWItOLd3VHmBpiZ6+r337LYEsh
+         VKMdCjVr+QKj09HmSOEQuIy0QwX8x4uU4ZK5L2h32arGX2BkcYJ8k3Pdarh/6HSxsxmS
+         puUDL9HUL7zA4lHFxfhJQFmFxuGW27f/XBUT6tN3slrmNzg7IgHISrFG0oJA0BVXiOwL
+         NZjSgXdw8mkvvdYhBwZAejxfv+tgU2Fg29/7c10O/Jr8vlAFk1JgnUvEU4Lw8WJ2u7Pf
+         6MOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=v5iO3DJsdBPM2eAKiUQEswEd2u5joVshDOWMCkBSEWI=;
-        b=4q4sxedaTMhf8TwPaU+uHFwzIv5X9KnIHFUYIQjh8qpaK3k9Az+T8jx7MDsC59nBpJ
-         K0p4cBU6buz6HNKDOzN4x1FIYIbJFa0FAX26ua5rt8P8HZJqw7HYNxaCcMBke7eI3q5t
-         7ZXWQuC1E5kXDFuwAegMyv9Z/JpCJ8/r0jc/SCeFGVnBFW59BiJGXqBg/kFkdYkjQ/83
-         M+u1EfjyGtT7PcS/pFefbKr0OFzcAWGoLGENjG7bZVp72nPUEDLoIByN/WpgAhgmGtw0
-         LFetkZaYAbzeGIuOsbcT7fKZz/KVE8CyXBXY3WEBsYighl4w5eVBo1bbAQV6lsNOD8b9
-         t3lA==
-X-Gm-Message-State: AJIora8WW5f+rgTofrEAdwF888IkqdWUgq3WgFRSSfNNUuXPWJx1haoa
-	76A9KDQXeVioKeVMUhS4aVc=
-X-Google-Smtp-Source: AGRyM1vrkYDWEh+Q5CKXwHq6PQq+SAM34S/j5zh3ymhk2nd7NrnqZNL26drZbsS7S6b+1oQNZRzfMQ==
-X-Received: by 2002:a17:902:ef46:b0:168:bac3:2fd4 with SMTP id e6-20020a170902ef4600b00168bac32fd4mr24230479plx.132.1658979261953;
-        Wed, 27 Jul 2022 20:34:21 -0700 (PDT)
+        bh=FCyuMS+MYtaXjHcIxmL31JDLi03JrIO2qsiSj9P1Eho=;
+        b=05o5jof508IqPjS9HDK1Sf0x0jx8EdjQ7ftaDeKSXOOGhBxVF4R3RLPoM3kXKxhSyG
+         taYFh787dUY3lmq6NNuk05FbNS3JxdMp8aKW4NQ682Qo72pZ0COlvbh10KZ8Yepddd1r
+         PjsgdKPaIMEV2fQ8V5UwO1ZCzEAwitW1HJgtnRL2s4z1ugu6axw5HTG3POl6o9jIgiuD
+         xc44nrmwAo4ZNu6EJVEfVA3az7AzFThAadxcaMcNKFx312F2SHFTFk6zJRrx7pI+dx9j
+         Yik44T22TvSr6332PfOSQwwzNnLI2FOcsXN0XjJBxb5hmZCiaOolWCi6C+IZ2c5hE7Bf
+         TzYw==
+X-Gm-Message-State: AJIora+Ojel+TPDaOEzFBV5RfNOT+xqBQK/2DnMzvxENEWagUtP9vumy
+	01oSs23sjfatNMW+cw59juk=
+X-Google-Smtp-Source: AGRyM1u09bL67UJ4D22OsPriM3aYVau9eNR+g2LJANdPbWk7JIFHDJdMAaRCIPQk8nM62BjKho6bVw==
+X-Received: by 2002:a17:902:900c:b0:16a:4521:10fd with SMTP id a12-20020a170902900c00b0016a452110fdmr24586283plp.75.1658979262231;
+        Wed, 27 Jul 2022 20:34:22 -0700 (PDT)
 Received: from debian.me (subs28-116-206-12-54.three.co.id. [116.206.12.54])
-        by smtp.gmail.com with ESMTPSA id d8-20020a17090a7bc800b001f2ef3c7956sm2598035pjl.25.2022.07.27.20.34.21
+        by smtp.gmail.com with ESMTPSA id j5-20020a17090a318500b001f035bfcc53sm2582722pjb.18.2022.07.27.20.34.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Wed, 27 Jul 2022 20:34:21 -0700 (PDT)
 Received: by debian.me (Postfix, from userid 1000)
-	id E106D104A91; Thu, 28 Jul 2022 10:34:16 +0700 (WIB)
+	id 7AB39104A8D; Thu, 28 Jul 2022 10:34:16 +0700 (WIB)
 From: Bagas Sanjaya <bagasdotme@gmail.com>
 To: linux-doc@vger.kernel.org,
 	linux-next@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-doc-tw-discuss@lists.sourceforge.net
-Subject: [PATCH 0/3] Documentation: powerpc: documentation fixes for Documentation/powerpc/elf_hwcaps.rst
-Date: Thu, 28 Jul 2022 10:33:30 +0700
-Message-Id: <20220728033332.27836-1-bagasdotme@gmail.com>
+Subject: [PATCH 3/3] Documentation: powerpc: add elf_hwcaps to table of contents
+Date: Thu, 28 Jul 2022 10:33:33 +0700
+Message-Id: <20220728033332.27836-4-bagasdotme@gmail.com>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20220727220050.549db613@canb.auug.org.au>
 References: <20220727220050.549db613@canb.auug.org.au>
@@ -82,31 +82,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Yanteng Si <siyanteng@loongson.cn>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Bagas Sanjaya <bagasdotme@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Alex Shi <alexs@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Yanteng Si <siyanteng@loongson.cn>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Bagas Sanjaya <bagasdotme@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Alex Shi <alexs@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After merging powerpc tree for linux-next integration testing, Stephen
-Rothwell reported htmldocs warnings at [1]. Fix these with self-explanatory
-fixes in the shortlog below.
+elf_hwcaps documentation is missing from table of contents at index.rst,
+hence triggers Sphinx warning:
 
-[1]: https://lore.kernel.org/linuxppc-dev/20220727220050.549db613@canb.auug.org.au/
+Documentation/powerpc/elf_hwcaps.rst: WARNING: document isn't included in any toctree
 
-Bagas Sanjaya (3):
-  Documentation: powerpc: fix indentation warnings
-  Documentation: use different label names for each arch's
-    elf_hwcaps.rst
-  Documentation: powerpc: add elf_hwcaps to table of contents
+Add the documentation to the index to fix the warning.
 
- Documentation/arm64/elf_hwcaps.rst              |  2 +-
- Documentation/powerpc/elf_hwcaps.rst            | 17 +++++++----------
- Documentation/powerpc/index.rst                 |  1 +
- .../translations/zh_CN/arm64/elf_hwcaps.rst     |  2 +-
- .../translations/zh_TW/arm64/elf_hwcaps.rst     |  2 +-
- 5 files changed, 11 insertions(+), 13 deletions(-)
+Link: https://lore.kernel.org/linuxppc-dev/20220727220050.549db613@canb.auug.org.au/
+Fixes: 3df1ff42e69e91 ("powerpc: add documentation for HWCAPs")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+---
+ Documentation/powerpc/index.rst | 1 +
+ 1 file changed, 1 insertion(+)
 
-
-base-commit: d6b551b8f90cc92c7d3c09cf38c748efe305ecb4
+diff --git a/Documentation/powerpc/index.rst b/Documentation/powerpc/index.rst
+index 0f7d3c495693e0..85e80e30160bb6 100644
+--- a/Documentation/powerpc/index.rst
++++ b/Documentation/powerpc/index.rst
+@@ -17,6 +17,7 @@ powerpc
+     dawr-power9
+     dscr
+     eeh-pci-error-recovery
++    elf_hwcaps
+     elfnote
+     firmware-assisted-dump
+     hvcs
 -- 
 An old man doll... just what I always wanted! - Clara
 
