@@ -4,71 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02B3FC04A68
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 03:36:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A57AC04A68
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 06:32:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LtbtB4tnYz3c5q
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 13:36:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LtgmH5fg4z3c7V
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 16:31:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=O9JqYvVS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nFvySBVT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=bagasdotme@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=O9JqYvVS;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nFvySBVT;
 	dkim-atps=neutral
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtbqR5qVWz2xHT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 13:34:26 +1000 (AEST)
-Received: by mail-pl1-x629.google.com with SMTP id p1so669919plr.11
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2022 20:34:26 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ltgln6HXfz2xGk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 16:31:32 +1000 (AEST)
+Received: by mail-pl1-x62b.google.com with SMTP id p1so951344plr.11
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2022 23:31:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=JhMvbIL/TwREFiBbhotzA3SEMID5qPiHSEntbLaD1W0=;
-        b=O9JqYvVSKOe0Yn6Nzu7KhVKqcpVLsZ98oKGiSGSTOgVnaEeGIVcBfDog8iPOe2/jV6
-         Do9q2C3g4H6zu1nr6zR8QyhneNtjq36NfIKjoUKVKMJMLhxtrD10+NvcgGzqO9jRTqdI
-         yLbEYOg3zeLceiDD0JX99bVps8WGiGW4qrwAzGLBMNxEkECd2tgicvP04XymNp/TfWOW
-         PwRjVU6E7YZVZO6YaWmxf8CNVYeQ4qOPTlgEyILjQbhj52JD2w5Bl1Wydp7nQTHcTm3L
-         daHd9hS2wGpaf/X0OjIm/l6OzzEtl23gNoOlbp20Mb2IWWz4E7JCaVIOm8ryiAPwm0qv
-         Vj/Q==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rYkz6bD1HsvWBCYK323ouOZgcMZJdTFqMjemxUcDmWE=;
+        b=nFvySBVTPsdaKHuucEnoL3OxqZgNYny9tDUes2rFhVaKXsw6IYVN6Wiq92yJ/qmayQ
+         RaC14egyTl+TyoXuTsvTsblkDysz22bL0Z7uUUNbOyoJwLv7JousiQ8qbt1v3zXosMOd
+         0Y4rpbybea9kydgM4g3RLstvglwHnNYL9BT2vF/xHwHS9d80YCV5h3NZmD5b5j/BZenp
+         PHTOdkp04cRc1DLC41NZbWOK+DmHEHDx2Z5u5jaJHP+JlDze4Uj0ZPQu3Ih/IJ1OqlLh
+         qkYWwjTWCBrV7vylsCls/qjwQmfSLyxckcIwIE26DBm5PvlpjFdIiUPl17+n+5IrAwaH
+         fRyQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=JhMvbIL/TwREFiBbhotzA3SEMID5qPiHSEntbLaD1W0=;
-        b=SU0aORMcGPN9jAQcVeqSdoPQ6QJ3PVtJWq/EJHaUC7sRR5YYqpmGXNriAB7HzlM4NQ
-         yawfwC/d8LUXBT66kgQfZg1VLXpT9FdRR3b2yj4UFQACYXmuvzqfLKjKA5VW1LZrTZsT
-         0u5TIR/bNqwB1MvPgKnWaB//g+m+aI4BEVtMZIhz3apC+Yf9GU/7o49GpdwoSmvblTVU
-         ihkp0BZftiaQgF1ZwMwjlvSG71VfwKu0zqWd5V5VuorZ1lcbXFzoJQhYaM3XrG1Mvi2X
-         4dXIWAEcyxk4aBOll/BiYbRx/RcQeGXTzs7K7j0hqszIfLtR2cgSkr/vd3kvq5M3ugBv
-         DDVQ==
-X-Gm-Message-State: AJIora8js0RTOJEAew806YrFtpF/rnkRaJlfsw8FpW9jWRKHB3xhpDi/
-	4eEbD478wUDUcVCN5+o4Q7g=
-X-Google-Smtp-Source: AGRyM1v5oWSU07CfUHQBcDsJS2AJzY+++qTWksKGLH2SCBONeBvdzlc3GtYmLMhOu8HbK5mXjsXOYA==
-X-Received: by 2002:a17:903:2351:b0:16d:9468:bb02 with SMTP id c17-20020a170903235100b0016d9468bb02mr11898940plh.82.1658979262115;
-        Wed, 27 Jul 2022 20:34:22 -0700 (PDT)
-Received: from debian.me (subs28-116-206-12-54.three.co.id. [116.206.12.54])
-        by smtp.gmail.com with ESMTPSA id h6-20020a056a00000600b00528c22fbb45sm15008851pfk.141.2022.07.27.20.34.21
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=rYkz6bD1HsvWBCYK323ouOZgcMZJdTFqMjemxUcDmWE=;
+        b=ogvR6ELoSuaeHvOhDz6oJ6acZKUVbZY2O+R6+VO7ulKcwSald1xwSJFjNxrzzSPTAn
+         dXXHQMYzkwvS/9iuNU4v6hYmi4sYbV6AP6bWn1ZvaRtGOHm6WiMd16wmJTvhaLvGj/7v
+         wiMTP7IuVE0O97ByJyHlL0FdtNocDiozORpDEqypoV4icg1cp5y3/r65TLw8AyrDzY1s
+         uu1Gn971kmj+42VjTrH5daUW6cu5G6RKtxVHUQkZzSkfkKJWDSl6e5kad+bu14S5k5MM
+         mRrVwY6zWOQTYc8skofYEHe0zM8onQ9VRQZ29NxS73Zk0avARRcvNcpHx8L6mYqInrsT
+         B7uA==
+X-Gm-Message-State: AJIora+9MdAH4ivNGLmwvcY5zPwlvckhSt+Fqx5iMW3QAZEmfj6CablJ
+	F0vsa5ASqfOKGfGYSeu+Xav2nAa205w=
+X-Google-Smtp-Source: AGRyM1uctAmcyvsblc4rTsVJBVBbzZ5odK54q85Z9739ve1J6fRgmsmyeVmGOYZy6D8cJT5qOQyDMw==
+X-Received: by 2002:a17:902:f54e:b0:16c:5119:d4a8 with SMTP id h14-20020a170902f54e00b0016c5119d4a8mr24215965plf.22.1658989889209;
+        Wed, 27 Jul 2022 23:31:29 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (193-116-97-43.tpgi.com.au. [193.116.97.43])
+        by smtp.gmail.com with ESMTPSA id s63-20020a635e42000000b003fadd680908sm189861pgb.83.2022.07.27.23.31.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 27 Jul 2022 20:34:21 -0700 (PDT)
-Received: by debian.me (Postfix, from userid 1000)
-	id 3E949104A8A; Thu, 28 Jul 2022 10:34:16 +0700 (WIB)
-From: Bagas Sanjaya <bagasdotme@gmail.com>
-To: linux-doc@vger.kernel.org,
-	linux-next@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-doc-tw-discuss@lists.sourceforge.net
-Subject: [PATCH 1/3] Documentation: powerpc: fix indentation warnings
-Date: Thu, 28 Jul 2022 10:33:31 +0700
-Message-Id: <20220728033332.27836-2-bagasdotme@gmail.com>
-X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20220727220050.549db613@canb.auug.org.au>
-References: <20220727220050.549db613@canb.auug.org.au>
+        Wed, 27 Jul 2022 23:31:28 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 00/17] powerpc: alternate queued spinlock implementation
+Date: Thu, 28 Jul 2022 16:31:02 +1000
+Message-Id: <20220728063120.2867508-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,79 +74,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Yanteng Si <siyanteng@loongson.cn>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Bagas Sanjaya <bagasdotme@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Alex Shi <alexs@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sphinx reported unexpected indentation warnings:
+This replaces the generic queued spinlock code (like s390 does) with
+our own implementation. There is an extra shim patch 1a here to get the
+series to apply.
 
-Documentation/powerpc/elf_hwcaps.rst:82: WARNING: Unexpected indentation.
-Documentation/powerpc/elf_hwcaps.rst:100: WARNING: Unexpected indentation.
-Documentation/powerpc/elf_hwcaps.rst:117: WARNING: Unexpected indentation.
-Documentation/powerpc/elf_hwcaps.rst:122: WARNING: Unexpected indentation.
-Documentation/powerpc/elf_hwcaps.rst:144: WARNING: Unexpected indentation.
+So far the microbenchmarks look okay, haven't really had time to write
+up a good set of results. I hope to get some significant bigger
+workloads some testing time in the next week or so so if those turn
+out positive I may resubmit with any tweaks and some more details of
+numbers.
 
-Fix these warnings by unindenting commit references and using literal code
-block for instructions list for PPC_FEATURE_ICACHE_SNOOP.
+Thanks,
+Nick
 
-Link: https://lore.kernel.org/linuxppc-dev/20220727220050.549db613@canb.auug.org.au/
-Fixes: 3df1ff42e69e91 ("powerpc: add documentation for HWCAPs")
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
----
- Documentation/powerpc/elf_hwcaps.rst | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+Nicholas Piggin (17):
+  powerpc/qspinlock: powerpc qspinlock implementation
+  powerpc/qspinlock: add mcs queueing for contended waiters
+  powerpc/qspinlock: use a half-word store to unlock to avoid larx/stcx.
+  powerpc/qspinlock: convert atomic operations to assembly
+  powerpc/qspinlock: allow new waiters to steal the lock before queueing
+  powerpc/qspinlock: theft prevention to control latency
+  powerpc/qspinlock: store owner CPU in lock word
+  powerpc/qspinlock: paravirt yield to lock owner
+  powerpc/qspinlock: implement option to yield to previous node
+  powerpc/qspinlock: allow stealing when head of queue yields
+  powerpc/qspinlock: allow propagation of yield CPU down the queue
+  powerpc/qspinlock: add ability to prod new queue head CPU
+  powerpc/qspinlock: trylock and initial lock attempt may steal
+  powerpc/qspinlock: use spin_begin/end API
+  powerpc/qspinlock: reduce remote node steal spins
+  powerpc/qspinlock: allow indefinite spinning on a preempted owner
+  powerpc/qspinlock: provide accounting and options for sleepy locks
 
-diff --git a/Documentation/powerpc/elf_hwcaps.rst b/Documentation/powerpc/elf_hwcaps.rst
-index 96d4fc4a3f91fe..bb7438cebf36e8 100644
---- a/Documentation/powerpc/elf_hwcaps.rst
-+++ b/Documentation/powerpc/elf_hwcaps.rst
-@@ -78,8 +78,7 @@ PPC_FEATURE_64
- 
- PPC_FEATURE_601_INSTR
-     The processor is PowerPC 601.
--    Unused in the kernel since:
--      f0ed73f3fa2c ("powerpc: Remove PowerPC 601")
-+    Unused in the kernel since f0ed73f3fa2c ("powerpc: Remove PowerPC 601")
- 
- PPC_FEATURE_HAS_ALTIVEC
-     Vector (aka Altivec, VMX) facility is available.
-@@ -96,8 +95,7 @@ PPC_FEATURE_HAS_4xxMAC
- PPC_FEATURE_UNIFIED_CACHE
-     The processor has a unified L1 cache for instructions and data, as
-     found in NXP e200.
--    Unused in the kernel since:
--      39c8bf2b3cc1 ("powerpc: Retire e200 core (mpc555x processor)")
-+    Unused in the kernel since 39c8bf2b3cc1 ("powerpc: Retire e200 core (mpc555x processor)")
- 
- PPC_FEATURE_HAS_SPE
-     Signal Processing Engine facility is available.
-@@ -113,13 +111,11 @@ PPC_FEATURE_NO_TB
-     This is a 601 specific HWCAP, so if it is known that the processor
-     running is not a 601, via other HWCAPs or other means, it is not
-     required to test this bit before using the timebase.
--    Unused in the kernel since:
--      f0ed73f3fa2c ("powerpc: Remove PowerPC 601")
-+    Unused in the kernel since f0ed73f3fa2c ("powerpc: Remove PowerPC 601")
- 
- PPC_FEATURE_POWER4
-     The processor is POWER4 or PPC970/FX/MP.
--    POWER4 support dropped from the kernel since:
--      471d7ff8b51b ("powerpc/64s: Remove POWER4 support")
-+    POWER4 support dropped from the kernel since 471d7ff8b51b ("powerpc/64s: Remove POWER4 support")
- 
- PPC_FEATURE_POWER5
-     The processor is POWER5.
-@@ -140,7 +136,8 @@ PPC_FEATURE_ICACHE_SNOOP
-     The processor icache is coherent with the dcache, and instruction storage
-     can be made consistent with data storage for the purpose of executing
-     instructions with the sequence (as described in, e.g., POWER9 Processor
--    User's Manual, 4.6.2.2 Instruction Cache Block Invalidate (icbi)):
-+    User's Manual, 4.6.2.2 Instruction Cache Block Invalidate (icbi))::
-+
-         sync
-         icbi (to any address)
-         isync
+ arch/powerpc/Kconfig                       |    1 -
+ arch/powerpc/include/asm/qspinlock.h       |  130 ++-
+ arch/powerpc/include/asm/qspinlock_types.h |   70 ++
+ arch/powerpc/include/asm/spinlock_types.h  |    2 +-
+ arch/powerpc/lib/Makefile                  |    4 +-
+ arch/powerpc/lib/qspinlock.c               | 1009 ++++++++++++++++++++
+ 6 files changed, 1172 insertions(+), 44 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/qspinlock_types.h
+ create mode 100644 arch/powerpc/lib/qspinlock.c
+
 -- 
-An old man doll... just what I always wanted! - Clara
+2.35.1
 
