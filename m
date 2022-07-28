@@ -4,52 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3796BC04A68
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 03:18:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7236EC04A68
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 03:35:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LtbTK146mz2xHq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 13:18:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ltbr94zmPz2xHS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Jul 2022 13:35:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=a48R+Va3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ZCpCWijz;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtbSf5GVHz2xHc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 13:18:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=bagasdotme@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=a48R+Va3;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ZCpCWijz;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LtbSf4JbGz4x1V;
-	Thu, 28 Jul 2022 13:18:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1658978290;
-	bh=0a1SfDZjYD0OjVyntTUgHptnneGyXdJhKfGnfOBAcAk=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=a48R+Va3VM2n7bEBvtkDWOplWR6rP69PNaK3OuAIn8INxiKx7288pkLbBWhnRs16G
-	 iYTj9nx+eF16wfWB51OkE0Le6h1HYKKmqagmGUL/GeuTdOGjdAl+CwvP+0EPhmznMS
-	 pmXU69swH3Pi1WD7yCK9FCG2/G471to6MX9Lut3Pu2VaMkBJOpdzdrYekLYkzuzrA6
-	 yspLWaTi3ljnnWDvHlwbL/hDkdnZ2Bd+5blK8aqa/TSfOBYfQnOO4/WadyGmYFedqC
-	 emdvFN3PhdFum3waxqwwJSesFdnHrzFOVo5phJ40S/lewFI1hMBJGYTB3zPD9jro3a
-	 cplF1dyD6Rf+w==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Laurent Dufour <ldufour@linux.ibm.com>
-Subject: Re: [PATCH] watchdog: Fix build error when
- CONFIG_SOFTLOCKUP_DETECTOR is not set
-In-Reply-To: <4dd9afa4-ddc1-c6c9-1205-bca28a858022@linux.ibm.com>
-References: <20220727092109.31362-1-ldufour@linux.ibm.com>
- <87sfmmaipn.fsf@mpe.ellerman.id.au>
- <4dd9afa4-ddc1-c6c9-1205-bca28a858022@linux.ibm.com>
-Date: Thu, 28 Jul 2022 13:18:06 +1000
-Message-ID: <87ilni9b81.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LtbqR5Mkcz2xHS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jul 2022 13:34:26 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id e1so821563pjl.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jul 2022 20:34:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc;
+        bh=j10ToGanO3cd/vYuHa5Kn8foeTs8uMlyZtELPg2UY1U=;
+        b=ZCpCWijzlJKFs64G+1k7Jl5GKh6G4zOE6ybwGhhR/exQ9bGqHu5jiznO5HvWlqa/rJ
+         6blTRDDSiBqKmbeZa1uCPh2Nyo9/0lSgoBae4muND+4qWPGNamj5AmdAYBJUEm7SGqbw
+         HXf6QFOrlDBQfF0eLDtdaVtzxe79XUj6OMXvc70gPfydf9HkHcRXdr6fvkFRltTf5//h
+         6Fy6RAqzfsW2N7ZbZKzdwib5zi2mCAOr5ScVrstEYPdirvZgJ8zOFm9HKdRn/Y5LPWwJ
+         ZY60cdEvLCP8iXWLUhJQo99JJiatYHysQCuaGzKDYXD6AMFLvjVx1VTyMSLscmEAgq2B
+         xtsg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
+        bh=j10ToGanO3cd/vYuHa5Kn8foeTs8uMlyZtELPg2UY1U=;
+        b=sI7yBLwrAO35yaxoRK24vZfW8WKW+fT2ME78lNthSyYdzHrzdM72tPXM8/49YtLJLc
+         X8peG+0q3V8be84+vqnHWBdccMeg5khK5Gpwgq3jj/EwM8lHbuLSf+nrVOsPaD85w9Hu
+         4zi70zWzmlbH0on9S5yojbUTO0Ez2ZYUTFLplpq6HCJN00E3OaZa2zWIqg1Db4AbeiWd
+         IFyudHvZaN94svFZPb4vI2RB6sl9it3oVKYlKafiyd/AWGqE6WdRffkfhpYtsvzMPH6M
+         N8CFn0z53/fkxLexdiRp0D+a9lFdAoKSWcUoW9N/VeU5LqW4MkDvusHmsA41ATeIhhwu
+         XyxQ==
+X-Gm-Message-State: AJIora/LcWupyeAn3t/JqmGv/J1MMLuKuXa44BrjF6WCe4YtSYn9pHgq
+	XbsopMB+RyyvIed5px+C/SU=
+X-Google-Smtp-Source: AGRyM1stnTgNjHqQvTX8yokSMFJC+fEv40VFSklSquPlJzshMGe0L5wVcYIHWCUudBsD3zBQBgCCow==
+X-Received: by 2002:a17:902:d54f:b0:16d:3bce:c40e with SMTP id z15-20020a170902d54f00b0016d3bcec40emr24861840plf.87.1658979262545;
+        Wed, 27 Jul 2022 20:34:22 -0700 (PDT)
+Received: from debian.me (subs28-116-206-12-54.three.co.id. [116.206.12.54])
+        by smtp.gmail.com with ESMTPSA id m17-20020a170902db1100b0016d33b8a231sm8418629plx.270.2022.07.27.20.34.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 27 Jul 2022 20:34:21 -0700 (PDT)
+Received: by debian.me (Postfix, from userid 1000)
+	id 5F5C7104A8C; Thu, 28 Jul 2022 10:34:16 +0700 (WIB)
+From: Bagas Sanjaya <bagasdotme@gmail.com>
+To: linux-doc@vger.kernel.org,
+	linux-next@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-doc-tw-discuss@lists.sourceforge.net
+Subject: [PATCH 2/3] Documentation: use different label names for each arch's elf_hwcaps.rst
+Date: Thu, 28 Jul 2022 10:33:32 +0700
+Message-Id: <20220728033332.27836-3-bagasdotme@gmail.com>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <20220727220050.549db613@canb.auug.org.au>
+References: <20220727220050.549db613@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,46 +82,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Sachin Sant <sachinp@linux.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Yanteng Si <siyanteng@loongson.cn>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Bagas Sanjaya <bagasdotme@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Alex Shi <alexs@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Laurent Dufour <ldufour@linux.ibm.com> writes:
-> Le 27/07/2022 =C3=A0 13:38, Michael Ellerman a =C3=A9crit=C2=A0:
->> Laurent Dufour <ldufour@linux.ibm.com> writes:
->>> Sachin reported the following build error when CONFIG_SOFTLOCKUP_DETECT=
-OR
->>> is not set:
->>>
->>> kernel/watchdog.c:597:20: error: static declaration of 'lockup_detector=
-_reconfigure' follows non-static declaration
->>>  static inline void lockup_detector_reconfigure(void)
->>>                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->>> In file included from kernel/watchdog.c:17:
->>> ./include/linux/nmi.h:125:6: note: previous declaration of 'lockup_dete=
-ctor_reconfigure' was here
->>>  void lockup_detector_reconfigure(void);
->>>       ^~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>
->>> The definition of lockup_detector_reconfigure should be exported even in
->>> that case, and __lockup_detector_reconfigure should remain static.
->>>
->>> Fixes: 24a1260705b7 ("watchdog: export lockup_detector_reconfigure")
->>> Reported-by: Sachin Sant <sachinp@linux.ibm.com>
->>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
->>> ---
->>>  kernel/watchdog.c | 4 ++--
->>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>=20
->> Thanks.
->>=20
->> I'll squash that in to the original commit.
->
-> Thanks Michael,
->
-> I was thinking this is too late for such a squash.
+Sphinx reported duplicate label warning:
 
-It usually would be, if I was organised, so sending a follow-up was the
-correct thing for you to do :)
+WARNING: duplicate label elf_hwcaps_index, other instance in Documentation/arm64/elf_hwcaps.rst
 
-cheers
+The warning is caused by elf_hwcaps_index label name is already used for
+arm64 documentation, whileas powerpc use the same name.
+
+Disambiguate the label name for each architecture's documentation. While
+at it, also adjust original reference in translated documentation.
+
+Link: https://lore.kernel.org/linuxppc-dev/20220727220050.549db613@canb.auug.org.au/
+Fixes: 3df1ff42e69e91 ("powerpc: add documentation for HWCAPs")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+---
+ Documentation/arm64/elf_hwcaps.rst                    | 2 +-
+ Documentation/powerpc/elf_hwcaps.rst                  | 2 +-
+ Documentation/translations/zh_CN/arm64/elf_hwcaps.rst | 2 +-
+ Documentation/translations/zh_TW/arm64/elf_hwcaps.rst | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/arm64/elf_hwcaps.rst b/Documentation/arm64/elf_hwcaps.rst
+index 3d116fb536c538..63b75080ec4544 100644
+--- a/Documentation/arm64/elf_hwcaps.rst
++++ b/Documentation/arm64/elf_hwcaps.rst
+@@ -1,4 +1,4 @@
+-.. _elf_hwcaps_index:
++.. _elf_hwcaps_arm64:
+ 
+ ================
+ ARM64 ELF hwcaps
+diff --git a/Documentation/powerpc/elf_hwcaps.rst b/Documentation/powerpc/elf_hwcaps.rst
+index bb7438cebf36e8..3366e5b18e6759 100644
+--- a/Documentation/powerpc/elf_hwcaps.rst
++++ b/Documentation/powerpc/elf_hwcaps.rst
+@@ -1,4 +1,4 @@
+-.. _elf_hwcaps_index:
++.. _elf_hwcaps_powerpc:
+ 
+ ==================
+ POWERPC ELF HWCAPs
+diff --git a/Documentation/translations/zh_CN/arm64/elf_hwcaps.rst b/Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
+index 9aa4637eac979c..39a94ff5383c01 100644
+--- a/Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
++++ b/Documentation/translations/zh_CN/arm64/elf_hwcaps.rst
+@@ -1,6 +1,6 @@
+ .. include:: ../disclaimer-zh_CN.rst
+ 
+-:Original: :ref:`Documentation/arm64/elf_hwcaps.rst <elf_hwcaps_index>`
++:Original: :ref:`Documentation/arm64/elf_hwcaps.rst <elf_hwcaps_arm64>`
+ 
+ Translator: Bailu Lin <bailu.lin@vivo.com>
+ 
+diff --git a/Documentation/translations/zh_TW/arm64/elf_hwcaps.rst b/Documentation/translations/zh_TW/arm64/elf_hwcaps.rst
+index 3eb1c623ce31b0..76164d851d0b5e 100644
+--- a/Documentation/translations/zh_TW/arm64/elf_hwcaps.rst
++++ b/Documentation/translations/zh_TW/arm64/elf_hwcaps.rst
+@@ -2,7 +2,7 @@
+ 
+ .. include:: ../disclaimer-zh_TW.rst
+ 
+-:Original: :ref:`Documentation/arm64/elf_hwcaps.rst <elf_hwcaps_index>`
++:Original: :ref:`Documentation/arm64/elf_hwcaps.rst <elf_hwcaps_arm64>`
+ 
+ Translator: Bailu Lin <bailu.lin@vivo.com>
+             Hu Haowen <src.res@email.cn>
+-- 
+An old man doll... just what I always wanted! - Clara
+
