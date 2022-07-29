@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEFF6C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83176C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:18:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSk43k1Zz3gDP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:17:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSkW0vZyz3gJp
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:18:11 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSZC5wGYz3cdM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSjw3cbPz3g9k
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:17:40 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSZC282Wz4xGD;
-	Fri, 29 Jul 2022 23:10:59 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSjw2Zdbz4x1b;
+	Fri, 29 Jul 2022 23:17:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220727143219.2684192-1-mpe@ellerman.id.au>
-References: <20220727143219.2684192-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH v6 1/3] powerpc/powernv: Avoid crashing if rng is NULL
-Message-Id: <165909978923.253830.5419750752675440971.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:03:09 +1000
+To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220723113048.521744-1-nayna@linux.ibm.com>
+References: <20220723113048.521744-1-nayna@linux.ibm.com>
+Subject: Re: [PATCH v2 0/3] Provide PowerVM LPAR Platform KeyStore driver for Self Encrypting Drives
+Message-Id: <165909977471.253830.3807806364955203071.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:54 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,29 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jason@zx2c4.com
+Cc: erichte@linux.ibm.com, George Wilson <gcwilson@linux.ibm.com>, gjoyce@linux.vnet.ibm.com, npiggin@gmail.com, muriloo@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 28 Jul 2022 00:32:17 +1000, Michael Ellerman wrote:
-> On a bare-metal Power8 system that doesn't have an "ibm,power-rng", a
-> malicious QEMU and guest that ignore the absence of the
-> KVM_CAP_PPC_HWRNG flag, and calls H_RANDOM anyway, will dereference a
-> NULL pointer.
+On Sat, 23 Jul 2022 07:30:45 -0400, Nayna Jain wrote:
+> PowerVM provides an isolated Platform KeyStore(PKS)[1] storage allocation
+> for each partition(LPAR) with individually managed access controls to store
+> sensitive information securely. The Linux Kernel can access this storage by
+> interfacing with the hypervisor using a new set of hypervisor calls.
 > 
-> In practice all Power8 machines have an "ibm,power-rng", but let's not
-> rely on that, add a NULL check and early return in
-> powernv_get_random_real_mode().
+> This storage can be used for multiple purposes. The current two usecases
+> are:
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 1 applied to powerpc/next.
 
-[1/3] powerpc/powernv: Avoid crashing if rng is NULL
-      https://git.kernel.org/powerpc/c/90b5d4fe0b3ba7f589c6723c6bfb559d9e83956a
-[2/3] powerpc/powernv/kvm: Use darn for H_RANDOM on Power9
-      https://git.kernel.org/powerpc/c/7ef3d06f1bc4a5e62273726f3dc2bd258ae1c71f
-[3/3] powerpc/powernv: rename remaining rng powernv_ functions to pnv_
-      https://git.kernel.org/powerpc/c/978030f054ff97d9079b35f0178e2013918fb316
+[1/3] powerpc/pseries: define driver for Platform KeyStore
+      https://git.kernel.org/powerpc/c/2454a7af0f2a42918aa972147a0bec38e6656cd8
 
 cheers
