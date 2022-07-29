@@ -4,83 +4,119 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E89CC00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 07:20:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9898C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 12:10:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvJnZ45pMz3bc3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 17:20:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvRDF6N2hz2ynx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 22:10:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HPzshkYH;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VBmugkWQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=40.107.102.83; helo=nam04-dm6-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HPzshkYH;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=VBmugkWQ;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from NAM04-DM6-obe.outbound.protection.outlook.com (mail-dm6nam04on2083.outbound.protection.outlook.com [40.107.102.83])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvJlc5dG2z3000
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 17:18:36 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 26T7BpVn014380;
-	Fri, 29 Jul 2022 07:18:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=KaCtiYW+5W8q1OQqhq5tIxVNKreM0CxkMs4FF9pjkDY=;
- b=HPzshkYHbh1yoMoJUpmTemQVu/r1YI3MGyHnLFyMnpbMimoO1ZYdo7lxTTa1XdZvFyx4
- xkfmqtCGeQpTNcfh7j2tu1SOSxQs0RtePlYbFrCk7z+vD9TpPniBZsbd9ppEACl+7c+2
- 4Z9JsFRJc3dnrPXg6/WjS2tdzTlrMF4G/zBshG9ALjbKUsaRzKY7OspfznmoeyOilNvr
- WXd7Tbua/bh+R/Vy1TIbE1U8az5GdoMLIiy5DWF03pgkNotx9eaZDr0qNNGXSek9xa8Z
- pWOEuY7M35GYs2eLi6NgpMyRz2ztSHlJIso4N/+h5qFZsILGmR0XAzhQJRbo2DO0GTdD 6Q== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hmaxrg79c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 Jul 2022 07:18:28 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 26T6pQ01030906;
-	Fri, 29 Jul 2022 07:18:26 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma04ams.nl.ibm.com with ESMTP id 3hg96wq9fb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 29 Jul 2022 07:18:26 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 26T7Ic7W32833922
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 29 Jul 2022 07:18:38 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B2236A4053;
-	Fri, 29 Jul 2022 07:18:23 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 93E0CA4040;
-	Fri, 29 Jul 2022 07:18:22 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.46.37])
-	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Fri, 29 Jul 2022 07:18:22 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3696.100.31\))
-Subject: Re: [linux-next] Build failure drivers/cxl/cxl_pmem (powerpc)
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <87sfmkbfyg.fsf@mpe.ellerman.id.au>
-Date: Fri, 29 Jul 2022 12:48:21 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <A60A5549-F8E0-4227-8AD1-3DEC165F4648@linux.ibm.com>
-References: <7FF6D18F-2F85-4FFC-96B8-D1B1E8D8D622@linux.ibm.com>
- <87sfmkbfyg.fsf@mpe.ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-X-Mailer: Apple Mail (2.3696.100.31)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: UCJU-wmyzXeAMQMrNMUcaEBjmFNLnMMv
-X-Proofpoint-ORIG-GUID: UCJU-wmyzXeAMQMrNMUcaEBjmFNLnMMv
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-07-28_06,2022-07-28_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
- bulkscore=0 phishscore=0 spamscore=0 clxscore=1015 suspectscore=0
- adultscore=0 mlxlogscore=999 impostorscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2206140000 definitions=main-2207290028
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvRCT5YtQz2xJ4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 22:09:37 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SVyvEWzxFiJKJbcZWX4McRd+FMnHJoNGuFu8n01UBB+44lnQb7HG9RYmOLhnE4NGbeGuvkzgkA+fU98DBmFuE762IHM8CkP4n0m5O1cJXXFBo//FSUSnGk+id99dsPNVqY0FTCDh2V+ZQzjjLHPqZLQy3QFxwIsCTICowQ6DHutkKrDEPTLDpB5yEkU8cjE4xC65JPVThH73At7ZMdQUsKdoR2vQmVBwxVOWT8JZxKpThfmtJEuI8BMrRxdmmlFuRGO0qLZR1LNhwCMFyTMQPfS1bOWHpHPhWoo1EUm4OWkT7bFv2//OpsnPrXXC/sSMIpSKy0eKw1bCdKXf4UZ1yA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=BUQS6kt+NpSUvndVbH5R64F4tA4bJrGRXBz6xHy1xsk=;
+ b=ZVhBpFHLHwb9xm4bMjYle2m0o5ZRCCQ72ZiNiRqoUR9h8WvpjOpdOz8DEAeCUuh9ZvBYdhMl9XOl767HU5YUFuqESWS9Pf4qZL/AVlxoyITMav9yidss50USYUH7ES0+NrjIL9UsMHZXj3qLTuyC069q8qIHnzVdUpeRzaEVuCrGuC6yeSfO3mbmdRUPtwapiTnrC7l4hSZhbbbJ7sZV/Xzd+ivB2Dmge8v+q0EUlq5/1n0hBiLNk+NJTMt1ciGuK7xAnabHWUNa/Tx7RApL3iTodEJGJSv8zEUxoDzp7yhS1tXd9Sopr8Pg1LwNL7Tx1X9ppy5KcWdBCXFxQ9nGxw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=BUQS6kt+NpSUvndVbH5R64F4tA4bJrGRXBz6xHy1xsk=;
+ b=VBmugkWQ+78i59nYY9rsIyKegnonaOGll3gEeMU1MQfW+k4XVY4fvolkwkV3zVhr0ZZwkTd58SkFtwNX3w+HukNKYqZqbuyY8l6r9dRQAgg8uUqNJ6S9rHKgfmM0cFr5hCTL+qI+Txsapau6Vt+nxqOmOWslTzqy64qitZkl9QouUzVEFUhdDebfvbUlniyMhx+gGxBNa+ohT+e/km0EsW7NwbKVPxt46KAADLl+fDg3uno5Rx8D24+iNcC0moYMwnDTvZkw1pbWLj272OTR29wdAxWkOSv7LpiRfLALjCsGgcTreDhhmUUXDPj8SEc+MrMxL2rbbjOJwXSt6s7A1g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from MN2PR12MB4192.namprd12.prod.outlook.com (2603:10b6:208:1d5::15)
+ by BN6PR12MB1377.namprd12.prod.outlook.com (2603:10b6:404:1c::22) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5482.6; Fri, 29 Jul
+ 2022 12:09:19 +0000
+Received: from MN2PR12MB4192.namprd12.prod.outlook.com
+ ([fe80::4cce:310f:93:5d58]) by MN2PR12MB4192.namprd12.prod.outlook.com
+ ([fe80::4cce:310f:93:5d58%8]) with mapi id 15.20.5482.006; Fri, 29 Jul 2022
+ 12:09:13 +0000
+Date: Fri, 29 Jul 2022 09:09:09 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: "Tian, Kevin" <kevin.tian@intel.com>
+Subject: Re: [PATCH kernel] powerpc/iommu: Add iommu_ops to report
+ capabilities and allow blocking domains
+Message-ID: <YuPN5dJUPezitwn2@nvidia.com>
+References: <20220707135552.3688927-1-aik@ozlabs.ru>
+ <20220707151002.GB1705032@nvidia.com>
+ <bb8f4c93-6cbc-0106-d4c1-1f3c0751fbba@ozlabs.ru>
+ <bbe29694-66a3-275b-5a79-71237ad7388f@ozlabs.ru>
+ <BN9PR11MB527690152FE449D26576D2FE8C829@BN9PR11MB5276.namprd11.prod.outlook.com>
+ <300aa0fe-31c5-4ed2-d0a2-597c2c305f91@ozlabs.ru>
+ <CAOSf1CHxkSxGXopT=9i3N9xUmj0=13J1V_M=or23ZamucXyu7w@mail.gmail.com>
+ <BN9PR11MB527626B389A0F7A4AB19B6728C999@BN9PR11MB5276.namprd11.prod.outlook.com>
+ <78db23aa-ff77-478e-efaa-058fe08765d9@ozlabs.ru>
+ <BN9PR11MB52766CDF5C0A96DF0575AADE8C999@BN9PR11MB5276.namprd11.prod.outlook.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BN9PR11MB52766CDF5C0A96DF0575AADE8C999@BN9PR11MB5276.namprd11.prod.outlook.com>
+X-ClientProxiedBy: MN2PR04CA0008.namprd04.prod.outlook.com
+ (2603:10b6:208:d4::21) To MN2PR12MB4192.namprd12.prod.outlook.com
+ (2603:10b6:208:1d5::15)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: b59f4e29-5c95-4003-16bc-08da715b270d
+X-MS-TrafficTypeDiagnostic: BN6PR12MB1377:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	LPpD4EY5b7Y9M1yQgzsREbiwH00yNDutFUHnqgzT7MyapUwMPY0jtKw3RicMHeer0zTKqwsQ5fah/Ua4cz/AJu++Kethx1+Jfg5Stz03ZxVLTopVNurSkxmAjs/LMs7qhWYtQp0xPm4I3RGeVj6WDeHR333sVKjjikcCgeuXUQcFMQMRa6io/P3fKmMfRS1DLneXpG7vYI/7OOq7RuT4hS4Q2Vnos6Y31ifAvX/CWm/MlVNZ56JjSsqv+6zvYRlIcKKR0ErquBkork7bUdLx+lsN6aIGXBKALnDz7IqryDwHLjF3Hy6YYLrplVpHqIj8rX+OQEw/TGs3UWg00nCkSPJC41XmWiLZXi1qrI1EeYqabCe7lianDLAbXepBg+A+8Dsz3YWk4gDzuydTLFcXEWF5qan9W/K9c4BlmXBQW7m96vS0kL074IwdSY8NENpm4N0ioxsMOZUemGcXh5740JFCDnfPyldISd3O4TLT+3gl1m+OO5yX0H2iBnRIy2iQxn9/ZpnaTCazq4oARmsMKZs5kaztXbOv9Sf1hWhJBZW98pWzwp8dCcVef279a3B5cL/xKIQlZtAoOHTCGj7m1hhQQP+5WHZvZFtFPKPIFZ/ulQJC6aVMkFvGyso7XB48fiDFtb67P7Rgk/8k+ztgYgO7dIdqBPMxvL6lHTpWkIJvt5cYVkB0i96fqXju1zVOa1CsWIfsg2QWEJ+nctFsXL1elgCIN8ylORW0/wX9UrHEqoJ3p4/79IEPxi88Gc8e
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MN2PR12MB4192.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(376002)(366004)(39860400002)(346002)(396003)(136003)(41300700001)(2906002)(6666004)(186003)(26005)(6506007)(6512007)(2616005)(38100700002)(86362001)(316002)(66946007)(7416002)(36756003)(4744005)(54906003)(478600001)(6486002)(66476007)(66556008)(6862004)(5660300002)(8936002)(8676002)(4326008);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?2ihlL+VjFLgR59FY24Ak35O5dt0L9TW69Qft419cjmDB58GktZM/jwDACF5g?=
+ =?us-ascii?Q?0oVP+qm0hyVGkwIasY0Cq2qVdeRWjzP3aDVnxl2Qst2NJFElXIOmooNgJwRX?=
+ =?us-ascii?Q?bEzGP/im77QMDwr39YQL2KnMBdgVjZ8ye/YPZiPSb5pXMxCikOX0GVKo46uE?=
+ =?us-ascii?Q?Tc7pIZZ6ktjTkhrYHoFrZadRE7GhbD9NGs2pLZlPYNzHqzeCGhc3w2V81yjI?=
+ =?us-ascii?Q?KaiDcIgUxs1IYXUA+SNk+xr6oG/eadYKhQnMEHRSAmNacsxeeAxIzZX+pPnj?=
+ =?us-ascii?Q?dqeWygk5e9u/b/z75ttmXGYQZD3c24DKsaMo7VuFpkNYXYWFbMPEbMc1Q7zC?=
+ =?us-ascii?Q?+PNLOzVkD0hsGWQ4aLsWfi8mqTbcbip7mbJZIR0iUIUj4owFUuq8EuYn6iVQ?=
+ =?us-ascii?Q?4KD46CPmgfi6rQ3gxs7lH9QgcYyyq9iU+nOIPY+ShRNaRhyCMxShzfAb3VRf?=
+ =?us-ascii?Q?mCL6aZQDppyUe65aO1JcDG8TcEpXoCVRM0+7D57nd2F15+/MwFuwAq1A3VyY?=
+ =?us-ascii?Q?g98qAc8EM5PAWJdaaNrQi3aExAzEvm1vHU22y1ESlPcwCXlyd1BN80iACXGm?=
+ =?us-ascii?Q?h9PW2aGiZNHHOXD5X2s91KUEFF1SAIHctF7r6LScz0O5n0+a0GLdtXl4QrGX?=
+ =?us-ascii?Q?7RKP+TnfTbVtm+9SvYWWuIu9UsYtIq+HpDAqb4v5Ee1eHrXRUBPkVI87cjOJ?=
+ =?us-ascii?Q?MYmA+dcRuZrRaFtzlsB8xPApSai7Cny52pzZBy4Owb0YTkS4d+DQk50MVNxb?=
+ =?us-ascii?Q?qZo5HkY4CqsdgDos4hhz9KUXJi2ueGGXSTf0Iw/2IWJ9nKlpgThuJtGoxvwx?=
+ =?us-ascii?Q?dRjfEU/oUdzsAnZqNHJNRcEhcKCCUl+IZdw1aNma5aGKzHnG0A5jzq+BbxSs?=
+ =?us-ascii?Q?2lg2KgOAQFAHnX/3UWU/Or/jwPlaVwZHbFsd9pmODgTyCDAccplHBgSM4gop?=
+ =?us-ascii?Q?C+ojqJWXXCgr7uISoEOG+QDJuOER0t21u+dsJ4WCLxf4YGwyBO7E48tyfete?=
+ =?us-ascii?Q?nUka1V2aQU5cC98k1iuZwpf56IYoR+s4RmW+UjTaEzFfaC4Wl9qbJzWPoZnz?=
+ =?us-ascii?Q?qBDnt52UPQxz1fK6oBLKEpZJdfY99UjLlnpVakjfyy4Sk0zmB84c1jetuMzV?=
+ =?us-ascii?Q?CPkrfxqsbyItiKj+vgHz69gK+vnlBnyPuYydCSRrVlfXTf2n25Uw5PGxKKv0?=
+ =?us-ascii?Q?/RT7j8zMIHGUeP6p1QnBalQCbnkt/t2SNyfXew44u+sRNbvDHz66f5cAya8v?=
+ =?us-ascii?Q?+wS75ydpCyOQOcXRIw0ICP2k79Qkd783d7D5NqU58YxC+tbYp2U2dTmDW/vm?=
+ =?us-ascii?Q?YHPTwgpWOveHGy9EBs84jL0XCuj5PwZV2uaYwF+gKL0YFrjUeWRJqIe9PBYx?=
+ =?us-ascii?Q?g14w/T39ET/pacWgFPVzBnRCo0DqThfAcUhLeZD5rmNb16pFsXdpaIV8Avgn?=
+ =?us-ascii?Q?2WiG+2QxsqL/Zswfi9NJNRLIDlxE6MmhR0jgeoNwFfFAQ6PvvhFmwIacaX0N?=
+ =?us-ascii?Q?Yt7YfIOFOIxhKkBbSmbgKAPum5QvTLp2EAAmmM/jcZ4DATarJaZ6djMVrdnK?=
+ =?us-ascii?Q?fkiAR120idhugXdBdiY/uz3XxDnDVoYR+boW2QQD?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b59f4e29-5c95-4003-16bc-08da715b270d
+X-MS-Exchange-CrossTenant-AuthSource: MN2PR12MB4192.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2022 12:09:13.9196
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: PF+Svv/L6lqoYOTdNQk+GZZfYElaTmAf/kxCrD5EYJaHbIOyw9Wkcx2xuOhjn1Ya
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN6PR12MB1377
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,47 +128,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dan.j.williams@intel.com>, linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-cxl@vger.kernel.org
+Cc: "Rodel, Jorg" <jroedel@suse.de>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, Fabiano Rosas <farosas@linux.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Robin Murphy <robin.murphy@arm.com>, Daniel Henrique Barboza <danielhb413@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>, Alex Williamson <alex.williamson@redhat.com>, Oliver O'Halloran <oohall@gmail.com>, Joel Stanley <joel@jms.id.au>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Fri, Jul 29, 2022 at 04:24:36AM +0000, Tian, Kevin wrote:
+> > It is a POWER specific thing with one not-so-obvious consequence of each
+> > window having an independent page size (fixed at the moment or creation)
+> > and (most likely) different page size, like, 4K vs. 2M.
+> 
+> page size is anyway decided by the iommu driver. Same for other vendors.
+> the caller (e.g. vfio) just tries to map as many contiguous pages as
+> possible but in the end it's iommu driver to decide the actual size.
 
-> =46rom 8ca5b098b6ff1048953be748dbffc987996e2605 Mon Sep 17 00:00:00 =
-2001
-> From: Michael Ellerman <mpe@ellerman.id.au>
-> Date: Fri, 29 Jul 2022 16:13:55 +1000
-> Subject: [PATCH] powerpc/mm: Export memory_add_physaddr_to_nid() for =
-modules
->=20
-> The cxl_pmem module wants to call memory_add_physaddr_to_nid(), so
-> export the symbol.
->=20
-> Fixes: 04ad63f086d1 ("cxl/region: Introduce cxl_pmem_region objects")
-> Reported-by: Sachin Sant <sachinp@linux.ibm.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
+An iommu_domain with a non-uniform page_size is weird, but it could be
+made to work as some device-specific thing. The only thing the core
+codes care about is the minimum alignment, so you'd just have to set
+it to 4k and mapping the wrong thing to the 2M area would fail.
 
-Thanks Michael.
+domains with their io page size != PAGE_SIZE are already very special
+things that require special handling by userspace..
 
-Tested-by: Sachin Sant <sachinp@linux.ibm.com>
-
-> arch/powerpc/mm/mem.c | 1 +
-> 1 file changed, 1 insertion(+)
->=20
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 7b0d286bf9ba..01772e79fd93 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -55,6 +55,7 @@ int memory_add_physaddr_to_nid(u64 start)
-> {
-> 	return hot_add_scn_to_nid(start);
-> }
-> +EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
-> #endif
->=20
-> int __weak create_section_mapping(unsigned long start, unsigned long =
-end,
-> --=20
-> 2.35.3
->=20
-
+Jason
