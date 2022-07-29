@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B161C19F2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8480C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSZW4fbkz3dvw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:11:15 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSZw27rcz3f0N
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:11:36 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYs38dSz2xHZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv165Sz2xkY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYs1F4vz4x1c;
-	Fri, 29 Jul 2022 23:10:41 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYr29zgz4x1b;
+	Fri, 29 Jul 2022 23:10:40 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, jolsa@kernel.org, mpe@ellerman.id.au, acme@kernel.org
-In-Reply-To: <20220520084630.15181-1-atrajeev@linux.vnet.ibm.com>
-References: <20220520084630.15181-1-atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 1/2] powerpc/perf: Add support for caps under sysfs in powerpc
-Message-Id: <165909971373.253830.11662171769797597633.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:01:53 +1000
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220629060614.1680476-1-aik@ozlabs.ru>
+References: <20220629060614.1680476-1-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v2] pseries/iommu/ddw: Fix kdump to work in absence of ibm,dma-window
+Message-Id: <165909977150.253830.4573134506438140160.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:51 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, Leonardo Bras <leobras.c@gmail.com>, Andrew Donnellan <ajd@linux.ibm.com>, Frederic Barrat <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 20 May 2022 14:16:29 +0530, Athira Rajeev wrote:
-> Add caps support under "/sys/bus/event_source/devices/<pmu>/"
-> for powerpc. This directory can be used to expose some of the
-> specific features that powerpc PMU supports to the user.
-> Example: pmu_name. The name of PMU registered will depend on
-> platform, say power9 or power10 or it could be Generic Compat
-> PMU.
+On Wed, 29 Jun 2022 16:06:14 +1000, Alexey Kardashevskiy wrote:
+> The pseries platform uses 32bit default DMA window (always 4K pages) and
+> optional 64bit DMA window available via DDW ("Dynamic DMA Windows"),
+> 64K or 2M pages. For ages the default one was not removed and a huge
+> window was created in addition. Things changed with SRIOV-enabled
+> PowerVM which creates a default-and-bigger DMA window in 64bit space
+> (still using 4K pages) for IOV VFs so certain OSes do not need to use
+> the DDW API in order to utilize all available TCE budget.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/perf: Add support for caps under sysfs in powerpc
-      https://git.kernel.org/powerpc/c/6320e693d98c7430653866b7ca6679338134cb79
-[2/2] docs: ABI: sysfs-bus-event_source-devices: Document sysfs caps entry for PMU
-      https://git.kernel.org/powerpc/c/999d7c47a0f737157608b9b0d2d37bdd1afec58c
+[1/1] pseries/iommu/ddw: Fix kdump to work in absence of ibm,dma-window
+      https://git.kernel.org/powerpc/c/b1fc44eaa9ba31e28c4125d6b9205a3582b47b5d
 
 cheers
