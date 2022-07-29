@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA3B8C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:21:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BB4EC00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:21:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSp83DjQz3h3B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:21:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSpY5SyQz3fGF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:21:41 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSk25mlXz3fCm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:17:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSk352Zhz3gDC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:17:47 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSk24PfHz4xG3;
-	Fri, 29 Jul 2022 23:17:46 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSk31xBBz4x1P;
+	Fri, 29 Jul 2022 23:17:47 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Pali Rohár <pali@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
-In-Reply-To: <20220706101043.4867-1-pali@kernel.org>
-References: <20220706101043.4867-1-pali@kernel.org>
-Subject: Re: [PATCH] powerpc/fsl-pci: Fix Class Code of PCIe Root Port
-Message-Id: <165909973844.253830.2407063568858087726.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:18 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Tyrel Datwyler <tyreld@linux.ibm.com>, Pali Rohár <pali@kernel.org>, Guowen Shan <gshan@redhat.com>, "Guilherme G. Piccoli" <gpiccoli@igalia.com>, Bjorn Helgaas <helgaas@kernel.org>
+In-Reply-To: <20220706102148.5060-1-pali@kernel.org>
+References: <20220706102148.5060-1-pali@kernel.org>
+Subject: Re: [PATCH v2 1/2] powerpc/pci: Add config option for using OF 'reg' for PCI domain
+Message-Id: <165909977663.253830.17432035953486470333.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:56 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,21 +46,19 @@ Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 6 Jul 2022 12:10:43 +0200, Pali Rohár wrote:
-> By default old pre-3.0 Freescale PCIe controllers reports invalid PCI Class
-> Code 0x0b20 for PCIe Root Port. It can be seen by lspci -b output on P2020
-> board which has this pre-3.0 controller:
+On Wed, 6 Jul 2022 12:21:47 +0200, Pali Rohár wrote:
+> Since commit 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on
+> device-tree properties"), powerpc kernel always fallback to PCI domain
+> assignment from OF / Device Tree 'reg' property of the PCI controller.
 > 
->   $ lspci -bvnn
->   00:00.0 Power PC [0b20]: Freescale Semiconductor Inc P2020E [1957:0070] (rev 21)
->           !!! Invalid class 0b20 for header type 01
->           Capabilities: [4c] Express Root Port (Slot-), MSI 00
+> In most cases 'reg' property is not zero and therefore there it cause that
+> PCI domain zero is not present in system anymore.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 2 applied to powerpc/next.
 
-[1/1] powerpc/fsl-pci: Fix Class Code of PCIe Root Port
-      https://git.kernel.org/powerpc/c/0c551abfa004ce154d487d91777bf221c808a64f
+[2/2] powerpc/pci: Prefer PCI domain assignment via DT 'linux,pci-domain' and alias
+      https://git.kernel.org/powerpc/c/0fe1e96fef0a5c53b4c0d1500d356f3906000f81
 
 cheers
