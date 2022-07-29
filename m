@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D8F3C19F2B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:23:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECE79C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:24:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSs85fdJz3gNV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:23:56 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSsZ4s4Xz3hZw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:24:18 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSlt1Tyjz3gZt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:19:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSlv4jjQz3fJx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:19:23 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSls4lyXz4xG0;
-	Fri, 29 Jul 2022 23:19:21 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSlt555Bz4xG3;
+	Fri, 29 Jul 2022 23:19:22 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Anatolij Gustschin <agust@denx.de>, Michael Ellerman <mpe@ellerman.id.au>, Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20220612213400.159257-1-u.kleine-koenig@pengutronix.de>
-References: <20220612213400.159257-1-u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] powerpc/52xx: Mark gpt driver as not removable
-Message-Id: <165909971479.253830.16544264778618959955.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:01:54 +1000
+To: paulus@samba.org, Jason Wang <wangborong@cdjrlc.com>
+In-Reply-To: <20220718075553.70897-1-wangborong@cdjrlc.com>
+References: <20220718075553.70897-1-wangborong@cdjrlc.com>
+Subject: Re: [PATCH] powerpc/pseries/vas: Fix comment typo
+Message-Id: <165909977858.253830.9547689135709883077.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
+Cc: nick.child@ibm.com, haren@linux.ibm.com, linux-kernel@vger.kernel.org, npiggin@gmail.com, Julia.Lawall@inria.fr, clg@kaod.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 12 Jun 2022 23:34:00 +0200, Uwe Kleine-König wrote:
-> Returning an error code (here -EBUSY) from a remove callback doesn't
-> prevent the driver from being unloaded. The only effect is that an error
-> message is emitted and the driver is removed anyhow.
+On Mon, 18 Jul 2022 15:55:53 +0800, Jason Wang wrote:
+> The double `the' in line 807 is duplicated, remove one.
 > 
-> So instead drop the remove function (which is equivalent to returning zero)
-> and set the suppress_bind_attrs property to make it impossible to unload
-> the driver via sysfs.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/52xx: Mark gpt driver as not removable
-      https://git.kernel.org/powerpc/c/1978c48495171165453a7c90d1345c1d8d776d02
+[1/1] powerpc/pseries/vas: Fix comment typo
+      https://git.kernel.org/powerpc/c/901a30cf5f765a26f1308701d9df9e7f3d0023a5
 
 cheers
