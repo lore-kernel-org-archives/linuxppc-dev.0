@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3492C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:13:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33FCDC00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:14:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSdQ3G0Kz3fPp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:13:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSdq4hpNz3fSR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:14:07 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSZ01wHQz305c
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSZ05sXKz3bXn
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:48 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYy5XDWz4xG0;
-	Fri, 29 Jul 2022 23:10:46 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSZ056Wpz4xG4;
+	Fri, 29 Jul 2022 23:10:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <2ee707512b8b212b079b877f4ceb525a1606a3fb.1656655567.git.christophe.leroy@csgroup.eu>
-References: <2ee707512b8b212b079b877f4ceb525a1606a3fb.1656655567.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/32s: Fix boot failure with KASAN + SMP + JUMP_LABEL_FEATURE_CHECK_DEBUG
-Message-Id: <165909975339.253830.11928843532091953158.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:33 +1000
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <8abab4888da69ff78b73a56f64d9678a7bf684e9.1657549153.git.christophe.leroy@csgroup.eu>
+References: <8abab4888da69ff78b73a56f64d9678a7bf684e9.1657549153.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v1 1/5] powerpc/32: Do not allow selection of e5500 or e6500 CPUs on PPC32
+Message-Id: <165909976455.253830.10900913181823665074.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:44 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,30 +42,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Erhard Furtner <erhard_f@mailbox.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 1 Jul 2022 08:06:15 +0200, Christophe Leroy wrote:
-> Since commit 4291d085b0b0 ("powerpc/32s: Make pte_update() non
-> atomic on 603 core"), pte_update() has been using
-> mmu_has_feature(MMU_FTR_HPTE_TABLE) to avoid a useless atomic
-> operation on 603 cores.
-> 
-> When kasan_early_init() sets up the early zero shadow, it uses
-> __set_pte_at(). On book3s/32, __set_pte_at() calls pte_update()
-> when CONFIG_SMP is selected in order to ensure the preservation of
-> _PAGE_HASHPTE in case of concurrent update of the PTE. But that's
-> too early for mmu_has_feature(), so when
-> CONFIG_JUMP_LABEL_FEATURE_CHECK_DEBUG is selected, mmu_has_feature()
-> calls printk(). That's too early to call printk() because KASAN
-> early zero shadow page is not set up yet. It leads to a deadlock.
+On Mon, 11 Jul 2022 16:19:29 +0200, Christophe Leroy wrote:
+> Commit 0e00a8c9fd92 ("powerpc: Allow CPU selection also on PPC32")
+> enlarged the CPU selection logic to PPC32 by removing depend to
+> PPC64, and failed to restrict that depend to E5500_CPU and E6500_CPU.
+> Fortunately that got unnoticed because -mcpu=8540 will override the
+> -mcpu=e500mc64 or -mpcu=e6500 as they are ealier, but that's
+> fragile and may no be right in the future.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/32s: Fix boot failure with KASAN + SMP + JUMP_LABEL_FEATURE_CHECK_DEBUG
-      https://git.kernel.org/powerpc/c/6042a1652d643d1d34fa89bb314cb102960c0800
+[1/5] powerpc/32: Do not allow selection of e5500 or e6500 CPUs on PPC32
+      https://git.kernel.org/powerpc/c/9be013b2a9ecb29b5168e4b9db0e48ed53acf37c
+[2/5] powerpc/32: Don't always pass -mcpu=powerpc to the compiler
+      https://git.kernel.org/powerpc/c/446cda1b21d9a6b3697fe399c6a3a00ff4a285f5
+[3/5] powerpc/405: Fix build failure with GCC 12 (unrecognized opcode: `wrteei')
+      https://git.kernel.org/powerpc/c/ff27d9200a98757efc7c2cdf198904fd79cf4ffd
+[4/5] powerpc/44x: Fix build failure with GCC 12 (unrecognized opcode: `wrteei')
+      https://git.kernel.org/powerpc/c/2255411d1d0f0661d1e5acd5f6edf4e6652a345a
+[5/5] powerpc/64e: Fix build failure with GCC 12 (unrecognized opcode: `wrteei')
+      https://git.kernel.org/powerpc/c/d6b551b8f90cc92c7d3c09cf38c748efe305ecb4
 
 cheers
