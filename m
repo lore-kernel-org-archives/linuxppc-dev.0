@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25C18C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B161C19F2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSZC4Yjqz3bXy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:10:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSZW4fbkz3dvw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:11:15 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYq2RB0z2xHZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYs38dSz2xHZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:41 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYp5JX1z4x1H;
-	Fri, 29 Jul 2022 23:10:38 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYs1F4vz4x1c;
+	Fri, 29 Jul 2022 23:10:41 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220714080800.3712998-1-aik@ozlabs.ru>
-References: <20220714080800.3712998-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] powerpc/ioda/iommu/debugfs: Generate unique debugfs entries
-Message-Id: <165909977264.253830.17801812115010465933.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:52 +1000
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, jolsa@kernel.org, mpe@ellerman.id.au, acme@kernel.org
+In-Reply-To: <20220520084630.15181-1-atrajeev@linux.vnet.ibm.com>
+References: <20220520084630.15181-1-atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/2] powerpc/perf: Add support for caps under sysfs in powerpc
+Message-Id: <165909971373.253830.11662171769797597633.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:01:53 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: irogers@google.com, maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Jul 2022 18:08:00 +1000, Alexey Kardashevskiy wrote:
-> The iommu_table::it_index is a LIOBN which is not initialized on PowerNV
-> as it is not used except IOMMU debugfs where it is used for a node name.
-> 
-> This initializes it_index witn a unique number to avoid warnings and
-> have a node for every iommu_table.
-> 
-> This should not cause any behavioral change without CONFIG_IOMMU_DEBUGFS.
+On Fri, 20 May 2022 14:16:29 +0530, Athira Rajeev wrote:
+> Add caps support under "/sys/bus/event_source/devices/<pmu>/"
+> for powerpc. This directory can be used to expose some of the
+> specific features that powerpc PMU supports to the user.
+> Example: pmu_name. The name of PMU registered will depend on
+> platform, say power9 or power10 or it could be Generic Compat
+> PMU.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/ioda/iommu/debugfs: Generate unique debugfs entries
-      https://git.kernel.org/powerpc/c/d73b46c3c1449bf27f793b9d9ee86ed70c7a7163
+[1/2] powerpc/perf: Add support for caps under sysfs in powerpc
+      https://git.kernel.org/powerpc/c/6320e693d98c7430653866b7ca6679338134cb79
+[2/2] docs: ABI: sysfs-bus-event_source-devices: Document sysfs caps entry for PMU
+      https://git.kernel.org/powerpc/c/999d7c47a0f737157608b9b0d2d37bdd1afec58c
 
 cheers
