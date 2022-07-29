@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CBF5C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64BB5C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:12:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSbm0VRjz3f3q
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:12:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvScB0bPWz3fCB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:12:42 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv1PXsz2xml
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv72kbz2yn3
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYq5XBXz4x1Y;
-	Fri, 29 Jul 2022 23:10:39 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYv2GSLz4x1h;
+	Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220714081119.3714605-1-aik@ozlabs.ru>
-References: <20220714081119.3714605-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] powerpc/iommu: Fix iommu_table_in_use for a small default DMA window case
-Message-Id: <165909977346.253830.17171738550660446758.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:53 +1000
+To: linux-watchdog@vger.kernel.org, Scott Cheloha <cheloha@linux.ibm.com>
+In-Reply-To: <20220713202335.1217647-1-cheloha@linux.ibm.com>
+References: <20220713202335.1217647-1-cheloha@linux.ibm.com>
+Subject: Re: [PATCH v3 0/4] pseries-wdt: initial support for H_WATCHDOG-based watchdog timers
+Message-Id: <165909971888.253830.15454249099878371474.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:01:58 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Leonardo Bras <leobras.c@gmail.com>, Fabiano Rosas <farosas@linux.ibm.com>
+Cc: nathanl@linux.ibm.com, wvoigt@us.ibm.com, aik@ozlabs.ru, vaishnavi@linux.ibm.com, npiggin@gmail.com, tzungbi@kernel.org, brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Jul 2022 18:11:19 +1000, Alexey Kardashevskiy wrote:
-> The existing iommu_table_in_use() helper checks if the kernel is using
-> any of TCEs. There are some reserved TCEs:
-> 1) the very first one if DMA window starts from 0 to avoid having a zero
-> but still valid DMA handle;
-> 2) it_reserved_start..it_reserved_end to exclude MMIO32 window in case
-> the default window spans across that - this is the default for the first
-> DMA window on PowerNV.
+On Wed, 13 Jul 2022 15:23:31 -0500, Scott Cheloha wrote:
+> PAPR v2.12 defines a new hypercall, H_WATCHDOG.  This patch series
+> adds support for this hypercall to powerpc/pseries kernels and
+> introduces a new watchdog driver, "pseries-wdt", for the virtual
+> timers exposed by the hypercall.
+> 
+> This series is preceded by the following:
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/iommu: Fix iommu_table_in_use for a small default DMA window case
-      https://git.kernel.org/powerpc/c/d80f6de9d601c30b53c17f00cb7cfe3169f2ddad
+[1/4] powerpc/pseries: hvcall.h: add H_WATCHDOG opcode, H_NOOP return code
+      https://git.kernel.org/powerpc/c/c6b2bd262b33aa2451f52aec2190131d1762945a
+[2/4] powerpc/pseries: add FW_FEATURE_WATCHDOG flag
+      https://git.kernel.org/powerpc/c/1621563ec62ff143c7b817dd5eab0884cdfaf89d
+[3/4] powerpc/pseries: register pseries-wdt device with platform bus
+      https://git.kernel.org/powerpc/c/578030bfe117060bf86c81aaa7b3faead4589810
+[4/4] watchdog/pseries-wdt: initial support for H_WATCHDOG-based watchdog timers
+      https://git.kernel.org/powerpc/c/69472ffa6575e3a1c1e3324dd06395af0f63eb71
 
 cheers
