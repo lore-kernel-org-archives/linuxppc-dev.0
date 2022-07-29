@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8480C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE454C19F2B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:11:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSZw27rcz3f0N
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:11:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSbL2xqvz3bjX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:11:58 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv165Sz2xkY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv1CxRz2xkk
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYr29zgz4x1b;
-	Fri, 29 Jul 2022 23:10:40 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYs5qW8z4x1d;
+	Fri, 29 Jul 2022 23:10:41 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220629060614.1680476-1-aik@ozlabs.ru>
-References: <20220629060614.1680476-1-aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v2] pseries/iommu/ddw: Fix kdump to work in absence of ibm,dma-window
-Message-Id: <165909977150.253830.4573134506438140160.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:51 +1000
+To: linux-doc-tw-discuss@lists.sourceforge.net, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Bagas Sanjaya <bagasdotme@gmail.com>, linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220728033332.27836-1-bagasdotme@gmail.com>
+References: <20220727220050.549db613@canb.auug.org.au> <20220728033332.27836-1-bagasdotme@gmail.com>
+Subject: Re: [PATCH 0/3] Documentation: powerpc: documentation fixes for Documentation/powerpc/elf_hwcaps.rst
+Message-Id: <165909979455.253830.7633506902686535863.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:03:14 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>, Leonardo Bras <leobras.c@gmail.com>, Andrew Donnellan <ajd@linux.ibm.com>, Frederic Barrat <fbarrat@linux.ibm.com>
+Cc: Yanteng Si <siyanteng@loongson.cn>, Catalin Marinas <catalin.marinas@arm.com>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Will Deacon <will@kernel.org>, Alex Shi <alexs@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 29 Jun 2022 16:06:14 +1000, Alexey Kardashevskiy wrote:
-> The pseries platform uses 32bit default DMA window (always 4K pages) and
-> optional 64bit DMA window available via DDW ("Dynamic DMA Windows"),
-> 64K or 2M pages. For ages the default one was not removed and a huge
-> window was created in addition. Things changed with SRIOV-enabled
-> PowerVM which creates a default-and-bigger DMA window in 64bit space
-> (still using 4K pages) for IOV VFs so certain OSes do not need to use
-> the DDW API in order to utilize all available TCE budget.
+On Thu, 28 Jul 2022 10:33:30 +0700, Bagas Sanjaya wrote:
+> After merging powerpc tree for linux-next integration testing, Stephen
+> Rothwell reported htmldocs warnings at [1]. Fix these with self-explanatory
+> fixes in the shortlog below.
+> 
+> [1]: https://lore.kernel.org/linuxppc-dev/20220727220050.549db613@canb.auug.org.au/
+> 
+> Bagas Sanjaya (3):
+>   Documentation: powerpc: fix indentation warnings
+>   Documentation: use different label names for each arch's
+>     elf_hwcaps.rst
+>   Documentation: powerpc: add elf_hwcaps to table of contents
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] pseries/iommu/ddw: Fix kdump to work in absence of ibm,dma-window
-      https://git.kernel.org/powerpc/c/b1fc44eaa9ba31e28c4125d6b9205a3582b47b5d
+[1/3] Documentation: powerpc: fix indentation warnings
+      https://git.kernel.org/powerpc/c/4515862b66d3bdaf681cade1c72f047c93d94d01
+[2/3] Documentation: use different label names for each arch's elf_hwcaps.rst
+      https://git.kernel.org/powerpc/c/0595a216920cb035030c73cec3ab9fe413ef1d77
+[3/3] Documentation: powerpc: add elf_hwcaps to table of contents
+      https://git.kernel.org/powerpc/c/a05aae92f84ba6d2705f6dac206ef5dcf097ea96
 
 cheers
