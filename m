@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64BB5C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC887C00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:13:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvScB0bPWz3fCB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:12:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvScb2d4Qz3fGh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:13:03 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYv72kbz2yn3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSYx52VHz2xss
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:10:45 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYv2GSLz4x1h;
-	Fri, 29 Jul 2022 23:10:43 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSYx1tLKz4x1H;
+	Fri, 29 Jul 2022 23:10:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linux-watchdog@vger.kernel.org, Scott Cheloha <cheloha@linux.ibm.com>
-In-Reply-To: <20220713202335.1217647-1-cheloha@linux.ibm.com>
-References: <20220713202335.1217647-1-cheloha@linux.ibm.com>
-Subject: Re: [PATCH v3 0/4] pseries-wdt: initial support for H_WATCHDOG-based watchdog timers
-Message-Id: <165909971888.253830.15454249099878371474.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:01:58 +1000
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <db3fc14f3bfa6215b0786ef58a6e2bc1e1f964d7.1655202804.git.christophe.leroy@csgroup.eu>
+References: <db3fc14f3bfa6215b0786ef58a6e2bc1e1f964d7.1655202804.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/32: Call mmu_mark_initmem_nx() regardless of data block mapping.
+Message-Id: <165909975216.253830.17486621428279802843.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:32 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,29 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, wvoigt@us.ibm.com, aik@ozlabs.ru, vaishnavi@linux.ibm.com, npiggin@gmail.com, tzungbi@kernel.org, brking@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net
+Cc: Maxime Bizon <mbizon@freebox.fr>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 13 Jul 2022 15:23:31 -0500, Scott Cheloha wrote:
-> PAPR v2.12 defines a new hypercall, H_WATCHDOG.  This patch series
-> adds support for this hypercall to powerpc/pseries kernels and
-> introduces a new watchdog driver, "pseries-wdt", for the virtual
-> timers exposed by the hypercall.
+On Tue, 14 Jun 2022 12:34:08 +0200, Christophe Leroy wrote:
+> mark_initmem_nx() calls either mmu_mark_initmem_nx() or
+> set_memory_attr() based on return from v_block_mapped()
+> of _sinittext.
 > 
-> This series is preceded by the following:
+> But we can now handle text and data independently, so that
+> text may be mapped by block even when data is mapped by pages.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/4] powerpc/pseries: hvcall.h: add H_WATCHDOG opcode, H_NOOP return code
-      https://git.kernel.org/powerpc/c/c6b2bd262b33aa2451f52aec2190131d1762945a
-[2/4] powerpc/pseries: add FW_FEATURE_WATCHDOG flag
-      https://git.kernel.org/powerpc/c/1621563ec62ff143c7b817dd5eab0884cdfaf89d
-[3/4] powerpc/pseries: register pseries-wdt device with platform bus
-      https://git.kernel.org/powerpc/c/578030bfe117060bf86c81aaa7b3faead4589810
-[4/4] watchdog/pseries-wdt: initial support for H_WATCHDOG-based watchdog timers
-      https://git.kernel.org/powerpc/c/69472ffa6575e3a1c1e3324dd06395af0f63eb71
+[1/2] powerpc/32: Call mmu_mark_initmem_nx() regardless of data block mapping.
+      https://git.kernel.org/powerpc/c/980bbf7ca72012d317617fcdbfabe8708e4cef29
+[2/2] powerpc/32: Set an IBAT covering up to _einittext during init
+      https://git.kernel.org/powerpc/c/2a0fb3c155c97c75176e557d61f8e66c1bd9b735
 
 cheers
