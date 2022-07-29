@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E57C00144
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C62CAC00144
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 13:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSmv5SfCz3gpt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:20:15 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LvSnK2lPBz3gt1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 29 Jul 2022 23:20:37 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSk101kbz3drn
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LvSk14PxDz3bnM
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jul 2022 23:17:45 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSk05748z4x1b;
-	Fri, 29 Jul 2022 23:17:44 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LvSk13J74z4xFy;
+	Fri, 29 Jul 2022 23:17:45 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Pali Rohár <pali@kernel.org>, Scott Wood <oss@buserror.net>
-In-Reply-To: <20220709124305.17559-1-pali@kernel.org>
-References: <20220709124305.17559-1-pali@kernel.org>
-Subject: Re: [PATCH] powerpc/85xx: Fix description of MPC85xx and P1/P2 boards options
-Message-Id: <165909977561.253830.2924056858467430349.b4-ty@ellerman.id.au>
-Date: Fri, 29 Jul 2022 23:02:55 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Pali Rohár <pali@kernel.org>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
+In-Reply-To: <20220504180822.29782-1-pali@kernel.org>
+References: <20220504180822.29782-1-pali@kernel.org>
+Subject: Re: [PATCH] powerpc/85xx: P2020: Add law_trgt_if property to PCIe DT nodes
+Message-Id: <165909977761.253830.2305727219055135050.b4-ty@ellerman.id.au>
+Date: Fri, 29 Jul 2022 23:02:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,15 +46,21 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 9 Jul 2022 14:43:05 +0200, Pali Rohár wrote:
-> More MPC85xx and P1/P2 boards options have incorrect description. Fix them
-> to include list of all boards for which they enable/disable support.
+On Wed, 4 May 2022 20:08:22 +0200, Pali Rohár wrote:
+> DT law_trgt_if property defines Local Access Window Target Interface.
 > 
+> Local Access Window Target Interface is used for identifying individual
+> peripheral and mapping its memory to CPU. Interface id is defined by
+> hardware itself.
 > 
+> U-Boot uses law_trgt_if DT property in PCIe nodes for configuring memory
+> mapping of individual PCIe controllers.
+> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/85xx: Fix description of MPC85xx and P1/P2 boards options
-      https://git.kernel.org/powerpc/c/d20c96deb3e2c1cedc47d2be9fc110ffed81b1af
+[1/1] powerpc/85xx: P2020: Add law_trgt_if property to PCIe DT nodes
+      https://git.kernel.org/powerpc/c/1f00b5ab992c122c51bc37662b3b4df5963462f3
 
 cheers
