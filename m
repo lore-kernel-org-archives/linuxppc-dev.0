@@ -4,41 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95131C19F2A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 12:43:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74CEEC00144
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 13:41:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LxHpZ0WrZz3cBq
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 22:43:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LxK5W6yw3z3bXD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 23:41:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vZsF5JXt;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=HMNxuNm0;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vZsF5JXt;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=HMNxuNm0;
+	dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LxK4l5N3Gz2xkr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2022 23:40:23 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out1.suse.de (Postfix) with ESMTP id 7B6ED38C76;
+	Mon,  1 Aug 2022 13:40:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1659361219; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=a/15e5KZCnNKb0azDiCVDEz20SQoPdOtelD54ZT3HrI=;
+	b=vZsF5JXt0yunqdghLnL8szmYGnecduZ5VaUF50ssv6NhWp/sQ/Eoqo26SQgkJghY6gmXSI
+	2yUH4JSJxYyzwbRG69QWbS8VhnlIvOs2vK1vMqgrN9cmcPTxGc4YaB6ORGS3ggcUhw5Y6h
+	IUBr3gPcpkJNVdZqb7IRrfvb0+LZeGM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1659361219;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=a/15e5KZCnNKb0azDiCVDEz20SQoPdOtelD54ZT3HrI=;
+	b=HMNxuNm0lGxkGLz2Wj+1OUU44LycDhShMQHSDOcCtFhc0cGYVlZ4pNxYPg7V5AqsB2Llw9
+	jbnAZv4hyp16SwBA==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LxHp717Gkz2xG5
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2022 22:42:37 +1000 (AEST)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0228A20148F;
-	Mon,  1 Aug 2022 14:42:34 +0200 (CEST)
-Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
-	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id BEB9220130A;
-	Mon,  1 Aug 2022 14:42:33 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id 4C22A180031C;
-	Mon,  1 Aug 2022 20:42:32 +0800 (+08)
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
-To: nicoleotsuka@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	shengjiu.wang@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	alsa-devel@alsa-project.org
-Subject: [PATCH] ASoC: imx-rpmsg: Support configure sysclk for codec dai
-Date: Mon,  1 Aug 2022 20:26:13 +0800
-Message-Id: <1659356773-8315-1-git-send-email-shengjiu.wang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+	by relay2.suse.de (Postfix) with ESMTPS id 4520B2C141;
+	Mon,  1 Aug 2022 13:40:19 +0000 (UTC)
+Date: Mon, 1 Aug 2022 15:40:18 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: gjoyce@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 1/2] lib: generic accessor functions for arch keystore
+Message-ID: <20220801134018.GY17705@kitsune.suse.cz>
+References: <20220801123426.585801-1-gjoyce@linux.vnet.ibm.com>
+ <20220801123426.585801-2-gjoyce@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220801123426.585801-2-gjoyce@linux.vnet.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,88 +71,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: axboe@kernel.dk, nayna@linux.ibm.com, linux-block@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, gjoyce@ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some codecs need to configure the sysclk even with slave
-mode, otherwise it may not work properly with some case.
+Hello,
 
-wm8960 is the one that need sysclk be configured, so add
-late_probe() to call the snd_soc_dai_set_sysclk() of codec
+On Mon, Aug 01, 2022 at 07:34:25AM -0500, gjoyce@linux.vnet.ibm.com wrote:
+> From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> 
+> Generic kernel subsystems may rely on platform specific persistent
+> KeyStore to store objects containing sensitive key material. In such case,
+> they need to access architecture specific functions to perform read/write
+> operations on these variables.
+> 
+> Define the generic variable read/write prototypes to be implemented by
+> architecture specific versions. The default(weak) implementations of
+> these prototypes return -EOPNOTSUPP unless overridden by architecture
+> versions.
+> 
+> Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> ---
+>  include/linux/arch_vars.h | 23 +++++++++++++++++++++++
+>  lib/Makefile              |  2 +-
+>  lib/arch_vars.c           | 25 +++++++++++++++++++++++++
+>  3 files changed, 49 insertions(+), 1 deletion(-)
+>  create mode 100644 include/linux/arch_vars.h
+>  create mode 100644 lib/arch_vars.c
+> 
+> diff --git a/include/linux/arch_vars.h b/include/linux/arch_vars.h
+> new file mode 100644
+> index 000000000000..9c280ff9432e
+> --- /dev/null
+> +++ b/include/linux/arch_vars.h
+> @@ -0,0 +1,23 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Platform variable opearations.
+> + *
+> + * Copyright (C) 2022 IBM Corporation
+> + *
+> + * These are the accessor functions (read/write) for architecture specific
+> + * variables. Specific architectures can provide overrides.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +
+> +enum arch_variable_type {
+> +	ARCH_VAR_OPAL_KEY      = 0,     /* SED Opal Authentication Key */
+> +	ARCH_VAR_OTHER         = 1,     /* Other type of variable */
+> +	ARCH_VAR_MAX           = 1,     /* Maximum type value */
+> +};
+> +
+> +int arch_read_variable(enum arch_variable_type type, char *varname,
+> +		       void *varbuf, u_int *varlen);
+> +int arch_write_variable(enum arch_variable_type type, char *varname,
+> +			void *varbuf, u_int varlen);
+> diff --git a/lib/Makefile b/lib/Makefile
+> index f99bf61f8bbc..b90c4cb0dbbb 100644
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -48,7 +48,7 @@ obj-y += bcd.o sort.o parser.o debug_locks.o random32.o \
+>  	 bsearch.o find_bit.o llist.o memweight.o kfifo.o \
+>  	 percpu-refcount.o rhashtable.o \
+>  	 once.o refcount.o usercopy.o errseq.o bucket_locks.o \
+> -	 generic-radix-tree.o
+> +	 generic-radix-tree.o arch_vars.o
+>  obj-$(CONFIG_STRING_SELFTEST) += test_string.o
+>  obj-y += string_helpers.o
+>  obj-$(CONFIG_TEST_STRING_HELPERS) += test-string_helpers.o
+> diff --git a/lib/arch_vars.c b/lib/arch_vars.c
+> new file mode 100644
+> index 000000000000..e6f16d7d09c1
+> --- /dev/null
+> +++ b/lib/arch_vars.c
+> @@ -0,0 +1,25 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Platform variable operations.
+> + *
+> + * Copyright (C) 2022 IBM Corporation
+> + *
+> + * These are the accessor functions (read/write) for architecture specific
+> + * variables. Specific architectures can provide overrides.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/arch_vars.h>
+> +
+> +int __weak arch_read_variable(enum arch_variable_type type, char *varname,
+> +			      void *varbuf, u_int *varlen)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +
+> +int __weak arch_write_variable(enum arch_variable_type type, char *varname,
+> +			       void *varbuf, u_int varlen)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> -- 
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
----
- sound/soc/fsl/imx-rpmsg.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+Doesn't EFI already have some variables?
 
-diff --git a/sound/soc/fsl/imx-rpmsg.c b/sound/soc/fsl/imx-rpmsg.c
-index 2e117311e582..bef4bd997c98 100644
---- a/sound/soc/fsl/imx-rpmsg.c
-+++ b/sound/soc/fsl/imx-rpmsg.c
-@@ -19,6 +19,7 @@
- struct imx_rpmsg {
- 	struct snd_soc_dai_link dai;
- 	struct snd_soc_card card;
-+	unsigned int sysclk;
- };
- 
- static const struct snd_soc_dapm_widget imx_rpmsg_dapm_widgets[] = {
-@@ -28,6 +29,27 @@ static const struct snd_soc_dapm_widget imx_rpmsg_dapm_widgets[] = {
- 	SND_SOC_DAPM_MIC("Main MIC", NULL),
- };
- 
-+static int imx_rpmsg_late_probe(struct snd_soc_card *card)
-+{
-+	struct imx_rpmsg *data = snd_soc_card_get_drvdata(card);
-+	struct snd_soc_pcm_runtime *rtd = list_first_entry(&card->rtd_list,
-+							   struct snd_soc_pcm_runtime, list);
-+	struct snd_soc_dai *codec_dai = asoc_rtd_to_codec(rtd, 0);
-+	struct device *dev = card->dev;
-+	int ret;
-+
-+	if (!data->sysclk)
-+		return 0;
-+
-+	ret = snd_soc_dai_set_sysclk(codec_dai, 0, data->sysclk, SND_SOC_CLOCK_IN);
-+	if (ret && ret != -ENOTSUPP) {
-+		dev_err(dev, "failed to set sysclk in %s\n", __func__);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
- static int imx_rpmsg_probe(struct platform_device *pdev)
- {
- 	struct snd_soc_dai_link_component *dlc;
-@@ -72,12 +94,18 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
- 		data->dai.codecs->dai_name = "snd-soc-dummy-dai";
- 		data->dai.codecs->name = "snd-soc-dummy";
- 	} else {
-+		struct clk *clk;
-+
- 		data->dai.codecs->of_node = args.np;
- 		ret = snd_soc_get_dai_name(&args, &data->dai.codecs->dai_name);
- 		if (ret) {
- 			dev_err(&pdev->dev, "Unable to get codec_dai_name\n");
- 			goto fail;
- 		}
-+
-+		clk = devm_get_clk_from_child(&pdev->dev, args.np, NULL);
-+		if (!IS_ERR(clk))
-+			data->sysclk = clk_get_rate(clk);
- 	}
- 
- 	data->dai.cpus->dai_name = dev_name(&rpmsg_pdev->dev);
-@@ -103,6 +131,7 @@ static int imx_rpmsg_probe(struct platform_device *pdev)
- 	data->card.owner = THIS_MODULE;
- 	data->card.dapm_widgets = imx_rpmsg_dapm_widgets;
- 	data->card.num_dapm_widgets = ARRAY_SIZE(imx_rpmsg_dapm_widgets);
-+	data->card.late_probe = imx_rpmsg_late_probe;
- 	/*
- 	 * Inoder to use common api to get card name and audio routing.
- 	 * Use parent of_node for this device, revert it after finishing using
--- 
-2.34.1
+And even powernv?
 
+Shouldn't this generalize the already existing variables?
+
+Or move to powerpc and at least generalize the powerpc ones?
+
+Thanks
+
+Michal
