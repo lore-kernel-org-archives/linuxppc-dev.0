@@ -4,58 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95F1EC00144
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 07:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F6DCC00144
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 10:01:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Lx9SC5lFCz30Qc
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 17:56:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LxDDD4thnz30Mr
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Aug 2022 20:01:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XHyqkREM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gcrlKjCt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XHyqkREM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gcrlKjCt;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Lx9RV14mwz2xHC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2022 17:56:05 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LxDCM68HLz2xJZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Aug 2022 20:00:47 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2718lDOm002036
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2022 10:00:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ mime-version : content-transfer-encoding; s=pp1;
+ bh=EmYVxdZENBv5YItMVxG9t+9nqpRUjtWsdKWByDczSak=;
+ b=gcrlKjCtVcGyyC4ZyYWnoI14lmiWMA90RkoyLryzUmCCgZTKCyQVqsLvCoTsHMMKvdN7
+ YoSeni27L6wFMmM7w1NZf6QnsQ6xkRjJW/t8LrfLlGxODq9R7acbR4YZHUUm0DD07VnI
+ kjnVloKfrkij3n+9kUbxYhNajFVKycSpYgBcewzhrk68haCVdZSp2CRhgD5uuX912cpF
+ ipSF7gTgHv8un3G0TKdUaikNFswATXjQVXabKl5C43tDQloRmBJFL+wHZTSNTVRbyisC
+ FRvudXLLW8/wtfq5fwyRCH78V86ldYzc8MYDq8jEQhuf77xVUCddA4QRLkRuUgwJjS8S 7g== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hpbmk1wd6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Aug 2022 10:00:42 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2719lPYU007406
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Aug 2022 10:00:42 GMT
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hpbmk1wbf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 01 Aug 2022 10:00:42 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2719qHxJ001955;
+	Mon, 1 Aug 2022 10:00:40 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma02fra.de.ibm.com with ESMTP id 3hmv98t097-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 01 Aug 2022 10:00:39 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 271A0b9x29032854
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 1 Aug 2022 10:00:37 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6EE68AE04D;
+	Mon,  1 Aug 2022 10:00:37 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 189ECAE045;
+	Mon,  1 Aug 2022 10:00:37 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Mon,  1 Aug 2022 10:00:37 +0000 (GMT)
+Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 029EE60EDF;
-	Mon,  1 Aug 2022 07:56:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 339F0C433C1;
-	Mon,  1 Aug 2022 07:56:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1659340562;
-	bh=x3Fg/Rbx8Ng7EwGIUGb7gYjJKq38W2VLLAiBUTzBwUQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XHyqkREMjXZIALfQgy1Cu/GsXenY3wYf/Xd1OB/ULWO1vihVUAOjYJFOaB/WF1FgR
-	 RRwKpChPwxguNRW8WaqI3SZt1oIfWI11BOkBb//PHn30D3i81qpyB9fjst8p42BNcG
-	 cHSZ3bKZ/+QmRE3ZeXIZqkGPZAnAcb7zSRJIeFCVou519sO+IVI6xxk78aBLErFUba
-	 8rmz4SG8igePx24OQgcQe7YSXMF9PDZUg+q5MhuMkIRqIZh/fVSGbR393/shz85pTM
-	 2d/rtw7iXNLlA09em4VH46l2yWlPxXmjRDwcx30bldkSm7A2D8NzZ7HYf+PPPv/NQm
-	 In9HFGRtVt2RQ==
-Received: by pali.im (Postfix)
-	id 14C3D75F; Mon,  1 Aug 2022 09:55:59 +0200 (CEST)
-Date: Mon, 1 Aug 2022 09:55:58 +0200
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/85xx: P2020: Add law_trgt_if property to PCIe DT
- nodes
-Message-ID: <20220801075558.jdkaegjjzexhe7kl@pali>
-References: <20220504180822.29782-1-pali@kernel.org>
- <165909977761.253830.2305727219055135050.b4-ty@ellerman.id.au>
- <CAL_JsqJZ6s4qU+Yt4CCj3q-Fk_MKEddx5aLKu15NLnTbgMyRGA@mail.gmail.com>
- <87k07sbpl3.fsf@mpe.ellerman.id.au>
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EA87B60142;
+	Mon,  1 Aug 2022 20:00:31 +1000 (AEST)
+Message-ID: <0eb09f119e2752b80c3d28bb620cee6205adc7db.camel@linux.ibm.com>
+Subject: Re: [PATCH v2 02/14] powerpc: Remove direct call to personality
+ syscall handler
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 01 Aug 2022 20:00:27 +1000
+In-Reply-To: <20220725062512.118602-1-rmclure@linux.ibm.com>
+References: <20220725062512.118602-1-rmclure@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.3-1 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <87k07sbpl3.fsf@mpe.ellerman.id.au>
-User-Agent: NeoMutt/20180716
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: miK_o2QVF8QOsY-2XS7zgPiHsuft_mdW
+X-Proofpoint-ORIG-GUID: t7pilSKGvHeYG_TtIBZfpV6DThC50mGm
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-08-01_05,2022-07-28_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
+ priorityscore=1501 lowpriorityscore=0 malwarescore=0 mlxlogscore=918
+ impostorscore=0 mlxscore=0 bulkscore=0 suspectscore=0 phishscore=0
+ adultscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2206140000 definitions=main-2208010045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,40 +103,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <patch-notifications@ellerman.id.au>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Monday 01 August 2022 13:38:32 Michael Ellerman wrote:
-> Rob Herring <robh+dt@kernel.org> writes:
-> > On Fri, Jul 29, 2022 at 7:17 AM Michael Ellerman
-> > <patch-notifications@ellerman.id.au> wrote:
-> >>
-> >> On Wed, 4 May 2022 20:08:22 +0200, Pali Rohár wrote:
-> >> > DT law_trgt_if property defines Local Access Window Target Interface.
-> >> >
-> >> > Local Access Window Target Interface is used for identifying individual
-> >> > peripheral and mapping its memory to CPU. Interface id is defined by
-> >> > hardware itself.
-> >> >
-> >> > U-Boot uses law_trgt_if DT property in PCIe nodes for configuring memory
-> >> > mapping of individual PCIe controllers.
-> >> >
-> >> > [...]
-> >>
-> >> Applied to powerpc/next.
-> >>
-> >> [1/1] powerpc/85xx: P2020: Add law_trgt_if property to PCIe DT nodes
-> >>       https://git.kernel.org/powerpc/c/1f00b5ab992c122c51bc37662b3b4df5963462f3
-> >
-> > Why? Minimally, it needs a vendor prefix and s/_/-/ as I commented.
+On Mon, 2022-07-25 at 16:25 +1000, Rohan McLure wrote:
+> Syscall handlers should not be invoked internally by their symbol
+> names,
+> as these symbols defined by the architecture-defined SYSCALL_DEFINE
+> macro. Fortunately, in the case of ppc64_personality, its call to
+> sys_personality can be replaced with an invocation to the
+> equivalent ksys_personality inline helper in <linux/syscalls.h>.
 > 
-> OK. I misread your "maybe that's fine" as approval.
-> 
-> Pali can you send a fixup patch please?
-> 
-> cheers
+> Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
 
-No I cannot. This is how this property is used by bootloaders for at
-least 10 years. There are underlines (not hyphens) and there is no
-vendor prefix.
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+
+> ---
+> V1 -> V2: Use inline helper to deduplicate bodies in compat/regular
+> implementations.
+> ---
+>  arch/powerpc/kernel/syscalls.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/syscalls.c
+> b/arch/powerpc/kernel/syscalls.c
+> index ca20083dd0ae..22755502afc0 100644
+> --- a/arch/powerpc/kernel/syscalls.c
+> +++ b/arch/powerpc/kernel/syscalls.c
+> @@ -89,7 +89,7 @@ static inline long do_ppc64_personality(unsigned
+> long personality)
+>         if (personality(current->personality) == PER_LINUX32
+>             && personality(personality) == PER_LINUX)
+>                 personality = (personality & ~PER_MASK) |
+> PER_LINUX32;
+> -       ret = sys_personality(personality);
+> +       ret = ksys_personality(personality);
+>         if (personality(ret) == PER_LINUX32)
+>                 ret = (ret & ~PER_MASK) | PER_LINUX;
+>         return ret;
+
+
