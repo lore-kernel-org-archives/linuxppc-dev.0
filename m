@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44A2AC00140
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Aug 2022 11:02:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A005FC00140
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Aug 2022 11:02:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LxsWj5jfrz305X
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Aug 2022 21:02:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LxsX72Mqzz3dt2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Aug 2022 21:02:31 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LxsWH6b0dz2xGd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2022 21:01:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LxsWL343mz2xtw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Aug 2022 21:01:50 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LxsWH41T8z4x1L;
-	Tue,  2 Aug 2022 21:01:47 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4LxsWJ26Ddz4x1N;
+	Tue,  2 Aug 2022 21:01:48 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Kajol Jain <kjain@linux.ibm.com>, npiggin@gmail.com, mpe@ellerman.id.au
-In-Reply-To: <20220711034927.213192-1-kjain@linux.ibm.com>
-References: <20220711034927.213192-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/kvm: Move pmu code in kvm folder to separate file for power9 and later platforms
-Message-Id: <165943809291.1060517.17469284777484730130.b4-ty@ellerman.id.au>
-Date: Tue, 02 Aug 2022 21:01:32 +1000
+To: linuxppc-dev@lists.ozlabs.org, Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20220711223617.63625-1-muriloo@linux.ibm.com>
+References: <20220711223617.63625-1-muriloo@linux.ibm.com>
+Subject: Re: [PATCH 0/2] KVM: PPC: Book3s HV: Cleanup unused function and declarations
+Message-Id: <165943809123.1060517.15281363723578421276.b4-ty@ellerman.id.au>
+Date: Tue, 02 Aug 2022 21:01:31 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,29 +42,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com, rnsastry@linux.ibm.com
+Cc: Juergen Gross <jgross@suse.com>, Fabiano Rosas <farosas@linux.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>, mopsfelder@gmail.com, Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 Jul 2022 09:19:26 +0530, Kajol Jain wrote:
-> File book3s_hv_p9_entry.c in powerpc/kvm folder consists of functions
-> like freeze_pmu, switch_pmu_to_guest and switch_pmu_to_host which are
-> specific to Performance Monitoring Unit(PMU) for power9 and later
-> platforms.
+On Mon, 11 Jul 2022 19:36:15 -0300, Murilo Opsfelder Araujo wrote:
+> Minor cleanup to remove unused function and declarations.
 > 
-> For better maintenance, moving pmu related code from
-> book3s_hv_p9_entry.c to a new file called book3s_hv_p9_perf.c,
-> without any logic change.
-> Also make corresponding changes in the Makefile to include
-> book3s_hv_p9_perf.c during compilation.
+> Murilo Opsfelder Araujo (2):
+>   KVM: PPC: Book3S HV: Remove kvmhv_p9_[set,restore]_lpcr declarations
+>   KVM: PPC: Book3s HV: Remove unused function kvmppc_bad_interrupt
+> 
+> arch/powerpc/include/asm/kvm_book3s.h |  3 ---
+>  arch/powerpc/kvm/book3s_hv_builtin.c  | 18 ------------------
+>  2 files changed, 21 deletions(-)
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/2] powerpc/kvm: Move pmu code in kvm folder to separate file for power9 and later platforms
-      https://git.kernel.org/powerpc/c/db5360840f09eded71009a981084ab10a93a08d8
-[2/2] powerpc/kvm: Remove comment related to moving PMU code to perf subsystem
-      https://git.kernel.org/powerpc/c/4008d54e29531813e800580f8309133b9b14a921
+[1/2] KVM: PPC: Book3S HV: Remove kvmhv_p9_[set,restore]_lpcr declarations
+      https://git.kernel.org/powerpc/c/4c9da83011c455c0791b1f5e4e84d454d4f4ae3c
+[2/2] KVM: PPC: Book3s HV: Remove unused function kvmppc_bad_interrupt
+      https://git.kernel.org/powerpc/c/b8c7ee79b1a37442a910b8a313045fb9aa639911
 
 cheers
