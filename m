@@ -4,81 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C097AC19F2D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 01:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08B1BC00140
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 06:11:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LzTGm3954z3bhK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 11:56:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4LzZwg1dFKz3c7C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 16:11:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=hCaTlOjh;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=jhOgFziP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=BfyWZLNA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.20; helo=wout4-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::132; helo=mail-lf1-x132.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=hCaTlOjh;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=jhOgFziP;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=BfyWZLNA;
 	dkim-atps=neutral
-X-Greylist: delayed 413 seconds by postgrey-1.36 at boromir; Fri, 05 Aug 2022 11:55:50 AEST
-Received: from wout4-smtp.messagingengine.com (wout4-smtp.messagingengine.com [64.147.123.20])
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LzTFy5mFfz2xGy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2022 11:55:50 +1000 (AEST)
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-	by mailout.west.internal (Postfix) with ESMTP id 61F8232005CA;
-	Thu,  4 Aug 2022 21:48:51 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute1.internal (MEProxy); Thu, 04 Aug 2022 21:48:51 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
-	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
-	:message-id:mime-version:reply-to:sender:subject:subject:to:to;
-	 s=fm1; t=1659664130; x=1659750530; bh=4bWYZAh0mJDLS7baSHABVd0oa
-	w8TqBTZWuT/M2jiYHU=; b=hCaTlOjhfpCsKSvJ97E29babSkOth+7cijhb5rc3i
-	rJKE9E9deIG2x+FZg/tXYN+4yk+j5t7lUYKge3b6+1mRbqPudqjkYPMBq9xWG/56
-	69iLIiIf6ab28Cl9MdqwfBO9FK9owNIh3ejDLbUtbl8fuj5Dpgu2oqQs3/fpoy0g
-	aZHHyVVjoOx8+sWSXo5WwW62aU6QpuSj7yjAJpVLXojykKWR1lx4YndSoSF2ZfGf
-	6bYdZja1CpS9Tcma3+fYie0HPunyN47bJAs+4BnGm7TOuDKBQDgVrcqhR2Oqjtn0
-	LWUro/9G4kjV7ZOFMGS3RJBfp3xaA+0ONX2iynpr9guWQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:message-id
-	:mime-version:reply-to:sender:subject:subject:to:to:x-me-proxy
-	:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1659664130; x=1659750530; bh=4bWYZAh0mJDLS7baSHABVd0oaw8TqBTZWuT
-	/M2jiYHU=; b=jhOgFziPPyGqn1cGsjpOSFgeQcQQyeR/FHz721pMetZeo8jZrrJ
-	wbWhGMxmgnaPxaT9Kk4adsMmo/IZDvT1ov59YRW+nVl4nrVnXuz7eRmHcXGI9PPs
-	JjWrvRP0UMH/qV/TPJhi0UlIYo9rq0cE4W+qVS3g5q5UxjqDmFTFVko4OdWTfaBe
-	bf+61LLJmwQ/XJ+OCX7bpIAsQcU+fb7HeNk7BnrQUfghpGBWGGCc/N3bZj1b+Alv
-	Q80QmXC54r/QCOyoG/NQv0YkuBvQ6BNeP9jtds7bKjx6Z04w2iKzXlD6V4lAZ/Em
-	rV86j1esVw8BiIvXwratDGFTS1iTmEQotaw==
-X-ME-Sender: <xms:AXfsYj7GiRIkL5eo46XL7YWAhlzBLkK8irDqsZMWs73_iWI3JpH-Ng>
-    <xme:AXfsYo4443lVnsfN_mvfKcGVenb3otIdu1kEF7-YpJgpYfP_NFsUzBRgj29PCLrw_
-    MhtunZXbqMGvKZheQ>
-X-ME-Received: <xmr:AXfsYqcA10i4qbuoIuAQN7UpGIH0Cxa_fcs0l1G2vLanNrL1nHYArH5SdTA4yzKn1hTxLJzFS8KwrQDH-kWo_QzbcTj8JVPp77q-15YLcy3Mxw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdeftddghedvucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    gfrhhlucfvnfffucdludehmdenucfjughrpefhvfevufffkffoggfgsedtkeertdertddt
-    necuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhushhsvg
-    hllhdrtggtqeenucggtffrrghtthgvrhhnpedvgeduteejgfevveevuddtieegleeuffev
-    hfefueehueffkefhffehgeehjefhtdenucevlhhushhtvghrufhiiigvpedtnecurfgrrh
-    grmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:AnfsYkK9-N5aXc5Tk51dUScHcldlm6SQYjbDcTNPtVeI972G7FCj8A>
-    <xmx:AnfsYnKlDVtm5hZl23zwMiusBhcTWsrI0cXrrArC6iQqmuzWE4-gKw>
-    <xmx:AnfsYtx5cum1NB1uyfljXJG558WiHvPy2E-dB-ONNRvQpU7YJZFmvQ>
-    <xmx:AnfsYv2-5VcbD6fA2x-YQzXBQ8MARmVTmZaSMIJZEXGfTLffGfQyfw>
-Feedback-ID: i4421424f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Thu,
- 4 Aug 2022 21:48:48 -0400 (EDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] selftests/powerpc: Don't run spectre_v2 test by default
-Date: Fri,  5 Aug 2022 11:48:07 +1000
-Message-Id: <20220805014807.34913-1-ruscur@russell.cc>
-X-Mailer: git-send-email 2.37.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LzVs01S9xz2xGx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2022 13:07:46 +1000 (AEST)
+Received: by mail-lf1-x132.google.com with SMTP id d14so1612640lfl.13
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2022 20:07:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=zRLrhdcOQ99bka6D1fOqnb8SZpDSCBPIHHf+1lVBXSM=;
+        b=BfyWZLNA0WA0wwe8aQmwrq46RWQdKrrLB7XyPlQeQqyFVErsZG1WvpkTCT31caCh8p
+         eS4iXl4wK2kGOigufJo9S6qacJG7Eeaa2Plgda6L4JEOntGA7+Ntl3onJjaYf3A0B9SW
+         1BkPF8lXNS0d2d+JZNp6gcv8k9AdMoBbj3pS2STf6GJMN4s43va/D1TBDg0KF1iK66d1
+         9TXiq1kkHRqa3CXqhTaWqGclcKM/BN3YWYEmrJvyYrqGjKy7yaUTA+Y0fJJE1QKzWi6s
+         tG5YslrcsH+AjecGEMiuFGWZW2nnqVBBdvqGW97jmSsm9rS5RsFQ8M+GSSlV1hgj4iNr
+         wNgg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=zRLrhdcOQ99bka6D1fOqnb8SZpDSCBPIHHf+1lVBXSM=;
+        b=2Wfqt4wVrLnk63wHuhZQAcWQlStAN7WAmflVNY+BgkJwahSH8QAUQZxkXU/ziI3OSt
+         7VgPSaZAfY0U88HWg/vIuT/LVC2gzOvjK75TWpI1qTZ1MhULBy/np4GK3NfAt6SAyBbD
+         6dN/9d7hQUxqi8joX7z1zykgilysdHZqxyrCH56hmtkuPIjU250tn7SS/1T6jSm+r9EE
+         huL2+N+qpJjsZf5CiLAtx0oU2g4nEq2uCWR9O5yefA34gaI0YTgXKhb2mALJ87Nef+np
+         Q1FALcRKdJ6UvS53ZwFk5rD1Y77pPsoYHmQrR36bzhCbWJvJ4dceuhKzPcz55pkX4XTd
+         Fahw==
+X-Gm-Message-State: ACgBeo3R5TkposndnxPNORzKuK1NxrhXPYZHImq4HJbzSqZQv1AknvyZ
+	EF2yz2Q+KfquTrcMtLI68UEF8hfP/79Rmcdbp7c=
+X-Google-Smtp-Source: AA6agR7Qfp8bF/c/dF8zcpgjC+nUpj98cRP4PLX8RQikDQJwywgbYhLTmF+vMFugwMjtJr0FnROMW2IDC92kB8tr+ec=
+X-Received: by 2002:a05:6512:31ca:b0:48a:2e3:db41 with SMTP id
+ j10-20020a05651231ca00b0048a02e3db41mr1573570lfe.285.1659668862329; Thu, 04
+ Aug 2022 20:07:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220507123101.10938-1-pieterjan.camerlynck@gmail.com>
+In-Reply-To: <20220507123101.10938-1-pieterjan.camerlynck@gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Fri, 5 Aug 2022 11:07:31 +0800
+Message-ID: <CAA+D8ANzaCGEAZUdZsCmKhuw+gXSXdHP7S0RW__xu7FYp+Rdcw@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: fix incorrect mclk number in error message
+To: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>, Mark Brown <broonie@kernel.org>
+Content-Type: multipart/alternative; boundary="000000000000fbe73c05e575c460"
+X-Mailman-Approved-At: Fri, 05 Aug 2022 16:10:40 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,47 +73,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eirik Fuller <efuller@redhat.com>, Russell Currey <ruscur@russell.cc>, david@gibson.dropbear.id.au
+Cc: alsa-devel@alsa-project.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-kernel <linux-kernel@vger.kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The spectre_v2 selftest has issues that I'm unsure of how to resolve.
-It uses context to determine intended behaviour, but that context is
-unreliable - as an example, when running as a KVM guest, qemu can
-deliberately misreport mitigation status for compatibility purposes.
+--000000000000fbe73c05e575c460
+Content-Type: text/plain; charset="UTF-8"
 
-As a result, the selftest is unreliable as a pass/fail test without
-the test runner knowing what they expect its behaviour to be.  I don't
-think the selftest is useless so we should keep it around, but we
-shouldn't have run_tests run it by default.
+On Sat, May 7, 2022 at 8:31 PM Pieterjan Camerlynck <
+pieterjan.camerlynck@gmail.com> wrote:
 
-Suggested-by: Eirik Fuller <efuller@redhat.com>
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- tools/testing/selftests/powerpc/security/Makefile | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> In commit <c3ecef21c3f26> ("ASoC: fsl_sai: add sai master mode support")
+> the loop was changed to start iterating from 1 instead of 0. The error
+> message however was not updated, reporting the wrong clock to the user.
+>
+> Signed-off-by: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
+>
 
-diff --git a/tools/testing/selftests/powerpc/security/Makefile b/tools/testing/selftests/powerpc/security/Makefile
-index 7488315fd847..c954d79aeb80 100644
---- a/tools/testing/selftests/powerpc/security/Makefile
-+++ b/tools/testing/selftests/powerpc/security/Makefile
-@@ -1,6 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0+
- 
--TEST_GEN_PROGS := rfi_flush entry_flush uaccess_flush spectre_v2
-+TEST_GEN_PROGS := rfi_flush entry_flush uaccess_flush
-+TEST_GEN_PROGS_EXTENDED := spectre_v2
- TEST_PROGS := mitigation-patching.sh
- 
- top_srcdir = ../../../../..
-@@ -10,6 +11,7 @@ CFLAGS += -I../../../../../usr/include
- include ../../lib.mk
- 
- $(TEST_GEN_PROGS): ../harness.c ../utils.c
-+$(TEST_GEN_PROGS_EXTENDED): ../harness.c ../utils.c
- 
- $(OUTPUT)/spectre_v2: CFLAGS += -m64
- $(OUTPUT)/spectre_v2: ../pmu/event.c branch_loops.S
--- 
-2.37.1
+Please resend it and cc Mark
 
+Best regards
+Wang shengjiu
+
+> ---
+>  sound/soc/fsl/fsl_sai.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index ffc24afb5a7a..f0602077b385 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -1054,7 +1054,7 @@ static int fsl_sai_probe(struct platform_device
+> *pdev)
+>                 sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
+>                 if (IS_ERR(sai->mclk_clk[i])) {
+>                         dev_err(&pdev->dev, "failed to get mclk%d clock:
+> %ld\n",
+> -                                       i + 1, PTR_ERR(sai->mclk_clk[i]));
+> +                                       i, PTR_ERR(sai->mclk_clk[i]));
+>                         sai->mclk_clk[i] = NULL;
+>                 }
+>         }
+> --
+> 2.25.1
+>
+>
+
+--000000000000fbe73c05e575c460
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Sat, May 7, 2022 at 8:31 PM Pieter=
+jan Camerlynck &lt;<a href=3D"mailto:pieterjan.camerlynck@gmail.com">pieter=
+jan.camerlynck@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail=
+_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204=
+,204);padding-left:1ex">In commit &lt;c3ecef21c3f26&gt; (&quot;ASoC: fsl_sa=
+i: add sai master mode support&quot;)<br>
+the loop was changed to start iterating from 1 instead of 0. The error<br>
+message however was not updated, reporting the wrong clock to the user.<br>
+<br>
+Signed-off-by: Pieterjan Camerlynck &lt;<a href=3D"mailto:pieterjan.camerly=
+nck@gmail.com" target=3D"_blank">pieterjan.camerlynck@gmail.com</a>&gt;<br>=
+</blockquote><div><br></div><div>Please resend it and cc Mark</div><div><br=
+></div><div>Best regards</div><div>Wang shengjiu=C2=A0<br></div><blockquote=
+ class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px so=
+lid rgb(204,204,204);padding-left:1ex">
+---<br>
+=C2=A0sound/soc/fsl/fsl_sai.c | 2 +-<br>
+=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
+<br>
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c<br>
+index ffc24afb5a7a..f0602077b385 100644<br>
+--- a/sound/soc/fsl/fsl_sai.c<br>
++++ b/sound/soc/fsl/fsl_sai.c<br>
+@@ -1054,7 +1054,7 @@ static int fsl_sai_probe(struct platform_device *pdev=
+)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 sai-&gt;mclk_clk[i]=
+ =3D devm_clk_get(&amp;pdev-&gt;dev, tmp);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (IS_ERR(sai-&gt;=
+mclk_clk[i])) {<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 dev_err(&amp;pdev-&gt;dev, &quot;failed to get mclk%d clock: %ld=
+\n&quot;,<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0i + 1, PT=
+R_ERR(sai-&gt;mclk_clk[i]));<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0i, PTR_ER=
+R(sai-&gt;mclk_clk[i]));<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 sai-&gt;mclk_clk[i] =3D NULL;<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+-- <br>
+2.25.1<br>
+<br>
+</blockquote></div></div>
+
+--000000000000fbe73c05e575c460--
