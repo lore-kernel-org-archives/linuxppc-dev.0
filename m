@@ -4,72 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F8D8C00140
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 06:40:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61566C00140
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 06:54:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4LzbZf57Smz3bvd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 16:40:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Lzbt84Rt5z3bpW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Aug 2022 16:54:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=kpA6bYaZ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=fcizwj7U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=pieterjan.camerlynck@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=kpA6bYaZ;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=fcizwj7U;
 	dkim-atps=neutral
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4LzbYz1p4nz2xGx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2022 16:40:05 +1000 (AEST)
-Received: by mail-ej1-x62d.google.com with SMTP id c24so3291003ejd.11
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2022 23:40:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4LzbsS2dtwz2xH4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Aug 2022 16:53:29 +1000 (AEST)
+Received: by mail-lf1-x12b.google.com with SMTP id x39so2159649lfu.7
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Aug 2022 23:53:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc;
-        bh=VbilywkyD/M8bgsQ+Goos9KyMxX3bX3Ox36YlxJ8d/c=;
-        b=kpA6bYaZVNdY5XPuTwRvs/4t2P2Jn7AIV5rT96nKfRBPIB8wjbIhAI7XMVCuac5coR
-         o4CO9nwCDgK+whRCFocX/baE6lWplV7v0ePT/D5Zm+V5MOoc47d3uDQkHzBTy60nfPgx
-         kh0ocgfXKM2mMG1ncreWjMHozyZd6Sm6lXfUv+rwHNvCtLVuCBq1FLLa5kfqNKfmzuRI
-         it+GR7DmZpbaIQdX2cK0ZsjVWWMVrJMRLfpu0y6nbck1Z+nMO1OoYhyMHPDj63ShN/Gz
-         8LZzqE3E3ogl7GLsA3/2tSgV9c7qKgkw9YRhIXPGs1X8bOlBzUBTfdvPNlAtDMEYY77q
-         8DCg==
+        d=linaro.org; s=google;
+        h=message-id:date:mime-version:user-agent:subject:content-language:to
+         :cc:references:from:in-reply-to:content-transfer-encoding;
+        bh=svGbdJtoA42vxhMw0xl6uJ/CKt4Zq7+usPD0U/PNy5Q=;
+        b=fcizwj7UD0ZDd1mZ0oDmsurKWnpaQ6W8uIjVJaOD0QvmsghpTV2mhyjgilSZfV3gfp
+         VKxKifhMNxIxkv84hkBVE/pSxJMeMj+KoWkFL2y+KDM6m2ZZWeC9sJYVxT6Eo7Xe5I1W
+         iV/F1O2wQ9eUQTVwfppVzZa0FHW+OxPbQV5/ji8lTUwWD3fxaFyFZOx4kNeQCte4KSj8
+         xKOGnH+sqff7E8e7Pb1UHtsuYRJl+IYJZbr6Ce0PeJiLzh1nHgmWeMbzZFyduUJFdbcX
+         GB7zxiqDzQ0zakdY5rGcgEwK7b7VDGioVCMp2950fn0J5lmPnn7nh8gr6S99j3QHei4p
+         vsYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc;
-        bh=VbilywkyD/M8bgsQ+Goos9KyMxX3bX3Ox36YlxJ8d/c=;
-        b=biYkYFDf+lFhKjdeS1tez9ULrIiGyWWNUI32kPNDOCb1qOZScTYo++uOYNZ/kTcOwN
-         oQevDPyfUmYPcuM4B2H69O6BBgOox4W/2qwNoMt0R4o+GhEO+2JlRjmLol01Mfkwe6EJ
-         nnEqSPWHcGzQt4y1v3y2ji1aHke87yzkIBa2hHLuYipTJGfHfTF1osYx0462HlsJvI5a
-         SIA5fsgfEee0EkzIgzSOylNrOQcvIBDl7LX41uKlMx0gwNTdEZYkLypGJid32imf3X8f
-         0lnq1RpUxQFvJLXGTr7AkVXopanBMcVbIKjRLG3K37nRCz23DwsYomvrc8W2qrJbcBs5
-         aneQ==
-X-Gm-Message-State: ACgBeo3CzMlvZ24Rqz19ks+R/TpPPKQz+gz9RmKXLA5wQegPxvJaNvpf
-	5+6LTbq28N38mnkk4yVOzUA2Ezvl9ObTQw==
-X-Google-Smtp-Source: AA6agR5MnwJei2qMi9xCPBXMyJBR3CjOgKjjo5gERif3wfzLaWzUTeQyRhVX5l+BxEggBeS4PVlK1g==
-X-Received: by 2002:a17:906:93ef:b0:730:69e0:dd0c with SMTP id yl15-20020a17090693ef00b0073069e0dd0cmr4120144ejb.609.1659681600787;
-        Thu, 04 Aug 2022 23:40:00 -0700 (PDT)
-Received: from pca.lan (dd57636e4.access.telenet.be. [213.118.54.228])
-        by smtp.gmail.com with ESMTPSA id p7-20020a170906140700b0073066d4d7a4sm1184987ejc.80.2022.08.04.23.39.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 04 Aug 2022 23:40:00 -0700 (PDT)
-From: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Subject: [PATCH] ASoC: fsl_sai: fix incorrect mclk number in error message
-Date: Fri,  5 Aug 2022 08:39:42 +0200
-Message-Id: <20220805063942.8520-1-pieterjan.camerlynck@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        h=x-gm-message-state:message-id:date:mime-version:user-agent:subject
+         :content-language:to:cc:references:from:in-reply-to
+         :content-transfer-encoding;
+        bh=svGbdJtoA42vxhMw0xl6uJ/CKt4Zq7+usPD0U/PNy5Q=;
+        b=NFOpufOcTkc7Ye8nt9jN0halDwOG+EU73oHT7aKKv3sHmWWW387U1uZ4QHQkpgDhsk
+         k99HA1lsEYtXzGDHMBF3oaMqs4FS2XBB9poKPdNjsJSPq+0/hkHndLb4TIJttGhYHLF9
+         /8qF6WUR/EXLe251rw872onxEa2y6aoM3cuxX0Shf11ExAFvoo+phWM7X8brUBXmh2Mr
+         OiuULalWz8McX6QBkxStlm2RXTBcT5s4GyHsNf6KXeRAHlxSNBzLHfyYQwx8F9aa+9UO
+         GfwRbOZU6KJrZMnwDZjYPCqsCNIHCABpSYD+5S6xSwyfhCrUihL8fUkKzgAOcB62oXim
+         mLJg==
+X-Gm-Message-State: ACgBeo1nZjV2+bTogSH2YBzqa7nZEmNlNKPPiiDvIe4bIjuFQ7OP7tQH
+	yBVfMjgPUdDrjWiaT1blV1lfXQ==
+X-Google-Smtp-Source: AA6agR5PP/ENG7yXEHTvyafw/XQB2vIAh7cCSieTd83vPiy91LJfZPa5YrNOmaUMVOVwlr0V6qymXg==
+X-Received: by 2002:a05:6512:230b:b0:48a:7c11:664d with SMTP id o11-20020a056512230b00b0048a7c11664dmr2034885lfu.390.1659682405752;
+        Thu, 04 Aug 2022 23:53:25 -0700 (PDT)
+Received: from [192.168.1.6] ([77.222.167.48])
+        by smtp.gmail.com with ESMTPSA id z16-20020a2e9650000000b0025dd6c8933csm362348ljh.114.2022.08.04.23.53.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 04 Aug 2022 23:53:23 -0700 (PDT)
+Message-ID: <bee3d724-1efb-d5c7-6698-c98a198e69fd@linaro.org>
+Date: Fri, 5 Aug 2022 08:53:21 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.12.0
+Subject: Re: [PATCH v4 3/8] dt-bindings: clock: Add ids for Lynx 10g PLLs
+Content-Language: en-US
+To: Sean Anderson <sean.anderson@seco.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@ti.com>, linux-phy@lists.infradead.org
+References: <20220804220602.477589-1-sean.anderson@seco.com>
+ <20220804220602.477589-4-sean.anderson@seco.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220804220602.477589-4-sean.anderson@seco.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,32 +82,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
+Cc: devicetree@vger.kernel.org, Madalin Bucur <madalin.bucur@nxp.com>, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In commit <c3ecef21c3f26> ("ASoC: fsl_sai: add sai master mode support")
-the loop was changed to start iterating from 1 instead of 0. The error
-message however was not updated, reporting the wrong clock to the user.
+On 05/08/2022 00:05, Sean Anderson wrote:
+> This adds ids for the Lynx 10g SerDes's internal PLLs. These may be used
+> witn assigned-clock* to specify a particular frequency to use.
+> 
+> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+> ---
+> 
+> Changes in v4:
+> - New
+> 
+>  include/dt-bindings/clock/fsl,lynx-10g.h | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 include/dt-bindings/clock/fsl,lynx-10g.h
+> 
+> diff --git a/include/dt-bindings/clock/fsl,lynx-10g.h b/include/dt-bindings/clock/fsl,lynx-10g.h
+> new file mode 100644
+> index 000000000000..f5b955658106
+> --- /dev/null
+> +++ b/include/dt-bindings/clock/fsl,lynx-10g.h
+> @@ -0,0 +1,14 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
 
-Signed-off-by: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
----
- sound/soc/fsl/fsl_sai.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This should be dual license.
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index ffc24afb5a7a..f0602077b385 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -1054,7 +1054,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
- 		if (IS_ERR(sai->mclk_clk[i])) {
- 			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
--					i + 1, PTR_ERR(sai->mclk_clk[i]));
-+					i, PTR_ERR(sai->mclk_clk[i]));
- 			sai->mclk_clk[i] = NULL;
- 		}
- 	}
--- 
-2.25.1
+> +/*
+> + * Copyright (C) 2022 Sean Anderson <sean.anderson@seco.com>
 
+It's confusing to see personal copyrights with company email. Either the
+copyright is attributed to your employer or to you. If to you, use
+private email.
+
+> + */
+> +
+> +#ifndef __DT_BINDINGS_CLK_LYNX_10G_H
+> +#define __DT_BINDINGS_CLK_LYNX_10G_H
+> +
+> +#define LYNX10G_CLKS_PER_PLL 2
+> +
+> +#define LYNX10G_PLLa(a)		((a) * LYNX10G_CLKS_PER_PLL)
+> +#define LYNX10G_PLLa_EX_DLY(a)	((a) * LYNX10G_CLKS_PER_PLL + 1)
+
+These do not look like proper IDs for clocks for bindings. Numbering
+starts from 0 or 1 and any "a" needs to be clearly explained. What do
+you bind here?
+
+> +
+> +#endif /* __DT_BINDINGS_CLK_LYNX_10G_H */
+
+
+Best regards,
+Krzysztof
