@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD9D6C19F29
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Aug 2022 06:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C4BFC19F29
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Aug 2022 06:47:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M0CgP333Yz3dxb
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Aug 2022 16:46:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M0Cgp5c9gz3f1c
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Aug 2022 16:47:18 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M0CfF0nwDz3bc5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M0CfF0x8nz3bc8
 	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Aug 2022 16:45:57 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4M0Cf929dXz4x2c;
-	Sat,  6 Aug 2022 16:45:53 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4M0Cf815H4z4x1L;
+	Sat,  6 Aug 2022 16:45:52 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: rcu@vger.kernel.org, npiggin@gmail.com, zhouzhouyi@gmail.com, adobriyan@gmail.com, linux-kernel@vger.kernel.org, lance@osuosl.org, benh@kernel.crashing.org, nick.child@ibm.com, paulmck@kernel.org, paulus@samba.org, clg@kaod.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, robh@kernel.org, christophe.leroy@csgroup.eu, frank.rowand@sony.com, john.ogness@linutronix.de
-In-Reply-To: <20220726015747.11754-1-zhouzhouyi@gmail.com>
-References: <20220726015747.11754-1-zhouzhouyi@gmail.com>
-Subject: Re: [PATCH linux-next v2] powerpc: init jump label early in ppc 64
-Message-Id: <165976833358.1752861.14286034118835101770.b4-ty@ellerman.id.au>
-Date: Sat, 06 Aug 2022 16:45:33 +1000
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20220803063152.1249270-1-mpe@ellerman.id.au>
+References: <20220803063152.1249270-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64e: Fix kexec build error
+Message-Id: <165976833143.1752861.12281953818502049510.b4-ty@ellerman.id.au>
+Date: Sat, 06 Aug 2022 16:45:31 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: aik@ozlabs.ru
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 26 Jul 2022 09:57:47 +0800, zhouzhouyi@gmail.com wrote:
-> From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+On Wed, 3 Aug 2022 16:31:52 +1000, Michael Ellerman wrote:
+> When building ppc64_book3e_allmodconfig the build fails with:
 > 
-> In ppc 64, invoke jump_label_init in setup_feature_keys is too late
-> because static key will be used in subroutine of parse_early_param
-> which is again subroutine of early_init_devtree.
+>   arch/powerpc/kexec/file_load_64.c:1063:14: error: implicit declaration of function ‘firmware_has_feature’
+>    1063 |         if (!firmware_has_feature(FW_FEATURE_LPAR))
+>         |              ^~~~~~~~~~~~~~~~~~~~
 > 
-> So we invoke jump_label_init just before parse_early_param in
-> early_init_devtree.
+> Add a direct include of asm/firmware.h to fix the error.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: init jump label early in ppc 64
-      https://git.kernel.org/powerpc/c/ca829e05d3d4f728810cc5e4b468d9ebc7745eb3
+[1/1] powerpc/64e: Fix kexec build error
+      https://git.kernel.org/powerpc/c/4cfa6ff24a9744ba484521c38bea613134fbfcb3
 
 cheers
