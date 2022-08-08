@@ -4,84 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27907C00140
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 13:03:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DB88C00140
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 13:10:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M1bwL4Sppz3bpW
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 23:02:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M1c520T0Zz308B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 23:10:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm2 header.b=QzcPL/dG;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=BZhdHmQA;
+	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=MAJJpLOm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=66.111.4.29; helo=out5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.19; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm2 header.b=QzcPL/dG;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=BZhdHmQA;
+	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=MAJJpLOm;
 	dkim-atps=neutral
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M1btx4gCCz2xHb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2022 23:01:45 +1000 (AEST)
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-	by mailout.nyi.internal (Postfix) with ESMTP id 92AFD5C010F;
-	Mon,  8 Aug 2022 09:01:43 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute4.internal (MEProxy); Mon, 08 Aug 2022 09:01:43 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
-	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm2; t=1659963703; x=1660050103; bh=XT
-	zkYp/ohy/3DoEWoEmvGh8s1ugeylCHf8upEgTzWb8=; b=QzcPL/dGt7nmwjlHjA
-	d/7pRHFLdb/2+0Cxub+K/5i/ZOZwdi4amyVH+9Q1NHmnL+GYeuUyB3G4MD3KmHYc
-	LBPXqZCz41RCpmccrUrZK4rlSNU+42ta8rAvKFXDvis+8PUPF7c6yxrMOmY8wOib
-	f0Gr8pqa4g4w5tfbmFGvueAAa75xsDhCjhRsENE0jczw0ZJm3CzsId75LaiyzDKb
-	OddqUQtBt0q3ew8H8qpr4x9FC6L9EEhO3XP93hIKYvD3yZsUeToBSKfWt3v1DT3p
-	Fvu/enCZ8UGtlszQMk6HXL/bTZunub/SxilFJhMW6BGrB3pBuVOvy4WTmjWECfCi
-	HsdQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm1; t=1659963703; x=1660050103; bh=XTzkYp/ohy/3D
-	oEWoEmvGh8s1ugeylCHf8upEgTzWb8=; b=BZhdHmQAjGFoHOH1VZ/KNlUEGGyD0
-	E6imnGtTAzXusIv9Spx6gvxpiY2ZoWdzRzRQKFVp8qQPVgiEX68o400Kq3kK+bgJ
-	qSVuoedB9TvrSC04Kgc9Sd4on8Nq7r9Ehv8j4ucghzWaHG2QnUpc9UhZYUoehgSX
-	bWLU5hsdAua2oPB5O6+nYoEvpawFw0xpu7mK9mU88FXCpJ1upQwmWP/lXPiG/mij
-	G0BZ8pZsab3sitWQ3Dhj13nSP2mztchTXGB/yeH4gK7Yb2hjpbsAY5uE4ujWCZWT
-	ARBWvhD58CNFJuHkiutkixf1Cdbqf+y0vHOGs32vHGqBhmSsOkHl025nA==
-X-ME-Sender: <xms:NgnxYhv2v3cLIQudWLSIHUnDm0D-_B9ZeAyuHvoKk85Ml_YlrCU9sw>
-    <xme:NgnxYqcnsgZV9udXWBxJAs7aOeIJtCMz61H12ADZSYsVW9QNdOk57grm5mQQYOJh2
-    HGWsBhjNCIhsYBpvg>
-X-ME-Received: <xmr:NgnxYkxEz0BV9SF60bo_FntT1_a4wmHDq1W6NebxwYcwdJbEiYY1i33NbpXGiWGm6a7pP_DeK3bvsX9eE8XdttECr7n0j8NfdsEf-AQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdefkedgieduucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenucfjughrpefhvf
-    evufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
-    rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpe
-    eitdetkeduveetteeltedvveetfeefvdfggeehkeevkeehudehkeevvedvgfffgeenucff
-    ohhmrghinhepghhithhhuhgsuhhsvghrtghonhhtvghnthdrtghomhenucevlhhushhtvg
-    hrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhs
-    vghllhdrtggt
-X-ME-Proxy: <xmx:NgnxYoPIj_KrB-j7Oee3-_VV78N-MRu54F1eK403XEy8OwSqEdui4g>
-    <xmx:NgnxYh_WZSRq5sM8lUjlbxmum7qgt-UP0mZjE8hwT6aSraN7rg6bJw>
-    <xmx:NgnxYoWhNsV26ggUyRHir0rPdsAoo--jjnEBw525pkxcOjrB6smn3g>
-    <xmx:NwnxYklCr77eOQDsDOgwSa7_BwP6ypZxzGnf-Nu2dYaX4hWtvIgMKQ>
-Feedback-ID: i4421424f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 8 Aug 2022 09:01:39 -0400 (EDT)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] powerpc/mm: Support execute-only memory on the Radix MMU
-Date: Mon,  8 Aug 2022 23:01:09 +1000
-Message-Id: <20220808130109.30738-2-ruscur@russell.cc>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M1c4J0xdCz2x9T
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2022 23:09:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+	s=badeba3b8450; t=1659964159;
+	bh=0M5qpS13eLgzHYee8MKVxWGYrt0iQg2yqGtZwU3aGdU=;
+	h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
+	b=MAJJpLOmv5dP4WWUjz3+3k/mV957rgW3/oPnz3WDvdF55JVzYl9+4da4nUIyEQde5
+	 fp4ZpNL1yylkjW4WMjOYsxEI1SbQVi0Y0V6evCsQBgpPvCz4S3PP29D3vBuNI8w955
+	 FdyD3hHW46JGuDTJWIudpTSlqEiAzvjdMRSuiaUg=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from p100.fritz.box ([92.116.169.184]) by mail.gmx.net (mrgmx005
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1M5wLZ-1oJ7ci0mt9-007QkE; Mon, 08
+ Aug 2022 15:09:19 +0200
+From: Helge Deller <deller@gmx.de>
+To: linux-s390@vger.kernel.org,
+	Josh Triplett <josh@joshtriplett.org>,
+	x86@kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v3 4/4] arc: Use generic dump_stack_print_cmdline() implementation
+Date: Mon,  8 Aug 2022 15:09:17 +0200
+Message-Id: <20220808130917.30760-5-deller@gmx.de>
 X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20220808130109.30738-1-ruscur@russell.cc>
-References: <20220808130109.30738-1-ruscur@russell.cc>
+In-Reply-To: <20220808130917.30760-1-deller@gmx.de>
+References: <20220808130917.30760-1-deller@gmx.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:qbhdCVDdOCub1ozqXacRBFmeXEK1oHZl6SIb4aOtZAfxd9npLiz
+ JIPE+2fdpNF9wfsoTc1Fq05gbMQbVssIrx529rpnx38ZZwh/bdchIpZuTlXNOU8kORBr51N
+ OUttWVrlobZJh72zp3/GOjg13qfmgf2jAdXfTwFqcswpTzOPz3Zb1y+E+QxB5Dq5yNsGa2L
+ /AiGHtqfm1EdEzr6qa2PA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:UBgKY5ubY/o=:y4mAM+/YC+hjlH357pzhLS
+ S1Oo26dgQQi0G3GNPLIWloPIzSYdEv9y+fkRy5kKq6Tapjmbzqd1PMccmB4swJ7gkoS1VPHsv
+ B+/aK5aoO9wR1huwRixwjHFzFW9X8bXaaCBe3tfJgOzHfGM/x6I4UzK8y7/gSjSKV3bNioc4d
+ a23nO7jfFxECak1p9CgZc913l8erOrMSXdvRqbOyPa+NScOFlMnCIXJiN2JQP9vOuFyBpbUCd
+ eNwWTHyTDWQ+TPta9DeTql3pDf9MrSx/ekuzbLuXnxvcnlV6/QKPt8G745S8Ig7pcKDIZA3Hb
+ keRlQimwz0qP23/7C7kNx3ttYi+EEpKwTPp+mW64ic366tf8+14YNjE/4l7hghbSJIG3fsF/m
+ 4F6w1QQfKgT8rPxu8Xm+UKVQb/kN+jnPmpWZQc8QB/QTk6TGeNu9usIZGvpqTsA6B4EjFfcVy
+ c+xgsWyLN0iVsIte/kRAKjFiLBWTxJPMu/FOAxAEViXUxdYB8blZUMkaG2PeBtnTyFbqf6PtT
+ m/ppniqaQYyVUvgk1Xvv29qBG+gGuTEOqnL314HzgwFp4woejXDpeTePfROdyGY9+Lru4yJKY
+ CEYAH7dJAlK2Xs4Snrq3hpQIcEwLUqH1g7VahcqtkZV0Q69KnpmxUaEDgyBLfu5qCRv+JIDNj
+ HvlJXR9n8yTIf6Fey5BpfmI7EGOzQ/mssNzrWX8MzX0cDupVg+Cbk1hlgPkl+cwaCXTOWlOz5
+ m+OPAHfwa77r5nTBke2ofYJ51SkCtHh0ukFqur0Lzvt2Cg6BRQvQpHT9asgfRbd7tVlOmTJwf
+ 8kl4XJDBAq0Qf/BxMmbHkYrEDZm1I04+HUjy7j58P5LiUZuLMWceAiFVHUTPOHg4Zj7hfLugL
+ VLIgvAOwrOqjINCRrmkB6V/lN8vbnrRcaTfxGAYfFmdm0zPIOFJLFbRadQE//zskDBdh4+vCD
+ SV8OZMvI+eCduWQJUXhMjp2yp7kTN9+hRq/abYJqStonqK9U1M54jkuhk3A+PXjDPkfM5SN8W
+ 7Hf8quu804dluN9yRLhnD3XHGCEErG9sCGDZ9CfjBhkqy0qrOm6zTa5bJd/swDqzUCx9Bp/Hm
+ LWtAFNsvYuYAvaE6CcXszUWJFsPIxTycLTSZDmdOHyy1A9d0bv5bV1Xfg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,114 +83,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, anshuman.khandual@arm.com, npiggin@gmail.com, aneesh.kumar@linux.ibm.com, Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Hash MMU already supports XOM (i.e. mmap with PROT_EXEC only)
-through the execute-only pkey.  A PROT_EXEC-only mapping will actually
-map to RX, and then the pkey will be applied on top of it.
+The process program name and command line is now shown in generic code
+in dump_stack_print_info(), so drop the arc-specific implementation.
 
-Radix doesn't have pkeys, but it does have execute permissions built-in
-to the MMU, so all we have to do to support XOM is expose it.
+Signed-off-by: Helge Deller <deller@gmx.de>
+=2D--
+ arch/arc/kernel/troubleshoot.c | 24 ------------------------
+ 1 file changed, 24 deletions(-)
 
-That's not possible with protection_map being const, so make it RO after
-init instead.
+diff --git a/arch/arc/kernel/troubleshoot.c b/arch/arc/kernel/troubleshoot=
+.c
+index 7654c2e42dc0..9807e590ee55 100644
+=2D-- a/arch/arc/kernel/troubleshoot.c
++++ b/arch/arc/kernel/troubleshoot.c
+@@ -51,29 +51,6 @@ static void print_regs_callee(struct callee_regs *regs)
+ 		regs->r24, regs->r25);
+ }
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
-v2: Make protection_map __ro_after_init and set it in an initcall
-(v1 didn't work, I tested before rebasing on Anshuman's patches)
-
-basic test: https://raw.githubusercontent.com/ruscur/junkcode/main/mmap_test.c
-
- arch/powerpc/include/asm/book3s/64/radix.h |  3 +++
- arch/powerpc/include/asm/pgtable.h         |  1 -
- arch/powerpc/mm/fault.c                    | 10 ++++++++++
- arch/powerpc/mm/pgtable.c                  | 16 +++++++++++++++-
- 4 files changed, 28 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 686001eda936..bf316b773d73 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -19,6 +19,9 @@
- #include <asm/cpu_has_feature.h>
- #endif
- 
-+/* Execute-only page protections, Hash can use RX + execute-only pkey */
-+#define PAGE_EXECONLY	__pgprot(_PAGE_BASE | _PAGE_EXEC)
-+
- /* An empty PTE can still have a R or C writeback */
- #define RADIX_PTE_NONE_MASK		(_PAGE_DIRTY | _PAGE_ACCESSED)
- 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 33f4bf8d22b0..3cbb6de20f9d 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -60,7 +60,6 @@ extern void paging_init(void);
- void poking_init(void);
- 
- extern unsigned long ioremap_bot;
--extern const pgprot_t protection_map[16];
- 
- /*
-  * kern_addr_valid is intended to indicate whether an address is a valid
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 014005428687..887c0cc45ca6 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -270,6 +270,16 @@ static bool access_error(bool is_write, bool is_exec, struct vm_area_struct *vma
- 		return false;
- 	}
- 
-+	if (unlikely(!(vma->vm_flags & VM_READ))) {
-+		/*
-+		 * If we're on Radix, then this could be a read attempt on
-+		 * execute-only memory.  On other MMUs, an "exec-only" page
-+		 * will be given RX flags, so this might be redundant.
-+		 */
-+		if (radix_enabled())
-+			return true;
-+	}
-+
- 	if (unlikely(!vma_is_accessible(vma)))
- 		return true;
- 	/*
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 0b2bbde5fb65..6e1a6a999c3c 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -475,7 +475,7 @@ pte_t *__find_linux_pte(pgd_t *pgdir, unsigned long ea,
- EXPORT_SYMBOL_GPL(__find_linux_pte);
- 
- /* Note due to the way vm flags are laid out, the bits are XWR */
--const pgprot_t protection_map[16] = {
-+static pgprot_t protection_map[16] __ro_after_init = {
- 	[VM_NONE]					= PAGE_NONE,
- 	[VM_READ]					= PAGE_READONLY,
- 	[VM_WRITE]					= PAGE_COPY,
-@@ -494,6 +494,20 @@ const pgprot_t protection_map[16] = {
- 	[VM_SHARED | VM_EXEC | VM_WRITE | VM_READ]	= PAGE_SHARED_X
- };
- 
-+#ifdef CONFIG_PPC_RADIX_MMU
-+static int __init radix_update_protection_map(void)
-+{
-+	if (early_radix_enabled()) {
-+		/* Radix directly supports execute-only page protections */
-+		protection_map[VM_EXEC] = PAGE_EXECONLY;
-+		protection_map[VM_EXEC | VM_SHARED] = PAGE_EXECONLY;
-+	}
-+
-+	return 0;
-+}
-+arch_initcall(radix_update_protection_map);
-+#endif /* CONFIG_PPC_RADIX_MMU */
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- pgprot_t vm_get_page_prot(unsigned long vm_flags)
+-static void print_task_path_n_nm(struct task_struct *tsk)
+-{
+-	char *path_nm =3D NULL;
+-	struct mm_struct *mm;
+-	struct file *exe_file;
+-	char buf[ARC_PATH_MAX];
+-
+-	mm =3D get_task_mm(tsk);
+-	if (!mm)
+-		goto done;
+-
+-	exe_file =3D get_mm_exe_file(mm);
+-	mmput(mm);
+-
+-	if (exe_file) {
+-		path_nm =3D file_path(exe_file, buf, ARC_PATH_MAX-1);
+-		fput(exe_file);
+-	}
+-
+-done:
+-	pr_info("Path: %s\n", !IS_ERR(path_nm) ? path_nm : "?");
+-}
+-
+ static void show_faulting_vma(unsigned long address)
  {
--- 
+ 	struct vm_area_struct *vma;
+@@ -176,7 +153,6 @@ void show_regs(struct pt_regs *regs)
+ 	 */
+ 	preempt_enable();
+
+-	print_task_path_n_nm(tsk);
+ 	show_regs_print_info(KERN_INFO);
+
+ 	show_ecr_verbose(regs);
+=2D-
 2.37.1
 
