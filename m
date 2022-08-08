@@ -4,34 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 317A9C00140
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 13:11:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DF86C00140
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 13:12:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M1c6K4klxz3dsD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 23:11:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M1c6z3gZnz3dx4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Aug 2022 23:12:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=YARkRCk+;
+	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=Yhhqd8gN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.18; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.15; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=YARkRCk+;
+	dkim=pass (1024-bit key; secure) header.d=gmx.net header.i=@gmx.net header.a=rsa-sha256 header.s=badeba3b8450 header.b=Yhhqd8gN;
 	dkim-atps=neutral
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M1c4L1MnPz2xkS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2022 23:09:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M1c4N6X7Mz2xHS
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Aug 2022 23:09:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
 	s=badeba3b8450; t=1659964158;
-	bh=lELR8WYbBOTLMAY/ROaaXRuZyiwAFpzcRRcD1yGmR+U=;
-	h=X-UI-Sender-Class:From:To:Subject:Date:In-Reply-To:References;
-	b=YARkRCk+edkIn5nZtTwbKK3+c5x4yjVNPDa9GujrX2humxefMcP6U/5piDtobCt91
-	 mE894Vzo2J/rqBnP+M/O9/i+Xrz22svt5Szx2tjzGcOVwE4jcCJ2O4SXL1SGq5zwmx
-	 OcJCGuVzeFwDEtHtoszNgMaJ+SvMji6yr7O7AwqE=
+	bh=aM64I3xT+nrAAK/BCGOu7rEdx/4nHtHx5JVVg4BjZUA=;
+	h=X-UI-Sender-Class:From:To:Subject:Date;
+	b=Yhhqd8gNlgo7WkmfXdoNiJLT5rGDDzerm7vNcQdF0WC3fY3jLTKPOnaS4Dd2/o89E
+	 uxV3tIAJBlPmf75Tt4tttgsxJrFwmeq+7am5xzYog9YODqjr2JOClwchIpus4BjujT
+	 3Z7F1zwZOh7SPl5IFCtBNm9NNoK33vXkUQ+4Awlk=
 X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
 Received: from p100.fritz.box ([92.116.169.184]) by mail.gmx.net (mrgmx005
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MGyxN-1o8AKD2zDf-00E4Zm; Mon, 08
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 1N3KTo-1nMENI0sCY-010Q4h; Mon, 08
  Aug 2022 15:09:18 +0200
 From: Helge Deller <deller@gmx.de>
 To: linux-s390@vger.kernel.org,
@@ -43,35 +43,34 @@ To: linux-s390@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 2/4] lib/dump_stack: Add dump_stack_print_cmdline() and wire up in dump_stack_print_info()
-Date: Mon,  8 Aug 2022 15:09:15 +0200
-Message-Id: <20220808130917.30760-3-deller@gmx.de>
+Subject: [PATCH v3 0/4] Dump command line of faulting process to syslog
+Date: Mon,  8 Aug 2022 15:09:13 +0200
+Message-Id: <20220808130917.30760-1-deller@gmx.de>
 X-Mailer: git-send-email 2.37.1
-In-Reply-To: <20220808130917.30760-1-deller@gmx.de>
-References: <20220808130917.30760-1-deller@gmx.de>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:dyv38+4Ugz+oNJYhEqwA1WGPLQMQCHxH7gYA9DzhxE1ZyTHPUeX
- lgD4MbyXnzij2je0A21JveizFDJ0RysmHlBxi1vdTStYEm+RmHzoUuMstEW+hD9FO33SxJr
- oP2WdouS9nQ1WcoKEklsuUfDBg9/nB9mx5tSBtp94vcEnDi6cGYPDjwHjZ/7PA8qYfqxH+H
- F9wPqtQXlYJ80YG68DQag==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:RpW0RFU0Z6E=:vHBeUsc70DYciJo0r3uauF
- MGJOW+2JX5iPyl7bzACYuZzcsgE0KOuDtO1K2Bppk4muzBADa/0UwkNWZnhnxq9gctbdzfM2F
- CjYlu/8hoQK8Rp2oi6uDjx0cvEw7fMo5WqUcUNzy/eq+XjoGQFk9oFfC6s4hJjWMIRGQtNjNM
- QcPSX8jSs3qP0DmNaFDGPankZ4Q+5EQr/+5SXjaSpwz59qzcyhuXKBV56vrYGFvdclmephBIq
- B7oxtrb2uaCWI+kvsoNLs/zrQv1fWspOyVBYQASk4fWO7nDttW8eUVv+FGqWNewFLKdxYj1Cx
- 17xFxjhqi6jg4+258yvMd3QGes7U/5INRI5An1vrAxJH5fzxnwNa5zPcFWDdXr6824deE2ODO
- OnIvUA2lLkfbK+8WKDyeLKZvsnoifbZDBBXzHpy94LePbuI+4LeFGkvBQAXgWh89djmnICx+I
- bklL2SCdn6+Dj4mOle7BQzRhIdtZGFKKjmcbGFkOQ9mhbF/AEA0+p6vxkBh3l+Sg7YCaET3rX
- Cvn6uoFNHsLPmIGhUZ9naF1Tg1Utleqnayp70ND3Y/8G6eYDBwrdmJ09KCKMJLksREGa9gCLw
- QGLTi8C+auExK41IXHRYB1YmxVCytlyQkZpRSoEB0K4iKVRvdBlP1PMJMsR2YfYUG807KDgnx
- vytnyNGsCYDOSI8kcQLPdUWHRcUehw5OAt9bVZBM09KlvsDZOafd89xsjR8n+hQLQDgQXIv79
- EVl4Fwge064DHAD7FCCY1/yuzwgRafYs3caT3EgYOx0FP9ExsGBPef5/Xjz4gUcxhQ7xEAvEG
- 1Yq4ZjOoSQ+WCbrKx2ftLQmfGPZLqor0mdgKBg/sfVEHQs6h0Qs8QYWVvlhaQIbWLavN+/5uV
- 5FQmjRtWTcUL1tqvnWnOjjYl+4E41TpDG/r1W4ZyXt6usjTpUUKxzAbU1plRO4KLbMjfe6iGo
- OAVHd7w4z5xUq0GYnj0ApSE32SJ0q2AEhGU1eprIAN5I2PHSYdUvVzglD8DT1HnByn9qhqba9
- GfWGIRaNOFib7OQV8Uetfbqt4SniAEFZaEgLv2Vtvka4Z3i1FSZNu7FnWZKiSg3tCWc1Z0Rw1
- twVCPi6Gum3G2ewQ5/3id79oC2uC0VmtWK+w4iwrz3W4P9YWwp/BHym5w==
+X-Provags-ID: V03:K1:84TWQbnNKsaSON1sxgzA8VMcCW1N9C9kjxeNROJetaoTlrwHyEJ
+ 4kLAo2nY0nBKJzTbYKeIFs0wsAhsUj400kCXTzFd1LBKOgRGmPhIDqCoKMQfbK1f02UFheV
+ T5pSHxSbW+FPInvGlRKQqW+uW/on0h1xD6YnsEiYHniWkmRAmTI8WGJknLpw6yJ+ky2f7sR
+ gQHsOTDFqQcj4xa5P6+Vg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qkPkvFZxlQc=:l818vHvl4KYHXR/6nteSWt
+ Drrh+hI657zDwl8V1U3h+u1Z+pOM/EhP9IKv5hA7uLlCzTiO9h3pjn1v1K5w8gwcEAN73aD8b
+ xWcGgKdNy9u4vAX31e2esewWODiQTuMd29ETswYKbHPzvMcGj/2AhEau5TlRb7AjyeruQUbST
+ 2cRf63S+seosQS7tx5rFHOgu3vprnK2TI3nQFWP44C/hu88i4roi9lLh9g5IT5ImcxCpVNh6v
+ +Nnw9li6J7kmfxqO4imAqs5lpcU7HkrH4fObsgfpglMx5CY0oscIgV8vRJ4wNF9C4mKGjgdDq
+ EBCSvYTlBd0tu1Z4X2opkt9bIl1/07DxbhrcDHISOhhGZ8GjzP3WzCXXQfLF6YVSeDfJuBcbR
+ FrQYJPohyACh+I01hf1nqRGL0ckxXyILyaog2XfeBcXQXAbi/XzHzW2KoDSI125XRbe/GJ23e
+ BcwSDEHo8OcTLB48E06g4rRFjc4m4ACnM/wPOUfdpZDZEGTrgO7CR3rnx40SRU609Tyx0FoGQ
+ denhspTfCIzVcTbC+O7mWNIgm8YqPaDwQ+35V3VtMR+kvz6PN9w73BtcPwNKih913fyODePNX
+ fGJr2KYAz2bbSltbJxEMvuM0jl0807rCn+BrlBYHh7sIdqcIhy4wpm1m3nnvyyAe+r2ASxrzh
+ DZqXgVCrWJFT+gVejvEspBcZ+ewAldyBW/KmLrL+RyNM++W0utwU4ipQecY70fOyPIJceWkiY
+ cGNmmby290PdNv1o1QTDO5wrLsoK8m/SYdFwuadOLXpCUj9MYB2bG4o3RbliCeQbBrjfUoHKL
+ DzinenDxGpMs7IaMVBCCOw+VKKTm+DxclOVjjw5Kcdfkf2U0/gdjnM6DekiDxppmkdpH6t/xw
+ aM5XuAU8q52e2DgR9220p6fHhmXPB0hreFOHFArj/bizQDgwORqgpARBmRsNHSo60C0gegv3P
+ dOeLwa7YU5a+JMGUqXSQ9aTf/kM9MQ/YIZqOOg8w2mvCwDj27+luOGR7xO2S+yWzjEgit73GA
+ hPx6/S6bWrqRdNitUF8aDK7FSHU4/ZrznQUNKhkPBb3dOE1PPl7sFrovZ5fHvhUa1Dmanldv8
+ oL5QHd1A8QxrA2nBCkObPsYPUln4QFPUAdswWgSqiyGJqFcqOymz8uumA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,124 +85,90 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the function dump_stack_print_cmdline() which can be used by arch
-code to print the command line of the current processs.  This function
-is useful in arch code when dumping information for a faulting process.
+This patch series dumps the command line (including the program parameters=
+) of
+a faulting process to the syslog.
 
-Wire this function up in the dump_stack_print_info() function to include
-the dumping of the command line for architectures which use
-dump_stack_print_info().
+The motivation for this patch is that it's sometimes quite hard to find ou=
+t and
+annoying to not know which program *exactly* faulted when looking at the s=
+yslog.
 
-As an example, with this patch a failing glibc testcase (which uses
-ld.so.1 as starting program) up to now reported just "ld.so.1" failing:
+For example, a dump on parisc shows:
+   do_page_fault() command=3D'cc1' type=3D15 address=3D0x00000000 in libc-=
+2.33.so[f6abb000+184000]
 
- do_page_fault() command=3D'ld.so.1' type=3D15 address=3D0x565921d8 in lib=
-c.so[f7339000+1bb000]
- trap #15: Data TLB miss fault, vm_start =3D 0x0001a000, vm_end =3D 0x0001=
-b000
+-> We see the "cc1" compiler crashed, but it would be useful to know which=
+ file was compiled.
+With this patch you will see that cc1 crashed while compiling some haskell=
+ code:
 
-and now it reports in addition:
+   cc1[13472] cmdline: /usr/lib/gcc/hppa-linux-gnu/12/cc1 -quiet @/tmp/ccR=
+kFSfY -imultilib . -imultiarch hppa-linux-gnu -D USE_MINIINTERPRETER -D NO=
+_REGS -D _HPUX_SOURCE -D NOSMP -D THREADED_RTS -include /build/ghc/ghc-9.0=
+.2/includes/dist-install/build/ghcversion.h -iquote compiler/GHC/Iface -qu=
+iet -dumpdir /tmp/ghc13413_0/ -dumpbase ghc_5.hc -dumpbase-ext .hc -O -Wim=
+plicit -fno-PIC -fwrapv -fno-builtin -fno-strict-aliasing -o /tmp/ghc13413=
+_0/ghc_5.s
 
- ld.so.1[1151] cmdline: /home/gnu/glibc/objdir/elf/ld.so.1 --library-path =
-/home/gnu/glibc/objdir:/home/gnu/glibc/objdir/math:/home/gnu/
-    /home/gnu/glibc/objdir/malloc/tst-safe-linking-malloc-hugetlb1
+Another example are the glibc testcases which always segfault in "ld.so.1"=
+ with no other info:
 
-Josh Triplett noted that dumping such command line parameters into
-syslog may theoretically lead to information disclosure.
-That's why this patch checks the value of the kptr_restrict sysctl
-variable and will not print any information if kptr_restrict=3D=3D2, and
-will not show the program parameters if kptr_restrict=3D=3D1.
+   do_page_fault() command=3D'ld.so.1' type=3D15 address=3D0x565921d8 in l=
+ibc.so[f7339000+1bb000]
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+-> With the patch you can see it was the "tst-safe-linking-malloc-hugetlb1=
+" testcase:
+
+   ld.so.1[1151] cmdline: /home/gnu/glibc/objdir/elf/ld.so.1 --library-pat=
+h /home/gnu/glibc/objdir:/home/gnu/glibc/objdir/math:/home/gnu/
+        /home/gnu/glibc/objdir/malloc/tst-safe-linking-malloc-hugetlb1
+
+An example of a typical x86 fault shows up as:
+   crash[2326]: segfault at 0 ip 0000561a7969c12e sp 00007ffe97a05630 erro=
+r 6 in crash[561a7969c000+1000]
+   Code: 68 ff ff ff c6 05 19 2f 00 00 01 5d c3 0f 1f 80 00 00 00 00 c3 0f=
+ 1f 80 00 00 ...
+
+-> with this patch you now see the whole command line:
+   crash[2326] cmdline: ./crash test_write_to_page_0
+
+The patches are relatively small, and reuse functions which are used
+to create the output for the /proc/<pid>/cmdline files.
+
+The relevant changes are in patches #1 and #2.
+Patch #3 adds the cmdline dump on x86.
+Patch #4 drops code from arc which now becomes unnecessary as this is done=
+ by generic code.
+
+Helge
+
 =2D--
- include/linux/printk.h |  5 +++++
- lib/dump_stack.c       | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
 
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-index cf7d666ab1f8..5290a32a197d 100644
-=2D-- a/include/linux/printk.h
-+++ b/include/linux/printk.h
-@@ -191,6 +191,7 @@ u32 log_buf_len_get(void);
- void log_buf_vmcoreinfo_setup(void);
- void __init setup_log_buf(int early);
- __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
-+void dump_stack_print_cmdline(const char *log_lvl);
- void dump_stack_print_info(const char *log_lvl);
- void show_regs_print_info(const char *log_lvl);
- extern asmlinkage void dump_stack_lvl(const char *log_lvl) __cold;
-@@ -262,6 +263,10 @@ static inline __printf(1, 2) void dump_stack_set_arch=
-_desc(const char *fmt, ...)
- {
- }
+Changes in v3:
+- require task to be locked by caller, noticed by kernel test robot
+- add parameter names in header files, noticed by kernel test robot
 
-+static inline void dump_stack_print_cmdline(const char *log_lvl)
-+{
-+}
-+
- static inline void dump_stack_print_info(const char *log_lvl)
- {
- }
-diff --git a/lib/dump_stack.c b/lib/dump_stack.c
-index 83471e81501a..38ef1067c7eb 100644
-=2D-- a/lib/dump_stack.c
-+++ b/lib/dump_stack.c
-@@ -14,6 +14,7 @@
- #include <linux/kexec.h>
- #include <linux/utsname.h>
- #include <linux/stop_machine.h>
-+#include <linux/proc_fs.h>
+Changes in v2:
+- Don't dump all or parts of the commandline depending on the
+  kptr_restrict sysctl value (suggested by Josh Triplett).
+- Patch sent to more arch mailing lists
 
- static char dump_stack_arch_desc_str[128];
+Helge Deller (4):
+  proc: Add get_task_cmdline_kernel() function
+  lib/dump_stack: Add dump_stack_print_cmdline() and wire up in
+    dump_stack_print_info()
+  x86/fault: Dump command line of faulting process to syslog
+  arc: Use generic dump_stack_print_cmdline() implementation
 
-@@ -45,6 +46,37 @@ void __init dump_stack_set_arch_desc(const char *fmt, .=
-..)
- #define BUILD_ID_VAL ""
- #endif
+ arch/arc/kernel/troubleshoot.c | 24 -----------
+ arch/x86/mm/fault.c            |  2 +
+ fs/proc/base.c                 | 74 +++++++++++++++++++++++-----------
+ include/linux/printk.h         |  5 +++
+ include/linux/proc_fs.h        |  5 +++
+ lib/dump_stack.c               | 34 ++++++++++++++++
+ 6 files changed, 97 insertions(+), 47 deletions(-)
 
-+/**
-+ * dump_stack_print_cmdline - print the command line of current process
-+ * @log_lvl: log level
-+ */
-+void dump_stack_print_cmdline(const char *log_lvl)
-+{
-+	char cmdline[256];
-+
-+	if (kptr_restrict >=3D 2)
-+		return; /* never show command line */
-+
-+	/* get command line */
-+	get_task_cmdline_kernel(current, cmdline, sizeof(cmdline));
-+
-+	if (kptr_restrict =3D=3D 1) {
-+		char *p;
-+
-+		/* if restricted show program path only */
-+		p =3D strchr(cmdline, ' ');
-+		if (p) {
-+			*p =3D 0;
-+			strlcat(cmdline,
-+				" ... [parameters hidden due to kptr_restrict]",
-+				sizeof(cmdline));
-+		}
-+	}
-+
-+	printk("%s%s[%d] cmdline: %s\n", log_lvl, current->comm,
-+		current->pid, cmdline);
-+}
-+
- /**
-  * dump_stack_print_info - print generic debug info for dump_stack()
-  * @log_lvl: log level
-@@ -62,6 +94,8 @@ void dump_stack_print_info(const char *log_lvl)
- 	       (int)strcspn(init_utsname()->version, " "),
- 	       init_utsname()->version, BUILD_ID_VAL);
-
-+	dump_stack_print_cmdline(log_lvl);
-+
- 	if (dump_stack_arch_desc_str[0] !=3D '\0')
- 		printk("%sHardware name: %s\n",
- 		       log_lvl, dump_stack_arch_desc_str);
 =2D-
 2.37.1
 
