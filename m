@@ -4,91 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10A1DC19F2A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Aug 2022 11:45:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66B58C19F2A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Aug 2022 12:36:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M3Q3Y1cW5z3bYS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Aug 2022 21:45:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M3R9t45v2z3c3Z
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Aug 2022 22:36:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N2cM+DWh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ql5Tzwac;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=anders.roxell@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N2cM+DWh;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=Ql5Tzwac;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3Q2j2yqHz2xrj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2022 21:44:44 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27BBfwei001906;
-	Thu, 11 Aug 2022 11:44:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type : subject :
- from : in-reply-to : date : cc : message-id : references : to :
- content-transfer-encoding : mime-version; s=pp1;
- bh=k8OxMey6CLg0GXntxVvBFhpJY5/zsW848Xv+A0GjS6s=;
- b=N2cM+DWhRVUbq/fJTKxUHNeWzMwuC1VF/Cf5xLd72K5f8Q9BtYpEfpLiTzIaF1TgUmFH
- RlTLBf+ZXw42RwJuIbBbTnkTZy8P6iQz9Jlp6hf9JkshETUbhLy7LxkJO6AjYWoSHdv3
- 1sv1bDBUmQJyGCE9J89dWKLQEvEv5X+8uwDK/xagkBF1R+ScrjGCjXuCa2Ml6uxytMdh
- FtXS5NCAjYiZWQGfcy4RxBLRKAk0SCgZinTPrtOWClqgGgoav4QKUC2fMLSXN3QqiOVD
- PLgRmuW1ZH0+ekScsN4b6Qy6dnfVwsc8xG+4FIvsd2rGnv+ZOHm0yeiWhQeRuc2M2TJM zQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hw14dr1x8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 11 Aug 2022 11:44:41 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 27BBgJO3002450;
-	Thu, 11 Aug 2022 11:44:41 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hw14dr1w9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 11 Aug 2022 11:44:41 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27BBZTgm017387;
-	Thu, 11 Aug 2022 11:44:38 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
-	by ppma03ams.nl.ibm.com with ESMTP id 3huwvg1yra-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 11 Aug 2022 11:44:38 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27BBiahf26280314
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 11 Aug 2022 11:44:36 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7500B11C04A;
-	Thu, 11 Aug 2022 11:44:36 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 823CD11C050;
-	Thu, 11 Aug 2022 11:44:35 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.75.173])
-	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Thu, 11 Aug 2022 11:44:35 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Subject: Re: [5.19.0-next-20220811] Build failure drivers/vdpa
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <CAGxU2F5V-qxurLSZhugvNLWkiDOM83tgKQrEUFB_PLd7=kTH3Q@mail.gmail.com>
-Date: Thu, 11 Aug 2022 17:14:34 +0530
-Message-Id: <7137A7BC-1036-49A3-885B-FEBC7985871F@linux.ibm.com>
-References: <A330513B-21C9-44D2-BA02-853327FC16CE@linux.ibm.com>
- <CAGxU2F5V-qxurLSZhugvNLWkiDOM83tgKQrEUFB_PLd7=kTH3Q@mail.gmail.com>
-To: Stefano Garzarella <sgarzare@redhat.com>
-X-Mailer: Apple Mail (2.3696.120.41.1.1)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Qoq6gJZ-p24hQfcSx8c9YSWViWxLr7kO
-X-Proofpoint-ORIG-GUID: vn0zB7nDtYDwZaBLZs4PbZ8c3O9kA7fe
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3R9860MTz2y2G
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2022 22:35:22 +1000 (AEST)
+Received: by mail-pj1-x1029.google.com with SMTP id p14-20020a17090a74ce00b001f4d04492faso4970066pjl.4
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Aug 2022 05:35:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=5w/KsvKeDQNB0nymQYwJO1nJhxYwskiJAdbQrcwrrws=;
+        b=Ql5TzwacX39R2Jd3F8nwCUw2umD0dCX30wm+NAMytxnOiFhjI29r2fh4KHIe8FbJA5
+         sYz4E0PDwIJi2YWeIZGBi2iV+Kzj0DYdKG+N+MawTLJhdefhUsUcV0ClrlBQcf1+CfbC
+         BhOcyvxJBYHt9jAR2olKMbE/rOdvH8kuymWFoAFCIdQ3O3rDei5TMFoybUL9zX6OoiC6
+         zSf7+O9WlFtOrgZpMoO4efq2+dLIYo4s6604mDZQ2A9zMsGb4t2OqoPcdUh7yyzAL4B5
+         4m2ConxAm3a5QZ2B5OUxbrnEPhFZedReRM5K3lF3hX3flUt9J1LLpTzaRYKOp4znfWwG
+         qROQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=5w/KsvKeDQNB0nymQYwJO1nJhxYwskiJAdbQrcwrrws=;
+        b=opAnnJA0c65/gM1xCKvE/cCg48g5zQpiuaG3rciJREBCLxEo/dr0MfHOxU+KmnEnIP
+         PUbOIVgoNUMvmW2wA5XKI3UojWjH40/egtKj1OAeItlcpIS0QxagHqKhr5R+Va2EtczL
+         mgRI2atTvIukIhQJbgJZGd4h+hsx2cEo5IDg3LoLg3e6HVnEAonH0SMcUgidAzL6qREE
+         QN0KWqbk1kU3FH0aVov5M3H8aDDWUvhmvZoLmG3p+jqTNkYyO3wbHo7sxEq1+Q079zct
+         4063trYV/f1w8kCV0rS87XiacYnLBBJkxyThoZ4C2MciHMAdte68EDneiqWlJvgVstqm
+         cmCw==
+X-Gm-Message-State: ACgBeo3OT3zdBCd8uluTDw5GdMzlATctgQYmBO3wi2u8uOewLSV9zxjX
+	j/j6Trx4+fsw5G5M6V6EyW8Nl2M87pMKaHxheowXZA==
+X-Google-Smtp-Source: AA6agR7mxh4xlrHaACk8ACRbYeCnushTJX/xovc1OX340+zRR7qqgn2gIIKem8n7+e/FLEibg6QqXPbdXVxgjeL2ts4=
+X-Received: by 2002:a17:90b:3805:b0:1f4:ebfe:558b with SMTP id
+ mq5-20020a17090b380500b001f4ebfe558bmr8709936pjb.48.1660221318988; Thu, 11
+ Aug 2022 05:35:18 -0700 (PDT)
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-08-11_05,2022-08-11_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- mlxlogscore=843 impostorscore=0 mlxscore=0 suspectscore=0 clxscore=1015
- adultscore=0 bulkscore=0 phishscore=0 priorityscore=1501
- lowpriorityscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2207270000 definitions=main-2208110034
+References: <20220810114318.3220630-1-anders.roxell@linaro.org> <87fsi3ce28.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87fsi3ce28.fsf@mpe.ellerman.id.au>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Thu, 11 Aug 2022 14:35:08 +0200
+Message-ID: <CADYN=9L_Sgd8HTkhtM5t0eoN7ict8zX6fRCJsVvYcgp9H_QsSg@mail.gmail.com>
+Subject: Re: [PATCHv3, resend] powerpc: mm: radix_tlb: rearrange the if-else block
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,25 +72,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, llvm@lists.linux.dev, ndesaulniers@google.com, linux-kernel@vger.kernel.org, nathan@kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, 11 Aug 2022 at 11:41, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Anders Roxell <anders.roxell@linaro.org> writes:
+> > Clang warns:
+> >
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1191:23: error: variable 'hstart' is uninitialized when used here [-Werror,-Wuninitialized]
+> >                                 __tlbiel_va_range(hstart, hend, pid,
+> >                                                   ^~~~~~
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1175:23: note: initialize the variable 'hstart' to silence this warning
+> >                 unsigned long hstart, hend;
+> >                                     ^
+> >                                      = 0
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1191:31: error: variable 'hend' is uninitialized when used here [-Werror,-Wuninitialized]
+> >                                 __tlbiel_va_range(hstart, hend, pid,
+> >                                                           ^~~~
+> > arch/powerpc/mm/book3s64/radix_tlb.c:1175:29: note: initialize the variable 'hend' to silence this warning
+> >                 unsigned long hstart, hend;
+> >                                           ^
+> >                                            = 0
+> > 2 errors generated.
+>
+> Which version & config are you building?
 
+clang-13, clang-14 and clang-nightly, configs are cell_defconfig and
+maple_defconfig
 
-> On 11-Aug-2022, at 3:45 PM, Stefano Garzarella <sgarzare@redhat.com> wrot=
-e:
->=20
->> Date:   Wed Aug 10 11:43:47 2022 +0200
->>    vdpa_sim_blk: add support for discard and write-zeroes
->>=20
->=20
-> Thanks for the report, I already re-sent a new series with that patch fix=
-ed:
-> https://lore.kernel.org/virtualization/20220811083632.77525-1-sgarzare@re=
-dhat.com/T/#t
+I'm building with tuxmake [1] like this:
+$ tuxmake --runtime podman --target-arch powerpc --toolchain clang-14
+--kconfig cell_defconfig
 
-Thanks. That patch works for me.
-
-- Sachin
-
+Cheers,
+Anders
+[1] https://tuxmake.org/
