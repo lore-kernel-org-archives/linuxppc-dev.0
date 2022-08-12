@@ -4,51 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78C05C00140
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 07:07:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C067C00140
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 07:17:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M3vrc5nf6z3cB3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 17:07:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M3w3w3nCJz3c5p
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 17:17:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm2 header.b=FvhgFurr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w8VGKIBJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm2 header.b=FvhgFurr;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=w8VGKIBJ;
+	dkim-atps=neutral
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3vqH1Xyjz2yK2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 17:06:34 +1000 (AEST)
-Received: from dggemv711-chm.china.huawei.com (unknown [172.30.72.53])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4M3vll1wdMzlVjx;
-	Fri, 12 Aug 2022 15:03:31 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- dggemv711-chm.china.huawei.com (10.1.198.66) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 12 Aug 2022 15:06:27 +0800
-Received: from localhost.localdomain (10.175.112.125) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 12 Aug 2022 15:06:25 +0800
-From: Tong Tiangen <tongtiangen@huawei.com>
-To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
-	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
-	<bp@alien8.de>, Robin Murphy <robin.murphy@arm.com>, Dave Hansen
-	<dave.hansen@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
-	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v7 3/4] arm64: add uaccess to machine check safe
-Date: Fri, 12 Aug 2022 07:05:56 +0000
-Message-ID: <20220812070557.1028499-4-tongtiangen@huawei.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220812070557.1028499-1-tongtiangen@huawei.com>
-References: <20220812070557.1028499-1-tongtiangen@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3w376dCqz2xTj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 17:16:51 +1000 (AEST)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.west.internal (Postfix) with ESMTP id 5689D320070D;
+	Fri, 12 Aug 2022 03:16:47 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Fri, 12 Aug 2022 03:16:47 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
+	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
+	:message-id:mime-version:reply-to:sender:subject:subject:to:to;
+	 s=fm2; t=1660288606; x=1660375006; bh=06O2XresKPmnssoag2kD4noV3
+	GFqGieqwEYgvHbR5nU=; b=FvhgFurruGnHWx/JvCJ60hlxXjiIvJy4WZkKj9L48
+	fw7ReyvtWNOSYHjMZCNnUmxPl9KtMu40kwM1PsIUb7yNvgDQBirO6t3xN3TiswOP
+	33nWXnjSIJL+3Uv7WgBa8XRYC7jQUaJm3CMMSUWdtKUPKBCxW9ME+MaIgMc5JvlW
+	l76Uz99O0nR47zsxB+VMDMLFnQo8AyfyKcXyjgdmTvGtjhUgLEyr9JS+86nsf6YC
+	+77sXd6ESGhMmCsTs4NySFSS+eupWRWLUXvk/jIonvcXvcuSL8qNaMPVnHCe0b+D
+	bfJJSxA3wuBd1VtdAd7s3Vd3UNd5UTBP6/lOfYLGG+GsQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:message-id
+	:mime-version:reply-to:sender:subject:subject:to:to:x-me-proxy
+	:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
+	1660288606; x=1660375006; bh=06O2XresKPmnssoag2kD4noV3GFqGieqwEY
+	gvHbR5nU=; b=w8VGKIBJLH9hFaHo52fbYeZaAFVn5LRiTq1AVGmmVX9/ZInQN8P
+	UmrPmvupFkNCkoOG+o1W9phQ3m1+Yev8ki47mBTJ6sH2Ovw5sGlj/PwRAHNPVvHd
+	VLCPu70Dd4mxIfqaEfLws+S8BAIrAHrYgFE80RkEa7mRuFwPL0AH73P58uRtOL7I
+	QRAxM2eZybEoDM7iyPRx4aGCUlQeUJjRVje712yR5tDmptsdSAxBacv/ViWoihTl
+	gIvoIIuE/eAlM7tlGvVg7ZE3IRnU7FPyrE3hjQzhWE04JuJ9idYtqtT4gEgWCctb
+	DeQIHdPswBI859zcXWPmnnjHrFP+4Njnpzw==
+X-ME-Sender: <xms:Xv71YixJCTtQ16RcZp2ex7t9GY2EW6CD-LemTYNbCcr4ZNQH6v5UVg>
+    <xme:Xv71YuTLN190hTWaMhOr8A21s7GiRLnUKIUGj1qbfsH1m7eUdeFamgj7FyNqQ_ojC
+    KIzPOOTK6DjeF_Vtg>
+X-ME-Received: <xmr:Xv71YkUAgVF2CN5yiwztNG2kplCmibcq2A9tV0XKa2sHgPCCqOOWoTnV91kKd0W3L9xCnEOIdHQvW2lMtiDbmtG4IDIr5F0ZJKaVHm8Fl8pphw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdeghedguddulecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+    necuuegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhephf
+    fvvefufffkofgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhr
+    vgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecuggftrfgrthhtvghrnhepvd
+    egudetjefgveevvedutdeigeelueffvefhfeeuheeuffekhfffheegheejhfdtnecuvehl
+    uhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrse
+    hruhhsshgvlhhlrdgttg
+X-ME-Proxy: <xmx:Xv71YoiHqvQQjtgHeXo4QNGCwQXOihdtRw9QWfQlLdEYEW1IKXB8xg>
+    <xmx:Xv71YkCpA4C31GUqOX5A9Og00sbDR_PkHLWDejq_18PqCA0oPIBMaw>
+    <xmx:Xv71YpIshdMe2NLaFSOvxJ4BlU8-DOQRmSlhuFIHpHvm_p6GccVpqg>
+    <xmx:Xv71YnPSm_8xWhU7zYk-2Nv4YE1LuiQWRZSaQAndyoiXUi3jkEotFA>
+Feedback-ID: i4421424f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Fri,
+ 12 Aug 2022 03:16:44 -0400 (EDT)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] selftests/powerpc: Add missing PMU selftests to .gitignores
+Date: Fri, 12 Aug 2022 17:16:32 +1000
+Message-Id: <20220812071632.56095-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.37.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.112.125]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemm600017.china.huawei.com (7.193.23.234)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,39 +89,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Tong Tiangen <tongtiangen@huawei.com>, Guohanjun <guohanjun@huawei.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com, Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If user access fail due to hardware memory error, only the relevant
-processes are affected, so killing the user process and isolate the
-error page with hardware memory errors is a more reasonable choice
-than kernel panic.
+Some recently added selftests don't have their binaries in .gitignores,
+so add them.
 
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
+I also alphabetically sorted sampling_tests/.gitignore while I was in
+there.
+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/arm64/mm/extable.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../powerpc/pmu/event_code_tests/.gitignore   | 20 +++++++++++++++++++
+ .../powerpc/pmu/sampling_tests/.gitignore     | 18 +++++++++++++----
+ 2 files changed, 34 insertions(+), 4 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/event_code_tests/.gitignore
 
-diff --git a/arch/arm64/mm/extable.c b/arch/arm64/mm/extable.c
-index 478e639f8680..28ec35e3d210 100644
---- a/arch/arm64/mm/extable.c
-+++ b/arch/arm64/mm/extable.c
-@@ -85,10 +85,10 @@ bool fixup_exception_mc(struct pt_regs *regs)
- 	if (!ex)
- 		return false;
- 
--	/*
--	 * This is not complete, More Machine check safe extable type can
--	 * be processed here.
--	 */
-+	switch (ex->type) {
-+	case EX_TYPE_UACCESS_ERR_ZERO:
-+		return ex_handler_uaccess_err_zero(ex, regs);
-+	}
- 
- 	return false;
- }
+diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/.gitignore b/tools/testing/selftests/powerpc/pmu/event_code_tests/.gitignore
+new file mode 100644
+index 000000000000..5710683da525
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/.gitignore
+@@ -0,0 +1,20 @@
++blacklisted_events_test
++event_alternatives_tests_p10
++event_alternatives_tests_p9
++generic_events_valid_test
++group_constraint_cache_test
++group_constraint_l2l3_sel_test
++group_constraint_mmcra_sample_test
++group_constraint_pmc56_test
++group_constraint_pmc_count_test
++group_constraint_radix_scope_qual_test
++group_constraint_repeat_test
++group_constraint_thresh_cmp_test
++group_constraint_thresh_ctl_test
++group_constraint_thresh_sel_test
++group_constraint_unit_test
++group_pmc56_exclude_constraints_test
++hw_cache_event_type_test
++invalid_event_code_test
++reserved_bits_mmcra_sample_elig_mode_test
++reserved_bits_mmcra_thresh_ctl_test
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore b/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
+index 0fce5a694684..f93b4c7c3a8a 100644
+--- a/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
+@@ -1,11 +1,21 @@
+-mmcr0_exceptionbits_test
++bhrb_filter_map_test
++bhrb_no_crash_wo_pmu_test
++intr_regs_no_crash_wo_pmu_test
+ mmcr0_cc56run_test
+-mmcr0_pmccext_test
+-mmcr0_pmcjce_test
++mmcr0_exceptionbits_test
+ mmcr0_fc56_pmc1ce_test
+ mmcr0_fc56_pmc56_test
++mmcr0_pmccext_test
++mmcr0_pmcjce_test
+ mmcr1_comb_test
+-mmcr2_l2l3_test
++mmcr1_sel_unit_cache_test
+ mmcr2_fcs_fch_test
++mmcr2_l2l3_test
+ mmcr3_src_test
++mmcra_bhrb_any_test
++mmcra_bhrb_cond_test
++mmcra_bhrb_disable_no_branch_test
++mmcra_bhrb_disable_test
++mmcra_bhrb_ind_call_test
++mmcra_thresh_cmp_test
+ mmcra_thresh_marked_sample_test
 -- 
-2.25.1
+2.37.1
 
