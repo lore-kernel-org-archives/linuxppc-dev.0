@@ -4,51 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 430A4C00140
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 07:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2773BC00140
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 08:20:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M3wDT4mjyz3bZ2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 17:24:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M3xT33H2Lz3bNj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 18:20:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jGpOV5b/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jGpOV5b/;
+	dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3wD16Wxkz2x9d
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 17:24:33 +1000 (AEST)
-Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.57])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4M3vlL2VgXz1M8lr;
-	Fri, 12 Aug 2022 15:03:10 +0800 (CST)
-Received: from kwepemm600017.china.huawei.com (7.193.23.234) by
- dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 12 Aug 2022 15:06:24 +0800
-Received: from localhost.localdomain (10.175.112.125) by
- kwepemm600017.china.huawei.com (7.193.23.234) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Fri, 12 Aug 2022 15:06:22 +0800
-From: Tong Tiangen <tongtiangen@huawei.com>
-To: Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner
-	<tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov
-	<bp@alien8.de>, Robin Murphy <robin.murphy@arm.com>, Dave Hansen
-	<dave.hansen@linux.intel.com>, Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>,
-	Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
-	<benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
-	<x86@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH -next v7 1/4] uaccess: add generic fallback version of copy_mc_to_user()
-Date: Fri, 12 Aug 2022 07:05:54 +0000
-Message-ID: <20220812070557.1028499-2-tongtiangen@huawei.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20220812070557.1028499-1-tongtiangen@huawei.com>
-References: <20220812070557.1028499-1-tongtiangen@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M3xSD6zwkz2xGx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 18:20:12 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27C899cn024680
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : date : in-reply-to : references : content-type : mime-version
+ : content-transfer-encoding; s=pp1;
+ bh=uxdX4TRFWpJ8Et50n7e4IYGljkFz2Qhdnuu94XJIafA=;
+ b=jGpOV5b/zT4N0d8wZbISda7o+FcaiucnNNsKEUMBQn+vayjBuieS6XURCoPlaJ/qhXy9
+ vLTgflWgOKR2h9IkMV+T+2tSdUNVgAF3cMF7mPJMLcVjXVAiY7uZcWR40jEQoxCCcP7h
+ FX9+2Dh13X+hhi0EifrW41SFUX3bEQKyRJZblchMF2vnUngfB2QCUyQ/JXvNWpJPrkpy
+ Ej3bL5mtaWejAlUI8OaESupgazpognJdDPkhu0y7Eg88ACKiR2DJli9FP8kYH7RoBHar
+ mBgqJ3iH77sZomZOY98RQ3Xiq/GND2+kLasB2UxhyOJpaDpPzmkZX52dPJLUOfpa9uMq qw== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3hwjqfrxj7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:09 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27C88Hvo023566
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:07 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma02fra.de.ibm.com with ESMTP id 3huww0tea6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:07 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27C8K5KB26542530
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:05 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D32DAE04D
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:05 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EB1FBAE053
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:04 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Aug 2022 08:20:04 +0000 (GMT)
+Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 21ADA600F5;
+	Fri, 12 Aug 2022 18:19:52 +1000 (AEST)
+Message-ID: <e4e4bd479bd9a7f03fdd6c646bc52d33b64e3ba0.camel@linux.ibm.com>
+Subject: Re: [PATCH] docs: powerpc: add POWER9 and POWER10 to CPU families
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: Nicholas Miehlbradt <nicholas@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+Date: Fri, 12 Aug 2022 18:19:51 +1000
+In-Reply-To: <20220810040321.375396-1-nicholas@linux.ibm.com>
+References: <20220810040321.375396-1-nicholas@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.38.3-1 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.175.112.125]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemm600017.china.huawei.com (7.193.23.234)
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ksbtENU9AZYnn95tF4Xbs6A0WP9DLUxp
+X-Proofpoint-GUID: ksbtENU9AZYnn95tF4Xbs6A0WP9DLUxp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-08-12_05,2022-08-11_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 mlxscore=0
+ phishscore=0 clxscore=1015 malwarescore=0 adultscore=0 priorityscore=1501
+ impostorscore=0 mlxlogscore=791 bulkscore=0 spamscore=0 lowpriorityscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
+ definitions=main-2208120021
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,66 +96,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Xie XiuQi <xiexiuqi@huawei.com>, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Tong Tiangen <tongtiangen@huawei.com>, Guohanjun <guohanjun@huawei.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-x86/powerpc has it's implementation of copy_mc_to_user(), we add generic
-fallback in include/linux/uaccess.h prepare for other architechures to
-enable CONFIG_ARCH_HAS_COPY_MC.
+On Wed, 2022-08-10 at 04:03 +0000, Nicholas Miehlbradt wrote:
+> Add POWER9 and POWER10 to CPU families and list Radix MMU.
+> 
+> Signed-off-by: Nicholas Miehlbradt <nicholas@linux.ibm.com>
 
-Signed-off-by: Tong Tiangen <tongtiangen@huawei.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/uaccess.h | 1 +
- arch/x86/include/asm/uaccess.h     | 1 +
- include/linux/uaccess.h            | 9 +++++++++
- 3 files changed, 11 insertions(+)
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 3ddc65c63a49..82dc55707c4b 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -357,6 +357,7 @@ copy_mc_to_user(void __user *to, const void *from, unsigned long n)
- 
- 	return n;
- }
-+#define copy_mc_to_user copy_mc_to_user
- #endif
- 
- extern long __copy_from_user_flushcache(void *dst, const void __user *src,
-diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
-index 913e593a3b45..64ba7f723ddf 100644
---- a/arch/x86/include/asm/uaccess.h
-+++ b/arch/x86/include/asm/uaccess.h
-@@ -512,6 +512,7 @@ copy_mc_to_kernel(void *to, const void *from, unsigned len);
- 
- unsigned long __must_check
- copy_mc_to_user(void *to, const void *from, unsigned len);
-+#define copy_mc_to_user copy_mc_to_user
- #endif
- 
- /*
-diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-index 47e5d374c7eb..6f48ad43a82e 100644
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -174,6 +174,15 @@ copy_mc_to_kernel(void *dst, const void *src, size_t cnt)
- }
- #endif
- 
-+#ifndef copy_mc_to_user
-+static inline unsigned long __must_check
-+copy_mc_to_user(void *dst, const void *src, size_t cnt)
-+{
-+	check_object_size(src, cnt, true);
-+	return raw_copy_to_user(dst, src, cnt);
-+}
-+#endif
-+
- static __always_inline void pagefault_disabled_inc(void)
- {
- 	current->pagefault_disabled++;
+
 -- 
-2.25.1
+Andrew Donnellan    OzLabs, ADL Canberra
+ajd@linux.ibm.com   IBM Australia Limited
 
