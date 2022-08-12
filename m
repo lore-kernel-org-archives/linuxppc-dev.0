@@ -4,62 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51CA7C00140
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 16:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBD37C00140
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Aug 2022 17:02:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M48hH69vNz3dyR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Aug 2022 02:46:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M492J0gTQz3c52
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Aug 2022 03:02:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZpSwVUtQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IdsRWAod;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZpSwVUtQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IdsRWAod;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M48dL1DpMz3blS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2022 02:43:49 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27CGdYfk017663;
-	Fri, 12 Aug 2022 16:43:34 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M491Z0cQSz2xGG
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2022 03:01:21 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27CGhbCS005850;
+	Fri, 12 Aug 2022 17:01:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=kZYHbZ9Pn5Z8IL5WRwrP+uOE619iJp8vvXfL5+FLseI=;
- b=ZpSwVUtQuWE/8txJVykYK/7iC4ynKY6JRzfPZ5rTC1Eql41Rtk+IkSKuIbh9Upa2Fhbu
- 9PFUiuBSKtjqWY+DnItoude2oVj69M6lbO4JJOH/5yxPZxdNFq376TtCm/VrbpxptA9d
- 8Eb54bKeyobj0yruZX4Std1XvD8+8eSxVuTcnlieU8G8MmlEFp6CPm/xfKMAjNYHMR/H
- uXHb0AqFXVKHLlYaLDWyrv0XrkaY0sxklvYIb2p5LlNlOeWb1eET61FRfl/nCIuEXNjT
- 8LjTHcg1stOiIjHSjA6G0KzQCLKD7n72TzIXSyXzS+aumamQiAa1i70AzYvd0jEb328+ /Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3hwtd20kuy-1
+ bh=k4rfDl5sjXMkFxZKUuEqZdOSLHex7NUKzrZWhtsr1fw=;
+ b=IdsRWAodbLf5S6DRZec/JyCO3UhO8kpJrlXb1jRiH4vZ3zQz4WbjEnINbUwjHJYXKPdN
+ 7+tnf+LLW+cYqCaKzf7Y3+O1BbpzraVryHhf6zHVXGNI7mjHkF5JZmyvsCR/JpDZNWNO
+ AJqPVm8y9Sn55R07BcXftE2No4VnHnU8/P/gDH4YbLq8K01sAag+lc9nltqvQ//Dwy59
+ Wmfb7dGF4QIUrGVyYQRBqG5cPhDIdXB+dxx7wz1Rr2/i8R1IDNXCCBSh0eQeeGI7IeXL
+ Ap1yAFW/vTcfGwmRGsjSy5E6CRxcb/AMFtsWe13DVe0yTE4Q5nYql2oWFHzUuQxbxddy pQ== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com [169.63.121.186])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3hwtmn8ejx-2
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Aug 2022 16:43:33 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 27CGeSt8024837;
-	Fri, 12 Aug 2022 16:43:26 GMT
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3hwtd20ka6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Aug 2022 16:43:26 +0000
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
-	by ppma02dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27CGZ8r3029766;
+	Fri, 12 Aug 2022 17:01:08 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+	by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27CGad3c004857;
 	Fri, 12 Aug 2022 16:43:12 GMT
 Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
-	by ppma02dal.us.ibm.com with ESMTP id 3hvkjhehyc-1
+	by ppma03wdc.us.ibm.com with ESMTP id 3huww6j67m-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 12 Aug 2022 16:43:12 +0000
 Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com [9.57.199.106])
-	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27CGhBL8524806
+	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27CGhBek524800
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Fri, 12 Aug 2022 16:43:11 GMT
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C096328058;
+	by IMSVA (Postfix) with ESMTP id 5FB772805E;
 	Fri, 12 Aug 2022 16:43:11 +0000 (GMT)
 Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AD18E28064;
+	by IMSVA (Postfix) with ESMTP id 46B8F2805A;
 	Fri, 12 Aug 2022 16:43:11 +0000 (GMT)
 Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
 	by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
@@ -68,24 +61,24 @@ From: Stefan Berger <stefanb@linux.ibm.com>
 To: kexec@lists.infradead.org, devicetree@vger.kernel.org,
         linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 5/6] of: kexec: Refactor IMA buffer related functions to make them reusable
-Date: Fri, 12 Aug 2022 12:43:04 -0400
-Message-Id: <20220812164305.2056641-6-stefanb@linux.ibm.com>
+Subject: [PATCH v7 2/6] drivers: of: kexec ima: Support 32-bit platforms
+Date: Fri, 12 Aug 2022 12:43:01 -0400
+Message-Id: <20220812164305.2056641-3-stefanb@linux.ibm.com>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <20220812164305.2056641-1-stefanb@linux.ibm.com>
 References: <20220812164305.2056641-1-stefanb@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 9IZ8TvcagnVUasvZtgNKaAV7AR8yeBiH
-X-Proofpoint-GUID: CTNOq0xRJeapnA58kou4a7UhnvmsasrM
+X-Proofpoint-ORIG-GUID: P20OgIJxfTKAti3Kpge_wkB5Cr85HOrG
+X-Proofpoint-GUID: P20OgIJxfTKAti3Kpge_wkB5Cr85HOrG
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-08-12_10,2022-08-11_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- bulkscore=0 lowpriorityscore=0 priorityscore=1501 mlxscore=0
- impostorscore=0 malwarescore=0 clxscore=1015 mlxlogscore=999 adultscore=0
- spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
+ mlxlogscore=999 spamscore=0 impostorscore=0 phishscore=0
+ lowpriorityscore=0 adultscore=0 priorityscore=1501 clxscore=1015
+ mlxscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2207270000 definitions=main-2208120044
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,231 +91,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Nageswara R Sastry <rnsastry@linux.ibm.com>, nayna@linux.ibm.com, Mimi Zohar <zohar@linux.ibm.com>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, Frank Rowand <frowand.list@gmail.com>, Stefan Berger <stefanb@linux.ibm.com>
+Cc: Rob Herring <robh@kernel.org>, nayna@linux.ibm.com, Mimi Zohar <zohar@linux.ibm.com>, nasastry@in.ibm.com, Palmer Dabbelt <palmer@rivosinc.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Refactor IMA buffer related functions to make them reusable for carrying
-TPM logs across kexec.
+From: Palmer Dabbelt <palmer@rivosinc.com>
 
-Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Frank Rowand <frowand.list@gmail.com>
-Cc: Mimi Zohar <zohar@linux.ibm.com>
+RISC-V recently added kexec_file() support, which uses enables kexec
+IMA.  We're the first 32-bit platform to support this, so we found a
+build bug.
+
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
 Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
-
 ---
-v6:
- - Add __init to get_kexec_buffer as suggested by Jonathan
-
-v5:
- - Rebased on Jonathan McDowell's commit "b69a2afd5afc x86/kexec: Carry
-   forward IMA measurement log on kexec"
-v4:
- - Move debug output into setup_buffer()
----
- drivers/of/kexec.c | 126 ++++++++++++++++++++++++++-------------------
- 1 file changed, 74 insertions(+), 52 deletions(-)
+ drivers/of/kexec.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
-index 548dd5b1b5c1..15a82b574f36 100644
+index 91b04b04eec4..c4f9b6655a2e 100644
 --- a/drivers/of/kexec.c
 +++ b/drivers/of/kexec.c
-@@ -117,45 +117,57 @@ static int do_get_kexec_buffer(const void *prop, int len, unsigned long *addr,
- }
- 
- #ifdef CONFIG_HAVE_IMA_KEXEC
--/**
-- * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-- * @addr:	On successful return, set to point to the buffer contents.
-- * @size:	On successful return, set to the buffer size.
-- *
-- * Return: 0 on success, negative errno on error.
-- */
--int __init ima_get_kexec_buffer(void **addr, size_t *size)
-+static int __init get_kexec_buffer(const char *name, unsigned long *addr,
-+				   size_t *size)
- {
- 	int ret, len;
--	unsigned long tmp_addr;
- 	unsigned long start_pfn, end_pfn;
--	size_t tmp_size;
- 	const void *prop;
- 
--	prop = of_get_property(of_chosen, "linux,ima-kexec-buffer", &len);
-+	prop = of_get_property(of_chosen, name, &len);
- 	if (!prop)
- 		return -ENOENT;
- 
--	ret = do_get_kexec_buffer(prop, len, &tmp_addr, &tmp_size);
-+	ret = do_get_kexec_buffer(prop, len, addr, size);
- 	if (ret)
- 		return ret;
- 
--	/* Do some sanity on the returned size for the ima-kexec buffer */
--	if (!tmp_size)
-+	/* Do some sanity on the returned size for the kexec buffer */
-+	if (!*size)
- 		return -ENOENT;
- 
- 	/*
- 	 * Calculate the PFNs for the buffer and ensure
- 	 * they are with in addressable memory.
- 	 */
--	start_pfn = PHYS_PFN(tmp_addr);
--	end_pfn = PHYS_PFN(tmp_addr + tmp_size - 1);
-+	start_pfn = PHYS_PFN(*addr);
-+	end_pfn = PHYS_PFN(*addr + *size - 1);
- 	if (!page_is_ram(start_pfn) || !page_is_ram(end_pfn)) {
--		pr_warn("IMA buffer at 0x%lx, size = 0x%zx beyond memory\n",
--			tmp_addr, tmp_size);
-+		pr_warn("%s buffer at 0x%lx, size = 0x%zx beyond memory\n",
-+			name, *addr, *size);
- 		return -EINVAL;
- 	}
- 
-+	return 0;
-+}
-+
-+/**
-+ * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-+ * @addr:	On successful return, set to point to the buffer contents.
-+ * @size:	On successful return, set to the buffer size.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int __init ima_get_kexec_buffer(void **addr, size_t *size)
-+{
-+	int ret;
-+	unsigned long tmp_addr;
-+	size_t tmp_size;
-+
-+	ret = get_kexec_buffer("linux,ima-kexec-buffer", &tmp_addr, &tmp_size);
-+	if (ret)
-+		return ret;
-+
- 	*addr = __va(tmp_addr);
- 	*size = tmp_size;
- 
-@@ -188,72 +200,82 @@ int __init ima_free_kexec_buffer(void)
- }
- #endif
- 
--/**
-- * remove_ima_buffer - remove the IMA buffer property and reservation from @fdt
-- *
-- * @fdt: Flattened Device Tree to update
-- * @chosen_node: Offset to the chosen node in the device tree
-- *
-- * The IMA measurement buffer is of no use to a subsequent kernel, so we always
-- * remove it from the device tree.
-- */
--static void remove_ima_buffer(void *fdt, int chosen_node)
-+static int remove_buffer(void *fdt, int chosen_node, const char *name)
- {
- 	int ret, len;
- 	unsigned long addr;
- 	size_t size;
- 	const void *prop;
- 
--	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
--		return;
--
--	prop = fdt_getprop(fdt, chosen_node, "linux,ima-kexec-buffer", &len);
-+	prop = fdt_getprop(fdt, chosen_node, name, &len);
- 	if (!prop)
--		return;
-+		return -ENOENT;
- 
- 	ret = do_get_kexec_buffer(prop, len, &addr, &size);
--	fdt_delprop(fdt, chosen_node, "linux,ima-kexec-buffer");
-+	fdt_delprop(fdt, chosen_node, name);
- 	if (ret)
--		return;
-+		return ret;
- 
- 	ret = fdt_find_and_del_mem_rsv(fdt, addr, size);
- 	if (!ret)
--		pr_debug("Removed old IMA buffer reservation.\n");
-+		pr_debug("Remove old %s buffer reserveration", name);
-+	return ret;
- }
- 
--#ifdef CONFIG_IMA_KEXEC
- /**
-- * setup_ima_buffer - add IMA buffer information to the fdt
-- * @image:		kexec image being loaded.
-- * @fdt:		Flattened device tree for the next kernel.
-- * @chosen_node:	Offset to the chosen node.
-+ * remove_ima_buffer - remove the IMA buffer property and reservation from @fdt
-  *
-- * Return: 0 on success, or negative errno on error.
-+ * @fdt: Flattened Device Tree to update
-+ * @chosen_node: Offset to the chosen node in the device tree
-+ *
-+ * The IMA measurement buffer is of no use to a subsequent kernel, so we always
-+ * remove it from the device tree.
-  */
--static int setup_ima_buffer(const struct kimage *image, void *fdt,
--			    int chosen_node)
-+static void remove_ima_buffer(void *fdt, int chosen_node)
-+{
-+	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
-+		return;
-+
-+	remove_buffer(fdt, chosen_node, "linux,ima-kexec-buffer");
-+}
-+
-+#ifdef CONFIG_IMA_KEXEC
-+static int setup_buffer(void *fdt, int chosen_node, const char *name,
-+			phys_addr_t addr, size_t size)
- {
- 	int ret;
- 
--	if (!image->ima_buffer_size)
-+	if (!size)
- 		return 0;
- 
- 	ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
--				       "linux,ima-kexec-buffer",
--				       image->ima_buffer_addr,
--				       image->ima_buffer_size);
-+				       name, addr, size);
- 	if (ret < 0)
- 		return -EINVAL;
- 
--	ret = fdt_add_mem_rsv(fdt, image->ima_buffer_addr,
--			      image->ima_buffer_size);
-+	ret = fdt_add_mem_rsv(fdt, addr, size);
+@@ -253,8 +253,8 @@ static int setup_ima_buffer(const struct kimage *image, void *fdt,
  	if (ret)
  		return -EINVAL;
  
--	pr_debug("IMA buffer at 0x%pa, size = 0x%zx\n",
--		 &image->ima_buffer_addr, image->ima_buffer_size);
-+	pr_debug("%s at 0x%pa, size = 0x%zx\n", name, &addr, size);
+-	pr_debug("IMA buffer at 0x%llx, size = 0x%zx\n",
+-		 image->ima_buffer_addr, image->ima_buffer_size);
++	pr_debug("IMA buffer at 0x%pa, size = 0x%zx\n",
++		 &image->ima_buffer_addr, image->ima_buffer_size);
  
  	return 0;
-+
-+}
-+
-+/**
-+ * setup_ima_buffer - add IMA buffer information to the fdt
-+ * @image:		kexec image being loaded.
-+ * @fdt:		Flattened device tree for the next kernel.
-+ * @chosen_node:	Offset to the chosen node.
-+ *
-+ * Return: 0 on success, or negative errno on error.
-+ */
-+static int setup_ima_buffer(const struct kimage *image, void *fdt,
-+			    int chosen_node)
-+{
-+	return setup_buffer(fdt, chosen_node, "linux,ima-kexec-buffer",
-+			    image->ima_buffer_addr, image->ima_buffer_size);
  }
- #else /* CONFIG_IMA_KEXEC */
- static inline int setup_ima_buffer(const struct kimage *image, void *fdt,
 -- 
 2.35.1
 
