@@ -4,51 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97F1DC19F2D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Aug 2022 18:17:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7A2EC25B0E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Aug 2022 22:39:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M4pfb6D3Vz3c16
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Aug 2022 04:17:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.216.49; helo=mail-pj1-f49.google.com; envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-pj1-f49.google.com (mail-pj1-f49.google.com [209.85.216.49])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M4wSk0Cg6z3c8C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Aug 2022 08:39:02 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M4pf46Rsnz2xH3
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2022 04:16:42 +1000 (AEST)
-Received: by mail-pj1-f49.google.com with SMTP id p14-20020a17090a74ce00b001f4d04492faso3545041pjl.4
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Aug 2022 11:16:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=AmRTB/8gR2ig8PJCGq+w2ZIymDcFBpWMH5rqLXrLQn4=;
-        b=CCMU9NHnHSpgXg63UR2rMs+nw8p3pCOlUvkUNoKRjJUW1IHVgIJMKBJp07R08k56Hj
-         lL2Qr1JjPlXVHYdlsLILPPBcxKjdQymqCQ6OVKnNQaG40HzA6YC0q62YK9tdicikWiDy
-         djBjuiEF8c3cFAyNKthCQZiFscTfNR56yiLq/dBtNPJ1+H75dLPMOMBI0a03E3devkXA
-         Wxsk2e8MkmX72GjfQgSZZjjhdHxEg52vqUGDT92QLCPZKo1MBxjtqhICBERmtx3uB1nj
-         oYfnQr9zb6V6qnqa0L0ik2o+uDEeGozq78BCWGLCvg1ojZjFc9SeGefdDyQxm4N+kqGN
-         DVGw==
-X-Gm-Message-State: ACgBeo1rIQTQUt9iS+Jv9V6X8c9je4/4ParvP4BBjbTkohHPucocOfHm
-	BAd9UNa/vUT0vaBoffhVoG4=
-X-Google-Smtp-Source: AA6agR5wQaJRK0e7xQm9qfm5QxyEBBSxIl2hjDwXZPh/g0UE2k/bZWhgmYX7mgkf4jyndvNnGQFXOg==
-X-Received: by 2002:a17:90a:b007:b0:1f1:d31e:4914 with SMTP id x7-20020a17090ab00700b001f1d31e4914mr19876174pjq.36.1660414599266;
-        Sat, 13 Aug 2022 11:16:39 -0700 (PDT)
-Received: from rocinante (fpd11144dd.ap.nuro.jp. [209.17.68.221])
-        by smtp.gmail.com with ESMTPSA id t7-20020a634607000000b0041b5b929664sm3250038pga.24.2022.08.13.11.16.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 13 Aug 2022 11:16:38 -0700 (PDT)
-Date: Sun, 14 Aug 2022 03:16:33 +0900
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Zhuo Chen <chenzhuo.1@bytedance.com>
-Subject: Re: [PATCH v4] PCI/ERR: Use pcie_aer_is_native() to judge whether OS
- owns AER
-Message-ID: <YvfqgWB9h+7Xj1tH@rocinante>
-References: <20220802040830.28514-1-chenzhuo.1@bytedance.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M4wSH561Lz2xGv
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Aug 2022 08:38:39 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4M4wSG1t2qz4x2c;
+	Sun, 14 Aug 2022 08:38:38 +1000 (AEST)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <eca9251f1e1f82c4c46ec6380ddb28356ab3fdfe.1659527244.git.christophe.leroy@csgroup.eu>
+References: <eca9251f1e1f82c4c46ec6380ddb28356ab3fdfe.1659527244.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/ppc-opcode: Fix PPC_RAW_TW()
+Message-Id: <166043029294.1050412.7867126278150984193.b4-ty@ellerman.id.au>
+Date: Sun, 14 Aug 2022 08:38:12 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20220802040830.28514-1-chenzhuo.1@bytedance.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,40 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sathyanarayanan.kuppuswamy@linux.intel.com, jan.kiszka@siemens.com, stuart.w.hayes@gmail.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, lukas@wunner.de, oohall@gmail.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Zhuo,
-
-> Use pcie_aer_is_native() in place of "host->native_aer ||
-> pcie_ports_native" to judge whether OS has native control of AER
-> in aer_root_reset() and pcie_do_recovery().
+On Wed, 3 Aug 2022 13:47:33 +0200, Christophe Leroy wrote:
+> PPC_RAW_TW() is erroneously defined with base code 0x7f000008
+> instead of 0x7c000008.
 > 
-> Replace "dev->aer_cap && (pcie_ports_native || host->native_aer)" in
-> get_port_device_capability() with pcie_aer_is_native(), which has no
-> functional changes.
+> That's invisible because its only user is PPC_RAW_TRAP() which is
+> 0x7fe00008, but fix it anyway to avoid any risk of future bug.
 > 
-> Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
-> ---
-> Changelog:
-> v4:
-> - Use pcie_aer_is_native() instead in aer_root_reset().
-> v3:
-> - Simplify why we use pcie_aer_is_native().
-> - Revert modification of pci_aer_clear_nonfatal_status() and comments.
-> v2:
-> - Add details and note in commit log.
-[...]
+> 
+> [...]
 
-A similar change has been proposed in the past, and back then, Bjorn had
-a few questions and concerns.  Have a look at the entire discussion:
+Applied to powerpc/fixes.
 
-  https://lore.kernel.org/linux-pci/1612490648-44817-1-git-send-email-tanxiaofei@huawei.com/
+[1/1] powerpc/ppc-opcode: Fix PPC_RAW_TW()
+      https://git.kernel.org/powerpc/c/59bab33a4f57f886c5f8a4d1f2bed728ec185d16
 
-If you think that the proposed changes are fine and can address some of
-Bjorn's concerns, then it would be great.
-
-Thank you in advance!
-
-	Krzysztof
+cheers
