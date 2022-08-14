@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4AAAC25B06
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Aug 2022 15:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 753FFC25B06
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Aug 2022 15:36:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M5M1t2Cj0z3bYd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Aug 2022 01:35:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M5M2j5n9lz3cfF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Aug 2022 01:36:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uQO9KbLX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TAoHJztt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uQO9KbLX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TAoHJztt;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M5M1D6WzWz2xG4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2022 01:35:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M5M244qSWz2xk5
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2022 01:35:56 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id EC13BB80B56;
-	Sun, 14 Aug 2022 15:35:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E737AC43140;
-	Sun, 14 Aug 2022 15:35:07 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 20C9EB80B43;
+	Sun, 14 Aug 2022 15:35:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0CB90C4347C;
+	Sun, 14 Aug 2022 15:35:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1660491308;
+	s=k20201202; t=1660491352;
 	bh=g97XD/pgPbqJ4VwO4uV+VBUuGwCDEvgLc1WAUiTfTeI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=uQO9KbLXh55fltn/zso1Awz3xEHeI9d9Ij0oxQ7yH+KQXoiAGxMSePsqw05ifgKRQ
-	 1MEM4jn6aR+BQoM2mkmHJovodLBs4qaYj3SeYiDFyQO1S40fK8ozIAH+/BoLRaUbvR
-	 9+qvuKOep+Gc1ME/pzQYbV0HMre71wwV37eDGoz5pkAxpgDgAYt4kMf0t3SWwT+jhe
-	 eqxqregXCXG2ZK+fAR+P+K3RF5LPFp+IXA9ttUdlu3k/60QVrgHtPiys46sfPRRpE5
-	 xZ2lQolSWb9hziQqazaBfOSO8PYqpzh9QblkMcKenK6QXPdXeVPCvwbONzYj8PsEZT
-	 yB3S+uTXYjqtw==
+	b=TAoHJzttcqBdGqqhoiTewjskzfmwU1O5KN95uqCTBoBnT0z9mK19MrCcvedO3oPOB
+	 BdekDvj+j1b7muGr2xhbg1Ga7r3Y1Lef0L4958CD9snKMScEOkSY5Pv89T39the/5V
+	 Ua1SvjPimAjgM9j9InwZL7xZiArpEmXApnziOJXLvl4L50sn/osQm68rcqRkU0JeSn
+	 490RNuXl/jLTWw7GMVmQqGbErsDLlq+efgL+O3VzGtVbnOFTncVBaeknYC/6fVgxIR
+	 jvKID9rSvxsrFLOim7NTpjCFZ2tRfUjU/y5zSrWYY3n8mA4QsIJi3agCqvXDHHcyfu
+	 fQEnm+e2aMWaQ==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.10 19/31] cxl: Fix a memory leak in an error handling path
-Date: Sun, 14 Aug 2022 11:34:19 -0400
-Message-Id: <20220814153431.2379231-19-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 12/21] cxl: Fix a memory leak in an error handling path
+Date: Sun, 14 Aug 2022 11:35:22 -0400
+Message-Id: <20220814153531.2379705-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20220814153431.2379231-1-sashal@kernel.org>
-References: <20220814153431.2379231-1-sashal@kernel.org>
+In-Reply-To: <20220814153531.2379705-1-sashal@kernel.org>
+References: <20220814153531.2379705-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
