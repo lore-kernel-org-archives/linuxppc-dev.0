@@ -4,111 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 598A9C2BB41
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 07:41:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9E63C2BB41
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 08:00:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M6NPp62x6z3cdm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 17:41:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M6Nq6022zz3cCk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 18:00:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Ukn13oGD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=SxF1uTOE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=40.107.93.65; helo=nam10-dm6-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22a; helo=mail-lj1-x22a.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=Ukn13oGD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=SxF1uTOE;
 	dkim-atps=neutral
-Received: from NAM10-DM6-obe.outbound.protection.outlook.com (mail-dm6nam10on2065.outbound.protection.outlook.com [40.107.93.65])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-x22a.google.com (mail-lj1-x22a.google.com [IPv6:2a00:1450:4864:20::22a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6NND06NPz2xJ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 17:40:12 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=E5rSWxO2yHy8xvtbznFuxlsE2axDd6/qjwRBif/aacEqv0huPeP7py5r14wlxI0R5313Fwuple/8fEAvoX58pnSVC+FPBuQRbcrF+4eSUAmj0sALsK8ygdcDUvWTpcU+ps7KTX6fIGjgBk46F4uFB8NNe/MyscqCsXqnG3F3dw9ZjmXqJdo5BjruaPZZy+1ZZuublpO6xnYPD8HnHvu/jjvqcl3ejL7IztXIlfiDvD2TjMxH1mvG6QOy/yXF80KZT0N2SVqPetntakRmwOrBE5+RC/jioMD2ZncdLhkJ/GGo9ZrEMo9nSe9T/v6Q40O2HKSKOaUcp3BSIiZi0DkfIQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=snVPulbAKBAi9Wd3KFPYZ5rYVHb8mY3ptG8l5yLntdE=;
- b=TjzSA/yWn6ITEwwxauQ4jKH4OIgdJwtpxyjoSsVWZyASh+O9yDsqa1zyUnrTe9ekWd1uFtfl6UVxPvSiql4sM/pP20ESe+l73N2KqjqVaSCEL3QLPLEpbzZg15blJTEV/u1VtLlAy/YDmay0dWASxFAupwN4kZd2ChzZO7LpMLCWYGdjEj29G5wn6WYX1moCrjJItoiRUu3vj9AvF1FxN4+p+ovg3YgVG8Z0fF1Fdll+fOubgKNfoeUmD8J+pLczKnMM349qhTYIcTPwIs79hOOUkalgyh8rYRHK2kQKXeS8ZGLfnt+vX63Wo/zfTIFHlP7ZHzCG+KFgK8MA/tanlw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=snVPulbAKBAi9Wd3KFPYZ5rYVHb8mY3ptG8l5yLntdE=;
- b=Ukn13oGD6XT1Pj2CEOvffqEeSEUb1PfBMsuGVa+Bc8NvDHpDWYmgolVnnoEb2d9Vr3ONaeZx0CMX8EcAaX6sYffRbqNOAQqoqtp428Pl9jGgH6YSeh/fdIe5LyghtX5VHcObTvdLcO8Lwb7MeMrH8+YEiC7VfUuKncGQ9dOR/VDrOG1djNUtqImwhx5PQ6c1bI8sazI7XMKfYeNuuHXnmzRJ9mwRWfZaaTFSOT2YfWcMpZ30ML14KDsDdmun8M7kjKNqqssmapyhoaxeofITOgNqLYqbLWA/dOpaGGZfMBULF3okmqcYVy5ugHTD38h5Sj2aMD4v77xKz2HAIV01rg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BYAPR12MB3176.namprd12.prod.outlook.com (2603:10b6:a03:134::26)
- by BL0PR12MB4722.namprd12.prod.outlook.com (2603:10b6:208:8c::30) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5504.17; Tue, 16 Aug
- 2022 07:39:51 +0000
-Received: from BYAPR12MB3176.namprd12.prod.outlook.com
- ([fe80::eca6:a4a7:e2b2:27e7]) by BYAPR12MB3176.namprd12.prod.outlook.com
- ([fe80::eca6:a4a7:e2b2:27e7%5]) with mapi id 15.20.5504.027; Tue, 16 Aug 2022
- 07:39:51 +0000
-From: Alistair Popple <apopple@nvidia.com>
-To: linux-mm@kvack.org,
-	akpm@linux-foundation.org
-Subject: [PATCH v2 2/2] selftests/hmm-tests: Add test for dirty bits
-Date: Tue, 16 Aug 2022 17:39:25 +1000
-Message-Id: <23069a5c6e07d16d4c4f0951ff003591ffc4f656.1660635033.git-series.apopple@nvidia.com>
-X-Mailer: git-send-email 2.35.1
-In-Reply-To: <6e77914685ede036c419fa65b6adc27f25a6c3e9.1660635033.git-series.apopple@nvidia.com>
-References: <6e77914685ede036c419fa65b6adc27f25a6c3e9.1660635033.git-series.apopple@nvidia.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BY5PR17CA0063.namprd17.prod.outlook.com
- (2603:10b6:a03:167::40) To BYAPR12MB3176.namprd12.prod.outlook.com
- (2603:10b6:a03:134::26)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6Fc36M11z2xGQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 12:34:57 +1000 (AEST)
+Received: by mail-lj1-x22a.google.com with SMTP id bx38so9324146ljb.10
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Aug 2022 19:34:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc;
+        bh=vmY+LUCJruKF8uLc3XlHm/fJT0a+m0ghSI6+yD5XTag=;
+        b=SxF1uTOEDfk3qpRS8vrws1X9rPL0pWXqD5SeWgJSoSEIxAe2LjVcSc2Ms2uC/MzoSr
+         b1KL0gMu7nxtqlDHUvsHX90BIlV4ErkwKvUp9vO8f8Ug3u1o8UQ5hEnApbhdpIxgJDsT
+         Uq3MeuEfM/Jn7wsR+xlbtjiMtwGGpvuaQYsBSEgM4FxWmr7MSFPT+C/W6IZnlLoT3UyM
+         +fuRhM63M30hg6vQhOyKe9yUugiJGNCnjkZHsKQ64wqd8RFxcZeq+H+sZo+NpTcAJWSr
+         LqOzUpPy4Jov7HqZFDhweENUQl5ojcHj7CQBjW9cEKibR/enBOhWomaKKekIB63g65Fv
+         rkEw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc;
+        bh=vmY+LUCJruKF8uLc3XlHm/fJT0a+m0ghSI6+yD5XTag=;
+        b=OA06MTzCG4Dn++SBHw5QyhMJCIdjkd97NQ8yvcYvjfY4P6uidF5+Z8DEcSBx1nc0eO
+         fQdP4JzET1WjicKei44qqiIJbFJ7QV8eEJ/gsCG5eAXxJnt8QNHeBIKb/imLP0T7et4L
+         Xmst2RJOHUjxN29UXhdx8o8B7a2We7r8uH5AV27HuwQT22jFd81EnYenB3z377AKh3+Q
+         Spqf68k4fjOftaP6nSubNKDYVjQuxqvj1OinrTw4mOPs3OkewhCXuhKiPmWOb4EmgL7H
+         hxf3s3ADKhrTiydksWqFau0ucycVSBH5WcDt5RxUMwMNbV0BIv/PKDlp3Q/u2Vp76T+J
+         /GWA==
+X-Gm-Message-State: ACgBeo1I7sZUxpXjO+RlfXSH2t+bfxIw+TVjt+OEQPxREbCXw0qWdqye
+	S7vITUd21ySHXq8eLUM0uEjD9tzrbf/780pOTFA=
+X-Google-Smtp-Source: AA6agR4pZpz+E+mZWSp2TEXSFno6q0tnw2P+5v+jTyqjZvCeszMWPDWVBLCrJh6OVtSiGey7VZVViK56eitP0OvMchg=
+X-Received: by 2002:a05:651c:ba5:b0:25e:c5d4:4341 with SMTP id
+ bg37-20020a05651c0ba500b0025ec5d44341mr6095297ljb.272.1660617291087; Mon, 15
+ Aug 2022 19:34:51 -0700 (PDT)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: d6b695a1-c7bf-405a-a4be-08da7f5a80e7
-X-MS-TrafficTypeDiagnostic: BL0PR12MB4722:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	aeRCfS3/Fo7zMGzT1qwnStcgepWwWirClaNG4MP+07vo+kzB3+fJHqFRF7hALlyEs6JEf63gG4DEZRQKm9Wi5OVtFk8sU1rOtnR7PfRwNEJLhHx/ycUliALt1zQykT7HvfpaqvvFULeYH2OOfMw9uD9BpIqC5p3w0S0tLZ8VFE/sXkdtCu1Dg+f7CSduuKKUkrrvcaWIHRKxI99uZueZPkwtfodvzqvyrhlWddxteBhipbzrsTWJXfF5mBdDH/3ivqKC0NEJAO1wOumufM5AipCdqRXY1PF5HOWLy5yx/x7kHHmJs6+qU6qgdnNDrkXZ/qVwiGXYPuz3+mJapsjk+3XcibYfte2bP87THEG3+drua9isK/7qTg3J2SqvSseJhNES87ioEvM3jaIR9v3ae2JTegc7aXYejkXyOtTwyx12hXoH/veASA0OAFmzourRBRhXZ0xO6E0sw8id51rLNd2OJgEVLQRcC4f+PJhcf0KSdSCyTEStlASsJK2RhGIcCB4KITv6WmFWQvYMD47HKANpeas3hKPNhLKtpQbM61TV+iU8rXH8GNMo/I2NN/m0X2aJFfZt5brjBHJjCO8BTnkRgbRfo9a6WIo7Zw2HcN2n02PevXzBjvabRu+kWuLcfq+0ScAFjO/mZMIujyeKC3iqxpI1LCTh9p7UI/SJmAklckA5bWthkT9LFNEL1TJw80LK+6jALbZy3vhkxuap2KOeXl6Flj4hYNh0vKvmiPItJa1xKLLBXo7szgQmGAokp/lGl+Yq6d1JSnoekuh8otmVKC2Yi3/xX4vX4dgxT/U=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR12MB3176.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(346002)(376002)(136003)(396003)(366004)(39860400002)(186003)(38100700002)(2616005)(5660300002)(8936002)(7416002)(66946007)(4326008)(6486002)(8676002)(66476007)(66556008)(478600001)(83380400001)(6512007)(6666004)(26005)(2906002)(41300700001)(316002)(86362001)(54906003)(6506007)(36756003)(14143004);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?5A0ThBR+SXjUEvKbOPLsKloUcxy4Bk/QaTjnlts5Vi+x+YfFB3/wsJmYMDGM?=
- =?us-ascii?Q?jKKmd735PF5qq5nF+vwB+qbLlEM9TTSMOhdyQ0ceRgHjlf09YFQ+YxkbeM7F?=
- =?us-ascii?Q?EnmWHyHHBHu2dPukAODCMoAxgMyNTMk2efLkvEPdequluHHrIIKAvlTzwClt?=
- =?us-ascii?Q?KQ4FCjZGrWzmBxALMZdmMCg3DrOYFtuxnIdW2sfgPlCTzdTXkt4EjsIHohHa?=
- =?us-ascii?Q?lAwU7kSQ4cjEFWK6BRXPcD4johAr5XtEU7FDdVITO3AXpKNf+ivA9TeQLX6D?=
- =?us-ascii?Q?/FhCRb1QFAZqICKYaBMEG0gPCwgW1z149+PDDGYntj1aU/h3rzQjE8h7FZeC?=
- =?us-ascii?Q?5rICIWmoU/Nrj7ePU/4j97amJsvsfoROuvt4kbIW66bgT8r94hXhRZnB2q6H?=
- =?us-ascii?Q?CAuTS8T4M49YshwWrpPKt9vo92RffLzhdqRBb5MMwpFSn9xsvws95wXt9jCg?=
- =?us-ascii?Q?UfjskDfmrydP0v+eV7ANqFvLCzlX+Ro3eLSelJItc1/lOe3/l+mb0HldSPjw?=
- =?us-ascii?Q?GZ+lZ4/Rposs5yur474pmxMnv8UmC5rLN2m+8+xWQ9TJwBtOAYZWgRIPWZXj?=
- =?us-ascii?Q?taUtwXzZaAJFumlwdx88poPZUhH9eys4CRfpdvfqsktxfrBRubXqx+kqpvin?=
- =?us-ascii?Q?3csyTS8QcDPr3uwiebNQOyHkKeq6wTZsrekQ984DJzk+q3/YV8/XbT/L0tFl?=
- =?us-ascii?Q?5pFvD4jWwyz/+seRlR68iifn/iTfo2+HHof0r9T85Ij2jiN/4gHBi9sZjGaR?=
- =?us-ascii?Q?y2HTDgKSY5PV3feLu1xeLoHOK4a7fHws2OHioM9jUD1ZfArY5+MTI+Gd7uPx?=
- =?us-ascii?Q?sjxQoMTgdDAuEWX1i4QI9d+IJ73JIfVCgh/f/EB21T15aqoRgZtktKcz/kbN?=
- =?us-ascii?Q?tnt25aVHPapGOikj/gTBBcoVdg5E/zgF9xK4h7rBIqHrKMYMF/vqBGcDBZA9?=
- =?us-ascii?Q?XFyxdwIV/kFi1LDsqFsl7EH1oc1uazamF2HtzWdPPn6Xf44NdAQOuEXQBN8F?=
- =?us-ascii?Q?yPh6nLkE+kdMVurdYTTOq3IdPWxEK64a91rb9WfZzhHRqKe4G0f1tocrVGwZ?=
- =?us-ascii?Q?PG/bOSS/D+77+Tk6RtmavFdI48eut2xt/c8vjnSEl1xTxjgKx2QKUi8QQNYu?=
- =?us-ascii?Q?1t3blgfIPC62OAcSzovk1+H4fsjR/cRUiqvyBPSBdVB6gVeYE/89/t52PJYJ?=
- =?us-ascii?Q?pHjHZSiWgxGso3Tz+mHo1Oy9Q42+lN85AsiFJys4J4Z1Cv/oX/J31Uxggyyl?=
- =?us-ascii?Q?bAt9uS5GsZOjT89n2ynk8/swSk56BFszrv7LC8ESfm52vgWAS2ZrGfNvekkb?=
- =?us-ascii?Q?SyJX/bl7FvENP4SUveQ4BTLUhD0l6JkSfWit36UglC1g/JlsuFjhfgTcFdD/?=
- =?us-ascii?Q?JPSx/Z45+QuqSF9dthfjps67huuj6MbtlTtWlROOe6S66HYJAfC4LOIouML3?=
- =?us-ascii?Q?k6djns11nes7W/4X4Xsirq0m97R3mdvwSVSIbYGcUFQFwReizQ7n1FlfW3Y7?=
- =?us-ascii?Q?dya/Qfk0r75Nb1HQ9LKMMgSUeO3jwmJzm1qIj8i4rMGWYkPb9DJWe7ENOQdt?=
- =?us-ascii?Q?1V7VvGuS+KXj6sPctNeROfhQhnFsYromQPhzhng4?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d6b695a1-c7bf-405a-a4be-08da7f5a80e7
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR12MB3176.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 16 Aug 2022 07:39:51.3889
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: PtyzWbZ3RnM4dueQ8RNGaevVlXVy9QXVAAZz0P7KBJlzfqhrZUKYhXaV/fYdqjz7V5HCNdRKVXUg9ctfU/4Jpg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BL0PR12MB4722
+References: <20220813083353.8959-1-pieterjan.camerlynck@gmail.com>
+In-Reply-To: <20220813083353.8959-1-pieterjan.camerlynck@gmail.com>
+From: Shengjiu Wang <shengjiu.wang@gmail.com>
+Date: Tue, 16 Aug 2022 10:34:39 +0800
+Message-ID: <CAA+D8AN45E-2ATVQMY7z3OOQJwGuZQ9NJiSFfmQNN-rgYwKbsQ@mail.gmail.com>
+Subject: Re: [PATCH v2] ASoC: fsl_sai: fix incorrect mclk number in error message
+To: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
+Content-Type: multipart/alternative; boundary="000000000000be455305e65297c1"
+X-Mailman-Approved-At: Tue, 16 Aug 2022 17:59:28 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,153 +73,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Sierra Guiza, Alejandro \(Alex\)" <alex.sierra@amd.com>, Ralph Campbell <rcampbell@nvidia.com>, linuxppc-dev@lists.ozlabs.org, Lyude Paul <lyude@redhat.com>, Karol Herbst <kherbst@redhat.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Felix Kuehling <Felix.Kuehling@amd.com>, Alistair Popple <apopple@nvidia.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, Peter Xu <peterx@redhat.com>, Ben Skeggs <bskeggs@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Logan Gunthorpe <logang@deltatee.com>
+Cc: alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>, linux-kernel <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We were not correctly copying PTE dirty bits to pages during
-migrate_vma_setup() calls. This could potentially lead to data loss, so
-add a test for this.
+--000000000000be455305e65297c1
+Content-Type: text/plain; charset="UTF-8"
 
-Signed-off-by: Alistair Popple <apopple@nvidia.com>
----
- tools/testing/selftests/vm/hmm-tests.c | 124 ++++++++++++++++++++++++++-
- 1 file changed, 124 insertions(+)
+On Sat, Aug 13, 2022 at 4:34 PM Pieterjan Camerlynck <
+pieterjan.camerlynck@gmail.com> wrote:
 
-diff --git a/tools/testing/selftests/vm/hmm-tests.c b/tools/testing/selftests/vm/hmm-tests.c
-index 529f53b..70fdb49 100644
---- a/tools/testing/selftests/vm/hmm-tests.c
-+++ b/tools/testing/selftests/vm/hmm-tests.c
-@@ -1200,6 +1200,130 @@ TEST_F(hmm, migrate_multiple)
- 	}
- }
- 
-+static char cgroup[] = "/sys/fs/cgroup/hmm-test-XXXXXX";
-+static int write_cgroup_param(char *cgroup_path, char *param, long value)
-+{
-+	int ret;
-+	FILE *f;
-+	char *filename;
-+
-+	if (asprintf(&filename, "%s/%s", cgroup_path, param) < 0)
-+		return -1;
-+
-+	f = fopen(filename, "w");
-+	if (!f) {
-+		ret = -1;
-+		goto out;
-+	}
-+
-+	ret = fprintf(f, "%ld\n", value);
-+	if (ret < 0)
-+		goto out1;
-+
-+	ret = 0;
-+
-+out1:
-+	fclose(f);
-+out:
-+	free(filename);
-+
-+	return ret;
-+}
-+
-+static int setup_cgroup(void)
-+{
-+	pid_t pid = getpid();
-+	int ret;
-+
-+	if (!mkdtemp(cgroup))
-+		return -1;
-+
-+	ret = write_cgroup_param(cgroup, "cgroup.procs", pid);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int destroy_cgroup(void)
-+{
-+	pid_t pid = getpid();
-+	int ret;
-+
-+	ret = write_cgroup_param("/sys/fs/cgroup/cgroup.procs",
-+				"cgroup.proc", pid);
-+	if (ret)
-+		return ret;
-+
-+	if (rmdir(cgroup))
-+		return -1;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Try and migrate a dirty page that has previously been swapped to disk. This
-+ * checks that we don't loose dirty bits.
-+ */
-+TEST_F(hmm, migrate_dirty_page)
-+{
-+	struct hmm_buffer *buffer;
-+	unsigned long npages;
-+	unsigned long size;
-+	unsigned long i;
-+	int *ptr;
-+	int tmp = 0;
-+
-+	npages = ALIGN(HMM_BUFFER_SIZE, self->page_size) >> self->page_shift;
-+	ASSERT_NE(npages, 0);
-+	size = npages << self->page_shift;
-+
-+	buffer = malloc(sizeof(*buffer));
-+	ASSERT_NE(buffer, NULL);
-+
-+	buffer->fd = -1;
-+	buffer->size = size;
-+	buffer->mirror = malloc(size);
-+	ASSERT_NE(buffer->mirror, NULL);
-+
-+	ASSERT_EQ(setup_cgroup(), 0);
-+
-+	buffer->ptr = mmap(NULL, size,
-+			   PROT_READ | PROT_WRITE,
-+			   MAP_PRIVATE | MAP_ANONYMOUS,
-+			   buffer->fd, 0);
-+	ASSERT_NE(buffer->ptr, MAP_FAILED);
-+
-+	/* Initialize buffer in system memory. */
-+	for (i = 0, ptr = buffer->ptr; i < size / sizeof(*ptr); ++i)
-+		ptr[i] = 0;
-+
-+	ASSERT_FALSE(write_cgroup_param(cgroup, "memory.reclaim", 1UL<<30));
-+
-+	/* Fault pages back in from swap as clean pages */
-+	for (i = 0, ptr = buffer->ptr; i < size / sizeof(*ptr); ++i)
-+		tmp += ptr[i];
-+
-+	/* Dirty the pte */
-+	for (i = 0, ptr = buffer->ptr; i < size / sizeof(*ptr); ++i)
-+		ptr[i] = i;
-+
-+	/*
-+	 * Attempt to migrate memory to device, which should fail because
-+	 * hopefully some pages are backed by swap storage.
-+	 */
-+	ASSERT_TRUE(hmm_migrate_sys_to_dev(self->fd, buffer, npages));
-+
-+	ASSERT_FALSE(write_cgroup_param(cgroup, "memory.reclaim", 1UL<<30));
-+
-+	/* Check we still see the updated data after restoring from swap. */
-+	for (i = 0, ptr = buffer->ptr; i < size / sizeof(*ptr); ++i)
-+		ASSERT_EQ(ptr[i], i);
-+
-+	hmm_buffer_free(buffer);
-+	destroy_cgroup();
-+}
-+
- /*
-  * Read anonymous memory multiple times.
-  */
--- 
-git-series 0.9.1
+> In commit c3ecef21c3f26 ("ASoC: fsl_sai: add sai master mode support")
+> the loop was changed to start iterating from 1 instead of 0. The error
+> message however was not updated, reporting the wrong clock to the user.
+>
+> Signed-off-by: Pieterjan Camerlynck <pieterjan.camerlynck@gmail.com>
+>
+
+Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
+
+Best regards
+Wang shengjiu
+
+
+> ---
+> V2: rebase against latest version
+> ---
+>  sound/soc/fsl/fsl_sai.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index 7523bb944b21..d430eece1d6b 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -1306,7 +1306,7 @@ static int fsl_sai_probe(struct platform_device
+> *pdev)
+>                 sai->mclk_clk[i] = devm_clk_get(dev, tmp);
+>                 if (IS_ERR(sai->mclk_clk[i])) {
+>                         dev_err(dev, "failed to get mclk%d clock: %ld\n",
+> -                                       i + 1, PTR_ERR(sai->mclk_clk[i]));
+> +                                       i, PTR_ERR(sai->mclk_clk[i]));
+>                         sai->mclk_clk[i] = NULL;
+>                 }
+>         }
+> --
+> 2.25.1
+>
+>
+
+--000000000000be455305e65297c1
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
+<div dir=3D"ltr" class=3D"gmail_attr">On Sat, Aug 13, 2022 at 4:34 PM Piete=
+rjan Camerlynck &lt;<a href=3D"mailto:pieterjan.camerlynck@gmail.com">piete=
+rjan.camerlynck@gmail.com</a>&gt; wrote:<br></div><blockquote class=3D"gmai=
+l_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,20=
+4,204);padding-left:1ex">In commit c3ecef21c3f26 (&quot;ASoC: fsl_sai: add =
+sai master mode support&quot;)<br>
+the loop was changed to start iterating from 1 instead of 0. The error<br>
+message however was not updated, reporting the wrong clock to the user.<br>
+<br>
+Signed-off-by: Pieterjan Camerlynck &lt;<a href=3D"mailto:pieterjan.camerly=
+nck@gmail.com" target=3D"_blank">pieterjan.camerlynck@gmail.com</a>&gt;<br>=
+</blockquote><div><br></div><div>Acked-by: Shengjiu Wang &lt;<a href=3D"mai=
+lto:shengjiu.wang@gmail.com">shengjiu.wang@gmail.com</a>&gt;</div><div><br>=
+</div><div>Best regards</div><div>Wang shengjiu</div><div>=C2=A0</div><bloc=
+kquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:=
+1px solid rgb(204,204,204);padding-left:1ex">
+---<br>
+V2: rebase against latest version<br>
+---<br>
+=C2=A0sound/soc/fsl/fsl_sai.c | 2 +-<br>
+=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
+<br>
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c<br>
+index 7523bb944b21..d430eece1d6b 100644<br>
+--- a/sound/soc/fsl/fsl_sai.c<br>
++++ b/sound/soc/fsl/fsl_sai.c<br>
+@@ -1306,7 +1306,7 @@ static int fsl_sai_probe(struct platform_device *pdev=
+)<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 sai-&gt;mclk_clk[i]=
+ =3D devm_clk_get(dev, tmp);<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (IS_ERR(sai-&gt;=
+mclk_clk[i])) {<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 dev_err(dev, &quot;failed to get mclk%d clock: %ld\n&quot;,<br>
+-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0i + 1, PT=
+R_ERR(sai-&gt;mclk_clk[i]));<br>
++=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0i, PTR_ER=
+R(sai-&gt;mclk_clk[i]));<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 sai-&gt;mclk_clk[i] =3D NULL;<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
+-- <br>
+2.25.1<br>
+<br>
+</blockquote></div></div>
+
+--000000000000be455305e65297c1--
