@@ -4,67 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D661BC32789
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 19:26:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4FF7C25B0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 20:35:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M6h2t3Sdfz3cCN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Aug 2022 05:26:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M6jbK5kSMz3cPl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Aug 2022 06:35:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Il9X/STp;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Il9X/STp;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
 	dkim-atps=neutral
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6h245JWdz2yjC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2022 05:25:30 +1000 (AEST)
-Received: by mail-pg1-x531.google.com with SMTP id 24so10097142pgr.7
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 12:25:29 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc;
-        bh=a5SjQ9AEC/AYbATxtS93Zgv94cT2xe13yj4SFSKvsIA=;
-        b=Il9X/STp6V9jcUaGx2WOrl/2yrZHrsz8cT7ebvlampboepQs9dAGad0VvgT4Olatjk
-         OlDXwGxAQgmZiUQHOpJeM8neJBE8yN5R1PrOofZJcNJ1sDP2dSicGonwkrMYrdOqqmsW
-         p1Ly68BgWg5AoIE0+KzMypl+WrEopij9J65M4=
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6jZX3vLSz3bVt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2022 06:35:14 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1660682110;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
+	b=emKok07gEvfJwSe/wpjLGYPDE8+1mCvDFPOOx/qX7FlYAW68rqT6ZgdAM+bJsaIygd4qeU
+	eyXpi0jCNAnDJA79hG0rb3na5M/qClBsPtc3McqAjqlEUYrKtrwVSEvX8tIQMeAfGzyu8x
+	GJDxFH8qMibTDZ8BRbYtKua/qbsx7Bs=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1660682110;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
+	b=emKok07gEvfJwSe/wpjLGYPDE8+1mCvDFPOOx/qX7FlYAW68rqT6ZgdAM+bJsaIygd4qeU
+	eyXpi0jCNAnDJA79hG0rb3na5M/qClBsPtc3McqAjqlEUYrKtrwVSEvX8tIQMeAfGzyu8x
+	GJDxFH8qMibTDZ8BRbYtKua/qbsx7Bs=
+Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
+ [209.85.222.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-260-FSDxaqNYP2uT-N-J9U_7Bg-1; Tue, 16 Aug 2022 16:35:07 -0400
+X-MC-Unique: FSDxaqNYP2uT-N-J9U_7Bg-1
+Received: by mail-qk1-f199.google.com with SMTP id n15-20020a05620a294f00b006b5768a0ed0so10036573qkp.7
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 13:35:07 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc;
-        bh=a5SjQ9AEC/AYbATxtS93Zgv94cT2xe13yj4SFSKvsIA=;
-        b=ICrbCb01zfyRaaEdiFsfruMI08AqDJ68W3fD04t2Vcp7BlOPSMMnPuXeo9sUuB10EL
-         reO731q2pLq6GvoiWSDNk8qY7F6IN6YBpqo9BEN/l+cgS2xev4/h5fr3xFK+KJjMhgU7
-         sxgJX7LvZwU+SOp9meg15Ln4WBwHQ3NHYKuKC8FLSvVZGHsCfWMh14T+gs0xkdYNpQn1
-         AiYn9RMOWAFOHMTg3tLCfRM7FAKd/FmME4eUOe1cgreqysygV5ZV+doTpHWYcLpLNJ10
-         6gB8hDnBM3EY3Q4hgWDm7JBngrTjGQS3GhyKP8HfhISSR21Sl0w5e4FuQU6rRQqO+Wd/
-         LZSw==
-X-Gm-Message-State: ACgBeo2rvHbhQWM77Uu83T4tUuNNAWLeJ62vgZYWcGb2D9P+yeEReAs5
-	+buJ6+4dMpPy191Jn2FlDySr8g==
-X-Google-Smtp-Source: AA6agR6WWo3/u3APAWhN8/0GZ1YW43LvZbtp82A+6RH1w8ZWfwDxYgvZvBY+tvcaBAYnXQRFDompUw==
-X-Received: by 2002:a05:6a00:189d:b0:52d:d4ae:d9f7 with SMTP id x29-20020a056a00189d00b0052dd4aed9f7mr22322238pfh.18.1660677926802;
-        Tue, 16 Aug 2022 12:25:26 -0700 (PDT)
-Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
-        by smtp.gmail.com with ESMTPSA id m9-20020a17090ade0900b001f3162e4e55sm6643744pjv.35.2022.08.16.12.25.25
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
+        bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
+        b=tRcwv3eGBf2FzuZe61ansv2uV52pqKBIOaMOEvfPF3wCsJsRloyFJx8x+Mk8Fx7/2a
+         LDElpvA5sTjkr6UMditNsKRDAdUgZ6NZa7Dfw6hKPwIAMStQM8VYvFgMFE3SabKDxIie
+         hKWrLFPoBff/6xcqG8WQwfJrS6lWofl3flqpFghxZlD0GQJkyJbodasHbdu4aAM528UJ
+         PQ0vwlKVK5Ow8/c5y0dnOImgQ9mq3Ra71//wBnoeWF5juZKw/Tu3RIrZGHiaiQAWtJ1S
+         ASpwQfzXJMGE9quOKFDDKfKVfNtcc6wgK46cSj7AT3mY8WSe6H+gDK8y8iy/Y6mzn5ei
+         ep/g==
+X-Gm-Message-State: ACgBeo3LtvLoWrpsDJoM78U1u+jJT/zRBFiQpVEL7xI535u2RmZJ/KYk
+	wzpYZQlOuAU4NDHRItR9GyM3SbM/umuw2+mFGJfabgFSaE/nHfM4U+1cuU1YkVqEhZqnWa2iwdi
+	uQqWFVaUmpsGugNJq04gmMKQKNg==
+X-Received: by 2002:a05:6214:2aa2:b0:477:1882:3dc with SMTP id js2-20020a0562142aa200b00477188203dcmr19064872qvb.11.1660682106683;
+        Tue, 16 Aug 2022 13:35:06 -0700 (PDT)
+X-Google-Smtp-Source: AA6agR6sxNDlfRThn/rIz3JOnzmI+jYq7VbHmqoYMTVRKckqHUaSQxZWhXW5hA43Dz2DbrziOS2X+w==
+X-Received: by 2002:a05:6214:2aa2:b0:477:1882:3dc with SMTP id js2-20020a0562142aa200b00477188203dcmr19064852qvb.11.1660682106470;
+        Tue, 16 Aug 2022 13:35:06 -0700 (PDT)
+Received: from xz-m1.local (bras-base-aurron9127w-grc-35-70-27-3-10.dsl.bell.ca. [70.27.3.10])
+        by smtp.gmail.com with ESMTPSA id l1-20020a05620a28c100b006b958c34bf1sm3222130qkp.10.2022.08.16.13.35.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Aug 2022 12:25:26 -0700 (PDT)
-From: Kees Cook <keescook@chromium.org>
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-hardening@vger.kernel.org,
-	ajd@linux.ibm.com
-Subject: Re: [PATCH] gcc-plugins: Undefine LATENT_ENTROPY_PLUGIN when plugin disabled for a file
-Date: Tue, 16 Aug 2022 12:25:08 -0700
-Message-Id: <166067790682.7084.237943534143309650.b4-ty@chromium.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220816051720.44108-1-ajd@linux.ibm.com>
-References: <20220816051720.44108-1-ajd@linux.ibm.com>
+        Tue, 16 Aug 2022 13:35:05 -0700 (PDT)
+Date: Tue, 16 Aug 2022 16:35:04 -0400
+From: Peter Xu <peterx@redhat.com>
+To: huang ying <huang.ying.caritas@gmail.com>
+Subject: Re: [PATCH v2 1/2] mm/migrate_device.c: Copy pte dirty bit to page
+Message-ID: <Yvv/eGfi3LW8WxPZ@xz-m1.local>
+References: <6e77914685ede036c419fa65b6adc27f25a6c3e9.1660635033.git-series.apopple@nvidia.com>
+ <CAC=cRTPGiXWjk=CYnCrhJnLx3mdkGDXZpvApo6yTbeW7+ZGajA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAC=cRTPGiXWjk=CYnCrhJnLx3mdkGDXZpvApo6yTbeW7+ZGajA@mail.gmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,30 +95,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: erhard_f@mailbox.org, Kees Cook <keescook@chromium.org>, yury.norov@gmail.com
+Cc: "Sierra Guiza, Alejandro \(Alex\)" <alex.sierra@amd.com>, Ralph Campbell <rcampbell@nvidia.com>, linuxppc-dev@lists.ozlabs.org, Lyude Paul <lyude@redhat.com>, Karol Herbst <kherbst@redhat.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Felix Kuehling <Felix.Kuehling@amd.com>, Alistair Popple <apopple@nvidia.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Ben Skeggs <bskeggs@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Huang Ying <ying.huang@intel.com>, stable@vger.kernel.org, akpm@linux-foundation.org, Logan Gunthorpe <logang@deltatee.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 16 Aug 2022 15:17:20 +1000, Andrew Donnellan wrote:
-> Commit 36d4b36b6959 ("lib/nodemask: inline next_node_in() and
-> node_random()") refactored some code by moving node_random() from
-> lib/nodemask.c to include/linux/nodemask.h, thus requiring nodemask.h to
-> include random.h, which conditionally defines add_latent_entropy()
-> depending on whether the macro LATENT_ENTROPY_PLUGIN is defined.
+On Tue, Aug 16, 2022 at 04:10:29PM +0800, huang ying wrote:
+> > @@ -193,11 +194,10 @@ static int migrate_vma_collect_pmd(pmd_t *pmdp,
+> >                         bool anon_exclusive;
+> >                         pte_t swp_pte;
+> >
+> > +                       flush_cache_page(vma, addr, pte_pfn(*ptep));
+> > +                       pte = ptep_clear_flush(vma, addr, ptep);
 > 
-> This broke the build on powerpc, where nodemask.h is indirectly included
-> in arch/powerpc/kernel/prom_init.c, part of the early boot machinery that
-> is excluded from the latent entropy plugin using
-> DISABLE_LATENT_ENTROPY_PLUGIN. It turns out that while we add a gcc flag
-> to disable the actual plugin, we don't undefine LATENT_ENTROPY_PLUGIN.
-> 
-> [...]
+> Although I think it's possible to batch the TLB flushing just before
+> unlocking PTL.  The current code looks correct.
 
-Applied to for-next/hardening, thanks!
+If we're with unconditionally ptep_clear_flush(), does it mean we should
+probably drop the "unmapped" and the last flush_tlb_range() already since
+they'll be redundant?
 
-[1/1] gcc-plugins: Undefine LATENT_ENTROPY_PLUGIN when plugin disabled for a file
-      https://git.kernel.org/kees/c/2d08c71d2c79
+If that'll need to be dropped, it looks indeed better to still keep the
+batch to me but just move it earlier (before unlock iiuc then it'll be
+safe), then we can keep using ptep_get_and_clear() afaiu but keep "pte"
+updated.
+
+Thanks,
 
 -- 
-Kees Cook
+Peter Xu
 
