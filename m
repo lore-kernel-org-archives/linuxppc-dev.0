@@ -4,86 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4FF7C25B0E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 20:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0FE6C25B0E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Aug 2022 21:49:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M6jbK5kSMz3cPl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Aug 2022 06:35:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=emKok07g;
-	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M6lCf1sPPz3drM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Aug 2022 07:49:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=virtuozzo.com (client-ip=130.117.225.111; helo=relay.virtuozzo.com; envelope-from=alexander.atanasov@virtuozzo.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 950 seconds by postgrey-1.36 at boromir; Tue, 16 Aug 2022 19:59:16 AEST
+Received: from relay.virtuozzo.com (relay.virtuozzo.com [130.117.225.111])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6jZX3vLSz3bVt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Aug 2022 06:35:14 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1660682110;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
-	b=emKok07gEvfJwSe/wpjLGYPDE8+1mCvDFPOOx/qX7FlYAW68rqT6ZgdAM+bJsaIygd4qeU
-	eyXpi0jCNAnDJA79hG0rb3na5M/qClBsPtc3McqAjqlEUYrKtrwVSEvX8tIQMeAfGzyu8x
-	GJDxFH8qMibTDZ8BRbYtKua/qbsx7Bs=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1660682110;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
-	b=emKok07gEvfJwSe/wpjLGYPDE8+1mCvDFPOOx/qX7FlYAW68rqT6ZgdAM+bJsaIygd4qeU
-	eyXpi0jCNAnDJA79hG0rb3na5M/qClBsPtc3McqAjqlEUYrKtrwVSEvX8tIQMeAfGzyu8x
-	GJDxFH8qMibTDZ8BRbYtKua/qbsx7Bs=
-Received: from mail-qk1-f199.google.com (mail-qk1-f199.google.com
- [209.85.222.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-260-FSDxaqNYP2uT-N-J9U_7Bg-1; Tue, 16 Aug 2022 16:35:07 -0400
-X-MC-Unique: FSDxaqNYP2uT-N-J9U_7Bg-1
-Received: by mail-qk1-f199.google.com with SMTP id n15-20020a05620a294f00b006b5768a0ed0so10036573qkp.7
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 13:35:07 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc;
-        bh=8qNWq56WcsAjV+d0DPWCWS43jEIePhWAAvwxxzNI+Yo=;
-        b=tRcwv3eGBf2FzuZe61ansv2uV52pqKBIOaMOEvfPF3wCsJsRloyFJx8x+Mk8Fx7/2a
-         LDElpvA5sTjkr6UMditNsKRDAdUgZ6NZa7Dfw6hKPwIAMStQM8VYvFgMFE3SabKDxIie
-         hKWrLFPoBff/6xcqG8WQwfJrS6lWofl3flqpFghxZlD0GQJkyJbodasHbdu4aAM528UJ
-         PQ0vwlKVK5Ow8/c5y0dnOImgQ9mq3Ra71//wBnoeWF5juZKw/Tu3RIrZGHiaiQAWtJ1S
-         ASpwQfzXJMGE9quOKFDDKfKVfNtcc6wgK46cSj7AT3mY8WSe6H+gDK8y8iy/Y6mzn5ei
-         ep/g==
-X-Gm-Message-State: ACgBeo3LtvLoWrpsDJoM78U1u+jJT/zRBFiQpVEL7xI535u2RmZJ/KYk
-	wzpYZQlOuAU4NDHRItR9GyM3SbM/umuw2+mFGJfabgFSaE/nHfM4U+1cuU1YkVqEhZqnWa2iwdi
-	uQqWFVaUmpsGugNJq04gmMKQKNg==
-X-Received: by 2002:a05:6214:2aa2:b0:477:1882:3dc with SMTP id js2-20020a0562142aa200b00477188203dcmr19064872qvb.11.1660682106683;
-        Tue, 16 Aug 2022 13:35:06 -0700 (PDT)
-X-Google-Smtp-Source: AA6agR6sxNDlfRThn/rIz3JOnzmI+jYq7VbHmqoYMTVRKckqHUaSQxZWhXW5hA43Dz2DbrziOS2X+w==
-X-Received: by 2002:a05:6214:2aa2:b0:477:1882:3dc with SMTP id js2-20020a0562142aa200b00477188203dcmr19064852qvb.11.1660682106470;
-        Tue, 16 Aug 2022 13:35:06 -0700 (PDT)
-Received: from xz-m1.local (bras-base-aurron9127w-grc-35-70-27-3-10.dsl.bell.ca. [70.27.3.10])
-        by smtp.gmail.com with ESMTPSA id l1-20020a05620a28c100b006b958c34bf1sm3222130qkp.10.2022.08.16.13.35.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 16 Aug 2022 13:35:05 -0700 (PDT)
-Date: Tue, 16 Aug 2022 16:35:04 -0400
-From: Peter Xu <peterx@redhat.com>
-To: huang ying <huang.ying.caritas@gmail.com>
-Subject: Re: [PATCH v2 1/2] mm/migrate_device.c: Copy pte dirty bit to page
-Message-ID: <Yvv/eGfi3LW8WxPZ@xz-m1.local>
-References: <6e77914685ede036c419fa65b6adc27f25a6c3e9.1660635033.git-series.apopple@nvidia.com>
- <CAC=cRTPGiXWjk=CYnCrhJnLx3mdkGDXZpvApo6yTbeW7+ZGajA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M6RSj00CHz2yMk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Aug 2022 19:59:12 +1000 (AEST)
+Received: from dev011.ch-qa.sw.ru ([172.29.1.16])
+	by relay.virtuozzo.com with esmtp (Exim 4.95)
+	(envelope-from <alexander.atanasov@virtuozzo.com>)
+	id 1oNt3k-00FxfB-0V;
+	Tue, 16 Aug 2022 11:41:39 +0200
+From: Alexander Atanasov <alexander.atanasov@virtuozzo.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Nadav Amit <namit@vmware.com>,
+	VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	David Hildenbrand <david@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 1/4] Make place for common balloon code
+Date: Tue, 16 Aug 2022 12:41:14 +0300
+Message-Id: <20220816094117.3144881-2-alexander.atanasov@virtuozzo.com>
+X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20220816094117.3144881-1-alexander.atanasov@virtuozzo.com>
+References: <20220816094117.3144881-1-alexander.atanasov@virtuozzo.com>
 MIME-Version: 1.0
-In-Reply-To: <CAC=cRTPGiXWjk=CYnCrhJnLx3mdkGDXZpvApo6yTbeW7+ZGajA@mail.gmail.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Wed, 17 Aug 2022 07:48:41 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,32 +54,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Sierra Guiza, Alejandro \(Alex\)" <alex.sierra@amd.com>, Ralph Campbell <rcampbell@nvidia.com>, linuxppc-dev@lists.ozlabs.org, Lyude Paul <lyude@redhat.com>, Karol Herbst <kherbst@redhat.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Felix Kuehling <Felix.Kuehling@amd.com>, Alistair Popple <apopple@nvidia.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Ben Skeggs <bskeggs@redhat.com>, Jason Gunthorpe <jgg@nvidia.com>, Huang Ying <ying.huang@intel.com>, stable@vger.kernel.org, akpm@linux-foundation.org, Logan Gunthorpe <logang@deltatee.com>
+Cc: Alexander Atanasov <alexander.atanasov@virtuozzo.com>, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, linux-mm@kvack.org, kernel@openvz.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 16, 2022 at 04:10:29PM +0800, huang ying wrote:
-> > @@ -193,11 +194,10 @@ static int migrate_vma_collect_pmd(pmd_t *pmdp,
-> >                         bool anon_exclusive;
-> >                         pte_t swp_pte;
-> >
-> > +                       flush_cache_page(vma, addr, pte_pfn(*ptep));
-> > +                       pte = ptep_clear_flush(vma, addr, ptep);
-> 
-> Although I think it's possible to batch the TLB flushing just before
-> unlocking PTL.  The current code looks correct.
+File already contains code that is common along balloon
+drivers so rename it to reflect its contents.
+mm/balloon_compaction.c -> mm/balloon_common.c
 
-If we're with unconditionally ptep_clear_flush(), does it mean we should
-probably drop the "unmapped" and the last flush_tlb_range() already since
-they'll be redundant?
+Signed-off-by: Alexander Atanasov <alexander.atanasov@virtuozzo.com>
+---
+ MAINTAINERS                                              | 4 ++--
+ arch/powerpc/platforms/pseries/cmm.c                     | 2 +-
+ drivers/misc/vmw_balloon.c                               | 2 +-
+ drivers/virtio/virtio_balloon.c                          | 2 +-
+ include/linux/{balloon_compaction.h => balloon_common.h} | 2 +-
+ mm/Makefile                                              | 2 +-
+ mm/{balloon_compaction.c => balloon_common.c}            | 4 ++--
+ mm/migrate.c                                             | 2 +-
+ mm/vmscan.c                                              | 2 +-
+ 9 files changed, 11 insertions(+), 11 deletions(-)
+ rename include/linux/{balloon_compaction.h => balloon_common.h} (99%)
+ rename mm/{balloon_compaction.c => balloon_common.c} (99%)
 
-If that'll need to be dropped, it looks indeed better to still keep the
-batch to me but just move it earlier (before unlock iiuc then it'll be
-safe), then we can keep using ptep_get_and_clear() afaiu but keep "pte"
-updated.
-
-Thanks,
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8a5012ba6ff9..1b94bf3eb95d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -21493,8 +21493,8 @@ L:	virtualization@lists.linux-foundation.org
+ S:	Maintained
+ F:	drivers/virtio/virtio_balloon.c
+ F:	include/uapi/linux/virtio_balloon.h
+-F:	include/linux/balloon_compaction.h
+-F:	mm/balloon_compaction.c
++F:	include/linux/balloon_common.h
++F:	mm/balloon_common.c
+ 
+ VIRTIO CRYPTO DRIVER
+ M:	Gonglei <arei.gonglei@huawei.com>
+diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
+index 5f4037c1d7fe..3beb109c7e44 100644
+--- a/arch/powerpc/platforms/pseries/cmm.c
++++ b/arch/powerpc/platforms/pseries/cmm.c
+@@ -19,7 +19,7 @@
+ #include <linux/stringify.h>
+ #include <linux/swap.h>
+ #include <linux/device.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ #include <asm/firmware.h>
+ #include <asm/hvcall.h>
+ #include <asm/mmu.h>
+diff --git a/drivers/misc/vmw_balloon.c b/drivers/misc/vmw_balloon.c
+index 61a2be712bf7..6c6d24783548 100644
+--- a/drivers/misc/vmw_balloon.c
++++ b/drivers/misc/vmw_balloon.c
+@@ -29,7 +29,7 @@
+ #include <linux/rwsem.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ #include <linux/vmw_vmci_defs.h>
+ #include <linux/vmw_vmci_api.h>
+ #include <asm/hypervisor.h>
+diff --git a/drivers/virtio/virtio_balloon.c b/drivers/virtio/virtio_balloon.c
+index 3f78a3a1eb75..6f69e483d98a 100644
+--- a/drivers/virtio/virtio_balloon.c
++++ b/drivers/virtio/virtio_balloon.c
+@@ -13,7 +13,7 @@
+ #include <linux/delay.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ #include <linux/oom.h>
+ #include <linux/wait.h>
+ #include <linux/mm.h>
+diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_common.h
+similarity index 99%
+rename from include/linux/balloon_compaction.h
+rename to include/linux/balloon_common.h
+index 5ca2d5699620..a45e9fd76235 100644
+--- a/include/linux/balloon_compaction.h
++++ b/include/linux/balloon_common.h
+@@ -1,6 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /*
+- * include/linux/balloon_compaction.h
++ * include/linux/balloon_common.h
+  *
+  * Common interface definitions for making balloon pages movable by compaction.
+  *
+diff --git a/mm/Makefile b/mm/Makefile
+index 9a564f836403..a3390f255b82 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -112,7 +112,7 @@ obj-$(CONFIG_ZSMALLOC)	+= zsmalloc.o
+ obj-$(CONFIG_Z3FOLD)	+= z3fold.o
+ obj-$(CONFIG_GENERIC_EARLY_IOREMAP) += early_ioremap.o
+ obj-$(CONFIG_CMA)	+= cma.o
+-obj-$(CONFIG_MEMORY_BALLOON) += balloon_compaction.o
++obj-$(CONFIG_MEMORY_BALLOON) += balloon_common.o
+ obj-$(CONFIG_PAGE_EXTENSION) += page_ext.o
+ obj-$(CONFIG_PAGE_TABLE_CHECK) += page_table_check.o
+ obj-$(CONFIG_CMA_DEBUGFS) += cma_debug.o
+diff --git a/mm/balloon_compaction.c b/mm/balloon_common.c
+similarity index 99%
+rename from mm/balloon_compaction.c
+rename to mm/balloon_common.c
+index 22c96fed70b5..54ed98653c78 100644
+--- a/mm/balloon_compaction.c
++++ b/mm/balloon_common.c
+@@ -1,6 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ /*
+- * mm/balloon_compaction.c
++ * mm/balloon_common.c
+  *
+  * Common interface for making balloon pages movable by compaction.
+  *
+@@ -9,7 +9,7 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ 
+ static void balloon_page_enqueue_one(struct balloon_dev_info *b_dev_info,
+ 				     struct page *page)
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 6a1597c92261..a6df467a250a 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -41,7 +41,7 @@
+ #include <linux/pfn_t.h>
+ #include <linux/memremap.h>
+ #include <linux/userfaultfd_k.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ #include <linux/page_idle.h>
+ #include <linux/page_owner.h>
+ #include <linux/sched/mm.h>
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index b2b1431352dc..4732f8c24264 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -54,7 +54,7 @@
+ #include <asm/div64.h>
+ 
+ #include <linux/swapops.h>
+-#include <linux/balloon_compaction.h>
++#include <linux/balloon_common.h>
+ #include <linux/sched/sysctl.h>
+ 
+ #include "internal.h"
 -- 
-Peter Xu
+2.31.1
 
