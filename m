@@ -4,49 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 021D0C32771
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 20:20:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A241C00140
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 11:32:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M8Y6D3rKGz3dxZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Aug 2022 06:20:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M7jRH12VXz3dsH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 21:32:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GbKvB1fj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=blackwall-org.20210112.gappssmtp.com header.i=@blackwall-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=8WejKLL+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=blackwall.org (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=razor@blackwall.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GbKvB1fj;
+	dkim=pass (2048-bit key; unprotected) header.d=blackwall-org.20210112.gappssmtp.com header.i=@blackwall-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=8WejKLL+;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8Y5X1brnz3cCW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Aug 2022 06:19:59 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4963A612AF;
-	Fri, 19 Aug 2022 20:19:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E914C433D6;
-	Fri, 19 Aug 2022 20:19:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1660940396;
-	bh=olPohxwuB8nScx7nJ7uyU6IDjTcA7hHC2u3+ajo7ux4=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=GbKvB1fj75mIAXCJYa4PXJtLbhHltip+GDS6Vdt7samXxjTaaBqrEXtlW5S7z44rE
-	 VVHBKCTlhovnkeWyF5b0QSXXW2cCNJ8f5+eeYvaDXkEQBbQ/nhACFZw8W4SHzjQN5X
-	 xsPcS1VhvyDbJaEluAfXp2esCybyo31LXlJ0cIGebsEjh2g2bq9CmwFD2r+67eP/+g
-	 Y0OVwjSMyNAqp4i5s9F76TYiU8wUXYNjl3ni1XEOUXr5tT0hxX44l+bWOiM6+DAn0Q
-	 rPcoY5lRYmyhRgO4Xmh1TPz+MbmxLNb6A2NHU8K8hozuqYQc0DQS6uzwNDLGj5Rgic
-	 s69uMqWY3meUg==
-Date: Fri, 19 Aug 2022 15:19:55 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH] MAINTAINERS: Remove myself as EEH maintainer
-Message-ID: <20220819201955.GA2503063@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M7bbT3bXkz2xrW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2022 17:09:09 +1000 (AEST)
+Received: by mail-ej1-x62d.google.com with SMTP id uj29so1674075ejc.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2022 00:09:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=blackwall-org.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=uB1dny6tZXinATmuz0fIf4H2QaK3MjZ8vYEWovRHfu4=;
+        b=8WejKLL+aMqLWC0O3FQnTQmsIGmJCsnGHI2BDlBU8o4VWw/LcfeBgWzHmX3qQ0kNdP
+         i2wsCNg8dEG2PeAx3BljZBM7q9E11q3FuTEevJM6v/fsy6yCCds3XLZ0KNJgMEwickhT
+         5pX++joOCNvyGmso9a/ojzehd7Cu+02vF5ZdH+w627ZOLQGf12vEwqgwdFkq2GSxyk3o
+         qKVx23t5WYxxqDzVDlUxryvOZHIM45E9l9h0uZxMmePvFva3B4rfwF+trq833C+5x8YJ
+         SqjNNHj/sd925+/MH11H9yWzWNmxhAGk+W5tp0j6FKddjOmqYwdrEqQ2VLWtuHStlIh3
+         ns3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=uB1dny6tZXinATmuz0fIf4H2QaK3MjZ8vYEWovRHfu4=;
+        b=dydUOJyQwFm6+raHjnUD1MYCpEx7HXaZQr2qyM7rXljb7LLGOw1+FIZGLithA3rx0x
+         0il99NYUHTD8bU2KvWiIM08wCn8GDW4wZTojkv+dLPjjtsBwZ8t+ufZtKLiOAk2rZ1Gq
+         vKkB610jnNNH/CNdPoUB7YkY0EFsuwkKGbgqoUAsySDK4PDSenF5UT7/6JdeNmf1eSIV
+         mzDdVLCyOAa2czKqCSWUQ1GKndfPBzX9BubEqC8U00VESiwh25Z6BgoimbFYupjdVhxI
+         ngYzPLkUXoTS+DsTIL1dRFDXRZeJwGJnAAMGu+fJeJjdRO7j9Peuv5tub2/1dH3XCFRB
+         E0eg==
+X-Gm-Message-State: ACgBeo3lTomTW178Y382wqwzW3JCMTckdrYXRP4q8lNWMLZaPtHFWnDx
+	OlUZ27+S/IdDG492msVPo+AflA==
+X-Google-Smtp-Source: AA6agR6L6Nq587p/lJCgXhHMIohS0fuUSvnisu370SwFRdqGr62Y3rWmL+GZ/dHscdaOTusJwrlmKQ==
+X-Received: by 2002:a17:906:6a2a:b0:730:a3f1:aee with SMTP id qw42-20020a1709066a2a00b00730a3f10aeemr1105108ejc.387.1660806544983;
+        Thu, 18 Aug 2022 00:09:04 -0700 (PDT)
+Received: from [192.168.0.111] (87-243-81-1.ip.btc-net.bg. [87.243.81.1])
+        by smtp.gmail.com with ESMTPSA id f28-20020a056402329c00b004418c7d633bsm594454eda.18.2022.08.18.00.09.01
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 18 Aug 2022 00:09:04 -0700 (PDT)
+Message-ID: <10091e35-491a-c10f-35ec-044357f09e3e@blackwall.org>
+Date: Thu, 18 Aug 2022 10:09:00 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220806085301.25142-1-ruscur@russell.cc>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.10.0
+Subject: Re: [PATCH net-next] Remove DECnet support from kernel
+Content-Language: en-US
+To: Stephen Hemminger <stephen@networkplumber.org>, netdev@vger.kernel.org
+References: <20220818004357.375695-1-stephen@networkplumber.org>
+From: Nikolay Aleksandrov <razor@blackwall.org>
+In-Reply-To: <20220818004357.375695-1-stephen@networkplumber.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Thu, 18 Aug 2022 21:31:51 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,71 +82,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Cc: "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Jeff Layton <jlayton@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "open list:MIPS" <linux-mips@vger.kernel.org>, Wang Qing <wangqing@vivo.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Eric Dumazet <edumazet@google.com>, Nathan Fontenot <nathan.fontenot@amd.com>, Suma Hegde <suma.hegde@amd.com>, Paolo Abeni <pabeni@redhat.com>, Neeraj Upadhyay <quic_neeraju@quicinc.com>, Menglong Dong <imagedong@tencent.com>, Florian Fainelli <f.fainelli@gmail.com>, Xin Long <lucien.xin@gmail.com>, Chen Yu <yu.c.chen@intel.com>, Daniel Borkmann <daniel@iogearbox.net>, Jonathan Corbet <corbet@lwn.net>, Damien Le Moal <damien.lemoal@opensource.wdc.com>, Jozsef Kadlecsik <kadlec@netfilter.org>, Xie Yongji <xieyongji@bytedance.com>, "open list:NETFILTER" <coreteam@netfilter.org>, Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, Borislav Petkov <bp@suse.de>, "open list:NETFILTER" <netfilter-devel@vger.ker
+ nel.org>, Pablo Neira Ayuso <pablo@netfilter.org>, Stefano Garzarella <sgarzare@redhat.com>, Petr Machata <petrm@nvidia.com>, Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>, Yu Zhe <yuzhe@nfschina.com>, William Breathitt Gray <vilhelm.gray@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Kuniyuki Iwashima <kuniyu@amazon.com>, Shakeel Butt <shakeelb@google.com>, Muchun Song <songmuchun@bytedance.com>, Alexandre Ghiti <alexandre.ghiti@canonical.com>, Yuwei Wang <wangyuweihx@gmail.com>, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Akhmat Karakotov <hmukos@yandex-team.ru>, "Martin K. Petersen" <martin.petersen@oracle.com>, "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>, David Ahern <dsahern@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Florian Westphal <fw@strlen.de>, open list <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.n
+ et>, Chuck Lever <chuck.lever@oracle.com>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>, Antoine Tenart <atenart@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Aug 06, 2022 at 06:53:01PM +1000, Russell Currey wrote:
-> I haven't touched EEH in a long time I don't have much knowledge of the
-> subsystem at this point either, so it's misleading to have me as a
-> maintainer.
+On 18/08/2022 03:43, Stephen Hemminger wrote:
+> DECnet is an obsolete network protocol that receives more attention
+> from kernel janitors than users. It belongs in computer protocol
+> history museum not in Linux kernel.
 > 
-> I remain grateful to Oliver for picking up my slack over the years.
+> It has been "Orphaned" in kernel since 2010. The iproute2 support
+> for DECnet was dropped in 5.0 release. The documentation link on
+> Sourceforge says it is abandoned there as well.
 > 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Leave the UAPI alone to keep userspace programs compiling.
+> This means that there is still an empty neighbour table
+> for AF_DECNET.
+> 
+> The table of /proc/sys/net entries was updated to match
+> current directories and reformatted to be alphabetical.
+> 
+> Signed-off-by: Stephen Hemminger <stephen@networkplumber.org>
+> Acked-by: David Ahern <dsahern@kernel.org>
 > ---
->  MAINTAINERS | 1 -
->  1 file changed, 1 deletion(-)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index a9f77648c107..dfe6081fa0b3 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -15639,7 +15639,6 @@ F:	drivers/pci/endpoint/
->  F:	tools/pci/
->  
->  PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
-> -M:	Russell Currey <ruscur@russell.cc>
->  M:	Oliver O'Halloran <oohall@gmail.com>
->  L:	linuxppc-dev@lists.ozlabs.org
->  S:	Supported
+> Incorporates feedback from the initial RFC.
+> The MPLS neighbour table to family table is left alone.
+> 
 
-I was thinking along these lines, but if you want to take this,
-Michael, I'll drop it:
+Acked-by: Nikolay Aleksandrov <razor@blackwall.org>
 
 
-commit 92ea781689d1 ("MAINTAINERS: Add Mahesh J Salgaonkar as EEH maintainer")
-Author: Russell Currey <ruscur@russell.cc>
-Date:   Sat Aug 6 18:53:01 2022 +1000
 
-    MAINTAINERS: Add Mahesh J Salgaonkar as EEH maintainer
-    
-    Update EEH entry:
-    
-      - Russell: lacks time to maintain EEH.
-    
-      - Oliver: lacks time & hardware to do actual maintenance, but happy to
-        field questions and review things.
-    
-      - Mahesh: glad to take over EEH maintenance.
-    
-    [bhelgaas: commit log, add Mahesh, make Oliver reviewer]
-    Link: https://lore.kernel.org/r/20220806085301.25142-1-ruscur@russell.cc
-    Signed-off-by: Russell Currey <ruscur@russell.cc>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f60dfac7661c..51def5ac9462 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15696,8 +15696,8 @@ F:	drivers/pci/endpoint/
- F:	tools/pci/
- 
- PCI ENHANCED ERROR HANDLING (EEH) FOR POWERPC
--M:	Russell Currey <ruscur@russell.cc>
--M:	Oliver O'Halloran <oohall@gmail.com>
-+M:	Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-+R:	Oliver O'Halloran <oohall@gmail.com>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
- F:	Documentation/PCI/pci-error-recovery.rst
