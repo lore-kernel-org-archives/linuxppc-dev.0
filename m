@@ -4,99 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24D74C00140
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 07:06:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68852C00140
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 10:47:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M7bWv3fVtz3cD8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 17:06:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M7hRr4NqQz3drp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Aug 2022 20:47:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gaTSo2oy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aNjepu+Q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nicholas@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gaTSo2oy;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aNjepu+Q;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M7bW31NDrz2yxF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2022 17:05:18 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27I6pnsK015551;
-	Thu, 18 Aug 2022 07:05:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M7hQz2HLBz2xGg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Aug 2022 20:47:06 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27IAeNHk018974;
+	Thu, 18 Aug 2022 10:46:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : subject :
+ to : cc : references : in-reply-to : mime-version : message-id :
  content-type : content-transfer-encoding; s=pp1;
- bh=HAURsoLLMO68sCPiE57Cr46JKxzEar+fGhZlLMEaVc8=;
- b=gaTSo2oyBGTqug07bo6sZhuaXzd2ftCCVeV1o8kKtnpzzulAJvxy965jNHqngB5mNZWo
- /TU/0WpMla39BvpMqbw6ROzLqfU+MQ4spZTJTqB6+WU1Fw9bd+40TQcChVvofPklkR0p
- CycwZVMOwOsApEqLGOwDL0EUuEiuKfXgCf60MQytrT6cmkFXfN3ADCnumIugyZnHTFUI
- 7xM5AIErQnc/4n+tXnxxEtW/o1E1MZzbihpow/JoSKaZHsCqUVRtDiW4OeiXC7GFpMPh
- sIZSu7qPZC43HysGIMYKfS4wXvqIk07P2bnPVHlCS6264BDhrQ/OoVwVjzpcTFejf7BP /w== 
+ bh=6A6aTCMp7D4cmQcxzVK5B0Tgk1o4eQLyKzzRt1Ei1D8=;
+ b=aNjepu+QJt70jAINZ2vYWHA5ImlmG9lfJRV+49wdt/bFlLTfb/1RPsCHZCEOkaoq6Ztg
+ 32oaFvfHRNI8Fcxc276smJvhx6W88Ne95ANxSllMwHx4KboW8vo1AwMdqRv7KxVDTRpk
+ koQnp7HtM08352eXkGlSPTV91q2v0FZebeC5oY7LTpKHSyKWNr9k2NZ4bMnnMJnMcf7P
+ RTBLejkOIWenWVSKxgaAJmV6zkdAYbCsMsSAz9tdZM2maLl/zq/m7Z4r70q0HmQj4vJ2
+ kc7x8exBaJxuVF10LFKQX5nZRa2HQ0ptTiIWfKCxLTnIcRWYfkw4OLM/q9uJtkYy80TB sA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j1ghfrb6g-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3j1kkr0j0d-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Aug 2022 07:05:11 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 27I6qB8F016252;
-	Thu, 18 Aug 2022 07:05:11 GMT
+	Thu, 18 Aug 2022 10:46:39 +0000
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 27IAh3ix031886;
+	Thu, 18 Aug 2022 10:46:39 GMT
 Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j1ghfrb4x-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3j1kkr0hy2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Aug 2022 07:05:11 +0000
+	Thu, 18 Aug 2022 10:46:39 +0000
 Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27I6oOTT004483;
-	Thu, 18 Aug 2022 07:05:08 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma03ams.nl.ibm.com with ESMTP id 3hx3k8wfsu-1
+	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27IAbEG5022884;
+	Thu, 18 Aug 2022 10:46:37 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma03ams.nl.ibm.com with ESMTP id 3hx3k8wr1f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 18 Aug 2022 07:05:08 +0000
+	Thu, 18 Aug 2022 10:46:36 +0000
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27I75Pe234406684
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27IAkYpo36897042
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 18 Aug 2022 07:05:25 GMT
+	Thu, 18 Aug 2022 10:46:34 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7A3AFA4051;
-	Thu, 18 Aug 2022 07:05:06 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 9E4EAA4051;
+	Thu, 18 Aug 2022 10:46:34 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CC891A4055;
-	Thu, 18 Aug 2022 07:05:05 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by IMSVA (Postfix) with ESMTP id 31FF8A404D;
+	Thu, 18 Aug 2022 10:46:34 +0000 (GMT)
+Received: from localhost (unknown [9.43.73.112])
 	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Thu, 18 Aug 2022 07:05:05 +0000 (GMT)
-Received: from [9.160.164.176] (unknown [9.160.164.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4B83860125;
-	Thu, 18 Aug 2022 17:04:54 +1000 (AEST)
-Message-ID: <daffd6e0-7dd7-8699-6136-fa63a15a7b47@linux.ibm.com>
-Date: Thu, 18 Aug 2022 17:04:36 +1000
+	Thu, 18 Aug 2022 10:46:34 +0000 (GMT)
+Date: Thu, 18 Aug 2022 16:16:32 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 01/16] powerpc: Replace unreachable() with it's builtin
+ variant in WARN_ON()
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        Sathvika Vasireddy <sv@linux.ibm.com>
+References: <20220808114908.240813-1-sv@linux.ibm.com>
+	<20220808114908.240813-2-sv@linux.ibm.com>
+	<82eec792-b71f-17cc-d905-368fd5ca62f2@csgroup.eu>
+In-Reply-To: <82eec792-b71f-17cc-d905-368fd5ca62f2@csgroup.eu>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.1.2
-Subject: Re: [PATCH v4 2/2] selftests/powerpc: Add a test for execute-only
- memory
-Content-Language: en-US
-To: Jordan Niethe <jniethe5@gmail.com>, Russell Currey <ruscur@russell.cc>,
-        linuxppc-dev@lists.ozlabs.org
-References: <20220817050640.406017-1-ruscur@russell.cc>
- <20220817050640.406017-2-ruscur@russell.cc>
- <faa82449f058e4d57372dc4e7b5ca2dc091cb454.camel@gmail.com>
-From: Nicholas Miehlbradt <nicholas@linux.ibm.com>
-In-Reply-To: <faa82449f058e4d57372dc4e7b5ca2dc091cb454.camel@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+User-Agent: astroid/4d6b06ad (https://github.com/astroidmail/astroid)
+Message-Id: <1660817468.4x4re2ul0k.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: dZTywz-usbWXi4WV8-Ofi_Z26jnkhxjX
-X-Proofpoint-ORIG-GUID: V1NmPDfDlueEDPhk-2tsp-r4uz57625X
+X-Proofpoint-GUID: pSUNmMYB0aU1d43EEUgjWiXA_doZGrCD
+X-Proofpoint-ORIG-GUID: bkaD2RFH1edI5RbUM9CkUCLOn9hGqb8y
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.883,Hydra:6.0.517,FMLib:17.11.122.1
- definitions=2022-08-18_02,2022-08-16_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
- adultscore=0 spamscore=0 clxscore=1011 mlxscore=0 lowpriorityscore=0
- priorityscore=1501 bulkscore=0 impostorscore=0 suspectscore=0
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2207270000 definitions=main-2208180021
+ definitions=2022-08-18_02,2022-08-18_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 malwarescore=0
+ spamscore=0 suspectscore=0 impostorscore=0 phishscore=0 priorityscore=1501
+ adultscore=0 mlxscore=0 bulkscore=0 lowpriorityscore=0 mlxlogscore=999
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
+ definitions=main-2208180036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,295 +102,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, linux-hardening@vger.kernel.org, ajd@linux.ibm.com, npiggin@gmail.com, anshuman.khandual@arm.com
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "npiggin@gmail.com" <npiggin@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "jpoimboe@redhat.com" <jpoimboe@redhat.com>, "mbenes@suse.cz" <mbenes@suse.cz>, "chenzhongjin@huawei.com" <chenzhongjin@huawei.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 17/8/2022 4:15 pm, Jordan Niethe wrote:
-> On Wed, 2022-08-17 at 15:06 +1000, Russell Currey wrote:
->> From: Nicholas Miehlbradt <nicholas@linux.ibm.com>
->>
->> This selftest is designed to cover execute-only protections
->> on the Radix MMU but will also work with Hash.
->>
->> The tests are based on those found in pkey_exec_test with modifications
->> to use the generic mprotect() instead of the pkey variants.
-> 
-> Would it make sense to rename pkey_exec_test to exec_test and have this test be apart of that?
-> 
-I think might make it unnecessarily complex. The checks needed when 
-testing with pkeys would mean that it would be necessary to check if 
-pkeys are enabled and choose which set of tests to run depending on the 
-result. The differences are substantial enough that it would be 
-challenging to combine them into a single set of tests.
+Christophe Leroy wrote:
+>=20
+>=20
+> Le 08/08/2022 =C3=A0 13:48, Sathvika Vasireddy a =C3=A9crit=C2=A0:
+>> objtool is throwing *unannotated intra-function call*
+>> warnings with a few instructions that are marked
+>> unreachable. Replace unreachable() with __builtin_unreachable()
+>> to fix these warnings, as the codegen remains same
+>> with unreachable() and __builtin_unreachable().
+>=20
+> I think it is necessary to explain why using unreachable() is not=20
+> necessary for powerpc, or even why using unreachable() is wrong.
+>=20
+> Allthough we are getting rid of the problem here by replacing=20
+> unreachable() by __builtin_unreachable(), it might still be a problem in=20
+> core parts of kernel which still use unreachable.
 
->>
->> Signed-off-by: Nicholas Miehlbradt <nicholas@linux.ibm.com>
->> Signed-off-by: Russell Currey <ruscur@russell.cc>
->> ---
->> v4: new
->>
->>   tools/testing/selftests/powerpc/mm/Makefile   |   3 +-
->>   .../testing/selftests/powerpc/mm/exec_prot.c  | 231 ++++++++++++++++++
->>   2 files changed, 233 insertions(+), 1 deletion(-)
->>   create mode 100644 tools/testing/selftests/powerpc/mm/exec_prot.c
->>
->> diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
->> index 27dc09d0bfee..19dd0b2ea397 100644
->> --- a/tools/testing/selftests/powerpc/mm/Makefile
->> +++ b/tools/testing/selftests/powerpc/mm/Makefile
->> @@ -3,7 +3,7 @@ noarg:
->>   	$(MAKE) -C ../
->>   
->>   TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr \
->> -		  large_vm_fork_separation bad_accesses pkey_exec_prot \
->> +		  large_vm_fork_separation bad_accesses exec_prot pkey_exec_prot \
->>   		  pkey_siginfo stack_expansion_signal stack_expansion_ldst \
->>   		  large_vm_gpr_corruption
->>   TEST_PROGS := stress_code_patching.sh
->> @@ -22,6 +22,7 @@ $(OUTPUT)/wild_bctr: CFLAGS += -m64
->>   $(OUTPUT)/large_vm_fork_separation: CFLAGS += -m64
->>   $(OUTPUT)/large_vm_gpr_corruption: CFLAGS += -m64
->>   $(OUTPUT)/bad_accesses: CFLAGS += -m64
->> +$(OUTPUT)/exec_prot: CFLAGS += -m64
->>   $(OUTPUT)/pkey_exec_prot: CFLAGS += -m64
->>   $(OUTPUT)/pkey_siginfo: CFLAGS += -m64
->>   
->> diff --git a/tools/testing/selftests/powerpc/mm/exec_prot.c b/tools/testing/selftests/powerpc/mm/exec_prot.c
->> new file mode 100644
->> index 000000000000..db75b2225de1
->> --- /dev/null
->> +++ b/tools/testing/selftests/powerpc/mm/exec_prot.c
->> @@ -0,0 +1,231 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +
->> +/*
->> + * Copyright 2022, Nicholas Miehlbradt, IBM Corporation
->> + * based on pkey_exec_prot.c
->> + *
->> + * Test if applying execute protection on pages works as expected.
->> + */
->> +
->> +#define _GNU_SOURCE
->> +#include <stdio.h>
->> +#include <stdlib.h>
->> +#include <string.h>
->> +#include <signal.h>
->> +
->> +#include <unistd.h>
->> +#include <sys/mman.h>
->> +
->> +#include "pkeys.h"
->> +
->> +
->> +#define PPC_INST_NOP	0x60000000
->> +#define PPC_INST_TRAP	0x7fe00008
->> +#define PPC_INST_BLR	0x4e800020
->> +
->> +static volatile sig_atomic_t fault_code;
->> +static volatile sig_atomic_t remaining_faults;
->> +static volatile unsigned int *fault_addr;
->> +static unsigned long pgsize, numinsns;
->> +static unsigned int *insns;
->> +static bool pkeys_supported;
->> +
->> +static bool is_fault_expected(int fault_code)
->> +{
->> +	if (fault_code == SEGV_ACCERR)
->> +		return true;
->> +
->> +	/* Assume any pkey error is fine since pkey_exec_prot test covers them */
->> +	if (fault_code == SEGV_PKUERR && pkeys_supported)
->> +		return true;
->> +
->> +	return false;
->> +}
->> +
->> +static void trap_handler(int signum, siginfo_t *sinfo, void *ctx)
->> +{
->> +	/* Check if this fault originated from the expected address */
->> +	if (sinfo->si_addr != (void *)fault_addr)
->> +		sigsafe_err("got a fault for an unexpected address\n");
->> +
->> +	_exit(1);
->> +}
->> +
->> +static void segv_handler(int signum, siginfo_t *sinfo, void *ctx)
->> +{
->> +	fault_code = sinfo->si_code;
->> +
->> +	/* Check if this fault originated from the expected address */
->> +	if (sinfo->si_addr != (void *)fault_addr) {
->> +		sigsafe_err("got a fault for an unexpected address\n");
->> +		_exit(1);
->> +	}
->> +
->> +	/* Check if too many faults have occurred for a single test case */
->> +	if (!remaining_faults) {
->> +		sigsafe_err("got too many faults for the same address\n");
->> +		_exit(1);
->> +	}
->> +
->> +
->> +	/* Restore permissions in order to continue */
->> +	if (is_fault_expected(fault_code)) {
->> +		if (mprotect(insns, pgsize, PROT_READ | PROT_WRITE | PROT_EXEC)) {
->> +			sigsafe_err("failed to set access permissions\n");
->> +			_exit(1);
->> +		}
->> +	} else {
->> +		sigsafe_err("got a fault with an unexpected code\n");
->> +		_exit(1);
->> +	}
->> +
->> +	remaining_faults--;
->> +}
->> +
->> +static int check_exec_fault(int rights)
->> +{
->> +	/*
->> +	 * Jump to the executable region.
->> +	 *
->> +	 * The first iteration also checks if the overwrite of the
->> +	 * first instruction word from a trap to a no-op succeeded.
->> +	 */
->> +	fault_code = -1;
->> +	remaining_faults = 0;
->> +	if (!(rights & PROT_EXEC))
->> +		remaining_faults = 1;
->> +
->> +	FAIL_IF(mprotect(insns, pgsize, rights) != 0);
->> +	asm volatile("mtctr	%0; bctrl" : : "r"(insns));
->> +
->> +	FAIL_IF(remaining_faults != 0);
->> +	if (!(rights & PROT_EXEC))
->> +		FAIL_IF(!is_fault_expected(fault_code));
->> +
->> +	return 0;
->> +}
->> +
->> +static int test(void)
->> +{
->> +	struct sigaction segv_act, trap_act;
->> +	int i;
->> +
->> +	/* Skip the test if the CPU doesn't support Radix */
->> +	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
->> +
->> +	/* Check if pkeys are supported */
->> +	pkeys_supported = pkeys_unsupported() == 0;
->> +
->> +	/* Setup SIGSEGV handler */
->> +	segv_act.sa_handler = 0;
->> +	segv_act.sa_sigaction = segv_handler;
->> +	FAIL_IF(sigprocmask(SIG_SETMASK, 0, &segv_act.sa_mask) != 0);
->> +	segv_act.sa_flags = SA_SIGINFO;
->> +	segv_act.sa_restorer = 0;
->> +	FAIL_IF(sigaction(SIGSEGV, &segv_act, NULL) != 0);
->> +
->> +	/* Setup SIGTRAP handler */
->> +	trap_act.sa_handler = 0;
->> +	trap_act.sa_sigaction = trap_handler;
->> +	FAIL_IF(sigprocmask(SIG_SETMASK, 0, &trap_act.sa_mask) != 0);
->> +	trap_act.sa_flags = SA_SIGINFO;
->> +	trap_act.sa_restorer = 0;
->> +	FAIL_IF(sigaction(SIGTRAP, &trap_act, NULL) != 0);
->> +
->> +	/* Setup executable region */
->> +	pgsize = getpagesize();
->> +	numinsns = pgsize / sizeof(unsigned int);
->> +	insns = (unsigned int *)mmap(NULL, pgsize, PROT_READ | PROT_WRITE,
->> +				      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
->> +	FAIL_IF(insns == MAP_FAILED);
->> +
->> +	/* Write the instruction words */
->> +	for (i = 1; i < numinsns - 1; i++)
->> +		insns[i] = PPC_INST_NOP;
->> +
->> +	/*
->> +	 * Set the first instruction as an unconditional trap. If
->> +	 * the last write to this address succeeds, this should
->> +	 * get overwritten by a no-op.
->> +	 */
->> +	insns[0] = PPC_INST_TRAP;
->> +
->> +	/*
->> +	 * Later, to jump to the executable region, we use a branch
->> +	 * and link instruction (bctrl) which sets the return address
->> +	 * automatically in LR. Use that to return back.
->> +	 */
->> +	insns[numinsns - 1] = PPC_INST_BLR;
->> +
->> +	/*
->> +	 * Pick the first instruction's address from the executable
->> +	 * region.
->> +	 */
->> +	fault_addr = insns;
->> +
->> +	/*
->> +	 * Read an instruction word from the address when the page
->> +	 * is execute only. This should generate an access fault.
->> +	 */
->> +	fault_code = -1;
->> +	remaining_faults = 1;
->> +	printf("Testing read on --x, should fault...");
->> +	FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
->> +	i = *fault_addr;
->> +	FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
->> +	printf("ok!\n");
->> +
->> +	/*
->> +	 * Write an instruction word to the address when the page
->> +	 * execute only. This should also generate an access fault.
->> +	 */
->> +	fault_code = -1;
->> +	remaining_faults = 1;
->> +	printf("Testing write on --x, should fault...");
->> +	FAIL_IF(mprotect(insns, pgsize, PROT_EXEC) != 0);
->> +	*fault_addr = PPC_INST_NOP;
->> +	FAIL_IF(remaining_faults != 0 || !is_fault_expected(fault_code));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on ---, should fault...");
->> +	FAIL_IF(check_exec_fault(PROT_NONE));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on r--, should fault...");
->> +	FAIL_IF(check_exec_fault(PROT_READ));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on -w-, should fault...");
->> +	FAIL_IF(check_exec_fault(PROT_WRITE));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on rw-, should fault...");
->> +	FAIL_IF(check_exec_fault(PROT_READ | PROT_WRITE));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on --x, should succeed...");
->> +	FAIL_IF(check_exec_fault(PROT_EXEC));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on r-x, should succeed...");
->> +	FAIL_IF(check_exec_fault(PROT_READ | PROT_EXEC));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on -wx, should succeed...");
->> +	FAIL_IF(check_exec_fault(PROT_WRITE | PROT_EXEC));
->> +	printf("ok!\n");
->> +
->> +	printf("Testing exec on rwx, should succeed...");
->> +	FAIL_IF(check_exec_fault(PROT_READ | PROT_WRITE | PROT_EXEC));
->> +	printf("ok!\n");
->> +
->> +	/* Cleanup */
->> +	FAIL_IF(munmap((void *)insns, pgsize));
->> +
->> +	return 0;
->> +}
->> +
->> +int main(void)
->> +{
->> +	return test_harness(test, "exec_prot");
->> +}
-> 
+I did a kernel build with this series applied, with a variant of=20
+ppc64le_defconfig. I then did another build with the same config, but=20
+with the below hunk to disable objtool:
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6be2e68fa9eb64..4c466acdc70d4c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -237,8 +237,6 @@ config PPC
+        select HAVE_MOD_ARCH_SPECIFIC
+        select HAVE_NMI                         if PERF_EVENTS || (PPC64 &&=
+ PPC_BOOK3S)
+        select HAVE_OPTPROBES
+-       select HAVE_OBJTOOL                     if PPC32 || MPROFILE_KERNEL
+-       select HAVE_OBJTOOL_MCOUNT              if HAVE_OBJTOOL
+        select HAVE_PERF_EVENTS
+        select HAVE_PERF_EVENTS_NMI             if PPC64
+        select HAVE_PERF_REGS
+
+This has the effect of disabling annotations for unreachable().
+
+When I compared the resulting object files, I did not see changes in=20
+codegen relating to the annotation, like we do with using unreachable()=20
+in __WARN_FLAGS().
+
+More specifically, arch/powerpc/kvm/book3s.o:kvmppc_h_logical_ci_load()=20
+uses BUG(), and the generated code remains the same with/without the=20
+unreachable() annotation.
+
+This suggests that the bad codegen we are seeing with the annotation in=20
+unreachable() is limited to its use in __WARN_FLAGS(), which I suspect=20
+is due to an interaction with the use of asm_volatile_goto() for=20
+WARN_ENTRY().
+
+If I revert this patch (patch 01/16), gcc seems to add a label 8 bytes=20
+before _some_ function in this object file, which happens to hold a=20
+relocation against .TOC., and emits a bl to that symbol. Otherwise, gcc=20
+either emits no new instruction for the annotation, or a 'nop' in some=20
+cases.
+
+If I add a 'nop' between WARN_ENTRY() and unreachable() in=20
+__WARN_FLAGS(), or convert WARN_ENTRY to BUG_ENTRY thereby removing use=20
+of asm_volatile_goto(), the problem goes away and no bl is emitted:
+
+diff --git a/arch/powerpc/include/asm/bug.h b/arch/powerpc/include/asm/bug.=
+h
+index 61a4736355c244..88e0027c20ba5c 100644
+--- a/arch/powerpc/include/asm/bug.h
++++ b/arch/powerpc/include/asm/bug.h
+@@ -99,6 +99,7 @@
+        __label__ __label_warn_on;                              \
+                                                                \
+        WARN_ENTRY("twi 31, 0, 0", BUGFLAG_WARNING | (flags), __label_warn_=
+on); \
++       __asm__ __volatile__("nop");                            \
+        unreachable();                                          \
+                                                                \
+ __label_warn_on:
+
+
+In summary, I think the annotation itself is fine and we are only seeing=20
+an issue with its usage after WARN_ENTRY() due to use of=20
+asm_volatile_goto. Other uses of unreachable() don't seem to exhibit=20
+this problem.
+
+As such, I think this patch is appropriate for this series, though I=20
+think we should capture some of this information in the changelog.
+
+Note also that if and when we start utlizing the annotation, if we=20
+classify twui as INSN_BUG, this change will continue to be appropriate.
+
+
+- Naveen
+
