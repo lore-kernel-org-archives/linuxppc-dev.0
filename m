@@ -4,53 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DABEC28D13
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 22:44:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ECD0C28D13
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 23:28:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M8cHh4Q0kz3dy2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Aug 2022 08:44:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M8dHL2vT3z3f89
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Aug 2022 09:28:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=G9ItjeqE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linbit-com.20210112.gappssmtp.com header.i=@linbit-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=agmJAUC8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linbit.com (client-ip=2a00:1450:4864:20::62b; helo=mail-ej1-x62b.google.com; envelope-from=christoph.boehmwalder@linbit.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=G9ItjeqE;
+	dkim=pass (2048-bit key; unprotected) header.d=linbit-com.20210112.gappssmtp.com header.i=@linbit-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=agmJAUC8;
 	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Received: from mail-ej1-x62b.google.com (mail-ej1-x62b.google.com [IPv6:2a00:1450:4864:20::62b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8cH30Yd7z3bxt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Aug 2022 08:43:26 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=goG5LB8namyKTJGHlQDVYOEn/LSWKITP9frCvQXf38Y=; b=G9ItjeqEmkfO7Sedn9n9RCO48B
-	bBIiwJ1kx8hIXNKondte8LHOV/iDX6lfxwRmD24PyeNnDAdIh7VVUXwA0dECCDfxn6lpflz/wjC4o
-	tJbCWaFX+jxoAP12qkpgpkHANjS9A5bnfaNnlxgz2SAiaFwAcGuIeSHvEtkDW7/Rl9bqemZP1KjA3
-	dvyImPZXGwyiB29OMWx+OctY+IdyMgk7HFSFyH5jC/jh6e245S9HGsQx+CB5pkk/AQ7+nprQ8yrs7
-	WODHyFNOPzZJ6TU39F+SUBaWGD3s/vnZLZ8EywFnqzfGb2BdZhBy3TVZUmwQq93LvhwFAyK1fG7ah
-	KaHLSYqA==;
-Received: from [2601:1c0:6280:3f0::a6b3]
-	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oPAhz-00D0H0-AT; Fri, 19 Aug 2022 22:43:19 +0000
-Message-ID: <ed703de5-2260-8cd5-4e28-2f7986b407d5@infradead.org>
-Date: Fri, 19 Aug 2022 15:43:18 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8QY40V3cz3bYG
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Aug 2022 01:24:54 +1000 (AEST)
+Received: by mail-ej1-x62b.google.com with SMTP id u15so755024ejt.6
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2022 08:24:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linbit-com.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=QcjuSMkjgvmcMVSZtEnP4HKDq1IJJzuLOO5WZsbK0+U=;
+        b=agmJAUC8jfOsl/gS4hT8lv5H6fTz01qf2pe3Iv5R9j9Ate9ewR22RfAhjEhwJ6X7ah
+         6i2gUSjqWAQUwG7vDL22TL3OJ2DhWyK4iGyCxaZDkZBo8C5fdnjLhkpYDW7Sa1kKJ0m9
+         nTTLPu80zYWs5VKFI/soqsQZ2m3SZwMJLkyAN+lFaM/+QA0zpsdobhOAVHSxJY09NVpJ
+         unBTEPM3BaQo8lZAI/3LxHBqdI4Xtjfj+l91HslXfgpBHq8BMYj8CpA31LlMMIn6dSW8
+         vv42Aj7Ht2909aymuONX4UFmgeVzYDTPM0HNunn/RXfrH17hgsFeGl4AuF4WAgPFBbnL
+         B9iA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=QcjuSMkjgvmcMVSZtEnP4HKDq1IJJzuLOO5WZsbK0+U=;
+        b=Zuf4Tage1AvkmJgQ/h+RVCi91f8XjqWbyJlvnB4ZOguMXhEH3IMtvlMlTK4n5lVo9u
+         ISgQMOsE1L3cVcOGJtXPnEwWcqFWdPN1Jkqvf85gc0BuA7ASyh8dNODRtrMNy+/o2UTE
+         KetSV9/TJBkiJT5e1+wk+Ni2ZCgrUTs2pSBYD+h5KGzpW50iuKlnx2AAUFA1Qb8mrTHe
+         JbfnenTNNf7lKj/5DrglPaOwkUILWm6esR5T60qwdHSE/I+HTQNNDuank/216lMqBR/d
+         5G/MUMQVK/vJX1am50MdUJHme+uZR+qpEmzcQV2d5Gtl6MDcxeL/jAkdrOkPbYOXm5x9
+         Ng/Q==
+X-Gm-Message-State: ACgBeo2uQMEfU065wpzdH6Pc+cK4jl5T94aZL98m0WxGCMCLtOykzmuj
+	kTc3z3ztCplLd7z1PgrPsQPJ1A==
+X-Google-Smtp-Source: AA6agR5mq+T7k3AHmZCAgqpwHVwskje+A0igISLSMji1ANW7KLAUFwidL9UZ9jQ29SXqclEdOTfxgg==
+X-Received: by 2002:a17:907:7fa5:b0:730:5d54:4c24 with SMTP id qk37-20020a1709077fa500b007305d544c24mr5248538ejc.641.1660922691995;
+        Fri, 19 Aug 2022 08:24:51 -0700 (PDT)
+Received: from [192.168.178.55] (h082218028181.host.wavenet.at. [82.218.28.181])
+        by smtp.gmail.com with ESMTPSA id h10-20020aa7c60a000000b0043cc2c9f5adsm3270313edq.40.2022.08.19.08.24.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 19 Aug 2022 08:24:51 -0700 (PDT)
+Message-ID: <a6d3e3a8-f0a6-dffc-c3b6-45d81efc7664@linbit.com>
+Date: Fri, 19 Aug 2022 17:24:50 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] powerpc: Add support for early debugging via Serial 16550
- console
+ Thunderbird/91.12.0
+Subject: Re: [PATCH] block: move from strlcpy with unused retval to strscpy
 Content-Language: en-US
-To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>
-References: <20220819211254.22192-1-pali@kernel.org>
- <35c0ff6a-387d-3c01-66b3-f659cfe67c2a@infradead.org>
- <20220819223848.lvxakjjzfdjvyqgu@pali>
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20220819223848.lvxakjjzfdjvyqgu@pali>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+References: <20220818205958.6552-1-wsa+renesas@sang-engineering.com>
+From: =?UTF-8?Q?Christoph_B=c3=b6hmwalder?= <christoph.boehmwalder@linbit.com>
+In-Reply-To: <20220818205958.6552-1-wsa+renesas@sang-engineering.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Sat, 20 Aug 2022 09:27:17 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,97 +82,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Child <nick.child@ibm.com>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, Sergey Senozhatsky <senozhatsky@chromium.org>, Geoff Levand <geoff@infradead.org>, Philipp Reisner <philipp.reisner@linbit.com>, Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, linuxppc-dev@lists.ozlabs.org, Nitin Gupta <ngupta@vflare.org>, drbd-dev@lists.linbit.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 8/19/22 15:38, Pali Rohár wrote:
-> On Friday 19 August 2022 15:34:14 Randy Dunlap wrote:
->> Hi--
->>
->> On 8/19/22 14:12, Pali Rohár wrote:
->>> Currently powerpc early debugging contains lot of platform specific
->>> options, but does not support standard UART / serial 16550 console.
->>>
->>> Later legacy_serial.c code supports registering UART as early debug console
->>> from device tree but it is not early during booting, but rather later after
->>> machine description code finishes.
->>>
->>> So for real early debugging via UART is current code unsuitable.
->>>
->>> Add support for new early debugging option CONFIG_PPC_EARLY_DEBUG_16550
->>> which enable Serial 16550 console on address defined by new option
->>> CONFIG_PPC_EARLY_DEBUG_16550_PHYSADDR and by stride by option
->>> CONFIG_PPC_EARLY_DEBUG_16550_STRIDE.
->>>
->>> With this change it is possible to debug powerpc machine descriptor code.
->>> For example this early debugging code can print on serial console also
->>> "No suitable machine description found" error which is done before
->>> legacy_serial.c code.
->>>
->>> Signed-off-by: Pali Rohár <pali@kernel.org>
->>> ---
->>> Tested on P2020 board. It allowed me do debug and implement this patch series:
->>> https://lore.kernel.org/linuxppc-dev/20220819191557.28116-1-pali@kernel.org/
->>> ---
->>>  arch/powerpc/Kconfig.debug       | 14 ++++++++++++++
->>>  arch/powerpc/include/asm/udbg.h  |  1 +
->>>  arch/powerpc/kernel/udbg.c       |  2 ++
->>>  arch/powerpc/kernel/udbg_16550.c | 33 ++++++++++++++++++++++++++++++++
->>>  4 files changed, 50 insertions(+)
->>>
->>> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
->>> index 9f363c143d86..a4e7d90a45d2 100644
->>> --- a/arch/powerpc/Kconfig.debug
->>> +++ b/arch/powerpc/Kconfig.debug
->>> @@ -276,6 +276,11 @@ config PPC_EARLY_DEBUG_OPAL_HVSI
->>>  	  Select this to enable early debugging for the PowerNV platform
->>>  	  using an "hvsi" console
->>>  
->>> +config PPC_EARLY_DEBUG_16550
->>> +	bool "Serial 16550"
->>> +	help
->>> +	  Select this to enable early debugging via Serial 16550 console
->>> +
->>>  config PPC_EARLY_DEBUG_MEMCONS
->>>  	bool "In memory console"
->>>  	help
->>> @@ -355,6 +360,15 @@ config PPC_EARLY_DEBUG_CPM_ADDR
->>>  	  platform probing is done, all platforms selected must
->>>  	  share the same address.
->>>  
->>> +config PPC_EARLY_DEBUG_16550_PHYSADDR
->>> +	hex "Early debug Serial 16550 physical address"
->>> +	depends on PPC_EARLY_DEBUG_16550
->>
->> Is there any chance that you could provide a default value here
->> so that 'make olddefconfig' does not end up like it does
->> without having a default value?
+Am 18.08.22 um 22:59 schrieb Wolfram Sang:
+> Follow the advice of the below link and prefer 'strscpy' in this
+> subsystem. Conversion is 1:1 because the return value is not used.
+> Generated by a coccinelle script.
 > 
-> No. Because there is not any default value. Physical address of 16550 is
-> hardly HW dependent. Possibly also bootloader dependent (if it can remap
-> peripherals to different physical addresses).
-> 
-> User _has to_ specify correct physical address if want to use early
-> debug 16550 console.
+> Link: https://lore.kernel.org/r/CAHk-=wgfRnXz0W3D37d01q3JFkr_i_uTL=V6A6G1oUZcprmknw@mail.gmail.com/
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> ---
+>  drivers/block/brd.c               |  2 +-
+>  drivers/block/drbd/drbd_nl.c      |  2 +-
 
-OK, we'll see if it ever causes a real problem then...
+For the drbd part:
 
->> CONFIG_PPC_EARLY_DEBUG_16550=y
->> # CONFIG_PPC_EARLY_DEBUG_MEMCONS is not set
->> CONFIG_PPC_EARLY_DEBUG_16550_PHYSADDR=
->> CONFIG_PPC_EARLY_DEBUG_16550_STRIDE=1
->>
->> which then causes a kconfig prompt when starting
->> the build...
-> 
-> Cannot we set somehow that PPC_EARLY_DEBUG_16550 would be disabled by
-> default when upgrading defconfig?
+Acked-by: Christoph Böhmwalder <christoph.boehmwalder@linbit.com>
 
-Don't know about that.
-
-Thanks.
+>  drivers/block/mtip32xx/mtip32xx.c | 12 ++++++------
+>  drivers/block/ps3vram.c           |  2 +-
+>  drivers/block/zram/zram_drv.c     |  6 +++---
+>  5 files changed, 12 insertions(+), 12 deletions(-)
+...
+> diff --git a/drivers/block/drbd/drbd_nl.c b/drivers/block/drbd/drbd_nl.c
+> index 013d355a2033..864c98e74875 100644
+> --- a/drivers/block/drbd/drbd_nl.c
+> +++ b/drivers/block/drbd/drbd_nl.c
+> @@ -4752,7 +4752,7 @@ void notify_helper(enum drbd_notification_type type,
+>  	struct drbd_genlmsghdr *dh;
+>  	int err;
+>  
+> -	strlcpy(helper_info.helper_name, name, sizeof(helper_info.helper_name));
+> +	strscpy(helper_info.helper_name, name, sizeof(helper_info.helper_name));
+>  	helper_info.helper_name_len = min(strlen(name), sizeof(helper_info.helper_name));
+>  	helper_info.helper_status = status;
+>
 -- 
-~Randy
+Christoph Böhmwalder
+LINBIT | Keeping the Digital World Running
+DRBD HA —  Disaster Recovery — Software defined Storage
