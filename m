@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FD23C32771
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 11:29:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7BF9C32771
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 11:30:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M8KKc0Psmz3dyS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 21:29:40 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M8KL12Nwfz3f2R
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 21:30:01 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8KKB6Qmzz3cFd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2022 21:29:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8KKD2fjgz3cFl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2022 21:29:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4M8KKB5Ttpz4x1N;
-	Fri, 19 Aug 2022 21:29:18 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4M8KKC3y0jz4x1d;
+	Fri, 19 Aug 2022 21:29:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220815065550.1303620-1-mpe@ellerman.id.au>
-References: <20220815065550.1303620-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pci: Fix get_phb_number() locking
-Message-Id: <166090854459.441873.16971335069896983225.b4-ty@ellerman.id.au>
-Date: Fri, 19 Aug 2022 21:29:04 +1000
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220812071632.56095-1-ruscur@russell.cc>
+References: <20220812071632.56095-1-ruscur@russell.cc>
+Subject: Re: [PATCH] selftests/powerpc: Add missing PMU selftests to .gitignores
+Message-Id: <166090854356.441873.15243805559069450960.b4-ty@ellerman.id.au>
+Date: Fri, 19 Aug 2022 21:29:03 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,41 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: pali@kernel.org, linux@roeck-us.net
+Cc: kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 15 Aug 2022 16:55:50 +1000, Michael Ellerman wrote:
-> The recent change to get_phb_number() causes a DEBUG_ATOMIC_SLEEP
-> warning on some systems:
+On Fri, 12 Aug 2022 17:16:32 +1000, Russell Currey wrote:
+> Some recently added selftests don't have their binaries in .gitignores,
+> so add them.
 > 
->   BUG: sleeping function called from invalid context at kernel/locking/mutex.c:580
->   in_atomic(): 1, irqs_disabled(): 0, non_block: 0, pid: 1, name: swapper
->   preempt_count: 1, expected: 0
->   RCU nest depth: 0, expected: 0
->   1 lock held by swapper/1:
->    #0: c157efb0 (hose_spinlock){+.+.}-{2:2}, at: pcibios_alloc_controller+0x64/0x220
->   Preemption disabled at:
->   [<00000000>] 0x0
->   CPU: 0 PID: 1 Comm: swapper Not tainted 5.19.0-yocto-standard+ #1
->   Call Trace:
->   [d101dc90] [c073b264] dump_stack_lvl+0x50/0x8c (unreliable)
->   [d101dcb0] [c0093b70] __might_resched+0x258/0x2a8
->   [d101dcd0] [c0d3e634] __mutex_lock+0x6c/0x6ec
->   [d101dd50] [c0a84174] of_alias_get_id+0x50/0xf4
->   [d101dd80] [c002ec78] pcibios_alloc_controller+0x1b8/0x220
->   [d101ddd0] [c140c9dc] pmac_pci_init+0x198/0x784
->   [d101de50] [c140852c] discover_phbs+0x30/0x4c
->   [d101de60] [c0007fd4] do_one_initcall+0x94/0x344
->   [d101ded0] [c1403b40] kernel_init_freeable+0x1a8/0x22c
->   [d101df10] [c00086e0] kernel_init+0x34/0x160
->   [d101df30] [c001b334] ret_from_kernel_thread+0x5c/0x64
+> I also alphabetically sorted sampling_tests/.gitignore while I was in
+> there.
+> 
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/pci: Fix get_phb_number() locking
-      https://git.kernel.org/powerpc/c/8d48562a2729742f767b0fdd994d6b2a56a49c63
+[1/1] selftests/powerpc: Add missing PMU selftests to .gitignores
+      https://git.kernel.org/powerpc/c/f889a2e89ea5b4db5cf09765ee5e310be43c7b6f
 
 cheers
