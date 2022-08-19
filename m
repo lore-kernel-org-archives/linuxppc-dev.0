@@ -4,54 +4,121 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F07EC32771
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 21:13:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA370C32771
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 22:15:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M8ZHb4FJFz3cfD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Aug 2022 07:13:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M8bgK62bpz3dwT
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Aug 2022 08:15:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qjQUXq8n;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=B4mGVAGu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=40.107.94.49; helo=nam10-mw2-obe.outbound.protection.outlook.com; envelope-from=felix.kuehling@amd.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qjQUXq8n;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=B4mGVAGu;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from NAM10-MW2-obe.outbound.protection.outlook.com (mail-mw2nam10on2049.outbound.protection.outlook.com [40.107.94.49])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8ZGq6cxVz3bPP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Aug 2022 07:13:07 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id DB982616E4;
-	Fri, 19 Aug 2022 21:13:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ECAA1C433B5;
-	Fri, 19 Aug 2022 21:13:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1660943583;
-	bh=+Rvw9vn0HtDtyc7wIEhqRjcE8VcOb2fJ7652n66XI/k=;
-	h=From:To:Cc:Subject:Date:From;
-	b=qjQUXq8ne3MVJz1PvvEuCrv9H6+PbsCnaxvUgGkgZAX+3JDFxZW1i5pNAJLp6aDBN
-	 Eix6ZeHtL9VxU26NZFGmg6S5JY+FzjdjJJGLCFljW0opnATM4vXm9LGRQr1IG95nRq
-	 xwhFWEl24xKndOWF/L0QLHL8338BrCxjNyn3HcpU9JNAMb1VJEXMOLrtnPjIITyPPg
-	 DmTyhmkTf6AuZkKe49lfaz2j4UZ+m+UjYdNSpZOlFAopXnI4xPsCFfqiKtJd82rl1z
-	 3xTcXmH3quaUfsOetDSMeHHQ97EDal8/Ui8zV6NPnimLKXVBGv2ds5d4lYs1OuFEvA
-	 DLg+S6zZWhXGw==
-Received: by pali.im (Postfix)
-	id E674B761; Fri, 19 Aug 2022 23:12:59 +0200 (CEST)
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Nick Child <nick.child@ibm.com>
-Subject: [PATCH] powerpc: Add support for early debugging via Serial 16550 console
-Date: Fri, 19 Aug 2022 23:12:54 +0200
-Message-Id: <20220819211254.22192-1-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M8bfW2MWqz3bY8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Aug 2022 08:15:11 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=C/RQJLGTVe38geDW2woV8pz9WVPkpxYdYbGR2seuDwymvmzCP8sFM6oqhk9AVjfmDsAI34WSUD8jFsXdJ8vs62D7xkt+az/nFtS4Z3Zn/tqAEjm1rUqxW1R/osFD2kTYxlBmMB/SWZVBor0PmkN7zHUMT2aVSTzQkN57gjrQg3v43Sl11ACDdvMbY+uvY5JLdZ2aoqUTKN2V7bDIOk+5XNbCgMr5wFVbdVBOXspNUPxBRFpNeTlZYjryEQIvB1rGLX22NwfItDPR/WnclMWORma3Na3prgz9kTsYZCibyxc1VTtaQ1n15zy/QBZLaPnJy0uiKb/iRdAiQhzlXWz9UA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=cfKhgoPnJdztvV4ulo+0DCVJiyfyWY9zEn1lbQd2K6M=;
+ b=jWfzFRgOtB73mBp69eNbNJhg/8coFqYK43t66/y7bS/kXRx7bggiG4wGUOIAL8outPKyFAIBn/R6L0iMfFRFAY+WMf3hfojuSl/fqgm0g0bU6h7Vz94nc2NJZJG1CNqLU6Jrs99dCSAzOCzsXRCn5swI3MHs5OGDe0BNzGElvTUmBb8rLIBDxh0HunwnJXwAgsJbxwo/Z+VvrXnIQeMBdvKAO91/Xj3WjW4PuSswzObu3fIKJxtO0NgWGwuj01QcFEj4navQK2JRHWMaSjzWqNUknfRVdeRdit/+WJlxpY8f+NIaeqhglNCLxX1RvVAOH8nVw6DipGp0cTfbMDmpig==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cfKhgoPnJdztvV4ulo+0DCVJiyfyWY9zEn1lbQd2K6M=;
+ b=B4mGVAGumUQOr0RrgxBoWp5dJfEp7DmVDh0XfiSgN59HKxfpx20Qe2nDggoi48fKFJLBBZ5ediP8GmkbifF/OqHdaTTshoqhgDfvRgINsJLOO0YlUlVlTbCySD31rJGv96ajNBuk4YqgyqyEoyzoR4mtxGRtJoj/L+26K2Etz58=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=amd.com;
+Received: from BN9PR12MB5115.namprd12.prod.outlook.com (2603:10b6:408:118::14)
+ by SN1PR12MB2527.namprd12.prod.outlook.com (2603:10b6:802:23::10) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5504.17; Fri, 19 Aug
+ 2022 22:14:51 +0000
+Received: from BN9PR12MB5115.namprd12.prod.outlook.com
+ ([fe80::406d:afb5:d2d7:8115]) by BN9PR12MB5115.namprd12.prod.outlook.com
+ ([fe80::406d:afb5:d2d7:8115%5]) with mapi id 15.20.5525.019; Fri, 19 Aug 2022
+ 22:14:51 +0000
+Message-ID: <20b88926-3252-cc70-a39e-9fa76a6f49c9@amd.com>
+Date: Fri, 19 Aug 2022 18:14:49 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH] powerpc: export cpu_smallcore_map for modules
+Content-Language: en-US
+To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
+References: <20220819210112.7924-1-rdunlap@infradead.org>
+From: Felix Kuehling <felix.kuehling@amd.com>
+Organization: AMD Inc.
+In-Reply-To: <20220819210112.7924-1-rdunlap@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: CH0PR13CA0040.namprd13.prod.outlook.com
+ (2603:10b6:610:b2::15) To BN9PR12MB5115.namprd12.prod.outlook.com
+ (2603:10b6:408:118::14)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: d29d9d66-ff1e-4fd2-5287-08da82303c67
+X-MS-TrafficTypeDiagnostic: SN1PR12MB2527:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	a8m4b0+wcv6TMnVY/f63WZDeQfHXCzhRk34v7ZIREGgwjBaKs/NYJc2q+qQsA2CJwvHKsrWtirRbt3HmHPc8hn1S4UEFyC/QIJQAQb4bia3N2SXhps4tA1HOAmAPeoC+fmdpDMPrE5lJ3Dtz8NVdU0we8RWYZUNVMMjxD1P3MUFVSTwcGVIZt4DajsiaOX4WoM7yhGUlctq3es+BRWg7ze1lVd76H8xsmX6OfNbowAMzVYJ2IMYO7emEnq9P122T3f/XlxHmdoO86Sd0RKV8OHtzyzYcJwqTdWNRSMxwwZ+2UwtlB1IWPIU1sY50r37brXtPZur8ThNpoylUjeq5WBu6+q6OupRqg6IckIEsmeJwWJaIndvmb5liTafkM9m+M4EWBcnvYAe5JRZabzj9oB0EAdzzEBQ/nhNH/q/enfk2w/gYfuF0t6rzsAu/VPhJdNWIxq3bgFQGPgj1lpoWnJD6rghuuAFjTeENvPdmWyvMwSI/GfwrXcowZTfCVd2eAcvVMkS9343+I+kAo60PZQnhM6pQAcwwJqvX98Zh+6d3SBN9QgNkuEFqfLAj61aEzhxkWhBNkG1fPPrEkE61GXuINZAnQ2SHQmT/zGeQOOvXA052vPji+MKqPFPqIN9b4CZ1HCqiqwHkON2E7lVdBy7HQRUX2OQtjCSF0OyGv236wA9drQtxu4AKUXEZMCPrFZcQeGHfn7x2LmKzguJ4wus0Pz/Ekuh996KoEcL149XqjxFD8KnlUV7VUcUW0qDhk0dmDTKGsrh9PqHGHkWOHTa1AcGLW+dqTRoXzL/haxU=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN9PR12MB5115.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(366004)(346002)(396003)(39860400002)(376002)(136003)(44832011)(41300700001)(6512007)(26005)(6506007)(2906002)(36916002)(53546011)(186003)(66574015)(83380400001)(2616005)(38100700002)(54906003)(6486002)(36756003)(66556008)(4326008)(66946007)(86362001)(478600001)(8676002)(31696002)(31686004)(316002)(66476007)(5660300002)(8936002)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?Z29hdTF4eCt0dENyYXpjazd0bUNCcUFpYkRjaUJTRjR0bEMxK2lRVExlbnZY?=
+ =?utf-8?B?S0pRUEYwa3R1OVllVGR3SkR2WHlBSUhGMFFpZlM1ZlNaV0xZbEdaL0xOeFFN?=
+ =?utf-8?B?bnExOVU4V3NxUy93UkV1amx4dHh0SmRhenBTSnB5Q1M4REwrbGo2VlpFcHNq?=
+ =?utf-8?B?M2hrd2FRR1NsS1FidFpHV1lCYVZ3aE01THFxYkZocW1pTHhtZUZzMG1jUW0v?=
+ =?utf-8?B?dGgxU3BsYVI4Rkk5K0cxb2xuVDY1MnZlYzRpTnpCYklTU2ovbVdrZGhHNUdU?=
+ =?utf-8?B?QmNXY1o2UGpHMzBieFV3RUZLYllrUzg5dFFMOEdHVy94WmpFK0VveURqeGxC?=
+ =?utf-8?B?bUdZSjFMQk5tbWxRK2pCRXAxbHMwOUpDOVRlUDIvcThONkZRa1VJSEFjMXV0?=
+ =?utf-8?B?Mi9xc1lkVC9LVWR4Qy9yL0V3dEhjWnJGbFNjTXR2K28vTlBmenBic051QzJ1?=
+ =?utf-8?B?aGRzVmEzTUFta29xL0c5Z1JBVWgydkpwWnI4bTJ3ckFVVWVQUURwVjhXc0JJ?=
+ =?utf-8?B?ZjMyYzNXMWs2UnpjZWtMdXdpZGx0ZmErc1ArSkl1OEhweDhWV21SSlQzUW0w?=
+ =?utf-8?B?L3JKbTZLTElQQkVGOGlIWnZVeVBjNCs1dFd3Z1BIZzhXNmczOXEzcmI2UkYy?=
+ =?utf-8?B?WWFTZTJqUTVnbGhFb0pkK08yazB2bE1FK0lpK0s1d1JINHFjNWduZG5DU3hz?=
+ =?utf-8?B?cXFoaHRkVXdwY2xzSXBMb1ZHTEk1QWJMdVA4OW00aU9qbHk3Zyt2MXRLVVJN?=
+ =?utf-8?B?RFBUWmNyTmxIR0o0aDR0ekZpVHZsMzZ1MmQybVhXZFpUZmJUTkpJQzhFd09T?=
+ =?utf-8?B?Q1owQmc2Y3Y3RVlDU3VlRU42VkJCSFpLZUg0TDFMb09NNlJ4Zy9uZUJuR0NW?=
+ =?utf-8?B?VzRycDA0OEJrNkJIMEx1cjh0RWYyeVhwQWMvZW5mOEFkWk4wWlhxV0J4UFQ4?=
+ =?utf-8?B?Si8xM1BWTTBuNGZMem1KZmZIMkpZMUpxK1lqcFhlV2RXclQxZEFtODN2cWxv?=
+ =?utf-8?B?NXk3eGFPZ1RPTit1OEk3OXI1MUVSbW42SFVOdjB5bmVUV2dBTnVPVGFzcDUw?=
+ =?utf-8?B?MHNiTEhXSmZWT3RKMlUxeVBySnRmQTlMZjNuUWtMaTk3amNOZm01cmdSODd6?=
+ =?utf-8?B?S0tQKzA4bGFRY1pWeEJKVnhyUWttS2NSVEY0V3hVRVRZeWNwNGhLNGJ0d0dX?=
+ =?utf-8?B?UmtHQXJoMDRUdkczdGxzbnFHeVVBaUlzeWJxOHY0cy8xVUlkNEdkQTN2OUta?=
+ =?utf-8?B?eElIMXhlU3g5MnoxYWkwZGYrK25LcUJ5SUN0K1Y0K09ENlhRdWtHd2VVWnJ2?=
+ =?utf-8?B?Tlp6aUdyZTA3M0xZQWJ3QVJqNXZsZDFnaEIrTFU4Q0FmUUoxYWhQK3RkVVdl?=
+ =?utf-8?B?eFBmeTRhdzM1QTIvK0ViNVp1VER4QzBnTG9DWVdkcTZFRGU0bWZRdkdIQ2Rs?=
+ =?utf-8?B?eVU3Z0NhTGt4d0wwYS9sZXo1VXZReC9kWS9VWlNsS0Q0ZW1TWFRMVnE4cDJ5?=
+ =?utf-8?B?Rm9mQm93Q3E4YnRlUkFBL2UvTm5URk16Nm5OOVlWVFUxOXU3Q2p4VXZYanpo?=
+ =?utf-8?B?ZUNBUWI3RFV6S2dEMmcxOFJSaXd2d2NldlN5V0ZzRTNEZUp0MlFrNEd0RXVa?=
+ =?utf-8?B?U3Vpb0dtTmRmQjgvWm5LcTBqcDhxSDJsQ2wzeGw5azQzRzN4Z1FseTBzVmZT?=
+ =?utf-8?B?ZFY5dTE0QUc1MkJzMy8yblZBQkNMeTZpM0ZxeHRndGRwM3AyM2YyMVRFaDZM?=
+ =?utf-8?B?cWU1d2dUM0x4cGo0K3dMY1R5QTN2VEtFSllSU3Btc0s0eXBVMVJjOUJLc2U2?=
+ =?utf-8?B?djFnTmdZUkYyUXIrdE1jdlA0cy9qWVR2Zjd5RFdFa2ZDSk5QUFlML3EzMU9j?=
+ =?utf-8?B?ZkViaGFmZmF0S2hCWk1vZE1WZFM3UktKdWxZN0pBMjN6dmpuUktSQnloSER0?=
+ =?utf-8?B?QllEVHR6ejVvWmhRaTZ5b09jbHBYc0hOL0E1alpQM3hab3E1ak5wR0NzWG50?=
+ =?utf-8?B?L1FJTTFoU1I2Uy8wS1ZkbTUweExiQi9tWGdBUS9lQVNWbzdtNFdGK2VNMVIw?=
+ =?utf-8?B?a3c3YWRLRXBFaGVzTE05U2dNVXBEYTBDN2dxeGRlZXkxNktkQ2Rld2VaVFln?=
+ =?utf-8?Q?Ahv44/c51LdDI2j0+1d4J2y/f?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d29d9d66-ff1e-4fd2-5287-08da82303c67
+X-MS-Exchange-CrossTenant-AuthSource: BN9PR12MB5115.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Aug 2022 22:14:51.0885
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: 7DPayuRARk8S1FGVaG5hC8tmlm5WKPhwUw8bb88zKetw/n3jZtc0CUyfpDE92Fl4F0vNugnv4gjI99CuojDl8g==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN1PR12MB2527
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,145 +130,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, "Pan, Xinhui" <Xinhui.Pan@amd.com>, Nicholas Piggin <npiggin@gmail.com>, amd-gfx@lists.freedesktop.org, Alex Deucher <alexander.deucher@amd.com>, linuxppc-dev@lists.ozlabs.org, =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently powerpc early debugging contains lot of platform specific
-options, but does not support standard UART / serial 16550 console.
 
-Later legacy_serial.c code supports registering UART as early debug console
-from device tree but it is not early during booting, but rather later after
-machine description code finishes.
+On 2022-08-19 17:01, Randy Dunlap wrote:
+> Fix build error when CONFIG_DRM_AMDGPU=m:
+>
+> ERROR: modpost: "cpu_smallcore_map" [drivers/gpu/drm/amd/amdgpu/amdgpu.ko] undefined!
+>
+> by exporting 'cpu_smallcore_map' just as other per_cpu
+> symbols are exported.
+>
+> drivers/gpu/drm/amd/amdkfd/kfd_device.c calls cpu_smt_mask().
+> This is an inline function on powerpc which references
+> cpu_smallcore_map.
+>
+> Fixes: 425752c63b6f ("powerpc: Detect the presence of big-cores via "ibm, thread-groups"")
+> Fixes: 7bc913085765 ("drm/amdkfd: Try to schedule bottom half on same core")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: amd-gfx@lists.freedesktop.org
+> Cc: Felix Kuehling <Felix.Kuehling@amd.com>
+> Cc: Alex Deucher <alexander.deucher@amd.com>
+> Cc: Christian König <christian.koenig@amd.com>
+> Cc: "Pan, Xinhui" <Xinhui.Pan@amd.com>
 
-So for real early debugging via UART is current code unsuitable.
+Acked-by: Felix Kuehling <Felix.Kuehling@amd.com>
 
-Add support for new early debugging option CONFIG_PPC_EARLY_DEBUG_16550
-which enable Serial 16550 console on address defined by new option
-CONFIG_PPC_EARLY_DEBUG_16550_PHYSADDR and by stride by option
-CONFIG_PPC_EARLY_DEBUG_16550_STRIDE.
 
-With this change it is possible to debug powerpc machine descriptor code.
-For example this early debugging code can print on serial console also
-"No suitable machine description found" error which is done before
-legacy_serial.c code.
-
-Signed-off-by: Pali Rohár <pali@kernel.org>
----
-Tested on P2020 board. It allowed me do debug and implement this patch series:
-https://lore.kernel.org/linuxppc-dev/20220819191557.28116-1-pali@kernel.org/
----
- arch/powerpc/Kconfig.debug       | 14 ++++++++++++++
- arch/powerpc/include/asm/udbg.h  |  1 +
- arch/powerpc/kernel/udbg.c       |  2 ++
- arch/powerpc/kernel/udbg_16550.c | 33 ++++++++++++++++++++++++++++++++
- 4 files changed, 50 insertions(+)
-
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 9f363c143d86..a4e7d90a45d2 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -276,6 +276,11 @@ config PPC_EARLY_DEBUG_OPAL_HVSI
- 	  Select this to enable early debugging for the PowerNV platform
- 	  using an "hvsi" console
- 
-+config PPC_EARLY_DEBUG_16550
-+	bool "Serial 16550"
-+	help
-+	  Select this to enable early debugging via Serial 16550 console
-+
- config PPC_EARLY_DEBUG_MEMCONS
- 	bool "In memory console"
- 	help
-@@ -355,6 +360,15 @@ config PPC_EARLY_DEBUG_CPM_ADDR
- 	  platform probing is done, all platforms selected must
- 	  share the same address.
- 
-+config PPC_EARLY_DEBUG_16550_PHYSADDR
-+	hex "Early debug Serial 16550 physical address"
-+	depends on PPC_EARLY_DEBUG_16550
-+
-+config PPC_EARLY_DEBUG_16550_STRIDE
-+	int "Early debug Serial 16550 stride"
-+	depends on PPC_EARLY_DEBUG_16550
-+	default 1
-+
- config FAIL_IOMMU
- 	bool "Fault-injection capability for IOMMU"
- 	depends on FAULT_INJECTION
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index b4aa0d88ce2c..20b5a37ab772 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -53,6 +53,7 @@ extern void __init udbg_init_ehv_bc(void);
- extern void __init udbg_init_ps3gelic(void);
- extern void __init udbg_init_debug_opal_raw(void);
- extern void __init udbg_init_debug_opal_hvsi(void);
-+extern void __init udbg_init_debug_16550(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index b1544b2f6321..92b3fc258d11 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -67,6 +67,8 @@ void __init udbg_early_init(void)
- 	udbg_init_debug_opal_raw();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_OPAL_HVSI)
- 	udbg_init_debug_opal_hvsi();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_16550)
-+	udbg_init_debug_16550();
- #endif
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG
-diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
-index d3942de254c6..46f2d831d7c9 100644
---- a/arch/powerpc/kernel/udbg_16550.c
-+++ b/arch/powerpc/kernel/udbg_16550.c
-@@ -8,6 +8,7 @@
- #include <asm/udbg.h>
- #include <asm/io.h>
- #include <asm/reg_a2.h>
-+#include <asm/early_ioremap.h>
- 
- extern u8 real_readb(volatile u8 __iomem  *addr);
- extern void real_writeb(u8 data, volatile u8 __iomem *addr);
-@@ -335,3 +336,35 @@ void __init udbg_init_debug_microwatt(void)
- }
- 
- #endif /* CONFIG_PPC_EARLY_DEBUG_MICROWATT */
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_16550
-+
-+static void __iomem *udbg_uart_early_addr;
-+
-+void __init udbg_init_debug_16550(void)
-+{
-+	udbg_uart_early_addr = early_ioremap(CONFIG_PPC_EARLY_DEBUG_16550_PHYSADDR, 0x1000);
-+	udbg_uart_init_mmio(udbg_uart_early_addr, CONFIG_PPC_EARLY_DEBUG_16550_STRIDE);
-+}
-+
-+static int __init udbg_init_debug_16550_ioremap(void)
-+{
-+	void __iomem *addr;
-+
-+	if (!udbg_uart_early_addr)
-+		return 0;
-+
-+	addr = ioremap(CONFIG_PPC_EARLY_DEBUG_16550_PHYSADDR, 0x1000);
-+	if (WARN_ON(!addr))
-+		return -ENOMEM;
-+
-+	udbg_uart_init_mmio(addr, CONFIG_PPC_EARLY_DEBUG_16550_STRIDE);
-+	early_iounmap(udbg_uart_early_addr, 0x1000);
-+	udbg_uart_early_addr = NULL;
-+
-+	return 0;
-+}
-+
-+early_initcall(udbg_init_debug_16550_ioremap);
-+
-+#endif /* CONFIG_PPC_EARLY_DEBUG_16550 */
--- 
-2.20.1
-
+> ---
+>   arch/powerpc/kernel/smp.c |    1 +
+>   1 file changed, 1 insertion(+)
+>
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -86,6 +86,7 @@ DEFINE_PER_CPU(cpumask_var_t, cpu_core_m
+>   static DEFINE_PER_CPU(cpumask_var_t, cpu_coregroup_map);
+>   
+>   EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
+> +EXPORT_PER_CPU_SYMBOL(cpu_smallcore_map);
+>   EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
+>   EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+>   EXPORT_SYMBOL_GPL(has_big_cores);
