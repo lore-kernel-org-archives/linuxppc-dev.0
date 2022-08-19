@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1653BC25B0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 03:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E674C25B0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 03:47:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M873G4cJWz3f96
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 13:46:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M87415LyFz3dxL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 13:47:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aauBq2h/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I8O6GR4h;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aauBq2h/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I8O6GR4h;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M86vN4GKWz3bXY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M86vN4pmRz3bxt
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2022 13:39:43 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27J2oiqJ002390;
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27J3Xj7T017507;
 	Fri, 19 Aug 2022 03:39:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=OeD1MeXsH6w/nvI6jzN1OUkcBWp/Slw6dw/E7KJkLOY=;
- b=aauBq2h/yFvesUTyE5l07zHLiSc2I7w46iYYXaYSVXn6mDwiIbuAUkLsTzjta2M+5Cha
- 5lkODvHv5pjiXV6zFruGS64biqQylZd69ohu5pPGdxyx6FbCBWTeJ+12f4lyhCtwJlA/
- OK5MzSc7c61GOkhgD+bOkNWUFyUP1Ogsty036UqQbWbXBUHVW936P97qgJtd23BPcJyW
- S7eHbBBSrvW35qm6ASYmElLI3vHLw3VL/y82ImAD4zvlXyk3LqJeQPAp1x8cnmx+Dtfv
- W/YJQ/UIWaK/DdJsHHaJfzWV/f33o253t0zBr3wJlVUI14TZnjDz8suv1mKJJGi1q4K0 fg== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3j22378x1s-1
+ bh=HUsN8Qh/8X3eJdRyFDTBoeoUYFjIsdfqvMa7Q20snVw=;
+ b=I8O6GR4hML4UPQ2JpbHcscVwfTzCuuQDHTKQfdS7FvyQa9tcitbvOBKUaK9h58Ra9P2u
+ VNVw0S62Q/AwyTjVZthfcyAiJTW6w0ZBB/NbUK1Gje4uyW6hK+QO1OX9LwG5RNpbE/mB
+ n6WYjHtvJW1E71SRhfIJjMwsCN7xjEdTmE42NoDChlYIqTGnFIJbsbqUyn2YngY4tklj
+ T3uqW+IiOlfxYDhXcNBp9r/2t5MoAH0ypOSl4jQsGDRu7tI5HdxLtgYOq0drYkw/9WJX
+ 0R/V5yd/OQnnBgNYv0b3deuBUIpN+GfvzQon8E3uAIxi69nkRBiKYPYmkrzIkWJv1gK1 Og== 
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3j22qm03jb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 19 Aug 2022 03:39:37 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27J3bs8C018039;
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27J3c8eJ012623;
 	Fri, 19 Aug 2022 03:39:36 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma05fra.de.ibm.com with ESMTP id 3hyp8skfxh-1
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma03fra.de.ibm.com with ESMTP id 3hx3k8vyrq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Aug 2022 03:39:35 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27J3dqnM12845438
+	Fri, 19 Aug 2022 03:39:36 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27J3dXi433292702
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 Aug 2022 03:39:52 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 78AD411C052;
+	Fri, 19 Aug 2022 03:39:33 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 75F31A405F;
 	Fri, 19 Aug 2022 03:39:33 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2355F11C04C;
-	Fri, 19 Aug 2022 03:39:33 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CA7B8A4054;
+	Fri, 19 Aug 2022 03:39:32 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Fri, 19 Aug 2022 03:39:33 +0000 (GMT)
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri, 19 Aug 2022 03:39:32 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A58AD604AF;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9278060430;
 	Fri, 19 Aug 2022 13:39:29 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 14/18] powerpc/64s: Clear/restore caller gprs in syscall interrupt/return
-Date: Fri, 19 Aug 2022 13:38:02 +1000
-Message-Id: <20220819033806.162054-15-rmclure@linux.ibm.com>
+Subject: [PATCH v3 05/18] powerpc: Adopt SYSCALL_DEFINE for arch-specific syscall handlers
+Date: Fri, 19 Aug 2022 13:37:53 +1000
+Message-Id: <20220819033806.162054-6-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220819033806.162054-1-rmclure@linux.ibm.com>
 References: <20220819033806.162054-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: MSkz05s5xjzNOSaNYQ2m0DzUGP7adIqu
-X-Proofpoint-ORIG-GUID: MSkz05s5xjzNOSaNYQ2m0DzUGP7adIqu
+X-Proofpoint-GUID: YnlrHyEoRexQHlyDV8gn9KHtGDkmUxR1
+X-Proofpoint-ORIG-GUID: YnlrHyEoRexQHlyDV8gn9KHtGDkmUxR1
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-08-19_02,2022-08-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 adultscore=0
- impostorscore=0 mlxscore=0 spamscore=0 lowpriorityscore=0 malwarescore=0
- suspectscore=0 mlxlogscore=514 phishscore=0 priorityscore=1501 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
- definitions=main-2208190013
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ phishscore=0 spamscore=0 malwarescore=0 mlxlogscore=423 lowpriorityscore=0
+ mlxscore=0 bulkscore=0 impostorscore=0 suspectscore=0 clxscore=1015
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2207270000 definitions=main-2208190013
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,101 +98,345 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Clear user state in gprs (assign to zero) to reduce the influence of user
-registers on speculation within kernel syscall handlers. Clears occur
-at the very beginning of the sc and scv 0 interrupt handlers, with
-restores occurring following the execution of the syscall handler.
+Arch-specific implementations of syscall handlers are currently used
+over generic implementations for the following reasons:
+
+1. Semantics unique to powerpc
+2. Compatibility syscalls require 'argument padding' to comply with
+   64-bit argument convention in ELF32 abi.
+3. Parameter types or order is different in other architectures.
+
+These syscall handlers have been defined prior to this patch series
+without invoking the SYSCALL_DEFINE or COMPAT_SYSCALL_DEFINE macros with
+custom input and output types. We remove every such direct definition in
+favour of the aforementioned macros.
+
+Also update syscalls.tbl in order to refer to the symbol names generated
+by each of these macros. Since ppc64_personality can be called by both
+64 bit and 32 bit binaries through compatibility, we must generate both
+both compat_sys_ and sys_ symbols for this handler.
+
+A number of architectures including arm and powerpc agree on an
+alternative argument order and numbering for most of these arch-specific
+handlers. A future patch series may allow for asm/unistd.h to signal
+through its defines that a generic implementation of these syscall
+handlers with the correct calling convention be omitted, through the
+__ARCH_WANT_COMPAT_SYS_... convention.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
 ---
-V1 -> V2: Update summary
-V2 -> V3: Remove erroneous summary paragraph on syscall_exit_prepare
+V1 -> V2: All syscall handlers wrapped by this macro.
+V2 -> V3: Move creation of do_ppc64_personality helper to prior patch.
 ---
- arch/powerpc/kernel/interrupt_64.S | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/syscalls.h          | 18 +++---
+ arch/powerpc/kernel/sys_ppc32.c              | 52 ++++++++++--------
+ arch/powerpc/kernel/syscalls.c               | 16 ++++--
+ arch/powerpc/kernel/syscalls/syscall.tbl     | 22 ++++----
+ .../arch/powerpc/entry/syscalls/syscall.tbl  | 22 ++++----
+ 5 files changed, 71 insertions(+), 59 deletions(-)
 
-diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-index 0178aeba3820..d9625113c7a5 100644
---- a/arch/powerpc/kernel/interrupt_64.S
-+++ b/arch/powerpc/kernel/interrupt_64.S
-@@ -70,7 +70,7 @@ _ASM_NOKPROBE_SYMBOL(system_call_vectored_\name)
- 	ld	r2,PACATOC(r13)
- 	mfcr	r12
- 	li	r11,0
--	/* Can we avoid saving r3-r8 in common case? */
-+	/* Save syscall parameters in r3-r8 */
- 	std	r3,GPR3(r1)
- 	std	r4,GPR4(r1)
- 	std	r5,GPR5(r1)
-@@ -109,6 +109,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	 * but this is the best we can do.
- 	 */
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 739498c358a1..0af7c2d8b2c9 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -11,15 +11,15 @@
+ struct rtas_args;
  
-+	/*
-+	 * Zero user registers to prevent influencing speculative execution
-+	 * state of kernel code.
-+	 */
-+	NULLIFY_GPRS(5, 12)
-+	NULLIFY_NVGPRS()
-+
- 	/* Calling convention has r3 = orig r0, r4 = regs */
- 	mr	r3,r0
- 	bl	system_call_exception
-@@ -139,6 +146,7 @@ BEGIN_FTR_SECTION
- 	HMT_MEDIUM_LOW
- END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ long sys_mmap(unsigned long addr, size_t len,
+-	      unsigned long prot, unsigned long flags,
+-	      unsigned long fd, off_t offset);
++		unsigned long prot, unsigned long flags,
++		unsigned long fd, off_t offset);
+ long sys_mmap2(unsigned long addr, size_t len,
+-	       unsigned long prot, unsigned long flags,
+-	       unsigned long fd, unsigned long pgoff);
+-long ppc64_personality(unsigned long personality);
++		unsigned long prot, unsigned long flags,
++		unsigned long fd, unsigned long pgoff);
++long sys_ppc64_personality(unsigned long personality);
+ long sys_rtas(struct rtas_args __user *uargs);
+-long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+-		      u32 len_high, u32 len_low);
++long sys_ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
++			  u32 len_high, u32 len_low);
  
-+	REST_NVGPRS(r1)
- 	cmpdi	r3,0
- 	bne	.Lsyscall_vectored_\name\()_restore_regs
+ #ifdef CONFIG_COMPAT
+ unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+@@ -40,8 +40,8 @@ int compat_sys_truncate64(const char __user *path, u32 reg4,
+ int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
+ 			   unsigned long len2);
  
-@@ -181,7 +189,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r4,_LINK(r1)
- 	ld	r5,_XER(r1)
+-long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
+-		     size_t len, int advice);
++long compat_sys_ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
++				size_t len, int advice);
  
--	REST_NVGPRS(r1)
- 	ld	r0,GPR0(r1)
- 	mtcr	r2
- 	mtctr	r3
-@@ -249,7 +256,7 @@ END_BTB_FLUSH_SECTION
- 	ld	r2,PACATOC(r13)
- 	mfcr	r12
- 	li	r11,0
--	/* Can we avoid saving r3-r8 in common case? */
-+	/* Save syscall parameters in r3-r8 */
- 	std	r3,GPR3(r1)
- 	std	r4,GPR4(r1)
- 	std	r5,GPR5(r1)
-@@ -300,6 +307,13 @@ END_BTB_FLUSH_SECTION
- 	wrteei	1
+ long compat_sys_sync_file_range2(int fd, unsigned int flags,
+ 				 unsigned int offset1, unsigned int offset2,
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index f4edcc9489fb..60cb5b4413b0 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -48,9 +48,10 @@
+ #include <asm/syscalls.h>
+ #include <asm/switch_to.h>
+ 
+-unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, unsigned long pgoff)
++COMPAT_SYSCALL_DEFINE6(mmap2,
++		       unsigned long, addr, size_t, len,
++		       unsigned long, prot, unsigned long, flags,
++		       unsigned long, fd, unsigned long, pgoff)
+ {
+ 	/* This should remain 12 even if PAGE_SIZE changes */
+ 	return sys_mmap(addr, len, prot, flags, fd, pgoff << 12);
+@@ -68,52 +69,55 @@ unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+ #define merge_64(high, low) ((u64)high << 32) | low
  #endif
  
-+	/*
-+	 * Zero user registers to prevent influencing speculative execution
-+	 * state of kernel code.
-+	 */
-+	NULLIFY_GPRS(5, 12)
-+	NULLIFY_NVGPRS()
-+
- 	/* Calling convention has r3 = orig r0, r4 = regs */
- 	mr	r3,r0
- 	bl	system_call_exception
-@@ -342,6 +356,7 @@ BEGIN_FTR_SECTION
- 	stdcx.	r0,0,r1			/* to clear the reservation */
- END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+-compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, compat_size_t count,
+-			     u32 reg6, u32 pos1, u32 pos2)
++COMPAT_SYSCALL_DEFINE6(ppc_pread64,
++		       unsigned int, fd,
++		       char __user *, ubuf, compat_size_t, count,
++		       u32, reg6, u32, pos1, u32, pos2)
+ {
+ 	return ksys_pread64(fd, ubuf, count, merge_64(pos1, pos2));
+ }
  
-+	REST_NVGPRS(r1)
- 	cmpdi	r3,0
- 	bne	.Lsyscall_restore_regs
- 	/* Zero volatile regs that may contain sensitive kernel data */
-@@ -377,7 +392,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- .Lsyscall_restore_regs:
- 	ld	r3,_CTR(r1)
- 	ld	r4,_XER(r1)
--	REST_NVGPRS(r1)
- 	mtctr	r3
- 	mtspr	SPRN_XER,r4
- 	ld	r0,GPR0(r1)
+-compat_ssize_t compat_sys_pwrite64(unsigned int fd, const char __user *ubuf, compat_size_t count,
+-			      u32 reg6, u32 pos1, u32 pos2)
++COMPAT_SYSCALL_DEFINE6(ppc_pwrite64,
++		       unsigned int, fd,
++		       const char __user *, ubuf, compat_size_t, count,
++		       u32, reg6, u32, pos1, u32, pos2)
+ {
+ 	return ksys_pwrite64(fd, ubuf, count, merge_64(pos1, pos2));
+ }
+ 
+-compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u32 count)
++COMPAT_SYSCALL_DEFINE5(ppc_readahead,
++		       int, fd, u32, r4,
++		       u32, offset1, u32, offset2, u32, count)
+ {
+ 	return ksys_readahead(fd, merge_64(offset1, offset2), count);
+ }
+ 
+-int compat_sys_truncate64(const char __user * path, u32 reg4,
+-				unsigned long len1, unsigned long len2)
++COMPAT_SYSCALL_DEFINE4(ppc_truncate64,
++		       const char __user *, path, u32, reg4,
++		       unsigned long, len1, unsigned long, len2)
+ {
+ 	return ksys_truncate(path, merge_64(len1, len2));
+ }
+ 
+-long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
+-				     u32 len1, u32 len2)
+-{
+-	return ksys_fallocate(fd, mode, ((loff_t)offset1 << 32) | offset2,
+-			     merge_64(len1, len2));
+-}
+-
+-int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
+-				 unsigned long len2)
++COMPAT_SYSCALL_DEFINE4(ppc_ftruncate64,
++		       unsigned int, fd, u32, reg4,
++		       unsigned long, len1, unsigned long, len2)
+ {
+ 	return ksys_ftruncate(fd, merge_64(len1, len2));
+ }
+ 
+-long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
+-		     size_t len, int advice)
++COMPAT_SYSCALL_DEFINE6(ppc32_fadvise64,
++		       int, fd, u32, unused, u32, offset1, u32, offset2,
++		       size_t, len, int, advice)
+ {
+ 	return ksys_fadvise64_64(fd, merge_64(offset1, offset2), len,
+ 				 advice);
+ }
+ 
+-long compat_sys_sync_file_range2(int fd, unsigned int flags,
+-				   unsigned offset1, unsigned offset2,
+-				   unsigned nbytes1, unsigned nbytes2)
++COMPAT_SYSCALL_DEFINE6(ppc_sync_file_range2,
++		       int, fd, unsigned int, flags,
++		       unsigned int, offset1, unsigned int, offset2,
++		       unsigned int, nbytes1, unsigned int, nbytes2)
+ {
+ 	loff_t offset = merge_64(offset1, offset2);
+ 	loff_t nbytes = merge_64(nbytes1, nbytes2);
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 9f29e451e2de..e89a2176b2a3 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -76,14 +76,22 @@ static inline long do_ppc64_personality(unsigned long personality)
+ 		ret = (ret & ~PER_MASK) | PER_LINUX;
+ 	return ret;
+ }
+-long ppc64_personality(unsigned long personality)
++
++SYSCALL_DEFINE1(ppc64_personality, unsigned long, personality)
++{
++	return do_ppc64_personality(personality);
++}
++#ifdef CONFIG_COMPAT
++COMPAT_SYSCALL_DEFINE1(ppc64_personality, unsigned long, personality)
+ {
+ 	return do_ppc64_personality(personality);
+ }
+-#endif
++#endif /* CONFIG_COMPAT */
++#endif /* CONFIG_PPC64 */
+ 
+-long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+-		      u32 len_high, u32 len_low)
++SYSCALL_DEFINE6(ppc_fadvise64_64,
++		int, fd, int, advice, u32, offset_high, u32, offset_low,
++		u32, len_high, u32, len_low)
+ {
+ 	return ksys_fadvise64_64(fd, (u64)offset_high << 32 | offset_low,
+ 				 (u64)len_high << 32 | len_low, advice);
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 4cbbb810ae10..b4c970c9c6b1 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -178,9 +178,9 @@
+ 133	common	fchdir				sys_fchdir
+ 134	common	bdflush				sys_ni_syscall
+ 135	common	sysfs				sys_sysfs
+-136	32	personality			sys_personality			ppc64_personality
+-136	64	personality			ppc64_personality
+-136	spu	personality			ppc64_personality
++136	32	personality			sys_personality			compat_sys_ppc64_personality
++136	64	personality			sys_ppc64_personality
++136	spu	personality			sys_ppc64_personality
+ 137	common	afs_syscall			sys_ni_syscall
+ 138	common	setfsuid			sys_setfsuid
+ 139	common	setfsgid			sys_setfsgid
+@@ -228,8 +228,8 @@
+ 176	64	rt_sigtimedwait			sys_rt_sigtimedwait
+ 177	nospu 	rt_sigqueueinfo			sys_rt_sigqueueinfo		compat_sys_rt_sigqueueinfo
+ 178	nospu 	rt_sigsuspend			sys_rt_sigsuspend		compat_sys_rt_sigsuspend
+-179	common	pread64				sys_pread64			compat_sys_pread64
+-180	common	pwrite64			sys_pwrite64			compat_sys_pwrite64
++179	common	pread64				sys_pread64			compat_sys_ppc_pread64
++180	common	pwrite64			sys_pwrite64			compat_sys_ppc_pwrite64
+ 181	common	chown				sys_chown
+ 182	common	getcwd				sys_getcwd
+ 183	common	capget				sys_capget
+@@ -242,10 +242,10 @@
+ 188	common 	putpmsg				sys_ni_syscall
+ 189	nospu	vfork				sys_vfork
+ 190	common	ugetrlimit			sys_getrlimit			compat_sys_getrlimit
+-191	common	readahead			sys_readahead			compat_sys_readahead
++191	common	readahead			sys_readahead			compat_sys_ppc_readahead
+ 192	32	mmap2				sys_mmap2			compat_sys_mmap2
+-193	32	truncate64			sys_truncate64			compat_sys_truncate64
+-194	32	ftruncate64			sys_ftruncate64			compat_sys_ftruncate64
++193	32	truncate64			sys_truncate64			compat_sys_ppc_truncate64
++194	32	ftruncate64			sys_ftruncate64			compat_sys_ppc_ftruncate64
+ 195	32	stat64				sys_stat64
+ 196	32	lstat64				sys_lstat64
+ 197	32	fstat64				sys_fstat64
+@@ -288,7 +288,7 @@
+ 230	common	io_submit			sys_io_submit			compat_sys_io_submit
+ 231	common	io_cancel			sys_io_cancel
+ 232	nospu	set_tid_address			sys_set_tid_address
+-233	common	fadvise64			sys_fadvise64			ppc32_fadvise64
++233	common	fadvise64			sys_fadvise64			compat_sys_ppc32_fadvise64
+ 234	nospu	exit_group			sys_exit_group
+ 235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
+ 236	common	epoll_create			sys_epoll_create
+@@ -323,7 +323,7 @@
+ 251	spu	utimes				sys_utimes
+ 252	common	statfs64			sys_statfs64			compat_sys_statfs64
+ 253	common	fstatfs64			sys_fstatfs64			compat_sys_fstatfs64
+-254	32	fadvise64_64			ppc_fadvise64_64
++254	32	fadvise64_64			sys_ppc_fadvise64_64
+ 254	spu	fadvise64_64			sys_ni_syscall
+ 255	common	rtas				sys_rtas
+ 256	32	sys_debug_setcontext		sys_debug_setcontext		sys_ni_syscall
+@@ -390,7 +390,7 @@
+ 305	common	signalfd			sys_signalfd			compat_sys_signalfd
+ 306	common	timerfd_create			sys_timerfd_create
+ 307	common	eventfd				sys_eventfd
+-308	common	sync_file_range2		sys_sync_file_range2		compat_sys_sync_file_range2
++308	common	sync_file_range2		sys_sync_file_range2		compat_sys_ppc_sync_file_range2
+ 309	nospu	fallocate			sys_fallocate			compat_sys_fallocate
+ 310	nospu	subpage_prot			sys_subpage_prot
+ 311	32	timerfd_settime			sys_timerfd_settime32
+diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+index 4cbbb810ae10..b4c970c9c6b1 100644
+--- a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
++++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+@@ -178,9 +178,9 @@
+ 133	common	fchdir				sys_fchdir
+ 134	common	bdflush				sys_ni_syscall
+ 135	common	sysfs				sys_sysfs
+-136	32	personality			sys_personality			ppc64_personality
+-136	64	personality			ppc64_personality
+-136	spu	personality			ppc64_personality
++136	32	personality			sys_personality			compat_sys_ppc64_personality
++136	64	personality			sys_ppc64_personality
++136	spu	personality			sys_ppc64_personality
+ 137	common	afs_syscall			sys_ni_syscall
+ 138	common	setfsuid			sys_setfsuid
+ 139	common	setfsgid			sys_setfsgid
+@@ -228,8 +228,8 @@
+ 176	64	rt_sigtimedwait			sys_rt_sigtimedwait
+ 177	nospu 	rt_sigqueueinfo			sys_rt_sigqueueinfo		compat_sys_rt_sigqueueinfo
+ 178	nospu 	rt_sigsuspend			sys_rt_sigsuspend		compat_sys_rt_sigsuspend
+-179	common	pread64				sys_pread64			compat_sys_pread64
+-180	common	pwrite64			sys_pwrite64			compat_sys_pwrite64
++179	common	pread64				sys_pread64			compat_sys_ppc_pread64
++180	common	pwrite64			sys_pwrite64			compat_sys_ppc_pwrite64
+ 181	common	chown				sys_chown
+ 182	common	getcwd				sys_getcwd
+ 183	common	capget				sys_capget
+@@ -242,10 +242,10 @@
+ 188	common 	putpmsg				sys_ni_syscall
+ 189	nospu	vfork				sys_vfork
+ 190	common	ugetrlimit			sys_getrlimit			compat_sys_getrlimit
+-191	common	readahead			sys_readahead			compat_sys_readahead
++191	common	readahead			sys_readahead			compat_sys_ppc_readahead
+ 192	32	mmap2				sys_mmap2			compat_sys_mmap2
+-193	32	truncate64			sys_truncate64			compat_sys_truncate64
+-194	32	ftruncate64			sys_ftruncate64			compat_sys_ftruncate64
++193	32	truncate64			sys_truncate64			compat_sys_ppc_truncate64
++194	32	ftruncate64			sys_ftruncate64			compat_sys_ppc_ftruncate64
+ 195	32	stat64				sys_stat64
+ 196	32	lstat64				sys_lstat64
+ 197	32	fstat64				sys_fstat64
+@@ -288,7 +288,7 @@
+ 230	common	io_submit			sys_io_submit			compat_sys_io_submit
+ 231	common	io_cancel			sys_io_cancel
+ 232	nospu	set_tid_address			sys_set_tid_address
+-233	common	fadvise64			sys_fadvise64			ppc32_fadvise64
++233	common	fadvise64			sys_fadvise64			compat_sys_ppc32_fadvise64
+ 234	nospu	exit_group			sys_exit_group
+ 235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
+ 236	common	epoll_create			sys_epoll_create
+@@ -323,7 +323,7 @@
+ 251	spu	utimes				sys_utimes
+ 252	common	statfs64			sys_statfs64			compat_sys_statfs64
+ 253	common	fstatfs64			sys_fstatfs64			compat_sys_fstatfs64
+-254	32	fadvise64_64			ppc_fadvise64_64
++254	32	fadvise64_64			sys_ppc_fadvise64_64
+ 254	spu	fadvise64_64			sys_ni_syscall
+ 255	common	rtas				sys_rtas
+ 256	32	sys_debug_setcontext		sys_debug_setcontext		sys_ni_syscall
+@@ -390,7 +390,7 @@
+ 305	common	signalfd			sys_signalfd			compat_sys_signalfd
+ 306	common	timerfd_create			sys_timerfd_create
+ 307	common	eventfd				sys_eventfd
+-308	common	sync_file_range2		sys_sync_file_range2		compat_sys_sync_file_range2
++308	common	sync_file_range2		sys_sync_file_range2		compat_sys_ppc_sync_file_range2
+ 309	nospu	fallocate			sys_fallocate			compat_sys_fallocate
+ 310	nospu	subpage_prot			sys_subpage_prot
+ 311	32	timerfd_settime			sys_timerfd_settime32
 -- 
 2.34.1
 
