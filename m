@@ -4,80 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC8E9C25B0E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 03:43:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13860C25B0E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 03:44:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M86zb3DLWz3fCK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 13:43:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4M870L4xrgz3fFh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Aug 2022 13:44:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WZMe5npw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Oy7t7vAA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WZMe5npw;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Oy7t7vAA;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M86vM51qdz3c7y
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4M86vM4Rlpz3c2W
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Aug 2022 13:39:42 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27J3CNmS003090;
-	Fri, 19 Aug 2022 03:39:38 GMT
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27J3YDtK012712;
+	Fri, 19 Aug 2022 03:39:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=bbAFqkwWr3XpISzeqVAbc3Ui9/hH4+i6tFrZhTS+TfA=;
- b=WZMe5npwHRc81HU1TmikSxeGt6pXulVkuBOcKVnMHPSMb65oDcW/UKvMZOdZh/lrLKz2
- R7u+YeOZTCqWBvJ4SfFI56GDAMls//+ewdvvJxN/KFgzRoJHiTqc1GQNcReybfhnmLkb
- pjDLlORCYWVD55fOx+RhSqofbMdze7gBw/nW86AIO+rD6fK4TRYFUnlwMWHs0EEWpMLP
- k7JPiW/QrH1G3AXeSl5RbovXGftGiQn2PeD157UIocJn07MWpT0FpuKN0/ZU4yO1lEDB
- dhYHizeZ5VeMUqo7uoK+fKHLvLdGZbgYpk+A52iVRMMIXt3xKXRaZ1H+6/sPsODG5SK7 pw== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j22dc0e43-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 19 Aug 2022 03:39:38 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27J3amsF017528;
-	Fri, 19 Aug 2022 03:39:35 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma06ams.nl.ibm.com with ESMTP id 3hx37jeqg0-1
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=kxmuhJM2SGL2klW7yPeJSptmMzUwvOr1G+8LwTD0jDA=;
+ b=Oy7t7vAAwBqAhN7DFf+BqHuNYYoOfsIWj1Yd+tUKuCPZ6ed7x0zqEixWtefHQm0An5p8
+ tc7MW/6o7GR/btJEEF4+Pk/8iB+y6k+aKV08/j3gPscwDZC+dA0Bv8xmATCDQSUndefV
+ xTvMQFgT1gA6KSDQZzZtO1Mt8NkZn3M6tYCB/k1xIaS8YGCTGN4duAWtIL7FC9SERDKi
+ O382hvoNLO69SD2+s5F5I3eVyTrLrriBNEegnxGJEP/SJ5rcqLcR5kH4eF+n5h0xdvx5
+ c9L+nGkCySDnYpHExcOfBAp920b1YAG9jSCE5REg0sU7zKZ21YZ9d8OJNSRHQK0Xb/jf 5Q== 
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j22qkr3e7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 19 Aug 2022 03:39:35 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27J3dqCG27263440
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27J3atNv019364;
+	Fri, 19 Aug 2022 03:39:34 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+	by ppma01fra.de.ibm.com with ESMTP id 3hx3k950t1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Aug 2022 03:39:34 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
+	by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27J3dVWg34013666
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 19 Aug 2022 03:39:52 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7066B52050;
-	Fri, 19 Aug 2022 03:39:33 +0000 (GMT)
+	Fri, 19 Aug 2022 03:39:32 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DBF7911C050;
+	Fri, 19 Aug 2022 03:39:31 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3BE4411C04A;
+	Fri, 19 Aug 2022 03:39:31 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id C47C25204E;
-	Fri, 19 Aug 2022 03:39:32 +0000 (GMT)
+	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri, 19 Aug 2022 03:39:31 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 97C9E60312;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8F08360306;
 	Fri, 19 Aug 2022 13:39:29 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 08/18] powerpc: Include all arch-specific syscall prototypes
-Date: Fri, 19 Aug 2022 13:37:56 +1000
-Message-Id: <20220819033806.162054-9-rmclure@linux.ibm.com>
+Subject: [PATCH v3 03/18] powerpc/32: Remove powerpc select specialisation
+Date: Fri, 19 Aug 2022 13:37:51 +1000
+Message-Id: <20220819033806.162054-4-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220819033806.162054-1-rmclure@linux.ibm.com>
 References: <20220819033806.162054-1-rmclure@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: xdEyPpEPvy8Q1vyhSLoOTxhgD0l9dYdg
-X-Proofpoint-GUID: xdEyPpEPvy8Q1vyhSLoOTxhgD0l9dYdg
+X-Proofpoint-ORIG-GUID: 1jLmDSI4BNGGoF_yRTy4U-JUllBmDvmM
+X-Proofpoint-GUID: 1jLmDSI4BNGGoF_yRTy4U-JUllBmDvmM
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-08-19_02,2022-08-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- spamscore=0 clxscore=1015 phishscore=0 mlxlogscore=999 malwarescore=0
- mlxscore=0 impostorscore=0 bulkscore=0 adultscore=0 suspectscore=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 bulkscore=0
+ mlxscore=0 mlxlogscore=816 spamscore=0 clxscore=1015 suspectscore=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 phishscore=0
  lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2207270000 definitions=main-2208190013
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,177 +98,107 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Forward declare all syscall handler prototypes where a generic prototype
-is not provided in either linux/syscalls.h or linux/compat.h in
-asm/syscalls.h. This is required for compile-time type-checking for
-syscall handlers, which is implemented later in this series.
+Syscall #82 has been implemented for 32-bit platforms in a unique way on
+powerpc systems. This hack will in effect guess whether the caller is
+expecting new select semantics or old select semantics. It does so via a
+guess, based off the first parameter. In new select, this parameter
+represents the length of a user-memory array of file descriptors, and in
+old select this is a pointer to an arguments structure.
 
-32-bit compatibility syscall handlers are expressed in terms of types in
-ppc32.h. Expose this header globally.
+The heuristic simply interprets sufficiently large values of its first
+parameter as being a call to old select. The following is a discussion
+on how this syscall should be handled.
+
+Link: https://lore.kernel.org/lkml/13737de5-0eb7-e881-9af0-163b0d29a1a0@csgroup.eu/
+
+As discussed in this thread, the existence of such a hack suggests that for
+whatever powerpc binaries may predate glibc, it is most likely that they
+would have taken use of the old select semantics. x86 and arm64 both
+implement this syscall with oldselect semantics.
+
+Remove the powerpc implementation, and update syscall.tbl to refer to emit
+a reference to sys_old_select for 32-bit binaries, in keeping with how
+other architectures support syscall #82.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
 ---
-V1 -> V2: Explicitly include prototypes.
-V2 -> V3: Remove extraneous #include <asm/compat.h> and ppc_fallocate
-prototype. Rename header.
+V1 -> V2: Remove arch-specific select handler
+V2 -> V3: Remove ppc_old_select prototype in <asm/syscalls.h>. Move to
+earlier in patch series
 ---
- arch/powerpc/include/asm/syscalls.h          | 96 +++++++++++++-----
- .../ppc32.h => include/asm/syscalls_32.h}    |  0
- arch/powerpc/kernel/signal_32.c              |  2 +-
- arch/powerpc/perf/callchain_32.c             |  2 +-
- 4 files changed, 73 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/syscalls.h           |  2 --
+ arch/powerpc/kernel/syscalls.c                | 17 -----------------
+ arch/powerpc/kernel/syscalls/syscall.tbl      |  2 +-
+ .../arch/powerpc/entry/syscalls/syscall.tbl   |  2 +-
+ 4 files changed, 2 insertions(+), 21 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 0af7c2d8b2c9..91417dee534e 100644
+index 675a8f5ec3ca..739498c358a1 100644
 --- a/arch/powerpc/include/asm/syscalls.h
 +++ b/arch/powerpc/include/asm/syscalls.h
-@@ -8,45 +8,91 @@
- #include <linux/types.h>
- #include <linux/compat.h>
- 
-+#ifdef CONFIG_PPC64
-+#include <asm/syscalls_32.h>
-+#endif
-+#include <asm/unistd.h>
-+#include <asm/ucontext.h>
-+
- struct rtas_args;
- 
--long sys_mmap(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, off_t offset);
--long sys_mmap2(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, unsigned long pgoff);
--long sys_ppc64_personality(unsigned long personality);
-+#ifndef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
-+
-+/*
-+ * PowerPC architecture-specific syscalls
-+ */
-+
+@@ -18,8 +18,6 @@ long sys_mmap2(unsigned long addr, size_t len,
+ 	       unsigned long fd, unsigned long pgoff);
+ long ppc64_personality(unsigned long personality);
  long sys_rtas(struct rtas_args __user *uargs);
--long sys_ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
--			  u32 len_high, u32 len_low);
-+long sys_ni_syscall(void);
+-int ppc_select(int n, fd_set __user *inp, fd_set __user *outp,
+-	       fd_set __user *exp, struct __kernel_old_timeval __user *tvp);
+ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
+ 		      u32 len_high, u32 len_low);
  
-+#ifdef CONFIG_PPC64
-+long sys_ppc64_personality(unsigned long personality);
- #ifdef CONFIG_COMPAT
--unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
--			       unsigned long prot, unsigned long flags,
--			       unsigned long fd, unsigned long pgoff);
-+long compat_sys_ppc64_personality(unsigned long personality);
-+#endif /* CONFIG_COMPAT */
-+#endif /* CONFIG_PPC64 */
-+
-+/* Parameters are reordered for powerpc to avoid padding */
-+long sys_ppc_fadvise64_64(int fd, int advice,
-+			  u32 offset_high, u32 offset_low,
-+			  u32 len_high, u32 len_low);
-+long sys_swapcontext(struct ucontext __user *old_ctx,
-+		     struct ucontext __user *new_ctx, long ctx_size);
-+long sys_mmap(unsigned long addr, size_t len,
-+	      unsigned long prot, unsigned long flags,
-+	      unsigned long fd, off_t offset);
-+long sys_mmap2(unsigned long addr, size_t len,
-+	       unsigned long prot, unsigned long flags,
-+	       unsigned long fd, unsigned long pgoff);
-+long sys_switch_endian(void);
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index fc999140bc27..ef5896bee818 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -63,23 +63,6 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
+ 	return do_mmap2(addr, len, prot, flags, fd, offset, PAGE_SHIFT);
+ }
  
--compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, compat_size_t count,
--				  u32 reg6, u32 pos1, u32 pos2);
-+#ifdef CONFIG_PPC32
-+long sys_sigreturn(void);
-+long sys_debug_setcontext(struct ucontext __user *ctx, int ndbg,
-+			  struct sig_dbg_op __user *dbg);
-+#endif
- 
--compat_ssize_t compat_sys_pwrite64(unsigned int fd, const char __user *ubuf, compat_size_t count,
--				   u32 reg6, u32 pos1, u32 pos2);
-+long sys_rt_sigreturn(void);
- 
--compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u32 count);
-+long sys_subpage_prot(unsigned long addr,
-+		      unsigned long len, u32 __user *map);
- 
--int compat_sys_truncate64(const char __user *path, u32 reg4,
--			  unsigned long len1, unsigned long len2);
-+#ifdef CONFIG_COMPAT
-+long compat_sys_swapcontext(struct ucontext32 __user *old_ctx,
-+			    struct ucontext32 __user *new_ctx,
-+			    int ctx_size);
-+long compat_sys_old_getrlimit(unsigned int resource,
-+			      struct compat_rlimit __user *rlim);
-+long compat_sys_sigreturn(void);
-+long compat_sys_rt_sigreturn(void);
- 
--int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
--			   unsigned long len2);
-+/* Architecture-specific implementations in sys_ppc32.c */
- 
-+long compat_sys_mmap2(unsigned long addr, size_t len,
-+		      unsigned long prot, unsigned long flags,
-+		      unsigned long fd, unsigned long pgoff);
-+long compat_sys_ppc_pread64(unsigned int fd,
-+			    char __user *ubuf, compat_size_t count,
-+			    u32 reg6, u32 pos1, u32 pos2);
-+long compat_sys_ppc_pwrite64(unsigned int fd,
-+			     const char __user *ubuf, compat_size_t count,
-+			     u32 reg6, u32 pos1, u32 pos2);
-+long compat_sys_ppc_readahead(int fd, u32 r4,
-+			      u32 offset1, u32 offset2, u32 count);
-+long compat_sys_ppc_truncate64(const char __user *path, u32 reg4,
-+			       unsigned long len1, unsigned long len2);
-+long compat_sys_ppc_ftruncate64(unsigned int fd, u32 reg4,
-+				unsigned long len1, unsigned long len2);
- long compat_sys_ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
- 				size_t len, int advice);
-+long compat_sys_ppc_sync_file_range2(int fd, unsigned int flags,
-+				     unsigned int offset1,
-+				     unsigned int offset2,
-+				     unsigned int nbytes1,
-+				     unsigned int nbytes2);
-+#endif /* CONFIG_COMPAT */
- 
--long compat_sys_sync_file_range2(int fd, unsigned int flags,
--				 unsigned int offset1, unsigned int offset2,
--				 unsigned int nbytes1, unsigned int nbytes2);
+-#ifdef CONFIG_PPC32
+-/*
+- * Due to some executables calling the wrong select we sometimes
+- * get wrong args.  This determines how the args are being passed
+- * (a single ptr to them all args passed) then calls
+- * sys_select() with the appropriate args. -- Cort
+- */
+-int
+-ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
+-{
+-	if ((unsigned long)n >= 4096)
+-		return sys_old_select((void __user *)n);
+-
+-	return sys_select(n, inp, outp, exp, tvp);
+-}
 -#endif
-+#endif /* CONFIG_ARCH_HAS_SYSCALL_WRAPPER */
- 
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_SYSCALLS_H */
-diff --git a/arch/powerpc/kernel/ppc32.h b/arch/powerpc/include/asm/syscalls_32.h
-similarity index 100%
-rename from arch/powerpc/kernel/ppc32.h
-rename to arch/powerpc/include/asm/syscalls_32.h
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 157a7403e3eb..c114c7f25645 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -43,7 +43,7 @@
- #include <asm/tm.h>
- #include <asm/asm-prototypes.h>
+-
  #ifdef CONFIG_PPC64
--#include "ppc32.h"
-+#include <asm/syscalls_32.h>
- #include <asm/unistd.h>
- #else
- #include <asm/ucontext.h>
-diff --git a/arch/powerpc/perf/callchain_32.c b/arch/powerpc/perf/callchain_32.c
-index b83c47b7947f..ea8cfe3806dc 100644
---- a/arch/powerpc/perf/callchain_32.c
-+++ b/arch/powerpc/perf/callchain_32.c
-@@ -19,7 +19,7 @@
- #include "callchain.h"
- 
- #ifdef CONFIG_PPC64
--#include "../kernel/ppc32.h"
-+#include <asm/syscalls_32.h>
- #else  /* CONFIG_PPC64 */
- 
- #define __SIGNAL_FRAMESIZE32	__SIGNAL_FRAMESIZE
+ long ppc64_personality(unsigned long personality)
+ {
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 2600b4237292..4cbbb810ae10 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -110,7 +110,7 @@
+ 79	common	settimeofday			sys_settimeofday		compat_sys_settimeofday
+ 80	common	getgroups			sys_getgroups
+ 81	common	setgroups			sys_setgroups
+-82	32	select				ppc_select			sys_ni_syscall
++82	32	select				sys_old_select			sys_ni_syscall
+ 82	64	select				sys_ni_syscall
+ 82	spu	select				sys_ni_syscall
+ 83	common	symlink				sys_symlink
+diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+index 2600b4237292..4cbbb810ae10 100644
+--- a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
++++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+@@ -110,7 +110,7 @@
+ 79	common	settimeofday			sys_settimeofday		compat_sys_settimeofday
+ 80	common	getgroups			sys_getgroups
+ 81	common	setgroups			sys_setgroups
+-82	32	select				ppc_select			sys_ni_syscall
++82	32	select				sys_old_select			sys_ni_syscall
+ 82	64	select				sys_ni_syscall
+ 82	spu	select				sys_ni_syscall
+ 83	common	symlink				sys_symlink
 -- 
 2.34.1
 
