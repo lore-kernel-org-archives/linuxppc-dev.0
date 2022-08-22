@@ -4,39 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C36EC28D13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Aug 2022 08:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D0A5C28D13
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Aug 2022 08:46:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MB5WY5bG8z3cdW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Aug 2022 18:44:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MB5Yr5BjRz3cB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Aug 2022 18:46:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=cotfquOt;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Mgzo53ZK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=cotfquOt;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Mgzo53ZK;
+	dkim-atps=neutral
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MB5W753llz2ywc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2022 18:44:03 +1000 (AEST)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.56])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MB50n281BznTgN;
-	Mon, 22 Aug 2022 16:21:13 +0800 (CST)
-Received: from localhost.localdomain (10.67.164.66) by
- canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Mon, 22 Aug 2022 16:23:29 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <akpm@linux-foundation.org>, <linux-mm@kvack.org>,
-	<linux-arm-kernel@lists.infradead.org>, <x86@kernel.org>,
-	<catalin.marinas@arm.com>, <will@kernel.org>, <linux-doc@vger.kernel.org>
-Subject: [PATCH v3 0/4] mm: arm64: bring up BATCHED_UNMAP_TLB_FLUSH
-Date: Mon, 22 Aug 2022 16:21:16 +0800
-Message-ID: <20220822082120.8347-1-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MB5Xy3F3kz2ywc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2022 18:45:30 +1000 (AEST)
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27M8K0DV002427;
+	Mon, 22 Aug 2022 08:45:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : content-type : in-reply-to : mime-version;
+ s=corp-2022-7-12; bh=bXtP+jhWSI9YtQAoJBzNA8U3hurwyUDO2JnRtT/cKg4=;
+ b=cotfquOtZVOxnC1l1aj/Kza+SEP+D6oTrAN4YuYdD/E8yDThwV5tHJfrHIVuvvLXIe2i
+ zX53yeA5N7cFtjcfXs4T8LzFtD79DRY5vg+QDNLxAzLtPLHXei5KhgnkV5nIZ8pSwngQ
+ oXaCS6OWRL/dh1J0PvHj0dBJPy2hgpxaWbfVqOWmokfWZsqwNalFzPgJHCU9ZGjJm1VL
+ ilRfyt7bWSSKzqHW7vFqcojw6DyF1zNWkgcS5DRbbgfncP5cAwYdUqDjGIeK+kzjbhrk
+ rTsGTPJKOjQjBnRoWEoru8uvyPam85tHIlNGx6i/R5utoXgEtJ7pg6zvwRjQUOAROF3l 3A== 
+Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3j466h02kh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 22 Aug 2022 08:45:03 +0000
+Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 27M8Z7AW038204;
+	Mon, 22 Aug 2022 08:45:02 GMT
+Received: from nam02-sn1-obe.outbound.protection.outlook.com (mail-sn1anam02lp2046.outbound.protection.outlook.com [104.47.57.46])
+	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3j3mkfs9cx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 22 Aug 2022 08:45:01 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=R5jfvuxjg6SFv6Z8LvcH0sJ5bBlM4VKrbHroCwPJEPPIYb44WSNPQByKnJlo/DD7bG5jDI9cks1fxXjFAKV6O+5RgmTqP+83z7ON9xlwxvZl4deGsveA4tPTBecXIsv/aMAYbDc3WANdkOg9pClBctC6KtigQizndgDHcg789I5P7xi5gZq65BQxZvjvRUsUL7TRv63xGRsXR5bZgCSXN4w+annwpI4Cjr5WCFQocS/Fwa4JA37McfMRZBkAovHULp60lLP9QsgwEfDpFxiCmN78gCuFitqSIU0lPT9fSTCieXXScsfIt+NqMFLZyf+GHF9w7M87/Tr5X2bZvwcAkA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=bXtP+jhWSI9YtQAoJBzNA8U3hurwyUDO2JnRtT/cKg4=;
+ b=QPwuochC4RqzZWJFLJn2w6TmBQVTeySnN90ygXGlhRM7+gVyuEzdfXUXLuNVCj8lObFNOQgs7RIXtdWN9o9EWyiQHzC5e6yZkffcebez7VmBByvny9kugaKAaZROCN08/SluB1UycdgR8q9gTvMVo+55c4u4Wkpvwvg4L9sf6jL9sRVP2wOyPPnZEyqi1MP5Mp5LdOjHP+wJUeC5L01oSW63tdyYsnq57eNA/iUQZPcDa++ma4o73iPLZukj13DmbmXiFMVfPF5zReZIHnkYpsXgFKgKSnXfGCZdfIOEE8XrdvA3EiMC20tJQcH8TgketpSXKDeyi8ur/D+YZJkxog==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bXtP+jhWSI9YtQAoJBzNA8U3hurwyUDO2JnRtT/cKg4=;
+ b=Mgzo53ZKxpcvmlX056OOLL+/RgzbK84DRtonAgtgjA3a4Gkak24J1ZvqodEcwW2ED9I8kw5KgYm/EJmY9EZV1IE/UsQOlUXZq/ocibBftQQ6M4LnLcdNy3x+JKOqN4pSrfqfTHbTm3TYbI/LrjjcTuLJcv5MEFBF8DvhIOON5Kc=
+Received: from MWHPR1001MB2365.namprd10.prod.outlook.com
+ (2603:10b6:301:2d::28) by BN7PR10MB2561.namprd10.prod.outlook.com
+ (2603:10b6:406:c9::17) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5546.19; Mon, 22 Aug
+ 2022 08:44:54 +0000
+Received: from MWHPR1001MB2365.namprd10.prod.outlook.com
+ ([fe80::209e:de4d:68ea:c026]) by MWHPR1001MB2365.namprd10.prod.outlook.com
+ ([fe80::209e:de4d:68ea:c026%3]) with mapi id 15.20.5546.022; Mon, 22 Aug 2022
+ 08:44:54 +0000
+Date: Mon, 22 Aug 2022 11:44:30 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: kbuild@lists.01.org, Arminder Singh <arminders208@outlook.com>,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2c: pasemi: Add IRQ support for Apple Silicon
+Message-ID: <202208220231.f88sizqa-lkp@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <MN2PR01MB535838492432C910F2381F929F6F9@MN2PR01MB5358.prod.exchangelabs.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-ClientProxiedBy: JNAP275CA0072.ZAFP275.PROD.OUTLOOK.COM (2603:1086:0:4f::23)
+ To MWHPR1001MB2365.namprd10.prod.outlook.com (2603:10b6:301:2d::28)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.67.164.66]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- canpemm500009.china.huawei.com (7.192.105.203)
-X-CFilter-Loop: Reflected
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id: 0010a8e1-c469-4fd1-eaef-08da841a95a5
+X-MS-TrafficTypeDiagnostic: BN7PR10MB2561:EE_
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	iiURD78QU1subsP24s7NcyY3JaRsuqmagOI+Q9ZwTVRjgnxMoD5ua/9SBIaDFhR6TUAMhNcZmPu51UlcyzZ8oY+SfAWURTdxDbQ6aSndLIRXd5/UgV9Nr2WCIsdKgespnGzBj1PvoeOHglDlxKCSBquXdvQj0OdkGS/KBZR17RVojlQrckzwYhs74TQW76ilIKcamoHnT86XwjKqbOIn2AKtUT7EzxwRq4m+xmiSZfKigwZDoZAQtBC0WDdqvfOj5J7cG58KSu+2cuoP+NP5JKHOFmQxGafR5rvqj3+WadY4i4SUZF75t35uMm7/4EQoWzG2LGRiCq5uLOZkpUr6qECQe0/wvJCbgdgS5Ab8c5f9NhZ4MLxlivKUO6ZP2beheo2P/cZ/nlV8QavETqyWw15wiepMRLz5hdqCdEucSo8G05u0+celEFgU632ASqCNbSun7kKuxXXD963EEKrxsZJ3dnQIzb5B3moF6kGSvzpsp209Ly083f9EZjAZAEC6gMbTctJDEcl93Wnksqb/NyOONjufMAyDnA7asacn+uYR5q5xh5b7B0cemkQYVrkvBY7kltHFCR5EqjkamFQhCR644MFb/Rcxisr0VMfd68pBsj8Km6AOQ2emYUgeAWjLpZpferv0ecN7pmMYhBQm90cYACvCD7af++uwW1ieJt9tTNxIO/JOeV7pe8CfXp/YVDrNlj/QnW5grUwAetiNowoSdBOfRl9o6dnHPwStudAGT2MTZVS6Am/Z9SX2W7CJ0qN1X8Zc4vSdzt0ag7C1zW0m/YDLn3VbWiDcLirMtHQnNYokjvqPyMW4lqmGh0WQmWTBPT82Mm1eJph43EC3E3PbSwfbbNX54PCs+AEGNEOE9Kpk+Dh48ic5I6xHS+04
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MWHPR1001MB2365.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(136003)(396003)(366004)(376002)(39860400002)(346002)(47660400002)(6666004)(52116002)(6506007)(26005)(6512007)(9686003)(478600001)(966005)(6486002)(41300700001)(83380400001)(2906002)(186003)(1076003)(4326008)(7416002)(8676002)(66946007)(66476007)(66556008)(5660300002)(8936002)(44832011)(316002)(54906003)(36756003)(38100700002)(38350700002)(86362001)(46800400005);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?xPFz5KsjcasP9sQUZVT7bRmNJTGj/xq9+GceR9KxlL/UZBQUVkW7NUIWL7G7?=
+ =?us-ascii?Q?L+tyM5RNsWzVqSbH7R58xJomo7FGDPK+WJL7bpuHqCrk9WXSecciuIl7G/rv?=
+ =?us-ascii?Q?XPhA6BXQuXt66JhkrdoHcr6bABxyY6LcYTi4tk8J7YJyxkANGIrrSpZQ1sKO?=
+ =?us-ascii?Q?CJO7uhYD4SeosswAX0o2aROqEH7MBzeEbrbK8GdLc487PTlnvYKfsZbnnKLS?=
+ =?us-ascii?Q?mLrGL8BnTdSdi+F5JKRdIuvmxue7iLTyuoAUHT76rftkyAgCNxVSY7HRuBxh?=
+ =?us-ascii?Q?G+CBMd/6qviB7p6fclyAaAGaBOFZ6HLjI2aTpSDiutoi/O0AbDwAv8FtNy0O?=
+ =?us-ascii?Q?7MZ46gujLoAvGFaVudBLC412U56qkgHGjMF/zxKgrFhev3vN556+T+r6UqDs?=
+ =?us-ascii?Q?Nd+hrTdJOVbLA+Gk7mZTrfSwmjK6OudV3BHr+ueqkly7g97rFYOmnShR83ur?=
+ =?us-ascii?Q?Q6W6idF1HTF88YvGgIp+zBd9gGzrQO7SkOplIWIZlF6aweGpfQqmzCO7aogP?=
+ =?us-ascii?Q?JI5kFYKMwy6kbDxePTD2U9suuWPtrnfwrLn55VZwNhgJ5J9jDU4m2u+3wXGh?=
+ =?us-ascii?Q?zyu9BGUKIpMw4Kn8/NiWXJkadg3/Lxu3uZGLcl9+S/M3qDrBfZtGKNtwg5JK?=
+ =?us-ascii?Q?ktqYLMCTJaYVBMVTBVTZBvmMvWVMMbeiaBvEjdmTxC0n5t9fBkzV9Nsui/Ak?=
+ =?us-ascii?Q?zrz4m2Rgr1Vxqpmy4/2sFi3EOKrN/CtHMpzWWuY/P2S06X5WNiu7vavGn8PC?=
+ =?us-ascii?Q?B/Ma+XFzQxou0fdPsaip6IsB+T3tFe4jaZ5BPUrNzjalW6qeGvY+1Bxrwrra?=
+ =?us-ascii?Q?PJOm/xEVXEBO9/Im4mH1A9JuWW4Iz7SMMGj+hOyCxch5l5zqb9HZEGBoFLtK?=
+ =?us-ascii?Q?OHZW0OwNzrFgRmcRG2KOpjRaiq2IIp6swC46rZrZNpcNEKJ/PPT7Wv8oIsgC?=
+ =?us-ascii?Q?LCuM0+SZlH4cB6WknSeEwu2rL+bo43ACdjHmbT9aCsnXXfKWmvnNvi03HXWw?=
+ =?us-ascii?Q?+v655VJJyktKyaGNJIWYJIaKz402U9nrMuRzF2Stcf9zueV/Z2Pw+cLz8qvG?=
+ =?us-ascii?Q?X0GXll3gooVeL/4JHtTe7UYzKb0dS5sP+iwrXuNxeKlW6uEFceThD169qx89?=
+ =?us-ascii?Q?8c8C/y9G43nhrIgZuqg6x5q/iRcoUbVm+OucjuPRu0VAVz/idswVhCxLB6fr?=
+ =?us-ascii?Q?UOFlRTw4ag7XXh6oRRooX/rF0TF5pPYX6ZnIzo5VLE6ExBQwoqFZfZ/ryLul?=
+ =?us-ascii?Q?ct40bc516/zLvvGClAcHLLlq+Hj8RxQFb4gWOTZW0SNth+OIRDUQG+FLit31?=
+ =?us-ascii?Q?o21cQNYnO9DuchZ4C7zmBg6KJNvazROqNVVxRDvTVXNoSmDuOUSLvQqJad25?=
+ =?us-ascii?Q?dhFsraLePaKcM6pg7xkP8i5oEIw5dLqyGo2Wsbq8FL1kd27rnGqA8k+RWrJe?=
+ =?us-ascii?Q?xApTh6lefJuDMoRQ7mjZrqIUW4PTIc40D48C5JqcySz30m8r2akJRhtbUBQi?=
+ =?us-ascii?Q?yvfwFkv6P3lOJskw+7932SN5eDLjAnY1/AvR/3GVfT51Dphhlk8CAftswPot?=
+ =?us-ascii?Q?G4D1eCehp+6RYCq/YKjj6Udcs1eycsC5xFJpNNKC9YJQzbooTkcGRm7H+ChM?=
+ =?us-ascii?Q?ZA=3D=3D?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0010a8e1-c469-4fd1-eaef-08da841a95a5
+X-MS-Exchange-CrossTenant-AuthSource: MWHPR1001MB2365.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 22 Aug 2022 08:44:54.4634
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: Gmc6v4bhU6YCUKriKuCbh4v3B8qbNi4HHsiknHZaFu23KVauWpBad/cnhNBHirrewMc7+SYxzWsjuNl/NubW1j2CyPVmBRtQByYy2ujFuAU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN7PR10MB2561
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-08-22_04,2022-08-18_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 suspectscore=0
+ phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 bulkscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2207270000 definitions=main-2208220037
+X-Proofpoint-ORIG-GUID: yWtAwSOKStO3TcI33We8aUeZakfhGg-6
+X-Proofpoint-GUID: yWtAwSOKStO3TcI33We8aUeZakfhGg-6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,74 +150,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, wangkefeng.wang@huawei.com, zhangshiming@oppo.com, lipeifeng@oppo.com, prime.zeng@hisilicon.com, arnd@arndb.de, corbet@lwn.net, peterz@infradead.org, realmz6@gmail.com, Barry Song <21cnbao@gmail.com>, linux-kernel@vger.kernel.org, yangyicong@hisilicon.com, openrisc@lists.librecores.org, xhao@linux.alibaba.com, darren@os.amperecomputing.com, huzhanyuan@oppo.com, guojian@oppo.com, linux-riscv@lists.infradead.org, linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anshuman.khandual@arm.com
+Cc: kbuild-all@lists.01.org, lkp@intel.com, Sven Peter <sven@svenpeter.dev>, Hector Martin <marcan@marcan.st>, Arminder Singh <arminders208@outlook.com>, Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Alyssa Rosenzweig <alyssa@rosenzweig.io>, linux-i2c@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yicong Yang <yangyicong@hisilicon.com>
+Hi Arminder,
 
-Though ARM64 has the hardware to do tlb shootdown, the hardware
-broadcasting is not free.
-A simplest micro benchmark shows even on snapdragon 888 with only
-8 cores, the overhead for ptep_clear_flush is huge even for paging
-out one page mapped by only one process:
-5.36%  a.out    [kernel.kallsyms]  [k] ptep_clear_flush
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-While pages are mapped by multiple processes or HW has more CPUs,
-the cost should become even higher due to the bad scalability of
-tlb shootdown.
+url:    https://github.com/intel-lab-lkp/linux/commits/Arminder-Singh/i2c-pasemi-Add-IRQ-support-for-Apple-Silicon/20220821-034703
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+config: parisc-randconfig-m031-20220821 (https://download.01.org/0day-ci/archive/20220822/202208220231.f88sizqa-lkp@intel.com/config)
+compiler: hppa-linux-gcc (GCC) 12.1.0
 
-The same benchmark can result in 16.99% CPU consumption on ARM64
-server with around 100 cores according to Yicong's test on patch
-4/4.
+If you fix the issue, kindly add following tag where applicable
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-This patchset leverages the existing BATCHED_UNMAP_TLB_FLUSH by
-1. only send tlbi instructions in the first stage -
-	arch_tlbbatch_add_mm()
-2. wait for the completion of tlbi by dsb while doing tlbbatch
-	sync in arch_tlbbatch_flush()
-My testing on snapdragon shows the overhead of ptep_clear_flush
-is removed by the patchset. The micro benchmark becomes 5% faster
-even for one page mapped by single process on snapdragon 888.
+smatch warnings:
+drivers/i2c/busses/i2c-pasemi-core.c:92 pasemi_smb_waitready() error: uninitialized symbol 'status'.
 
--v3:
-1. Declare arch's tlbbatch defer support by arch_tlbbatch_should_defer() instead
-   of ARCH_HAS_MM_CPUMASK, per Barry and Kefeng
-2. Add Tested-by from Xin Hao
-Link: https://lore.kernel.org/linux-mm/20220711034615.482895-1-21cnbao@gmail.com/
+vim +/status +92 drivers/i2c/busses/i2c-pasemi-core.c
 
--v2:
-1. Collected Yicong's test result on kunpeng920 ARM64 server;
-2. Removed the redundant vma parameter in arch_tlbbatch_add_mm()
-   according to the comments of Peter Zijlstra and Dave Hansen
-3. Added ARCH_HAS_MM_CPUMASK rather than checking if mm_cpumask
-   is empty according to the comments of Nadav Amit
+8032214346c0c8 drivers/i2c/busses/i2c-pasemi.c      Julia Lawall   2010-09-05   80  static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   81  {
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   82  	int timeout = 10;
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   83  	unsigned int status;
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   84  	unsigned int bitmask = SMSTA_XEN | SMSTA_MTN;
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   85  
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   86  	if (smbus->use_irq) {
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   87  		reinit_completion(&smbus->irq_completion);
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   88  		reg_write(smbus, REG_IMASK, bitmask);
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   89  		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(10));
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   90  		status = reg_read(smbus, REG_SMSTA);
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   91  	} else {
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  @92  		while (!(status & SMSTA_XEN) && timeout--) {
 
-Thanks, Peter, Dave and Nadav for your testing or reviewing
-, and comments.
+"status" not intialized.
 
--v1:
-https://lore.kernel.org/lkml/20220707125242.425242-1-21cnbao@gmail.com/
-
-Anshuman Khandual (1):
-  mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
-
-Barry Song (3):
-  Revert "Documentation/features: mark BATCHED_UNMAP_TLB_FLUSH doesn't
-    apply to ARM64"
-  mm: rmap: Extend tlbbatch APIs to fit new platforms
-  arm64: support batched/deferred tlb shootdown during page reclamation
-
- Documentation/features/arch-support.txt       |  1 -
- .../features/vm/TLB/arch-support.txt          |  2 +-
- arch/arm64/Kconfig                            |  1 +
- arch/arm64/include/asm/tlbbatch.h             | 12 ++++++++
- arch/arm64/include/asm/tlbflush.h             | 28 +++++++++++++++++--
- arch/x86/include/asm/tlbflush.h               | 15 +++++++++-
- mm/rmap.c                                     | 19 +++++--------
- 7 files changed, 61 insertions(+), 17 deletions(-)
- create mode 100644 arch/arm64/include/asm/tlbbatch.h
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   93  			msleep(1);
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   94  			status = reg_read(smbus, REG_SMSTA);
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   95  		}
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   96  	}
+98584b2b51d808 drivers/i2c/busses/i2c-pasemi-core.c Arminder Singh 2022-08-20   97  
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13   98  
+be8a1f7cd4501c drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-11-15   99  	/* Got NACK? */
+be8a1f7cd4501c drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-11-15  100  	if (status & SMSTA_MTN)
+be8a1f7cd4501c drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-11-15  101  		return -ENXIO;
+be8a1f7cd4501c drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-11-15  102  
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  103  	if (timeout < 0) {
+c06f50ed36cc0a drivers/i2c/busses/i2c-pasemi.c      Sven Peter     2021-10-08  104  		dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  105  		reg_write(smbus, REG_SMSTA, status);
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  106  		return -ETIME;
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  107  	}
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  108  
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  109  	/* Clear XEN */
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  110  	reg_write(smbus, REG_SMSTA, SMSTA_XEN);
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  111  
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  112  	return 0;
+beb58aa39e6e5a drivers/i2c/busses/i2c-pasemi.c      Olof Johansson 2007-02-13  113  }
 
 -- 
-2.24.0
+0-DAY CI Kernel Test Service
+https://01.org/lkp
 
