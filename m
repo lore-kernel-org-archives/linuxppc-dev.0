@@ -4,48 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24E2EC32792
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Aug 2022 01:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7CD7C28D13
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Aug 2022 01:54:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MBXJD3HqCz3btQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Aug 2022 11:51:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DEgk+7Vn;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MBXMw2lYfz3chS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Aug 2022 11:54:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=92.121.34.21; helo=inva021.nxp.com; envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MBXHX0dPDz2yT0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2022 11:50:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DEgk+7Vn;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MBXHM47Kmz4xD1;
-	Tue, 23 Aug 2022 11:50:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1661219427;
-	bh=z9iiwzy/0z+uHWfmksMPhESPFYy+Z3H5BGqkn1wngcs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=DEgk+7VnxcKnfnDWeJCx5DJOJqcojGvAPZL4dAHunxNoWM+bQtxuXvu9G4XsO7+Dp
-	 byo6xtex7aE3A+qd5jFBwmC4y4P03SqzHVHn1GxZ/pW7DbZebqbbwxmr++8xqd5WPR
-	 3aUl2DgUz23eKD7ZuL3zzcUSakJ4bhx2EwgrKz7lIMzN5QCWVB3JDxHuAE+VQRsYGE
-	 DAErKd1XxhCAzheOcLlMR4+rh+FZCUZhQF7GiixrHkLrcVnxajupmwuShvTl46+5un
-	 UcLe+/VlgYz3bjteY2HzpCD74ysI0kimN1qvLCx0h2OAWNRun0UZg0gl4/r68gW+nZ
-	 mbZNJfdvFRtWA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arminder Singh <arminders208@outlook.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i2c: pasemi: Add IRQ support for Apple Silicon
-In-Reply-To: <MN2PR01MB535838492432C910F2381F929F6F9@MN2PR01MB5358.prod.exchangelabs.com>
-References: <MN2PR01MB535838492432C910F2381F929F6F9@MN2PR01MB5358.prod.exchangelabs.com>
-Date: Tue, 23 Aug 2022 11:50:18 +1000
-Message-ID: <87h723lodh.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MBXMN6gTJz2yZc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2022 11:53:51 +1000 (AEST)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 98BB9200424;
+	Tue, 23 Aug 2022 03:53:47 +0200 (CEST)
+Received: from aprdc01srsp001v.ap-rdc01.nxp.com (aprdc01srsp001v.ap-rdc01.nxp.com [165.114.16.16])
+	by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 2D18A20043E;
+	Tue, 23 Aug 2022 03:53:47 +0200 (CEST)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+	by aprdc01srsp001v.ap-rdc01.nxp.com (Postfix) with ESMTP id AEBA2180031C;
+	Tue, 23 Aug 2022 09:53:45 +0800 (+08)
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: nicoleotsuka@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	shengjiu.wang@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	alsa-devel@alsa-project.org
+Subject: [RESEND PATCH] ASoC: fsl_sai: Add support multi fifo sdma script
+Date: Tue, 23 Aug 2022 09:36:13 +0800
+Message-Id: <1661218573-2154-1-git-send-email-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,48 +50,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, Sven Peter <sven@svenpeter.dev>, Hector Martin <marcan@marcan.st>, Arminder Singh <arminders208@outlook.com>, Paul Mackerras <paulus@samba.org>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Arminder Singh <arminders208@outlook.com> writes:
-> This is the first time I'm interacting with the Linux mailing lists, so 
-> please don't eviscerate me *too much* if I get the formatting wrong.
-> Of course I'm always willing to take criticism and improve my formatting 
-> in the future.
->
-> This patch adds support for IRQs to the PASemi I2C controller driver.
-> This will allow for faster performing I2C transactions on Apple Silicon
-> hardware, as previously, the driver was forced to poll the SMSTA register
-> for a set amount of time.
->
-> With this patchset the driver on Apple silicon hardware will instead wait
-> for an interrupt which will signal the completion of the I2C transaction.
-> The timeout value for this completion will be the same as the current
-> amount of time the I2C driver polls for.
->
-> This will result in some performance improvement since the driver will be
-> waiting for less time than it does right now on Apple Silicon hardware.
->
-> The patch right now will only enable IRQs for Apple Silicon I2C chips,
-> and only if it's able to successfully request the IRQ from the kernel.
->
-> === Testing ===
->
-> This patch has been tested on both the mainline Linux kernel tree and
-> the Asahi branch (https://github.com/AsahiLinux/linux.git) on both an
-> M1 and M2 MacBook Air, and it compiles successfully as both a module and
-> built-in to the kernel itself. The patch in both trees successfully boots
-> to userspace without any hitch.
->
-> I do not have PASemi hardware on hand unfortunately, so I'm unable to test
-> the impact of this patch on old PASemi hardware. This is also why I've
-> elected to do the IRQ request and enablement on the Apple platform driver
-> and not in the common file, as I'm not sure if PASemi hardware supports
-> IRQs.
+With disabling combine mode, the multiple successive
+FIFO registers or non successive FIFO registers of SAI module
+can work with the sdma multi fifo script.
 
-I've added Darren and Christian to Cc, they have helped with PASemi
-development and testing in the past, and may be able to help test this
-series on PASemi hardware.
+This patch is to configure the necessary information to
+the SDMA engine driver for support multi fifo script.
 
-cheers
+'words_per_fifo' is the channels for each dataline
+'n_fifos_src' and 'n_fifos_dst' are the fifo number
+'stride_fifos_src' and 'stride_fifos_dst' are the stride
+between enable FIFOs
+'maxburst' is the multiply of datalines
+
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+---
+changes in resend:
+- rebase to latest for-6.1
+
+ sound/soc/fsl/fsl_sai.c | 37 ++++++++++++++++++++++++++++++++++++-
+ sound/soc/fsl/fsl_sai.h |  3 +++
+ 2 files changed, 39 insertions(+), 1 deletion(-)
+
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index a7fa6f0bf83d..0f92906d7a29 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -527,6 +527,7 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	u32 slot_width = word_width;
+ 	int adir = tx ? RX : TX;
+ 	u32 pins, bclk;
++	u32 watermark;
+ 	int ret, i;
+ 
+ 	if (sai->slots)
+@@ -619,7 +620,15 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 				   FSL_SAI_CR5_FBT_MASK, val_cr5);
+ 	}
+ 
+-	if (hweight8(dl_cfg[dl_cfg_idx].mask[tx]) <= 1)
++	/*
++	 * Combine mode has limation:
++	 * - Can't used for singel dataline/FIFO case except the FIFO0
++	 * - Can't used for multi dataline/FIFO case except the enabled FIFOs
++	 *   are successive and start from FIFO0
++	 *
++	 * So for common usage, all multi fifo case disable the combine mode.
++	 */
++	if (hweight8(dl_cfg[dl_cfg_idx].mask[tx]) <= 1 || sai->is_multi_fifo_dma)
+ 		regmap_update_bits(sai->regmap, FSL_SAI_xCR4(tx, ofs),
+ 				   FSL_SAI_CR4_FCOMB_MASK, 0);
+ 	else
+@@ -630,6 +639,26 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	dma_params->addr = sai->res->start + FSL_SAI_xDR0(tx) +
+ 			   dl_cfg[dl_cfg_idx].start_off[tx] * 0x4;
+ 
++	if (sai->is_multi_fifo_dma) {
++		sai->audio_config[tx].words_per_fifo = min(slots, channels);
++		if (tx) {
++			sai->audio_config[tx].n_fifos_dst = pins;
++			sai->audio_config[tx].stride_fifos_dst = dl_cfg[dl_cfg_idx].next_off[tx];
++		} else {
++			sai->audio_config[tx].n_fifos_src = pins;
++			sai->audio_config[tx].stride_fifos_src = dl_cfg[dl_cfg_idx].next_off[tx];
++		}
++		dma_params->maxburst = sai->audio_config[tx].words_per_fifo * pins;
++		dma_params->peripheral_config = &sai->audio_config[tx];
++		dma_params->peripheral_size = sizeof(sai->audio_config[tx]);
++
++		watermark = tx ? (sai->soc_data->fifo_depth - dma_params->maxburst) :
++				 (dma_params->maxburst - 1);
++		regmap_update_bits(sai->regmap, FSL_SAI_xCR1(tx, ofs),
++				   FSL_SAI_CR1_RFW_MASK(sai->soc_data->fifo_depth),
++				   watermark);
++	}
++
+ 	/* Find a proper tcre setting */
+ 	for (i = 0; i < sai->soc_data->pins; i++) {
+ 		trce_mask = (1 << (i + 1)) - 1;
+@@ -1257,6 +1286,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 	char tmp[8];
+ 	int irq, ret, i;
+ 	int index;
++	u32 dmas[4];
+ 
+ 	sai = devm_kzalloc(dev, sizeof(*sai), GFP_KERNEL);
+ 	if (!sai)
+@@ -1313,6 +1343,11 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 	fsl_asoc_get_pll_clocks(&pdev->dev, &sai->pll8k_clk,
+ 				&sai->pll11k_clk);
+ 
++	/* Use Multi FIFO mode depending on the support from SDMA script */
++	ret = of_property_read_u32_array(np, "dmas", dmas, 4);
++	if (!sai->soc_data->use_edma && !ret && dmas[2] == IMX_DMATYPE_MULTI_SAI)
++		sai->is_multi_fifo_dma = true;
++
+ 	/* read dataline mask for rx and tx*/
+ 	ret = fsl_sai_read_dlcfg(sai);
+ 	if (ret < 0) {
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 17956b5731dc..697f6690068c 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -6,6 +6,7 @@
+ #ifndef __FSL_SAI_H
+ #define __FSL_SAI_H
+ 
++#include <linux/dma/imx-dma.h>
+ #include <sound/dmaengine_pcm.h>
+ 
+ #define FSL_SAI_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
+@@ -281,6 +282,7 @@ struct fsl_sai {
+ 	bool is_lsb_first;
+ 	bool is_dsp_mode;
+ 	bool is_pdm_mode;
++	bool is_multi_fifo_dma;
+ 	bool synchronous[2];
+ 	struct fsl_sai_dl_cfg *dl_cfg;
+ 	unsigned int dl_cfg_cnt;
+@@ -300,6 +302,7 @@ struct fsl_sai {
+ 	struct pm_qos_request pm_qos_req;
+ 	struct pinctrl *pinctrl;
+ 	struct pinctrl_state *pins_state;
++	struct sdma_peripheral_config audio_config[2];
+ };
+ 
+ #define TX 1
+-- 
+2.34.1
+
