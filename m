@@ -4,59 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0E2DC00140
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 21 Aug 2022 17:07:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF57DC32772
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Aug 2022 18:50:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4M9hkB6vRxz2xTb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Aug 2022 03:07:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MBywW6vM4z3bZg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 04:50:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f/InbUJw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XxThZNV7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f/InbUJw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XxThZNV7;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4M9dsX3YGBz2yMK
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Aug 2022 00:58:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MByvt56Wtz2xH8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 04:50:02 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 31997B80D59
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2022 14:58:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 836BBC43142
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2022 14:58:17 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 78EEEB82024;
+	Tue, 23 Aug 2022 18:49:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AE5BC433D6;
+	Tue, 23 Aug 2022 18:49:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1661093897;
-	bh=GzHlPdU+t+7DtU8s+ZQkqJLPYJa2D5QllpBgFvrmGaw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=f/InbUJweAfp1LwZGHesZqt6a4G8zsWb4eQ8hwBY+fB8ZNzuv2+o+WZHLNeTfA4WO
-	 tP4Obzfca17jnLVlGgFOFqxNd6GFR4jnIKswxHiVPRByKR0FyyfEjvUWSnMKafFXQ4
-	 QOr40w20RSDAD9EvrDPFMMrXNqdtlQCXpnGEoCR3w5CIY8AdxOD/JFzlCAcvspGNEm
-	 DVW630OZ50JWDkTiPs1UE7dtpdaCNgkS+cAO/JlCROhsav5Fnx6kPk1iKt/dCeUOfS
-	 RZB0YxyQZs+ZabqVHYJ21sh7i3kcM3kQyE6cLB3Q80qen46LSIsGqGB9qTe2iH9WI3
-	 DNgxHvxgpF3Bw==
-Received: by mail-pj1-f49.google.com with SMTP id w11-20020a17090a380b00b001f73f75a1feso11672079pjb.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Aug 2022 07:58:17 -0700 (PDT)
-X-Gm-Message-State: ACgBeo1qgultT4QHKZDMNPxpaqquKnUCI6eX5AeWa2HSfcQQXkkLV/1A
-	2xZJTNVRLYBAEXhPAbcaz42qBBIISt4OrmVN0nk=
-X-Google-Smtp-Source: AA6agR5Jfm9mVjshWjpFq8OKc54hNg+6T+J3SLoca3TFw2LF4khEc2uAuPslbwwXSbPSAHiGS5rHKpQKorBBpPqiG2g=
-X-Received: by 2002:a05:6102:390d:b0:387:78b9:bf9c with SMTP id
- e13-20020a056102390d00b0038778b9bf9cmr6025080vsu.43.1661093886384; Sun, 21
- Aug 2022 07:58:06 -0700 (PDT)
+	s=k20201202; t=1661280597;
+	bh=v2a8Ab0aNwJGMtkb8CZSGaqdXiDRPqmdyQ81ECzRFqI=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=XxThZNV7CNxQQ4gy14LjOHq7t/s/iALnFiqL9xctkg98k2uPtKgE7Bkz2spzwGOfq
+	 S19z/tm3liyJ9yhuGi2av3SccJ72F64Kch/fH12LmS1YKB2tkjZ/6bDJsWFL7OOqU8
+	 5eu9ToycKziVe08GHd5bI305SVDUte5nuvtmIWAuMG4j1LRXfag5vstTspsbIY2rxi
+	 KhaXhNKTPOie0omIGFDtDPx+y/M9WwUcd9EH0y/uoYJFYkcWqpTVKHlhkf5t4+aVC9
+	 QVu/9D1GR9yLqblpBXq+rX9hODHQMLLWvNltXbOKRjnVU8xZpxG/WFPIu9bPcbZux6
+	 QVjyvdoHQ5AxQ==
+From: Mark Brown <broonie@kernel.org>
+To: tiwai@suse.com, shengjiu.wang@gmail.com, lgirdwood@gmail.com, Xiubo.Lee@gmail.com, perex@perex.cz,
+ alsa-devel@alsa-project.org, Shengjiu Wang <shengjiu.wang@nxp.com>, nicoleotsuka@gmail.com, festevam@gmail.com
+In-Reply-To: <1660555546-24223-1-git-send-email-shengjiu.wang@nxp.com>
+References: <1660555546-24223-1-git-send-email-shengjiu.wang@nxp.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add support multi fifo sdma script
+Message-Id: <166128059487.1031684.18152206941376913913.b4-ty@kernel.org>
+Date: Tue, 23 Aug 2022 19:49:54 +0100
 MIME-Version: 1.0
-References: <20220819014406.32266-1-wangkefeng.wang@huawei.com> <YwIc7qbCWpIVKR2j@arm.com>
-In-Reply-To: <YwIc7qbCWpIVKR2j@arm.com>
-From: Huacai Chen <chenhuacai@kernel.org>
-Date: Sun, 21 Aug 2022 22:57:53 +0800
-X-Gmail-Original-Message-ID: <CAAhV-H4qffsU0Tmb7_b0iQh7x3Bks2vVrmmvL+0Z0CVaVggsYg@mail.gmail.com>
-Message-ID: <CAAhV-H4qffsU0Tmb7_b0iQh7x3Bks2vVrmmvL+0Z0CVaVggsYg@mail.gmail.com>
-Subject: Re: [PATCH] kernel: exit: cleanup release_thread()
-To: Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Mon, 22 Aug 2022 03:06:40 +1000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: b4 0.10.0-dev-0c1df
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,26 +61,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Rich Felker <dalias@libc.org>, Thomas Gleixner <tglx@linutronix.de>, Linux-sh list <linux-sh@vger.kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, "open list:MIPS" <linux-mips@vger.kernel.org>, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, linux-snps-arc@lists.infradead.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <m
- attst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-xtensa@linux-xtensa.org, Vasily Gorbik <gor@linux.ibm.com>, Chris Zankel <chris@zankel.net>, linux-um <linux-um@lists.infradead.org>, Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-m68k <linux-m68k@lists.linux-m68k.org>, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv <linux-riscv@lists.infra
- dead.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>, Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For LoongArch parts:
-
-Acked-by: Huacai Chen <chenhuacai@kernel.org>
-
-On Sun, Aug 21, 2022 at 7:54 PM Catalin Marinas <catalin.marinas@arm.com> wrote:
->
-> On Fri, Aug 19, 2022 at 09:44:06AM +0800, Kefeng Wang wrote:
-> > Only x86 has own release_thread(), introduce a new weak
-> > release_thread() function to clean empty definitions in
-> > other ARCHs.
-> >
-> > Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+On Mon, 15 Aug 2022 17:25:46 +0800, Shengjiu Wang wrote:
+> With disabling combine mode, the multiple successive
+> FIFO registers or non successive FIFO registers of SAI module
+> can work with the sdma multi fifo script.
+> 
+> This patch is to configure the necessary information to
+> the SDMA engine driver for support multi fifo script.
+> 
 > [...]
-> >  arch/arm64/include/asm/processor.h      | 3 ---
-> >  arch/arm64/kernel/process.c             | 4 ----
->
-> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+
+Applied to
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+
+Thanks!
+
+[1/1] ASoC: fsl_sai: Add support multi fifo sdma script
+      commit: 88630575406fdf2a7853545a884484bd55dab8a0
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
