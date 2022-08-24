@@ -4,82 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE9AC38142
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 02:16:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 051F7C32793
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 02:17:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MC8qC05whz3fY9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 12:16:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MC8qx47X6z3fDT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 12:17:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g6ckzIMg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SSmW87PQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g6ckzIMg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SSmW87PQ;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC8cS1HSlz3c9B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 12:07:19 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27O22H02013872;
-	Wed, 24 Aug 2022 02:07:13 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC8cY4Y3Wz3cB7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 12:07:25 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27O201E6009206;
+	Wed, 24 Aug 2022 02:07:19 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=0SK2MZPro0FKtKN2jDu6+TgeRz8nL9kjfnziPGpTFsM=;
- b=g6ckzIMgoGCkhGFLFPI2u/Wlz4EgGWRYDu/b9cARga/gIgDGljgp4xEL9QOEFxnsV4Ik
- lwiP4hSW8qX6okzfYPJ0v7BV5dbtjEt54OcmqSaAfmqzmtpwcsMjZITPPMRMRQ66mg8s
- cLeFqc1RMZPrvdIogB9ve1oTeSaSyEj5gpH9gNdi8hoiU8V1OleMTO0voIwsdRKM2EmZ
- aTM9f+/ofIiUxP69dw1WjQ9slvdBSRmN+BJmeqqo7aKkPb+YfqDiR5xv89XkpI5wZLC/
- laIUBXIP8Wxf8VSNz7xM6dMh5AuKrDkMCCAwbO5BXCBYwXw0epXFR173XBTtVimulnWG zA== 
+ bh=EsaSD6Nb6j/4nUWEGW1nsigmGn3CzUMID7nASZFesJ0=;
+ b=SSmW87PQMUsyu7AHHUSs4MUELicq/VmFYfO8qhijPKQgpt6BK6JNA5N4+MjdhFsEJRCZ
+ f/yVR97QcSJhDJhcyhKc5aWtNCMQrm8dSurNoyA5kOhuIXQaK2Ur8IeuZXUIKNsoBQrc
+ mCsiJyeLTkTCHO7rHFtU/T0YOwn7Ydw+WYv+F4magxXcLUD69h3mLVryRLGavWNWTTqp
+ i/n55PzaBPRaciBoMjkPfjwpoY2CQxu3Q+JDzTw3psNs3/fQrENF3vB6bfds/l+1UJgT
+ bIBQCTgI9PSx0dVBKTqx9b2e0DH++6HAtuJLmsj5o7RHg+/cFrqlj0KsKC+ylBwdiAbA Cg== 
 Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3j5ausr406-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j5atag5qm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 24 Aug 2022 02:07:13 +0000
+	Wed, 24 Aug 2022 02:07:19 +0000
 Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27O257Aq013911;
-	Wed, 24 Aug 2022 02:07:11 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma06ams.nl.ibm.com with ESMTP id 3j2pvj4gkg-1
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27O25Q1V013960;
+	Wed, 24 Aug 2022 02:07:17 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma06ams.nl.ibm.com with ESMTP id 3j2pvj4gkj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 24 Aug 2022 02:07:11 +0000
+	Wed, 24 Aug 2022 02:07:17 +0000
 Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27O279o027787614
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27O27Fw128574194
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 24 Aug 2022 02:07:09 GMT
+	Wed, 24 Aug 2022 02:07:15 GMT
 Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1ED0B5204E;
-	Wed, 24 Aug 2022 02:07:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 501A952050;
+	Wed, 24 Aug 2022 02:07:15 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id BD2F852050;
-	Wed, 24 Aug 2022 02:07:08 +0000 (GMT)
+	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id A4D8F5204F;
+	Wed, 24 Aug 2022 02:07:14 +0000 (GMT)
 Received: from civic.. (unknown [9.177.18.116])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CE76A60430;
-	Wed, 24 Aug 2022 12:07:05 +1000 (AEST)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B5E3160151;
+	Wed, 24 Aug 2022 12:07:11 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 15/20] powerpc/64s: Use {ZEROIZE,SAVE,REST}_GPRS macros in sc, scv 0 handlers
-Date: Wed, 24 Aug 2022 12:05:43 +1000
-Message-Id: <20220824020548.62625-16-rmclure@linux.ibm.com>
+Subject: [PATCH v4 17/20] powerpc/64e: Clarify register saves and clears with {SAVE,ZEROIZE}_GPRS
+Date: Wed, 24 Aug 2022 12:05:45 +1000
+Message-Id: <20220824020548.62625-18-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220824020548.62625-1-rmclure@linux.ibm.com>
 References: <20220824020548.62625-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: dz-3LwEm22iZwa6SoSPYv3IzHL-cQUUC
-X-Proofpoint-ORIG-GUID: dz-3LwEm22iZwa6SoSPYv3IzHL-cQUUC
+X-Proofpoint-GUID: 6QLJ8WRd4pTfP776B8lUkvSdgba7wWCP
+X-Proofpoint-ORIG-GUID: 6QLJ8WRd4pTfP776B8lUkvSdgba7wWCP
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.517,FMLib:17.11.122.1
  definitions=2022-08-23_10,2022-08-22_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 suspectscore=0 priorityscore=1501 bulkscore=0 phishscore=0
- clxscore=1015 malwarescore=0 impostorscore=0 mlxscore=0 mlxlogscore=899
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2207270000 definitions=main-2208240005
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 impostorscore=0
+ malwarescore=0 clxscore=1015 priorityscore=1501 mlxscore=0 suspectscore=0
+ mlxlogscore=712 adultscore=0 lowpriorityscore=0 phishscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
+ definitions=main-2208240005
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,115 +95,108 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Use the convenience macros for saving/clearing/restoring gprs in keeping
-with syscall calling conventions. The plural variants of these macros
-can store a range of registers for concision.
+The common interrupt handler prologue macro and the bad_stack
+trampolines include consecutive sequences of register saves, and some
+register clears. Neaten such instances by expanding use of the SAVE_GPRS
+macro and employing the ZEROIZE_GPR macro when appropriate.
 
-This works well when the user gpr value we are hoping to save is still
-live. In the syscall interrupt handlers, user register state is
-sometimes juggled between registers. Hold-off from issuing the SAVE_GPR
-macro for applicable neighbouring lines to highlight the delicate
-register save logic.
+Also simplify an invocation of SAVE_GPRS targetting all non-volatile
+registers to SAVE_NVGPRS.
 
-Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Signed-off-by: Rohan Mclure <rmclure@linux.ibm.com>
 ---
-V1 -> V2: Update summary
-V2 -> V3: Update summary regarding exclusions for the SAVE_GPR marco.
-Acknowledge new name for ZEROIZE_GPR{,S} macros.
+V3 -> V4: New commit.
 ---
- arch/powerpc/kernel/interrupt_64.S | 43 ++++++----------------------
- 1 file changed, 9 insertions(+), 34 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 27 +++++++++++---------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-index a8065209dd8c..ad302ad93433 100644
---- a/arch/powerpc/kernel/interrupt_64.S
-+++ b/arch/powerpc/kernel/interrupt_64.S
-@@ -71,12 +71,7 @@ _ASM_NOKPROBE_SYMBOL(system_call_vectored_\name)
- 	mfcr	r12
- 	li	r11,0
- 	/* Save syscall parameters in r3-r8 */
--	std	r3,GPR3(r1)
--	std	r4,GPR4(r1)
--	std	r5,GPR5(r1)
--	std	r6,GPR6(r1)
--	std	r7,GPR7(r1)
--	std	r8,GPR8(r1)
-+	SAVE_GPRS(3, 8, r1)
- 	/* Zero r9-r12, this should only be required when restoring all GPRs */
- 	std	r11,GPR9(r1)
- 	std	r11,GPR10(r1)
-@@ -157,17 +152,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	/* Could zero these as per ABI, but we may consider a stricter ABI
- 	 * which preserves these if libc implementations can benefit, so
- 	 * restore them for now until further measurement is done. */
--	ld	r0,GPR0(r1)
--	ld	r4,GPR4(r1)
--	ld	r5,GPR5(r1)
--	ld	r6,GPR6(r1)
--	ld	r7,GPR7(r1)
--	ld	r8,GPR8(r1)
-+	REST_GPR(0, r1)
-+	REST_GPRS(4, 8, r1)
- 	/* Zero volatile regs that may contain sensitive kernel data */
--	li	r9,0
--	li	r10,0
--	li	r11,0
--	li	r12,0
-+	ZEROIZE_GPRS(9, 12)
- 	mtspr	SPRN_XER,r0
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 67dc4e3179a0..48c640ca425d 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -216,17 +216,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mtlr	r10
+ 	mtcr	r11
  
- 	/*
-@@ -189,7 +177,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r4,_LINK(r1)
- 	ld	r5,_XER(r1)
+-	ld	r10,GPR10(r1)
+-	ld	r11,GPR11(r1)
+-	ld	r12,GPR12(r1)
++	REST_GPRS(10, 12, r1)
+ 	mtspr	\scratch,r0
  
+ 	std	r10,\paca_ex+EX_R10(r13);
+ 	std	r11,\paca_ex+EX_R11(r13);
+ 	ld	r10,_NIP(r1)
+ 	ld	r11,_MSR(r1)
 -	ld	r0,GPR0(r1)
-+	REST_GPR(0, r1)
- 	mtcr	r2
- 	mtctr	r3
- 	mtlr	r4
-@@ -257,12 +245,7 @@ END_BTB_FLUSH_SECTION
- 	mfcr	r12
- 	li	r11,0
- 	/* Save syscall parameters in r3-r8 */
--	std	r3,GPR3(r1)
--	std	r4,GPR4(r1)
--	std	r5,GPR5(r1)
--	std	r6,GPR6(r1)
--	std	r7,GPR7(r1)
--	std	r8,GPR8(r1)
-+	SAVE_GPRS(3, 8, r1)
- 	/* Zero r9-r12, this should only be required when restoring all GPRs */
- 	std	r11,GPR9(r1)
- 	std	r11,GPR10(r1)
-@@ -360,16 +343,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	cmpdi	r3,0
- 	bne	.Lsyscall_restore_regs
- 	/* Zero volatile regs that may contain sensitive kernel data */
--	li	r0,0
--	li	r4,0
--	li	r5,0
--	li	r6,0
--	li	r7,0
--	li	r8,0
--	li	r9,0
--	li	r10,0
--	li	r11,0
+-	ld	r1,GPR1(r1)
++	REST_GPRS(0, 1, r1)
+ 	mtspr	\srr0,r10
+ 	mtspr	\srr1,r11
+ 	ld	r10,\paca_ex+EX_R10(r13)
+@@ -372,16 +369,15 @@ ret_from_mc_except:
+ /* Core exception code for all exceptions except TLB misses. */
+ #define EXCEPTION_COMMON_LVL(n, scratch, excf)				    \
+ exc_##n##_common:							    \
+-	std	r0,GPR0(r1);		/* save r0 in stackframe */	    \
+-	std	r2,GPR2(r1);		/* save r2 in stackframe */	    \
+-	SAVE_GPRS(3, 9, r1);		/* save r3 - r9 in stackframe */    \
++	SAVE_GPR(0, r1);		/* save r0 in stackframe */	    \
++	SAVE_GPRS(2, 9, r1);		/* save r2 - r9 in stackframe */    \
+ 	std	r10,_NIP(r1);		/* save SRR0 to stackframe */	    \
+ 	std	r11,_MSR(r1);		/* save SRR1 to stackframe */	    \
+ 	beq	2f;			/* if from kernel mode */	    \
+ 2:	ld	r3,excf+EX_R10(r13);	/* get back r10 */		    \
+ 	ld	r4,excf+EX_R11(r13);	/* get back r11 */		    \
+ 	mfspr	r5,scratch;		/* get back r13 */		    \
+-	std	r12,GPR12(r1);		/* save r12 in stackframe */	    \
++	SAVE_GPR(12, r1);		/* save r12 in stackframe */	    \
+ 	ld	r2,PACATOC(r13);	/* get kernel TOC into r2 */	    \
+ 	mflr	r6;			/* save LR in stackframe */	    \
+ 	mfctr	r7;			/* save CTR in stackframe */	    \
+@@ -390,7 +386,7 @@ exc_##n##_common:							    \
+ 	lwz	r10,excf+EX_CR(r13);	/* load orig CR back from PACA	*/  \
+ 	lbz	r11,PACAIRQSOFTMASK(r13); /* get current IRQ softe */	    \
+ 	ld	r12,exception_marker@toc(r2);				    \
+-	li	r0,0;							    \
++	ZEROIZE_GPR(0);							    \
+ 	std	r3,GPR10(r1);		/* save r10 to stackframe */	    \
+ 	std	r4,GPR11(r1);		/* save r11 to stackframe */	    \
+ 	std	r5,GPR13(r1);		/* save it to stackframe */	    \
+@@ -1056,15 +1052,14 @@ bad_stack_book3e:
+ 	mfspr	r11,SPRN_ESR
+ 	std	r10,_DEAR(r1)
+ 	std	r11,_ESR(r1)
+-	std	r0,GPR0(r1);		/* save r0 in stackframe */	    \
+-	std	r2,GPR2(r1);		/* save r2 in stackframe */	    \
+-	SAVE_GPRS(3, 9, r1);		/* save r3 - r9 in stackframe */    \
++	SAVE_GPR(0, r1);		/* save r0 in stackframe */	    \
++	SAVE_GPRS(2, 9, r1);		/* save r2 - r9 in stackframe */    \
+ 	ld	r3,PACA_EXGEN+EX_R10(r13);/* get back r10 */		    \
+ 	ld	r4,PACA_EXGEN+EX_R11(r13);/* get back r11 */		    \
+ 	mfspr	r5,SPRN_SPRG_GEN_SCRATCH;/* get back r13 XXX can be wrong */ \
+ 	std	r3,GPR10(r1);		/* save r10 to stackframe */	    \
+ 	std	r4,GPR11(r1);		/* save r11 to stackframe */	    \
+-	std	r12,GPR12(r1);		/* save r12 in stackframe */	    \
++	SAVE_GPR(12, r1);		/* save r12 in stackframe */	    \
+ 	std	r5,GPR13(r1);		/* save it to stackframe */	    \
+ 	mflr	r10
+ 	mfctr	r11
+@@ -1072,12 +1067,12 @@ bad_stack_book3e:
+ 	std	r10,_LINK(r1)
+ 	std	r11,_CTR(r1)
+ 	std	r12,_XER(r1)
+-	SAVE_GPRS(14, 31, r1)
++	SAVE_NVGPRS(r1)
+ 	lhz	r12,PACA_TRAP_SAVE(r13)
+ 	std	r12,_TRAP(r1)
+ 	addi	r11,r1,INT_FRAME_SIZE
+ 	std	r11,0(r1)
 -	li	r12,0
-+	ZEROIZE_GPR(0)
-+	ZEROIZE_GPRS(4, 12)
- 	mtctr	r0
- 	mtspr	SPRN_XER,r0
- .Lsyscall_restore_regs_cont:
-@@ -394,7 +369,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	ld	r4,_XER(r1)
- 	mtctr	r3
- 	mtspr	SPRN_XER,r4
--	ld	r0,GPR0(r1)
-+	REST_GPR(0, r1)
- 	REST_GPRS(4, 12, r1)
- 	b	.Lsyscall_restore_regs_cont
- .Lsyscall_rst_end:
++	ZEROIZE_GPR(12)
+ 	std	r12,0(r11)
+ 	ld	r2,PACATOC(r13)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
 -- 
 2.34.1
 
