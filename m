@@ -4,118 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63108C32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 02:21:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFF3DC3F6B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 02:48:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MC8x20Z4Sz2xGg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 12:21:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=QWOxPO9Z;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=40.107.236.40; helo=nam11-bn8-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=QWOxPO9Z;
-	dkim-atps=neutral
-Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on2040.outbound.protection.outlook.com [40.107.236.40])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MC9X82ZmGz3cB3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 12:48:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC8d80DH1z3c7B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 12:07:53 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=BW0HOr41CDsV/wGrunk2Lm/J85BAU40eEviEHRs5HMkeP/sEftGmpDq3jpPFAZoATKUIRb+aDlxf4/oANzS05JhunIQtgPPct0ut54CyS0gHR1nNmDas1oBgjPRe5xm8QOlb0EREAQ/FL6HZh3hhAZLVEbPkbB1iSwZ6+L2TZHxIP/o19HZyki1wWgsuDT+BnMqPbwmioR/KTCCyQKRSCkgsFYjyK7npbTjNGj+W7ObCYniAU1bLSMMONx4HU97gHc02svu3BvB2Boq549aJSK1JlkF6ToLt5jONjiTSV/8/wdPLtZoTK3U7UPlv0h0L0MUvHLUrikWaxHOwkYmXvw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=/EsHsBSpkl01Xgx6E992Gm8GA/HDYoWLZnjRlByMO6c=;
- b=i/Pb4VlzU5vTjxaaqGRkwEPTK7M3uHrfzzF2un4WZk0DwVr3VueGmNPwgdj9YzvEGNuKUqbpS1KO/iU3NvPmL/0lmcmB4PVVR11ELFZXrso41NOyz3NJXoZmx1cONlLuVwW3EZTclhr4UQzBwciV/OGLrje2XqLrnJi7dQrU8TCQHgF/400q1qd+bVR99cnslBs3JFPL2LsRKJRU4LbYfK0QRAXnOORS5KREjy7JBn45l4ErO78CuOWF9fvcrusi91At+UlOlb6eY/4uLwqvxJqlGyE9mIoqmkR+0ZdogXAcw5rewccsdcnFb55L+TqgnHSyme3j3NK5LeMkN0auuw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/EsHsBSpkl01Xgx6E992Gm8GA/HDYoWLZnjRlByMO6c=;
- b=QWOxPO9Z2UDNra3ELXopKNR8DJ4hwzrnvL6BevAQlnbwv0irnyb7EBFGFvZylVGQIJoEyggjmXxsNxw20HivdHUkyS5BAQAnYDpA1B/w3NmV/7oX1HD2sRqwEeuTXUZxGGXjfLMxp5HR7+Vm7PNfV0x6gNbnbnwJcgBmZCmWhEy3Te0j6wO8OQ7MRw0sRSkX2BMts7IGJUc6tEI+S9ex/0xhxFN7mrmRSTnCgosTAtDiNHJKUeXh9XMv2esPTbJA8akB8ZE5ya6doyob6WXDT+xgw0RbHggp1XCjVar2SvtXvAEJ7vnMnQnQIbe+7YnGOL5gz/wF8I3uEpPtixfBaQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from BYAPR12MB3176.namprd12.prod.outlook.com (2603:10b6:a03:134::26)
- by BY5PR12MB4918.namprd12.prod.outlook.com (2603:10b6:a03:1df::22) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5546.18; Wed, 24 Aug
- 2022 02:07:34 +0000
-Received: from BYAPR12MB3176.namprd12.prod.outlook.com
- ([fe80::7432:2749:aa27:722c]) by BYAPR12MB3176.namprd12.prod.outlook.com
- ([fe80::7432:2749:aa27:722c%7]) with mapi id 15.20.5546.022; Wed, 24 Aug 2022
- 02:07:33 +0000
-References: <6e77914685ede036c419fa65b6adc27f25a6c3e9.1660635033.git-series.apopple@nvidia.com>
- <CAC=cRTPGiXWjk=CYnCrhJnLx3mdkGDXZpvApo6yTbeW7+ZGajA@mail.gmail.com>
- <Yvv/eGfi3LW8WxPZ@xz-m1.local> <871qtfvdlw.fsf@nvdebian.thelocal>
- <YvxWUY9eafFJ27ef@xz-m1.local> <87o7wjtn2g.fsf@nvdebian.thelocal>
- <87tu6bbaq7.fsf@yhuang6-desk2.ccr.corp.intel.com>
- <1D2FB37E-831B-445E-ADDC-C1D3FF0425C1@gmail.com>
- <Yv1BJKb5he3dOHdC@xz-m1.local>
- <87czcyawl6.fsf@yhuang6-desk2.ccr.corp.intel.com>
- <Yv5QXkS4Bm9pTBeG@xz-m1.local>
- <874jy9aqts.fsf@yhuang6-desk2.ccr.corp.intel.com>
-User-agent: mu4e 1.6.9; emacs 27.1
-From: Alistair Popple <apopple@nvidia.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH v2 1/2] mm/migrate_device.c: Copy pte dirty bit to page
-Date: Wed, 24 Aug 2022 11:56:25 +1000
-In-reply-to: <874jy9aqts.fsf@yhuang6-desk2.ccr.corp.intel.com>
-Message-ID: <87czcqiecd.fsf@nvdebian.thelocal>
-Content-Type: text/plain
-X-ClientProxiedBy: SJ0PR03CA0191.namprd03.prod.outlook.com
- (2603:10b6:a03:2ef::16) To BYAPR12MB3176.namprd12.prod.outlook.com
- (2603:10b6:a03:134::26)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC9Wg24X9z2xHk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 12:48:12 +1000 (AEST)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.53])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4MC9RV1KKCz1N7Td;
+	Wed, 24 Aug 2022 10:44:38 +0800 (CST)
+Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.24; Wed, 24 Aug 2022 10:48:01 +0800
+Received: from [127.0.0.1] (10.67.108.67) by dggpemm500013.china.huawei.com
+ (7.185.36.172) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Wed, 24 Aug
+ 2022 10:48:01 +0800
+Message-ID: <48ca5e9e-eb03-3fb1-96d0-4755e1d39c3f@huawei.com>
+Date: Wed, 24 Aug 2022 10:48:01 +0800
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: a5fc7fcf-eb26-4461-e1d3-08da85756851
-X-MS-TrafficTypeDiagnostic: BY5PR12MB4918:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	AZ0ERyiZQbgOuusr6wIrkirtipLx3fxd0p93qmdogTeS0jvGNpoLpsdSxunIB5vtIlsxyPB4EO8IU75QXFPJ6b0AwYgx6MIG+l/f5r6WMU3jDZEzaU7Drq9CclGy2Tk72Rd+SSkOxryOkoAVISfIrBHpHP6dRwClvawmf4sZplj84FaaljpYGXAjsZa0+8VQosUSy3XALE9AtQMNzNLmoMVVBj6ILkYoubbjDES0FIVIhmtZttE9NHHpbTmyH0C3cXE/nBlVHMNKdGJznrvCS7Yf0oaQJI1WxM/nBx4JKkxuqR80CkE24+TILt1Wtdm/5TdHUdQCas75LexjYOwEhv3i7WZUCKpOOVty2kHgH8alXAx2Om0Q6EkJuGg7/Sagem+uSR19Vxrn27V7rRQimwAMHoV0fh8gww9WbBbT3Fe1py+ydTA+H6XNcSHmHi8jfepA7sswCGHr4FhFgvN2m9g1qrzm46OjQp15bXo66n590EziaGIJHR8AhW1rhhDSP6LK4RWwdCuAFVImswFLeUQ5EdVXTesn6+xttXffiNPybNBESKD6ZnPE3V+663uuQ1rtqghHaMedu2WWaTwnNulzUrgd/WpyqMnaQJPlWlDylUn6ENIUoED8e5ugKE+THbJquGJ2AoQ8NHEpH51Y87roGj1SQ1oUh04ZIQNngVT1zGVOKhI8tgBH56atp7DizeI4oDJSkmePn3Ajzcpd0dcw2RdTzaGyN9QCCaQ/Hh4GZXdm1rI9MB8eHz5fGovG
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR12MB3176.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(4636009)(396003)(39860400002)(136003)(376002)(366004)(346002)(26005)(2906002)(86362001)(6506007)(6512007)(9686003)(186003)(38100700002)(83380400001)(54906003)(6916009)(8936002)(316002)(4326008)(66476007)(6666004)(66946007)(8676002)(66556008)(478600001)(6486002)(7416002)(5660300002)(41300700001)(14143004);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?/6fK4Tc8EN+t3UKDjkLLwN1vrOkj2LEFVherEZU190HpKJL6++AEvqw4HDTp?=
- =?us-ascii?Q?iZ+iWnPK7wppbWZqIQnoU7C4BTlYp1qmOs7wHh76T3LohfX+g0stMN9NIZ84?=
- =?us-ascii?Q?cP6/6k/bcOP7FT2LF6tatb5d0to5GFXGy3dkYC6AnPr8qe7MrUfwvsCjAxC5?=
- =?us-ascii?Q?Oq6H56XWBGB6MNHf2UAB5/WIHZ2LQg04rGnTbtsrfvz8xRicSS21DUOoul8j?=
- =?us-ascii?Q?xM7U4asLqVbnfH2284H+gz1ilvDyEmu1c5zQq6lM/EB259W+Z6Y2/JkN7rHw?=
- =?us-ascii?Q?/ULtweEd9eXNFhliL8E762OzesWYiXoeG/6DCH05SOrfido0dEm7dS44EdP+?=
- =?us-ascii?Q?jdBNRwep+oTmu9i+AqIdEulCin+Umd6qJThNyDx4lDAbFR62XiKBD4QwHMYY?=
- =?us-ascii?Q?iAsyvNZCY2SZiWo6yng2TaR94SlHb2ehUGDUhtKTK3Udd3b7ronbiWJyYHzM?=
- =?us-ascii?Q?OkccaHwqL8RL9+z80w39i4zRmYrmfyJ2BiVfwlif5nFv281SuRjNXIt+PWiK?=
- =?us-ascii?Q?QPAVjksGT7xhWgPExRa0dsKcO6TZUUCsZ+rxFlBxnfY5wgSamBdaUgJxh91G?=
- =?us-ascii?Q?s5I0y/E4xl2mG9+sjmRVcULOh6p1Yy+CLZu0Vh3zOOGJNkho8wCGaRtSqJBv?=
- =?us-ascii?Q?JHLSu/1rZLDdGqQTOAr59+pBtR3ySzaghM6X2CgLqgedkA9BomViZAMFNSfg?=
- =?us-ascii?Q?H4xzOdk0uvYtZcG3B3gIaFCy+JbMVJqnQ0SUFYDoxVvO4uqZ3dsWfd3UhUZp?=
- =?us-ascii?Q?vnQ7cZpfPD6Z59h7KP2ohSEIyF9OYbt1cRhgtc/FHYwMd9H+1KQ/4k/Sk0Tg?=
- =?us-ascii?Q?AoIB0yyFe01P5wgbkp+A27ZYDYXapmnffZpgXaMyCViFUxSfjVk/NWNauJNb?=
- =?us-ascii?Q?xRpw/w77h8MsAGBD3RG2QJW0sAnZwGOwgdGP4EcH75UOdEw7Oznuh74evVtw?=
- =?us-ascii?Q?aCe3IsELi2mPCxQtBuXiBFgB2Dlt6iLxarWCwNpZAcJWTyH3DmA1D5348GqM?=
- =?us-ascii?Q?/bW+9NZ4PQzxHQ7OqDpd2Cuiv2cVKbHSw3MV8yc9pr2WzwLSENW0n2BsHGtS?=
- =?us-ascii?Q?iEubZqKQ0JNRmT/TTIwlfcuTJ+25E3a2cO/5wOdqT9MWw3HIAMuO64lqWcVF?=
- =?us-ascii?Q?xxJCFp8RbBWqZUtavLRXY8B4KMOC0n6Ot+IR6dss67dfEUoVaVnjCzXFkRRy?=
- =?us-ascii?Q?QeyYcizh0xcoNj5qBFuOT1kgAY+I2eP/Xra7Yvkn8glp1F1xlLC+XYCqXy21?=
- =?us-ascii?Q?WNoORWc0Bij5x7+hL53yT/LFfXMURNJD+oDH5dQSCcOvmbRoeYM+l5GgoGgl?=
- =?us-ascii?Q?0VK+rJ67WzStwmzCr9bYZXxDQa5EgRZQLEJPGXKMAJn7TpnnPiHJHkMK+Hkm?=
- =?us-ascii?Q?s5bWhEVXqhxnQ8dW0jefgCzAGAKklOr+W8jl6qzUxYlDJxlplhH8GoBHq4nR?=
- =?us-ascii?Q?wq7TWpaDW4tqoyDGeEmJX7HVkl9MxvcsjlJSkydbMSdCfzuvzsAPXG93ieGN?=
- =?us-ascii?Q?gykzrgcmX6uooBSacv6Plqy4XYHDCRnERaae/Roq9CPJErxquzm5FodoISU1?=
- =?us-ascii?Q?D1TrxP02fMPG3Xu0QnZheLrY3NVIrp9wVpTbOt48?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a5fc7fcf-eb26-4461-e1d3-08da85756851
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR12MB3176.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Aug 2022 02:07:33.7335
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: RQXgCX74IYU1+4DNPdhzNTO0u8EKAa7l7w1vu6iXDq717ms42rJt/KrnrRLj8KRJmYEBHogq/6UIbtFMZC8l6Q==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4918
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.0
+Subject: Re: [PATCH] objtool: replace _ASM_PTR with quad in macros
+Content-Language: en-US
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	"peterz@infradead.org" <peterz@infradead.org>
+References: <20220823133124.55914-1-chenzhongjin@huawei.com>
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+In-Reply-To: <20220823133124.55914-1-chenzhongjin@huawei.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.108.67]
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+ dggpemm500013.china.huawei.com (7.185.36.172)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -127,64 +55,147 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Sierra Guiza, Alejandro \(Alex\)" <alex.sierra@amd.com>, Ralph Campbell <rcampbell@nvidia.com>, Lyude Paul <lyude@redhat.com>, Karol Herbst <kherbst@redhat.com>, David Hildenbrand <david@redhat.com>, Nadav Amit <nadav.amit@gmail.com>, Felix Kuehling <Felix.Kuehling@amd.com>, linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>, Peter Xu <peterx@redhat.com>, Linux MM <linux-mm@kvack.org>, Logan Gunthorpe <logang@deltatee.com>, Matthew Wilcox <willy@infradead.org>, Jason Gunthorpe <jgg@nvidia.com>, John Hubbard <jhubbard@nvidia.com>, stable@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, huang ying <huang.ying.caritas@gmail.com>, Ben Skeggs <bskeggs@redhat.com>
+Cc: sv@linux.ibm.com, mhiramat@kernel.org, naveen.n.rao@linux.vnet.ibm.com, bp@suse.de, jpoimboe@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-"Huang, Ying" <ying.huang@intel.com> writes:
-
-> Peter Xu <peterx@redhat.com> writes:
+On 2022/8/23 21:31, Chen Zhongjin wrote:
+> Macros STACK_FRAME_NON_STANDARD and ANNOTATE_NOENDBR uses
+> _ASM_PTR. It switch between .long and .quad based on 32bit
+> or 64bit. However objtool doesn't work for 32bit, so _ASM_PTR
+> makes no sense.
 >
->> On Thu, Aug 18, 2022 at 02:34:45PM +0800, Huang, Ying wrote:
->>> > In this specific case, the only way to do safe tlb batching in my mind is:
->>> >
->>> > 	pte_offset_map_lock();
->>> > 	arch_enter_lazy_mmu_mode();
->>> >         // If any pending tlb, do it now
->>> >         if (mm_tlb_flush_pending())
->>> > 		flush_tlb_range(vma, start, end);
->>> >         else
->>> >                 flush_tlb_batched_pending();
->>>
->>> I don't think we need the above 4 lines.  Because we will flush TLB
->>> before we access the pages.
-
-I agree. For migration the TLB flush is only important if the PTE is
-present, and in that case we do a TLB flush anyway.
-
->> Could you elaborate?
+> Considering that _ASM_PTR comes from asm.h, which is x86
+> specific head file, while objtool.h is generic. Replace
+> _ASM_PTR with quad and remove asm.h reference.
 >
-> As you have said below, we don't use non-present PTEs and flush present
-> PTEs before we access the pages.
+> Signed-off-by: Chen Zhongjin <chenzhongjin@huawei.com>
+> ---
+>   include/linux/objtool.h       | 6 ++----
+>   tools/include/linux/objtool.h | 6 ++----
+>   2 files changed, 4 insertions(+), 8 deletions(-)
 >
->>> Can you find any issue if we don't use the above 4 lines?
->>
->> It seems okay to me to leave stall tlb at least within the scope of this
->> function. It only collects present ptes and flush propoerly for them.  I
->> don't quickly see any other implications to other not touched ptes - unlike
->> e.g. mprotect(), there's a strong barrier of not allowing further write
->> after mprotect() returns.
->
-> Yes.  I think so too.
->
->> Still I don't know whether there'll be any side effect of having stall tlbs
->> in !present ptes because I'm not familiar enough with the private dev swap
->> migration code.  But I think having them will be safe, even if redundant.
+> diff --git a/include/linux/objtool.h b/include/linux/objtool.h
+> index 62c54ffbeeaa..d2413cb78037 100644
+> --- a/include/linux/objtool.h
+> +++ b/include/linux/objtool.h
+> @@ -45,8 +45,6 @@ struct unwind_hint {
+>   
+>   #ifdef CONFIG_OBJTOOL
+>   
+> -#include <asm/asm.h>
+> -
+>   #ifndef __ASSEMBLY__
+>   
+>   #define UNWIND_HINT(sp_reg, sp_offset, type, end)		\
+> @@ -87,7 +85,7 @@ struct unwind_hint {
+>   #define ANNOTATE_NOENDBR					\
+>   	"986: \n\t"						\
+>   	".pushsection .discard.noendbr\n\t"			\
+> -	_ASM_PTR " 986b\n\t"					\
+> +	".quad 986b\n\t"					\
+>   	".popsection\n\t"
+>   
+>   #define ASM_REACHABLE							\
+> @@ -144,7 +142,7 @@ struct unwind_hint {
+>   
+>   .macro STACK_FRAME_NON_STANDARD func:req
+>   	.pushsection .discard.func_stack_frame_non_standard, "aw"
+> -	_ASM_PTR \func
+> +	.quad \func
+>   	.popsection
+>   .endm
+>   
+> diff --git a/tools/include/linux/objtool.h b/tools/include/linux/objtool.h
+> index 62c54ffbeeaa..d2413cb78037 100644
+> --- a/tools/include/linux/objtool.h
+> +++ b/tools/include/linux/objtool.h
+> @@ -45,8 +45,6 @@ struct unwind_hint {
+>   
+>   #ifdef CONFIG_OBJTOOL
+>   
+> -#include <asm/asm.h>
+> -
+>   #ifndef __ASSEMBLY__
+>   
+>   #define UNWIND_HINT(sp_reg, sp_offset, type, end)		\
+> @@ -87,7 +85,7 @@ struct unwind_hint {
+>   #define ANNOTATE_NOENDBR					\
+>   	"986: \n\t"						\
+>   	".pushsection .discard.noendbr\n\t"			\
+> -	_ASM_PTR " 986b\n\t"					\
+> +	".quad 986b\n\t"					\
+>   	".popsection\n\t"
+>   
+>   #define ASM_REACHABLE							\
+> @@ -144,7 +142,7 @@ struct unwind_hint {
+>   
+>   .macro STACK_FRAME_NON_STANDARD func:req
+>   	.pushsection .discard.func_stack_frame_non_standard, "aw"
+> -	_ASM_PTR \func
+> +	.quad \func
+>   	.popsection
+>   .endm
+>   
 
-What side-effect were you thinking of? I don't see any issue with not
-TLB flushing stale device-private TLBs prior to the migration because
-they're not accessible anyway and shouldn't be in any TLB.
+As ppc said they will use objtool for both 32 and 64bit, maybe we still 
+need a switchable symbol type for this.
 
-> I don't think it's a good idea to be redundant.  That may hide the real
-> issue.
->
-> Best Regards,
-> Huang, Ying
+How about this one?
 
-Thanks all for the discussion. Having done some more reading I agree
-that it's safe to assume HW dirty bits are write-through, so will remove
-the ptep_clear_flush() and use ptep_get_and_clear() instead. Will split
-out the TLB flushing fix into a separate patch in this series.
 
- - Alistair
+diff --git a/include/linux/objtool.h b/include/linux/objtool.h
+index 62c54ffbeeaa..14af2bcc460b 100644
+--- a/include/linux/objtool.h
++++ b/include/linux/objtool.h
+@@ -45,10 +45,14 @@ struct unwind_hint {
+
+  #ifdef CONFIG_OBJTOOL
+
+-#include <asm/asm.h>
+-
+  #ifndef __ASSEMBLY__
+
++#ifdef CONFIG_64BIT
++#define _RELOC_PTR __stringify(.quad)
++#else
++#define _RELOC_PTR __stringify(.long)
++#endif
++
+  #define UNWIND_HINT(sp_reg, sp_offset, type, end)              \
+         "987: \n\t"                                             \
+         ".pushsection .discard.unwind_hints\n\t"                \
+@@ -87,7 +91,7 @@ struct unwind_hint {
+  #define ANNOTATE_NOENDBR                                       \
+         "986: \n\t"                                             \
+         ".pushsection .discard.noendbr\n\t"                     \
+-       _ASM_PTR " 986b\n\t"                                    \
++       _RELOC_PTR " 986b\n\t"                                  \
+         ".popsection\n\t"
+
+  #define ASM_REACHABLE                                                  \
+@@ -98,6 +102,12 @@ struct unwind_hint {
+
+  #else /* __ASSEMBLY__ */
+
++#ifdef CONFIG_64BIT
++#define _RELOC_PTR .quad
++#else
++#define _RELOC_PTR .long
++#endif
++
+  /*
+   * This macro indicates that the following intra-function call is valid.
+   * Any non-annotated intra-function call will cause objtool to issue a 
+warning.
+@@ -144,7 +154,7 @@ struct unwind_hint {
+
+  .macro STACK_FRAME_NON_STANDARD func:req
+         .pushsection .discard.func_stack_frame_non_standard, "aw"
+-       _ASM_PTR \func
++       _RELOC_PTR \func
+         .popsection
+  .endm
+
+
+
