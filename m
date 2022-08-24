@@ -4,70 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C8C1C32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 01:51:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A60BC3F6B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 02:07:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MC8Fw3Jcsz3c66
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 11:51:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MC8cP6WPHz3c7g
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Aug 2022 12:07:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YAaktP1N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ct1bKFro;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1035; helo=mail-pj1-x1035.google.com; envelope-from=jniethe5@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YAaktP1N;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ct1bKFro;
 	dkim-atps=neutral
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC8FB3sDNz2xGy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 11:50:37 +1000 (AEST)
-Received: by mail-pj1-x1035.google.com with SMTP id e19so14435100pju.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Aug 2022 18:50:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:user-agent:references
-         :in-reply-to:date:cc:to:from:subject:message-id:from:to:cc;
-        bh=L7NGZhsdEddaVVBOrdKk8HCVjkHqDc2Mpm5jQDhHOGY=;
-        b=YAaktP1NNPWVFKvRtKwrrwi7fLjIva09QrEEdJP8GA4E97d1+2EMVlRupiXVupMJVI
-         wvjDEiRhlckpSX7gTqSUaA7QbrztFKe4g/xHbNIodHQ9aX2e6W4in0mVQKblCZtRd2o8
-         EYFl+ar12z8btgiIdGIAjwzIBfUiTJ/gB0DPV2ImhWckNiW3mY1m5clv/rTHSk2D50ar
-         i+5Vxude2LD6jiHukL5EIn8rx2kj3DvWxd/wK+BDZxmSEXfU1FlxCRusD9QXZxj2qtkG
-         eL1KYprxEzST/Om2nflzdxCcySevHCK7BvMJ6imY0iwXOKJ9PT1p6QE9t2V0QochAwO1
-         VFDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:user-agent:references
-         :in-reply-to:date:cc:to:from:subject:message-id:x-gm-message-state
-         :from:to:cc;
-        bh=L7NGZhsdEddaVVBOrdKk8HCVjkHqDc2Mpm5jQDhHOGY=;
-        b=TU5Ty1ls5BIB9gvmCJfDzaFUdOP7PtSxnhxDos+66bf3rFuFXVDLMo+xoh+5Jeo7Dg
-         7PkN8hUAQeoQwVk3lzb5Lw+zKBtH1Xfwm/SSjm16UpJ0cmxW7L1iQRmsxP6NBpqnlJHz
-         Y3BN9Pa89OJ6dd08OvYCKpxe2Im2ar7CpIUgpdf8eUs3y+iVxhb1KWApvwPj5d6vYpkm
-         qcuXIQZ06Vp26VjR4BJ4kHxm/Ie1C5gd8qx+63XEKVWzmJSg0sbemWAHqOVM/5i55Ngj
-         SNLg/oc8IivsUHvUhQA/Wb2OmGSoLGEdZ8blPxRcAHovNSgMXQtMWVFXZ1eqHwjTr+oz
-         /2eg==
-X-Gm-Message-State: ACgBeo38O5i8FAnYnxlvgyD2aW4xVRD9NbWZBc3GGnsLLfEKgdnQTJ6b
-	PEQ5di5IX9sIcMxyOAZ3ig0=
-X-Google-Smtp-Source: AA6agR4q+d8YDZ2hzBnwMIiPDeYJhQpinjKbHKe0nKnr/rKYKHsBppsuUkqqjAoroQmSrhLMmco6sQ==
-X-Received: by 2002:a17:902:ebc2:b0:172:94f7:1b5e with SMTP id p2-20020a170902ebc200b0017294f71b5emr27989848plg.131.1661305834244;
-        Tue, 23 Aug 2022 18:50:34 -0700 (PDT)
-Received: from tee480.ozlabs.ibm.com (110-175-254-242.static.tpgi.com.au. [110.175.254.242])
-        by smtp.googlemail.com with ESMTPSA id a3-20020a170902710300b00172e19c2fa9sm5858317pll.9.2022.08.23.18.50.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Aug 2022 18:50:31 -0700 (PDT)
-Message-ID: <ae28ea837d733d5bdb86c9c2e44c74808fa5ee8b.camel@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/rtas: Fix RTAS MSR[HV] handling for Cell
-From: Jordan Niethe <jniethe5@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 24 Aug 2022 11:50:26 +1000
-In-Reply-To: <20220823115952.1203106-2-mpe@ellerman.id.au>
-References: <20220823115952.1203106-1-mpe@ellerman.id.au>
-	 <20220823115952.1203106-2-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-7"
-User-Agent: Evolution 3.36.5-0ubuntu1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MC8bq0TjTz2xGF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Aug 2022 12:06:46 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 27O1g2TO001139;
+	Wed, 24 Aug 2022 02:06:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=kbueKt4rb3c/jJy1eXxSdOWAKYEUQ2Qq2+WLXR5rK+g=;
+ b=Ct1bKFro+1K/7/4z0HYomNo0BCc98np6ItWn2Ut1T1CssdSOXeNrc27uUJHEd9cW93hC
+ 8Ei0/s0t8wnJgniTUEFlWT3Ukl+dCoMnEAGOWiLp5MWE8Xu7avQDBGRpG70FKS6DJrD+
+ gZJjVDbA3gMtz8a2glaCa67HkICdAgNoXa+W/bBv69nEtg/2uaOe5eNJr+Fr+Gqc9HG6
+ dlKGRWPNh2haYt6YVGIfVzS4H6Dcvg48/y0lRYp32YQQni7xuFOaJXoqYN8/WcLJ2zYY
+ FHr4nhSMHww0VGBwHqe4xNF8hzX53MMtCcnTesK0eNFJ2JjY7zNn8O53dsUkOsINd4fb sA== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3j5aj38hmd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 24 Aug 2022 02:06:38 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 27O25Yhb025792;
+	Wed, 24 Aug 2022 02:06:36 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma05fra.de.ibm.com with ESMTP id 3j2q89b90e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 24 Aug 2022 02:06:36 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 27O26Xlq32047564
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 24 Aug 2022 02:06:33 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 78256A4054;
+	Wed, 24 Aug 2022 02:06:33 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 21EE1A405B;
+	Wed, 24 Aug 2022 02:06:33 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Wed, 24 Aug 2022 02:06:33 +0000 (GMT)
+Received: from civic.. (unknown [9.177.18.116])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 130A760431;
+	Wed, 24 Aug 2022 12:06:28 +1000 (AEST)
+From: Rohan McLure <rmclure@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 02/20] powerpc: Use generic fallocate compatibility syscall
+Date: Wed, 24 Aug 2022 12:05:30 +1000
+Message-Id: <20220824020548.62625-3-rmclure@linux.ibm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20220824020548.62625-1-rmclure@linux.ibm.com>
+References: <20220824020548.62625-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: NFGSQnDnM58jryXbm_Vh8o_UbdNMgo7u
+X-Proofpoint-ORIG-GUID: NFGSQnDnM58jryXbm_Vh8o_UbdNMgo7u
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.517,FMLib:17.11.122.1
+ definitions=2022-08-23_10,2022-08-22_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
+ priorityscore=1501 suspectscore=0 clxscore=1015 impostorscore=0
+ lowpriorityscore=0 phishscore=0 mlxscore=0 malwarescore=0 mlxlogscore=628
+ adultscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2207270000 definitions=main-2208240005
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,86 +94,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: rmclure@linux.ibm.com, ldufour@linux.ibm.com, npiggin@gmail.com
+Cc: Rohan McLure <rmclure@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2022-08-23 at 21:59 +-1000, Michael Ellerman wrote:
-+AD4 The semi-recent changes to MSR handling when entering RTAS (firmware)
-+AD4 cause crashes on IBM Cell machines. An example trace:
-+AD4 
-+AD4   kernel tried to execute user page (2fff01a8) - exploit attempt? (uid: 0)
-+AD4   BUG: Unable to handle kernel instruction fetch
-+AD4   Faulting instruction address: 0x2fff01a8
-+AD4   Oops: Kernel access of bad area, sig: 11 +AFsAIw-1+AF0
-+AD4   BE PAGE+AF8-SIZE+AD0-64K MMU+AD0-Hash SMP NR+AF8-CPUS+AD0-4 NUMA Cell
-+AD4   Modules linked in:
-+AD4   CPU: 0 PID: 0 Comm: swapper/0 Tainted: G        W          6.0.0-rc2-00433-gede0a8d3307a +ACM-207
-+AD4   NIP:  000000002fff01a8 LR: 0000000000032608 CTR: 0000000000000000
-+AD4   REGS: c0000000015236b0 TRAP: 0400   Tainted: G        W           (6.0.0-rc2-00433-gede0a8d3307a)
-+AD4   MSR:  0000000008001002 +ADw-ME,RI+AD4  CR: 00000000  XER: 20000000
-+AD4   ...
-+AD4   NIP 0x2fff01a8
-+AD4   LR  0x32608
-+AD4   Call Trace:
-+AD4     0xc00000000143c5f8 (unreliable)
-+AD4     .rtas+AF8-call+-0x224/0x320
-+AD4     .rtas+AF8-get+AF8-boot+AF8-time+-0x70/0x150
-+AD4     .read+AF8-persistent+AF8-clock64+-0x114/0x140
-+AD4     .read+AF8-persistent+AF8-wall+AF8-and+AF8-boot+AF8-offset+-0x24/0x80
-+AD4     .timekeeping+AF8-init+-0x40/0x29c
-+AD4     .start+AF8-kernel+-0x674/0x8f0
-+AD4     start+AF8-here+AF8-common+-0x1c/0x50
-+AD4 
-+AD4 Unlike PAPR platforms where RTAS is only used in guests, on the IBM Cell
-+AD4 machines Linux runs with MSR+AFs-HV+AF0 set but also uses RTAS, provided by
-+AD4 SLOF.
-+AD4 
-+AD4 Fix it by copying the MSR+AFs-HV+AF0 bit from the MSR value we've just read
-+AD4 using mfmsr into the value used for RTAS.
-+AD4 
-+AD4 It seems like we could also fix it using an +ACM-ifdef CELL to set MSR+AFs-HV+AF0,
-+AD4 but that doesn't work because it's possible to build a single kernel
-+AD4 image that runs on both Cell native and pseries.
-+AD4 
-+AD4 Fixes: b6b1c3ce06ca (+ACI-powerpc/rtas: Keep MSR+AFs-RI+AF0 set when calling RTAS+ACI)
-+AD4 Cc: stable+AEA-vger.kernel.org +ACM v5.19+-
-+AD4 Signed-off-by: Michael Ellerman +ADw-mpe+AEA-ellerman.id.au+AD4
-+AD4 ---
-+AD4  arch/powerpc/kernel/rtas+AF8-entry.S +AHw 4 +-+-+-+-
-+AD4  1 file changed, 4 insertions(+-)
-+AD4 
-+AD4 diff --git a/arch/powerpc/kernel/rtas+AF8-entry.S b/arch/powerpc/kernel/rtas+AF8-entry.S
-+AD4 index 9a434d42e660..6ce95ddadbcd 100644
-+AD4 --- a/arch/powerpc/kernel/rtas+AF8-entry.S
-+AD4 +-+-+- b/arch/powerpc/kernel/rtas+AF8-entry.S
-+AD4 +AEAAQA -109,8 +-109,12 +AEAAQA +AF8-GLOBAL(enter+AF8-rtas)
-+AD4  	 +ACo its critical regions (as specified in PAPR+- section 7.2.1). MSR+AFs-S+AF0
-+AD4  	 +ACo is not impacted by RFI+AF8-TO+AF8-KERNEL (only urfid can unset it). So if
-+AD4  	 +ACo MSR+AFs-S+AF0 is set, it will remain when entering RTAS.
-+AD4 +-	 +ACo If we're in HV mode, RTAS must also run in HV mode, so extract MSR+AF8-HV
-+AD4 +-	 +ACo from the saved MSR value and insert into the value RTAS will use.
-+AD4  	 +ACo-/
+The powerpc fallocate compat syscall handler is identical to the
+generic implementation provided by commit 59c10c52f573f ("riscv:
+compat: syscall: Add compat_sys_call_table implementation"), and as
+such can be removed in favour of the generic implementation.
 
-Interestingly it looks like these are the first uses of these extended
-mnemonics in the kernel?
+A future patch series will replace more architecture-defined syscall
+handlers with generic implementations, dependent on introducing generic
+implementations that are compatible with powerpc and arm's parameter
+reorderings.
 
-+AD4 +-	extrdi	r0, r6, 1, 63 - MSR+AF8-HV+AF8-LG
+Reported-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+---
+V1 -> V2: Remove arch-specific fallocate handler.
+V2 -> V3: Remove generic fallocate prototype. Move to beginning of
+series.
+---
+ arch/powerpc/include/asm/compat.h   | 5 +++++
+ arch/powerpc/include/asm/syscalls.h | 2 --
+ arch/powerpc/include/asm/unistd.h   | 1 +
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
-Or in non-mnemonic form...
-rldicl  r0, r6, 64 - MSR+AF8-HV+AF8-LG, 63
-
-+AD4  	LOAD+AF8-REG+AF8-IMMEDIATE(r6, MSR+AF8-ME +AHw MSR+AF8-RI)
-+AD4 +-	insrdi	r6, r0, 1, 63 - MSR+AF8-HV+AF8-LG
-
-Or in non-mnemonic form...
-rldimi	r6, r0, MSR+AF8-HV+AF8-LG, 63 - MSR+AF8-HV+AF8-LG
-
-It is ok to use r0 as a scratch register as it is loaded with 0 afterwards anyway.
-
-+AD4  
-+AD4  	li      r0,0
-+AD4  	mtmsrd  r0,1                    /+ACo disable RI before using SRR0/1 +ACo-/
-
-Reviewed-by: Jordan Niethe +ADw-jniethe5+AEA-gmail.com+AD4
+diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
+index dda4091fd012..f20caae3f019 100644
+--- a/arch/powerpc/include/asm/compat.h
++++ b/arch/powerpc/include/asm/compat.h
+@@ -16,6 +16,11 @@ typedef u16		compat_ipc_pid_t;
+ #include <asm-generic/compat.h>
+ 
+ #ifdef __BIG_ENDIAN__
++#define compat_arg_u64(name)		u32  name##_hi, u32  name##_lo
++#define compat_arg_u64_dual(name)	u32, name##_hi, u32, name##_lo
++#define compat_arg_u64_glue(name)	(((u64)name##_lo & 0xffffffffUL) | \
++					 ((u64)name##_hi << 32))
++
+ #define COMPAT_UTS_MACHINE	"ppc\0\0"
+ #else
+ #define COMPAT_UTS_MACHINE	"ppcle\0\0"
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 21c2faaa2957..675a8f5ec3ca 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -39,8 +39,6 @@ compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u3
+ int compat_sys_truncate64(const char __user *path, u32 reg4,
+ 			  unsigned long len1, unsigned long len2);
+ 
+-long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2, u32 len1, u32 len2);
+-
+ int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
+ 			   unsigned long len2);
+ 
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index b1129b4ef57d..659a996c75aa 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -45,6 +45,7 @@
+ #define __ARCH_WANT_SYS_UTIME
+ #define __ARCH_WANT_SYS_NEWFSTATAT
+ #define __ARCH_WANT_COMPAT_STAT
++#define __ARCH_WANT_COMPAT_FALLOCATE
+ #define __ARCH_WANT_COMPAT_SYS_SENDFILE
+ #endif
+ #define __ARCH_WANT_SYS_FORK
+-- 
+2.34.1
 
