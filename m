@@ -4,63 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0178ECAAD5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Aug 2022 19:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EF67ECAAA2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 23:42:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MGgBS1zBkz3bmC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Aug 2022 05:15:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MDKJ51s0gz3bms
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Aug 2022 09:42:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=cF+kdAvc;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=conchuod.ie header.i=@conchuod.ie header.a=rsa-sha256 header.s=google header.b=SJaPKdEK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::22d; helo=mail-lj1-x22d.google.com; envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=conchuod.ie (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=mail@conchuod.ie; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=cF+kdAvc;
+	dkim=pass (2048-bit key; secure) header.d=conchuod.ie header.i=@conchuod.ie header.a=rsa-sha256 header.s=google header.b=SJaPKdEK;
 	dkim-atps=neutral
-Received: from mail-lj1-x22d.google.com (mail-lj1-x22d.google.com [IPv6:2a00:1450:4864:20::22d])
+Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MGg9m33s6z2xFx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2022 05:14:51 +1000 (AEST)
-Received: by mail-lj1-x22d.google.com with SMTP id b26so2108140ljk.12
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2022 12:14:51 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MDFkm577kz2xJL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2022 07:01:33 +1000 (AEST)
+Received: by mail-wr1-x430.google.com with SMTP id az27so6062354wrb.6
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2022 14:01:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc;
-        bh=Y8cn/Ka3pcZLBE1C037RI6dkwIa2wol9roLu1FJAIwI=;
-        b=cF+kdAvc4wBcoWhrn/GOzEioVwY+NRlToBqYoVLuTvU9cB/S9BjUxM8IeKAuLlNfLs
-         guxPRuRbI4aNt0dY7ubYOam97BUkWCvn2zaohD+yHmSmgxHdMlkIQhOORX/BNs0DnxSD
-         FT6goqc6eE2lYQLdw9NjixEPA1a3hsprxC+cDgM3/LIwOKRzCzLyD7le4hmCakgQ0D0j
-         qHgxEtdVqmW+EJ5LtmaTr2QQRTXHtWLcz71Y6QM/cGMUW+VzafNLIlTf8vArp0uYIrw/
-         Qh+kh8gLNj5UZZaVLMu95sLnyFB3F9eFXiMfPbmm5m1qh3iP9z4e2IbaNsvNs8IA17HF
-         Qbkg==
+        d=conchuod.ie; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc;
+        bh=Z63zwi7cGAuKiNoBIs10Ekj9CC9KQ4p8G+KukTWva3I=;
+        b=SJaPKdEKD3cZ4U2ILmGJ7YYl8jrjkW+umstaVhULXfth/8eB87EBEKn/1mLbA1W76X
+         PzwduEhBRnRX4YqA+aiPXjDTcwdjcfx/3gAU9DBS4WBTJpRmqny0NPSmw9G9ochTOInu
+         2WeWfYenhoC74R53yv/Z0OwTJEtmrKUx6FM/amJ0sZsda7+BI8NV+YKEpXHvhWWUIQjL
+         jIvX/rug3aVUgMdrWNpc6nGPjyF4/U1BUWb17IFkiyO/CnXUmbpjEQXfrqIv9bH9Ityb
+         Jo9HX3MLhnjEaryWcsPgu/zFHTD87Za/Foj2KTeWLFsfxj4oLiPHVvekJWAPqw55D4IJ
+         wP5A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc;
-        bh=Y8cn/Ka3pcZLBE1C037RI6dkwIa2wol9roLu1FJAIwI=;
-        b=UU1gcf4HUnFkxFIXVpm2/ze/wi2DoqweMcGLT47tZgf4F8gXA02krTE+cT72klRhy3
-         qghdfP/SECDwbQdmyZxQMcSFDr+AsOtMPvpTxqfq7QMhli8A3EhV5thGxyAvtsrRf+4E
-         WS7bWvKFuXBLinm6eQoydssu4U1pHXrA60FLk4L0PwS89XoGKuOu8HJ1CsuO1NHw2MKb
-         jrT55Okwepsrez2ErsGBaLAepCw1lRI58rTAeWoV7yywJ2YkkyDSDewBssO/TAXNLR4d
-         SnBiLOEtm1Wbu5gwAIwnDFYqLDaN1xCdWkIY6Zu+V2HX9LmRfxxfnCsCnqUDrJQC0Y0Y
-         sHwg==
-X-Gm-Message-State: ACgBeo2ixxJnKvVkqFrdrzUFu92Mn4RiIKn9rzmTXiLlN/fft7m/K74S
-	GbVn+s3TFriW0H4+P/2vzlSXqE4NkKk+LLNNCTk41A==
-X-Google-Smtp-Source: AA6agR5P7HwgcXKioSMOaHmqYnD0Zdm6r3YM9ykmsuJ9lZHHOWUMc2YeLsDh/5cR/Rn2ia4E+vs5JMAz7+l704S1p8U=
-X-Received: by 2002:a2e:a910:0:b0:261:b408:1169 with SMTP id
- j16-20020a2ea910000000b00261b4081169mr6255451ljq.360.1661800482927; Mon, 29
- Aug 2022 12:14:42 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc;
+        bh=Z63zwi7cGAuKiNoBIs10Ekj9CC9KQ4p8G+KukTWva3I=;
+        b=Z1mrt10wz9FD9wWKymohXnpuw+Wf5ZMpOhxyXd7ly3iuSIHq5e5A4R+yOhq4Ioj9Bj
+         AZBIEveaK18xkVgRpZ88n2Rcd9qMXrBKJeJ5Sw8s73vSsLMW1qNWq06UY12j3Z4fWzTC
+         9ZD2sje8mQdMHcbkp7PQdfz0GdY5ZnaS5iMRUS3Xzh4r7HrI8fprmBjUGsiCkP8Mcafi
+         AEu4iH9QTNuGduxn1uPKeGU/5OYbmG08oekVfoAZhgoZripyb6Ck/di8MQ9gOascyBGa
+         gbaDwpuqge2qUC3qJ1XNdJSOsIGfw2BI7zQZzenjEH5KdEGbVPc4oKzNFGhW+AikZPP5
+         5fgQ==
+X-Gm-Message-State: ACgBeo0XHUk8jMOlPWVbNyEYpEdliara1RwSk+UH+AF3R1+iWyjW9jQ1
+	p2H/AjGmrJVJw8GGzGsOrKsM7A==
+X-Google-Smtp-Source: AA6agR6CHzaozIjR/7Q20mq4qiXqh3OzKi41CUQLkIeloF4Lpy2xCkUYlbFCvfPNRwRzxYHUk2X5VA==
+X-Received: by 2002:a5d:5b19:0:b0:225:3ed4:ff64 with SMTP id bx25-20020a5d5b19000000b002253ed4ff64mr3336331wrb.537.1661461285500;
+        Thu, 25 Aug 2022 14:01:25 -0700 (PDT)
+Received: from henark71.. ([51.37.149.245])
+        by smtp.gmail.com with ESMTPSA id i14-20020adffdce000000b00225213fd4a9sm220877wrs.33.2022.08.25.14.01.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 25 Aug 2022 14:01:24 -0700 (PDT)
+From: Conor Dooley <mail@conchuod.ie>
+To: arnd@arndb.de,
+	linux-arch@vger.kernel.org
+Subject: [PATCH v2] include/linux: declare cpuinfo_op in processor.h
+Date: Thu, 25 Aug 2022 21:59:43 +0100
+Message-Id: <20220825205942.1713914-1-mail@conchuod.ie>
+X-Mailer: git-send-email 2.37.1
 MIME-Version: 1.0
-References: <20220827164056.3365356-1-masahiroy@kernel.org>
-In-Reply-To: <20220827164056.3365356-1-masahiroy@kernel.org>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Mon, 29 Aug 2022 12:14:31 -0700
-Message-ID: <CAKwvOdkZY5R-pU-Obz0GgwXfL=POqXkkMwidj=C3pip_vxMuog@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: clean up binutils version check
-To: Masahiro Yamada <masahiroy@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 26 Aug 2022 09:41:36 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,146 +76,441 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>, Kees Cook <keescook@chromium.org>, linux-kbuild@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, linux-kernel@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>, Nathan Chancellor <nathan@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, Alexey Dobriyan <adobriyan@gmail.com>, Daniel Axtens <dja@axtens.net>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com, x86@kernel.org, linux-mips@vger.kernel.org, jcmvbkbc@gmail.com, Conor Dooley <conor.dooley@microchip.com>, guoren@kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, will@kernel.org, gerg@linux-m68k.org, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, geert@linux-m68k.org, vgupta@kernel.org, mattst88@gmail.com, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, linux-um@lists.infradead.org, hca@linux.ibm.com, linux-alpha@vger.kernel.org, richard.henderson@linaro.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, shorne@gmail.com, linux-arm-kernel@lists.infradead.org, bcain@quicinc.com, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, linux-kernel@vger.ke
+ rnel.org, dinguyen@kernel.org, palmer@dabbelt.com, richard@nod.at, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Aug 27, 2022 at 9:43 AM Masahiro Yamada <masahiroy@kernel.org> wrote:
->
-> The checkbin in arch/powerpc/Makefile errors out if ld <= 2.24.
-> So, the requirement on PPC is binutils >= 2.25. It is cleaner to
-> specify it in scripts/min-tool-version.sh. If binutils < 2.25 is
-> used, the toolchain check will fail in the Kconfig stage going
-> forward.
+From: Conor Dooley <conor.dooley@microchip.com>
 
-Thoughts on making binutils 2.25.1 the new minimal support version for
-all architectures? We already require GCC 5.1. Looking at
+RISC-V is missing a prototype for cpuinfo_op, triggering complaints
+from sparse. Rather than adding yet another `extern const struct
+seq_operations cpuinfo_op;` to an arch specific header file, create a
+generic variant and include it across the board.
 
-https://gcc.gnu.org/releases.html
+Several archs already have a declaration in asm/processor.h - migrate
+these to include linux/processor.h instead. Most archs do not declare
+cpuinfo_op so one sparse complaint off their books.
 
-that was released on April 22, 2015.  Looking at
+Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+---
+Changes since v1:
+- Per Geert, use linux/processor.h & include it on all archs &
+- Squash to a single patch
 
-https://ftp.gnu.org/gnu/binutils/
+I pushed it out for LKP to take a look at, and was all good there.
+Only added one person per arch & the mailing lists to stay within a
+1024 character CC list. Please scream if I picked the wrong person.
+---
+ arch/alpha/kernel/setup.c               | 1 +
+ arch/arc/kernel/setup.c                 | 1 +
+ arch/arm/kernel/setup.c                 | 1 +
+ arch/arm64/kernel/cpuinfo.c             | 1 +
+ arch/csky/kernel/cpu-probe.c            | 1 +
+ arch/hexagon/kernel/setup.c             | 1 +
+ arch/ia64/kernel/setup.c                | 1 +
+ arch/loongarch/kernel/proc.c            | 1 +
+ arch/m68k/kernel/setup_mm.c             | 1 +
+ arch/m68k/kernel/setup_no.c             | 1 +
+ arch/microblaze/include/asm/processor.h | 2 --
+ arch/microblaze/kernel/cpu/mb.c         | 1 +
+ arch/mips/kernel/proc.c                 | 1 +
+ arch/nios2/kernel/cpuinfo.c             | 1 +
+ arch/openrisc/kernel/setup.c            | 1 +
+ arch/parisc/kernel/setup.c              | 1 +
+ arch/powerpc/kernel/setup-common.c      | 1 +
+ arch/riscv/kernel/cpu.c                 | 3 ++-
+ arch/s390/include/asm/processor.h       | 2 +-
+ arch/s390/kernel/processor.c            | 1 +
+ arch/sh/include/asm/processor.h         | 1 -
+ arch/sh/kernel/cpu/proc.c               | 1 +
+ arch/sparc/include/asm/cpudata.h        | 2 --
+ arch/sparc/kernel/cpu.c                 | 1 +
+ arch/um/kernel/um_arch.c                | 1 +
+ arch/x86/include/asm/processor.h        | 2 --
+ arch/x86/kernel/cpu/proc.c              | 1 +
+ arch/xtensa/kernel/setup.c              | 1 +
+ fs/proc/cpuinfo.c                       | 3 +--
+ include/linux/processor.h               | 2 ++
+ 30 files changed, 28 insertions(+), 11 deletions(-)
 
-2.25 was released on 2014-12-23 and 2.25.1 on 2015-07-21.
-
-Current minimum is 2.23 released on 2012-10-22.  Almost 10 years old.
-
->
-> Since binutils >= 2.25 is already required, another version test
-> for --save-restore-funcs on PPC64 is always met.
->
-> PPC is the last user of ld-ifversion. With all the callers removed,
-> the macro definition in scripts/Makefile.compiler can go away.
->
-> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
-> ---
->
->  arch/powerpc/Makefile       | 21 ---------------------
->  arch/powerpc/lib/Makefile   |  8 --------
->  scripts/Makefile.compiler   |  4 ----
->  scripts/min-tool-version.sh |  8 +++++++-
->  4 files changed, 7 insertions(+), 34 deletions(-)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 02742facf895..fb607758eeca 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -46,13 +46,7 @@ UTS_MACHINE := $(subst $(space),,$(machine-y))
->  ifdef CONFIG_PPC32
->  KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
->  else
-> -ifeq ($(call ld-ifversion, -ge, 22500, y),y)
-> -# Have the linker provide sfpr if possible.
-> -# There is a corresponding test in arch/powerpc/lib/Makefile
->  KBUILD_LDFLAGS_MODULE += --save-restore-funcs
-> -else
-> -KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-> -endif
->  endif
->
->  ifdef CONFIG_CPU_LITTLE_ENDIAN
-> @@ -395,8 +389,6 @@ vdso_prepare: prepare0
->                 $(build)=arch/powerpc/kernel/vdso include/generated/vdso64-offsets.h)
->  endif
->
-> -archprepare: checkbin
-> -
->  archheaders:
->         $(Q)$(MAKE) $(build)=arch/powerpc/kernel/syscalls all
->
-> @@ -411,16 +403,3 @@ else
->         $(eval KBUILD_CFLAGS += -mstack-protector-guard-offset=$(shell awk '{if ($$2 == "TASK_CANARY") print $$3;}' include/generated/asm-offsets.h))
->  endif
->  endif
-> -
-> -PHONY += checkbin
-> -# Check toolchain versions:
-> -# - gcc-4.6 is the minimum kernel-wide version so nothing required.
-> -checkbin:
-> -       @if test "x${CONFIG_LD_IS_LLD}" != "xy" -a \
-> -               "x$(call ld-ifversion, -le, 22400, y)" = "xy" ; then \
-> -               echo -n '*** binutils 2.24 miscompiles weak symbols ' ; \
-> -               echo 'in some circumstances.' ; \
-> -               echo    '*** binutils 2.23 do not define the TOC symbol ' ; \
-> -               echo -n '*** Please use a different binutils version.' ; \
-> -               false ; \
-> -       fi
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index 8560c912186d..5eb3971ccb9c 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -38,14 +38,6 @@ obj-$(CONFIG_PPC32)  += div64.o copy_32.o crtsavres.o
->
->  obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
->
-> -# See corresponding test in arch/powerpc/Makefile
-> -# 64-bit linker creates .sfpr on demand for final link (vmlinux),
-> -# so it is only needed for modules, and only for older linkers which
-> -# do not support --save-restore-funcs
-> -ifeq ($(call ld-ifversion, -lt, 22500, y),y)
-> -extra-$(CONFIG_PPC64)  += crtsavres.o
-> -endif
-> -
->  obj-$(CONFIG_PPC_BOOK3S_64) += copyuser_power7.o copypage_power7.o \
->                                memcpy_power7.o restart_table.o
->
-> diff --git a/scripts/Makefile.compiler b/scripts/Makefile.compiler
-> index 94d0d40cddb3..63e7d79dd877 100644
-> --- a/scripts/Makefile.compiler
-> +++ b/scripts/Makefile.compiler
-> @@ -68,7 +68,3 @@ cc-ifversion = $(shell [ $(CONFIG_GCC_VERSION)0 $(1) $(2)000 ] && echo $(3) || e
->  # ld-option
->  # Usage: KBUILD_LDFLAGS += $(call ld-option, -X, -Y)
->  ld-option = $(call try-run, $(LD) $(KBUILD_LDFLAGS) $(1) -v,$(1),$(2),$(3))
-> -
-> -# ld-ifversion
-> -# Usage:  $(call ld-ifversion, -ge, 22252, y)
-> -ld-ifversion = $(shell [ $(CONFIG_LD_VERSION)0 $(1) $(2)0 ] && echo $(3) || echo $(4))
-> diff --git a/scripts/min-tool-version.sh b/scripts/min-tool-version.sh
-> index 250925aab101..7df9f2150ea1 100755
-> --- a/scripts/min-tool-version.sh
-> +++ b/scripts/min-tool-version.sh
-> @@ -14,7 +14,13 @@ fi
->
->  case "$1" in
->  binutils)
-> -       echo 2.23.0
-> +       if [ "$SRCARCH" = powerpc ]; then
-> +               # binutils 2.24 miscompiles weak symbols in some circumstances
-> +               # binutils 2.23 do not define the TOC symbol
-> +               echo 2.25.0
-> +       else
-> +               echo 2.23.0
-> +       fi
->         ;;
->  gcc)
->         echo 5.1.0
-> --
-> 2.34.1
->
-
-
+diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
+index b4fbbba30aa2..d2c2546e9b1a 100644
+--- a/arch/alpha/kernel/setup.c
++++ b/arch/alpha/kernel/setup.c
+@@ -46,6 +46,7 @@
+ #include <asm/io.h>
+ #include <linux/log2.h>
+ #include <linux/export.h>
++#include <linux/processor.h>
+ 
+ static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
+ static struct notifier_block alpha_panic_block = {
+diff --git a/arch/arc/kernel/setup.c b/arch/arc/kernel/setup.c
+index 41f07b3e594e..b681bdd21a0c 100644
+--- a/arch/arc/kernel/setup.c
++++ b/arch/arc/kernel/setup.c
+@@ -17,6 +17,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/of.h>
+ #include <linux/cache.h>
++#include <linux/processor.h>
+ #include <uapi/linux/mount.h>
+ #include <asm/sections.h>
+ #include <asm/arcregs.h>
+diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
+index 1e8a50a97edf..83240c3c0463 100644
+--- a/arch/arm/kernel/setup.c
++++ b/arch/arm/kernel/setup.c
+@@ -29,6 +29,7 @@
+ #include <linux/compiler.h>
+ #include <linux/sort.h>
+ #include <linux/psci.h>
++#include <linux/processor.h>
+ 
+ #include <asm/unified.h>
+ #include <asm/cp15.h>
+diff --git a/arch/arm64/kernel/cpuinfo.c b/arch/arm64/kernel/cpuinfo.c
+index d7702f39b4d3..4c1b12918aed 100644
+--- a/arch/arm64/kernel/cpuinfo.c
++++ b/arch/arm64/kernel/cpuinfo.c
+@@ -20,6 +20,7 @@
+ #include <linux/personality.h>
+ #include <linux/preempt.h>
+ #include <linux/printk.h>
++#include <linux/processor.h>
+ #include <linux/seq_file.h>
+ #include <linux/sched.h>
+ #include <linux/smp.h>
+diff --git a/arch/csky/kernel/cpu-probe.c b/arch/csky/kernel/cpu-probe.c
+index 5f15ca31d3e8..62580f5d0d74 100644
+--- a/arch/csky/kernel/cpu-probe.c
++++ b/arch/csky/kernel/cpu-probe.c
+@@ -5,6 +5,7 @@
+ #include <linux/init.h>
+ #include <linux/seq_file.h>
+ #include <linux/memblock.h>
++#include <linux/processor.h>
+ 
+ #include <abi/reg_ops.h>
+ 
+diff --git a/arch/hexagon/kernel/setup.c b/arch/hexagon/kernel/setup.c
+index 1880d9beaf2b..395d2930dbd1 100644
+--- a/arch/hexagon/kernel/setup.c
++++ b/arch/hexagon/kernel/setup.c
+@@ -13,6 +13,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/console.h>
+ #include <linux/of_fdt.h>
++#include <linux/processor.h>
+ #include <asm/io.h>
+ #include <asm/sections.h>
+ #include <asm/setup.h>
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index fd6301eafa9d..973725c4ce1e 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -52,6 +52,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/kexec.h>
+ #include <linux/crash_dump.h>
++#include <linux/processor.h>
+ 
+ #include <asm/mca.h>
+ #include <asm/meminit.h>
+diff --git a/arch/loongarch/kernel/proc.c b/arch/loongarch/kernel/proc.c
+index 5c67cc4fd56d..a8cbebe839e2 100644
+--- a/arch/loongarch/kernel/proc.c
++++ b/arch/loongarch/kernel/proc.c
+@@ -6,6 +6,7 @@
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
++#include <linux/processor.h>
+ #include <asm/bootinfo.h>
+ #include <asm/cpu.h>
+ #include <asm/cpu-features.h>
+diff --git a/arch/m68k/kernel/setup_mm.c b/arch/m68k/kernel/setup_mm.c
+index e62fa8f2149b..45d82a4839fc 100644
+--- a/arch/m68k/kernel/setup_mm.c
++++ b/arch/m68k/kernel/setup_mm.c
+@@ -25,6 +25,7 @@
+ #include <linux/module.h>
+ #include <linux/nvram.h>
+ #include <linux/initrd.h>
++#include <linux/processor.h>
+ 
+ #include <asm/bootinfo.h>
+ #include <asm/byteorder.h>
+diff --git a/arch/m68k/kernel/setup_no.c b/arch/m68k/kernel/setup_no.c
+index cb6def585851..86dd4b47ff43 100644
+--- a/arch/m68k/kernel/setup_no.c
++++ b/arch/m68k/kernel/setup_no.c
+@@ -33,6 +33,7 @@
+ #include <linux/initrd.h>
+ #include <linux/root_dev.h>
+ #include <linux/rtc.h>
++#include <linux/processor.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/bootinfo.h>
+diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
+index 7e9e92670df3..c5877c91116a 100644
+--- a/arch/microblaze/include/asm/processor.h
++++ b/arch/microblaze/include/asm/processor.h
+@@ -15,8 +15,6 @@
+ #include <asm/current.h>
+ 
+ # ifndef __ASSEMBLY__
+-/* from kernel/cpu/mb.c */
+-extern const struct seq_operations cpuinfo_op;
+ 
+ # define cpu_relax()		barrier()
+ 
+diff --git a/arch/microblaze/kernel/cpu/mb.c b/arch/microblaze/kernel/cpu/mb.c
+index 9581d194d9e4..33f5be916121 100644
+--- a/arch/microblaze/kernel/cpu/mb.c
++++ b/arch/microblaze/kernel/cpu/mb.c
+@@ -14,6 +14,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/cpu.h>
+ #include <linux/initrd.h>
++#include <linux/processor.h>
+ 
+ #include <linux/bug.h>
+ #include <asm/cpuinfo.h>
+diff --git a/arch/mips/kernel/proc.c b/arch/mips/kernel/proc.c
+index 8eba5a1ed664..54a4226cff84 100644
+--- a/arch/mips/kernel/proc.c
++++ b/arch/mips/kernel/proc.c
+@@ -8,6 +8,7 @@
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
++#include <linux/processor.h>
+ #include <asm/bootinfo.h>
+ #include <asm/cpu.h>
+ #include <asm/cpu-features.h>
+diff --git a/arch/nios2/kernel/cpuinfo.c b/arch/nios2/kernel/cpuinfo.c
+index 203870c4b86d..9641ca55377e 100644
+--- a/arch/nios2/kernel/cpuinfo.c
++++ b/arch/nios2/kernel/cpuinfo.c
+@@ -12,6 +12,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/string.h>
+ #include <linux/of.h>
++#include <linux/processor.h>
+ #include <asm/cpuinfo.h>
+ 
+ struct cpuinfo cpuinfo;
+diff --git a/arch/openrisc/kernel/setup.c b/arch/openrisc/kernel/setup.c
+index 0cd04d936a7a..a628c928941b 100644
+--- a/arch/openrisc/kernel/setup.c
++++ b/arch/openrisc/kernel/setup.c
+@@ -33,6 +33,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/of.h>
+ #include <linux/device.h>
++#include <linux/processor.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/types.h>
+diff --git a/arch/parisc/kernel/setup.c b/arch/parisc/kernel/setup.c
+index f005ddedb50e..d00488507f49 100644
+--- a/arch/parisc/kernel/setup.c
++++ b/arch/parisc/kernel/setup.c
+@@ -25,6 +25,7 @@
+ #include <linux/sched.h>
+ #include <linux/sched/clock.h>
+ #include <linux/start_kernel.h>
++#include <linux/processor.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/processor.h>
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index dd98f43bd685..12ddcb1401be 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -34,6 +34,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/hugetlb.h>
+ #include <linux/pgtable.h>
++#include <linux/processor.h>
+ #include <asm/io.h>
+ #include <asm/paca.h>
+ #include <asm/processor.h>
+diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+index 0be8a2403212..f28ec528d54a 100644
+--- a/arch/riscv/kernel/cpu.c
++++ b/arch/riscv/kernel/cpu.c
+@@ -4,8 +4,9 @@
+  */
+ 
+ #include <linux/init.h>
+-#include <linux/seq_file.h>
+ #include <linux/of.h>
++#include <linux/processor.h>
++#include <linux/seq_file.h>
+ #include <asm/hwcap.h>
+ #include <asm/smp.h>
+ #include <asm/pgtable.h>
+diff --git a/arch/s390/include/asm/processor.h b/arch/s390/include/asm/processor.h
+index bd66f8e34949..55fbb4f7f7f6 100644
+--- a/arch/s390/include/asm/processor.h
++++ b/arch/s390/include/asm/processor.h
+@@ -33,6 +33,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/linkage.h>
+ #include <linux/irqflags.h>
++#include <linux/processor.h>
+ #include <asm/cpu.h>
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
+@@ -80,7 +81,6 @@ void s390_adjust_jiffies(void);
+ void s390_update_cpu_mhz(void);
+ void cpu_detect_mhz_feature(void);
+ 
+-extern const struct seq_operations cpuinfo_op;
+ extern void execve_tail(void);
+ extern void __bpon(void);
+ unsigned long vdso_size(void);
+diff --git a/arch/s390/kernel/processor.c b/arch/s390/kernel/processor.c
+index a194611ba88c..267886605902 100644
+--- a/arch/s390/kernel/processor.c
++++ b/arch/s390/kernel/processor.c
+@@ -17,6 +17,7 @@
+ #include <linux/mm_types.h>
+ #include <linux/delay.h>
+ #include <linux/cpu.h>
++#include <linux/processor.h>
+ 
+ #include <asm/diag.h>
+ #include <asm/facility.h>
+diff --git a/arch/sh/include/asm/processor.h b/arch/sh/include/asm/processor.h
+index 85a6c1c3c16e..10c4b4b9af46 100644
+--- a/arch/sh/include/asm/processor.h
++++ b/arch/sh/include/asm/processor.h
+@@ -123,7 +123,6 @@ extern unsigned int mem_init_done;
+ 
+ /* arch/sh/kernel/setup.c */
+ const char *get_cpu_subtype(struct sh_cpuinfo *c);
+-extern const struct seq_operations cpuinfo_op;
+ 
+ /* thread_struct flags */
+ #define SH_THREAD_UAC_NOPRINT	(1 << 0)
+diff --git a/arch/sh/kernel/cpu/proc.c b/arch/sh/kernel/cpu/proc.c
+index a306bcd6b341..f373a21c6705 100644
+--- a/arch/sh/kernel/cpu/proc.c
++++ b/arch/sh/kernel/cpu/proc.c
+@@ -2,6 +2,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/processor.h>
+ #include <asm/machvec.h>
+ #include <asm/processor.h>
+ 
+diff --git a/arch/sparc/include/asm/cpudata.h b/arch/sparc/include/asm/cpudata.h
+index d213165ee713..f7e690a7860b 100644
+--- a/arch/sparc/include/asm/cpudata.h
++++ b/arch/sparc/include/asm/cpudata.h
+@@ -7,8 +7,6 @@
+ #include <linux/threads.h>
+ #include <linux/percpu.h>
+ 
+-extern const struct seq_operations cpuinfo_op;
+-
+ #endif /* !(__ASSEMBLY__) */
+ 
+ #if defined(__sparc__) && defined(__arch64__)
+diff --git a/arch/sparc/kernel/cpu.c b/arch/sparc/kernel/cpu.c
+index 79cd6ccfeac0..ffdc7a825b80 100644
+--- a/arch/sparc/kernel/cpu.c
++++ b/arch/sparc/kernel/cpu.c
+@@ -12,6 +12,7 @@
+ #include <linux/smp.h>
+ #include <linux/threads.h>
+ #include <linux/pgtable.h>
++#include <linux/processor.h>
+ 
+ #include <asm/spitfire.h>
+ #include <asm/oplib.h>
+diff --git a/arch/um/kernel/um_arch.c b/arch/um/kernel/um_arch.c
+index e0de60e503b9..4034f5b959f7 100644
+--- a/arch/um/kernel/um_arch.c
++++ b/arch/um/kernel/um_arch.c
+@@ -9,6 +9,7 @@
+ #include <linux/ctype.h>
+ #include <linux/module.h>
+ #include <linux/panic_notifier.h>
++#include <linux/processor.h>
+ #include <linux/seq_file.h>
+ #include <linux/string.h>
+ #include <linux/utsname.h>
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 356308c73951..08ccd453ec4f 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -188,8 +188,6 @@ DECLARE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
+ #define cpu_data(cpu)		boot_cpu_data
+ #endif
+ 
+-extern const struct seq_operations cpuinfo_op;
+-
+ #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
+ 
+ extern void cpu_detect(struct cpuinfo_x86 *c);
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 099b6f0d96bd..5a0699d9ff7d 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -4,6 +4,7 @@
+ #include <linux/string.h>
+ #include <linux/seq_file.h>
+ #include <linux/cpufreq.h>
++#include <linux/processor.h>
+ 
+ #include "cpu.h"
+ 
+diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
+index 9191738f9941..d4417a174887 100644
+--- a/arch/xtensa/kernel/setup.c
++++ b/arch/xtensa/kernel/setup.c
+@@ -25,6 +25,7 @@
+ #include <linux/cpu.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
++#include <linux/processor.h>
+ 
+ #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
+ # include <linux/console.h>
+diff --git a/fs/proc/cpuinfo.c b/fs/proc/cpuinfo.c
+index f38bda5b83ec..ca3065dfecd9 100644
+--- a/fs/proc/cpuinfo.c
++++ b/fs/proc/cpuinfo.c
+@@ -3,10 +3,9 @@
+ #include <linux/fs.h>
+ #include <linux/init.h>
+ #include <linux/proc_fs.h>
++#include <linux/processor.h>
+ #include <linux/seq_file.h>
+ 
+-extern const struct seq_operations cpuinfo_op;
+-
+ static int cpuinfo_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &cpuinfo_op);
+diff --git a/include/linux/processor.h b/include/linux/processor.h
+index dc78bdc7079a..71bdf8626874 100644
+--- a/include/linux/processor.h
++++ b/include/linux/processor.h
+@@ -59,4 +59,6 @@ do {								\
+ 
+ #endif
+ 
++extern const struct seq_operations cpuinfo_op;
++
+ #endif /* _LINUX_PROCESSOR_H */
 -- 
-Thanks,
-~Nick Desaulniers
+2.37.1
+
