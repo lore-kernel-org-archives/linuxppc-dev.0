@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B08C5C28D13
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 07:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABE9DC04AA5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 07:53:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MCw9V6xQWz3blj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 17:50:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MCwFZ0jpHz2xst
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 17:53:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DccTqgAE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZLFEHd4S;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (unknown [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MCw8s5qC8z2xGv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2022 17:49:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MCwDx1DpPz2xbC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2022 17:53:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=DccTqgAE;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ZLFEHd4S;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MCw8s2Q2rz4xV7;
-	Thu, 25 Aug 2022 17:49:33 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MCwDt5BS1z4xV9;
+	Thu, 25 Aug 2022 17:53:02 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1661413773;
-	bh=k/K7Js7dK6dxOfVTDaXcqeIh7AqfvCWAPYJNJN8qsTQ=;
+	s=201909; t=1661413983;
+	bh=UtVip1icK7gJdBlHq+HFWJBnOoW3QoCQ+h8pU+n3KkA=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=DccTqgAEj8cQsbTwecf0Jayd3dBrvqd6U8m1Lt7V86aEL++OLOLr5xIxGu99atBxI
-	 8Op6ppf0sepvXsD0m6OkdhzaHfgImYUmJPGiLiq3nJiq3ntzUck+GTN3FvFJV27GEU
-	 4w0hN5KCHxMDg62pj4Q+gPJPSNhBdDSy7LVx3iHwYtaZaFf76dZGxLlkVEdYTsuVes
-	 cPfKQfSYwJCazV/Fwg8Wr1BfDBHuNGe+IzPBEfhXpzHVzAtNwu/5Xk0J6aE7z/Syo7
-	 WRJmfyOLeFBd2IapKcyLn3WNadQqoAlge4tptmNzYmzmPjrBmjIwoZb83LvI3srdMO
-	 Qu38O06uVNhzg==
+	b=ZLFEHd4Sc+LArWxSHPMZaxUV5Xt5HbCBwxEJoAOkDftQUBd3UvDzQ3SPoUGfIq8+Y
+	 XOXVABGmUJRXNewPOhBZ4PnZBgAclyRWiDmLWWWIEoOxbTyf0lT9HmzLfn6qDXHVP8
+	 4cFLNr2mtb3VMBT0+X8XSw8kOQcDbMBET6kwqKOBcIoT5DWSkK5aoD9YgXXoTklXi4
+	 4vn7aZmWvMmRDrzEWJ1c3IdlA0o+UvHCBus9SLXerZ9zIaIxILLCzH95mjf0d5/kTH
+	 Nh5wLMJbIfMZsTuGrUc2j6C3xLq/AaC3ujgNFv8DeGoG8jRuDO1B7lmoCz2us+rszT
+	 QVS80HXLzHXbw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pali =?utf-8?Q?Roh=C3=A1r?= <pali@kernel.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc/pci: Enable PCI domains in /proc when PCI bus
- numbers are not unique
-In-Reply-To: <20220820115113.30581-1-pali@kernel.org>
-References: <20220820115113.30581-1-pali@kernel.org>
-Date: Thu, 25 Aug 2022 17:49:28 +1000
-Message-ID: <878rnclq47.fsf@mpe.ellerman.id.au>
+To: Masahiro Yamada <masahiroy@kernel.org>, Nicholas Piggin
+ <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: align syscall table for ppc32
+In-Reply-To: <20220820165129.1147589-1-masahiroy@kernel.org>
+References: <20220820165129.1147589-1-masahiroy@kernel.org>
+Date: Thu, 25 Aug 2022 17:53:02 +1000
+Message-ID: <874jy0lpy9.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,68 +59,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Masahiro Yamada <masahiroy@kernel.org>, linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Pali Roh=C3=A1r <pali@kernel.org> writes:
-> On 32-bit powerpc systems with more PCIe controllers and more PCI domains,
-> where on more PCI domains are same PCI numbers, when kernel is compiled
-> with CONFIG_PROC_FS=3Dy and CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT=3Dy
-> options, kernel prints "proc_dir_entry 'pci/01' already registered" error
-> message.
-
-Thanks, I'll pick this up.
-
-> This regression started appearing after commit 566356813082 ("powerpc/pci:
-> Add config option for using all 256 PCI buses") in case in each mPCIe slot
-> is connected PCIe card and therefore PCI bus 1 is populated in for every
-> PCIe controller / PCI domain.
+Masahiro Yamada <masahiroy@kernel.org> writes:
+> Christophe Leroy reported that commit 7b4537199a4a ("kbuild: link
+> symbol CRCs at final link,  removing CONFIG_MODULE_REL_CRCS") broke
+> mpc85xx_defconfig + CONFIG_RELOCATABLE=y.
 >
-> The reason is that PCI procfs code expects that when PCI bus numbers are
-> not unique across all PCI domains, function pci_proc_domain() returns true
-> for domain dependent buses.
+>     LD      vmlinux
+>     SYSMAP  System.map
+>     SORTTAB vmlinux
+>     CHKREL  vmlinux
+>   WARNING: 451 bad relocations
+>   c0b312a9 R_PPC_UADDR32     .head.text-0x3ff9ed54
+>   c0b312ad R_PPC_UADDR32     .head.text-0x3ffac224
+>   c0b312b1 R_PPC_UADDR32     .head.text-0x3ffb09f4
+>   c0b312b5 R_PPC_UADDR32     .head.text-0x3fe184dc
+>   c0b312b9 R_PPC_UADDR32     .head.text-0x3fe183a8
+>       ...
 >
-> Fix this issue by setting PCI_ENABLE_PROC_DOMAINS and PCI_COMPAT_DOMAIN_0
-> flags for 32-bit powerpc code when CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
-> is enabled. Same approach is already implemented for 64-bit powerpc code
-> (where PCI bus numbers are always domain dependent).
+> The compiler emits a bunch of R_PPC_UADDR32, which is not supported by
+> arch/powerpc/kernel/reloc_32.S.
+>
+> The reason is there exists an unaligned symbol.
+>
+>   $ powerpc-linux-gnu-nm -n vmlinux
+>     ...
+>   c0b31258 d spe_aligninfo
+>   c0b31298 d __func__.0
+>   c0b312a9 D sys_call_table
+>   c0b319b8 d __func__.0
+>
+> Commit 7b4537199a4a is not the root cause. Even before that, I can
+> reproduce the same issue for mpc85xx_defconfig + CONFIG_RELOCATABLE=y
+> + CONFIG_MODVERSIONS=n.
+>
+> It is just that nobody did not notice it because when CONFIG_MODVERSIONS
+> is enabled, a __crc_* symbol inserted before sys_call_table was hiding
+> the unalignment issue.
+>
+> I checked the commit history, but I could not understand commit
+> 46b45b10f142 ("[POWERPC] Align the sys_call_table").
+>
+> It said 'Our _GLOBAL macro does a ".align 2" so the alignment is fine
+> for 32 bit'. I checked the _GLOBAL in include/asm-powerpc/ppc_asm.h
+> at that time. _GLOBAL specifies ".align 2" for ppc64, but no .align
+> for ppc32.
+>
+> Commit c857c43b34ec ("powerpc: Don't use a function descriptor for
+> system call table") removed _GLOBAL from the syscall table.
+>
+> Anyway, adding alignment to the syscall table for ppc32 fixes the issue.
+>
+> I am not giving Fixes tag because I do not know since when it has been
+> broken, but presumably it has been for a long while.
 
-We also have the same in ppc4xx_pci_find_bridges().
+Thanks.
 
-And if we can eventually make CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
-the standard behaviour on 32-bit then everything would behave the same
-and we could simplify pci_proc_domain() to match what other arches do.
+I trimmed the change log a bit just to say ~= it's been broken for ever,
+and added a Cc to stable.
 
 cheers
-
-
-> Fixes: 566356813082 ("powerpc/pci: Add config option for using all 256 PC=
-I buses")
-> Signed-off-by: Pali Roh=C3=A1r <pali@kernel.org>
-> ---
->  arch/powerpc/kernel/pci_32.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index ffc4e1928c80..8acbc9592ebb 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -249,6 +249,15 @@ static int __init pcibios_init(void)
->=20=20
->  	printk(KERN_INFO "PCI: Probing PCI hardware\n");
->=20=20
-> +#ifdef CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
-> +	/*
-> +	 * Enable PCI domains in /proc when PCI bus numbers are not unique
-> +	 * across all PCI domains to prevent conflicts. And keep PCI domain 0
-> +	 * backward compatible in /proc for video cards.
-> +	 */
-> +	pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
-> +#endif
-> +
->  	if (pci_has_flag(PCI_REASSIGN_ALL_BUS))
->  		pci_assign_all_buses =3D 1;
->=20=20
-> --=20
-> 2.20.1
