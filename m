@@ -4,67 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EF67ECAAA2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Aug 2022 23:42:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19E88ECAAD2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Aug 2022 22:02:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MDKJ51s0gz3bms
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 26 Aug 2022 09:42:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MGktm307jz3c74
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Aug 2022 08:02:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=conchuod.ie header.i=@conchuod.ie header.a=rsa-sha256 header.s=google header.b=SJaPKdEK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gjUmOZLV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=conchuod.ie (client-ip=2a00:1450:4864:20::430; helo=mail-wr1-x430.google.com; envelope-from=mail@conchuod.ie; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::649; helo=mail-pl1-x649.google.com; envelope-from=3zy4nywykdiawyvirfksskpi.gsqpmry1ttg-hizpmwxw.s3pefw.svk@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=conchuod.ie header.i=@conchuod.ie header.a=rsa-sha256 header.s=google header.b=SJaPKdEK;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gjUmOZLV;
 	dkim-atps=neutral
-Received: from mail-wr1-x430.google.com (mail-wr1-x430.google.com [IPv6:2a00:1450:4864:20::430])
+Received: from mail-pl1-x649.google.com (mail-pl1-x649.google.com [IPv6:2607:f8b0:4864:20::649])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MDFkm577kz2xJL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Aug 2022 07:01:33 +1000 (AEST)
-Received: by mail-wr1-x430.google.com with SMTP id az27so6062354wrb.6
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Aug 2022 14:01:33 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MGk4k5dJWz3bkQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2022 07:25:40 +1000 (AEST)
+Received: by mail-pl1-x649.google.com with SMTP id p18-20020a170902a41200b00172b0dc71e0so6786919plq.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Aug 2022 14:25:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=conchuod.ie; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc;
-        bh=Z63zwi7cGAuKiNoBIs10Ekj9CC9KQ4p8G+KukTWva3I=;
-        b=SJaPKdEKD3cZ4U2ILmGJ7YYl8jrjkW+umstaVhULXfth/8eB87EBEKn/1mLbA1W76X
-         PzwduEhBRnRX4YqA+aiPXjDTcwdjcfx/3gAU9DBS4WBTJpRmqny0NPSmw9G9ochTOInu
-         2WeWfYenhoC74R53yv/Z0OwTJEtmrKUx6FM/amJ0sZsda7+BI8NV+YKEpXHvhWWUIQjL
-         jIvX/rug3aVUgMdrWNpc6nGPjyF4/U1BUWb17IFkiyO/CnXUmbpjEQXfrqIv9bH9Ityb
-         Jo9HX3MLhnjEaryWcsPgu/zFHTD87Za/Foj2KTeWLFsfxj4oLiPHVvekJWAPqw55D4IJ
-         wP5A==
+        d=google.com; s=20210112;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:from:to:cc;
+        bh=pDTzUH9ZmkMZg3cmno897HgIwaaxstGwmWtClqeSQMY=;
+        b=gjUmOZLV9bcbLonNS4lb3WBoz84QjOA/D7CmogvUP5ud9+InysL8Oh9E7DKJdwkXA1
+         t51SYWvWY7me7fS7UP+Cv2Nf/JhijDPumYxXmtSNDCmzKiJTL6HeIT2vpSjyKp+dKUA+
+         i/6AfO9yhnI27e6m85YLYK5uydUZDc69Ws3yGDc+9jVDOLuag8kYSvlT6GKmBabHISlj
+         Agpyx6xSKbJ2VmCCsK/dQfHtKexX+gaWqNmpXiQWr3NzSlhT0v1YMSw9eFOFs2Oau/MZ
+         ybOwhTMeJ9rLhGpwSsJLA1PyAZvwxA2dIcGal5knPsRHjNnfif7k984xL88bpesVgDea
+         AYvg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc;
-        bh=Z63zwi7cGAuKiNoBIs10Ekj9CC9KQ4p8G+KukTWva3I=;
-        b=Z1mrt10wz9FD9wWKymohXnpuw+Wf5ZMpOhxyXd7ly3iuSIHq5e5A4R+yOhq4Ioj9Bj
-         AZBIEveaK18xkVgRpZ88n2Rcd9qMXrBKJeJ5Sw8s73vSsLMW1qNWq06UY12j3Z4fWzTC
-         9ZD2sje8mQdMHcbkp7PQdfz0GdY5ZnaS5iMRUS3Xzh4r7HrI8fprmBjUGsiCkP8Mcafi
-         AEu4iH9QTNuGduxn1uPKeGU/5OYbmG08oekVfoAZhgoZripyb6Ck/di8MQ9gOascyBGa
-         gbaDwpuqge2qUC3qJ1XNdJSOsIGfw2BI7zQZzenjEH5KdEGbVPc4oKzNFGhW+AikZPP5
-         5fgQ==
-X-Gm-Message-State: ACgBeo0XHUk8jMOlPWVbNyEYpEdliara1RwSk+UH+AF3R1+iWyjW9jQ1
-	p2H/AjGmrJVJw8GGzGsOrKsM7A==
-X-Google-Smtp-Source: AA6agR6CHzaozIjR/7Q20mq4qiXqh3OzKi41CUQLkIeloF4Lpy2xCkUYlbFCvfPNRwRzxYHUk2X5VA==
-X-Received: by 2002:a5d:5b19:0:b0:225:3ed4:ff64 with SMTP id bx25-20020a5d5b19000000b002253ed4ff64mr3336331wrb.537.1661461285500;
-        Thu, 25 Aug 2022 14:01:25 -0700 (PDT)
-Received: from henark71.. ([51.37.149.245])
-        by smtp.gmail.com with ESMTPSA id i14-20020adffdce000000b00225213fd4a9sm220877wrs.33.2022.08.25.14.01.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 25 Aug 2022 14:01:24 -0700 (PDT)
-From: Conor Dooley <mail@conchuod.ie>
-To: arnd@arndb.de,
-	linux-arch@vger.kernel.org
-Subject: [PATCH v2] include/linux: declare cpuinfo_op in processor.h
-Date: Thu, 25 Aug 2022 21:59:43 +0100
-Message-Id: <20220825205942.1713914-1-mail@conchuod.ie>
-X-Mailer: git-send-email 2.37.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 26 Aug 2022 09:41:36 +1000
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:x-gm-message-state:from:to:cc;
+        bh=pDTzUH9ZmkMZg3cmno897HgIwaaxstGwmWtClqeSQMY=;
+        b=y8/GM5DxhaDeEeNvuAHor/GCapmo88WQ62kbctlUTH7i0DAazA1SNU8ispxxKQDDoy
+         eKVi40nMALPzd/lr2ipQUFsn74YVFzs51yPLTkY4I2wwOMfU0VEJndzm+0ijJys9yZsl
+         NenduV95QxMzO/S3aDuUk6o6+mqfZ9BMzQ1HiDT/ryo8gmW93jz+XSQpzMIaBRKoIJP4
+         MKIG4wXki6ppdWSiyCQip9IGJ4JYoUYnEEMplZ8RiUADT8Zo7pY6A5u5Xbfrc/WXefVO
+         skiF9b6SETRI2kcndw+79jDbAQ++NTEJt8MrYU6gFxFUpK2cEmiBq8bBQWDKoa+2c63K
+         KuaQ==
+X-Gm-Message-State: ACgBeo0HshSJP7SpO6tDzA505mS9Xkq//5u2b/AOXwAuKWV+BXj9vYAT
+	aY8J81dy7QfG2ccaWdcGDNfRBDz9I6A=
+X-Google-Smtp-Source: AA6agR6UQmZ/vaRok0dLo0fY9ZItUpZFj7DUiATdYYW4UNrGosZUH5TdrbUN0W11FQtWqAaY7kD6g0jugM8=
+X-Received: from surenb-spec.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:3e30])
+ (user=surenb job=sendgmr) by 2002:a05:6a00:1a47:b0:52e:6a8c:5430 with SMTP id
+ h7-20020a056a001a4700b0052e6a8c5430mr18212460pfv.48.1661808335904; Mon, 29
+ Aug 2022 14:25:35 -0700 (PDT)
+Date: Mon, 29 Aug 2022 21:25:03 +0000
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.37.2.672.g94769d06f0-goog
+Message-ID: <20220829212531.3184856-1-surenb@google.com>
+Subject: [RFC PATCH 00/28] per-VMA locks proposal
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailman-Approved-At: Tue, 30 Aug 2022 08:01:45 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,441 +74,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, catalin.marinas@arm.com, x86@kernel.org, linux-mips@vger.kernel.org, jcmvbkbc@gmail.com, Conor Dooley <conor.dooley@microchip.com>, guoren@kernel.org, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, will@kernel.org, gerg@linux-m68k.org, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, geert@linux-m68k.org, vgupta@kernel.org, mattst88@gmail.com, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, linux-um@lists.infradead.org, hca@linux.ibm.com, linux-alpha@vger.kernel.org, richard.henderson@linaro.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, shorne@gmail.com, linux-arm-kernel@lists.infradead.org, bcain@quicinc.com, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, linux-kernel@vger.ke
- rnel.org, dinguyen@kernel.org, palmer@dabbelt.com, richard@nod.at, linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, jglisse@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, paulmck@kernel.org, riel@surriel.com, liam.howlett@oracle.com, luto@kernel.org, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, mgorman@techsingularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Conor Dooley <conor.dooley@microchip.com>
+This is a proof of concept for per-vma locks idea that was discussed
+during SPF [1] discussion at LSF/MM this year [2], which concluded with
+suggestion that =E2=80=9Ca reader/writer semaphore could be put into the VM=
+A
+itself; that would have the effect of using the VMA as a sort of range
+lock. There would still be contention at the VMA level, but it would be an
+improvement.=E2=80=9D This patchset implements this suggested approach.
 
-RISC-V is missing a prototype for cpuinfo_op, triggering complaints
-from sparse. Rather than adding yet another `extern const struct
-seq_operations cpuinfo_op;` to an arch specific header file, create a
-generic variant and include it across the board.
+When handling page faults we lookup the VMA that contains the faulting
+page under RCU protection and try to acquire its lock. If that fails we
+fall back to using mmap_lock, similar to how SPF handled this situation.
 
-Several archs already have a declaration in asm/processor.h - migrate
-these to include linux/processor.h instead. Most archs do not declare
-cpuinfo_op so one sparse complaint off their books.
+One notable way the implementation deviates from the proposal is the way
+VMAs are marked as locked. Because during some of mm updates multiple
+VMAs need to be locked until the end of the update (e.g. vma_merge,
+split_vma, etc). Tracking all the locked VMAs, avoiding recursive locks
+and other complications would make the code more complex. Therefore we
+provide a way to "mark" VMAs as locked and then unmark all locked VMAs
+all at once. This is done using two sequence numbers - one in the
+vm_area_struct and one in the mm_struct. VMA is considered locked when
+these sequence numbers are equal. To mark a VMA as locked we set the
+sequence number in vm_area_struct to be equal to the sequence number
+in mm_struct. To unlock all VMAs we increment mm_struct's seq number.
+This allows for an efficient way to track locked VMAs and to drop the
+locks on all VMAs at the end of the update.
 
-Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
----
-Changes since v1:
-- Per Geert, use linux/processor.h & include it on all archs &
-- Squash to a single patch
+The patchset implements per-VMA locking only for anonymous pages which
+are not in swap. If the initial proposal is considered acceptable, then
+support for swapped and file-backed page faults will be added.
 
-I pushed it out for LKP to take a look at, and was all good there.
-Only added one person per arch & the mailing lists to stay within a
-1024 character CC list. Please scream if I picked the wrong person.
----
- arch/alpha/kernel/setup.c               | 1 +
- arch/arc/kernel/setup.c                 | 1 +
- arch/arm/kernel/setup.c                 | 1 +
- arch/arm64/kernel/cpuinfo.c             | 1 +
- arch/csky/kernel/cpu-probe.c            | 1 +
- arch/hexagon/kernel/setup.c             | 1 +
- arch/ia64/kernel/setup.c                | 1 +
- arch/loongarch/kernel/proc.c            | 1 +
- arch/m68k/kernel/setup_mm.c             | 1 +
- arch/m68k/kernel/setup_no.c             | 1 +
- arch/microblaze/include/asm/processor.h | 2 --
- arch/microblaze/kernel/cpu/mb.c         | 1 +
- arch/mips/kernel/proc.c                 | 1 +
- arch/nios2/kernel/cpuinfo.c             | 1 +
- arch/openrisc/kernel/setup.c            | 1 +
- arch/parisc/kernel/setup.c              | 1 +
- arch/powerpc/kernel/setup-common.c      | 1 +
- arch/riscv/kernel/cpu.c                 | 3 ++-
- arch/s390/include/asm/processor.h       | 2 +-
- arch/s390/kernel/processor.c            | 1 +
- arch/sh/include/asm/processor.h         | 1 -
- arch/sh/kernel/cpu/proc.c               | 1 +
- arch/sparc/include/asm/cpudata.h        | 2 --
- arch/sparc/kernel/cpu.c                 | 1 +
- arch/um/kernel/um_arch.c                | 1 +
- arch/x86/include/asm/processor.h        | 2 --
- arch/x86/kernel/cpu/proc.c              | 1 +
- arch/xtensa/kernel/setup.c              | 1 +
- fs/proc/cpuinfo.c                       | 3 +--
- include/linux/processor.h               | 2 ++
- 30 files changed, 28 insertions(+), 11 deletions(-)
+Performance benchmarks show similar although slightly smaller benefits as
+with SPF patchset (~75% of SPF benefits). Still, with lower complexity
+this approach might be more desirable.
 
-diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
-index b4fbbba30aa2..d2c2546e9b1a 100644
---- a/arch/alpha/kernel/setup.c
-+++ b/arch/alpha/kernel/setup.c
-@@ -46,6 +46,7 @@
- #include <asm/io.h>
- #include <linux/log2.h>
- #include <linux/export.h>
-+#include <linux/processor.h>
- 
- static int alpha_panic_event(struct notifier_block *, unsigned long, void *);
- static struct notifier_block alpha_panic_block = {
-diff --git a/arch/arc/kernel/setup.c b/arch/arc/kernel/setup.c
-index 41f07b3e594e..b681bdd21a0c 100644
---- a/arch/arc/kernel/setup.c
-+++ b/arch/arc/kernel/setup.c
-@@ -17,6 +17,7 @@
- #include <linux/of_fdt.h>
- #include <linux/of.h>
- #include <linux/cache.h>
-+#include <linux/processor.h>
- #include <uapi/linux/mount.h>
- #include <asm/sections.h>
- #include <asm/arcregs.h>
-diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-index 1e8a50a97edf..83240c3c0463 100644
---- a/arch/arm/kernel/setup.c
-+++ b/arch/arm/kernel/setup.c
-@@ -29,6 +29,7 @@
- #include <linux/compiler.h>
- #include <linux/sort.h>
- #include <linux/psci.h>
-+#include <linux/processor.h>
- 
- #include <asm/unified.h>
- #include <asm/cp15.h>
-diff --git a/arch/arm64/kernel/cpuinfo.c b/arch/arm64/kernel/cpuinfo.c
-index d7702f39b4d3..4c1b12918aed 100644
---- a/arch/arm64/kernel/cpuinfo.c
-+++ b/arch/arm64/kernel/cpuinfo.c
-@@ -20,6 +20,7 @@
- #include <linux/personality.h>
- #include <linux/preempt.h>
- #include <linux/printk.h>
-+#include <linux/processor.h>
- #include <linux/seq_file.h>
- #include <linux/sched.h>
- #include <linux/smp.h>
-diff --git a/arch/csky/kernel/cpu-probe.c b/arch/csky/kernel/cpu-probe.c
-index 5f15ca31d3e8..62580f5d0d74 100644
---- a/arch/csky/kernel/cpu-probe.c
-+++ b/arch/csky/kernel/cpu-probe.c
-@@ -5,6 +5,7 @@
- #include <linux/init.h>
- #include <linux/seq_file.h>
- #include <linux/memblock.h>
-+#include <linux/processor.h>
- 
- #include <abi/reg_ops.h>
- 
-diff --git a/arch/hexagon/kernel/setup.c b/arch/hexagon/kernel/setup.c
-index 1880d9beaf2b..395d2930dbd1 100644
---- a/arch/hexagon/kernel/setup.c
-+++ b/arch/hexagon/kernel/setup.c
-@@ -13,6 +13,7 @@
- #include <linux/seq_file.h>
- #include <linux/console.h>
- #include <linux/of_fdt.h>
-+#include <linux/processor.h>
- #include <asm/io.h>
- #include <asm/sections.h>
- #include <asm/setup.h>
-diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-index fd6301eafa9d..973725c4ce1e 100644
---- a/arch/ia64/kernel/setup.c
-+++ b/arch/ia64/kernel/setup.c
-@@ -52,6 +52,7 @@
- #include <linux/cpufreq.h>
- #include <linux/kexec.h>
- #include <linux/crash_dump.h>
-+#include <linux/processor.h>
- 
- #include <asm/mca.h>
- #include <asm/meminit.h>
-diff --git a/arch/loongarch/kernel/proc.c b/arch/loongarch/kernel/proc.c
-index 5c67cc4fd56d..a8cbebe839e2 100644
---- a/arch/loongarch/kernel/proc.c
-+++ b/arch/loongarch/kernel/proc.c
-@@ -6,6 +6,7 @@
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/seq_file.h>
-+#include <linux/processor.h>
- #include <asm/bootinfo.h>
- #include <asm/cpu.h>
- #include <asm/cpu-features.h>
-diff --git a/arch/m68k/kernel/setup_mm.c b/arch/m68k/kernel/setup_mm.c
-index e62fa8f2149b..45d82a4839fc 100644
---- a/arch/m68k/kernel/setup_mm.c
-+++ b/arch/m68k/kernel/setup_mm.c
-@@ -25,6 +25,7 @@
- #include <linux/module.h>
- #include <linux/nvram.h>
- #include <linux/initrd.h>
-+#include <linux/processor.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/byteorder.h>
-diff --git a/arch/m68k/kernel/setup_no.c b/arch/m68k/kernel/setup_no.c
-index cb6def585851..86dd4b47ff43 100644
---- a/arch/m68k/kernel/setup_no.c
-+++ b/arch/m68k/kernel/setup_no.c
-@@ -33,6 +33,7 @@
- #include <linux/initrd.h>
- #include <linux/root_dev.h>
- #include <linux/rtc.h>
-+#include <linux/processor.h>
- 
- #include <asm/setup.h>
- #include <asm/bootinfo.h>
-diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
-index 7e9e92670df3..c5877c91116a 100644
---- a/arch/microblaze/include/asm/processor.h
-+++ b/arch/microblaze/include/asm/processor.h
-@@ -15,8 +15,6 @@
- #include <asm/current.h>
- 
- # ifndef __ASSEMBLY__
--/* from kernel/cpu/mb.c */
--extern const struct seq_operations cpuinfo_op;
- 
- # define cpu_relax()		barrier()
- 
-diff --git a/arch/microblaze/kernel/cpu/mb.c b/arch/microblaze/kernel/cpu/mb.c
-index 9581d194d9e4..33f5be916121 100644
---- a/arch/microblaze/kernel/cpu/mb.c
-+++ b/arch/microblaze/kernel/cpu/mb.c
-@@ -14,6 +14,7 @@
- #include <linux/seq_file.h>
- #include <linux/cpu.h>
- #include <linux/initrd.h>
-+#include <linux/processor.h>
- 
- #include <linux/bug.h>
- #include <asm/cpuinfo.h>
-diff --git a/arch/mips/kernel/proc.c b/arch/mips/kernel/proc.c
-index 8eba5a1ed664..54a4226cff84 100644
---- a/arch/mips/kernel/proc.c
-+++ b/arch/mips/kernel/proc.c
-@@ -8,6 +8,7 @@
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/seq_file.h>
-+#include <linux/processor.h>
- #include <asm/bootinfo.h>
- #include <asm/cpu.h>
- #include <asm/cpu-features.h>
-diff --git a/arch/nios2/kernel/cpuinfo.c b/arch/nios2/kernel/cpuinfo.c
-index 203870c4b86d..9641ca55377e 100644
---- a/arch/nios2/kernel/cpuinfo.c
-+++ b/arch/nios2/kernel/cpuinfo.c
-@@ -12,6 +12,7 @@
- #include <linux/seq_file.h>
- #include <linux/string.h>
- #include <linux/of.h>
-+#include <linux/processor.h>
- #include <asm/cpuinfo.h>
- 
- struct cpuinfo cpuinfo;
-diff --git a/arch/openrisc/kernel/setup.c b/arch/openrisc/kernel/setup.c
-index 0cd04d936a7a..a628c928941b 100644
---- a/arch/openrisc/kernel/setup.c
-+++ b/arch/openrisc/kernel/setup.c
-@@ -33,6 +33,7 @@
- #include <linux/of_fdt.h>
- #include <linux/of.h>
- #include <linux/device.h>
-+#include <linux/processor.h>
- 
- #include <asm/sections.h>
- #include <asm/types.h>
-diff --git a/arch/parisc/kernel/setup.c b/arch/parisc/kernel/setup.c
-index f005ddedb50e..d00488507f49 100644
---- a/arch/parisc/kernel/setup.c
-+++ b/arch/parisc/kernel/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/sched.h>
- #include <linux/sched/clock.h>
- #include <linux/start_kernel.h>
-+#include <linux/processor.h>
- 
- #include <asm/cacheflush.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index dd98f43bd685..12ddcb1401be 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -34,6 +34,7 @@
- #include <linux/of_platform.h>
- #include <linux/hugetlb.h>
- #include <linux/pgtable.h>
-+#include <linux/processor.h>
- #include <asm/io.h>
- #include <asm/paca.h>
- #include <asm/processor.h>
-diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-index 0be8a2403212..f28ec528d54a 100644
---- a/arch/riscv/kernel/cpu.c
-+++ b/arch/riscv/kernel/cpu.c
-@@ -4,8 +4,9 @@
-  */
- 
- #include <linux/init.h>
--#include <linux/seq_file.h>
- #include <linux/of.h>
-+#include <linux/processor.h>
-+#include <linux/seq_file.h>
- #include <asm/hwcap.h>
- #include <asm/smp.h>
- #include <asm/pgtable.h>
-diff --git a/arch/s390/include/asm/processor.h b/arch/s390/include/asm/processor.h
-index bd66f8e34949..55fbb4f7f7f6 100644
---- a/arch/s390/include/asm/processor.h
-+++ b/arch/s390/include/asm/processor.h
-@@ -33,6 +33,7 @@
- #include <linux/cpumask.h>
- #include <linux/linkage.h>
- #include <linux/irqflags.h>
-+#include <linux/processor.h>
- #include <asm/cpu.h>
- #include <asm/page.h>
- #include <asm/ptrace.h>
-@@ -80,7 +81,6 @@ void s390_adjust_jiffies(void);
- void s390_update_cpu_mhz(void);
- void cpu_detect_mhz_feature(void);
- 
--extern const struct seq_operations cpuinfo_op;
- extern void execve_tail(void);
- extern void __bpon(void);
- unsigned long vdso_size(void);
-diff --git a/arch/s390/kernel/processor.c b/arch/s390/kernel/processor.c
-index a194611ba88c..267886605902 100644
---- a/arch/s390/kernel/processor.c
-+++ b/arch/s390/kernel/processor.c
-@@ -17,6 +17,7 @@
- #include <linux/mm_types.h>
- #include <linux/delay.h>
- #include <linux/cpu.h>
-+#include <linux/processor.h>
- 
- #include <asm/diag.h>
- #include <asm/facility.h>
-diff --git a/arch/sh/include/asm/processor.h b/arch/sh/include/asm/processor.h
-index 85a6c1c3c16e..10c4b4b9af46 100644
---- a/arch/sh/include/asm/processor.h
-+++ b/arch/sh/include/asm/processor.h
-@@ -123,7 +123,6 @@ extern unsigned int mem_init_done;
- 
- /* arch/sh/kernel/setup.c */
- const char *get_cpu_subtype(struct sh_cpuinfo *c);
--extern const struct seq_operations cpuinfo_op;
- 
- /* thread_struct flags */
- #define SH_THREAD_UAC_NOPRINT	(1 << 0)
-diff --git a/arch/sh/kernel/cpu/proc.c b/arch/sh/kernel/cpu/proc.c
-index a306bcd6b341..f373a21c6705 100644
---- a/arch/sh/kernel/cpu/proc.c
-+++ b/arch/sh/kernel/cpu/proc.c
-@@ -2,6 +2,7 @@
- #include <linux/seq_file.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-+#include <linux/processor.h>
- #include <asm/machvec.h>
- #include <asm/processor.h>
- 
-diff --git a/arch/sparc/include/asm/cpudata.h b/arch/sparc/include/asm/cpudata.h
-index d213165ee713..f7e690a7860b 100644
---- a/arch/sparc/include/asm/cpudata.h
-+++ b/arch/sparc/include/asm/cpudata.h
-@@ -7,8 +7,6 @@
- #include <linux/threads.h>
- #include <linux/percpu.h>
- 
--extern const struct seq_operations cpuinfo_op;
--
- #endif /* !(__ASSEMBLY__) */
- 
- #if defined(__sparc__) && defined(__arch64__)
-diff --git a/arch/sparc/kernel/cpu.c b/arch/sparc/kernel/cpu.c
-index 79cd6ccfeac0..ffdc7a825b80 100644
---- a/arch/sparc/kernel/cpu.c
-+++ b/arch/sparc/kernel/cpu.c
-@@ -12,6 +12,7 @@
- #include <linux/smp.h>
- #include <linux/threads.h>
- #include <linux/pgtable.h>
-+#include <linux/processor.h>
- 
- #include <asm/spitfire.h>
- #include <asm/oplib.h>
-diff --git a/arch/um/kernel/um_arch.c b/arch/um/kernel/um_arch.c
-index e0de60e503b9..4034f5b959f7 100644
---- a/arch/um/kernel/um_arch.c
-+++ b/arch/um/kernel/um_arch.c
-@@ -9,6 +9,7 @@
- #include <linux/ctype.h>
- #include <linux/module.h>
- #include <linux/panic_notifier.h>
-+#include <linux/processor.h>
- #include <linux/seq_file.h>
- #include <linux/string.h>
- #include <linux/utsname.h>
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 356308c73951..08ccd453ec4f 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -188,8 +188,6 @@ DECLARE_PER_CPU_READ_MOSTLY(struct cpuinfo_x86, cpu_info);
- #define cpu_data(cpu)		boot_cpu_data
- #endif
- 
--extern const struct seq_operations cpuinfo_op;
--
- #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
- 
- extern void cpu_detect(struct cpuinfo_x86 *c);
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 099b6f0d96bd..5a0699d9ff7d 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -4,6 +4,7 @@
- #include <linux/string.h>
- #include <linux/seq_file.h>
- #include <linux/cpufreq.h>
-+#include <linux/processor.h>
- 
- #include "cpu.h"
- 
-diff --git a/arch/xtensa/kernel/setup.c b/arch/xtensa/kernel/setup.c
-index 9191738f9941..d4417a174887 100644
---- a/arch/xtensa/kernel/setup.c
-+++ b/arch/xtensa/kernel/setup.c
-@@ -25,6 +25,7 @@
- #include <linux/cpu.h>
- #include <linux/of.h>
- #include <linux/of_fdt.h>
-+#include <linux/processor.h>
- 
- #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
- # include <linux/console.h>
-diff --git a/fs/proc/cpuinfo.c b/fs/proc/cpuinfo.c
-index f38bda5b83ec..ca3065dfecd9 100644
---- a/fs/proc/cpuinfo.c
-+++ b/fs/proc/cpuinfo.c
-@@ -3,10 +3,9 @@
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/proc_fs.h>
-+#include <linux/processor.h>
- #include <linux/seq_file.h>
- 
--extern const struct seq_operations cpuinfo_op;
--
- static int cpuinfo_open(struct inode *inode, struct file *file)
- {
- 	return seq_open(file, &cpuinfo_op);
-diff --git a/include/linux/processor.h b/include/linux/processor.h
-index dc78bdc7079a..71bdf8626874 100644
---- a/include/linux/processor.h
-+++ b/include/linux/processor.h
-@@ -59,4 +59,6 @@ do {								\
- 
- #endif
- 
-+extern const struct seq_operations cpuinfo_op;
-+
- #endif /* _LINUX_PROCESSOR_H */
--- 
-2.37.1
+The patchset applies cleanly over 6.0-rc3
+The tree for testing is posted at [3]
+
+[1] https://lore.kernel.org/all/20220128131006.67712-1-michel@lespinasse.or=
+g/
+[2] https://lwn.net/Articles/893906/
+[3] https://github.com/surenbaghdasaryan/linux/tree/per_vma_lock_rfc
+
+Laurent Dufour (2):
+  powerc/mm: try VMA lock-based page fault handling first
+  powerpc/mm: define ARCH_SUPPORTS_PER_VMA_LOCK
+
+Michel Lespinasse (1):
+  mm: rcu safe VMA freeing
+
+Suren Baghdasaryan (25):
+  mm: introduce CONFIG_PER_VMA_LOCK
+  mm: introduce __find_vma to be used without mmap_lock protection
+  mm: move mmap_lock assert function definitions
+  mm: add per-VMA lock and helper functions to control it
+  mm: mark VMA as locked whenever vma->vm_flags are modified
+  kernel/fork: mark VMAs as locked before copying pages during fork
+  mm/khugepaged: mark VMA as locked while collapsing a hugepage
+  mm/mempolicy: mark VMA as locked when changing protection policy
+  mm/mmap: mark VMAs as locked in vma_adjust
+  mm/mmap: mark VMAs as locked before merging or splitting them
+  mm/mremap: mark VMA as locked while remapping it to a new address
+    range
+  mm: conditionally mark VMA as locked in free_pgtables and
+    unmap_page_range
+  mm: mark VMAs as locked before isolating them
+  mm/mmap: mark adjacent VMAs as locked if they can grow into unmapped
+    area
+  kernel/fork: assert no VMA readers during its destruction
+  mm/mmap: prevent pagefault handler from racing with mmu_notifier
+    registration
+  mm: add FAULT_FLAG_VMA_LOCK flag
+  mm: disallow do_swap_page to handle page faults under VMA lock
+  mm: introduce per-VMA lock statistics
+  mm: introduce find_and_lock_anon_vma to be used from arch-specific
+    code
+  x86/mm: try VMA lock-based page fault handling first
+  x86/mm: define ARCH_SUPPORTS_PER_VMA_LOCK
+  arm64/mm: try VMA lock-based page fault handling first
+  arm64/mm: define ARCH_SUPPORTS_PER_VMA_LOCK
+  kernel/fork: throttle call_rcu() calls in vm_area_free
+
+ arch/arm64/Kconfig                     |   1 +
+ arch/arm64/mm/fault.c                  |  36 +++++++++
+ arch/powerpc/mm/fault.c                |  41 ++++++++++
+ arch/powerpc/platforms/powernv/Kconfig |   1 +
+ arch/powerpc/platforms/pseries/Kconfig |   1 +
+ arch/x86/Kconfig                       |   1 +
+ arch/x86/mm/fault.c                    |  36 +++++++++
+ drivers/gpu/drm/i915/i915_gpu_error.c  |   4 +-
+ fs/proc/task_mmu.c                     |   1 +
+ fs/userfaultfd.c                       |   6 ++
+ include/linux/mm.h                     | 104 ++++++++++++++++++++++++-
+ include/linux/mm_types.h               |  33 ++++++--
+ include/linux/mmap_lock.h              |  37 ++++++---
+ include/linux/vm_event_item.h          |   6 ++
+ include/linux/vmstat.h                 |   6 ++
+ kernel/fork.c                          |  75 +++++++++++++++++-
+ mm/Kconfig                             |  13 ++++
+ mm/Kconfig.debug                       |   8 ++
+ mm/init-mm.c                           |   6 ++
+ mm/internal.h                          |   4 +-
+ mm/khugepaged.c                        |   1 +
+ mm/madvise.c                           |   1 +
+ mm/memory.c                            |  82 ++++++++++++++++---
+ mm/mempolicy.c                         |   6 +-
+ mm/mlock.c                             |   2 +
+ mm/mmap.c                              |  60 ++++++++++----
+ mm/mprotect.c                          |   1 +
+ mm/mremap.c                            |   1 +
+ mm/nommu.c                             |   2 +
+ mm/oom_kill.c                          |   3 +-
+ mm/vmstat.c                            |   6 ++
+ 31 files changed, 531 insertions(+), 54 deletions(-)
+
+--=20
+2.37.2.672.g94769d06f0-goog
 
