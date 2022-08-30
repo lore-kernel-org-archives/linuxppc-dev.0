@@ -4,66 +4,204 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF701ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Aug 2022 22:15:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69356ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 30 Aug 2022 22:16:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MHM7W1lgRz2xrW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 08:15:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MHM8s0s6jz3cCF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 08:16:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20210112 header.b=Jbe444uv;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=bvs8E5/f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=googlemail.com (client-ip=2a00:1450:4864:20::632; helo=mail-ej1-x632.google.com; envelope-from=cgzones@googlemail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mail.zeus03.de (client-ip=194.117.254.33; helo=mail.zeus03.de; envelope-from=wsa+renesas@sang-engineering.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=googlemail.com header.i=@googlemail.com header.a=rsa-sha256 header.s=20210112 header.b=Jbe444uv;
+	dkim=pass (1024-bit key; secure) header.d=sang-engineering.com header.i=@sang-engineering.com header.a=rsa-sha256 header.s=k1 header.b=bvs8E5/f;
 	dkim-atps=neutral
-Received: from mail-ej1-x632.google.com (mail-ej1-x632.google.com [IPv6:2a00:1450:4864:20::632])
+Received: from mail.zeus03.de (www.zeus03.de [194.117.254.33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHB730c5Xz3bkR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 01:29:16 +1000 (AEST)
-Received: by mail-ej1-x632.google.com with SMTP id kk26so22888479ejc.11
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Aug 2022 08:29:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=googlemail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc;
-        bh=/KQ/vUyiG4uvx6QG1V/DvG1u3VsN0RU6NmbgpiZoIwo=;
-        b=Jbe444uvwS5KTtBsCVBQjowFQX49PHwxyphvrog6nzitvtmHBHJMnk/ZXbtFjf4ivK
-         05Qx4aMUE04ULC1C5awae7j4X5P9v22dPa9y9903IO/MYxipD+HrcvQQ15y+/rG3bhKL
-         4gl4/UESbeSMeDSj0WoBLZdVsTJtzG0xipCPmcnRa8zxUsUaapTfn57JwaCoZBc3TH1d
-         l6y3eQc3QWr/aFnH4qMBWANzKiSmGU2WnZGxLGbvrFQQ8U8EGaCrVYoWlbtqLk+koQDw
-         gnw0y0HmKYojMLO+m4tqL6r7fUOmxHIS3+r5H8g+GVc6QppaQoeQ5HaMO2dCWJKkqEzA
-         2nzg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc;
-        bh=/KQ/vUyiG4uvx6QG1V/DvG1u3VsN0RU6NmbgpiZoIwo=;
-        b=vlUOQTvARkgbw4KH0kuB9hE4u7IyfHznYDFCaDuMdZn8UJ3it2QMZT2H6qRddtMruT
-         TZq/nb8F8ZhcfmghRgckLnozYiDEEILC5I8aLMDgXtN4Ze9t/2vohkxbxEUxdRLkpH74
-         fiE3D7ZCUrqZpWXBBhbcj+08SNXRRym+n452zBR03W08+CRcRKgC7GO4qBHie85NzVjG
-         9prJ0A7R0uz7NtCRxd0mp8k7708OrH4VqbSlGboxFKlzlKq8fok9BFhkPvGErCtY1Su7
-         pngC2JIOQcfyqGmi7Oi6mjdY+oT1NAnul8Bbq4k3ttVCmelRM+0LZNLDKYWwjuHnl8j3
-         uzoA==
-X-Gm-Message-State: ACgBeo1m/owPfFXaIy7oxZePpRNqUvGG4fFZgOKnoCgmxFKaF4IPuUUy
-	13MXmVZPdl+dIGP/L0W+sy0=
-X-Google-Smtp-Source: AA6agR6mh+hG5Ub9n0mP0M72q8basJqWrEfuKrZt7HLzsynsaPcpmVK6SV7y8Jwa2Sli8dDEw14qDA==
-X-Received: by 2002:a17:906:cc13:b0:73d:d22d:63cd with SMTP id ml19-20020a170906cc1300b0073dd22d63cdmr17202596ejb.741.1661873348951;
-        Tue, 30 Aug 2022 08:29:08 -0700 (PDT)
-Received: from debianHome.localdomain (dynamic-095-116-163-172.95.116.pool.telefonica.de. [95.116.163.172])
-        by smtp.gmail.com with ESMTPSA id t19-20020a056402525300b00445bda73fbesm5473947edd.33.2022.08.30.08.29.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 30 Aug 2022 08:29:08 -0700 (PDT)
-From: =?UTF-8?q?Christian=20G=C3=B6ttsche?= <cgzones@googlemail.com>
-To: selinux@vger.kernel.org
-Subject: [RFC PATCH 2/2] fs/xattr: wire up syscalls
-Date: Tue, 30 Aug 2022 17:28:38 +0200
-Message-Id: <20220830152858.14866-1-cgzones@googlemail.com>
-X-Mailer: git-send-email 2.37.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHJ7H0nNJz2x9J
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 05:59:52 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
+	date:from:to:cc:subject:message-id:references:mime-version
+	:content-type:in-reply-to; s=k1; bh=A8bVRCFI98pRUSlXVuZ0JuXQWSsk
+	LWEPpZPSCxPQ4Yc=; b=bvs8E5/fix4EfPuCb+OWMHT6Bu46TU1l+IigRSvtvn9P
+	EPjUjEMoaKMAh5zUmSlIUll78CFyvIAIO22BPo+YYx2/PHVMYseFmKF27NnJ760a
+	yJnn+PLBTo5LOy0cZ+CcMvpCeYZvUs2xJ9oI/cferGF5V0ikEASasUiMDmVqo9M=
+Received: (qmail 417445 invoked from network); 30 Aug 2022 21:59:10 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 30 Aug 2022 21:59:10 +0200
+X-UD-Smtp-Session: l3s3148p1@xaob0HrnKMEgAwDtxxrgAFH1RcxMblwv
+Date: Tue, 30 Aug 2022 21:59:06 +0200
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: Jakub Kicinski <kuba@kernel.org>
+Subject: Re: [PATCH] net: move from strlcpy with unused retval to strscpy
+Message-ID: <Yw5sCpdgdR9k/mgs@shikoro>
+Mail-Followup-To: Wolfram Sang <wsa+renesas@sang-engineering.com>,
+	Jakub Kicinski <kuba@kernel.org>, linux-kernel@vger.kernel.org,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>,
+	Jay Vosburgh <j.vosburgh@gmail.com>,
+	Veaceslav Falico <vfalico@gmail.com>,
+	Andy Gospodarek <andy@greyhouse.net>,
+	Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>,
+	Florian Fainelli <f.fainelli@gmail.com>,
+	Andrew Lunn <andrew@lunn.ch>,
+	Vivien Didelot <vivien.didelot@gmail.com>,
+	Vladimir Oltean <olteanv@gmail.com>,
+	Kurt Kanzenbach <kurt@linutronix.de>,
+	Steffen Klassert <klassert@kernel.org>,
+	David Dillow <dave@thedillows.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Ion Badulescu <ionut@badula.org>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Mark Einon <mark.einon@gmail.com>,
+	Lino Sanfilippo <LinoSanfilippo@gmx.de>,
+	Chen-Yu Tsai <wens@csie.org>,
+	Jernej Skrabec <jernej.skrabec@gmail.com>,
+	Samuel Holland <samuel@sholland.org>,
+	Jes Sorensen <jes@trained-monkey.org>,
+	Shay Agroskin <shayagr@amazon.com>,
+	Arthur Kiyanovski <akiyano@amazon.com>,
+	David Arinzon <darinzon@amazon.com>, Noam Dagan <ndagan@amazon.com>,
+	Saeed Bishara <saeedb@amazon.com>, Don Fry <pcnet32@frontier.com>,
+	Tom Lendacky <thomas.lendacky@amd.com>,
+	Shyam Sundar S K <Shyam-sundar.S-k@amd.com>,
+	Igor Russkikh <irusskikh@marvell.com>,
+	Chris Snook <chris.snook@gmail.com>,
+	Michael Chan <michael.chan@broadcom.com>,
+	Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+	=?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>,
+	Rasesh Mody <rmody@marvell.com>, GR-Linux-NIC-Dev@marvell.com,
+	Ariel Elior <aelior@marvell.com>,
+	Sudarsana Kalluru <skalluru@marvell.com>,
+	Manish Chopra <manishc@marvell.com>,
+	Doug Berger <opendmb@gmail.com>,
+	Siva Reddy Kallam <siva.kallam@broadcom.com>,
+	Prashant Sreedharan <prashant@broadcom.com>,
+	Sunil Goutham <sgoutham@marvell.com>,
+	Raju Rangoju <rajur@chelsio.com>,
+	Ayush Sawal <ayush.sawal@chelsio.com>,
+	Vinay Kumar Yadav <vinay.yadav@chelsio.com>,
+	Rohit Maheshwari <rohitm@chelsio.com>,
+	Hartley Sweeten <hsweeten@visionengravers.com>,
+	Christian Benvenuti <benve@cisco.com>,
+	Govindarajulu Varadarajan <_govind@gmx.com>,
+	Denis Kirjanov <kda@linux-powerpc.org>,
+	Ajit Khaparde <ajit.khaparde@broadcom.com>,
+	Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>,
+	Somnath Kotur <somnath.kotur@broadcom.com>,
+	Madalin Bucur <madalin.bucur@nxp.com>,
+	Ioana Ciornei <ioana.ciornei@nxp.com>,
+	Claudiu Manoil <claudiu.manoil@nxp.com>,
+	Joakim Zhang <qiangqing.zhang@nxp.com>,
+	Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+	Li Yang <leoyang.li@nxp.com>,
+	Yisen Zhuang <yisen.zhuang@huawei.com>,
+	Salil Mehta <salil.mehta@huawei.com>,
+	Douglas Miller <dougmill@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Jesse Brandeburg <jesse.brandeburg@intel.com>,
+	Tony Nguyen <anthony.l.nguyen@intel.com>,
+	Guo-Fu Tseng <cooldavid@cooldavid.org>,
+	Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	Marcin Wojtas <mw@semihalf.com>,
+	Geetha sowjanya <gakula@marvell.com>,
+	Subbaraya Sundeep <sbhatta@marvell.com>,
+	hariprasad <hkelam@marvell.com>,
+	Taras Chornyi <tchornyi@marvell.com>,
+	Mirko Lindner <mlindner@marvell.com>,
+	Stephen Hemminger <stephen@networkplumber.org>,
+	Felix Fietkau <nbd@nbd.name>, John Crispin <john@phrozen.org>,
+	Sean Wang <sean.wang@mediatek.com>,
+	Mark Lee <Mark-MC.Lee@mediatek.com>,
+	Matthias Brugger <matthias.bgg@gmail.com>,
+	Tariq Toukan <tariqt@nvidia.com>,
+	Saeed Mahameed <saeedm@nvidia.com>,
+	Leon Romanovsky <leon@kernel.org>, Ido Schimmel <idosch@nvidia.com>,
+	Petr Machata <petrm@nvidia.com>,
+	Bryan Whitehead <bryan.whitehead@microchip.com>,
+	UNGLinuxDriver@microchip.com, Chris Lee <christopher.lee@cspi.com>,
+	Jon Mason <jdmason@kudzu.us>,
+	Simon Horman <simon.horman@corigine.com>,
+	Rain River <rain.1986.08.12@gmail.com>,
+	Zhu Yanjun <zyjzyj2000@gmail.com>,
+	Vladimir Zapolskiy <vz@mleia.com>, Rahul Verma <rahulv@marvell.com>,
+	Shahed Shaikh <shshaikh@marvell.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>, nic_swsd@realtek.com,
+	Jiri Pirko <jiri@resnulli.us>, Byungho An <bh74.an@samsung.com>,
+	Edward Cree <ecree.xilinx@gmail.com>,
+	Martin Habets <habetsm.xilinx@gmail.com>,
+	Ralf Baechle <ralf@linux-mips.org>,
+	Francois Romieu <romieu@fr.zoreil.com>,
+	Daniele Venzano <venza@brownhat.org>,
+	Nicolas Pitre <nico@fluxnic.net>,
+	Steve Glendinning <steve.glendinning@shawell.net>,
+	Jassi Brar <jaswinder.singh@linaro.org>,
+	Ilias Apalodimas <ilias.apalodimas@linaro.org>,
+	Kunihiko Hayashi <hayashi.kunihiko@socionext.com>,
+	Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Jose Abreu <joabreu@synopsys.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Grygorii Strashko <grygorii.strashko@ti.com>,
+	Samuel Chessman <chessman@tux.org>,
+	Geoff Levand <geoff@infradead.org>,
+	Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
+	Kevin Brace <kevinbrace@bracecomputerlab.com>,
+	Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>,
+	Michal Simek <michal.simek@xilinx.com>,
+	Krzysztof Halasa <khalasa@piap.pl>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Sridhar Samudrala <sridhar.samudrala@intel.com>,
+	Dave Jiang <dave.jiang@intel.com>, Allen Hubbe <allenbh@gmail.com>,
+	Michael Hennerich <michael.hennerich@analog.com>,
+	Petko Manolov <petkan@nucleusys.com>,
+	Oliver Neukum <oneukum@suse.com>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>, Ronak Doshi <doshir@vmware.com>,
+	VMware PV-Drivers Reviewers <pv-drivers@vmware.com>,
+	David Ahern <dsahern@kernel.org>, Kalle Valo <kvalo@kernel.org>,
+	Christian Lamparter <chunkeey@googlemail.com>,
+	Simon Kelley <simon@thekelleys.org.uk>,
+	Larry Finger <Larry.Finger@lwfinger.net>,
+	Arend van Spriel <aspriel@gmail.com>,
+	Franky Lin <franky.lin@broadcom.com>,
+	Hante Meuleman <hante.meuleman@broadcom.com>,
+	Stanislav Yakovlev <stas.yakovlev@gmail.com>,
+	Stanislaw Gruszka <stf_xl@wp.pl>, Jouni Malinen <j@w1.fi>,
+	Ajay Singh <ajay.kathat@microchip.com>,
+	Claudiu Beznea <claudiu.beznea@microchip.com>,
+	Igor Mitsyanko <imitsyanko@quantenna.com>,
+	Sergey Matyukevich <geomatsi@gmail.com>,
+	Herton Ronaldo Krzesinski <herton@canonical.com>,
+	Hin-Tak Leung <htl10@users.sourceforge.net>, netdev@vger.kernel.org,
+	linux-can@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linux-sunxi@lists.linux.dev, linux-acenic@sunsite.dk,
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	intel-wired-lan@lists.osuosl.org,
+	linux-mediatek@lists.infradead.org, linux-rdma@vger.kernel.org,
+	oss-drivers@corigine.com, linux-mips@vger.kernel.org,
+	linux-stm32@st-md-mailman.stormreply.com,
+	linux-omap@vger.kernel.org, linux-hyperv@vger.kernel.org,
+	ntb@lists.linux.dev, linux-usb@vger.kernel.org,
+	virtualization@lists.linux-foundation.org,
+	linux-wireless@vger.kernel.org, b43-dev@lists.infradead.org,
+	brcm80211-dev-list.pdl@broadcom.com,
+	SHA-cyfmac-dev-list@infineon.com, libertas-dev@lists.infradead.org
+References: <20220818210050.7108-1-wsa+renesas@sang-engineering.com>
+ <20220822180551.160c2a0b@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="bu+qW3icU8857Hzl"
+Content-Disposition: inline
+In-Reply-To: <20220822180551.160c2a0b@kernel.org>
 X-Mailman-Approved-At: Wed, 31 Aug 2022 08:14:47 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,350 +214,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linux-xtensa@linux-xtensa.org, =?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@igalia.com>, Vasily Gor
- bik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, linux-alpha@vger.kernel.org, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Alexander Viro <viro@zeniv.linux.org.uk>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Suren Baghdasaryan <surenb@google.com>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Wang Haojun <jiangliuer01@gmail.com>, linux-parisc@vger.kernel.org, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>, linux-audit@redhat.com, Arnd Bergmann <arnd@arndb.de>, Sven Schnelle <svens@linux.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-fsdevel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, 
- "David S. Miller" <davem@davemloft.net>
+Cc: Andrew Lunn <andrew@lunn.ch>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, Igor Russkikh <irusskikh@marvell.com>, Kevin Brace <kevinbrace@bracecomputerlab.com>, David Dillow <dave@thedillows.org>, Somnath Kotur <somnath.kotur@broadcom.com>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, "K. Y. Srinivasan" <kys@microsoft.com>, linux-stm32@st-md-mailman.stormreply.com, Andy Gospodarek <andy@greyhouse.net>, Wei Liu <wei.liu@kernel.org>, Manish Chopra <manishc@marvell.com>, Samuel Holland <samuel@sholland.org>, Madalin Bucur <madalin.bucur@nxp.com>, Christian Lamparter <chunkeey@googlemail.com>, Michal Simek <michal.simek@xilinx.com>, Jose Abreu <joabreu@synopsys.com>, Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>, Franky Lin <franky.lin@broadcom.com>, Mark Lee <Mark-MC.Lee@mediatek.com>, Chris Lee <christopher.lee@cspi.com>, Nick Child <nnac123@linux.ibm.com>, Jiri Pirko <jiri@resnulli.us>, Jay Vosburgh <j.vosburgh@gmail.com>, Vinay Kumar Yadav <vinay.yadav@chelsio.com>
+ , Arend van Spriel <aspriel@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Igor Mitsyanko <imitsyanko@quantenna.com>, Krzysztof Halasa <khalasa@piap.pl>, Shay Agroskin <shayagr@amazon.com>, linux-omap@vger.kernel.org, Petr Machata <petrm@nvidia.com>, libertas-dev@lists.infradead.org, Rasesh Mody <rmody@marvell.com>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Douglas Miller <dougmill@linux.ibm.com>, Joakim Zhang <qiangqing.zhang@nxp.com>, Ralf Baechle <ralf@linux-mips.org>, Vivien Didelot <vivien.didelot@gmail.com>, Ion Badulescu <ionut@badula.org>, Hartley Sweeten <hsweeten@visionengravers.com>, Stanislav Yakovlev <stas.yakovlev@gmail.com>, Jon Mason <jdmason@kudzu.us>, Vladimir Oltean <olteanv@gmail.com>, Claudiu Beznea <claudiu.beznea@microchip.com>, Christian Benvenuti <benve@cisco.com>, Samuel Chessman <chessman@tux.org>, linux-usb@vger.kernel.org, Ronak Doshi <doshir@vmware.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Chris Snook <chris.snook@gmail.com>, Deni
+ s Kirjanov <kda@linux-powerpc.org>, Prashant Sreedharan <prashant@broadcom.com>, linux-kernel@vger.kernel.org, Daniele Venzano <venza@brownhat.org>, Eric Dumazet <edumazet@google.com>, Zhu Yanjun <zyjzyj2000@gmail.com>, Tony Nguyen <anthony.l.nguyen@intel.com>, Arthur Kiyanovski <akiyano@amazon.com>, Leon Romanovsky <leon@kernel.org>, "David S. Miller" <davem@davemloft.net>, Sergey Matyukevich <geomatsi@gmail.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Rain River <rain.1986.08.12@gmail.com>, Veaceslav Falico <vfalico@gmail.com>, Martin Habets <habetsm.xilinx@gmail.com>, Yisen Zhuang <yisen.zhuang@huawei.com>, Wolfgang Grandegger <wg@grandegger.com>, Steve Glendinning <steve.glendinning@shawell.net>, Tom Lendacky <thomas.lendacky@amd.com>, Michael Hennerich <michael.hennerich@analog.com>, Ido Schimmel <idosch@nvidia.com>, Sean Wang <sean.wang@mediatek.com>, linuxppc-dev@lists.ozlabs.org, linux-can@vger.kernel.org, Siva Reddy Kallam <siva.kallam@broadcom.com>, Claudiu Manoil 
+ <claudiu.manoil@nxp.com>, Doug Berger <opendmb@gmail.com>, Simon Kelley <simon@thekelleys.org.uk>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, linux-arm-kernel@lists.infradead.org, Mirko Lindner <mlindner@marvell.com>, Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>, Nicolas Pitre <nico@fluxnic.net>, David Arinzon <darinzon@amazon.com>, Rohit Maheshwari <rohitm@chelsio.com>, Tariq Toukan <tariqt@nvidia.com>, Sudarsana Kalluru <skalluru@marvell.com>, Taras Chornyi <tchornyi@marvell.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linux-mediatek@lists.infradead.org, Heiner Kallweit <hkallweit1@gmail.com>, linux-wireless@vger.kernel.org, Ajit Khaparde <ajit.khaparde@broadcom.com>, Petko Manolov <petkan@nucleusys.com>, Andreas Larsson <andreas@gaisler.com>, Jason Wang <jasowang@redhat.com>, Kurt Kanzenbach <kurt@linutronix.de>, linux-hyperv@vger.kernel.org, oss-drivers@corigine.com, netdev@vger.kernel.org, Subbaraya Sundeep <sbhatta@marvell.com>, Hin-Tak Leung <htl10@users
+ .sourceforge.net>, Jassi Brar <jaswinder.singh@linaro.org>, Noam Dagan <ndagan@amazon.com>, Stanislaw Gruszka <stf_xl@wp.pl>, Ajay Singh <ajay.kathat@microchip.com>, Florian Fainelli <f.fainelli@gmail.com>, Dave Jiang <dave.jiang@intel.com>, linux-rdma@vger.kernel.org, Guo-Fu Tseng <cooldavid@cooldavid.org>, Dexuan Cui <decui@microsoft.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, b43-dev@lists.infradead.org, Simon Horman <simon.horman@corigine.com>, Paolo Abeni <pabeni@redhat.com>, Allen Hubbe <allenbh@gmail.com>, Shahed Shaikh <shshaikh@marvell.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>, Haiyang Zhang <haiyangz@microsoft.com>, Francois Romieu <romieu@fr.zoreil.com>, Hante Meuleman <hante.meuleman@broadcom.com>, Vladimir Zapolskiy <vz@mleia.com>, Don Fry <pcnet32@frontier.com>, John Crispin <john@phrozen.org>, Michael Chan <michael
+ .chan@broadcom.com>, virtualization@lists.linux-foundation.org, Salil Mehta <salil.mehta@huawei.com>, GR-Linux-NIC-Dev@marvell.com, linux-parisc@vger.kernel.org, Geoff Levand <geoff@infradead.org>, linux-sunxi@lists.linux.dev, Edward Cree <ecree.xilinx@gmail.com>, Bryan Whitehead <bryan.whitehead@microchip.com>, Saeed Bishara <saeedb@amazon.com>, Mark Einon <mark.einon@gmail.com>, Geetha sowjanya <gakula@marvell.com>, Oliver Neukum <oneukum@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>, VMware PV-Drivers Reviewers <pv-drivers@vmware.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Govindarajulu Varadarajan <_govind@gmx.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Ayush Sawal <ayush.sawal@chelsio.com>, UNGLinuxDriver@microchip.com, linux-acenic@sunsite.dk, Herton Ronaldo Krzesinski <herton@canonical.com>, Rahul Verma <rahulv@marvell.com>, Russell King <linux@armlinux.org.uk>, SHA-cyfmac-dev-list@infineon.com, Lino Sanfilippo <
+ LinoSanfilippo@gmx.de>, intel-wired-lan@lists.osuosl.org, Steffen Klassert <klassert@kernel.org>, Sunil Goutham <sgoutham@marvell.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jes Sorensen <jes@trained-monkey.org>, nic_swsd@realtek.com, Ariel Elior <aelior@marvell.com>, Jouni Malinen <j@w1.fi>, Kalle Valo <kvalo@kernel.org>, Marc Kleine-Budde <mkl@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, Marcin Wojtas <mw@semihalf.com>, brcm80211-dev-list.pdl@broadcom.com, Sridhar Samudrala <sridhar.samudrala@intel.com>, David Ahern <dsahern@kernel.org>, linux-mips@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Stephen Hemminger <stephen@networkplumber.org>, hariprasad <hkelam@marvell.com>, ntb@lists.linux.dev, Raju Rangoju <rajur@chelsio.com>, Larry Finger <Larry.Finger@lwfinger.net>, Saeed Mahameed <saeedm@nvidia.com>, Felix Fietkau <nbd@nbd.name>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Enable the new added extended attribute related syscalls.
 
-Signed-off-by: Christian Göttsche <cgzones@googlemail.com>
----
-TODO:
-  - deprecate traditional syscalls (setxattr, ...)?
-  - resolve possible conflicts with proposed readfile syscall
----
- arch/alpha/kernel/syscalls/syscall.tbl      |  4 ++++
- arch/arm/tools/syscall.tbl                  |  4 ++++
- arch/arm64/include/asm/unistd.h             |  2 +-
- arch/arm64/include/asm/unistd32.h           |  8 ++++++++
- arch/ia64/kernel/syscalls/syscall.tbl       |  4 ++++
- arch/m68k/kernel/syscalls/syscall.tbl       |  4 ++++
- arch/microblaze/kernel/syscalls/syscall.tbl |  4 ++++
- arch/mips/kernel/syscalls/syscall_n32.tbl   |  4 ++++
- arch/mips/kernel/syscalls/syscall_n64.tbl   |  4 ++++
- arch/mips/kernel/syscalls/syscall_o32.tbl   |  4 ++++
- arch/parisc/kernel/syscalls/syscall.tbl     |  4 ++++
- arch/powerpc/kernel/syscalls/syscall.tbl    |  4 ++++
- arch/s390/kernel/syscalls/syscall.tbl       |  4 ++++
- arch/sh/kernel/syscalls/syscall.tbl         |  4 ++++
- arch/sparc/kernel/syscalls/syscall.tbl      |  4 ++++
- arch/x86/entry/syscalls/syscall_32.tbl      |  4 ++++
- arch/x86/entry/syscalls/syscall_64.tbl      |  4 ++++
- arch/xtensa/kernel/syscalls/syscall.tbl     |  4 ++++
- include/asm-generic/audit_change_attr.h     |  6 ++++++
- include/linux/syscalls.h                    |  8 ++++++++
- include/uapi/asm-generic/unistd.h           | 12 +++++++++++-
- 21 files changed, 98 insertions(+), 2 deletions(-)
+--bu+qW3icU8857Hzl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index 3515bc4f16a4..826a8a36da81 100644
---- a/arch/alpha/kernel/syscalls/syscall.tbl
-+++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -490,3 +490,7 @@
- 558	common	process_mrelease		sys_process_mrelease
- 559	common  futex_waitv                     sys_futex_waitv
- 560	common	set_mempolicy_home_node		sys_ni_syscall
-+561	common	setxattrat			sys_setxattrat
-+562	common	getxattrat			sys_getxattrat
-+563	common	listxattrat			sys_listxattrat
-+564	common	removexattrat			sys_removexattrat
-diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
-index ac964612d8b0..f0e9d9d487f0 100644
---- a/arch/arm/tools/syscall.tbl
-+++ b/arch/arm/tools/syscall.tbl
-@@ -464,3 +464,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common	futex_waitv			sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
-index 037feba03a51..63a8a9c4abc1 100644
---- a/arch/arm64/include/asm/unistd.h
-+++ b/arch/arm64/include/asm/unistd.h
-@@ -39,7 +39,7 @@
- #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
- #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
- 
--#define __NR_compat_syscalls		451
-+#define __NR_compat_syscalls		455
- #endif
- 
- #define __ARCH_WANT_SYS_CLONE
-diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-index 604a2053d006..cd6ac63376d1 100644
---- a/arch/arm64/include/asm/unistd32.h
-+++ b/arch/arm64/include/asm/unistd32.h
-@@ -907,6 +907,14 @@ __SYSCALL(__NR_process_mrelease, sys_process_mrelease)
- __SYSCALL(__NR_futex_waitv, sys_futex_waitv)
- #define __NR_set_mempolicy_home_node 450
- __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
-+#define __NR_setxattrat 451
-+__SYSCALL(__NR_setxattrat, sys_setxattrat)
-+#define __NR_getxattrat 452
-+__SYSCALL(__NR_getxattrat, sys_getxattrat)
-+#define __NR_listxattrat 453
-+__SYSCALL(__NR_listxattrat, sys_listxattrat)
-+#define __NR_removexattrat 454
-+__SYSCALL(__NR_removexattrat, sys_removexattrat)
- 
- /*
-  * Please add new compat syscalls above this comment and update
-diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-index 78b1d03e86e1..6e942a935a27 100644
---- a/arch/ia64/kernel/syscalls/syscall.tbl
-+++ b/arch/ia64/kernel/syscalls/syscall.tbl
-@@ -371,3 +371,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index b1f3940bc298..0847efdee734 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -450,3 +450,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-index 820145e47350..7f619bbc718d 100644
---- a/arch/microblaze/kernel/syscalls/syscall.tbl
-+++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-@@ -456,3 +456,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
-index 253ff994ed2e..5e4206c0aede 100644
---- a/arch/mips/kernel/syscalls/syscall_n32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
-@@ -389,3 +389,7 @@
- 448	n32	process_mrelease		sys_process_mrelease
- 449	n32	futex_waitv			sys_futex_waitv
- 450	n32	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	n32	setxattrat			sys_setxattrat
-+452	n32	getxattrat			sys_getxattrat
-+453	n32	listxattrat			sys_listxattrat
-+454	n32	removexattrat			sys_removexattrat
-diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
-index 3f1886ad9d80..df0f053e76cd 100644
---- a/arch/mips/kernel/syscalls/syscall_n64.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
-@@ -365,3 +365,7 @@
- 448	n64	process_mrelease		sys_process_mrelease
- 449	n64	futex_waitv			sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	n64	setxattrat			sys_setxattrat
-+452	n64	getxattrat			sys_getxattrat
-+453	n64	listxattrat			sys_listxattrat
-+454	n64	removexattrat			sys_removexattrat
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 8f243e35a7b2..09ec31ad475f 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -438,3 +438,7 @@
- 448	o32	process_mrelease		sys_process_mrelease
- 449	o32	futex_waitv			sys_futex_waitv
- 450	o32	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	o32	setxattrat			sys_setxattrat
-+452	o32	getxattrat			sys_getxattrat
-+453	o32	listxattrat			sys_listxattrat
-+454	o32	removexattrat			sys_removexattrat
-diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
-index 8a99c998da9b..fe3f4f41aee6 100644
---- a/arch/parisc/kernel/syscalls/syscall.tbl
-+++ b/arch/parisc/kernel/syscalls/syscall.tbl
-@@ -448,3 +448,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common	futex_waitv			sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index 2600b4237292..bee27f650397 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -530,3 +530,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450 	nospu	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-index 799147658dee..d1fbad4b7864 100644
---- a/arch/s390/kernel/syscalls/syscall.tbl
-+++ b/arch/s390/kernel/syscalls/syscall.tbl
-@@ -453,3 +453,7 @@
- 448  common	process_mrelease	sys_process_mrelease		sys_process_mrelease
- 449  common	futex_waitv		sys_futex_waitv			sys_futex_waitv
- 450  common	set_mempolicy_home_node	sys_set_mempolicy_home_node	sys_set_mempolicy_home_node
-+451  common	setxattrat		sys_setxattrat			sys_setxattrat
-+452  common	getxattrat		sys_getxattrat			sys_getxattrat
-+453  common	listxattrat		sys_listxattrat			sys_listxattrat
-+454  common	removexattrat		sys_removexattrat		sys_removexattrat
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index 2de85c977f54..d4daa8afe45c 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -453,3 +453,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index 4398cc6fb68d..510d5175f80a 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -496,3 +496,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index 320480a8db4f..8488cc157fe0 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -455,3 +455,7 @@
- 448	i386	process_mrelease	sys_process_mrelease
- 449	i386	futex_waitv		sys_futex_waitv
- 450	i386	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	i386	setxattrat		sys_setxattrat
-+452	i386	getxattrat		sys_getxattrat
-+453	i386	listxattrat		sys_listxattrat
-+454	i386	removexattrat		sys_removexattrat
-diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
-index c84d12608cd2..f45d723d5a30 100644
---- a/arch/x86/entry/syscalls/syscall_64.tbl
-+++ b/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -372,6 +372,10 @@
- 448	common	process_mrelease	sys_process_mrelease
- 449	common	futex_waitv		sys_futex_waitv
- 450	common	set_mempolicy_home_node	sys_set_mempolicy_home_node
-+451	common	setxattrat		sys_setxattrat
-+452	common	getxattrat		sys_getxattrat
-+453	common	listxattrat		sys_listxattrat
-+454	common	removexattrat		sys_removexattrat
- 
- #
- # Due to a historical design error, certain syscalls are numbered differently
-diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-index 52c94ab5c205..dbafe441a83f 100644
---- a/arch/xtensa/kernel/syscalls/syscall.tbl
-+++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-@@ -421,3 +421,7 @@
- 448	common	process_mrelease		sys_process_mrelease
- 449	common  futex_waitv                     sys_futex_waitv
- 450	common	set_mempolicy_home_node		sys_set_mempolicy_home_node
-+451	common	setxattrat			sys_setxattrat
-+452	common	getxattrat			sys_getxattrat
-+453	common	listxattrat			sys_listxattrat
-+454	common	removexattrat			sys_removexattrat
-diff --git a/include/asm-generic/audit_change_attr.h b/include/asm-generic/audit_change_attr.h
-index 331670807cf0..cc840537885f 100644
---- a/include/asm-generic/audit_change_attr.h
-+++ b/include/asm-generic/audit_change_attr.h
-@@ -11,9 +11,15 @@ __NR_lchown,
- __NR_fchown,
- #endif
- __NR_setxattr,
-+#ifdef __NR_setxattrat
-+__NR_setxattrat,
-+#endif
- __NR_lsetxattr,
- __NR_fsetxattr,
- __NR_removexattr,
-+#ifdef __NR_removexattrat
-+__NR_removexattrat,
-+#endif
- __NR_lremovexattr,
- __NR_fremovexattr,
- #ifdef __NR_fchownat
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index a34b0f9a9972..090b9b5229a0 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -348,23 +348,31 @@ asmlinkage long sys_io_uring_register(unsigned int fd, unsigned int op,
- /* fs/xattr.c */
- asmlinkage long sys_setxattr(const char __user *path, const char __user *name,
- 			     const void __user *value, size_t size, int flags);
-+asmlinkage long sys_setxattrat(int dfd, const char __user *path, const char __user *name,
-+			     const void __user *value, size_t size, int flags);
- asmlinkage long sys_lsetxattr(const char __user *path, const char __user *name,
- 			      const void __user *value, size_t size, int flags);
- asmlinkage long sys_fsetxattr(int fd, const char __user *name,
- 			      const void __user *value, size_t size, int flags);
- asmlinkage long sys_getxattr(const char __user *path, const char __user *name,
- 			     void __user *value, size_t size);
-+asmlinkage long sys_getxattrat(int dfd, const char __user *path, const char __user *name,
-+			     void __user *value, size_t size, int flags);
- asmlinkage long sys_lgetxattr(const char __user *path, const char __user *name,
- 			      void __user *value, size_t size);
- asmlinkage long sys_fgetxattr(int fd, const char __user *name,
- 			      void __user *value, size_t size);
- asmlinkage long sys_listxattr(const char __user *path, char __user *list,
- 			      size_t size);
-+asmlinkage long sys_listxattrat(int dfd, const char __user *path, char __user *list,
-+			      size_t size, int flags);
- asmlinkage long sys_llistxattr(const char __user *path, char __user *list,
- 			       size_t size);
- asmlinkage long sys_flistxattr(int fd, char __user *list, size_t size);
- asmlinkage long sys_removexattr(const char __user *path,
- 				const char __user *name);
-+asmlinkage long sys_removexattrat(int dfd, const char __user *path,
-+				const char __user *name, int flags);
- asmlinkage long sys_lremovexattr(const char __user *path,
- 				 const char __user *name);
- asmlinkage long sys_fremovexattr(int fd, const char __user *name);
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index 45fa180cc56a..4fcc71612b7a 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -886,8 +886,18 @@ __SYSCALL(__NR_futex_waitv, sys_futex_waitv)
- #define __NR_set_mempolicy_home_node 450
- __SYSCALL(__NR_set_mempolicy_home_node, sys_set_mempolicy_home_node)
- 
-+/* fs/xattr.c */
-+#define __NR_setxattrat 451
-+__SYSCALL(__NR_setxattrat, sys_setxattrat)
-+#define __NR_getxattrat 452
-+__SYSCALL(__NR_getxattrat, sys_getxattrat)
-+#define __NR_listxattrat 453
-+__SYSCALL(__NR_listxattrat, sys_listxattrat)
-+#define __NR_removexattrat 454
-+__SYSCALL(__NR_removexattrat, sys_removexattrat)
-+
- #undef __NR_syscalls
--#define __NR_syscalls 451
-+#define __NR_syscalls 455
- 
- /*
-  * 32 bit systems traditionally used different
--- 
-2.37.2
 
+> Unfortunately looks like patchwork was unable to ingest this change :(
+> Not sure why.
+
+vger rejected this mail because the header was too big. I updated my
+scripts to estimate that before sending out.
+
+> Would you mind splitting it into 3 chunks - wireless, ethernet,
+> everything else, and resending? Let's see if that'll be small enough..
+
+I did this and my scripts estimate that the patches will be small enough
+now. Let's see...
+
+
+--bu+qW3icU8857Hzl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAmMObAUACgkQFA3kzBSg
+KbYmbxAAhLDry8AFCMs0JeaOiDjRHrHjQEgpCeivV6b/gp/jt/RKiaPiEcHJAMtv
+EIS+TTWc+VeHctybJ5IXx6ABcP64zEBQmcWaExve4a8QAEd5OBjFBqHMBNYLOjl3
+2LGdKq94jeX80mkXitqnxGKCZHvD+3fv86hgce4psGaByDBgrtFvnCYOEMOAb/i/
+QevZg2nDRS9Agwpz1u+L/byfiIP9L8n0FxFFkM8acJmU68E7zd1DZ4Zo0CKajVGa
+7VuzjWEjYpIRrp6BQh+HCfL+FvHJoxE7euZQ+b5t4jOqEKZwsH8J2367g4NtnTQd
+EE9vTTG1K07rfBoratigsH2yyNoi93cTR9mk7WgeYCSzFW5hyc/wrFM+tpIe9OUj
+9mOstqkAgKfUeIrkpnH/e1S9S7J8iMehTSU8HvIrX+gyBDXn7IgFTizgT+Kb1N95
+gyaciis4a5wdBiEJndYoQup2O94FRuqP4jvs3b6nU4DnspMrcp7OZ1iUYs2MJf/+
+jqtbi6y3n3y+PyeB3yic/rT9OKhEMO06A+Th68Ys/EK5KFs71763znTEsqfqMAzs
+HJZ6OhnNREklAf0x9E3jQbHD9I90WXUUp8OwiGVa7p+Y2kwa6L/PVTMon/J+97zk
+AqapabC9SVMN1KMRdpPlCJsb0CViQ0aWpW2gmfmsNb42RjFBjdQ=
+=9XVx
+-----END PGP SIGNATURE-----
+
+--bu+qW3icU8857Hzl--
