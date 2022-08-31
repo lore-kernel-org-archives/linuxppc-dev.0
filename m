@@ -4,52 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31EB3ECAAD1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 07:23:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C21C8ECAAD1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 07:32:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MHbHl2f9vz3c46
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 17:23:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MHbV119PYz3c81
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 17:32:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OXOVQQmo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=eDUHucZH;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=eDUHucZH;
+	dkim-atps=neutral
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHbH01Y2Dz2xJ9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 17:22:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=OXOVQQmo;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MHbGq5FVgz4xG6;
-	Wed, 31 Aug 2022 17:22:27 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1661930552;
-	bh=WKkkQRG6bf9R7KZ/zDCU6xhALT0ZrJhryQ3qstr4wgk=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=OXOVQQmoDSeeEcD48crP47K3BNbJY4Uviw8tglh6zCYmC+OOdxku5P55VfDPf8KFV
-	 pQxW1oevMEULJVLrLGqrJkLD4u8+Bh4I36NANKY1J0kve8uyeJztIqCyZY7J+gCUFJ
-	 HpTA3KYAKcucUhKq3zMRUW/k9eWwL9p24AZDN/z4alx67ITDE4zCPY4NZKe8KE82H3
-	 uaK3YwWDSv7mUHiPtMF6tBBXsRXykTPW8XZnyu3O5bpmGX0g2WiMEIkFn+lW5g9I6V
-	 5kIxQPXE4kOD1bJiSm4jg3C0c8sZNUfk0wSW1M9j8ZDXsbchhGE3T04xLkeopR4L4C
-	 Y/tNqlozJU5cQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Sathvika Vasireddy
- <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 02/16] powerpc: override __ALIGN() and __ALIGN_STR()
- macros
-In-Reply-To: <CMJW5375AS4G.3VZ0XK6D3OZ9O@bobo>
-References: <20220829055223.24767-1-sv@linux.ibm.com>
- <20220829055223.24767-3-sv@linux.ibm.com>
- <CMJW5375AS4G.3VZ0XK6D3OZ9O@bobo>
-Date: Wed, 31 Aug 2022 17:22:25 +1000
-Message-ID: <878rn4vpvy.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHbTG5Gdfz2xG6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 17:31:29 +1000 (AEST)
+Received: by mail-lj1-x22b.google.com with SMTP id b26so6791592ljk.12
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 00:31:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc;
+        bh=SowT+GgtM4rpf2Tm7Xdg2PLTWLyEuq4YWLGVJCfBBo4=;
+        b=eDUHucZHmNWPS4dcTDAvSB+3Gf6B84OpnmrxcPBg31ZikUd8NxfnOhl5KSqS8dqwTH
+         By91LHkdLFJWxuU3BZip5eaLMrQ3CxsdmPbKI+MBD5j0nW1JUI4YzW3nktfZKPaQBcHx
+         KtZG8TaSTS9srPQOsqMP85vqWbBerDKMiFGow/qtjx4HobjfONZP21xmc1c5FfT+xX+j
+         nIg8aDpdTtf7gCUwKdLU6g4jzLSvaiPTv8zA9dKiV3jUY+6cVOhIcxEpmKsLBKokL/TW
+         zbez57XmSuj33sarUwUCCEpvsSsp5xK9z8nlhK8VXyG0a1y862EP0dyou+0fo27AGZu0
+         Oc8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc;
+        bh=SowT+GgtM4rpf2Tm7Xdg2PLTWLyEuq4YWLGVJCfBBo4=;
+        b=Yb8PDcuvesPYxt92lo8JH4Mp5ORa5+cQd14n8gp/RKp2NxSRGwKTU1zUIicWfYmaKZ
+         vgE7+h99cpgiHME+g9GPROFzl3SGBV8DT6rjvUkaPmhG4CF3xDnKmK7N0EgTQ7iKvk6I
+         ThUN2BdKbflZi8f34JN4ZBUS2S7IosXDtv4EpR+IL4F/woH6HL8A5WC2QnwIU1JOOI1T
+         e1QsW7SHHbQbLpC1zFcRGdpV3rsvT5RbSdfqnjeJXE13DZvEzT9gS6/etHgteRIj5N4i
+         X8+qv1MoCsyTtk+Ufxpd7jWFdVPIE2PiL7ypvaBKA2QroXyYOwyixqylBskERZCe+yF8
+         2Ihg==
+X-Gm-Message-State: ACgBeo22mwcqXfgMBHlap6XN/IYD9bJCWLsGvM8+uaWefAxCh/YypVG1
+	YaT9ALP+DryOKC6J7OLicZxzoA==
+X-Google-Smtp-Source: AA6agR4/QCHMtUzdlfGAL1xvdig57DJ6Ktw8Nv3Fk/1Sl/NMSIE1w3emriDGwD5pekMf0VCiwhuuGw==
+X-Received: by 2002:a05:651c:199f:b0:261:d789:cd6c with SMTP id bx31-20020a05651c199f00b00261d789cd6cmr8281851ljb.450.1661931083551;
+        Wed, 31 Aug 2022 00:31:23 -0700 (PDT)
+Received: from [192.168.28.124] (balticom-73-99-134.balticom.lv. [109.73.99.134])
+        by smtp.gmail.com with ESMTPSA id c7-20020a056512104700b0049468f9e697sm1135488lfb.236.2022.08.31.00.31.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 31 Aug 2022 00:31:23 -0700 (PDT)
+Message-ID: <373fdedb-447e-b552-df83-737267068296@linaro.org>
+Date: Wed, 31 Aug 2022 10:31:22 +0300
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.13.0
+Subject: Re: [PATCH v2 1/3] dt-bindings: reset: syscon-reboot: Add priority
+ property
+Content-Language: en-US
+To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20220820102925.29476-1-pali@kernel.org>
+ <20220830230012.9429-1-pali@kernel.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20220830230012.9429-1-pali@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,40 +86,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, aik@ozlabs.ru, mingo@redhat.com, rostedt@goodmis.org, jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz, chenzhongjin@huawei.com
+Cc: =?UTF-8?Q?Marek_Beh=c3=ban?= <kabel@kernel.org>, devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Nicholas Piggin" <npiggin@gmail.com> writes:
-> On Mon Aug 29, 2022 at 3:52 PM AEST, Sathvika Vasireddy wrote:
->> Powerpc instructions must be word-aligned. Currently,
->> there is an alignment of 16 bytes (by default), and it is
->> much more than what is required for powerpc (4 bytes).
->>
->> The default expansion of __ALIGN() macro is:
->> #define __ALIGN       .align 4,0x90
->>
->> Since Powerpc Linux does not require a 16 byte alignment,
->> override __ALIGN() and __ALIGN_STR() macros to use required
->> 4 byte alignment.
->
-> Alignment can be desirable beyond the minimum requirement, for
-> example 16 byte alignment for functions could be helpful for
-> instruction fetch. So it should be explained why possible
-> benefits of the larger alignment are not worth it.
+On 31/08/2022 02:00, Pali Rohár wrote:
+> This new optional priority property allows to specify custom priority level
+> of reset device. Default level was always 192.
 
-Using ".align 2" matches what our existing _GLOBAL macro does. So this
-change basically just propagates that existing alignment into this new
-macro, which is used for similar purposes.
+You still did not explain why do we need this. You only explained what
+you did here, which is obvious and visible from the diff. What you
+should explain is why you are doing it, what problem you are solving.
 
-So if we want to increase the alignment we should do that explicitly,
-and update _GLOBAL at the same time.
-
-The change log should probably just say ~= "use the same alignment as
-the existing _GLOBAL macro".
-
-What's more important, but not mentioned in the change log, is that we
-don't want to pad with 0x90, because repeated 0x90s are not a nop or
-trap on powerpc.
-
-cheers
+Best regards,
+Krzysztof
