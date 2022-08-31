@@ -4,86 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65F57ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 07:36:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9904FECAAD1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 07:37:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MHbbG5v0sz3c4f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 17:36:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MHbby1x28z3cdB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 17:37:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=nR4RDBmt;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=i56a14606.fm1 header.b=L8StyYpb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XNLGfVMe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.230; helo=new4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=nR4RDBmt;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=i56a14606.fm1 header.b=L8StyYpb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XNLGfVMe;
 	dkim-atps=neutral
-X-Greylist: delayed 554 seconds by postgrey-1.36 at boromir; Wed, 31 Aug 2022 17:35:56 AEST
-Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHbZN5VqTz2xn5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 17:35:56 +1000 (AEST)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailnew.nyi.internal (Postfix) with ESMTP id 22188580551
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 03:26:38 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute3.internal (MEProxy); Wed, 31 Aug 2022 03:26:38 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:sender:subject:subject:to:to; s=fm1; t=1661930798; x=
-	1661934398; bh=SpmvgAZmShrF0l7gD6cdrt516aXO97qP2DhvL2kbjew=; b=n
-	R4RDBmtiT22kKeY4+hkrxH7/rOTmWVq+AnBcrvmzBpbwrUcGFZ1ytoAGVAyViql4
-	DDSoq23/TmGWfj9hoYFxBSShGIW63I97yQ2+OyN8hInhBekNZJqiLMkxOtVbzVNM
-	IuMtRGUUnug6ZEE58ML4IQmm7spwL8sFtZXKzaxsBGRuT6/9fkbdLe0S7pIGVAfo
-	mbR1YV8roGjehUyigvXeOEm+yOyaNn6Rp8OhQLtwRI7y3GZxQgVxZLuABp9oPa9B
-	JszTFAtg9Fsx7tqmUHQTkrv7jHCPhrH4e+LS0moBcHRaBQchh3xNftZRAd6UGSbk
-	5KGOOhY7UyoTgeZvXINxA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:content-transfer-encoding:content-type
-	:date:date:feedback-id:feedback-id:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender
-	:x-me-sender:x-sasl-enc; s=i56a14606.fm1; t=1661930798; x=
-	1661934398; bh=SpmvgAZmShrF0l7gD6cdrt516aXO97qP2DhvL2kbjew=; b=L
-	8StyYpbaCCUVBeIjtA5FOXmCPVd9bqMEzqLudd6N2f6BmsP/Kr6k2RmKd/PyXVxJ
-	XtxnElNsjknRXxusN+5b2uGQv25a3UNtZ2GZRVc8kJSsrY323Hx1wabDjCfm/wib
-	sbyN6nHlMLZqdzyBEK3pqiHaQJQxwd1RqSp5ENwwwe+4iLzv63IMm54rmmov3A0a
-	JcbXF7dzd/F5nREz5l3+WHtVscXVCOx8OgCv6/YAjdiQ1i2LxFmLS68DCBiERTkQ
-	sLbiVW7y3JV5R7Jdza/7jWUQbNO9HqCNqzyCanJTxhke99Cc09s1EQuuUQhZJyue
-	/ii28FYxP++5uSsmq2v7Q==
-X-ME-Sender: <xms:LQ0PY25AgkvZhdBl4UCDkM_4--caDFmS8q0UkwAoSllLmK2nr46f-A>
-    <xme:LQ0PY_5etj21fLWA2qgpnWQXWPjFGsX3rNKjQu8g-RsFyeoJGyzpjoectxmxnNH8N
-    J1zeRNva4cLa552HrU>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrvdekgedguddvfecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
-    necuuegrihhlohhuthemuceftddtnecunecujfgurhepofgfggfkjghffffhvffutgfgse
-    htqhertderreejnecuhfhrohhmpedftehrnhguuceuvghrghhmrghnnhdfuceorghrnhgu
-    segrrhhnuggsrdguvgeqnecuggftrfgrthhtvghrnhepjeeghfeutdejjeehudevgeehve
-    duffejkefhveefgfettdehgeeiledufeeuvdfhnecuvehluhhsthgvrhfuihiivgeptden
-    ucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:LQ0PY1f-hu1PHLPlzKkYlBcpT9OD-X5Gvq4tBpaMvpGmqJjL_bg3IQ>
-    <xmx:LQ0PYzLhE5rR5eozADMB_BeYEbnAzjEuZwpvpYnBppWzy5VROSFjNw>
-    <xmx:LQ0PY6KSJakDkX8fhG4zWNMrVBOH33PzwJ3ElpyKzzkczMHIR6Y1TA>
-    <xmx:LQ0PY_UKBdBeYHaCQVI7zrI-9XRmf9DWKWZxhhE0ZqlFIBAYxJAR5Q>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id B0878B60083; Wed, 31 Aug 2022 03:26:37 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.7.0-alpha0-841-g7899e99a45-fm-20220811.002-g7899e99a
-Mime-Version: 1.0
-Message-Id: <a5d148c1-70c1-4e86-a50c-7dc6da45ff2f@www.fastmail.com>
-In-Reply-To: <20220830230012.9429-1-pali@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHbb30Z8Rz3c1N
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 17:36:30 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id AAB09618D1;
+	Wed, 31 Aug 2022 07:36:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB3DDC433D7;
+	Wed, 31 Aug 2022 07:36:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1661931386;
+	bh=PX8yHkSXE5BpbH8BEhvTKLqiAUGh7txekQ/EyKnH4NA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XNLGfVMeHc6+owM+kwZbEmwwTPhTUuG3byEEMSNqekF/heVsxs8ZNrv6HzIcqos9C
+	 TnaTErhphNAHn5LxHKg9+Q0bC0UOPCLtHpeYB35/8gACT3gEB7il+/F8K6bRH5+Bct
+	 t/Hund6Nrx9CRx7SCxgS/Wps/0GBMYP/Ip7pvE3j3SbV6qEyq1dSGuXn6bk8qVfDMv
+	 yMZcAkH53B+em349skOP1K7zUM5/F9iLaExTUiOPgRKoBdrLFwvcdsbyJ78cwzymvw
+	 1fmPLy+FydaCg4THlVwDviNyK10rvof1mPnxwtnH6imJLeY/iQ1HjUwOftlu7GHusi
+	 PI4loU1gCX0Ow==
+Received: by pali.im (Postfix)
+	id F3DA6855; Wed, 31 Aug 2022 09:36:22 +0200 (CEST)
+Date: Wed, 31 Aug 2022 09:36:22 +0200
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+Subject: Re: [PATCH v2 1/3] dt-bindings: reset: syscon-reboot: Add priority
+ property
+Message-ID: <20220831073622.5bp3ftf3fkea5rdk@pali>
 References: <20220820102925.29476-1-pali@kernel.org>
  <20220830230012.9429-1-pali@kernel.org>
-Date: Wed, 31 Aug 2022 09:26:17 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/3] dt-bindings: reset: syscon-reboot: Add priority property
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ <373fdedb-447e-b552-df83-737267068296@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <373fdedb-447e-b552-df83-737267068296@linaro.org>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,35 +66,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Marek =?utf-8?B?QmVow7pu?= <kabel@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Aug 31, 2022, at 1:00 AM, Pali Roh=C3=A1r wrote:
-> a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml=20
-> b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-> index da2509724812..4c8b0d0a0111 100644
-> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot.yaml
-> @@ -42,6 +42,11 @@ properties:
->      $ref: /schemas/types.yaml#/definitions/uint32
->      description: The reset value written to the reboot register (32=20
-> bit access).
->=20
-> +  priority:
-> +    $ref: /schemas/types.yaml#/definitions/int32
-> +    description: Priority level of this syscon reset device.
-> +    default: 192
-> +
+On Wednesday 31 August 2022 10:31:22 Krzysztof Kozlowski wrote:
+> On 31/08/2022 02:00, Pali Rohár wrote:
+> > This new optional priority property allows to specify custom priority level
+> > of reset device. Default level was always 192.
+> 
+> You still did not explain why do we need this. You only explained what
+> you did here, which is obvious and visible from the diff. What you
+> should explain is why you are doing it, what problem you are solving.
+> 
+> Best regards,
+> Krzysztof
 
-My first thought was that this is looks very Linux specific and
-probably should be documented as such. However I see there is
-already precedent in
-Documentation/devicetree/bindings/power/reset/gpio-restart.yaml,
-which defines the same thing with a more detailed description.
-
-Since this is an optional property for both, and it has the
-same meaning here, is it possible to move the description
-to a common place where it either gets included from both,
-or from all reboot bindings?
-
-       Arnd
+Look at patch 3/3, thanks.
