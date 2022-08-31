@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C336DECAAD1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 13:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BA26ECAAD1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 13:18:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MHl8j2Xd7z3fKX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 23:17:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MHl971fk0z3cYd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 23:18:03 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHl6G2xMhz3bkb
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHl6G6ZFmz3bnM
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 23:15:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MHl6F5PcSz4xGJ;
-	Wed, 31 Aug 2022 23:15:33 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MHl6G5pM9z4xGL;
+	Wed, 31 Aug 2022 23:15:34 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220804015708.5928-1-joel@jms.id.au>
-References: <20220804015708.5928-1-joel@jms.id.au>
-Subject: Re: [PATCH] powerpc/microwatt: Add LiteX MMC driver
-Message-Id: <166195164051.45984.8261835961890033490.b4-ty@ellerman.id.au>
-Date: Wed, 31 Aug 2022 23:14:00 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220819110430.433984-1-mpe@ellerman.id.au>
+References: <20220819110430.433984-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/boot: Convert more files to use SPDX tags
+Message-Id: <166195163098.45984.2776043525792290652.b4-ty@ellerman.id.au>
+Date: Wed, 31 Aug 2022 23:13:50 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,18 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: gregkh@linuxfoundation.org, tglx@linutronix.de, linux-spdx@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 4 Aug 2022 11:27:08 +0930, Joel Stanley wrote:
-> Enable the LiteX MMC device and it's dependency the common clock
-> framework.
+On Fri, 19 Aug 2022 21:04:30 +1000, Michael Ellerman wrote:
+> These files are all plain GPL 2.0, with a second sentence about being
+> licensed as-is.
+> 
+> Similar to the rule in commit 577b61cee5b2 ("treewide: Replace GPLv2
+> boilerplate/reference with SPDX - gpl-2.0_398.RULE").
 > 
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/microwatt: Add LiteX MMC driver
-      https://git.kernel.org/powerpc/c/0b9e534fcbf0a45e2ba08467de08a848a99ba2d6
+[1/1] powerpc/boot: Convert more files to use SPDX tags
+      https://git.kernel.org/powerpc/c/e01432baf6618296f4d2d557e6b4c3245a5cc3c2
 
 cheers
