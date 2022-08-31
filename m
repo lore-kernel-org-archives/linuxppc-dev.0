@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37220ECAAD1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 13:17:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C336DECAAD1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 13:17:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MHl894c26z3fF6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 23:17:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MHl8j2Xd7z3fKX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 31 Aug 2022 23:17:41 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHl6F2L4Dz2xJ5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 23:15:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MHl6G2xMhz3bkb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Aug 2022 23:15:34 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MHl6F1V9Yz4xGH;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MHl6F5PcSz4xGJ;
 	Wed, 31 Aug 2022 23:15:33 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <cba76f5a5b01fcc49415e632d92c11c1c5998cab.1660843877.git.christophe.leroy@csgroup.eu>
-References: <cba76f5a5b01fcc49415e632d92c11c1c5998cab.1660843877.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/vdso: Don't map VDSO at a fixed address on PPC32
-Message-Id: <166195162996.45984.6268667436058610815.b4-ty@ellerman.id.au>
-Date: Wed, 31 Aug 2022 23:13:49 +1000
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220804015708.5928-1-joel@jms.id.au>
+References: <20220804015708.5928-1-joel@jms.id.au>
+Subject: Re: [PATCH] powerpc/microwatt: Add LiteX MMC driver
+Message-Id: <166195164051.45984.8261835961890033490.b4-ty@ellerman.id.au>
+Date: Wed, 31 Aug 2022 23:14:00 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 18 Aug 2022 19:31:25 +0200, Christophe Leroy wrote:
-> PPC64 removed default mapping address from VDSO in
-> commit 30d0b3682887 ("powerpc: Move 64bit VDSO to improve context
-> switch performance").
+On Thu, 4 Aug 2022 11:27:08 +0930, Joel Stanley wrote:
+> Enable the LiteX MMC device and it's dependency the common clock
+> framework.
 > 
-> Do like PPC64 and let get_unmapped_area() place the VDSO mapping
-> at the address it wants, don't force a default address.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/vdso: Don't map VDSO at a fixed address on PPC32
-      https://git.kernel.org/powerpc/c/8a8f7866663588b162031a5348c24e42161461cd
+[1/1] powerpc/microwatt: Add LiteX MMC driver
+      https://git.kernel.org/powerpc/c/0b9e534fcbf0a45e2ba08467de08a848a99ba2d6
 
 cheers
