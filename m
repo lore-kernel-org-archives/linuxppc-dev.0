@@ -4,46 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95B77ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 20:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D569ECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 20:30:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MJXWd6Pz2z3bmc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 06:21:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MJXjw2jmvz2yXH
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 06:30:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=dXIMcpOF;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=EwoBt2tu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=94.23.1.103; helo=out0.migadu.com; envelope-from=kent.overstreet@linux.dev; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.121.223.63; helo=out1.migadu.com; envelope-from=kent.overstreet@linux.dev; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=dXIMcpOF;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=EwoBt2tu;
 	dkim-atps=neutral
-Received: from out0.migadu.com (out0.migadu.com [94.23.1.103])
+X-Greylist: delayed 341 seconds by postgrey-1.36 at boromir; Fri, 02 Sep 2022 06:30:08 AEST
+Received: from out1.migadu.com (out1.migadu.com [91.121.223.63])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJXVw3MVKz2xZf
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2022 06:21:10 +1000 (AEST)
-Date: Thu, 1 Sep 2022 16:20:52 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJXjD52l5z2xZV
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2022 06:30:08 +1000 (AEST)
+Date: Thu, 1 Sep 2022 16:24:09 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1662063664;
+	t=1662063855;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=59N4cXDrrx4pvcgXkof/n8IFhKqV2Yv9jG1OYeuE1s4=;
-	b=dXIMcpOFv3ETRiKCxyi6yjMteTgi6ggGBp7Fdyb2codMRsgCLJp7x2x4nLvG1IWvASiMF0
-	hESvF7xeaq0Q8V1p+DUAYmtNi3gteD6Owm4NzOM5fELcAqZMBiNPRvXj18LmToocre3m2H
-	ZW+O5s0hMKJyEFO4DjHZjZ1sua9VkBw=
+	bh=xfsb9kRgUK3KweWYt2HkB9+K5WeFFKU/t1uaMQF6e7I=;
+	b=EwoBt2tuIDzQpe0zDHZ4K8qS5db1PANOADoqffcU8P+/iVkNHTp86cWX3pwvwa2DFgQh5u
+	Im6eJ+7gJM+y5opnx9fMMXpn/S+nGT9mGCUCLrWd0i2piG4AffrFRXWQQJY9/vf9181j3j
+	tibjRQQp8XEaq3ZiXDdiK1JVzP09b80=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Kent Overstreet <kent.overstreet@linux.dev>
 To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [RFC PATCH RESEND 23/28] x86/mm: define
- ARCH_SUPPORTS_PER_VMA_LOCK
-Message-ID: <20220901202052.xfaeuhmosheml2gz@moria.home.lan>
+Subject: Re: [RFC PATCH RESEND 04/28] mm: move mmap_lock assert function
+ definitions
+Message-ID: <20220901202409.e2fqegqghlijkzey@moria.home.lan>
 References: <20220901173516.702122-1-surenb@google.com>
- <20220901173516.702122-24-surenb@google.com>
+ <20220901173516.702122-5-surenb@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20220901173516.702122-24-surenb@google.com>
+In-Reply-To: <20220901173516.702122-5-surenb@google.com>
 X-Migadu-Flow: FLOW_OUT
 X-Migadu-Auth-User: linux.dev
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,27 +62,28 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Sep 01, 2022 at 10:35:11AM -0700, Suren Baghdasaryan wrote:
-> Set ARCH_SUPPORTS_PER_VMA_LOCK so that the per-VMA lock support can be
-> compiled on this architecture.
+On Thu, Sep 01, 2022 at 10:34:52AM -0700, Suren Baghdasaryan wrote:
+> Move mmap_lock assert function definitions up so that they can be used
+> by other mmap_lock routines.
 > 
 > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 > ---
->  arch/x86/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
+>  include/linux/mmap_lock.h | 24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index f9920f1341c8..ee19de020b27 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -27,6 +27,7 @@ config X86_64
->  	# Options that are inherently 64-bit kernel only:
->  	select ARCH_HAS_GIGANTIC_PAGE
->  	select ARCH_SUPPORTS_INT128 if CC_HAS_INT128
-> +	select ARCH_SUPPORTS_PER_VMA_LOCK
->  	select ARCH_USE_CMPXCHG_LOCKREF
->  	select HAVE_ARCH_SOFT_DIRTY
->  	select MODULES_USE_ELF_RELA
+> diff --git a/include/linux/mmap_lock.h b/include/linux/mmap_lock.h
+> index 96e113e23d04..e49ba91bb1f0 100644
+> --- a/include/linux/mmap_lock.h
+> +++ b/include/linux/mmap_lock.h
+> @@ -60,6 +60,18 @@ static inline void __mmap_lock_trace_released(struct mm_struct *mm, bool write)
+>  
+>  #endif /* CONFIG_TRACING */
+>  
+> +static inline void mmap_assert_locked(struct mm_struct *mm)
+> +{
+> +	lockdep_assert_held(&mm->mmap_lock);
+> +	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
 
-I think you could combine this with the previous path (and similarly on other
-architectures) - they logically go together.
+These look redundant to me - maybe there's a reason the VM developers want both,
+but I would drop the VM_BUG_ON() and just keep the lockdep_assert_held(), since
+that's the standard way to write that assertion.
