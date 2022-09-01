@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7F4BECAAD1
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 11:49:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0CCFECAAD1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 11:49:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MJK8W1sWbz3c1Q
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 21:49:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MJK8y2mV1z3cF8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 21:49:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJK811sslz2xZT
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2022 21:49:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJK852vF0z2xZT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2022 21:49:09 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MJK7s1Bkmz9sp8;
-	Thu,  1 Sep 2022 13:48:57 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MJK7t224Sz9spF;
+	Thu,  1 Sep 2022 13:48:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zENmgUcEPJFI; Thu,  1 Sep 2022 13:48:57 +0200 (CEST)
+	with ESMTP id UXtK-XKVhThw; Thu,  1 Sep 2022 13:48:58 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MJK7r70wRz9sp7;
-	Thu,  1 Sep 2022 13:48:56 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MJK7t1H6Dz9sp7;
+	Thu,  1 Sep 2022 13:48:58 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DD8BF8B780;
-	Thu,  1 Sep 2022 13:48:56 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A9BC8B788;
+	Thu,  1 Sep 2022 13:48:58 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id TIenZCy2TllG; Thu,  1 Sep 2022 13:48:56 +0200 (CEST)
+	with ESMTP id 0HcmlL4WpmWA; Thu,  1 Sep 2022 13:48:58 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.131])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A3AA18B764;
-	Thu,  1 Sep 2022 13:48:56 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A38408B764;
+	Thu,  1 Sep 2022 13:48:57 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 281BmkoS1768874
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 281Bmrbb1768893
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 1 Sep 2022 13:48:46 +0200
+	Thu, 1 Sep 2022 13:48:53 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 281BmgEQ1768870;
-	Thu, 1 Sep 2022 13:48:42 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 281Bmr1r1768892;
+	Thu, 1 Sep 2022 13:48:53 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -51,12 +51,14 @@ To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         rostedt@goodmis.org, ardb@kernel.org, tglx@linutronix.de,
         mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com,
         hpa@zytor.com
-Subject: [PATCH v3 0/6] Implement inline static calls on PPC32 - v3
-Date: Thu,  1 Sep 2022 13:48:19 +0200
-Message-Id: <cover.1662032631.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 4/6] static_call_inline: Provide trampoline address when updating sites
+Date: Thu,  1 Sep 2022 13:48:23 +0200
+Message-Id: <b1441fba3cae8dc7a4def90cbcfd7e62100ff392.1662032631.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
+In-Reply-To: <cover.1662032631.git.christophe.leroy@csgroup.eu>
+References: <cover.1662032631.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1662032901; l=1870; s=20211009; h=from:subject:message-id; bh=GAgDRyI5Iv4v6NxY6e0q7Pc95r863rGYKNlkTCV4Iz4=; b=xIoTdQATVlMxl+qo3b8kowa0Ce1JnaXHUKOLiVoHMjZhqAH98kCIcW/VrJESaDkHweU7OcGCCuQ/ ZHZ5QlLlAZhSMhFyRCUfG3ew9RKhh2g10uAM5ujyxo71l437f4Kv
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1662032901; l=1424; s=20211009; h=from:subject:message-id; bh=iaPcJGPBr+7akkSMZQpha0PF06ZbrAuI+md5r5d1jpw=; b=E+g03r66AuQfuqcIEQa/zGKgc3BR8wBKX/EgJIH/iZ3A6OcPnCufDNUKfhNp1CiTnnTvD6ZkSSAk YYU4wVGSCeYNz1/tr+7SbwpMJelF+Y3Lzt0Xfsj1TIqFHf6xP4uj
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,46 +76,43 @@ Cc: chenzhongjin@huawei.com, x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series applies on top of the series v2 "objtool: Enable and
-implement --mcount option on powerpc" [1]
+In preparation of support of inline static calls on powerpc, provide
+trampoline address when updating sites, so that when the destination
+function is too far for a direct function call, the call site is
+patched with a call to the trampoline.
 
-A few modifications are done to core parts to enable powerpc
-implementation:
-- R_X86_64_PC32 is abstracted to R_REL32 so that it can then be
-redefined as R_PPC_REL32.
-- A call to static_call_init() is added to start_kernel() to avoid
-every architecture to have to call it
-- Trampoline address is provided to arch_static_call_transform() even
-when setting a site to fallback on a call to the trampoline when the
-target is too far.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/x86/kernel/static_call.c | 2 +-
+ kernel/static_call_inline.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-[1] https://lore.kernel.org/all/20220829055223.24767-8-sv@linux.ibm.com/T/
-
-This version of the series includes a preliminary patch (patch 1) that
-should be squashed into Sathvika's series.
-
-Christophe Leroy (6):
-  Fixup for "objtool/powerpc: Add --mcount specific implementation"
-  objtool: Add architecture specific R_REL32 macro
-  init: Call static_call_init() from start_kernel()
-  static_call_inline: Provide trampoline address when updating sites
-  powerpc: Prepare arch_static_call_transform() for supporting inline
-    static calls
-  powerpc/static_call: Implement inline static calls
-
- arch/powerpc/Kconfig                          |  1 +
- arch/powerpc/include/asm/static_call.h        |  2 +
- arch/powerpc/kernel/static_call.c             | 58 ++++++++++++++-----
- arch/x86/kernel/static_call.c                 |  2 +-
- init/main.c                                   |  1 +
- kernel/static_call_inline.c                   |  2 +-
- tools/objtool/arch/powerpc/decode.c           | 39 +++++++++----
- tools/objtool/arch/powerpc/include/arch/elf.h |  1 +
- tools/objtool/arch/x86/include/arch/elf.h     |  1 +
- tools/objtool/check.c                         | 10 ++--
- tools/objtool/orc_gen.c                       |  2 +-
- 11 files changed, 85 insertions(+), 34 deletions(-)
-
+diff --git a/arch/x86/kernel/static_call.c b/arch/x86/kernel/static_call.c
+index aaaba85d6d7f..1c0072272214 100644
+--- a/arch/x86/kernel/static_call.c
++++ b/arch/x86/kernel/static_call.c
+@@ -113,7 +113,7 @@ void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
+ {
+ 	mutex_lock(&text_mutex);
+ 
+-	if (tramp) {
++	if (tramp && !site) {
+ 		__static_call_validate(tramp, true, true);
+ 		__static_call_transform(tramp, __sc_insn(!func, true), func, false);
+ 	}
+diff --git a/kernel/static_call_inline.c b/kernel/static_call_inline.c
+index dc5665b62814..b5de9d92fa4e 100644
+--- a/kernel/static_call_inline.c
++++ b/kernel/static_call_inline.c
+@@ -195,7 +195,7 @@ void __static_call_update(struct static_call_key *key, void *tramp, void *func)
+ 				continue;
+ 			}
+ 
+-			arch_static_call_transform(site_addr, NULL, func,
++			arch_static_call_transform(site_addr, tramp, func,
+ 						   static_call_is_tail(site));
+ 		}
+ 	}
 -- 
 2.37.1
 
