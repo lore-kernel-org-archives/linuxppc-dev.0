@@ -4,40 +4,34 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9FA0CECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 12:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47561ECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 15:15:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MJLVW6Hqxz2yfq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Sep 2022 22:50:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJFM16nDgz2xVr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Sep 2022 18:58:18 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.53])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MJFHQ2hD6znTxJ;
-	Thu,  1 Sep 2022 16:55:14 +0800 (CST)
-Received: from huawei.com (10.67.175.83) by kwepemi500008.china.huawei.com
- (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.24; Thu, 1 Sep
- 2022 16:57:41 +0800
-From: ruanjinjie <ruanjinjie@huawei.com>
-To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
-	<joel@jms.id.au>, <Julia.Lawall@inria.fr>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>
-Subject: [PATCH -next] powerpc/mpic_msgr: fix cast removes address space of expression warnings
-Date: Thu, 1 Sep 2022 16:54:16 +0800
-Message-ID: <20220901085416.204378-1-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MJPjl3BQ1z3bkk
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 01:15:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MJPjJ1q0Vz2x9J
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2022 01:14:43 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 281FBJ1H024415;
+	Thu, 1 Sep 2022 10:11:19 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 281FBHnO024414;
+	Thu, 1 Sep 2022 10:11:17 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Thu, 1 Sep 2022 10:11:17 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 15/16] objtool/powerpc: Enable objtool to be built on ppc
+Message-ID: <20220901151117.GE25951@gate.crashing.org>
+References: <20220829055223.24767-1-sv@linux.ibm.com> <20220829055223.24767-16-sv@linux.ibm.com> <2fb92e17-2ad5-9732-560c-a7321e6a2528@csgroup.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.67.175.83]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
-X-Mailman-Approved-At: Thu, 01 Sep 2022 22:49:50 +1000
+In-Reply-To: <2fb92e17-2ad5-9732-560c-a7321e6a2528@csgroup.eu>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,37 +43,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ruanjinjie@huawei.com
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "chenzhongjin@huawei.com" <chenzhongjin@huawei.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "aik@ozlabs.ru" <aik@ozlabs.ru>, "mingo@redhat.com" <mingo@redhat.com>, Sathvika Vasireddy <sv@linux.ibm.com>, "npiggin@gmail.com" <npiggin@gmail.com>, "jpoimboe@redhat.com" <jpoimboe@redhat.com>, "naveen.n.rao@linux.vnet.ibm.com" <naveen.n.rao@linux.vnet.ibm.com>, "mbenes@suse.cz" <mbenes@suse.cz>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When build Linux kernel, encounter the following warnings:
+On Thu, Sep 01, 2022 at 09:32:46AM +0000, Christophe Leroy wrote:
+> Le 29/08/2022 à 07:52, Sathvika Vasireddy a écrit :
+> > +int arch_decode_instruction(struct objtool_file *file, const struct section *sec,
+> > +			    unsigned long offset, unsigned int maxlen,
+> > +			    unsigned int *len, enum insn_type *type,
+> > +			    unsigned long *immediate,
+> > +			    struct list_head *ops_list)
+> > +{
+> > +	u32 insn;
+> > +
+> > +	*immediate = 0;
+> > +	insn = bswap_if_needed(file->elf, *(u32 *)(sec->data->d_buf + offset));
+> > +	*len = 4;
+> 
+> Should be *len = 8 when insn >> 26 == 1.
 
-./arch/powerpc/sysdev/mpic_msgr.c:230:38: warning: cast removes address space '__iomem' of expression
-./arch/powerpc/sysdev/mpic_msgr.c:230:27: warning: incorrect type in assignment (different address spaces)
+But please use ppc_inst_prefixed().  And just use ppc_inst_len() here?
 
-The data type of msgr->mer and msgr->base are 'u32 __iomem *', but
-converted to 'u32 *' and 'u8 *' directly and cause above warnings, now
-recover their data types to fix these warnings.
+Not having convenience abstraction functions like that will give you
+much more work in the future -- currently all prefix insns use primary
+opcode 1, sure, and nothing else does; but this can change.
 
-Signed-off-by: ruanjinjie <ruanjinjie@huawei.com>
----
- arch/powerpc/sysdev/mpic_msgr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/mpic_msgr.c b/arch/powerpc/sysdev/mpic_msgr.c
-index 698fefaaa6dd..cbb0d24f15ba 100644
---- a/arch/powerpc/sysdev/mpic_msgr.c
-+++ b/arch/powerpc/sysdev/mpic_msgr.c
-@@ -227,7 +227,7 @@ static int mpic_msgr_probe(struct platform_device *dev)
- 
- 		reg_number = block_number * MPIC_MSGR_REGISTERS_PER_BLOCK + i;
- 		msgr->base = msgr_block_addr + i * MPIC_MSGR_STRIDE;
--		msgr->mer = (u32 *)((u8 *)msgr->base + MPIC_MSGR_MER_OFFSET);
-+		msgr->mer = (u32 __iomem *)((u8 __iomem *)msgr->base + MPIC_MSGR_MER_OFFSET);
- 		msgr->in_use = MSGR_FREE;
- 		msgr->num = i;
- 		raw_spin_lock_init(&msgr->lock);
--- 
-2.25.1
-
+Segher
