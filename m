@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1405DC6FA85
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 11:31:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11645C38145
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 11:32:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MJwjY28fwz30DP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 21:31:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MJwjz3hNkz306K
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Sep 2022 21:32:07 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJwj23BzKz2yZ4
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MJwj24Gqnz2yZ4
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Sep 2022 21:31:18 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MJwj03fP1z4xG6;
-	Fri,  2 Sep 2022 21:31:16 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MJwhz5DdGz4wgr;
+	Fri,  2 Sep 2022 21:31:15 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220831131052.42250-1-mpe@ellerman.id.au>
-References: <20220831131052.42250-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] Revert "powerpc/irq: Don't open code irq_soft_mask helpers"
-Message-Id: <166211825329.554590.8228191731474663031.b4-ty@ellerman.id.au>
-Date: Fri, 02 Sep 2022 21:30:53 +1000
+To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <a8298991b3df049a54ee8e558838e34265812014.1661272586.git.christophe.leroy@csgroup.eu>
+References: <a8298991b3df049a54ee8e558838e34265812014.1661272586.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Fix hard_irq_disable() with sanitizer
+Message-Id: <166211825114.554590.4796763378822550345.b4-ty@ellerman.id.au>
+Date: Fri, 02 Sep 2022 21:30:51 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,36 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: zhouzhouyi@gmail.com, npiggin@gmail.com
+Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 31 Aug 2022 23:10:52 +1000, Michael Ellerman wrote:
-> This reverts commit ef5b570d3700fbb8628a58da0487486ceeb713cd.
+On Tue, 23 Aug 2022 18:36:35 +0200, Christophe Leroy wrote:
+> As reported by Zhouyi Zhou, WRITE_ONCE() is not atomic
+> as expected when KASAN or KCSAN are compiled in.
 > 
-> Zhouyi reported that commit is causing crashes when running rcutorture
-> with KASAN enabled:
+> Fix it by re-implementing it using inline assembly.
 > 
->   BUG: using smp_processor_id() in preemptible [00000000] code: rcu_torture_rea/100
->   caller is rcu_preempt_deferred_qs_irqrestore+0x74/0xed0
->   CPU: 4 PID: 100 Comm: rcu_torture_rea Tainted: G        W          5.19.0-rc5-next-20220708-dirty #253
->   Call Trace:
->     dump_stack_lvl+0xbc/0x108 (unreliable)
->     check_preemption_disabled+0x154/0x160
->     rcu_preempt_deferred_qs_irqrestore+0x74/0xed0
->     __rcu_read_unlock+0x290/0x3b0
->     rcu_torture_read_unlock+0x30/0xb0
->     rcutorture_one_extend+0x198/0x810
->     rcu_torture_one_read+0x58c/0xc90
->     rcu_torture_reader+0x12c/0x360
->     kthread+0x1e8/0x220
->     ret_from_kernel_thread+0x5c/0x64
 > 
-> [...]
 
 Applied to powerpc/fixes.
 
-[1/1] Revert "powerpc/irq: Don't open code irq_soft_mask helpers"
-      https://git.kernel.org/powerpc/c/684c68d92e2e1b97fa2f31c35c1b0f7671a8618a
+[1/1] powerpc: Fix hard_irq_disable() with sanitizer
+      https://git.kernel.org/powerpc/c/814816d71e29934d0a76ee259b54c0b80c3b0e4a
 
 cheers
