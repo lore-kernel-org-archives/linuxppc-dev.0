@@ -4,47 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E63B2C54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Sep 2022 12:38:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FAF1ECAAD4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Sep 2022 15:07:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MKZ7j39Gpz3c7t
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Sep 2022 22:38:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MKdS806gkz3bk9
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  4 Sep 2022 01:07:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=riS7bYBz;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=lYFKN8Sx;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MKZ6D6KSLz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Sep 2022 22:36:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=40.107.9.75; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=riS7bYBz;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=lYFKN8Sx;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-eopbgr90075.outbound.protection.outlook.com [40.107.9.75])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MKZ685YDkz4x7X;
-	Sat,  3 Sep 2022 22:36:48 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1662208609;
-	bh=rHeuTgRrfGrBjFMjzmbML7a6c4An5Ak6UxSM4uRunIA=;
-	h=From:To:Cc:Subject:Date:From;
-	b=riS7bYBzgt85ZaCWylfzNimFqojj6+HFsVy85MbLXItJyjmuTiUBl0d/Vnjp86uAq
-	 DGSpZJbbe0iS20c6trcJpPHjQDA/FDB7CrLzAhPuNzf6YfjRgF6pb4XFo0FHdWfYkH
-	 HC4DNqRTD+qN8HrGmFQX3Vo6mOf5aFRGe7z4ZOF+4Rq84e/87zc1iTJH82opCF9mZO
-	 gWuX5RIvnFgiIGY4rO00fX83IstGR8HbWC3Xkc6afiDXWolNW++vdS3jEHDa6KgfUa
-	 /dpn5j1wo8FyOIef9Ydzu8ZhyA21cgz5rgh+yY5HGIBTvQI8VhwOJo57CrDjUhOYOF
-	 rfofZxj40Hx/A==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/mm/64s: Drop pgd_huge()
-Date: Sat,  3 Sep 2022 22:36:39 +1000
-Message-Id: <20220903123640.719846-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.37.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MKdRF30rdz2xZ9
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Sep 2022 01:06:47 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=WVBQtpmVktuTzUY2wf4n6DRHpsI1aY6/iXRjsO5X42LS7Cn3QCZDlH/Bl19vXMpSYs1YHU3u42GmvZwnoLiBbsODptZOyRNERHWLxaXhuFybRcn/9OD05LFiH7/Tf2tbDmxIpge3SVJQEWObHZa0EJgYcvDIv1uLpoOIpsg+PYZnEpU+qvv19Gdl96AHsXCl283KwKz56TYMmqj/k+NSx5HItEfLSlIhEN4GVJVhBnswRHNP6rIHO/hAmSUrcKGs+JuwdL2fFKbh6eDbkmwOXu7F6uxdkn52ljmqcNFwRblyuUpz0qMzy7FjgGNObTNlO/Z4KOdLWp22Jb9T8D/NaQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ZiRAgEXltvvEVwBoGXIy7AtSudTPG8cFZzTw5afkTRI=;
+ b=Ag2vZ+dPy7wiam1Mq6v2n9nYYjjc74kY0QwpCZVvFIwSp4IrUhmeBWxqvhHusNofqrTQANXu67KWjZvIkBtPk0ChtL7jVthTymWgjGYpXzyBv1r3i1jN0bRwh1OIQJVLkGos2WTOnjQPeBBOscL3ZOUJmibFEt/BT7FERB9TPPmoQ9n1xUeRrD8apvrVhk9yKWB+h5UDLWC7q/cKe/sKdUvzwmfZ/vvtYP/d5hdAfZTk/GH/cbvqonslk2gRSt4/qS++aHc/Qpi2TAA+Fhr5YAfA+ToX9ih6Hh1R8Iq1Dg/TkBV9nJQt9X/HFC3/lxR8bRCy1XWZz+H7krbB6j8gJA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ZiRAgEXltvvEVwBoGXIy7AtSudTPG8cFZzTw5afkTRI=;
+ b=lYFKN8SxwCM3NUdn36/4BbnEwKzulfGYHKgF28hJJHQyrG0RfQNRHcsPJOfoXAK5tCunsyEeqJlt7jnLWjEJjrd+ZXEgRBr5CaecbQSc03U3SZ+RNjtPamgggwM5DnBGPh9LS/SLKiMlh88xez+occx2Ypv1d2aqb7uUUhxJ0O2B0hCVRWMceG90XIC7zbm/ts7Z164RgngfNH5Hz+60psD8cwWvt56kBK4hjtifs+qPm/zRP3r+Q9X2c7Kyo75/mlScayFN6BmpXZT70zp/91pLzo2sH+YRT56R1nBPi+Lsv9BW2NnXBjjUiPi97IHVi0hkemSOu+tz0vsXPvFtUQ==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PAYP264MB3351.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:18c::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5588.10; Sat, 3 Sep
+ 2022 15:06:28 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::382a:ed3b:83d6:e5d8]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::382a:ed3b:83d6:e5d8%4]) with mapi id 15.20.5588.017; Sat, 3 Sep 2022
+ 15:06:28 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 1/2] powerpc/mm/64s: Drop pgd_huge()
+Thread-Topic: [PATCH 1/2] powerpc/mm/64s: Drop pgd_huge()
+Thread-Index: AQHYv5HcTeiP0g8PgE6KVQ+vkT0pe63NzleA
+Date: Sat, 3 Sep 2022 15:06:27 +0000
+Message-ID: <9534a2bd-57d7-400c-500b-4a591dbb3fbc@csgroup.eu>
+References: <20220903123640.719846-1-mpe@ellerman.id.au>
+In-Reply-To: <20220903123640.719846-1-mpe@ellerman.id.au>
+Accept-Language: fr-FR, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.2.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 4fe19438-70f7-44d6-9c94-08da8dbde065
+x-ms-traffictypediagnostic: PAYP264MB3351:EE_
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  qe1hZznd1FKEMrh5rw9fbq9dopO80G6lEg+NC8X8QBr0TF8j1uxoQvNQLHLWwveje05mDzIBREnbaZ6MX7LnR/C57ojZeCDjT0KVGjJIHKzM4lgsxIyAiyroTZMDRpmiLhVnQcqhWo7UVee65K+/LNEBkoUSdjSFMlkQiv8TIKJYoBeHF5Y1M3lGK9ezMfSMi3rtQ6oSxfsySwRgJj2oj3mt9iG91FGrVJUns1Bd4ft5LxbYHMcsQ1Z+wuBdGPEtBy7vVDuM1vXRNi+5mg4dWgcdXkZArCVIn2aos3ithOnTaXhAS/gYMiQ+uyBmDIih188TMhCQ5ezfq+1guhD+u2KVpenPTN7VvotzuIwwUdCjmV8Sl9u9MYIPIWedmWvQxeMO6yROQXgYd3b1cLCplS0TiskRQWXFN9yowUT89G7H0eHl1ljB6F5QiEpbJjolxNajUPpRC/AAYs9ViSqUkkrTeUz5syhqjdXqSLOZ+/mqhrXjGEaKFdpBZN2KILEtCbWQYomdioXiUjhOLIcAG/9P72XpZdgl/nfsKKch29RxQcFhBkCvXt7lPFUyQ6+xgNah/XNVHZiafSjpbkRuKeMCGfxv6Zo6qbzrvHknKKmcyWHnOx/mSJgB9QJ4SU/3AdzqS244Z7FjFnU7qj22angF7lWPtt/QMvMDIXxb7EzWoP/etTg0BdfYw/uYjtK1ZbEG9JaGez9my7A85PuUWFFIYwf01UGm/Q9t9jcW84SttP5TsAzrdkU/Oz1UXlIflKWc0zXZnx+nw4LehA2fmXfkqtvixYxqd6ps7oIkY/3NHKSbgVepMTFV3E+Iaf1quvggBHpW1ypIKzUuSVXMODHUdTUuCG9MPqioutT5FuY=
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230016)(4636009)(136003)(376002)(346002)(366004)(396003)(39850400004)(31696002)(86362001)(38070700005)(122000001)(38100700002)(316002)(54906003)(110136005)(91956017)(2906002)(8936002)(5660300002)(4744005)(44832011)(66946007)(66556008)(66476007)(66446008)(64756008)(8676002)(4326008)(76116006)(2616005)(186003)(478600001)(71200400001)(26005)(41300700001)(6486002)(6512007)(6506007)(31686004)(36756003)(14583001)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?THFMdmxXUVZUOVR0QTh1bXQrbXVZTUVjNFAvVVVPbEgyRzkxK1hPTWh1VDF6?=
+ =?utf-8?B?aFh0OXJIaEdLaktmbmxMUE1xbk1HSElqaTRBL3Z3UFhENVVIL2NwNThKblpo?=
+ =?utf-8?B?TDhpTlhGeW1DZ21WcjU1ZVFESitxclIyY29LYXdlK1hnOEpDTkVOZjA2b1JZ?=
+ =?utf-8?B?YzJWRkxVV2t2Uk5jdm4xWUNHTDBhWER0Z21IaG9ZT3Q1TWVOTVZlSXJoSG8z?=
+ =?utf-8?B?ZlVvUnh4VGNaSzBoR3BnY1UwS3RRaU4wZHF2NGVCVFo4Q2lpd0RLNXcyd2Jz?=
+ =?utf-8?B?dXhLeEtXQ2tpWUtrWnY1ejBFQnFQd3dNUytERXg0U1IxWGpQQVpob2Q4MlEx?=
+ =?utf-8?B?eFVnLzdDb0tacGdUcjZDNmhBcE4xTGdyMXVQci8xVW0zb2Q1di9xN0dEa2Z0?=
+ =?utf-8?B?TUtSdW96eElDWFRtdlc3Z2NVcU02V0RKbHJJTmFRdFRKQUhSV1BObVcwc2Ev?=
+ =?utf-8?B?WFFmWk5BazlNeFZ3UzZhVTdkUU9RRXh6QWJXRGdSQm1WcE5vZjhFV1VVdFps?=
+ =?utf-8?B?MDhEWnY3eDVvTC92M1JjaFFpZFNNeTFBQ1FDV3BHQy8xdDhUaGVVMTA3Q2Rw?=
+ =?utf-8?B?amZiZDc4M09rYzVRZ2g1SHh3cUlxbjJweExYYWFFMFc0ejh0enBnbjFtTHBr?=
+ =?utf-8?B?SlV4R2lqUDV5eXR6OWpYZUJDQkVaYkh4L2tXZ0c2QVFCZmt1clRSK2s4dmRW?=
+ =?utf-8?B?OHFIQzdJTU5IODVBZ1J4VXB2bFA3T0tsdjNuRlAvb0UvZmV5S2hBQjZwdjBw?=
+ =?utf-8?B?YUc5dklJd3lVTDczejlOeXN5QzRKRFh1T0ZTeEJMTGl6TlZZYU82K3l4TmxE?=
+ =?utf-8?B?dDlGTURUOHVLRWlSMyt4Y0w0NWFONnFHSkhIL3F0YU1KYUxaajk2WnVDWW1R?=
+ =?utf-8?B?YW1vVkJwZW15QzR2QUNNcFlmeHpnRUhPamx4L2t3TDlZQ0k3QjljM2V2YlVw?=
+ =?utf-8?B?QjNFWEY3Mm1mcHRnSVRaZzFiRnUvZ2RYdEJKZDFCOTlNa1d3anRtVk4ybTVt?=
+ =?utf-8?B?ckYzMXh3UXZVaXRGMEUrYTlyNDRVejhkVzdTYm5MN3ZlczVpNEdxTVhrL3or?=
+ =?utf-8?B?VkpnVFpzVUxYNWxjSXZrUTdrakoxTlhETWNQNTVFMkg0U0tKZUJGTzhIb2tX?=
+ =?utf-8?B?SzhLL3FzTFgzRUlpeUFCOERZMHhFc3p1ZFlPR1drSit1ODVjTmw3RkJFdzd2?=
+ =?utf-8?B?SGdmQldTUlJhbzFwOHRoSStpTzBUNEdVdTBaQzNqOW1zc1NZMlQ4aGhNK05N?=
+ =?utf-8?B?d2Y0SzhyWjNwTHU0bmtSK0daSTJHajZ4MXhUUk9QRUY1L2RBVFJheGFmNDk1?=
+ =?utf-8?B?Sy9HQmpYUURsV2JjeWJ4QWwxd2U2ZDM3UHBwRUo1c2VzTmQ5VUZGcE1KWjBT?=
+ =?utf-8?B?cGs5Yms4VkNpSTdudzA5MEszTk9DN2RxMVNOc2x0ckJtVFQrL2F6Rm1lTlE1?=
+ =?utf-8?B?NFJwQkp1dXdJeGRxaTJkcVIzdksvRlFCaGRCVmxSamNkT05RSnl3U2J0cjNY?=
+ =?utf-8?B?dHp2RHZoTi92Nzg3c051QlNtWFo2U1hUeGpReW4vSjFZZkorRGNwdU96MlBD?=
+ =?utf-8?B?ZFdZWTRicEd0RFQza0lPdGE1UFJrWFo5QkVtK1pmQWI1N2wraXhVdEFvR1JQ?=
+ =?utf-8?B?eDRta1NzeVZsbUt5YU05dk95Z1VWSU93dCtZZDhNNHl4QzF4ZTMxazg4M1Z2?=
+ =?utf-8?B?ZGFuLy9nV3VhZDRkNFJMcmk0bkRRNVRLeDhPRXhCTmhHc2JMbjNMSXJvQVpR?=
+ =?utf-8?B?dG9PZXRZeFNZaGRIdzMyQXVKSHBwT1ZsRXFWdHc5OTlHTWozQ1hQZHVwVU9E?=
+ =?utf-8?B?MGdYTTFiU09zQlVQUFUyNldZTjluUTdzQkc4MFVYQ2lsSzcxY0ZocmpXTUNS?=
+ =?utf-8?B?ZjJZdkRJSmExeWsvbG93K3dMcUVWNmhpbGVHek9SUHk3RXZBTW9xU2F1MlZu?=
+ =?utf-8?B?bDY0dk1XbUpJeCttZFFKYTRGcDY2NkxXMTJKakllaFIzbEtNYjJjakowMS9G?=
+ =?utf-8?B?R2xWcXArVURJUGo3QmZXZkVpMVNlemVvV2oxdVlFNWZQVk1UdjcxU2U0a2kw?=
+ =?utf-8?B?UUxkTmFNdkRrWEVQN1JTK2R1NGlSQ3BldmJ2N0FxbzN2V2pxRzlERXVFYnBx?=
+ =?utf-8?B?OEUyd0Fuc0RrT2dhSDNjQkVSbitzRVZMVndwRTkzTEcwWmovWUV1V3BQRkty?=
+ =?utf-8?B?VEE9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <D185B80766550E4DBB0626370ED075CC@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4fe19438-70f7-44d6-9c94-08da8dbde065
+X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Sep 2022 15:06:27.8968
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: MQZvn16gi+eqKFGIvdjvaM52zKRPoXUzNxeN321fu4LSsIXVQEHLmhuiJxynP4bLrCZBDKssrsQ2JKJbKrb6m3BnsT68+IRDX5E/gbQhJMU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAYP264MB3351
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,110 +135,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, aneesh.kumar@linux.ibm.com, mike.kravetz@oracle.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, "aneesh.kumar@linux.ibm.com" <aneesh.kumar@linux.ibm.com>, "mike.kravetz@oracle.com" <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On powerpc there are two ways for huge pages to be represented in the
-top level page table, aka PGD (Page Global Directory).
-
-If the address space mapped by an individual PGD entry does not
-correspond to a given huge page size, then the PGD entry points to a
-non-standard page table, known as a "hugepd" (Huge Page Directory).
-The hugepd contains some number of huge page PTEs sufficient to map the
-address space with the given huge page size.
-
-On the other hand, if the address space mapped by an individual PGD
-entry does correspond exactly to a given huge page size, that PGD entry
-is used to directly encode the huge page PTE in place. In this case the
-pgd_huge() wrapper indicates to generic code that the PGD entry is
-actually a huge page PTE.
-
-This commit deals with the pgd_huge() case only, it does nothing with
-respect to the hugepd case.
-
-Over time the size of the virtual address space supported on powerpc has
-increased several times, which means the location at which huge pages
-can sit in the tree has also changed. There have also been new huge page
-sizes added, with the introduction of the Radix MMU.
-
-On Power9 and later with the Radix MMU, the largest huge page size in
-any implementation is 1GB.
-
-Since the introduction of Radix, 1GB entries have been supported at the
-PUD level, with both 4K and 64K base page size. Radix has never had a
-supported huge page size at the PGD level.
-
-On Power8 or earlier, which uses the Hash MMU, or Power9 or later with
-the Hash MMU enabled, the largest huge page size is 16GB.
-
-Using the Hash MMU and a base page size of 4K, 16GB has never been a
-supported huge page size at the PGD level, due to the geometry being
-incompatible. The two supported huge page sizes (16M & 16GB) both use
-the hugepd format.
-
-Using the Hash MMU and a base page size of 64K, 16GB pages were
-supported in the past at the PGD level.
-
-However in commit ba95b5d03596 ("powerpc/mm/book3s/64: Rework page table
-geometry for lower memory usage") the page table layout was reworked to
-shrink the size of the PGD.
-
-As a result the 16GB page size now fits at the PUD level when using 64K
-base page size.
-
-Therefore there are no longer any supported configurations where
-pgd_huge() can be true, so drop the definitions for pgd_huge(), and
-fallback to the generic definition which is always false.
-
-Fixes: ba95b5d03596 ("powerpc/mm/book3s/64: Rework page table geometry for lower memory usage")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/64/pgtable-4k.h  | 10 ----------
- arch/powerpc/include/asm/book3s/64/pgtable-64k.h |  9 ---------
- 2 files changed, 19 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-index 4e697bc2f4cd..48f21820afe2 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-4k.h
-@@ -26,16 +26,6 @@ static inline int pud_huge(pud_t pud)
- 	return 0;
- }
- 
--static inline int pgd_huge(pgd_t pgd)
--{
--	/*
--	 * leaf pte for huge page
--	 */
--	if (radix_enabled())
--		return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
--	return 0;
--}
--#define pgd_huge pgd_huge
- /*
-  * With radix , we have hugepage ptes in the pud and pmd entries. We don't
-  * need to setup hugepage directory for them. Our pte and page directory format
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-index 34d1018896b3..2fce3498b000 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable-64k.h
-@@ -30,15 +30,6 @@ static inline int pud_huge(pud_t pud)
- 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
- }
- 
--static inline int pgd_huge(pgd_t pgd)
--{
--	/*
--	 * leaf pte for huge page
--	 */
--	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
--}
--#define pgd_huge pgd_huge
--
- /*
-  * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
-  * need to setup hugepage directory for them. Our pte and page directory format
--- 
-2.37.2
-
+DQoNCkxlIDAzLzA5LzIwMjIgw6AgMTQ6MzYsIE1pY2hhZWwgRWxsZXJtYW4gYSDDqWNyaXTCoDoN
+Cg0KLi4uDQoNCj4gDQo+IEhvd2V2ZXIgaW4gY29tbWl0IGJhOTViNWQwMzU5NiAoInBvd2VycGMv
+bW0vYm9vazNzLzY0OiBSZXdvcmsgcGFnZSB0YWJsZQ0KPiBnZW9tZXRyeSBmb3IgbG93ZXIgbWVt
+b3J5IHVzYWdlIikgdGhlIHBhZ2UgdGFibGUgbGF5b3V0IHdhcyByZXdvcmtlZCB0bw0KPiBzaHJp
+bmsgdGhlIHNpemUgb2YgdGhlIFBHRC4NCj4gDQo+IEFzIGEgcmVzdWx0IHRoZSAxNkdCIHBhZ2Ug
+c2l6ZSBub3cgZml0cyBhdCB0aGUgUFVEIGxldmVsIHdoZW4gdXNpbmcgNjRLDQo+IGJhc2UgcGFn
+ZSBzaXplLg0KPiANCj4gVGhlcmVmb3JlIHRoZXJlIGFyZSBubyBsb25nZXIgYW55IHN1cHBvcnRl
+ZCBjb25maWd1cmF0aW9ucyB3aGVyZQ0KPiBwZ2RfaHVnZSgpIGNhbiBiZSB0cnVlLCBzbyBkcm9w
+IHRoZSBkZWZpbml0aW9ucyBmb3IgcGdkX2h1Z2UoKSwgYW5kDQo+IGZhbGxiYWNrIHRvIHRoZSBn
+ZW5lcmljIGRlZmluaXRpb24gd2hpY2ggaXMgYWx3YXlzIGZhbHNlLg0KDQpXZSBhbHNvIGhhdmUg
+cGdkX2h1Z2UgZGVmaW5lZCBhcyBhbHdheXMgZmFsc2UgaW46DQogIGFyY2gvcG93ZXJwYy9pbmNs
+dWRlL2FzbS9wYWdlLmgNCiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL25vaGFzaC9wZ3RhYmxl
+LmgNCg0KVGhvc2UgY291bGQgYmUgcmVtb3ZlZCBhcyB3ZWxsIGFzIHRoZXJlIGlzIGEgZGVmYXVs
+dCBkZWZpbml0aW9uIGluIA0KaW5jbHVkZS9saW51eC9odWdldGxiLmgNCg0KQW5kIHRoZW4gYWxs
+IHVzZXMgb2YgcGdkX2h1Z2UoKSBpbiB0aGUgY29yZSBtbSBjYW4gYmUgZHJvcHBlZCBiZWNhdXNl
+IA0KcG93ZXJwYyB3YXMgdGhlIG9ubHkgdXNlci4NCg0KQ2hyaXN0b3BoZQ==
