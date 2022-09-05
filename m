@@ -4,54 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76730ECAAD5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Sep 2022 13:40:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12DE3ECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Sep 2022 14:20:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MLqRC5S6Rz3bY5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Sep 2022 23:40:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MLrJt3FPJz303C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Sep 2022 00:20:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Sh4RtzZv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qNMqfE8r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Sh4RtzZv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qNMqfE8r;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MLqQb3tPWz2xGB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Sep 2022 23:40:23 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id F27CE611B7;
-	Mon,  5 Sep 2022 13:40:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7B63CC43140;
-	Mon,  5 Sep 2022 13:40:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1662385218;
-	bh=6OkNTRmZgp9w9Gp+m6vHUoevwgIKFYL8Zii/ZwPojUY=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=Sh4RtzZvi+GizYPg7PV2g9FMRtjd+Mkk4Q/0HelEX+759PzbasbrSubnRiIZ9BO1P
-	 Dn32m3gt2GWkXsVTk3iLvvT5zQXXhxMsMxwOEHFq0DodysCkMEfI9NgEFOC5yoU0NU
-	 jep/Qy9f5R2ThWeCT5kzfEbj2QcPVyRkGQ0LdMz6RlhbnUafWaH9JXdj/6GGtAM8dT
-	 kl7GyN5Fn1+YXK1wiULWOe4K1F4W7+SHyU84Pm8s4kvqxMVLUZ1FfnlL2vCgc3esWS
-	 z/ITpd4I22zVSHNucY2vySajmO/UABY1KOOgoE96FpUPhyRlE8ciMYSJZEQjDoupva
-	 miZhTHv3m7fmg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 5F17FC73FE0;
-	Mon,  5 Sep 2022 13:40:18 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MLrJ55Ngvz2xG6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Sep 2022 00:19:49 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 285DVk5i002780;
+	Mon, 5 Sep 2022 14:19:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=6X8ya9LCgPFJnU+OCYIhBoWY3HplEfHYL5f2JFgxBKA=;
+ b=qNMqfE8r5tmlwFiRv8L2x8SnAd4xxjUEC+LQTQg2hxT7wxOeYT8g3sMl6/JMvTmKIP+u
+ TUTPQdsh6egTJcNVkGxbtMiB/WHfWXQvANIYq36BOrWEjAYXjc7ndrcsWd832BODSnGR
+ Z7Vz7gvNdY6jON2U5JDDCd2+SN8fBhdWQRdzzdYGhF8RAdLqWMw3Rdh6bbvWWb3ExhqH
+ a3OwthsRPD8Hox+A+1wcY4WAhQtOgLdGKNo0BKjjayIsC3ndI/UO3X3YnwK0y6nTtfn+
+ GnEJorfirs8JYLSSzGgpfTu3JFgEywODv+gD/xlXpgyKXw6VcLur719TwTiaTC/U00gg rg== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jdj301cua-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Sep 2022 14:19:41 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 285EAOMW010212;
+	Mon, 5 Sep 2022 14:19:39 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma06ams.nl.ibm.com with ESMTP id 3jbx6hjjjm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 05 Sep 2022 14:19:39 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 285EJanP14615010
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 5 Sep 2022 14:19:36 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1C69AE04D;
+	Mon,  5 Sep 2022 14:19:35 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EEFEBAE045;
+	Mon,  5 Sep 2022 14:19:33 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.39.18])
+	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Mon,  5 Sep 2022 14:19:33 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: acme@kernel.org, jolsa@kernel.org
+Subject: [PATCH V2 2/2] tools/perf: Fix out of bound access to cpu mask array
+Date: Mon,  5 Sep 2022 19:49:29 +0530
+Message-Id: <20220905141929.7171-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220905141929.7171-1-atrajeev@linux.vnet.ibm.com>
+References: <20220905141929.7171-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH net-next v5 00/14] net: dpaa: Cleanups in preparation for
- phylink conversion (part 2)
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id:  <166238521838.32478.17433933785506172537.git-patchwork-notify@kernel.org>
-Date: Mon, 05 Sep 2022 13:40:18 +0000
-References: <20220902215737.981341-1-sean.anderson@seco.com>
-In-Reply-To: <20220902215737.981341-1-sean.anderson@seco.com>
-To: Sean Anderson <sean.anderson@seco.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Lf1vfAoNf5qb4pAITPeNYhfUUhGvur7W
+X-Proofpoint-GUID: Lf1vfAoNf5qb4pAITPeNYhfUUhGvur7W
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-05_09,2022-09-05_03,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
+ lowpriorityscore=0 priorityscore=1501 adultscore=0 bulkscore=0
+ malwarescore=0 impostorscore=0 phishscore=0 mlxlogscore=999 mlxscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2207270000 definitions=main-2209050067
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,62 +89,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: madalin.bucur@nxp.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, edumazet@google.com, camelia.groza@nxp.com, kuba@kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, linux-arm-kernel@lists.infradead.org
+Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, linux-perf-users@vger.kernel.org, kjain@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+The cpu mask init code in "record__mmap_cpu_mask_init"
+function access "bits" array part of "struct mmap_cpu_mask".
+The size of this array is the value from cpu__max_cpu().cpu.
+This array is used to contain the cpumask value for each
+cpu. While setting bit for each cpu, it calls "set_bit" function
+which access index in "bits" array. If we provide a command
+line option to -C which is greater than the number of CPU's
+present in the system, the set_bit could access an array
+member which is out-of the array size. This is because
+currently, there is no boundary check for the CPU. This will
+result in seg fault:
 
-This series was applied to netdev/net-next.git (master)
-by David S. Miller <davem@davemloft.net>:
+<<>>
+./perf record -C 12341234 ls
+Perf can support 2048 CPUs. Consider raising MAX_NR_CPUS
+Segmentation fault (core dumped)
+<<>>
 
-On Fri,  2 Sep 2022 17:57:22 -0400 you wrote:
-> This series contains several cleanup patches for dpaa/fman. While they
-> are intended to prepare for a phylink conversion, they stand on their
-> own. This series was originally submitted as part of [1].
-> 
-> [1] https://lore.kernel.org/netdev/20220715215954.1449214-1-sean.anderson@seco.com
-> 
-> Changes in v5:
-> - Reduce line length of tgec_config
-> - Reduce line length of qman_update_cgr_safe
-> - Rebase onto net-next/master
-> 
-> [...]
+Debugging with gdb, points to function flow as below:
 
-Here is the summary with links:
-  - [net-next,v5,01/14] net: fman: Move initialization to mac-specific files
-    https://git.kernel.org/netdev/net-next/c/302376feec1d
-  - [net-next,v5,02/14] net: fman: Mark mac methods static
-    https://git.kernel.org/netdev/net-next/c/1257c9623deb
-  - [net-next,v5,03/14] net: fman: Inline several functions into initialization
-    (no matching commit)
-  - [net-next,v5,04/14] net: fman: Remove internal_phy_node from params
-    https://git.kernel.org/netdev/net-next/c/45fa34bfaa52
-  - [net-next,v5,05/14] net: fman: Map the base address once
-    https://git.kernel.org/netdev/net-next/c/262f2b782e25
-  - [net-next,v5,06/14] net: fman: Pass params directly to mac init
-    (no matching commit)
-  - [net-next,v5,07/14] net: fman: Use mac_dev for some params
-    https://git.kernel.org/netdev/net-next/c/19c788b144e2
-  - [net-next,v5,08/14] net: fman: Specify type of mac_dev for exception_cb
-    https://git.kernel.org/netdev/net-next/c/5b6acb554065
-  - [net-next,v5,09/14] net: fman: Clean up error handling
-    https://git.kernel.org/netdev/net-next/c/aedbeb4e597e
-  - [net-next,v5,10/14] net: fman: Change return type of disable to void
-    https://git.kernel.org/netdev/net-next/c/901bdff2f529
-  - [net-next,v5,11/14] net: dpaa: Use mac_dev variable in dpaa_netdev_init
-    https://git.kernel.org/netdev/net-next/c/fca4804f68cf
-  - [net-next,v5,12/14] soc: fsl: qbman: Add helper for sanity checking cgr ops
-    https://git.kernel.org/netdev/net-next/c/d0e17a4653ce
-  - [net-next,v5,13/14] soc: fsl: qbman: Add CGR update function
-    https://git.kernel.org/netdev/net-next/c/914f8b228ede
-  - [net-next,v5,14/14] net: dpaa: Adjust queue depth on rate change
-    https://git.kernel.org/netdev/net-next/c/ef2a8d5478b9
+<<>>
+set_bit
+record__mmap_cpu_mask_init
+record__init_thread_default_masks
+record__init_thread_masks
+cmd_record
+<<>>
 
-You are awesome, thank you!
+Fix this by adding boundary check for the array.
+
+After the patch:
+<<>>
+./perf record -C 12341234 ls
+Perf can support 2048 CPUs. Consider raising MAX_NR_CPUS
+Failed to initialize parallel data streaming masks
+<<>>
+
+With this fix, if -C is given a non-exsiting CPU, perf
+record will fail with:
+
+<<>>
+ ./perf record -C 50 ls
+Failed to initialize parallel data streaming masks
+<<>>
+
+Reported-by: Nageswara Sastry <rnsastry@linux.ibm.com>
+Tested-by: Nageswara Sastry <rnsastry@linux.ibm.com>
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ tools/perf/builtin-record.c | 26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 4713f0f3a6cf..09b68d76bbdc 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -3358,16 +3358,22 @@ static struct option __record_options[] = {
+ 
+ struct option *record_options = __record_options;
+ 
+-static void record__mmap_cpu_mask_init(struct mmap_cpu_mask *mask, struct perf_cpu_map *cpus)
++static int record__mmap_cpu_mask_init(struct mmap_cpu_mask *mask, struct perf_cpu_map *cpus)
+ {
+ 	struct perf_cpu cpu;
+ 	int idx;
+ 
+ 	if (cpu_map__is_dummy(cpus))
+-		return;
++		return 0;
+ 
+-	perf_cpu_map__for_each_cpu(cpu, idx, cpus)
++	perf_cpu_map__for_each_cpu(cpu, idx, cpus) {
++		/* Return ENODEV is input cpu is greater than max cpu */
++		if ((unsigned long)cpu.cpu > mask->nbits)
++			return -ENODEV;
+ 		set_bit(cpu.cpu, mask->bits);
++	}
++
++	return 0;
+ }
+ 
+ static int record__mmap_cpu_mask_init_spec(struct mmap_cpu_mask *mask, const char *mask_spec)
+@@ -3379,7 +3385,9 @@ static int record__mmap_cpu_mask_init_spec(struct mmap_cpu_mask *mask, const cha
+ 		return -ENOMEM;
+ 
+ 	bitmap_zero(mask->bits, mask->nbits);
+-	record__mmap_cpu_mask_init(mask, cpus);
++	if (record__mmap_cpu_mask_init(mask, cpus))
++		return -ENODEV;
++
+ 	perf_cpu_map__put(cpus);
+ 
+ 	return 0;
+@@ -3461,7 +3469,12 @@ static int record__init_thread_masks_spec(struct record *rec, struct perf_cpu_ma
+ 		pr_err("Failed to allocate CPUs mask\n");
+ 		return ret;
+ 	}
+-	record__mmap_cpu_mask_init(&cpus_mask, cpus);
++
++	ret = record__mmap_cpu_mask_init(&cpus_mask, cpus);
++	if (ret) {
++		pr_err("Failed to init cpu mask\n");
++		goto out_free_cpu_mask;
++	}
+ 
+ 	ret = record__thread_mask_alloc(&full_mask, cpu__max_cpu().cpu);
+ 	if (ret) {
+@@ -3702,7 +3715,8 @@ static int record__init_thread_default_masks(struct record *rec, struct perf_cpu
+ 	if (ret)
+ 		return ret;
+ 
+-	record__mmap_cpu_mask_init(&rec->thread_masks->maps, cpus);
++	if (record__mmap_cpu_mask_init(&rec->thread_masks->maps, cpus))
++		return -ENODEV;
+ 
+ 	rec->nr_threads = 1;
+ 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.35.1
 
