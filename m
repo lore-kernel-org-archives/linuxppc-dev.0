@@ -4,145 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04FFFECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Sep 2022 17:14:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F5ADECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Sep 2022 19:17:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MMX7V20dYz3bd3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Sep 2022 03:14:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MMZsL3N2kz3bSW
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Sep 2022 05:17:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=DTVzmDTL;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=OuDhdhMq;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256 header.s=google header.b=cdseVbcC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ffwll.ch (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=daniel@ffwll.ch; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=DTVzmDTL;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=OuDhdhMq;
+	dkim=pass (1024-bit key; secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256 header.s=google header.b=cdseVbcC;
 	dkim-atps=neutral
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MMX6Y27hXz2xG9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2022 03:13:54 +1000 (AEST)
-Received: from pps.filterd (m0246630.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 286GO3SV004368;
-	Tue, 6 Sep 2022 17:13:29 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : content-type :
- content-transfer-encoding : in-reply-to : mime-version; s=corp-2022-7-12;
- bh=UelA/A0PFMSO7fqB0d1yBlOX2x44YtgFxS3fmqUFivY=;
- b=DTVzmDTLEpSLcyQResurNOdDdjOZsR7Xbx0Ntae/wQt80lOpVLerfzZIfC8tK7SVhVZV
- P9gqsrgrGCKXuAd7v7uoOGbR6VycVEepyTYEnU34g5KMOebTap1YjPgFvl/SXo+t/pvq
- CXe4plakKxOftnYMT1AuuljyXaVHAueE5F4WIjg0uKbyIfxgaWUydvoRVVWkJDISp2la
- TOB5GPmrnj3RjvSYZRsq4TtTdfPtXPs94jIhCijW7ErSn7DaDbrtGJm2b9hLrMB62bgu
- g0iHSs46Hp3XWCK7lEcNk5VQtN5ccGa4rne6I78aF7hCRq1kYIXFTp1R5C+9CSYPPSc3 rQ== 
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3jbwbc6fcf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 06 Sep 2022 17:13:29 +0000
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 286H4HER023869;
-	Tue, 6 Sep 2022 17:13:28 GMT
-Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2104.outbound.protection.outlook.com [104.47.58.104])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3jbwc9eg8m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 06 Sep 2022 17:13:28 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=LO7Nwv+PbGSkvhapXii/tSwDLWMs16yV32uob25oF/qFVujccyIztf8C3YbBBpKHufvd2MkpRK0pwlTspMhMz94ZF7Iw9BBj9CaOZd1wGGQgsdGBF6Ne73lCiEunFECC5uWKx32ShrjTlfwNiiieX0H30l2IyFQYZ20In0vmLI9r0tbdXCKFy51OaUoQTsw4qWY71tLNqX4V9AZfa972VZoY2+dDRTyub5ss3hPuDMyBGZaugHtJQrKsaUATgM4vSwIErQgu8VOd6cwUwIdbpYVGanfrkx5/sCuyC315eKrEdd1H+vtOPdisBKmeDBsZ4eHYq9+6dy8s7hiTSrAy9g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=c6bD0+bwChXin7IA9xG1wTkqkY21Au9WJuz/xsUNUyw=;
- b=lfyoC3IGUNfN0xuuz39CVzT7Ntz0H7zO0shuJbR1I7y/cTx/pWaxmmdtxdIIYJLToiczb87PedjUMzcCVyrPU9C+AtTyuKSi55gvEe9hcIrJ/L6ujqTfkIOp5Qrusm0FeBXqngJwM66aw2TlrxWi0uk1wsBJ2SJPhSvUtSKk1iP++mnjEnfiMS6cYHDdisLJNQGcwfDufGjSgrksgAGBkpCNSPZNBJ7rNOlf85JbmQcYa0NJY+xeRlnIBg2YuJQO9GH7FsAsWq2RL018bixBtZZEmh4+emQRMp64AqLGseKxnj8KmQSxRRI5yotKqtl9IY7BL5In8zRIzAfPIrCp8w==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MMZrc1Hkhz2yxc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2022 05:17:02 +1000 (AEST)
+Received: by mail-wm1-x32f.google.com with SMTP id n17-20020a05600c501100b003a84bf9b68bso8016734wmr.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Sep 2022 12:17:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=c6bD0+bwChXin7IA9xG1wTkqkY21Au9WJuz/xsUNUyw=;
- b=OuDhdhMqveBvkyj5CFen8kpqaAuEqjO/+2+M82I81bYROybdIZn3CDTopcpLxQUnC24TPa1mgKYIeSKhlhhXW0FVkqC1R9ZnkMyKyTOVXDj/6goQ0mad1SHskeG88W8nZcrMgERCgHObZVE/3Xq0wBz8Os7k7kJBXr5FWIEsZ5U=
-Received: from BY5PR10MB4196.namprd10.prod.outlook.com (2603:10b6:a03:20d::23)
- by MW4PR10MB5773.namprd10.prod.outlook.com (2603:10b6:303:18d::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5588.17; Tue, 6 Sep
- 2022 17:13:26 +0000
-Received: from BY5PR10MB4196.namprd10.prod.outlook.com
- ([fe80::e9d2:a804:e53a:779a]) by BY5PR10MB4196.namprd10.prod.outlook.com
- ([fe80::e9d2:a804:e53a:779a%6]) with mapi id 15.20.5588.018; Tue, 6 Sep 2022
- 17:13:26 +0000
-Date: Tue, 6 Sep 2022 10:13:24 -0700
-From: Mike Kravetz <mike.kravetz@oracle.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] hugetlb: simplify hugetlb handling in follow_page_mask
-Message-ID: <Yxd/tE4EnIqhfd9s@monkey>
-References: <20220902190357.469512-1-mike.kravetz@oracle.com>
- <3a65e455-ce68-30e2-6e1b-fb8a1917b40d@csgroup.eu>
+        d=ffwll.ch; s=google;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date;
+        bh=JEvsSrJgYklFhGk6ahEcCPzEIfyEDAvxEZnTiVWC9eA=;
+        b=cdseVbcCEW+0adnYE1ZJVO9jG5brWhQdSFqN3fOdlrEMZH5usP0dx1z/CJ0XD0J0RL
+         bAkiZpqCPSjVrxFM44dQKbC/U98L530af+pqaLl1etXUF0NmN9x37EU2WVo8cMWKcIDI
+         7lb6E97Ia78hjxUPcO4toxnqlaOGHpwjpM0oU=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=JEvsSrJgYklFhGk6ahEcCPzEIfyEDAvxEZnTiVWC9eA=;
+        b=f7OvPuH/5CXddY5MiYZkSU5eBPAUOesEeBmpbSapLB+/2pU7T23R6+QJL12qFufGHE
+         od/aJl0Oucw+D1MHj8pclNkQnDrQoHJQiInHD/js2s1XlOpCMEa0D4+AVlFWEEKkUPLj
+         JH10oYvS/4GwHlA9i/yuZddiMdtpZyr79e+ggP1/JtC9x+z7o+LIJYxnOwIHIV5jQ/xz
+         JfyWt/DB63QHdwIZe5hGduSAzLToRO4k95nSL2II4C9IAqcYE+pHDBZs/LjjwGKtwc0X
+         Eat7Hu2MAm6MmAVs6ibj9CO/C1gA/C0WH9bH2HeODP99y+c6s0x5rEpwyDlsoIXqBEkh
+         mbSQ==
+X-Gm-Message-State: ACgBeo2Jx0YyRvuKJvaX+MXNqifJ4laKYQe12FKDj69lADa7Ogz9Uhng
+	Gmv31PepvzH+RMsP45AUWKVFCw==
+X-Google-Smtp-Source: AA6agR6OuHVb2pFJPiq3+DrxkjfxbowfIdQDMa1KkVrRU9rkHXQXlViPuHiqyxK7ZR4ooN7yTicD5Q==
+X-Received: by 2002:a05:600c:2e03:b0:3a5:3928:7958 with SMTP id o3-20020a05600c2e0300b003a539287958mr2411wmf.77.1662491817741;
+        Tue, 06 Sep 2022 12:16:57 -0700 (PDT)
+Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
+        by smtp.gmail.com with ESMTPSA id i14-20020a05600c354e00b003a5dde32e4bsm23272538wmq.37.2022.09.06.12.16.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 06 Sep 2022 12:16:56 -0700 (PDT)
+Date: Tue, 6 Sep 2022 21:16:54 +0200
+From: Daniel Vetter <daniel@ffwll.ch>
+To: Thomas Zimmermann <tzimmermann@suse.de>
+Subject: Re: [PATCH v2 04/10] drm/simpledrm: Compute framebuffer stride if
+ not set
+Message-ID: <YxecprE8c8pwy5PB@phenom.ffwll.local>
+References: <20220720142732.32041-1-tzimmermann@suse.de>
+ <20220720142732.32041-5-tzimmermann@suse.de>
+ <CAMuHMdWEah62Ho4C8NQr-qwz62pKQiJiTi8Fa4KcXNRzo7ySJA@mail.gmail.com>
+ <4a7c2c1d-2bf9-84e7-9257-41fcfd66ab9d@redhat.com>
+ <20f4e5e6-2ff2-af21-1f85-70a545d147bc@suse.de>
+ <CAKMK7uGr_SbHAm7r5VNWgpM2cPMFYpCmyE_Aq8TYc84rOAtJpA@mail.gmail.com>
+ <33ce5744-5d41-2501-6105-2585529820d2@suse.de>
+ <b22b363c-187b-0783-32ab-f9683af2e20a@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <3a65e455-ce68-30e2-6e1b-fb8a1917b40d@csgroup.eu>
-X-ClientProxiedBy: MW4PR04CA0184.namprd04.prod.outlook.com
- (2603:10b6:303:86::9) To BY5PR10MB4196.namprd10.prod.outlook.com
- (2603:10b6:a03:20d::23)
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: f411987c-d537-4a49-e335-08da902b1c9e
-X-MS-TrafficTypeDiagnostic: MW4PR10MB5773:EE_
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	5aJaskHP1E+k3Gp2mzr+d5zmwXY3ybdMRb9Sf4fZsLmRiFW8OuJWnlYklYDwN27dUNB5q9y5JXIDvnx00g3S9J5qLGy//qUAmAFOybIJWDQs/ekwYABLtNz75H4sN3JPSdk0uQ/7ppzXsOctimsl+f1+LaN99ioHNfZLYTGGQ+42W8lTY2RE7ss6P8rKOWSqIhXWnVDoCJZm2qgipfKgip2KgMDqmBTa58tSBOvZTwGB9EoJR4+p7NcPbnPfApGEu9XSw45zXZqcuCEqVbaR642B/6u7pqFjVapbJui5C/VJShlHCvWrI0lOKMHmHL/jGykEnZscy+XixTxpwc+pBhz6225U9fDYMqpxanAGNpF6RAK98/fsI37kEWWv4YxMv4dR82mJjBbtVIVrdujKPSQaFT465/BHwzU3Tc+UT57W8tpjXbbwyRZBU8bfMU6biMoksZsZ0TDkXnPmH6L2SmYXZEZIY2bZeYfyaepX0ugfVfES47N8Qs4+T1UyhP0YtOCTaBclQvk8+xaLvp5rMHb2IhkpdpipdtoJJuK1S8X/HtnRFERAwIqDc0K/hKXTL8gkoBQkzBBFVWfuJ75+BOucTVQe5PS/1M9ldNW8onE1k/or7tMN55G1iItGpUQZL/E74BT5D0X2neNQeBl943GHfxbpqCRY5MYhq5KnKrSW4AzuIqUC7HX9fs1FPMkOPG6/iKLfkM4lnY4gAybpaA==
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BY5PR10MB4196.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230016)(7916004)(346002)(39860400002)(396003)(366004)(376002)(136003)(2906002)(186003)(44832011)(5660300002)(8936002)(86362001)(53546011)(7416002)(33716001)(8676002)(6506007)(4326008)(41300700001)(38100700002)(66946007)(66476007)(26005)(66556008)(6512007)(478600001)(9686003)(54906003)(316002)(6916009)(6486002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?iso-8859-1?Q?l+yiffAkrvOJOI2DHXIEcRNmduMgL5WOF75sad17j764x52Vx9xk7mc7SX?=
- =?iso-8859-1?Q?EGazWTKzcl004IxohmVMvlTquQnLp/Ez+65+CPJSuCdgMC+7NOIuU4S89a?=
- =?iso-8859-1?Q?SEypKE1adJu9yDg326D4RcRB6XVmdq/1qqEILYtH0YkvudoqfjS5gnosm7?=
- =?iso-8859-1?Q?AUjM7OXXpl8tEi0/63W8ek+mHRKvLQmVFt60FsfRwzqi4FCCwXwqWNtF5T?=
- =?iso-8859-1?Q?UiiriuHnrXUI93TuU7gD5EWtolv1TK/rBVi4eehWBWCFenUqU00elJTR/q?=
- =?iso-8859-1?Q?bee3BFEY/pqdLxNmWl0HyjkVWqDQjDtto96FHSSEjhJUjzYY0gIBxZF/7f?=
- =?iso-8859-1?Q?MvgZy8kbLDy8bEGvubFVCIvP0MOyHzxGWIXAVL4g3hrKdTuzkW8zvURbNQ?=
- =?iso-8859-1?Q?uaj80BoZespVu7ttWUqS8pD16b5V6KXImusBWyFxAHHika5DRkuLg6Ymgr?=
- =?iso-8859-1?Q?Qy3Y20UVSsyykO0s8f6uSfwmepReGxKvd2+CCc20jxVa/IgHo5nmPvu0Z5?=
- =?iso-8859-1?Q?5hFNXNNAs9JLzNNKSRpQU96KXNUJrnNIwEwMvfhQC8zm/Fz3ykA94wuWMA?=
- =?iso-8859-1?Q?xAc3Oims+wqO/tHwCN0oOL7OBFgyI5aGHdWgX43CbuwXo9pZJC79UvzoaC?=
- =?iso-8859-1?Q?/cNYIjdL9vBHR78gcDQwDTbkQGe/1gSdxz5PrMxMnWPQn1D1MSoD8uwkf8?=
- =?iso-8859-1?Q?qs8XFVg+EIgFfrqoynsPUjbV7jQUzGvznJpS96f1d5RLmQGZnKa7oorG9l?=
- =?iso-8859-1?Q?3W+uJvA+h/Oc9HrOFY3IChHBIPfM8YjFMqVNbZdiYeYmnkYpVjlhRCDcX6?=
- =?iso-8859-1?Q?JYZeZu9EYBSA2W8d8vBiiHwaqH+0X2o79s3ySkZ07QYpm+iHNgCsPD7co8?=
- =?iso-8859-1?Q?A8a+ESHWVlqoS5JfCsi9Q8eQULxDoKQ1/OLkpk63m2oRPM28hgPMJEYggh?=
- =?iso-8859-1?Q?fdoGRo3RoEQzGD2bNfjxKOs+pW1Mpc8RIlU133i0xkZJKKeRdg/3c7oJNd?=
- =?iso-8859-1?Q?YNheR7JUcUWYitVlNXieWnLI87tgRQTFTowpk0AnafCvQ1XtN3q4g2SF4D?=
- =?iso-8859-1?Q?B3yL93AdvPdD0oK2kiKP5VdK59wtKnxviHTjSuRZDMlIbUyAScEeMtaGXE?=
- =?iso-8859-1?Q?p96paJruePj7ZxaWtohjmgE8Uf6cxuua/smjZr61Y4nieMBOXMmjqYuLSw?=
- =?iso-8859-1?Q?9yrGIknhnGN8D8ZwioFA3NbfeU2/PWuh3lSoeSGmdYEAtco0Vz2GtuEb/v?=
- =?iso-8859-1?Q?w03/va3V801IJTrYOeKRZwP3AeUrfFurY3g3r6p3r/qmAR2/1tgxF5DGud?=
- =?iso-8859-1?Q?lQxKWozuf6wvD36D1V52qMJU7lqOaJsPraH+ykQgFgsZNr39s1LIQzJobG?=
- =?iso-8859-1?Q?NmrhOtsg3C3cM29FghoPl8ymxauZSmkr3iS0GE8r4twUlc5cgTnanVHydT?=
- =?iso-8859-1?Q?mEqk6OEh4HicYQzm3sjU24wHZOqy1MWo0fJh/DKlKLhrGSRzGCw21kJjRg?=
- =?iso-8859-1?Q?gPDO0Yd3Nr++nwnIFyB7QvZJzkYZUU+yPv9XPf3GJTl+UBarTWgqu9rsGx?=
- =?iso-8859-1?Q?sl1a8Z+GxJnmnS9DCl9fHkBnTFw45LAcJtJ1F/UFuhOKAOLnjrxL3LQDQ1?=
- =?iso-8859-1?Q?Cqx/ZczuT+bRCzLz49sHgHR8x4OHj29vsRDy7lGklGfUHpSoEWpUioXg?=
- =?iso-8859-1?Q?=3D=3D?=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: f411987c-d537-4a49-e335-08da902b1c9e
-X-MS-Exchange-CrossTenant-AuthSource: BY5PR10MB4196.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Sep 2022 17:13:26.7482
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Q+fam7ZgAyLIri0UBUo7D8yypIgko3Zwtz/F6ToEW1b/n24h2TMpZ73unMWyB0yJr2r61+JXDl66/PSFfcJd5A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MW4PR10MB5773
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-06_09,2022-09-06_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 adultscore=0
- malwarescore=0 mlxlogscore=999 bulkscore=0 suspectscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
- definitions=main-2209060079
-X-Proofpoint-ORIG-GUID: 8D8V_Z8GXYNRqCkff_EyEPBlYC1R42Uk
-X-Proofpoint-GUID: 8D8V_Z8GXYNRqCkff_EyEPBlYC1R42Uk
+In-Reply-To: <b22b363c-187b-0783-32ab-f9683af2e20a@suse.de>
+X-Operating-System: Linux phenom 5.18.0-4-amd64 
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -154,45 +85,127 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Naoya Horiguchi <naoya.horiguchi@linux.dev>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, David Hildenbrand <david@redhat.com>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, Muchun Song <songmuchun@bytedance.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Baolin Wang <baolin.wang@linux.alibaba.com>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Helge Deller <deller@gmx.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>, Javier Martinez Canillas <javierm@redhat.com>, DRI Development <dri-devel@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard <maxime@cerno.tech>, Daniel Vetter <daniel@ffwll.ch>, Paul Mackerras <paulus@samba.org>, Michal Suchanek <msuchanek@suse.de>, Sam Ravnborg <sam@ravnborg.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 09/05/22 06:34, Christophe Leroy wrote:
+On Thu, Aug 11, 2022 at 08:27:42PM +0200, Thomas Zimmermann wrote:
 > 
 > 
-> Le 02/09/2022 à 21:03, Mike Kravetz a écrit :
-> > diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> > index fe4944f89d34..275e554dd365 100644
-> > --- a/include/linux/hugetlb.h
-> > +++ b/include/linux/hugetlb.h
-> > @@ -264,6 +255,13 @@ static inline void adjust_range_if_pmd_sharing_possible(
-> >   {
-> >   }
-> >   
-> > +static inline struct page *hugetlb_follow_page_mask(struct vm_area_struct *vma,
-> > +				unsigned long address, unsigned int flags)
-> > +{
-> > +	WARN_ON_ONCE(1); /* should never be called if !CONFIG_HUGETLB_PAGE*/
-> > +	return ERR_PTR(-EINVAL);
+> Am 11.08.22 um 20:26 schrieb Thomas Zimmermann:
+> > Hi Daniel
+> > 
+> > Am 11.08.22 um 19:23 schrieb Daniel Vetter:
+> > > On Wed, 27 Jul 2022 at 09:53, Thomas Zimmermann
+> > > <tzimmermann@suse.de> wrote:
+> > > > 
+> > > > Hi
+> > > > 
+> > > > Am 25.07.22 um 17:13 schrieb Javier Martinez Canillas:
+> > > > > Hello Geert,
+> > > > > 
+> > > > > On 7/21/22 16:46, Geert Uytterhoeven wrote:
+> > > > > > Hi Thomas,
+> > > > > > 
+> > > > > > On Wed, Jul 20, 2022 at 4:27 PM Thomas Zimmermann
+> > > > > > <tzimmermann@suse.de> wrote:
+> > > > > > > Compute the framebuffer's scanline stride length if not given by
+> > > > > > > the simplefb data.
+> > > > > > > 
+> > > > > > > Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+> > > > > > 
+> > > > > > Thanks for your patch!
+> > > > > > 
+> > > > > > > --- a/drivers/gpu/drm/tiny/simpledrm.c
+> > > > > > > +++ b/drivers/gpu/drm/tiny/simpledrm.c
+> > > > > > > @@ -743,6 +743,9 @@ static struct simpledrm_device
+> > > > > > > *simpledrm_device_create(struct drm_driver *drv,
+> > > > > > >                   drm_err(dev, "no simplefb configuration found\n");
+> > > > > > >                   return ERR_PTR(-ENODEV);
+> > > > > > >           }
+> > > > > > > +       if (!stride)
+> > > > > > > +               stride = format->cpp[0] * width;
+> > > > > > 
+> > > > > > DIV_ROUND_UP(drm_format_info_bpp(format) * width, 8)
+> > > > > > 
+> > > > > 
+> > > > > I think you meant here:
+> > > > > 
+> > > > > DIV_ROUND_UP(drm_format_info_bpp(format, 0) * width, 8) ?
+> > > > 
+> > > > I guess, that's the right function. My original code is correct, but cpp
+> > > > is also deprecated.
+> > > 
+> > > You all mean drm_format_info_min_pitch().
+> > 
+> > Thanks a lot. I wasn't even aware of this function, but I had almost
+> > written my own implementation of it.  I'll update the patch accordingly.
 > 
-> This function is called only when is_vm_hugetlb_page() is true.
-> 
-> When !CONFIG_HUGETLB_PAGE is_vm_hugetlb_page() always returns false, so 
-> the call to hugetlb_follow_page_mask() should never be compiled in.
-> 
-> Use BUILD_BUG() to catch it at buildtime.
-> 
+> Arghh, too late. I merged that patch already.
 
-Yes.  My bad as David suggested this previously.
-How about we just leave out the function in the !CONFIG_HUGETLB_PAGE case?
-We will get build errors without the need for a BUILD_BUG().
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-> > +}
-> > +
-> >   static inline long follow_hugetlb_page(struct mm_struct *mm,
-> >   			struct vm_area_struct *vma, struct page **pages,
-> >   			struct vm_area_struct **vmas, unsigned long *position,
+Preemptively, if you can do the fixup patch (and it's not yet merged)?
+-Daniel
+
+> 
+> > 
+> > Best regards
+> > Thomas
+> > 
+> > > 
+> > > I really don't want drivers to go grab any of the legacy format info
+> > > fields like bpp or depth. switch() statements on the fourcc code for
+> > > programming registers, or one of the real helper functions in
+> > > drm_fourcc.c (there might be some gaps), but not ever going through
+> > > legacy concepts. Anything else just leads to subtle bugs when new
+> > > formats get added and oops suddenly the assumptions don't hold.
+> > > 
+> > > Those should be strictly limited to legacy (i.e. not drm_fourcc aware)
+> > > interfaces. Heck I think even fbdev emulation should completely switch
+> > > over to drm_fourcc/drm_format_info, but alas that's a pile of work and
+> > > not much payoff.
+> > > 
+> > > I'm trying to volunteer Same to add a legacy_bpp tag to the above
+> > > helper and appropriately limit it, I think limiting to formats with
+> > > depth!=0 is probably the right thing. And then we should probably
+> > > remove a pile of the cargo-culted depth!=0 entries too.
+> > > -Daniel
+> > > 
+> > > > 
+> > > > Best regards
+> > > > Thomas
+> > > > 
+> > > > > 
+> > > > > With that change,
+> > > > > 
+> > > > > Acked-by: Javier Martinez Canillas <javierm@redhat.com>
+> > > > > 
+> > > > 
+> > > > -- 
+> > > > Thomas Zimmermann
+> > > > Graphics Driver Developer
+> > > > SUSE Software Solutions Germany GmbH
+> > > > Maxfeldstr. 5, 90409 Nürnberg, Germany
+> > > > (HRB 36809, AG Nürnberg)
+> > > > Geschäftsführer: Ivo Totev
+> > > 
+> > > 
+> > > 
+> > 
+> 
+> -- 
+> Thomas Zimmermann
+> Graphics Driver Developer
+> SUSE Software Solutions Germany GmbH
+> Maxfeldstr. 5, 90409 Nürnberg, Germany
+> (HRB 36809, AG Nürnberg)
+> Geschäftsführer: Ivo Totev
+
+
+
 
 -- 
-Mike Kravetz
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch
