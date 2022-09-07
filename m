@@ -4,54 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3657EECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Sep 2022 23:33:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E77BFC38145
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Sep 2022 00:10:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MMhXS21Z8z3bkk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Sep 2022 09:33:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MMjMP4xS8z3c65
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Sep 2022 10:10:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LRj2zLU7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=W16AaxYj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Two or more type TXT spf records found.) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LRj2zLU7;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=W16AaxYj;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MMhWn33dWz2xJ9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2022 09:32:52 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 97E9361595;
-	Tue,  6 Sep 2022 23:32:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 75D0EC433C1;
-	Tue,  6 Sep 2022 23:32:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1662507167;
-	bh=VSbsodn32Me/TB6K6eplLjOszQKC8B+zCTblViWR7YE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LRj2zLU7S0ku2c8uSQ4JavQr7F3lqx3X3iA8IxX3dtJ3PF9y5PbR/Os4AFMmP+DIQ
-	 xnJXS+8qYttCV2P96XjirbDo6Ru8SVLDpx7fr87pvpzhKdyqps8dfEnBH653AYm+m4
-	 m++1BshTGP1TbiObcwrogtqT2OYgvgMKe1Bwb+iEt2oo/WiDzQXQwiQgowObXtfys+
-	 yrHHGHYhPJD8QioMOj7YsYSqhmWT1PjZXXMk+pxGM+T1NhFLENBUo9IvsQf1ryPCQj
-	 r7uS3s4iSQg4KNyvSxUjZ8A/4Lq33jgBeA9Lh9oqWGj8942QR9deDuljPvWXdJFk6s
-	 gACiP9gE0ms5A==
-Date: Tue, 6 Sep 2022 16:32:44 -0700
-From: Nathan Chancellor <nathan@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MMjLg0Pc2z2xJD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Sep 2022 10:09:57 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1662509403; x=1694045403;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=h9zKEDTpIHgZPoufnLRdNUlOfPwoMNldZEhVgitJKSc=;
+  b=W16AaxYjJqXIbkon306b1pnPSq/d0p4JlYB5Y3S3SxwigU9+p4qcrxPR
+   y4wq6VXn86+PlDYyovc57xEF42nE3ejR6bWs2o+pvHSzqWvUeZaKfwyIK
+   vJKQNNKwNSaN4vsEwQc/UOhFm+8leyOmv9TOcNmOy8qbloJs5fd/MnhwB
+   enTQ4LtaKogktCrWxOb5uR3TaomN6gzjm63K4Cd20IK+LtI8sK48GxpbB
+   UZ4ng0yQLNew42DrAvIUQdkPVY9YFpg1v3lBpVNooqWs5bd3GBNzHbCsP
+   NVYzTjKCm0vebNUgrrpcnENUZczKQs+jKBfAHVIA8KsCJYxQMkTvD6rPt
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10462"; a="276480247"
+X-IronPort-AV: E=Sophos;i="5.93,295,1654585200"; 
+   d="scan'208";a="276480247"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Sep 2022 17:09:54 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.93,295,1654585200"; 
+   d="scan'208";a="644382454"
+Received: from lkp-server02.sh.intel.com (HELO 95dfd251caa2) ([10.239.97.151])
+  by orsmga008.jf.intel.com with ESMTP; 06 Sep 2022 17:09:52 -0700
+Received: from kbuild by 95dfd251caa2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1oVidc-0005oT-0q;
+	Wed, 07 Sep 2022 00:09:52 +0000
+Date: Wed, 07 Sep 2022 08:09:35 +0800
+From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] powerpc/pseries: define driver for Platform
- KeyStore
-Message-ID: <YxfYnLw6R30pvZ8l@dev-arch.thelio-3990X>
-References: <20220723113048.521744-1-nayna@linux.ibm.com>
- <20220723113048.521744-2-nayna@linux.ibm.com>
- <Yxe06fbq18Wv9y3W@dev-arch.thelio-3990X>
- <875yi0t7e1.fsf@mpe.ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS
+ 33a92cf0fa6e2f07c1d1a0338abc86d85803f630
+Message-ID: <6317e13f.cbl8f1i29Rg/oQ6k%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <875yi0t7e1.fsf@mpe.ellerman.id.au>
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,53 +69,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: bjking1@us.ibm.com, gjoyce@linux.vnet.ibm.com, erichte@linux.ibm.com, Nayna Jain <nayna@linux.ibm.com>, npiggin@gmail.com, muriloo@linux.ibm.com, George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 07, 2022 at 09:23:02AM +1000, Michael Ellerman wrote:
-> Nathan Chancellor <nathan@kernel.org> writes:
-> > Hi all,
-> >
-> > On Sat, Jul 23, 2022 at 07:30:46AM -0400, Nayna Jain wrote:
-> >> PowerVM provides an isolated Platform Keystore(PKS) storage allocation
-> >> for each LPAR with individually managed access controls to store
-> >> sensitive information securely. It provides a new set of hypervisor
-> >> calls for Linux kernel to access PKS storage.
-> >> 
-> >> Define POWER LPAR Platform KeyStore(PLPKS) driver using H_CALL interface
-> >> to access PKS storage.
-> >> 
-> >> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-> >
-> > This commit is now in mainline as commit 2454a7af0f2a ("powerpc/pseries:
-> > define driver for Platform KeyStore") and I just bisected a crash while
-> > boot testing Fedora's configuration [1] in QEMU to it. I initially
-> > noticed this in ClangBuiltLinux's CI but this doesn't appear to be clang
-> > specific since I can reproduce with GCC 12.2.1 from Fedora. I can
-> > reproduce with just powernv_defconfig + CONFIG_PPC_PSERIES=y +
-> > CONFIG_PSERIES_PLPKS=y. Our firmware and rootfs are available in our
-> > boot-utils repository [2].
-> 
-> Thanks, classic bug I should have spotted.
-> 
-> I didn't catch it in my testing because PLPKS isn't enabled in
-> our defconfigs.
-> 
-> Does your CI enable new options by default? Or are you booting
-> allyesconfig?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 33a92cf0fa6e2f07c1d1a0338abc86d85803f630  Automatic merge of 'master' into merge (2022-09-05 10:06)
 
-Neither actually. We just test a bunch of in-tree and distribution
-configurations. The distribution configurations are fetched straight
-from their URLs on gitweb so we get any updates that they do, which is
-how we noticed this (CONFIG_PSERIES_PLPKS was recently enabled in
-Fedora):
+elapsed time: 734m
 
-https://src.fedoraproject.org/rpms/kernel/c/a73f6858a2cbd16bbcc6d305d6c43aab6f59d0b1
+configs tested: 53
+configs skipped: 2
 
-> I'll send a fix.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Thanks for the quick response!
+gcc tested configs:
+um                             i386_defconfig
+um                           x86_64_defconfig
+arc                  randconfig-r043-20220906
+riscv                randconfig-r042-20220906
+powerpc                           allnoconfig
+s390                 randconfig-r044-20220906
+i386                                defconfig
+x86_64                              defconfig
+alpha                            allyesconfig
+arc                              allyesconfig
+m68k                             allmodconfig
+x86_64                               rhel-8.3
+sh                               allmodconfig
+m68k                             allyesconfig
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+mips                             allyesconfig
+i386                          randconfig-a001
+powerpc                          allmodconfig
+i386                          randconfig-a003
+x86_64                           allyesconfig
+x86_64                        randconfig-a015
+i386                          randconfig-a005
+i386                          randconfig-a014
+x86_64                          rhel-8.3-func
+i386                          randconfig-a012
+x86_64                         rhel-8.3-kunit
+i386                          randconfig-a016
+x86_64                        randconfig-a004
+x86_64                           rhel-8.3-kvm
+x86_64                        randconfig-a002
+x86_64                    rhel-8.3-kselftests
+i386                             allyesconfig
+x86_64                           rhel-8.3-syz
+arm                                 defconfig
+x86_64                        randconfig-a006
+arm64                            allyesconfig
+arm                              allyesconfig
+ia64                             allmodconfig
 
-Cheers,
-Nathan
+clang tested configs:
+hexagon              randconfig-r041-20220906
+hexagon              randconfig-r045-20220906
+x86_64                        randconfig-a014
+x86_64                        randconfig-a012
+x86_64                        randconfig-a016
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
