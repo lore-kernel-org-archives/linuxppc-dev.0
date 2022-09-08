@@ -4,91 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71180C38145
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:01:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DBAFC6FA86
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:38:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MNlkt4Pyhz3c5B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:01:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cKtuK38q;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cKtuK38q;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmZF2QSYz3c99
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:38:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNlk42HMXz2xfs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:00:28 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 288Fo80F031133;
-	Thu, 8 Sep 2022 17:00:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=8AW4KlqyJt539Sq/UiKumFe+LFsf0MsnpKLzYAns/mg=;
- b=cKtuK38q53h/v7XUNMryLT1+qSS2p0CZ5zY3y+bR49QcEmWo9zNOdG9zDBBSlvdDs38R
- KjAYf5ImTdTc/9O1nsoWjEq0+MHO15HPIaMYTB17ieFz3eupvnbDw0pzKKYKapvfKWKd
- +n/RJPX18ECr7Zi/xbCmnCrIB3Hm4E4tr4m6khDmYoq9VYebcScYFQHaiVK9MRaOOlIp
- YINFK164cYNvqWF3uQIkDR47x9jVs6z0K3BQzUF9py7tS4pnTYgX1+8vjh6/GA2N/UYk
- MxaOVaZsJjJjVZALmoCPHU86u2rFeRaIyQpdzNFwjjLvEcyt0TvS7JBjdLQ10BZaSMQb 3w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jfjampc8x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Sep 2022 17:00:08 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 288EbSXI031823;
-	Thu, 8 Sep 2022 17:00:08 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jfjampc6k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Sep 2022 17:00:08 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 288Goexi006923;
-	Thu, 8 Sep 2022 17:00:05 GMT
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
-	by ppma04ams.nl.ibm.com with ESMTP id 3jbxj8xv7u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 08 Sep 2022 17:00:05 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 288H03tR36897048
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 8 Sep 2022 17:00:03 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3B74A11C052;
-	Thu,  8 Sep 2022 17:00:03 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7688511C04C;
-	Thu,  8 Sep 2022 17:00:00 +0000 (GMT)
-Received: from [9.43.97.195] (unknown [9.43.97.195])
-	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Thu,  8 Sep 2022 17:00:00 +0000 (GMT)
-Message-ID: <6e8246ae-c420-df00-c1d1-03c49c0ab1f1@linux.ibm.com>
-Date: Thu, 8 Sep 2022 22:29:59 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmYm4WSrz2xJM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:38:17 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4MNmYf1V9Cz9sm2;
+	Thu,  8 Sep 2022 19:38:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id N6Snb1-biAkx; Thu,  8 Sep 2022 19:38:14 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYf0jpvz9sks;
+	Thu,  8 Sep 2022 19:38:14 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0BC7A8B7AE;
+	Thu,  8 Sep 2022 19:38:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id m-Xkrh8zhQ8f; Thu,  8 Sep 2022 19:38:13 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.247])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id AC7C28B763;
+	Thu,  8 Sep 2022 19:38:13 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcARX3449148
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Thu, 8 Sep 2022 19:38:10 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcADH3449125;
+	Thu, 8 Sep 2022 19:38:10 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH v1 04/19] powerpc/cputable: Remove __machine_check_early_realmode_p{7/8/9} prototypes
+Date: Thu,  8 Sep 2022 19:37:37 +0200
+Message-Id: <89b6512c9f9cf175e6e63c0011a9d50f66e0ab38.1662658653.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.37.1
+In-Reply-To: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
+References: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Subject: Re: [RFC PATCH] fs/hugetlb: Fix UBSAN warning reported on hugetlb
-Content-Language: en-US
-To: Matthew Wilcox <willy@infradead.org>
-References: <20220908072659.259324-1-aneesh.kumar@linux.ibm.com>
- <YxoeFUW5HFP/3/s1@casper.infradead.org>
-From: Aneesh Kumar K V <aneesh.kumar@linux.ibm.com>
-In-Reply-To: <YxoeFUW5HFP/3/s1@casper.infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: FMbPsgOwhsIocIP-GmBJf4Sv-eoTvw7H
-X-Proofpoint-GUID: ppeyt1aZMBSqFvKG2fYMkZe-o4CL7I5v
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-08_10,2022-09-08_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- priorityscore=1501 bulkscore=0 phishscore=0 adultscore=0 clxscore=1011
- impostorscore=0 malwarescore=0 mlxlogscore=999 mlxscore=0
- lowpriorityscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2207270000 definitions=main-2209080059
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658667; l=1067; s=20211009; h=from:subject:message-id; bh=DgPTHMdcz9L+rKHTAuGAhKEz9zw+3lh+FcsaKJHphmA=; b=nOqf4dVd7V9cA/T4+ONjZV25IbP51d7W0mrn0ABzR3L5Xz3NDlqdgILOU5mug2VNEwTOkqBS/sQz Ky3FpqOEBLHS8CJJ/eotoN2ooa97eDgspCHpX7lFCujLM1uU2QBX
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,41 +67,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David Howells <dhowells@redhat.com>, linux-mm@kvack.org, npiggin@gmail.com, linux-fsdevel@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 9/8/22 10:23 PM, Matthew Wilcox wrote:
-> On Thu, Sep 08, 2022 at 12:56:59PM +0530, Aneesh Kumar K.V wrote:
->> +++ b/fs/dax.c
->> @@ -1304,7 +1304,7 @@ EXPORT_SYMBOL_GPL(dax_zero_range);
->>  int dax_truncate_page(struct inode *inode, loff_t pos, bool *did_zero,
->>  		const struct iomap_ops *ops)
->>  {
->> -	unsigned int blocksize = i_blocksize(inode);
->> +	size_t blocksize = i_blocksize(inode);
->>  	unsigned int off = pos & (blocksize - 1);
-> 
-> If blocksize is larger than 4GB, then off also needs to be size_t.
-> 
->> +++ b/fs/iomap/buffered-io.c
->> @@ -955,7 +955,7 @@ int
->>  iomap_truncate_page(struct inode *inode, loff_t pos, bool *did_zero,
->>  		const struct iomap_ops *ops)
->>  {
->> -	unsigned int blocksize = i_blocksize(inode);
->> +	size_t blocksize = i_blocksize(inode);
->>  	unsigned int off = pos & (blocksize - 1);
-> 
-> Ditto.
-> 
-> (maybe there are others; I didn't check closely)
+__machine_check_early_realmode_p{7/8/9} are already in mce.h
+which is included. Remove them from cputable.c
 
-Thanks. will check those. 
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/kernel/cputable.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Any feedback on statx? Should we really fix that?
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 2829ea537277..5ace97cccad8 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -64,9 +64,6 @@ extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
+ extern void __restore_cpu_pa6t(void);
+ extern void __restore_cpu_ppc970(void);
+-extern long __machine_check_early_realmode_p7(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p8(struct pt_regs *regs);
+-extern long __machine_check_early_realmode_p9(struct pt_regs *regs);
+ #endif /* CONFIG_PPC64 */
+ #if defined(CONFIG_E500)
+ extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
+-- 
+2.37.1
 
-I am still not clear why we chose to set blocksize = pagesize for hugetlbfs.
-Was that done to enable application find the hugetlb pagesize via stat()? 
-
--aneesh
