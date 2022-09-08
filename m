@@ -4,58 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40463C38145
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:46:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7400FC38145
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:50:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmkq5rwhz3g8N
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:46:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmqX07lJz3dqw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:50:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=N9miSMEM;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52a; helo=mail-pg1-x52a.google.com; envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=N9miSMEM;
+	dkim-atps=neutral
+Received: from mail-pg1-x52a.google.com (mail-pg1-x52a.google.com [IPv6:2607:f8b0:4864:20::52a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmbP0Cq0z3f3L
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:39:44 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MNmZ11nPQz9smR;
-	Thu,  8 Sep 2022 19:38:33 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Cs35PyRfhR_N; Thu,  8 Sep 2022 19:38:33 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYm2563z9sm1;
-	Thu,  8 Sep 2022 19:38:20 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CE8F8B78F;
-	Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id QC4q5_pYvu4M; Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.247])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DA77C8B7AA;
-	Thu,  8 Sep 2022 19:38:13 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcAwU3449165
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 8 Sep 2022 19:38:11 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcAbu3449164;
-	Thu, 8 Sep 2022 19:38:10 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 08/19] powerpc/cputable: Split cpu_specs[] for mpc85xx and e500mc
-Date: Thu,  8 Sep 2022 19:37:41 +0200
-Message-Id: <73e7f789141362dc0f9feddbed8d14f51b7a04ce.1662658653.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.37.1
-In-Reply-To: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
-References: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmpr4ybtz2xJM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:49:39 +1000 (AEST)
+Received: by mail-pg1-x52a.google.com with SMTP id c24so17432583pgg.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Sep 2022 10:49:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :sender:from:to:cc:subject:date;
+        bh=6tvs4ayRExWvRUyu07Fc3dE/Ryea2CBbaJjmdbcY3zQ=;
+        b=N9miSMEMgSmCGbHiQdE2LfUCX1ihj9UQdDXy4wUwvgQqAgT6c89By9B32Yr7ks4QW/
+         kQ3r/GzhvTa+Qg8BbYzGl6AyHpJC846e6qN6kwPlHLifQDD2x4FUCdTpgvksa6uWVXcD
+         hqNSr6yBzrXOpZ+L4PDO2vHgKyP9tpNtRpC0Hz/Q72HoumSKIVl0V1wYsTwRdY9xI42q
+         VodiYMH0Gr7pg5pHaGd77fxN8sKYs6l3AOENeIXSIhU/uMbUuw829uxlnSnNtndJsT7b
+         Aozkj+v0mARSnpsxipaFS3n/8JN/9DFfgycFsbUcAFTWHvb2qlaGj3EGU36VsVJcMwSm
+         J6UA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :sender:x-gm-message-state:from:to:cc:subject:date;
+        bh=6tvs4ayRExWvRUyu07Fc3dE/Ryea2CBbaJjmdbcY3zQ=;
+        b=J5ItGUGgk6Hsp9aZVe2cghSKqUXusG3x0l3SKY8ykc1GnzZMs89A8TssbZuAj2GZPQ
+         HH/riOFDRd+D0PSvNaJgKztqP8MI3koxv4M0ar/PWRxwgVNDOvzJfgu8ovFlzcO/vdqt
+         TPFyHEpxtB056dn4cz3rTHucopsy2SUr3YhmK9TEnCG3gnOBADHIvACddFq4kvhv5oUG
+         TnRzKWv/x9uXmv+1AwrChjA1AHPDSoLT83ZbW5GvHT7wpNkOWkMSKMqAbkmexwxqW2/U
+         hTJrKzVmUW9Z0unkgEu9IritH1CVIK7tWubKiy1rKzazzxi06WA0JwMo321S7QtLCnI1
+         /hMA==
+X-Gm-Message-State: ACgBeo0cm5KPzK1sRQfEbt36QJzqh/W80UQ7NSxDhvRjPpfteo1ItkFk
+	BlzB80YnlF/1tVWK1TtK3sk=
+X-Google-Smtp-Source: AA6agR4rP0sq0eTqJnNeFCoLicuac5FawsgASHi+dty/arH6J/GnQ6Y3EXP1Dq4hyzo0M3jlr3GItQ==
+X-Received: by 2002:a63:4519:0:b0:434:ae87:ca5b with SMTP id s25-20020a634519000000b00434ae87ca5bmr8796465pga.194.1662659375463;
+        Thu, 08 Sep 2022 10:49:35 -0700 (PDT)
+Received: from ?IPV6:2600:1700:e321:62f0:329c:23ff:fee3:9d7c? ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id g11-20020a17090a300b00b002005c3d4d4fsm2032943pjb.19.2022.09.08.10.49.31
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 08 Sep 2022 10:49:33 -0700 (PDT)
+Message-ID: <35ed4d8c-21c3-fd1f-bbab-fa826c33adab@roeck-us.net>
+Date: Thu, 8 Sep 2022 10:49:31 -0700
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658668; l=5912; s=20211009; h=from:subject:message-id; bh=TXQtVvws+HY+umocoHqdiBq24MPM+oo8JUUPWa19ei8=; b=wYHaTFjAjfYN19f4xLQeKt6UVFf5/maP8S8/p86oGruQDocNmG8WM61e58WoHM2IqlM9hMur7Ffk SWYpHVnJCOPHCEaFLpVtPBQg91Zq1uW8ZdOIr5zRU16H+H9Tc2KS
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH v1 13/19] watchdog: booke_wdt: Replace PPC_FSL_BOOK3E by
+ PPC_E500
+Content-Language: en-US
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+References: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
+ <015ac5217fd0f061e98df9cf98bce515855f2bc3.1662658653.git.christophe.leroy@csgroup.eu>
+From: Guenter Roeck <linux@roeck-us.net>
+In-Reply-To: <015ac5217fd0f061e98df9cf98bce515855f2bc3.1662658653.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,191 +84,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-e500v1/v2 and e500mc are said to be mutually exclusive in Kconfig.
+On 9/8/22 10:37, Christophe Leroy wrote:
+> CONFIG_PPC_FSL_BOOK3E is redundant with CONFIG_PPC_E500.
+> 
+> Replace it so that CONFIG_PPC_FSL_BOOK3E can be removed later.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: Wim Van Sebroeck <wim@linux-watchdog.org>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: linux-watchdog@vger.kernel.org
 
-Split e500 cpu_specs[] and then restrict the non e500mc to PPC32
-which is then 85xx.
+Acked-by: Guenter Roeck <linux@roeck-us.net>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/cpu_specs.h               |  6 +-
- arch/powerpc/kernel/cpu_specs_85xx.h          | 60 +++++++++++++++++++
- .../{cpu_specs_e500.h => cpu_specs_e500mc.h}  | 57 ------------------
- 3 files changed, 64 insertions(+), 59 deletions(-)
- create mode 100644 arch/powerpc/kernel/cpu_specs_85xx.h
- rename arch/powerpc/kernel/{cpu_specs_e500.h => cpu_specs_e500mc.h} (58%)
-
-diff --git a/arch/powerpc/kernel/cpu_specs.h b/arch/powerpc/kernel/cpu_specs.h
-index 3de0b70d7203..2f5168c09be1 100644
---- a/arch/powerpc/kernel/cpu_specs.h
-+++ b/arch/powerpc/kernel/cpu_specs.h
-@@ -14,8 +14,10 @@
- #include "cpu_specs_8xx.h"
- #endif
- 
--#ifdef CONFIG_E500
--#include "cpu_specs_e500.h"
-+#ifdef CONFIG_PPC_E500MC
-+#include "cpu_specs_e500mc.h"
-+#elif defined(CONFIG_PPC_85xx)
-+#include "cpu_specs_85xx.h"
- #endif
- 
- #ifdef CONFIG_PPC_BOOK3S_32
-diff --git a/arch/powerpc/kernel/cpu_specs_85xx.h b/arch/powerpc/kernel/cpu_specs_85xx.h
-new file mode 100644
-index 000000000000..f5534311cfc0
---- /dev/null
-+++ b/arch/powerpc/kernel/cpu_specs_85xx.h
-@@ -0,0 +1,60 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
-+ */
-+
-+#define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
-+				 PPC_FEATURE_BOOKE)
-+
-+static struct cpu_spec __initdata cpu_specs[] = {
-+	{	/* e500 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x80200000,
-+		.cpu_name		= "e500",
-+		.cpu_features		= CPU_FTRS_E500,
-+		.cpu_user_features	= COMMON_USER_BOOKE |
-+			PPC_FEATURE_HAS_SPE_COMP |
-+			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
-+		.cpu_user_features2	= PPC_FEATURE2_ISEL,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.num_pmcs		= 4,
-+		.cpu_setup		= __setup_cpu_e500v1,
-+		.machine_check		= machine_check_e500,
-+		.platform		= "ppc8540",
-+	},
-+	{	/* e500v2 */
-+		.pvr_mask		= 0xffff0000,
-+		.pvr_value		= 0x80210000,
-+		.cpu_name		= "e500v2",
-+		.cpu_features		= CPU_FTRS_E500_2,
-+		.cpu_user_features	= COMMON_USER_BOOKE |
-+			PPC_FEATURE_HAS_SPE_COMP |
-+			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
-+			PPC_FEATURE_HAS_EFP_DOUBLE_COMP,
-+		.cpu_user_features2	= PPC_FEATURE2_ISEL,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.num_pmcs		= 4,
-+		.cpu_setup		= __setup_cpu_e500v2,
-+		.machine_check		= machine_check_e500,
-+		.platform		= "ppc8548",
-+		.cpu_down_flush		= cpu_down_flush_e500v2,
-+	},
-+	{	/* default match */
-+		.pvr_mask		= 0x00000000,
-+		.pvr_value		= 0x00000000,
-+		.cpu_name		= "(generic E500 PPC)",
-+		.cpu_features		= CPU_FTRS_E500,
-+		.cpu_user_features	= COMMON_USER_BOOKE |
-+			PPC_FEATURE_HAS_SPE_COMP |
-+			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
-+		.mmu_features		= MMU_FTR_TYPE_FSL_E,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.machine_check		= machine_check_e500,
-+		.platform		= "powerpc",
-+	}
-+};
-diff --git a/arch/powerpc/kernel/cpu_specs_e500.h b/arch/powerpc/kernel/cpu_specs_e500mc.h
-similarity index 58%
-rename from arch/powerpc/kernel/cpu_specs_e500.h
-rename to arch/powerpc/kernel/cpu_specs_e500mc.h
-index 92d165741efc..2f6586f04cef 100644
---- a/arch/powerpc/kernel/cpu_specs_e500.h
-+++ b/arch/powerpc/kernel/cpu_specs_e500mc.h
-@@ -16,44 +16,6 @@
- 
- static struct cpu_spec __initdata cpu_specs[] = {
- #ifdef CONFIG_PPC32
--#ifndef CONFIG_PPC_E500MC
--	{	/* e500 */
--		.pvr_mask		= 0xffff0000,
--		.pvr_value		= 0x80200000,
--		.cpu_name		= "e500",
--		.cpu_features		= CPU_FTRS_E500,
--		.cpu_user_features	= COMMON_USER_BOOKE |
--			PPC_FEATURE_HAS_SPE_COMP |
--			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
--		.cpu_user_features2	= PPC_FEATURE2_ISEL,
--		.mmu_features		= MMU_FTR_TYPE_FSL_E,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.num_pmcs		= 4,
--		.cpu_setup		= __setup_cpu_e500v1,
--		.machine_check		= machine_check_e500,
--		.platform		= "ppc8540",
--	},
--	{	/* e500v2 */
--		.pvr_mask		= 0xffff0000,
--		.pvr_value		= 0x80210000,
--		.cpu_name		= "e500v2",
--		.cpu_features		= CPU_FTRS_E500_2,
--		.cpu_user_features	= COMMON_USER_BOOKE |
--			PPC_FEATURE_HAS_SPE_COMP |
--			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
--			PPC_FEATURE_HAS_EFP_DOUBLE_COMP,
--		.cpu_user_features2	= PPC_FEATURE2_ISEL,
--		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.num_pmcs		= 4,
--		.cpu_setup		= __setup_cpu_e500v2,
--		.machine_check		= machine_check_e500,
--		.platform		= "ppc8548",
--		.cpu_down_flush		= cpu_down_flush_e500v2,
--	},
--#else
- 	{	/* e500mc */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x80230000,
-@@ -71,9 +33,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.platform		= "ppce500mc",
- 		.cpu_down_flush		= cpu_down_flush_e500mc,
- 	},
--#endif /* CONFIG_PPC_E500MC */
- #endif /* CONFIG_PPC32 */
--#ifdef CONFIG_PPC_E500MC
- 	{	/* e5500 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x80240000,
-@@ -115,21 +75,4 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.platform		= "ppce6500",
- 		.cpu_down_flush		= cpu_down_flush_e6500,
- 	},
--#endif /* CONFIG_PPC_E500MC */
--#ifdef CONFIG_PPC32
--	{	/* default match */
--		.pvr_mask		= 0x00000000,
--		.pvr_value		= 0x00000000,
--		.cpu_name		= "(generic E500 PPC)",
--		.cpu_features		= CPU_FTRS_E500,
--		.cpu_user_features	= COMMON_USER_BOOKE |
--			PPC_FEATURE_HAS_SPE_COMP |
--			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
--		.mmu_features		= MMU_FTR_TYPE_FSL_E,
--		.icache_bsize		= 32,
--		.dcache_bsize		= 32,
--		.machine_check		= machine_check_e500,
--		.platform		= "powerpc",
--	}
--#endif /* CONFIG_PPC32 */
- };
--- 
-2.37.1
+> ---
+>   drivers/watchdog/Kconfig     | 8 ++++----
+>   drivers/watchdog/booke_wdt.c | 8 ++++----
+>   2 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index 9295492d24f7..b7c03c600567 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -1935,10 +1935,10 @@ config BOOKE_WDT
+>   config BOOKE_WDT_DEFAULT_TIMEOUT
+>   	int "PowerPC Book-E Watchdog Timer Default Timeout"
+>   	depends on BOOKE_WDT
+> -	default 38 if PPC_FSL_BOOK3E
+> -	range 0 63 if PPC_FSL_BOOK3E
+> -	default 3 if !PPC_FSL_BOOK3E
+> -	range 0 3 if !PPC_FSL_BOOK3E
+> +	default 38 if PPC_E500
+> +	range 0 63 if PPC_E500
+> +	default 3 if !PPC_E500
+> +	range 0 3 if !PPC_E500
+>   	help
+>   	  Select the default watchdog timer period to be used by the PowerPC
+>   	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
+> diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+> index 75da5cd02615..932a03f4436a 100644
+> --- a/drivers/watchdog/booke_wdt.c
+> +++ b/drivers/watchdog/booke_wdt.c
+> @@ -27,7 +27,7 @@
+>    */
+>   
+>   
+> -#ifdef	CONFIG_PPC_FSL_BOOK3E
+> +#ifdef	CONFIG_PPC_E500
+>   #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
+>   #define WDTP_MASK	(WDTP(0x3f))
+>   #else
+> @@ -45,7 +45,7 @@ MODULE_PARM_DESC(nowayout,
+>   		"Watchdog cannot be stopped once started (default="
+>   				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+>   
+> -#ifdef CONFIG_PPC_FSL_BOOK3E
+> +#ifdef CONFIG_PPC_E500
+>   
+>   /* For the specified period, determine the number of seconds
+>    * corresponding to the reset time.  There will be a watchdog
+> @@ -88,7 +88,7 @@ static unsigned int sec_to_period(unsigned int secs)
+>   
+>   #define MAX_WDT_TIMEOUT		period_to_sec(1)
+>   
+> -#else /* CONFIG_PPC_FSL_BOOK3E */
+> +#else /* CONFIG_PPC_E500 */
+>   
+>   static unsigned long long period_to_sec(unsigned int period)
+>   {
+> @@ -102,7 +102,7 @@ static unsigned int sec_to_period(unsigned int secs)
+>   
+>   #define MAX_WDT_TIMEOUT		3	/* from Kconfig */
+>   
+> -#endif /* !CONFIG_PPC_FSL_BOOK3E */
+> +#endif /* !CONFIG_PPC_E500 */
+>   
+>   static void __booke_wdt_set(void *data)
+>   {
 
