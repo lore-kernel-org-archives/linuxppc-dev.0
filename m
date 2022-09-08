@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2455BC38145
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:45:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40463C38145
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:46:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmkN5Sjwz3g4R
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:45:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmkq5rwhz3g8N
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:46:11 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmbK0LPqz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:39:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmbP0Cq0z3f3L
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:39:44 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MNmZ0175Tz9smQ;
-	Thu,  8 Sep 2022 19:38:32 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MNmZ11nPQz9smR;
+	Thu,  8 Sep 2022 19:38:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id doxHdpMTK0lZ; Thu,  8 Sep 2022 19:38:32 +0200 (CEST)
+	with ESMTP id Cs35PyRfhR_N; Thu,  8 Sep 2022 19:38:33 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYj6R8Jz9smS;
-	Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYm2563z9sm1;
+	Thu,  8 Sep 2022 19:38:20 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7B0A98B792;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CE8F8B78F;
 	Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id PA9n5bkGlhPf; Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
+	with ESMTP id QC4q5_pYvu4M; Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.247])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 304888B790;
-	Thu,  8 Sep 2022 19:38:17 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id DA77C8B7AA;
+	Thu,  8 Sep 2022 19:38:13 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcDim3449213
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcAwU3449165
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 8 Sep 2022 19:38:14 +0200
+	Thu, 8 Sep 2022 19:38:11 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcD933449212;
-	Thu, 8 Sep 2022 19:38:13 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcAbu3449164;
+	Thu, 8 Sep 2022 19:38:10 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 18/19] powerpc: Cleanup idle for e500
-Date: Thu,  8 Sep 2022 19:37:51 +0200
-Message-Id: <9ddb4b41a712c7c60c8ac72b55cbe96c99040c68.1662658653.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 08/19] powerpc/cputable: Split cpu_specs[] for mpc85xx and e500mc
+Date: Thu,  8 Sep 2022 19:37:41 +0200
+Message-Id: <73e7f789141362dc0f9feddbed8d14f51b7a04ce.1662658653.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
 References: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658668; l=4717; s=20211009; h=from:subject:message-id; bh=2++AAnzzOJYJGhhhMcfuX+a8XV2xZcg62ybaUo1obvs=; b=dumMQnvOhP7pxhuM+evcSR1zRszBI3bvPBH+g7CXHVGHtQ5iK1SV1vNnKVDxRHh9uyNn3dH6ch4w GLQgupIIBVpvlErhxZKGsMLXksYI9SfkAasY2jJwxUsLLI6SHUxu
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658668; l=5912; s=20211009; h=from:subject:message-id; bh=TXQtVvws+HY+umocoHqdiBq24MPM+oo8JUUPWa19ei8=; b=wYHaTFjAjfYN19f4xLQeKt6UVFf5/maP8S8/p86oGruQDocNmG8WM61e58WoHM2IqlM9hMur7Ffk SWYpHVnJCOPHCEaFLpVtPBQg91Zq1uW8ZdOIr5zRU16H+H9Tc2KS
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,129 +71,186 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-e500 idle setup is a bit messy.
+e500v1/v2 and e500mc are said to be mutually exclusive in Kconfig.
 
-e500_idle() is used for PPC32 while book3e_idle() is used for PPC64.
-As they are mutually exclusive, call them all e500_idle().
-
-Use CONFIG_MPC_85xx instead of PPC32 + E500 in Makefile and rename
-idle_e500.c to idle_85xx.c .
-
-Rename idle_book3e.c to idle_64e.c and remove #ifdef PPC64 in
-as it's only built on PPC64.
+Split e500 cpu_specs[] and then restrict the non e500mc to PPC32
+which is then 85xx.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/machdep.h                | 1 -
- arch/powerpc/kernel/Makefile                      | 6 ++----
- arch/powerpc/kernel/{idle_book3e.S => idle_64e.S} | 8 ++------
- arch/powerpc/kernel/{idle_e500.S => idle_85xx.S}  | 0
- arch/powerpc/platforms/85xx/corenet_generic.c     | 4 ----
- arch/powerpc/platforms/85xx/qemu_e500.c           | 4 ----
- 6 files changed, 4 insertions(+), 19 deletions(-)
- rename arch/powerpc/kernel/{idle_book3e.S => idle_64e.S} (93%)
- rename arch/powerpc/kernel/{idle_e500.S => idle_85xx.S} (100%)
+ arch/powerpc/kernel/cpu_specs.h               |  6 +-
+ arch/powerpc/kernel/cpu_specs_85xx.h          | 60 +++++++++++++++++++
+ .../{cpu_specs_e500.h => cpu_specs_e500mc.h}  | 57 ------------------
+ 3 files changed, 64 insertions(+), 59 deletions(-)
+ create mode 100644 arch/powerpc/kernel/cpu_specs_85xx.h
+ rename arch/powerpc/kernel/{cpu_specs_e500.h => cpu_specs_e500mc.h} (58%)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 8cb83600c434..378b8d5836a7 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -204,7 +204,6 @@ struct machdep_calls {
- extern void e500_idle(void);
- extern void power4_idle(void);
- extern void ppc6xx_idle(void);
--extern void book3e_idle(void);
- 
- /*
-  * ppc_md contains a copy of the machine description structure for the
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 658c4dffaa56..1f121c188805 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -81,7 +81,7 @@ obj-$(CONFIG_PPC_DAWR)		+= dawr.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
--obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
-+obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_64e.o
- obj-$(CONFIG_PPC_BARRIER_NOSPEC) += security.o
- obj-$(CONFIG_PPC64)		+= vdso64_wrapper.o
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o
-@@ -100,9 +100,7 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_FA_DUMP)		+= fadump.o
- obj-$(CONFIG_PRESERVE_FA_DUMP)	+= fadump.o
--ifdef CONFIG_PPC32
--obj-$(CONFIG_PPC_E500)		+= idle_e500.o
--endif
-+obj-$(CONFIG_PPC_85xx)		+= idle_85xx.o
- obj-$(CONFIG_PPC_BOOK3S_32)	+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
- obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_64e.S
-similarity index 93%
-rename from arch/powerpc/kernel/idle_book3e.S
-rename to arch/powerpc/kernel/idle_64e.S
-index cc008de58b05..1736aad2afe9 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_64e.S
-@@ -2,7 +2,7 @@
- /*
-  * Copyright 2010 IBM Corp, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-  *
-- * Generic idle routine for Book3E processors
-+ * Generic idle routine for 64 bits e500 processors
-  */
- 
- #include <linux/threads.h>
-@@ -16,8 +16,6 @@
- #include <asm/hw_irq.h>
- 
- /* 64-bit version only for now */
--#ifdef CONFIG_PPC64
--
- .macro BOOK3E_IDLE name loop
- _GLOBAL(\name)
- 	/* Save LR for later */
-@@ -98,6 +96,4 @@ epapr_ev_idle_start:
- 
- BOOK3E_IDLE epapr_ev_idle EPAPR_EV_IDLE_LOOP
- 
--BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
--
--#endif /* CONFIG_PPC64 */
-+BOOK3E_IDLE e500_idle BOOK3E_IDLE_LOOP
-diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_85xx.S
-similarity index 100%
-rename from arch/powerpc/kernel/idle_e500.S
-rename to arch/powerpc/kernel/idle_85xx.S
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 28d6b36f1ccd..2c539de2d629 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -200,9 +200,5 @@ define_machine(corenet_generic) {
+diff --git a/arch/powerpc/kernel/cpu_specs.h b/arch/powerpc/kernel/cpu_specs.h
+index 3de0b70d7203..2f5168c09be1 100644
+--- a/arch/powerpc/kernel/cpu_specs.h
++++ b/arch/powerpc/kernel/cpu_specs.h
+@@ -14,8 +14,10 @@
+ #include "cpu_specs_8xx.h"
  #endif
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--#ifdef CONFIG_PPC64
--	.power_save		= book3e_idle,
+ 
+-#ifdef CONFIG_E500
+-#include "cpu_specs_e500.h"
++#ifdef CONFIG_PPC_E500MC
++#include "cpu_specs_e500mc.h"
++#elif defined(CONFIG_PPC_85xx)
++#include "cpu_specs_85xx.h"
+ #endif
+ 
+ #ifdef CONFIG_PPC_BOOK3S_32
+diff --git a/arch/powerpc/kernel/cpu_specs_85xx.h b/arch/powerpc/kernel/cpu_specs_85xx.h
+new file mode 100644
+index 000000000000..f5534311cfc0
+--- /dev/null
++++ b/arch/powerpc/kernel/cpu_specs_85xx.h
+@@ -0,0 +1,60 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ *  Copyright (C) 2001 Ben. Herrenschmidt (benh@kernel.crashing.org)
++ */
++
++#define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
++				 PPC_FEATURE_BOOKE)
++
++static struct cpu_spec __initdata cpu_specs[] = {
++	{	/* e500 */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x80200000,
++		.cpu_name		= "e500",
++		.cpu_features		= CPU_FTRS_E500,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++			PPC_FEATURE_HAS_SPE_COMP |
++			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
++		.cpu_user_features2	= PPC_FEATURE2_ISEL,
++		.mmu_features		= MMU_FTR_TYPE_FSL_E,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.num_pmcs		= 4,
++		.cpu_setup		= __setup_cpu_e500v1,
++		.machine_check		= machine_check_e500,
++		.platform		= "ppc8540",
++	},
++	{	/* e500v2 */
++		.pvr_mask		= 0xffff0000,
++		.pvr_value		= 0x80210000,
++		.cpu_name		= "e500v2",
++		.cpu_features		= CPU_FTRS_E500_2,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++			PPC_FEATURE_HAS_SPE_COMP |
++			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
++			PPC_FEATURE_HAS_EFP_DOUBLE_COMP,
++		.cpu_user_features2	= PPC_FEATURE2_ISEL,
++		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.num_pmcs		= 4,
++		.cpu_setup		= __setup_cpu_e500v2,
++		.machine_check		= machine_check_e500,
++		.platform		= "ppc8548",
++		.cpu_down_flush		= cpu_down_flush_e500v2,
++	},
++	{	/* default match */
++		.pvr_mask		= 0x00000000,
++		.pvr_value		= 0x00000000,
++		.cpu_name		= "(generic E500 PPC)",
++		.cpu_features		= CPU_FTRS_E500,
++		.cpu_user_features	= COMMON_USER_BOOKE |
++			PPC_FEATURE_HAS_SPE_COMP |
++			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
++		.mmu_features		= MMU_FTR_TYPE_FSL_E,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.machine_check		= machine_check_e500,
++		.platform		= "powerpc",
++	}
++};
+diff --git a/arch/powerpc/kernel/cpu_specs_e500.h b/arch/powerpc/kernel/cpu_specs_e500mc.h
+similarity index 58%
+rename from arch/powerpc/kernel/cpu_specs_e500.h
+rename to arch/powerpc/kernel/cpu_specs_e500mc.h
+index 92d165741efc..2f6586f04cef 100644
+--- a/arch/powerpc/kernel/cpu_specs_e500.h
++++ b/arch/powerpc/kernel/cpu_specs_e500mc.h
+@@ -16,44 +16,6 @@
+ 
+ static struct cpu_spec __initdata cpu_specs[] = {
+ #ifdef CONFIG_PPC32
+-#ifndef CONFIG_PPC_E500MC
+-	{	/* e500 */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x80200000,
+-		.cpu_name		= "e500",
+-		.cpu_features		= CPU_FTRS_E500,
+-		.cpu_user_features	= COMMON_USER_BOOKE |
+-			PPC_FEATURE_HAS_SPE_COMP |
+-			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
+-		.cpu_user_features2	= PPC_FEATURE2_ISEL,
+-		.mmu_features		= MMU_FTR_TYPE_FSL_E,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.num_pmcs		= 4,
+-		.cpu_setup		= __setup_cpu_e500v1,
+-		.machine_check		= machine_check_e500,
+-		.platform		= "ppc8540",
+-	},
+-	{	/* e500v2 */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x80210000,
+-		.cpu_name		= "e500v2",
+-		.cpu_features		= CPU_FTRS_E500_2,
+-		.cpu_user_features	= COMMON_USER_BOOKE |
+-			PPC_FEATURE_HAS_SPE_COMP |
+-			PPC_FEATURE_HAS_EFP_SINGLE_COMP |
+-			PPC_FEATURE_HAS_EFP_DOUBLE_COMP,
+-		.cpu_user_features2	= PPC_FEATURE2_ISEL,
+-		.mmu_features		= MMU_FTR_TYPE_FSL_E | MMU_FTR_BIG_PHYS,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.num_pmcs		= 4,
+-		.cpu_setup		= __setup_cpu_e500v2,
+-		.machine_check		= machine_check_e500,
+-		.platform		= "ppc8548",
+-		.cpu_down_flush		= cpu_down_flush_e500v2,
+-	},
 -#else
- 	.power_save		= e500_idle,
--#endif
- };
-diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 64109ad6736c..1639e222cc33 100644
---- a/arch/powerpc/platforms/85xx/qemu_e500.c
-+++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -68,9 +68,5 @@ define_machine(qemu_e500) {
- 	.get_irq		= mpic_get_coreint_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
--#ifdef CONFIG_PPC64
--	.power_save		= book3e_idle,
--#else
- 	.power_save		= e500_idle,
--#endif
+ 	{	/* e500mc */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80230000,
+@@ -71,9 +33,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.platform		= "ppce500mc",
+ 		.cpu_down_flush		= cpu_down_flush_e500mc,
+ 	},
+-#endif /* CONFIG_PPC_E500MC */
+ #endif /* CONFIG_PPC32 */
+-#ifdef CONFIG_PPC_E500MC
+ 	{	/* e5500 */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80240000,
+@@ -115,21 +75,4 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.platform		= "ppce6500",
+ 		.cpu_down_flush		= cpu_down_flush_e6500,
+ 	},
+-#endif /* CONFIG_PPC_E500MC */
+-#ifdef CONFIG_PPC32
+-	{	/* default match */
+-		.pvr_mask		= 0x00000000,
+-		.pvr_value		= 0x00000000,
+-		.cpu_name		= "(generic E500 PPC)",
+-		.cpu_features		= CPU_FTRS_E500,
+-		.cpu_user_features	= COMMON_USER_BOOKE |
+-			PPC_FEATURE_HAS_SPE_COMP |
+-			PPC_FEATURE_HAS_EFP_SINGLE_COMP,
+-		.mmu_features		= MMU_FTR_TYPE_FSL_E,
+-		.icache_bsize		= 32,
+-		.dcache_bsize		= 32,
+-		.machine_check		= machine_check_e500,
+-		.platform		= "powerpc",
+-	}
+-#endif /* CONFIG_PPC32 */
  };
 -- 
 2.37.1
