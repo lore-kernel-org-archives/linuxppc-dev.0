@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58A90C38145
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:43:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C743EC54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Sep 2022 17:43:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmgJ09T4z3ff0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:43:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MNmgt2C37z3fk7
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 03:43:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmZm5chpz3chs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:39:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MNmZs2fD2z3cjK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 03:39:17 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MNmYt1Tj4z9smW;
-	Thu,  8 Sep 2022 19:38:26 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MNmYv1fg1z9smZ;
+	Thu,  8 Sep 2022 19:38:27 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id PIZvxFbUFS_c; Thu,  8 Sep 2022 19:38:26 +0200 (CEST)
+	with ESMTP id N2zSebs70ejb; Thu,  8 Sep 2022 19:38:27 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYg5KVxz9smK;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MNmYg6BCYz9smN;
 	Thu,  8 Sep 2022 19:38:15 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B0DF08B763;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C83A18B794;
 	Thu,  8 Sep 2022 19:38:15 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id jHq6Q3XsG7ga; Thu,  8 Sep 2022 19:38:15 +0200 (CEST)
+	with ESMTP id P3ZsNERFk6JH; Thu,  8 Sep 2022 19:38:15 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.247])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BACA98B798;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C27A68B79C;
 	Thu,  8 Sep 2022 19:38:13 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcBDb3449169
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 288HcDxA3449197
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 8 Sep 2022 19:38:11 +0200
+	Thu, 8 Sep 2022 19:38:13 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcBu63449168;
-	Thu, 8 Sep 2022 19:38:11 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 288HcD5g3449196;
+	Thu, 8 Sep 2022 19:38:13 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 09/19] powerpc: Remove CONFIG_PPC_BOOK3E
-Date: Thu,  8 Sep 2022 19:37:42 +0200
-Message-Id: <ddcea353b7c0bd3151264eb7b6fb8a88109ad2d2.1662658653.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 14/19] powerpc: Remove CONFIG_PPC_FSL_BOOK3E
+Date: Thu,  8 Sep 2022 19:37:47 +0200
+Message-Id: <9349dcd5359c1f7e6be085db6abea9b5ce505809.1662658653.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
 References: <4e7e6259e5af0e0e171f19ee1f85ab5b2553723f.1662658653.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658668; l=22792; s=20211009; h=from:subject:message-id; bh=OUhkzILGmz9x5JmP0immgwc/z6tCf68FN6vBmSqN2TE=; b=UamOd2D3IgRGb0C99r8+Lcedkzoqp34inuymj1OUYO5F1PL3tEuNoVv1MhZDsFuwcN6DXfDLGdaR 3bBbG0k3B5NdbXoM/WOutBHzEEaa2YP737EkfYcTGCh9I1CfWT7X
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1662658668; l=23855; s=20211009; h=from:subject:message-id; bh=xpNXSfMjFMY9ywlUYK8WLF9KFHrQZd6uOBesICLv3+Y=; b=b6cva4LpcieGLG+UJ97V30redXO1xS3viWcWrCHjDV6tbYdG0tL7zjZnqSIATc00VkO9vvWxXq2V I9Ow53hVCKJ8QgdL+sx8CBT890uC3pu+5Cq9mntFuMPMLJkg4xKJ
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,696 +71,630 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_PPC_BOOK3E is redundant with CONFIG_PPC_BOOK3E_64.
+CONFIG_PPC_FSL_BOOK3E is redundant with CONFIG_PPC_E500.
 
-The later is more explicit about the fact that it's a 64 bits target.
+Remove it.
 
-Remove CONFIG_PPC_BOOK3E.
+And rename five files accordingly.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/Kconfig                      |  2 +-
- arch/powerpc/include/asm/cputable.h       |  4 +--
- arch/powerpc/include/asm/interrupt.h      |  2 +-
- arch/powerpc/include/asm/nohash/pgalloc.h |  2 +-
- arch/powerpc/include/asm/paca.h           |  8 ++---
- arch/powerpc/include/asm/ppc_asm.h        |  4 +--
- arch/powerpc/kernel/asm-offsets.c         |  6 ++--
- arch/powerpc/kernel/entry_64.S            |  6 ++--
- arch/powerpc/kernel/head_64.S             | 40 +++++++++++------------
- arch/powerpc/kernel/misc_64.S             |  6 ++--
- arch/powerpc/kernel/paca.c                |  6 ++--
- arch/powerpc/kernel/setup.h               |  2 +-
- arch/powerpc/kernel/setup_64.c            |  8 ++---
- arch/powerpc/kernel/vmlinux.lds.S         |  2 +-
- arch/powerpc/kexec/core_64.c              |  2 +-
- arch/powerpc/mm/mmu_decl.h                |  6 ++--
- arch/powerpc/mm/nohash/tlb_low.S          |  2 +-
- arch/powerpc/platforms/85xx/Kconfig       |  2 +-
- arch/powerpc/platforms/Kconfig.cputype    | 10 ++----
- arch/powerpc/xmon/xmon.c                  | 16 ++++-----
- 20 files changed, 66 insertions(+), 70 deletions(-)
+ arch/powerpc/Kconfig                             |  2 +-
+ arch/powerpc/include/asm/barrier.h               |  2 +-
+ arch/powerpc/include/asm/hugetlb.h               |  4 ++--
+ arch/powerpc/include/asm/kvm_host.h              |  2 +-
+ arch/powerpc/include/asm/mmu.h                   |  2 +-
+ arch/powerpc/include/asm/nohash/32/pgtable.h     |  2 +-
+ arch/powerpc/include/asm/nohash/64/pgtable.h     |  2 +-
+ .../nohash/{hugetlb-book3e.h => hugetlb-e500.h}  |  2 +-
+ arch/powerpc/include/asm/nohash/pgtable.h        |  2 +-
+ .../asm/nohash/{pte-book3e.h => pte-e500.h}      |  0
+ arch/powerpc/include/asm/page.h                  |  2 +-
+ arch/powerpc/include/asm/ppc_asm.h               |  6 +++---
+ arch/powerpc/include/asm/setup.h                 |  2 +-
+ arch/powerpc/kernel/Makefile                     |  2 +-
+ arch/powerpc/kernel/asm-offsets.c                |  4 ++--
+ .../{cpu_setup_fsl_booke.S => cpu_setup_e500.S}  |  0
+ arch/powerpc/kernel/head_booke.h                 |  2 +-
+ arch/powerpc/kernel/interrupt_64.S               |  2 +-
+ arch/powerpc/kernel/security.c                   | 10 +++++-----
+ arch/powerpc/kernel/smp.c                        |  2 +-
+ arch/powerpc/kernel/sysfs.c                      |  6 +++---
+ arch/powerpc/kernel/vmlinux.lds.S                |  2 +-
+ arch/powerpc/lib/feature-fixups.c                |  4 ++--
+ arch/powerpc/mm/hugetlbpage.c                    |  2 +-
+ arch/powerpc/mm/mem.c                            |  2 +-
+ arch/powerpc/mm/mmu_decl.h                       |  4 ++--
+ arch/powerpc/mm/nohash/Makefile                  |  6 +++---
+ arch/powerpc/mm/nohash/{fsl_book3e.c => e500.c}  |  0
+ .../{book3e_hugetlbpage.c => e500_hugetlbpage.c} |  0
+ arch/powerpc/mm/nohash/tlb.c                     | 16 ++++++++--------
+ arch/powerpc/mm/nohash/tlb_low.S                 |  2 +-
+ arch/powerpc/platforms/Kconfig.cputype           | 16 ++++------------
+ 32 files changed, 52 insertions(+), 60 deletions(-)
+ rename arch/powerpc/include/asm/nohash/{hugetlb-book3e.h => hugetlb-e500.h} (95%)
+ rename arch/powerpc/include/asm/nohash/{pte-book3e.h => pte-e500.h} (100%)
+ rename arch/powerpc/kernel/{cpu_setup_fsl_booke.S => cpu_setup_e500.S} (100%)
+ rename arch/powerpc/mm/nohash/{fsl_book3e.c => e500.c} (100%)
+ rename arch/powerpc/mm/nohash/{book3e_hugetlbpage.c => e500_hugetlbpage.c} (100%)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 7fe522b0946b..94a614bb1581 100644
+index 94a614bb1581..38f36eb4d96c 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -548,7 +548,7 @@ config PPC64_SUPPORTS_MEMORY_FAILURE
+@@ -290,7 +290,7 @@ config PPC_LONG_DOUBLE_128
+ config PPC_BARRIER_NOSPEC
+ 	bool
+ 	default y
+-	depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
++	depends on PPC_BOOK3S_64 || PPC_E500
  
- config KEXEC
- 	bool "kexec system call"
--	depends on (PPC_BOOK3S || PPC_85xx || (44x && !SMP)) || PPC_BOOK3E
-+	depends on (PPC_BOOK3S || PPC_85xx || (44x && !SMP)) || PPC_BOOK3E_64
- 	select KEXEC_CORE
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index ae8c3e13cfce..27875f0b7bc7 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -463,7 +463,7 @@ static inline void cpu_feature_keys_init(void) { }
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_PPCAS_ARCH_V2)
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index ef2d8b15eaab..e80b2c0e9315 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -86,7 +86,7 @@ do {									\
  
- #ifdef CONFIG_PPC64
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- #define CPU_FTRS_POSSIBLE	(CPU_FTRS_E6500 | CPU_FTRS_E5500)
- #else
- #ifdef CONFIG_CPU_LITTLE_ENDIAN
-@@ -521,7 +521,7 @@ enum {
- #endif /* __powerpc64__ */
- 
- #ifdef CONFIG_PPC64
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- #define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500)
- #else
- 
-diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-index 8069dbc4b8d1..84a1cdc3204c 100644
---- a/arch/powerpc/include/asm/interrupt.h
-+++ b/arch/powerpc/include/asm/interrupt.h
-@@ -281,7 +281,7 @@ static inline bool nmi_disables_ftrace(struct pt_regs *regs)
- 		if (TRAP(regs) == INTERRUPT_PERFMON)
- 		       return false;
- 	}
--	if (IS_ENABLED(CONFIG_PPC_BOOK3E)) {
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
- 		if (TRAP(regs) == INTERRUPT_PERFMON)
- 			return false;
- 	}
-diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
-index 29c43665a753..4b62376318e1 100644
---- a/arch/powerpc/include/asm/nohash/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/pgalloc.h
-@@ -15,7 +15,7 @@ static inline void tlb_flush_pgtable(struct mmu_gather *tlb,
- {
- 
- }
--#endif /* !CONFIG_PPC_BOOK3E */
-+#endif /* !CONFIG_PPC_BOOK3E_64 */
- 
- static inline pgd_t *pgd_alloc(struct mm_struct *mm)
- {
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 4d7aaab82702..14e5d23fcdd7 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -18,7 +18,7 @@
- #include <asm/lppaca.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- #include <asm/exception-64e.h>
- #else
- #include <asm/exception-64s.h>
-@@ -127,7 +127,7 @@ struct paca_struct {
- #endif
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	u64 exgen[8] __aligned(0x40);
- 	/* Keep pgd in the same cacheline as the start of extlb */
- 	pgd_t *pgd __aligned(0x40); /* Current PGD */
-@@ -151,7 +151,7 @@ struct paca_struct {
- 	void *dbg_kstack;
- 
- 	struct tlb_core_data tcd;
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
- 
- #ifdef CONFIG_PPC_64S_HASH_MMU
- 	unsigned char mm_ctx_low_slices_psize[BITS_PER_LONG / BITS_PER_BYTE];
-@@ -168,7 +168,7 @@ struct paca_struct {
- #ifdef CONFIG_PPC64
- 	u64 exit_save_r1;		/* Syscall/interrupt R1 save */
- #endif
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	u16 trap_save;			/* Used when bad stack is encountered */
- #endif
  #ifdef CONFIG_PPC_BOOK3S_64
+ #define NOSPEC_BARRIER_SLOT   nop
+-#elif defined(CONFIG_PPC_FSL_BOOK3E)
++#elif defined(CONFIG_PPC_E500)
+ #define NOSPEC_BARRIER_SLOT   nop; nop
+ #endif
+ 
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 32ce0fb7548f..ea71f7245a63 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -7,8 +7,8 @@
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #include <asm/book3s/64/hugetlb.h>
+-#elif defined(CONFIG_PPC_FSL_BOOK3E)
+-#include <asm/nohash/hugetlb-book3e.h>
++#elif defined(CONFIG_PPC_E500)
++#include <asm/nohash/hugetlb-e500.h>
+ #elif defined(CONFIG_PPC_8xx)
+ #include <asm/nohash/32/hugetlb-8xx.h>
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index c2b003550dc9..caea15dcb91d 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -443,7 +443,7 @@ struct kvmppc_passthru_irqmap {
+ };
+ #endif
+ 
+-# ifdef CONFIG_PPC_FSL_BOOK3E
++# ifdef CONFIG_PPC_E500
+ #define KVMPPC_BOOKE_IAC_NUM	2
+ #define KVMPPC_BOOKE_DAC_NUM	2
+ # else
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 5b46da9ba7f6..39057320e436 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -141,7 +141,7 @@
+ 
+ typedef pte_t *pgtable_t;
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ #include <asm/percpu.h>
+ DECLARE_PER_CPU(int, next_tlbcam_idx);
+ #endif
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 197e7552d9f6..0d40b33184eb 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -131,7 +131,7 @@ void unmap_kernel_page(unsigned long va);
+ #elif defined(CONFIG_44x)
+ #include <asm/nohash/32/pte-44x.h>
+ #elif defined(CONFIG_PPC_85xx) && defined(CONFIG_PTE_64BIT)
+-#include <asm/nohash/pte-book3e.h>
++#include <asm/nohash/pte-e500.h>
+ #elif defined(CONFIG_PPC_85xx)
+ #include <asm/nohash/32/pte-85xx.h>
+ #elif defined(CONFIG_PPC_8xx)
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 599921cc257e..879e9a6e5a87 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -70,7 +70,7 @@
+ /*
+  * Include the PTE bits definitions
+  */
+-#include <asm/nohash/pte-book3e.h>
++#include <asm/nohash/pte-e500.h>
+ 
+ #define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
+ 
+diff --git a/arch/powerpc/include/asm/nohash/hugetlb-book3e.h b/arch/powerpc/include/asm/nohash/hugetlb-e500.h
+similarity index 95%
+rename from arch/powerpc/include/asm/nohash/hugetlb-book3e.h
+rename to arch/powerpc/include/asm/nohash/hugetlb-e500.h
+index ecd8694cb229..bdcd9040ad04 100644
+--- a/arch/powerpc/include/asm/nohash/hugetlb-book3e.h
++++ b/arch/powerpc/include/asm/nohash/hugetlb-e500.h
+@@ -30,7 +30,7 @@ void flush_hugetlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+ 
+ static inline void hugepd_populate(hugepd_t *hpdp, pte_t *new, unsigned int pshift)
+ {
+-	/* We use the old format for PPC_FSL_BOOK3E */
++	/* We use the old format for PPC_E500 */
+ 	*hpdp = __hugepd(((unsigned long)new & ~PD_HUGE) | pshift);
+ }
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index b499da6c1a99..1ebf3413e9d5 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -292,7 +292,7 @@ static inline int pgd_huge(pgd_t pgd)
+  * We use it to ensure coherency between the i-cache and d-cache
+  * for the page which has just been mapped in.
+  */
+-#if defined(CONFIG_PPC_FSL_BOOK3E) && defined(CONFIG_HUGETLB_PAGE)
++#if defined(CONFIG_PPC_E500) && defined(CONFIG_HUGETLB_PAGE)
+ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address, pte_t *ptep);
+ #else
+ static inline
+diff --git a/arch/powerpc/include/asm/nohash/pte-book3e.h b/arch/powerpc/include/asm/nohash/pte-e500.h
+similarity index 100%
+rename from arch/powerpc/include/asm/nohash/pte-book3e.h
+rename to arch/powerpc/include/asm/nohash/pte-e500.h
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index e5f75c70eda8..f906135b778a 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -31,7 +31,7 @@ extern unsigned int hpage_shift;
+ #define HPAGE_SHIFT hpage_shift
+ #elif defined(CONFIG_PPC_8xx)
+ #define HPAGE_SHIFT		19	/* 512k pages */
+-#elif defined(CONFIG_PPC_FSL_BOOK3E)
++#elif defined(CONFIG_PPC_E500)
+ #define HPAGE_SHIFT		22	/* 4M pages */
+ #endif
+ #define HPAGE_SIZE		((1UL) << HPAGE_SHIFT)
 diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 83c02f5a7f2a..55149a0384db 100644
+index 55149a0384db..7e4fe766e247 100644
 --- a/arch/powerpc/include/asm/ppc_asm.h
 +++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -709,7 +709,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
-  * kernel is built for.
-  */
+@@ -342,7 +342,7 @@ GLUE(.,name):
+ #endif
  
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- #define FIXUP_ENDIAN
+ /* various errata or part fixups */
+-#if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
++#if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_E500)
+ #define MFTB(dest)			\
+ 90:	mfspr dest, SPRN_TBRL;		\
+ BEGIN_FTR_SECTION_NESTED(96);		\
+@@ -768,7 +768,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
+ 	stringify_in_c(.llong (_target);)	\
+ 	stringify_in_c(.previous)
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ #define BTB_FLUSH(reg)			\
+ 	lis reg,BUCSR_INIT@h;		\
+ 	ori reg,reg,BUCSR_INIT@l;	\
+@@ -776,6 +776,6 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
+ 	isync;
  #else
- /*
-@@ -749,7 +749,7 @@ END_FTR_SECTION_NESTED(CPU_FTR_CELL_TB_BUG, CPU_FTR_CELL_TB_BUG, 96)
- 	.long 0x2402004c; /* hrfid				*/ \
- 191:
+ #define BTB_FLUSH(reg)
+-#endif /* CONFIG_PPC_FSL_BOOK3E */
++#endif /* CONFIG_PPC_E500 */
  
--#endif /* !CONFIG_PPC_BOOK3E */
-+#endif /* !CONFIG_PPC_BOOK3E_64 */
+ #endif /* _ASM_POWERPC_PPC_ASM_H */
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index dd461b2c825c..85143849a586 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -69,7 +69,7 @@ void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
+ static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { }
+ #endif
  
- #endif /*  __ASSEMBLY__ */
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ void __init setup_spectre_v2(void);
+ #else
+ static inline void setup_spectre_v2(void) {}
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 33dafd12e81d..658c4dffaa56 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -114,7 +114,7 @@ endif
+ obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+ obj-$(CONFIG_MODULES)		+= module.o module_$(BITS).o
+ obj-$(CONFIG_44x)		+= cpu_setup_44x.o
+-obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o
++obj-$(CONFIG_PPC_E500)		+= cpu_setup_e500.o
+ obj-$(CONFIG_PPC_DOORBELL)	+= dbell.o
+ obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
  
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 8c10f536e478..10ce03052a19 100644
+index 10ce03052a19..4ce2a4aa3985 100644
 --- a/arch/powerpc/kernel/asm-offsets.c
 +++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -197,7 +197,7 @@ int main(void)
- 	OFFSET(PACAIRQHAPPENED, paca_struct, irq_happened);
- 	OFFSET(PACA_FTRACE_ENABLED, paca_struct, ftrace_enabled);
+@@ -59,7 +59,7 @@
+ #endif
+ #endif
  
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	OFFSET(PACAPGD, paca_struct, pgd);
- 	OFFSET(PACA_KERNELPGD, paca_struct, kernel_pgd);
- 	OFFSET(PACA_EXGEN, paca_struct, exgen);
-@@ -213,7 +213,7 @@ int main(void)
- 	OFFSET(TCD_ESEL_NEXT, tlb_core_data, esel_next);
- 	OFFSET(TCD_ESEL_MAX, tlb_core_data, esel_max);
- 	OFFSET(TCD_ESEL_FIRST, tlb_core_data, esel_first);
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
+-#if defined(CONFIG_PPC_FSL_BOOK3E)
++#if defined(CONFIG_PPC_E500)
+ #include "../mm/mmu_decl.h"
+ #endif
+ 
+@@ -651,7 +651,7 @@ int main(void)
+ 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
+ 	DEFINE(PTE_T_LOG2, PTE_T_LOG2);
+ #endif
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	DEFINE(TLBCAM_SIZE, sizeof(struct tlbcam));
+ 	OFFSET(TLBCAM_MAS0, tlbcam, MAS0);
+ 	OFFSET(TLBCAM_MAS1, tlbcam, MAS1);
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_e500.S
+similarity index 100%
+rename from arch/powerpc/kernel/cpu_setup_fsl_booke.S
+rename to arch/powerpc/kernel/cpu_setup_e500.S
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index a2f82ced6e4a..1047dc053b47 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -34,7 +34,7 @@
+  */
+ #define THREAD_NORMSAVE(offset)	(THREAD_NORMSAVES + (offset * 4))
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ #define BOOKE_CLEAR_BTB(reg)									\
+ START_BTB_FLUSH_SECTION								\
+ 	BTB_FLUSH(reg)									\
+diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
+index ce25b28cf418..e9679a87f649 100644
+--- a/arch/powerpc/kernel/interrupt_64.S
++++ b/arch/powerpc/kernel/interrupt_64.S
+@@ -240,7 +240,7 @@ _ASM_NOKPROBE_SYMBOL(system_call_common)
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	std	r2,GPR2(r1)
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ START_BTB_FLUSH_SECTION
+ 	BTB_FLUSH(r10)
+ END_BTB_FLUSH_SECTION
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index b562a1d2c750..206475e3e0b4 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -35,7 +35,7 @@ static enum branch_cache_flush_type link_stack_flush_type = BRANCH_CACHE_FLUSH_N
+ bool barrier_nospec_enabled;
+ static bool no_nospec;
+ static bool btb_flush_enabled;
+-#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3S_64)
++#if defined(CONFIG_PPC_E500) || defined(CONFIG_PPC_BOOK3S_64)
+ static bool no_spectrev2;
+ #endif
+ 
+@@ -122,7 +122,7 @@ static __init int security_feature_debugfs_init(void)
+ device_initcall(security_feature_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
+ 
+-#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_BOOK3S_64)
++#if defined(CONFIG_PPC_E500) || defined(CONFIG_PPC_BOOK3S_64)
+ static int __init handle_nospectre_v2(char *p)
+ {
+ 	no_spectrev2 = true;
+@@ -130,9 +130,9 @@ static int __init handle_nospectre_v2(char *p)
+ 	return 0;
+ }
+ early_param("nospectre_v2", handle_nospectre_v2);
+-#endif /* CONFIG_PPC_FSL_BOOK3E || CONFIG_PPC_BOOK3S_64 */
++#endif /* CONFIG_PPC_E500 || CONFIG_PPC_BOOK3S_64 */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ void __init setup_spectre_v2(void)
+ {
+ 	if (no_spectrev2 || cpu_mitigations_off())
+@@ -140,7 +140,7 @@ void __init setup_spectre_v2(void)
+ 	else
+ 		btb_flush_enabled = true;
+ }
+-#endif /* CONFIG_PPC_FSL_BOOK3E */
++#endif /* CONFIG_PPC_E500 */
  
  #ifdef CONFIG_PPC_BOOK3S_64
- 	OFFSET(PACA_EXGEN, paca_struct, exgen);
-@@ -248,7 +248,7 @@ int main(void)
- #ifdef CONFIG_PPC64
- 	OFFSET(PACA_EXIT_SAVE_R1, paca_struct, exit_save_r1);
- #endif
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	OFFSET(PACA_TRAP_SAVE, paca_struct, trap_save);
- #endif
- 	OFFSET(PACA_SPRG_VDSO, paca_struct, sprg_vdso);
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 01ace4c56104..3e2e37e6ecab 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -292,16 +292,16 @@ _GLOBAL(enter_prom)
- 
- 	/* Prepare a 32-bit mode big endian MSR
- 	 */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	rlwinm	r11,r11,0,1,31
- 	mtsrr1	r11
- 	rfi
--#else /* CONFIG_PPC_BOOK3E */
-+#else /* CONFIG_PPC_BOOK3E_64 */
- 	LOAD_REG_IMMEDIATE(r12, MSR_SF | MSR_LE)
- 	andc	r11,r11,r12
- 	mtsrr1	r11
- 	RFI_TO_KERNEL
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
- 
- 1:	/* Return from OF */
- 	FIXUP_ENDIAN
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index cf2c08902c05..da544ea0ce01 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -143,7 +143,7 @@ DEFINE_FIXED_SYMBOL(__run_at_load, first_256B)
- 	.globl	__secondary_hold
- __secondary_hold:
- 	FIXUP_ENDIAN
--#ifndef CONFIG_PPC_BOOK3E
-+#ifndef CONFIG_PPC_BOOK3E_64
- 	mfmsr	r24
- 	ori	r24,r24,MSR_RI
- 	mtmsrd	r24			/* RI on */
-@@ -160,7 +160,7 @@ __secondary_hold:
- 	sync
- 
- 	li	r26,0
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	tovirt(r26,r26)
- #endif
- 	/* All secondary cpus wait here until told to start. */
-@@ -169,7 +169,7 @@ __secondary_hold:
- 	beq	100b
- 
- #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC_CORE)
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	tovirt(r12,r12)
- #endif
- 	mtctr	r12
-@@ -178,7 +178,7 @@ __secondary_hold:
- 	 * it may be the case that other platforms have r4 right to
- 	 * begin with, this gives us some safety in case it is not
- 	 */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	mr	r4,r25
- #else
- 	li	r4,0
-@@ -214,7 +214,7 @@ USE_TEXT_SECTION()
- 
- #include "interrupt_64.S"
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- /*
-  * The booting_thread_hwid holds the thread id we want to boot in cpu
-  * hotplug case. It is set by cpu hotplug code, and is invalid by default.
-@@ -322,7 +322,7 @@ _GLOBAL(fsl_secondary_thread_init)
- 	bl	book3e_secondary_thread_init
- 	b	generic_secondary_common_init
- 
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
- 
- /*
-  * On pSeries and most other platforms, secondary processors spin
-@@ -345,7 +345,7 @@ _GLOBAL(generic_secondary_smp_init)
- 	bl	relative_toc
- 	tovirt(r2,r2)
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	/* Book3E initialization */
- 	mr	r3,r24
- 	mr	r4,r25
-@@ -417,7 +417,7 @@ generic_secondary_common_init:
- 	b	kexec_wait		/* next kernel might do better	 */
- 
- 2:	SET_PACA(r13)
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	addi	r12,r13,PACA_EXTLB	/* and TLB exc frame in another  */
- 	mtspr	SPRN_SPRG_TLB_EXFRAME,r12
- #endif
-@@ -519,7 +519,7 @@ __start_initialization_multiplatform:
- 	mr	r29,r9
- #endif
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	bl	start_initialization_book3e
- 	b	__after_prom_start
- #else
-@@ -540,7 +540,7 @@ __start_initialization_multiplatform:
- 	/* Switch off MMU if not already off */
- 	bl	__mmu_off
- 	b	__after_prom_start
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
- 
- __REF
- __boot_from_prom:
-@@ -587,11 +587,11 @@ __after_prom_start:
- 	/* process relocations for the final address of the kernel */
- 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
- 	sldi	r25,r25,32
--#if defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC_BOOK3E_64)
- 	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
- #endif
- 	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
--#if defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC_BOOK3E_64)
- 	tophys(r26,r26)
- #endif
- 	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
-@@ -599,7 +599,7 @@ __after_prom_start:
- 	add	r25,r25,r26
- 1:	mr	r3,r25
- 	bl	relocate
--#if defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC_BOOK3E_64)
- 	/* IVPR needs to be set after relocation. */
- 	bl	init_core_book3e
- #endif
-@@ -613,11 +613,11 @@ __after_prom_start:
-  * Note: This process overwrites the OF exception vectors.
-  */
- 	li	r3,0			/* target addr */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	tovirt(r3,r3)		/* on booke, we already run at PAGE_OFFSET */
- #endif
- 	mr.	r4,r26			/* In some cases the loader may  */
--#if defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC_BOOK3E_64)
- 	tovirt(r4,r4)
- #endif
- 	beq	9f			/* have already put us at zero */
-@@ -630,14 +630,14 @@ __after_prom_start:
-  * variable __run_at_load, if it is set the kernel is treated as relocatable
-  * kernel, otherwise it will be moved to PHYSICAL_START
-  */
--#if defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC_BOOK3E_64)
- 	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
- #endif
- 	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
- 	cmplwi	cr0,r7,1
- 	bne	3f
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	LOAD_REG_ADDR(r5, __end_interrupts)
- 	LOAD_REG_ADDR(r11, _stext)
- 	sub	r5,r5,r11
-@@ -871,10 +871,10 @@ _GLOBAL(start_secondary_resume)
-  */
- enable_64b_mode:
- 	mfmsr	r11			/* grab the current MSR */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	oris	r11,r11,0x8000		/* CM bit set, we'll set ICM later */
- 	mtmsr	r11
--#else /* CONFIG_PPC_BOOK3E */
-+#else /* CONFIG_PPC_BOOK3E_64 */
- 	LOAD_REG_IMMEDIATE(r12, MSR_64BIT)
- 	or	r11,r11,r12
- 	mtmsrd	r11
-@@ -940,7 +940,7 @@ start_here_multiplatform:
- 	std	r29,8(r11);
- #endif
- 
--#ifndef CONFIG_PPC_BOOK3E
-+#ifndef CONFIG_PPC_BOOK3E_64
- 	mfmsr	r6
- 	ori	r6,r6,MSR_RI
- 	mtmsrd	r6			/* RI on */
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index fd6d8d3a548e..36184cada00b 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -286,7 +286,7 @@ kexec_flag:
- 
- 
- #ifdef CONFIG_KEXEC_CORE
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- /*
-  * BOOK3E has no real MMU mode, so we have to setup the initial TLB
-  * for a core to identity map v:0 to p:0.  This current implementation
-@@ -354,7 +354,7 @@ _GLOBAL(kexec_smp_wait)
-  * don't overwrite r3 here, it is live for kexec_wait above.
-  */
- real_mode:	/* assume normal blr return */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	/* Create an identity mapping. */
- 	b	kexec_create_tlb
- #else
-@@ -413,7 +413,7 @@ _GLOBAL(kexec_sequence)
- 	lhz	r25,PACAHWCPUID(r13)	/* get our phys cpu from paca */
- 
- 	/* disable interrupts, we are overwriting kernel data next */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	wrteei	0
- #else
- 	mfmsr	r3
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index ba593fd60124..e3f7471112ef 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -211,7 +211,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
- #ifdef CONFIG_PPC_PSERIES
- 	new_paca->lppaca_ptr = NULL;
- #endif
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	new_paca->kernel_pgd = swapper_pg_dir;
- #endif
- 	new_paca->lock_token = 0x8000;
-@@ -228,7 +228,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
- 	new_paca->slb_shadow_ptr = NULL;
- #endif
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	/* For now -- if we have threads this will be adjusted later */
- 	new_paca->tcd_ptr = &new_paca->tcd;
- #endif
-@@ -244,7 +244,7 @@ void setup_paca(struct paca_struct *new_paca)
- 	/* Setup r13 */
- 	local_paca = new_paca;
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	/* On Book3E, initialize the TLB miss exception frames */
- 	mtspr(SPRN_SPRG_TLB_EXFRAME, local_paca->extlb);
- #else
-diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
-index 93f22da12abe..7912bb50a7cb 100644
---- a/arch/powerpc/kernel/setup.h
-+++ b/arch/powerpc/kernel/setup.h
-@@ -23,7 +23,7 @@ void check_smt_enabled(void);
- static inline void check_smt_enabled(void) { }
- #endif
- 
--#if defined(CONFIG_PPC_BOOK3E) && defined(CONFIG_SMP)
-+#if defined(CONFIG_PPC_BOOK3E_64) && defined(CONFIG_SMP)
- void setup_tlb_core_data(void);
- #else
- static inline void setup_tlb_core_data(void) { }
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2b2d0b0fbb30..6434a3f6acb5 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -86,7 +86,7 @@ struct ppc64_caches ppc64_caches = {
- };
- EXPORT_SYMBOL_GPL(ppc64_caches);
- 
--#if defined(CONFIG_PPC_BOOK3E) && defined(CONFIG_SMP)
-+#if defined(CONFIG_PPC_BOOK3E_64) && defined(CONFIG_SMP)
- void __init setup_tlb_core_data(void)
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 169703fead57..11ded19186b9 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -708,7 +708,7 @@ static struct task_struct *current_set[NR_CPUS];
+ static void smp_store_cpu_info(int id)
  {
- 	int cpu;
-@@ -673,7 +673,7 @@ void __init initialize_cache_info(void)
-  */
- __init u64 ppc64_bolted_size(void)
- {
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	/* Freescale BookE bolts the entire linear mapping */
- 	/* XXX: BookE ppc64_rma_limit setup seems to disagree? */
- 	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E))
-@@ -723,7 +723,7 @@ void __init irqstack_early_init(void)
- 	}
+ 	per_cpu(cpu_pvr, id) = mfspr(SPRN_PVR);
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	per_cpu(next_tlbcam_idx, id)
+ 		= (mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY) - 1;
+ #endif
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 3a10cda9c05e..ef9a61718940 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -228,7 +228,7 @@ static void __init sysfs_create_dscr_default(void)
  }
+ #endif /* CONFIG_PPC64 */
  
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- void __init exc_lvl_early_init(void)
- {
- 	unsigned int i;
-@@ -825,7 +825,7 @@ void __init setup_per_cpu_areas(void)
- 	/*
- 	 * BookE and BookS radix are historical values and should be revisited.
- 	 */
--	if (IS_ENABLED(CONFIG_PPC_BOOK3E)) {
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
- 		atom_size = SZ_1M;
- 	} else if (radix_enabled()) {
- 		atom_size = PAGE_SIZE;
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ #define MAX_BIT				63
+ 
+ static u64 pw20_wt;
+@@ -907,7 +907,7 @@ static int register_cpu_online(unsigned int cpu)
+ 		device_create_file(s, &dev_attr_tscr);
+ #endif /* CONFIG_PPC64 */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
+ 		device_create_file(s, &dev_attr_pw20_state);
+ 		device_create_file(s, &dev_attr_pw20_wait_time);
+@@ -1003,7 +1003,7 @@ static int unregister_cpu_online(unsigned int cpu)
+ 		device_remove_file(s, &dev_attr_tscr);
+ #endif /* CONFIG_PPC64 */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
+ 		device_remove_file(s, &dev_attr_pw20_state);
+ 		device_remove_file(s, &dev_attr_pw20_wait_time);
 diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index fe22d940412f..8bb5f081ee31 100644
+index 8bb5f081ee31..58c7901e57d1 100644
 --- a/arch/powerpc/kernel/vmlinux.lds.S
 +++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -67,7 +67,7 @@ SECTIONS
- 	.head.text : AT(ADDR(.head.text) - LOAD_OFFSET) {
- #ifdef CONFIG_PPC64
- 		KEEP(*(.head.text.first_256B));
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- #else
- 		KEEP(*(.head.text.real_vectors));
- 		*(.head.text.real_trampolines);
-diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-index c2bea9db1c1e..a79e28c91e2b 100644
---- a/arch/powerpc/kexec/core_64.c
-+++ b/arch/powerpc/kexec/core_64.c
-@@ -360,7 +360,7 @@ void default_machine_kexec(struct kimage *image)
- 	 * the RMA. On BookE there is no real MMU off mode, so we have to
- 	 * keep it enabled as well (but then we have bolted TLB entries).
- 	 */
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	copy_with_mmu_off = false;
- #else
- 	copy_with_mmu_off = radix_enabled() ||
+@@ -201,7 +201,7 @@ SECTIONS
+ 	}
+ #endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	. = ALIGN(8);
+ 	__spec_btb_flush_fixup : AT(ADDR(__spec_btb_flush_fixup) - LOAD_OFFSET) {
+ 		__start__btb_flush_fixup = .;
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 993d3f31832a..31f40f544de5 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -550,7 +550,7 @@ void do_barrier_nospec_fixups(bool enable)
+ }
+ #endif /* CONFIG_PPC_BARRIER_NOSPEC */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
+ {
+ 	unsigned int instr[2], *dest;
+@@ -602,7 +602,7 @@ void __init do_btb_flush_fixups(void)
+ 	for (; start < end; start += 2)
+ 		patch_btb_flush_section(start);
+ }
+-#endif /* CONFIG_PPC_FSL_BOOK3E */
++#endif /* CONFIG_PPC_E500 */
+ 
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ {
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index bc84a594ca62..8c3ea5300ac3 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -623,7 +623,7 @@ static int __init hugetlbpage_init(void)
+ 		if (pdshift > shift) {
+ 			if (!IS_ENABLED(CONFIG_PPC_8xx))
+ 				pgtable_cache_add(pdshift - shift);
+-		} else if (IS_ENABLED(CONFIG_PPC_FSL_BOOK3E) ||
++		} else if (IS_ENABLED(CONFIG_PPC_E500) ||
+ 			   IS_ENABLED(CONFIG_PPC_8xx)) {
+ 			pgtable_cache_add(PTE_T_ORDER);
+ 		}
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 01772e79fd93..5bb4458deb6d 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -308,7 +308,7 @@ void __init mem_init(void)
+ 	}
+ #endif /* CONFIG_HIGHMEM */
+ 
+-#if defined(CONFIG_PPC_FSL_BOOK3E) && !defined(CONFIG_SMP)
++#if defined(CONFIG_PPC_E500) && !defined(CONFIG_SMP)
+ 	/*
+ 	 * If smp is enabled, next_tlbcam_idx is initialized in the cpu up
+ 	 * functions.... do it here for the non-smp case.
 diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 3c799d7860f8..ff231c26fa5b 100644
+index ff231c26fa5b..5dba9417e6af 100644
 --- a/arch/powerpc/mm/mmu_decl.h
 +++ b/arch/powerpc/mm/mmu_decl.h
-@@ -38,7 +38,7 @@ static inline void _tlbil_pid(unsigned int pid)
- #else /* CONFIG_40x || CONFIG_PPC_8xx */
- extern void _tlbil_all(void);
- extern void _tlbil_pid(unsigned int pid);
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- extern void _tlbil_pid_noind(unsigned int pid);
- #else
- #define _tlbil_pid_noind(pid)	_tlbil_pid(pid)
-@@ -55,7 +55,7 @@ static inline void _tlbil_va(unsigned long address, unsigned int pid,
- 	asm volatile ("tlbie %0; sync" : : "r" (address) : "memory");
- 	trace_tlbie(0, 0, address, pid, 0, 0, 0);
- }
--#elif defined(CONFIG_PPC_BOOK3E)
-+#elif defined(CONFIG_PPC_BOOK3E_64)
- extern void _tlbil_va(unsigned long address, unsigned int pid,
- 		      unsigned int tsize, unsigned int ind);
- #else
-@@ -67,7 +67,7 @@ static inline void _tlbil_va(unsigned long address, unsigned int pid,
- }
- #endif /* CONFIG_PPC_8xx */
+@@ -119,7 +119,7 @@ void MMU_init_hw_patch(void);
+ unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
+ #endif
  
--#if defined(CONFIG_PPC_BOOK3E) || defined(CONFIG_PPC_47x)
-+#if defined(CONFIG_PPC_BOOK3E_64) || defined(CONFIG_PPC_47x)
- extern void _tlbivax_bcast(unsigned long address, unsigned int pid,
- 			   unsigned int tsize, unsigned int ind);
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ extern unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx,
+ 				     bool dryrun, bool init);
+ #ifdef CONFIG_PPC32
+@@ -165,7 +165,7 @@ static inline phys_addr_t v_block_mapped(unsigned long va) { return 0; }
+ static inline unsigned long p_block_mapped(phys_addr_t pa) { return 0; }
+ #endif
+ 
+-#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_PPC_8xx) || defined(CONFIG_PPC_FSL_BOOK3E)
++#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_PPC_8xx) || defined(CONFIG_PPC_E500)
+ void mmu_mark_initmem_nx(void);
+ void mmu_mark_rodata_ro(void);
  #else
+diff --git a/arch/powerpc/mm/nohash/Makefile b/arch/powerpc/mm/nohash/Makefile
+index b467a25ee155..f3894e79d5f7 100644
+--- a/arch/powerpc/mm/nohash/Makefile
++++ b/arch/powerpc/mm/nohash/Makefile
+@@ -7,13 +7,13 @@ obj-$(CONFIG_PPC_BOOK3E_64)  	+= tlb_low_64e.o book3e_pgtable.o
+ obj-$(CONFIG_40x)		+= 40x.o
+ obj-$(CONFIG_44x)		+= 44x.o
+ obj-$(CONFIG_PPC_8xx)		+= 8xx.o
+-obj-$(CONFIG_PPC_FSL_BOOK3E)	+= fsl_book3e.o
++obj-$(CONFIG_PPC_E500)		+= e500.o
+ obj-$(CONFIG_RANDOMIZE_BASE)	+= kaslr_booke.o
+ ifdef CONFIG_HUGETLB_PAGE
+-obj-$(CONFIG_PPC_FSL_BOOK3E)	+= book3e_hugetlbpage.o
++obj-$(CONFIG_PPC_E500)	+= e500_hugetlbpage.o
+ endif
+ 
+ # Disable kcov instrumentation on sensitive code
+ # This is necessary for booting with kcov enabled on book3e machines
+ KCOV_INSTRUMENT_tlb.o := n
+-KCOV_INSTRUMENT_fsl_book3e.o := n
++KCOV_INSTRUMENT_e500.o := n
+diff --git a/arch/powerpc/mm/nohash/fsl_book3e.c b/arch/powerpc/mm/nohash/e500.c
+similarity index 100%
+rename from arch/powerpc/mm/nohash/fsl_book3e.c
+rename to arch/powerpc/mm/nohash/e500.c
+diff --git a/arch/powerpc/mm/nohash/book3e_hugetlbpage.c b/arch/powerpc/mm/nohash/e500_hugetlbpage.c
+similarity index 100%
+rename from arch/powerpc/mm/nohash/book3e_hugetlbpage.c
+rename to arch/powerpc/mm/nohash/e500_hugetlbpage.c
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index f21896ebdc5a..fcb1e5ae5c55 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -50,7 +50,7 @@
+  * indirect page table entries.
+  */
+ #if defined(CONFIG_PPC_BOOK3E_MMU) || defined(CONFIG_PPC_8xx)
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ 	[MMU_PAGE_4K] = {
+ 		.shift	= 12,
+@@ -166,7 +166,7 @@ int extlb_level_exc;
+ 
+ #endif /* CONFIG_PPC64 */
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ /* next_tlbcam_idx is used to round-robin tlbcam entry assignment */
+ DEFINE_PER_CPU(int, next_tlbcam_idx);
+ EXPORT_PER_CPU_SYMBOL(next_tlbcam_idx);
+@@ -441,7 +441,7 @@ static void __init setup_page_sizes(void)
+ 	unsigned int eptcfg;
+ 	int i, psize;
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	unsigned int mmucfg = mfspr(SPRN_MMUCFG);
+ 	int fsl_mmu = mmu_has_feature(MMU_FTR_TYPE_FSL_E);
+ 
+@@ -584,7 +584,7 @@ static void __init setup_mmu_htw(void)
+ 		patch_exception(0x1c0, exc_data_tlb_miss_htw_book3e);
+ 		patch_exception(0x1e0, exc_instruction_tlb_miss_htw_book3e);
+ 		break;
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	case PPC_HTW_E6500:
+ 		extlb_level_exc = EX_TLB_SIZE;
+ 		patch_exception(0x1c0, exc_data_tlb_miss_e6500_book3e);
+@@ -627,7 +627,7 @@ static void early_init_this_mmu(void)
+ 	}
+ 	mtspr(SPRN_MAS4, mas4);
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+ 		unsigned int num_cams;
+ 		bool map = true;
+@@ -680,7 +680,7 @@ static void __init early_init_mmu_global(void)
+ 	/* Look for HW tablewalk support */
+ 	setup_mmu_htw();
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+ 		if (book3e_htw_mode == PPC_HTW_NONE) {
+ 			extlb_level_exc = EX_TLB_SIZE;
+@@ -701,7 +701,7 @@ static void __init early_init_mmu_global(void)
+ 
+ static void __init early_mmu_set_memory_limit(void)
+ {
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+ 		/*
+ 		 * Limit memory so we dont have linear faults.
+@@ -750,7 +750,7 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+ 	 * We crop it to the size of the first MEMBLOCK to
+ 	 * avoid going over total available memory just in case...
+ 	 */
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 	if (early_mmu_has_feature(MMU_FTR_TYPE_FSL_E)) {
+ 		unsigned long linear_sz;
+ 		unsigned int num_cams;
 diff --git a/arch/powerpc/mm/nohash/tlb_low.S b/arch/powerpc/mm/nohash/tlb_low.S
-index d378031246ab..6914bc8e4ead 100644
+index 6914bc8e4ead..e1199608ff4d 100644
 --- a/arch/powerpc/mm/nohash/tlb_low.S
 +++ b/arch/powerpc/mm/nohash/tlb_low.S
-@@ -294,7 +294,7 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	isync
- 1:	wrtee	r10
- 	blr
--#elif defined(CONFIG_PPC_BOOK3E)
-+#elif defined(CONFIG_PPC_BOOK3E_64)
+@@ -364,7 +364,7 @@ _GLOBAL(_tlbivax_bcast)
+ #error Unsupported processor type !
+ #endif
+ 
+-#if defined(CONFIG_PPC_FSL_BOOK3E)
++#if defined(CONFIG_PPC_E500)
  /*
-  * New Book3E (>= 2.06) implementation
+  * extern void loadcam_entry(unsigned int index)
   *
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index be16eba0f704..069628670a0c 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- menuconfig FSL_SOC_BOOKE
- 	bool "Freescale Book-E Machine Type"
--	depends on PPC_85xx || PPC_BOOK3E
-+	depends on PPC_85xx || PPC_BOOK3E_64
- 	select FSL_SOC
- 	select PPC_UDBG_16550
- 	select MPIC
 diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 11780074eb23..d63b6386a974 100644
+index 5b065186ace5..32c60ad8f45d 100644
 --- a/arch/powerpc/platforms/Kconfig.cputype
 +++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -257,10 +257,6 @@ config PPC_BOOK3S
- 	def_bool y
- 	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
+@@ -107,7 +107,6 @@ config PPC_BOOK3S_64
  
--config PPC_BOOK3E
--	def_bool y
--	depends on PPC_BOOK3E_64
--
- config E500
+ config PPC_BOOK3E_64
+ 	bool "Embedded processors"
+-	select PPC_FSL_BOOK3E
+ 	select PPC_E500
+ 	select PPC_E500MC
+ 	select PPC_FPU # Make it a choice ?
+@@ -259,8 +258,11 @@ config PPC_BOOK3S
+ 
+ config PPC_E500
  	select FSL_EMB_PERFMON
- 	select PPC_FSL_BOOK3E
-@@ -316,7 +312,7 @@ config 4xx
- 
- config BOOKE
+-	select PPC_FSL_BOOK3E
  	bool
--	depends on E500 || 44x || PPC_BOOK3E
-+	depends on E500 || 44x || PPC_BOOK3E_64
++	select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
++	select PPC_SMP_MUXED_IPI
++	select PPC_DOORBELL
++	select PPC_KUEP
+ 
+ config PPC_E500MC
+ 	bool "e500mc Support"
+@@ -320,16 +322,6 @@ config BOOKE_OR_40x
+ 	depends on BOOKE || 40x
  	default y
  
- config BOOKE_OR_40x
-@@ -480,7 +476,7 @@ config PPC_MMU_NOHASH
- 
- config PPC_BOOK3E_MMU
- 	def_bool y
--	depends on PPC_85xx || PPC_BOOK3E
-+	depends on PPC_85xx || PPC_BOOK3E_64
- 
- config PPC_HAVE_PMU_SUPPORT
+-# this is for common code between PPC32 & PPC64 FSL BOOKE
+-config PPC_FSL_BOOK3E
+-	bool
+-	select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
+-	imply FSL_EMB_PERFMON
+-	select PPC_SMP_MUXED_IPI
+-	select PPC_DOORBELL
+-	select PPC_KUEP
+-	default y if PPC_85xx
+-
+ config PTE_64BIT
  	bool
-@@ -503,7 +499,7 @@ config FORCE_SMP
- 	select SMP
- 
- config SMP
--	depends on PPC_BOOK3S || PPC_BOOK3E || PPC_85xx || PPC_47x
-+	depends on PPC_BOOK3S || PPC_BOOK3E_64 || PPC_85xx || PPC_47x
- 	select GENERIC_IRQ_MIGRATION
- 	bool "Symmetric multi-processing support" if !FORCE_SMP
- 	help
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 26ef3388c24c..e6d678d27b0f 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -195,7 +195,7 @@ static int do_spu_cmd(void);
- #ifdef CONFIG_44x
- static void dump_tlb_44x(void);
- #endif
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- static void dump_tlb_book3e(void);
- #endif
- 
-@@ -288,11 +288,11 @@ Commands:\n\
-   t	print backtrace\n\
-   x	exit monitor and recover\n\
-   X	exit monitor and don't recover\n"
--#if defined(CONFIG_PPC64) && !defined(CONFIG_PPC_BOOK3E)
-+#if defined(CONFIG_PPC64) && !defined(CONFIG_PPC_BOOK3E_64)
- "  u	dump segment table or SLB\n"
- #elif defined(CONFIG_PPC_BOOK3S_32)
- "  u	dump segment registers\n"
--#elif defined(CONFIG_44x) || defined(CONFIG_PPC_BOOK3E)
-+#elif defined(CONFIG_44x) || defined(CONFIG_PPC_BOOK3E_64)
- "  u	dump TLB\n"
- #endif
- "  U	show uptime information\n"
-@@ -1166,7 +1166,7 @@ cmds(struct pt_regs *excp)
- 		case 'u':
- 			dump_tlb_44x();
- 			break;
--#elif defined(CONFIG_PPC_BOOK3E)
-+#elif defined(CONFIG_PPC_BOOK3E_64)
- 		case 'u':
- 			dump_tlb_book3e();
- 			break;
-@@ -2686,7 +2686,7 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, rfi_flush_fallback_area, "%-*px");
- #endif
- 	DUMP(p, dscr_default, "%#-*llx");
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	DUMP(p, pgd, "%-*px");
- 	DUMP(p, kernel_pgd, "%-*px");
- 	DUMP(p, tcd_ptr, "%-*px");
-@@ -2701,7 +2701,7 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, canary, "%#-*lx");
- #endif
- 	DUMP(p, saved_r1, "%#-*llx");
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- 	DUMP(p, trap_save, "%#-*x");
- #endif
- 	DUMP(p, irq_soft_mask, "%#-*x");
-@@ -3823,7 +3823,7 @@ static void dump_tlb_44x(void)
- }
- #endif /* CONFIG_44x */
- 
--#ifdef CONFIG_PPC_BOOK3E
-+#ifdef CONFIG_PPC_BOOK3E_64
- static void dump_tlb_book3e(void)
- {
- 	u32 mmucfg, pidmask, lpidmask;
-@@ -3965,7 +3965,7 @@ static void dump_tlb_book3e(void)
- 		}
- 	}
- }
--#endif /* CONFIG_PPC_BOOK3E */
-+#endif /* CONFIG_PPC_BOOK3E_64 */
- 
- static void xmon_init(int enable)
- {
+ 	depends on 44x || PPC_E500 || PPC_86xx
 -- 
 2.37.1
 
