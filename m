@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91F7AC6FA86
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:22:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40876ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:22:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFVz1PKZz3hFc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:22:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFWN6kx3z3hKh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:22:56 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDx4VvZz3bmP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDy66Ggz3cdf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:26 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDx3cbLz4xsk;
-	Fri,  9 Sep 2022 22:10:25 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDy4hR6z4xsn;
+	Fri,  9 Sep 2022 22:10:26 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, arnd@arndb.de, Liang He <windhl@126.com>, benh@kernel.crashing.org, mpe@ellerman.id.au
-In-Reply-To: <20220701144949.252364-1-windhl@126.com>
-References: <20220701144949.252364-1-windhl@126.com>
-Subject: Re: [PATCH v2 1/2] powerpc: cell: cbe_regs: Fix refcount bugs
-Message-Id: <166272523263.2076816.10472120144968266059.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:12 +1000
+To: clg@kaod.org, paulus@samba.org, christophe.leroy@csgroup.eu, Liang He <windhl@126.com>, tglx@linutronix.de, benh@kernel.crashing.org, mpe@ellerman.id.au
+In-Reply-To: <20220620130221.4073228-1-windhl@126.com>
+References: <20220620130221.4073228-1-windhl@126.com>
+Subject: Re: [PATCH v2] powerpc/sysdev: Fix refcount leak bugs
+Message-Id: <166272523576.2076816.7317671593026628995.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:07:15 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 1 Jul 2022 22:49:48 +0800, Liang He wrote:
-> There are several bugs as following:
+On Mon, 20 Jun 2022 21:02:21 +0800, Liang He wrote:
+> We need add corresponding of_node_put() to keep refcount balance
+> in sysdev.
 > 
-> (1) In cbe_get_be_node(), we should hold the reference returned by
->     of_find_xxx and of_get_xxx OF APIs and use it to call of_node_put
-> (2) In cbe_fill_regs_map(), we should same as above
-> (3) In cbe_regs_init(), during the iteration of for_each_node_by_type(),
->     the refcount of 'cpu' will be automatically increased and decreased.
->     However, there is a reference escaped out into 'map->cpu_node' and
->     we should properly handle it.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: cell: cbe_regs: Fix refcount bugs
-      https://git.kernel.org/powerpc/c/ad4b323693abd221798a6479105d22c79605aa0f
-[2/2] powerpc: cell: iommu: Hold reference returned by of_find_node_by_name()
-      https://git.kernel.org/powerpc/c/f4f8320b01677b467c768c43c1e1d10383a0e30d
+[1/1] powerpc/sysdev: Fix refcount leak bugs
+      https://git.kernel.org/powerpc/c/3d31adc47edb6d0cef122a41fba1b639db5d1c37
 
 cheers
