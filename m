@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E222C6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A74FECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:10:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFDw43jmz3cd8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:10:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFFF3sH9z3cj9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:10:41 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDX0PLyz2xBl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDY2jctz2xBl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:05 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDW4d6Vz4xXS;
-	Fri,  9 Sep 2022 22:10:03 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDX2zd5z4xXy;
+	Fri,  9 Sep 2022 22:10:04 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <688084b40b5ac88f2905cb207d5dad947d8d34dc.1662531153.git.christophe.leroy@csgroup.eu>
-References: <688084b40b5ac88f2905cb207d5dad947d8d34dc.1662531153.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/math-emu: Inhibit W=1 warnings
-Message-Id: <166272525808.2076816.12460969365372770146.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:38 +1000
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <8403854a4c187459b2f4da3537f51227b70b9223.1662134272.git.christophe.leroy@csgroup.eu>
+References: <8403854a4c187459b2f4da3537f51227b70b9223.1662134272.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 1/2] powerpc/math_emu/efp: Include module.h
+Message-Id: <166272521909.2076816.16685747643958755021.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:06:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,22 +42,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>, linux-kernel@vger.kernel.org
+Cc: Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org, kernel test robot <lkp@intel.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 7 Sep 2022 08:12:54 +0200, Christophe Leroy wrote:
-> When building with W=1 you get:
+On Fri, 2 Sep 2022 18:00:08 +0200, Christophe Leroy wrote:
+> From: Nathan Chancellor <nathan@kernel.org>
 > 
-> 	arch/powerpc/math-emu/fre.c:6:5: error: no previous prototype for 'fre' [-Werror=missing-prototypes]
-> 	arch/powerpc/math-emu/fsqrt.c:11:1: error: no previous prototype for 'fsqrt' [-Werror=missing-prototypes]
-> 	arch/powerpc/math-emu/fsqrts.c:12:1: error: no previous prototype for 'fsqrts' [-Werror=missing-prototypes]
+> When building with a recent version of clang, there are a couple of
+> errors around the call to module_init():
+> 
+>   arch/powerpc/math-emu/math_efp.c:927:1: error: type specifier missing, defaults to 'int'; ISO C99 and later do not support implicit int [-Wimplicit-int]
+>   module_init(spe_mathemu_init);
+>   ^
+>   int
+>   arch/powerpc/math-emu/math_efp.c:927:13: error: a parameter list without types is only allowed in a function definition
+>   module_init(spe_mathemu_init);
+>               ^
+>   2 errors generated.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/math-emu: Inhibit W=1 warnings
-      https://git.kernel.org/powerpc/c/78c73c80fd860d5b3471d8eaa2778a105a56f6ab
+[1/2] powerpc/math_emu/efp: Include module.h
+      https://git.kernel.org/powerpc/c/cfe0d370e0788625ce0df3239aad07a2506c1796
+[2/2] powerpc/math-emu: Remove -w build flag and fix warnings
+      https://git.kernel.org/powerpc/c/7245fc5bb7a966852d5bd7779d1f5855530b461a
 
 cheers
