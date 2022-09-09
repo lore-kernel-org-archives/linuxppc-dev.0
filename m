@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F7A0ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE085ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:11:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFFb46SRz3dxm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:10:59 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFG12c16z3bY3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:11:21 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDY5vDHz2xBl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDY6Dg4z2yWl
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:05 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDY576Zz4xYS;
-	Fri,  9 Sep 2022 22:10:05 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDW14byz4xG8;
+	Fri,  9 Sep 2022 22:10:03 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <b95f2e3216a574837dd61208444e9515c3423da4.1662132312.git.christophe.leroy@csgroup.eu>
-References: <b95f2e3216a574837dd61208444e9515c3423da4.1662132312.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2] powerpc/vdso: link with -z noexecstack
-Message-Id: <166272522030.2076816.2756216556441607158.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:00 +1000
+In-Reply-To: <959d77be630b9b46a7458f0fbd41dc3a94ec811a.1661938317.git.christophe.leroy@csgroup.eu>
+References: <959d77be630b9b46a7458f0fbd41dc3a94ec811a.1661938317.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/3] powerpc/32: Drop a stale comment about reservation of gigantic pages
+Message-Id: <166272520935.2076816.18378317029543943017.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:06:49 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,21 +46,23 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2 Sep 2022 17:25:24 +0200, Christophe Leroy wrote:
-> With recent binutils, the following warning appears:
+On Wed, 31 Aug 2022 11:32:07 +0200, Christophe Leroy wrote:
+> A comment about the reservation of gigantic pages was left in MMU_init()
+> after commit 79cc38ded1e1 ("powerpc/mm/hugetlb: Add support for
+> reserving gigantic huge pages via kernel command line")
 > 
->   VDSO32L arch/powerpc/kernel/vdso/vdso32.so.dbg
-> /opt/gcc-12.2.0-nolibc/powerpc64-linux/bin/../lib/gcc/powerpc64-linux/12.2.0/../../../../powerpc64-linux/bin/ld: warning: arch/powerpc/kernel/vdso/getcpu-32.o: missing .note.GNU-stack section implies executable stack
-> /opt/gcc-12.2.0-nolibc/powerpc64-linux/bin/../lib/gcc/powerpc64-linux/12.2.0/../../../../powerpc64-linux/bin/ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker
+> Remove it.
 > 
-> To avoid that, explicitely tell the linker we don't
-> want executable stack.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/vdso: link with -z noexecstack
-      https://git.kernel.org/powerpc/c/1d53c0192b15f42129a3dbbbfa05637bcf781a3e
+[1/3] powerpc/32: Drop a stale comment about reservation of gigantic pages
+      https://git.kernel.org/powerpc/c/fc06755e25628ce215e9f75c1207250242dadf42
+[2/3] powerpc/32: Allow fragmented physical memory
+      https://git.kernel.org/powerpc/c/b0e0d68b1c52cb2c46e513011fdd53815cffefb7
+[3/3] powerpc/32: Remove wii_memory_fixups()
+      https://git.kernel.org/powerpc/c/0115953dcebe8858ba3d9997ba48328ebdca593f
 
 cheers
