@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67681ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:16:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F0BDECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:17:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFN56wqFz3g6N
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:16:37 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFNW4VQ6z3gB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:16:59 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDl38sRz3brd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:15 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDm0PkYz3c7k
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:16 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDl2RKgz4xcS;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDl6Wx4z4xcT;
 	Fri,  9 Sep 2022 22:10:15 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: jk@ozlabs.org, paulus@samba.org, arnd@arndb.de, Liang He <windhl@126.com>, benh@kernel.crashing.org, mpe@ellerman.id.au
-In-Reply-To: <20220619072335.4067728-1-windhl@126.com>
-References: <20220619072335.4067728-1-windhl@126.com>
-Subject: Re: [PATCH] powerpc/cell: Fix refcount leak bugs
-Message-Id: <166272523074.2076816.5407553903697659959.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:10 +1000
+To: benh@kernel.crashing.org, paulus@samba.org, Liang He <windhl@126.com>, mpe@ellerman.id.au
+In-Reply-To: <20220620065904.4071787-1-windhl@126.com>
+References: <20220620065904.4071787-1-windhl@126.com>
+Subject: Re: [PATCH] powerpc/embedded6xx/ls_uart: Add missing of_node_put()
+Message-Id: <166272523453.2076816.8030610384355885213.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:07:14 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 19 Jun 2022 15:23:35 +0800, Liang He wrote:
-> We should use of_node_put() for of_find_node_by_path() and
-> of_find_node_by_phandle() to keep refcount balance.
+On Mon, 20 Jun 2022 14:59:04 +0800, Liang He wrote:
+> In ls_uarts_init(), we need to add a of_node_put() to keep refcount
+> balance.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/cell: Fix refcount leak bugs
-      https://git.kernel.org/powerpc/c/d9e1c6104d87d4027133b28f5ccab8f999830acd
+[1/1] powerpc/embedded6xx/ls_uart: Add missing of_node_put()
+      https://git.kernel.org/powerpc/c/cd772e659da0ad67f19f022f65449e14ebcf1284
 
 cheers
