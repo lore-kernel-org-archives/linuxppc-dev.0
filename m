@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B7F7ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79084ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:21:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFSq72Ndz3gt3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:20:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFTG1GBWz3gxV
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:21:06 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDt2yCkz3cFT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDt6h0nz3cH1
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:22 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDt2FjHz4xsZ;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDt5t8bz4xdl;
 	Fri,  9 Sep 2022 22:10:22 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, Liang He <windhl@126.com>, benh@kernel.crashing.org, mpe@ellerman.id.au
-In-Reply-To: <20220716073111.539739-1-windhl@126.com>
-References: <20220716073111.539739-1-windhl@126.com>
-Subject: Re: [PATCH] powerpc/powermac/pfunc_base: Fix refcount leak bug in macio_gpio_init_one()
-Message-Id: <166272525050.2076816.11343388205728532741.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:30 +1000
+In-Reply-To: <20220716074344.540049-1-windhl@126.com>
+References: <20220716074344.540049-1-windhl@126.com>
+Subject: Re: [PATCH] powerpc/powermac/udbg_scc: Fix refcount leak bug in udbg_scc_init()
+Message-Id: <166272525144.2076816.15424415533586183551.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:07:31 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,15 +45,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 16 Jul 2022 15:31:11 +0800, Liang He wrote:
-> We should call of_node_put() for the reference 'gparent' escaped
-> out of the for_each_child_of_node() as it has increased the refcount.
+On Sat, 16 Jul 2022 15:43:44 +0800, Liang He wrote:
+> During the iteration of for_each_child_of_node(), we need to call
+> of_node_put() for the old references stored in to 'ch_def' and 'ch_a'
+> as their refcounters have been increased in last iteration.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/powermac/pfunc_base: Fix refcount leak bug in macio_gpio_init_one()
-      https://git.kernel.org/powerpc/c/11373c933db20f8b6fd2cad27712e683ac9785f0
+[1/1] powerpc/powermac/udbg_scc: Fix refcount leak bug in udbg_scc_init()
+      https://git.kernel.org/powerpc/c/2378bf144b841df548161af49bf1ff393dc60d44
 
 cheers
