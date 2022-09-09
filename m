@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B5B7ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:19:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82967C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:19:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFR44DH0z3gbK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:19:12 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFRV6jHcz3gfw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:19:34 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDr1G4Bz3bvl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDr47gkz3c2q
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDm70svz4xc1;
-	Fri,  9 Sep 2022 22:10:16 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDr3KzCz4xch;
+	Fri,  9 Sep 2022 22:10:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, christophe.leroy@csgroup.eu, Liang He <windhl@126.com>, npiggin@gmail.com, benh@kernel.crashing.org, mpe@ellerman.id.au
-In-Reply-To: <20220619070811.4067215-1-windhl@126.com>
-References: <20220619070811.4067215-1-windhl@126.com>
-Subject: Re: [PATCH] powerpc: kernel: Fix refcount bug in legacy_serial.c
-Message-Id: <166272522961.2076816.13852480670517670306.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:09 +1000
+To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, Liang He <windhl@126.com>, benh@kernel.crashing.org, mpe@ellerman.id.au
+In-Reply-To: <20220716065412.539153-1-windhl@126.com>
+References: <20220716065412.539153-1-windhl@126.com>
+Subject: Re: [PATCH] powerpc/powermac/feature: Fix refcount leak bug
+Message-Id: <166272524856.2076816.14557112585906751700.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:07:28 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +42,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 19 Jun 2022 15:08:11 +0800, Liang He wrote:
-> In find_legacy_serial_ports(), of_find_node_by_path() will return
-> a node pointer with refcount incremented. We should use of_node_put()
-> when it is not used anymore.
+On Sat, 16 Jul 2022 14:54:12 +0800, Liang He wrote:
+> In probe_one_macio(), we should call of_node_put() for the refernece
+> 'node' escaped out of the for_each_node_by_name() which has increased
+> its refcount. While the 'node' will finally escaped into a global
+> reference, we should still call of_node_put() in fail path which will
+> stop global reference creation.
 > 
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: kernel: Fix refcount bug in legacy_serial.c
-      https://git.kernel.org/powerpc/c/d1aabbbb2564f23b66ded10d870e7859e92075a3
+[1/1] powerpc/powermac/feature: Fix refcount leak bug
+      https://git.kernel.org/powerpc/c/d36337ce950ce8c57a8e4f61593f923cceaf0dd7
 
 cheers
