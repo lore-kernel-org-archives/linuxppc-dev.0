@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5D4AECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:24:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5746AECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:25:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFYc3Q5mz3hhM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:24:52 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFZ06GW8z3hmN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:25:12 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFF126wjz3cfZ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFF13qXgz3cfj
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:29 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDy0wCbz4xsm;
-	Fri,  9 Sep 2022 22:10:26 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFF12dm6z4xtd;
+	Fri,  9 Sep 2022 22:10:29 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: paulus@samba.org, christophe.leroy@csgroup.eu, Liang He <windhl@126.com>, npiggin@gmail.com, maz@kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au
-In-Reply-To: <20220618041042.4058066-1-windhl@126.com>
-References: <20220618041042.4058066-1-windhl@126.com>
-Subject: Re: [PATCH v2] powerpc: embedded6xx: Fix refcount leak bugs
-Message-Id: <166272522746.2076816.8160630951736110654.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:07:07 +1000
+To: Julia.Lawall@inria.fr, christophe.leroy@csgroup.eu, Jilin Yuan <yuanjilin@cdjrlc.com>, npiggin@gmail.com, gustavoars@kernel.org, mpe@ellerman.id.au
+In-Reply-To: <20220831004914.37055-1-yuanjilin@cdjrlc.com>
+References: <20220831004914.37055-1-yuanjilin@cdjrlc.com>
+Subject: Re: [PATCH] powerpc/vas: fix repeated words in comments
+Message-Id: <166272525491.2076816.12659916420695750455.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:07:34 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,16 +46,14 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 18 Jun 2022 12:10:42 +0800, Liang He wrote:
-> In xx_init_xx(), of_find_node_by_type() will return a node pointer
-> with refcount incremented. We should use of_node_put() when it is
-> not used anymore.
+On Wed, 31 Aug 2022 08:49:14 +0800, Jilin Yuan wrote:
+> Delete the redundant word 'the'.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: embedded6xx: Fix refcount leak bugs
-      https://git.kernel.org/powerpc/c/6b2d17d514b105ecf486bdf011c444978e633085
+[1/1] powerpc/vas: fix repeated words in comments
+      https://git.kernel.org/powerpc/c/0d4bb5e45aa698f2f357b1424b842bebe13b1c8b
 
 cheers
