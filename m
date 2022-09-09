@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DADB0ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A84FCECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 12:12:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFGR2X8Jz3f9p
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:11:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MPFGs1KJ4z3cjN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Sep 2022 22:12:05 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDZ2Xlpz2xBl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MPFDZ6PdPz2xBl
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Sep 2022 22:10:06 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDZ1syJz4xFt;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MPFDZ5Psxz4xZS;
 	Fri,  9 Sep 2022 22:10:06 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220901014253.252927-1-mpe@ellerman.id.au>
-References: <20220901014253.252927-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/configs: Properly enable PAPR_SCM in pseries_defconfig
-Message-Id: <166272521128.2076816.765769894015076256.b4-ty@ellerman.id.au>
-Date: Fri, 09 Sep 2022 22:06:51 +1000
+In-Reply-To: <20220901020215.254097-1-mpe@ellerman.id.au>
+References: <20220901020215.254097-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] selftests/powerpc: Skip 4PB test on 4K PAGE_SIZE systems
+Message-Id: <166272521241.2076816.8462459396771351198.b4-ty@ellerman.id.au>
+Date: Fri, 09 Sep 2022 22:06:52 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,17 +45,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 1 Sep 2022 11:42:53 +1000, Michael Ellerman wrote:
-> My commit to add PAPR_SCM to pseries_defconfig failed to add the
-> required dependencies, meaning the driver doesn't get built.
-> 
-> Add the required LIBNVDIMM=m.
+On Thu, 1 Sep 2022 12:02:15 +1000, Michael Ellerman wrote:
+> Systems using the hash MMU with a 4K page size don't support 4PB address
+> space, so skip the test because the bug it tests for can't be triggered.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/configs: Properly enable PAPR_SCM in pseries_defconfig
-      https://git.kernel.org/powerpc/c/aa398d88aea4ec863bd7aea35d5035a37096dc59
+[1/1] selftests/powerpc: Skip 4PB test on 4K PAGE_SIZE systems
+      https://git.kernel.org/powerpc/c/501fe299826ead2cfa2046b5c244e36de254ec6a
 
 cheers
