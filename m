@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49E6FECAAD5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Sep 2022 08:27:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E61AECAAD5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Sep 2022 08:27:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MR07x6ZStz3fH8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Sep 2022 18:27:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MR08q6cRSz3fKn
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Sep 2022 18:27:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNUt6cg7;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZAE0nhjc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bNUt6cg7;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZAE0nhjc;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MR01q3Dq6z3cB3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2022 18:21:51 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28C6hIIh019656;
-	Mon, 12 Sep 2022 08:21:32 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MR01v1Lh1z3cBF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Sep 2022 18:21:54 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28C80NtR022608;
+	Mon, 12 Sep 2022 08:21:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=HlIWah+UUHq9SUa0rbY/ZhI2MEjFKo4f0r/nmY/tjXM=;
- b=bNUt6cg7eos2Gu9LDx6ju5pROyMoRbYkO0+Kd3AGg8W0pojomzLCAbMJywqcFrz1WE3O
- q3hNB9wWdf54Y/ecfvONO3x6EmRF9mdpjpyqVWcbhrD6JUhw0froLqwTSyEENbBR6q0J
- feRdZpxhb/Xr4dGb7PWHKHOLn2sjHW0E8t94iJe58VF3pHIYH1GBSqt9HzTw+DUblwht
- 4osQ6j33Wymd2HbzooT8o3xXGoIoUitOgleXu5KSmLkPX9uuRmh7liSoiH6KQVdN3QB2
- 7sC7qohrVyYwy0Q5yw1+eZD8y1HbF+HBknVUAvRPUYYXj7VOZ6trpJTjAdcnNluHM4VT /w== 
+ bh=ZnJlitfd6NmpcHYegG8iZXRKXR+fdaJ50QC8USjmUPA=;
+ b=ZAE0nhjcM6Dyi6fd3JxBl0wgVTlQv37eZ4Hv5Stm+9/bIMfhxf9Vm2IjWFvU64kqULvE
+ lZ2jvnsMspE8/zZgE5OYGF89b/nwJxXkP1yk8DlbgGZzkZbKgW08WVFVyPc8w5x8gtxi
+ RzM9ZBgrnnBkLpLC9x1ylm6JtTj12uwKo6dMNVU+T9LlUnjlfzJfnpf8pZZeZC55BTdX
+ KHWhNHAHY/xRcHsoC8HQ3kzOFre2/vgKvV+4AXnLS7ZPpH5SH2ld3J+JDpQeFcPMUzL1
+ W1awxFAPQtutit0Fdnx8BCQzyUCzqWCyM5Lx0VtPGhR6VTKWzP81KNk9SOgexwLYA86Y PA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jhyre2xn4-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jhxvhce4j-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Sep 2022 08:21:32 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28C80Q0X030442;
-	Mon, 12 Sep 2022 08:21:31 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jhyre2xm5-1
+	Mon, 12 Sep 2022 08:21:09 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28C6BtZm013164;
+	Mon, 12 Sep 2022 08:21:09 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jhxvhce3c-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Sep 2022 08:21:31 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28C86X43006212;
-	Mon, 12 Sep 2022 08:21:29 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma06ams.nl.ibm.com with ESMTP id 3jghuja3vq-1
+	Mon, 12 Sep 2022 08:21:09 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28C85cdC024801;
+	Mon, 12 Sep 2022 08:21:07 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma03fra.de.ibm.com with ESMTP id 3jgj78shdj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 12 Sep 2022 08:21:29 +0000
+	Mon, 12 Sep 2022 08:21:06 +0000
 Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28C8HkXa18678228
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28C8L4mK37290422
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 12 Sep 2022 08:17:46 GMT
+	Mon, 12 Sep 2022 08:21:04 GMT
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 70A17A4040;
-	Mon, 12 Sep 2022 08:21:27 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 93DC9A4053;
+	Mon, 12 Sep 2022 08:21:04 +0000 (GMT)
 Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4965A404D;
-	Mon, 12 Sep 2022 08:21:22 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 01AE5A4040;
+	Mon, 12 Sep 2022 08:21:00 +0000 (GMT)
 Received: from li-c3569c4c-1ef8-11b2-a85c-ee139cda3133.ibm.com.com (unknown [9.43.91.220])
 	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Mon, 12 Sep 2022 08:21:22 +0000 (GMT)
+	Mon, 12 Sep 2022 08:20:59 +0000 (GMT)
 From: Sathvika Vasireddy <sv@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 10/16] objtool: Use target file class size instead of a compiled constant
-Date: Mon, 12 Sep 2022 13:50:14 +0530
-Message-Id: <20220912082020.226755-11-sv@linux.ibm.com>
+Subject: [PATCH v3 06/16] powerpc: Fix objtool unannotated intra-function call warnings on PPC32
+Date: Mon, 12 Sep 2022 13:50:10 +0530
+Message-Id: <20220912082020.226755-7-sv@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20220912082020.226755-1-sv@linux.ibm.com>
 References: <20220912082020.226755-1-sv@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: S-BMpyE_QLe-g_Vs9FakR8Ue0O_7SNCb
-X-Proofpoint-GUID: v-_z0ut3KYCb7WWr-bYJLxM5f1D_lPf1
+X-Proofpoint-ORIG-GUID: bZi2Z03YSaVK8A97YB_rna69ZV89YCT0
+X-Proofpoint-GUID: fNoZOKR-9bEGLs8_lXA6tDW8CmEtw10l
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-12_04,2022-09-09_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 impostorscore=0
- bulkscore=0 mlxlogscore=958 phishscore=0 malwarescore=0 suspectscore=0
- mlxscore=0 priorityscore=1501 adultscore=0 lowpriorityscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2207270000 definitions=main-2209120027
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 clxscore=1015 mlxlogscore=999 adultscore=0
+ spamscore=0 bulkscore=0 priorityscore=1501 impostorscore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2207270000
+ definitions=main-2209120027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,125 +102,615 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-In order to allow using objtool on cross-built kernels,
-determine size of long from elf data instead of using
-sizeof(long) at build time.
+Fix several annotations in assembly files on PPC32.
 
-For the time being this covers only mcount.
-
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-[Sathvika Vasireddy: Rename variable "size" to "addrsize" and function
-"elf_class_size()" to "elf_class_addrsize()", and modify
-create_mcount_loc_sections() function to follow reverse christmas tree
-format to order local variable declarations.]
+[Sathvika Vasireddy: Changed subject line from "objtool/powerpc: Activate
+objtool on PPC32" to "powerpc: Fix objtool unannotated intra-function call
+warnings on PPC32", and removed Kconfig change to enable objtool, as it
+is a part of "objtool/powerpc: Enable objtool to be built on ppc" patch in
+this series.]
 Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
 ---
- tools/objtool/check.c               | 18 ++++++++++--------
- tools/objtool/elf.c                 |  8 ++++++--
- tools/objtool/include/objtool/elf.h |  8 ++++++++
- 3 files changed, 24 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/cpu_setup_6xx.S          | 26 ++++++++++++------
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S    |  8 ++++--
+ arch/powerpc/kernel/entry_32.S               |  9 ++++--
+ arch/powerpc/kernel/head_40x.S               |  5 +++-
+ arch/powerpc/kernel/head_8xx.S               |  5 +++-
+ arch/powerpc/kernel/head_book3s_32.S         | 29 ++++++++++++++------
+ arch/powerpc/kernel/head_fsl_booke.S         |  5 +++-
+ arch/powerpc/kernel/swsusp_32.S              |  5 +++-
+ arch/powerpc/kvm/fpu.S                       | 17 ++++++++----
+ arch/powerpc/platforms/52xx/lite5200_sleep.S | 15 +++++++---
+ 10 files changed, 89 insertions(+), 35 deletions(-)
 
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index c36e7a020d80..738de23cb9e8 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -852,9 +852,9 @@ static int create_ibt_endbr_seal_sections(struct objtool_file *file)
+diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
+index f8b5ff64b604..f29ce3dd6140 100644
+--- a/arch/powerpc/kernel/cpu_setup_6xx.S
++++ b/arch/powerpc/kernel/cpu_setup_6xx.S
+@@ -4,6 +4,8 @@
+  *    Copyright (C) 2003 Benjamin Herrenschmidt (benh@kernel.crashing.org)
+  */
  
- static int create_mcount_loc_sections(struct objtool_file *file)
- {
--	struct section *sec;
--	unsigned long *loc;
-+	int addrsize = elf_class_addrsize(file->elf);
- 	struct instruction *insn;
-+	struct section *sec;
- 	int idx;
- 
- 	sec = find_section_by_name(file->elf, "__mcount_loc");
-@@ -871,23 +871,25 @@ static int create_mcount_loc_sections(struct objtool_file *file)
- 	list_for_each_entry(insn, &file->mcount_loc_list, call_node)
- 		idx++;
- 
--	sec = elf_create_section(file->elf, "__mcount_loc", 0, sizeof(unsigned long), idx);
-+	sec = elf_create_section(file->elf, "__mcount_loc", 0, addrsize, idx);
- 	if (!sec)
- 		return -1;
- 
-+	sec->sh.sh_addralign = addrsize;
++#include <linux/linkage.h>
 +
- 	idx = 0;
- 	list_for_each_entry(insn, &file->mcount_loc_list, call_node) {
-+		void *loc;
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/cputable.h>
+@@ -81,7 +83,7 @@ _GLOBAL(__setup_cpu_745x)
+ 	blr
  
--		loc = (unsigned long *)sec->data->d_buf + idx;
--		memset(loc, 0, sizeof(unsigned long));
-+		loc = sec->data->d_buf + idx;
-+		memset(loc, 0, addrsize);
+ /* Enable caches for 603's, 604, 750 & 7400 */
+-setup_common_caches:
++SYM_FUNC_START_LOCAL(setup_common_caches)
+ 	mfspr	r11,SPRN_HID0
+ 	andi.	r0,r11,HID0_DCE
+ 	ori	r11,r11,HID0_ICE|HID0_DCE
+@@ -95,11 +97,12 @@ setup_common_caches:
+ 	sync
+ 	isync
+ 	blr
++SYM_FUNC_END(setup_common_caches)
  
--		if (elf_add_reloc_to_insn(file->elf, sec,
--					  idx * sizeof(unsigned long),
-+		if (elf_add_reloc_to_insn(file->elf, sec, idx,
- 					  R_X86_64_64,
- 					  insn->sec, insn->offset))
- 			return -1;
+ /* 604, 604e, 604ev, ...
+  * Enable superscalar execution & branch history table
+  */
+-setup_604_hid0:
++SYM_FUNC_START_LOCAL(setup_604_hid0)
+ 	mfspr	r11,SPRN_HID0
+ 	ori	r11,r11,HID0_SIED|HID0_BHTE
+ 	ori	r8,r11,HID0_BTCD
+@@ -110,6 +113,7 @@ setup_604_hid0:
+ 	sync
+ 	isync
+ 	blr
++SYM_FUNC_END(setup_604_hid0)
  
--		idx++;
-+		idx += addrsize;
- 	}
+ /* 7400 <= rev 2.7 and 7410 rev = 1.0 suffer from some
+  * erratas we work around here.
+@@ -125,13 +129,14 @@ setup_604_hid0:
+  * needed once we have applied workaround #5 (though it's
+  * not set by Apple's firmware at least).
+  */
+-setup_7400_workarounds:
++SYM_FUNC_START_LOCAL(setup_7400_workarounds)
+ 	mfpvr	r3
+ 	rlwinm	r3,r3,0,20,31
+ 	cmpwi	0,r3,0x0207
+ 	ble	1f
+ 	blr
+-setup_7410_workarounds:
++SYM_FUNC_END(setup_7400_workarounds)
++SYM_FUNC_START_LOCAL(setup_7410_workarounds)
+ 	mfpvr	r3
+ 	rlwinm	r3,r3,0,20,31
+ 	cmpwi	0,r3,0x0100
+@@ -151,6 +156,7 @@ setup_7410_workarounds:
+ 	sync
+ 	isync
+ 	blr
++SYM_FUNC_END(setup_7410_workarounds)
  
- 	return 0;
-diff --git a/tools/objtool/elf.c b/tools/objtool/elf.c
-index c25e957c1e52..40c6d53b081f 100644
---- a/tools/objtool/elf.c
-+++ b/tools/objtool/elf.c
-@@ -1124,6 +1124,7 @@ static struct section *elf_create_rela_reloc_section(struct elf *elf, struct sec
- {
- 	char *relocname;
- 	struct section *sec;
-+	int addrsize = elf_class_addrsize(elf);
+ /* 740/750/7400/7410
+  * Enable Store Gathering (SGE), Address Broadcast (ABE),
+@@ -158,7 +164,7 @@ setup_7410_workarounds:
+  * Dynamic Power Management (DPM), Speculative (SPD)
+  * Clear Instruction cache throttling (ICTC)
+  */
+-setup_750_7400_hid0:
++SYM_FUNC_START_LOCAL(setup_750_7400_hid0)
+ 	mfspr	r11,SPRN_HID0
+ 	ori	r11,r11,HID0_SGE | HID0_ABE | HID0_BHTE | HID0_BTIC
+ 	oris	r11,r11,HID0_DPM@h
+@@ -177,12 +183,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_NO_DPM)
+ 	sync
+ 	isync
+ 	blr
++SYM_FUNC_END(setup_750_7400_hid0)
  
- 	relocname = malloc(strlen(base->name) + strlen(".rela") + 1);
- 	if (!relocname) {
-@@ -1133,7 +1134,10 @@ static struct section *elf_create_rela_reloc_section(struct elf *elf, struct sec
- 	strcpy(relocname, ".rela");
- 	strcat(relocname, base->name);
+ /* 750cx specific
+  * Looks like we have to disable NAP feature for some PLL settings...
+  * (waiting for confirmation)
+  */
+-setup_750cx:
++SYM_FUNC_START_LOCAL(setup_750cx)
+ 	mfspr	r10, SPRN_HID1
+ 	rlwinm	r10,r10,4,28,31
+ 	cmpwi	cr0,r10,7
+@@ -196,11 +203,13 @@ setup_750cx:
+ 	andc	r6,r6,r7
+ 	stw	r6,CPU_SPEC_FEATURES(r4)
+ 	blr
++SYM_FUNC_END(setup_750cx)
  
--	sec = elf_create_section(elf, relocname, 0, sizeof(GElf_Rela), 0);
-+	if (addrsize == sizeof(u32))
-+		sec = elf_create_section(elf, relocname, 0, sizeof(Elf32_Rela), 0);
-+	else
-+		sec = elf_create_section(elf, relocname, 0, sizeof(GElf_Rela), 0);
- 	free(relocname);
- 	if (!sec)
- 		return NULL;
-@@ -1142,7 +1146,7 @@ static struct section *elf_create_rela_reloc_section(struct elf *elf, struct sec
- 	sec->base = base;
+ /* 750fx specific
+  */
+-setup_750fx:
++SYM_FUNC_START_LOCAL(setup_750fx)
+ 	blr
++SYM_FUNC_END(setup_750fx)
  
- 	sec->sh.sh_type = SHT_RELA;
--	sec->sh.sh_addralign = 8;
-+	sec->sh.sh_addralign = addrsize;
- 	sec->sh.sh_link = find_section_by_name(elf, ".symtab")->idx;
- 	sec->sh.sh_info = base->idx;
- 	sec->sh.sh_flags = SHF_INFO_LINK;
-diff --git a/tools/objtool/include/objtool/elf.h b/tools/objtool/include/objtool/elf.h
-index 16f4067b82ae..78b3aa2e546d 100644
---- a/tools/objtool/include/objtool/elf.h
-+++ b/tools/objtool/include/objtool/elf.h
-@@ -142,6 +142,14 @@ static inline bool has_multiple_files(struct elf *elf)
- 	return elf->num_files > 1;
- }
+ /* MPC 745x
+  * Enable Store Gathering (SGE), Branch Folding (FOLD)
+@@ -212,7 +221,7 @@ setup_750fx:
+  * Clear Instruction cache throttling (ICTC)
+  * Enable L2 HW prefetch
+  */
+-setup_745x_specifics:
++SYM_FUNC_START_LOCAL(setup_745x_specifics)
+ 	/* We check for the presence of an L3 cache setup by
+ 	 * the firmware. If any, we disable NAP capability as
+ 	 * it's known to be bogus on rev 2.1 and earlier
+@@ -270,6 +279,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_NO_DPM)
+ 	sync
+ 	isync
+ 	blr
++SYM_FUNC_END(setup_745x_specifics)
  
-+static inline int elf_class_addrsize(struct elf *elf)
-+{
-+	if (elf->ehdr.e_ident[EI_CLASS] == ELFCLASS32)
-+		return sizeof(u32);
-+	else
-+		return sizeof(u64);
-+}
+ /*
+  * Initialize the FPU registers. This is needed to work around an errata
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index 4bf33f1b4193..f573a4f3bbe6 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -8,6 +8,8 @@
+  * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  */
+ 
++#include <linux/linkage.h>
 +
- struct elf *elf_open_read(const char *name, int flags);
- struct section *elf_create_section(struct elf *elf, const char *name, unsigned int sh_flags, size_t entsize, int nr);
+ #include <asm/page.h>
+ #include <asm/processor.h>
+ #include <asm/cputable.h>
+@@ -274,7 +276,7 @@ _GLOBAL(flush_dcache_L1)
  
+ 	blr
+ 
+-has_L2_cache:
++SYM_FUNC_START_LOCAL(has_L2_cache)
+ 	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
+ 	mfspr	r3, SPRN_SVR
+ 	/* shift right by 8 bits and clear E bit of SVR */
+@@ -290,9 +292,10 @@ has_L2_cache:
+ 1:
+ 	li	r3, 0
+ 	blr
++SYM_FUNC_END(has_L2_cache)
+ 
+ /* flush backside L2 cache */
+-flush_backside_L2_cache:
++SYM_FUNC_START_LOCAL(flush_backside_L2_cache)
+ 	mflr	r10
+ 	bl	has_L2_cache
+ 	mtlr	r10
+@@ -313,6 +316,7 @@ flush_backside_L2_cache:
+ 	bne	1b
+ 2:
+ 	blr
++SYM_FUNC_END(flush_backside_L2_cache)
+ 
+ _GLOBAL(cpu_down_flush_e500v2)
+ 	mflr r0
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 1d599df6f169..f8480d88509f 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -18,6 +18,8 @@
+ #include <linux/err.h>
+ #include <linux/sys.h>
+ #include <linux/threads.h>
++#include <linux/linkage.h>
++
+ #include <asm/reg.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -74,17 +76,18 @@ _ASM_NOKPROBE_SYMBOL(prepare_transfer_to_handler)
+ #endif /* CONFIG_PPC_BOOK3S_32 || CONFIG_E500 */
+ 
+ #if defined(CONFIG_PPC_KUEP) && defined(CONFIG_PPC_BOOK3S_32)
+-	.globl	__kuep_lock
+-__kuep_lock:
++SYM_FUNC_START(__kuep_lock)
+ 	lwz	r9, THREAD+THSR0(r2)
+ 	update_user_segments_by_4 r9, r10, r11, r12
+ 	blr
++SYM_FUNC_END(__kuep_lock)
+ 
+-__kuep_unlock:
++SYM_FUNC_START_LOCAL(__kuep_unlock)
+ 	lwz	r9, THREAD+THSR0(r2)
+ 	rlwinm  r9,r9,0,~SR_NX
+ 	update_user_segments_by_4 r9, r10, r11, r12
+ 	blr
++SYM_FUNC_END(__kuep_unlock)
+ 
+ .macro	kuep_lock
+ 	bl	__kuep_lock
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index 088f500896c7..9110fe9d6747 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -28,6 +28,8 @@
+ #include <linux/init.h>
+ #include <linux/pgtable.h>
+ #include <linux/sizes.h>
++#include <linux/linkage.h>
++
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -662,7 +664,7 @@ start_here:
+  * kernel initialization.  This maps the first 32 MBytes of memory 1:1
+  * virtual to physical and more importantly sets the cache mode.
+  */
+-initial_mmu:
++SYM_FUNC_START_LOCAL(initial_mmu)
+ 	tlbia			/* Invalidate all TLB entries */
+ 	isync
+ 
+@@ -711,6 +713,7 @@ initial_mmu:
+ 	mtspr	SPRN_EVPR,r0
+ 
+ 	blr
++SYM_FUNC_END(initial_mmu)
+ 
+ _GLOBAL(abort)
+         mfspr   r13,SPRN_DBCR0
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 0b05f2be66b9..c94ed5a08c93 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -18,6 +18,8 @@
+ #include <linux/magic.h>
+ #include <linux/pgtable.h>
+ #include <linux/sizes.h>
++#include <linux/linkage.h>
++
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -625,7 +627,7 @@ start_here:
+  * 24 Mbytes of data, and the 512k IMMR space.  Anything not covered by
+  * these mappings is mapped by page tables.
+  */
+-initial_mmu:
++SYM_FUNC_START_LOCAL(initial_mmu)
+ 	li	r8, 0
+ 	mtspr	SPRN_MI_CTR, r8		/* remove PINNED ITLB entries */
+ 	lis	r10, MD_TWAM@h
+@@ -686,6 +688,7 @@ initial_mmu:
+ #endif
+ 	mtspr	SPRN_DER, r8
+ 	blr
++SYM_FUNC_END(initial_mmu)
+ 
+ _GLOBAL(mmu_pin_tlb)
+ 	lis	r9, (1f - PAGE_OFFSET)@h
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index 519b60695167..4af12447dc0b 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -18,6 +18,8 @@
+ 
+ #include <linux/init.h>
+ #include <linux/pgtable.h>
++#include <linux/linkage.h>
++
+ #include <asm/reg.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -877,7 +879,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_HPTE_TABLE)
+  * Load stuff into the MMU.  Intended to be called with
+  * IR=0 and DR=0.
+  */
+-early_hash_table:
++SYM_FUNC_START_LOCAL(early_hash_table)
+ 	sync			/* Force all PTE updates to finish */
+ 	isync
+ 	tlbia			/* Clear all TLB entries */
+@@ -888,8 +890,9 @@ early_hash_table:
+ 	ori	r6, r6, 3	/* 256kB table */
+ 	mtspr	SPRN_SDR1, r6
+ 	blr
++SYM_FUNC_END(early_hash_table)
+ 
+-load_up_mmu:
++SYM_FUNC_START_LOCAL(load_up_mmu)
+ 	sync			/* Force all PTE updates to finish */
+ 	isync
+ 	tlbia			/* Clear all TLB entries */
+@@ -918,6 +921,7 @@ BEGIN_MMU_FTR_SECTION
+ 	LOAD_BAT(7,r3,r4,r5)
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	blr
++SYM_FUNC_END(load_up_mmu)
+ 
+ _GLOBAL(load_segment_registers)
+ 	li	r0, NUM_USER_SEGMENTS /* load up user segment register values */
+@@ -1028,7 +1032,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_HPTE_TABLE)
+  * this makes sure it's done.
+  *  -- Cort
+  */
+-clear_bats:
++SYM_FUNC_START_LOCAL(clear_bats)
+ 	li	r10,0
+ 
+ 	mtspr	SPRN_DBAT0U,r10
+@@ -1072,6 +1076,7 @@ BEGIN_MMU_FTR_SECTION
+ 	mtspr	SPRN_IBAT7L,r10
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	blr
++SYM_FUNC_END(clear_bats)
+ 
+ _GLOBAL(update_bats)
+ 	lis	r4, 1f@h
+@@ -1108,15 +1113,16 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_HIGH_BATS)
+ 	mtspr	SPRN_SRR1, r6
+ 	rfi
+ 
+-flush_tlbs:
++SYM_FUNC_START_LOCAL(flush_tlbs)
+ 	lis	r10, 0x40
+ 1:	addic.	r10, r10, -0x1000
+ 	tlbie	r10
+ 	bgt	1b
+ 	sync
+ 	blr
++SYM_FUNC_END(flush_tlbs)
+ 
+-mmu_off:
++SYM_FUNC_START_LOCAL(mmu_off)
+  	addi	r4, r3, __after_mmu_off - _start
+ 	mfmsr	r3
+ 	andi.	r0,r3,MSR_DR|MSR_IR		/* MMU enabled? */
+@@ -1128,9 +1134,10 @@ mmu_off:
+ 	mtspr	SPRN_SRR1,r3
+ 	sync
+ 	rfi
++SYM_FUNC_END(mmu_off)
+ 
+ /* We use one BAT to map up to 256M of RAM at _PAGE_OFFSET */
+-initial_bats:
++SYM_FUNC_START_LOCAL(initial_bats)
+ 	lis	r11,PAGE_OFFSET@h
+ 	tophys(r8,r11)
+ #ifdef CONFIG_SMP
+@@ -1146,9 +1153,10 @@ initial_bats:
+ 	mtspr	SPRN_IBAT0U,r11
+ 	isync
+ 	blr
++SYM_FUNC_END(initial_bats)
+ 
+ #ifdef CONFIG_BOOTX_TEXT
+-setup_disp_bat:
++SYM_FUNC_START_LOCAL(setup_disp_bat)
+ 	/*
+ 	 * setup the display bat prepared for us in prom.c
+ 	 */
+@@ -1164,10 +1172,11 @@ setup_disp_bat:
+ 	mtspr	SPRN_DBAT3L,r8
+ 	mtspr	SPRN_DBAT3U,r11
+ 	blr
++SYM_FUNC_END(setup_disp_bat)
+ #endif /* CONFIG_BOOTX_TEXT */
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+-setup_cpm_bat:
++SYM_FUNC_START_LOCAL(setup_cpm_bat)
+ 	lis	r8, 0xf000
+ 	ori	r8, r8,	0x002a
+ 	mtspr	SPRN_DBAT1L, r8
+@@ -1177,10 +1186,11 @@ setup_cpm_bat:
+ 	mtspr	SPRN_DBAT1U, r11
+ 
+ 	blr
++SYM_FUNC_END(setup_cpm_bat)
+ #endif
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
+-setup_usbgecko_bat:
++SYM_FUNC_START_LOCAL(setup_usbgecko_bat)
+ 	/* prepare a BAT for early io */
+ #if defined(CONFIG_GAMECUBE)
+ 	lis	r8, 0x0c00
+@@ -1199,6 +1209,7 @@ setup_usbgecko_bat:
+ 	mtspr	SPRN_DBAT1L, r8
+ 	mtspr	SPRN_DBAT1U, r11
+ 	blr
++SYM_FUNC_END(setup_usbgecko_bat)
+ #endif
+ 
+ 	.data
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index f0db4f52bc00..744b096857a1 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -29,6 +29,8 @@
+ #include <linux/init.h>
+ #include <linux/threads.h>
+ #include <linux/pgtable.h>
++#include <linux/linkage.h>
++
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -885,7 +887,7 @@ KernelSPE:
+  * Translate the effec addr in r3 to phys addr. The phys addr will be put
+  * into r3(higher 32bit) and r4(lower 32bit)
+  */
+-get_phys_addr:
++SYM_FUNC_START_LOCAL(get_phys_addr)
+ 	mfmsr	r8
+ 	mfspr	r9,SPRN_PID
+ 	rlwinm	r9,r9,16,0x3fff0000	/* turn PID into MAS6[SPID] */
+@@ -907,6 +909,7 @@ get_phys_addr:
+ 	mfspr	r3,SPRN_MAS7
+ #endif
+ 	blr
++SYM_FUNC_END(get_phys_addr)
+ 
+ /*
+  * Global functions
+diff --git a/arch/powerpc/kernel/swsusp_32.S b/arch/powerpc/kernel/swsusp_32.S
+index e0cbd63007f2..ffb79326483c 100644
+--- a/arch/powerpc/kernel/swsusp_32.S
++++ b/arch/powerpc/kernel/swsusp_32.S
+@@ -1,5 +1,7 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #include <linux/threads.h>
++#include <linux/linkage.h>
++
+ #include <asm/processor.h>
+ #include <asm/page.h>
+ #include <asm/cputable.h>
+@@ -400,7 +402,7 @@ _ASM_NOKPROBE_SYMBOL(swsusp_arch_resume)
+ /* FIXME:This construct is actually not useful since we don't shut
+  * down the instruction MMU, we could just flip back MSR-DR on.
+  */
+-turn_on_mmu:
++SYM_FUNC_START_LOCAL(turn_on_mmu)
+ 	mflr	r4
+ 	mtsrr0	r4
+ 	mtsrr1	r3
+@@ -408,4 +410,5 @@ turn_on_mmu:
+ 	isync
+ 	rfi
+ _ASM_NOKPROBE_SYMBOL(turn_on_mmu)
++SYM_FUNC_END(turn_on_mmu)
+ 
+diff --git a/arch/powerpc/kvm/fpu.S b/arch/powerpc/kvm/fpu.S
+index 315c94946bad..b68e7f26a81f 100644
+--- a/arch/powerpc/kvm/fpu.S
++++ b/arch/powerpc/kvm/fpu.S
+@@ -6,6 +6,8 @@
+  */
+ 
+ #include <linux/pgtable.h>
++#include <linux/linkage.h>
++
+ #include <asm/reg.h>
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+@@ -110,18 +112,22 @@ FPS_THREE_IN(fsel)
+  * R8 = (double*)&param3 [load_three]
+  * LR = instruction call function
+  */
+-fpd_load_three:
++SYM_FUNC_START_LOCAL(fpd_load_three)
+ 	lfd	2,0(r8)			/* load param3 */
+-fpd_load_two:
++SYM_FUNC_START_LOCAL(fpd_load_two)
+ 	lfd	1,0(r7)			/* load param2 */
+-fpd_load_one:
++SYM_FUNC_START_LOCAL(fpd_load_one)
+ 	lfd	0,0(r6)			/* load param1 */
+-fpd_load_none:
++SYM_FUNC_START_LOCAL(fpd_load_none)
+ 	lfd	3,0(r3)			/* load up fpscr value */
+ 	MTFSF_L(3)
+ 	lwz	r6, 0(r4)		/* load cr */
+ 	mtcr	r6
+ 	blr
++SYM_FUNC_END(fpd_load_none)
++SYM_FUNC_END(fpd_load_one)
++SYM_FUNC_END(fpd_load_two)
++SYM_FUNC_END(fpd_load_three)
+ 
+ /*
+  * End of double instruction processing
+@@ -131,13 +137,14 @@ fpd_load_none:
+  * R5 = (double*)&result
+  * LR = caller of instruction call function
+  */
+-fpd_return:
++SYM_FUNC_START_LOCAL(fpd_return)
+ 	mfcr	r6
+ 	stfd	0,0(r5)			/* save result */
+ 	mffs	0
+ 	stfd	0,0(r3)			/* save new fpscr value */
+ 	stw	r6,0(r4)		/* save new cr value */
+ 	blr
++SYM_FUNC_END(fpd_return)
+ 
+ /*
+  * Double operation with no input operand
+diff --git a/arch/powerpc/platforms/52xx/lite5200_sleep.S b/arch/powerpc/platforms/52xx/lite5200_sleep.S
+index afee8b1515a8..0b12647e7b42 100644
+--- a/arch/powerpc/platforms/52xx/lite5200_sleep.S
++++ b/arch/powerpc/platforms/52xx/lite5200_sleep.S
+@@ -1,4 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
++#include <linux/linkage.h>
++
+ #include <asm/reg.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/processor.h>
+@@ -178,7 +180,8 @@ sram_code:
+ 
+ 
+ 	/* local udelay in sram is needed */
+-  udelay: /* r11 - tb_ticks_per_usec, r12 - usecs, overwrites r13 */
++SYM_FUNC_START_LOCAL(udelay)
++	/* r11 - tb_ticks_per_usec, r12 - usecs, overwrites r13 */
+ 	mullw	r12, r12, r11
+ 	mftb	r13	/* start */
+ 	add	r12, r13, r12 /* end */
+@@ -187,6 +190,7 @@ sram_code:
+ 	cmp	cr0, r13, r12
+ 	blt	1b
+ 	blr
++SYM_FUNC_END(udelay)
+ 
+ sram_code_end:
+ 
+@@ -271,7 +275,7 @@ _ASM_NOKPROBE_SYMBOL(lite5200_wakeup)
+ 	SAVE_SR(n+2, addr+2);	\
+ 	SAVE_SR(n+3, addr+3);
+ 
+-save_regs:
++SYM_FUNC_START_LOCAL(save_regs)
+ 	stw	r0, 0(r4)
+ 	stw	r1, 0x4(r4)
+ 	stw	r2, 0x8(r4)
+@@ -317,6 +321,7 @@ save_regs:
+ 	SAVE_SPRN(TBRU,  0x5b)
+ 
+ 	blr
++SYM_FUNC_END(save_regs)
+ 
+ 
+ /* restore registers */
+@@ -336,7 +341,7 @@ save_regs:
+ 	LOAD_SR(n+2, addr+2);	\
+ 	LOAD_SR(n+3, addr+3);
+ 
+-restore_regs:
++SYM_FUNC_START_LOCAL(restore_regs)
+ 	lis	r4, registers@h
+ 	ori	r4, r4, registers@l
+ 
+@@ -393,6 +398,7 @@ restore_regs:
+ 
+ 	blr
+ _ASM_NOKPROBE_SYMBOL(restore_regs)
++SYM_FUNC_END(restore_regs)
+ 
+ 
+ 
+@@ -403,7 +409,7 @@ _ASM_NOKPROBE_SYMBOL(restore_regs)
+  * Flush data cache
+  * Do this by just reading lots of stuff into the cache.
+  */
+-flush_data_cache:
++SYM_FUNC_START_LOCAL(flush_data_cache)
+ 	lis	r3,CONFIG_KERNEL_START@h
+ 	ori	r3,r3,CONFIG_KERNEL_START@l
+ 	li	r4,NUM_CACHE_LINES
+@@ -413,3 +419,4 @@ flush_data_cache:
+ 	addi	r3,r3,L1_CACHE_BYTES	/* Next line, please */
+ 	bdnz	1b
+ 	blr
++SYM_FUNC_END(flush_data_cache)
 -- 
 2.31.1
 
