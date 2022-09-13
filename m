@@ -4,24 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B78FC6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 07:53:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE3FFC6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 08:10:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbLR7392z3c6g
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 17:53:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbkd0nlSz3c9p
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 18:10:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 1177 seconds by postgrey-1.36 at boromir; Tue, 13 Sep 2022 18:10:18 AEST
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbHv36LJz3c7B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:51:07 +1000 (AEST)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.54])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MRbDB0DD0znTxr;
-	Tue, 13 Sep 2022 15:47:54 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbk23DLWz2xKh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 18:10:14 +1000 (AEST)
+Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.55])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4MRbBm6WZTz14QMg;
+	Tue, 13 Sep 2022 15:46:40 +0800 (CST)
 Received: from cgs.huawei.com (10.244.148.83) by
  kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 13 Sep 2022 15:50:33 +0800
+ 15.1.2375.24; Tue, 13 Sep 2022 15:50:35 +0800
 From: Gaosheng Cui <cuigaosheng1@huawei.com>
 To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoff@infradead.org>, <jk@ozlabs.org>, <arnd@arndb.de>, <clg@kaod.org>,
@@ -33,9 +34,9 @@ To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoffrey.levand@am.sony.com>, <yu.liu@freescale.com>,
 	<scottwood@freescale.com>, <hollisb@us.ibm.com>, <avi@redhat.com>,
 	<agraf@suse.de>, <cuigaosheng1@huawei.com>
-Subject: [PATCH 3/9] powerpc: remove unused chrp_event_scan() declaration
-Date: Tue, 13 Sep 2022 15:50:23 +0800
-Message-ID: <20220913075029.682327-4-cuigaosheng1@huawei.com>
+Subject: [PATCH 5/9] powerpc/mm: remove orphan declarations from mmu_context.h
+Date: Tue, 13 Sep 2022 15:50:25 +0800
+Message-ID: <20220913075029.682327-6-cuigaosheng1@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220913075029.682327-1-cuigaosheng1@huawei.com>
 References: <20220913075029.682327-1-cuigaosheng1@huawei.com>
@@ -61,24 +62,42 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-chrp_event_scan() has been removed since
-commit 3d541c4b7f6e ("powerpc/chrp: Use the same RTAS
-daemon as pSeries"), so remove it.
+Remove the following orphan declarations from mmu_context.h:
+1. switch_cop() and drop_cop() have been removed since
+commit 6ff4d3e96652 ("powerpc: Remove old unused icswx
+based coprocessor support").
+
+2. mm_iommu_cleanup() has been removed since
+commit 4b6fad7097f8 ("powerpc/mm/iommu, vfio/spapr: Put
+pages on VFIO container shutdown").
+
+So remove the declarations for them from header file.
 
 Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
 ---
- arch/powerpc/platforms/chrp/chrp.h | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/include/asm/mmu_context.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/chrp.h b/arch/powerpc/platforms/chrp/chrp.h
-index a5a7c338caf9..6ff4631d9db4 100644
---- a/arch/powerpc/platforms/chrp/chrp.h
-+++ b/arch/powerpc/platforms/chrp/chrp.h
-@@ -9,4 +9,3 @@ extern int chrp_set_rtc_time(struct rtc_time *);
- extern long chrp_time_init(void);
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 3f25bd3e14eb..c1ea270bb848 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -31,7 +31,6 @@ extern long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
+ extern long mm_iommu_put(struct mm_struct *mm,
+ 		struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_init(struct mm_struct *mm);
+-extern void mm_iommu_cleanup(struct mm_struct *mm);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+@@ -117,7 +116,6 @@ static inline bool need_extra_context(struct mm_struct *mm, unsigned long ea)
+ }
+ #endif
  
- extern void chrp_find_bridges(void);
--extern void chrp_event_scan(unsigned long);
+-extern void switch_cop(struct mm_struct *next);
+ extern int use_cop(unsigned long acop, struct mm_struct *mm);
+ extern void drop_cop(unsigned long acop, struct mm_struct *mm);
+ 
 -- 
 2.25.1
 
