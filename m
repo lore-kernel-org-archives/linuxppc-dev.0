@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8244EC54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 07:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1153CC54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 07:52:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbKT1SZ0z3cdN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 17:52:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbL14NZKz3cfP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 17:52:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbHR3qddz3bsS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:50:42 +1000 (AEST)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.56])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4MRbF26R92zHnjF;
-	Tue, 13 Sep 2022 15:48:38 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbHv2lSKz3bgC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:51:07 +1000 (AEST)
+Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.53])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MRbBh5ZhrzkWqF;
+	Tue, 13 Sep 2022 15:46:36 +0800 (CST)
 Received: from cgs.huawei.com (10.244.148.83) by
  kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 13 Sep 2022 15:50:38 +0800
+ 15.1.2375.24; Tue, 13 Sep 2022 15:50:32 +0800
 From: Gaosheng Cui <cuigaosheng1@huawei.com>
 To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoff@infradead.org>, <jk@ozlabs.org>, <arnd@arndb.de>, <clg@kaod.org>,
@@ -33,9 +33,9 @@ To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoffrey.levand@am.sony.com>, <yu.liu@freescale.com>,
 	<scottwood@freescale.com>, <hollisb@us.ibm.com>, <avi@redhat.com>,
 	<agraf@suse.de>, <cuigaosheng1@huawei.com>
-Subject: [PATCH 9/9] KVM: PPC: remove orphan declarations from kvm_ppc.h
-Date: Tue, 13 Sep 2022 15:50:29 +0800
-Message-ID: <20220913075029.682327-10-cuigaosheng1@huawei.com>
+Subject: [PATCH 2/9] powerpc/spufs: remove orphan declarations from spufs.h
+Date: Tue, 13 Sep 2022 15:50:22 +0800
+Message-ID: <20220913075029.682327-3-cuigaosheng1@huawei.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20220913075029.682327-1-cuigaosheng1@huawei.com>
 References: <20220913075029.682327-1-cuigaosheng1@huawei.com>
@@ -61,54 +61,40 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove the following orphan declarations from kvm_ppc.h:
+Remove the following orphan declarations from spufs.h:
+1. spufs_coredump_calls has been removed since
+commit 48cad41f7ee7 ("[POWERPC] spufs: Combine
+spufs_coredump_calls with spufs_calls").
 
-1. kvmppc_mmu_priv_switch() has been removed since
-commit dd9ebf1f9435 ("KVM: PPC: e500: Add shadow PID
-support").
-2. kvmppc_core_destroy_mmu() has been removed since
-commit ecc0981ff07c ("KVM: ppc: cosmetic changes to mmu
-hook names").
-3. kvmppc_prepare_vrma() has been removed since
-commit aa04b4cc5be6 ("KVM: PPC: Allocate RMAs (Real Mode
-Areas) at boot for use by guests").
-
-So remove the declarations for them from header file.
+2. spufs_coredump_num_notes has been removed since
+commit 936d5bf1d7dc ("[POWERPC] spufs: Get rid of spufs_coredump_num_notes,
+it's not needed if we NULL terminate").
 
 Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
 ---
- arch/powerpc/include/asm/kvm_ppc.h | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/platforms/cell/spufs/spufs.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 9f625af3b65b..bfacf12784dd 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -104,7 +104,6 @@ extern void kvmppc_subarch_vcpu_uninit(struct kvm_vcpu *vcpu);
+diff --git a/arch/powerpc/platforms/cell/spufs/spufs.h b/arch/powerpc/platforms/cell/spufs/spufs.h
+index af048b6dd30a..84958487f696 100644
+--- a/arch/powerpc/platforms/cell/spufs/spufs.h
++++ b/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -333,7 +333,6 @@ void spufs_stop_callback(struct spu *spu, int irq);
+ void spufs_mfc_callback(struct spu *spu);
+ void spufs_dma_callback(struct spu *spu, int type);
  
- extern void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 gvaddr, gpa_t gpaddr,
-                            unsigned int gtlb_idx);
--extern void kvmppc_mmu_priv_switch(struct kvm_vcpu *vcpu, int usermode);
- extern void kvmppc_mmu_switch_pid(struct kvm_vcpu *vcpu, u32 pid);
- extern int kvmppc_mmu_dtlb_index(struct kvm_vcpu *vcpu, gva_t eaddr);
- extern int kvmppc_mmu_itlb_index(struct kvm_vcpu *vcpu, gva_t eaddr);
-@@ -153,7 +152,6 @@ extern int kvmppc_core_check_requests(struct kvm_vcpu *vcpu);
- extern int kvmppc_booke_init(void);
- extern void kvmppc_booke_exit(void);
+-extern struct spu_coredump_calls spufs_coredump_calls;
+ struct spufs_coredump_reader {
+ 	char *name;
+ 	ssize_t (*dump)(struct spu_context *ctx, struct coredump_params *cprm);
+@@ -341,7 +340,6 @@ struct spufs_coredump_reader {
+ 	size_t size;
+ };
+ extern const struct spufs_coredump_reader spufs_coredump_read[];
+-extern int spufs_coredump_num_notes;
  
--extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
- extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
- extern void kvmppc_map_magic(struct kvm_vcpu *vcpu);
- 
-@@ -162,8 +160,6 @@ extern void kvmppc_set_hpt(struct kvm *kvm, struct kvm_hpt_info *info);
- extern long kvmppc_alloc_reset_hpt(struct kvm *kvm, int order);
- extern void kvmppc_free_hpt(struct kvm_hpt_info *info);
- extern void kvmppc_rmap_reset(struct kvm *kvm);
--extern long kvmppc_prepare_vrma(struct kvm *kvm,
--				struct kvm_userspace_memory_region *mem);
- extern void kvmppc_map_vrma(struct kvm_vcpu *vcpu,
- 			struct kvm_memory_slot *memslot, unsigned long porder);
- extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ extern int spu_init_csa(struct spu_state *csa);
+ extern void spu_fini_csa(struct spu_state *csa);
 -- 
 2.25.1
 
