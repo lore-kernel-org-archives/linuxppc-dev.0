@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 430ECC54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 07:51:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9D45C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 07:51:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbJ966MKz307C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 17:51:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MRbJc1y9Mz3dsc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 17:51:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=cuigaosheng1@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbHM2ydBz2xHW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:50:37 +1000 (AEST)
-Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.53])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4MRbDt2bnPzHns8;
-	Tue, 13 Sep 2022 15:48:30 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRbHM4bM8z2xYy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:50:39 +1000 (AEST)
+Received: from kwepemi500012.china.huawei.com (unknown [172.30.72.55])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MRbBz3wZbzmVMM;
+	Tue, 13 Sep 2022 15:46:51 +0800 (CST)
 Received: from cgs.huawei.com (10.244.148.83) by
  kwepemi500012.china.huawei.com (7.221.188.12) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.24; Tue, 13 Sep 2022 15:50:30 +0800
+ 15.1.2375.24; Tue, 13 Sep 2022 15:50:34 +0800
 From: Gaosheng Cui <cuigaosheng1@huawei.com>
 To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoff@infradead.org>, <jk@ozlabs.org>, <arnd@arndb.de>, <clg@kaod.org>,
@@ -33,10 +33,12 @@ To: <mpe@ellerman.id.au>, <npiggin@gmail.com>, <christophe.leroy@csgroup.eu>,
 	<geoffrey.levand@am.sony.com>, <yu.liu@freescale.com>,
 	<scottwood@freescale.com>, <hollisb@us.ibm.com>, <avi@redhat.com>,
 	<agraf@suse.de>, <cuigaosheng1@huawei.com>
-Subject: [PATCH 0/9] Remove unused declarations for powerpc
-Date: Tue, 13 Sep 2022 15:50:20 +0800
-Message-ID: <20220913075029.682327-1-cuigaosheng1@huawei.com>
+Subject: [PATCH 4/9] powerpc: remove unused udbg_init_debug_beat() declaration
+Date: Tue, 13 Sep 2022 15:50:24 +0800
+Message-ID: <20220913075029.682327-5-cuigaosheng1@huawei.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20220913075029.682327-1-cuigaosheng1@huawei.com>
+References: <20220913075029.682327-1-cuigaosheng1@huawei.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -59,31 +61,27 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series contains a few cleanup patches, to remove unused
-declarations which have been removed. Thanks!
+udbg_init_debug_beat() has been removed since
+commit bf4981a00636 ("powerpc: Remove the celleb support"),
+so remove it.
 
-Gaosheng Cui (9):
-  powerpc/xmon: remove unused ppc_parse_cpu() declaration
-  powerpc/spufs: remove orphan declarations from spufs.h
-  powerpc: remove unused chrp_event_scan() declaration
-  powerpc: remove unused udbg_init_debug_beat() declaration
-  powerpc/mm: remove orphan declarations from mmu_context.h
-  powerpc/powernv: remove orphan declarations from opal.h
-  powerpc/sysdev: remove unused xics_ipi_dispatch() declaration
-  powerpc/ps3: remove orphan declarations from ps3av.h
-  KVM: PPC: remove orphan declarations from kvm_ppc.h
+Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
+---
+ arch/powerpc/include/asm/udbg.h | 1 -
+ 1 file changed, 1 deletion(-)
 
- arch/powerpc/include/asm/kvm_ppc.h        | 4 ----
- arch/powerpc/include/asm/mmu_context.h    | 2 --
- arch/powerpc/include/asm/opal.h           | 6 ------
- arch/powerpc/include/asm/ps3av.h          | 2 --
- arch/powerpc/include/asm/udbg.h           | 1 -
- arch/powerpc/include/asm/xics.h           | 1 -
- arch/powerpc/platforms/cell/spufs/spufs.h | 2 --
- arch/powerpc/platforms/chrp/chrp.h        | 1 -
- arch/powerpc/xmon/ppc.h                   | 2 --
- 9 files changed, 21 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
+index b4aa0d88ce2c..524c2085070f 100644
+--- a/arch/powerpc/include/asm/udbg.h
++++ b/arch/powerpc/include/asm/udbg.h
+@@ -42,7 +42,6 @@ extern void __init udbg_init_maple_realmode(void);
+ extern void __init udbg_init_pas_realmode(void);
+ extern void __init udbg_init_rtas_panel(void);
+ extern void __init udbg_init_rtas_console(void);
+-extern void __init udbg_init_debug_beat(void);
+ extern void __init udbg_init_btext(void);
+ extern void __init udbg_init_44x_as1(void);
+ extern void __init udbg_init_40x_realmode(void);
 -- 
 2.25.1
 
