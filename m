@@ -4,58 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 926DBC54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 09:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1D8FC6FA89
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 09:51:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MRdpC0H4Rz3bZP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 19:44:03 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MRdyJ65nfz3c18
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Sep 2022 19:51:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gDVmlbDJ;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gDVmlbDJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mpenttil@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gDVmlbDJ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gDVmlbDJ;
+	dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRdng3c9kz2xvJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 19:43:32 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MRdnT2ShQz9t0C;
-	Tue, 13 Sep 2022 11:43:25 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wTNuIV4UJsKy; Tue, 13 Sep 2022 11:43:25 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MRdmZ39yDz9t0Y;
-	Tue, 13 Sep 2022 11:42:38 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5E0E08B77E;
-	Tue, 13 Sep 2022 11:42:38 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 9xEu-YDnXdMS; Tue, 13 Sep 2022 11:42:38 +0200 (CEST)
-Received: from [192.168.232.91] (unknown [192.168.232.91])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id ED4EF8B763;
-	Tue, 13 Sep 2022 11:42:37 +0200 (CEST)
-Message-ID: <449eb912-f7c7-2f79-d8bb-9449bee01986@csgroup.eu>
-Date: Tue, 13 Sep 2022 11:42:38 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MRZf63kRJz2xdQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 17:21:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1663053704;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ylh9ncmGPJOsB78thI/3cAGzV/njJPkYV/mAwkDnPyI=;
+	b=gDVmlbDJXUfXsuQGBiGKARgTX1WTp4oyGju5w1ihYXyGRvcNmBSJq83rznWP0iGG+MZp4k
+	HwxORjssqNi3toMzXH2xzPv91GjcLSXJpFDn9xvp7ubYqS/SJTEXbUOoQn+hI2BVALhLj6
+	4iMJoROGIoXTEot7kWd12FbBcQiwc+E=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1663053704;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=ylh9ncmGPJOsB78thI/3cAGzV/njJPkYV/mAwkDnPyI=;
+	b=gDVmlbDJXUfXsuQGBiGKARgTX1WTp4oyGju5w1ihYXyGRvcNmBSJq83rznWP0iGG+MZp4k
+	HwxORjssqNi3toMzXH2xzPv91GjcLSXJpFDn9xvp7ubYqS/SJTEXbUOoQn+hI2BVALhLj6
+	4iMJoROGIoXTEot7kWd12FbBcQiwc+E=
+Received: from mail-lj1-f199.google.com (mail-lj1-f199.google.com
+ [209.85.208.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-335-BlEu_mSnOC2W8Ikx5g8uwg-1; Tue, 13 Sep 2022 03:21:42 -0400
+X-MC-Unique: BlEu_mSnOC2W8Ikx5g8uwg-1
+Received: by mail-lj1-f199.google.com with SMTP id v4-20020a2ea444000000b00261e0d5bc25so2744761ljn.19
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Sep 2022 00:21:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=ylh9ncmGPJOsB78thI/3cAGzV/njJPkYV/mAwkDnPyI=;
+        b=yCznOhOCsj+gVScsyWGnjaA0zWkgjwTVL1I3emp9CpZLWcWifTAlYIed+RJIWQFelw
+         JDuJhrR3ODrG81pxGrjskCDViNxa2Wob5HTG17XDTX3qTr9tl0yKcxAaFA3aL7lYlfAz
+         NazqrPvVVsazIXvdft9LrZUZjf82FYQWQoDBa0szm+FynZD3f8G301dz27RgDNKx+OFr
+         ixujTE7fWva2nWiB2qzL1yla+lQFG0ir4jheBSicEgEt7gagK+Pjx7CNHR1RXcIxGIgY
+         cmnd68O8rwNfsrUSk9J3xqpIdsXwrIiWR4cKhkp7B8dcjd+YXPO3FUgvPqmCJoQEJd23
+         so1w==
+X-Gm-Message-State: ACgBeo2O/RdqG1BHUTXsivqXaOpY8BI2YetP0ji+PmPvl9wOPXliYu/b
+	0NRa0+xyqUrXa6VtryMZQTbFUgksZygv31VCveUFVCWX4p+jlEE1hS31LvPieIBxoC5f/oCMGoP
+	WwmGp4FAny3SN1j3HRP4RY9uG
+X-Received: by 2002:a2e:a887:0:b0:26a:871b:a16d with SMTP id m7-20020a2ea887000000b0026a871ba16dmr9391607ljq.482.1663053701481;
+        Tue, 13 Sep 2022 00:21:41 -0700 (PDT)
+X-Google-Smtp-Source: AA6agR6r+REe45FUvXnaTS9jVKKwZjNZFId41bNwnokkT3n1YTbgrJnWiH8KnqDSyjREPFSzn6xt4g==
+X-Received: by 2002:a2e:a887:0:b0:26a:871b:a16d with SMTP id m7-20020a2ea887000000b0026a871ba16dmr9391578ljq.482.1663053700977;
+        Tue, 13 Sep 2022 00:21:40 -0700 (PDT)
+Received: from [192.168.1.121] (91-145-109-188.bb.dnainternet.fi. [91.145.109.188])
+        by smtp.gmail.com with ESMTPSA id o1-20020a05651205c100b0048b0099f40fsm1522618lfo.216.2022.09.13.00.21.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 13 Sep 2022 00:21:40 -0700 (PDT)
+Message-ID: <64964b86-1fef-3550-a224-081f8e0e5e52@redhat.com>
+Date: Tue, 13 Sep 2022 10:21:39 +0300
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.1
-Subject: Re: State of RFC PATCH Remove CONFIG_DCACHE_WORD_ACCESS
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Lukas Bulwahn <lukas.bulwahn@gmail.com>, Joe Perches <joe@perches.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- kernel-janitors <kernel-janitors@vger.kernel.org>
-References: <CAKXUXMzQDy-A5n8gvHaT9s21dn_ThuW0frCgm_tXMHPUhLY2zA@mail.gmail.com>
- <91e6cf8b-f66a-3ea1-daa0-2ea875b7e7e8@csgroup.eu>
-In-Reply-To: <91e6cf8b-f66a-3ea1-daa0-2ea875b7e7e8@csgroup.eu>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PATCH] hmm-tests: Fix migrate_dirty_page test
+To: Alistair Popple <apopple@nvidia.com>, linux-mm@kvack.org,
+ akpm@linux-foundation.org
+References: <20220913052203.177071-1-apopple@nvidia.com>
+From: =?UTF-8?Q?Mika_Penttil=c3=a4?= <mpenttil@redhat.com>
+In-Reply-To: <20220913052203.177071-1-apopple@nvidia.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Tue, 13 Sep 2022 19:50:27 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,55 +103,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: "Sierra Guiza, Alejandro \(Alex\)" <alex.sierra@amd.com>, Nadav Amit <nadav.amit@gmail.com>, Lyude Paul <lyude@redhat.com>, Karol Herbst <kherbst@redhat.com>, David Hildenbrand <david@redhat.com>, John Hubbard <jhubbard@nvidia.com>, Felix Kuehling <Felix.Kuehling@amd.com>, linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>, Peter Xu <peterx@redhat.com>, Logan Gunthorpe <logang@deltatee.com>, Ralph Campbell <rcampbell@nvidia.com>, Matthew Wilcox <willy@infradead.org>, Jason Gunthorpe <jgg@nvidia.com>, huang ying <huang.ying.caritas@gmail.com>, Ben Skeggs <bskeggs@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-Le 12/09/2022 à 17:22, Christophe Leroy a écrit :
+On 13.9.2022 8.22, Alistair Popple wrote:
+> As noted by John Hubbard the original test relied on side effects of the
+> implementation of migrate_vma_setup() to detect if pages had been
+> swapped to disk or not. This is subject to change in future so
+> explicitly check for swap entries via pagemap instead. Fix a spelling
+> mistake while we're at it.
 > 
+> Signed-off-by: Alistair Popple <apopple@nvidia.com>
+> Fixes: 5cc88e844e87 ("selftests/hmm-tests: add test for dirty bits")
+> ---
+>   tools/testing/selftests/vm/hmm-tests.c | 50 +++++++++++++++++++++++---
+>   1 file changed, 46 insertions(+), 4 deletions(-)
 > 
-> Le 12/09/2022 à 15:46, Lukas Bulwahn a écrit :
->> Hi Joe, hi Ben,
->>
->> While reviewing some kernel config, I came across
->> CONFIG_DCACHE_WORD_ACCESS and tried to understand its purpose.
->>
->> Then, I discovered this RFC patch from 2014 that seems never to have
->> been integrated:
->>
->> https://lore.kernel.org/all/1393964591.20435.58.camel@joe-AO722/
->> [RFC] Remove CONFIG_DCACHE_WORD_ACCESS
->>
->> The discussion seemed to just not continue and the patch was just not
->> integrated by anyone.
->>
->> In the meantime, the use of CONFIG_DCACHE_WORD_ACCESS has spread into
->> a few more files, but replacing it with
->> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS still seems feasible.
->>
->> Are you aware of reasons that this patch from 2014 should not be 
->> integrated?
->>
->> I would spend some time to move the integration of this patch further
->> if you consider that the patch is not completely wrong.
->>
-> 
-> As far as I can see, for the time being this is not equivalent on powerpc:
-> 
-> select HAVE_EFFICIENT_UNALIGNED_ACCESS  if !(CPU_LITTLE_ENDIAN && 
-> POWER7_CPU)
-> 
-> select DCACHE_WORD_ACCESS               if PPC64 && CPU_LITTLE_ENDIAN
-> 
-> This will need to be investigated I guess.
-> 
-> In the meantime I'll try to see if it makes any difference for ppc32.
-> 
+> diff --git a/tools/testing/selftests/vm/hmm-tests.c b/tools/testing/selftests/vm/hmm-tests.c
+> index 70fdb49b59ed..b5f6a7dc1f12 100644
+> --- a/tools/testing/selftests/vm/hmm-tests.c
+> +++ b/tools/testing/selftests/vm/hmm-tests.c
+> @@ -1261,9 +1261,47 @@ static int destroy_cgroup(void)
+>   	return 0;
+>   }
+>   
+> +static uint64_t get_pfn(int fd, uint64_t ptr)
+> +{
+> +	uint64_t pfn;
+> +	int ret;
+> +
+> +	ret = pread(fd, &pfn, sizeof(ptr),
+> +		(uint64_t) ptr / getpagesize() * sizeof(ptr));
+> +	if (ret != sizeof(ptr))
+> +		return 0;
+> +
+> +	return pfn;
+> +}
+> +
+> +#define PAGEMAP_SWAPPED (1ULL << 62)
+> +
+> +/* Returns true if at least one page in the range is on swap */
+> +static bool pages_swapped(void *ptr, unsigned long pages)
+> +{
+> +	uint64_t pfn;
+> +	int fd = open("/proc/self/pagemap", O_RDONLY);
+> +	unsigned long i;
+> +
+> +	if (fd < 0)
+> +		return false;
+> +
+> +	for (i = 0; i < pages; i++) {
+> +		pfn = get_pfn(fd, (uint64_t) ptr + i * getpagesize());
+> +
+> +		if (pfn & PAGEMAP_SWAPPED) {
+> +			close(fd);
+> +			return true;
+> +		}
+> +	}
+> +
+> +	close(fd);
+> +	return false;
+> +}
+> +
+>   /*
+>    * Try and migrate a dirty page that has previously been swapped to disk. This
+> - * checks that we don't loose dirty bits.
+> + * checks that we don't lose dirty bits.
+>    */
+>   TEST_F(hmm, migrate_dirty_page)
+>   {
+> @@ -1300,6 +1338,10 @@ TEST_F(hmm, migrate_dirty_page)
+>   
+>   	ASSERT_FALSE(write_cgroup_param(cgroup, "memory.reclaim", 1UL<<30));
+>   
+> +	/* Make sure at least some pages got paged to disk. */
+> +	if (!pages_swapped(buffer->ptr, npages))
+> +		SKIP(return, "Pages weren't swapped when they should have been");
+> +
+>   	/* Fault pages back in from swap as clean pages */
+>   	for (i = 0, ptr = buffer->ptr; i < size / sizeof(*ptr); ++i)
+>   		tmp += ptr[i];
+> @@ -1309,10 +1351,10 @@ TEST_F(hmm, migrate_dirty_page)
+>   		ptr[i] = i;
+>   
+>   	/*
+> -	 * Attempt to migrate memory to device, which should fail because
+> -	 * hopefully some pages are backed by swap storage.
+> +	 * Attempt to migrate memory to device. This might fail if some pages
+> +	 * are/were backed by swap but that's ok.
+>   	 */
+> -	ASSERT_TRUE(hmm_migrate_sys_to_dev(self->fd, buffer, npages));
+> +	hmm_migrate_sys_to_dev(self->fd, buffer, npages);
+>   
+>   	ASSERT_FALSE(write_cgroup_param(cgroup, "memory.reclaim", 1UL<<30));
+>   
 
-Selecting DCACHE_WORD_ACCESS on powerpc32 provides an improvement of 
-approx 9% on a powerpc 8xx and about 2% on a powerpc 832x, using the 
-benchmark test in commit a75c380c7129 ("powerpc: Enable 
-DCACHE_WORD_ACCESS on ppc64le")
 
-Christophe
+Reviewed-by: Mika Penttilä <mpenttil@redhat.com>
+
