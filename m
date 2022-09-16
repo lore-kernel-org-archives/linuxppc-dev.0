@@ -4,52 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB512C54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 14:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71E10C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 14:43:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTbhR219sz3bnH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Sep 2022 00:15:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTcJW1rf1z3c2L
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Sep 2022 00:43:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j2UFEmLJ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=OulnIc0P;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gustavoars@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j2UFEmLJ;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=OulnIc0P;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTbgj55wVz2xYj
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Sep 2022 00:15:13 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 5AF1562C20;
-	Fri, 16 Sep 2022 14:15:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E2302C433D6;
-	Fri, 16 Sep 2022 14:15:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1663337709;
-	bh=ZP/LxkFN5dV5vhW4DgkYG+8YyHxvLgZVftkuiKVPu7M=;
-	h=Date:From:To:Cc:Subject:From;
-	b=j2UFEmLJdjhCi7rpTJe3YiWaumoVT7ncJfH1W+mqqPrQmS0A2NAC8tc2Mi9fVUal/
-	 MVCNPOqdgl6SIUYDPBti2lPFcGA0UxNYMe5WqjITsvIFgoCVaTDmMvUSwQlmOgs6SP
-	 mqB2usFMLP47Qw8doPEduBZ/+6Quyk05vMhF694Vz2j5TALOyhxEsC5/wPac2kCxhC
-	 s6hnaPHw4ICg5bachbAgoGma8zf098TFxYPZfsB9cB6TADN4rWwcUg/pHkGegF267o
-	 NOKzeD7o4tCWNJljcMVUn9lnLRsRUy1qpKLlyS6W2EezwpzI76sqNf6JKmIi/zyCog
-	 ZemiUfmafvcMQ==
-Date: Fri, 16 Sep 2022 15:15:04 +0100
-From: "Gustavo A. R. Silva" <gustavoars@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH][next] powerpc/xmon: Fix -Wswitch-unreachable warning in
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTcHq2pFmz3bcv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Sep 2022 00:43:00 +1000 (AEST)
+Received: by mail-pl1-x629.google.com with SMTP id v1so21635464plo.9
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 07:43:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date;
+        bh=CczDj0L6fyErXarjYUw/nJButDiDyt2jg/VsMlHD9x0=;
+        b=OulnIc0PtMHK6HBr/Ps6pXumK5u3z46zD9qTpwgCt3YZ9WlxymyQYofzW2uXiYqD68
+         l+1dCUz9ozdNUjkvCBpAKBX7kXamXafBqAitnxJWe/mgSPrKxR+LqZz1ASr2cVF+MT0i
+         FqQW0UwdPP0m9XW+ODPsEEuMnSXwGDAiQYCCg=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=CczDj0L6fyErXarjYUw/nJButDiDyt2jg/VsMlHD9x0=;
+        b=4NLDNqfrmylEzt6/Vpv3TpV3p6hOQMPiebbADfA+mcqNO7vnmMwYqX07vgXB6lTtuy
+         jLbGRFTJOnc1AHK/M2dnd/6jkQh7a0QHC5ndpc4wJPD4fzmNpc2uf4f/QnbRejDt/oIC
+         vrJ5IYPaTH+58kadLxtIBdYWz+upw5MyaLuJLTO1LUwsmMR9ojTtDQXLAPyhvulbahrT
+         5L/Ux4eAslQ0VG/azcodpYyoQ6rTgfimkHpX1Vw2ka0r0RM8ijCTOlJnm5WVdfNYAti3
+         Ft11TEQT1le1YC5GjONIdOj0HSxGYSisnoeUuGbpVlVS5kNrlzeFmDGas8tQdKb3a0WF
+         IojQ==
+X-Gm-Message-State: ACrzQf2jnGDkA5QG99lnkV4oRmFXrUIqAE+iySlp0xWFPvu4Kf92GorW
+	gHdDaOzcjqd4Cn3KAT4iq7zQjQ==
+X-Google-Smtp-Source: AMsMyM6fN+pgEnc/ncnyOHdVfzsAk03A4QioD6WtmLqIzn6JzDwi9BxnF+gf8QmMz6pDubaM926hUw==
+X-Received: by 2002:a17:902:b693:b0:178:5fa6:4b3 with SMTP id c19-20020a170902b69300b001785fa604b3mr170800pls.63.1663339376925;
+        Fri, 16 Sep 2022 07:42:56 -0700 (PDT)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id m17-20020a637d51000000b0042ff6b0cf4dsm13491251pgn.58.2022.09.16.07.42.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 16 Sep 2022 07:42:56 -0700 (PDT)
+Date: Fri, 16 Sep 2022 07:42:55 -0700
+From: Kees Cook <keescook@chromium.org>
+To: "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Subject: Re: [PATCH][next] powerpc/xmon: Fix -Wswitch-unreachable warning in
  bpt_cmds
-Message-ID: <YySE6FHiOcbWWR+9@work>
+Message-ID: <202209160742.81BE54E@keescook>
+References: <YySE6FHiOcbWWR+9@work>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <YySE6FHiOcbWWR+9@work>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,50 +77,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org, linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When building with automatic stack variable initialization, GCC 12
-complains about variables defined outside of switch case statements.
-Move the variable into the case that uses it, which silences the warning:
+On Fri, Sep 16, 2022 at 03:15:04PM +0100, Gustavo A. R. Silva wrote:
+> When building with automatic stack variable initialization, GCC 12
+> complains about variables defined outside of switch case statements.
+> Move the variable into the case that uses it, which silences the warning:
+> 
+> arch/powerpc/xmon/xmon.c: In function ‘bpt_cmds’:
+> arch/powerpc/xmon/xmon.c:1529:13: warning: statement will never be executed [-Wswitch-unreachable]
+>  1529 |         int mode;
+>       |             ^~~~
+> 
+> Fixes: 09b6c1129f89 ("powerpc/xmon: Fix compile error with PPC_8xx=y")
+> Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
 
-arch/powerpc/xmon/xmon.c: In function ‘bpt_cmds’:
-arch/powerpc/xmon/xmon.c:1529:13: warning: statement will never be executed [-Wswitch-unreachable]
- 1529 |         int mode;
-      |             ^~~~
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-Fixes: 09b6c1129f89 ("powerpc/xmon: Fix compile error with PPC_8xx=y")
-Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
----
- arch/powerpc/xmon/xmon.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 26ef3388c24c..df91dfc7ff72 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -1525,9 +1525,9 @@ bpt_cmds(void)
- 	cmd = inchar();
- 
- 	switch (cmd) {
--	static const char badaddr[] = "Only kernel addresses are permitted for breakpoints\n";
--	int mode;
--	case 'd':	/* bd - hardware data breakpoint */
-+	case 'd': {	/* bd - hardware data breakpoint */
-+		static const char badaddr[] = "Only kernel addresses are permitted for breakpoints\n";
-+		int mode;
- 		if (xmon_is_ro) {
- 			printf(xmon_ro_msg);
- 			break;
-@@ -1560,6 +1560,7 @@ bpt_cmds(void)
- 
- 		force_enable_xmon();
- 		break;
-+	}
- 
- 	case 'i':	/* bi - hardware instr breakpoint */
- 		if (xmon_is_ro) {
 -- 
-2.34.1
-
+Kees Cook
