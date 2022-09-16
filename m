@@ -4,89 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D29CECAAD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:48:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B5B8C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:48:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTNQR3p8dz3fr6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:47:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTNR86bsWz3fGP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:48:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sAt7E7eQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RIvMyXk5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sAt7E7eQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RIvMyXk5;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTNCS5Ydlz3fR3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTNCS5K6tz3fR2
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:38:28 +1000 (AEST)
 Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5VJEn004074;
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5VKRU004180;
 	Fri, 16 Sep 2022 05:38:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : content-transfer-encoding
- : mime-version; s=pp1; bh=UX0f1CD98QltkImvvvAoNYBKLwE4PSe7YiLsOiuClZ8=;
- b=sAt7E7eQqVqwLN4Prh8IOssxB4oB/44cFUVkc0U22QMZcVT9+USliafAWNY64iZTh85y
- TiA2I+iQ48nuX89kER9R5700L3dqxfwiqut/QRs/aPv/fW6UPGRmdfFZ8SRJjpnTnxre
- HRIb0gXQMmiHflU5PU/iOkSiRPtqh0IjrC9gvSdTgoqEFkAxcQkVKdOIG3MGvZw6rNYJ
- PzxLgJnuJLbK68c2cVD/YjOiJjC+jdbqMLne8rZFPMceSqmEB8sUlPlsVo4BC/+5MDy5
- 89r3a1Hq4qVwx9dFE8rG0slTGGn8Bkj56Gou+haEZI0VosvsXpvyCLBxkl/FFhQz4ma0 Bw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk2f888a-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=juocgxdCf+GLuqAc5mijtgfD0FONYUQM3geYd6ekZGU=;
+ b=RIvMyXk5bkrIgl6BtTwpRmPPz2cOo6LGK4v2pIZllSdF0K1CslsIwk3hFwQKE9Q+6k7G
+ p3fTW+9hGCT4VD6cmrwF/5BxqckC9mgNu+6jh5l03Cin2ZvmQ/P3uhwrg1hMX/iO+JOm
+ ecoaYF1brsvFmgCp/QWZN3RHUN/vGbzZlEwtiGHEMYw+PDGYu8H0LiRu6TYyQvYC+CyI
+ SzNDWhSWGIjrItsNZ3eP6Yotb/T0Hs9E3QGf62/iZ7e0OGJik56YMoa5SmClvnu7mkSN
+ lgFjcBZVyhXzp9WrSOfT6Jdj62IoqF9ezaT2e+gXCMjkgHn9D2kprdLvgYrcWztvq0/u KQ== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk2f8868-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:38:24 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5WMbb008429;
-	Fri, 16 Sep 2022 05:38:23 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk2f8862-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Sep 2022 05:38:23 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5Kwpw022293;
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5LD2U017456;
 	Fri, 16 Sep 2022 05:33:21 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
-	by ppma04ams.nl.ibm.com with ESMTP id 3jm921gh8j-1
+Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+	by ppma05fra.de.ibm.com with ESMTP id 3jm91crcnp-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:33:21 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
-	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XIlr30540194
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5TUnH32702828
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Sep 2022 05:33:18 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BB02442042;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1E3D342041;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+	Fri, 16 Sep 2022 05:29:30 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5219252050;
+	Fri, 16 Sep 2022 05:33:19 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id F213F52051;
 	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 656DC6056F;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A669460593;
 	Fri, 16 Sep 2022 15:33:13 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 11/23] powerpc/32: Remove powerpc select specialisation
-Date: Fri, 16 Sep 2022 15:32:48 +1000
-Message-Id: <20220916053300.786330-12-rmclure@linux.ibm.com>
+Subject: [PATCH 20/23] powerpc/64s: Clear/restore caller gprs in syscall interrupt/return
+Date: Fri, 16 Sep 2022 15:32:57 +1000
+Message-Id: <20220916053300.786330-21-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220916053300.786330-1-rmclure@linux.ibm.com>
 References: <20220916053300.786330-1-rmclure@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: QdqFp1GLsTIOvY815ia2JpjO7g17svC6
-X-Proofpoint-GUID: TwD46pgajtQTRltXbL0C-PNMNkd2scwK
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Y4bA_gyCP7g-5xstbVX9y2675ANIZ6tI
+X-Proofpoint-GUID: Y4bA_gyCP7g-5xstbVX9y2675ANIZ6tI
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-16_02,2022-09-14_04,2022-06-22_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
- phishscore=0 impostorscore=0 mlxlogscore=924 suspectscore=0 clxscore=1015
+ phishscore=0 impostorscore=0 mlxlogscore=501 suspectscore=0 clxscore=1015
  adultscore=0 spamscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
  definitions=main-2209160041
@@ -101,114 +91,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Syscall #82 has been implemented for 32-bit platforms in a unique way on
-powerpc systems. This hack will in effect guess whether the caller is
-expecting new select semantics or old select semantics. It does so via a
-guess, based off the first parameter. In new select, this parameter
-represents the length of a user-memory array of file descriptors, and in
-old select this is a pointer to an arguments structure.
-
-The heuristic simply interprets sufficiently large values of its first
-parameter as being a call to old select. The following is a discussion
-on how this syscall should be handled.
-
-Link: https://lore.kernel.org/lkml/13737de5-0eb7-e881-9af0-163b0d29a1a0@csgroup.eu/
-
-As discussed in this thread, the existence of such a hack suggests that for
-whatever powerpc binaries may predate glibc, it is most likely that they
-would have taken use of the old select semantics. x86 and arm64 both
-implement this syscall with oldselect semantics.
-
-Remove the powerpc implementation, and update syscall.tbl to refer to emit
-a reference to sys_old_select and compat_sys_old_select
-for 32-bit binaries, in keeping with how other architectures support
-syscall #82.
+Clear user state in gprs (assign to zero) to reduce the influence of user
+registers on speculation within kernel syscall handlers. Clears occur
+at the very beginning of the sc and scv 0 interrupt handlers, with
+restores occurring following the execution of the syscall handler.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-V1 -> V2: Remove arch-specific select handler
-V2 -> V3: Remove ppc_old_select prototype in <asm/syscalls.h>. Move to
-earlier in patch series
-V4 -> V5: Use compat_sys_old_select on 64-bit systems.
+V1 -> V2: Update summary
+V2 -> V3: Remove erroneous summary paragraph on syscall_exit_prepare
+V3 -> V4: Use ZEROIZE instead of NULLIFY. Clear r0 also.
+V4 -> V5: Move to end of patch series.
 ---
- arch/powerpc/include/asm/syscalls.h           |  2 --
- arch/powerpc/kernel/syscalls.c                | 17 -----------------
- arch/powerpc/kernel/syscalls/syscall.tbl      |  2 +-
- .../arch/powerpc/entry/syscalls/syscall.tbl   |  2 +-
- 4 files changed, 2 insertions(+), 21 deletions(-)
+ arch/powerpc/kernel/interrupt_64.S | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 960b3871db72..20cbd29b1228 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -30,8 +30,6 @@ long sys_mmap2(unsigned long addr, size_t len,
- 	       unsigned long fd, unsigned long pgoff);
- long ppc64_personality(unsigned long personality);
- long sys_rtas(struct rtas_args __user *uargs);
--int ppc_select(int n, fd_set __user *inp, fd_set __user *outp,
--	       fd_set __user *exp, struct __kernel_old_timeval __user *tvp);
- long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
- 		      u32 len_high, u32 len_low);
+diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
+index 16a1b44088e7..40147558e1a6 100644
+--- a/arch/powerpc/kernel/interrupt_64.S
++++ b/arch/powerpc/kernel/interrupt_64.S
+@@ -70,7 +70,7 @@ _ASM_NOKPROBE_SYMBOL(system_call_vectored_\name)
+ 	ld	r2,PACATOC(r13)
+ 	mfcr	r12
+ 	li	r11,0
+-	/* Can we avoid saving r3-r8 in common case? */
++	/* Save syscall parameters in r3-r8 */
+ 	SAVE_GPRS(3, 8, r1)
+ 	/* Zero r9-r12, this should only be required when restoring all GPRs */
+ 	std	r11,GPR9(r1)
+@@ -110,6 +110,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 	 * Zero user registers to prevent influencing speculative execution
+ 	 * state of kernel code.
+ 	 */
++	ZEROIZE_GPR(0)
+ 	ZEROIZE_GPRS(5, 12)
+ 	ZEROIZE_NVGPRS()
+ 	bl	system_call_exception
+@@ -140,6 +141,7 @@ BEGIN_FTR_SECTION
+ 	HMT_MEDIUM_LOW
+ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
  
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index abc3fbb3c490..34e1ae88e15b 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -63,23 +63,6 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
- 	return do_mmap2(addr, len, prot, flags, fd, offset, PAGE_SHIFT);
- }
++	REST_NVGPRS(r1)
+ 	cmpdi	r3,0
+ 	bne	.Lsyscall_vectored_\name\()_restore_regs
  
--#ifdef CONFIG_PPC32
--/*
-- * Due to some executables calling the wrong select we sometimes
-- * get wrong args.  This determines how the args are being passed
-- * (a single ptr to them all args passed) then calls
-- * sys_select() with the appropriate args. -- Cort
-- */
--int
--ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct __kernel_old_timeval __user *tvp)
--{
--	if ((unsigned long)n >= 4096)
--		return sys_old_select((void __user *)n);
--
--	return sys_select(n, inp, outp, exp, tvp);
--}
--#endif
--
- #ifdef CONFIG_PPC64
- long ppc64_personality(unsigned long personality)
- {
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index 2600b4237292..64f27cbbdd2c 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -110,7 +110,7 @@
- 79	common	settimeofday			sys_settimeofday		compat_sys_settimeofday
- 80	common	getgroups			sys_getgroups
- 81	common	setgroups			sys_setgroups
--82	32	select				ppc_select			sys_ni_syscall
-+82	32	select				sys_old_select			compat_sys_old_select
- 82	64	select				sys_ni_syscall
- 82	spu	select				sys_ni_syscall
- 83	common	symlink				sys_symlink
-diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-index 2600b4237292..64f27cbbdd2c 100644
---- a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-+++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
-@@ -110,7 +110,7 @@
- 79	common	settimeofday			sys_settimeofday		compat_sys_settimeofday
- 80	common	getgroups			sys_getgroups
- 81	common	setgroups			sys_setgroups
--82	32	select				ppc_select			sys_ni_syscall
-+82	32	select				sys_old_select			compat_sys_old_select
- 82	64	select				sys_ni_syscall
- 82	spu	select				sys_ni_syscall
- 83	common	symlink				sys_symlink
+@@ -243,7 +245,7 @@ END_BTB_FLUSH_SECTION
+ 	ld	r2,PACATOC(r13)
+ 	mfcr	r12
+ 	li	r11,0
+-	/* Can we avoid saving r3-r8 in common case? */
++	/* Save syscall parameters in r3-r8 */
+ 	SAVE_GPRS(3, 8, r1)
+ 	/* Zero r9-r12, this should only be required when restoring all GPRs */
+ 	std	r11,GPR9(r1)
+@@ -295,6 +297,7 @@ END_BTB_FLUSH_SECTION
+ 	 * Zero user registers to prevent influencing speculative execution
+ 	 * state of kernel code.
+ 	 */
++	ZEROIZE_GPR(0)
+ 	ZEROIZE_GPRS(5, 12)
+ 	ZEROIZE_NVGPRS()
+ 	bl	system_call_exception
+@@ -337,6 +340,7 @@ BEGIN_FTR_SECTION
+ 	stdcx.	r0,0,r1			/* to clear the reservation */
+ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 
++	REST_NVGPRS(r1)
+ 	cmpdi	r3,0
+ 	bne	.Lsyscall_restore_regs
+ 	/* Zero volatile regs that may contain sensitive kernel data */
+@@ -364,7 +368,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ .Lsyscall_restore_regs:
+ 	ld	r3,_CTR(r1)
+ 	ld	r4,_XER(r1)
+-	REST_NVGPRS(r1)
+ 	mtctr	r3
+ 	mtspr	SPRN_XER,r4
+ 	REST_GPR(0, r1)
 -- 
 2.34.1
 
