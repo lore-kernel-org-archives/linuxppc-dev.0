@@ -4,70 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA9F5C6FA86
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 04:12:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A640BC54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:08:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTLJk13tPz3fDF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 14:12:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTMYG62hwz3c7h
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:08:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=n/YfM7Sv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=brainfault-org.20210112.gappssmtp.com header.i=@brainfault-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=yAWumhze;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=brainfault.org (client-ip=2607:f8b0:4864:20::134; helo=mail-il1-x134.google.com; envelope-from=anup@brainfault.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=n/YfM7Sv;
+	dkim=pass (2048-bit key; unprotected) header.d=brainfault-org.20210112.gappssmtp.com header.i=@brainfault-org.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=yAWumhze;
 	dkim-atps=neutral
-Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
+Received: from mail-il1-x134.google.com (mail-il1-x134.google.com [IPv6:2607:f8b0:4864:20::134])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTLCd2ZlFz3c6N
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 14:08:29 +1000 (AEST)
-Received: by mail-pg1-x531.google.com with SMTP id r23so10626039pgr.6
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2022 21:08:28 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTMXX0Pl8z2xrH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:08:09 +1000 (AEST)
+Received: by mail-il1-x134.google.com with SMTP id x13so1388125ilp.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Sep 2022 22:08:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=FzVeBl6UEwj4BGFvXAQc6ukNXP28RZr0i6SJS1709Xk=;
-        b=n/YfM7Sv4h+ygDRer1ktk6/5A89oxTLmogZiwGSYhK24iFTemo1+LU4ZasacManI0E
-         VhlshWpwF36cdv9hcA3PHE0JwBOS4MsmDVyHkaMIUe4+/ljevbg2FLgnZtaS3/6UvD6T
-         nDsdR6HISwg7kXZvBOlfFUlIx3+xxAoHnIYKn5Xvmd30kzemObEIeC9RQ3vSCn0NyiM8
-         +nav0kC3hPJjjRchGdIeV1nme3o2af7Jz2C+rDHvI41DnZyfZjEqSB9+j9XVpDl8i00t
-         rkvCa7oRhqHvt6YP8TJKVuNX58mXW7eZ5jJYZ2JlOrMxsrJj24LXa7tR/ivnG+4Xzc8n
-         gdqw==
+        d=brainfault-org.20210112.gappssmtp.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=yP5XHXLcK+UX9e2N5YzbTl9a4h8ihKkfwEUan36DPrg=;
+        b=yAWumhzewMa3eEP3CnaMNUvAKmgC8eanQ3L4jWiwdGCcIzPkhFrQzQw0wwV9+O9C/s
+         pWA8px3RR32jSQRkZ724RUliMw1N1pJV7uypHBZtXw/s45KvAkUFFBkjDay0fezO6Q1H
+         n/OjWEaMaEvHTgl1WjFIQhvNgjxtHZeYZXfVlqejl77Y0na9OV31a8qO4TRydLDh9b1J
+         NF1Fubd/swhKTWFgEXpw3HK96R4pCPPNOYmiQOe7Bp9RLaM6/LZ/umsF8xY1IvG5Kb40
+         CBEv7FTQftTVcumiWuAZRwOn7ym/68hjz6J2lRqkwYLZ2FbLbPgjYRH/Tm0ZHhOzbqfn
+         INxg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=FzVeBl6UEwj4BGFvXAQc6ukNXP28RZr0i6SJS1709Xk=;
-        b=nn+N8WF0tc3hgmfthx8ydeaDDoCDyiIKIhu0PGG+QxDQsbAuluGiuo6KDaJH4we82H
-         AeoHgcgrHJYUIb6lzy8BlRdAORZJUjHEs4/d/ZJwx1Im5+ECnYwYF+OWSHRqn7r86YCY
-         ODIQela5iKnzAyAdmd3+UNFwA24SOKVVr6cTfmd8INK/d2UJXZ+sqR0/HCAA2hU4vryr
-         bGJJ42v/sgu2jx1rKQE1GLSTcn3vVq+1dRG/u6gxaL2pLqcSRBKXJx2p6tl0uIi6cjUS
-         a4FjxhFvioo18JSjkSb9uNEXmy3Ud5jpf0J4H0Wk5yaLq2Fi7tX5Y4f1E9dlU8mNGW+J
-         VZWg==
-X-Gm-Message-State: ACrzQf3TSa67nxgnjDMGQ3EKepp1o0hdbyp+jOQ1hIAONwASrQ51w2lB
-	/3s9wyuhBQzQrBkKMhA/ItHSe9GfrVY=
-X-Google-Smtp-Source: AMsMyM5dHg4JOQq59j5GFod8A5rxeWlfZ31C8Ime7QFGzcQs5/BQLxBAsp4GRAIzZdew6oC8uXA0mQ==
-X-Received: by 2002:a63:1349:0:b0:438:fa5a:b6f1 with SMTP id 9-20020a631349000000b00438fa5ab6f1mr2913581pgt.250.1663301306326;
-        Thu, 15 Sep 2022 21:08:26 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com (193-116-127-167.tpgi.com.au. [193.116.127.167])
-        by smtp.gmail.com with ESMTPSA id t6-20020a1709027fc600b0017534ffd491sm13696816plb.163.2022.09.15.21.08.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Sep 2022 21:08:25 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH v2 7/7] powerpc/build: put sys_call_table in .data.rel.ro if RELOCATABLE
-Date: Fri, 16 Sep 2022 14:07:55 +1000
-Message-Id: <20220916040755.2398112-8-npiggin@gmail.com>
-X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20220916040755.2398112-1-npiggin@gmail.com>
-References: <20220916040755.2398112-1-npiggin@gmail.com>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=yP5XHXLcK+UX9e2N5YzbTl9a4h8ihKkfwEUan36DPrg=;
+        b=Tw4G9UtCeCt+AUKJhudF5AnC01/hnxUfo5tR7G1WjvtqTDAE/UXr3n9MPwAPsuQqRL
+         MWuBaOpUxjA6CE6+Sdh5uQnfLaSbAdS3M9muCPfvCyDjWB09jzyxiN3iKJSuXGYEKcTG
+         myRp4eAi7tdiYg/Ww66kdWhzHRXs+eMNOO75Wsf4bMkakdTgX55bPSfuQfCRImQV48Sq
+         rRbutASL4GCbuZbTI6w87R1mwYH2M2hhUrq5zjLJ2VjUEVG37pAAbs+jW0k/weoHglC7
+         KaCznAZ8jI/XTzsYemvsV6NihUi0hJccY0l3hXEsyTgqNzbupYhOWCay7vw7bHwTxnOQ
+         90VQ==
+X-Gm-Message-State: ACrzQf0S5PRIBksflkvFCBPskU3J/nftyN5e7tS4jhVNFBKdz0v2y/nA
+	fyGCVQyerqHOQDxa5TDMX3rfFizqE6+oc4IrRLU/qw==
+X-Google-Smtp-Source: AMsMyM5GqgO04FmX/wur2Jt+8ypcoEU8eotcYd1jKm89jw9hQAj1ZhLfSUj5pD6zTUMTtw3xNbjyMSejcFd/JFYW8jo=
+X-Received: by 2002:a05:6e02:164d:b0:2f1:869c:c45b with SMTP id
+ v13-20020a056e02164d00b002f1869cc45bmr1488365ilu.212.1663304885797; Thu, 15
+ Sep 2022 22:08:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20220504074807.3616813-1-aik@ozlabs.ru>
+In-Reply-To: <20220504074807.3616813-1-aik@ozlabs.ru>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 16 Sep 2022 10:37:53 +0530
+Message-ID: <CAAhSdy0hxHjQkVj8TLPh4j=vBrX1QoZcJXNeRBPtf5ozdjQaTQ@mail.gmail.com>
+Subject: Re: [PATCH kernel] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE platform dependent
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,37 +72,142 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-s390@vger.kernel.org, kvm@vger.kernel.org, Fabiano Rosas <farosas@linux.ibm.com>, x86@kernel.org, linux-mips@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>, kvm-riscv@lists.infradead.org, Paolo Bonzini <pbonzini@redhat.com>, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, kvmarm@lists.cs.columbia.edu, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Const function pointers by convention live in .data.rel.ro if they need
-to be relocated. Now that .data.rel.ro is linked into the read-only
-region, put them in the right section. This doesn't make much practical
-difference, but it will make the C conversion of sys_call_table a
-smaller change as far as linking goes.
+On Wed, May 4, 2022 at 1:18 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>
+> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+> KVM on POWER9 has never implemented it - the compatibility mode code
+> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+> XIVE mode does not handle INTx in KVM at all.
+>
+> This moved the capability support advertising to platforms and stops
+> advertising it on XIVE, i.e. POWER9 and later.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>
+>
+> Or I could move this one together with KVM_CAP_IRQFD. Thoughts?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/systbl.S | 4 ++++
- 1 file changed, 4 insertions(+)
+For KVM RISC-V:
+Acked-by: Anup Patel <anup@brainfault.org>
 
-diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
-index cb3358886203..0bec33e86f50 100644
---- a/arch/powerpc/kernel/systbl.S
-+++ b/arch/powerpc/kernel/systbl.S
-@@ -12,7 +12,11 @@
- 
- #include <asm/ppc_asm.h>
- 
-+#ifdef CONFIG_RELOCATABLE
-+.section .data.rel.ro,"aw"
-+#else
- .section .rodata,"a"
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	.p2align	3
--- 
-2.37.2
+Thanks,
+Anup
 
+>
+> ---
+>  arch/arm64/kvm/arm.c       | 3 +++
+>  arch/mips/kvm/mips.c       | 3 +++
+>  arch/powerpc/kvm/powerpc.c | 6 ++++++
+>  arch/riscv/kvm/vm.c        | 3 +++
+>  arch/s390/kvm/kvm-s390.c   | 3 +++
+>  arch/x86/kvm/x86.c         | 3 +++
+>  virt/kvm/kvm_main.c        | 1 -
+>  7 files changed, 21 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+> index 523bc934fe2f..092f0614bae3 100644
+> --- a/arch/arm64/kvm/arm.c
+> +++ b/arch/arm64/kvm/arm.c
+> @@ -210,6 +210,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_SET_GUEST_DEBUG:
+>         case KVM_CAP_VCPU_ATTRIBUTES:
+>         case KVM_CAP_PTP_KVM:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_SET_GUEST_DEBUG2:
+> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+> index a25e0b73ee70..0f3de470a73e 100644
+> --- a/arch/mips/kvm/mips.c
+> +++ b/arch/mips/kvm/mips.c
+> @@ -1071,6 +1071,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_READONLY_MEM:
+>         case KVM_CAP_SYNC_MMU:
+>         case KVM_CAP_IMMEDIATE_EXIT:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_NR_VCPUS:
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 875c30c12db0..87698ffef3be 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -591,6 +591,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>                 break;
+>  #endif
+>
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +               r = !xive_enabled();
+> +               break;
+> +#endif
+> +
+>         case KVM_CAP_PPC_ALLOC_HTAB:
+>                 r = hv_enabled;
+>                 break;
+> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> index c768f75279ef..b58579b386bb 100644
+> --- a/arch/riscv/kvm/vm.c
+> +++ b/arch/riscv/kvm/vm.c
+> @@ -63,6 +63,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_READONLY_MEM:
+>         case KVM_CAP_MP_STATE:
+>         case KVM_CAP_IMMEDIATE_EXIT:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_NR_VCPUS:
+> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> index 156d1c25a3c1..85e093fc8d13 100644
+> --- a/arch/s390/kvm/kvm-s390.c
+> +++ b/arch/s390/kvm/kvm-s390.c
+> @@ -564,6 +564,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_SET_GUEST_DEBUG:
+>         case KVM_CAP_S390_DIAG318:
+>         case KVM_CAP_S390_MEM_OP_EXTENSION:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_SET_GUEST_DEBUG2:
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 0c0ca599a353..a0a7b769483d 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -4273,6 +4273,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_SYS_ATTRIBUTES:
+>         case KVM_CAP_VAPIC:
+>         case KVM_CAP_ENABLE_CAP:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_EXIT_HYPERCALL:
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 70e05af5ebea..885e72e668a5 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -4293,7 +4293,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>  #endif
+>  #ifdef CONFIG_HAVE_KVM_IRQFD
+>         case KVM_CAP_IRQFD:
+> -       case KVM_CAP_IRQFD_RESAMPLE:
+>  #endif
+>         case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>         case KVM_CAP_CHECK_EXTENSION_VM:
+> --
+> 2.30.2
+>
