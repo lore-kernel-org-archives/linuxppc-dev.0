@@ -4,52 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F271ECAAD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 06:08:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DF77C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 06:25:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTNt44WQnz2ypn
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 16:08:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTPFL3BNWz3c18
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 16:25:10 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (4096-bit key; unprotected) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202205 header.b=Bh3hgchM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TjdnY0wh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nabijaczleweli.xyz (client-ip=139.28.40.42; helo=tarta.nabijaczleweli.xyz; envelope-from=nabijaczleweli@nabijaczleweli.xyz; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (4096-bit key; unprotected) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202205 header.b=Bh3hgchM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TjdnY0wh;
 	dkim-atps=neutral
-X-Greylist: delayed 543 seconds by postgrey-1.36 at boromir; Fri, 16 Sep 2022 12:04:27 AEST
-Received: from tarta.nabijaczleweli.xyz (unknown [139.28.40.42])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTHSW63pBz302x
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 12:04:27 +1000 (AEST)
-Received: from tarta.nabijaczleweli.xyz (unknown [192.168.1.250])
-	by tarta.nabijaczleweli.xyz (Postfix) with ESMTPSA id AC81C1622;
-	Fri, 16 Sep 2022 03:55:19 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nabijaczleweli.xyz;
-	s=202205; t=1663293319;
-	bh=l9k1DbKKiMqSObU43xu0T2mj2fDjr0VeGS9y7PQ8jPg=;
-	h=Date:From:Cc:Subject:References:In-Reply-To:From;
-	b=Bh3hgchMAnvrp8bHQhJt5ll2yDO/+vXV/PUUx6r4R+oSztvKmgVg6zmhk1reW27iR
-	 tGgu+5AArFJ8BMWtNZOBlFN/xKI6UMzevCjKMdwjvUKkADW6jw9LH4TAlxiR1Pr2uC
-	 vqIRxtSJpEin6x0ieLy4JnCiuGmZ82z7x8K6c3YkMjRDEIODeYnFELjz/6RsS6uoEO
-	 43P2rKBBYFDaIindRFHhwGAgbUcUnD56GjiHI7MQJjEsL0taLBYivPj+e+tfwaRMA6
-	 528fQa+lcNqqG2BQCA6SMH47Rna1pl2Pwh0BN4Ep+wLLH0zeqSMPkLsm7JPT9ekkZv
-	 cm3IkFBEe3IyX0G3lju5NOUQcuuqrIXM94p8jtRorKVAP3CEXd7M8gjQtHIxTAz48y
-	 6dIiMJIdaSxubjwDQFOJ4tZRq3tfCHPbRzAbjiQiijrWN6bJ6BOy1wsCG1TLmpdBWY
-	 jxS/9lxv2XJ8v54q4SsOyQKjzfmO4HTM2v6uEx82JZWfbjHna2tAnHPn4DVddx1VeD
-	 2sRGDCalWHHcFtdQpZ1qW52POJR8AOg0vMGllLfyfc3F3p4Pv5V9pDZcMIGRJludDO
-	 h17KsS2yhrx4PezduKSiPiXkGFjFKoiBm678TNzejofOtgtLHmLgXi9kdQ2jJAyBZS
-	 GVIh7rR8oWKmadMT9PLmn7eQ=
-Date: Fri, 16 Sep 2022 03:55:18 +0200
-From: =?utf-8?B?0L3QsNCx?= <nabijaczleweli@nabijaczleweli.xyz>
-Subject: [PATCH 5/5] tty: hvc: remove HVC_IUCV_MAGIC
-Message-ID: <8c8a2c9dfc1bfbe6ef3f3237368e483865fc1c29.1663288066.git.nabijaczleweli@nabijaczleweli.xyz>
-References: <476d024cd6b04160a5de381ea2b9856b60088cbd.1663288066.git.nabijaczleweli@nabijaczleweli.xyz>
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTPDg13Hqz2xjt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 16:24:34 +1000 (AEST)
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5hlrs010067;
+	Fri, 16 Sep 2022 06:24:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=h5UBtJeIO6ZtF/gYD5gMZ0KDP0Wzw4KIjF+qDCxbDJ4=;
+ b=TjdnY0whPXvg8vDMPZWnR8Pc1Fy5I+Kc40k7bkN6XNr5ebypvS8++O0CJnvj3Cj4L+XX
+ l8PUM0tR8CylYXu6LsKDy2DxzD+EWj+hrk3tiJl9ZK4biuCUkRXaWM2CRww142+hmBpH
+ +E3XEDMYQTMixjd5DrK0tQ4E+NNqJWyXqP6gg86PDN4bSnsXWJ6wj8LGOlee3jksASIx
+ mCgAB9vStp6D+JSEUQnnngXQ/v7GBTs9tRn8f7inujtgxygLJlOynh28CA9ZJNMpjMqr
+ 1UOl/idJDlbgplJBZ+oXCKPFFtlwTWRcBwFHc3fop/zgYkSWV5ygsbM7+DdVKT3V70hs YQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk8eh1w1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Sep 2022 06:24:18 +0000
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5jDjx015460;
+	Fri, 16 Sep 2022 06:24:17 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk8eh1vg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Sep 2022 06:24:17 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G6Ko8O003065;
+	Fri, 16 Sep 2022 06:24:15 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma06ams.nl.ibm.com with ESMTP id 3jm9218jjv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Sep 2022 06:24:15 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G6OD8e23200056
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 16 Sep 2022 06:24:13 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 600B74C04A;
+	Fri, 16 Sep 2022 06:24:13 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 08E6A4C040;
+	Fri, 16 Sep 2022 06:24:13 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Sep 2022 06:24:12 +0000 (GMT)
+Received: from beng-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9411F600EE;
+	Fri, 16 Sep 2022 16:24:09 +1000 (AEST)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/6] powerpc/module: Handle caller-saved TOC in module linker
+Date: Fri, 16 Sep 2022 16:23:26 +1000
+Message-Id: <20220916062330.430468-3-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20220916062330.430468-1-bgray@linux.ibm.com>
+References: <20220916062330.430468-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="rnftti7pthqkpnuy"
-Content-Disposition: inline
-In-Reply-To: <476d024cd6b04160a5de381ea2b9856b60088cbd.1663288066.git.nabijaczleweli@nabijaczleweli.xyz>
-User-Agent: NeoMutt/20220429
-X-Mailman-Approved-At: Fri, 16 Sep 2022 16:07:55 +1000
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: amjqpL4TnH9VLa4tjBrc8-eM5bEBtPaK
+X-Proofpoint-ORIG-GUID: cOGlfX9_LetUUGVUQUgnkGBWkLYmAi_p
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-16_02,2022-09-14_04,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=980
+ impostorscore=0 bulkscore=0 clxscore=1011 suspectscore=0
+ lowpriorityscore=0 malwarescore=0 priorityscore=1501 phishscore=0
+ spamscore=0 mlxscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2209130000 definitions=main-2209160045
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,95 +101,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Randy Dunlap <rdunlap@infradead.org>, Jiri Slaby <jirislaby@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: christophe.leroy@c-s.fr, ajd@linux.ibm.com, peterz@infradead.org, Benjamin Gray <bgray@linux.ibm.com>, npiggin@gmail.com, ardb@kernel.org, jbaron@akamai.com, rostedt@goodmis.org, jpoimboe@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The callee may set a field in `st_other` to 1 to indicate r2 should be
+treated as caller-saved. This means a trampoline must be used to save
+the current TOC before calling it and restore it afterwards, much like
+external calls.
 
---rnftti7pthqkpnuy
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is necessary for supporting V2 ABI static calls that do not
+preserve the TOC.
 
-According to Greg, in the context of magic numbers as defined in
-magic-number.rst, "the tty layer should not need this and I'll gladly
-take patches"
-
-This stretches that definition slightly, since it multiplexes it with
-the terminal number as a constant offset, but is equivalent
-
-Ref: https://lore.kernel.org/linux-doc/YyMlovoskUcHLEb7@kroah.com/
-Signed-off-by: Ahelenia Ziemia=C5=84ska <nabijaczleweli@nabijaczleweli.xyz>
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
- drivers/tty/hvc/hvc_iucv.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/module_64.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tty/hvc/hvc_iucv.c b/drivers/tty/hvc/hvc_iucv.c
-index 32366caca662..7d49a872de48 100644
---- a/drivers/tty/hvc/hvc_iucv.c
-+++ b/drivers/tty/hvc/hvc_iucv.c
-@@ -29,7 +29,6 @@
-=20
-=20
- /* General device driver settings */
--#define HVC_IUCV_MAGIC		0xc9e4c3e5
- #define MAX_HVC_IUCV_LINES	HVC_ALLOC_TTY_ADAPTERS
- #define MEMPOOL_MIN_NR		(PAGE_SIZE / sizeof(struct iucv_tty_buffer)/4)
-=20
-@@ -131,9 +130,9 @@ static struct iucv_handler hvc_iucv_handler =3D {
-  */
- static struct hvc_iucv_private *hvc_iucv_get_private(uint32_t num)
- {
--	if ((num < HVC_IUCV_MAGIC) || (num - HVC_IUCV_MAGIC > hvc_iucv_devices))
-+	if (num > hvc_iucv_devices)
- 		return NULL;
--	return hvc_iucv_table[num - HVC_IUCV_MAGIC];
-+	return hvc_iucv_table[num];
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 7e45dc98df8a..3656476097c2 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -55,6 +55,11 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ 	 * of function and try to derive r2 from it). */
+ 	return PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
  }
-=20
- /**
-@@ -1072,8 +1071,8 @@ static int __init hvc_iucv_alloc(int id, unsigned int=
- is_console)
- 	priv->is_console =3D is_console;
-=20
- 	/* allocate hvc device */
--	priv->hvc =3D hvc_alloc(HVC_IUCV_MAGIC + id, /*		  PAGE_SIZE */
--			      HVC_IUCV_MAGIC + id, &hvc_iucv_ops, 256);
-+	priv->hvc =3D hvc_alloc(id, /*		 PAGE_SIZE */
-+			      id, &hvc_iucv_ops, 256);
- 	if (IS_ERR(priv->hvc)) {
- 		rc =3D PTR_ERR(priv->hvc);
- 		goto out_error_hvc;
-@@ -1371,7 +1370,7 @@ static int __init hvc_iucv_init(void)
-=20
- 	/* register the first terminal device as console
- 	 * (must be done before allocating hvc terminal devices) */
--	rc =3D hvc_instantiate(HVC_IUCV_MAGIC, IUCV_HVC_CON_IDX, &hvc_iucv_ops);
-+	rc =3D hvc_instantiate(0, IUCV_HVC_CON_IDX, &hvc_iucv_ops);
- 	if (rc) {
- 		pr_err("Registering HVC terminal device as "
- 		       "Linux console failed\n");
---=20
-2.30.2
++
++static bool need_r2save_stub(unsigned char st_other) {
++	return ((st_other & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT) == 1;
++}
++
+ #else
+ 
+ static func_desc_t func_desc(unsigned long addr)
+@@ -66,6 +71,10 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ 	return 0;
+ }
+ 
++static bool need_r2save_stub(unsigned char st_other) {
++	return false;
++}
++
+ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+ {
+ 	if (ptr < (void *)mod->arch.start_opd ||
+@@ -632,7 +641,8 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		case R_PPC_REL24:
+ 			/* FIXME: Handle weak symbols here --RR */
+ 			if (sym->st_shndx == SHN_UNDEF ||
+-			    sym->st_shndx == SHN_LIVEPATCH) {
++			    sym->st_shndx == SHN_LIVEPATCH ||
++			    need_r2save_stub(sym->st_other)) {
+ 				/* External: go via stub */
+ 				value = stub_for_addr(sechdrs, value, me,
+ 						strtab + sym->st_name);
+-- 
+2.37.3
 
---rnftti7pthqkpnuy
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEfWlHToQCjFzAxEFjvP0LAY0mWPEFAmMj14YACgkQvP0LAY0m
-WPGDlRAAmOsQ96hFk4wbrrr1tz6fBYeA1H7oPGYFhSIPjx2XstzizMg/6MCaYq6K
-wakN5iXs9GFmmpxoX+9MCt7tGbHP5pACaCRb+r/F8wTHFjHe7gAdVuGcVDnhhA1K
-6az+jDCnCHSFpimfjACDEbvzkN7io62V1y0NndI7xDOfzIgr11j5OKTHhKY0e5Em
-yj/SOQ1yIDoNQHJrx1IYK8x18QhLdK8CZWEiQ/HqlO79jQiM3y/TuT3yVJC9hu2v
-gHXLL5bg4M4MwZ9QkKizGcSnFXp3Wg2VwVBsFUdtHAs9df3YOV6CzPlTdGQABcJ4
-RJ68qx0W0o0tVy6obQqyZRP1LJTHbt+Dicw1fdAXMgrcXBhEnEOZzWjSA713MEqZ
-8uYKPle3Tz6wnf0NluBFKOUq0y5eov/GF1YLBWt8jSwa/5YmixHXz4YigCcZ/+1X
-9IMbwiFWXzoDIzO3xwcvHEK/MGMCPgB3a32Fzdx6wwpVVaAm7JKEhDpIMH0zxOor
-/2nJ4pwrtQ3fQI8QsUmZ0h1ylgWM+nBnYvucX/QANC+ihVAUN9WXSfz2Mo2RenAr
-99PAehuHK5wCWApyjgWrJi/8fvzAavjRuCj2sPK5X/HBXIn5gm5q6yClU1BD/0z7
-YjS8CTHUf+eAnvpC8zzY8NpBJJ2C48sBpY/7Kj09Nqbvlc+J1EY=
-=xgyf
------END PGP SIGNATURE-----
-
---rnftti7pthqkpnuy--
