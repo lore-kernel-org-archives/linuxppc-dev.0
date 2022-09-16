@@ -4,85 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33BF0ECAAD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 112B0ECAAD8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:44:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTNKL4zGFz3fRx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:43:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTNL65PGzz3f8Z
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:44:14 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=agzMcjeC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ieksT5je;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=agzMcjeC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ieksT5je;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5l2YjTz3bk0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:33:30 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5VKP8004180;
-	Fri, 16 Sep 2022 05:33:23 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5l3YtWz3bbj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:33:31 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5M66W010208;
+	Fri, 16 Sep 2022 05:33:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ruZsaTCsVcjyXtcsM0nUJNNvbRXrLKX2sgcKzuQ4Cmc=;
- b=agzMcjeCCHoPE+VW33YBCRm7psgK9QhMfPj6nQdm2UDUYD1FACc9YqMzEypXP+yfpE71
- vysSQAXvocf6InJJ+3DpaQU0TLL6j6Gn/gD3DM1PtpBb1TrJiyM1EMrDApU8085TRHKK
- O775I7DaPpn8ySHYlVRunPnKOLeuhRzZVUN1fnKz7NA7I+RqwEECtv0CF3ZdE139rqPV
- aISCnwzVIil/DT7hKiF7Us5vp4DjAEd7NNylNiytVffoZCBOXlRaENU+u8qb0uUoQu54
- zyTMMp9rQqE7kgg4NRhypYNjGSJTKD6XDYYPoSPspkPwWV52F3ufQ/6BBM9OWcp2Be21 1A== 
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk2f81xm-1
+ bh=6q7SrRk0n7ZvaurZg+Ju5kaD/unDcZhdgeeT5rUcecM=;
+ b=ieksT5jepzeRQ5Lo/rFeFX/rXJVzGYanT/mVnqcHoloa42dHvBNN7gxM4oZXV8qBLGBa
+ fNGxJA2eko82qzYx/lET1uQ15c4RvQO62uUsXIacw1ceU8iKQOjZhD4tMl2l4+F30h77
+ ELvA+b/eeJIu5UOM2VNVA2NEXLW4vXjfJ1u9BotCBWIc9n+fi+/A+JzjIG/xQ6TKDnDC
+ pexpZwmrRPvfBsN3JvpnOP1SEgLeelyPy7XjnyrknLF8hLmhOE58po4ySMj/VRJ+7BsU
+ YPhtLjyY3UW3GOZfFHuKsaOtwzoFJkceDs92Medrk9klbdGMggzUlZBuWn/WSth0+qFp yg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmjxe88st-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 16 Sep 2022 05:33:24 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5NAQv013187;
+	Fri, 16 Sep 2022 05:33:23 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmjxe88s0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:33:23 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5Kpne020720;
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5JvqF025385;
 	Fri, 16 Sep 2022 05:33:21 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma01fra.de.ibm.com with ESMTP id 3jm9168cgn-1
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma03fra.de.ibm.com with ESMTP id 3jm91p0cqd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Sep 2022 05:33:20 +0000
+	Fri, 16 Sep 2022 05:33:21 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XIY741288064
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XJhh42664388
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Sep 2022 05:33:18 GMT
+	Fri, 16 Sep 2022 05:33:19 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 663B111C050;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 59A7511C054;
+	Fri, 16 Sep 2022 05:33:19 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1228F11C052;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 04AF611C052;
+	Fri, 16 Sep 2022 05:33:19 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
 	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5F6C16050B;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9063D60571;
 	Fri, 16 Sep 2022 15:33:13 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 10/23] powerpc: Use generic fallocate compatibility syscall
-Date: Fri, 16 Sep 2022 15:32:47 +1000
-Message-Id: <20220916053300.786330-11-rmclure@linux.ibm.com>
+Subject: [PATCH 17/23] powerpc: Enable compile-time check for syscall handlers
+Date: Fri, 16 Sep 2022 15:32:54 +1000
+Message-Id: <20220916053300.786330-18-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220916053300.786330-1-rmclure@linux.ibm.com>
 References: <20220916053300.786330-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 270sra3677XnUESH2n7UIZyWXA-jBto0
-X-Proofpoint-GUID: 270sra3677XnUESH2n7UIZyWXA-jBto0
+X-Proofpoint-GUID: vC1gBXqBodWjvtw7GrgJR7HWMBP1Brud
+X-Proofpoint-ORIG-GUID: VE1vnYipVLdRO2px1zglJXr7KCPpCoK0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-16_02,2022-09-14_04,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
- phishscore=0 impostorscore=0 mlxlogscore=710 suspectscore=0 clxscore=1015
- adultscore=0 spamscore=0 bulkscore=0 malwarescore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
- definitions=main-2209160041
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
+ adultscore=0 clxscore=1015 priorityscore=1501 lowpriorityscore=0
+ mlxlogscore=999 spamscore=0 bulkscore=0 impostorscore=0 suspectscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2209160041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,77 +101,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>
+Cc: Rohan McLure <rmclure@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The powerpc fallocate compat syscall handler is identical to the
-generic implementation provided by commit 59c10c52f573f ("riscv:
-compat: syscall: Add compat_sys_call_table implementation"), and as
-such can be removed in favour of the generic implementation.
-
-A future patch series will replace more architecture-defined syscall
-handlers with generic implementations, dependent on introducing generic
-implementations that are compatible with powerpc and arm's parameter
-reorderings.
+The table of syscall handlers and registered compatibility syscall
+handlers has in past been produced using assembly, with function
+references resolved at link time. This moves link-time errors to
+compile-time, by rewriting systbl.S in C, and including the
+linux/syscalls.h, linux/compat.h and asm/syscalls.h headers for
+prototypes.
 
 Reported-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Reported-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-V1 -> V2: Remove arch-specific fallocate handler.
-V2 -> V3: Remove generic fallocate prototype. Move to beginning of
-series.
-V4 -> V5: Remove implementation as well which I somehow failed to do.
-Replace local BE compat_arg_u64 with generic.
+V1 -> V2: New patch.
+V4 -> V5: For this patch only, represent handler function pointers as
+unsigned long. Remove reference to syscall wrappers. Use asm/syscalls.h
+which implies asm/syscall.h
 ---
- arch/powerpc/include/asm/syscalls.h | 2 --
- arch/powerpc/include/asm/unistd.h   | 1 +
- arch/powerpc/kernel/sys_ppc32.c     | 7 -------
- 3 files changed, 1 insertion(+), 9 deletions(-)
+ arch/powerpc/kernel/{systbl.S => systbl.c} | 28 ++++++++------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 16b668515d15..960b3871db72 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -51,8 +51,6 @@ compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u3
- int compat_sys_truncate64(const char __user *path, u32 reg4,
- 			  unsigned long len1, unsigned long len2);
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.c
+similarity index 61%
+rename from arch/powerpc/kernel/systbl.S
+rename to arch/powerpc/kernel/systbl.c
+index 6c1db3b6de2d..ce52bd2ec292 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.c
+@@ -10,32 +10,26 @@
+  * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com) 
+  */
  
--long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2, u32 len1, u32 len2);
+-#include <asm/ppc_asm.h>
++#include <linux/syscalls.h>
++#include <linux/compat.h>
++#include <asm/unistd.h>
++#include <asm/syscalls.h>
+ 
+-.section .rodata,"a"
++#define __SYSCALL_WITH_COMPAT(nr, entry, compat) __SYSCALL(nr, entry)
++#define __SYSCALL(nr, entry) [nr] = (unsigned long) &entry,
+ 
+-#ifdef CONFIG_PPC64
+-	.p2align	3
+-#define __SYSCALL(nr, entry)	.8byte entry
+-#else
+-	.p2align	2
+-#define __SYSCALL(nr, entry)	.long entry
+-#endif
 -
- int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
- 			   unsigned long len2);
- 
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index b1129b4ef57d..659a996c75aa 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -45,6 +45,7 @@
- #define __ARCH_WANT_SYS_UTIME
- #define __ARCH_WANT_SYS_NEWFSTATAT
- #define __ARCH_WANT_COMPAT_STAT
-+#define __ARCH_WANT_COMPAT_FALLOCATE
- #define __ARCH_WANT_COMPAT_SYS_SENDFILE
+-#define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)
+-.globl sys_call_table
+-sys_call_table:
++const unsigned long sys_call_table[] = {
+ #ifdef CONFIG_PPC64
+ #include <asm/syscall_table_64.h>
+ #else
+ #include <asm/syscall_table_32.h>
  #endif
- #define __ARCH_WANT_SYS_FORK
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index ba363328da2b..d961634976d8 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -79,13 +79,6 @@ int compat_sys_truncate64(const char __user * path, u32 reg4,
- 	return ksys_truncate(path, merge_64(len1, len2));
- }
++};
  
--long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
--				     u32 len1, u32 len2)
--{
--	return ksys_fallocate(fd, mode, merge_64(offset1, offset2),
--			     merge_64(len1, len2));
--}
--
- int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
- 				 unsigned long len2)
- {
+ #ifdef CONFIG_COMPAT
+ #undef __SYSCALL_WITH_COMPAT
+ #define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, compat)
+-.globl compat_sys_call_table
+-compat_sys_call_table:
+-#define compat_sys_sigsuspend	sys_sigsuspend
++const unsigned long compat_sys_call_table[] = {
+ #include <asm/syscall_table_32.h>
+-#endif
++};
++#endif /* CONFIG_COMPAT */
 -- 
 2.34.1
 
