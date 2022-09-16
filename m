@@ -4,89 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36075ECAAD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C7CDC54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:37:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTN995Zc2z3dqX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:36:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTN9w5Sfjz3fFx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:37:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFkhybVb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CMNjWQMI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFkhybVb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CMNjWQMI;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5k1dJQz3bZt
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5k1mjfz3bbj
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:33:28 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5SkiG008898;
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5SnJK009110;
 	Fri, 16 Sep 2022 05:33:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=jg4HvWBwT5S2C3SUQM7yZQUo64Da9pQa+qv9Xg7pNxk=;
- b=CFkhybVbyimwHT0GujfgfOGolMS3UR56Og3CKjN2u+kgj8zUV81jGCv29mZ4P8SKaLqR
- Tgtt9Om2e3/FpYTC/PTckoxCZgeoCmLSI47V2PstQGj8zVOSIY/UKZ/qcCEKKuzI0Vs8
- nWWD6tA0YzKHccWhSYfWjD/OK2/IOnIIH6syU55/r5ehJ0HP++vL9m4/ImnjsfRWe7zO
- //uTYa6r88IbgjkcbjTZEsWmaWNQlr/VJK7r0W1IuthMMeNtbyxAf1EIazuA4S/WMSVn
- 7JQoE9JPm+7oBO7zx2hoaKKApKCDT8lmRxiH8iw3DUVt30RRkWkc9cEN8WHcPurSueDg sw== 
+ bh=zflCbdFLRsfYU1lxuoW6IPhVBYWcAOKOCIorWONvT1I=;
+ b=CMNjWQMIl2L6OmzOilote6zUUEQpfpO91c88cZIwot4aOvbFIkZENs0ZAUGqNQXnpwAh
+ nW7jSK5L3aNrPwK8cV+y2I9SvZMv/DLbWPu7gqKEjYNW58Zvo5cWnQ+kYOIGsRIs2WDk
+ 1mTpF5QkYxDHg5sujh8t7mLl6uUqXkIddvJnBrmfRrQ7DQvFmd2flZE4PJ2t7qkOO28l
+ d5thcmFmgfEu+t5BgUpOQtX8nwlPOSnGCf1iXcizWqkRsS2ndc9FHwyt9wFGia/w3cFZ
+ q+pdC9ebGB9bMYxMpg4oKJkHKJchqLDTTDYNaWyPt7Efbbgt6+i133YUc4X35j2zJ8dL Qg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05xg-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05xd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:33:23 +0000
 Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5T6xj010429;
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5T6xh010429;
 	Fri, 16 Sep 2022 05:33:23 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05vk-1
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05vg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:33:23 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5Kpnd020720;
-	Fri, 16 Sep 2022 05:33:20 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
-	by ppma01fra.de.ibm.com with ESMTP id 3jm9168cgm-1
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5KqsH013531;
+	Fri, 16 Sep 2022 05:33:21 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma03ams.nl.ibm.com with ESMTP id 3jm918ggvf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 16 Sep 2022 05:33:20 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XIiJ34013662
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XI5J34931190
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Fri, 16 Sep 2022 05:33:18 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 74781AE045;
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7115EA405B;
 	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 20226AE04D;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C83FEA4054;
+	Fri, 16 Sep 2022 05:33:17 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Sep 2022 05:33:17 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7172260556;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 436D560435;
 	Fri, 16 Sep 2022 15:33:13 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/23] powerpc: Remove direct call to mmap2 syscall handlers
-Date: Fri, 16 Sep 2022 15:32:50 +1000
-Message-Id: <20220916053300.786330-14-rmclure@linux.ibm.com>
+Subject: [PATCH 06/23] powerpc/64e: Clarify register saves and clears with {SAVE,ZEROIZE}_GPRS
+Date: Fri, 16 Sep 2022 15:32:43 +1000
+Message-Id: <20220916053300.786330-7-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220916053300.786330-1-rmclure@linux.ibm.com>
 References: <20220916053300.786330-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: e7mWz5YN6wmnuT1dee0gxQH7fkpmmcX0
-X-Proofpoint-ORIG-GUID: rIaLBS8fvfi1sOyLD5PJEK7WasZL_5nO
+X-Proofpoint-GUID: -r_gBgYpZjmnGIzQmCo1duN_0Ej-cxpB
+X-Proofpoint-ORIG-GUID: yIHnMTQ8E1fPejidYI5Hivp6Z9kULf95
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-16_02,2022-09-14_04,2022-06-22_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
- bulkscore=0 phishscore=0 mlxlogscore=999 spamscore=0 adultscore=0
+ bulkscore=0 phishscore=0 mlxlogscore=738 spamscore=0 adultscore=0
  priorityscore=1501 clxscore=1015 impostorscore=0 malwarescore=0
  suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2209130000 definitions=main-2209160041
@@ -105,86 +105,109 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Syscall handlers should not be invoked internally by their symbol names,
-as these symbols defined by the architecture-defined SYSCALL_DEFINE
-macro. Move the compatibility syscall definition for mmap2 to
-syscalls.c, so that all mmap implementations can share a helper function.
+The common interrupt handler prologue macro and the bad_stack
+trampolines include consecutive sequences of register saves, and some
+register clears. Neaten such instances by expanding use of the SAVE_GPRS
+macro and employing the ZEROIZE_GPR macro when appropriate.
 
-Remove 'inline' on static mmap helper.
+Also simplify an invocation of SAVE_GPRS targetting all non-volatile
+registers to SAVE_NVGPRS.
 
-Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Rohan Mclure <rmclure@linux.ibm.com>
+Reported-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-V1 -> V2: Move mmap2 compat implementation to asm/kernel/syscalls.c.
-V3 -> V4: Move to be applied before syscall wrapper introduced.
-V4 -> V5: Remove 'inline' in helper.
+V3 -> V4: New commit.
 ---
- arch/powerpc/kernel/sys_ppc32.c |  9 ---------
- arch/powerpc/kernel/syscalls.c  | 17 ++++++++++++++---
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 27 +++++++++++---------------
+ 1 file changed, 11 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index d961634976d8..776ae7565fc5 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -25,7 +25,6 @@
- #include <linux/poll.h>
- #include <linux/personality.h>
- #include <linux/stat.h>
--#include <linux/mman.h>
- #include <linux/in.h>
- #include <linux/syscalls.h>
- #include <linux/unistd.h>
-@@ -48,14 +47,6 @@
- #include <asm/syscalls.h>
- #include <asm/switch_to.h>
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 67dc4e3179a0..48c640ca425d 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -216,17 +216,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	mtlr	r10
+ 	mtcr	r11
  
--unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
--			  unsigned long prot, unsigned long flags,
--			  unsigned long fd, unsigned long pgoff)
--{
--	/* This should remain 12 even if PAGE_SIZE changes */
--	return sys_mmap(addr, len, prot, flags, fd, pgoff << 12);
--}
--
- compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, compat_size_t count,
- 			     u32 reg6, u32 pos1, u32 pos2)
- {
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index a04c97faa21a..9830957498b0 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -36,9 +36,9 @@
- #include <asm/time.h>
- #include <asm/unistd.h>
+-	ld	r10,GPR10(r1)
+-	ld	r11,GPR11(r1)
+-	ld	r12,GPR12(r1)
++	REST_GPRS(10, 12, r1)
+ 	mtspr	\scratch,r0
  
--static inline long do_mmap2(unsigned long addr, size_t len,
--			unsigned long prot, unsigned long flags,
--			unsigned long fd, unsigned long off, int shift)
-+static long do_mmap2(unsigned long addr, size_t len,
-+		     unsigned long prot, unsigned long flags,
-+		     unsigned long fd, unsigned long off, int shift)
- {
- 	if (!arch_validate_prot(prot, addr))
- 		return -EINVAL;
-@@ -56,6 +56,17 @@ SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
- 	return do_mmap2(addr, len, prot, flags, fd, pgoff, PAGE_SHIFT-12);
- }
- 
-+#ifdef CONFIG_COMPAT
-+COMPAT_SYSCALL_DEFINE6(mmap2,
-+		       unsigned long, addr, size_t, len,
-+		       unsigned long, prot, unsigned long, flags,
-+		       unsigned long, fd, unsigned long, pgoff)
-+{
-+	/* This should remain 12 even if PAGE_SIZE changes */
-+	return do_mmap2(addr, len, prot, flags, fd, pgoff << 12, PAGE_SHIFT-12);
-+}
-+#endif
-+
- SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
- 		unsigned long, prot, unsigned long, flags,
- 		unsigned long, fd, off_t, offset)
+ 	std	r10,\paca_ex+EX_R10(r13);
+ 	std	r11,\paca_ex+EX_R11(r13);
+ 	ld	r10,_NIP(r1)
+ 	ld	r11,_MSR(r1)
+-	ld	r0,GPR0(r1)
+-	ld	r1,GPR1(r1)
++	REST_GPRS(0, 1, r1)
+ 	mtspr	\srr0,r10
+ 	mtspr	\srr1,r11
+ 	ld	r10,\paca_ex+EX_R10(r13)
+@@ -372,16 +369,15 @@ ret_from_mc_except:
+ /* Core exception code for all exceptions except TLB misses. */
+ #define EXCEPTION_COMMON_LVL(n, scratch, excf)				    \
+ exc_##n##_common:							    \
+-	std	r0,GPR0(r1);		/* save r0 in stackframe */	    \
+-	std	r2,GPR2(r1);		/* save r2 in stackframe */	    \
+-	SAVE_GPRS(3, 9, r1);		/* save r3 - r9 in stackframe */    \
++	SAVE_GPR(0, r1);		/* save r0 in stackframe */	    \
++	SAVE_GPRS(2, 9, r1);		/* save r2 - r9 in stackframe */    \
+ 	std	r10,_NIP(r1);		/* save SRR0 to stackframe */	    \
+ 	std	r11,_MSR(r1);		/* save SRR1 to stackframe */	    \
+ 	beq	2f;			/* if from kernel mode */	    \
+ 2:	ld	r3,excf+EX_R10(r13);	/* get back r10 */		    \
+ 	ld	r4,excf+EX_R11(r13);	/* get back r11 */		    \
+ 	mfspr	r5,scratch;		/* get back r13 */		    \
+-	std	r12,GPR12(r1);		/* save r12 in stackframe */	    \
++	SAVE_GPR(12, r1);		/* save r12 in stackframe */	    \
+ 	ld	r2,PACATOC(r13);	/* get kernel TOC into r2 */	    \
+ 	mflr	r6;			/* save LR in stackframe */	    \
+ 	mfctr	r7;			/* save CTR in stackframe */	    \
+@@ -390,7 +386,7 @@ exc_##n##_common:							    \
+ 	lwz	r10,excf+EX_CR(r13);	/* load orig CR back from PACA	*/  \
+ 	lbz	r11,PACAIRQSOFTMASK(r13); /* get current IRQ softe */	    \
+ 	ld	r12,exception_marker@toc(r2);				    \
+-	li	r0,0;							    \
++	ZEROIZE_GPR(0);							    \
+ 	std	r3,GPR10(r1);		/* save r10 to stackframe */	    \
+ 	std	r4,GPR11(r1);		/* save r11 to stackframe */	    \
+ 	std	r5,GPR13(r1);		/* save it to stackframe */	    \
+@@ -1056,15 +1052,14 @@ bad_stack_book3e:
+ 	mfspr	r11,SPRN_ESR
+ 	std	r10,_DEAR(r1)
+ 	std	r11,_ESR(r1)
+-	std	r0,GPR0(r1);		/* save r0 in stackframe */	    \
+-	std	r2,GPR2(r1);		/* save r2 in stackframe */	    \
+-	SAVE_GPRS(3, 9, r1);		/* save r3 - r9 in stackframe */    \
++	SAVE_GPR(0, r1);		/* save r0 in stackframe */	    \
++	SAVE_GPRS(2, 9, r1);		/* save r2 - r9 in stackframe */    \
+ 	ld	r3,PACA_EXGEN+EX_R10(r13);/* get back r10 */		    \
+ 	ld	r4,PACA_EXGEN+EX_R11(r13);/* get back r11 */		    \
+ 	mfspr	r5,SPRN_SPRG_GEN_SCRATCH;/* get back r13 XXX can be wrong */ \
+ 	std	r3,GPR10(r1);		/* save r10 to stackframe */	    \
+ 	std	r4,GPR11(r1);		/* save r11 to stackframe */	    \
+-	std	r12,GPR12(r1);		/* save r12 in stackframe */	    \
++	SAVE_GPR(12, r1);		/* save r12 in stackframe */	    \
+ 	std	r5,GPR13(r1);		/* save it to stackframe */	    \
+ 	mflr	r10
+ 	mfctr	r11
+@@ -1072,12 +1067,12 @@ bad_stack_book3e:
+ 	std	r10,_LINK(r1)
+ 	std	r11,_CTR(r1)
+ 	std	r12,_XER(r1)
+-	SAVE_GPRS(14, 31, r1)
++	SAVE_NVGPRS(r1)
+ 	lhz	r12,PACA_TRAP_SAVE(r13)
+ 	std	r12,_TRAP(r1)
+ 	addi	r11,r1,INT_FRAME_SIZE
+ 	std	r11,0(r1)
+-	li	r12,0
++	ZEROIZE_GPR(12)
+ 	std	r12,0(r11)
+ 	ld	r2,PACATOC(r13)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
 -- 
 2.34.1
 
