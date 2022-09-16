@@ -4,86 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35AC0C54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:35:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36075ECAAD8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 05:36:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MTN8Q4VXGz3cCC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:35:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MTN995Zc2z3dqX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 Sep 2022 15:36:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pHlB1Qa6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFkhybVb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pHlB1Qa6;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFkhybVb;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5k0d4mz3bZg
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MTN5k1dJQz3bZt
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Sep 2022 15:33:28 +1000 (AEST)
 Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5Sqer009298;
-	Fri, 16 Sep 2022 05:33:22 GMT
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28G5SkiG008898;
+	Fri, 16 Sep 2022 05:33:24 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=1z5+It0/HO6i9PQDbAZmyKN1Ue9LHrQ0g4BB5M0KKIo=;
- b=pHlB1Qa69EWXFQYyyLXP3/KeVJ3IcehvnYDpwaPe9+ZNmubX7qMLnvseSut9/TFkB9PG
- cio56xp8C58ahvd2N7WqFqEMQZ2hH1kaGZFi92K/aZInyn36VU8x8hNa72a14hYlKWJs
- vf1JA246ca7b/tAxVsHQzQJnkPIstBiU17AOB3BToISP86mTVvBaZbqMhVtvWYK5yCS3
- 4HJjs5QUjZulMTQ1gmLmlB6Vz67QyhIAkYlglIO+4NsEdTkU9bcqcfg/MmQwqNNaSQ+b
- pKu0+L197B8wfXy+mPuWPkqjN36Ntpb01mUTt79wILKUCv2z0xUAZWITXVZY4MBCFHjj 5w== 
+ bh=jg4HvWBwT5S2C3SUQM7yZQUo64Da9pQa+qv9Xg7pNxk=;
+ b=CFkhybVbyimwHT0GujfgfOGolMS3UR56Og3CKjN2u+kgj8zUV81jGCv29mZ4P8SKaLqR
+ Tgtt9Om2e3/FpYTC/PTckoxCZgeoCmLSI47V2PstQGj8zVOSIY/UKZ/qcCEKKuzI0Vs8
+ nWWD6tA0YzKHccWhSYfWjD/OK2/IOnIIH6syU55/r5ehJ0HP++vL9m4/ImnjsfRWe7zO
+ //uTYa6r88IbgjkcbjTZEsWmaWNQlr/VJK7r0W1IuthMMeNtbyxAf1EIazuA4S/WMSVn
+ 7JQoE9JPm+7oBO7zx2hoaKKApKCDT8lmRxiH8iw3DUVt30RRkWkc9cEN8WHcPurSueDg sw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05w8-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05xg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Sep 2022 05:33:22 +0000
+	Fri, 16 Sep 2022 05:33:23 +0000
 Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5U8ra017251;
-	Fri, 16 Sep 2022 05:33:21 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05u3-1
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28G5T6xj010429;
+	Fri, 16 Sep 2022 05:33:23 GMT
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jmk1b05vk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Sep 2022 05:33:21 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5Kouc013525;
-	Fri, 16 Sep 2022 05:33:19 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
-	by ppma03ams.nl.ibm.com with ESMTP id 3jm918ggvd-1
+	Fri, 16 Sep 2022 05:33:23 +0000
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28G5Kpnd020720;
+	Fri, 16 Sep 2022 05:33:20 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma01fra.de.ibm.com with ESMTP id 3jm9168cgm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 16 Sep 2022 05:33:19 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XG2W41812432
+	Fri, 16 Sep 2022 05:33:20 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28G5XIiJ34013662
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 16 Sep 2022 05:33:16 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D486B52051;
-	Fri, 16 Sep 2022 05:33:16 +0000 (GMT)
+	Fri, 16 Sep 2022 05:33:18 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 74781AE045;
+	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 20226AE04D;
+	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 36FEC52050;
-	Fri, 16 Sep 2022 05:33:16 +0000 (GMT)
+	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri, 16 Sep 2022 05:33:18 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 201DF603C2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7172260556;
 	Fri, 16 Sep 2022 15:33:13 +1000 (AEST)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/23] powerpc: Remove asmlinkage from syscall handler definitions
-Date: Fri, 16 Sep 2022 15:32:38 +1000
-Message-Id: <20220916053300.786330-2-rmclure@linux.ibm.com>
+Subject: [PATCH 13/23] powerpc: Remove direct call to mmap2 syscall handlers
+Date: Fri, 16 Sep 2022 15:32:50 +1000
+Message-Id: <20220916053300.786330-14-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20220916053300.786330-1-rmclure@linux.ibm.com>
 References: <20220916053300.786330-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: GwX1Qy-4Q8wJhWohlvxT3Gf4tkdyxxq3
-X-Proofpoint-ORIG-GUID: 13JzPGKr8INibf45YeMw7kBHKDLpP6LY
+X-Proofpoint-GUID: e7mWz5YN6wmnuT1dee0gxQH7fkpmmcX0
+X-Proofpoint-ORIG-GUID: rIaLBS8fvfi1sOyLD5PJEK7WasZL_5nO
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-16_02,2022-09-14_04,2022-06-22_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
- bulkscore=0 phishscore=0 mlxlogscore=734 spamscore=0 adultscore=0
+ bulkscore=0 phishscore=0 mlxlogscore=999 spamscore=0 adultscore=0
  priorityscore=1501 clxscore=1015 impostorscore=0 malwarescore=0
  suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2209130000 definitions=main-2209160041
@@ -98,94 +101,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Rohan McLure <rmclure@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The asmlinkage macro has no special meaning in powerpc, and prior to
-this patch is used sporadically on some syscall handler definitions. On
-architectures that do not define asmlinkage, it resolves to extern "C"
-for C++ compilers and a nop otherwise. The current invocations of
-asmlinkage provide far from complete support for C++ toolchains, and so
-the macro serves no purpose in powerpc.
+Syscall handlers should not be invoked internally by their symbol names,
+as these symbols defined by the architecture-defined SYSCALL_DEFINE
+macro. Move the compatibility syscall definition for mmap2 to
+syscalls.c, so that all mmap implementations can share a helper function.
 
-Remove all invocations of asmlinkage in arch/powerpc. These incidentally
-only occur in syscall definitions and prototypes.
+Remove 'inline' on static mmap helper.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
-V2 -> V3: new patch
+V1 -> V2: Move mmap2 compat implementation to asm/kernel/syscalls.c.
+V3 -> V4: Move to be applied before syscall wrapper introduced.
+V4 -> V5: Remove 'inline' in helper.
 ---
- arch/powerpc/include/asm/syscalls.h | 16 ++++++++--------
- arch/powerpc/kernel/sys_ppc32.c     |  8 ++++----
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/sys_ppc32.c |  9 ---------
+ arch/powerpc/kernel/syscalls.c  | 17 ++++++++++++++---
+ 2 files changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index a2b13e55254f..21c2faaa2957 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -10,14 +10,14 @@
- 
- struct rtas_args;
- 
--asmlinkage long sys_mmap(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, off_t offset);
--asmlinkage long sys_mmap2(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, unsigned long pgoff);
--asmlinkage long ppc64_personality(unsigned long personality);
--asmlinkage long sys_rtas(struct rtas_args __user *uargs);
-+long sys_mmap(unsigned long addr, size_t len,
-+	      unsigned long prot, unsigned long flags,
-+	      unsigned long fd, off_t offset);
-+long sys_mmap2(unsigned long addr, size_t len,
-+	       unsigned long prot, unsigned long flags,
-+	       unsigned long fd, unsigned long pgoff);
-+long ppc64_personality(unsigned long personality);
-+long sys_rtas(struct rtas_args __user *uargs);
- int ppc_select(int n, fd_set __user *inp, fd_set __user *outp,
- 	       fd_set __user *exp, struct __kernel_old_timeval __user *tvp);
- long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
 diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index 16ff0399a257..f4edcc9489fb 100644
+index d961634976d8..776ae7565fc5 100644
 --- a/arch/powerpc/kernel/sys_ppc32.c
 +++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -85,20 +85,20 @@ compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u3
- 	return ksys_readahead(fd, merge_64(offset1, offset2), count);
+@@ -25,7 +25,6 @@
+ #include <linux/poll.h>
+ #include <linux/personality.h>
+ #include <linux/stat.h>
+-#include <linux/mman.h>
+ #include <linux/in.h>
+ #include <linux/syscalls.h>
+ #include <linux/unistd.h>
+@@ -48,14 +47,6 @@
+ #include <asm/syscalls.h>
+ #include <asm/switch_to.h>
+ 
+-unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+-			  unsigned long prot, unsigned long flags,
+-			  unsigned long fd, unsigned long pgoff)
+-{
+-	/* This should remain 12 even if PAGE_SIZE changes */
+-	return sys_mmap(addr, len, prot, flags, fd, pgoff << 12);
+-}
+-
+ compat_ssize_t compat_sys_pread64(unsigned int fd, char __user *ubuf, compat_size_t count,
+ 			     u32 reg6, u32 pos1, u32 pos2)
+ {
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index a04c97faa21a..9830957498b0 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -36,9 +36,9 @@
+ #include <asm/time.h>
+ #include <asm/unistd.h>
+ 
+-static inline long do_mmap2(unsigned long addr, size_t len,
+-			unsigned long prot, unsigned long flags,
+-			unsigned long fd, unsigned long off, int shift)
++static long do_mmap2(unsigned long addr, size_t len,
++		     unsigned long prot, unsigned long flags,
++		     unsigned long fd, unsigned long off, int shift)
+ {
+ 	if (!arch_validate_prot(prot, addr))
+ 		return -EINVAL;
+@@ -56,6 +56,17 @@ SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
+ 	return do_mmap2(addr, len, prot, flags, fd, pgoff, PAGE_SHIFT-12);
  }
  
--asmlinkage int compat_sys_truncate64(const char __user * path, u32 reg4,
-+int compat_sys_truncate64(const char __user * path, u32 reg4,
- 				unsigned long len1, unsigned long len2)
- {
- 	return ksys_truncate(path, merge_64(len1, len2));
- }
- 
--asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
-+long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
- 				     u32 len1, u32 len2)
- {
- 	return ksys_fallocate(fd, mode, ((loff_t)offset1 << 32) | offset2,
- 			     merge_64(len1, len2));
- }
- 
--asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
-+int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
- 				 unsigned long len2)
- {
- 	return ksys_ftruncate(fd, merge_64(len1, len2));
-@@ -111,7 +111,7 @@ long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
- 				 advice);
- }
- 
--asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
-+long compat_sys_sync_file_range2(int fd, unsigned int flags,
- 				   unsigned offset1, unsigned offset2,
- 				   unsigned nbytes1, unsigned nbytes2)
- {
++#ifdef CONFIG_COMPAT
++COMPAT_SYSCALL_DEFINE6(mmap2,
++		       unsigned long, addr, size_t, len,
++		       unsigned long, prot, unsigned long, flags,
++		       unsigned long, fd, unsigned long, pgoff)
++{
++	/* This should remain 12 even if PAGE_SIZE changes */
++	return do_mmap2(addr, len, prot, flags, fd, pgoff << 12, PAGE_SHIFT-12);
++}
++#endif
++
+ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
+ 		unsigned long, prot, unsigned long, flags,
+ 		unsigned long, fd, off_t, offset)
 -- 
 2.34.1
 
