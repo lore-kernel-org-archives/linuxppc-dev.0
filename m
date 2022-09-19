@@ -4,64 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 052E8C54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 08:13:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46FF9ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 21:59:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWHW94F16z307g
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 18:13:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWdrG3nswz3cDs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 07:59:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lixom-net.20210112.gappssmtp.com header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=EuFCJAks;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=dlSngLTI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lixom.net (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=olof@lixom.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=lixom-net.20210112.gappssmtp.com header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=EuFCJAks;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=dlSngLTI;
 	dkim-atps=neutral
-Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MW9Xx12LQz2ysx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 13:44:47 +1000 (AEST)
-Received: by mail-ed1-x52b.google.com with SMTP id x94so22140748ede.11
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2022 20:44:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=lixom-net.20210112.gappssmtp.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date;
-        bh=8wzd/IsQMAz4yliZb1FsJ3OfMRVNZc5tTLnz3lR7QHQ=;
-        b=EuFCJAkszMPKPtxQSyMQ0NoboaeVB7t96eFw9rPXwH9oSHUro5o77bxEeYAtANDzyR
-         I9BMOm4HMiosCb0pcsiSHEAZo2qSCtvZawUq0/zPNIdwAvDvQAPS+8+0uFrWbUJgoTtd
-         ExLo8MeQP7GyQ+rW2rlFvIPPT75kqxCAKPhOGjeDjYZZFhuAOfywggSn5a+jZu6mJGBr
-         cWVHHoToy9UWA6nPxBqZcAZLzmJoxjkbRc1yLhwZYNZgNQEBRnr86m6GI/e/+J8MoRAT
-         suDLw8ILYZpcoPAOh+pvz4Lu/zfiYh6RXQKy+jZAxuRvjXsVxLmt63JqorCueNp9TEEJ
-         9kQg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date;
-        bh=8wzd/IsQMAz4yliZb1FsJ3OfMRVNZc5tTLnz3lR7QHQ=;
-        b=6laK3A0G3fQgA3ySPTCgnura3FOUhC/0hl1/ybLs3r5LDJoGV2zlYFk93KEjD8roaY
-         YvaoDU0EC8bApNSYbiO7khcDuKoHV7AMRuoDBn2KIhOJ+okFPjUICGIrFDyt8/v2uhyo
-         dhHTfZmxfmjkHsBqyzfUaZL3lISV1viM/LqTy3OxWTYRiYEf2Ics6pdnhP2Rp+VVtM9w
-         4JlLegdSmTyU1xgHTUuDHiT6W0/t0pQINA7ORjsNaKGlO8m11zA3E2to53uuhxS3PzOg
-         OwnVy67G2VJnmLgph4aQUOSpgJFTV9CqiA9HIqlBLq7WqzM8iUy/sUPQ0Fu9nSyd5u6N
-         7Csg==
-X-Gm-Message-State: ACrzQf0R9JVc6vx65k2mGqlAwCvFErkTt/FwpWmrH6Rzo2BZqc0R1PLv
-	KOohiiBop/C5wGMvgwylhC6uz3ezz7ef9OSlCoCbgQ==
-X-Google-Smtp-Source: AMsMyM67X4fHgNHGRzRNZ0AalOVh8oZlYNRkDoycvf7zBAcHx4qOwSpxEraLAwYUCmYCoDnGs0xLR1B5pb/N312tK3I=
-X-Received: by 2002:aa7:cc8a:0:b0:446:7668:2969 with SMTP id
- p10-20020aa7cc8a000000b0044676682969mr13821510edt.206.1663559079248; Sun, 18
- Sep 2022 20:44:39 -0700 (PDT)
-MIME-Version: 1.0
-References: <20220701012647.2007122-1-saravanak@google.com> <YwS5J3effuHQJRZ5@kroah.com>
-In-Reply-To: <YwS5J3effuHQJRZ5@kroah.com>
-From: Olof Johansson <olof@lixom.net>
-Date: Sun, 18 Sep 2022 20:44:27 -0700
-Message-ID: <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWJC30f95z2xJN;
+	Mon, 19 Sep 2022 18:44:45 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 6D1DCB816B0;
+	Mon, 19 Sep 2022 08:44:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DE61C433C1;
+	Mon, 19 Sep 2022 08:44:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1663577080;
+	bh=Vd83dSwOxxVSmijrL/0T0PlkhSMj1d5PUkUDnXOIUyE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=dlSngLTIaXTUHmuHDJgtMdbNwSHKqUJq9SLyDbvIvDthukzpSXHybBsTRhVVyFNJ2
+	 1qqCtuHfpcMr/GliCB6rzwJjMLC2MHRH03VKiFCffo41yXNOwwmKRS/fEC1f2Cxj7R
+	 DLEvYnlAXyJ2KzF8cFOljKYCXKTJeMmqp7ByoylE=
+Date: Mon, 19 Sep 2022 10:45:06 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Olof Johansson <olof@lixom.net>
 Subject: Re: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Mon, 19 Sep 2022 18:12:32 +1000
+Message-ID: <YygsEtxKz8dsEstc@kroah.com>
+References: <20220701012647.2007122-1-saravanak@google.com>
+ <YwS5J3effuHQJRZ5@kroah.com>
+ <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+X-Mailman-Approved-At: Tue, 20 Sep 2022 07:59:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,35 +67,39 @@ Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, "Rafael J. Wysock
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
-> > These patches are on top of driver-core-next.
+On Sun, Sep 18, 2022 at 08:44:27PM -0700, Olof Johansson wrote:
+> On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
 > >
-> > Even if stdout-path isn't set in DT, this patch should take console
-> > probe times back to how they were before the deferred_probe_timeout
-> > clean up series[1].
->
-> Now dropped from my queue due to lack of a response to other reviewer's
-> questions.
+> > On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
+> > > These patches are on top of driver-core-next.
+> > >
+> > > Even if stdout-path isn't set in DT, this patch should take console
+> > > probe times back to how they were before the deferred_probe_timeout
+> > > clean up series[1].
+> >
+> > Now dropped from my queue due to lack of a response to other reviewer's
+> > questions.
+> 
+> What happened to this patch? I have a 10 second timeout on console
+> probe on my SiFive Unmatched, and I don't see this flag being set for
+> the serial driver. In fact, I don't see it anywhere in-tree. I can't
+> seem to locate another patchset from Saravana around this though, so
+> I'm not sure where to look for a missing piece for the sifive serial
+> driver.
+> 
+> This is the second boot time regression (this one not fatal, unlike
+> the Layerscape PCIe one) from the fw_devlink patchset.
+> 
+> Greg, can you revert the whole set for 6.0, please? It's obviously
+> nowhere near tested enough to go in and I expect we'll see a bunch of
+> -stable fixups due to this if we let it remain in.
 
-What happened to this patch? I have a 10 second timeout on console
-probe on my SiFive Unmatched, and I don't see this flag being set for
-the serial driver. In fact, I don't see it anywhere in-tree. I can't
-seem to locate another patchset from Saravana around this though, so
-I'm not sure where to look for a missing piece for the sifive serial
-driver.
+What exactly is "the whole set"?  I have the default option fix queued
+up and will send that to Linus later this week (am traveling back from
+Plumbers still), but have not heard any problems about any other issues
+at all other than your report.
 
-This is the second boot time regression (this one not fatal, unlike
-the Layerscape PCIe one) from the fw_devlink patchset.
+thnaks,
 
-Greg, can you revert the whole set for 6.0, please? It's obviously
-nowhere near tested enough to go in and I expect we'll see a bunch of
--stable fixups due to this if we let it remain in.
-
-This seems to be one of the worst releases I've encountered in recent
-years on my hardware here due to this patchset. :-(
-
-
--Olof
+greg k-h
