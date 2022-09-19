@@ -4,58 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FE92ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:54:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46DB0ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 21:21:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWXPd501Hz2yjR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:54:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWczb24rfz3blV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 07:20:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RiM4TJBY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ou2550Hn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RiM4TJBY;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ou2550Hn;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWXNz35g9z2xmr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:54:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWcys1981z2xJN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 07:20:20 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 28E73B81F54;
-	Mon, 19 Sep 2022 17:54:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 70D90C433B5;
-	Mon, 19 Sep 2022 17:54:06 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 852566207D;
+	Mon, 19 Sep 2022 21:20:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 71C4EC433C1;
+	Mon, 19 Sep 2022 21:20:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1663610046;
-	bh=DvqH3q9Hr6/f/KVvc2EIOZwfO4WOQSZ2uFVd/i3sVIQ=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=RiM4TJBYjwNtLa3BGc3b5nz+cARE0VfszK+QMOLU7mU5ZOCKKRLumi8MwjSWboFxz
-	 aUR4m4kkt3Mke56WHFBrNId/v48N16/7C+ZzGMSx6SZqruLk8ys7bgoty65XUXwB/0
-	 pszSPdR1tlwbr5OMLdR1Gb5sb+S7GGKi2JLmOTClbUtZLtL2J2K6WHaGHJTABa5bLC
-	 rbuJZVkEbfg78opUAhsTctJF4QtnDk3K8YgOJ1JDj88TX6GJZnAuCcnc3OhsWiI+vm
-	 SkbAMsz7551d4Wfosg/TTr79AoO2whrM+ObrLYispjDJYIVUCVugLxHannI3r8ENAR
-	 PvoIJL65GRTkw==
-Date: Mon, 19 Sep 2022 18:54:01 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Omar Sandoval <osandov@osandov.com>
-Subject: Re: [PATCH 2/2] Discard .note.gnu.property sections in generic NOTES
-Message-ID: <YyisuQk74ux7sC3z@sirena.org.uk>
-References: <20200428132105.170886-1-hjl.tools@gmail.com>
- <20200428132105.170886-2-hjl.tools@gmail.com>
- <YyTRM3/9Mm+b+M8N@relinquished.localdomain>
- <e15de60c-8133-3d93-eb1c-c6b1b5389887@csgroup.eu>
- <YyimOW229By98Dn7@relinquished.localdomain>
- <Yyin1FUU7enibeD8@sirena.org.uk>
- <YyiplGhX65Hrkkjw@relinquished.localdomain>
+	s=k20201202; t=1663622414;
+	bh=akJpHY6MQEHvLsC1Re27oJlE5aMX8u2E99iMcnMhMxc=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=Ou2550HnOwwWMe8oYpmod5gb+LfI4zWiwDtuDKmGlpOgOuf7mJOZG29hiSbscQpJx
+	 0EWw2EhGr5AZAWOuFhc9og2EcL4FWxvEub/YIl/pxZTqDB+CEyjV+lEUfhsTteo2gR
+	 /o/2RcYS5+Gro9dovTXax0TYykVO+PLI7c8RW+isu47qH+AKufD8hjb3cvTCF1Ye6R
+	 lR5w0eK5Ns7pG2ETmUqrTD0LQSPBOmo4FOoZk74qrL1UR97eQGmMH0rchbmO2x2nGV
+	 50v68fpor0BSq5JrsgtKlz5PM74HbXG08hYQF6hpZpj2g541BINxxJ9+POpFvx8CIW
+	 knlpDcCMB8g5g==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 50A83E52536;
+	Mon, 19 Sep 2022 21:20:14 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="EqpzY94vBNwCHWF8"
-Content-Disposition: inline
-In-Reply-To: <YyiplGhX65Hrkkjw@relinquished.localdomain>
-X-Cookie: One FISHWICH coming up!!
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH] net: ethernet: remove fs_mii_disconnect and fs_mii_connect
+ declarations
+From: patchwork-bot+netdevbpf@kernel.org
+Message-Id:  <166362241432.4330.4829794093210572810.git-patchwork-notify@kernel.org>
+Date: Mon, 19 Sep 2022 21:20:14 +0000
+References: <20220909062959.1144493-1-cuigaosheng1@huawei.com>
+In-Reply-To: <20220909062959.1144493-1-cuigaosheng1@huawei.com>
+To: Gaosheng Cui <cuigaosheng1@huawei.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,43 +63,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "H.J. Lu" <hjl.tools@gmail.com>, Yu-cheng Yu <yu-cheng.yu@intel.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, edumazet@google.com, vbordug@ru.mvista.com, kuba@kernel.org, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hello:
 
---EqpzY94vBNwCHWF8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This patch was applied to netdev/net-next.git (master)
+by Jakub Kicinski <kuba@kernel.org>:
 
-On Mon, Sep 19, 2022 at 10:40:36AM -0700, Omar Sandoval wrote:
-> On Mon, Sep 19, 2022 at 06:33:40PM +0100, Mark Brown wrote:
+On Fri, 9 Sep 2022 14:29:59 +0800 you wrote:
+> fs_mii_disconnect and fs_mii_connect have been removed since
+> commit 5b4b8454344a ("[PATCH] FS_ENET: use PAL for mii management"),
+> so remove them.
+> 
+> Signed-off-by: Gaosheng Cui <cuigaosheng1@huawei.com>
+> ---
+>  drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 3 ---
+>  1 file changed, 3 deletions(-)
 
-> > I don't understand the question, what file are you talking about
-> > here?  arch/arm64/include/asm/assembler.h is itself a file and I
-> > couldn't find anything nearby in your mail talking about a file...
+Here is the summary with links:
+  - net: ethernet: remove fs_mii_disconnect and fs_mii_connect declarations
+    https://git.kernel.org/netdev/net-next/c/feceb24ed79a
 
-> Oops, that was a typo, I meant to say "I'm not sure what
-> arch/arm64/include/asm/assembler.h is doing with this *note*". To be
-> more explicit: does ARM64 need .note.gnu.property/NT_GNU_PROPERTY_TYPE_0
-> in vmlinux?
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-It needs it in at least the vDSO which gets built into vmlinux.
-AFAIR we don't use it in normal kernel code.
 
---EqpzY94vBNwCHWF8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmMorLgACgkQJNaLcl1U
-h9AeAgf+I7vqneefeeQjYjLayNpW3jVr/pFAMKL+V3w+IQjePpTxH3p5lo7JLQYT
-FR275uZQdE1cistY2WtHAYQxxJw0jT4VHO5Jte2Ajb6vWv3ouJQWmv1ZVBCqxS2Q
-05+Z9v3toO2yg7nPlqme8NAX52VEXzjDtijaRaU7PY5NsxYXluHjkxq5yuaqoMMF
-m3dgZdAvRKewtLt/rB6PFqO0v3nkns6aPZ7S/LLCR4IFkpULco7vxmEXqV3oD4ac
-arjQLAGqXfn3sbfSy2rQj8/feG7bKWQlaMRZE9fEkfYL25/bx7F2ipfCH2b/9tbF
-9kDEpdrUjKqorXGvblX5Ae+pjiXubw==
-=fNrU
------END PGP SIGNATURE-----
-
---EqpzY94vBNwCHWF8--
