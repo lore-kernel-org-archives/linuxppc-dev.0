@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1B46ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87E6FC54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:09:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWPJ2sM5z3gQM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:09:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWPk6c56z3gTG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:09:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWGd6lhZz3fBW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWGk0sZ9z3fBc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:42 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MWWF8374gz9slB;
-	Mon, 19 Sep 2022 19:02:20 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MWWF90gRnz9slF;
+	Mon, 19 Sep 2022 19:02:21 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id yxruzLMCp3SA; Mon, 19 Sep 2022 19:02:20 +0200 (CEST)
+	with ESMTP id ie8HRh2nz6OU; Mon, 19 Sep 2022 19:02:21 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr647kz9slF;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr63Klz9slC;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B50288B76E;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id ADBF68B77D;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id sXNi4wYvt_GZ; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
+	with ESMTP id pLzKLz5YKgIo; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.8])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BBE58B770;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A7FF8B778;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH1xIM1549629
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH20iq1549653
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 19 Sep 2022 19:01:59 +0200
+	Mon, 19 Sep 2022 19:02:00 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH1wlT1549627;
-	Mon, 19 Sep 2022 19:01:58 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH20Ud1549652;
+	Mon, 19 Sep 2022 19:02:00 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 13/19] watchdog: booke_wdt: Replace PPC_FSL_BOOK3E by PPC_E500
-Date: Mon, 19 Sep 2022 19:01:37 +0200
-Message-Id: <01a9132d51d3d8d9c74576d3da4d9d1fa5a88bde.1663606876.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 19/19] powerpc: Remove impossible mmu_psize_defs[] on nohash
+Date: Mon, 19 Sep 2022 19:01:43 +0200
+Message-Id: <030a843449f348c0b709ca5349640624f36a016f.1663606876.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 References: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606899; l=2397; s=20211009; h=from:subject:message-id; bh=PyTJa8Piekhf+SO+h17YPQ6Dhr2fe9f5muCSXgILORw=; b=/WRRsEVoYhxgCSA8ALhVXRUDZ7eaLtTmjVSWaur8VV1a7V7BDLuxzdmbxH0DBeeXN/nBAwnmy8+/ betygx+YDgsvBtLrkAwStVuwcrbHX1u+p5AzfBSuPmRkysBvIJFh
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606900; l=2716; s=20211009; h=from:subject:message-id; bh=nioyTUrOcI0IAX5HeERk3XUyDqQ/dEMnQUd5F2Nwdqs=; b=nR6Hho7Ye5PVaGQECxLSQ1KMmCb9+i66cAkobdtkukNvnAX6oQFyuXreMNVuO1lEDa6xfkPTyvqq gzXNSvnVDqyiFhHvF357JJ/Yw3Ub1e0HJ3azDa3h3v6ooO5xX5G3
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,82 +67,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@linux-watchdog.org>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_PPC_FSL_BOOK3E is redundant with CONFIG_PPC_E500.
+Today there is:
 
-Replace it so that CONFIG_PPC_FSL_BOOK3E can be removed later.
+  if e500 or 8xx
+    if e500
+      mmu_psize_defs[] =
+    else if 8xx
+      mmu_psize_defs[] =
+    else
+      mmu_psize_defs[] =
+    endif
+  endif
+
+The else leg is dead definition.
+
+Drop that else leg and rewrite as:
+
+  if e500
+    mmu_psize_defs[] =
+  endif
+  if 8xx
+    mmu_psize_defs[] =
+  endif
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Wim Van Sebroeck <wim@linux-watchdog.org>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-watchdog@vger.kernel.org
 ---
- drivers/watchdog/Kconfig     | 8 ++++----
- drivers/watchdog/booke_wdt.c | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+v2: Fix build failure
+---
+ arch/powerpc/mm/nohash/tlb.c | 64 +++++++++---------------------------
+ 1 file changed, 15 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 9295492d24f7..b7c03c600567 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -1935,10 +1935,10 @@ config BOOKE_WDT
- config BOOKE_WDT_DEFAULT_TIMEOUT
- 	int "PowerPC Book-E Watchdog Timer Default Timeout"
- 	depends on BOOKE_WDT
--	default 38 if PPC_FSL_BOOK3E
--	range 0 63 if PPC_FSL_BOOK3E
--	default 3 if !PPC_FSL_BOOK3E
--	range 0 3 if !PPC_FSL_BOOK3E
-+	default 38 if PPC_E500
-+	range 0 63 if PPC_E500
-+	default 3 if !PPC_E500
-+	range 0 3 if !PPC_E500
- 	help
- 	  Select the default watchdog timer period to be used by the PowerPC
- 	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
-diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-index 75da5cd02615..932a03f4436a 100644
---- a/drivers/watchdog/booke_wdt.c
-+++ b/drivers/watchdog/booke_wdt.c
-@@ -27,7 +27,7 @@
+diff --git a/arch/powerpc/mm/nohash/tlb.c b/arch/powerpc/mm/nohash/tlb.c
+index fac59fbd475a..2c15c86c7015 100644
+--- a/arch/powerpc/mm/nohash/tlb.c
++++ b/arch/powerpc/mm/nohash/tlb.c
+@@ -49,7 +49,6 @@
+  * other sizes not listed here.   The .ind field is only used on MMUs that have
+  * indirect page table entries.
   */
+-#if defined(CONFIG_PPC_E500) || defined(CONFIG_PPC_8xx)
+ #ifdef CONFIG_PPC_E500
+ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ 	[MMU_PAGE_4K] = {
+@@ -81,7 +80,20 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ 		.enc	= BOOK3E_PAGESZ_1GB,
+ 	},
+ };
+-#elif defined(CONFIG_PPC_8xx)
++
++static inline int mmu_get_tsize(int psize)
++{
++	return mmu_psize_defs[psize].enc;
++}
++#else
++static inline int mmu_get_tsize(int psize)
++{
++	/* This isn't used on !Book3E for now */
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_PPC_8xx
+ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ 	[MMU_PAGE_4K] = {
+ 		.shift	= 12,
+@@ -96,53 +108,7 @@ struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+ 		.shift	= 23,
+ 	},
+ };
+-#else
+-struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
+-	[MMU_PAGE_4K] = {
+-		.shift	= 12,
+-		.ind	= 20,
+-		.enc	= BOOK3E_PAGESZ_4K,
+-	},
+-	[MMU_PAGE_16K] = {
+-		.shift	= 14,
+-		.enc	= BOOK3E_PAGESZ_16K,
+-	},
+-	[MMU_PAGE_64K] = {
+-		.shift	= 16,
+-		.ind	= 28,
+-		.enc	= BOOK3E_PAGESZ_64K,
+-	},
+-	[MMU_PAGE_1M] = {
+-		.shift	= 20,
+-		.enc	= BOOK3E_PAGESZ_1M,
+-	},
+-	[MMU_PAGE_16M] = {
+-		.shift	= 24,
+-		.ind	= 36,
+-		.enc	= BOOK3E_PAGESZ_16M,
+-	},
+-	[MMU_PAGE_256M] = {
+-		.shift	= 28,
+-		.enc	= BOOK3E_PAGESZ_256M,
+-	},
+-	[MMU_PAGE_1G] = {
+-		.shift	= 30,
+-		.enc	= BOOK3E_PAGESZ_1GB,
+-	},
+-};
+-#endif /* CONFIG_PPC_85xx */
+-
+-static inline int mmu_get_tsize(int psize)
+-{
+-	return mmu_psize_defs[psize].enc;
+-}
+-#else
+-static inline int mmu_get_tsize(int psize)
+-{
+-	/* This isn't used on !Book3E for now */
+-	return 0;
+-}
+-#endif /* CONFIG_PPC_E500 */
++#endif
  
- 
--#ifdef	CONFIG_PPC_FSL_BOOK3E
-+#ifdef	CONFIG_PPC_E500
- #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
- #define WDTP_MASK	(WDTP(0x3f))
- #else
-@@ -45,7 +45,7 @@ MODULE_PARM_DESC(nowayout,
- 		"Watchdog cannot be stopped once started (default="
- 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
- 
--#ifdef CONFIG_PPC_FSL_BOOK3E
-+#ifdef CONFIG_PPC_E500
- 
- /* For the specified period, determine the number of seconds
-  * corresponding to the reset time.  There will be a watchdog
-@@ -88,7 +88,7 @@ static unsigned int sec_to_period(unsigned int secs)
- 
- #define MAX_WDT_TIMEOUT		period_to_sec(1)
- 
--#else /* CONFIG_PPC_FSL_BOOK3E */
-+#else /* CONFIG_PPC_E500 */
- 
- static unsigned long long period_to_sec(unsigned int period)
- {
-@@ -102,7 +102,7 @@ static unsigned int sec_to_period(unsigned int secs)
- 
- #define MAX_WDT_TIMEOUT		3	/* from Kconfig */
- 
--#endif /* !CONFIG_PPC_FSL_BOOK3E */
-+#endif /* !CONFIG_PPC_E500 */
- 
- static void __booke_wdt_set(void *data)
- {
+ /* The variables below are currently only used on 64-bit Book3E
+  * though this will probably be made common with other nohash
 -- 
 2.37.1
 
