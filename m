@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0638ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DA61ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:12:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf671prcz3g5Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:11:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf6n67q0z3g9B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:12:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=hxc9HxCk;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=JbVpe9aV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=hxc9HxCk;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=JbVpe9aV;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGb36NCz303m
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:17:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGc2VrLz304j
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:18:00 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=aIisfZps5gh8CFbGfWo9r3lQVFXbgWOaMv4QJgU4z04=; b=hxc9HxCkAPKmwd/87KXlu+DlQX
-	JXvV6SJli6qLykLjwa3DGp+tiVWY117rlVRlL635wg8nynhmchkZD7XkvfubwxdyxpcPx/54eWMrp
-	0dSLsw0UAYWnyA1Lx3s1R6z0O3Tv4aW8iIQazebv8JXPs6X3HMOveAj+ROL7wibtRRA0i6DT5jNgj
-	x+1KcZn/Mu3bHSeGzFAjW0W7H9qe3oUepsswWD4KUYyi2OnwsT9LhYW7cDpJHqkk2IGmPHPCLbu0y
-	jBFv0H8m0QpQ0raAMYFKyqq70mwP+Ef1jpdhpyqrxPY1/RK/qRouCli9t+kJofknpsGrHAW71iMe7
-	6n+pk0XA==;
+	bh=09Q+uBv4m8ezDZdYZ5KakXIYsVymlhYhZfz4mEDH0tE=; b=JbVpe9aV8H6kYx8ftu67Y3u9r0
+	gXNnU5LaPVCfpK5iLi7o0zM7rJjvu4xaBPEmot/099oNetn8DzfAbl4uJxIS10v0vloCqGMVM719t
+	+p8U3dMyhrhRPGkeTXRqUB1okkHDXCK11tZ1P7PI6eTZGX1Dlu2Nmay6p1IwLD52fcJ7ojBGZrbFi
+	VDDdZsf17fz7HNr0qYV+IW9I4J1uqmliO7c3IvKaBeKm/Lj/utimTnStwbzt4LNAbJTRbM/PLYySH
+	8SVxqwjN00rLR7TeeQctulS9yYSXO5jaHXgkF/kHPDIWJ1mjwdm2yU9y/TIZMKPk+UJKe0mFMDfE+
+	1EYUDx8A==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDq5-004b7c-8Y; Mon, 19 Sep 2022 10:17:21 +0000
+	id 1oaDq5-004b7e-9z; Mon, 19 Sep 2022 10:17:21 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id E4D09302ED3;
-	Mon, 19 Sep 2022 12:16:24 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 05E68302EE7;
+	Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 0AC522BA49044; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
-Message-ID: <20220919101521.206622076@infradead.org>
+	id 1E1F72BA4ABC9; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
+Message-ID: <20220919101521.475195632@infradead.org>
 User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 11:59:52 +0200
+Date: Mon, 19 Sep 2022 11:59:56 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v2 13/44] cpuidle: Fix ct_idle_*() usage
+Subject: [PATCH v2 17/44] objtool/idle: Validate __cpuidle code as noinstr
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -71,444 +71,454 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.wal
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The whole disable-RCU, enable-IRQS dance is very intricate since
-changing IRQ state is traced, which depends on RCU.
-
-Add two helpers for the cpuidle case that mirror the entry code.
+Idle code is very like entry code in that RCU isn't available. As
+such, add a little validation.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/arm/mach-imx/cpuidle-imx6q.c    |    4 +--
- arch/arm/mach-imx/cpuidle-imx6sx.c   |    4 +--
- arch/arm/mach-omap2/cpuidle34xx.c    |    4 +--
- arch/arm/mach-omap2/cpuidle44xx.c    |    8 +++---
- drivers/acpi/processor_idle.c        |    8 ++++--
- drivers/cpuidle/cpuidle-big_little.c |    4 +--
- drivers/cpuidle/cpuidle-mvebu-v7.c   |    4 +--
- drivers/cpuidle/cpuidle-psci.c       |    4 +--
- drivers/cpuidle/cpuidle-riscv-sbi.c  |    4 +--
- drivers/cpuidle/cpuidle-tegra.c      |    8 +++---
- drivers/cpuidle/cpuidle.c            |   11 ++++----
- include/linux/cpuidle.h              |   38 ++++++++++++++++++++++++++---
- kernel/sched/idle.c                  |   45 ++++++++++-------------------------
- kernel/time/tick-broadcast.c         |    6 +++-
- 14 files changed, 86 insertions(+), 66 deletions(-)
+ arch/alpha/kernel/vmlinux.lds.S      |    1 -
+ arch/arc/kernel/vmlinux.lds.S        |    1 -
+ arch/arm/include/asm/vmlinux.lds.h   |    1 -
+ arch/arm64/kernel/vmlinux.lds.S      |    1 -
+ arch/csky/kernel/vmlinux.lds.S       |    1 -
+ arch/hexagon/kernel/vmlinux.lds.S    |    1 -
+ arch/ia64/kernel/vmlinux.lds.S       |    1 -
+ arch/loongarch/kernel/vmlinux.lds.S  |    1 -
+ arch/m68k/kernel/vmlinux-nommu.lds   |    1 -
+ arch/m68k/kernel/vmlinux-std.lds     |    1 -
+ arch/m68k/kernel/vmlinux-sun3.lds    |    1 -
+ arch/microblaze/kernel/vmlinux.lds.S |    1 -
+ arch/mips/kernel/vmlinux.lds.S       |    1 -
+ arch/nios2/kernel/vmlinux.lds.S      |    1 -
+ arch/openrisc/kernel/vmlinux.lds.S   |    1 -
+ arch/parisc/kernel/vmlinux.lds.S     |    1 -
+ arch/powerpc/kernel/vmlinux.lds.S    |    1 -
+ arch/riscv/kernel/vmlinux-xip.lds.S  |    1 -
+ arch/riscv/kernel/vmlinux.lds.S      |    1 -
+ arch/s390/kernel/vmlinux.lds.S       |    1 -
+ arch/sh/kernel/vmlinux.lds.S         |    1 -
+ arch/sparc/kernel/vmlinux.lds.S      |    1 -
+ arch/um/kernel/dyn.lds.S             |    1 -
+ arch/um/kernel/uml.lds.S             |    1 -
+ arch/x86/include/asm/irqflags.h      |   11 ++++-------
+ arch/x86/include/asm/mwait.h         |    2 +-
+ arch/x86/kernel/vmlinux.lds.S        |    1 -
+ arch/xtensa/kernel/vmlinux.lds.S     |    1 -
+ include/asm-generic/vmlinux.lds.h    |    9 +++------
+ include/linux/compiler_types.h       |    8 ++++++--
+ include/linux/cpu.h                  |    3 ---
+ tools/objtool/check.c                |   13 +++++++++++++
+ 32 files changed, 27 insertions(+), 45 deletions(-)
 
---- a/arch/arm/mach-imx/cpuidle-imx6q.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6q.c
-@@ -25,9 +25,9 @@ static int imx6q_enter_wait(struct cpuid
- 		imx6_set_lpm(WAIT_UNCLOCKED);
- 	raw_spin_unlock(&cpuidle_lock);
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -27,7 +27,6 @@ SECTIONS
+ 		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		*(.fixup)
+ 		*(.gnu.warning)
+--- a/arch/arc/kernel/vmlinux.lds.S
++++ b/arch/arc/kernel/vmlinux.lds.S
+@@ -85,7 +85,6 @@ SECTIONS
+ 		_stext = .;
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/arm/include/asm/vmlinux.lds.h
++++ b/arch/arm/include/asm/vmlinux.lds.h
+@@ -96,7 +96,6 @@
+ 		SOFTIRQENTRY_TEXT					\
+ 		TEXT_TEXT						\
+ 		SCHED_TEXT						\
+-		CPUIDLE_TEXT						\
+ 		LOCK_TEXT						\
+ 		KPROBES_TEXT						\
+ 		ARM_STUBS_TEXT						\
+--- a/arch/arm64/kernel/vmlinux.lds.S
++++ b/arch/arm64/kernel/vmlinux.lds.S
+@@ -163,7 +163,6 @@ SECTIONS
+ 			ENTRY_TEXT
+ 			TEXT_TEXT
+ 			SCHED_TEXT
+-			CPUIDLE_TEXT
+ 			LOCK_TEXT
+ 			KPROBES_TEXT
+ 			HYPERVISOR_TEXT
+--- a/arch/csky/kernel/vmlinux.lds.S
++++ b/arch/csky/kernel/vmlinux.lds.S
+@@ -38,7 +38,6 @@ SECTIONS
+ 		SOFTIRQENTRY_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		*(.fixup)
+--- a/arch/hexagon/kernel/vmlinux.lds.S
++++ b/arch/hexagon/kernel/vmlinux.lds.S
+@@ -41,7 +41,6 @@ SECTIONS
+ 		IRQENTRY_TEXT
+ 		SOFTIRQENTRY_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		*(.fixup)
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -51,7 +51,6 @@ SECTIONS {
+ 		__end_ivt_text = .;
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/loongarch/kernel/vmlinux.lds.S
++++ b/arch/loongarch/kernel/vmlinux.lds.S
+@@ -41,7 +41,6 @@ SECTIONS
+ 	.text : {
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/m68k/kernel/vmlinux-nommu.lds
++++ b/arch/m68k/kernel/vmlinux-nommu.lds
+@@ -48,7 +48,6 @@ SECTIONS {
+ 		IRQENTRY_TEXT
+ 		SOFTIRQENTRY_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		*(.fixup)
+ 		. = ALIGN(16);
+--- a/arch/m68k/kernel/vmlinux-std.lds
++++ b/arch/m68k/kernel/vmlinux-std.lds
+@@ -19,7 +19,6 @@ SECTIONS
+ 	IRQENTRY_TEXT
+ 	SOFTIRQENTRY_TEXT
+ 	SCHED_TEXT
+-	CPUIDLE_TEXT
+ 	LOCK_TEXT
+ 	*(.fixup)
+ 	*(.gnu.warning)
+--- a/arch/m68k/kernel/vmlinux-sun3.lds
++++ b/arch/m68k/kernel/vmlinux-sun3.lds
+@@ -19,7 +19,6 @@ SECTIONS
+ 	IRQENTRY_TEXT
+ 	SOFTIRQENTRY_TEXT
+ 	SCHED_TEXT
+-	CPUIDLE_TEXT
+ 	LOCK_TEXT
+ 	*(.fixup)
+ 	*(.gnu.warning)
+--- a/arch/microblaze/kernel/vmlinux.lds.S
++++ b/arch/microblaze/kernel/vmlinux.lds.S
+@@ -36,7 +36,6 @@ SECTIONS {
+ 		EXIT_TEXT
+ 		EXIT_CALL
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/mips/kernel/vmlinux.lds.S
++++ b/arch/mips/kernel/vmlinux.lds.S
+@@ -61,7 +61,6 @@ SECTIONS
+ 	.text : {
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/nios2/kernel/vmlinux.lds.S
++++ b/arch/nios2/kernel/vmlinux.lds.S
+@@ -24,7 +24,6 @@ SECTIONS
+ 	.text : {
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		IRQENTRY_TEXT
+ 		SOFTIRQENTRY_TEXT
+--- a/arch/openrisc/kernel/vmlinux.lds.S
++++ b/arch/openrisc/kernel/vmlinux.lds.S
+@@ -52,7 +52,6 @@ SECTIONS
+           _stext = .;
+ 	  TEXT_TEXT
+ 	  SCHED_TEXT
+-	  CPUIDLE_TEXT
+ 	  LOCK_TEXT
+ 	  KPROBES_TEXT
+ 	  IRQENTRY_TEXT
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -86,7 +86,6 @@ SECTIONS
+ 		TEXT_TEXT
+ 		LOCK_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+ 		SOFTIRQENTRY_TEXT
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -107,7 +107,6 @@ SECTIONS
+ #endif
+ 		NOINSTR_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/riscv/kernel/vmlinux-xip.lds.S
++++ b/arch/riscv/kernel/vmlinux-xip.lds.S
+@@ -39,7 +39,6 @@ SECTIONS
+ 		_stext = .;
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		ENTRY_TEXT
+--- a/arch/riscv/kernel/vmlinux.lds.S
++++ b/arch/riscv/kernel/vmlinux.lds.S
+@@ -42,7 +42,6 @@ SECTIONS
+ 		_stext = .;
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		ENTRY_TEXT
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -42,7 +42,6 @@ SECTIONS
+ 		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/sh/kernel/vmlinux.lds.S
++++ b/arch/sh/kernel/vmlinux.lds.S
+@@ -29,7 +29,6 @@ SECTIONS
+ 		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/sparc/kernel/vmlinux.lds.S
++++ b/arch/sparc/kernel/vmlinux.lds.S
+@@ -50,7 +50,6 @@ SECTIONS
+ 		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		IRQENTRY_TEXT
+--- a/arch/um/kernel/dyn.lds.S
++++ b/arch/um/kernel/dyn.lds.S
+@@ -74,7 +74,6 @@ SECTIONS
+     _stext = .;
+     TEXT_TEXT
+     SCHED_TEXT
+-    CPUIDLE_TEXT
+     LOCK_TEXT
+     IRQENTRY_TEXT
+     SOFTIRQENTRY_TEXT
+--- a/arch/um/kernel/uml.lds.S
++++ b/arch/um/kernel/uml.lds.S
+@@ -35,7 +35,6 @@ SECTIONS
+     _stext = .;
+     TEXT_TEXT
+     SCHED_TEXT
+-    CPUIDLE_TEXT
+     LOCK_TEXT
+     IRQENTRY_TEXT
+     SOFTIRQENTRY_TEXT
+--- a/arch/x86/include/asm/irqflags.h
++++ b/arch/x86/include/asm/irqflags.h
+@@ -8,9 +8,6 @@
  
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 	cpu_do_idle();
--	ct_idle_exit();
-+	ct_cpuidle_exit();
+ #include <asm/nospec-branch.h>
  
- 	raw_spin_lock(&cpuidle_lock);
- 	if (num_idle_cpus-- == num_online_cpus())
---- a/arch/arm/mach-imx/cpuidle-imx6sx.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6sx.c
-@@ -47,9 +47,9 @@ static int imx6sx_enter_wait(struct cpui
- 		cpu_pm_enter();
- 		cpu_cluster_pm_enter();
- 
--		ct_idle_enter();
-+		ct_cpuidle_enter();
- 		cpu_suspend(0, imx6sx_idle_finish);
--		ct_idle_exit();
-+		ct_cpuidle_exit();
- 
- 		cpu_cluster_pm_exit();
- 		cpu_pm_exit();
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -133,9 +133,9 @@ static int omap3_enter_idle(struct cpuid
- 	}
- 
- 	/* Execute ARM wfi */
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 	omap_sram_idle();
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	/*
- 	 * Call idle CPU PM enter notifier chain to restore
---- a/arch/arm/mach-omap2/cpuidle44xx.c
-+++ b/arch/arm/mach-omap2/cpuidle44xx.c
-@@ -105,9 +105,9 @@ static int omap_enter_idle_smp(struct cp
- 	}
- 	raw_spin_unlock_irqrestore(&mpu_lock, flag);
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	raw_spin_lock_irqsave(&mpu_lock, flag);
- 	if (cx->mpu_state_vote == num_online_cpus())
-@@ -186,10 +186,10 @@ static int omap_enter_idle_coupled(struc
- 		}
- 	}
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
- 	cpu_done[dev->cpu] = true;
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	/* Wakeup CPU1 only if it is not offlined */
- 	if (dev->cpu == 0 && cpumask_test_cpu(1, cpu_online_mask)) {
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -627,6 +627,8 @@ static int __cpuidle acpi_idle_enter_bm(
- 	 */
- 	bool dis_bm = pr->flags.bm_control;
- 
-+	instrumentation_begin();
-+
- 	/* If we can skip BM, demote to a safe state. */
- 	if (!cx->bm_sts_skip && acpi_idle_bm_check()) {
- 		dis_bm = false;
-@@ -648,11 +650,11 @@ static int __cpuidle acpi_idle_enter_bm(
- 		raw_spin_unlock(&c3_lock);
- 	}
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 
- 	acpi_idle_do_entry(cx);
- 
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	/* Re-enable bus master arbitration */
- 	if (dis_bm) {
-@@ -662,6 +664,8 @@ static int __cpuidle acpi_idle_enter_bm(
- 		raw_spin_unlock(&c3_lock);
- 	}
- 
-+	instrumentation_end();
-+
- 	return index;
- }
- 
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -126,13 +126,13 @@ static int bl_enter_powerdown(struct cpu
- 				struct cpuidle_driver *drv, int idx)
- {
- 	cpu_pm_enter();
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 
- 	cpu_suspend(0, bl_powerdown_finisher);
- 
- 	/* signals the MCPM core that CPU is out of low power state */
- 	mcpm_cpu_powered_up();
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	cpu_pm_exit();
- 
---- a/drivers/cpuidle/cpuidle-mvebu-v7.c
-+++ b/drivers/cpuidle/cpuidle-mvebu-v7.c
-@@ -36,9 +36,9 @@ static int mvebu_v7_enter_idle(struct cp
- 	if (drv->states[index].flags & MVEBU_V7_FLAG_DEEP_IDLE)
- 		deepidle = true;
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 	ret = mvebu_v7_cpu_suspend(deepidle);
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	cpu_pm_exit();
- 
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -74,7 +74,7 @@ static int __psci_enter_domain_idle_stat
- 	else
- 		pm_runtime_put_sync_suspend(pd_dev);
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 
- 	state = psci_get_domain_state();
- 	if (!state)
-@@ -82,7 +82,7 @@ static int __psci_enter_domain_idle_stat
- 
- 	ret = psci_cpu_suspend_enter(state) ? -1 : idx;
- 
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	if (s2idle)
- 		dev_pm_genpd_resume(pd_dev);
---- a/drivers/cpuidle/cpuidle-riscv-sbi.c
-+++ b/drivers/cpuidle/cpuidle-riscv-sbi.c
-@@ -121,7 +121,7 @@ static int __sbi_enter_domain_idle_state
- 	else
- 		pm_runtime_put_sync_suspend(pd_dev);
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 
- 	if (sbi_is_domain_state_available())
- 		state = sbi_get_domain_state();
-@@ -130,7 +130,7 @@ static int __sbi_enter_domain_idle_state
- 
- 	ret = sbi_suspend(state) ? -1 : idx;
- 
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	if (s2idle)
- 		dev_pm_genpd_resume(pd_dev);
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -183,7 +183,7 @@ static int tegra_cpuidle_state_enter(str
- 	tegra_pm_set_cpu_in_lp2();
- 	cpu_pm_enter();
- 
--	ct_idle_enter();
-+	ct_cpuidle_enter();
- 
- 	switch (index) {
- 	case TEGRA_C7:
-@@ -199,7 +199,7 @@ static int tegra_cpuidle_state_enter(str
- 		break;
- 	}
- 
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 
- 	cpu_pm_exit();
- 	tegra_pm_clear_cpu_in_lp2();
-@@ -240,10 +240,10 @@ static int tegra_cpuidle_enter(struct cp
- 
- 	if (index == TEGRA_C1) {
- 		if (do_rcu)
--			ct_idle_enter();
-+			ct_cpuidle_enter();
- 		ret = arm_cpuidle_simple_enter(dev, drv, index);
- 		if (do_rcu)
--			ct_idle_exit();
-+			ct_cpuidle_exit();
- 	} else
- 		ret = tegra_cpuidle_state_enter(dev, index, cpu);
- 
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -14,6 +14,7 @@
- #include <linux/mutex.h>
- #include <linux/sched.h>
- #include <linux/sched/clock.h>
-+#include <linux/sched/idle.h>
- #include <linux/notifier.h>
- #include <linux/pm_qos.h>
- #include <linux/cpu.h>
-@@ -152,12 +153,12 @@ static void enter_s2idle_proper(struct c
- 	 */
- 	stop_critical_timings();
- 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
--		ct_idle_enter();
-+		ct_cpuidle_enter();
- 	target_state->enter_s2idle(dev, drv, index);
- 	if (WARN_ON_ONCE(!irqs_disabled()))
--		local_irq_disable();
-+		raw_local_irq_disable();
- 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
--		ct_idle_exit();
-+		ct_cpuidle_exit();
- 	tick_unfreeze();
- 	start_critical_timings();
- 
-@@ -235,14 +236,14 @@ int cpuidle_enter_state(struct cpuidle_d
- 
- 	stop_critical_timings();
- 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
--		ct_idle_enter();
-+		ct_cpuidle_enter();
- 
- 	entered_state = target_state->enter(dev, drv, index);
- 	if (WARN_ONCE(!irqs_disabled(), "%ps leaked IRQ state", target_state->enter))
- 		raw_local_irq_disable();
- 
- 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
--		ct_idle_exit();
-+		ct_cpuidle_exit();
- 	start_critical_timings();
- 
- 	sched_clock_idle_wakeup_event();
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -14,6 +14,7 @@
- #include <linux/percpu.h>
- #include <linux/list.h>
- #include <linux/hrtimer.h>
-+#include <linux/context_tracking.h>
- 
- #define CPUIDLE_STATE_MAX	10
- #define CPUIDLE_NAME_LEN	16
-@@ -115,6 +116,35 @@ struct cpuidle_device {
- DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
- DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
- 
-+static __always_inline void ct_cpuidle_enter(void)
-+{
-+	lockdep_assert_irqs_disabled();
-+	/*
-+	 * Idle is allowed to (temporary) enable IRQs. It
-+	 * will return with IRQs disabled.
-+	 *
-+	 * Trace IRQs enable here, then switch off RCU, and have
-+	 * arch_cpu_idle() use raw_local_irq_enable(). Note that
-+	 * ct_idle_enter() relies on lockdep IRQ state, so switch that
-+	 * last -- this is very similar to the entry code.
-+	 */
-+	trace_hardirqs_on_prepare();
-+	lockdep_hardirqs_on_prepare();
-+	instrumentation_end();
-+	ct_idle_enter();
-+	lockdep_hardirqs_on(_THIS_IP_);
-+}
-+
-+static __always_inline void ct_cpuidle_exit(void)
-+{
-+	/*
-+	 * Carefully undo the above.
-+	 */
-+	lockdep_hardirqs_off(_THIS_IP_);
-+	ct_idle_exit();
-+	instrumentation_begin();
-+}
-+
- /****************************
-  * CPUIDLE DRIVER INTERFACE *
-  ****************************/
-@@ -282,18 +312,18 @@ extern s64 cpuidle_governor_latency_req(
- 	int __ret = 0;							\
- 									\
- 	if (!idx) {							\
--		ct_idle_enter();					\
-+		ct_cpuidle_enter();					\
- 		cpu_do_idle();						\
--		ct_idle_exit();						\
-+		ct_cpuidle_exit();					\
- 		return idx;						\
- 	}								\
- 									\
- 	if (!is_retention)						\
- 		__ret =  cpu_pm_enter();				\
- 	if (!__ret) {							\
--		ct_idle_enter();					\
-+		ct_cpuidle_enter();					\
- 		__ret = low_level_idle_enter(state);			\
--		ct_idle_exit();						\
-+		ct_cpuidle_exit();					\
- 		if (!is_retention)					\
- 			cpu_pm_exit();					\
- 	}								\
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -51,18 +51,22 @@ __setup("hlt", cpu_idle_nopoll_setup);
- 
- static noinline int __cpuidle cpu_idle_poll(void)
- {
-+	instrumentation_begin();
- 	trace_cpu_idle(0, smp_processor_id());
- 	stop_critical_timings();
--	ct_idle_enter();
--	local_irq_enable();
-+	ct_cpuidle_enter();
- 
-+	raw_local_irq_enable();
- 	while (!tif_need_resched() &&
- 	       (cpu_idle_force_poll || tick_check_broadcast_expired()))
- 		cpu_relax();
-+	raw_local_irq_disable();
- 
--	ct_idle_exit();
-+	ct_cpuidle_exit();
- 	start_critical_timings();
- 	trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
-+	local_irq_enable();
-+	instrumentation_end();
- 
- 	return 1;
- }
-@@ -85,44 +89,21 @@ void __weak arch_cpu_idle(void)
+-/* Provide __cpuidle; we can't safely include <linux/cpu.h> */
+-#define __cpuidle __section(".cpuidle.text")
+-
+ /*
+  * Interrupt control:
   */
- void __cpuidle default_idle_call(void)
- {
--	if (current_clr_polling_and_test()) {
--		local_irq_enable();
--	} else {
--
-+	instrumentation_begin();
-+	if (!current_clr_polling_and_test()) {
- 		trace_cpu_idle(1, smp_processor_id());
- 		stop_critical_timings();
- 
--		/*
--		 * arch_cpu_idle() is supposed to enable IRQs, however
--		 * we can't do that because of RCU and tracing.
--		 *
--		 * Trace IRQs enable here, then switch off RCU, and have
--		 * arch_cpu_idle() use raw_local_irq_enable(). Note that
--		 * ct_idle_enter() relies on lockdep IRQ state, so switch that
--		 * last -- this is very similar to the entry code.
--		 */
--		trace_hardirqs_on_prepare();
--		lockdep_hardirqs_on_prepare();
--		ct_idle_enter();
--		lockdep_hardirqs_on(_THIS_IP_);
--
-+		ct_cpuidle_enter();
- 		arch_cpu_idle();
--
--		/*
--		 * OK, so IRQs are enabled here, but RCU needs them disabled to
--		 * turn itself back on.. funny thing is that disabling IRQs
--		 * will cause tracing, which needs RCU. Jump through hoops to
--		 * make it 'work'.
--		 */
- 		raw_local_irq_disable();
--		lockdep_hardirqs_off(_THIS_IP_);
--		ct_idle_exit();
--		lockdep_hardirqs_on(_THIS_IP_);
--		raw_local_irq_enable();
-+		ct_cpuidle_exit();
- 
- 		start_critical_timings();
- 		trace_cpu_idle(PWR_EVENT_EXIT, smp_processor_id());
- 	}
-+	local_irq_enable();
-+	instrumentation_end();
+@@ -45,13 +42,13 @@ static __always_inline void native_irq_e
+ 	asm volatile("sti": : :"memory");
  }
  
- static int call_cpuidle_s2idle(struct cpuidle_driver *drv,
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -622,9 +622,13 @@ struct cpumask *tick_get_broadcast_onesh
-  * to avoid a deep idle transition as we are about to get the
-  * broadcast IPI right away.
+-static inline __cpuidle void native_safe_halt(void)
++static __always_inline void native_safe_halt(void)
+ {
+ 	mds_idle_clear_cpu_buffers();
+ 	asm volatile("sti; hlt": : :"memory");
+ }
+ 
+-static inline __cpuidle void native_halt(void)
++static __always_inline void native_halt(void)
+ {
+ 	mds_idle_clear_cpu_buffers();
+ 	asm volatile("hlt": : :"memory");
+@@ -84,7 +81,7 @@ static __always_inline void arch_local_i
+  * Used in the idle loop; sti takes one instruction cycle
+  * to complete:
   */
--int tick_check_broadcast_expired(void)
-+noinstr int tick_check_broadcast_expired(void)
+-static inline __cpuidle void arch_safe_halt(void)
++static __always_inline void arch_safe_halt(void)
  {
-+#ifdef _ASM_GENERIC_BITOPS_INSTRUMENTED_NON_ATOMIC_H
-+	return arch_test_bit(smp_processor_id(), cpumask_bits(tick_broadcast_force_mask));
-+#else
- 	return cpumask_test_cpu(smp_processor_id(), tick_broadcast_force_mask);
-+#endif
+ 	native_safe_halt();
  }
+@@ -93,7 +90,7 @@ static inline __cpuidle void arch_safe_h
+  * Used when interrupts are already enabled or to
+  * shutdown the processor:
+  */
+-static inline __cpuidle void halt(void)
++static __always_inline void halt(void)
+ {
+ 	native_halt();
+ }
+--- a/arch/x86/include/asm/mwait.h
++++ b/arch/x86/include/asm/mwait.h
+@@ -104,7 +104,7 @@ static inline void __sti_mwait(unsigned
+  * New with Core Duo processors, MWAIT can take some hints based on CPU
+  * capability.
+  */
+-static inline void mwait_idle_with_hints(unsigned long eax, unsigned long ecx)
++static __always_inline void mwait_idle_with_hints(unsigned long eax, unsigned long ecx)
+ {
+ 	if (static_cpu_has_bug(X86_BUG_MONITOR) || !current_set_polling_and_test()) {
+ 		if (static_cpu_has_bug(X86_BUG_CLFLUSH_MONITOR)) {
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -129,7 +129,6 @@ SECTIONS
+ 		HEAD_TEXT
+ 		TEXT_TEXT
+ 		SCHED_TEXT
+-		CPUIDLE_TEXT
+ 		LOCK_TEXT
+ 		KPROBES_TEXT
+ 		ALIGN_ENTRY_TEXT_BEGIN
+--- a/arch/xtensa/kernel/vmlinux.lds.S
++++ b/arch/xtensa/kernel/vmlinux.lds.S
+@@ -125,7 +125,6 @@ SECTIONS
+     ENTRY_TEXT
+     TEXT_TEXT
+     SCHED_TEXT
+-    CPUIDLE_TEXT
+     LOCK_TEXT
+     *(.fixup)
+   }
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -559,6 +559,9 @@
+ 		ALIGN_FUNCTION();					\
+ 		__noinstr_text_start = .;				\
+ 		*(.noinstr.text)					\
++		__cpuidle_text_start = .;				\
++		*(.cpuidle.text)					\
++		__cpuidle_text_end = .;					\
+ 		__noinstr_text_end = .;
  
  /*
+@@ -600,12 +603,6 @@
+ 		*(.spinlock.text)					\
+ 		__lock_text_end = .;
+ 
+-#define CPUIDLE_TEXT							\
+-		ALIGN_FUNCTION();					\
+-		__cpuidle_text_start = .;				\
+-		*(.cpuidle.text)					\
+-		__cpuidle_text_end = .;
+-
+ #define KPROBES_TEXT							\
+ 		ALIGN_FUNCTION();					\
+ 		__kprobes_text_start = .;				\
+--- a/include/linux/compiler_types.h
++++ b/include/linux/compiler_types.h
+@@ -227,10 +227,14 @@ struct ftrace_likely_data {
+ #endif
+ 
+ /* Section for code which can't be instrumented at all */
+-#define noinstr								\
+-	noinline notrace __attribute((__section__(".noinstr.text")))	\
++#define __noinstr_section(section)					\
++	noinline notrace __attribute((__section__(section)))		\
+ 	__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage
+ 
++#define noinstr __noinstr_section(".noinstr.text")
++
++#define __cpuidle __noinstr_section(".cpuidle.text")
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* __ASSEMBLY__ */
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -176,9 +176,6 @@ void __noreturn cpu_startup_entry(enum c
+ 
+ void cpu_idle_poll_ctrl(bool enable);
+ 
+-/* Attach to any functions which should be considered cpuidle. */
+-#define __cpuidle	__section(".cpuidle.text")
+-
+ bool cpu_in_idle(unsigned long pc);
+ 
+ void arch_cpu_idle(void);
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -377,6 +377,7 @@ static int decode_instructions(struct ob
+ 
+ 		if (!strcmp(sec->name, ".noinstr.text") ||
+ 		    !strcmp(sec->name, ".entry.text") ||
++		    !strcmp(sec->name, ".cpuidle.text") ||
+ 		    !strncmp(sec->name, ".text.__x86.", 12))
+ 			sec->noinstr = true;
+ 
+@@ -3187,6 +3188,12 @@ static inline bool noinstr_call_dest(str
+ 		return true;
+ 
+ 	/*
++	 * If the symbol is a static_call trampoline, we can't tell.
++	 */
++	if (func->static_call_tramp)
++		return true;
++
++	/*
+ 	 * The __ubsan_handle_*() calls are like WARN(), they only happen when
+ 	 * something 'BAD' happened. At the risk of taking the machine down,
+ 	 * let them proceed to get the message out.
+@@ -3932,6 +3939,12 @@ static int validate_noinstr_sections(str
+ 	if (sec) {
+ 		warnings += validate_section(file, sec);
+ 		warnings += validate_unwind_hints(file, sec);
++	}
++
++	sec = find_section_by_name(file->elf, ".cpuidle.text");
++	if (sec) {
++		warnings += validate_section(file, sec);
++		warnings += validate_unwind_hints(file, sec);
+ 	}
+ 
+ 	return warnings;
 
 
