@@ -4,61 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6DEB7ECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 08:13:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13C58C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 08:14:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWHVV5TqYz3c2d
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 18:13:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWHWx55jqz3c69
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 18:14:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=blKKmWik;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UZIKR6sd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.100; helo=mga07.intel.com; envelope-from=naamax.meir@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=blKKmWik;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UZIKR6sd;
 	dkim-atps=neutral
-Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MVb8b3mN1z2x9d
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2022 14:55:10 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1663476911; x=1695012911;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=epSNHhdQxzAXTtOVkg0lQms6n58dl1u6MupG0x4QYh8=;
-  b=blKKmWikNtFu0Wcy+oxp5TmtRnyDhmI+03vriMUwVja3Bcs+uxDGK3EJ
-   c8mZvh/gFdWLwhn7UagJtZS0YjO1ABbVi3BwGr9A2Bg6z9u2xfnyHeQ8A
-   nsrDgo0RQOAKvJ2Ca2UhX4RGMnvo2cUpy9cuD3WeOVMO0EQPvJ6Lmtdth
-   Dg1gWILJLdWZOPlZsoX+zA1Bv61Pv7T5K/1hUlNvddMCq6GuGrCLt1GuA
-   SvCLBf0/bpL7cevbw3bElhPw4ENEZycCfOmAUyx3w76gSswIbAGTGQ7YR
-   6D635QASjg+u2KK6wsRQC+5DTr+O31h0wyzxNWQ20C3juyoaU7nMRr7zJ
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10473"; a="363161992"
-X-IronPort-AV: E=Sophos;i="5.93,323,1654585200"; 
-   d="scan'208";a="363161992"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2022 21:55:06 -0700
-X-IronPort-AV: E=Sophos;i="5.93,323,1654585200"; 
-   d="scan'208";a="793503255"
-Received: from naamamex-mobl.ger.corp.intel.com (HELO [10.13.13.50]) ([10.13.13.50])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2022 21:54:35 -0700
-Message-ID: <4d81077c-6dcd-a442-201a-113b087f3ca9@linux.intel.com>
-Date: Sun, 18 Sep 2022 07:54:27 +0300
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWDd06rJRz2yYL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 16:03:32 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28J5K7Br002816;
+	Mon, 19 Sep 2022 06:03:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ message-id : date : mime-version : subject : to : cc : references : from :
+ in-reply-to; s=pp1; bh=b0JxFeJQMsGrOIKS8SCWKkrVTBJMriLRD6npqoHFZZg=;
+ b=UZIKR6sdXoUp5ZhgE8lknsUvkIVEHlWOkj4Bq81HgMEGpFk1XEpQi2wudAzllML13D85
+ uRdFupOf4U4kevCYKKXqc4PrCV3akWrIIsfSkj15/ifrU+SlLmNqqttO+AbrDcXKexd7
+ ZSb2cT9g4oJx+rxDqNXnkXYO3JYjuR/W2/PtBbAfXUA6NmO+B75ovjmFyOHMrMNsBC4e
+ RQQFl0p+tkdTw4paaXumiQnewSh9Cu+k86U+tPznPEki4vHpp7lW/c3R8r8PT/PS2Qfs
+ z7tKZiBCAotsoWemgaL537+nuvkErkuLsWAchi1nmSWN07X93l9C0npD9duNtSvawfjo pg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jpj680sqr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 19 Sep 2022 06:03:26 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28J5aoGR032155;
+	Mon, 19 Sep 2022 06:03:26 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jpj680sq4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 19 Sep 2022 06:03:26 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28J5p1Ne001007;
+	Mon, 19 Sep 2022 06:03:24 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+	by ppma06ams.nl.ibm.com with ESMTP id 3jn5gj1y1s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 19 Sep 2022 06:03:24 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
+	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28J63k9j40960400
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 19 Sep 2022 06:03:46 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D9C1DA4053;
+	Mon, 19 Sep 2022 06:03:20 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2E5D7A4040;
+	Mon, 19 Sep 2022 06:03:19 +0000 (GMT)
+Received: from [9.43.125.247] (unknown [9.43.125.247])
+	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Mon, 19 Sep 2022 06:03:18 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------xnH1tx2oswo1w1EnfCqTvUwT"
+Message-ID: <895f4387-582a-6d60-a176-e2112f506e12@linux.ibm.com>
+Date: Mon, 19 Sep 2022 11:33:17 +0530
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.13.0
-Subject: Re: [Intel-wired-lan] [PATCH v2 3/3] net: ethernet: move from strlcpy
- with unused retval to strscpy
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.11.0
+Subject: Re: [PACTH v2] powerpc/pseries/mce: Avoid instrumentation in realmode
 Content-Language: en-US
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>,
- linux-kernel@vger.kernel.org
-References: <20220830201457.7984-1-wsa+renesas@sang-engineering.com>
- <20220830201457.7984-3-wsa+renesas@sang-engineering.com>
-From: "naamax.meir" <naamax.meir@linux.intel.com>
-In-Reply-To: <20220830201457.7984-3-wsa+renesas@sang-engineering.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+        mpe@ellerman.id.au
+References: <20220905063811.16454-1-ganeshgr@linux.ibm.com>
+ <CMPVP7RZXP5G.2D3ZNQPWARIG8@bobo>
+From: Ganesh <ganeshgr@linux.ibm.com>
+In-Reply-To: <CMPVP7RZXP5G.2D3ZNQPWARIG8@bobo>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: AceP4uWgcU3JhxDaC-TzwUxKYIIHO99E
+X-Proofpoint-ORIG-GUID: u5za0AjZP54b_r_2w-7Rj-DUW-k82WTI
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-19_03,2022-09-16_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 impostorscore=0
+ mlxscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 spamscore=0 malwarescore=0 clxscore=1015
+ mlxlogscore=772 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2209130000 definitions=main-2209190039
 X-Mailman-Approved-At: Mon, 19 Sep 2022 18:12:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -71,232 +101,145 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kevin Brace <kevinbrace@bracecomputerlab.com>, Shyam Sundar S K <Shyam-sundar.S-k@amd.com>, Igor Russkikh <irusskikh@marvell.com>, Rahul Verma <rahulv@marvell.com>, Somnath Kotur <somnath.kotur@broadcom.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, Leon Romanovsky <leonro@nvidia.com>, linux-stm32@st-md-mailman.stormreply.com, Andy Gospodarek <andy@greyhouse.net>, Manish Chopra <manishc@marvell.com>, Rohit Maheshwari <rohitm@chelsio.com>, Andreas Larsson <andreas@gaisler.com>, Michal Simek <michal.simek@xilinx.com>, Jose Abreu <joabreu@synopsys.com>, Mark Lee <Mark-MC.Lee@mediatek.com>, Chris Lee <christopher.lee@cspi.com>, Nick Child <nnac123@linux.ibm.com>, Jiri Pirko <jiri@resnulli.us>, Geetha sowjanya <gakula@marvell.com>, Vinay Kumar Yadav <vinay.yadav@chelsio.com>, Nicholas Piggin <npiggin@gmail.com>, =?UTF-8?Q?Krzysztof_Ha=c5=82asa?= <khalasa@piap.pl>, Shay Agroskin <shayagr@amazon.com>, linux-omap@vger.kernel.org, Petr Machata <petrm@nvidia.com>, Geoff Levand 
- <geoff@infradead.org>, Ilias Apalodimas <ilias.apalodimas@linaro.org>, Douglas Miller <dougmill@linux.ibm.com>, Joakim Zhang <qiangqing.zhang@nxp.com>, Ralf Baechle <ralf@linux-mips.org>, Ion Badulescu <ionut@badula.org>, Rasesh Mody <rmody@marvell.com>, Jon Mason <jdmason@kudzu.us>, Saeed Mahameed <saeedm@nvidia.com>, Christian Benvenuti <benve@cisco.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Chris Snook <chris.snook@gmail.com>, Denis Kirjanov <kda@linux-powerpc.org>, Prashant Sreedharan <prashant@broadcom.com>, Daniele Venzano <venza@brownhat.org>, Eric Dumazet <edumazet@google.com>, Zhu Yanjun <zyjzyj2000@gmail.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, Arthur Kiyanovski <akiyano@amazon.com>, Leon Romanovsky <leon@kernel.org>, Hartley Sweeten <hsweeten@visionengravers.com>, Rain River <rain.1986.08.12@gmail.com>, Martin Habets <habetsm.xilinx@gmail.com>, Yisen Zhuang <yisen.zhuang@huawei.com>, Steve Glendinning <steve.glendinning@shawell.net>, Tom Lendacky <thomas
- .lendacky@amd.com>, Ido Schimmel <idosch@nvidia.com>, Sean Wang <sean.wang@mediatek.com>, Siva Reddy Kallam <siva.kallam@broadcom.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Florian Fainelli <f.fainelli@gmail.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, linux-arm-kernel@lists.infradead.org, Mirko Lindner <mlindner@marvell.com>, Sriharsha Basavapatna <sriharsha.basavapatna@broadcom.com>, Jassi Brar <jaswinder.singh@linaro.org>, David Arinzon <darinzon@amazon.com>, Samuel Holland <samuel@sholland.org>, Tariq Toukan <tariqt@nvidia.com>, "David S. Miller" <davem@davemloft.net>, Taras Chornyi <tchornyi@marvell.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Heiner Kallweit <hkallweit1@gmail.com>, Ajit Khaparde <ajit.khaparde@broadcom.com>, Madalin Bucur <madalin.bucur@nxp.com>, oss-drivers@corigine.com, Subbaraya Sundeep <sbhatta@marvell.com>, Noam Dagan <ndagan@amazon.com>, Doug Berger <opendmb@gmail.com>, linux-rdma@vger.kernel.org, Guo-Fu Tseng <cooldavid@cooldavid.org>, J
- ernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Simon Horman <simon.horman@corigine.com>, Paolo Abeni <pabeni@redhat.com>, Shahed Shaikh <shshaikh@marvell.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Byungho An <bh74.an@samsung.com>, Radhey Shyam Pandey <radhey.shyam.pandey@xilinx.com>, Vladimir Zapolskiy <vz@mleia.com>, Don Fry <pcnet32@frontier.com>, John Crispin <john@phrozen.org>, Michael Chan <michael.chan@broadcom.com>, Salil Mehta <salil.mehta@huawei.com>, GR-Linux-NIC-Dev@marvell.com, linux-parisc@vger.kernel.org, Nicolas Pitre <nico@fluxnic.net>, linux-sunxi@lists.linux.dev, Edward Cree <ecree.xilinx@gmail.com>, Bryan Whitehead <bryan.whitehead@microchip.com>, Saeed Bishara <saeedb@amazon.com>, Mark Einon <mark.einon@gmail.com>, Sudarsana Kalluru <skalluru@marvell.com>, Samuel Chessman <chessman@tux.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Govindarajulu
-  Varadarajan <_govind@gmx.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Ayush Sawal <ayush.sawal@chelsio.com>, UNGLinuxDriver@microchip.com, linux-acenic@sunsite.dk, Russell King <linux@armlinux.org.uk>, Lino Sanfilippo <LinoSanfilippo@gmx.de>, intel-wired-lan@lists.osuosl.org, Jakub Kicinski <kuba@kernel.org>, Steffen Klassert <klassert@kernel.org>, Sunil Goutham <sgoutham@marvell.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Jes Sorensen <jes@trained-monkey.org>, nic_swsd@realtek.com, Ariel Elior <aelior@marvell.com>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, Marcin Wojtas <mw@semihalf.com>, netdev@vger.kernel.org, linux-mips@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Stephen Hemminger <stephen@networkplumber.org>, hariprasad <hkelam@marvell.com>, Raju Rangoju <rajur@chelsio.com>, linuxppc-dev@lists.ozlabs.org, Felix Fietkau <nbd@nbd.name>
+Cc: mahesh@linux.ibm.com, sachinp@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8/30/2022 23:14, Wolfram Sang wrote:
-> Follow the advice of the below link and prefer 'strscpy' in this
-> subsystem. Conversion is 1:1 because the return value is not used.
-> Generated by a coccinelle script.
-> 
-> Link: https://lore.kernel.org/r/CAHk-=wgfRnXz0W3D37d01q3JFkr_i_uTL=V6A6G1oUZcprmknw@mail.gmail.com/
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> Reviewed-by: Petr Machata <petrm@nvidia.com> # For drivers/net/ethernet/mellanox/mlxsw
-> Acked-by: Geoff Levand <geoff@infradead.org> # For ps3_gelic_net and spider_net_ethtool
-> Acked-by: Tom Lendacky <thomas.lendacky@amd.com> # For drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c
-> Acked-by: Marcin Wojtas <mw@semihalf.com> # For drivers/net/ethernet/marvell/mvpp2
-> Reviewed-by: Leon Romanovsky <leonro@nvidia.com> # For drivers/net/ethernet/mellanox/mlx{4|5}
-> Reviewed-by: Shay Agroskin <shayagr@amazon.com> # For drivers/net/ethernet/amazon/ena
-> Acked-by: Krzysztof Hałasa <khalasa@piap.pl> # For IXP4xx Ethernet
-> ---
-> 
-> Changes since v1:
-> * split into smaller patches
-> * added given tags
-> 
->   drivers/net/ethernet/3com/3c509.c                |  2 +-
->   drivers/net/ethernet/3com/3c515.c                |  2 +-
->   drivers/net/ethernet/3com/3c589_cs.c             |  2 +-
->   drivers/net/ethernet/3com/3c59x.c                |  6 +++---
->   drivers/net/ethernet/3com/typhoon.c              |  8 ++++----
->   drivers/net/ethernet/8390/ax88796.c              |  6 +++---
->   drivers/net/ethernet/8390/etherh.c               |  6 +++---
->   drivers/net/ethernet/adaptec/starfire.c          |  4 ++--
->   drivers/net/ethernet/aeroflex/greth.c            |  4 ++--
->   drivers/net/ethernet/agere/et131x.c              |  4 ++--
->   drivers/net/ethernet/alacritech/slicoss.c        |  4 ++--
->   drivers/net/ethernet/allwinner/sun4i-emac.c      |  4 ++--
->   drivers/net/ethernet/alteon/acenic.c             |  4 ++--
->   drivers/net/ethernet/amazon/ena/ena_ethtool.c    |  4 ++--
->   drivers/net/ethernet/amazon/ena/ena_netdev.c     |  2 +-
->   drivers/net/ethernet/amd/amd8111e.c              |  4 ++--
->   drivers/net/ethernet/amd/au1000_eth.c            |  2 +-
->   drivers/net/ethernet/amd/nmclan_cs.c             |  2 +-
->   drivers/net/ethernet/amd/pcnet32.c               |  4 ++--
->   drivers/net/ethernet/amd/sunlance.c              |  2 +-
->   drivers/net/ethernet/amd/xgbe/xgbe-ethtool.c     |  4 ++--
->   .../net/ethernet/aquantia/atlantic/aq_ethtool.c  |  2 +-
->   drivers/net/ethernet/arc/emac_main.c             |  2 +-
->   drivers/net/ethernet/atheros/ag71xx.c            |  4 ++--
->   .../net/ethernet/atheros/atl1c/atl1c_ethtool.c   |  4 ++--
->   .../net/ethernet/atheros/atl1e/atl1e_ethtool.c   |  6 +++---
->   drivers/net/ethernet/atheros/atlx/atl1.c         |  4 ++--
->   drivers/net/ethernet/atheros/atlx/atl2.c         |  6 +++---
->   drivers/net/ethernet/broadcom/b44.c              |  6 +++---
->   drivers/net/ethernet/broadcom/bcm63xx_enet.c     |  4 ++--
->   drivers/net/ethernet/broadcom/bcmsysport.c       |  4 ++--
->   drivers/net/ethernet/broadcom/bgmac.c            |  6 +++---
->   drivers/net/ethernet/broadcom/bnx2.c             |  6 +++---
->   drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c  |  2 +-
->   .../net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c  |  6 +++---
->   drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |  2 +-
->   .../net/ethernet/broadcom/bnx2x/bnx2x_sriov.h    |  2 +-
->   drivers/net/ethernet/broadcom/bnx2x/bnx2x_vfpf.c |  2 +-
->   .../net/ethernet/broadcom/bnxt/bnxt_ethtool.c    |  8 ++++----
->   drivers/net/ethernet/broadcom/bnxt/bnxt_vfr.c    |  2 +-
->   drivers/net/ethernet/broadcom/genet/bcmgenet.c   |  2 +-
->   drivers/net/ethernet/broadcom/tg3.c              |  6 +++---
->   drivers/net/ethernet/brocade/bna/bnad_ethtool.c  |  6 +++---
->   drivers/net/ethernet/cavium/octeon/octeon_mgmt.c |  2 +-
->   .../net/ethernet/cavium/thunder/nicvf_ethtool.c  |  4 ++--
->   drivers/net/ethernet/chelsio/cxgb/cxgb2.c        |  4 ++--
->   drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c  |  4 ++--
->   .../net/ethernet/chelsio/cxgb4/cxgb4_ethtool.c   |  4 ++--
->   drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c  |  4 ++--
->   .../net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c  |  4 ++--
->   .../chelsio/inline_crypto/chtls/chtls_main.c     |  2 +-
->   drivers/net/ethernet/cirrus/ep93xx_eth.c         |  2 +-
->   drivers/net/ethernet/cisco/enic/enic_ethtool.c   |  6 +++---
->   drivers/net/ethernet/davicom/dm9000.c            |  4 ++--
->   drivers/net/ethernet/dec/tulip/de2104x.c         |  4 ++--
->   drivers/net/ethernet/dec/tulip/dmfe.c            |  4 ++--
->   drivers/net/ethernet/dec/tulip/tulip_core.c      |  4 ++--
->   drivers/net/ethernet/dec/tulip/uli526x.c         |  4 ++--
->   drivers/net/ethernet/dec/tulip/winbond-840.c     |  4 ++--
->   drivers/net/ethernet/dlink/dl2k.c                |  4 ++--
->   drivers/net/ethernet/dlink/sundance.c            |  4 ++--
->   drivers/net/ethernet/dnet.c                      |  4 ++--
->   drivers/net/ethernet/emulex/benet/be_cmds.c      | 12 ++++++------
->   drivers/net/ethernet/emulex/benet/be_ethtool.c   |  6 +++---
->   drivers/net/ethernet/faraday/ftgmac100.c         |  4 ++--
->   drivers/net/ethernet/faraday/ftmac100.c          |  4 ++--
->   drivers/net/ethernet/fealnx.c                    |  4 ++--
->   .../net/ethernet/freescale/dpaa/dpaa_ethtool.c   |  4 ++--
->   drivers/net/ethernet/freescale/dpaa2/dpaa2-mac.c |  2 +-
->   .../net/ethernet/freescale/enetc/enetc_ethtool.c |  4 ++--
->   drivers/net/ethernet/freescale/fec_main.c        |  8 ++++----
->   drivers/net/ethernet/freescale/fec_ptp.c         |  2 +-
->   .../ethernet/freescale/fs_enet/fs_enet-main.c    |  2 +-
->   drivers/net/ethernet/freescale/gianfar_ethtool.c |  2 +-
->   .../net/ethernet/freescale/ucc_geth_ethtool.c    |  4 ++--
->   drivers/net/ethernet/fujitsu/fmvj18x_cs.c        |  4 ++--
->   drivers/net/ethernet/hisilicon/hip04_eth.c       |  4 ++--
->   drivers/net/ethernet/ibm/ehea/ehea_ethtool.c     |  4 ++--
->   drivers/net/ethernet/ibm/emac/core.c             |  4 ++--
->   drivers/net/ethernet/ibm/ibmveth.c               |  4 ++--
->   drivers/net/ethernet/intel/e100.c                |  4 ++--
->   drivers/net/ethernet/intel/e1000/e1000_ethtool.c |  4 ++--
->   drivers/net/ethernet/intel/e1000e/ethtool.c      |  4 ++--
->   drivers/net/ethernet/intel/e1000e/netdev.c       |  6 +++---
->   drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |  6 +++---
->   drivers/net/ethernet/intel/i40e/i40e_main.c      | 16 ++++++++--------
->   drivers/net/ethernet/intel/i40e/i40e_ptp.c       |  2 +-
->   drivers/net/ethernet/intel/iavf/iavf_ethtool.c   |  6 +++---
->   drivers/net/ethernet/intel/igb/igb_ethtool.c     |  6 +++---
->   drivers/net/ethernet/intel/igb/igb_main.c        |  2 +-
->   drivers/net/ethernet/intel/igbvf/ethtool.c       |  4 ++--
->   drivers/net/ethernet/intel/ixgb/ixgb_ethtool.c   |  4 ++--
->   drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  6 +++---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c    |  2 +-
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  4 ++--
->   drivers/net/ethernet/intel/ixgbevf/ethtool.c     |  4 ++--
->   drivers/net/ethernet/jme.c                       |  6 +++---
->   drivers/net/ethernet/korina.c                    |  6 +++---
->   drivers/net/ethernet/marvell/mv643xx_eth.c       |  8 ++++----
->   drivers/net/ethernet/marvell/mvneta.c            |  6 +++---
->   drivers/net/ethernet/marvell/mvpp2/mvpp2_main.c  |  6 +++---
->   .../marvell/octeontx2/nic/otx2_ethtool.c         |  8 ++++----
->   .../ethernet/marvell/prestera/prestera_ethtool.c |  4 ++--
->   drivers/net/ethernet/marvell/pxa168_eth.c        |  8 ++++----
->   drivers/net/ethernet/marvell/skge.c              |  6 +++---
->   drivers/net/ethernet/marvell/sky2.c              |  6 +++---
->   drivers/net/ethernet/mediatek/mtk_eth_soc.c      |  4 ++--
->   drivers/net/ethernet/mediatek/mtk_star_emac.c    |  2 +-
->   drivers/net/ethernet/mellanox/mlx4/en_ethtool.c  |  6 +++---
->   drivers/net/ethernet/mellanox/mlx4/fw.c          |  2 +-
->   .../net/ethernet/mellanox/mlx5/core/en_ethtool.c |  4 ++--
->   drivers/net/ethernet/mellanox/mlx5/core/en_rep.c |  2 +-
->   .../ethernet/mellanox/mlx5/core/ipoib/ethtool.c  |  2 +-
->   drivers/net/ethernet/mellanox/mlxsw/core.c       |  2 +-
->   drivers/net/ethernet/mellanox/mlxsw/minimal.c    |  4 ++--
->   .../ethernet/mellanox/mlxsw/spectrum_ethtool.c   |  6 +++---
->   drivers/net/ethernet/micrel/ks8851_common.c      |  6 +++---
->   drivers/net/ethernet/micrel/ksz884x.c            |  6 +++---
->   drivers/net/ethernet/microchip/enc28j60.c        |  6 +++---
->   drivers/net/ethernet/microchip/encx24j600.c      |  6 +++---
->   drivers/net/ethernet/microchip/lan743x_ethtool.c |  4 ++--
->   drivers/net/ethernet/myricom/myri10ge/myri10ge.c |  8 ++++----
->   drivers/net/ethernet/natsemi/natsemi.c           |  6 +++---
->   drivers/net/ethernet/natsemi/ns83820.c           |  6 +++---
->   drivers/net/ethernet/neterion/s2io.c             |  6 +++---
->   .../net/ethernet/netronome/nfp/nfp_net_ethtool.c |  6 +++---
->   drivers/net/ethernet/ni/nixge.c                  |  4 ++--
->   drivers/net/ethernet/nvidia/forcedeth.c          |  6 +++---
->   drivers/net/ethernet/nxp/lpc_eth.c               |  6 +++---
->   .../ethernet/oki-semi/pch_gbe/pch_gbe_ethtool.c  |  6 +++---
->   drivers/net/ethernet/packetengines/hamachi.c     |  6 +++---
->   drivers/net/ethernet/packetengines/yellowfin.c   |  6 +++---
->   .../ethernet/qlogic/netxen/netxen_nic_ethtool.c  |  6 +++---
->   drivers/net/ethernet/qlogic/qed/qed_int.c        |  2 +-
->   drivers/net/ethernet/qlogic/qede/qede_ethtool.c  |  4 ++--
->   drivers/net/ethernet/qlogic/qede/qede_main.c     |  2 +-
->   drivers/net/ethernet/qlogic/qla3xxx.c            |  6 +++---
->   .../net/ethernet/qlogic/qlcnic/qlcnic_ethtool.c  |  6 +++---
->   drivers/net/ethernet/qualcomm/qca_debug.c        |  8 ++++----
->   drivers/net/ethernet/rdc/r6040.c                 |  6 +++---
->   drivers/net/ethernet/realtek/8139cp.c            |  6 +++---
->   drivers/net/ethernet/realtek/8139too.c           |  6 +++---
->   drivers/net/ethernet/realtek/r8169_main.c        |  6 +++---
->   drivers/net/ethernet/rocker/rocker_main.c        |  4 ++--
->   .../net/ethernet/samsung/sxgbe/sxgbe_ethtool.c   |  4 ++--
->   drivers/net/ethernet/sfc/efx.c                   |  2 +-
->   drivers/net/ethernet/sfc/efx_common.c            |  2 +-
->   drivers/net/ethernet/sfc/ethtool_common.c        |  6 +++---
->   drivers/net/ethernet/sfc/falcon/efx.c            |  4 ++--
->   drivers/net/ethernet/sfc/falcon/ethtool.c        |  8 ++++----
->   drivers/net/ethernet/sfc/falcon/falcon.c         |  2 +-
->   drivers/net/ethernet/sfc/falcon/nic.c            |  2 +-
->   drivers/net/ethernet/sfc/mcdi_mon.c              |  2 +-
->   drivers/net/ethernet/sfc/nic.c                   |  2 +-
->   drivers/net/ethernet/sfc/siena/efx.c             |  2 +-
->   drivers/net/ethernet/sfc/siena/efx_common.c      |  2 +-
->   drivers/net/ethernet/sfc/siena/ethtool_common.c  |  6 +++---
->   drivers/net/ethernet/sfc/siena/mcdi_mon.c        |  2 +-
->   drivers/net/ethernet/sfc/siena/nic.c             |  2 +-
->   drivers/net/ethernet/sgi/ioc3-eth.c              |  6 +++---
->   drivers/net/ethernet/sis/sis190.c                |  6 +++---
->   drivers/net/ethernet/sis/sis900.c                |  6 +++---
->   drivers/net/ethernet/smsc/epic100.c              |  6 +++---
->   drivers/net/ethernet/smsc/smc911x.c              |  6 +++---
->   drivers/net/ethernet/smsc/smc91c92_cs.c          |  4 ++--
->   drivers/net/ethernet/smsc/smc91x.c               |  6 +++---
->   drivers/net/ethernet/smsc/smsc911x.c             |  6 +++---
->   drivers/net/ethernet/smsc/smsc9420.c             |  6 +++---
->   drivers/net/ethernet/socionext/netsec.c          |  4 ++--
->   drivers/net/ethernet/socionext/sni_ave.c         |  4 ++--
->   .../net/ethernet/stmicro/stmmac/stmmac_ethtool.c |  8 ++++----
->   drivers/net/ethernet/sun/cassini.c               |  6 +++---
->   drivers/net/ethernet/sun/ldmvsw.c                |  4 ++--
->   drivers/net/ethernet/sun/niu.c                   |  6 +++---
->   drivers/net/ethernet/sun/sunbmac.c               |  4 ++--
->   drivers/net/ethernet/sun/sungem.c                |  6 +++---
->   drivers/net/ethernet/sun/sunhme.c                |  6 +++---
->   drivers/net/ethernet/sun/sunqe.c                 |  4 ++--
->   drivers/net/ethernet/sun/sunvnet.c               |  4 ++--
->   .../net/ethernet/synopsys/dwc-xlgmac-common.c    |  4 ++--
->   .../net/ethernet/synopsys/dwc-xlgmac-ethtool.c   |  6 +++---
->   drivers/net/ethernet/tehuti/tehuti.c             |  8 ++++----
->   drivers/net/ethernet/ti/am65-cpsw-ethtool.c      |  4 ++--
->   drivers/net/ethernet/ti/cpmac.c                  |  4 ++--
->   drivers/net/ethernet/ti/cpsw.c                   |  6 +++---
->   drivers/net/ethernet/ti/cpsw_new.c               |  6 +++---
->   drivers/net/ethernet/ti/davinci_emac.c           |  4 ++--
->   drivers/net/ethernet/ti/tlan.c                   |  6 +++---
->   drivers/net/ethernet/toshiba/ps3_gelic_net.c     |  4 ++--
->   .../net/ethernet/toshiba/spider_net_ethtool.c    |  8 ++++----
->   drivers/net/ethernet/toshiba/tc35815.c           |  6 +++---
->   drivers/net/ethernet/via/via-rhine.c             |  4 ++--
->   drivers/net/ethernet/via/via-velocity.c          |  8 ++++----
->   drivers/net/ethernet/wiznet/w5100.c              |  6 +++---
->   drivers/net/ethernet/wiznet/w5300.c              |  6 +++---
->   .../net/ethernet/xilinx/xilinx_axienet_main.c    |  4 ++--
->   drivers/net/ethernet/xilinx/xilinx_emaclite.c    |  2 +-
->   drivers/net/ethernet/xircom/xirc2ps_cs.c         |  2 +-
->   drivers/net/ethernet/xscale/ixp4xx_eth.c         |  4 ++--
->   199 files changed, 457 insertions(+), 457 deletions(-)
-Tested-by: Naama Meir <naamax.meir@linux.intel.com>
+This is a multi-part message in MIME format.
+--------------xnH1tx2oswo1w1EnfCqTvUwT
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+On 9/7/22 09:49, Nicholas Piggin wrote:
+
+> On Mon Sep 5, 2022 at 4:38 PM AEST, Ganesh Goudar wrote:
+>> Part of machine check error handling is done in realmode,
+>> As of now instrumentation is not possible for any code that
+>> runs in realmode.
+>> When MCE is injected on KASAN enabled kernel, crash is
+>> observed, Hence force inline or mark no instrumentation
+>> for functions which can run in realmode, to avoid KASAN
+>> instrumentation.
+>>
+>> Signed-off-by: Ganesh Goudar<ganeshgr@linux.ibm.com>
+>> ---
+>> v2: Force inline few more functions.
+>> ---
+>>   arch/powerpc/include/asm/hw_irq.h    | 8 ++++----
+>>   arch/powerpc/include/asm/interrupt.h | 2 +-
+>>   arch/powerpc/include/asm/rtas.h      | 4 ++--
+>>   arch/powerpc/kernel/rtas.c           | 4 ++--
+>>   4 files changed, 9 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+>> index 26ede09c521d..3264991fe524 100644
+>> --- a/arch/powerpc/include/asm/hw_irq.h
+>> +++ b/arch/powerpc/include/asm/hw_irq.h
+>> @@ -111,7 +111,7 @@ static inline void __hard_RI_enable(void)
+>>   #ifdef CONFIG_PPC64
+>>   #include <asm/paca.h>
+>>   
+>> -static inline notrace unsigned long irq_soft_mask_return(void)
+>> +static __always_inline notrace unsigned long irq_soft_mask_return(void)
+>>   {
+>>   	return READ_ONCE(local_paca->irq_soft_mask);
+>>   }
+>> @@ -121,7 +121,7 @@ static inline notrace unsigned long irq_soft_mask_return(void)
+>>    * for the critical section and as a clobber because
+>>    * we changed paca->irq_soft_mask
+>>    */
+>> -static inline notrace void irq_soft_mask_set(unsigned long mask)
+>> +static __always_inline notrace void irq_soft_mask_set(unsigned long mask)
+>>   {
+>>   	/*
+>>   	 * The irq mask must always include the STD bit if any are set.
+> This doesn't give a reason why it's __always_inline, and having the
+> notrace attribute makes it possibly confusing. I think it would be easy
+> for someone to break without realising. Could you add a noinstr to these
+> instead / as well?
+
+Yeah we can add noinstr. Missed to see your comment, Sorry for the delayed reply
+
+>
+> What about adding a 'realmode' function annotation that includes noinstr?
+
+You mean to define a new function annotation?
+
+
+--------------xnH1tx2oswo1w1EnfCqTvUwT
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <div class="moz-cite-prefix">
+      <pre>On 9/7/22 09:49, Nicholas Piggin wrote:</pre>
+    </div>
+    <blockquote type="cite" cite="mid:CMPVP7RZXP5G.2D3ZNQPWARIG8@bobo">
+      <pre class="moz-quote-pre" wrap="">On Mon Sep 5, 2022 at 4:38 PM AEST, Ganesh Goudar wrote:
+</pre>
+      <blockquote type="cite">
+        <pre class="moz-quote-pre" wrap="">Part of machine check error handling is done in realmode,
+As of now instrumentation is not possible for any code that
+runs in realmode.
+When MCE is injected on KASAN enabled kernel, crash is
+observed, Hence force inline or mark no instrumentation
+for functions which can run in realmode, to avoid KASAN
+instrumentation.
+
+Signed-off-by: Ganesh Goudar <a class="moz-txt-link-rfc2396E" href="mailto:ganeshgr@linux.ibm.com">&lt;ganeshgr@linux.ibm.com&gt;</a>
+---
+v2: Force inline few more functions.
+---
+ arch/powerpc/include/asm/hw_irq.h    | 8 ++++----
+ arch/powerpc/include/asm/interrupt.h | 2 +-
+ arch/powerpc/include/asm/rtas.h      | 4 ++--
+ arch/powerpc/kernel/rtas.c           | 4 ++--
+ 4 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index 26ede09c521d..3264991fe524 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -111,7 +111,7 @@ static inline void __hard_RI_enable(void)
+ #ifdef CONFIG_PPC64
+ #include &lt;asm/paca.h&gt;
+ 
+-static inline notrace unsigned long irq_soft_mask_return(void)
++static __always_inline notrace unsigned long irq_soft_mask_return(void)
+ {
+ 	return READ_ONCE(local_paca-&gt;irq_soft_mask);
+ }
+@@ -121,7 +121,7 @@ static inline notrace unsigned long irq_soft_mask_return(void)
+  * for the critical section and as a clobber because
+  * we changed paca-&gt;irq_soft_mask
+  */
+-static inline notrace void irq_soft_mask_set(unsigned long mask)
++static __always_inline notrace void irq_soft_mask_set(unsigned long mask)
+ {
+ 	/*
+ 	 * The irq mask must always include the STD bit if any are set.
+</pre>
+      </blockquote>
+      <pre class="moz-quote-pre" wrap="">
+This doesn't give a reason why it's __always_inline, and having the
+notrace attribute makes it possibly confusing. I think it would be easy
+for someone to break without realising. Could you add a noinstr to these
+instead / as well?</pre>
+    </blockquote>
+    <pre>Yeah we can add noinstr. Missed to see your comment, Sorry for the delayed reply</pre>
+    <blockquote type="cite" cite="mid:CMPVP7RZXP5G.2D3ZNQPWARIG8@bobo">
+      <pre class="moz-quote-pre" wrap="">
+
+What about adding a 'realmode' function annotation that includes noinstr?</pre>
+    </blockquote>
+    <pre>You mean to define a new function annotation?</pre>
+    <br>
+  </body>
+</html>
+
+--------------xnH1tx2oswo1w1EnfCqTvUwT--
+
