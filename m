@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8806CECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:08:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1B46ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:09:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWNl1cT1z3fbG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:08:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWPJ2sM5z3gQM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:09:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWGY2W9Lz3fCm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWGd6lhZz3fBW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:37 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MWWF74ty7z9sl6;
-	Mon, 19 Sep 2022 19:02:19 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MWWF8374gz9slB;
+	Mon, 19 Sep 2022 19:02:20 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id JPH3j7p6QAFF; Mon, 19 Sep 2022 19:02:19 +0200 (CEST)
+	with ESMTP id yxruzLMCp3SA; Mon, 19 Sep 2022 19:02:20 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr60nxz9slB;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr647kz9slF;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C356A8B775;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B50288B76E;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id X8zqCz8SfniM; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
+	with ESMTP id sXNi4wYvt_GZ; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.8])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 77F098B781;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BBE58B770;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH1vAA1549594
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH1xIM1549629
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 19 Sep 2022 19:01:57 +0200
+	Mon, 19 Sep 2022 19:01:59 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH1vxP1549593;
-	Mon, 19 Sep 2022 19:01:57 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH1wlT1549627;
+	Mon, 19 Sep 2022 19:01:58 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 05/19] powerpc/cputable: Move __cpu_setup() prototypes out of cputable.h
-Date: Mon, 19 Sep 2022 19:01:29 +0200
-Message-Id: <f45118489ee450db654db8bbcdfd8f5907337c22.1663606875.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 13/19] watchdog: booke_wdt: Replace PPC_FSL_BOOK3E by PPC_E500
+Date: Mon, 19 Sep 2022 19:01:37 +0200
+Message-Id: <01a9132d51d3d8d9c74576d3da4d9d1fa5a88bde.1663606876.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 References: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606899; l=7788; s=20211009; h=from:subject:message-id; bh=sVD1UbssGC3ZWyGiihC1NO31adaAXqH5RcLy0K+cuQU=; b=x9vs46X4sp3ziMhfac/eFh3Z0A3P9uV33Kug1kNP5pZEC/hh6jcqIiq3v/EBIU7+nQYa5loa98Fb oBe7Gnr8D+J9X5a6AshDPXjJZBvh8pw1CUCjNbRU/0cTbNz9lqpR
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606899; l=2397; s=20211009; h=from:subject:message-id; bh=PyTJa8Piekhf+SO+h17YPQ6Dhr2fe9f5muCSXgILORw=; b=/WRRsEVoYhxgCSA8ALhVXRUDZ7eaLtTmjVSWaur8VV1a7V7BDLuxzdmbxH0DBeeXN/nBAwnmy8+/ betygx+YDgsvBtLrkAwStVuwcrbHX1u+p5AzfBSuPmRkysBvIJFh
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,167 +67,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-watchdog@vger.kernel.org, linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@linux-watchdog.org>, linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move all prototypes out of cputable.h
+CONFIG_PPC_FSL_BOOK3E is redundant with CONFIG_PPC_E500.
 
-For that rename cpu_setup_power.h to cpu_setup.h and move all
-prototypes in it.
+Replace it so that CONFIG_PPC_FSL_BOOK3E can be removed later.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Wim Van Sebroeck <wim@linux-watchdog.org>
+Acked-by: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-watchdog@vger.kernel.org
 ---
- arch/powerpc/include/asm/cpu_setup.h       | 49 ++++++++++++++++++++++
- arch/powerpc/include/asm/cpu_setup_power.h | 12 ------
- arch/powerpc/kernel/cpu_setup_power.c      |  2 +-
- arch/powerpc/kernel/cputable.c             | 38 +----------------
- 4 files changed, 51 insertions(+), 50 deletions(-)
- create mode 100644 arch/powerpc/include/asm/cpu_setup.h
- delete mode 100644 arch/powerpc/include/asm/cpu_setup_power.h
+ drivers/watchdog/Kconfig     | 8 ++++----
+ drivers/watchdog/booke_wdt.c | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cpu_setup.h b/arch/powerpc/include/asm/cpu_setup.h
-new file mode 100644
-index 000000000000..d497b051598f
---- /dev/null
-+++ b/arch/powerpc/include/asm/cpu_setup.h
-@@ -0,0 +1,49 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ * Copyright (C) 2020 IBM Corporation
-+ */
-+
-+#ifndef _ASM_POWERPC_CPU_SETUP_H
-+#define _ASM_POWERPC_CPU_SETUP_H
-+void __setup_cpu_power7(unsigned long offset, struct cpu_spec *spec);
-+void __setup_cpu_power8(unsigned long offset, struct cpu_spec *spec);
-+void __setup_cpu_power9(unsigned long offset, struct cpu_spec *spec);
-+void __setup_cpu_power10(unsigned long offset, struct cpu_spec *spec);
-+void __restore_cpu_power7(void);
-+void __restore_cpu_power8(void);
-+void __restore_cpu_power9(void);
-+void __restore_cpu_power10(void);
-+
-+void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_e500mc(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_440x5(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_460ex(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_460gt(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_460sx(unsigned long offset, struct cpu_spec *spec);
-+void __setup_cpu_apm821xx(unsigned long offset, struct cpu_spec *spec);
-+void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_750cx(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_750fx(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_7400(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_7410(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_745x(unsigned long offset, struct cpu_spec* spec);
-+
-+void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
-+void __restore_cpu_pa6t(void);
-+void __restore_cpu_ppc970(void);
-+
-+void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
-+void __setup_cpu_e6500(unsigned long offset, struct cpu_spec* spec);
-+void __restore_cpu_e5500(void);
-+void __restore_cpu_e6500(void);
-+#endif /* _ASM_POWERPC_CPU_SETUP_H */
-diff --git a/arch/powerpc/include/asm/cpu_setup_power.h b/arch/powerpc/include/asm/cpu_setup_power.h
-deleted file mode 100644
-index 24be9131f803..000000000000
---- a/arch/powerpc/include/asm/cpu_setup_power.h
-+++ /dev/null
-@@ -1,12 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * Copyright (C) 2020 IBM Corporation
-- */
--void __setup_cpu_power7(unsigned long offset, struct cpu_spec *spec);
--void __restore_cpu_power7(void);
--void __setup_cpu_power8(unsigned long offset, struct cpu_spec *spec);
--void __restore_cpu_power8(void);
--void __setup_cpu_power9(unsigned long offset, struct cpu_spec *spec);
--void __restore_cpu_power9(void);
--void __setup_cpu_power10(unsigned long offset, struct cpu_spec *spec);
--void __restore_cpu_power10(void);
-diff --git a/arch/powerpc/kernel/cpu_setup_power.c b/arch/powerpc/kernel/cpu_setup_power.c
-index 3dc61e203f37..097c033668f0 100644
---- a/arch/powerpc/kernel/cpu_setup_power.c
-+++ b/arch/powerpc/kernel/cpu_setup_power.c
-@@ -11,7 +11,7 @@
- #include <asm/synch.h>
- #include <linux/bitops.h>
- #include <asm/cputable.h>
--#include <asm/cpu_setup_power.h>
-+#include <asm/cpu_setup.h>
- 
- /* Disable CPU_FTR_HVMODE and return false if MSR:HV is not set */
- static bool init_hvmode_206(struct cpu_spec *t)
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 5ace97cccad8..9229e0930332 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -18,6 +18,7 @@
- #include <asm/mce.h>
- #include <asm/mmu.h>
- #include <asm/setup.h>
-+#include <asm/cpu_setup.h>
- 
- static struct cpu_spec the_cpu_spec __read_mostly;
- 
-@@ -34,43 +35,6 @@ const char *powerpc_base_platform;
-  * part of the cputable though. That has to be fixed for both ppc32
-  * and ppc64
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 9295492d24f7..b7c03c600567 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -1935,10 +1935,10 @@ config BOOKE_WDT
+ config BOOKE_WDT_DEFAULT_TIMEOUT
+ 	int "PowerPC Book-E Watchdog Timer Default Timeout"
+ 	depends on BOOKE_WDT
+-	default 38 if PPC_FSL_BOOK3E
+-	range 0 63 if PPC_FSL_BOOK3E
+-	default 3 if !PPC_FSL_BOOK3E
+-	range 0 3 if !PPC_FSL_BOOK3E
++	default 38 if PPC_E500
++	range 0 63 if PPC_E500
++	default 3 if !PPC_E500
++	range 0 3 if !PPC_E500
+ 	help
+ 	  Select the default watchdog timer period to be used by the PowerPC
+ 	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index 75da5cd02615..932a03f4436a 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -27,7 +27,7 @@
   */
--#ifdef CONFIG_PPC32
--extern void __setup_cpu_e500v1(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_e500v2(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_e500mc(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_440x5(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_460ex(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_460gt(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_460sx(unsigned long offset, struct cpu_spec *spec);
--extern void __setup_cpu_apm821xx(unsigned long offset, struct cpu_spec *spec);
--extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_750cx(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_750fx(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_7400(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_7410(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_745x(unsigned long offset, struct cpu_spec* spec);
--#endif /* CONFIG_PPC32 */
--#ifdef CONFIG_PPC64
--#include <asm/cpu_setup_power.h>
--extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
--extern void __restore_cpu_pa6t(void);
--extern void __restore_cpu_ppc970(void);
--#endif /* CONFIG_PPC64 */
--#if defined(CONFIG_E500)
--extern void __setup_cpu_e5500(unsigned long offset, struct cpu_spec* spec);
--extern void __setup_cpu_e6500(unsigned long offset, struct cpu_spec* spec);
--extern void __restore_cpu_e5500(void);
--extern void __restore_cpu_e6500(void);
--#endif /* CONFIG_E500 */
  
- /* This table only contains "desktop" CPUs, it need to be filled with embedded
-  * ones as well...
+ 
+-#ifdef	CONFIG_PPC_FSL_BOOK3E
++#ifdef	CONFIG_PPC_E500
+ #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
+ #define WDTP_MASK	(WDTP(0x3f))
+ #else
+@@ -45,7 +45,7 @@ MODULE_PARM_DESC(nowayout,
+ 		"Watchdog cannot be stopped once started (default="
+ 				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ 
+-#ifdef CONFIG_PPC_FSL_BOOK3E
++#ifdef CONFIG_PPC_E500
+ 
+ /* For the specified period, determine the number of seconds
+  * corresponding to the reset time.  There will be a watchdog
+@@ -88,7 +88,7 @@ static unsigned int sec_to_period(unsigned int secs)
+ 
+ #define MAX_WDT_TIMEOUT		period_to_sec(1)
+ 
+-#else /* CONFIG_PPC_FSL_BOOK3E */
++#else /* CONFIG_PPC_E500 */
+ 
+ static unsigned long long period_to_sec(unsigned int period)
+ {
+@@ -102,7 +102,7 @@ static unsigned int sec_to_period(unsigned int secs)
+ 
+ #define MAX_WDT_TIMEOUT		3	/* from Kconfig */
+ 
+-#endif /* !CONFIG_PPC_FSL_BOOK3E */
++#endif /* !CONFIG_PPC_E500 */
+ 
+ static void __booke_wdt_set(void *data)
+ {
 -- 
 2.37.1
 
