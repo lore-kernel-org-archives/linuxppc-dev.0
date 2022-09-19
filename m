@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFDD6ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA53DECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:08:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf2F2JlDz3fpc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:08:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf2t4H6zz3fqh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:08:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=LWO0au/r;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=fLDVs7Aj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=LWO0au/r;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=fLDVs7Aj;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGX2XTwz306K
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGX0QTJz306l
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:17:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=d1PXrA0ji5y7WX9aOTLSAuRcBGPwqyEk8vh/reRf4ZE=; b=LWO0au/rvI8XBtiLpmPp+Hj6ty
-	aVN9bB7ygtes6LLRtSeEdagzQF9hUqR0AP2Xlew8lTJ1+l9gYN1fheWby45WO7HUyga7mVz9FhOWt
-	eiKINrvkyp9Bqyk9kjLcHDbPWOp25a01H/raJMCYIgNb4IrTiq9QT/AhVOBh+cjOloRDnZxT+XWaF
-	yLrkkOPgJrBGclK4tPXgrx0gLmayYBzdMjZH7m6HBUXtMXqr3Kpvk05mGoh2fnRJUMQaUjvpUM+T/
-	ddTH7+6dZSJ3yLO+E1HwSdjEk51sYXwh0pWg9z+JrKcWs/qshJKYcJvb6hFkNZVoCc5bOF2D+D9a1
-	zFoJmGCw==;
+	bh=TtR3uUdCvUM2x08kEUTStDUmM7q30GrToBg+SVCjhcg=; b=fLDVs7Aj5IsIPSbZ9uP3HlZv74
+	R1FNtQJlesBxAxH20mHNFNgOi8G6TmGVOm5kCWSGYGCB5XCLfek8ukDXCokb4M95Qey5bvuBemxOS
+	ayf2Hz8jVxaa+UdCsN2M+JsvmocP7hT7U4zQX/I8/SkpoO/u2sDYpO7XPma83d29iRVaDA0JKwh4E
+	VsvAYSpF1zBGa91ou16CzDlsAEWHbzim3R/hTq8m21hDIAD5uDuU44K4U+KHjOOoVT+Xw98aS4z5a
+	DJJebX6DOGcVtgCldMCuc57B643drdf0+M3/9iRspyBGJLKy6BbxD63UeybB6Mz5t5DmzixjdXksJ
+	GYRNmgPQ==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDq8-004bAC-FV; Mon, 19 Sep 2022 10:17:24 +0000
+	id 1oaDq9-004bBp-6s; Mon, 19 Sep 2022 10:17:25 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 65EBF302F53;
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 75DB7302F5D;
 	Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 77FE22BAC75AE; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
-Message-ID: <20220919101522.573936213@infradead.org>
+	id 883CE2BAC75B8; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
+Message-ID: <20220919101522.775353582@infradead.org>
 User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 12:00:12 +0200
+Date: Mon, 19 Sep 2022 12:00:15 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v2 33/44] ftrace: WARN on rcuidle
+Subject: [PATCH v2 36/44] cpuidle,omap4: Push RCU-idle into omap4_enter_lowpower()
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -71,59 +71,126 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.wal
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_GENERIC_ENTRY disallows any and all tracing when RCU isn't
-enabled.
+From: Tony Lindgren <tony@atomide.com>
 
-XXX if s390 (the only other GENERIC_ENTRY user as of this writing)
-isn't comfortable with this, we could switch to
-HAVE_NOINSTR_VALIDATION which is x86_64 only atm.
+OMAP4 uses full SoC suspend modes as idle states, as such it needs the
+whole power-domain and clock-domain code from the idle path.
 
+All that code is not suitable to run with RCU disabled, as such push
+RCU-idle deeper still.
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Link: https://lkml.kernel.org/r/Yqcv6crSNKuSWoTu@atomide.com
 ---
- include/linux/tracepoint.h |   13 ++++++++++++-
- kernel/trace/trace.c       |    3 +++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ arch/arm/mach-omap2/common.h              |    6 ++++--
+ arch/arm/mach-omap2/cpuidle44xx.c         |    8 ++------
+ arch/arm/mach-omap2/omap-mpuss-lowpower.c |   12 +++++++++++-
+ arch/arm/mach-omap2/pm44xx.c              |    2 +-
+ 4 files changed, 18 insertions(+), 10 deletions(-)
 
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -178,6 +178,16 @@ static inline struct tracepoint *tracepo
- #endif /* CONFIG_HAVE_STATIC_CALL */
+--- a/arch/arm/mach-omap2/common.h
++++ b/arch/arm/mach-omap2/common.h
+@@ -284,11 +284,13 @@ extern u32 omap4_get_cpu1_ns_pa_addr(voi
  
- /*
-+ * CONFIG_GENERIC_ENTRY archs are expected to have sanitized entry and idle
-+ * code that disallow any/all tracing/instrumentation when RCU isn't watching.
-+ */
-+#ifdef CONFIG_GENERIC_ENTRY
-+#define RCUIDLE_COND(rcuidle)	(rcuidle)
-+#else
-+#define RCUIDLE_COND(rcuidle)	(rcuidle && in_nmi())
-+#endif
-+
-+/*
-  * it_func[0] is never NULL because there is at least one element in the array
-  * when the array itself is non NULL.
-  */
-@@ -189,7 +199,8 @@ static inline struct tracepoint *tracepo
- 			return;						\
- 									\
- 		/* srcu can't be used from NMI */			\
--		WARN_ON_ONCE(rcuidle && in_nmi());			\
-+		if (WARN_ON_ONCE(RCUIDLE_COND(rcuidle)))		\
-+			return;						\
- 									\
- 		/* keep srcu and sched-rcu usage consistent */		\
- 		preempt_disable_notrace();				\
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3104,6 +3104,9 @@ void __trace_stack(struct trace_array *t
- 		return;
+ #if defined(CONFIG_SMP) && defined(CONFIG_PM)
+ extern int omap4_mpuss_init(void);
+-extern int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state);
++extern int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state,
++				bool rcuidle);
+ extern int omap4_hotplug_cpu(unsigned int cpu, unsigned int power_state);
+ #else
+ static inline int omap4_enter_lowpower(unsigned int cpu,
+-					unsigned int power_state)
++					unsigned int power_state,
++					bool rcuidle)
+ {
+ 	cpu_do_idle();
+ 	return 0;
+--- a/arch/arm/mach-omap2/cpuidle44xx.c
++++ b/arch/arm/mach-omap2/cpuidle44xx.c
+@@ -105,9 +105,7 @@ static int omap_enter_idle_smp(struct cp
+ 	}
+ 	raw_spin_unlock_irqrestore(&mpu_lock, flag);
+ 
+-	ct_cpuidle_enter();
+-	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
+-	ct_cpuidle_exit();
++	omap4_enter_lowpower(dev->cpu, cx->cpu_state, true);
+ 
+ 	raw_spin_lock_irqsave(&mpu_lock, flag);
+ 	if (cx->mpu_state_vote == num_online_cpus())
+@@ -186,10 +184,8 @@ static int omap_enter_idle_coupled(struc
+ 		}
  	}
  
-+	if (WARN_ON_ONCE(IS_ENABLED(CONFIG_GENERIC_ENTRY)))
-+		return;
+-	ct_cpuidle_enter();
+-	omap4_enter_lowpower(dev->cpu, cx->cpu_state);
++	omap4_enter_lowpower(dev->cpu, cx->cpu_state, true);
+ 	cpu_done[dev->cpu] = true;
+-	ct_cpuidle_exit();
+ 
+ 	/* Wakeup CPU1 only if it is not offlined */
+ 	if (dev->cpu == 0 && cpumask_test_cpu(1, cpu_online_mask)) {
+--- a/arch/arm/mach-omap2/omap-mpuss-lowpower.c
++++ b/arch/arm/mach-omap2/omap-mpuss-lowpower.c
+@@ -33,6 +33,7 @@
+  * and first to wake-up when MPUSS low power states are excercised
+  */
+ 
++#include <linux/cpuidle.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/errno.h>
+@@ -214,6 +215,7 @@ static void __init save_l2x0_context(voi
+  * of OMAP4 MPUSS subsystem
+  * @cpu : CPU ID
+  * @power_state: Low power state.
++ * @rcuidle: RCU needs to be idled
+  *
+  * MPUSS states for the context save:
+  * save_state =
+@@ -222,7 +224,8 @@ static void __init save_l2x0_context(voi
+  *	2 - CPUx L1 and logic lost + GIC lost: MPUSS OSWR
+  *	3 - CPUx L1 and logic lost + GIC + L2 lost: DEVICE OFF
+  */
+-int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state)
++int omap4_enter_lowpower(unsigned int cpu, unsigned int power_state,
++			 bool rcuidle)
+ {
+ 	struct omap4_cpu_pm_info *pm_info = &per_cpu(omap4_pm_info, cpu);
+ 	unsigned int save_state = 0, cpu_logic_state = PWRDM_POWER_RET;
+@@ -268,6 +271,10 @@ int omap4_enter_lowpower(unsigned int cp
+ 	cpu_clear_prev_logic_pwrst(cpu);
+ 	pwrdm_set_next_pwrst(pm_info->pwrdm, power_state);
+ 	pwrdm_set_logic_retst(pm_info->pwrdm, cpu_logic_state);
++
++	if (rcuidle)
++		ct_cpuidle_enter();
++
+ 	set_cpu_wakeup_addr(cpu, __pa_symbol(omap_pm_ops.resume));
+ 	omap_pm_ops.scu_prepare(cpu, power_state);
+ 	l2x0_pwrst_prepare(cpu, save_state);
+@@ -283,6 +290,9 @@ int omap4_enter_lowpower(unsigned int cp
+ 	if (IS_PM44XX_ERRATUM(PM_OMAP4_ROM_SMP_BOOT_ERRATUM_GICD) && cpu)
+ 		gic_dist_enable();
+ 
++	if (rcuidle)
++		ct_cpuidle_exit();
 +
  	/*
- 	 * When an NMI triggers, RCU is enabled via ct_nmi_enter(),
- 	 * but if the above rcu_is_watching() failed, then the NMI
+ 	 * Restore the CPUx power state to ON otherwise CPUx
+ 	 * power domain can transitions to programmed low power
+--- a/arch/arm/mach-omap2/pm44xx.c
++++ b/arch/arm/mach-omap2/pm44xx.c
+@@ -76,7 +76,7 @@ static int omap4_pm_suspend(void)
+ 	 * domain CSWR is not supported by hardware.
+ 	 * More details can be found in OMAP4430 TRM section 4.3.4.2.
+ 	 */
+-	omap4_enter_lowpower(cpu_id, cpu_suspend_state);
++	omap4_enter_lowpower(cpu_id, cpu_suspend_state, false);
+ 
+ 	/* Restore next powerdomain state */
+ 	list_for_each_entry(pwrst, &pwrst_list, node) {
 
 
