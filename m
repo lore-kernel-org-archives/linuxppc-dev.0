@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6DBCECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:07:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFDD6ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:08:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf1b2SPbz3fK8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:07:47 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWf2F2JlDz3fpc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:08:21 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ocGTItbn;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=LWO0au/r;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ocGTItbn;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=LWO0au/r;
 	dkim-atps=neutral
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGW4YTFz308B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:17:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGX2XTwz306K
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:17:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=5J6w0/E9GHUuxcPhak3+lKL/wLFktsWBVlnujWsvOEE=; b=ocGTItbnHMCSlaYiyMpchOEOtx
-	veHzmEQdt1SePnsivQdcNeIJIOJZndJ7oHl64ZVy4viIjqO5KfL7b2Wf5bz98R8lyCJd2nm9U3tjz
-	/9zwY2YzIzcGpJXNLPKlakxz0YTThM6NGt6sYMHo9YdgO/p77zXJwy4mzj8pJoWIiP3Mbe7DI6Jbt
-	2AMc2nOm8r1Lr/VZ+Ls7ftZ6POJ0PEiFVy9OSbCKzFB2aKH4z9eBrdwrOthgJzOSji5xIKlx+miPC
-	kBrvhjwCHv1vWywPAOk0NStNCu/l3FpOGhyXrqsfN8NmBRF3aeNbEK1vsmnay3e97r1v8JSs2JEc6
-	a9exIuTw==;
+	bh=d1PXrA0ji5y7WX9aOTLSAuRcBGPwqyEk8vh/reRf4ZE=; b=LWO0au/rvI8XBtiLpmPp+Hj6ty
+	aVN9bB7ygtes6LLRtSeEdagzQF9hUqR0AP2Xlew8lTJ1+l9gYN1fheWby45WO7HUyga7mVz9FhOWt
+	eiKINrvkyp9Bqyk9kjLcHDbPWOp25a01H/raJMCYIgNb4IrTiq9QT/AhVOBh+cjOloRDnZxT+XWaF
+	yLrkkOPgJrBGclK4tPXgrx0gLmayYBzdMjZH7m6HBUXtMXqr3Kpvk05mGoh2fnRJUMQaUjvpUM+T/
+	ddTH7+6dZSJ3yLO+E1HwSdjEk51sYXwh0pWg9z+JrKcWs/qshJKYcJvb6hFkNZVoCc5bOF2D+D9a1
+	zFoJmGCw==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDq8-004b9u-AO; Mon, 19 Sep 2022 10:17:24 +0000
+	id 1oaDq8-004bAC-FV; Mon, 19 Sep 2022 10:17:24 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 490C4302F41;
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 65EBF302F53;
 	Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 646262BAC75A6; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
-Message-ID: <20220919101522.291054325@infradead.org>
+	id 77FE22BAC75AE; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
+Message-ID: <20220919101522.573936213@infradead.org>
 User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 12:00:08 +0200
+Date: Mon, 19 Sep 2022 12:00:12 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v2 29/44] cpuidle,tdx: Make tdx noinstr clean
+Subject: [PATCH v2 33/44] ftrace: WARN on rcuidle
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -71,59 +71,59 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.wal
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vmlinux.o: warning: objtool: __halt+0x2c: call to hcall_func.constprop.0() leaves .noinstr.text section
-vmlinux.o: warning: objtool: __halt+0x3f: call to __tdx_hypercall() leaves .noinstr.text section
-vmlinux.o: warning: objtool: __tdx_hypercall+0x66: call to __tdx_hypercall_failed() leaves .noinstr.text section
+CONFIG_GENERIC_ENTRY disallows any and all tracing when RCU isn't
+enabled.
+
+XXX if s390 (the only other GENERIC_ENTRY user as of this writing)
+isn't comfortable with this, we could switch to
+HAVE_NOINSTR_VALIDATION which is x86_64 only atm.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- arch/x86/boot/compressed/vmlinux.lds.S |    1 +
- arch/x86/coco/tdx/tdcall.S             |    2 ++
- arch/x86/coco/tdx/tdx.c                |    5 +++--
- 3 files changed, 6 insertions(+), 2 deletions(-)
+ include/linux/tracepoint.h |   13 ++++++++++++-
+ kernel/trace/trace.c       |    3 +++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
---- a/arch/x86/boot/compressed/vmlinux.lds.S
-+++ b/arch/x86/boot/compressed/vmlinux.lds.S
-@@ -34,6 +34,7 @@ SECTIONS
- 		_text = .; 	/* Text */
- 		*(.text)
- 		*(.text.*)
-+		*(.noinstr.text)
- 		_etext = . ;
- 	}
- 	.rodata : {
---- a/arch/x86/coco/tdx/tdcall.S
-+++ b/arch/x86/coco/tdx/tdcall.S
-@@ -31,6 +31,8 @@
- 					  TDX_R12 | TDX_R13 | \
- 					  TDX_R14 | TDX_R15 )
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -178,6 +178,16 @@ static inline struct tracepoint *tracepo
+ #endif /* CONFIG_HAVE_STATIC_CALL */
  
-+.section .noinstr.text, "ax"
-+
  /*
-  * __tdx_module_call()  - Used by TDX guests to request services from
-  * the TDX module (does not include VMM services) using TDCALL instruction.
---- a/arch/x86/coco/tdx/tdx.c
-+++ b/arch/x86/coco/tdx/tdx.c
-@@ -53,8 +53,9 @@ static inline u64 _tdx_hypercall(u64 fn,
- }
- 
- /* Called from __tdx_hypercall() for unrecoverable failure */
--void __tdx_hypercall_failed(void)
-+noinstr void __tdx_hypercall_failed(void)
- {
-+	instrumentation_begin();
- 	panic("TDVMCALL failed. TDX module bug?");
- }
- 
-@@ -64,7 +65,7 @@ void __tdx_hypercall_failed(void)
-  * Reusing the KVM EXIT_REASON macros makes it easier to connect the host and
-  * guest sides of these calls.
++ * CONFIG_GENERIC_ENTRY archs are expected to have sanitized entry and idle
++ * code that disallow any/all tracing/instrumentation when RCU isn't watching.
++ */
++#ifdef CONFIG_GENERIC_ENTRY
++#define RCUIDLE_COND(rcuidle)	(rcuidle)
++#else
++#define RCUIDLE_COND(rcuidle)	(rcuidle && in_nmi())
++#endif
++
++/*
+  * it_func[0] is never NULL because there is at least one element in the array
+  * when the array itself is non NULL.
   */
--static u64 hcall_func(u64 exit_reason)
-+static __always_inline u64 hcall_func(u64 exit_reason)
- {
- 	return exit_reason;
- }
+@@ -189,7 +199,8 @@ static inline struct tracepoint *tracepo
+ 			return;						\
+ 									\
+ 		/* srcu can't be used from NMI */			\
+-		WARN_ON_ONCE(rcuidle && in_nmi());			\
++		if (WARN_ON_ONCE(RCUIDLE_COND(rcuidle)))		\
++			return;						\
+ 									\
+ 		/* keep srcu and sched-rcu usage consistent */		\
+ 		preempt_disable_notrace();				\
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3104,6 +3104,9 @@ void __trace_stack(struct trace_array *t
+ 		return;
+ 	}
+ 
++	if (WARN_ON_ONCE(IS_ENABLED(CONFIG_GENERIC_ENTRY)))
++		return;
++
+ 	/*
+ 	 * When an NMI triggers, RCU is enabled via ct_nmi_enter(),
+ 	 * but if the above rcu_is_watching() failed, then the NMI
 
 
