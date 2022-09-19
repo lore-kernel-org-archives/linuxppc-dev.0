@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8077FECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 292F2ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:16:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWfCL0JRhz3fDJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:16:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWfCz6Hj5z3fG4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:16:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=WLGHjeKc;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=AlyUL2n2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=WLGHjeKc;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=AlyUL2n2;
 	dkim-atps=neutral
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGx4J8rz30F7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLGx4DP3z306r
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:18:17 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=QoMAr3LApQWawpgafmfgLtjlo5s7sxEjoowggy+JX/o=; b=WLGHjeKc/BMYqns1qUsWRZUaSt
-	Tofg6rifY75OG/LDEJW9VOB+NIgkufdCrkbxq1v+SrRaHNBJMpyCyEfxqhfG01AmqVvJ1AB34pydJ
-	jWmfba2WKyUMYvUchvTu0KMuRygDJE7MoDyNt3XpDo4R3j4+68w/YWPJcAFfvyqT7zdUozhlp2VrJ
-	ev7eU0mOg+ggSNPE92jTJlv4fbP8+GL0CErpKOVSRb9V9MrPPgJyG1Trd4TiJLfKRmfnCYIBHcKhB
-	kheMCWNvDAUtvFyllnDb0Kx9l5NNdUV4tdE5x4BcQVEDblgVOaGiHd3SJlMcsNl4SfP41J7i2TeFx
-	M9uI0mbQ==;
+	bh=YOWU43M4IjsvcmJXQwOIFJh+WuCbnSytdcIdnv65DkY=; b=AlyUL2n21Ay/eo4jzhxLVHbjtT
+	UQyURrUAFbSeZXMu+qSEhGh5tsE0SavJsEpBS1K1IB5BR2w0cqpFKFUfHSoscIwaG1ohk66JX0VfJ
+	mLJwvAXSiH7Gt28S3XByOnqo3uEOTiM0P9sWLADHW7udnoML9bRxDpBpb3wcuoeOVqMcXphlfL21A
+	my5k9xukM3nRKLIX0+tEddJpYBIiN6NUySN7jnWjWc6oY49Xk2EEzfYF2TBITi40qvcU6x6hpac+t
+	3G1ys0gAkcnegE95WH6F0JTlIbD+ZqauWXPqFE9mdWImdtoBd2u5kmXCBlZVlWagaRZnaojLqXDwM
+	xgmg5ltg==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDq8-00E2C5-Kw; Mon, 19 Sep 2022 10:17:25 +0000
+	id 1oaDpA-00E28l-Ry; Mon, 19 Sep 2022 10:17:17 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id A6CEE302F91;
-	Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id ED9F430067B;
+	Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id AFEB12BABC0C7; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
-Message-ID: <20220919101523.312333837@infradead.org>
+	id C4C3D2BA49036; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
+Message-ID: <20220919101520.399971897@infradead.org>
 User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 12:00:23 +0200
+Date: Mon, 19 Sep 2022 11:59:40 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v2 44/44] arm64,riscv,perf: Remove RCU_NONIDLE() usage
+Subject: [PATCH v2 01/44] x86/perf/amd: Remove tracing from perf_lopwr_cb()
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -71,53 +71,59 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.wal
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The PM notifiers should no longer be ran with RCU disabled (per the
-previous patches), as such this hack is no longer required either.
+The perf_lopwr_cb() is called from the idle routines; there is no RCU
+there, we must not enter tracing.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/perf/arm_pmu.c       |   11 +----------
- drivers/perf/riscv_pmu_sbi.c |    8 +-------
- 2 files changed, 2 insertions(+), 17 deletions(-)
+ arch/x86/events/amd/brs.c         |   13 +++++--------
+ arch/x86/include/asm/perf_event.h |    2 +-
+ 2 files changed, 6 insertions(+), 9 deletions(-)
 
---- a/drivers/perf/arm_pmu.c
-+++ b/drivers/perf/arm_pmu.c
-@@ -762,17 +762,8 @@ static void cpu_pm_pmu_setup(struct arm_
- 		case CPU_PM_ENTER_FAILED:
- 			 /*
- 			  * Restore and enable the counter.
--			  * armpmu_start() indirectly calls
--			  *
--			  * perf_event_update_userpage()
--			  *
--			  * that requires RCU read locking to be functional,
--			  * wrap the call within RCU_NONIDLE to make the
--			  * RCU subsystem aware this cpu is not idle from
--			  * an RCU perspective for the armpmu_start() call
--			  * duration.
- 			  */
--			RCU_NONIDLE(armpmu_start(event, PERF_EF_RELOAD));
-+			armpmu_start(event, PERF_EF_RELOAD);
- 			break;
- 		default:
- 			break;
---- a/drivers/perf/riscv_pmu_sbi.c
-+++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -747,14 +747,8 @@ static int riscv_pm_pmu_notify(struct no
- 		case CPU_PM_ENTER_FAILED:
- 			/*
- 			 * Restore and enable the counter.
--			 *
--			 * Requires RCU read locking to be functional,
--			 * wrap the call within RCU_NONIDLE to make the
--			 * RCU subsystem aware this cpu is not idle from
--			 * an RCU perspective for the riscv_pmu_start() call
--			 * duration.
- 			 */
--			RCU_NONIDLE(riscv_pmu_start(event, PERF_EF_RELOAD));
-+			riscv_pmu_start(event, PERF_EF_RELOAD);
- 			break;
- 		default:
- 			break;
+--- a/arch/x86/events/amd/brs.c
++++ b/arch/x86/events/amd/brs.c
+@@ -41,18 +41,15 @@ static inline unsigned int brs_to(int id
+ 	return MSR_AMD_SAMP_BR_FROM + 2 * idx + 1;
+ }
+ 
+-static inline void set_debug_extn_cfg(u64 val)
++static __always_inline void set_debug_extn_cfg(u64 val)
+ {
+ 	/* bits[4:3] must always be set to 11b */
+-	wrmsrl(MSR_AMD_DBG_EXTN_CFG, val | 3ULL << 3);
++	__wrmsr(MSR_AMD_DBG_EXTN_CFG, val | 3ULL << 3, val >> 32);
+ }
+ 
+-static inline u64 get_debug_extn_cfg(void)
++static __always_inline u64 get_debug_extn_cfg(void)
+ {
+-	u64 val;
+-
+-	rdmsrl(MSR_AMD_DBG_EXTN_CFG, val);
+-	return val;
++	return __rdmsr(MSR_AMD_DBG_EXTN_CFG);
+ }
+ 
+ static bool __init amd_brs_detect(void)
+@@ -338,7 +335,7 @@ void amd_pmu_brs_sched_task(struct perf_
+  * called from ACPI processor_idle.c or acpi_pad.c
+  * with interrupts disabled
+  */
+-void perf_amd_brs_lopwr_cb(bool lopwr_in)
++void noinstr perf_amd_brs_lopwr_cb(bool lopwr_in)
+ {
+ 	struct cpu_hw_events *cpuc = this_cpu_ptr(&cpu_hw_events);
+ 	union amd_debug_extn_cfg cfg;
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -554,7 +554,7 @@ extern void perf_amd_brs_lopwr_cb(bool l
+ 
+ DECLARE_STATIC_CALL(perf_lopwr_cb, perf_amd_brs_lopwr_cb);
+ 
+-static inline void perf_lopwr_cb(bool lopwr_in)
++static __always_inline void perf_lopwr_cb(bool lopwr_in)
+ {
+ 	static_call_mod(perf_lopwr_cb)(lopwr_in);
+ }
 
 
