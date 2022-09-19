@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD4CDECAAD3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EDD2ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 17:07:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWLr0ljJz3g8v
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:07:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWWMH0RpPz3gCM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 03:07:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWG96zkPz3f5P
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWWGG526Mz3f5K
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 03:03:18 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MWWF34S8dz9sl8;
-	Mon, 19 Sep 2022 19:02:15 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4MWWF42Wngz9sl9;
+	Mon, 19 Sep 2022 19:02:16 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id S3VF5cw_7SYS; Mon, 19 Sep 2022 19:02:15 +0200 (CEST)
+	with ESMTP id bhJH3nhaaO-k; Mon, 19 Sep 2022 19:02:16 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr5wSDz9sl9;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4MWWDr5q7Zz9sl7;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A9ADB8B78B;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id ACA668B774;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id c3Dun-A3qyRJ; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
+	with ESMTP id 6tIJxMSki6oT; Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.8])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4EC178B773;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 60B818B77A;
 	Mon, 19 Sep 2022 19:02:04 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH1wk51549624
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28JH20LW1549649
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Mon, 19 Sep 2022 19:01:58 +0200
+	Mon, 19 Sep 2022 19:02:00 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH1wYK1549623;
-	Mon, 19 Sep 2022 19:01:58 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28JH20Ff1549648;
+	Mon, 19 Sep 2022 19:02:00 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 12/19] Documentation: Rename PPC_FSL_BOOK3E to PPC_E500
-Date: Mon, 19 Sep 2022 19:01:36 +0200
-Message-Id: <d3d42b395c09e66b0705fda1e51779f33e13ac38.1663606876.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 18/19] powerpc: Cleanup idle for e500
+Date: Mon, 19 Sep 2022 19:01:42 +0200
+Message-Id: <8039301334e948974c85ec5ef2db37751075185b.1663606876.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 References: <828f6a64eeb51ce9abfa1d4e84c521a02fecebb8.1663606875.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606899; l=1023; s=20211009; h=from:subject:message-id; bh=mzcbo4MeqpUQugY5af2ekUxOsdx736AJlQlhUXXpELE=; b=CuHMf4NyC1MRuuC6NCMG7HmRloBj69YbAQYAjGM/flK9aCYUvUbqaJYL6GEpy0a+Q+OrcfsGWbEJ XqIbnR79ACaRumw36N1fhcpM3joqTzaxKavzVjqGqYSVHq2av1BB
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1663606900; l=4717; s=20211009; h=from:subject:message-id; bh=2++AAnzzOJYJGhhhMcfuX+a8XV2xZcg62ybaUo1obvs=; b=PwFchBlsaB/HrztyDePI/WVeZD6Po3coLW+GmSdWUF+kgZP1hG+8cy5safW6K0BL81mALeQhZOBi FOZRT1p2BJ+yW9DA4mX3n4LmwwDgc7l6gCscUINmf7rw3LE9G0gD
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,34 +67,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-CONFIG_PPC_FSL_BOOK3E is redundant with CONFIG_PPC_E500.
+e500 idle setup is a bit messy.
 
-Rename it so that CONFIG_PPC_FSL_BOOK3E can be removed later.
+e500_idle() is used for PPC32 while book3e_idle() is used for PPC64.
+As they are mutually exclusive, call them all e500_idle().
+
+Use CONFIG_MPC_85xx instead of PPC32 + E500 in Makefile and rename
+idle_e500.c to idle_85xx.c .
+
+Rename idle_book3e.c to idle_64e.c and remove #ifdef PPC64 in
+as it's only built on PPC64.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org
 ---
- Documentation/admin-guide/kernel-parameters.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/machdep.h                | 1 -
+ arch/powerpc/kernel/Makefile                      | 6 ++----
+ arch/powerpc/kernel/{idle_book3e.S => idle_64e.S} | 8 ++------
+ arch/powerpc/kernel/{idle_e500.S => idle_85xx.S}  | 0
+ arch/powerpc/platforms/85xx/corenet_generic.c     | 4 ----
+ arch/powerpc/platforms/85xx/qemu_e500.c           | 4 ----
+ 6 files changed, 4 insertions(+), 19 deletions(-)
+ rename arch/powerpc/kernel/{idle_book3e.S => idle_64e.S} (93%)
+ rename arch/powerpc/kernel/{idle_e500.S => idle_85xx.S} (100%)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 7172a91539f2..07a134d8388b 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3626,7 +3626,7 @@
- 			(bounds check bypass). With this option data leaks are
- 			possible in the system.
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 8cb83600c434..378b8d5836a7 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -204,7 +204,6 @@ struct machdep_calls {
+ extern void e500_idle(void);
+ extern void power4_idle(void);
+ extern void ppc6xx_idle(void);
+-extern void book3e_idle(void);
  
--	nospectre_v2	[X86,PPC_FSL_BOOK3E,ARM64] Disable all mitigations for
-+	nospectre_v2	[X86,PPC_E500,ARM64] Disable all mitigations for
- 			the Spectre variant 2 (indirect branch prediction)
- 			vulnerability. System may allow data leaks with this
- 			option.
+ /*
+  * ppc_md contains a copy of the machine description structure for the
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 658c4dffaa56..1f121c188805 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -81,7 +81,7 @@ obj-$(CONFIG_PPC_DAWR)		+= dawr.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
+ obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
+-obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
++obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_64e.o
+ obj-$(CONFIG_PPC_BARRIER_NOSPEC) += security.o
+ obj-$(CONFIG_PPC64)		+= vdso64_wrapper.o
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o
+@@ -100,9 +100,7 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_FA_DUMP)		+= fadump.o
+ obj-$(CONFIG_PRESERVE_FA_DUMP)	+= fadump.o
+-ifdef CONFIG_PPC32
+-obj-$(CONFIG_PPC_E500)		+= idle_e500.o
+-endif
++obj-$(CONFIG_PPC_85xx)		+= idle_85xx.o
+ obj-$(CONFIG_PPC_BOOK3S_32)	+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
+diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_64e.S
+similarity index 93%
+rename from arch/powerpc/kernel/idle_book3e.S
+rename to arch/powerpc/kernel/idle_64e.S
+index cc008de58b05..1736aad2afe9 100644
+--- a/arch/powerpc/kernel/idle_book3e.S
++++ b/arch/powerpc/kernel/idle_64e.S
+@@ -2,7 +2,7 @@
+ /*
+  * Copyright 2010 IBM Corp, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  *
+- * Generic idle routine for Book3E processors
++ * Generic idle routine for 64 bits e500 processors
+  */
+ 
+ #include <linux/threads.h>
+@@ -16,8 +16,6 @@
+ #include <asm/hw_irq.h>
+ 
+ /* 64-bit version only for now */
+-#ifdef CONFIG_PPC64
+-
+ .macro BOOK3E_IDLE name loop
+ _GLOBAL(\name)
+ 	/* Save LR for later */
+@@ -98,6 +96,4 @@ epapr_ev_idle_start:
+ 
+ BOOK3E_IDLE epapr_ev_idle EPAPR_EV_IDLE_LOOP
+ 
+-BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
+-
+-#endif /* CONFIG_PPC64 */
++BOOK3E_IDLE e500_idle BOOK3E_IDLE_LOOP
+diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_85xx.S
+similarity index 100%
+rename from arch/powerpc/kernel/idle_e500.S
+rename to arch/powerpc/kernel/idle_85xx.S
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 28d6b36f1ccd..2c539de2d629 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -200,9 +200,5 @@ define_machine(corenet_generic) {
+ #endif
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+-#ifdef CONFIG_PPC64
+-	.power_save		= book3e_idle,
+-#else
+ 	.power_save		= e500_idle,
+-#endif
+ };
+diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
+index 64109ad6736c..1639e222cc33 100644
+--- a/arch/powerpc/platforms/85xx/qemu_e500.c
++++ b/arch/powerpc/platforms/85xx/qemu_e500.c
+@@ -68,9 +68,5 @@ define_machine(qemu_e500) {
+ 	.get_irq		= mpic_get_coreint_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+-#ifdef CONFIG_PPC64
+-	.power_save		= book3e_idle,
+-#else
+ 	.power_save		= e500_idle,
+-#endif
+ };
 -- 
 2.37.1
 
