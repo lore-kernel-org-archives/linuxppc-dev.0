@@ -4,51 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43045ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:02:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C6F5ECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:29:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWdvs5QQWz3fJq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:02:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWfVK3j94z3hpk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:29:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=Pu2ax4C+;
+	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=joCTNtjG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hitachienergy.com (client-ip=40.107.105.129; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=holger.brunck@hitachienergy.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=hitachienergy.com header.i=@hitachienergy.com header.a=rsa-sha256 header.s=selector1 header.b=joCTNtjG;
+	dkim-atps=neutral
+Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2129.outbound.protection.outlook.com [40.107.105.129])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLG64F3bz303m
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:17:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
-	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
-	Content-ID:Content-Description:In-Reply-To;
-	bh=t0hoKUhhRPcpNA2sMhDiSnk+WMkt/R0zO6loPF3PH9w=; b=Pu2ax4C+q2gikvdKh53kb5LQaq
-	1icXVAPPb5rTxmDMICtYx2G9B9yrHKvYB27SoYQJT/Juj9Z0e/ciHJ7RnfVuY0UEjWNyVpkpns/fy
-	/NILdltY1jI6makeZnfd6Ue64JSOcginNFswX+VLat0o+YrsIuhjqYP8sxzm+/aHtz2+5+wAVzwMQ
-	Z6tx/N/mzW2m5hIYqNNQHq8hVqXusyw1qoanShE7Uh/Lm8p05qkgyTLMAP6KM2PwHkRt1IYSrnHns
-	bdeqefliBxf1GDAvIiKTpMroNoGSw6cOFgqeoY/+lppO/2cDzth/JGUAVVk19kUUcCVXxh2cgXBOx
-	JuF2Xc/w==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDpE-004ahX-Bw; Mon, 19 Sep 2022 10:16:28 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 71529300BBA;
-	Mon, 19 Sep 2022 12:16:24 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id C99462BA49037; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
-Message-ID: <20220919101520.466971769@infradead.org>
-User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 11:59:41 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: peterz@infradead.org
-Subject: [PATCH v2 02/44] x86/idle: Replace x86_idle with a static_call
-References: <20220919095939.761690562@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWRm51kwpz2xJ8
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 00:25:23 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=g5rw5WqXcmb9mkmqgCKyBG8T9xuU61xr7W9XI4Od0c1ed86OBbyXY1+maXZVtU+CA0h3635ktHHH+OSxgQobGnmEeki1WKE73Jh6GHIMD+ePvCYwLXQqNMslCQnltM9uWrUlrsVIB5MGVI9kdFWgeG9nzNWlhU5dv14TTiT3+S/O7Mr5mA1DiG6aZx7lmzyTM/SrBRcl3vtFHYVfh31v0BdhftUMeZkNXVzNfYiCRaWDZOTZVG0u3HaUrF0bKRBPpnDOCwd+lI86WDOFEsU7K3+U7npwEJa6RWXp8oXNsl0IcRn5AoOBoy2u34ERT/ecUMI9cQFArb3Ui4yciHsOyQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=zBhDki20oZkW7k0X+HKQCZ4Jnm3eU/9kmX5q/iyLNq4=;
+ b=BgLkfAHHXf0XLRg03AcLHkDvh2AN+nZGUVAMr0wuGW0omLITsUDYusVxi5fvL5UUV6EwGavjmQd6R2TcgHKQkUiWfhJfkXehnNOe6018kDuRys7cJJmvmumRcTVGecT3oDIl9QtFFAVhB11ZhC5F3HZ3UQXZXAHawy4Tt7ibLQ00uzz0Yr9tyaz48w3kMaI/vw/+ZS2ID8Ecn0JtFCo90OefByK/s0XbmLN5yywI87jUzVnPt48P5oDEBUsfLnOu6PZEhAzrEnP8XCIImsp1lZg1nDS/e+X9Xn8S7MS6M77iRhc3OcP9uwVoU5X3+ne0JNMsL8QCKuLMbwHZEVRCgg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=hitachienergy.com; dmarc=pass action=none
+ header.from=hitachienergy.com; dkim=pass header.d=hitachienergy.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hitachienergy.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=zBhDki20oZkW7k0X+HKQCZ4Jnm3eU/9kmX5q/iyLNq4=;
+ b=joCTNtjGefch5F9vivzv77sj68sPW/BUcxGm3n33bBsOCEzbFw6ckScxLqzcZh808cjTIIfaRHqvGYKbCjKIbqKpEsfkWbHlDHcqcsN28rPzh7SKlK3qkz+U120uPTTS/nT8sxrJG/XkutwOO/UxGhfi4FkjvHFDtabsm0agpuoXJrHQYd+K0wGF13R1IdT0/8OV57BaHCuvYkhQG1I2oRZhUKCcQQcRBy2M/Qji8QG+eoj7HHNKEIrjbKOv/ku/jxXZ2Np3LuMW8S276N01wpry/IjfK3LZiM6NSqA5Pw074oiXpRV9D+UWwhs1OQgM+LPYUc/JpMMfluIKsoULAg==
+Received: from DB6PR0601MB2485.eurprd06.prod.outlook.com (2603:10a6:4:21::10)
+ by PR1PR06MB5753.eurprd06.prod.outlook.com (2603:10a6:102:10::28) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5632.19; Mon, 19 Sep
+ 2022 14:25:04 +0000
+Received: from DB6PR0601MB2485.eurprd06.prod.outlook.com
+ ([fe80::c09d:437c:380b:8569]) by DB6PR0601MB2485.eurprd06.prod.outlook.com
+ ([fe80::c09d:437c:380b:8569%2]) with mapi id 15.20.5632.021; Mon, 19 Sep 2022
+ 14:25:03 +0000
+From: Holger Brunck <holger.brunck@hitachienergy.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] powerpc/83xx: update kmeter1 defconfig and dts
+Thread-Topic: [PATCH] powerpc/83xx: update kmeter1 defconfig and dts
+Thread-Index: AQHYwt7jfIzzrAag70uL8Z8S6EN1Fq3UmQSAgBJHwNA=
+Date: Mon, 19 Sep 2022 14:25:03 +0000
+Message-ID:  <DB6PR0601MB2485716EBE45037CB8ED7196F74D9@DB6PR0601MB2485.eurprd06.prod.outlook.com>
+References: <20191216095006.13590-1-holger.brunck@ch.abb.com>
+ <269be158-2451-30cc-f478-0b0453b58c3a@csgroup.eu>
+ <87y1uueq2o.fsf@mpe.ellerman.id.au>
+In-Reply-To: <87y1uueq2o.fsf@mpe.ellerman.id.au>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-processedbytemplafy: true
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=hitachienergy.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: DB6PR0601MB2485:EE_|PR1PR06MB5753:EE_
+x-ms-office365-filtering-correlation-id: 7857b3fc-4c74-4dd3-c6bb-08da9a4abe5f
+x-he-o365-outbound: HEO365Out
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  WqqhKU09hAVrRpww1kK/a7Djcyp1rPX/Xx5snSy1JiITTYX32bPV2hGt1XcaGQFcysqnq8+gc9vyEAvq8QCc7t/gUWtLfbZtvObm4znFxzmbyPWqaoLF2Z/V9IJpwoCi/qNN/9cMo8dqzvQqMYgcZqXS3omQE4fMaX3arAfOBiqTPeCar4Ab9nj5OU+qLFCQVDrS2D8FJ5J16mUoiEnzpD9yfirJ0B7RRRW3GOYDmGHKNv9Eq8OLc1zFiAdk6BdoqPyDE+c2jpGl9FuTwzMPRYFZEoIIyWld1qyuyNXsKvG5+wezgNYAz2UAoTIgtPUnRWsRl7XlDT5eFc63P+XW0/8cGdDqR6EFRtgGd1GbWcnLKyRZiNlQYiaf4ozNouANO+4gaY2Z3EPJGV51Yq1qFIpnRhdvDvxKUtYafFUw+uCxrK8UjTELbg7cwu/nug0BaGEPSX8rdZ6NcR11RBWRPhm0zPixQUAK5BxYkNQgVmDHk/T2+eAmGacZrogLNEZhDVP7tOALOahXqhnzW83Fdwa7iWql1AqmpAQVihlDDHKOdNtsMYoJVyUrlZe8X6bzgsoRvpIdgRxkfkC3Z89uKDxWMJkWDwrzFfaeyjnBRV/lIH8HmSMX1XaYF8PwgRd5YBJL+GyUOLfMGWYUmIC7MUn5egcCSb4Grd1xZ0bXXL2PlWF4XgXeRXjp6069uAZPzQXopovK1lV2E87YGikHjfPTgYqd0+0GSLQMp1tr7K/SFCpe43PLXPtmy7uOnFJEa7mG2CSpY9gm/rA33jY1TA==
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB6PR0601MB2485.eurprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(346002)(39860400002)(136003)(396003)(366004)(376002)(451199015)(86362001)(33656002)(55016003)(110136005)(71200400001)(38070700005)(316002)(122000001)(38100700002)(8676002)(2906002)(82960400001)(478600001)(7696005)(9686003)(6506007)(26005)(76116006)(66556008)(66476007)(66446008)(64756008)(4326008)(41300700001)(66946007)(8936002)(52536014)(83380400001)(186003)(5660300002)(66574015)(4744005)(44832011);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?WkxxWlpsRHQzc1JzTHhrcFU5L1BySHNsdlh2ZjZSd1lDUHBvZWpTNjNHWUUz?=
+ =?utf-8?B?b0lxeFU3aU5oNlBkWnhTTlcrMGcrT05OU3ZnRmZEWWp0T1ZiUmRuMTU2MVFY?=
+ =?utf-8?B?YUc5QUw3N3k5WnBPbHJudFBaOXZsd2gyS1V4a0htcUdZeWp4UmpIeEI1eXl5?=
+ =?utf-8?B?WS9uaHVjQ09YbFJOTHpCa2NGT1JRbkp3UlFZcDdCNURodUtVd3JmNm9Fckh3?=
+ =?utf-8?B?bCtrUndTRFYxak1ZemgvVkpTanIzbVpEamp3eVdlR05xeXYzN3V5K3VTM0NY?=
+ =?utf-8?B?UkVTWW1JTU9ybG80cndIQ2laRER4TGFFZE5qaE5rUjFJY0hPMzNJSjBKOE9x?=
+ =?utf-8?B?aDNPdytCcTFyNlFxbGlQb1l3T0pzeVhLSCt3YllhZ3VXSkxYamxnV2ZCSm0w?=
+ =?utf-8?B?ZmpWRFcxNWszSFFSYmYwd0ZKSE9QejdyUmh6TjVsZEZ1RDlHMC8xV0Y4YnBX?=
+ =?utf-8?B?WGt6YVc4UEgxbE5CNFRsSGg2SWlFa1dEV25jQVRXaFBwUXlxZWF3K1pHVlp5?=
+ =?utf-8?B?dzNBTlR0ZE5XcFY4alFrVHNGZ3d4VzNxdmJncCtKYUJqc2ZiOHl1ekcxaVor?=
+ =?utf-8?B?TlRkV1A2TDlhbDMxSHRWUnJNazJDTUVrUXlzb24rRFNhRU8zSFExMmhoWGlz?=
+ =?utf-8?B?OENiOU5QS1B3WjZVTU9VYUpJVkhaSXRIT1FFbG0yMkhTcHlJWEpYenRKOEhN?=
+ =?utf-8?B?a29TcGFqd1BhQXlvdlBwa21ZMjB1NHdyME9TQ2Y3L012ak9NR1FaNzhBUWx3?=
+ =?utf-8?B?b3o4R01ta1JQejJicUlaa0M1eXZ2T0tObnVvdTlXaGQ1RGdLTHYvajN1Z1Vt?=
+ =?utf-8?B?SHFVNEZ6U3I1UzBQbEo0clhNV3Z5aXI4emRTalRpZWZ5azRUa25ZTHJUQ3pE?=
+ =?utf-8?B?RjgyUi9YT0Z1d09SMVU2Z3Mza0xIVzNzckJhTmppdHl0K1FiVXJFUC9adUpI?=
+ =?utf-8?B?R0UwNE1sUnlwczhLS2pVNFlJNXVsNUZ4WTNFUEgvYUMzYTUrL3NkWFBwTmp3?=
+ =?utf-8?B?YTFKU2VUVk1mWWp4cWJ2NXhkbkY3SVF4MlZqcjE2TFZWcmxNei9McDdnYzJo?=
+ =?utf-8?B?ZGJoeHA1bi9ieVY3R0pnWGRsZmJSemRPcjBTeStuSFhYem04T2w5cVQyVlVC?=
+ =?utf-8?B?WUgxZkIwZzRIT2VjcnZPWExEOURTZHVQTmZ2bkZvbnVEbWtPc0grOFFTQ1hl?=
+ =?utf-8?B?YmdIeTV4cmNwVnh4UHk3NllZZ0xXUG1qODFPUzJvQVlkTGh2L243b2dNT3Zr?=
+ =?utf-8?B?OGhjcW5QRDlEenFWSzAyRkFMd0tkTi96OWQyaWJ6cEVkSXROUG9XNHZTNVdV?=
+ =?utf-8?B?RG1hVzNCUFZ6WU1wRjVMMUZOdmhpVXViOWNGd3VnSlNXZW1XMHBocE1iZ2V4?=
+ =?utf-8?B?bjNnQkh4MEhQKzVlRGdPR0Q2U2FjeHMvSVJIVWh1bGtmSkFVYnlVWW9CdkJ6?=
+ =?utf-8?B?VFovazNhQ2EvZjNRUlhVMndaU21PdXdoQXJPUkZjeWN6T2RzNkVsU1ZvMlFH?=
+ =?utf-8?B?ZzRtZEhiQVcxR1hVcncrT3RKc3pGYTloWktoYU8xenE5YVdSNWVHRjlOTkZz?=
+ =?utf-8?B?NzhkUU5md3JuVkMyNHFKUTlXOTFGdmxQSGcvN3F4SnYwa1JjZXZha1I1ak1H?=
+ =?utf-8?B?QjE5UE1GOTZUZUliUm5ZVVpPVlliMHNUYUxNV3A5NU9xYTZmcHlMbWFtckpL?=
+ =?utf-8?B?d25FYS9jVkRVRlA0T1NSRHVETW52emRtZEJFelB0Z0pHVGVXdGQrblExS2t0?=
+ =?utf-8?B?WnFDUlZaMlNVQkJLNS9ESzhFOHpTUjF2Z0RTSkk2bmZIT3NIVHBIU1g1OHRu?=
+ =?utf-8?B?N0VEQjlQU0pkb25VZjc5THpvbHlyVmUvUHI0enZ0M1hSL1JLdzFNR3c2Nm9n?=
+ =?utf-8?B?cHRGVWhSLzYxMUFLbWJXNEVmVnp5REkzZE5yb2E4SDRPUmFGWVVHNzdRYmhY?=
+ =?utf-8?B?L3c4cTFaKzRoYUpIT1YzVTFYYjE5cHV1aXpQTUVna25VbDlYdlFoVi81S3cw?=
+ =?utf-8?B?WnJIb3JTd0dQbVhEandFb1hxdmdReHVybGYwRnk2K3FMcjlXTmhlT0svQ3gw?=
+ =?utf-8?B?MURTOC9SRlN1MS9EVUh0L3FrMU9HNGZkd3NRVXJ4bHo2a3duRWpSSVFSTW51?=
+ =?utf-8?B?ZGN2YVQ4Y1g3elJpb2VreHRwbnN3Tk5nWlBMbVpTcFNtbEUzeWM0dnRqOEdp?=
+ =?utf-8?B?MXc9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+X-OriginatorOrg: hitachienergy.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: DB6PR0601MB2485.eurprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7857b3fc-4c74-4dd3-c6bb-08da9a4abe5f
+X-MS-Exchange-CrossTenant-originalarrivaltime: 19 Sep 2022 14:25:03.7926
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 7831e6d9-dc6c-4cd1-9ec6-1dc2b4133195
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: uPr+VxJsiPdj8bP4kS1rNn/caoL1OfnG3Ml8PGqo1nOKTYTbNASCYFJKoQTBFZr5n6CNhBGkyt6zipadXad+cGQOY4Ma/4KKF3O2FTx8atk=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR1PR06MB5753
 X-Mailman-Approved-At: Tue, 20 Sep 2022 07:59:18 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -61,124 +138,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, rafael@kernel.org, catalin.marinas@arm.com, linus.walleij@linaro.org, bsegall@google.com, guoren@kernel.org, pavel@ucw.cz, agordeev@linux.ibm.com, srivatsa@csail.mit.edu, linux-arch@vger.kernel.org, vincent.guittot@linaro.org, chenhuacai@kernel.org, linux-acpi@vger.kernel.org, agross@kernel.org, geert@linux-m68k.org, linux-imx@nxp.com, vgupta@kernel.org, mattst88@gmail.com, borntraeger@linux.ibm.com, mturquette@baylibre.com, sammy@sammy.net, pmladek@suse.com, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, npiggin@gmail.com, tglx@linutronix.de, linux-omap@vger.kernel.org, dietmar.eggemann@arm.com, andreyknvl@gmail.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, senozhatsky@chromium.org, svens@linux.ibm.com, jolsa@kernel.org, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, mark.rutland@arm.com, linux-ia64
- @vger.kernel.org, dave.hansen@linux.intel.com, virtualization@lists.linux-foundation.org, James.Bottomley@HansenPartnership.com, jcmvbkbc@gmail.com, thierry.reding@gmail.com, kernel@xen0n.name, cl@linux.com, linux-s390@vger.kernel.org, vschneid@redhat.com, john.ogness@linutronix.de, ysato@users.sourceforge.jp, linux-sh@vger.kernel.org, festevam@gmail.com, deller@gmx.de, daniel.lezcano@linaro.org, jonathanh@nvidia.com, dennis@kernel.org, Frederic Weisbecker <frederic@kernel.org>, lenb@kernel.org, linux-xtensa@linux-xtensa.org, kernel@pengutronix.de, gor@linux.ibm.com, linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, shorne@gmail.com, chris@zankel.net, sboyd@kernel.org, dinguyen@kernel.org, bristot@redhat.com, alexander.shishkin@linux.intel.com, fweisbec@gmail.com, lpieralisi@kernel.org, atishp@atishpatra.org, linux@rasmusvillemoes.dk, kasan-dev@googlegroups.com, will@kernel.org, boris.ostrovsky@oracle.com, khilman
- @kernel.org, linux-csky@vger.kernel.org, pv-drivers@vmware.com, linux-snps-arc@lists.infradead.org, mgorman@suse.de, jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, ulli.kroll@googlemail.com, linux-clk@vger.kernel.org, rostedt@goodmis.org, ink@jurassic.park.msu.ru, bcain@quicinc.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, ryabinin.a.a@gmail.com, sudeep.holla@arm.com, shawnguo@kernel.org, davem@davemloft.net, dalias@libc.org, tony@atomide.com, amakhalov@vmware.com, konrad.dybcio@somainline.org, bjorn.andersson@linaro.org, glider@google.com, hpa@zytor.com, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, vincenzo.frascino@arm.com, anton.ivanov@cambridgegreys.com, jonas@southpole.se, yury.norov@gmail.com, richard@nod.at, x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, aou@eecs.berkeley.edu, hca@linux.ibm.com, richard.henderson@linaro.org, stefan.kristiansson@saunalahti.fi, openrisc@lists.librecores.org,
-  acme@kernel.org, paul.walmsley@sifive.com, linux-tegra@vger.kernel.org, namhyung@kernel.org, andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org, dvyukov@google.com, jgross@suse.com, monstr@monstr.eu, linux-mips@vger.kernel.org, palmer@dabbelt.com, anup@brainfault.org, bp@alien8.de, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org
+Cc: Heiko Schocher <hs@denx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Typical boot time setup; no need to suffer an indirect call for that.
-
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Frederic Weisbecker <frederic@kernel.org>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/kernel/process.c |   50 +++++++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 22 deletions(-)
-
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -24,6 +24,7 @@
- #include <linux/cpuidle.h>
- #include <linux/acpi.h>
- #include <linux/elf-randomize.h>
-+#include <linux/static_call.h>
- #include <trace/events/power.h>
- #include <linux/hw_breakpoint.h>
- #include <asm/cpu.h>
-@@ -692,7 +693,23 @@ void __switch_to_xtra(struct task_struct
- unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
- EXPORT_SYMBOL(boot_option_idle_override);
- 
--static void (*x86_idle)(void);
-+/*
-+ * We use this if we don't have any better idle routine..
-+ */
-+void __cpuidle default_idle(void)
-+{
-+	raw_safe_halt();
-+}
-+#if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
-+EXPORT_SYMBOL(default_idle);
-+#endif
-+
-+DEFINE_STATIC_CALL_NULL(x86_idle, default_idle);
-+
-+static bool x86_idle_set(void)
-+{
-+	return !!static_call_query(x86_idle);
-+}
- 
- #ifndef CONFIG_SMP
- static inline void play_dead(void)
-@@ -715,28 +732,17 @@ void arch_cpu_idle_dead(void)
- /*
-  * Called from the generic idle code.
-  */
--void arch_cpu_idle(void)
--{
--	x86_idle();
--}
--
--/*
-- * We use this if we don't have any better idle routine..
-- */
--void __cpuidle default_idle(void)
-+void __cpuidle arch_cpu_idle(void)
- {
--	raw_safe_halt();
-+	static_call(x86_idle)();
- }
--#if defined(CONFIG_APM_MODULE) || defined(CONFIG_HALTPOLL_CPUIDLE_MODULE)
--EXPORT_SYMBOL(default_idle);
--#endif
- 
- #ifdef CONFIG_XEN
- bool xen_set_default_idle(void)
- {
--	bool ret = !!x86_idle;
-+	bool ret = x86_idle_set();
- 
--	x86_idle = default_idle;
-+	static_call_update(x86_idle, default_idle);
- 
- 	return ret;
- }
-@@ -859,20 +865,20 @@ void select_idle_routine(const struct cp
- 	if (boot_option_idle_override == IDLE_POLL && smp_num_siblings > 1)
- 		pr_warn_once("WARNING: polling idle and HT enabled, performance may degrade\n");
- #endif
--	if (x86_idle || boot_option_idle_override == IDLE_POLL)
-+	if (x86_idle_set() || boot_option_idle_override == IDLE_POLL)
- 		return;
- 
- 	if (boot_cpu_has_bug(X86_BUG_AMD_E400)) {
- 		pr_info("using AMD E400 aware idle routine\n");
--		x86_idle = amd_e400_idle;
-+		static_call_update(x86_idle, amd_e400_idle);
- 	} else if (prefer_mwait_c1_over_halt(c)) {
- 		pr_info("using mwait in idle threads\n");
--		x86_idle = mwait_idle;
-+		static_call_update(x86_idle, mwait_idle);
- 	} else if (cpu_feature_enabled(X86_FEATURE_TDX_GUEST)) {
- 		pr_info("using TDX aware idle routine\n");
--		x86_idle = tdx_safe_halt;
-+		static_call_update(x86_idle, tdx_safe_halt);
- 	} else
--		x86_idle = default_idle;
-+		static_call_update(x86_idle, default_idle);
- }
- 
- void amd_e400_c1e_apic_setup(void)
-@@ -925,7 +931,7 @@ static int __init idle_setup(char *str)
- 		 * To continue to load the CPU idle driver, don't touch
- 		 * the boot_option_idle_override.
- 		 */
--		x86_idle = default_idle;
-+		static_call_update(x86_idle, default_idle);
- 		boot_option_idle_override = IDLE_HALT;
- 	} else if (!strcmp(str, "nomwait")) {
- 		/*
-
-
+PiA+IExlIDE2LzEyLzIwMTkgw6AgMTA6NTAsIEhvbGdlciBCcnVuY2sgYSDDqWNyaXQgOg0KPiA+
+PiBGcm9tOiBNYXR0ZW8gR2hpZG9uaSA8bWF0dGVvLmdoaWRvbmlAY2guYWJiLmNvbT4NCj4gPj4N
+Cj4gPj4gVGhlIGRlZmNvbmZpZyBpcyBzeW5jaHJvbml6ZWQgYW5kIHRoZSBtaXNzaW5nIE1URF9Q
+SFlTTUFQLA0KPiBERVZUTVBGUw0KPiA+PiBhbmQgSTJDIE1VWCBzdXBwb3J0IGFyZSBzd2l0Y2hl
+ZCBvbi4NCj4gPj4NCj4gPj4gQWRkaXRpb25hbGx5IHRoZSBJMkMgbXV4IGRldmljZSBpcyBhZGRl
+ZCB0byB0aGUgRFRTIHdpdGggaXRzIGF0dGFjaGVkDQo+ID4+IHRlbXBlcmF0dXJlIHNlbnNvcnMg
+YW5kIEkyQyBjbG9jayBmcmVxdWVuY3kgaXMgbG93ZXJlZC4NCj4gPg0KPiA+IFRoaXMgcGF0Y2gg
+ZG9lc24ndCBhcHBseS4NCj4gPg0KPiA+IElzIGl0IHN0aWxsIHJlbGV2YW50ID8NCj4gDQo+IElm
+IHNvIGl0IHNob3VsZCBiZSBzcGxpdCBpbnRvIHR3byBwYXRjaGVzLg0KPiANCg0KT2suIFRoZW4g
+eW91IGNhbiBhYmFuZG9uIHRoaXMgb25lLiBJZiBJIGZpbmQgdGhlIHRpbWUgSSB3aWxsIHNwbGl0
+IGl0IHVwIGFuZA0KcmViYXNlIGl0IGFuZCBzZW5kIGl0IGFzIGEgbmV3IHBhdGNoIHNlcmllcyB3
+aXRoIHR3byBwYXRjaGVzLg0KDQpCZXN0IHJlZ2FyZHMNCkhvbGdlcg0KDQo=
