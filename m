@@ -4,47 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B582FC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 21:28:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 052E8C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 08:13:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mdmh265mHz3c2h
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 07:28:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWHW94F16z307g
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 18:13:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=j6uSKWeX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=lixom-net.20210112.gappssmtp.com header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=EuFCJAks;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lixom.net (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=olof@lixom.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=j6uSKWeX;
+	dkim=pass (2048-bit key; unprotected) header.d=lixom-net.20210112.gappssmtp.com header.i=@lixom-net.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=EuFCJAks;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MdmgL4FM5z2xk6
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 07:28:11 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=nKkp4EcfXgofFnFrywrhIotmIiMrzxdQ/G5/JvZSeIE=; b=j6uSKWeXpVHx42ioIMQOQA4xBG
-	mhlC5RicNdriGlPZJ5NiqS83mGrUoQ5LHiXTvFsILv4bFuruFmQYqwPYIPxUGwvvoOqP0g/fC56Jd
-	Hah18RXFSjaD2YtQDebkbJ7t4d0zomcVkycwhoZkMzlmKghDi03zR9xokD+SQPbznIq8CwKLbZIhT
-	aK/ltTtmshQDTS1Rfzw6hx6RedfS8SRqBfii2Ji9uJrsUIrjojRLZ8j/ej0LSzNEMgFdMEDyY90DC
-	317XbSv7tAuAWq1GQ1uowrGZRptQSZn2KVTLsS33YgN5D9zfG9N6HF7kktTS3jtdPaySGaXHY+XVc
-	RgHpeRzQ==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oe14a-00Dclb-RV; Thu, 29 Sep 2022 21:28:00 +0000
-Date: Thu, 29 Sep 2022 22:28:00 +0100
-From: Matthew Wilcox <willy@infradead.org>
-To: Zorro Lang <zlang@kernel.org>
-Subject: Re: [Bug report] BUG: Kernel NULL pointer dereference at 0x00000069,
- filemap_release_folio+0x88/0xb0
-Message-ID: <YzYN4JqbKdxLd6oA@casper.infradead.org>
-References: <20220927011720.7jmugevxc7ax26qw@zlang-mailbox>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MW9Xx12LQz2ysx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 13:44:47 +1000 (AEST)
+Received: by mail-ed1-x52b.google.com with SMTP id x94so22140748ede.11
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Sep 2022 20:44:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=lixom-net.20210112.gappssmtp.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=8wzd/IsQMAz4yliZb1FsJ3OfMRVNZc5tTLnz3lR7QHQ=;
+        b=EuFCJAkszMPKPtxQSyMQ0NoboaeVB7t96eFw9rPXwH9oSHUro5o77bxEeYAtANDzyR
+         I9BMOm4HMiosCb0pcsiSHEAZo2qSCtvZawUq0/zPNIdwAvDvQAPS+8+0uFrWbUJgoTtd
+         ExLo8MeQP7GyQ+rW2rlFvIPPT75kqxCAKPhOGjeDjYZZFhuAOfywggSn5a+jZu6mJGBr
+         cWVHHoToy9UWA6nPxBqZcAZLzmJoxjkbRc1yLhwZYNZgNQEBRnr86m6GI/e/+J8MoRAT
+         suDLw8ILYZpcoPAOh+pvz4Lu/zfiYh6RXQKy+jZAxuRvjXsVxLmt63JqorCueNp9TEEJ
+         9kQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=8wzd/IsQMAz4yliZb1FsJ3OfMRVNZc5tTLnz3lR7QHQ=;
+        b=6laK3A0G3fQgA3ySPTCgnura3FOUhC/0hl1/ybLs3r5LDJoGV2zlYFk93KEjD8roaY
+         YvaoDU0EC8bApNSYbiO7khcDuKoHV7AMRuoDBn2KIhOJ+okFPjUICGIrFDyt8/v2uhyo
+         dhHTfZmxfmjkHsBqyzfUaZL3lISV1viM/LqTy3OxWTYRiYEf2Ics6pdnhP2Rp+VVtM9w
+         4JlLegdSmTyU1xgHTUuDHiT6W0/t0pQINA7ORjsNaKGlO8m11zA3E2to53uuhxS3PzOg
+         OwnVy67G2VJnmLgph4aQUOSpgJFTV9CqiA9HIqlBLq7WqzM8iUy/sUPQ0Fu9nSyd5u6N
+         7Csg==
+X-Gm-Message-State: ACrzQf0R9JVc6vx65k2mGqlAwCvFErkTt/FwpWmrH6Rzo2BZqc0R1PLv
+	KOohiiBop/C5wGMvgwylhC6uz3ezz7ef9OSlCoCbgQ==
+X-Google-Smtp-Source: AMsMyM67X4fHgNHGRzRNZ0AalOVh8oZlYNRkDoycvf7zBAcHx4qOwSpxEraLAwYUCmYCoDnGs0xLR1B5pb/N312tK3I=
+X-Received: by 2002:aa7:cc8a:0:b0:446:7668:2969 with SMTP id
+ p10-20020aa7cc8a000000b0044676682969mr13821510edt.206.1663559079248; Sun, 18
+ Sep 2022 20:44:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20220927011720.7jmugevxc7ax26qw@zlang-mailbox>
+References: <20220701012647.2007122-1-saravanak@google.com> <YwS5J3effuHQJRZ5@kroah.com>
+In-Reply-To: <YwS5J3effuHQJRZ5@kroah.com>
+From: Olof Johansson <olof@lixom.net>
+Date: Sun, 18 Sep 2022 20:44:27 -0700
+Message-ID: <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
+Subject: Re: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Mon, 19 Sep 2022 18:12:32 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,85 +73,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linux-ext4@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linus walleij <linus.walleij@linaro.org>, Paul Mackerras <paulus@samba.org>, Alim Akhtar <alim.akhtar@samsung.com>, Peter Korsgaard <jacmet@sunsite.dk>, linux-stm32@st-md-mailman.stormreply.com, Karol Gugala <kgugala@antmicro.com>, Jerome Brunet <jbrunet@baylibre.com>, linux-samsung-soc@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>, Hammer Hsieh <hammerh0314@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, Vineet Gupta <vgupta@kernel.org>, len brown <len.brown@intel.com>, Nicolas Saenz Julienne <nsaenz@kernel.org>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-unisoc@lists.infradead.org, Scott Branden <sbranden@broadcom.com>, Andrew Jeffery <andrew@aj.id.au>, linux-kernel@vger.kernel.org, Richard Genoud <richard.genoud@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Claudiu Beznea <claudiu.beznea
+ @microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, pavel machek <pavel@ucw.cz>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, eric dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, sascha hauer <sha@pengutronix.de>, Saravana Kannan <saravanak@google.com>, Chunyan Zhang <zhang.lyra@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Gabriel Somlo <gsomlo@gmail.com>, Tobias Klauser <tklauser@distanz.ch>, linux-mips@vger.kernel.org, kernel-team@android.com, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Andreas Farber <afaerber@suse.de>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Kevin Hilman <khilman@baylibre.com>, Pali Rohar <pali@kernel.org>, heiner kallweit <hkallweit1@gmail.com>, ulf hansson <ulf.hansson@linaro.org>, Neil
+  Armstrong <narmstrong@baylibre.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Al Cooper <alcooperx@gmail.com>, linux-tegra@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>, linux-aspeed@lists.ozlabs.org, Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Mateusz Holenko <mholenko@antmicro.com>, Alexander Shiyan <shc_work@mail.ru>, kevin hilman <khilman@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Joel Stanley <joel@jms.id.au>, Orson Zhai <orsonzhai@gmail.com>, paolo abeni <pabeni@redhat.com>, Patrice Chotard <patrice.chotard@foss.st.com>, Ray Jui <rjui@broadcom.com>, Vladimir Zapolskiy <vz@mleia.com>, linux-snps-arc@lists.infradead.org, Timur Tabi <timur@kernel.org>, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, iommu@lists.linux-foundation.org, Laxman Dewangan <ldewangan@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Baolin Wang <baolin.wang7@gmail.com>, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <dav
+ em@davemloft.net>, Baruch Siach <baruch@tkos.co.il>, Liviu Dudau <liviu.dudau@arm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Paul Cercueil <paul@crapouillou.net>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, joerg roedel <joro@8bytes.org>, Russell King <linux@armlinux.org.uk>, Andy Gross <agross@kernel.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, will deacon <will@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, linux-mediatek@lists.infradead.org, Fabio Estevam <festevam@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, Matthias Brugger <matthias.bgg@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Taichi Sugaya <sugaya.taichi@socionext.com>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Palmer Dabbelt <palmer
+ @dabbelt.com>, Takao Orito <orito.takao@socionext.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Sep 27, 2022 at 09:17:20AM +0800, Zorro Lang wrote:
-> Hi mm and ppc list,
-> 
-> Recently I started to hit a kernel panic [2] rarely on *ppc64le* with *1k
-> blocksize* ext4. It's not easy to reproduce, but still has chance to trigger
-> by loop running generic/048 on ppc64le (not sure all kind of ppc64le can
-> reproduce it).
-> 
-> Although I've reported a bug to ext4 [1] (more details refer to [1]), but I only
-> hit it on ppc64le until now, and I'm not sure if it's an ext4 related bug, more
-> likes folio related issue, so I cc mm and ppc mail list, hope to get more
-> reviewing.
+On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
+> > These patches are on top of driver-core-next.
+> >
+> > Even if stdout-path isn't set in DT, this patch should take console
+> > probe times back to how they were before the deferred_probe_timeout
+> > clean up series[1].
+>
+> Now dropped from my queue due to lack of a response to other reviewer's
+> questions.
 
-Argh.  This is the wrong way to do it.  Please stop using bugzilla.
-Now there's discussion in two places and there's nowhere to see all
-of it.
+What happened to this patch? I have a 10 second timeout on console
+probe on my SiFive Unmatched, and I don't see this flag being set for
+the serial driver. In fact, I don't see it anywhere in-tree. I can't
+seem to locate another patchset from Saravana around this though, so
+I'm not sure where to look for a missing piece for the sifive serial
+driver.
 
-> [ 4681.230907] BUG: Kernel NULL pointer dereference at 0x00000069 
-> [ 4681.230922] Faulting instruction address: 0xc00000000068ee0c 
-> [ 4681.230929] Oops: Kernel access of bad area, sig: 11 [#1] 
-> [ 4681.230934] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA pSeries 
-> [ 4681.230991] CPU: 0 PID: 82 Comm: kswapd0 Kdump: loaded Not tainted 6.0.0-rc6+ #1 
-> [ 4681.230999] NIP:  c00000000068ee0c LR: c00000000068f2b8 CTR: 0000000000000000 
-> [ 4681.238525] REGS: c000000006c0b560 TRAP: 0380   Not tainted  (6.0.0-rc6+) 
-> [ 4681.238532] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 24028242  XER: 00000000 
-> [ 4681.238556] CFAR: c00000000068edf4 IRQMASK: 0  
-> [ 4681.238556] GPR00: c00000000068f2b8 c000000006c0b800 c000000002cf1700 c00c00000042f1c0  
-> [ 4681.238556] GPR04: c000000006c0b860 0000000000000000 0000000000000002 0000000000000000  
-> [ 4681.238556] GPR08: c000000002d404b0 0000000000000000 c00c00000042f1c0 0000000000000000  
-> [ 4681.238556] GPR12: c0000000001cf080 c000000005100000 c000000000194298 c0000001fff9c480  
-> [ 4681.238556] GPR16: c000000048cdb850 0000000000000007 0000000000000000 0000000000000000  
-> [ 4681.238556] GPR20: 0000000000000001 c000000006c0b8f8 c00000000146b9d8 5deadbeef0000100  
-> [ 4681.238556] GPR24: 5deadbeef0000122 c000000048cdb800 c000000006c0bc00 c000000006c0b8e8  
-> [ 4681.238556] GPR28: c000000006c0b860 c00c00000042f1c0 0000000000000009 0000000000000009  
-> [ 4681.238634] NIP [c00000000068ee0c] drop_buffers.constprop.0+0x4c/0x1c0 
-> [ 4681.238643] LR [c00000000068f2b8] try_to_free_buffers+0x128/0x150 
-> [ 4681.238650] Call Trace: 
-> [ 4681.238654] [c000000006c0b800] [c000000006c0b880] 0xc000000006c0b880 (unreliable) 
-> [ 4681.238663] [c000000006c0b840] [c000000006c0bc00] 0xc000000006c0bc00 
-> [ 4681.238670] [c000000006c0b890] [c000000000498708] filemap_release_folio+0x88/0xb0 
-> [ 4681.238679] [c000000006c0b8b0] [c0000000004c51c0] shrink_active_list+0x490/0x750 
-> [ 4681.238688] [c000000006c0b9b0] [c0000000004c9f88] shrink_lruvec+0x3f8/0x430 
-> [ 4681.238697] [c000000006c0baa0] [c0000000004ca1f4] shrink_node_memcgs+0x234/0x290 
-> [ 4681.238704] [c000000006c0bb10] [c0000000004ca3c4] shrink_node+0x174/0x6b0 
-> [ 4681.238711] [c000000006c0bbc0] [c0000000004cacf0] balance_pgdat+0x3f0/0x970 
-> [ 4681.238718] [c000000006c0bd20] [c0000000004cb440] kswapd+0x1d0/0x450 
-> [ 4681.238726] [c000000006c0bdc0] [c0000000001943d8] kthread+0x148/0x150 
-> [ 4681.238735] [c000000006c0be10] [c00000000000cbe4] ret_from_kernel_thread+0x5c/0x64 
-> [ 4681.238745] Instruction dump: 
-> [ 4681.238749] fbc1fff0 f821ffc1 7c7d1b78 7c9c2378 ebc30028 7fdff378 48000018 60000000  
-> [ 4681.238765] 60000000 ebff0008 7c3ef840 41820048 <815f0060> e93f0000 5529077c 7d295378  
+This is the second boot time regression (this one not fatal, unlike
+the Layerscape PCIe one) from the fw_devlink patchset.
 
-Running that through scripts/decodecode (with some minor hacks .. how
-do PPC people do this properly?) I get:
+Greg, can you revert the whole set for 6.0, please? It's obviously
+nowhere near tested enough to go in and I expect we'll see a bunch of
+-stable fixups due to this if we let it remain in.
 
-   0:	fb c1 ff f0 	std     r30,-16(r1)
-   4:	f8 21 ff c1 	stdu    r1,-64(r1)
-   8:	7c 7d 1b 78 	mr      r29,r3
-   c:	7c 9c 23 78 	mr      r28,r4
-  10:	eb c3 00 28 	ld      r30,40(r3)
-  14:	7f df f3 78 	mr      r31,r30
-  18:	48 00 00 18 	b       0x30
-  1c:	60 00 00 00 	nop
-  20:	60 00 00 00 	nop
-  24:	eb ff 00 08 	ld      r31,8(r31)
-  28:	7c 3e f8 40 	cmpld   r30,r31
-  2c:	41 82 00 48 	beq     0x74
-  30:*	81 5f 00 60 	lwz     r10,96(r31)		<-- trapping instruction
-  34:	e9 3f 00 00 	ld      r9,0(r31)
-  38:	55 29 07 7c 	rlwinm  r9,r9,0,29,30
-  3c:	7d 29 53 78 	or      r9,r9,r10
+This seems to be one of the worst releases I've encountered in recent
+years on my hardware here due to this patchset. :-(
 
-That would seem to track; 96 is 0x60 and r31 contains 0x00..09, giving
-us an effective address of 0x69.
 
-It would be nice to know what source line that corresponds to.  Could
-you use scripts/faddr2line to turn drop_buffers.constprop.0+0x4c/0x1c0
-into a line number?  I can't because it needs the vmlinux you generated.
+-Olof
