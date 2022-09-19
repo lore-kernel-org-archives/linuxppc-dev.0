@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16F18ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A48EECAAD3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 19 Sep 2022 22:24:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MWfMh57zbz3hFZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:23:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MWfNL0DF0z3hHR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 08:24:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=dhBNASMj;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ADXtthd/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=dhBNASMj;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=ADXtthd/;
 	dkim-atps=neutral
-Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLHP6gqxz308B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:18:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MWLHv202zz30B1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Sep 2022 20:19:07 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
+	d=infradead.org; s=casper.20170209; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=RR6lW9yNo9DZO38N/e4p2MZQ6Q7RTpDFv4YAvZRPRqw=; b=dhBNASMjq9JKam0WFAPScBiUEC
-	31XDK+h8qwhTq5EYT0SjwEcio54RYo3YXNJzL9qp8vVRkHyfJsQdQcJ5Pti5d6ymG6v5YR3rrgpSe
-	4XQcuWxDsJ1q6ovVgaQ+SzZulVoRGlSkSN5mw4EvYN4P6fE8HKs2maYkCA13mRDRuD64OLEBGUXNF
-	/Qgic1QrUIq2i79qFoP0kCFY/irIFSIMyGshswJWaLZxBi5W3PBUL9nwY5VACRXQbvXsyeiTIa0ch
-	J7yjXG2VyjwvJ2v3SrZKjK45QEL7p9TWkv0I41FozhTFdQrt5gfJGZDLrunBCNqm7Jycvz/5X9SYw
-	ljUFiqLQ==;
+	bh=wztoayxqdaRhc3fzwYQuz0RAh5ZT6y7bJFX0CXMuNy8=; b=ADXtthd/kB2UkNVNsBZX3mcAgx
+	eb1wSA1egq4M07Od+XfETtj3lhd4iMNEvYwcU9NzeS13eZKp+mowXOQTzEFZK7CeroXVfNcUNAucm
+	DFEs4ENnbXNf93/JuDzTXaj8dDvpaoObTItrP5rfAcPTaGTUO9u17CB7M9lBwSzhZqApt31copOyD
+	THHS1zzgB7BqCqSJl0DeM5JLgmoPtje3pC9taSIf0jDAy3NiwNozoFE6k7Aa6gH0axWhSw0Ae2Kln
+	k7+RKfh2KfpdBiXJ6godhy6Y1cfSrmD10KmQxJ5TbTEnSM6kxy+r95TYqIDfTireSwql4ofArgV57
+	wDOwI0dQ==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by desiato.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oaDq8-00E2Bs-F5; Mon, 19 Sep 2022 10:17:25 +0000
+	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1oaDpF-004ahk-Dm; Mon, 19 Sep 2022 10:16:29 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 9592E302F78;
-	Mon, 19 Sep 2022 12:16:25 +0200 (CEST)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 99768302218;
+	Mon, 19 Sep 2022 12:16:24 +0200 (CEST)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id A2A092BAC75A3; Mon, 19 Sep 2022 12:16:22 +0200 (CEST)
-Message-ID: <20220919101523.110221113@infradead.org>
+	id D336C2BA49039; Mon, 19 Sep 2022 12:16:21 +0200 (CEST)
+Message-ID: <20220919101520.602636221@infradead.org>
 User-Agent: quilt/0.66
-Date: Mon, 19 Sep 2022 12:00:20 +0200
+Date: Mon, 19 Sep 2022 11:59:43 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v2 41/44] intel_idle: Add force_irq_on module param
+Subject: [PATCH v2 04/44] cpuidle: Move IRQ state validation
 References: <20220919095939.761690562@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -71,36 +71,41 @@ Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.wal
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For testing purposes.
+Make cpuidle_enter_state() consistent with the s2idle variant and
+verify ->enter() always returns with interrupts disabled.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 ---
- drivers/idle/intel_idle.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/cpuidle/cpuidle.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1787,6 +1787,9 @@ static bool __init intel_idle_verify_cst
- 	return true;
- }
- 
-+static bool force_irq_on __read_mostly;
-+module_param(force_irq_on, bool, 0444);
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -236,7 +236,11 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	stop_critical_timings();
+ 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
+ 		ct_idle_enter();
 +
- static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- {
- 	int cstate;
-@@ -1838,8 +1841,10 @@ static void __init intel_idle_init_cstat
- 		/* Structure copy. */
- 		drv->states[drv->state_count] = cpuidle_state_table[cstate];
+ 	entered_state = target_state->enter(dev, drv, index);
++	if (WARN_ONCE(!irqs_disabled(), "%ps leaked IRQ state", target_state->enter))
++		raw_local_irq_disable();
++
+ 	if (!(target_state->flags & CPUIDLE_FLAG_RCU_IDLE))
+ 		ct_idle_exit();
+ 	start_critical_timings();
+@@ -248,12 +252,8 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	/* The cpu is no longer idle or about to enter idle. */
+ 	sched_idle_set_state(NULL);
  
--		if (cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_IRQ_ENABLE)
-+		if ((cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_IRQ_ENABLE) || force_irq_on) {
-+			printk("intel_idle: forced intel_idle_irq for state %d\n", cstate);
- 			drv->states[drv->state_count].enter = intel_idle_irq;
-+		}
+-	if (broadcast) {
+-		if (WARN_ON_ONCE(!irqs_disabled()))
+-			local_irq_disable();
+-
++	if (broadcast)
+ 		tick_broadcast_exit();
+-	}
  
- 		if (cpu_feature_enabled(X86_FEATURE_KERNEL_IBRS) &&
- 		    cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_IBRS) {
+ 	if (!cpuidle_state_is_coupled(drv, index))
+ 		local_irq_enable();
 
 
