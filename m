@@ -4,45 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0619ECAAD8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 13:12:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE627C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 13:16:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MX25g1szkz3c7D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 23:12:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=oaQI9fmp;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MX24y2Qvsz30KY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 23:12:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=oaQI9fmp;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MX24y05Vbz4xG7;
-	Tue, 20 Sep 2022 23:12:01 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1663679522;
-	bh=LUUxiEK29W0gO2D6WtJ1TBcE5D19HPmh7V776iZzUks=;
-	h=From:To:Cc:Subject:Date:From;
-	b=oaQI9fmpaEPaCtpAPSA5LnK5LSWgWLGTvdjeksw20TjTv+kyZ2j4Mr3bAeG5ypjMj
-	 AEnivpL811yoFgYGyLQGfPX3fJgmUWKXDFh6FC+zAVEVioJD4YQlxWauleYo92SFsn
-	 XNYv1875JQLsgCFHaLR0AAhVB9Ahy+4uSq+1pj4pZb1M1LhR8UFYeS2AUL7UFg7u9r
-	 lRxI5ObqEDeIlSlRXOZ7EwwKwbtjXAJdEKbRFWyASIKgiH/oHcSe153cL/zIJ/nnAW
-	 fKAdb8SjQ3Q9HikcG+FnQ/x27H4Rf1pe8rsdBrM+oBmHcgxK3b946aOkzpu1r8kMLq
-	 Gza0DmYPoO4/g==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/64: Remove unused prom_init_toc symbols
-Date: Tue, 20 Sep 2022 23:11:57 +1000
-Message-Id: <20220920131157.1032707-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.37.2
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MX29h0c9qz3c8Z
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Sep 2022 23:16:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.ru (client-ip=107.174.27.60; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Received: from ozlabs.ru (ozlabs.ru [107.174.27.60])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MX29D5DBMz307g
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 23:15:43 +1000 (AEST)
+Received: from ole.1.ozlabs.ru (localhost [IPv6:::1])
+	by ozlabs.ru (Postfix) with ESMTP id 212C282ECC;
+	Tue, 20 Sep 2022 09:05:07 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel v2 0/3] powerpc/iommu: Add iommu_ops to report capabilities and allow blocking domains
+Date: Tue, 20 Sep 2022 23:04:54 +1000
+Message-Id: <20220920130457.29742-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -56,68 +35,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>, Nicholas Piggin <npiggin@gmail.com>, Jason Gunthorpe <jgg@ziepe.ca>, Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 24d33ac5b8ff ("powerpc/64s: Make prom_init require RELOCATABLE")
-made prom_init depend on CONFIG_RELOCATABLE.
+Here is another take on iommu_ops on POWER to make VFIO work
+again on POWERPC64. Tested on PPC, kudos to Fred!
 
-But it missed cleaning up a case in the linker script for RELOCATABLE=n,
-and associated symbols. Remove them now.
+The tree with all prerequisites is here:
+https://github.com/aik/linux/tree/kvm-fixes-wip
 
-Fixes: 24d33ac5b8ff ("powerpc/64s: Make prom_init require RELOCATABLE")
-Reported-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/sections.h    | 3 ---
- arch/powerpc/kernel/prom_init_check.sh | 3 +--
- arch/powerpc/kernel/vmlinux.lds.S      | 5 -----
- 3 files changed, 1 insertion(+), 10 deletions(-)
+The previous discussion is here:
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220707135552.3688927-1-aik@ozlabs.ru/
+https://patchwork.ozlabs.org/project/kvm-ppc/patch/20220701061751.1955857-1-aik@ozlabs.ru/
+https://lore.kernel.org/all/20220714081822.3717693-3-aik@ozlabs.ru/T/
 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 7ed7273b7baf..9c00c9c0ca8f 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -33,9 +33,6 @@ extern long kvm_flush_link_stack;
- extern char __start_interrupts[];
- extern char __end_interrupts[];
- 
--extern char __prom_init_toc_start[];
--extern char __prom_init_toc_end[];
--
- #ifdef CONFIG_PPC_POWERNV
- extern char start_real_trampolines[];
- extern char end_real_trampolines[];
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index dfa5f729f774..311890d71c4c 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -26,8 +26,7 @@ _end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
- __secondary_hold_acknowledge __secondary_hold_spinloop __start
- logo_linux_clut224 btext_prepare_BAT
- reloc_got2 kernstart_addr memstart_addr linux_banner _stext
--__prom_init_toc_start __prom_init_toc_end btext_setup_display TOC.
--relocate"
-+btext_setup_display TOC. relocate"
- 
- NM="$1"
- OBJ="$2"
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index d839bf78f5f2..29d891329856 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -345,11 +345,6 @@ SECTIONS
- 
- 	.got : AT(ADDR(.got) - LOAD_OFFSET) ALIGN(256) {
- 		*(.got)
--#ifndef CONFIG_RELOCATABLE
--		__prom_init_toc_start = .;
--		arch/powerpc/kernel/prom_init.o*(.toc)
--		__prom_init_toc_end = .;
--#endif
- 		*(.toc)
- 	}
- #endif
+Please comment. Thanks.
+
+
+This is based on sha1
+ce888220d5c7 Linus Torvalds "Merge tag 'scsi-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi".
+
+Please comment. Thanks.
+
+
+
+Alexey Kardashevskiy (3):
+  powerpc/iommu: Add "borrowing" iommu_table_group_ops
+  powerpc/pci_64: Init pcibios subsys a bit later
+  powerpc/iommu: Add iommu_ops to report capabilities and allow blocking
+    domains
+
+ arch/powerpc/include/asm/iommu.h          |   6 +-
+ arch/powerpc/include/asm/pci-bridge.h     |   7 +
+ arch/powerpc/platforms/pseries/pseries.h  |   4 +
+ arch/powerpc/kernel/iommu.c               | 247 +++++++++++++++++++++-
+ arch/powerpc/kernel/pci_64.c              |   2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c |  36 +++-
+ arch/powerpc/platforms/pseries/iommu.c    |  27 +++
+ arch/powerpc/platforms/pseries/setup.c    |   3 +
+ drivers/vfio/vfio_iommu_spapr_tce.c       |  96 ++-------
+ 9 files changed, 334 insertions(+), 94 deletions(-)
+
 -- 
-2.37.2
+2.37.3
 
