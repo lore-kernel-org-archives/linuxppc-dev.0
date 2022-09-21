@@ -4,85 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 947AEC6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 02:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF6A0C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 03:17:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MXMFN0qXcz3c5w
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 12:05:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xlf/zhv6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=nicholas@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xlf/zhv6;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MXNrB1V98z3cD8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 13:17:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=chenzhongjin@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXMBQ0GJLz2xjw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2022 12:02:53 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28L1rHn1013289;
-	Wed, 21 Sep 2022 02:02:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=4UhhpDlbLiuPghapKpJLruLUpcamZRhrdG0W7HtSKu8=;
- b=Xlf/zhv6xPbRJcVp05sbqd+pCnULHLzLYVZOfR6OhUvsJ49al5ShUDoNDyjsfxfPRJPc
- QOstWPUrsF+wnoKUY/Gi40dx3oIvUZyfd1qjYSFEf6/ZR1+MHraylAv1rraPP0YkQpC4
- 6sFF+JOVDxAsfs8x9ladvlngxMG2aE2MSKc/u+O1jPBB2uUPodGzxHjx2PeXP6bm26+j
- FJg6Z5ifWHk7WLTE5ussSNEzWLh+i7blGnrM4gywralRANGLivO9mDAsv898+uC8gCw7
- XoY2snZpQgIseUJOBOyTWnYb+1aAMfdD2hwW+Ze+Ub711JePoSWFsEzOosd7CbaMyKb/ Dw== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3jqsbh86f2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 02:02:48 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28L1p4sZ024264;
-	Wed, 21 Sep 2022 02:02:46 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma04ams.nl.ibm.com with ESMTP id 3jn5v8mkh0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 02:02:46 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28L22ijh37290452
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 21 Sep 2022 02:02:44 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F21E24C040;
-	Wed, 21 Sep 2022 02:02:43 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9DD244C04E;
-	Wed, 21 Sep 2022 02:02:43 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 21 Sep 2022 02:02:43 +0000 (GMT)
-Received: from nicholasmvm.. (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AE79960539;
-	Wed, 21 Sep 2022 12:02:41 +1000 (AEST)
-From: Nicholas Miehlbradt <nicholas@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/4] powerpc/64s: Allow double call of kernel_[un]map_linear_page()
-Date: Wed, 21 Sep 2022 02:02:12 +0000
-Message-Id: <20220921020213.868124-3-nicholas@linux.ibm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220921020213.868124-1-nicholas@linux.ibm.com>
-References: <20220921020213.868124-1-nicholas@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXNqg4P7pz30M8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2022 13:16:42 +1000 (AEST)
+Received: from dggpemm500021.china.huawei.com (unknown [172.30.72.55])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4MXNk65L9gzlWhP;
+	Wed, 21 Sep 2022 11:11:58 +0800 (CST)
+Received: from dggpemm500013.china.huawei.com (7.185.36.172) by
+ dggpemm500021.china.huawei.com (7.185.36.109) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Wed, 21 Sep 2022 11:16:05 +0800
+Received: from [10.67.108.67] (10.67.108.67) by dggpemm500013.china.huawei.com
+ (7.185.36.172) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Wed, 21 Sep
+ 2022 11:16:05 +0800
+Message-ID: <f7df65b0-ae41-8cce-01aa-84349efc387a@huawei.com>
+Date: Wed, 21 Sep 2022 11:16:04 +0800
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: OU8EtzF8QOhb7kxSaZoFzoST5bIfHwWe
-X-Proofpoint-ORIG-GUID: OU8EtzF8QOhb7kxSaZoFzoST5bIfHwWe
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-20_12,2022-09-20_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
- malwarescore=0 adultscore=0 suspectscore=0 priorityscore=1501
- mlxlogscore=999 impostorscore=0 clxscore=1015 lowpriorityscore=0
- mlxscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2209210008
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
+ Thunderbird/102.0
+Subject: Re: [RFC] Objtool toolchain proposal:
+ -fannotate-{jump-table,noreturn}
+Content-Language: en-US
+To: Ard Biesheuvel <ardb@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+References: <20220909180704.jwwed4zhwvin7uyi@treble>
+ <Yx8PcldkdOLN8eaw@nazgul.tnic>
+ <alpine.LSU.2.20.2209121200120.8265@wotan.suse.de>
+ <6a61aa57-141f-039c-5a2d-b2d79fecb8c2@huawei.com>
+ <YyLmhUxTUaNzaieC@hirez.programming.kicks-ass.net>
+ <CAMj1kXGa7D6TLOQruYF+0czWwxcRxN7k1rWTrhB2xnjTQ32c9Q@mail.gmail.com>
+From: Chen Zhongjin <chenzhongjin@huawei.com>
+In-Reply-To: <CAMj1kXGa7D6TLOQruYF+0czWwxcRxN7k1rWTrhB2xnjTQ32c9Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.108.67]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ dggpemm500013.china.huawei.com (7.185.36.172)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,46 +60,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Miehlbradt <nicholas@linux.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, x86@kernel.org, Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Michael Matz <matz@suse.de>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>, linux-toolchains@vger.kernel.org, Indu
+ Bhagat <indu.bhagat@oracle.com>, live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>, Will
+ Deacon <will@kernel.org>, Josh
+ Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, "Jose E. Marchesi" <jemarch@gnu.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Hi,
 
-If the page is already mapped resp. already unmapped, bail out.
+On 2022/9/21 0:49, Ard Biesheuvel wrote:
+> On Thu, 15 Sept 2022 at 10:47, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Thu, Sep 15, 2022 at 10:56:58AM +0800, Chen Zhongjin wrote:
+>>
+>>> We have found some anonymous information on x86 in .rodata.
+>> Well yes, but that's still a bunch of heuristics on our side.
+>>
+>>> I'm not sure if those are *all* of Josh wanted on x86, however for arm64 we
+>>> did not found that in the same section so it is a problem on arm64 now.
+>> Nick found Bolt managed the ARM64 jumptables:
+>>
+>>    https://github.com/llvm/llvm-project/blob/main/bolt/lib/Target/AArch64/AArch64MCPlusBuilder.cpp#L484
+>>
+>> But that does look like a less than ideal solution too.
+>>
+>>> Does the compiler will emit these for all arches? At lease I tried and
+>>> didn't find anything meaningful (maybe I omitted it).
+>> That's the question; can we get the compiler to help us here in a well
+>> defined manner.
+> Do BTI landing pads help at all here? I.e., I assume that objtool just
+> treats any indirect call as a dangling edge in the control flow graph,
+> and the problem is identifying the valid targets. In the BTI case,
+> those will all start with a 'BTI J' instruction.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Signed-off-by: Nicholas Miehlbradt <nicholas@linux.ibm.com>
----
- arch/powerpc/mm/book3s64/hash_utils.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Maybe not enough, I guess.
 
-diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-index e63ff401a6ea..b37412fe5930 100644
---- a/arch/powerpc/mm/book3s64/hash_utils.c
-+++ b/arch/powerpc/mm/book3s64/hash_utils.c
-@@ -2000,6 +2000,9 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- 	if (!vsid)
- 		return;
- 
-+	if (linear_map_hash_slots[lmi] & 0x80)
-+		return;
-+
- 	ret = hpte_insert_repeating(hash, vpn, __pa(vaddr), mode,
- 				    HPTE_V_BOLTED,
- 				    mmu_linear_psize, mmu_kernel_ssize);
-@@ -2019,7 +2022,10 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
- 
- 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
- 	spin_lock(&linear_map_hash_lock);
--	BUG_ON(!(linear_map_hash_slots[lmi] & 0x80));
-+	if (!(linear_map_hash_slots[lmi] & 0x80)) {
-+		spin_unlock(&linear_map_hash_lock);
-+		return;
-+	}
- 	hidx = linear_map_hash_slots[lmi] & 0x7f;
- 	linear_map_hash_slots[lmi] = 0;
- 	spin_unlock(&linear_map_hash_lock);
--- 
-2.34.1
+For switch jump tables we need to know its *own* jump targets so that we 
+can go through all its branches. If there are more than one indirect 
+jump inside one function, only marks targets with BTI J can't help 
+matching the entry and its targets.
+
+
+Anyway I think this job is more for compiler. Switch jump tables is 
+different from other indirect jump/call. It have fixed control flow just 
+as if/else flow and the indirect jump table is just a compiler 
+optimization which hide this.
+
+
+Best,
+
+Chen
 
