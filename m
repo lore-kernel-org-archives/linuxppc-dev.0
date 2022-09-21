@@ -4,92 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A4C9C32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 06:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 876B9ECAAD8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 06:59:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MXTlL60m0z3cfJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 16:58:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MXTm31gtbz3dxX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 16:58:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K+eDLLNt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zd9VKku7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::22e; helo=mail-lj1-x22e.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=K+eDLLNt;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zd9VKku7;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXTkC22tMz3bjX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2022 16:57:23 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28L6bc93002570;
-	Wed, 21 Sep 2022 06:57:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=2z2xK9jg+E2XoftrCl3OiVW6UFeqd88XYjWBDJXgvpo=;
- b=K+eDLLNtcMy0n3B4SVv8sDAYrF4WPywPkKQjf4ZoSYPQy3h0XIWqnxi7O2AeVx0PEH/d
- SJLXTw05gMmKV2dSS7IRz2PUeDcc/QxRmyxIUvV84B6OVczsFsVX27ZLyySGc1P/R4xs
- A8sEsYF8WQYNPpV+NAIQJeE9SEsPqKLBlj/H+zjXVF99mfgL5iNdRlkf7C5RNe/pBOhT
- ov09uvaW1F+LuSjLxrMb4FqZnZ7UULwWH1SjDnsYlv0Ng0CLVk8j5NW7MlVflDeGbSPT
- jn7Lrmq0J6Xp5ZYUKHEYUPB8mzUZbG8iom4yKMOg/OqmIpfG9w+umVptPw1iipScJrJU dg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jqw6yrw61-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 06:57:18 +0000
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28L6vHR3007120;
-	Wed, 21 Sep 2022 06:57:17 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jqw6yrw55-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 06:57:17 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28L6rRK7004605;
-	Wed, 21 Sep 2022 06:57:15 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma04ams.nl.ibm.com with ESMTP id 3jn5v8mvgn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 06:57:15 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28L6vdJF52625886
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 21 Sep 2022 06:57:39 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 364C0AE04D;
-	Wed, 21 Sep 2022 06:57:13 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8B763AE045;
-	Wed, 21 Sep 2022 06:57:12 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 21 Sep 2022 06:57:12 +0000 (GMT)
-Received: from civic.. (unknown [9.177.29.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DE49D60060;
-	Wed, 21 Sep 2022 16:57:07 +1000 (AEST)
-From: Rohan McLure <rmclure@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 01/25] powerpc: Remove asmlinkage from syscall handler definitions
-Date: Wed, 21 Sep 2022 16:55:41 +1000
-Message-Id: <20220921065605.1051927-2-rmclure@linux.ibm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20220921065605.1051927-1-rmclure@linux.ibm.com>
-References: <20220921065605.1051927-1-rmclure@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXTkG0Ksgz3c4Y
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Sep 2022 16:57:25 +1000 (AEST)
+Received: by mail-lj1-x22e.google.com with SMTP id h3so5844962lja.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Sep 2022 23:57:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date;
+        bh=NK2N/b/QQywGXjYSUF1DR4DFgFeCcv8ay3tmMR7yQe4=;
+        b=zd9VKku7G1ak2cVyYOpEVge/UKl5/MrmOGUtOuV36rnH2moft2SkAC/9tMMOJjqevW
+         iij9gy5AkWzLqLBhcQtg1LjWDm4G7jMk8WimQOrNfN9u3qVCSv4AvFMcBkGlB/Z+DkrM
+         44pP9yln+ruBWW3bjLElOcV+dH5W1qdMRKI9bGT5lqT/8i3qKkxJAdDmOLkLgCbIHLdQ
+         yXDMxXv2Kyp4S00TH8ryrjxRPvWLMtROado73s+RWJl4EyKQFnQDrVSrFJ1qNp7NWebr
+         brEd1UtiG4Qv3mueTQn9TpQaUJVc7FuasEN6YvoZj72MynPHRGdqSqPndsNjRBMnNICy
+         zACg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+        bh=NK2N/b/QQywGXjYSUF1DR4DFgFeCcv8ay3tmMR7yQe4=;
+        b=M8DkUV0Ci3J9cnLTTxZnM3b9xRuRM+QJ4mGBQkU0SRgE9+uk7peVBcU8xnKtQQHCYC
+         U+uXUHBRlj06QxYclQG0+fJLAEtxRzayg1NBqX+rusujQN6NZK5mGfcCVfq4w5IcoxDc
+         miH1ldsFAXlSwthhs2oI9TREdPL/ocTVNcZBQDJ3HiHyOPB2h0Xp7L/IbFeVH/hWjjvK
+         QWoQ7WgwP49SjW9ZihsRjKA7zYd9/Ma5klMdc4dLxzVo5BQFgKIDl6YkyRpbC46DUpKC
+         JgwsJpc7ezg7LRJ8Gw0WwwEMy1DFqsYzER0bTrjKu5VFR6qTpI9L7alhDCghqwxAq9DM
+         OevQ==
+X-Gm-Message-State: ACrzQf0Kc49WzGFwTpoixAskN142FXoixyTOjY8HiR+avLqXwmtjbnSo
+	3nVt9sOAEczpWHrrQ5kyqYGWYw==
+X-Google-Smtp-Source: AMsMyM4EcQa7KqdhM3o6+dyVA7n/gHX0GrxOqzZR52bpaVcu/jIZW6WrDc7SJVRTnVlFdh3dYeQywA==
+X-Received: by 2002:a2e:944a:0:b0:24f:10bd:b7e8 with SMTP id o10-20020a2e944a000000b0024f10bdb7e8mr8835541ljh.238.1663743441318;
+        Tue, 20 Sep 2022 23:57:21 -0700 (PDT)
+Received: from krzk-bin (78-11-189-27.static.ip.netia.com.pl. [78.11.189.27])
+        by smtp.gmail.com with ESMTPSA id p15-20020ac24ecf000000b00499cf3e3ebesm307999lfr.121.2022.09.20.23.57.20
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 20 Sep 2022 23:57:20 -0700 (PDT)
+Date: Wed, 21 Sep 2022 08:57:18 +0200
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+To: Sean Anderson <sean.anderson@seco.com>
+Subject: Re: [PATCH v6 2/8] dt-bindings: phy: Add Lynx 10G phy binding
+Message-ID: <20220921065718.lafutkkgiium5ycu@krzk-bin>
+References: <20220920202356.1451033-1-sean.anderson@seco.com>
+ <20220920202356.1451033-3-sean.anderson@seco.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: l8XIyXIN4EBE_TVShI36TVeq38DjPg7N
-X-Proofpoint-GUID: FGk52vuWKqjAaXQ5ozn3QcQmzYm4hPjU
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-21_03,2022-09-20_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
- mlxlogscore=761 suspectscore=0 priorityscore=1501 adultscore=0 spamscore=0
- clxscore=1015 bulkscore=0 malwarescore=0 phishscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
- definitions=main-2209210043
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20220920202356.1451033-3-sean.anderson@seco.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,94 +77,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, Madalin Bucur <madalin.bucur@nxp.com>, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Kishon Vijay Abraham I <kishon@ti.com>, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linux-phy@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The asmlinkage macro has no special meaning in powerpc, and prior to
-this patch is used sporadically on some syscall handler definitions. On
-architectures that do not define asmlinkage, it resolves to extern "C"
-for C++ compilers and a nop otherwise. The current invocations of
-asmlinkage provide far from complete support for C++ toolchains, and so
-the macro serves no purpose in powerpc.
+On Tue, 20 Sep 2022 16:23:50 -0400, Sean Anderson wrote:
+> This adds a binding for the SerDes module found on QorIQ processors.
+> Each phy is a subnode of the top-level device, possibly supporting
+> multiple lanes and protocols. This "thick" #phy-cells is used due to
+> allow for better organization of parameters. Note that the particular
+> parameters necessary to select a protocol-controller/lane combination
+> vary across different SoCs, and even within different SerDes on the same
+> SoC.
+> 
+> The driver is designed to be able to completely reconfigure lanes at
+> runtime. Generally, the phy consumer can select the appropriate
+> protocol using set_mode.
+> 
+> There are two PLLs, each of which can be used as the master clock for
+> each lane. Each PLL has its own reference. For the moment they are
+> required, because it simplifies the driver implementation. Absent
+> reference clocks can be modeled by a fixed-clock with a rate of 0.
+> 
+> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> ---
+> 
+> Changes in v6:
+> - fsl,type -> phy-type
+> 
+> Changes in v4:
+> - Use subnodes to describe lane configuration, instead of describing
+>   PCCRs. This is the same style used by phy-cadence-sierra et al.
+> 
+> Changes in v3:
+> - Manually expand yaml references
+> - Add mode configuration to device tree
+> 
+> Changes in v2:
+> - Rename to fsl,lynx-10g.yaml
+> - Refer to the device in the documentation, rather than the binding
+> - Move compatible first
+> - Document phy cells in the description
+> - Allow a value of 1 for phy-cells. This allows for compatibility with
+>   the similar (but according to Ioana Ciornei different enough) lynx-28g
+>   binding.
+> - Remove minItems
+> - Use list for clock-names
+> - Fix example binding having too many cells in regs
+> - Add #clock-cells. This will allow using assigned-clocks* to configure
+>   the PLLs.
+> - Document the structure of the compatible strings
+> 
+>  .../devicetree/bindings/phy/fsl,lynx-10g.yaml | 236 ++++++++++++++++++
+>  1 file changed, 236 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+> 
 
-Remove all invocations of asmlinkage in arch/powerpc. These incidentally
-only occur in syscall definitions and prototypes.
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
----
-V3: new patch
----
- arch/powerpc/include/asm/syscalls.h | 16 ++++++++--------
- arch/powerpc/kernel/sys_ppc32.c     |  8 ++++----
- 2 files changed, 12 insertions(+), 12 deletions(-)
+yamllint warnings/errors:
 
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index a2b13e55254f..21c2faaa2957 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -10,14 +10,14 @@
- 
- struct rtas_args;
- 
--asmlinkage long sys_mmap(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, off_t offset);
--asmlinkage long sys_mmap2(unsigned long addr, size_t len,
--		unsigned long prot, unsigned long flags,
--		unsigned long fd, unsigned long pgoff);
--asmlinkage long ppc64_personality(unsigned long personality);
--asmlinkage long sys_rtas(struct rtas_args __user *uargs);
-+long sys_mmap(unsigned long addr, size_t len,
-+	      unsigned long prot, unsigned long flags,
-+	      unsigned long fd, off_t offset);
-+long sys_mmap2(unsigned long addr, size_t len,
-+	       unsigned long prot, unsigned long flags,
-+	       unsigned long fd, unsigned long pgoff);
-+long ppc64_personality(unsigned long personality);
-+long sys_rtas(struct rtas_args __user *uargs);
- int ppc_select(int n, fd_set __user *inp, fd_set __user *outp,
- 	       fd_set __user *exp, struct __kernel_old_timeval __user *tvp);
- long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index 16ff0399a257..f4edcc9489fb 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -85,20 +85,20 @@ compat_ssize_t compat_sys_readahead(int fd, u32 r4, u32 offset1, u32 offset2, u3
- 	return ksys_readahead(fd, merge_64(offset1, offset2), count);
- }
- 
--asmlinkage int compat_sys_truncate64(const char __user * path, u32 reg4,
-+int compat_sys_truncate64(const char __user * path, u32 reg4,
- 				unsigned long len1, unsigned long len2)
- {
- 	return ksys_truncate(path, merge_64(len1, len2));
- }
- 
--asmlinkage long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
-+long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
- 				     u32 len1, u32 len2)
- {
- 	return ksys_fallocate(fd, mode, ((loff_t)offset1 << 32) | offset2,
- 			     merge_64(len1, len2));
- }
- 
--asmlinkage int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
-+int compat_sys_ftruncate64(unsigned int fd, u32 reg4, unsigned long len1,
- 				 unsigned long len2)
- {
- 	return ksys_ftruncate(fd, merge_64(len1, len2));
-@@ -111,7 +111,7 @@ long ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
- 				 advice);
- }
- 
--asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
-+long compat_sys_sync_file_range2(int fd, unsigned int flags,
- 				   unsigned offset1, unsigned offset2,
- 				   unsigned nbytes1, unsigned nbytes2)
- {
--- 
-2.34.1
+dtschema/dtc warnings/errors:
+Error: Documentation/devicetree/bindings/phy/fsl,lynx-10g.example.dts:51.27-28 syntax error
+FATAL ERROR: Unable to parse input tree
+make[1]: *** [scripts/Makefile.lib:384: Documentation/devicetree/bindings/phy/fsl,lynx-10g.example.dtb] Error 1
+make[1]: *** Waiting for unfinished jobs....
+make: *** [Makefile:1420: dt_binding_check] Error 2
 
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/patch/
+
+This check can fail if there are any dependencies. The base for a patch
+series is generally the most recent rc1.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
