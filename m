@@ -4,77 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C454CC6FA91
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 14:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50F2EC6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 Sep 2022 14:54:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MXhJ50J3Vz3cB6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 00:53:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MXhJp6CMKz3cd2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 00:54:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1imbdrF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=djlIXTYQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j1imbdrF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=djlIXTYQ;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXhHJ1hz5z2xgb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 00:53:15 +1000 (AEST)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28LE7Dth017301;
-	Wed, 21 Sep 2022 14:53:05 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MXhHK27W4z2xgb
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 00:53:16 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28LEBRDw026141;
+	Wed, 21 Sep 2022 14:53:11 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=YmV7+SR+naPySmui2WtOrJWH4gwxSgpGu/JELmjByHs=;
- b=j1imbdrF3YLDo2tYpNTdwRJDgOR8o7Tj5f8C0e8019UN+2C1bgAeHZfVyaMRVvGn3gld
- bYjIijMNULwbWDPwhUQPzVocqibNyJf4/pDiOrDyCxwJCHXsWLazf/Lmex40NQxJXRwg
- xOj2gwNFfu5/NmZYPmRgLe5a3ylZiCNvEPBIgxWKwYb96pvu4neM0sTJX/w4FBU2EQt5
- 5g97U9VSe/bGrUparxjG2/+Xfy3ivenzc1t4rihPr1jRJtA/JtMQs7+lEq38GCftHned
- fnhJUvV7W9DCJzX9t9DYX/2LYq9FFn1dJdMhgqqT8eq8OvFirZxKywcW4pRumhmZxhrr /Q== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jr3vx26nc-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=OytiCbZ+hr65qHIxRfBe2c+T0flu3QwSpsi70//OSI0=;
+ b=djlIXTYQrMz/zoOLOVYXLZLSms+q864VJlLG8ElkLmQ3UAAgRT0pOGNutJzNlQ6yal3n
+ NJnnRnhYIGsMNmKeCzRchMOKjFUu/iMVuu+pvFHxNmMY8HHg/58/LcFAQ9TGafey6fOx
+ MWP2Xwm55i18Ug1XfAf3v9d39BB5PXEw+3mzcjV9IWlQQgJV19YUr3i/pqE0E8O5VGeG
+ LaW73C18hweEVzmM/wPLDCQ9IaGEQ+hovT4a2xai05PT5yezxmvT3vtIYACiDpoNFSnD
+ NqfYzuum2Eo5obJzrUVfL4+t+t3s6ssW2xRe5QD1gCLa0NSO/NPZRTm20EZQt4Nokzye XA== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jr2dfdhkq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 14:53:05 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28LEprcR002568;
-	Wed, 21 Sep 2022 14:53:02 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma04fra.de.ibm.com with ESMTP id 3jn5v9412x-1
+	Wed, 21 Sep 2022 14:53:10 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28LEr1W4014898;
+	Wed, 21 Sep 2022 14:53:08 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+	by ppma05fra.de.ibm.com with ESMTP id 3jn5v8v0e9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 Sep 2022 14:53:02 +0000
+	Wed, 21 Sep 2022 14:53:07 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28LErPap41157070
+	by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28LEr4H236307382
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 21 Sep 2022 14:53:25 GMT
+	Wed, 21 Sep 2022 14:53:04 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7D4E611C04C;
-	Wed, 21 Sep 2022 14:52:59 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id B1CDC11C050;
+	Wed, 21 Sep 2022 14:53:04 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4FCD811C04A;
-	Wed, 21 Sep 2022 14:52:57 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 87E1211C04C;
+	Wed, 21 Sep 2022 14:53:02 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.43.4.79])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 21 Sep 2022 14:52:57 +0000 (GMT)
+	Wed, 21 Sep 2022 14:53:02 +0000 (GMT)
 From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 To: acme@kernel.org, jolsa@kernel.org, mpe@ellerman.id.au
-Subject: [PATCH V2 1/3] powerpc/perf: Fix branch_filter support for multiple filters in powerpc
-Date: Wed, 21 Sep 2022 20:22:53 +0530
-Message-Id: <20220921145255.20972-1-atrajeev@linux.vnet.ibm.com>
+Subject: [PATCH V2 3/3] tools/testing/selftests/powerpc: Update the bhrb filter sampling test to test for multiple branch filters
+Date: Wed, 21 Sep 2022 20:22:55 +0530
+Message-Id: <20220921145255.20972-3-atrajeev@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20220921145255.20972-1-atrajeev@linux.vnet.ibm.com>
+References: <20220921145255.20972-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: rkGd131DKWhAy6pHHNDQl0_XXTPD2-1f
-X-Proofpoint-ORIG-GUID: rkGd131DKWhAy6pHHNDQl0_XXTPD2-1f
+X-Proofpoint-ORIG-GUID: mi-DZKLgTBHb7t21y5M0U0we1g33woRP
+X-Proofpoint-GUID: mi-DZKLgTBHb7t21y5M0U0we1g33woRP
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-09-21_08,2022-09-20_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
- lowpriorityscore=0 clxscore=1011 impostorscore=0 mlxscore=0 malwarescore=0
- mlxlogscore=999 priorityscore=1501 spamscore=0 adultscore=0 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
- definitions=main-2209210099
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 clxscore=1015
+ spamscore=0 impostorscore=0 mlxscore=0 bulkscore=0 phishscore=0
+ mlxlogscore=999 malwarescore=0 lowpriorityscore=0 adultscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2209210099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,79 +93,45 @@ Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, kjain@linux.ibm.com, linux
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For PERF_SAMPLE_BRANCH_STACK sample type, different branch_sample_type
-ie branch filters are supported. The branch filters are requested via
-event attribute "branch_sample_type". Multiple branch filters can be
-passed in event attribute.
-
-Example:
-perf record -b -o- -B --branch-filter any,ind_call true
-
-Powerpc does not support having multiple branch filters at
-sametime. In powerpc, branch filters for branch stack sampling
-is set via MMCRA IFM bits [32:33]. But currently when requesting
-for multiple filter types, the "perf record" command does not
-report any error.
-
-Example:
-perf record -b -o- -B --branch-filter any,save_type true
-perf record -b -o- -B --branch-filter any,ind_call true
-
-The "bhrb_filter_map" function in PMU driver code does the
-validity check for supported branch filters. But this check
-is done for single filter. Hence "perf record" will proceed
-here without reporting any error.
-
-Fix power_pmu_event_init to return EOPNOTSUPP when multiple
-branch filters are requested in the event attr.
-
-After the fix:
-perf record --branch-filter any,ind_call -- ls
-Error:
-cycles: PMU Hardware doesn't support sampling/overflow-interrupts.
-Try 'perf stat'
+For PERF_SAMPLE_BRANCH_STACK sample type, different branch_sample_type,
+ie branch filters are supported. The testcase "bhrb_filter_map_test"
+tests the valid and invalid filter maps in different powerpc platforms.
+Update this testcase to include scenario to cover multiple branch
+filters at sametime. Since powerpc doesn't support multiple filters at
+sametime, expect failure during perf_event_open.
 
 Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
 Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Reviewed-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-Tested-by: Disha Goel<disgoel@linux.vnet.ibm.com>
 Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
 ---
 Changelog:
- Addressed review comment from Michael Ellerman to
- do irq restore before returning EOPNOTSUPP
+ Fixed compile error for undefined branch sample type
+ by using PERF_SAMPLE_BRANCH_ANY_CALL instead of
+ PERF_SAMPLE_BRANCH_TYPE_SAVE
 
- arch/powerpc/perf/core-book3s.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ .../powerpc/pmu/sampling_tests/bhrb_filter_map_test.c    | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 13919eb96931..a939ac3b3a84 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -2131,6 +2131,23 @@ static int power_pmu_event_init(struct perf_event *event)
- 	if (has_branch_stack(event)) {
- 		u64 bhrb_filter = -1;
+diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
+index 8182647c63c8..3f43c315c666 100644
+--- a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
++++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
+@@ -96,6 +96,15 @@ static int bhrb_filter_map_test(void)
+ 		}
+ 	}
  
-+		/*
-+		 * powerpc does not support having multiple branch filters
-+		 * at sametime. Branch filters are set via MMCRA IFM[32:33]
-+		 * bits for power8 and above. Return EOPNOTSUPP when multiple
-+		 * branch filters are requested in the event attr.
-+		 *
-+		 * When opening event via perf_event_open, branch_sample_type
-+		 * gets adjusted in perf_copy_attr function. Kernel will
-+		 * automatically adjust the branch_sample_type based on the
-+		 * event modifier settings to include PERF_SAMPLE_BRANCH_PLM_ALL.
-+		 * Hence drop the check for PERF_SAMPLE_BRANCH_PLM_ALL.
-+		 */
-+		if (hweight64(event->attr.branch_sample_type & ~PERF_SAMPLE_BRANCH_PLM_ALL) > 1) {
-+			local_irq_restore(irq_flags);
-+			return -EOPNOTSUPP;
-+		}
++	/*
++	 * Combine filter maps which includes a valid branch filter and an invalid branch
++	 * filter. Example: any ( PERF_SAMPLE_BRANCH_ANY) and any_call
++	 * (PERF_SAMPLE_BRANCH_ANY_CALL).
++	 * The perf_event_open should fail in this case.
++	 */
++	event.attr.branch_sample_type = PERF_SAMPLE_BRANCH_ANY | PERF_SAMPLE_BRANCH_ANY_CALL;
++	FAIL_IF(!event_open(&event));
 +
- 		if (ppmu->bhrb_filter_map)
- 			bhrb_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
+ 	return 0;
+ }
+ 
 -- 
 2.31.1
 
