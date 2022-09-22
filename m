@@ -4,60 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0939BC54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 11:35:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ECB8C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 11:35:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MYCr337qZz3f6X
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 21:34:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MYCrq2V26z3cd6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 21:35:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LC5WU3o3;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=GFaR9KMd;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yoCkJLCm;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lnoHL8kI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=LC5WU3o3;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=GFaR9KMd;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=yoCkJLCm;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lnoHL8kI;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYCp24jsRz30hw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 21:33:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYCp52TCCz3c16
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 21:33:16 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 5793A219C2;
-	Thu, 22 Sep 2022 11:33:10 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 5A342219BD;
+	Thu, 22 Sep 2022 11:33:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1663846390; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jbbam2YhWxouEMDobQu04q6c6VvibTkNn46TIeK/lXg=;
-	b=LC5WU3o3ljuFjOF1yfVQf+XSpqZ+E4H/3Fv7EVZ53nd5AB5KEZEern/fwNK0NiGSBUCF56
-	imMaO0ei5Y48dY5KYKKotWi204IvzG51OMKq6bPO8eohc7O51WV/6Fp1EO+i6nUkzDsekU
-	4mwk2topFygmOB5yD5tNaUH+XKe9oI8=
+	t=1663846389; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=TQvMpeIy7cygWqyqnF1hlTB6kVkyGdVkV1T4Po87npQ=;
+	b=yoCkJLCmKv8hjDuBTEAxfYkwO6rYLGOkvlqDKfieQD/MWidBdDOIkYYwaaJ7h8WDuBmMWZ
+	LITnul/r2/iXXtdkY5HoAfduyI+T2LSHgeM6m5nRqyEZkLUlhxDqEX0FbkN6ZkR4Ac0XFK
+	wC2Ob+za9ideUna+yvUTh439N8PnN5I=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1663846390;
+	s=susede2_ed25519; t=1663846389;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jbbam2YhWxouEMDobQu04q6c6VvibTkNn46TIeK/lXg=;
-	b=GFaR9KMdEElPfNTfCGFNXoszQ8HKiSQ9avNKF79msn4QDdoRgT/+yfG9Nnwx/POXhPk9al
-	IOa8SAO1P8WNOSDg==
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=TQvMpeIy7cygWqyqnF1hlTB6kVkyGdVkV1T4Po87npQ=;
+	b=lnoHL8kIiwZUq//J3yGz5E0Z7C2tvQq9m6s6ry3OE1hQZ5cUlAjIjFI34WZfpzqR7yS3hD
+	D+ESSk4MRR3L2sBA==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 0E26B13AA5;
-	Thu, 22 Sep 2022 11:33:10 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 081CB13AA5;
+	Thu, 22 Sep 2022 11:33:09 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id ONGZAvZHLGPyPAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 22 Sep 2022 11:33:10 +0000
+	id KAsVAfVHLGPyPAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 22 Sep 2022 11:33:09 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	airlied@linux.ie,
@@ -71,12 +67,10 @@ To: javierm@redhat.com,
 	paulus@samba.org,
 	geert@linux-m68k.org,
 	mark.cave-ayland@ilande.co.uk
-Subject: [PATCH v3 3/4] drm/ofdrm: Add per-model device function
-Date: Thu, 22 Sep 2022 13:33:05 +0200
-Message-Id: <20220922113306.11251-4-tzimmermann@suse.de>
+Subject: [PATCH v3 0/4] drm: Add driver for PowerPC OF displays
+Date: Thu, 22 Sep 2022 13:33:02 +0200
+Message-Id: <20220922113306.11251-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220922113306.11251-1-tzimmermann@suse.de>
-References: <20220922113306.11251-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,191 +88,43 @@ Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmerman
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a per-model device-function structure in preparation of adding
-color-management support. Detection of the individual models has been
-taken from fbdev's offb.
+PowerPC's Open Firmware offers a simple display buffer for graphics
+output. Add ofdrm, a DRM driver for the device. As with the existing
+simpledrm driver, the graphics hardware is pre-initialized by the
+firmware. The driver only provides blitting, no actual DRM modesetting
+is possible.
 
-v3:
-	* define constants for PCI ids (Javier)
+For version 3 of this patchset, all preparatory changes have been
+merged into the DRM codebase. Only ofdrm changes are left.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
----
- drivers/gpu/drm/tiny/ofdrm.c | 125 +++++++++++++++++++++++++++++++++++
- 1 file changed, 125 insertions(+)
+Patch 1 adds ofdrm, which has again been significantly reworked.
+The FWFB library has been removed infavor of various functions in
+existing DRM helper libraries. Ofdrm now supports damage iterators
+and synchronization for imported GEM BOs.
 
-diff --git a/drivers/gpu/drm/tiny/ofdrm.c b/drivers/gpu/drm/tiny/ofdrm.c
-index a78aee800956..9a8e5696999c 100644
---- a/drivers/gpu/drm/tiny/ofdrm.c
-+++ b/drivers/gpu/drm/tiny/ofdrm.c
-@@ -28,6 +28,21 @@
- #define DRIVER_MAJOR	1
- #define DRIVER_MINOR	0
- 
-+#define PCI_VENDOR_ID_ATI_R520	0x7100
-+#define PCI_VENDOR_ID_ATI_R600	0x9400
-+
-+enum ofdrm_model {
-+	OFDRM_MODEL_UNKNOWN,
-+	OFDRM_MODEL_MACH64, /* ATI Mach64 */
-+	OFDRM_MODEL_RAGE128, /* ATI Rage128 */
-+	OFDRM_MODEL_RAGE_M3A, /* ATI Rage Mobility M3 Head A */
-+	OFDRM_MODEL_RAGE_M3B, /* ATI Rage Mobility M3 Head B */
-+	OFDRM_MODEL_RADEON, /* ATI Radeon */
-+	OFDRM_MODEL_GXT2000, /* IBM GXT2000 */
-+	OFDRM_MODEL_AVIVO, /* ATI R5xx */
-+	OFDRM_MODEL_QEMU, /* QEMU VGA */
-+};
-+
- /*
-  * Helpers for display nodes
-  */
-@@ -149,14 +164,63 @@ static u64 display_get_address_of(struct drm_device *dev, struct device_node *of
- 	return address;
- }
- 
-+static bool is_avivo(__be32 vendor, __be32 device)
-+{
-+	/* This will match most R5xx */
-+	return (vendor == PCI_VENDOR_ID_ATI) &&
-+	       ((device >= PCI_VENDOR_ID_ATI_R520 && device < 0x7800) ||
-+		(PCI_VENDOR_ID_ATI_R600 >= 0x9400));
-+}
-+
-+static enum ofdrm_model display_get_model_of(struct drm_device *dev, struct device_node *of_node)
-+{
-+	enum ofdrm_model model = OFDRM_MODEL_UNKNOWN;
-+
-+	if (of_node_name_prefix(of_node, "ATY,Rage128")) {
-+		model = OFDRM_MODEL_RAGE128;
-+	} else if (of_node_name_prefix(of_node, "ATY,RageM3pA") ||
-+		   of_node_name_prefix(of_node, "ATY,RageM3p12A")) {
-+		model = OFDRM_MODEL_RAGE_M3A;
-+	} else if (of_node_name_prefix(of_node, "ATY,RageM3pB")) {
-+		model = OFDRM_MODEL_RAGE_M3B;
-+	} else if (of_node_name_prefix(of_node, "ATY,Rage6")) {
-+		model = OFDRM_MODEL_RADEON;
-+	} else if (of_node_name_prefix(of_node, "ATY,")) {
-+		return OFDRM_MODEL_MACH64;
-+	} else if (of_device_is_compatible(of_node, "pci1014,b7") ||
-+		   of_device_is_compatible(of_node, "pci1014,21c")) {
-+		model = OFDRM_MODEL_GXT2000;
-+	} else if (of_node_name_prefix(of_node, "vga,Display-")) {
-+		struct device_node *of_parent;
-+		const __be32 *vendor_p, *device_p;
-+
-+		/* Look for AVIVO initialized by SLOF */
-+		of_parent = of_get_parent(of_node);
-+		vendor_p = of_get_property(of_parent, "vendor-id", NULL);
-+		device_p = of_get_property(of_parent, "device-id", NULL);
-+		if (vendor_p && device_p && is_avivo(*vendor_p, *device_p))
-+			model = OFDRM_MODEL_AVIVO;
-+		of_node_put(of_parent);
-+	} else if (of_device_is_compatible(of_node, "qemu,std-vga")) {
-+		model = OFDRM_MODEL_QEMU;
-+	}
-+
-+	return model;
-+}
-+
- /*
-  * Open Firmware display device
-  */
- 
-+struct ofdrm_device_funcs {
-+};
-+
- struct ofdrm_device {
- 	struct drm_device dev;
- 	struct platform_device *pdev;
- 
-+	const struct ofdrm_device_funcs *funcs;
-+
- 	/* simplefb settings */
- 	struct iosys_map screen_base;
- 	struct drm_display_mode mode;
-@@ -520,6 +584,33 @@ static const struct drm_mode_config_funcs ofdrm_mode_config_funcs = {
-  * Init / Cleanup
-  */
- 
-+static const struct ofdrm_device_funcs ofdrm_unknown_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_mach64_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_rage128_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_rage_m3a_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_rage_m3b_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_radeon_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_gxt2000_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_avivo_device_funcs = {
-+};
-+
-+static const struct ofdrm_device_funcs ofdrm_qemu_device_funcs = {
-+};
-+
- static struct drm_display_mode ofdrm_mode(unsigned int width, unsigned int height)
- {
- 	/*
-@@ -541,6 +632,7 @@ static struct ofdrm_device *ofdrm_device_create(struct drm_driver *drv,
- 	struct device_node *of_node = pdev->dev.of_node;
- 	struct ofdrm_device *odev;
- 	struct drm_device *dev;
-+	enum ofdrm_model model;
- 	int width, height, linebytes;
- 	const struct drm_format_info *format;
- 	u64 address;
-@@ -569,6 +661,39 @@ static struct ofdrm_device *ofdrm_device_create(struct drm_driver *drv,
- 	 * OF display-node settings
- 	 */
- 
-+	model = display_get_model_of(dev, of_node);
-+	drm_dbg(dev, "detected model %d\n", model);
-+
-+	switch (model) {
-+	case OFDRM_MODEL_UNKNOWN:
-+		odev->funcs = &ofdrm_unknown_device_funcs;
-+		break;
-+	case OFDRM_MODEL_MACH64:
-+		odev->funcs = &ofdrm_mach64_device_funcs;
-+		break;
-+	case OFDRM_MODEL_RAGE128:
-+		odev->funcs = &ofdrm_rage128_device_funcs;
-+		break;
-+	case OFDRM_MODEL_RAGE_M3A:
-+		odev->funcs = &ofdrm_rage_m3a_device_funcs;
-+		break;
-+	case OFDRM_MODEL_RAGE_M3B:
-+		odev->funcs = &ofdrm_rage_m3b_device_funcs;
-+		break;
-+	case OFDRM_MODEL_RADEON:
-+		odev->funcs = &ofdrm_radeon_device_funcs;
-+		break;
-+	case OFDRM_MODEL_GXT2000:
-+		odev->funcs = &ofdrm_gxt2000_device_funcs;
-+		break;
-+	case OFDRM_MODEL_AVIVO:
-+		odev->funcs = &ofdrm_avivo_device_funcs;
-+		break;
-+	case OFDRM_MODEL_QEMU:
-+		odev->funcs = &ofdrm_qemu_device_funcs;
-+		break;
-+	}
-+
- 	width = display_get_width_of(dev, of_node);
- 	if (width < 0)
- 		return ERR_PTR(width);
+Patches 2 to 4 add support for color management. The code has been
+taken from fbdev's offb. I have no hardware available for testing the
+functionality. Qemu's stdvga apparently does not support gamma tables
+in RGB modes. I verified that the color management code is executed
+by running Gnome's night-mode settings, but the display's color tone
+does not change.
+
+Thomas Zimmermann (4):
+  drm/ofdrm: Add ofdrm for Open Firmware framebuffers
+  drm/ofdrm: Add CRTC state
+  drm/ofdrm: Add per-model device function
+  drm/ofdrm: Support color management
+
+ MAINTAINERS                   |    1 +
+ drivers/gpu/drm/tiny/Kconfig  |   13 +
+ drivers/gpu/drm/tiny/Makefile |    1 +
+ drivers/gpu/drm/tiny/ofdrm.c  | 1351 +++++++++++++++++++++++++++++++++
+ drivers/video/fbdev/Kconfig   |    1 +
+ 5 files changed, 1367 insertions(+)
+ create mode 100644 drivers/gpu/drm/tiny/ofdrm.c
+
+
+base-commit: a7d5d07d5ac5ac58ec81932b3f732e3127d17af9
 -- 
 2.37.3
 
