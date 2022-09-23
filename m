@@ -4,48 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3EFEC6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 13:18:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1E28C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Sep 2022 17:11:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MYG7h6mtjz3cdB
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Sep 2022 23:18:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.174; helo=mail-vk1-f174.google.com; envelope-from=philippe.mathieu.daude@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-vk1-f174.google.com (mail-vk1-f174.google.com [209.85.221.174])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MYzFk0sWJz3cL8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Sep 2022 03:11:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uumJiLIU;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Fngpn3ub;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=uumJiLIU;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Fngpn3ub;
+	dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYG7B3trrz302k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 23:18:12 +1000 (AEST)
-Received: by mail-vk1-f174.google.com with SMTP id g85so4901067vkf.10
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Sep 2022 06:18:12 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=FmC3Wnd/dYfP2uqwVfxKzutzBThKJES4nPc9HEeo7QQ=;
-        b=CpO4RtVOSwZMScoKYND+pKb8duXkVco77/U17BGjaOYLr4X2veJrZDeW6BGzpAzmPP
-         iGguFglmzlOgHCgFvSp4nRxkhCpPX4Ui+w7YEERYcfDX8eCUNePL1OqfY4z2bfe75uaY
-         0F1LUDHDecouy8acxuFKu5wcIUzgb+fYygMJAkooEHtBcZq4gk+Svx3KDwnsm3OYlfgV
-         QZGUpduuNuVq0M3Msvg/H3EuiritizJJRknk8YMkhHKU6Q3BsJXxHWPKShpKLXhUcSBx
-         kX6tizn2ei4XKnSOQTjpZ8t3hk05kNE0oKCICE0+2Zj8/LxdqF+/4ZJtpKxmEz6P9dhI
-         qtlw==
-X-Gm-Message-State: ACrzQf2iqwUpiX7KW4TbP8xI+PQUeM3AGuWXi+wFnKGriiTnV+sknRxl
-	u46Wmr3uCFYWGEcMVW3mxOL/QtzIkSph20Cm5Ps=
-X-Google-Smtp-Source: AMsMyM5hAS5sGeCyGhDs3JB8ybhSoe0SBFugJqR9UWsYlOLvGt3tSKkrbx2I2RYfB9/ZOUlHboLppHif1VOrjItnvws=
-X-Received: by 2002:a05:6122:10dc:b0:3a3:4904:2941 with SMTP id
- l28-20020a05612210dc00b003a349042941mr1265866vko.24.1663852689165; Thu, 22
- Sep 2022 06:18:09 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYzF36j8Fz3bxL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2022 03:10:47 +1000 (AEST)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out1.suse.de (Postfix) with ESMTP id 9C334219EC;
+	Fri, 23 Sep 2022 17:10:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1663953043; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=ZSPBzEUu4HvvRKKrmrdU/FMS6Qx20fLyxT3yF1tghgc=;
+	b=uumJiLIU2hCeUjB//pYmunQ3XhUTmH5n97IVRpx0df4OZYv5fuXBQ0xekIy4XJccvKNdf+
+	ZZ2q/2pniI8zXucmq84IOe9+SqdEoZRhNamUxbx08sYZ/Rz9mhwPlaqhD1IuXjRA5vy2v5
+	Iqu37b4i4NZhqLy45/3MLfqEcVgd2Os=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1663953043;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=ZSPBzEUu4HvvRKKrmrdU/FMS6Qx20fLyxT3yF1tghgc=;
+	b=Fngpn3ub5IEe7UJDgzoo8OBgYwiwTJAr8CYGfJ5/Ppmar1cb8XYsiESPKo8Bi3lpB3A8SE
+	scN82gpoaRkfC7CQ==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+	by relay2.suse.de (Postfix) with ESMTP id 44B9C2C15B;
+	Fri, 23 Sep 2022 17:10:41 +0000 (UTC)
+From: Michal Suchanek <msuchanek@suse.de>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH 5.15 0/6] arm64: kexec_file: use more system keyrings to verify kernel image signature + dependencies
+Date: Fri, 23 Sep 2022 19:10:28 +0200
+Message-Id: <cover.1663951201.git.msuchanek@suse.de>
+X-Mailer: git-send-email 2.35.3
 MIME-Version: 1.0
-References: <20220921003201.1441511-1-seanjc@google.com> <20220921003201.1441511-12-seanjc@google.com>
-In-Reply-To: <20220921003201.1441511-12-seanjc@google.com>
-From: =?UTF-8?Q?Philippe_Mathieu=2DDaud=C3=A9?= <f4bug@amsat.org>
-Date: Thu, 22 Sep 2022 15:17:56 +0200
-Message-ID: <CAAdtpL4yFdh3V0Be05OKxUFBTSgFs6oTy9U5FjSRGwOhi=tDMQ@mail.gmail.com>
-Subject: Re: [PATCH v4 11/12] KVM: mips, x86: do not rely on KVM_REQ_UNHALT
-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,31 +64,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm <kvm@vger.kernel.org>, David Hildenbrand <david@redhat.com>, Paul Walmsley <paul.walmsley@sifive.com>, open list <linux-kernel@vger.kernel.org>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Maxim Levitsky <mlevitsk@redhat.com>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, Atish Patra <atishp@atishpatra.org>, Alexandru Elisei <alexandru.elisei@arm.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, l
- inuxppc-dev@lists.ozlabs.org
+Cc: Dave Hansen <dave.hansen@linux.intel.com>, Alexander Egorenkov <egorenar@linux.ibm.com>, keyrings@vger.kernel.org, Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Will Deacon <will@kernel.org>, Sasha Levin <sashal@kernel.org>, "open list:S390" <linux-s390@vger.kernel.org>, Coiby Xu <coxu@redhat.com>, Baoquan He <bhe@redhat.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, "maintainer:X86 ARCHITECTURE 32-BIT AND 64-BIT" <x86@kernel.org>, Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>, Catalin Marinas <catalin.marinas@arm.com>, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michal Suchanek <msuchanek@suse.de>, Eric Biederman <ebiederm@xmission.com>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Borislav Petkov <bp@alien8.de>, Mimi Zohar <zohar@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, "moderated list:ARM64 PORT AARCH64 ARCHITECTURE" <linux-arm-
+ kernel@lists.infradead.org>, Philipp Rudo <prudo@redhat.com>, "open list:KEXEC" <kexec@lists.infradead.org>, linux-security-module@vger.kernel.org, James Morse <james.morse@arm.com>, Sven Schnelle <svens@linux.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, "open list:LINUX FOR POWERPC 32-BIT AND 64-BIT" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Sep 21, 2022 at 2:34 AM Sean Christopherson <seanjc@google.com> wro=
-te:
->
-> From: Paolo Bonzini <pbonzini@redhat.com>
->
-> KVM_REQ_UNHALT is a weird request that simply reports the value of
-> kvm_arch_vcpu_runnable() on exit from kvm_vcpu_halt().  Only
-> MIPS and x86 are looking at it, the others just clear it.  Check
-> the state of the vCPU directly so that the request is handled
-> as a nop on all architectures.
->
-> No functional change intended, except for corner cases where an
-> event arrive immediately after a signal become pending or after
-> another similar host-side event.
->
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/mips/kvm/emulate.c | 7 +++----
->  arch/x86/kvm/x86.c      | 9 ++++++++-
->  2 files changed, 11 insertions(+), 5 deletions(-)
+Hello,
 
-Reviewed-by: Philippe Mathieu-Daud=C3=A9 <f4bug@amsat.org>
+this is backport of commit 0d519cadf751
+("arm64: kexec_file: use more system keyrings to verify kernel image signature")
+to table 5.15 tree including the preparatory patches.
+
+Some patches needed minor adjustment for context.
+
+Thanks
+
+Michal
+
+
+Coiby Xu (3):
+  kexec: clean up arch_kexec_kernel_verify_sig
+  kexec, KEYS: make the code in bzImage64_verify_sig generic
+  arm64: kexec_file: use more system keyrings to verify kernel image
+    signature
+
+Naveen N. Rao (2):
+  kexec_file: drop weak attribute from functions
+  kexec: drop weak attribute from functions
+
+Sven Schnelle (1):
+  s390/kexec_file: move kernel image size check
+
+ arch/arm64/include/asm/kexec.h        | 20 ++++++-
+ arch/arm64/kernel/kexec_image.c       | 11 +---
+ arch/powerpc/include/asm/kexec.h      | 14 +++++
+ arch/s390/boot/head.S                 |  2 -
+ arch/s390/include/asm/kexec.h         | 14 +++++
+ arch/s390/include/asm/setup.h         |  1 -
+ arch/s390/kernel/machine_kexec_file.c | 17 +-----
+ arch/x86/include/asm/kexec.h          | 12 ++++
+ arch/x86/kernel/kexec-bzimage64.c     | 20 +------
+ include/linux/kexec.h                 | 82 ++++++++++++++++++++++----
+ kernel/kexec_core.c                   | 27 ---------
+ kernel/kexec_file.c                   | 83 ++++++++++-----------------
+ 12 files changed, 163 insertions(+), 140 deletions(-)
+
+-- 
+2.35.3
+
