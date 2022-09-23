@@ -4,91 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCD99C6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Sep 2022 10:56:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE500C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Sep 2022 10:59:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MYpx027ldz3cd3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Sep 2022 20:56:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MYq0N70PNz3c8M
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 Sep 2022 20:59:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UEwLxXK/;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UEwLxXK/;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BYzbUNCX;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gl2cDoLB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UEwLxXK/;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UEwLxXK/;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BYzbUNCX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Gl2cDoLB;
 	dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYpwD1BBJz3bcc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2022 20:55:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MYpzZ2wNDz30L5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2022 20:58:34 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1663930534;
+	s=mimecast20190719; t=1663930711;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=eef54XeIfI5ePPfdQCCa+xwkgeOXOv7/COauKA6kwwQ=;
-	b=UEwLxXK/DcqRGm/I3a1xLTR3BJ660LIWxR4D405iMewcQGAwfZ45M9XLPYJNUuQFe7jkXo
-	a3eShBkOPF/MUW7bcMGuLN8FD9AMooOwROydmGKY+AFXQSL+96VS/8rwqqucURsDnOj9XU
-	SyHITg6YpfyjPeHz++PTg+Bo3q2LLXc=
+	bh=pq+nqOhkpxfLUyiqEq4MNg6ulDavWi2pU/tSeIb7Oc0=;
+	b=BYzbUNCXOeCS/YO58N031GhFD5jlKWUNlsjQrdmsDFGL7r87sZZApRo2ah10wWrUlaKHWr
+	/m6wVpjRvdrwRQmAkXizfUlUsAUbQXhpKUmuNg1IzXXm+sA6l9VW/wDp4Lo5xiIXXkqMlQ
+	5UhbHfOkS1EYGnfCwKnSYAV1vEiVd3Y=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1663930534;
+	s=mimecast20190719; t=1663930712;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=eef54XeIfI5ePPfdQCCa+xwkgeOXOv7/COauKA6kwwQ=;
-	b=UEwLxXK/DcqRGm/I3a1xLTR3BJ660LIWxR4D405iMewcQGAwfZ45M9XLPYJNUuQFe7jkXo
-	a3eShBkOPF/MUW7bcMGuLN8FD9AMooOwROydmGKY+AFXQSL+96VS/8rwqqucURsDnOj9XU
-	SyHITg6YpfyjPeHz++PTg+Bo3q2LLXc=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=pq+nqOhkpxfLUyiqEq4MNg6ulDavWi2pU/tSeIb7Oc0=;
+	b=Gl2cDoLB6/AvIdcZ30SWvHLyp1GIr5KC5dwlIfWn7G+g9W8R1vRyGdKo5C8BW4d4hcFp+i
+	gTGf/pnDjaAZYIhcC4xLdM+9RNrcuq1rcdT4UQmZ3h2tn+OXlOzFIPVzFjpPW2Er1g7Pir
+	poaJbeOi3B9Hrm2smmnYnttw/Zx8KmU=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-523-l39HgEGKMHmL39-2x41VWw-1; Fri, 23 Sep 2022 06:55:32 -0400
-X-MC-Unique: l39HgEGKMHmL39-2x41VWw-1
-Received: by mail-wr1-f69.google.com with SMTP id d9-20020adfa349000000b0022ad6fb2845so3867999wrb.17
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2022 03:55:32 -0700 (PDT)
+ us-mta-595-FHDQHwQ1Oa2umz9emL4olA-1; Fri, 23 Sep 2022 06:58:30 -0400
+X-MC-Unique: FHDQHwQ1Oa2umz9emL4olA-1
+Received: by mail-wm1-f71.google.com with SMTP id t14-20020a1c770e000000b003b4856a6ecaso1688663wmi.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Sep 2022 03:58:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:in-reply-to:organization:from:references
          :cc:to:content-language:subject:user-agent:mime-version:date
          :message-id:x-gm-message-state:from:to:cc:subject:date;
-        bh=eef54XeIfI5ePPfdQCCa+xwkgeOXOv7/COauKA6kwwQ=;
-        b=nYulwtepzw2w6NNZodQe5Hti3tXcw9VMC6/Hg8RbyM+zDTEcfGaIlt1POwVKJAdq/D
-         n7rIknrmQtqtcYl+6cM6hIsd27EBWb/sUF1i6b7CdQ6bopz3ggNnYEKzU7cDfdG09Ofr
-         TtFA17jAt6Nz37bWKUeqork16vi31FyCfRsZAbdNIxXK2KZ2X5b4V8Mgg1Asov3kN8HZ
-         9K5qXJPr2RVmuWfI58ovjnTo3pxERys+qv4n/NCKRt5YzTTR0a6AzkHV1TUtSaJpP6n9
-         6f85EuXlvvUKyB9KD+PC4pW2kW9873E1NNyhnQWj6HS5i1O5zvMYtacNrcHUCpNTWknm
-         4TMQ==
-X-Gm-Message-State: ACrzQf3pUjZ3rT3bkbjOvoCETo0UScuMvX7c5p5FlNNNQaP7t4dTBbYw
-	ykR55KYeaeYAT7QIwAZAzWlt5j+x+nFs/uAzDCMRjATo9jJhpuuGLNxK0a73L/wPb0sJxlCet6G
-	V1mXiuPKNVQOZ1I22vTI4fT07vA==
-X-Received: by 2002:adf:de01:0:b0:228:62ae:78bc with SMTP id b1-20020adfde01000000b0022862ae78bcmr4702233wrm.41.1663930531852;
-        Fri, 23 Sep 2022 03:55:31 -0700 (PDT)
-X-Google-Smtp-Source: AMsMyM4kdGvtbB82mE3J4eOPvIcDO2feso4JPy2pwAaShDx+NaqgW7GNPKE3hF5xRI57FveqzL+0bQ==
-X-Received: by 2002:adf:de01:0:b0:228:62ae:78bc with SMTP id b1-20020adfde01000000b0022862ae78bcmr4702188wrm.41.1663930531409;
-        Fri, 23 Sep 2022 03:55:31 -0700 (PDT)
+        bh=pq+nqOhkpxfLUyiqEq4MNg6ulDavWi2pU/tSeIb7Oc0=;
+        b=JpRe1j4SydTakCFAvmAJd1eO6j8IQRMtV6R2UIQlcwczVxGa85gud1e4JbYV4gQRXG
+         0f6Z3mKSstMODFqC6RhZGrbR2Cyrcxi6QFuI6kB8IYbGI8a/Tq7phfn0iurSDFsh5ZYk
+         NMnZ6O1VT1w115PSatP5B+cxERyuZKwOCTeTixO19aILsIfSLKw6SzOf4xJLLe0DlyPy
+         AA42tfiPlaRtDa2vLaM3xQ7EtTIKbfi47dnmpywQpo9O3qAl1NINK4bTFAhfwh+KedIG
+         GuVtTiwnZWFx/5RQ2RbUonjZX9CnDSREkWt0TGclbMj3JHabEJCbdYKIUlbk+UxcbgX7
+         EvGg==
+X-Gm-Message-State: ACrzQf2CQLZ/FTyUecH+H4XejMolH2JqenKe8qhxiOOLAWAmkArsZhkB
+	KEDx2s0QVNiO/lnSaN113TnJIGNN7lmHWSPDzXXCPwDaxzzt55aXrjFSqgpcArR3ZJk+RYmh7Pl
+	AxSdILmoZYKLMgScv/yJcHrB37g==
+X-Received: by 2002:a05:6000:794:b0:22b:311:afe9 with SMTP id bu20-20020a056000079400b0022b0311afe9mr4596515wrb.509.1663930709602;
+        Fri, 23 Sep 2022 03:58:29 -0700 (PDT)
+X-Google-Smtp-Source: AMsMyM692HEan4sa48+pnUlqFXSHn8xzHJwtwuzQCIVFVG2mftuoGFZX1M6CyfbTNUt+KIc+bI3WYg==
+X-Received: by 2002:a05:6000:794:b0:22b:311:afe9 with SMTP id bu20-20020a056000079400b0022b0311afe9mr4596495wrb.509.1663930709283;
+        Fri, 23 Sep 2022 03:58:29 -0700 (PDT)
 Received: from ?IPV6:2003:cb:c704:cc00:4585:a83b:64f2:ad21? (p200300cbc704cc004585a83b64f2ad21.dip0.t-ipconnect.de. [2003:cb:c704:cc00:4585:a83b:64f2:ad21])
-        by smtp.gmail.com with ESMTPSA id d10-20020a056000114a00b002250c35826dsm7067750wrx.104.2022.09.23.03.55.29
+        by smtp.gmail.com with ESMTPSA id i66-20020a1c3b45000000b003b2878b9e0dsm2158664wma.20.2022.09.23.03.58.27
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 23 Sep 2022 03:55:30 -0700 (PDT)
-Message-ID: <3108be4e-319d-3444-308d-ca60729ea502@redhat.com>
-Date: Fri, 23 Sep 2022 12:55:28 +0200
+        Fri, 23 Sep 2022 03:58:28 -0700 (PDT)
+Message-ID: <4f7ae306-7894-8baa-f920-441ce8c472a0@redhat.com>
+Date: Fri, 23 Sep 2022 12:58:27 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.3.0
-Subject: Re: [PATCH v1 1/3] coding-style.rst: document BUG() and WARN() rules
- ("do not crash the kernel")
-To: John Hubbard <jhubbard@nvidia.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 3/3] checkpatch: warn on usage of VM_BUG_ON() and other
+ BUG variants
+To: John Hubbard <jhubbard@nvidia.com>, Joe Perches <joe@perches.com>,
+ linux-kernel@vger.kernel.org
 References: <20220920122302.99195-1-david@redhat.com>
- <20220920122302.99195-2-david@redhat.com>
- <3dcbcc7b-9ca0-1465-5a73-075a1c151331@nvidia.com>
+ <20220920122302.99195-4-david@redhat.com>
+ <d0c59eb8-baca-26fd-5f10-4a1f89bcf7b9@nvidia.com>
+ <3179f4545d3f71358da3e6c6ee18085af601b2eb.camel@perches.com>
+ <60fa5b16-021e-1e54-7e06-39bbb871eaef@nvidia.com>
 From: David Hildenbrand <david@redhat.com>
 Organization: Red Hat
-In-Reply-To: <3dcbcc7b-9ca0-1465-5a73-075a1c151331@nvidia.com>
+In-Reply-To: <60fa5b16-021e-1e54-7e06-39bbb871eaef@nvidia.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
@@ -105,50 +108,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Lukas Bulwahn <lukas.bulwahn@gmail.com>, Baoquan He <bhe@redhat.com>, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Dave Young <dyoung@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Nicholas Piggin <npiggin@gmail.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-mm@kvack.org, David Laight <David.Laight@ACULAB.COM>, Dwaipayan Ray <dwaipayanray1@gmail.com>, Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, Vivek Goyal <vgoyal@redhat.com>
+Cc: Baoquan He <bhe@redhat.com>, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Dave Young <dyoung@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Nicholas Piggin <npiggin@gmail.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-mm@kvack.org, David Laight <David.Laight@ACULAB.COM>, Dwaipayan Ray <dwaipayanray1@gmail.com>, Andy Whitcroft <apw@canonical.com>, Lukas Bulwahn <lukas.bulwahn@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>, Vivek Goyal <vgoyal@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23.09.22 04:26, John Hubbard wrote:
-> On 9/20/22 05:23, David Hildenbrand wrote:
->> [1] https://lkml.kernel.org/r/CAHk-=wiEAH+ojSpAgx_Ep=NKPWHU8AdO3V56BXcCsU97oYJ1EA@mail.gmail.com
->> [2] https://lore.kernel.org/r/CAHk-=wg40EAZofO16Eviaj7mfqDhZ2gVEbvfsMf6gYzspRjYvw@mail.gmail.com
->> [2] https://lkml.kernel.org/r/CAHk-=wit-DmhMfQErY29JSPjFgebx_Ld+pnerc4J2Ag990WwAA@mail.gmail.com
+>> And I think that "Do not crash" is a stronger statement than "Avoid crashing"
+>> so I prefer the original suggestion but it's not a big deal either way.
 > 
-> s/2/3/
-
-Thanks!
-
+> Yes, stronger wording is better. So how about this:
 > 
-> ...
->> diff --git a/Documentation/process/coding-style.rst b/Documentation/process/coding-style.rst
->> index 03eb53fd029a..e05899cbfd49 100644
->> --- a/Documentation/process/coding-style.rst
->> +++ b/Documentation/process/coding-style.rst
->> @@ -1186,6 +1186,67 @@ expression used.  For instance:
->>   	#endif /* CONFIG_SOMETHING */
->>   
->>   
->> +22) Do not crash the kernel
->> +---------------------------
->> +
->> +In general, it is not the kernel developer's decision to crash the kernel.
-> 
-> What do you think of this alternate wording:
-> 
-> In general, the decision to crash the kernel belongs to the user, rather
-> than to the kernel developer.
+> "Do not crash the kernel unless it is absolutely unavoidable--use WARN_ON_ONCE() plus recovery code (if feasible) instead of BUG() or variants\n" . $herecurr);
 
-Ack
-
-[...]
-
-> I like the wording, it feels familiar somehow! :)
-
-:)
-
-> 
-> Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+Okay, let's use that.
 
 Thanks!
 
