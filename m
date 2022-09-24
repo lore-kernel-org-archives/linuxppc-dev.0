@@ -4,63 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C3FC07E9D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Sep 2022 09:46:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C029C32771
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Sep 2022 10:14:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MZPKc5yQqz3dqf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Sep 2022 19:46:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MZPy64XYtz3dq6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Sep 2022 20:14:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=P3Jq6HqO;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KTkOyriF;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=0Tw9HH0a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=P3Jq6HqO;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=KTkOyriF;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=0Tw9HH0a;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MZPJw0jpbz3bkn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2022 19:45:35 +1000 (AEST)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out2.suse.de (Postfix) with ESMTP id F35621F88E;
-	Sat, 24 Sep 2022 09:45:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1664012729; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=X+31A8c9OfnUMfxPv1Vio1hLtPmcDuwGTIjcRm3tKEs=;
-	b=P3Jq6HqOy5gS7m6FJDMINZyRR8CzuNUbJKkzyYtwRnM1R6DvQu2CQdR/Gu7CeEdmQQPJAw
-	eikEp/i1ZBjrdwZ6P8CoMJZBKJIqkRRRCvTDJG/R09FprsSWTCkTi80jVyNXKlEHackQvb
-	bvTZPj63OV+ovtHhsrQC4iiLXdkpCiU=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1664012729;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=X+31A8c9OfnUMfxPv1Vio1hLtPmcDuwGTIjcRm3tKEs=;
-	b=KTkOyriFJKJx9Ejq1tpe5tI5kJSiUXMkJzZuFFrtte0p785wK6VotBiKdeVD1Tkp8h9r2k
-	0jOgM+O9oS7vA3Aw==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id E91CC2C166;
-	Sat, 24 Sep 2022 09:45:22 +0000 (UTC)
-Date: Sat, 24 Sep 2022 11:45:21 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MZPxP1hWQz3blg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Sep 2022 20:13:43 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 475A7B8087F;
+	Sat, 24 Sep 2022 10:13:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72082C433D6;
+	Sat, 24 Sep 2022 10:13:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1664014417;
+	bh=2RR7JCSle62Ctd7cdprNFNuNTmoMwLRSHoPcjFErasY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=0Tw9HH0agvwO440m5y/HJwPfr43xzzV/VsRm39t4dsn1npdKjHy/MWDuw98bFO7By
+	 GjNvO3dj6iZIKCfpff0NcgYBbtzrc/OrVikuPqjLdFZ1nHLbmg7Gc2kzRXsGwJH9m9
+	 O6xsyQEpCNlaEC3jkmNwX42igf+xwaYVyoGMYcLw=
+Date: Sat, 24 Sep 2022 12:13:34 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
 Subject: Re: [PATCH 5.15 0/6] arm64: kexec_file: use more system keyrings to
  verify kernel image signature + dependencies
-Message-ID: <20220924094521.GY28810@kitsune.suse.cz>
+Message-ID: <Yy7YTnJKkv1UtvWF@kroah.com>
 References: <cover.1663951201.git.msuchanek@suse.de>
  <Yy7Ll1QJ+u+nkic9@kroah.com>
+ <20220924094521.GY28810@kitsune.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Yy7Ll1QJ+u+nkic9@kroah.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20220924094521.GY28810@kitsune.suse.cz>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,26 +65,33 @@ Cc: Dave Hansen <dave.hansen@linux.intel.com>, Alexander Egorenkov <egorenar@lin
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Sep 24, 2022 at 11:19:19AM +0200, Greg Kroah-Hartman wrote:
-> On Fri, Sep 23, 2022 at 07:10:28PM +0200, Michal Suchanek wrote:
-> > Hello,
+On Sat, Sep 24, 2022 at 11:45:21AM +0200, Michal Suchánek wrote:
+> On Sat, Sep 24, 2022 at 11:19:19AM +0200, Greg Kroah-Hartman wrote:
+> > On Fri, Sep 23, 2022 at 07:10:28PM +0200, Michal Suchanek wrote:
+> > > Hello,
+> > > 
+> > > this is backport of commit 0d519cadf751
+> > > ("arm64: kexec_file: use more system keyrings to verify kernel image signature")
+> > > to table 5.15 tree including the preparatory patches.
 > > 
-> > this is backport of commit 0d519cadf751
-> > ("arm64: kexec_file: use more system keyrings to verify kernel image signature")
-> > to table 5.15 tree including the preparatory patches.
+> > This feels to me like a new feature for arm64, one that has never worked
+> > before and you are just making it feature-parity with x86, right?
+> > 
+> > Or is this a regression fix somewhere?  Why is this needed in 5.15.y and
+> > why can't people who need this new feature just use a newer kernel
+> > version (5.19?)
 > 
-> This feels to me like a new feature for arm64, one that has never worked
-> before and you are just making it feature-parity with x86, right?
-> 
-> Or is this a regression fix somewhere?  Why is this needed in 5.15.y and
-> why can't people who need this new feature just use a newer kernel
-> version (5.19?)
+> It's half-broken implementation of the kexec kernel verification. At the time
+> it was implemented for arm64 we had the platform and secondary keyrings
+> and x86 was using them but on arm64 the initial implementation ignores
+> them.
 
-It's half-broken implementation of the kexec kernel verification. At the time
-it was implemented for arm64 we had the platform and secondary keyrings
-and x86 was using them but on arm64 the initial implementation ignores
-them.
+Ok, so it's something that never worked.  Adding support to get it to
+work doesn't really fall into the stable kernel rules, right?
 
-Thanks
+Again, what's wrong with 5.19 for anyone who wants this?  Who does want
+this?
 
-Michal
+thanks,
+
+greg k-h
