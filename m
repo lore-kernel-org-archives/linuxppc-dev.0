@@ -4,37 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DD7BC32771
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 12:35:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32886C07E9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 12:46:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mbj0X4brWz3bxC
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 22:35:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MbjD64lVWz3cBq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 22:45:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 965 seconds by postgrey-1.36 at boromir; Mon, 26 Sep 2022 22:45:36 AEST
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mbj012YKTz30M8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 22:35:28 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.55])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MbhvG1mFtzWh6M;
-	Mon, 26 Sep 2022 20:31:22 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MbjCh5wTkz2xYn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 22:45:32 +1000 (AEST)
+Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.54])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4Mbhm341XGz1P6x8;
+	Mon, 26 Sep 2022 20:25:07 +0800 (CST)
 Received: from huawei.com (10.67.175.83) by kwepemi500008.china.huawei.com
  (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Mon, 26 Sep
- 2022 20:35:25 +0800
+ 2022 20:29:20 +0800
 From: ruanjinjie <ruanjinjie@huawei.com>
 To: <Roy.Pledge@nxp.com>, <leoyang.li@nxp.com>,
 	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
 	<linux-arm-kernel@lists.infradead.org>
 Subject: [PATCH -next] soc: fsl: dpio: Add __init/__exit annotations to module init/exit func
-Date: Mon, 26 Sep 2022 20:31:36 +0800
-Message-ID: <20220926123136.1340026-1-ruanjinjie@huawei.com>
+Date: Mon, 26 Sep 2022 20:25:27 +0800
+Message-ID: <20220926122527.1338917-1-ruanjinjie@huawei.com>
 X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
 X-Originating-IP: [10.67.175.83]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
  kwepemi500008.china.huawei.com (7.221.188.139)
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
