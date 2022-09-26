@@ -4,53 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3088AC32771
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 09:02:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48210C32771
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 09:08:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MbcGj2G3tz3c9W
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 19:02:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.85.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 307 seconds by postgrey-1.36 at boromir; Mon, 26 Sep 2022 19:02:26 AEST
-Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MbcNl4Gm4z3bqY
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 19:08:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Herv8AMS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Herv8AMS;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MbcGB0lWjz2xGS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 19:02:24 +1000 (AEST)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-123-wDdDusd0NTG4vDH9ByOzYA-1; Mon, 26 Sep 2022 09:56:04 +0100
-X-MC-Unique: wDdDusd0NTG4vDH9ByOzYA-1
-Received: from AcuMS.Aculab.com (10.202.163.4) by AcuMS.aculab.com
- (10.202.163.4) with Microsoft SMTP Server (TLS) id 15.0.1497.38; Mon, 26 Sep
- 2022 09:56:00 +0100
-Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
- id 15.00.1497.040; Mon, 26 Sep 2022 09:56:00 +0100
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Nicholas Piggin' <npiggin@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
-	<linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [RFC PATCH 2/2] powerpc: nop trap instruction after WARN_ONCE
- fires
-Thread-Topic: [RFC PATCH 2/2] powerpc: nop trap instruction after WARN_ONCE
- fires
-Thread-Index: AQHYz2M0TZdjr4Cd10Ss2btR2GgWaK3xa6OA
-Date: Mon, 26 Sep 2022 08:56:00 +0000
-Message-ID: <347d89ae6b7d452b8d8d417857476b7b@AcuMS.aculab.com>
-References: <20220923154143.1115645-1-npiggin@gmail.com>
- <20220923154143.1115645-2-npiggin@gmail.com>
-In-Reply-To: <20220923154143.1115645-2-npiggin@gmail.com>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
-MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MbcMz72Y0z2xjt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 19:07:27 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28Q8rQJW016958;
+	Mon, 26 Sep 2022 09:07:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ mime-version : subject : from : in-reply-to : date : cc :
+ content-transfer-encoding : message-id : references : to; s=pp1;
+ bh=J0lse/BJRhIIs5EwbBLqDS/lJK6RAtCOexFCGyRGBKo=;
+ b=Herv8AMSQWXMzenSav51Or8Qc7gxf44GEx9VZUjzdWxFu0H9pmYmhXfZiGkjZfOZ8+yX
+ v9ZZezRT6AQhfoPrTJA7UAw2fHn4LY5dUiEefKY+MzZnrxvxYUJsy7sJDnNhlm+j0KSr
+ eh5jMSGqXP2XQD7O7ZvmhMV8/ux6mDb8q5hJIjnIZ9USNwLk7TXqoMycNOWvbsskk4J3
+ xbyPlR+bxRf2X3FK3TGMrXSbcIEoAF2EPek4GyFjcP6THL38zLaj80SCHxpreO5GQDG1
+ G7Q+L8WWvmV3D5yoHrWnayJfcErTCvcGKCg5b0hBj+f1W+Eq2dGtkbZMbeow/tms836m Tw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ju8yfrbrp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Sep 2022 09:07:20 +0000
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28Q8t62m021701;
+	Mon, 26 Sep 2022 09:07:20 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ju8yfrbqj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Sep 2022 09:07:20 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28Q95f5b019723;
+	Mon, 26 Sep 2022 09:07:18 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+	by ppma04fra.de.ibm.com with ESMTP id 3jssh91msr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Sep 2022 09:07:18 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
+	by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28Q97FoY1901178
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 26 Sep 2022 09:07:15 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 106F0A4051;
+	Mon, 26 Sep 2022 09:07:15 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C37EBA4040;
+	Mon, 26 Sep 2022 09:07:13 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.43.21.247])
+	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Mon, 26 Sep 2022 09:07:13 +0000 (GMT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3696.120.41.1.1\))
+Subject: Re: [PATCH v3] powerpc/pseries/mce: Avoid instrumentation in realmode
+From: Sachin Sant <sachinp@linux.ibm.com>
+In-Reply-To: <20220926061827.95102-1-ganeshgr@linux.ibm.com>
+Date: Mon, 26 Sep 2022 14:37:09 +0530
+Content-Transfer-Encoding: 7bit
+Message-Id: <C4EF1929-2154-4CFF-96D5-93221E3AAFF3@linux.ibm.com>
+References: <20220926061827.95102-1-ganeshgr@linux.ibm.com>
+To: Ganesh Goudar <ganeshgr@linux.ibm.com>
+X-Mailer: Apple Mail (2.3696.120.41.1.1)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: q2G-PODS3UGafuU9ToOtI980-XF_1iKD
+X-Proofpoint-ORIG-GUID: u22wNtcA_E2lg1aCPpSFXAgfakUZ7rmi
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-26_06,2022-09-22_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ mlxlogscore=584 clxscore=1015 priorityscore=1501 bulkscore=0 phishscore=0
+ spamscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0 impostorscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
+ definitions=main-2209260057
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,36 +98,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, mahesh@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin
-> Sent: 23 September 2022 16:42
->
-> WARN_ONCE and similar are often used in frequently executed code, and
-> should not crash the system. The program check interrupt caused by
-> WARN_ON_ONCE can be a significant overhead even when nothing is being
-> printed. This can cause performance to become unacceptable, having the
-> same effective impact to the user as a BUG_ON().
->=20
-> Avoid this overhead by patching the trap with a nop instruction after a
-> "once" trap fires. Conditional warnings that return a result must have
-> equivalent compare and branch instructions after the trap, so when it is
-> nopped the statement will behave the same way. It's possible the asm
-> goto should be removed entirely and this comparison just done in C now.
->=20
-> XXX: possibly this should schedule the patching to run in a different
-> context than the program check.
 
-I'm pretty sure WARN_ON_ONCE() is valid everywhere printk() is allowed.
-In many cases this means you can't call mutex_enter().
 
-So you need a different scheme.
+> On 26-Sep-2022, at 11:48 AM, Ganesh Goudar <ganeshgr@linux.ibm.com> wrote:
+> 
+> Part of machine check error handling is done in realmode,
+> As of now instrumentation is not possible for any code that
+> runs in realmode.
+> When MCE is injected on KASAN enabled kernel, crash is
+> observed, Hence force inline or mark no instrumentation
+> for functions which can run in realmode, to avoid KASAN
+> instrumentation.
+> 
+> Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+> ---
+> v2: Force inline few more functions.
+> 
+> v3: Adding noinstr to few functions instead of __always_inline.
+> ---
 
-=09David
+Tested-by: Sachin Sant <sachinp@linux.ibm.com>
 
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
-
+- Sachin
