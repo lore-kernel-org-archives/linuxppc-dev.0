@@ -4,114 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAE4AC32771
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 19:11:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A32BC07E9D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 19:29:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MbsmQ2yn4z3dqL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Sep 2022 05:11:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MbtBF5Lfjz3blf
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Sep 2022 05:29:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=u8j4N65o;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DyJL9EqH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=40.107.13.55; helo=eur01-he1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=u8j4N65o;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DyJL9EqH;
 	dkim-atps=neutral
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com (mail-eopbgr130055.outbound.protection.outlook.com [40.107.13.55])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MbscN1KB7z3c0g
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2022 05:04:02 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Ts8vKHLPxBHwDVID0SojiznEuvbjyYNLn44FJnhiipPsghdhvcFgvwjsrQbymP/0sYEjk85akpX7BwVjyZ64zZzNDVsRPD0zaSNw2MxnGdF4zVn3uLuAaS1A87HIoJO6sVWOP8AV4sldoxn5HGA9oHw/fH1S8iloxrP0FDJscBy1OF0Et1crB/nbGuCbYDnK5ymda3ov3lGMpPjd7Fk5r8HhmSXGsSWI1zio9Jthq6F2mqrTtE4oNSkSYh+hEcsBZP5S86j6OEuaNv05M5fmrOuS/zWVNaA3VAf+42/lU8jU0H/fyQfjnaqN8g6Xvv3FxBcc5fLY49/jrVKZ+LdqIA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=X4M7eczcS+e9um+t3nZNA/QXokzeVzTi2NBrV+ZwouM=;
- b=J8qFRGR0Tr6FDYfLF+Tuv07NglUJmYcGkjHDWWnCA/0fs15ndYeB731gAEh3Ve/xjNWhkb3QkajH1hs0eQTuz8JpAL0ei8nFQtBEEEHkBhSwufkhhgVw3OGD8x8STy06gWsZowebErFCHIN4SgHs3RPbR8XT4NeZuEvMGLWxrIkXmAXHSxgGk/PcVGVvymD1XGouCro5tY2l3p+37FsouKt0Oh0zZ9rT+W+R8S8lantqm+y1hYh63H15JAtZwcLcMJQXvpN/cHddY53PzJ0rkXmc6i5dme89m6/1/O/QdmTmLWKD4aj1vn0aKMZjxHQdVEcwQqxwsxYn3ihwmMDHeg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
- dkim=pass header.d=seco.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=X4M7eczcS+e9um+t3nZNA/QXokzeVzTi2NBrV+ZwouM=;
- b=u8j4N65ozrq7OyrZ25yTh38p5MGYys16xeMgLqKkoeCH9dlOYfY8281sE+MApHQ/Isl6s0sTP3d2kQktLibhf+DXvnzG5fL4sv7D513GfqhUwWNtpJ9bKeYJHPZIZn8e+K+fhTlxt504Ti+nTtcHv3t5dJ2kzLzROahfo2C9C32VcmZkEJB2PBySIArNUMB2he1GYbQWgX5AuEU9ydvXB72tUZLVSgXVzR1h/sG8Uca6c6SwfoZXpX7vht1Bclr9z8Wc18tFrIkEpUEXmCV/wdhScOLLJgHABS8AmZkViTStlt9fMEn4LDOE0QwTeiX7f6SgshgsV1MyE3OJd/zOrA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=seco.com;
-Received: from DB7PR03MB4972.eurprd03.prod.outlook.com (2603:10a6:10:7d::22)
- by PAWPR03MB9246.eurprd03.prod.outlook.com (2603:10a6:102:342::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5654.25; Mon, 26 Sep
- 2022 19:03:34 +0000
-Received: from DB7PR03MB4972.eurprd03.prod.outlook.com
- ([fe80::204a:de22:b651:f86d]) by DB7PR03MB4972.eurprd03.prod.outlook.com
- ([fe80::204a:de22:b651:f86d%6]) with mapi id 15.20.5654.014; Mon, 26 Sep 2022
- 19:03:34 +0000
-From: Sean Anderson <sean.anderson@seco.com>
-To: "David S . Miller" <davem@davemloft.net>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Madalin Bucur <madalin.bucur@nxp.com>,
-	Camelia Alexandra Groza <camelia.groza@nxp.com>,
-	netdev@vger.kernel.org
-Subject: [PATCH net-next v5 1/9] dt-bindings: net: Expand pcs-handle to an array
-Date: Mon, 26 Sep 2022 15:03:13 -0400
-Message-Id: <20220926190322.2889342-2-sean.anderson@seco.com>
-X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
-In-Reply-To: <20220926190322.2889342-1-sean.anderson@seco.com>
-References: <20220926190322.2889342-1-sean.anderson@seco.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BL0PR1501CA0019.namprd15.prod.outlook.com
- (2603:10b6:207:17::32) To DB7PR03MB4972.eurprd03.prod.outlook.com
- (2603:10a6:10:7d::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mbt9b1yw3z304J
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2022 05:29:23 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id E7D77B80C75;
+	Mon, 26 Sep 2022 19:29:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77985C433D6;
+	Mon, 26 Sep 2022 19:29:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1664220558;
+	bh=dd4PJJug6S0lh3IVCKUeujY4WoRu7gTAlwK1QGArvfw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=DyJL9EqHEJa1IOL8XS7x+/G/haaho4oc3H/3vrn1H4kZuAkeKgowf02GePVilfoDc
+	 Sv2EWtKWfiZfnawULSrsCRK1nc/h34HuK/eLW+WfIflFOtYliPTWrI4SRYsZsU3fGV
+	 js7S3Cx/Yaq/WqdzR7EZXv7EEwhD9epczfat6bq/i/r0Y7gE/Gh3wMidrCob8htJ/x
+	 /07JW2l8NGcZK+NE+RZNSgjPozi8piIirVCC1WOOkr42kX6ImdwYgWOCYvPt9uIil1
+	 JflR77OnGaUF4AjtLfD68p1iEK6wXTzTWgBogb6pNxl++QRH/eKV42vC8QKqM3HgkC
+	 GJJ7LB+U27lfg==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+	id B7CFD403B0; Mon, 26 Sep 2022 20:29:15 +0100 (IST)
+Date: Mon, 26 Sep 2022 20:29:15 +0100
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: kajoljain <kjain@linux.ibm.com>
+Subject: Re: [PATCH V2] tools/perf/tests: Fix perf probe error log check in
+ skip_if_no_debuginfo
+Message-ID: <YzH9i4XQI1Ec9T/W@kernel.org>
+References: <20220916104904.99798-1-atrajeev@linux.vnet.ibm.com>
+ <be87927f-f2c9-4475-6298-9ffe0a0195de@linux.ibm.com>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB7PR03MB4972:EE_|PAWPR03MB9246:EE_
-X-MS-Office365-Filtering-Correlation-Id: bad2c1a7-b22a-43c3-ccdd-08da9ff1cf3e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	ttHLCdrlNmA0hrnOC/JTk+VgE+yq7nwc5MStaBLo37J7Mw2qvFAeMUBiZ3s5tQjfi5V+cqXBvGWo8Skk0S4LAHABnYnDoiIhEFtu/LvlcCUVt42K+xer8rF55MMsrcZmAOOPWCErLqVTFDc34XsfrScY0eA0557+VR0dSjsademhAO4aOLbBgIjz7XdKljbni9EmUZD58RASMntXxgUHDhb0qG1NXA46z5dRqJJ/kSoUr0j6Ef/r5e5I/tMScWVpfv1G5CXcdJ91UYbhkMfGDZ34aXZDEUfTyA9MgDkY5CK9n38JXG68ESLRK0Pk5M3i2BiIKMX5LdaLjMgHFl5Hf0az0kkWp+XSfAPSM4HtGwVa0UgPn8YlKxtGg8csifcumWGzLbsm/mo597/TTkKvVzT+6FPctjoE0zjf3Fc04OK4p0wezBg0QfVTCV6fbMf/9VwXGfw16ryfr5p3xc26i3dKPz2SltneXF04dCVyk2j0e7x2ICek73ITOy9IxBpxFsTQMryH7JQwuBiIbr6jBQkeWVxsMsPzE9zK5nsExfPwWp7VOZdh6ExvZ99Dlb2xE+0kMFfdnW2GlZxXoZf3tpgVwqOczl1Giritgi4YF9cNhI/uVdqDhuKiND7gU9+cJvGz9CnJBk1ZyNB6U4Cwb8nwbm9XMyl2PH9wHAIndT7l5FsQFcqILVqDnMR5WsTDMjFkjGHZZ0kE4tftdZlyoYsrmPBNQiYclB0qb1Uv6MkeGgwKKX+dxyevQD70Oatqbh3tcliDZIi1HBHkJPIbaaGjQS1HXGyjNm4T7dYZZKA=
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR03MB4972.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(366004)(396003)(136003)(376002)(39850400004)(346002)(451199015)(36756003)(86362001)(66946007)(66476007)(66556008)(6486002)(966005)(110136005)(54906003)(4326008)(316002)(478600001)(38350700002)(38100700002)(41300700001)(6666004)(8676002)(5660300002)(7416002)(44832011)(6512007)(26005)(2616005)(2906002)(1076003)(186003)(83380400001)(8936002)(6506007)(52116002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?mmCJa41i/+n40OBX5h9opRzBKojbs3sJZd8+/1xK/Ci0WZzVk0v2i+dmcPOO?=
- =?us-ascii?Q?djdqRB2mT0zPtjwp9M7N/2P/SvoQGdBIxQvScmAaBgB9iZnyn2MsjPHRVr/K?=
- =?us-ascii?Q?LlmbCt6OF88bnLif0+WpUmFOFdNNCu5/F6vLRNO4CBMy+iUHj3Zm/60TvVv0?=
- =?us-ascii?Q?F51ccHNMQlVIY/9lAnPr6eam2qvbfAl1Ow8ceB48V68nH/zsszuPk8MBzY9P?=
- =?us-ascii?Q?FgbSjSRvTem4XUI/hpCTsZnR4SwrAyQ4AxnRsbc7EHMdbE02GoGL2yE8ZQKt?=
- =?us-ascii?Q?dYDsWFtoBwXRXLuHfpImXXlRn4XQ9ALg++tSneuC42y7lUFBsje3ZQEsQDhV?=
- =?us-ascii?Q?soTGdY8lgrHKGBQbbmP7gI5oThvbjiwesUI6QSCX2uZrc4zDgJLasVP0EGJu?=
- =?us-ascii?Q?YzUwG9LYsmRLovsDadPTq7n8ikrGFM9JF/gsNHIV2OuLJGaTQerNwRL90RfR?=
- =?us-ascii?Q?3i/Xg4odagKLnWJsYAxklA43ylQ724EbtQfzsCMM2H6t055sfUF1l+tXtb2l?=
- =?us-ascii?Q?08Cp4oFnTBUm9x9tA8+ouUhcTRuUQZDFQrGEa2xPb3hnsfVIaq5YopBZeb4v?=
- =?us-ascii?Q?sC/TvhPvScORD6N4909prQV5Qzc+++kmO+qncVkrOG/Q1J/pHcjO8/PElTAI?=
- =?us-ascii?Q?7w9cxJO9J9xM9agsVaBOPJhkiGcvZ+Y1mexfs/E+yzHQx+QB2GanKQdi/Kvr?=
- =?us-ascii?Q?NVVlTg1Y/l4klmXiAS5e0RZ7uUBM66IzDdP03HhJJ3PwkZUphq4dOfo6m/wR?=
- =?us-ascii?Q?UI7znk96VsMeiEm+8T1lZsrfmRczQGaXkT3xtyTFVhViEPFV7LOv2ghRhh0L?=
- =?us-ascii?Q?KULaKNsb7M4sD+m7sRssxnZxxSEpjT1nDGK+jOcgXBf3sBpe13Btf53iEwrP?=
- =?us-ascii?Q?wdQ+YAiKGXm5PjQV2FYYFJWGo5IofTM4/RXiunwckUsujxoDFvJkBALCfHGM?=
- =?us-ascii?Q?K0oghhr4FXdlFyy8vBZYlNxY2uO1Txzd4biJ1QYaNV/ps+WJw1IiMML5BuwO?=
- =?us-ascii?Q?rZzjr8+EwiVkhY79y+aRHxzliK3kSkDffKn4BaPBjVkOz2rRzcXyvGYlLfe7?=
- =?us-ascii?Q?RGzH1INA5SQ4Mp+6pnboQ42Kz71c2AV+x0IKfgD5x/cVOcKaB2MaJ1kap0F+?=
- =?us-ascii?Q?/2pmeSDrYZWcW07tEdPP5W4t8Mf8c5Q/iN89jDJxtH8PmHK0dbo4qD8RlP/1?=
- =?us-ascii?Q?cqOZJMn3Hy0v9jLjiyK/QCwy80ZztzM3lppqNLMaNLIkzj5ZUDZBLcFNne5F?=
- =?us-ascii?Q?WwNoevzLzS6MuU3EvJ5AEjKTiH8cXRxlvotaziKQfph2LdhX1D9UjGeKloaI?=
- =?us-ascii?Q?JsJek+79zJhVkQ+NhSKE82GX9bIOlx7NNsKreog02hQHCaj/NiO1WtnAsONg?=
- =?us-ascii?Q?um3KJ6Jojp5AtIFkfgOhLzFMMSM9Dt6AqeD505ummpjUwy34G3iC+4lCC7U1?=
- =?us-ascii?Q?8uv0dHFK/f3ryHk9p2T13SrQ6sYzjMJTTDJq+GV9fTTzPvN+sn3wHTvWC8Sw?=
- =?us-ascii?Q?oesEj+jud9CbhaJSjlI+7NWNvFyE4caCAU782KbWZSS3r19VbbZ2g43BEq5c?=
- =?us-ascii?Q?zZVIQ1t5P5fGjRNsxLL9pyEu7JOCwkq5dzGsukVN6155mj7jCpCz3dJCIQ/F?=
- =?us-ascii?Q?ag=3D=3D?=
-X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bad2c1a7-b22a-43c3-ccdd-08da9ff1cf3e
-X-MS-Exchange-CrossTenant-AuthSource: DB7PR03MB4972.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 26 Sep 2022 19:03:34.0218
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: GNsBowhKug77TZGZu22oCWiUnfWteXc3raGzhaE72b5Sqrynz4cch3oJBYQhHvcA2HL4N21PbxPYlFBLbx4l8A==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR03MB9246
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <be87927f-f2c9-4475-6298-9ffe0a0195de@linux.ibm.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,93 +64,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Sean Anderson <sean.anderson@seco.com>, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Eric Dumazet <edumazet@google.com>, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Paolo Abeni <pabeni@redhat.com>, "linuxppc-dev @ lists . ozlabs . org" <linuxppc-dev@lists.ozlabs.org>, linux-arm-kernel@lists.infradead.org
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>, rnsastry@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, jolsa@kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This allows multiple phandles to be specified for pcs-handle, such as
-when multiple PCSs are present for a single MAC. To differentiate
-between them, also add a pcs-handle-names property.
+Em Fri, Sep 16, 2022 at 06:35:41PM +0530, kajoljain escreveu:
+> 
+> 
+> On 9/16/22 16:19, Athira Rajeev wrote:
+> > The perf probe related tests like probe_vfs_getname.sh which
+> > is in "tools/perf/tests/shell" directory have dependency on
+> > debuginfo information in the kernel. Currently debuginfo
+> > check is handled by skip_if_no_debuginfo function in the
+> > file "lib/probe_vfs_getname.sh". skip_if_no_debuginfo function
+> > looks for this specific error log from perf probe to skip
+> > the testcase:
+> > 
+> > <<>>
+> > Failed to find the path for the kernel|Debuginfo-analysis is
+> > not supported
+> > <>>
+> > 
+> > But in some case, like this one in powerpc, while running this
+> > test, observed error logs is:
+> > 
+> > <<>>
+> > The /lib/modules/<version>/build/vmlinux file has no debug information.
+> > Rebuild with CONFIG_DEBUG_INFO=y, or install an appropriate debuginfo
+> > package.
+> >   Error: Failed to add events.
+> > <<>>
+> > 
+> > Update the skip_if_no_debuginfo function to include the above
+> > error, to skip the test in these scenarios too.
+> 
+> Patch looks good to me.
+> 
+> Reviewed-By: Kajol Jain <kjain@linux.ibm.com>
 
-Signed-off-by: Sean Anderson <sean.anderson@seco.com>
----
-This was previously submitted as [1]. I expect to update this series
-more, so I have moved it here. Changes from that version include:
-- Add maxItems to existing bindings
-- Add a dependency from pcs-names to pcs-handle.
+Thanks, applied.
 
-[1] https://lore.kernel.org/netdev/20220711160519.741990-3-sean.anderson@seco.com/
+- Arnaldo
 
-(no changes since v4)
-
-Changes in v4:
-- Use pcs-handle-names instead of pcs-names, as discussed
-
-Changes in v3:
-- New
-
- .../bindings/net/dsa/renesas,rzn1-a5psw.yaml           |  1 +
- .../devicetree/bindings/net/ethernet-controller.yaml   | 10 +++++++++-
- .../devicetree/bindings/net/fsl,qoriq-mc-dpmac.yaml    |  2 +-
- 3 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/net/dsa/renesas,rzn1-a5psw.yaml b/Documentation/devicetree/bindings/net/dsa/renesas,rzn1-a5psw.yaml
-index 7ca9c19a157c..a53552ee1d0e 100644
---- a/Documentation/devicetree/bindings/net/dsa/renesas,rzn1-a5psw.yaml
-+++ b/Documentation/devicetree/bindings/net/dsa/renesas,rzn1-a5psw.yaml
-@@ -74,6 +74,7 @@ properties:
  
-         properties:
-           pcs-handle:
-+            maxItems: 1
-             description:
-               phandle pointing to a PCS sub-node compatible with
-               renesas,rzn1-miic.yaml#
-diff --git a/Documentation/devicetree/bindings/net/ethernet-controller.yaml b/Documentation/devicetree/bindings/net/ethernet-controller.yaml
-index 4b3c590fcebf..5bb2ec2963cf 100644
---- a/Documentation/devicetree/bindings/net/ethernet-controller.yaml
-+++ b/Documentation/devicetree/bindings/net/ethernet-controller.yaml
-@@ -108,11 +108,16 @@ properties:
-     $ref: "#/properties/phy-connection-type"
- 
-   pcs-handle:
--    $ref: /schemas/types.yaml#/definitions/phandle
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-     description:
-       Specifies a reference to a node representing a PCS PHY device on a MDIO
-       bus to link with an external PHY (phy-handle) if exists.
- 
-+  pcs-handle-names:
-+    $ref: /schemas/types.yaml#/definitions/string-array
-+    description:
-+      The name of each PCS in pcs-handle.
-+
-   phy-handle:
-     $ref: /schemas/types.yaml#/definitions/phandle
-     description:
-@@ -216,6 +221,9 @@ properties:
-         required:
-           - speed
- 
-+dependencies:
-+  pcs-handle-names: [pcs-handle]
-+
- allOf:
-   - if:
-       properties:
-diff --git a/Documentation/devicetree/bindings/net/fsl,qoriq-mc-dpmac.yaml b/Documentation/devicetree/bindings/net/fsl,qoriq-mc-dpmac.yaml
-index 7f620a71a972..600240281e8c 100644
---- a/Documentation/devicetree/bindings/net/fsl,qoriq-mc-dpmac.yaml
-+++ b/Documentation/devicetree/bindings/net/fsl,qoriq-mc-dpmac.yaml
-@@ -31,7 +31,7 @@ properties:
-   phy-mode: true
- 
-   pcs-handle:
--    $ref: /schemas/types.yaml#/definitions/phandle
-+    maxItems: 1
-     description:
-       A reference to a node representing a PCS PHY device found on
-       the internal MDIO bus.
+> Thanks,
+> Kajol Jain
+> 
+> > 
+> > Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
+> > Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+> > ---
+> > changelog:
+> >  v1 -> v2:
+> >  Corrected formatting of spaces in error log.
+> >  With spaces in v1 of the patch, the egrep search was
+> >  considering spaces also.
+> > 
+> >  tools/perf/tests/shell/lib/probe_vfs_getname.sh | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/tools/perf/tests/shell/lib/probe_vfs_getname.sh b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> > index 5b17d916c555..b616d42bd19d 100644
+> > --- a/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> > +++ b/tools/perf/tests/shell/lib/probe_vfs_getname.sh
+> > @@ -19,6 +19,6 @@ add_probe_vfs_getname() {
+> >  }
+> >  
+> >  skip_if_no_debuginfo() {
+> > -	add_probe_vfs_getname -v 2>&1 | egrep -q "^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)" && return 2
+> > +	add_probe_vfs_getname -v 2>&1 | egrep -q "^(Failed to find the path for the kernel|Debuginfo-analysis is not supported)|(file has no debug information)" && return 2
+> >  	return 1
+> >  }
+
 -- 
-2.35.1.1320.gc452695387.dirty
 
+- Arnaldo
