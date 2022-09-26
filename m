@@ -4,40 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32886C07E9D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 12:46:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82F93C32771
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 13:17:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MbjD64lVWz3cBq
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 22:45:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 965 seconds by postgrey-1.36 at boromir; Mon, 26 Sep 2022 22:45:36 AEST
-Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mbjwj6Ztfz3c71
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 Sep 2022 23:17:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DYqkRpIa;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DYqkRpIa;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MbjCh5wTkz2xYn
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 22:45:32 +1000 (AEST)
-Received: from kwepemi500008.china.huawei.com (unknown [172.30.72.54])
-	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4Mbhm341XGz1P6x8;
-	Mon, 26 Sep 2022 20:25:07 +0800 (CST)
-Received: from huawei.com (10.67.175.83) by kwepemi500008.china.huawei.com
- (7.221.188.139) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Mon, 26 Sep
- 2022 20:29:20 +0800
-From: ruanjinjie <ruanjinjie@huawei.com>
-To: <Roy.Pledge@nxp.com>, <leoyang.li@nxp.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH -next] soc: fsl: dpio: Add __init/__exit annotations to module init/exit func
-Date: Mon, 26 Sep 2022 20:25:27 +0800
-Message-ID: <20220926122527.1338917-1-ruanjinjie@huawei.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mbjvx20rKz2xKV
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Sep 2022 23:17:00 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28QChtYP013017;
+	Mon, 26 Sep 2022 13:16:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=8W0sUEzVknNUWdeLhEf1U8UuT8CwIMgLbQ5U0+91X+U=;
+ b=DYqkRpIa4SBcdhWlOGZ3Ee8yrtrVSHCpcvjp0EFC+Ln4oIMeaMhcY5ekZ4+4o9vEIPBE
+ 694DqT+kMMUuhoakcyY2mTxVCL+verWmpkk2EmJ9mWXt07/jVYi2zvtqqMcWBlCU0sKI
+ ww232Jw37RGCLu23+NOkkqCIhBJpkVos4CsDoHP+S0rvBpG3KoH9vsL6S3ZKc+Yq7atZ
+ 1tt+FvkvpoesJweVYgEdhcgL6RWWUW8HrtZyZePnEdvhimGid9uzpHdbqZl56CbeVJAZ
+ m8G+eddOCOeicpyEDvhYDu3mY8AbFq0j+t0uxVm7mNrlDn02HZ2rlaJ5sJ6wx3+YiGcg Cg== 
+Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com [169.63.121.186])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jucbj8ysm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Sep 2022 13:16:46 +0000
+Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
+	by ppma03wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28QD6tS4020955;
+	Mon, 26 Sep 2022 13:16:45 GMT
+Received: from b03cxnp08027.gho.boulder.ibm.com (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+	by ppma03wdc.us.ibm.com with ESMTP id 3jssh961kp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 26 Sep 2022 13:16:45 +0000
+Received: from smtpav03.dal12v.mail.ibm.com ([9.208.128.129])
+	by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28QDGgoe15859986
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 26 Sep 2022 13:16:42 GMT
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AFC5C58056;
+	Mon, 26 Sep 2022 13:16:43 +0000 (GMT)
+Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 953945803F;
+	Mon, 26 Sep 2022 13:16:43 +0000 (GMT)
+Received: from localhost (unknown [9.163.91.170])
+	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 26 Sep 2022 13:16:43 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-security-module@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] powerpc/pseries: block untrusted device tree changes when locked down
+Date: Mon, 26 Sep 2022 08:16:42 -0500
+Message-Id: <20220926131643.146502-2-nathanl@linux.ibm.com>
+X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20220926131643.146502-1-nathanl@linux.ibm.com>
+References: <20220926131643.146502-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.67.175.83]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
- kwepemi500008.china.huawei.com (7.221.188.139)
-X-CFilter-Loop: Reflected
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Ntwi7r51iwpoB6HW4ORGfcDKOKcnlsvc
+X-Proofpoint-GUID: Ntwi7r51iwpoB6HW4ORGfcDKOKcnlsvc
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-26_08,2022-09-22_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
+ mlxlogscore=999 bulkscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
+ adultscore=0 suspectscore=0 spamscore=0 impostorscore=0 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
+ definitions=main-2209260083
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,39 +90,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ruanjinjie@huawei.com
+Cc: ajd@linux.ibm.com, nayna@linux.ibm.com, jmorris@namei.org, paul@paul-moore.com, gcwilson@linux.ibm.com, serge@hallyn.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add missing __init/__exit annotations to module init/exit funcs
+The /proc/powerpc/ofdt interface allows the root user to freely alter
+the in-kernel device tree, enabling arbitrary physical address writes
+via drivers that could bind to malicious device nodes, thus making it
+possible to disable lockdown.
 
-Signed-off-by: ruanjinjie <ruanjinjie@huawei.com>
+Historically this interface has been used on the pseries platform to
+facilitate the runtime addition and removal of processor, memory, and
+device resources (aka Dynamic Logical Partitioning or DLPAR). Years
+ago, the processor and memory use cases were migrated to designs that
+happen to be lockdown-friendly: device tree updates are communicated
+directly to the kernel from firmware without passing through untrusted
+user space. I/O device DLPAR via the "drmgr" command in powerpc-utils
+remains the sole legitimate user of /proc/powerpc/ofdt, but it is
+already broken in lockdown since it uses /dev/mem to allocate argument
+buffers for the rtas syscall. So only illegitimate uses of the
+interface should see a behavior change when running on a locked down
+kernel.
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- drivers/soc/fsl/dpio/dpio-driver.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/reconfig.c | 5 +++++
+ include/linux/security.h                  | 1 +
+ security/security.c                       | 1 +
+ 3 files changed, 7 insertions(+)
 
-diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
-index 5a2edc48dd79..534e91dd929c 100644
---- a/drivers/soc/fsl/dpio/dpio-driver.c
-+++ b/drivers/soc/fsl/dpio/dpio-driver.c
-@@ -326,7 +326,7 @@ static struct fsl_mc_driver dpaa2_dpio_driver = {
- 	.match_id_table = dpaa2_dpio_match_id_table
- };
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index cad7a0c93117..599bd2c78514 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
++#include <linux/security.h>
+ #include <linux/slab.h>
+ #include <linux/of.h>
  
--static int dpio_driver_init(void)
-+static int __init dpio_driver_init(void)
- {
- 	if (!zalloc_cpumask_var(&cpus_unused_mask, GFP_KERNEL))
- 		return -ENOMEM;
-@@ -335,7 +335,7 @@ static int dpio_driver_init(void)
- 	return fsl_mc_driver_register(&dpaa2_dpio_driver);
- }
+@@ -361,6 +362,10 @@ static ssize_t ofdt_write(struct file *file, const char __user *buf, size_t coun
+ 	char *kbuf;
+ 	char *tmp;
  
--static void dpio_driver_exit(void)
-+static void __exit dpio_driver_exit(void)
- {
- 	free_cpumask_var(cpus_unused_mask);
- 	fsl_mc_driver_unregister(&dpaa2_dpio_driver);
++	rv = security_locked_down(LOCKDOWN_DEVICE_TREE);
++	if (rv)
++		return rv;
++
+ 	kbuf = memdup_user_nul(buf, count);
+ 	if (IS_ERR(kbuf))
+ 		return PTR_ERR(kbuf);
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 7bd0c490703d..39e7c0e403d9 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -114,6 +114,7 @@ enum lockdown_reason {
+ 	LOCKDOWN_IOPORT,
+ 	LOCKDOWN_MSR,
+ 	LOCKDOWN_ACPI_TABLES,
++	LOCKDOWN_DEVICE_TREE,
+ 	LOCKDOWN_PCMCIA_CIS,
+ 	LOCKDOWN_TIOCSSERIAL,
+ 	LOCKDOWN_MODULE_PARAMETERS,
+diff --git a/security/security.c b/security/security.c
+index 4b95de24bc8d..51bf66d4f472 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -52,6 +52,7 @@ const char *const lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1] = {
+ 	[LOCKDOWN_IOPORT] = "raw io port access",
+ 	[LOCKDOWN_MSR] = "raw MSR access",
+ 	[LOCKDOWN_ACPI_TABLES] = "modifying ACPI tables",
++	[LOCKDOWN_DEVICE_TREE] = "modifying device tree contents",
+ 	[LOCKDOWN_PCMCIA_CIS] = "direct PCMCIA CIS storage",
+ 	[LOCKDOWN_TIOCSSERIAL] = "reconfiguration of serial port IO",
+ 	[LOCKDOWN_MODULE_PARAMETERS] = "unsafe module parameters",
 -- 
-2.25.1
+2.37.3
 
