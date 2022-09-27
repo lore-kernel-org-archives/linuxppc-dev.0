@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07F7CC6FA82
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Sep 2022 14:37:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70642C6FA82
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Sep 2022 14:37:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McMfN49zqz3fj9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 00:37:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4McMfp6wk8z3f8f
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 00:37:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McMZc1xnTz3f2R
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 00:34:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4McMZg6KS3z3f3Q
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 00:34:19 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4McMYs130Mz9sp6;
-	Tue, 27 Sep 2022 16:33:37 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4McMYt6j5hz9sp9;
+	Tue, 27 Sep 2022 16:33:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UlFbt5b2Qkph; Tue, 27 Sep 2022 16:33:37 +0200 (CEST)
+	with ESMTP id 1SiFCoNKW3xl; Tue, 27 Sep 2022 16:33:38 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4McMYm3B2hz9sp9;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4McMYm3qk2z9snt;
 	Tue, 27 Sep 2022 16:33:32 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5DF038B779;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 72F668B77A;
 	Tue, 27 Sep 2022 16:33:32 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 18QqowAJcPzi; Tue, 27 Sep 2022 16:33:32 +0200 (CEST)
+	with ESMTP id zHy3vs1DbF3O; Tue, 27 Sep 2022 16:33:32 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.35])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EF0C48B77B;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E9C488B763;
 	Tue, 27 Sep 2022 16:33:31 +0200 (CEST)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28REXRE7351172
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 28REXSY4351188
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 27 Sep 2022 16:33:27 +0200
+	Tue, 27 Sep 2022 16:33:28 +0200
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28REXRR8351169;
-	Tue, 27 Sep 2022 16:33:27 +0200
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 28REXSNB351187;
+	Tue, 27 Sep 2022 16:33:28 +0200
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Benjamin Gray <bgray@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 3/6] powerpc/feature-fixups: Refactor entry fixups patching
-Date: Tue, 27 Sep 2022 16:33:07 +0200
-Message-Id: <8a4f97928f302aaf327107e51826e380e77226c8.1664289176.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 6/6] powerpc/code-patching: Remove protection against patching init addresses after init
+Date: Tue, 27 Sep 2022 16:33:11 +0200
+Message-Id: <0df84a2eea551c1d000c34c36d0c1d23cbe26a97.1664289176.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.37.1
 In-Reply-To: <b0aac2127d30c32e5742e978045c5793667bb7ce.1664289176.git.christophe.leroy@csgroup.eu>
 References: <b0aac2127d30c32e5742e978045c5793667bb7ce.1664289176.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1664289185; l=4747; s=20211009; h=from:subject:message-id; bh=vG27o998ObLSW9+dA62VNCyKj5WTMt8ILk8ZvjQJ9LE=; b=MN2SlDW0LILpywfR5f5ga+Z9OIx+JKBYRAKfKGWqvwaHOFi9cb/03QFJmBVqAM71lK6mRgkLcSJK tLkMa3iPCKNQ3HG5ITvPkwJigdKOkGZlJXN4ZSjSAo4KpSnQh3DW
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1664289185; l=2535; s=20211009; h=from:subject:message-id; bh=z3ka+6OOq3CEDgkFJE+8I1ykZrzQV0f4yyWtRHe1CHM=; b=f5PlXayB6EBbw7hP4cAxAbOOF09+lOe51dh2PIuGcZZI8UWlgY6QWD8879fH0UcHCPyFvscjlFTZ rmYGoNKzAnCbNNOeLksKwIFyiYfprQCU4HN0pSobaaAyxz9lCuW9
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,136 +72,81 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Several fonctions have the same loop for patching instructions.
+Once init section is freed, attempting to patch init code
+ends up in the weed.
 
-Introduce function do_patch_entry_fixups() to refactor those loops.
+Commit 51c3c62b58b3 ("powerpc: Avoid code patching freed init sections")
+protected patch_instruction() against that, but it is the responsibility
+of the caller to ensure that the patched memory is valid.
+
+All callers have now been verified and fixed so the check
+can be removed.
+
+This improves ftrace activation by about 2% on 8xx.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/lib/feature-fixups.c | 84 ++++++++++++-------------------
- 1 file changed, 32 insertions(+), 52 deletions(-)
+ arch/powerpc/include/asm/code-patching.h |  2 --
+ arch/powerpc/lib/code-patching.c         | 13 +------------
+ arch/powerpc/mm/mem.c                    |  1 -
+ 3 files changed, 1 insertion(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 993d3f31832a..6767a6c3106f 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -118,9 +118,33 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 1c6316ec4b74..3f881548fb61 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -22,8 +22,6 @@
+ #define BRANCH_SET_LINK	0x1
+ #define BRANCH_ABSOLUTE	0x2
+ 
+-DECLARE_STATIC_KEY_FALSE(init_mem_is_free);
+-
+ /*
+  * Powerpc branch instruction is :
+  *
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 647a0bb35848..125c55e3e148 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -174,7 +174,7 @@ static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
+ 	return err;
  }
  
- #ifdef CONFIG_PPC_BOOK3S_64
-+static int do_patch_entry_fixups(long *start, long *end, unsigned int *instrs,
-+				 bool do_fallback, void *fallback)
-+{
-+	int i;
-+
-+	for (i = 0; start < end; start++, i++) {
-+		unsigned int *dest = (void *)start + *start;
-+
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+
-+		// See comment in do_entry_flush_fixups() RE order of patching
-+		if (do_fallback) {
-+			patch_instruction(dest, ppc_inst(instrs[0]));
-+			patch_instruction(dest + 2, ppc_inst(instrs[2]));
-+			patch_branch(dest + 1, (unsigned long)fallback, BRANCH_SET_LINK);
-+		} else {
-+			patch_instruction(dest + 1, ppc_inst(instrs[1]));
-+			patch_instruction(dest + 2, ppc_inst(instrs[2]));
-+			patch_instruction(dest, ppc_inst(instrs[0]));
-+		}
-+	}
-+	return i;
-+}
-+
- static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
+-static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
++int patch_instruction(u32 *addr, ppc_inst_t instr)
  {
--	unsigned int instrs[3], *dest;
-+	unsigned int instrs[3];
- 	long *start, *end;
- 	int i;
+ 	int err;
+ 	unsigned long flags;
+@@ -194,17 +194,6 @@ static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
  
-@@ -144,23 +168,8 @@ static void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
- 		instrs[i++] = PPC_RAW_ORI(_R31, _R31, 0); /* speculation barrier */
- 	}
- 
--	for (i = 0; start < end; start++, i++) {
--		dest = (void *)start + *start;
+ 	return err;
+ }
 -
--		pr_devel("patching dest %lx\n", (unsigned long)dest);
+-__ro_after_init DEFINE_STATIC_KEY_FALSE(init_mem_is_free);
 -
--		// See comment in do_entry_flush_fixups() RE order of patching
--		if (types & STF_BARRIER_FALLBACK) {
--			patch_instruction(dest, ppc_inst(instrs[0]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_branch(dest + 1,
--				     (unsigned long)&stf_barrier_fallback, BRANCH_SET_LINK);
--		} else {
--			patch_instruction(dest + 1, ppc_inst(instrs[1]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_instruction(dest, ppc_inst(instrs[0]));
--		}
--	}
-+	i = do_patch_entry_fixups(start, end, instrs, types & STF_BARRIER_FALLBACK,
-+				  &stf_barrier_fallback);
+-int patch_instruction(u32 *addr, ppc_inst_t instr)
+-{
+-	/* Make sure we aren't patching a freed init section */
+-	if (static_branch_likely(&init_mem_is_free) && init_section_contains(addr, 4))
+-		return 0;
+-
+-	return do_patch_instruction(addr, instr);
+-}
+ NOKPROBE_SYMBOL(patch_instruction);
  
- 	printk(KERN_DEBUG "stf-barrier: patched %d entry locations (%s barrier)\n", i,
- 		(types == STF_BARRIER_NONE)                  ? "no" :
-@@ -325,7 +334,7 @@ void do_uaccess_flush_fixups(enum l1d_flush_type types)
- static int __do_entry_flush_fixups(void *data)
+ int patch_branch(u32 *addr, unsigned long target, int flags)
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 01772e79fd93..fb89883e97bd 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -344,7 +344,6 @@ void free_initmem(void)
  {
- 	enum l1d_flush_type types = *(enum l1d_flush_type *)data;
--	unsigned int instrs[3], *dest;
-+	unsigned int instrs[3];
- 	long *start, *end;
- 	int i;
- 
-@@ -375,42 +384,13 @@ static int __do_entry_flush_fixups(void *data)
- 
- 	start = PTRRELOC(&__start___entry_flush_fixup);
- 	end = PTRRELOC(&__stop___entry_flush_fixup);
--	for (i = 0; start < end; start++, i++) {
--		dest = (void *)start + *start;
--
--		pr_devel("patching dest %lx\n", (unsigned long)dest);
--
--		if (types == L1D_FLUSH_FALLBACK) {
--			patch_instruction(dest, ppc_inst(instrs[0]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_branch(dest + 1,
--				     (unsigned long)&entry_flush_fallback, BRANCH_SET_LINK);
--		} else {
--			patch_instruction(dest + 1, ppc_inst(instrs[1]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_instruction(dest, ppc_inst(instrs[0]));
--		}
--	}
-+	i = do_patch_entry_fixups(start, end, instrs, types == L1D_FLUSH_FALLBACK,
-+				  &entry_flush_fallback);
- 
- 	start = PTRRELOC(&__start___scv_entry_flush_fixup);
- 	end = PTRRELOC(&__stop___scv_entry_flush_fixup);
--	for (; start < end; start++, i++) {
--		dest = (void *)start + *start;
--
--		pr_devel("patching dest %lx\n", (unsigned long)dest);
--
--		if (types == L1D_FLUSH_FALLBACK) {
--			patch_instruction(dest, ppc_inst(instrs[0]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_branch(dest + 1,
--				     (unsigned long)&scv_entry_flush_fallback, BRANCH_SET_LINK);
--		} else {
--			patch_instruction(dest + 1, ppc_inst(instrs[1]));
--			patch_instruction(dest + 2, ppc_inst(instrs[2]));
--			patch_instruction(dest, ppc_inst(instrs[0]));
--		}
--	}
--
-+	i += do_patch_entry_fixups(start, end, instrs, types == L1D_FLUSH_FALLBACK,
-+				   &scv_entry_flush_fallback);
- 
- 	printk(KERN_DEBUG "entry-flush: patched %d locations (%s flush)\n", i,
- 		(types == L1D_FLUSH_NONE)       ? "no" :
+ 	ppc_md.progress = ppc_printk_progress;
+ 	mark_initmem_nx();
+-	static_branch_enable(&init_mem_is_free);
+ 	free_initmem_default(POISON_FREE_INITMEM);
+ 	ftrace_free_init_tramp();
+ }
 -- 
 2.37.1
 
