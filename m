@@ -4,93 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2A4AC32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 14:34:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E476BC04A95
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 15:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MczXk1gwzz3bln
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 00:34:46 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Md15w20RWz3bln
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 01:45:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O7SjoSg2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e59s1+yd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=O7SjoSg2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e59s1+yd;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MczWw4jJ6z2xCj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2022 00:34:04 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28SELEWZ032622;
-	Wed, 28 Sep 2022 14:33:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=GN56reUPbWbC6yaYNBo3OGMdXXx8P7+DUdvfrq3KzfA=;
- b=O7SjoSg2kBS47Z7lvhuzmZNWXXEJDPAGQupRTeJSRCyvzRvffiVGTuRCwzCC27pH9j10
- 1JS1RmuykfO99SI0+cNVqBEsoWdCWqgHL1IuzVAOMavZSF1+nt5D15sQhTEdYO4T2S2B
- 7lBYfpfqdVTj0o9OkgW2neQfOwBm8jy4xH96vbSD1MvoaktqjRdkUCDaxSk6nJB4TKAf
- pzrO04PPk5ZV6lvEGsXiItGShc5t0eXo1aaUtnZySj+oOUGvjQQRzf0wwjceZ8xMM/Wt
- IL07X1YeXI0V9EO45nOzjbhF030fwgV4bqxqOPf5Z0Jdredzwt4AVAMe8cqoyZBPZSJp kA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jvmtr6mnf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Sep 2022 14:33:20 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 28SELvan003417;
-	Wed, 28 Sep 2022 14:33:20 GMT
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jvmtr6mkj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Sep 2022 14:33:20 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28SE6lYH011452;
-	Wed, 28 Sep 2022 14:33:17 GMT
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
-	by ppma03fra.de.ibm.com with ESMTP id 3jssh940wy-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Sep 2022 14:33:17 +0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
-	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28SEXE8B40894916
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 28 Sep 2022 14:33:14 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0EDFEA4051;
-	Wed, 28 Sep 2022 14:33:14 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9C797A4040;
-	Wed, 28 Sep 2022 14:33:11 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.45.125])
-	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
-	Wed, 28 Sep 2022 14:33:11 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3696.120.41.1.1\))
-Subject: Re: [PATCH] tools/perf: Fix aggr_printout to display cpu field
- irrespective of core value
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <2353467d-c83d-f6ee-0972-1e94bc9f4f5d@linux.ibm.com>
-Date: Wed, 28 Sep 2022 20:03:09 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <B48A46B1-D247-409A-893C-F41EE44E214B@linux.vnet.ibm.com>
-References: <20220913115717.36191-1-atrajeev@linux.vnet.ibm.com>
- <2353467d-c83d-f6ee-0972-1e94bc9f4f5d@linux.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>, Ian Rogers <irogers@google.com>,
-        Adrian Hunter <adrian.hunter@intel.com>
-X-Mailer: Apple Mail (2.3696.120.41.1.1)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: mbRuD9OP74abrPh9q22Ts4StwhufxKSX
-X-Proofpoint-ORIG-GUID: ZE3Hhcjq4pWRYPLbuVcv_zzAFxKDzkDZ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-28_06,2022-09-28_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxlogscore=999
- phishscore=0 clxscore=1015 priorityscore=1501 mlxscore=0 adultscore=0
- bulkscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2209280086
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Md15F4T2qz3bhy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2022 01:44:33 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 55C4E61F07;
+	Wed, 28 Sep 2022 15:44:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AFF11C433C1;
+	Wed, 28 Sep 2022 15:44:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1664379869;
+	bh=WJ9VZ+JE/9UbAAbyu5q+enZmSRYXTWcBGhmijWm6LmI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=e59s1+ydJlVyCUQekYx5ZLUbpj0mkrT8eSzmcJ0e89ft/L1nQBnRfu2JNNwcOa/wc
+	 J4kxZ8UP5P5HNj/++9jSpNJ0V/U2U0IdXqc3qBXfYsjfxDBfZh1LHMclw6GAU3yKC3
+	 cPQf2Bn4+470eq1G6fd21QIrK28ZnkgqBQjDygFAThwQwIIjR0S/lzyOFpf0Mh7ii/
+	 3C/7c03o53W19IheKrFYWl7FMvAriTZLZiPsRgKqXHjnCn8Kom2Z/nozx2AaoWN9Qt
+	 JsgXZljkwZ5YYv2MQZ1FMqH5+aYUg0u/653m7V+ci2/oicKYpZDHTMIZ+HyXQqk6Kk
+	 r5DG8GTwy4oQw==
+Date: Wed, 28 Sep 2022 08:44:27 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: kernel test robot <yujie.liu@intel.com>
+Subject: Re: [objtool] ca5e2b42c0: kernel_BUG_at_arch/x86/kernel/jump_label.c
+Message-ID: <YzRr23Bn6qFDC7j0@dev-arch.thelio-3990X>
+References: <20220912082020.226755-12-sv@linux.ibm.com>
+ <202209280801.2d5eebb5-yujie.liu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202209280801.2d5eebb5-yujie.liu@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,142 +60,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, Nageswara Sastry <rnsastry@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, linux-perf-users@vger.kernel.org, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: lkp@intel.com, aik@ozlabs.ru, linux-kbuild@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, chenzhongjin@huawei.com, llvm@lists.linux.dev, npiggin@gmail.com, linux-kernel@vger.kernel.org, lkp@lists.01.org, mingo@redhat.com, Sathvika Vasireddy <sv@linux.ibm.com>, rostedt@goodmis.org, jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi all,
 
+On Wed, Sep 28, 2022 at 08:48:53AM +0800, kernel test robot wrote:
+> Greeting,
+> 
+> FYI, we noticed the following commit (built with clang-14):
+> 
+> commit: ca5e2b42c0d4438ba93623579b6860b98f3598f3 ("[PATCH v3 11/16] objtool: Add --mnop as an option to --mcount")
+> url: https://github.com/intel-lab-lkp/linux/commits/Sathvika-Vasireddy/objtool-Enable-and-implement-mcount-option-on-powerpc/20220912-163023
+> base: https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git topic/ppc-kvm
+> patch link: https://lore.kernel.org/linuxppc-dev/20220912082020.226755-12-sv@linux.ibm.com
+> 
+> in testcase: boot
+> 
+> on test machine: qemu-system-x86_64 -enable-kvm -cpu SandyBridge -smp 2 -m 16G
+> 
+> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
+> 
+> 
+> [  152.068363][    T0] jump_label: Fatal kernel bug, unexpected op at trace_initcall_start+0xc/0x180 [ffffffff810016ec] (e9 c9 00 00 00 != 0f 1f 44 00 00)) size:5 type:1
+> [  152.070368][    T0] ------------[ cut here ]------------
+> [  152.071050][    T0] kernel BUG at arch/x86/kernel/jump_label.c:73!
+> [  152.071825][    T0] invalid opcode: 0000 [#1] SMP KASAN PTI
+> [  152.072427][    T0] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 6.0.0-rc2-00011-gca5e2b42c0d4 #1 96a19ca45386d518c4bccc5b3bc53f548a2dc122
+> [  152.073837][    T0] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.16.0-debian-1.16.0-4 04/01/2014
+> [  152.075461][    T0] RIP: 0010:__jump_label_patch+0x340/0x350
+> [  152.076162][    T0] Code: 00 48 89 da e9 51 fe ff ff 48 c7 c7 00 d1 80 83 4c 89 fe 4c 89 fa 4c 89 f9 49 89 d8 45 89 e9 41 54 e8 f2 91 34 02 48 83 c4 08 <0f> 0b 0f 0b 0f 0b 0f 0b 0f 1f 84 00 00 00 00 00 48 c7 c7 00 09 69
+> [  152.078374][    T0] RSP: 0000:ffffffff84607cb8 EFLAGS: 00010086
+> [  152.079159][    T0] RAX: 0000000000000092 RBX: ffffffff8380f62a RCX: ffffffff84634d80
+> [  152.080100][    T0] RDX: 0000000000000000 RSI: 00000000ffffffea RDI: 00000000fffffffe
+> [  152.081020][    T0] RBP: ffffffff855d9f60 R08: ffffffff8124f17c R09: fffffbfff08c0f53
+> [  152.081936][    T0] R10: dffff7fff08c0f54 R11: 1ffffffff08c0f52 R12: 0000000000000001
+> [  152.082832][    T0] R13: 0000000000000005 R14: ffffffff8380f62a R15: ffffffff810016ec
+> [  152.083744][    T0] FS:  0000000000000000(0000) GS:ffff8883aee00000(0000) knlGS:0000000000000000
+> [  152.084763][    T0] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [  152.085567][    T0] CR2: ffff88843ffff000 CR3: 0000000004628000 CR4: 00000000000406b0
+> [  152.086472][    T0] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  152.087407][    T0] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> [  152.088326][    T0] Call Trace:
+> [  152.088702][    T0]  <TASK>
+> [  152.089042][    T0]  ? trace_initcall_start+0xc/0x180
+> [  152.089660][    T0]  ? trace_initcall_start+0x1b/0x180
+> [  152.090281][    T0]  ? trace_initcall_start+0x11/0x180
+> [  152.091237][    T0]  ? jump_label_transform+0x25/0xd0
+> [  152.091923][    T0]  ? arch_jump_label_transform_queue+0x87/0xd0
+> [  152.092651][    T0]  ? __jump_label_update+0x192/0x3b0
+> [  152.093320][    T0]  ? static_key_enable_cpuslocked+0x129/0x250
+> [  152.094020][    T0]  ? rcu_lock_release+0x20/0x20
+> [  152.094573][    T0]  ? static_key_enable+0x16/0x20
+> [  152.095167][    T0]  ? tracepoint_add_func+0x87e/0x9d0
+> [  152.095822][    T0]  ? rcu_lock_release+0x20/0x20
+> [  152.096394][    T0]  ? tracepoint_probe_register+0x99/0xd0
+> [  152.097055][    T0]  ? rcu_lock_release+0x20/0x20
+> [  152.097606][    T0]  ? initcall_debug_enable+0x21/0x6b
+> [  152.098305][    T0]  ? start_kernel+0x24b/0x4e6
+> [  152.098861][    T0]  ? secondary_startup_64_no_verify+0xce/0xdb
+> [  152.099556][    T0]  </TASK>
+> [  152.099891][    T0] Modules linked in:
+> [  152.100352][    T0] ---[ end trace 0000000000000000 ]---
+> [  152.100980][    T0] RIP: 0010:__jump_label_patch+0x340/0x350
+> [  152.101652][    T0] Code: 00 48 89 da e9 51 fe ff ff 48 c7 c7 00 d1 80 83 4c 89 fe 4c 89 fa 4c 89 f9 49 89 d8 45 89 e9 41 54 e8 f2 91 34 02 48 83 c4 08 <0f> 0b 0f 0b 0f 0b 0f 0b 0f 1f 84 00 00 00 00 00 48 c7 c7 00 09 69
+> [  152.103892][    T0] RSP: 0000:ffffffff84607cb8 EFLAGS: 00010086
+> [  152.104544][    T0] RAX: 0000000000000092 RBX: ffffffff8380f62a RCX: ffffffff84634d80
+> [  152.105421][    T0] RDX: 0000000000000000 RSI: 00000000ffffffea RDI: 00000000fffffffe
+> [  152.106280][    T0] RBP: ffffffff855d9f60 R08: ffffffff8124f17c R09: fffffbfff08c0f53
+> [  152.107182][    T0] R10: dffff7fff08c0f54 R11: 1ffffffff08c0f52 R12: 0000000000000001
+> [  152.108110][    T0] R13: 0000000000000005 R14: ffffffff8380f62a R15: ffffffff810016ec
+> [  152.109002][    T0] FS:  0000000000000000(0000) GS:ffff8883aee00000(0000) knlGS:0000000000000000
+> [  152.109986][    T0] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> [  152.110796][    T0] CR2: ffff88843ffff000 CR3: 0000000004628000 CR4: 00000000000406b0
+> [  152.111748][    T0] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  152.112686][    T0] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> [  152.113568][    T0] Kernel panic - not syncing: Fatal exception
+> 
+> 
+> If you fix the issue, kindly add following tag
+> | Reported-by: kernel test robot <yujie.liu@intel.com>
+> | Link: https://lore.kernel.org/r/202209280801.2d5eebb5-yujie.liu@intel.com
 
-> On 16-Sep-2022, at 5:01 PM, Disha Goel <disgoel@linux.ibm.com> wrote:
->=20
-> This Message Is =46rom an External Sender
-> This message came from outside your organization.
->=20
->=20
-> On 9/13/22 5:27 PM, Athira Rajeev wrote:
->> perf stat includes option to specify aggr_mode to display
->> per-socket, per-core, per-die, per-node counter details.
->> Also there is option -A ( AGGR_NONE, -no-aggr ), where the
->> counter values are displayed for each cpu along with "CPU"
->> value in one field of the output.
->>=20
->> Each of the aggregate mode uses the information fetched
->> from "/sys/devices/system/cpu/cpuX/topology" like core_id,
->> physical_package_id. Utility functions in "cpumap.c" fetches
->> this information and populates the socket id, core id, cpu etc.
->> If the platform does not expose the topology information,
->> these values will be set to -1. Example, in case of powerpc,
->> details like physical_package_id is restricted to be exposed
->> in pSeries platform. So id.socket, id.core, id.cpu all will
->> be set as -1.
->>=20
->> In case of displaying socket or die value, there is no check
->> done in the "aggr_printout" function to see if it points to
->> valid socket id or die. But for displaying "cpu" value, there
->> is a check for "if (id.core > -1)". In case of powerpc pSeries
->> where detail like physical_package_id is restricted to be
->> exposed, id.core will be set to -1. Hence the column or field
->> itself for CPU won't be displayed in the output.
->>=20
->> Result for per-socket:
->>=20
->> <<>>
->> perf stat -e branches --per-socket -a true
->>=20
->>  Performance counter stats for 'system wide':
->>=20
->> S-1      32            416,851      branches
->> <<>>
->>=20
->> Here S has -1 in above result. But with -A option which also
->> expects CPU in one column in the result, below is observed.
->>=20
->> <<>>
->>  /bin/perf stat -e instructions -A -a true
->>=20
->>  Performance counter stats for 'system wide':
->>=20
->>             47,146      instructions
->>             45,226      instructions
->>             43,354      instructions
->>             45,184      instructions
->> <<>>
->>=20
->> If the cpu id value is pointing to -1 also, it makes sense
->> to display the column in the output to replicate the behaviour
->> or to be in precedence with other aggr options(like per-socket,
->> per-core). Remove the check "id.core" so that CPU field gets
->> displayed in the output.
->>=20
->> After the fix:
->>=20
->> <<>>
->> perf stat -e instructions -A -a true
->>=20
->>  Performance counter stats for 'system wide':
->>=20
->> CPU-1                  64,034      instructions
->> CPU-1                  68,941      instructions
->> CPU-1                  59,418      instructions
->> CPU-1                  70,478      instructions
->> CPU-1                  65,201      instructions
->> CPU-1                  63,704      instructions
->> <<>>
->>=20
->> This is caught while running "perf test" for
->> "stat+json_output.sh" and "stat+csv_output.sh".
->>=20
->> Reported-by: Disha Goel=20
->> <disgoel@linux.vnet.ibm.com>
->>=20
->> Signed-off-by: Athira Rajeev=20
->> <atrajeev@linux.vnet.ibm.com>
-> Tested-by: Disha Goel <disgoel@linux.vnet.ibm.com>
+This crash appears to just be a symptom of objtool erroring throughout
+the entire build, which means things like the jump label hacks do not
+get applied. I see a flood of
 
-Hi,
+  error: objtool: --mnop requires --mcount
 
-Looking for review comments for this change.
+throughout the build because the configuration has
+CONFIG_HAVE_NOP_MCOUNT=y because CONFIG_HAVE_OBJTOOL_MCOUNT is
+unconditionally enabled for x86_64 due to CONFIG_HAVE_OBJTOOL but
+'--mcount' is only actually used when CONFIG_FTRACE_MCOUNT_USE_OBJTOOL
+is enabled so '--mnop' gets passed in without '--mcount'. This should
+obviously be fixed somehow, perhaps by moving the '--mnop' addition into
+the '--mcount' if, even if that makes the line really long.
 
-Thanks
-Athira
->> ---
->>  tools/perf/util/stat-display.c | 6 ++----
->>  1 file changed, 2 insertions(+), 4 deletions(-)
->>=20
->> diff --git a/tools/perf/util/stat-display.c =
-b/tools/perf/util/stat-display.c
->> index b82844cb0ce7..1b751a730271 100644
->> --- a/tools/perf/util/stat-display.c
->> +++ b/tools/perf/util/stat-display.c
->> @@ -168,10 +168,9 @@ static void aggr_printout(struct =
-perf_stat_config *config,
->>  					id.socket,
->>  					id.die,
->>  					id.core);
->> -			} else if (id.core > -1) {
->> +			} else
->>  				fprintf(config->output, "\"cpu\" : =
-\"%d\", ",
->>  					id.cpu.cpu);
->> -			}
->>  		} else {
->>  			if (evsel->percore && =
-!config->percore_show_thread) {
->>  				fprintf(config->output, =
-"S%d-D%d-C%*d%s",
->> @@ -179,11 +178,10 @@ static void aggr_printout(struct =
-perf_stat_config *config,
->>  					id.die,
->>  					config->csv_output ? 0 : -3,
->>  					id.core, config->csv_sep);
->> -			} else if (id.core > -1) {
->> +			} else
->>  				fprintf(config->output, "CPU%*d%s",
->>  					config->csv_output ? 0 : -7,
->>  					id.cpu.cpu, config->csv_sep);
->> -			}
->>  		}
->>  		break;
->>  	case AGGR_THREAD:
->>=20
+A secondary issue is that it seems like if objtool encounters a fatal
+error like this, it should completely fail the build to make it obvious
+that something is wrong, rather than allowing it to continue and
+generate a broken kernel, especially since x86_64 requires objtool to
+build a working kernel at this point.
 
+Cheers,
+Nathan
