@@ -4,64 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06C71C54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Sep 2022 20:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF47FC6FA83
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 00:24:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McVpc3Yd3z3cGh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 06:00:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mcch20ScFz3bd5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 10:24:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c7D3k10N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=N4SqAspV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.126; helo=mga18.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=21cnbao@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c7D3k10N;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=N4SqAspV;
 	dkim-atps=neutral
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McVnw2NVZz2yJQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 05:59:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1664308772; x=1695844772;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=hHMW6dKcSr50LmzJxBbJqerolMIPg6Gn2+JmAaKAzHQ=;
-  b=c7D3k10N20noCIvd8eixSksQsJ+dl4M6mTN4MUVczlkKrP5+yJBOw3kR
-   tO1q7CpWXvIHp4pFoDN5zchGHvXHtyByQmeBszRCwaoubCVKJPkjWT83a
-   wybsT/yI7poYeVipvZeh4yyEBY69kOWhqA9E2klzd5rwVs2UVFGnSfuBI
-   fRVHK78LE/h+DY6fCkl3elaNMheXN3kokZSu9Tff1b4XAefjZJHFguvo6
-   RfYXtkPP0s6PFf+beRIc39PCk1NbO9z6tzysFNT+JkekrXwQQJgbgvXKL
-   ZC1/PUaK5VQcSfbiTKmMZ87fWXhqNIcX1ceYRPMgtWa2gvziCJi0YTPa0
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10483"; a="284546384"
-X-IronPort-AV: E=Sophos;i="5.93,350,1654585200"; 
-   d="scan'208";a="284546384"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Sep 2022 12:59:29 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10483"; a="684116462"
-X-IronPort-AV: E=Sophos;i="5.93,350,1654585200"; 
-   d="scan'208";a="684116462"
-Received: from weimingg-mobl.amr.corp.intel.com (HELO [10.212.244.112]) ([10.212.244.112])
-  by fmsmga008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Sep 2022 12:59:28 -0700
-Message-ID: <8bf3e3c0-78b6-7121-1951-300175ede3b9@linux.intel.com>
-Date: Tue, 27 Sep 2022 12:59:27 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MccgL3B9Vz2yq8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 10:24:12 +1000 (AEST)
+Received: by mail-ej1-x636.google.com with SMTP id nb11so23930253ejc.5
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Sep 2022 17:24:12 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date;
+        bh=yrRvoMA2qzsQLaNGkBWV3qKU0u6GXYvGhupTkuY6VEY=;
+        b=N4SqAspV6MMkhBYCFIyWw1zoLE0Rd7s2OcFI1DceVn/pHLgQQpIGuPVe/Y5xz2rq7u
+         4AwEph2NeuV3pICsTTUzwRekddH0yOeND7JGqULNGiEUieyWRG6v6tDzpLe64Ks46WYl
+         +E7aPSySmJM5rrRbU/QTtIuWWnrypBa5Nee0vTcASR26Pbtt3a1rnWEXJiAhZ0LuaF3z
+         G0Kpy5TJl/IDsRofANqT6QeQSyO+rxKfvYX1lEVX/uIl1opJ/g6T4wX2v3xFu9sWUBhf
+         nxjbUpm/gkJf8RF8BM1xVL9NUSyaLL/yweBBM9Jtss7d1JdDL1D0xSUAW2CB9lb+daDC
+         gCuA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date;
+        bh=yrRvoMA2qzsQLaNGkBWV3qKU0u6GXYvGhupTkuY6VEY=;
+        b=pUYC9cl75HYNHckAmMqiS4mad5VdSfPRpeXO9qRJF1BnuausPf1USi7IS5QHr99Lwq
+         X2riBLQO3F8a6IRTAotdFIq/URNViBWAmPIzWeqIvV+zcVHyGLCvwX7BWr52LVSSA38B
+         nAyXiR1uyvsgRsvb4gYsNLK+aZBDuHp+p7xkBj897fUYUnWeR6l8Vsw+xmKFCJ2d3zZn
+         iI1vJDgW7JhueUAzAhQzZqj2ZV68M68Ex5IdL2KJDych0nYNY3LOh6OIIcIkHIUq9GTE
+         jZS8waG4d14mDXLCb5OsaNjvS29M3HmFiejwtvNxgKOQrakBY+d/kHf42zjaLbeg9Ncn
+         JE4A==
+X-Gm-Message-State: ACrzQf1ClMJyJussxLunMv9zxNrRTgEaUzGnrPCUK5A6jf/uIQGNACSm
+	XMjxN2VJfhFjmm1mhgsY5kdVJWchA5x9as/GxWw=
+X-Google-Smtp-Source: AMsMyM7eMgPelqF9CjnEbxsTqqXy6pmBZpLW9pueVjK2kG6gmJQBXY3G4jO1eBrNDVmQMCspWLB2ar5LjeuRSz4OCpA=
+X-Received: by 2002:a17:907:7eaa:b0:782:3d2b:20b0 with SMTP id
+ qb42-20020a1709077eaa00b007823d2b20b0mr25078507ejc.746.1664324641882; Tue, 27
+ Sep 2022 17:24:01 -0700 (PDT)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Firefox/91.0 Thunderbird/91.11.0
-Subject: Re: [PATCH v2 5/9] PCI/AER: Unexport pci_aer_clear_nonfatal_status()
-Content-Language: en-US
-To: Zhuo Chen <chenzhuo.1@bytedance.com>, bhelgaas@google.com,
- ruscur@russell.cc, oohall@gmail.com, fancer.lancer@gmail.com,
- jdmason@kudzu.us, dave.jiang@intel.com, allenbh@gmail.com,
- james.smart@broadcom.com, dick.kennedy@broadcom.com, jejb@linux.ibm.com,
- martin.petersen@oracle.com
-References: <20220927153524.49172-1-chenzhuo.1@bytedance.com>
- <20220927153524.49172-6-chenzhuo.1@bytedance.com>
-From: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
-In-Reply-To: <20220927153524.49172-6-chenzhuo.1@bytedance.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+References: <20220921084302.43631-1-yangyicong@huawei.com> <20220921084302.43631-3-yangyicong@huawei.com>
+ <168eac93-a6ee-0b2e-12bb-4222eff24561@arm.com> <8e391962-4e3a-5a56-64b4-78e8637e3b8c@huawei.com>
+In-Reply-To: <8e391962-4e3a-5a56-64b4-78e8637e3b8c@huawei.com>
+From: Barry Song <21cnbao@gmail.com>
+Date: Wed, 28 Sep 2022 13:23:50 +1300
+Message-ID: <CAGsJ_4z=dZbrAUD9jczT08S3qi_ep-h+EK35UfayVk1S+Cnp2A@mail.gmail.com>
+Subject: Re: [PATCH v4 2/2] arm64: support batched/deferred tlb shootdown
+ during page reclamation
+To: Yicong Yang <yangyicong@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,102 +74,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, ntb@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: wangkefeng.wang@huawei.com, prime.zeng@hisilicon.com, realmz6@gmail.com, linux-doc@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, yangyicong@hisilicon.com, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, guojian@oppo.com, linux-riscv@lists.infradead.org, will@kernel.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, x86@kernel.org, Mel Gorman <mgorman@suse.de>, linux-mips@vger.kernel.org, arnd@arndb.de, Anshuman Khandual <anshuman.khandual@arm.com>, Barry Song <v-songbaohua@oppo.com>, openrisc@lists.librecores.org, darren@os.amperecomputing.com, linux-arm-kernel@lists.infradead.org, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Sep 27, 2022 at 10:15 PM Yicong Yang <yangyicong@huawei.com> wrote:
+>
+> On 2022/9/27 14:16, Anshuman Khandual wrote:
+> > [...]
+> >
+> > On 9/21/22 14:13, Yicong Yang wrote:
+> >> +static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
+> >> +{
+> >> +    /* for small systems with small number of CPUs, TLB shootdown is cheap */
+> >> +    if (num_online_cpus() <= 4)
+> >
+> > It would be great to have some more inputs from others, whether 4 (which should
+> > to be codified into a macro e.g ARM64_NR_CPU_DEFERRED_TLB, or something similar)
+> > is optimal for an wide range of arm64 platforms.
+> >
 
+I have tested it on a 4-cpus and 8-cpus machine. but i have no machine
+with 5,6,7
+cores.
+I saw improvement on 8-cpus machines and I found 4-cpus machines don't need
+this patch.
 
-On 9/27/22 8:35 AM, Zhuo Chen wrote:
-> Since pci_aer_clear_nonfatal_status() is used only internally, move
-> its declaration to the PCI internal header file. Also, no one cares
-> about return value of pci_aer_clear_nonfatal_status(), so make it void.
-> 
-> Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
-> ---
+so it seems safe to have
+if (num_online_cpus()  < 8)
 
-Looks good to me.
+>
+> Do you prefer this macro to be static or make it configurable through kconfig then
+> different platforms can make choice based on their own situations? It maybe hard to
+> test on all the arm64 platforms.
 
->  drivers/pci/pci.h      | 2 ++
->  drivers/pci/pcie/aer.c | 7 ++-----
->  include/linux/aer.h    | 5 -----
->  3 files changed, 4 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 785f31086313..a114175d08e4 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -684,6 +684,7 @@ void pci_aer_init(struct pci_dev *dev);
->  void pci_aer_exit(struct pci_dev *dev);
->  extern const struct attribute_group aer_stats_attr_group;
->  void pci_aer_clear_fatal_status(struct pci_dev *dev);
-> +void pci_aer_clear_nonfatal_status(struct pci_dev *dev);
->  int pci_aer_clear_status(struct pci_dev *dev);
->  int pci_aer_raw_clear_status(struct pci_dev *dev);
->  #else
-> @@ -691,6 +692,7 @@ static inline void pci_no_aer(void) { }
->  static inline void pci_aer_init(struct pci_dev *d) { }
->  static inline void pci_aer_exit(struct pci_dev *d) { }
->  static inline void pci_aer_clear_fatal_status(struct pci_dev *dev) { }
-> +static inline void pci_aer_clear_nonfatal_status(struct pci_dev *dev) { }
->  static inline int pci_aer_clear_status(struct pci_dev *dev) { return -EINVAL; }
->  static inline int pci_aer_raw_clear_status(struct pci_dev *dev) { return -EINVAL; }
->  #endif
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 4e637121be23..e2ebd108339d 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -251,13 +251,13 @@ int pci_disable_pcie_error_reporting(struct pci_dev *dev)
->  }
->  EXPORT_SYMBOL_GPL(pci_disable_pcie_error_reporting);
->  
-> -int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
-> +void pci_aer_clear_nonfatal_status(struct pci_dev *dev)
->  {
->  	int aer = dev->aer_cap;
->  	u32 status, sev;
->  
->  	if (!pcie_aer_is_native(dev))
-> -		return -EIO;
-> +		return;
->  
->  	/* Clear status bits for ERR_NONFATAL errors only */
->  	pci_read_config_dword(dev, aer + PCI_ERR_UNCOR_STATUS, &status);
-> @@ -265,10 +265,7 @@ int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
->  	status &= ~sev;
->  	if (status)
->  		pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_STATUS, status);
-> -
-> -	return 0;
->  }
-> -EXPORT_SYMBOL_GPL(pci_aer_clear_nonfatal_status);
->  
->  void pci_aer_clear_fatal_status(struct pci_dev *dev)
->  {
-> diff --git a/include/linux/aer.h b/include/linux/aer.h
-> index 154690c278cb..f638ad955deb 100644
-> --- a/include/linux/aer.h
-> +++ b/include/linux/aer.h
-> @@ -44,7 +44,6 @@ struct aer_capability_regs {
->  /* PCIe port driver needs this function to enable AER */
->  int pci_enable_pcie_error_reporting(struct pci_dev *dev);
->  int pci_disable_pcie_error_reporting(struct pci_dev *dev);
-> -int pci_aer_clear_nonfatal_status(struct pci_dev *dev);
->  int pci_aer_clear_uncorrect_error_status(struct pci_dev *dev);
->  void pci_save_aer_state(struct pci_dev *dev);
->  void pci_restore_aer_state(struct pci_dev *dev);
-> @@ -57,10 +56,6 @@ static inline int pci_disable_pcie_error_reporting(struct pci_dev *dev)
->  {
->  	return -EINVAL;
->  }
-> -static inline int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
-> -{
-> -	return -EINVAL;
-> -}
->  static inline int pci_aer_clear_uncorrect_error_status(struct pci_dev *dev)
->  {
->  	return -EINVAL;
+Maybe we can have this default enabled on machines with 8 and more cpus and
+provide a tlbflush_batched = on or off to allow users enable or
+disable it according
+to their hardware and products. Similar example: rodata=on or off.
 
--- 
-Sathyanarayanan Kuppuswamy
-Linux Kernel Developer
+Hi Anshuman, Will,  Catalin, Andrew,
+what do you think about this approach?
+
+BTW, haoxin mentioned another important user scenarios for tlb bach on arm64:
+https://lore.kernel.org/lkml/393d6318-aa38-01ed-6ad8-f9eac89bf0fc@linux.alibaba.com/
+
+I do believe we need it based on the expensive cost of tlb shootdown in arm64
+even by hardware broadcast.
+
+>
+> Thanks.
+>
+> >> +            return false;> +
+> >> +#ifdef CONFIG_ARM64_WORKAROUND_REPEAT_TLBI
+> >> +    if (unlikely(this_cpu_has_cap(ARM64_WORKAROUND_REPEAT_TLBI)))
+> >> +            return false;
+> >> +#endif
+> >> +
+> >> +    return true;
+> >> +}
+> >> +
+> >
+> > [...]
+> >
+> > .
+> >
+
+Thanks
+Barry
