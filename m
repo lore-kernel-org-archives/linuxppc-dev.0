@@ -4,45 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F880C32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC327C32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:42:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McyMx5X8yz3dxG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:42:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4McyNb1Q5Pz3c7y
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:42:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i4YCUIZA;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o9Ilw5vK;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL85ffmz3bkb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 23:40:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL90Tz8z3bkb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 23:40:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i4YCUIZA;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o9Ilw5vK;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL65c8Zz4xGQ;
-	Wed, 28 Sep 2022 23:40:30 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL86wWKz4xGH;
+	Wed, 28 Sep 2022 23:40:32 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1664372430;
-	bh=/lNEJmTqE4KJ0mXO03cJ7YzFkVHxeI96IWFG2LDU56Q=;
-	h=From:To:Subject:Date:From;
-	b=i4YCUIZAaLz17ulYzn+SwmuNEJb67OYEjRJ4H2gghGsC5dBKT3EhaQ5URkuxxBxfN
-	 YzNct5k9A8PnxZ3t2c1pdgTpPEdKOlluwjqny4c4GblxJG4FTIJ9tVTkb2qHMRwHCV
-	 TYAghR7nbT0hhHAlLQQeYmHd785hZZNmHT76OxsT5qY6qFDNq3puAVlTVQp0qeWJZa
-	 sIBNZrfDTLCv50dPcn4i2EiqTkQgAQdMLIQ2vvxegb2+QruvHBK+uOZ5YkuNnIXOp+
-	 8YjY740MxFGFrSHrMiNCen7azpeRG35XRgQiV/Fcr5hc3/dwcE2A1LqbrGItGoD3Cz
-	 oBvQddkXwT9oQ==
+	s=201909; t=1664372433;
+	bh=Y1C3ki1GevbbthhRELULS4p8sdE1ZmXzWqPGNPp0Pzk=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=o9Ilw5vKaTMcPFB5ZLHkevBQLThKD/cbilBGTQU2cjhrpLPJNeyIpRvEMjXctXehw
+	 192TzTKXirYsI0ooHvK/haNYaKE4SmxVqoglKzRgJ54NxqSJYWKX9+/H8euR+CsoI2
+	 8YlTXunjCCZUtbH9XeK3k5ZfGpafX6/W0WjXMsxoSgtmyp3HAktL/SPPX3ZP/XVMA7
+	 CKObBpyjdNnDYdNZuw8PYIcstCgo7sn5x22/WHJc/CoQRcf9CDZA7pDNozJEvXzGUd
+	 8KmZ5tM2o2GrbXuTPhMqROJTu1CnATHC6+X25F1Jq1fELGFTqW5NLRLKATd7U0PkA6
+	 LPyI4xxmIn2NA==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/6] powerpc: Add ppc_md.name to dump stack arch description
-Date: Wed, 28 Sep 2022 23:40:20 +1000
-Message-Id: <20220928134025.1739909-1-mpe@ellerman.id.au>
+Subject: [PATCH 5/6] powerpc/powernv: Add opal details to dump stack arch description
+Date: Wed, 28 Sep 2022 23:40:24 +1000
+Message-Id: <20220928134025.1739909-5-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20220928134025.1739909-1-mpe@ellerman.id.au>
+References: <20220928134025.1739909-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -59,77 +61,62 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As soon as we know the name of the machine description we're using,
-add it to the dump stack arch description, which is printed in case of
-an oops.
+Add OPAL version details to the dump stack arch description, which is
+printed in case of an oops.
 
-eg: Hardware name: ... machine:pSeries
+eg: Hardware name: ... opal:v6.2
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/setup.h   |  2 ++
- arch/powerpc/kernel/setup-common.c | 14 ++++++++++++++
- 2 files changed, 16 insertions(+)
+ arch/powerpc/platforms/powernv/setup.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 85143849a586..e29e83f8a89c 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -88,6 +88,8 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 			       unsigned long pp, unsigned long r6,
- 			       unsigned long r7, unsigned long kbase);
- 
-+extern struct seq_buf ppc_hw_desc;
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif	/* _ASM_POWERPC_SETUP_H */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index dd98f43bd685..42279c3f1d31 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -18,6 +18,7 @@
- #include <linux/delay.h>
- #include <linux/initrd.h>
- #include <linux/platform_device.h>
-+#include <linux/printk.h>
- #include <linux/seq_file.h>
- #include <linux/ioport.h>
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index dac545aa0308..fddc61ec1d5b 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -17,6 +17,7 @@
  #include <linux/console.h>
-@@ -25,6 +26,7 @@
- #include <linux/root_dev.h>
- #include <linux/cpu.h>
- #include <linux/unistd.h>
+ #include <linux/delay.h>
+ #include <linux/irq.h>
 +#include <linux/seq_buf.h>
- #include <linux/serial.h>
- #include <linux/serial_8250.h>
- #include <linux/percpu.h>
-@@ -588,6 +590,15 @@ static __init int add_pcspkr(void)
- device_initcall(add_pcspkr);
- #endif	/* CONFIG_PCSPKR_PLATFORM */
- 
-+static char ppc_hw_desc_buf[128] __initdata;
-+
-+struct seq_buf ppc_hw_desc __initdata = {
-+	.buffer = ppc_hw_desc_buf,
-+	.size = sizeof(ppc_hw_desc_buf),
-+	.len = 0,
-+	.readpos = 0,
-+};
-+
- static __init void probe_machine(void)
- {
- 	extern struct machdep_calls __machine_desc_start;
-@@ -628,6 +639,9 @@ static __init void probe_machine(void)
- 		for (;;);
- 	}
- 
-+	seq_buf_printf(&ppc_hw_desc,"machine:%s ", ppc_md.name);
-+	dump_stack_set_arch_desc(ppc_hw_desc.buffer);
-+
- 	printk(KERN_INFO "Using %s machine description\n", ppc_md.name);
+ #include <linux/seq_file.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+@@ -207,8 +208,33 @@ static void __init pnv_setup_arch(void)
+ 	pnv_rng_init();
  }
  
++static void __init pnv_add_dump_stack_arch_desc(void)
++{
++	struct device_node *dn;
++	const char *version;
++
++	dn = of_find_node_by_path("/ibm,opal/firmware");
++	if (!dn)
++		return;
++
++	version = of_get_property(dn, "version", NULL);
++	if (!version)
++		version = of_get_property(dn, "git-id", NULL);
++
++	if (version)
++		seq_buf_printf(&ppc_hw_desc, "opal:%s", version);
++
++	version = of_get_property(dn, "mi-version", NULL);
++	if (version)
++		seq_buf_printf(&ppc_hw_desc, "mi:%s", version);
++
++	of_node_put(dn);
++}
++
+ static void __init pnv_init(void)
+ {
++	pnv_add_dump_stack_arch_desc();
++
+ 	/*
+ 	 * Initialize the LPC bus now so that legacy serial
+ 	 * ports can be found on it
 -- 
 2.37.3
 
