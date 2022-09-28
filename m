@@ -4,89 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31A86C04A95
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92BB7C54EE9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 14:14:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McyQl4txpz3fD3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:44:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mcz4t52x3z3cC1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 00:14:06 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jyl7wRTq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qSzEA7zz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jyl7wRTq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qSzEA7zz;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyLm3kXmz3cCD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 23:41:04 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28SDarhw029178;
-	Wed, 28 Sep 2022 13:40:54 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- mime-version : content-transfer-encoding; s=pp1;
- bh=Mh2fWVk3fNEf2DhAYeJxnFE3lkUUL1QVUTXLHpMXmPg=;
- b=jyl7wRTq6Gk7BW8atbRWFccufGg4KPj/S7tcFRjs5qIxcEC7zV+gz/QA69AzERRzo0sN
- DPOii7OJ7uzMHb5kbu+G+nOnnHm0PkgPsHY3Hp7Y0UkC2VFIwlBeU8hUhnx4hmxq0Dvv
- WGS7oHbuWHJgy3+fqcyKT3hBHSpK3NRTHQUUywr0lSUF2XgSfsBVYTbcNidy2wZ0pgmy
- qp234ogI149MIknflBq4UjYuSTSbra15mh7aKlNBhTJFoM04bQTOvpPXv4dbSs2J1+Fw
- kbjwOEVGIBAp23dKpFLcKp1J+PTcrFYSrVmMuI5v7iWpouTCW297+4JUJnOxP76/sdFX NQ== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jvmtr50aj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Sep 2022 13:40:54 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28SDb6Q8020722;
-	Wed, 28 Sep 2022 13:40:51 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
-	by ppma04fra.de.ibm.com with ESMTP id 3jssh9409c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 28 Sep 2022 13:40:51 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
-	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28SDeniI52035980
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 28 Sep 2022 13:40:49 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 04E65A4054;
-	Wed, 28 Sep 2022 13:40:49 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5A260A4060;
-	Wed, 28 Sep 2022 13:40:48 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed, 28 Sep 2022 13:40:48 +0000 (GMT)
-Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mcz476RjDz3bhy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2022 00:13:27 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B95496016C;
-	Wed, 28 Sep 2022 20:02:40 +1000 (AEST)
-Message-ID: <591a3e016605181e119496992027ae21700a2c3b.camel@linux.ibm.com>
-Subject: Re: [PATCH v2 2/2] powerpc/rtas: block error injection when locked
- down
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Wed, 28 Sep 2022 20:02:40 +1000
-In-Reply-To: <20220926131643.146502-3-nathanl@linux.ibm.com>
-References: <20220926131643.146502-1-nathanl@linux.ibm.com>
-	 <20220926131643.146502-3-nathanl@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3-1 
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 43E9161E91;
+	Wed, 28 Sep 2022 14:13:23 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C94DC433C1;
+	Wed, 28 Sep 2022 14:13:22 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1664374402;
+	bh=DnDj6xo2uXE9wXOwp1tWVhvS3P4pfwaANrNc0vZzYlA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=qSzEA7zzNiYIIlvk6hPoMYO5gQY8+ZbwthLj1NZSL3TYRB3k/EFB1ajt7KRUR2LV1
+	 1/oOeOKqfPHQpI6AufmjLstwmCnr7gOCnGydt5BAcnVAFAR2olzouUUZ8Kp4L7tLcz
+	 mDBgjUPS3iBiil3Z42YDxyG6fRh7EOKBN8vTkZF0ynoU5mf9Z/m8RJsAdeR8rQI9va
+	 brro43iU3u+8uopH7jA26UOtYW09rafxasrL6cyg5x/CMiepK37fv74BFfvNIVJYbj
+	 NMp0a3wQ0+lyqH5+ShGeQt6FtxQAjFNovswirJ6yHV9arZBSVUv466eNI40xwSGDta
+	 Isddzz+om8OIQ==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+	id 03044405F0; Wed, 28 Sep 2022 11:13:20 -0300 (-03)
+Date: Wed, 28 Sep 2022 11:13:19 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] tools/perf/tests: Update is_ignored_symbol function in
+ vmlinux-kallsyms test
+Message-ID: <YzRWfxsvfeK38CZN@kernel.org>
+References: <20220928045218.37322-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: mG5ysnGAlMM9Fev4UY_3wOPa0iaGdcWB
-X-Proofpoint-ORIG-GUID: mG5ysnGAlMM9Fev4UY_3wOPa0iaGdcWB
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-09-28_06,2022-09-28_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 mlxlogscore=999
- phishscore=0 clxscore=1015 priorityscore=1501 mlxscore=0 adultscore=0
- bulkscore=0 lowpriorityscore=0 impostorscore=0 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2209280083
+In-Reply-To: <20220928045218.37322-1-atrajeev@linux.vnet.ibm.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,134 +64,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paul@paul-moore.com, nayna@linux.ibm.com, jmorris@namei.org, gcwilson@linux.ibm.com, serge@hallyn.com
+Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, linux-perf-users@vger.kernel.org, jolsa@kernel.org, kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2022-09-26 at 08:16 -0500, Nathan Lynch wrote:
-> The error injection facility on pseries VMs allows corruption of
-> arbitrary guest memory, potentially enabling a sufficiently
-> privileged
-> user to disable lockdown or perform other modifications of the
-> running
-> kernel via the rtas syscall.
+Em Wed, Sep 28, 2022 at 10:22:18AM +0530, Athira Rajeev escreveu:
+> The testcase “vmlinux-kallsyms.c” fails in powerpc.
 > 
-> Block the PAPR error injection facility from being opened or called
-> when locked down.
+> 	vmlinux symtab matches kallsyms: FAILED!
+
+Thanks, applied.
+
+- Arnaldo
+
+ 
+> This test look at the symbols in the vmlinux DSO
+> and check if we find all of them in the kallsyms dso.
+> But from the powerpc logs , observed that the failure
+> happens for:
+> 	ERR : 0xc0000000000fe9c8: .Lmfspr_table not on kallsyms
+> 	ERR : 0xc0000000001009c8: .Lmtspr_table not on kallsyms
 > 
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-
-Is there any circumstance (short of arbitrary code execution etc) where
-the rtas_call() check will actually trigger rather than the sys_rtas()
-check? (Not that it matters, defence in depth is good.)
-
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
-
+> These are labels ( with .L) in the source code and
+> has to be ignored. Reference code with .Lmtspr_table:
+> arch/powerpc/xmon/spr_access.S
+> 
+> The testcases invokes is_ignored_symbol() function to
+> ignore hidden symbols in the dso like local symbols. This
+> function is adapted from is_ignored_symbol() kernel
+> function in code: scripts/kallsyms.c . The kernel
+> function got some updates which is not reflected in
+> the testcase function and the new updates also handles
+> ignoring "labels".
+> 
+> Below is the changes that went in the kernel function.
+> 
+> 	 /* Symbol names that begin with the following are ignored.*/
+> 	 static const char * const ignored_prefixes[] = {
+> 	 		"$",			/* local symbols for ARM, MIPS, etc. */
+> 	-		".LASANPC",		/* s390 kasan local symbols */
+> 	+		".L",			/* local labels, .LBB,.Ltmpxxx,.L__unnamed_xx,.LASANPC, etc. */
+> 	 		"__crc_",		/* modversions */
+> 	 		"__efistub_",		/* arm64 EFI stub namespace */
+> 	-		"__kvm_nvhe_",		/* arm64 non-VHE KVM namespace */
+> 	+		"__kvm_nvhe_$",		/* arm64 local symbols in non-VHE KVM namespace */
+> 	+		"__kvm_nvhe_.L",	/* arm64 local symbols in non-VHE KVM namespace */
+> 	 		"__AArch64ADRPThunk_",	/* arm64 lld */
+> 	 		"__ARMV5PILongThunk_",	/* arm lld */
+> 	 		"__ARMV7PILongThunk_",
+> 
+> This change is part of below commits and will handle the
+> symbols with “.L”
+> 
+> commit d4c858643263 ("kallsyms: ignore all local labels prefixed
+> by '.L'")
+> commit 6ccf9cb557bd ("KVM: arm64: Symbolize the nVHE HYP addresses")
+> 
+> Update the testcase function to include the new
+> changes.
+> 
+> Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
+> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/rtas.c | 25 ++++++++++++++++++++++++-
->  include/linux/security.h   |  1 +
->  security/security.c        |  1 +
->  3 files changed, 26 insertions(+), 1 deletion(-)
+>  tools/perf/tests/vmlinux-kallsyms.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index 693133972294..c2540d393f1c 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -23,6 +23,7 @@
->  #include <linux/memblock.h>
->  #include <linux/slab.h>
->  #include <linux/reboot.h>
-> +#include <linux/security.h>
->  #include <linux/syscalls.h>
->  #include <linux/of.h>
->  #include <linux/of_fdt.h>
-> @@ -464,6 +465,9 @@ void rtas_call_unlocked(struct rtas_args *args,
-> int token, int nargs, int nret,
->         va_end(list);
->  }
->  
-> +static int ibm_open_errinjct_token;
-> +static int ibm_errinjct_token;
-> +
->  int rtas_call(int token, int nargs, int nret, int *outputs, ...)
->  {
->         va_list list;
-> @@ -476,6 +480,16 @@ int rtas_call(int token, int nargs, int nret,
-> int *outputs, ...)
->         if (!rtas.entry || token == RTAS_UNKNOWN_SERVICE)
->                 return -1;
->  
-> +       if (token == ibm_open_errinjct_token || token ==
-> ibm_errinjct_token) {
-> +               /*
-> +                * It would be nicer to not discard the error value
-> +                * from security_locked_down(), but callers expect an
-> +                * RTAS status, not an errno.
-> +                */
-> +               if
-> (security_locked_down(LOCKDOWN_RTAS_ERROR_INJECTION))
-> +                       return -1;
-> +       }
-> +
->         if ((mfmsr() & (MSR_IR|MSR_DR)) != (MSR_IR|MSR_DR)) {
->                 WARN_ON_ONCE(1);
->                 return -1;
-> @@ -1227,6 +1241,14 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user
-> *, uargs)
->         if (block_rtas_call(token, nargs, &args))
->                 return -EINVAL;
->  
-> +       if (token == ibm_open_errinjct_token || token ==
-> ibm_errinjct_token) {
-> +               int err;
-> +
-> +               err =
-> security_locked_down(LOCKDOWN_RTAS_ERROR_INJECTION);
-> +               if (err)
-> +                       return err;
-> +       }
-> +
->         /* Need to handle ibm,suspend_me call specially */
->         if (token == rtas_token("ibm,suspend-me")) {
->  
-> @@ -1325,7 +1347,8 @@ void __init rtas_initialize(void)
->  #ifdef CONFIG_RTAS_ERROR_LOGGING
->         rtas_last_error_token = rtas_token("rtas-last-error");
->  #endif
-> -
-> +       ibm_open_errinjct_token = rtas_token("ibm,open-errinjct");
-> +       ibm_errinjct_token = rtas_token("ibm,errinjct");
->         rtas_syscall_filter_init();
->  }
->  
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 39e7c0e403d9..70f89dc3a712 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -123,6 +123,7 @@ enum lockdown_reason {
->         LOCKDOWN_XMON_WR,
->         LOCKDOWN_BPF_WRITE_USER,
->         LOCKDOWN_DBG_WRITE_KERNEL,
-> +       LOCKDOWN_RTAS_ERROR_INJECTION,
->         LOCKDOWN_INTEGRITY_MAX,
->         LOCKDOWN_KCORE,
->         LOCKDOWN_KPROBES,
-> diff --git a/security/security.c b/security/security.c
-> index 51bf66d4f472..eabe3ce7e74e 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -61,6 +61,7 @@ const char *const
-> lockdown_reasons[LOCKDOWN_CONFIDENTIALITY_MAX+1] = {
->         [LOCKDOWN_XMON_WR] = "xmon write access",
->         [LOCKDOWN_BPF_WRITE_USER] = "use of bpf to write user RAM",
->         [LOCKDOWN_DBG_WRITE_KERNEL] = "use of kgdb/kdb to write
-> kernel RAM",
-> +       [LOCKDOWN_RTAS_ERROR_INJECTION] = "RTAS error injection",
->         [LOCKDOWN_INTEGRITY_MAX] = "integrity",
->         [LOCKDOWN_KCORE] = "/proc/kcore access",
->         [LOCKDOWN_KPROBES] = "use of kprobes",
+> diff --git a/tools/perf/tests/vmlinux-kallsyms.c b/tools/perf/tests/vmlinux-kallsyms.c
+> index 4fd8d703ff19..8ab035b55875 100644
+> --- a/tools/perf/tests/vmlinux-kallsyms.c
+> +++ b/tools/perf/tests/vmlinux-kallsyms.c
+> @@ -43,10 +43,11 @@ static bool is_ignored_symbol(const char *name, char type)
+>  	/* Symbol names that begin with the following are ignored.*/
+>  	static const char * const ignored_prefixes[] = {
+>  		"$",			/* local symbols for ARM, MIPS, etc. */
+> -		".LASANPC",		/* s390 kasan local symbols */
+> +		".L",			/* local labels, .LBB,.Ltmpxxx,.L__unnamed_xx,.LASANPC, etc. */
+>  		"__crc_",		/* modversions */
+>  		"__efistub_",		/* arm64 EFI stub namespace */
+> -		"__kvm_nvhe_",		/* arm64 non-VHE KVM namespace */
+> +		"__kvm_nvhe_$",		/* arm64 local symbols in non-VHE KVM namespace */
+> +		"__kvm_nvhe_.L",	/* arm64 local symbols in non-VHE KVM namespace */
+>  		"__AArch64ADRPThunk_",	/* arm64 lld */
+>  		"__ARMV5PILongThunk_",	/* arm lld */
+>  		"__ARMV7PILongThunk_",
+> -- 
+> 2.31.1
 
 -- 
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
 
+- Arnaldo
