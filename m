@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E83CC04A95
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:43:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1CBEC32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:43:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McyPF2Kk0z3dpl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:43:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4McyPt3kZQz3cFB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:43:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IVixxF0b;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=cBl/R0Mv;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL936Wdz3bkb
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL94Jmhz3bkb
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 23:40:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=IVixxF0b;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=cBl/R0Mv;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL72pzHz4xGh;
-	Wed, 28 Sep 2022 23:40:31 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL93c8Vz4xGm;
+	Wed, 28 Sep 2022 23:40:33 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1664372431;
-	bh=pi+mUOLsnhmd6VVvCm4bw8pEUUFjwaM50i6henrEXqE=;
+	s=201909; t=1664372433;
+	bh=OmVLqcJXRvUals4duaQ8Y3fFuXzdjkddBOVtf5vzMjk=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=IVixxF0b2KwMHLOsnvERQ5NNeaJ6m3SUBNElNvB4OdimyvE+HGWKslUoI35zTg1ys
-	 onJ2Op8Dv+BbC5Mt/FD4RY7Zjroj+xzxf8k7VdQG70ADKQ9E4DSZqLbvoIJ1ka/KIP
-	 K4P6pKJiH6hqW9mtqvkwxPMGTBgRzLjwdPKzHMWVbyDhCNzC7ZrcnIvxI7bnKbQrbU
-	 1NsQDeiybSsQucx7odkIUWE7oo55Ae2mKFKnyPzcYdV1kPhoddfZ4Gu3luBIOucn5p
-	 19izVWTALp9X+pf6Np/ZPkpf2ozoaoHC2fwFHUSAn6heE6eWURWusryCA4NNVfK2ob
-	 YiS0e/abCCo3g==
+	b=cBl/R0Mv7TbDoDPBwHqb7Btjy0TlhgEdKFCdHCHlvUP31hAsuo9diPoFGIW9eU8lb
+	 j74y1RqaIUIM0/lRxq1PXYU93Qt3tU1x22c6mU7TtE1XRtwpDZYm7oe4Lh+jO1wFl1
+	 lxLvFuEXghOR4GvC033J1ttzpjPLHlPCicmxGXurCVRPo0kuyt5pez6RMX2e6TQhew
+	 6yStgzGCqaR1VUXpu6nncNc0Z7pbp5jKE5w8rYvMj4QCNHwvcDUT2gT205tIwz+PCC
+	 UfcdEznmGL4GTkYJ4VNVhCPlSiTPbl2+uEMZMnrxxti5q0GPbZOGLPVdsmF/PGazAG
+	 Km66lYgdgTkOg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/6] powerpc: Add PVR & CPU name to dump stack arch description
-Date: Wed, 28 Sep 2022 23:40:21 +1000
-Message-Id: <20220928134025.1739909-2-mpe@ellerman.id.au>
+Subject: [PATCH 6/6] powerpc/pseries: Add firmware details to dump stack arch description
+Date: Wed, 28 Sep 2022 23:40:25 +1000
+Message-Id: <20220928134025.1739909-6-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20220928134025.1739909-1-mpe@ellerman.id.au>
 References: <20220928134025.1739909-1-mpe@ellerman.id.au>
@@ -61,39 +61,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the PVR and CPU name to the dump stack arch description, which is
-printed in case of an oops.
+Add firmware version details to the dump stack arch description, which
+is printed in case of an oops.
 
-eg: Hardware name: ... POWER8E (raw) pvr:0x4b0201
+Currently /hypervisor only exists on KVM, so if we don't find that
+look for something that suggests we're on phyp and if so that's
+probably a good guess. The actual content of the ibm,fw-net-version
+seems to be a full path so is too long to add to the description.
+
+eg: Hardware name: ... of:'IBM,FW860.42 (SV860_138)' hv:phyp
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c | 36 ++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 2e7a04dab2f7..7987d69f1785 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -30,6 +30,7 @@
- #include <linux/libfdt.h>
- #include <linux/cpu.h>
- #include <linux/pgtable.h>
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 5e44c65a032c..f0ce8256ebb8 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -41,6 +41,7 @@
+ #include <linux/of_pci.h>
+ #include <linux/memblock.h>
+ #include <linux/swiotlb.h>
 +#include <linux/seq_buf.h>
  
- #include <asm/rtas.h>
- #include <asm/page.h>
-@@ -819,6 +820,10 @@ void __init early_init_devtree(void *params)
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+@@ -1011,6 +1012,39 @@ static void __init pSeries_cmo_feature_init(void)
+ 	pr_debug(" <- fw_cmo_feature_init()\n");
+ }
  
- 	dt_cpu_ftrs_scan();
- 
-+	/* We can now set the CPU name & PVR for the oops output */
-+	seq_buf_printf(&ppc_hw_desc, "%s pvr:0x%04lx ", cur_cpu_spec->cpu_name,
-+		       mfspr(SPRN_PVR));
++static void __init pseries_add_dump_stack_arch_desc(void)
++{
++	struct device_node *dn;
++	const char *prop;
 +
- 	/* Retrieve CPU related informations from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
- 	 */
++	dn = of_find_node_by_path("/openprom");
++	if (dn) {
++		prop = of_get_property(dn, "model", NULL);
++		if (prop)
++			seq_buf_printf(&ppc_hw_desc, "of:'%s' ", prop);
++
++		of_node_put(dn);
++	}
++
++	dn = of_find_node_by_path("/hypervisor");
++	if (dn) {
++		prop = of_get_property(dn, "compatible", NULL);
++		if (prop)
++			seq_buf_printf(&ppc_hw_desc, "hv:%s ", prop);
++
++		of_node_put(dn);
++	} else {
++		dn = of_find_node_by_path("/");
++		if (dn) {
++			prop = of_get_property(dn, "ibm,fw-net-version", NULL);
++			if (prop)
++				seq_buf_printf(&ppc_hw_desc, "hv:phyp ");
++
++			of_node_put(dn);
++		}
++	}
++}
++
+ /*
+  * Early initialization.  Relocation is on but do not reference unbolted pages
+  */
+@@ -1018,6 +1052,8 @@ static void __init pseries_init(void)
+ {
+ 	pr_debug(" -> pseries_init()\n");
+ 
++	pseries_add_dump_stack_arch_desc();
++
+ #ifdef CONFIG_HVC_CONSOLE
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		hvc_vio_init_early();
 -- 
 2.37.3
 
