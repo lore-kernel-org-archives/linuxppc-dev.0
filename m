@@ -4,36 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B03B6C32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 15:45:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1FABC32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 15:54:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Md16M0F0pz3cjR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 01:45:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=james.clark@arm.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 534 seconds by postgrey-1.36 at boromir; Thu, 29 Sep 2022 01:44:39 AEST
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Md15M03nbz3bk4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2022 01:44:37 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B71861063;
-	Wed, 28 Sep 2022 08:35:13 -0700 (PDT)
-Received: from [10.57.0.129] (unknown [10.57.0.129])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 76DE13F73D;
-	Wed, 28 Sep 2022 08:35:05 -0700 (PDT)
-Message-ID: <4792ef3a-8790-a0d4-50f2-4917874d81d6@arm.com>
-Date: Wed, 28 Sep 2022 16:35:04 +0100
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Md1KC1XkWz3cB1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 01:54:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=zVPtZAzw;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=chenzhuo.1@bytedance.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=zVPtZAzw;
+	dkim-atps=neutral
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Md1JT4bGCz2yPD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Sep 2022 01:54:15 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d82so12872163pfd.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 08:54:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance-com.20210112.gappssmtp.com; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date;
+        bh=QSAEb2hPZjK1ev/lBZ3te+y9kjBYl6H9pPRLwr+M8HM=;
+        b=zVPtZAzw49EHbsqZqHSTXnYA4fCJVgV0ehiFbcHyaUHvs7WCLafoa7uK8ML2BgDos4
+         U3FTz1fzfHSRaG2aOZCd8/5mNO7Axa7rX0KW2D5mLDTSbLVEtkUQOx6vb/WyEcOgh4Uz
+         G3MWAF5BUbXqgxQMBe6juX25LkAKPlRyvo63Wzt+Yv3rhBiZNaVmN2vC4IinqkH8thMI
+         fcW+q5fTcp+dYGYs/mLBTunIT/PtRbJH+KvZjES40kJqik7SN1sR/JSsLEQ/r4w+dY53
+         yZdvlKWU6xrLQVlPNbzhwy4LOQyi9Q3bXls/2CE0MyPKoxajKOawzKhM6WGhLzi7H/dw
+         P2bA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date;
+        bh=QSAEb2hPZjK1ev/lBZ3te+y9kjBYl6H9pPRLwr+M8HM=;
+        b=c2ZwW5pUQZYJTITbIp3P2pX5gE09hCdJufmwysWiTQ2fCtIDWuw7bh5EO4bkNXJxKz
+         J2Se81aM1USrn2xpG15GxpFP5FDjq8H/emLaNZlfSkUSMzLTGGcLSkhl4TeHWMVGM7M4
+         4Wgh3z1HVTy/5QaUgM3b0k38kB/JGDsDnqx6p7T90hNEKR8wu9ptTSXD3Jw27xtMBr/B
+         tSJgYPDuRrBVOcEQNbuyeIR5ZyEXmJNaBWHif37HS7uF1Xmu88Lq8epAsq+jAVM35sxs
+         pdp4Bq9gPHwoffQA7J/wfybI8auYltLLLIYxAayA1I46XHOULtR7KrTYCskGIO4pCKmG
+         T1Fw==
+X-Gm-Message-State: ACrzQf3NxY5pLwK/hLeNbsuHGHcuSZbqmHAEm6MOokR5ndAmG5VdtQpM
+	RpZzgOqs5BQym68he/zi7Aip5g==
+X-Google-Smtp-Source: AMsMyM7wU01xLNnTTslW5qPcH9U0d3210mJJyOX0dSh6iYjiDoTkBczR8AGldIXcdzIutrYwjwxMXw==
+X-Received: by 2002:a63:5c07:0:b0:43f:6af:7590 with SMTP id q7-20020a635c07000000b0043f06af7590mr7563656pgb.272.1664380451650;
+        Wed, 28 Sep 2022 08:54:11 -0700 (PDT)
+Received: from [10.2.223.68] ([61.120.150.77])
+        by smtp.gmail.com with ESMTPSA id i28-20020a056a00005c00b0053e72ed5252sm4231499pfk.42.2022.09.28.08.54.05
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 28 Sep 2022 08:54:11 -0700 (PDT)
+Message-ID: <eade28ce-97eb-ff96-e8cb-7e1c2127f77b@bytedance.com>
+Date: Wed, 28 Sep 2022 23:54:02 +0800
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-Subject: Re: [PATCH] tools/perf: Fix aggr_printout to display cpu field
- irrespective of core value
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.3.0
+Subject: Re: [External] Re: [PATCH v3 0/9] PCI/AER: Fix and optimize usage of
+ status clearing api
 Content-Language: en-US
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
- Ian Rogers <irogers@google.com>
-References: <20220913115717.36191-1-atrajeev@linux.vnet.ibm.com>
-From: James Clark <james.clark@arm.com>
-In-Reply-To: <20220913115717.36191-1-atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Serge Semin <fancer.lancer@gmail.com>, bhelgaas@google.com,
+ Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
+References: <20220928105946.12469-1-chenzhuo.1@bytedance.com>
+ <20220928110623.b3vocoubasrshyzk@mobilestation>
+From: Zhuo Chen <chenzhuo.1@bytedance.com>
+In-Reply-To: <20220928110623.b3vocoubasrshyzk@mobilestation>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -46,141 +84,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, kjain@linux.ibm.com, acme@kernel.org, linux-perf-users@vger.kernel.org, jolsa@kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: allenbh@gmail.com, dave.jiang@intel.com, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, linux-pci@vger.kernel.org, jejb@linux.ibm.com, james.smart@broadcom.com, linux-kernel@vger.kernel.org, ntb@lists.linux.dev, oohall@gmail.com, jdmason@kudzu.us, dick.kennedy@broadcom.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 13/09/2022 12:57, Athira Rajeev wrote:
-> perf stat includes option to specify aggr_mode to display
-> per-socket, per-core, per-die, per-node counter details.
-> Also there is option -A ( AGGR_NONE, -no-aggr ), where the
-> counter values are displayed for each cpu along with "CPU"
-> value in one field of the output.
+On 9/28/22 7:06 PM, Serge Semin wrote:
+> On Wed, Sep 28, 2022 at 06:59:37PM +0800, Zhuo Chen wrote:
+>> Hello.
+>>
+>> Here comes patch v3, which contains some fixes and optimizations of
+>> aer api usage. The v1 and v2 can be found on the mailing list.
+>>
+>> v3:
+>> - Modifications to comments proposed by Sathyanarayanan.
 > 
-> Each of the aggregate mode uses the information fetched
-> from "/sys/devices/system/cpu/cpuX/topology" like core_id,
+>> Remove
+>>    pci_aer_clear_nonfatal_status() call in NTB and improve commit log.
+> 
+> Failed to see who has requested that...
+> 
+> -Sergey
+> 
+Hi, Sergey
 
-I thought that this wouldn't apply to the cpu field because cpu is
-basically interchangeable as an index in cpumap, rather than anything
-being read from the topology file.
+Currently other vendor drivers do not clear error status in their own 
+init code, I don't exactly know what is special reason for clearing 
+error status during init code in ntb driver.
 
-> physical_package_id. Utility functions in "cpumap.c" fetches
-> this information and populates the socket id, core id, cpu etc.
-> If the platform does not expose the topology information,
-> these values will be set to -1. Example, in case of powerpc,
-> details like physical_package_id is restricted to be exposed
-> in pSeries platform. So id.socket, id.core, id.cpu all will
-> be set as -1.
-> 
-> In case of displaying socket or die value, there is no check
-> done in the "aggr_printout" function to see if it points to
-> valid socket id or die. But for displaying "cpu" value, there
-> is a check for "if (id.core > -1)". In case of powerpc pSeries
-> where detail like physical_package_id is restricted to be
-> exposed, id.core will be set to -1. Hence the column or field
-> itself for CPU won't be displayed in the output.
-> 
-> Result for per-socket:
-> 
-> <<>>
-> perf stat -e branches --per-socket -a true
-> 
->  Performance counter stats for 'system wide':
-> 
-> S-1      32            416,851      branches
-> <<>>
-> 
-> Here S has -1 in above result. But with -A option which also
-> expects CPU in one column in the result, below is observed.
-> 
-> <<>>
->  /bin/perf stat -e instructions -A -a true
-> 
->  Performance counter stats for 'system wide':
-> 
->             47,146      instructions
->             45,226      instructions
->             43,354      instructions
->             45,184      instructions
-> <<>>
-> 
-> If the cpu id value is pointing to -1 also, it makes sense
-> to display the column in the output to replicate the behaviour
-> or to be in precedence with other aggr options(like per-socket,
-> per-core). Remove the check "id.core" so that CPU field gets
-> displayed in the output.
+An evidence is in pci_aer_init(), PCI core driver has do 
+pci_aer_clear_status() and pci_enable_pcie_error_reporting() in common 
+process. So vendor drivers don't need to do again.
 
-Why would you want to print -1 out? Seems like the if statement was a
-good one to me, otherwise the output looks a bit broken to users. Are
-the other aggregation modes even working if -1 is set for socket and
-die? Maybe we need to not print -1 in those cases or exit earlier with a
-failure.
+But I don't know the reason why many vendor drivers reserve 
+pci_enable_pcie_error_reporting() after commit f26e58bf6f54 ("PCI/AER: 
+Enable error reporting when AER is native"). Do they need to be removed?
+Could Bjorn and Sathyanarayanan help look into it, thanks a lot.
 
-The -1 value has a specific internal meaning which is "to not
-aggregate". It doesn't mean "not set".
+Thanks.
+>>
+>> v2:
+>> - Modifications to comments proposed by Bjorn. Split patch into more
+>>    obvious parts.
+>>
+>> Zhuo Chen (9):
+>>    PCI/AER: Add pci_aer_clear_uncorrect_error_status() to PCI core
+>>    PCI/DPC: Use pci_aer_clear_uncorrect_error_status() to clear
+>>      uncorrectable error status
+>>    NTB: Remove pci_aer_clear_nonfatal_status() call
+>>    scsi: lpfc: Change to use pci_aer_clear_uncorrect_error_status()
+>>    PCI/AER: Unexport pci_aer_clear_nonfatal_status()
+>>    PCI/AER: Move check inside pcie_clear_device_status().
+>>    PCI/AER: Use pcie_aer_is_native() to judge whether OS owns AER
+>>    PCI/ERR: Clear fatal error status when pci_channel_io_frozen
+>>    PCI/AER: Refine status clearing process with api
+>>
+>>   drivers/ntb/hw/idt/ntb_hw_idt.c |  2 --
+>>   drivers/pci/pci.c               |  7 +++--
+>>   drivers/pci/pci.h               |  2 ++
+>>   drivers/pci/pcie/aer.c          | 45 +++++++++++++++++++--------------
+>>   drivers/pci/pcie/dpc.c          |  3 +--
+>>   drivers/pci/pcie/err.c          | 15 ++++-------
+>>   drivers/pci/pcie/portdrv_core.c |  3 +--
+>>   drivers/scsi/lpfc/lpfc_attr.c   |  4 +--
+>>   include/linux/aer.h             |  4 +--
+>>   9 files changed, 44 insertions(+), 41 deletions(-)
+>>
+>> -- 
+>> 2.30.1 (Apple Git-130)
+>>
 
-> 
-> After the fix:
-> 
-> <<>>
-> perf stat -e instructions -A -a true
-> 
->  Performance counter stats for 'system wide':
-> 
-> CPU-1                  64,034      instructions
-> CPU-1                  68,941      instructions
-> CPU-1                  59,418      instructions
-> CPU-1                  70,478      instructions
-> CPU-1                  65,201      instructions
-> CPU-1                  63,704      instructions
-> <<>>
-> 
-> This is caught while running "perf test" for
-> "stat+json_output.sh" and "stat+csv_output.sh".
-
-Is it possible to fix the issue by making the tests cope with the lack
-of the CPU id?
-
-> 
-> Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> ---
->  tools/perf/util/stat-display.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-> index b82844cb0ce7..1b751a730271 100644
-> --- a/tools/perf/util/stat-display.c
-> +++ b/tools/perf/util/stat-display.c
-> @@ -168,10 +168,9 @@ static void aggr_printout(struct perf_stat_config *config,
->  					id.socket,
->  					id.die,
->  					id.core);
-> -			} else if (id.core > -1) {
-> +			} else
-
-This should have been "id.cpu.cpu > -1". Looks like it was changed by
-some kind of bad merge or rebase in df936cadfb because there is no
-obvious justification for the change to .core in that commit.
-
->  				fprintf(config->output, "\"cpu\" : \"%d\", ",
->  					id.cpu.cpu);
-> -			}
->  		} else {
->  			if (evsel->percore && !config->percore_show_thread) {
->  				fprintf(config->output, "S%d-D%d-C%*d%s",
-> @@ -179,11 +178,10 @@ static void aggr_printout(struct perf_stat_config *config,
->  					id.die,
->  					config->csv_output ? 0 : -3,
->  					id.core, config->csv_sep);
-> -			} else if (id.core > -1) {
-> +			} else
->  				fprintf(config->output, "CPU%*d%s",
->  					config->csv_output ? 0 : -7,
->  					id.cpu.cpu, config->csv_sep);
-> -			}
->  		}
->  		break;
->  	case AGGR_THREAD:
+-- 
+Zhuo Chen
