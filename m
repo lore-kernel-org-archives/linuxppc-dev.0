@@ -4,79 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7099DC04A95
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 11:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B7DC32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 11:04:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mctry0ytQz3fBN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 21:03:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mctsj47gPz3fFV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 21:04:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=d2W1pLch;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=B22A+5wg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::633; helo=mail-pl1-x633.google.com; envelope-from=chenzhuo.1@bytedance.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12b; helo=mail-lf1-x12b.google.com; envelope-from=fancer.lancer@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance-com.20210112.gappssmtp.com header.i=@bytedance-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=d2W1pLch;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=B22A+5wg;
 	dkim-atps=neutral
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
+Received: from mail-lf1-x12b.google.com (mail-lf1-x12b.google.com [IPv6:2a00:1450:4864:20::12b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mctnf6rvmz3cCc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 21:00:38 +1000 (AEST)
-Received: by mail-pl1-x633.google.com with SMTP id iw17so11518160plb.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 04:00:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mctnm4BRWz3bqY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 21:00:44 +1000 (AEST)
+Received: by mail-lf1-x12b.google.com with SMTP id a3so19748194lfk.9
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 04:00:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance-com.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date;
-        bh=RIt/qxR4EAUFbxZ1RMkWtn/7tkqNw/Ddhp3wGfxncRU=;
-        b=d2W1pLchnwquxcq0SaIHq+JVlwQdK1dLJyk6IbZ5tT5ZgmZDlzGh9dQFGvUHHMee/8
-         4eCRMz497eb69Zl8la5FvOnmviD4W7y18tP6UTl2DnawVcVLeJ6ivPayff9akC/ZKWSG
-         J70O2bz4ZbP+H+YKT4OrZasGv0iQzXQCskJ30QW8L6plaf2Eyx8/2RrTI8bF2cfaeaLn
-         H3v+60z4DEBwM/szdWIP+MVpvaRHIzUfT4ZSZA3i14C5f6Q3SZpW8BQtVOZNVw4hTGZH
-         w/GSKr7+FzYhJn9VaYLIr/iotP4yrE32Su6pMfBnaqjYIy17Klis0nZPfKr9pXq4P/YM
-         +YHg==
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date;
+        bh=OcX91QSmfcORtUJuhjxsYlI4jDkm84+aPMTKqsh2mFg=;
+        b=B22A+5wg/gpUg3toqo4rJeKFnUzSSnLoGxNGs8VRO3g0wdmQbtK6mgG/i3q14yO2vo
+         gQKY919BK1PBejNcNheYfn98WzgaSHM15ncLgQfaiSv2DhBcSYTHuRUVylsKvh8oVAxq
+         bAr9bG39yRRyRQIQG8hcT29xbgJhsghWNtUnP6zh6Nh2y3Y6R23E2SKY3OnbiNrlV9Hv
+         vBzjNHfwCIT+m791PM9xrvBJbhxLMcthuomHcNynvO/4FmtiwC+48v2C+CtK/9rKShPn
+         uZFVYF2G1sUIX2kXFCxThLI5i9YqGPzJtxXnhlK+hNJPnXFPNX51P8567jqadv01p1Cm
+         ahoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date;
-        bh=RIt/qxR4EAUFbxZ1RMkWtn/7tkqNw/Ddhp3wGfxncRU=;
-        b=RrTEtges3XTjVDgy/J3CLjUCkMWtkdWgzLxfzOnkDtknaqDVnlxNjvd8RycIK7rUG3
-         bSAZxdprYWFsitKs/L39wN9vuG3O7vqCAxqJCsvJXvTihNGHjyFqaKtA67/v831qA9v7
-         DyISeGzqkBNqa4jQlc9+v/tI3cshEJR3BptnDqjxcpghEmVPhspsGVwjY8xozyLJq5qV
-         pwW29M2zvHbHl0Evzz+sbor4VRrhE89YhcI5xioTzqnabDxoh3Zl/cHUbDqRANaRLnCc
-         Ho4Wdk9Ze+kgeHWQMwJEiCsYwtIkDNpq3GiULpynDgM/+Xa+XjS1AqestyVIogtEw9xH
-         wLFw==
-X-Gm-Message-State: ACrzQf2YezJMkjLGMwpHHtu/BAJWzRMaLdtdsAseyjffdlUhewjCdkH2
-	ASQm2TCnrjJXYJf/w1rqP/BRYA==
-X-Google-Smtp-Source: AMsMyM7e+doSVcNfsgJRtgQO2FTh/mndFIJ8tFDGM1/fX7o2yWrpaYGbOuOTgBdfIXXwWYdMMdaylw==
-X-Received: by 2002:a17:902:ceca:b0:177:fa1f:4abc with SMTP id d10-20020a170902ceca00b00177fa1f4abcmr31918275plg.99.1664362836541;
-        Wed, 28 Sep 2022 04:00:36 -0700 (PDT)
-Received: from C02F63J9MD6R.bytedance.net ([61.120.150.77])
-        by smtp.gmail.com with ESMTPSA id b13-20020a170902d50d00b00177efb56475sm1539524plg.85.2022.09.28.04.00.30
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 28 Sep 2022 04:00:36 -0700 (PDT)
-From: Zhuo Chen <chenzhuo.1@bytedance.com>
-To: sathyanarayanan.kuppuswamy@linux.intel.com,
-	bhelgaas@google.com,
-	ruscur@russell.cc,
-	oohall@gmail.com,
-	fancer.lancer@gmail.com,
-	jdmason@kudzu.us,
-	dave.jiang@intel.com,
-	allenbh@gmail.com,
-	james.smart@broadcom.com,
-	dick.kennedy@broadcom.com,
-	jejb@linux.ibm.com,
-	martin.petersen@oracle.com
-Subject: [PATCH v3 5/9] PCI/AER: Unexport pci_aer_clear_nonfatal_status()
-Date: Wed, 28 Sep 2022 18:59:42 +0800
-Message-Id: <20220928105946.12469-6-chenzhuo.1@bytedance.com>
-X-Mailer: git-send-email 2.30.1 (Apple Git-130)
-In-Reply-To: <20220928105946.12469-1-chenzhuo.1@bytedance.com>
-References: <20220928105946.12469-1-chenzhuo.1@bytedance.com>
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
+        bh=OcX91QSmfcORtUJuhjxsYlI4jDkm84+aPMTKqsh2mFg=;
+        b=rMLxI9PmKYyWHFA57fj4d2l2qdxqOQIAd/6kYGYvBvDMEDVopOWIVLJ5SxGVc5kolY
+         VgXUG0h0XpaiZOpEZ1tINWKfYVOHP0NjhXcReneNMpBFQRLNX/ratowdtsQ3KxF2ENjd
+         es+KSCQSWyvJDXtnOePsevBIKE0pM2TmktEgT1vo3F0EeD8BJXWu58NIHg4V4mQKoX91
+         z1ZWQb8Ek8DkS/V8YefpsL+E8ehU7cCciXs8HpFCPvnnYmcCopi5UWuY9a+wfNIwG1y4
+         jn894YFnzKqNNnHGZXzroP2HSe0eFPGIVIX0cV/4sHwsEWPvlQQeltwUnWLNX3ilwc/1
+         15yg==
+X-Gm-Message-State: ACrzQf1Wr71+bAkz8gqNqyBnKAuzVvqULXhsxKd4pC/k7Y7qAkXpG6JQ
+	cRUsR+AHQROLdKcEPgvsrR8=
+X-Google-Smtp-Source: AMsMyM7JGXbsNz0x5dE7UU8ItndkkQoelLZGntJ1miWPln8EohyuyG9V5ZZNjSRdJrKF5P6xSXVViQ==
+X-Received: by 2002:a05:6512:12c8:b0:49b:8005:1d9d with SMTP id p8-20020a05651212c800b0049b80051d9dmr13713891lfg.489.1664362838099;
+        Wed, 28 Sep 2022 04:00:38 -0700 (PDT)
+Received: from mobilestation ([95.79.140.178])
+        by smtp.gmail.com with ESMTPSA id z18-20020a19f712000000b00494a11c5f52sm442697lfe.256.2022.09.28.04.00.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Sep 2022 04:00:37 -0700 (PDT)
+Date: Wed, 28 Sep 2022 14:00:35 +0300
+From: Serge Semin <fancer.lancer@gmail.com>
+To: Zhuo Chen <chenzhuo.1@bytedance.com>
+Subject: Re: [PATCH v2 3/9] NTB: Change to use
+ pci_aer_clear_uncorrect_error_status()
+Message-ID: <20220928110035.ehbdxvpzkitbomoe@mobilestation>
+References: <20220927153524.49172-1-chenzhuo.1@bytedance.com>
+ <20220927153524.49172-4-chenzhuo.1@bytedance.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20220927153524.49172-4-chenzhuo.1@bytedance.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,95 +78,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-scsi@vger.kernel.org, linux-pci@vger.kernel.org, chenzhuo.1@bytedance.com, linux-kernel@vger.kernel.org, ntb@lists.linux.dev, linuxppc-dev@lists.ozlabs.org
+Cc: allenbh@gmail.com, dave.jiang@intel.com, linux-scsi@vger.kernel.org, martin.petersen@oracle.com, linux-pci@vger.kernel.org, jejb@linux.ibm.com, james.smart@broadcom.com, linux-kernel@vger.kernel.org, ntb@lists.linux.dev, oohall@gmail.com, jdmason@kudzu.us, bhelgaas@google.com, dick.kennedy@broadcom.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since pci_aer_clear_nonfatal_status() is used only internally, move
-its declaration to the PCI internal header file. Also, no one cares
-about return value of pci_aer_clear_nonfatal_status(), so make it void.
+On Tue, Sep 27, 2022 at 11:35:18PM +0800, Zhuo Chen wrote:
+> Status bits for ERR_NONFATAL errors only are cleared in
+> pci_aer_clear_nonfatal_status(), but we want clear uncorrectable
+> error status in idt_init_pci(), so we change to use
+> pci_aer_clear_uncorrect_error_status().
 
-Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
----
- drivers/pci/pci.h      | 2 ++
- drivers/pci/pcie/aer.c | 7 ++-----
- include/linux/aer.h    | 5 -----
- 3 files changed, 4 insertions(+), 10 deletions(-)
+Have the modification changed since:
+https://lore.kernel.org/linux-pci/20220901181634.99591-2-chenzhuo.1@bytedance.com/
+?
+AFAICS it hasn't. Then my ab-tag should have been preserved on v2.
+One more time:
+Acked-by: Serge Semin <fancer.lancer@gmail.com>
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 785f31086313..a114175d08e4 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -684,6 +684,7 @@ void pci_aer_init(struct pci_dev *dev);
- void pci_aer_exit(struct pci_dev *dev);
- extern const struct attribute_group aer_stats_attr_group;
- void pci_aer_clear_fatal_status(struct pci_dev *dev);
-+void pci_aer_clear_nonfatal_status(struct pci_dev *dev);
- int pci_aer_clear_status(struct pci_dev *dev);
- int pci_aer_raw_clear_status(struct pci_dev *dev);
- #else
-@@ -691,6 +692,7 @@ static inline void pci_no_aer(void) { }
- static inline void pci_aer_init(struct pci_dev *d) { }
- static inline void pci_aer_exit(struct pci_dev *d) { }
- static inline void pci_aer_clear_fatal_status(struct pci_dev *dev) { }
-+static inline void pci_aer_clear_nonfatal_status(struct pci_dev *dev) { }
- static inline int pci_aer_clear_status(struct pci_dev *dev) { return -EINVAL; }
- static inline int pci_aer_raw_clear_status(struct pci_dev *dev) { return -EINVAL; }
- #endif
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 4e637121be23..e2ebd108339d 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -251,13 +251,13 @@ int pci_disable_pcie_error_reporting(struct pci_dev *dev)
- }
- EXPORT_SYMBOL_GPL(pci_disable_pcie_error_reporting);
- 
--int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
-+void pci_aer_clear_nonfatal_status(struct pci_dev *dev)
- {
- 	int aer = dev->aer_cap;
- 	u32 status, sev;
- 
- 	if (!pcie_aer_is_native(dev))
--		return -EIO;
-+		return;
- 
- 	/* Clear status bits for ERR_NONFATAL errors only */
- 	pci_read_config_dword(dev, aer + PCI_ERR_UNCOR_STATUS, &status);
-@@ -265,10 +265,7 @@ int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
- 	status &= ~sev;
- 	if (status)
- 		pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_STATUS, status);
--
--	return 0;
- }
--EXPORT_SYMBOL_GPL(pci_aer_clear_nonfatal_status);
- 
- void pci_aer_clear_fatal_status(struct pci_dev *dev)
- {
-diff --git a/include/linux/aer.h b/include/linux/aer.h
-index 154690c278cb..f638ad955deb 100644
---- a/include/linux/aer.h
-+++ b/include/linux/aer.h
-@@ -44,7 +44,6 @@ struct aer_capability_regs {
- /* PCIe port driver needs this function to enable AER */
- int pci_enable_pcie_error_reporting(struct pci_dev *dev);
- int pci_disable_pcie_error_reporting(struct pci_dev *dev);
--int pci_aer_clear_nonfatal_status(struct pci_dev *dev);
- int pci_aer_clear_uncorrect_error_status(struct pci_dev *dev);
- void pci_save_aer_state(struct pci_dev *dev);
- void pci_restore_aer_state(struct pci_dev *dev);
-@@ -57,10 +56,6 @@ static inline int pci_disable_pcie_error_reporting(struct pci_dev *dev)
- {
- 	return -EINVAL;
- }
--static inline int pci_aer_clear_nonfatal_status(struct pci_dev *dev)
--{
--	return -EINVAL;
--}
- static inline int pci_aer_clear_uncorrect_error_status(struct pci_dev *dev)
- {
- 	return -EINVAL;
--- 
-2.30.1 (Apple Git-130)
+Don't forget to add it should you have some more patchset re-spins.
 
+-Sergey
+
+> 
+> Signed-off-by: Zhuo Chen <chenzhuo.1@bytedance.com>
+> ---
+>  drivers/ntb/hw/idt/ntb_hw_idt.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/ntb/hw/idt/ntb_hw_idt.c b/drivers/ntb/hw/idt/ntb_hw_idt.c
+> index 0ed6f809ff2e..d5f0aa87f817 100644
+> --- a/drivers/ntb/hw/idt/ntb_hw_idt.c
+> +++ b/drivers/ntb/hw/idt/ntb_hw_idt.c
+> @@ -2657,8 +2657,8 @@ static int idt_init_pci(struct idt_ntb_dev *ndev)
+>  	ret = pci_enable_pcie_error_reporting(pdev);
+>  	if (ret != 0)
+>  		dev_warn(&pdev->dev, "PCIe AER capability disabled\n");
+> -	else /* Cleanup nonfatal error status before getting to init */
+> -		pci_aer_clear_nonfatal_status(pdev);
+> +	else /* Cleanup uncorrectable error status before getting to init */
+> +		pci_aer_clear_uncorrect_error_status(pdev);
+>  
+>  	/* First enable the PCI device */
+>  	ret = pcim_enable_device(pdev);
+> -- 
+> 2.30.1 (Apple Git-130)
+> 
