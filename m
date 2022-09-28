@@ -4,47 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24188C32771
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:41:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F880C32771
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 13:42:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McyMJ452pz3cjJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:41:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4McyMx5X8yz3dxG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 23:42:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CJOyz4Ej;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i4YCUIZA;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL85ZHnz3bY3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4McyL85ffmz3bkb
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Sep 2022 23:40:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=CJOyz4Ej;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=i4YCUIZA;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL83DwDz4xGl;
-	Wed, 28 Sep 2022 23:40:32 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4McyL65c8Zz4xGQ;
+	Wed, 28 Sep 2022 23:40:30 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1664372432;
-	bh=/uqDlqqQgcpOgll/WldlYrE1D+Je2HurKP2I9O6k8JQ=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=CJOyz4Ejm4g+h/I0J9mTK/gJXrXvKhzk/d/KeR2g8rN7B2o3WMO8nS9IRot2Y+RZq
-	 l4UL3Yzu3ToXXrH8lLnloxN6//jVvBm9v3wyg8uSFTrUbU3jm16VovrI3xcxH8/Wx+
-	 iWszQDbQJvnrcxPw724og+quNOK99l3M6b38mn8lbIOxK7t4KvZUra4yoLW3jGqeiI
-	 38sg+W8aMx+5AnZrEd7RkGFxmPNnCp/Fv+2+kgsHv73zogTm/oGQsgLYuraFOkn7No
-	 CdfSuszwgQpyUjWGfnofYeRvtmQfX3POnILtMXb/mcUdb8NURv1KNvRPFe48oxqZMR
-	 wamcNIbPQe7fw==
+	s=201909; t=1664372430;
+	bh=/lNEJmTqE4KJ0mXO03cJ7YzFkVHxeI96IWFG2LDU56Q=;
+	h=From:To:Subject:Date:From;
+	b=i4YCUIZAaLz17ulYzn+SwmuNEJb67OYEjRJ4H2gghGsC5dBKT3EhaQ5URkuxxBxfN
+	 YzNct5k9A8PnxZ3t2c1pdgTpPEdKOlluwjqny4c4GblxJG4FTIJ9tVTkb2qHMRwHCV
+	 TYAghR7nbT0hhHAlLQQeYmHd785hZZNmHT76OxsT5qY6qFDNq3puAVlTVQp0qeWJZa
+	 sIBNZrfDTLCv50dPcn4i2EiqTkQgAQdMLIQ2vvxegb2+QruvHBK+uOZ5YkuNnIXOp+
+	 8YjY740MxFGFrSHrMiNCen7azpeRG35XRgQiV/Fcr5hc3/dwcE2A1LqbrGItGoD3Cz
+	 oBvQddkXwT9oQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/6] powerpc: Add device-tree model to dump stack arch description
-Date: Wed, 28 Sep 2022 23:40:23 +1000
-Message-Id: <20220928134025.1739909-4-mpe@ellerman.id.au>
+Subject: [PATCH 1/6] powerpc: Add ppc_md.name to dump stack arch description
+Date: Wed, 28 Sep 2022 23:40:20 +1000
+Message-Id: <20220928134025.1739909-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220928134025.1739909-1-mpe@ellerman.id.au>
-References: <20220928134025.1739909-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,53 +59,77 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the model of the machine we're on to the dump stack arch
-description, which is printed in case of an oops.
+As soon as we know the name of the machine description we're using,
+add it to the dump stack arch description, which is printed in case of
+an oops.
 
-eg: Hardware name: model:'IBM,8247-22L'
+eg: Hardware name: ... machine:pSeries
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/powerpc/include/asm/setup.h   |  2 ++
+ arch/powerpc/kernel/setup-common.c | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index dca06ef7fcde..605e4ad8a4c2 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -715,6 +715,23 @@ static void __init tm_init(void)
- static void tm_init(void) { }
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 85143849a586..e29e83f8a89c 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -88,6 +88,8 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ 			       unsigned long pp, unsigned long r6,
+ 			       unsigned long r7, unsigned long kbase);
  
-+static int __init
-+early_init_dt_scan_model(unsigned long node, const char *uname,
-+			 int depth, void *data)
-+{
-+	const char *prop;
++extern struct seq_buf ppc_hw_desc;
 +
-+	if (depth != 0)
-+		return 0;
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif	/* _ASM_POWERPC_SETUP_H */
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index dd98f43bd685..42279c3f1d31 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
+ #include <linux/initrd.h>
+ #include <linux/platform_device.h>
++#include <linux/printk.h>
+ #include <linux/seq_file.h>
+ #include <linux/ioport.h>
+ #include <linux/console.h>
+@@ -25,6 +26,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
+ #include <linux/unistd.h>
++#include <linux/seq_buf.h>
+ #include <linux/serial.h>
+ #include <linux/serial_8250.h>
+ #include <linux/percpu.h>
+@@ -588,6 +590,15 @@ static __init int add_pcspkr(void)
+ device_initcall(add_pcspkr);
+ #endif	/* CONFIG_PCSPKR_PLATFORM */
+ 
++static char ppc_hw_desc_buf[128] __initdata;
 +
-+	prop = of_get_flat_dt_prop(node, "model", NULL);
-+	if (prop)
-+		seq_buf_printf(&ppc_hw_desc, "model:'%s' ", prop);
++struct seq_buf ppc_hw_desc __initdata = {
++	.buffer = ppc_hw_desc_buf,
++	.size = sizeof(ppc_hw_desc_buf),
++	.len = 0,
++	.readpos = 0,
++};
 +
-+	/* break now */
-+	return 1;
-+}
-+
- #ifdef CONFIG_PPC64
- static void __init save_fscr_to_task(void)
+ static __init void probe_machine(void)
  {
-@@ -743,6 +760,8 @@ void __init early_init_devtree(void *params)
- 	if (!early_init_dt_verify(params))
- 		panic("BUG: Failed verifying flat device tree, bad version?");
+ 	extern struct machdep_calls __machine_desc_start;
+@@ -628,6 +639,9 @@ static __init void probe_machine(void)
+ 		for (;;);
+ 	}
  
-+	of_scan_flat_dt(early_init_dt_scan_model, NULL);
++	seq_buf_printf(&ppc_hw_desc,"machine:%s ", ppc_md.name);
++	dump_stack_set_arch_desc(ppc_hw_desc.buffer);
 +
- #ifdef CONFIG_PPC_RTAS
- 	/* Some machines might need RTAS info for debugging, grab it now. */
- 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
+ 	printk(KERN_INFO "Using %s machine description\n", ppc_md.name);
+ }
+ 
 -- 
 2.37.3
 
