@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD71CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 14:24:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23EEDC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 14:25:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MdbGX43Xpz3dq6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 00:24:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MdbH84nPZz3c8c
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 00:25:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EB4Bxtl8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mZDnihUS;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MdbFJ0dPzz3bSX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MdbFJ4v4Mz3bSX
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 00:23:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EB4Bxtl8;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mZDnihUS;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MdbFH6grZz4xGZ;
-	Fri, 30 Sep 2022 00:23:31 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MdbFJ45hGz4xG6;
+	Fri, 30 Sep 2022 00:23:32 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1664461412;
-	bh=Wnbk66ivAKryyRRSf+MuMSh0U1FLFIq+sOvgdZFxJro=;
+	bh=Cb/cTHXpcBtzZbP1obHiikKKNM4JCw9+64ilWViZ5lk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=EB4Bxtl8YwZSOud1rNDRfAJHi/nCnVy2iidgW8+THLjYE9bRWpY1OJ3z3fsirqDEx
-	 eOFLGnI9q/Eg/CNUNrqCsW7MkJMRlI3EZIL0wv/eG65DK0IuLN4jkI2OBgEvo8TOpb
-	 YvaqPIkmGwZ39LWWchWPjnxAOy62X5J+Ok1202SFUyM6i/wXJ0y9BrPsQ1ODW7OCkD
-	 KLGMhdlr3p0Z1aUa/dy3oM5sdqKiFFgDqQEAfHpVqBp1Miyk26V9XPMWupuSQHEEC2
-	 XIcX18kdgh4yRIr41D12clDq6xLIOUPXuzZGyOGfXFfLFvWTPM8aPaawc/JTw0XN4S
-	 1G7WyT7nW9bpw==
+	b=mZDnihUSAvPPuAE+pg239JcFJD8/qPMP0jEc1O4movKd1j/WgETEUAURefN+ttxJU
+	 Gd6/BKfurTpZ2/TrQ9h3wWaitLD+Zf6VuSZXrHA1xz+vl1iFBvw0SWTJuwd38/6ufk
+	 uhtR0vv0lpWmDaNoX6JB2vhISAGPb+fm3ziobynQ+Uba3Jnqcz2uBjhgA21QHaRkr5
+	 xrQXe/do5oe5AbIak7o3zYPiV0oXx7Xj9vms/8Jpa4kkc9o3nS1RDFIFbAsoM6T7cM
+	 uPceBP0/eAKr5xMA1KZuOE5bib9xjudQzfSkneqLa6BK6iiU/uN2OsHoUaPhSUsVF8
+	 jBW4hp5qp9A2Q==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 2/6] powerpc: Add PVR & CPU name to hardware description
-Date: Fri, 30 Sep 2022 00:22:47 +1000
-Message-Id: <20220929142251.1987025-2-mpe@ellerman.id.au>
+Subject: [PATCH v2 3/6] powerpc/64: Add logical PVR to the hardware description
+Date: Fri, 30 Sep 2022 00:22:48 +1000
+Message-Id: <20220929142251.1987025-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20220929142251.1987025-1-mpe@ellerman.id.au>
 References: <20220929142251.1987025-1-mpe@ellerman.id.au>
@@ -62,39 +62,32 @@ Cc: nathanl@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the PVR and CPU name to the hardware description, which is printed
-at boot and in case of an oops.
+If we detect a logical PVR add that to the hardware description, which
+is printed at boot and in case of an oops.
 
-eg: Hardware name: ... cpu:'POWER8E (raw)' pvr:0x4b0201
+eg: Hardware name: ... lpvr:0xf000004
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/prom.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 2e7a04dab2f7..b42e2dbeb021 100644
+index b42e2dbeb021..8c4cce6dc1e8 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -30,6 +30,7 @@
- #include <linux/libfdt.h>
- #include <linux/cpu.h>
- #include <linux/pgtable.h>
-+#include <linux/seq_buf.h>
- 
- #include <asm/rtas.h>
- #include <asm/page.h>
-@@ -819,6 +820,10 @@ void __init early_init_devtree(void *params)
- 
- 	dt_cpu_ftrs_scan();
- 
-+	// We can now add the CPU name & PVR to the hardware description
-+	seq_buf_printf(&ppc_hw_desc, "cpu:'%s' pvr:0x%04lx ", cur_cpu_spec->cpu_name,
-+		       mfspr(SPRN_PVR));
-+
- 	/* Retrieve CPU related informations from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
+@@ -390,8 +390,10 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
  	 */
+ 	if (!dt_cpu_ftrs_in_use()) {
+ 		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
+-		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
++		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000) {
+ 			identify_cpu(0, be32_to_cpup(prop));
++			seq_buf_printf(&ppc_hw_desc, "lpvr:0x%04x ", be32_to_cpup(prop));
++		}
+ 
+ 		check_cpu_feature_properties(node);
+ 		check_cpu_features(node, "ibm,pa-features", ibm_pa_features,
 -- 
 2.37.3
 
