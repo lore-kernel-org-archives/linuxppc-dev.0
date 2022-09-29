@@ -4,68 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10C9DC54EE9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 00:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03076C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Sep 2022 22:11:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4McdM85Gpjz3f5c
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Sep 2022 10:55:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mdnd22Ll5z3c7V
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 08:11:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=FaS73uE4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pRFMJ4xT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=FaS73uE4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pRFMJ4xT;
 	dkim-atps=neutral
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4McJZ04c15z309f;
-	Tue, 27 Sep 2022 22:18:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1664281113; x=1695817113;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=OFIxxBkiaCDaU7hdmWCgva7sjv3x1WGTNlqGM1oQtNQ=;
-  b=FaS73uE4zp9UpsS1M+KbVp36XzuqhWSgE4LPuJgYxKQ9wK+HndrXlmA4
-   Nb1LivTuo4Y4sWEb7sUXIJcVCM7WPpsre7OUsasXCC8enhaITC+u4xsYs
-   TLa6Ymlrdq0ORkYtfk6mV1hnkRyzzO2hr/0q7lgmrkBxcdLv/PLQSrJ/r
-   H8m+tmCv8yyb7EwXHjth4RHRgFZZFfihL2x5zZXZIT3AR+5mN6pp6oxc5
-   OuF7ZunuYT1Tz0PKKYNHNWGcpMObz+L2xWOJ4jwswm4eIscvD4GSPr7UQ
-   LTPQzzAW47lpFYrIC9I/aaG3WhGe3YraT5Y2y5z59T4Ny5qDEByJq39GN
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10482"; a="302212010"
-X-IronPort-AV: E=Sophos;i="5.93,349,1654585200"; 
-   d="scan'208";a="302212010"
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Sep 2022 05:18:29 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10482"; a="616810246"
-X-IronPort-AV: E=Sophos;i="5.93,349,1654585200"; 
-   d="scan'208";a="616810246"
-Received: from smile.fi.intel.com ([10.237.72.54])
-  by orsmga007.jf.intel.com with ESMTP; 27 Sep 2022 05:18:06 -0700
-Received: from andy by smile.fi.intel.com with local (Exim 4.96)
-	(envelope-from <andriy.shevchenko@linux.intel.com>)
-	id 1od9XD-008RHv-1p;
-	Tue, 27 Sep 2022 15:17:59 +0300
-Date: Tue, 27 Sep 2022 15:17:59 +0300
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Rob Herring <robh@kernel.org>, Andrzej Hajda <andrzej.hajda@intel.com>
-Subject: Re: [PATCH v2 0/2] Fix console probe delay when stdout-path isn't set
-Message-ID: <YzLp9yXgoJmy5YU8@smile.fi.intel.com>
-References: <20220701012647.2007122-1-saravanak@google.com>
- <YwS5J3effuHQJRZ5@kroah.com>
- <CAOesGMivJ5Q-jdeGKw32yhjmNiYctHjpEAnoMMRghYqWD2m2tw@mail.gmail.com>
- <YygsEtxKz8dsEstc@kroah.com>
- <CAOesGMh5GHCONTQ9M1Ro7zW-hkL_1F7Xt=xRV0vYSfPY=7LYkQ@mail.gmail.com>
- <CAL_JsqK7auA8coB3DCqSDKw1ept_yQihVs-Me3bvU923os23xg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MdncJ51xCz2yP8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 08:10:40 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 28TLtBqu005868;
+	Thu, 29 Sep 2022 22:10:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : subject :
+ in-reply-to : references : date : message-id : mime-version :
+ content-type; s=pp1; bh=pQH4tiUYaJap9C/cCB5G8K+8InauKQNHX4Htnd4fKa8=;
+ b=pRFMJ4xTOsLOL/0BKhDdFOBa3Zbi/8J5p+cUdOkF17Ndxxo6Lq9AXDMhUIHo6PW0bsWK
+ w0Nr6CWfT2VoXMIqLIo54pRk9C9KZFeeQ5htA1MarmmuFJ3dKac7iQaALYVNQh608aol
+ EH5ZhkMq497ExevEdLShJbKydI10EXoF7seVTvOJWn086E+ERtZ6BiBf21T9lK61del/
+ SjcxIr8LeTHvReQbaYpi8LH7FWAxZYjB6juk7Dp1S9L1ZF5qCcjJ3UnhDx+2o7iMEP4O
+ VnZ8CzIPJY8eJbKm9qTKc11dOM1WZyuSvvzDta3jfTIAP6d8pSHpyAqaPjVrN02IbnVP fg== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3jwkpy10xh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Sep 2022 22:10:33 +0000
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+	by ppma01wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 28TM6OTb009469;
+	Thu, 29 Sep 2022 22:10:17 GMT
+Received: from b03cxnp07028.gho.boulder.ibm.com (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+	by ppma01wdc.us.ibm.com with ESMTP id 3jt40s9wq2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 29 Sep 2022 22:10:17 +0000
+Received: from smtpav05.dal12v.mail.ibm.com ([9.208.128.132])
+	by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 28TMAHbC26935804
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 29 Sep 2022 22:10:17 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 84B555805D;
+	Thu, 29 Sep 2022 22:10:16 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 737AC58056;
+	Thu, 29 Sep 2022 22:10:16 +0000 (GMT)
+Received: from localhost (unknown [9.41.178.242])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 29 Sep 2022 22:10:16 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 6/6] powerpc/pseries: Add firmware details to the
+ hardware description
+In-Reply-To: <20220929142251.1987025-6-mpe@ellerman.id.au>
+References: <20220929142251.1987025-1-mpe@ellerman.id.au>
+ <20220929142251.1987025-6-mpe@ellerman.id.au>
+Date: Thu, 29 Sep 2022 17:10:16 -0500
+Message-ID: <87zgehbznb.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqK7auA8coB3DCqSDKw1ept_yQihVs-Me3bvU923os23xg@mail.gmail.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
-X-Mailman-Approved-At: Wed, 28 Sep 2022 10:50:40 +1000
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: DeVhf6RBgcLLHL5ss7ghK6jmkBdqiUfH
+X-Proofpoint-GUID: DeVhf6RBgcLLHL5ss7ghK6jmkBdqiUfH
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-09-29_13,2022-09-29_03,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 suspectscore=0 bulkscore=0 spamscore=0 phishscore=0
+ adultscore=0 mlxlogscore=999 clxscore=1015 impostorscore=0 mlxscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2209290139
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,87 +89,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: andrew lunn <andrew@lunn.ch>, peng fan <peng.fan@nxp.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linus walleij <linus.walleij@linaro.org>, Paul Mackerras <paulus@samba.org>, Alim Akhtar <alim.akhtar@samsung.com>, Peter Korsgaard <jacmet@sunsite.dk>, linux-stm32@st-md-mailman.stormreply.com, Karol Gugala <kgugala@antmicro.com>, Jerome Brunet <jbrunet@baylibre.com>, linux-samsung-soc@vger.kernel.org, Michal Simek <michal.simek@xilinx.com>, Hammer Hsieh <hammerh0314@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, Vineet Gupta <vgupta@kernel.org>, len brown <len.brown@intel.com>, Nicolas Saenz Julienne <nsaenz@kernel.org>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-unisoc@lists.infradead.org, Scott Branden <sbranden@broadcom.com>, Andrew Jeffery <andrew@aj.id.au>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Richard Genoud <richard.genoud@gmail.com>, Masami Hiramatsu <mhiramat@kernel.org>, Pengutronix Kernel Team <kerne
- l@pengutronix.de>, Claudiu Beznea <claudiu.beznea@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, pavel machek <pavel@ucw.cz>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, eric dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, sascha hauer <sha@pengutronix.de>, Saravana Kannan <saravanak@google.com>, will deacon <will@kernel.org>, Jonathan Hunter <jonathanh@nvidia.com>, Gabriel Somlo <gsomlo@gmail.com>, Tobias Klauser <tklauser@distanz.ch>, linux-mips@vger.kernel.org, kernel-team@android.com, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, linux-arm-msm@vger.kernel.org, linux-actions@lists.infradead.org, Olof Johansson <olof@lixom.net>, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, Chunyan Zhang <zhang.lyra@gmail.com>, Andreas Farber <afaerber@suse.de>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Kevin Hilman <khilman@baylibre.com>,
-  Pali Rohar <pali@kernel.org>, heiner kallweit <hkallweit1@gmail.com>, ulf hansson <ulf.hansson@linaro.org>, Neil Armstrong <narmstrong@baylibre.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Al Cooper <alcooperx@gmail.com>, linux-tegra@vger.kernel.org, Jiri Slaby <jirislaby@kernel.org>, linux-aspeed@lists.ozlabs.org, Florian Fainelli <f.fainelli@gmail.com>, Mateusz Holenko <mholenko@antmicro.com>, Alexander Shiyan <shc_work@mail.ru>, kevin hilman <khilman@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Joel Stanley <joel@jms.id.au>, Orson Zhai <orsonzhai@gmail.com>, paolo abeni <pabeni@redhat.com>, Patrice Chotard <patrice.chotard@foss.st.com>, Ray Jui <rjui@broadcom.com>, Vladimir Zapolskiy <vz@mleia.com>, linux-snps-arc@lists.infradead.org, Timur Tabi <timur@kernel.org>, hideaki yoshifuji <yoshfuji@linux-ipv6.org>, iommu@lists.linux-foundation.org, Laxman Dewangan <ldewangan@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Baolin Wang
-  <baolin.wang7@gmail.com>, Shawn Guo <shawnguo@kernel.org>, "David S. Miller" <davem@davemloft.net>, Baruch Siach <baruch@tkos.co.il>, Liviu Dudau <liviu.dudau@arm.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, Paul Cercueil <paul@crapouillou.net>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, joerg roedel <joro@8bytes.org>, Russell King <linux@armlinux.org.uk>, Andy Gross <agross@kernel.org>, linux-serial@vger.kernel.org, jakub kicinski <kuba@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>, linux-mediatek@lists.infradead.org, Fabio Estevam <festevam@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, Matthias Brugger <matthias.bgg@gmail.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Taichi Sugaya <sugaya.taichi@socionext.com>, netdev@vger.kernel.org, david ahern <dsahern@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Palmer Dabbelt <palmer@d
- abbelt.com>, Takao Orito <orito.takao@socionext.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Sep 26, 2022 at 01:25:05PM -0500, Rob Herring wrote:
-> On Mon, Sep 19, 2022 at 5:56 PM Olof Johansson <olof@lixom.net> wrote:
-> >
-> > On Mon, Sep 19, 2022 at 1:44 AM Greg Kroah-Hartman
-> > <gregkh@linuxfoundation.org> wrote:
-> > >
-> > > On Sun, Sep 18, 2022 at 08:44:27PM -0700, Olof Johansson wrote:
-> > > > On Tue, Aug 23, 2022 at 8:37 AM Greg Kroah-Hartman
-> > > > <gregkh@linuxfoundation.org> wrote:
-> > > > >
-> > > > > On Thu, Jun 30, 2022 at 06:26:38PM -0700, Saravana Kannan wrote:
-> > > > > > These patches are on top of driver-core-next.
-> > > > > >
-> > > > > > Even if stdout-path isn't set in DT, this patch should take console
-> > > > > > probe times back to how they were before the deferred_probe_timeout
-> > > > > > clean up series[1].
-> > > > >
-> > > > > Now dropped from my queue due to lack of a response to other reviewer's
-> > > > > questions.
-> > > >
-> > > > What happened to this patch? I have a 10 second timeout on console
-> > > > probe on my SiFive Unmatched, and I don't see this flag being set for
-> > > > the serial driver. In fact, I don't see it anywhere in-tree. I can't
-> > > > seem to locate another patchset from Saravana around this though, so
-> > > > I'm not sure where to look for a missing piece for the sifive serial
-> > > > driver.
-> > > >
-> > > > This is the second boot time regression (this one not fatal, unlike
-> > > > the Layerscape PCIe one) from the fw_devlink patchset.
-> > > >
-> > > > Greg, can you revert the whole set for 6.0, please? It's obviously
-> > > > nowhere near tested enough to go in and I expect we'll see a bunch of
-> > > > -stable fixups due to this if we let it remain in.
-> > >
-> > > What exactly is "the whole set"?  I have the default option fix queued
-> > > up and will send that to Linus later this week (am traveling back from
-> > > Plumbers still), but have not heard any problems about any other issues
-> > > at all other than your report.
-> >
-> > I stand corrected in this case, the issue on the Hifive Unmatched was
-> > a regression due to a PWM clock change -- I just sent a patch for that
-> > (serial driver fix).
-> >
-> > So it seems like as long as the fw_devlink.strict=1 patch is reverted,
-> > things are back to a working state here.
-> >
-> > I still struggle with how the fw_devlink patchset is expected to work
-> > though, since DT is expected to describe the hardware configuration,
-> > and it has no knowledge of whether there are drivers that will be
-> > bound to any referenced supplier devnodes. It's not going to work well
-> > to assume that they will always be bound, and to add 10 second
-> > timeouts for those cases isn't a good solution. Seems like the number
-> > of special cases will keep adding up.
-> 
-> Since the introduction of deferred probe, the kernel has always
-> assumed if there is a device described, then there is or will be a
-> driver for it. The result is you can't use new DTs (if they add
-> providers) with older kernels.
-> 
-> We've ended up with a timeout because no one has come up with a better
-> way to handle it. What the kernel needs is userspace saying "I'm done
-> loading modules", but it's debatable whether that's a good solution
-> too.
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Add firmware version details to the hardware description, which is
+> printed at boot and in case of an oops.
+>
+> Use /hypervisor if we find it, though currently it only exists if we're
+> running under qemu.
+>
+> Look for "ibm,powervm-partition" which is specified in PAPR+ v2.11 and
+> tells us we're running under PowerVM.
+>
+> Failing that look for "ibm,fw-net-version" which is seen on PowerVM
+> going back to at least Power6.
+>
+> eg: Hardware name: ... of:'IBM,FW860.42 (SV860_138)' hv:'phyp'
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/platforms/pseries/setup.c | 30 ++++++++++++++++++++++++++
+>  1 file changed, 30 insertions(+)
+>
+> v2: Look for "ibm,powervm-partition" as suggested by Nathan.
+>     Use of_property_read_string().
 
-In my opinion the deferred probe is a big hack and that is the root
-cause of the issues we have here and there. It has to be redesigned
-to be mathematically robust. It was an attempt by Andrzej Hajda to
-solve this [1].
+LGTM.
 
-[1]: https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Deferred-Problem-Issues-With-Complex-Dependencies-Between-Devices-in-Linux-Kernel-Andrzej-Hajda-Samsung.pdf
+I noticed that we don't get an "of:" report with qemu+vof, because there's no
+/openprom node.
 
--- 
-With Best Regards,
-Andy Shevchenko
+$ qemu-system-ppc64 -nographic -vga none -M pseries,x-vof=off -kernel vmlinux | grep Hardware
+Hardware name: model:'IBM pSeries (emulated by qemu)' cpu:'POWER9 (raw)' pvr:0x4e1200 lpvr:0xf000005 of:'SLOF,HEAD' machine:pSeries
+$ qemu-system-ppc64 -nographic -vga none -M pseries,x-vof=on -kernel vmlinux | grep Hardware
+Hardware name: model:'IBM pSeries (emulated by qemu)' cpu:'POWER9 (raw)' pvr:0x4e1200 lpvr:0xf000005 machine:pSeries
+$ qemu-system-ppc64 --version
+QEMU emulator version 7.0.0 (qemu-7.0.0-6.fc36)
+
+I didn't see anything in the vof device tree that would help though.
 
 
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 5e44c65a032c..83b047db35da 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -41,6 +41,7 @@
+>  #include <linux/of_pci.h>
+>  #include <linux/memblock.h>
+>  #include <linux/swiotlb.h>
+> +#include <linux/seq_buf.h>
+>  
+>  #include <asm/mmu.h>
+>  #include <asm/processor.h>
+> @@ -1011,6 +1012,33 @@ static void __init pSeries_cmo_feature_init(void)
+>  	pr_debug(" <- fw_cmo_feature_init()\n");
+>  }
+>  
+> +static void __init pseries_add_hw_description(void)
+> +{
+> +	struct device_node *dn;
+> +	const char *s;
+> +
+> +	dn = of_find_node_by_path("/openprom");
+> +	if (dn) {
+> +		if (of_property_read_string(dn, "model", &s) == 0)
+> +			seq_buf_printf(&ppc_hw_desc, "of:'%s' ", s);
+> +
+> +		of_node_put(dn);
+> +	}
+> +
+> +	dn = of_find_node_by_path("/hypervisor");
+> +	if (dn) {
+> +		if (of_property_read_string(dn, "compatible", &s) == 0)
+> +			seq_buf_printf(&ppc_hw_desc, "hv:'%s' ", s);
+> +
+> +		of_node_put(dn);
+> +		return;
+> +	}
+> +
+> +	if (of_property_read_bool(of_root, "ibm,powervm-partition") ||
+> +	    of_property_read_bool(of_root, "ibm,fw-net-version"))
+> +		seq_buf_printf(&ppc_hw_desc, "hv:'phyp' ");
+> +}
