@@ -4,47 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 005A8C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 08:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199ADC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 08:30:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mf3LN2LWZz3dsM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 18:29:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mf3M05MNBz3f3q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 18:30:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gI/AcHws;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O0AdGHxt;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mf3K84wgzz2xy2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 18:28:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mf3K91yplz3c2q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 18:28:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gI/AcHws;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=O0AdGHxt;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mf3K83pLwz4xGk;
-	Fri, 30 Sep 2022 18:28:28 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mf3K73YZTz4xGZ;
+	Fri, 30 Sep 2022 18:28:27 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1664526508;
-	bh=ZrM6T/KXJyPxKYfLeGjGcN1HR+t+1SIb13Ka+E8p0Dg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=gI/AcHwsE8vqfqFocQfm7Q7sTVMZnornIADdQ/m0MA157p6QswOUSK0GZqa+oQ4P6
-	 uC6PnUGIIVDw0H5DZmBHrTprHgHMcubkk7vFge7Ql16wpdJ+o6AoNmPDtCeJgrTnuZ
-	 FiRQUN/RF3jtudQvkeZNKvVLp026bp4GFPoCLfesQ7idOm+VPGwAzd/tN9lbVyzOzx
-	 3PKioWH3Xf53jgQIQCku3FicLbPBMeq1F0roUJ8PmYi+bH9JgHZ0xqhui+qjaCs2bS
-	 BxukxBhcZ64/i1EmWfKODLhQNXEkla0b0yQbYHn34PkP4RQtsSvM11F2E8eSQJW/3N
-	 fOGlMyIQpquHQ==
+	s=201909; t=1664526507;
+	bh=bNInHcguQVUPfj5J1CREi3zqsFusom2kwnM8+PYDMoA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=O0AdGHxtiHERKhUSYUYqBu8jdEnIfpMtRoeEne7abdwgoSuaiTdbKWCe1uXGC7P6q
+	 uR1EB5CqF4O7yCFYNOPfFmoJBMy59rSB585B9n4dpijuHagOxXMLkEfvg+gEtrtZU0
+	 RNA4AgK8NDuswDS4J1HBYnpEDQXDQQqa8Pb2V7kWsjkjEuss+wWwZ0jAgFWah0fVIt
+	 ZMKF0RVq5RXlR9dFsDZ10vDCW4awsXJNWu0Rdk4QrZyfCwsqX+QmodifeN+pZp/n+e
+	 Rw6nblMgtgMcryaq/yL51fEwK6KtcP1hzegDSckhAWPPDchGTHa8lq9/NE9M4uL+a6
+	 /k/2KTvBdbDYw==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3 3/6] powerpc/64: Add logical PVR to the hardware description
-Date: Fri, 30 Sep 2022 18:27:06 +1000
-Message-Id: <20220930082709.55830-3-mpe@ellerman.id.au>
+Subject: [PATCH v3 1/6] powerpc: Add hardware description string
+Date: Fri, 30 Sep 2022 18:27:04 +1000
+Message-Id: <20220930082709.55830-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20220930082709.55830-1-mpe@ellerman.id.au>
-References: <20220930082709.55830-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -62,34 +60,92 @@ Cc: nathanl@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If we detect a logical PVR add that to the hardware description, which
-is printed at boot and in case of an oops.
+Create a hardware description string, which we will use to record
+various details of the hardware platform we are running on.
 
-eg: Hardware name: ... 0xf000004
+Print the accumulated description at boot, and use it to set the generic
+description which is printed in oopses.
+
+To begin with add ppc_md.name, aka the "machine description".
+
+Example output at boot with the full series applied:
+
+  Linux version 6.0.0-rc2-gcc-11.1.0-00199-g893f9007a5ce-dirty (michael@alpine1-p1) (powerpc64-linux-gcc (GCC) 11.1.0, GNU ld (GNU Binutils) 2.36.1) #844 SMP Thu Sep 29 22:29:53 AEST 2022
+  Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1200 0xf000005 of:SLOF,git-5b4c5a pSeries
+  printk: bootconsole [udbg0] enabled
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/setup.h   |  2 ++
+ arch/powerpc/kernel/setup-common.c | 19 ++++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-v3: Drop "lpvr:" tag for brevity.
+v3: Drop 'machine:' tag for brevity.
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 09f07cc57216..83fc72202838 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -390,8 +390,10 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	 */
- 	if (!dt_cpu_ftrs_in_use()) {
- 		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
--		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
-+		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000) {
- 			identify_cpu(0, be32_to_cpup(prop));
-+			seq_buf_printf(&ppc_hw_desc, "0x%04x ", be32_to_cpup(prop));
-+		}
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 85143849a586..e29e83f8a89c 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -88,6 +88,8 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ 			       unsigned long pp, unsigned long r6,
+ 			       unsigned long r7, unsigned long kbase);
  
- 		check_cpu_feature_properties(node);
- 		check_cpu_features(node, "ibm,pa-features", ibm_pa_features,
++extern struct seq_buf ppc_hw_desc;
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif	/* _ASM_POWERPC_SETUP_H */
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index dd98f43bd685..6d041993a45d 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
+ #include <linux/initrd.h>
+ #include <linux/platform_device.h>
++#include <linux/printk.h>
+ #include <linux/seq_file.h>
+ #include <linux/ioport.h>
+ #include <linux/console.h>
+@@ -25,6 +26,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/cpu.h>
+ #include <linux/unistd.h>
++#include <linux/seq_buf.h>
+ #include <linux/serial.h>
+ #include <linux/serial_8250.h>
+ #include <linux/percpu.h>
+@@ -588,6 +590,15 @@ static __init int add_pcspkr(void)
+ device_initcall(add_pcspkr);
+ #endif	/* CONFIG_PCSPKR_PLATFORM */
+ 
++static char ppc_hw_desc_buf[128] __initdata;
++
++struct seq_buf ppc_hw_desc __initdata = {
++	.buffer = ppc_hw_desc_buf,
++	.size = sizeof(ppc_hw_desc_buf),
++	.len = 0,
++	.readpos = 0,
++};
++
+ static __init void probe_machine(void)
+ {
+ 	extern struct machdep_calls __machine_desc_start;
+@@ -628,7 +639,13 @@ static __init void probe_machine(void)
+ 		for (;;);
+ 	}
+ 
+-	printk(KERN_INFO "Using %s machine description\n", ppc_md.name);
++	// Append the machine name to other info we've gathered
++	seq_buf_puts(&ppc_hw_desc, ppc_md.name);
++
++	// Set the generic hardware description shown in oopses
++	dump_stack_set_arch_desc(ppc_hw_desc.buffer);
++
++	pr_info("Hardware name: %s\n", ppc_hw_desc.buffer);
+ }
+ 
+ /* Match a class of boards, not a specific device configuration. */
 -- 
 2.37.3
 
