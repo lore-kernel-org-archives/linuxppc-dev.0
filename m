@@ -4,47 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9571DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 02:13:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C541C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 04:29:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mdv0y6xfrz3c61
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 12:13:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mdy1P1ZGCz3c6d
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Sep 2022 14:29:29 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Cp0mQabO;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gcxowIOd;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mdv0L3CF5z2yZd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 12:13:22 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mdy0j6fncz3bln
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Sep 2022 14:28:53 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Cp0mQabO;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=gcxowIOd;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mdv0L2PP8z4xGG;
-	Fri, 30 Sep 2022 12:13:22 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mdy0b2PCtz4xGT;
+	Fri, 30 Sep 2022 14:28:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1664504002;
-	bh=3MTX6hqy8nd5nyKxNiDOQkLAb1u8JfDwumbhwFaTYiE=;
+	s=201909; t=1664512127;
+	bh=wykyjk1vRB+wmm4zz+5y1/6bWmQOokwGfLJ10piwdwM=;
 	h=From:To:Subject:In-Reply-To:References:Date:From;
-	b=Cp0mQabOQh7r8ZjaB5UzdBUMfXslOeCztPuNVp9/RYewPfUaCsHWtVvMXJvA3bcNH
-	 UJJStYt6OAMLqEjhBGpE8Anu5hJdCO5DXufKGqgDdM5n2Vzh7jP1qfFeHikOI6hPMD
-	 IogP8KGzRbcH2mAqJv8sCU0HPqpWkqceSOGBAIRV5EDYfh2hMjeSZ+GQaL5jwPhblD
-	 OsFoiFdVOo3GwvKwnb6mtzC17NuVKtW3QOeJWPZ8tejOuVmqU2pNTQOB+LFuYsR74j
-	 5HjlAA3z5XIRCWpA99MwHQI4qzXZpplKzfSC1MGGtRvxbAQm0OgV0lRAIBfIWWMv1O
-	 FoHw1nWHV6GEw==
+	b=gcxowIOdM3KDskfNkQfnpJl2rFLH9fFbM1sHzGtx/B/WhCMp1W0wIP1dF1pS1pPxR
+	 NbiyfTDzvLb7J/Yt7zu1S/a/fDQMPrsBEqy5FKMZbYo4oQ+DDT2PuWKO7ZkmnlxqTW
+	 wHW/aXa5BVXqUBxlc7Nst/USiOW3NNWvukUY5rxQUZUn6F658NIxBJqx1iwZH6mqTR
+	 9nOuUryVEhsuG8gpeugSSrvdaFEp0df2sVIrBAnp5qNXfbiRSEI/5ZVeB2pdtD/FbC
+	 HmnOTf9E7QzxiHPYDuawIZQMAyoObEH44cK132INzeg7xyL8a2tR/PYh7Gbz0F4o3W
+	 +0JbAfAtFsnDg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/6] powerpc: Add hardware description string
-In-Reply-To: <8735c9delr.fsf@linux.ibm.com>
-References: <20220929142251.1987025-1-mpe@ellerman.id.au>
- <8735c9delr.fsf@linux.ibm.com>
-Date: Fri, 30 Sep 2022 12:13:21 +1000
-Message-ID: <87r0ztehj2.fsf@mpe.ellerman.id.au>
+Subject: Re: [PATCH 6/6] powerpc/pseries: Add firmware details to dump stack
+ arch description
+In-Reply-To: <87tu4rp885.fsf@linux.ibm.com>
+References: <20220928134025.1739909-1-mpe@ellerman.id.au>
+ <20220928134025.1739909-6-mpe@ellerman.id.au>
+ <87tu4rp885.fsf@linux.ibm.com>
+Date: Fri, 30 Sep 2022 14:28:46 +1000
+Message-ID: <87pmfdeb9d.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -63,64 +65,46 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 Nathan Lynch <nathanl@linux.ibm.com> writes:
 > Michael Ellerman <mpe@ellerman.id.au> writes:
->> Create a hardware description string, which we will use to record
->> various details of the hardware platform we are running on.
->>
->> Print the accumulated description at boot, and use it to set the generic
->> description which is printed in oopses.
->>
->> To begin with add ppc_md.name, aka the "machine description".
->>
->> Example output at boot with the full series applied:
->>
->>   Linux version 6.0.0-rc2-gcc-11.1.0-00199-g893f9007a5ce-dirty (michael@alpine1-p1) (powerpc64-linux-gcc (GCC) 11.1.0, GNU ld (GNU Binutils) 2.36.1) #844 SMP Thu Sep 29 22:29:53 AEST 2022
->>   Hardware name: model:'IBM pSeries (emulated by qemu)' cpu:'POWER8 (raw)' pvr:0x4d0200 lpvr:0xf000004 of:'SLOF,HEAD' machine:pSeries
->>   printk: bootconsole [udbg0] enabled
->>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->>  arch/powerpc/include/asm/setup.h   |  2 ++
->>  arch/powerpc/kernel/setup-common.c | 19 ++++++++++++++++++-
->>  2 files changed, 20 insertions(+), 1 deletion(-)
->>
->> v2: Print the string at boot as suggested by Nathan.
 >
-> Thanks!
+>> Add firmware version details to the dump stack arch description, which
+>> is printed in case of an oops.
+>>
+>> Currently /hypervisor only exists on KVM, so if we don't find that
+>> look for something that suggests we're on phyp and if so that's
+>> probably a good guess. The actual content of the ibm,fw-net-version
+>> seems to be a full path so is too long to add to the description.
 >
-> I've booted the series on P8 and P9 LPARs:
+> My only reservation is that ibm,fw-net-version seems to be unspecified
+> and could disappear in future firmware versions.
+
+Yeah good point.
+
+> /ibm,powervm-partition would be the best PAPR-specified property for
+> this purpose, but I don't see it on a P8/860 partition I checked,
+> unfortunately. I do see it on a P9. Presumably it's present in device
+> trees on PowerVM P9 systems and later, but it's probably too new to use
+> for this.
+
+I'll look for both, it's easy enough.
+
+> /ibm,lpar-capable "indicates that the platform is capable of supporting
+> logical partitioning and is only present on such systems." This one is
+> present on the P8.
+
+But conceivably qemu/KVM could provide that property, which would defeat
+the purpose here which is to differentiate which actual hypervisor we're
+under.
+
+>> eg: Hardware name: ... of:'IBM,FW860.42 (SV860_138)' hv:phyp
 >
-> Hardware name: model:'IBM,8408-E8E' cpu:'POWER8E (raw)' pvr:0x4b0201 lpvr:0xf000004 of:'IBM,FW860.50 (SV860_146)' hv:'phyp' machine:pSeries
->
-> Hardware name: model:'IBM,9040-MR9' cpu:'POWER9 (raw)' pvr:0x4e2102 lpvr:0xf000005 of:'IBM,FW950.01 (VM950_047)' hv:'phyp' machine:pSeries
->
-> Not on objection but just an FYI: we're already very close to exceeding
-> the arch description buffer's size on PowerVM. Both of the above are
-> over 120 bytes.
+> Will this info get printed during boot as well? There are many times it
+> would have been useful to me when looking at logs from non-oopsed
+> kernels.
 
-Hmm yeah that's a good point.
+No it's not. But you're right that would often be useful.
 
-I was tossing up whether the tags (model:, cpu: etc) are worth the space
-they consume.
+I think we can print it at the end of probe_machine().
 
-I erred on the side of keeping them because although I know what the raw
-values mean, I figured other folks might not.
-
-But given we are getting tight for space I might change my mind on that
-and just use the values with no tags. It will make the value harder to
-parse programmatically, but we will probably never do that anyway.
-
-> It also occurs to me that we'll want to rebuild the arch description
-> string after partition migration. Probably immediately after processing
-> the device tree updates.
-
-OK I hadn't thought of that.
-
-It won't be entirely straight forward because the existing code wants to
-build the value up incrementally, so we have as much info as possible at
-any point during the boot.
-
-But we can probably just have a pseries specific routine that
-reconstructs the value in a similar format to the existing one after
-migration.
+I'll send a v2.
 
 cheers
