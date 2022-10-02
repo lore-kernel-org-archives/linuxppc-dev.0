@@ -4,101 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 837E8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Oct 2022 11:53:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 912D0C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Oct 2022 14:08:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MgMmc5LqRz3cBj
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Oct 2022 22:53:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MgQmJ6frpz3c8q
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Oct 2022 01:08:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=g+5rUop+;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=Pw4gPoF2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=40.92.19.101; helo=nam11-dm6-obe.outbound.protection.outlook.com; envelope-from=arminders208@outlook.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=outlook.com (client-ip=40.92.15.28; helo=nam02-bn1-obe.outbound.protection.outlook.com; envelope-from=arminders208@outlook.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=g+5rUop+;
+	dkim=pass (2048-bit key; unprotected) header.d=outlook.com header.i=@outlook.com header.a=rsa-sha256 header.s=selector1 header.b=Pw4gPoF2;
 	dkim-atps=neutral
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11olkn2101.outbound.protection.outlook.com [40.92.19.101])
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (mail-bn1nam07olkn2028.outbound.protection.outlook.com [40.92.15.28])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mg1sK0xB1z3bST
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Oct 2022 09:26:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MgQlV06Zdz3bVt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Oct 2022 01:07:32 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=I5qTqJJd/Zbxfx8hdw7XWN/3rTMpF2cuS+HWw5mKBOZzD6I7zwH+kYn3RsaJui7FLTGEpcvf3wnMvrRrQ6t9C6pgyUiLYssGHQ6RgN8/wP4td5iVAhMX35rrRj0P/KaLQ3OspwGk/5P7ifUGtL3cVEesdcwUl3hhjgCsu40YY4rHSedn1tmX72rsyD60RauG2+exKGCubfdlZibs7nuI2PZqLpIRXM/vV3oWUVjEXptH7M78/ZRziSu6dwdX1EVcdCcOYeDVp9W976j0SFIHkQVxxoEQqNASDFqw9QDI1OU8FrUG6z0TklOSD9Rzku6LucYHboEfloktYMP78VR+UQ==
+ b=aXRsph2NtmVXUa/koWRVZsLMMBL1Q5ITAehm1tAn+DgGxhnGN6kYhR/8LrMmN8Bsit+sRAbcVMSikSY4HkntEJ3ZBo20iSFyxGroLL9LMYmg047B336JohuACNUS3MOp7uyO2KpHvi4KlD/cQteue/yvNiZ/XfIiy2X1oKbI/seiqQufVFcEGe2AUkbS+JToMDi9YnwCsUOAer2gWVWbnU8MPuQyBiHvl897JEM1uc7LvOVg9ACq1uYnQ9s8PAnKYkOV1XmmcUI7QYmQXcECL/A2GXtQxBt9KHJGswfgzIbexrbEy3u9awbaQ1L/oohPxmjI+88L4wRt3zmv/G+pGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=C+306KdYT145mhgKNOTZrljlJLjsfUJT0g3OMPEX1a4=;
- b=AZDYeZnTgwvpv8lwpkJtl6/GNcH5MfQPogvSPlCu2tVoZS//xzp+03Y3f/SJw0Y1qblDXT8UC4ns0/vN8FrxSK5mOqcijZ9zVW/ZaE7bh8RmNa+j4xJ4K5zo0VjbpzJU6KgWbVTAnZ0rW7/w1Vr7qhw0IL2acXpALNu8U3xbxR2nXSJs0/x5nIVPZDoF/tK1jxNe/TSQK233ntU7PGs3avAZcNEjxs/wtZtShBdHdmMgIGg5lWye3jXx+onEUU4Lb1U3nC9CT1JNzj775C2GCS3zz39gjdexfH4bHIbxlgTvFDPjtbze8VXaB4n4ifFFAueB1kyM5GY8xN/7ta0vZg==
+ bh=/D5xl303EL0HbIL7etvawYRskurBl6MSU3A0PXAZzYo=;
+ b=HHV10+kaoYTanPsgeYuXkWKz3z75pKHUdDwDHtQCCtZTUtl6cPsZLpWCdzebpRO0CBLfoSaakMs8jGA9TmfkML8oh00HCD+JCFyQB3POAp/oyxuYV7wINTjvXcpaBy/OkEF+hjwbfkZU4kObyjOZnphYJhhAOjeGQLvQ4KBEQfdAp5OgPcrZ0SX4zpdOnhwrQcW7RNTSeRynbOMotzXyI3INSiASmU4LEne4jFajcEyMp1pPcPMr6SdMLiffEzsFQB1PXA5ftRRNeTpjHZReDY2qyvh1x+Jd+o22+JQu76BcNsNoMCMDN5zQbvAZcuHUMKuW2GdI//k2iMMYA/b4NA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
  dkim=none; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=outlook.com;
  s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=C+306KdYT145mhgKNOTZrljlJLjsfUJT0g3OMPEX1a4=;
- b=g+5rUop+pa4OYfNcYSJrOikZLqmTL8CWrX4bMlptaTzYMQdMjVr0EtBaIwaJP4642BOup8zy7vEU5BjKG3FUxg9BaKIKqQLBOn63XCjS/SLamNwGkKAiRJ4cDxDLTe9uclo39QV5QaLYJZRNYbCFqzg0g2KQAdGTnYnKFDH7VGumv/VxMjrelyiM3t1c4TXF8bUuBd6dnlQWXl/CKa0avioHm2LCiY4rfzM+Tp2rHfGGkK2CVCKO4sY8XekTLY7oci81TPP+bz7bViDzZusVVgnchI9FUQgTGVga8xn8i+cGEmUoeILD0i7NB9QFzgD08D0Aew2BNwHAhYjNBuWweQ==
+ bh=/D5xl303EL0HbIL7etvawYRskurBl6MSU3A0PXAZzYo=;
+ b=Pw4gPoF2eWsq44S5KEQ+z1sQCpNDXF//ef9VF3QsmgA1NanBUEUow0vVrkP054zsHb4R3apstp7EYO/owcb1mTGkUBEB3vvee94/5qYbQO1te1f8BSW/YpBSh3yv2qe2gBPXLymvisSkJ9lxC+dy5yWAs3I7qzAZ+BH/jbmmRa/oaOEMjRwy4ttZs2DL5UNdNhl9a3bA5WjmrJViL7ZuXeDyiB61MwUpW/okwDTAFKzRT1/QnP+/dKbksPkT9F5r/RHLh2IkWzOl+T7CqqFUdedCTT2WZ+lC6Fuxnr+Gk9n49nvTSZy6vY345bFX2TsxNtfT7aIDBemZmOIziqeIdw==
 Received: from MN2PR01MB5358.prod.exchangelabs.com (2603:10b6:208:117::26) by
- DM6PR01MB5578.prod.exchangelabs.com (2603:10b6:5:17c::10) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.5676.23; Sat, 1 Oct 2022 22:25:51 +0000
+ SA0PR01MB6188.prod.exchangelabs.com (2603:10b6:806:da::21) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.5676.17; Sun, 2 Oct 2022 14:07:13 +0000
 Received: from MN2PR01MB5358.prod.exchangelabs.com
  ([fe80::3c11:1e6d:4c2b:c8c7]) by MN2PR01MB5358.prod.exchangelabs.com
- ([fe80::3c11:1e6d:4c2b:c8c7%6]) with mapi id 15.20.5676.019; Sat, 1 Oct 2022
- 22:25:51 +0000
+ ([fe80::3c11:1e6d:4c2b:c8c7%6]) with mapi id 15.20.5676.028; Sun, 2 Oct 2022
+ 14:07:12 +0000
 From: Arminder Singh <arminders208@outlook.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] i2c/pasemi: PASemi I2C controller IRQ enablement
-Date: Sat,  1 Oct 2022 18:25:31 -0400
-Message-ID:  <MN2PR01MB535821C8058C7814B2F8EEDF9F599@MN2PR01MB5358.prod.exchangelabs.com>
+To: wsa@kernel.org
+Subject: Re: [PATCH v2] i2c-pasemi: PASemi I2C controller IRQ enablement
+Date: Sun,  2 Oct 2022 10:07:06 -0400
+Message-ID:  <MN2PR01MB5358FB185A18D2E6C22A45FE9F589@MN2PR01MB5358.prod.exchangelabs.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <Yzl16W6+poH8/8h4@shikoro>
+References: <Yzl16W6+poH8/8h4@shikoro>
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-TMN: [/LCd/AQbYy1R09ebhcUzSHx0jSuTZy4T/je8E52It9yvfWHGCYMIIkAUky8zugrT]
-X-ClientProxiedBy: BLAPR03CA0125.namprd03.prod.outlook.com
- (2603:10b6:208:32e::10) To MN2PR01MB5358.prod.exchangelabs.com
+X-TMN: [9KxWHeWqI6chxxLtZtsB+njbTObPlx1Lr0CqowDc+LbBepkHpIk1UXFM3d79VwK4]
+X-ClientProxiedBy: MN2PR19CA0027.namprd19.prod.outlook.com
+ (2603:10b6:208:178::40) To MN2PR01MB5358.prod.exchangelabs.com
  (2603:10b6:208:117::26)
-X-Microsoft-Original-Message-ID:  <20221001222531.870810-1-arminders208@outlook.com>
+X-Microsoft-Original-Message-ID:  <20221002140706.967711-1-arminders208@outlook.com>
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: MN2PR01MB5358:EE_|DM6PR01MB5578:EE_
-X-MS-Office365-Filtering-Correlation-Id: 9c733bb9-50a0-47ac-caec-08daa3fbe5e2
-X-MS-Exchange-SLBlob-MailProps: 	ymJijV9pwJkn0EBXIE9SfJLm+nWX9Vm94k3OzsLzm0CWMzQcKbsW/aPwCIqXle/2QjtjeAn17Um9EET2me2shgrTjZtdC7tSS3ypYiZXhsAxA59RtSWCRO4wY/VbmmqW6sCH0QAQa72DPZY6Mz48TaBVY7T6LdmhGV/mzxl1NxIlG6WoGhZn/J5/BGynKdj3YlDY6mNhUsbHT/aO5Fj8QEs4LzR1emRS3KHl4FD7ipQrcNVv7+t8LpICNn3jzYim7JL7RIjOijNlfkmSVpTWRMleehsp7lyAfNPnkOUttPDk6HsiD7biDqQR8X7EvOcxtl6kPFehkfhfjEs8t388WplgUkJk7ReYN5shrOZJ8+ajPIirM34fwGg3IMy+zqPgJrwEsiMsOVnfehe9/LZGg0E3rmb+ZGfNhMbJba/pHg5xprgSuwITmcYtv7ajGjwVho08Kgjr0PuHq9Exp4iKEP3PrR4emYpgVKIiAkzDa15fp+2EnAmItmZ4R1VC5is9mhT58w1nmLeScScc2oMhFjkia6vjYT2vyekt1iu05VugL8uBlR7+/rFNds7wZqKFLgvht9nUqsCmAt8kxORYXQdovfRPGQbl1v/SwEOiGfDg+SLC5J+O3aTB4BsuXDiWuPdbEFNq0W9B+j/cpzggedzZjRQn5YG+x4s8VF2HtJrhCZ39B8YvZZhLMWF8BTbsw1DD2sPlV9BVJZPRpDOookkjoi2UlLXWEPvp10vOjyhrpMia6YSMFZHc0EJwwEqm5t2Dxfri2szWKmFovIqkNHITI50vi4HsAo+5h7+CQ8YVDG/gKbys/uOk2HhvhSfJ
+X-MS-TrafficTypeDiagnostic: MN2PR01MB5358:EE_|SA0PR01MB6188:EE_
+X-MS-Office365-Filtering-Correlation-Id: c2ca80c8-fcc0-4fcf-39ec-08daa47f6726
+X-MS-Exchange-SLBlob-MailProps: 	YfhX3sd/0TVe5bVfS5Sv6w9/LBWDHjHOEXyhyzvk5VuQ7Rt22h/iNMd4FyhXYhREmWREvMapogTC6/LAC76PZemqtfubG5cmrtsMeZaRJCsVoS19aaOTIIqWmnqI6WAj4fpXM0qKDAFBS8xtJFRHyOR2W//vCaB3cmTPVRuldsGH+pL+civgeUpRxr3r9uyf7VgorK4R9GWDRDieKBiCTXCNR2K/eEjzbXFV2cABJQ/hCIzNqkaah/oYHdUX3lEskwQaL+E0YBg07F4gr1NJADdaagXPsZwNT5+HrqIH5sTJoN3jONDpLWowyfTuQp7Gs07+Vzd2N6VXUKDWQmWEx5qyyaDcxbQafzpud8nRywM3435eX8cjBe1tKKCf5R8dTt1qjEtR5koFTTkeZT3aauDJRgF7cT/KCs1XXvunvHP/CNNQeoDhJX+Uf9uKkyjfOJxsdH4AY26KP3H744djq5VghccvEmZaOYcEy/zmMMRAxfgRXNViHYK6Fk8aoGYSYGSU+kzg6r9PnuELZQheo9g1n0rQsFYonrkY8qXzw34VwiciVe5MaUw2uiP3PWBgM8mm2WoOwaP+bAohPjGJf+xEiaXJnHugZo6JIr2G8QxuhNbsWELNE2vHS3oSlCiw/Qv/lixNqRfJJbtUT+wWZjM8O+VsvyrHQIBV7z+Fm/AjwTHy0rq8NWR4K2unD1uXaSSRU850fos7POdz7hVARLFAK0zEYuAbL9VZO+5VewD0+c+2rc8LI2PNdHcs6t36/N6zmiSenw0s5FkX12lXIFvZkpyocMIHNSER6nQWwvs=
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	N4XWEurXuBXcEHwgdr0zHHpjcneu98VaaUja71pSE2Ju6lD2Ag/dTdg5VdV21KLvG3kfW7dmC/FoWhHMuSpPKUEKD9/LDqmRGQV9JJhf598ze3NcTVRsKpLG+UGeOY9d0pCGtiXy+2HkeLhM5G3kIBQAcqfOR2cqLqOmymDko/gc2jeEf1z6Lhngv8LV2plRiymlU89Q38qOYRfCkFLFyxXCfXXHcAU7NUEcYdCX3Ktl0Ao7oCBI8zRS0i7hv6jdalnVKoB7f0ScepcHhq9OMeQLITStilKlWh6q9BhfrGz4HAHx+2e3aOudElS6YvItuI6zi0a89Z7LMgHeezW1PJ/EwTGloUcKQtuGhx1yHnTuYZEIto+fJJh3i7gLRye4ML1/MC05sGmtAeLIq5e14x6jdD0Cs9Yn2y2e/QbNNzHiRgJ7idKlTU/C2kKGUh3Vg1q7ROv5k2DohkTFXAubWdni9z8K2sAmE1cySa0ZjkyYWCR8S3kvbcfDHLKjiiq7e+JAHutakArq/Yx1ivFD8UdbjhYVmre61uVzl9yV27LZv96hndP5Ja7b3M+I61Ol+/SONcWEfhxt3kTeZjUEEhGTpwiPugFB81zVv0Nj6TgpldQoX4NdNv2CQSrDSeuYM+dcSJ8AoeweFrCa3ImWwfBG5q5aP6bEbN4q8aQE7F6RLxV/zVLj5Nzx3VESmdi+
+X-Microsoft-Antispam-Message-Info: 	otsf82Vx297MCX5izw8OVcZW8HGK8+omFb4s/mqXd4TUoRxStqjGPO/qf6JS3RvbuPeG6o0WSLvPp+A2iTeTQWDJNu2YktPxgz3tuA6QHVvfDtRcXVNDZqTF340Expl383vH3uWUW1EJFw6xsXdoa70Gov7yaqvM7oas0wUm60mmZin+M2mbQEYQdBi9V+NpIp30ICv+3Qk32V31zodXrQjPqWgHisB+pp0GvthudSWvZLwBG+PFJb4AlmmZRTrCm/qnvVaaqhU9xQrkuXH6FRfx0MX06XnbXNdbZnJ6AHzaO7/yllHMHHR5JXab8VBDqShOXwVbYOMe4th/aJbijWZULiwDHhId/as76AriK+hccgT/gtjmyXBmJDog34n1KIOJqgJPmoGGcWFtFOCX5bSR97//er1I7+pQT+0nr2JHB60dcBos5RVWZ2MR2vP73TxDhiezxl2uFvOSkayUzUbj9we6Q5pM0ZR6jWqd35hsl4JGVUm1F5rVPBaG1WugBTnzwDfrDlr1K7LHg1WfUEsLxrBTBrqDYFYyqCAdjSHuWAMza8kDG4angCidhCmOooSEUqjN1Znk2WREPIeVmoRQnEpXsYXRDuJbscsl4qzJQ5Wz/Hh1s63NycqgPi4YY3Ch7CPsiSuBZ1QVyYSt4ZL3xX/fxzvVkCUWMyLCaOxYWXkAnl8HDvYtOoKl2NUdrY/uz+EYniShYV/i/8/rGLOzN47GIBfboY70vEYXtY0=
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?jJUTxrC+74gG7mYV53gVmnAT9q7UQwDY7fePgEsCPWnXzsEgo8qdyjbGEkeo?=
- =?us-ascii?Q?CwrCiz2eyAEc5+pKFx7xpflxhUAHPTCy0fIz2alAP2K9u4m/Z5Kftjclmqnj?=
- =?us-ascii?Q?v6fQUxSi6O4fAlJeZByrrDw8k7dw7aEIeFlZGmQuR346OPX5nfeKHoXzVOe5?=
- =?us-ascii?Q?fK7r9JyBtyl3zhgOoXGKDPHHG0V5GvuP2ALNnM8eXQeiVn84fIUrvwNg2efh?=
- =?us-ascii?Q?tfFTfLmBSD4hA6G6whmELO2hP03RzlEzMX5hm9pAy2WUYGGu5F1I5ixoApr6?=
- =?us-ascii?Q?tsKO9vpaUbcq2zeChYXx9hsxbJIrOp0rn6IyCv8oxb51cNr7U/d3NKYWJXXJ?=
- =?us-ascii?Q?+CAo3A9J7/ExoWJYs5YBAu+GW3uDmXatOw/WjOF3+i9NbabgTPiHokT2JqRK?=
- =?us-ascii?Q?OuCcTB8NfcRzIJvDgldAjB7kNEx/EH7YSCo59IxyxFVMp9Sb5heXnTSHJ7Cx?=
- =?us-ascii?Q?BnQWrPpjEkidT0tnXCY1Mj9I5cpDGCNpTRswuJFcXFzjx+bX4ajU9MGu2sqR?=
- =?us-ascii?Q?z43bRU294EOx6Ql+Xbc9o40AoksiNaDeVKjD+TMRlwnLn5QX0Al0HsigoJuS?=
- =?us-ascii?Q?HiNuOI3uhIPnTne+lHzHnD+1QjIa0r/7GyPWlk4yoIUp6CvWyqpu8s3FAGgz?=
- =?us-ascii?Q?61IkqK0/fd6cq+jxbLpIak6QhQ9Rvbwk4BNxe2bDCI3fbYKUWYWcXZr9VT2/?=
- =?us-ascii?Q?KjF83tocXmkDhE9v7HIz3V1pnCAznAnApqZfIxdK///fGBZImv4eMRcJldyr?=
- =?us-ascii?Q?4icDWuKTm1xlVd/D7ynd2FA8Gxyx8o7TKo52kzLs1Uss/Z2oSvP0+kDqrTH9?=
- =?us-ascii?Q?6Jv3bNEzgkzNJoY1YUV3/X8PRYGBhG2h5cHXe1TgTHuv6OZJCbODnlHGXr/6?=
- =?us-ascii?Q?W0W60WDdZ9e4ZrhXMhIEVSyUrUDaNnFFiRSciYWciKHTcKB1PyuToPDECdKM?=
- =?us-ascii?Q?9L7rP+UeMmDv4seVBBzn55nTY3nPTDhEENhO1OpSmzqtzVvDoAx20KhCnUX4?=
- =?us-ascii?Q?xIav1EAo9tCTdXFbi8V6V0C/4qgbEjFhhPodUrH9RGE+CfctxPmKlmK7E4He?=
- =?us-ascii?Q?hH+oLfADtrWcQ3Pq5S7rp8hzjspP1E39Aed5SCu3PlGCssGrH1apnLoEwPR4?=
- =?us-ascii?Q?27OkDPV5kzbcDENGdH1XNYBhGoZwOVOx0/AZOTwp9iqAk2OpGLaYze1QnbN0?=
- =?us-ascii?Q?NEkaiaBr68TeLdlKo7/rKaCa2qDFOhjLJN+D8y99xRSdnTQsfULK3XicMHHN?=
- =?us-ascii?Q?tdNSR3iIMt8HbaaoUlWY/zkHt01bh26KsQLtfWglPkYmM5qkg4+oj0Acxjmw?=
- =?us-ascii?Q?ui83pUSfrfuVZb+v0Gwx5Z2ajqf4c6I6hzV0F3jPciz0+Q=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?DTmr9nslFzbP2oBjnR5vHwGNx+uTOZmg8Y09HW0DVQPwJesmXWa5qTBsFEFI?=
+ =?us-ascii?Q?PrpMj+e9ko7mQMZETI+moPnpFgejFnwfViYBDPyrCbfJQBl2W5m533Vo2xWY?=
+ =?us-ascii?Q?yv+GQqGRX92TT4LxCED4Jy7HQAWFZjNDSgXxSr/A4UptDv1BJxIXC09uO0ud?=
+ =?us-ascii?Q?8VRijufHExzY5h5t6KMQF3fhwVUCaRWx4C6oajO+uHsbD0m0qYiEB/OndPPJ?=
+ =?us-ascii?Q?Fr91xtz/1Dt9QXZ+t6L2yYoHR5k4/644oEitmikv16sXhjeYIxTkmMpSNyJr?=
+ =?us-ascii?Q?R832r/Mp1A6FFAJHgukSG9/gVEtj8BiX/WVi/bEi3UQCUHy0EUsyB5pFkaRx?=
+ =?us-ascii?Q?4tSdC5jCb4IVbbkWc/TA2v12+v0ycy39gegPhrWtJqMODShvJbW9iPlnbO1l?=
+ =?us-ascii?Q?2cJYrM7/KcTrvgt0Spu+MlGPi/p0XyFW6Gm6Piz5x4naHyxRXMrySgTK1Wgb?=
+ =?us-ascii?Q?Lj1w29pqhHj6g3KtMhl+QGaO0JVjVsbx0R+b42bL+UgMGw+pBtOXRp/IdOqT?=
+ =?us-ascii?Q?VifhhnDoJyQq+cWMAaCiNsRHdbLRbj15QUiyRv6k2RHdYGtl+hnt+zmTtc+8?=
+ =?us-ascii?Q?wSpBKEUgTq7OK/spI01c4GwTJLHef0zc1q4nA5BNPe9HRhqhQJC1+XoYonP3?=
+ =?us-ascii?Q?XHUSuQP4ulI3id5xW0p2lrxuVKdb+B1utTpoHKalSk1guSEVYbFFVtgTqriS?=
+ =?us-ascii?Q?Onom56F1s+gb4Ds0bYcReJ5mF5yhAb8DToldDyc0ZoM8TVTuu7WGxhFghFFF?=
+ =?us-ascii?Q?lgK0vNX4xbeEPITEItrFgyX9ab3+iBh7KgETmS/alek4nz494mf9zeOjYux2?=
+ =?us-ascii?Q?WFiAIc8paSEuA/k42N9X96QVSExw8Umcw9KKw+A6Tyu34Sx+ocIoDF3SaGJq?=
+ =?us-ascii?Q?0eFNwtO1g0MIUN88hgGAvNFdoFLhZ2p5D6jhr1aWr1UWuO7cthkPJBKPT6pv?=
+ =?us-ascii?Q?aOay/mjt5jNdR3su0G7nYNF5UWrs9/s5HnzQ4HOzSCIvUZ2yxVXnVc8Vprga?=
+ =?us-ascii?Q?o09nxe/kYLCcRKQ+uHrrRmZdiEcxy2voyBf/+FAgKL2T5l8+OjbAIW8+jwgh?=
+ =?us-ascii?Q?tNhSHeZlZgHB0BMCQxjXHvnBfzYBQdWBkwq+FF2sIDSTwpKp81UDsmrcDsYI?=
+ =?us-ascii?Q?CalCkbkqvw0b8cfe5BP4GlaOyqGO/IserjzeOgbl64XcPFQZRi+87si3W8mc?=
+ =?us-ascii?Q?W9x/0o+FfrKSv5WOCADMmB0qkkYL13vmM3Vj6FGmFwUkcLa/nohsEtO1tdBG?=
+ =?us-ascii?Q?cELVpWx18rWFMT8i8x0NR2iWrhRX5CO7rd9oZXX4L2xT9ImQ3Naid7lLbK1g?=
+ =?us-ascii?Q?2Txn8rz9fI+xATCSUHV1RemWuXH70+L7ut4RLwUwNv+7Ow=3D=3D?=
 X-OriginatorOrg: outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 9c733bb9-50a0-47ac-caec-08daa3fbe5e2
+X-MS-Exchange-CrossTenant-Network-Message-Id: c2ca80c8-fcc0-4fcf-39ec-08daa47f6726
 X-MS-Exchange-CrossTenant-AuthSource: MN2PR01MB5358.prod.exchangelabs.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Oct 2022 22:25:51.7654
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Oct 2022 14:07:12.9081
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
 X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 	00000000-0000-0000-0000-000000000000
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR01MB5578
-X-Mailman-Approved-At: Sun, 02 Oct 2022 22:52:39 +1100
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR01MB6188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,182 +111,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-kernel@lists.infradead.org, Darren Stevens <darren@stevens-zone.net>, Sven Peter <sven@svenpeter.dev>, Christian Zigotzky <chzigotzky@xenosoft.de>, Hector Martin <marcan@marcan.st>, Arminder Singh <arminders208@outlook.com>, Paul Mackerras <paulus@samba.org>, linux-i2c@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Alyssa Rosenzweig <alyssa@rosenzweig.io>, asahi@lists.linux.dev
+Cc: linux-arm-kernel@lists.infradead.org, darren@stevens-zone.net, sven@svenpeter.dev, marcan@marcan.st, linux-kernel@vger.kernel.org, arminders208@outlook.com, paulus@samba.org, asahi@lists.linux.dev, chzigotzky@xenosoft.de, linuxppc-dev@lists.ozlabs.org, alyssa@rosenzweig.io, linux-i2c@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Hi,
 
-This is v2 of the PASemi I2C controller IRQ enablement patch.
+>  #define REG_MTXFIFO	0x00
+>  #define REG_MRXFIFO	0x04
+>  #define REG_SMSTA	0x14
+> +#define REG_IMASK   0x18
 
-This patch adds IRQ support to the PASemi I2C controller driver to 
-increase the performace of I2C transactions on platforms with PASemi I2C 
-controllers. While the patch is primarily intended for Apple silicon 
-platforms, this patch should also help in enabling IRQ support for 
-older PASemi hardware as well should the need arise.
+> This doesn't seem to be aligned correctly, this file seems to use a tab
+> to separate the register name and the offset and you used spaces here.
 
-This version of the patch has been tested on an M1 Ultra Mac Studio,
-as well as an M1 MacBook Pro, and userspace launches successfully
-while using the IRQ path for I2C transactions.
+> @@ -15,7 +16,11 @@ struct pasemi_smbus {
+>  	struct i2c_adapter	 adapter;
+>  	void __iomem		*ioaddr;
+>  	unsigned int		 clk_div;
+> -	int			 hw_rev;
+> +	int			         hw_rev;
+> +	int                  use_irq;
+> +	struct completion    irq_completion;
 
-Tested-by: Arminder Singh <arminders208@outlook.com>
-Signed-off-by: Arminder Singh <arminders208@outlook.com>
----
-Changes from v1:
- - moved completion setup from pasemi_platform_i2c_probe to
-   pasemi_i2c_common_probe to allow PASemi and Apple platforms to share
-   common completion setup code in case PASemi hardware gets IRQ support
-   added
- - initialized the status variable in pasemi_smb_waitready when going down
-   the non-IRQ path
- - removed an unnecessary cast of dev_id in the IRQ handler
- - fixed alignment of struct member names in i2c-pasemi-core.h
-   (addresses Christophe's feedback in the original submission)
- - IRQs are now disabled after the wait_for_completion_timeout call
-   instead of inside the IRQ handler
-   (prevents the IRQ from going off after the completion times out)
- - changed the request_irq call to a devm_request_irq call to obviate
-   the need for a remove function and a free_irq call
-   (thanks to Sven for pointing this out in the original submission)
- - added a reinit_completion call to pasemi_reset 
-   as a failsafe to prevent missed interrupts from causing the completion
-   to never complete (thanks to Arnd Bergmann for pointing this out)
- - removed the bitmask variable in favor of just using the value
-   directly (it wasn't used anywhere else)
+> This doesn't seem to be aligned correctly and the hw_rev line
+> doesn't have to be changed.
 
-v1 linked here: https://lore.kernel.org/linux-i2c/MN2PR01MB535838492432C910F2381F929F6F9@MN2PR01MB5358.prod.exchangelabs.com/T/#m11b3504c2667517aad7521514c99ca0e07a9381f
+I'm sorry for the alignment issues in the patch, I genuinely didn't notice
+them as from the perspective of my primary editor (Visual Studio Code)
+the entries were aligned. I just saw them when opening the files in
+nano.
 
-Thanks for all the feedback on the previous submission, I'm sorry
-I wasn't able to answer everyone's emails, was just pretty busy, I'll
-make sure to be more responsive this time around! Also wasn't sure whether
-the v1 changelog belonged before or after the '---' so I put it after
-to keep the commit changelog short and concise.
-(This is just one patch, didn't think it needed a cover letter)
+Does fixing the alignment issues and the commit description justify a v3
+of the patch or should the minor fixes go out as a "resend"? Just not sure
+in this particular case as the fixes seem to be very minor ones.
 
- drivers/i2c/busses/i2c-pasemi-core.c     | 29 ++++++++++++++++++++----
- drivers/i2c/busses/i2c-pasemi-core.h     |  7 +++++-
- drivers/i2c/busses/i2c-pasemi-platform.c |  6 +++++
- 3 files changed, 37 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index 9028ffb58cc0..05af8f3575bc 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.c
-+++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -21,6 +21,7 @@
- #define REG_MTXFIFO	0x00
- #define REG_MRXFIFO	0x04
- #define REG_SMSTA	0x14
-+#define REG_IMASK   0x18
- #define REG_CTL		0x1c
- #define REG_REV		0x28
- 
-@@ -66,6 +67,7 @@ static void pasemi_reset(struct pasemi_smbus *smbus)
- 		val |= CTL_EN;
- 
- 	reg_write(smbus, REG_CTL, val);
-+	reinit_completion(&smbus->irq_completion);
- }
- 
- static void pasemi_smb_clear(struct pasemi_smbus *smbus)
-@@ -81,11 +83,18 @@ static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
- 	int timeout = 10;
- 	unsigned int status;
- 
--	status = reg_read(smbus, REG_SMSTA);
--
--	while (!(status & SMSTA_XEN) && timeout--) {
--		msleep(1);
-+	if (smbus->use_irq) {
-+		reinit_completion(&smbus->irq_completion);
-+		reg_write(smbus, REG_IMASK, SMSTA_XEN | SMSTA_MTN);
-+		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(10));
-+		reg_write(smbus, REG_IMASK, 0);
- 		status = reg_read(smbus, REG_SMSTA);
-+	} else {
-+		status = reg_read(smbus, REG_SMSTA);
-+		while (!(status & SMSTA_XEN) && timeout--) {
-+			msleep(1);
-+			status = reg_read(smbus, REG_SMSTA);
-+		}
- 	}
- 
- 	/* Got NACK? */
-@@ -344,10 +353,14 @@ int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
- 
- 	/* set up the sysfs linkage to our parent device */
- 	smbus->adapter.dev.parent = smbus->dev;
-+	smbus->use_irq = 0;
-+	init_completion(&smbus->irq_completion);
- 
- 	if (smbus->hw_rev != PASEMI_HW_REV_PCI)
- 		smbus->hw_rev = reg_read(smbus, REG_REV);
- 
-+	reg_write(smbus, REG_IMASK, 0);
-+
- 	pasemi_reset(smbus);
- 
- 	error = devm_i2c_add_adapter(smbus->dev, &smbus->adapter);
-@@ -356,3 +369,11 @@ int pasemi_i2c_common_probe(struct pasemi_smbus *smbus)
- 
- 	return 0;
- }
-+
-+irqreturn_t pasemi_irq_handler(int irq, void *dev_id)
-+{
-+	struct pasemi_smbus *smbus = dev_id;
-+
-+	complete(&smbus->irq_completion);
-+	return IRQ_HANDLED;
-+}
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.h b/drivers/i2c/busses/i2c-pasemi-core.h
-index 4655124a37f3..ba6d6ccf9cdc 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.h
-+++ b/drivers/i2c/busses/i2c-pasemi-core.h
-@@ -7,6 +7,7 @@
- #include <linux/i2c-smbus.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/completion.h>
- 
- #define PASEMI_HW_REV_PCI -1
- 
-@@ -15,7 +16,11 @@ struct pasemi_smbus {
- 	struct i2c_adapter	 adapter;
- 	void __iomem		*ioaddr;
- 	unsigned int		 clk_div;
--	int			 hw_rev;
-+	int			         hw_rev;
-+	int                  use_irq;
-+	struct completion    irq_completion;
- };
- 
- int pasemi_i2c_common_probe(struct pasemi_smbus *smbus);
-+
-+irqreturn_t pasemi_irq_handler(int irq, void *dev_id);
-diff --git a/drivers/i2c/busses/i2c-pasemi-platform.c b/drivers/i2c/busses/i2c-pasemi-platform.c
-index 88a54aaf7e3c..e35945a91dbe 100644
---- a/drivers/i2c/busses/i2c-pasemi-platform.c
-+++ b/drivers/i2c/busses/i2c-pasemi-platform.c
-@@ -49,6 +49,7 @@ static int pasemi_platform_i2c_probe(struct platform_device *pdev)
- 	struct pasemi_smbus *smbus;
- 	u32 frequency;
- 	int error;
-+	int irq_num;
- 
- 	data = devm_kzalloc(dev, sizeof(struct pasemi_platform_i2c_data),
- 			    GFP_KERNEL);
-@@ -82,6 +83,11 @@ static int pasemi_platform_i2c_probe(struct platform_device *pdev)
- 	if (error)
- 		goto out_clk_disable;
- 
-+	irq_num = platform_get_irq(pdev, 0);
-+	error = devm_request_irq(smbus->dev, irq_num, pasemi_irq_handler, 0, "pasemi_apple_i2c", (void *)smbus);
-+
-+	if (!error)
-+		smbus->use_irq = 1;
- 	platform_set_drvdata(pdev, data);
- 
- 	return 0;
--- 
-2.34.1
-
+Thanks,
+Arminder
