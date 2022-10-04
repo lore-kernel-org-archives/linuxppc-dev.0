@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B59EC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:42:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88894C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:43:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mhf5p4YPpz3fKd
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:42:38 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mhf6N1dFgz3fQL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:43:08 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1N502Jz3bry
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:38:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1P1s9Bz2y33
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:38:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1N3pCHz4xGy;
-	Wed,  5 Oct 2022 00:38:48 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1P0Yp3z4xH1;
+	Wed,  5 Oct 2022 00:38:49 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <bea5ad0de7f83eff256116816d46c84fa0a444de.1662370698.git.christophe.leroy@csgroup.eu>
-References: <bea5ad0de7f83eff256116816d46c84fa0a444de.1662370698.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/book3s: Inline first level of update_mmu_cache()
-Message-Id: <166488985859.779920.743401358886191871.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:24:18 +1100
+In-Reply-To: <f08cca5c46d67399c53262eca48e015dcf1841f9.1663695394.git.christophe.leroy@csgroup.eu>
+References: <f08cca5c46d67399c53262eca48e015dcf1841f9.1663695394.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/highmem: Properly handle fragmented memory
+Message-Id: <166488986270.779920.12946841693460358950.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:24:22 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Pali Rohár <pali@kernel.org>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 5 Sep 2022 11:38:25 +0200, Christophe Leroy wrote:
-> update_mmu_cache() voids when hash page tables are not used.
-> On PPC32 that means when MMU_FTR_HPTE_TABLE is not defined.
-> On PPC64 that means when RADIX is enabled.
+On Tue, 20 Sep 2022 19:36:42 +0200, Christophe Leroy wrote:
+> In addition to checking whether a page is reserved before allocating
+> it to highmem, verify that it is valid memory.
 > 
-> Rename core part of update_mmu_cache() as __update_mmu_cache()
-> and include the initial verification in an inlined caller.
+> Otherwise the kernel Oopses as below:
+> 
+> [    0.000000] mem auto-init: stack:off, heap alloc:off, heap free:off
+> [    0.000000] Kernel attempted to read user page (7df58) - exploit attempt? (uid: 0)
+> [    0.000000] BUG: Unable to handle kernel data access on read at 0x0007df58
+> [    0.000000] Faulting instruction address: 0xc01c8348
+> [    0.000000] Oops: Kernel access of bad area, sig: 11 [#1]
+> [    0.000000] BE PAGE_SIZE=4K SMP NR_CPUS=2 P2020RDB-PC
+> [    0.000000] Modules linked in:
+> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 6.0.0-rc2-0caacb197b677410bdac81bc34f05235+ #121
+> [    0.000000] NIP:  c01c8348 LR: c01cb2bc CTR: 0000000a
+> [    0.000000] REGS: c10d7e20 TRAP: 0300   Not tainted  (6.0.0-rc2-0caacb197b677410bdac81bc34f05235+)
+> [    0.000000] MSR:  00021000 <CE,ME>  CR: 48044224  XER: 00000000
+> [    0.000000] DEAR: 0007df58 ESR: 00000000
+> [    0.000000] GPR00: c01cb294 c10d7f10 c1045340 00000001 00000004 c112bcc0 00000015 eedf1000
+> [    0.000000] GPR08: 00000003 0007df58 00000000 f0000000 28044228 00000200 00000000 00000000
+> [    0.000000] GPR16: 00000000 00000000 00000000 0275cb7a c0000000 00000001 0000075f 00000000
+> [    0.000000] GPR24: c1031004 00000000 00000000 00000001 c10f0000 eedf1000 00080000 00080000
+> [    0.000000] NIP [c01c8348] free_unref_page_prepare.part.93+0x48/0x60
+> [    0.000000] LR [c01cb2bc] free_unref_page+0x84/0x4b8
+> [    0.000000] Call Trace:
+> [    0.000000] [c10d7f10] [eedf1000] 0xeedf1000 (unreliable)
+> [    0.000000] [c10d7f20] [c01cb294] free_unref_page+0x5c/0x4b8
+> [    0.000000] [c10d7f70] [c1007644] mem_init+0xd0/0x194
+> [    0.000000] [c10d7fa0] [c1000e4c] start_kernel+0x4c0/0x6d0
+> [    0.000000] [c10d7ff0] [c00003e0] set_ivor+0x13c/0x178
+> [    0.000000] Instruction dump:
+> [    0.000000] 552817be 5509103a 7d294214 55293830 7d4a4a14 812a003c 814a0038 5529002a
+> [    0.000000] 7c892050 5484c23a 5489eafa 548406fe <7d2a482e> 7d242430 5484077e 90870010
+> [    0.000000] ---[ end trace 0000000000000000 ]---
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/book3s: Inline first level of update_mmu_cache()
-      https://git.kernel.org/powerpc/c/73ea68ad0d2f655815b6f1fbe1c5521d72f01b64
+[1/1] powerpc/highmem: Properly handle fragmented memory
+      https://git.kernel.org/powerpc/c/2fc1c63d2763ad7562ea7d241da79b42538a557b
 
 cheers
