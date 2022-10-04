@@ -4,32 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9770EC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:22:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE303C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:31:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mhdg51jKhz3drp
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:22:57 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhdrV0Rnzz3bjw
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:31:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=f4GVjCrb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=f4GVjCrb;
+	dkim-atps=neutral
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MhdfR2X0hz2xHw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:22:23 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MhdfN4svqz4xGj;
-	Wed,  5 Oct 2022 00:22:20 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220816222517.1916391-1-farosas@linux.ibm.com>
-References: <20220816222517.1916391-1-farosas@linux.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Fix decrementer migration
-Message-Id: <166488970203.778266.13672388386206891818.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:21:42 +1100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MhdqP3Cp7z2xHw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:30:07 +1100 (AEDT)
+Received: by mail-pj1-x102b.google.com with SMTP id 70so12866134pjo.4
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Oct 2022 06:30:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date;
+        bh=grT08PTQiYfQ4VlqpxBTaE4YAbLJ93R7EocY8oBOtxM=;
+        b=f4GVjCrbnyYje6dkbNI5w7HJejyWboUinD5pz0Mwb55bBu6upddncVx5jHlFSFyiLM
+         h+NaxckHv4tD8lryB/haD/+1/78OB2/UYM1HICLsPbRM4VTYcLgwGOf1hlg5mg0+X6vY
+         VsHAANeO0687TeOT6E+iCtB59IooB9/FJk02vp4w+BLK4FwPQQE563lLhTD+0Vi+ojo/
+         JLsIYwwng6LO7jwwt7Z/TjuRd6RwLjRZ58kYaYayhQnMM4ocvmtjuZhPxuYZ+D4ySHdP
+         Pyjza72Hm7ceY9oaHvYwGyFcyLVtV2qphVFr6utHiqsRKZqqc2h8+7ae+/YoEZX0Wr3C
+         4iIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date;
+        bh=grT08PTQiYfQ4VlqpxBTaE4YAbLJ93R7EocY8oBOtxM=;
+        b=7Xco6Np+X2fI/E2r6Nd0B2vO87VO5Z46O/fVQG1Q92+OM0Ked9rB59mCrzVGYLkGnR
+         jlfAvJ1+0dX33WpEq5LUwnqALlv2cmZx7X+bl184SnrllLkaXcVFHiAy4oUn08gmNtUp
+         sAmGxHX2F0bYY8tnodFoTcp1o8s0fYzRPGGrrC4BF+9aQvPkC0q9Y4Ogrmi3jTKnmyiw
+         2S11/xZxjUqXrgc6Sf+3iMrS4IE1ejZpDqcwou1Yih8ss+veZ00dCg/dqlxPobD0E/Jx
+         04aYh7bIIsGGta1Ez3Y90tjIcCDDtRmDGUO/LTPyTTTGkM38QSrq6n6ejB0eU3o3r/yg
+         GffA==
+X-Gm-Message-State: ACrzQf1HBTF5vjfuXBBfA6eDuEAQ+R0xCILDBt3sCclye37km1xY/O0F
+	LnMtCmhoTQe2NAhZL02Lrg5A5wnnRwo=
+X-Google-Smtp-Source: AMsMyM5jjAfwED9LLArL2ljnz6KZqCXApeqdUx4mrF09UWg+D00dt8EobpcxtaVGvU0RsE7wFPYwJA==
+X-Received: by 2002:a17:902:eccb:b0:178:1313:afa1 with SMTP id a11-20020a170902eccb00b001781313afa1mr27633691plh.97.1664890204299;
+        Tue, 04 Oct 2022 06:30:04 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (123-243-1-173.tpgi.com.au. [123.243.1.173])
+        by smtp.gmail.com with ESMTPSA id a4-20020a170902ecc400b00179f370dbe7sm8923612plh.287.2022.10.04.06.30.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Oct 2022 06:30:03 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/64s/interrupt: stack backtrace fix
+Date: Tue,  4 Oct 2022 23:29:52 +1000
+Message-Id: <20221004132952.984341-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -42,27 +74,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm-ppc@vger.kernel.org, npiggin@gmail.com
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 16 Aug 2022 19:25:17 -0300, Fabiano Rosas wrote:
-> We used to have a workaround[1] for a hang during migration that was
-> made ineffective when we converted the decrementer expiry to be
-> relative to guest timebase.
-> 
-> The point of the workaround was that in the absence of an explicit
-> decrementer expiry value provided by userspace during migration, KVM
-> needs to initialize dec_expires to a value that will result in an
-> expired decrementer after subtracting the current guest timebase. That
-> stops the vcpu from hanging after migration due to a decrementer
-> that's too large.
-> 
-> [...]
+The value of the stack frame regs marker that gets saved on the
+stack in interrupt entry code does not match the regs marker value,
+which breaks stack frame marker matching.
 
-Applied to powerpc/topic/ppc-kvm.
+This stray instruction looks to have been introduced in a mismerge.
 
-[1/1] KVM: PPC: Book3S HV: Fix decrementer migration
-      https://git.kernel.org/powerpc/c/0a5bfb824a6ea35e54b7e5ac6f881beea5e309d2
+Fixes: bf75a3258a403 ("powerpc/64s/interrupt: move early boot ILE fixup into a macro")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S | 1 -
+ 1 file changed, 1 deletion(-)
 
-cheers
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index fed983cc7ee0..ec5dfc7b5517 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -590,7 +590,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	std	r9,_TRAP(r1)		/* set trap number		*/
+ 	li	r10,0
+ 	LOAD_REG_IMMEDIATE(r11, STACK_FRAME_REGS_MARKER)
+-	rldimi	r11, r11, 32, 0
+ 	std	r10,RESULT(r1)		/* clear regs->result		*/
+ 	std	r11,STACK_FRAME_OVERHEAD-16(r1) /* mark the frame	*/
+ .endm
+-- 
+2.37.2
+
