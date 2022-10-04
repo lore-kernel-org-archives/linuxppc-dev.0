@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 159DDC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 14:00:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17326C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 14:01:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfVt4Zpwz3fH4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 01:00:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfWS3jKnz3h5d
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 01:01:24 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1t4fc8z3dsV
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1t5lnsz3dtw
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:14 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1s5rJyz4xHj;
-	Wed,  5 Oct 2022 00:39:13 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1q4L1Hz4xHk;
+	Wed,  5 Oct 2022 00:39:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Paul Mackerras <paulus@samba.org>, Pali Rohár <pali@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220902212103.22534-1-pali@kernel.org>
-References: <20220902212103.22534-1-pali@kernel.org>
-Subject: Re: [PATCH 1/2] powerpc: Fix SPE Power ISA properties for e500v1 platforms
-Message-Id: <166488994758.779920.14841742277370652020.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:25:47 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220926055620.2676869-1-npiggin@gmail.com>
+References: <20220926055620.2676869-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2 0/5] powerpc/64s: improve boot debugging
+Message-Id: <166488995843.779920.12401044629146940322.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:25:58 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2 Sep 2022 23:21:02 +0200, Pali Rohár wrote:
-> Commit 2eb28006431c ("powerpc/e500v2: Add Power ISA properties to comply
-> with ePAPR 1.1") introduced new include file e500v2_power_isa.dtsi and
-> should have used it for all e500v2 platforms. But apparently it was used
-> also for e500v1 platforms mpc8540, mpc8541, mpc8555 and mpc8560.
+On Mon, 26 Sep 2022 15:56:15 +1000, Nicholas Piggin wrote:
+> This series provides a machine check handler to catch out of
+> bounds memory accesses in early boot before the MMU is enabled.
 > 
-> e500v1 cores compared to e500v2 do not support double precision floating
-> point SPE instructions. Hence power-isa-sp.fd should not be set on e500v1
-> platforms, which is in e500v2_power_isa.dtsi include file.
+> Since v1:
+> - 64e compile fix
+> 
+> Nicholas Piggin (5):
+>   powerpc/64s/interrupt: move early boot ILE fixup into a macro
+>   powerpc/64s: early boot machine check handler
+>   powerpc/64: avoid using r13 in relocate
+>   powerpc/64: don't set boot CPU's r13 to paca until the structure is
+>     set up
+>   powerpc/64s/interrupt: halt early boot interrupts if paca is not set
+>     up
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: Fix SPE Power ISA properties for e500v1 platforms
-      https://git.kernel.org/powerpc/c/37b9345ce7f4ab17538ea62def6f6d430f091355
-[2/2] powerpc: Include e500v1_power_isa.dtsi for remaining e500v1 platforms
-      https://git.kernel.org/powerpc/c/c102432005e8811b80b25641e12c4577970b5558
+[1/5] powerpc/64s/interrupt: move early boot ILE fixup into a macro
+      https://git.kernel.org/powerpc/c/bf75a3258a40327b73c5b4458ae8102cfa921b40
+[2/5] powerpc/64s: early boot machine check handler
+      https://git.kernel.org/powerpc/c/2f5182cffa43f31c241131a2c10a4ecd8e90fb3e
+[3/5] powerpc/64: avoid using r13 in relocate
+      https://git.kernel.org/powerpc/c/b830c8754e046f96e84da9d3b3e028c4ceef2b18
+[4/5] powerpc/64: don't set boot CPU's r13 to paca until the structure is set up
+      https://git.kernel.org/powerpc/c/519b2e317e39ac99ce589a7c8480c47a17d62638
+[5/5] powerpc/64s/interrupt: halt early boot interrupts if paca is not set up
+      https://git.kernel.org/powerpc/c/e1100cee059ad0bea6a668177e835baa087a0c65
 
 cheers
