@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3358BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:50:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DED8FC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:51:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfHF6L8rz3gPL
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:50:49 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfHq3K9Tz3fY3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:51:19 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1c0wTVz3c4B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1d1Wfsz3dqT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:01 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1b6vNwz4xHL;
-	Wed,  5 Oct 2022 00:38:59 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1d0Mj8z4xHN;
+	Wed,  5 Oct 2022 00:39:01 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220913124545.2817825-1-mpe@ellerman.id.au>
-References: <20220913124545.2817825-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64: Remove unused SYS_CALL_TABLE symbol
-Message-Id: <166488985138.779920.17518270170170849576.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:24:11 +1100
+In-Reply-To: <20220928130912.1732466-1-mpe@ellerman.id.au>
+References: <20220928130912.1732466-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Remove old STAB comment
+Message-Id: <166488996806.779920.10383020371339275322.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:26:08 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,19 +45,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 13 Sep 2022 22:45:45 +1000, Michael Ellerman wrote:
-> In interrupt_64.S, formerly entry_64.S, there are two toc entries
-> created for sys_call_table and compat_sys_call_table.
+On Wed, 28 Sep 2022 23:09:12 +1000, Michael Ellerman wrote:
+> This used to be about the 0x4300 handler, but that was moved in commit
+> da2bc4644c75 ("powerpc/64s: Add new exception vector macros").
 > 
-> These are no longer used, since the system call entry was converted from
-> asm to C, so remove them.
+> Note that "STAB" here refers to "Segment Table" not the debug format.
 > 
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: Remove unused SYS_CALL_TABLE symbol
-      https://git.kernel.org/powerpc/c/e74611aa91bb9939dfc4a41b045a1a19227cff98
+[1/1] powerpc/64s: Remove old STAB comment
+      https://git.kernel.org/powerpc/c/57a8e4b26eaa8f30aa8bc737255d192915a53023
 
 cheers
