@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA60C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:55:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1817C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:56:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfP05VJlz3fht
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:55:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfPZ3WCXz3c74
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:56:18 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1l3vvHz30Mn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1m2ZGFz3dsK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:08 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1l2k6Lz4xH5;
-	Wed,  5 Oct 2022 00:39:07 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1m1Q1Pz4xHY;
+	Wed,  5 Oct 2022 00:39:08 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220921014103.587954-1-npiggin@gmail.com>
-References: <20220921014103.587954-1-npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/64s: Fix GENERIC_CPU build flags for PPC970 / G5
-Message-Id: <166488989854.779920.12105665642744542088.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:24:58 +1100
+In-Reply-To: <20220908132545.4085849-1-npiggin@gmail.com>
+References: <20220908132545.4085849-1-npiggin@gmail.com>
+Subject: Re: (subset) [PATCH 1/5] KVM: PPC: Book3S HV P9: Clear vcpu cpu fields before enabling host irqs
+Message-Id: <166488996162.779920.16826184817213539665.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:26:01 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,21 +45,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 21 Sep 2022 11:41:02 +1000, Nicholas Piggin wrote:
-> Big-endian GENERIC_CPU supports 970, but builds with -mcpu=power5.
-> POWER5 is ISA v2.02 whereas 970 is v2.01 plus Altivec. 2.02 added
-> the popcntb instruction which a compiler might use.
+On Thu, 8 Sep 2022 23:25:41 +1000, Nicholas Piggin wrote:
+> On guest entry, vcpu->cpu and vcpu->arch.thread_cpu are set after
+> disabling host irqs. On guest exit there is a window whre tick time
+> accounting briefly enables irqs before these fields are cleared.
 > 
-> Use -mcpu=power4.
-> 
+> Move them up to ensure they are cleared before host irqs are run.
+> This is possibly not a problem, but is more symmetric and makes the
+> fields less surprising.
 > 
 > [...]
 
-Applied to powerpc/next.
+Patch 5 applied to powerpc/next.
 
-[1/2] powerpc/64s: Fix GENERIC_CPU build flags for PPC970 / G5
-      https://git.kernel.org/powerpc/c/58ec7f06b74e0d6e76c4110afce367c8b5f0837d
-[2/2] powerpc/64s: update cpu selection options
-      https://git.kernel.org/powerpc/c/7fd123e544886bf04fa853869efe55cb3f22d0c0
+[5/5] KVM: PPC: Book3S HV: Implement scheduling wait interval counters in the VPA
+      https://git.kernel.org/powerpc/c/e4335f53198fa0c0aefb2a38bb5518e94253412c
 
 cheers
