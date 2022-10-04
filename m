@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 072EAC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:59:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2154C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:59:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfT14Dy6z3hXq
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:59:17 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfTl2wJYz3fv8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:59:55 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1q1k6hz3dsc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1r2DFdz3brF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:12 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1q0Yxcz4xHh;
-	Wed,  5 Oct 2022 00:39:11 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1r14cFz4xHl;
+	Wed,  5 Oct 2022 00:39:12 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220926034057.2360083-1-npiggin@gmail.com>
-References: <20220926034057.2360083-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/5] powerpc/64: avoid GOT addressing, don't put data in TOC
-Message-Id: <166488994441.779920.15001354435966049513.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:25:44 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20220916040755.2398112-1-npiggin@gmail.com>
+References: <20220916040755.2398112-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2 0/7] powerpc: build / linker improvements
+Message-Id: <166488984825.779920.16579265711784950572.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:24:08 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,32 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Sep 2022 13:40:52 +1000, Nicholas Piggin wrote:
-> This is a cleaned up set of the initial prep patches from the pcrel
-> series, dealing with regularising addressing variables from asm
-> and using helper macros more consistently.
+On Fri, 16 Sep 2022 14:07:48 +1000, Nicholas Piggin wrote:
+> This series is mainly about moving more things out of writable and
+> executable memory, and slightly moving the linker script in the
+> direction of the binutils ld internal linker script as we do.
 > 
-> Changes since v1:
-> - Use "REGS" stack frame marker for 64-bit, leaving 32-bit unchanged.
-> - Fix PPC64 32-bit boot wrapper compile.
+> Thanks,
+> Nick
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/5] powerpc/64: use 32-bit immediate for STACK_FRAME_REGS_MARKER
-      https://git.kernel.org/powerpc/c/17773afdcd1589c5925a984f512330410cb2ba4f
-[2/5] powerpc/64: asm use consistent global variable declaration and access
-      https://git.kernel.org/powerpc/c/dab3b8f4fd09c22e8dbb2d9608194c7d52252f33
-[3/5] powerpc/64: switch asm helpers from GOT to TOC relative addressing
-      https://git.kernel.org/powerpc/c/754f611774e4b9357a944f5b703dd291c85161cf
-[4/5] powerpc/64: provide a helper macro to load r2 with the kernel TOC
-      https://git.kernel.org/powerpc/c/8e93fb33c84f68db20c0bc2821334a4c54c3e251
-[5/5] powerpc/64e: provide an addressing macro for use with TOC in alternate register
-      https://git.kernel.org/powerpc/c/3569d84bb26f6f07d426446da3d2c836180f1565
+[1/7] powerpc: move __end_rodata to cover arch read-only sections
+      https://git.kernel.org/powerpc/c/7082f8e7d2276575a8806370007cbb4a7b9abdce
+[2/7] powerpc/32/build: move got1/got2 sections out of text
+      https://git.kernel.org/powerpc/c/1faa1235c1a00614bc4849a8dbd0790363c9a22f
+[3/7] powerpc/build: move got, toc, plt, branch_lt sections to read-only
+      https://git.kernel.org/powerpc/c/f21ba4499a15b76ad6013ca0a60873dbcf164c7b
+[4/7] powerpc/build: move .data.rel.ro, .sdata2 to read-only
+      https://git.kernel.org/powerpc/c/b6adc6d6d327229d75607a948cde2349d317f366
+[5/7] powerpc/64/build: only include .opd with ELFv1
+      https://git.kernel.org/powerpc/c/c787fed11890babda1e4882cd3b6efaf412e1bde
+[6/7] powerpc/64/build: merge .got and .toc input sections
+      https://git.kernel.org/powerpc/c/1e9eca485a840985a663080eb049c420272d4bdd
+[7/7] powerpc/build: put sys_call_table in .data.rel.ro if RELOCATABLE
+      https://git.kernel.org/powerpc/c/fdfdcfd504933ed06eb6b4c9df21eede0e213c3e
 
 cheers
