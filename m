@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A7971C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:41:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83EDAC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:42:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mhf4g2fwSz3f0L
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:41:39 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mhf5F1VRGz3dtS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:42:09 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1M41m0z3bjc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:38:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1N0st1z3blt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:38:48 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1L4JMQz4xGm;
-	Wed,  5 Oct 2022 00:38:46 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1M6kBdz4xGw;
+	Wed,  5 Oct 2022 00:38:47 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: cgel.zte@gmail.com, mpe@ellerman.id.au
-In-Reply-To: <20220825072657.229168-1-ye.xingchen@zte.com.cn>
-References: <20220825072657.229168-1-ye.xingchen@zte.com.cn>
-Subject: Re: [PATCH linux-next] powerpc/pseries/vas: Remove the unneeded result variable
-Message-Id: <166488995937.779920.17176528386276511230.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:25:59 +1100
+To: "linux-mm @ kvack . org" <linux-mm@kvack.org>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <ae6aa7fce84f7abcbf67f534271a4a6dd7949b0d.1662543243.git.christophe.leroy@csgroup.eu>
+References: <ae6aa7fce84f7abcbf67f534271a4a6dd7949b0d.1662543243.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH 1/2] powerpc/nohash: Remove pgd_huge() stub
+Message-Id: <166488985737.779920.8762393003008837052.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:24:17 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,21 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, nick.child@ibm.com, ye xingchen <ye.xingchen@zte.com.cn>, Zeal Robot <zealci@zte.com.cn>, haren@linux.ibm.com, linux-kernel@vger.kernel.org, Julia.Lawall@inria.fr, npiggin@gmail.com, wangborong@cdjrlc.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 25 Aug 2022 07:26:57 +0000, cgel.zte@gmail.com wrote:
-> From: ye xingchen <ye.xingchen@zte.com.cn>
+On Wed, 7 Sep 2022 11:34:44 +0200, Christophe Leroy wrote:
+> linux/hugetlb.h has a fallback pgd_huge() macro for when
+> pgd_huge is not defined.
 > 
-> Return the value vas_register_coproc_api() directly instead of storing it
-> in another redundant variable.
+> Remove the powerpc redundant definitions.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries/vas: Remove the unneeded result variable
-      https://git.kernel.org/powerpc/c/91986d7f0300c2c01722e0eac5119bb0946fe9b5
+[1/2] powerpc/nohash: Remove pgd_huge() stub
+      https://git.kernel.org/powerpc/c/a26494cf4aeb8e9888428a43f55cc486f06f1334
+[2/2] powerpc: Rely on generic definition of hugepd_t and is_hugepd when unused
+      https://git.kernel.org/powerpc/c/691cdf016d3be6f66a3ea384809be229e0f9c590
 
 cheers
