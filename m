@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0D08C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:52:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8FD2C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:53:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfKY3LkRz3gfQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:52:49 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfL72nfgz3gjC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:53:19 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1g2j8Kz3c4S
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1g51Bfz3c4W
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:03 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1g1vtyz4xHT;
-	Wed,  5 Oct 2022 00:39:03 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1c3ft4z4xHM;
+	Wed,  5 Oct 2022 00:39:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220919052755.800907-1-mpe@ellerman.id.au>
-References: <20220919052755.800907-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/microwatt: Remove unused early debug code
-Message-Id: <166488985245.779920.12918596230908367280.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:24:12 +1100
+In-Reply-To: <20220928130941.1732818-1-mpe@ellerman.id.au>
+References: <20220928130941.1732818-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Remove lost/old comment
+Message-Id: <166488996929.779920.5829734729896838611.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:26:09 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lukas.bulwahn@gmail.com, andrew.donnellan@au1.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 19 Sep 2022 15:27:55 +1000, Michael Ellerman wrote:
-> The original microwatt submission[1] included some early debug code for
-> using the Microwatt "potato" UART.
+On Wed, 28 Sep 2022 23:09:41 +1000, Michael Ellerman wrote:
+> The bulk of this was moved/reworded in:
+>   57f266497d81 ("powerpc: Use gas sections for arranging exception vectors")
 > 
-> The series that was eventually merged switched to using a standard UART,
-> and so doesn't need any special early debug handling. But some of the
-> original code was merged accidentally under the non-existent
-> CONFIG_PPC_EARLY_DEBUG_MICROWATT.
+> And now appears around line 700 in arch/powerpc/kernel/exceptions-64s.S.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/microwatt: Remove unused early debug code
-      https://git.kernel.org/powerpc/c/456c3005102b18cce6662b1915c6efffe7744dcc
+[1/1] powerpc/64s: Remove lost/old comment
+      https://git.kernel.org/powerpc/c/0c360996425e36945c10479e2bc6ad5992c57794
 
 cheers
