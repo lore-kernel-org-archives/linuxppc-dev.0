@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4298AC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:55:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA60C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:55:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfNQ5w69z3gwc
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:55:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfP05VJlz3fht
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:55:48 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1k39Lpz3dpv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1l3vvHz30Mn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:07 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1k214sz4xHX;
-	Wed,  5 Oct 2022 00:39:06 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1l2k6Lz4xH5;
+	Wed,  5 Oct 2022 00:39:07 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20220926220250.157022-1-nathanl@linux.ibm.com>
-References: <20220926220250.157022-1-nathanl@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/smp: poll cpu_callin_map more aggressively in __cpu_up()
-Message-Id: <166488995280.779920.3610162954505679118.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:25:52 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220921014103.587954-1-npiggin@gmail.com>
+References: <20220921014103.587954-1-npiggin@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/64s: Fix GENERIC_CPU build flags for PPC970 / G5
+Message-Id: <166488989854.779920.12105665642744542088.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:24:58 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,21 +45,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Sep 2022 17:02:50 -0500, Nathan Lynch wrote:
-> At boot time, it is not necessary to delay between polls of
-> cpu_callin_map when waiting for a kicked CPU to come up. Remove the
-> delay intervals, but preserve the overall deadline (five seconds).
+On Wed, 21 Sep 2022 11:41:02 +1000, Nicholas Piggin wrote:
+> Big-endian GENERIC_CPU supports 970, but builds with -mcpu=power5.
+> POWER5 is ISA v2.02 whereas 970 is v2.01 plus Altivec. 2.02 added
+> the popcntb instruction which a compiler might use.
 > 
-> At run time, the first poll result is usually negative and we incur a
-> sleeping wait. If we spin on the callin word for a short time first,
-> we can reduce __cpu_up() from dozens of milliseconds to under 1ms in
-> the common case on a P9 LPAR:
+> Use -mcpu=power4.
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/smp: poll cpu_callin_map more aggressively in __cpu_up()
-      https://git.kernel.org/powerpc/c/b37ac1894ac3c014863986d6b8ed880195213e78
+[1/2] powerpc/64s: Fix GENERIC_CPU build flags for PPC970 / G5
+      https://git.kernel.org/powerpc/c/58ec7f06b74e0d6e76c4110afce367c8b5f0837d
+[2/2] powerpc/64s: update cpu selection options
+      https://git.kernel.org/powerpc/c/7fd123e544886bf04fa853869efe55cb3f22d0c0
 
 cheers
