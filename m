@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8FD2C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:53:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8ACD1C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:53:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfL72nfgz3gjC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:53:19 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfLj1mnGz3gmb
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:53:49 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1g51Bfz3c4W
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1g74lBz3ds1
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:39:03 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1c3ft4z4xHM;
-	Wed,  5 Oct 2022 00:39:00 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1g61f1z4xGn;
+	Wed,  5 Oct 2022 00:39:03 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220928130941.1732818-1-mpe@ellerman.id.au>
-References: <20220928130941.1732818-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Remove lost/old comment
-Message-Id: <166488996929.779920.5829734729896838611.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:26:09 +1100
+In-Reply-To: <20220930082709.55830-1-mpe@ellerman.id.au>
+References: <20220930082709.55830-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 1/6] powerpc: Add hardware description string
+Message-Id: <166488998856.779920.5754534111893286650.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:26:28 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: nathanl@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 28 Sep 2022 23:09:41 +1000, Michael Ellerman wrote:
-> The bulk of this was moved/reworded in:
->   57f266497d81 ("powerpc: Use gas sections for arranging exception vectors")
+On Fri, 30 Sep 2022 18:27:04 +1000, Michael Ellerman wrote:
+> Create a hardware description string, which we will use to record
+> various details of the hardware platform we are running on.
 > 
-> And now appears around line 700 in arch/powerpc/kernel/exceptions-64s.S.
+> Print the accumulated description at boot, and use it to set the generic
+> description which is printed in oopses.
 > 
+> To begin with add ppc_md.name, aka the "machine description".
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s: Remove lost/old comment
-      https://git.kernel.org/powerpc/c/0c360996425e36945c10479e2bc6ad5992c57794
+[1/6] powerpc: Add hardware description string
+      https://git.kernel.org/powerpc/c/41dc056391b334fae646b55ee020bfa8f67b60c8
+[2/6] powerpc: Add PVR & CPU name to hardware description
+      https://git.kernel.org/powerpc/c/bd649d40e0f2ffa1e16b4dbb93dc627177410e78
+[3/6] powerpc/64: Add logical PVR to the hardware description
+      https://git.kernel.org/powerpc/c/48b7019b6abd029d3800620bb53f0ae3ca052441
+[4/6] powerpc: Add device-tree model to the hardware description
+      https://git.kernel.org/powerpc/c/541229707970ff2ad3f7705b1dbd025d7cc9bc48
+[5/6] powerpc/powernv: Add opal details to the hardware description
+      https://git.kernel.org/powerpc/c/37576cb0961fe9d3318c17e4e4bc5ecebf38e9bb
+[6/6] powerpc/pseries: Add firmware details to the hardware description
+      https://git.kernel.org/powerpc/c/8535a1afff0f4f568eb589f3795a930ef3d483b0
 
 cheers
