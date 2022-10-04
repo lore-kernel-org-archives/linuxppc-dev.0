@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6395C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:49:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6DC6C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Oct 2022 13:50:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfFz31G4z3gCH
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:49:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MhfGh1q5Tz3dwv
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 00:50:20 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1b0N3nz3bjm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mhf1b4DTNz2xtt
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 00:38:59 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1Z5gxRz4xHJ;
-	Wed,  5 Oct 2022 00:38:58 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mhf1b34wPz4xGp;
+	Wed,  5 Oct 2022 00:38:59 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220903123640.719846-1-mpe@ellerman.id.au>
-References: <20220903123640.719846-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/mm/64s: Drop pgd_huge()
-Message-Id: <166488985450.779920.10720240945227242140.b4-ty@ellerman.id.au>
-Date: Wed, 05 Oct 2022 00:24:14 +1100
+In-Reply-To: <20220916131422.318752-1-mpe@ellerman.id.au>
+References: <20220916131422.318752-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc/vmlinux.lds: Ensure STRICT_ALIGN_SIZE is at least page aligned
+Message-Id: <166488985030.779920.15599868484615582893.b4-ty@ellerman.id.au>
+Date: Wed, 05 Oct 2022 00:24:10 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, aneesh.kumar@linux.ibm.com, mike.kravetz@oracle.com
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 3 Sep 2022 22:36:39 +1000, Michael Ellerman wrote:
-> On powerpc there are two ways for huge pages to be represented in the
-> top level page table, aka PGD (Page Global Directory).
+On Fri, 16 Sep 2022 23:14:21 +1000, Michael Ellerman wrote:
+> Add a check that STRICT_ALIGN_SIZE is aligned to at least PAGE_SIZE.
 > 
-> If the address space mapped by an individual PGD entry does not
-> correspond to a given huge page size, then the PGD entry points to a
-> non-standard page table, known as a "hugepd" (Huge Page Directory).
-> The hugepd contains some number of huge page PTEs sufficient to map the
-> address space with the given huge page size.
+> That then makes the alignment to PAGE_SIZE immediately after the
+> alignment to STRICT_ALIGN_SIZE redundant, so remove it.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/2] powerpc/mm/64s: Drop pgd_huge()
-      https://git.kernel.org/powerpc/c/51da853e3708852f47cd95e6f5e1821c3d54c3ef
-[2/2] powerpc/mm/64s: Drop p4d_leaf()
-      https://git.kernel.org/powerpc/c/79c5640ab4460a03535ce0f120193174e7701b65
+[1/2] powerpc/vmlinux.lds: Ensure STRICT_ALIGN_SIZE is at least page aligned
+      https://git.kernel.org/powerpc/c/331771e836e6a32c8632d8cf5e2cdd94471258ad
+[2/2] powerpc/vmlinux.lds: Add an explicit symbol for the SRWX boundary
+      https://git.kernel.org/powerpc/c/b150a4d12b919baf956b807aa305cf78df03d0fe
 
 cheers
