@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EA16C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 12:36:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D887C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 14:39:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MjDb55bTNz3bj4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 23:36:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MjHJT3v7bz3bnM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 01:39:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FqMsFoM5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MPIKb3Hv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FqMsFoM5;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MPIKb3Hv;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjDZ43z5zz2yQg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 23:35:40 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id C375AB81C44;
-	Wed,  5 Oct 2022 12:35:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 371E6C433D6;
-	Wed,  5 Oct 2022 12:35:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1664973336;
-	bh=n3uxAPagq6lhuYs2Q/ymQSQ+tG2YXiSgBL5FgiUtu/c=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=FqMsFoM5vTIhFqyhXgJtDfTuVICFjtgXn1XVyDRkSY7KoL3o94nvmH0Z/fzYHEHF8
-	 /igRAE/G2C4O4BiQflN/wjuo4rlANzlDeKQiTqvkA92M4HveMEw7qxXtHDWz/QV4GM
-	 7BxVBuelfhM1UX9cKRuScojDBFOkfPBsjbKO6+LnRtl/INRVt4F7H4LGqyoNqVTtqO
-	 T2WF65EUaJESmVMth/er+W567aVjCJQvDbmg0XuztMI1OBVIa0K/ChmSFqhmx00CoK
-	 z3ibMkSaSKvuAfs63/H+hZcU8wTb7jL3APAE8lUAEjeME4sYvB4co1Nxqe+7e3F4kb
-	 GAWPwM4Hq66+A==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id AEF0E4062C; Wed,  5 Oct 2022 09:35:33 -0300 (-03)
-Date: Wed, 5 Oct 2022 09:35:33 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] tools/perf: Fix aggr_printout to display cpu field
- irrespective of core value
-Message-ID: <Yz16FdcUF+Wn8xvA@kernel.org>
-References: <6627ae9a-91e3-0923-1234-54e0fc3f4916@arm.com>
- <CAP-5=fVBzLfhfwPjxE_9DNeesPaPxf3k0b5T5S6THzB1H85mrA@mail.gmail.com>
- <993a1391ee931e859d972c460644d171@imap.linux.ibm.com>
- <CAP-5=fWJ0YBxdCarpNSfbzoAZ9uTAtgj4CdR7sQU8748Y-+DVA@mail.gmail.com>
- <6A5D0603-CF66-43B4-A13F-0308CF01967A@linux.vnet.ibm.com>
- <CAP-5=fU=bwv-e_53QagWsKvW8wjibOjfGvnivWFFVba5A55boA@mail.gmail.com>
- <Yzx4A+2I4yWTlbEn@kernel.org>
- <Yzx4ET7QU2VpCcsx@kernel.org>
- <137635B2-F4E8-4C65-B797-5C6511E265A8@linux.vnet.ibm.com>
- <Yz14hG3EVJPph11m@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjHHN6PMzz3bj8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 01:38:07 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1664980689; x=1696516689;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=uI6x+OuIX8Zsde+No42SImigImxqe3gZvNiHUYWU+j8=;
+  b=MPIKb3Hv7aTsuUjMK1+lkY3p2+IQuWUP4qhqhDNDvgwzw8VxUgFbRyO9
+   tuX6foYek4pF+JZDHuxWQwKiTb/CtavluL2lXKOUfXl/9nMUMMx2dQpxN
+   hlcJ1dHGweqTYd/kj3KnQWXMpwRYKtxO8jFIK/9+sM6cuVZ+ibeuEDjr/
+   /y37LMOIUOHYj0kdGNyMSpCpLDGqkY3YXA9NK/tuNDUahkDeqZGNn7Omj
+   Svk1bK4LTWsJNyaQAcSa2qh1j0RwogG0WxH7Z0wp5PBcbxbltObhR9ovG
+   wbKKdTXLJKtd6w/8TLjR8BMztdcivdW5GgNgThcqBewBBOpE/DuxvqyaR
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="282889735"
+X-IronPort-AV: E=Sophos;i="5.95,161,1661842800"; 
+   d="scan'208";a="282889735"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2022 07:38:04 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="619481343"
+X-IronPort-AV: E=Sophos;i="5.95,161,1661842800"; 
+   d="scan'208";a="619481343"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga007.jf.intel.com with ESMTP; 05 Oct 2022 07:38:01 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 6221A155; Wed,  5 Oct 2022 17:38:21 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org
+Subject: [PATCH v1 2/2] soc: fsl: qe: Switch to use fwnode instead of of_node
+Date: Wed,  5 Oct 2022 17:38:12 +0300
+Message-Id: <20221005143812.33503-2-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20221005143812.33503-1-andriy.shevchenko@linux.intel.com>
+References: <20221005143812.33503-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Yz14hG3EVJPph11m@kernel.org>
-X-Url: http://acmel.wordpress.com
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,153 +72,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, maddy@linux.vnet.ibm.com, Nageswara Sastry <rnsastry@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, linux-perf-users <linux-perf-users@vger.kernel.org>, James Clark <james.clark@arm.com>, Jiri Olsa <jolsa@kernel.org>, atrajeev <atrajeev@imap.linux.ibm.com>, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Daniel Scally <djrscally@gmail.com>, Li Yang <leoyang.li@nxp.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Wed, Oct 05, 2022 at 09:28:52AM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Wed, Oct 05, 2022 at 10:23:39AM +0530, Athira Rajeev escreveu:
-> > diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-> > index b82844cb0ce7..cf28020798ec 100644
-> > --- a/tools/perf/util/stat-display.c
-> > +++ b/tools/perf/util/stat-display.c
-> > @@ -168,7 +168,7 @@ static void aggr_printout(struct perf_stat_config *config,
-> > 					id.socket,
-> > 					id.die,
-> > 					id.core);
-> > -			} else if (id.core > -1) {
-> > +			} else if (id.cpu.cpu > -1) {
-> > 				fprintf(config->output, "\"cpu\" : \"%d\", ",
-> > 					id.cpu.cpu);
-> > 			}
-> > @@ -179,7 +179,7 @@ static void aggr_printout(struct perf_stat_config *config,
-> > 					id.die,
-> > 					config->csv_output ? 0 : -3,
-> > 					id.core, config->csv_sep);
-> > -			} else if (id.core > -1) {
-> > +			} else if (id.cpu.cpu > -1) {
-> > 				fprintf(config->output, "CPU%*d%s",
-> > 					config->csv_output ? 0 : -7,
-> > 					id.cpu.cpu, config->csv_sep);
-> > -- 
-> > If it is confusing, shall I send it as a separate patch along with Tested-by from Ian ?
-> 
-> I'll have to do this by hand, tried pointing b4 to this message and it
-> picked the old one, also tried to save the message and apply by hand,
-> its mangled.
+The OF node in the GPIO library is deprecated and soon
+will be removed.
 
-This is what I have now, will force push later, please triple check :-)
+GPIO library now accepts fwnode as a firmware node, so
+switch the driver to use it.
 
-- Arnaldo
-
-From b7dd96f9211e4ddbd6fa080da8dec2eac98d3f2a Mon Sep 17 00:00:00 2001
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Date: Tue, 13 Sep 2022 17:27:17 +0530
-Subject: [PATCH 1/1] perf stat: Fix aggr_printout to display CPU field
- irrespective of core value
-
-perf stat includes option to specify aggr_mode to display per-socket,
-per-core, per-die, per-node counter details.  Also there is option -A (
-AGGR_NONE, -no-aggr ), where the counter values are displayed for each
-CPU along with "CPU" value in one field of the output.
-
-Each of the aggregate mode uses the information fetched from
-"/sys/devices/system/cpu/cpuX/topology" like core_id,
-physical_package_id. Utility functions in "cpumap.c" fetches this
-information and populates the socket id, core id, CPU etc.  If the
-platform does not expose the topology information, these values will be
-set to -1. Example, in case of powerpc, details like physical_package_id
-is restricted to be exposed in pSeries platform. So id.socket, id.core,
-id.cpu all will be set as -1.
-
-In case of displaying socket or die value, there is no check done in the
-"aggr_printout" function to see if it points to valid socket id or die.
-But for displaying "cpu" value, there is a check for "if (id.core >
--1)". In case of powerpc pSeries where detail like physical_package_id
-is restricted to be exposed, id.core will be set to -1. Hence the column
-or field itself for CPU won't be displayed in the output.
-
-Result for per-socket:
-
-  perf stat -e branches --per-socket -a true
-
-   Performance counter stats for 'system wide':
-
-  S-1      32            416,851      branches
-
-Here S has -1 in above result. But with -A option which also expects CPU
-in one column in the result, below is observed.
-
-  perf stat -e instructions -A -a true
-
-   Performance counter stats for 'system wide':
-
-            47,146      instructions
-            45,226      instructions
-            43,354      instructions
-            45,184      instructions
-
-If the CPU id value is pointing to -1 also, it makes sense to display
-the column in the output to replicate the behaviour or to be in
-precedence with other aggr options(like per-socket, per-core). Remove
-the check "id.core" so that CPU field gets displayed in the output.
-
-After the fix:
-
-  perf stat -e instructions -A -a true
-
-   Performance counter stats for 'system wide':
-
-  CPU-1                  64,034      instructions
-  CPU-1                  68,941      instructions
-  CPU-1                  59,418      instructions
-  CPU-1                  70,478      instructions
-  CPU-1                  65,201      instructions
-  CPU-1                  63,704      instructions
-
-This is caught while running "perf test" for "stat+json_output.sh" and
-"stat+csv_output.sh".
-
-Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-Suggested-by: Ian Rogers <irogers@google.com>
-Suggested-by: James Clark <james.clark@arm.com>
-Signed-off-by: Athira Jajeev <atrajeev@linux.vnet.ibm.com>
-Tested-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-Tested-by: Ian Rogers <irogers@google.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Kajol Jain <kjain@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: https://lore.kernel.org/r/20220913115717.36191-1-atrajeev@linux.vnet.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- tools/perf/util/stat-display.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/soc/fsl/qe/gpio.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-index df26fb5eb072be9f..5c47ee9963a7c04c 100644
---- a/tools/perf/util/stat-display.c
-+++ b/tools/perf/util/stat-display.c
-@@ -168,7 +168,7 @@ static void aggr_printout(struct perf_stat_config *config,
- 					id.socket,
- 					id.die,
- 					id.core);
--			} else if (id.core > -1) {
-+			} else if (id.cpu.cpu > -1) {
- 				fprintf(config->output, "\"cpu\" : \"%d\", ",
- 					id.cpu.cpu);
- 			}
-@@ -179,7 +179,7 @@ static void aggr_printout(struct perf_stat_config *config,
- 					id.die,
- 					config->csv_output ? 0 : -3,
- 					id.core, config->csv_sep);
--			} else if (id.core > -1) {
-+			} else if (id.cpu.cpu > -1) {
- 				fprintf(config->output, "CPU%*d%s",
- 					config->csv_output ? 0 : -7,
- 					id.cpu.cpu, config->csv_sep);
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 99f7de43c3c6..9abb45ab138b 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -19,6 +19,8 @@
+ #include <linux/gpio.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
++#include <linux/property.h>
++
+ #include <soc/fsl/qe/qe.h>
+ 
+ struct qe_gpio_chip {
+@@ -179,7 +181,7 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
+ 		goto err0;
+ 	}
+ 
+-	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
++	if (!fwnode_device_is_compatible(gc->fwnode, "fsl,mpc8323-qe-pario-bank")) {
+ 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
+ 		err = -EINVAL;
+ 		goto err0;
 -- 
-2.37.3
+2.35.1
 
