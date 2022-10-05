@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 318B6C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 05:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29E61C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 05:36:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mj3Dp4BFkz3c6t
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 16:35:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mj3Fr3HxXz3cf2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 16:36:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSR25Ijx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k2yxFKn/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TSR25Ijx;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k2yxFKn/;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mj3Bf5Fcxz2yQl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 16:33:14 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2953BXeb024355;
-	Wed, 5 Oct 2022 05:32:58 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mj3Bg3sd4z2yQl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Oct 2022 16:33:15 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2952ipgx007255;
+	Wed, 5 Oct 2022 05:32:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=iRJTFcCHm1i1ecYtsMj1tbRuC1jUlfBqCIDQQU9uDXA=;
- b=TSR25Ijx8L7mZ4gh8LC6ZRwShBT8d0zvYAGUcxACsfhEOATeyn3Q00T2YSC5YOZM7BXG
- 8T7pf6OxGUTn6f2UHB3B+W7bqKKKyEd2WDP20OB7gcqKOod7JF8LASUCagBbsZaNK/dL
- wu8Q2N5SMt4qsieD01isJMjbL7IZjulVYdf25qdDjsWV43hRNOzuEpieO6qwPXxD6fsb
- DbAoyC8RagKuaaRNMoCV0udlba4Z0s+X4x7wwUTsosOZzM5A1uJBFGnHrNC09zwJqOSv
- 6EDRMW8Txer124hldHXCe5y8+c8SSZNvHym0PyD9ZpyqB2c3v1higTYZdnqfjsa4kPdZ ag== 
+ bh=R9L6Ris1vLA7gwMh492upDmDrwtHI0P7XWhHtSbcz4Y=;
+ b=k2yxFKn/iM++ZUhocnIZEX93aGfHU2nvyCba5al5m4hoC+AwB6Bkjr8ss/QQO9B/Q9yA
+ P1UzNNpAfcffRvUMUIoSwHQ6o/lxhH5PuVpXCq091kQ9V5b/CakWKFJUSHS+/mivwubR
+ VZzha0cI5cXra8ZpO40VVsYBsf/ISw/MWaqgVq6M6DW859rwyUsrpm6jJEphd1vdn+zd
+ oPFpBa0D0Ie574wF9lfrdKue+DE7WYHuWX7Rq+g44YaB8O8Hjeu7on/kzbDdkC1cb7wS
+ M7r+axc4w69sgZT6krVM/K5qtS9i5g+kIyHVuNNdnzKucNFtAG1vsXpB4q/gaEgBcIWl tg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k0pbh6gm3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Oct 2022 05:32:58 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2955MB5f012612;
-	Wed, 5 Oct 2022 05:32:57 GMT
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k0pbh6gkb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 05 Oct 2022 05:32:57 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
-	by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2955KgA2001012;
-	Wed, 5 Oct 2022 05:32:55 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
-	by ppma06fra.de.ibm.com with ESMTP id 3jxcthuqyh-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3k0bdt8hhf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 05 Oct 2022 05:32:55 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2955Wq15066280
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2954qHwA012511;
+	Wed, 5 Oct 2022 05:32:55 GMT
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3k0bdt8hgd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Oct 2022 05:32:55 +0000
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2955NEsj009621;
+	Wed, 5 Oct 2022 05:32:53 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+	by ppma01fra.de.ibm.com with ESMTP id 3jxd68uq5q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Oct 2022 05:32:53 +0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2955Wpei55378430
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 5 Oct 2022 05:32:52 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B931AAE051;
-	Wed,  5 Oct 2022 05:32:52 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 16B02AE056;
-	Wed,  5 Oct 2022 05:32:52 +0000 (GMT)
+	Wed, 5 Oct 2022 05:32:51 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1B222A4060;
+	Wed,  5 Oct 2022 05:32:51 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B92C4A4054;
+	Wed,  5 Oct 2022 05:32:50 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed,  5 Oct 2022 05:32:52 +0000 (GMT)
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Oct 2022 05:32:50 +0000 (GMT)
 Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 96FE1605F2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8DE85605B2;
 	Wed,  5 Oct 2022 16:32:49 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/6] powerpc/64: Add support for out-of-line static calls
-Date: Wed,  5 Oct 2022 16:32:33 +1100
-Message-Id: <20221005053234.29312-6-bgray@linux.ibm.com>
+Subject: [PATCH v3 2/6] powerpc/module: Handle caller-saved TOC in module linker
+Date: Wed,  5 Oct 2022 16:32:30 +1100
+Message-Id: <20221005053234.29312-3-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20221005053234.29312-1-bgray@linux.ibm.com>
 References: <20221005053234.29312-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: U-VfLfM7BkNQ_eLGfdGjtor_Bcfk8_Pr
-X-Proofpoint-GUID: UqMvYrsMHAljFqXZK_Cnp3TioTQp1aN0
+X-Proofpoint-ORIG-GUID: wpVMs28-N3CaTZfMAtr8WrgsAX7HW6-g
+X-Proofpoint-GUID: CGqF4D1-s9pZvYkC7_WV0bcUQ51mLTei
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-10-04_09,2022-09-29_03,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
- priorityscore=1501 spamscore=0 lowpriorityscore=0 bulkscore=0
- malwarescore=0 mlxscore=0 mlxlogscore=999 phishscore=0 impostorscore=0
- adultscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2209130000 definitions=main-2210050034
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
+ mlxlogscore=985 impostorscore=0 suspectscore=0 lowpriorityscore=0
+ clxscore=1015 spamscore=0 mlxscore=0 adultscore=0 priorityscore=1501
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2210050034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,363 +105,58 @@ Cc: ajd@linux.ibm.com, peterz@infradead.org, Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Implement static call support for 64 bit V2 ABI. This requires making
-sure the TOC is kept correct across kernel-module boundaries. As a
-secondary concern, it tries to use the local entry point of a target
-wherever possible. It does so by checking if both tramp & target are
-kernel code, and falls back to detecting the common global entry point
-patterns if modules are involved. Detecting the global entry point is
-also required for setting the local entry point as the trampoline
-target: if we cannot detect the local entry point, then we need to
-convservatively initialise r12 and use the global entry point.
+The callee may set a field in st_other to 1 to indicate r2 should be
+treated as caller-saved. This means a trampoline must be used to save
+the current TOC before calling it and restore it afterwards, much like
+external calls.
 
-The trampolines are marked with `.localentry NAME, 1` to make the
-linker save and restore the TOC on each call to the trampoline. This
-allows the trampoline to safely target functions with different TOC
-values.
-
-However this directive also implies the TOC is not initialised on entry
-to the trampoline. The kernel TOC is easily found in the PACA, but not
-an arbitrary module TOC. Therefore the trampoline implementation depends
-on whether it's in the kernel or not. If in the kernel, we initialise
-the TOC using the PACA. If in a module, we have to initialise the TOC
-with zero context, so it's quite expensive.
+This is necessary for supporting V2 ABI static calls that do not
+preserve the TOC.
 
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
- arch/powerpc/Kconfig                     |  14 ++-
- arch/powerpc/include/asm/code-patching.h |   1 +
- arch/powerpc/include/asm/static_call.h   |  80 +++++++++++++-
- arch/powerpc/kernel/Makefile             |   3 +-
- arch/powerpc/kernel/static_call.c        | 130 +++++++++++++++++++++--
- 5 files changed, 216 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/module_64.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4c466acdc70d..962e36ec34ec 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -102,6 +102,18 @@ config GENERIC_HWEIGHT
- 	bool
- 	default y
- 
-+config TOOLCHAIN_SUPPORTS_LOCALENTRY1
-+	bool
-+	depends on PPC64_ELF_ABI_V2
-+	default y if LD_VERSION >= 23200 || LLD_VERSION >= 110000
-+	help
-+	  A section of the ELF symbol st_other field can be given the value 1
-+	  using the directive '.localentry NAME, 1' to mean the local and global
-+	  entry points are the same, and r2 should be treated as caller-saved.
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 7e45dc98df8a..4d816f7785b4 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -55,6 +55,12 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ 	 * of function and try to derive r2 from it). */
+ 	return PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
+ }
 +
-+	  Older versions of Clang and binutils do not recognise this form of the
-+	  directive and will error if it is used.
-+
- config PPC
- 	bool
- 	default y
-@@ -248,7 +260,7 @@ config PPC
- 	select HAVE_SOFTIRQ_ON_OWN_STACK
- 	select HAVE_STACKPROTECTOR		if PPC32 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r2)
- 	select HAVE_STACKPROTECTOR		if PPC64 && $(cc-option,-mstack-protector-guard=tls -mstack-protector-guard-reg=r13)
--	select HAVE_STATIC_CALL			if PPC32
-+	select HAVE_STATIC_CALL			if PPC32 || (PPC64_ELF_ABI_V2 && TOOLCHAIN_SUPPORTS_LOCALENTRY1)
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_VIRT_CPU_ACCOUNTING
- 	select HUGETLB_PAGE_SIZE_VARIABLE	if PPC_BOOK3S_64 && HUGETLB_PAGE
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index 170bfa848c7c..cb4629e55e57 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -152,6 +152,7 @@ int translate_branch(ppc_inst_t *instr, const u32 *dest, const u32 *src);
- bool is_conditional_branch(ppc_inst_t instr);
- 
- #define OP_RT_RA_MASK	0xffff0000UL
-+#define OP_SI_MASK	0x0000ffffUL
- #define LIS_R2		(PPC_RAW_LIS(_R2, 0))
- #define ADDIS_R2_R12	(PPC_RAW_ADDIS(_R2, _R12, 0))
- #define ADDI_R2_R2	(PPC_RAW_ADDI(_R2, _R2, 0))
-diff --git a/arch/powerpc/include/asm/static_call.h b/arch/powerpc/include/asm/static_call.h
-index de1018cc522b..3d6e82200cb7 100644
---- a/arch/powerpc/include/asm/static_call.h
-+++ b/arch/powerpc/include/asm/static_call.h
-@@ -2,12 +2,75 @@
- #ifndef _ASM_POWERPC_STATIC_CALL_H
- #define _ASM_POWERPC_STATIC_CALL_H
- 
-+#ifdef CONFIG_PPC64_ELF_ABI_V2
-+
-+#ifdef MODULE
-+
-+#define __PPC_SCT(name, inst)					\
-+	asm(".pushsection .text, \"ax\"				\n"	\
-+	    ".align 6						\n"	\
-+	    ".globl " STATIC_CALL_TRAMP_STR(name) "		\n"	\
-+	    ".localentry " STATIC_CALL_TRAMP_STR(name) ", 1	\n"	\
-+	    STATIC_CALL_TRAMP_STR(name) ":			\n"	\
-+	    "	mflr	11					\n"	\
-+	    "	bcl	20, 31, $+4				\n"	\
-+	    "0:	mflr	12					\n"	\
-+	    "	mtlr	11					\n"	\
-+	    "	addi	12, 12, (" STATIC_CALL_TRAMP_STR(name) " - 0b)	\n"	\
-+	    "	addis 2, 12, (.TOC.-" STATIC_CALL_TRAMP_STR(name) ")@ha	\n"	\
-+	    "	addi 2, 2, (.TOC.-" STATIC_CALL_TRAMP_STR(name) ")@l	\n"	\
-+	    "	" inst "					\n"	\
-+	    "	ld	12, (2f - " STATIC_CALL_TRAMP_STR(name) ")(12)	\n"	\
-+	    "	mtctr	12					\n"	\
-+	    "	bctr						\n"	\
-+	    "1:	li	3, 0					\n"	\
-+	    "	blr						\n"	\
-+	    ".balign 8						\n"	\
-+	    "2:	.8byte 0					\n"	\
-+	    ".type " STATIC_CALL_TRAMP_STR(name) ", @function	\n"	\
-+	    ".size " STATIC_CALL_TRAMP_STR(name) ", . - " STATIC_CALL_TRAMP_STR(name) " \n" \
-+	    ".popsection					\n")
-+
-+#else /* KERNEL */
-+
-+#define __PPC_SCT(name, inst)					\
-+	asm(".pushsection .text, \"ax\"				\n"	\
-+	    ".align 5						\n"	\
-+	    ".globl " STATIC_CALL_TRAMP_STR(name) "		\n"	\
-+	    ".localentry " STATIC_CALL_TRAMP_STR(name) ", 1	\n"	\
-+	    STATIC_CALL_TRAMP_STR(name) ":			\n"	\
-+	    "	ld	2, 16(13)				\n"	\
-+	    "	" inst "					\n"	\
-+	    "	addis	12, 2, 2f@toc@ha			\n"	\
-+	    "	ld	12, 2f@toc@l(12)			\n"	\
-+	    "	mtctr	12					\n"	\
-+	    "	bctr						\n"	\
-+	    "1:	li	3, 0					\n"	\
-+	    "	blr						\n"	\
-+	    ".balign 8						\n"	\
-+	    "2:	.8byte 0					\n"	\
-+	    ".type " STATIC_CALL_TRAMP_STR(name) ", @function	\n"	\
-+	    ".size " STATIC_CALL_TRAMP_STR(name) ", . - " STATIC_CALL_TRAMP_STR(name) " \n" \
-+	    ".popsection					\n")
-+
-+#endif /* MODULE */
-+
-+#define PPC_SCT_INST_MODULE		28		/* Offset of instruction to update */
-+#define PPC_SCT_RET0_MODULE		44		/* Offset of label 1 */
-+#define PPC_SCT_DATA_MODULE		56		/* Offset of label 2 (aligned) */
-+
-+#define PPC_SCT_INST_KERNEL		4		/* Offset of instruction to update */
-+#define PPC_SCT_RET0_KERNEL		24		/* Offset of label 1 */
-+#define PPC_SCT_DATA_KERNEL		32		/* Offset of label 2 (aligned) */
-+
-+#elif defined(CONFIG_PPC32)
-+
- #define __PPC_SCT(name, inst)					\
- 	asm(".pushsection .text, \"ax\"				\n"	\
- 	    ".align 5						\n"	\
- 	    ".globl " STATIC_CALL_TRAMP_STR(name) "		\n"	\
- 	    STATIC_CALL_TRAMP_STR(name) ":			\n"	\
--	    inst "						\n"	\
-+	    "	" inst "					\n"	\
- 	    "	lis	12,2f@ha				\n"	\
- 	    "	lwz	12,2f@l(12)				\n"	\
- 	    "	mtctr	12					\n"	\
-@@ -19,11 +82,20 @@
- 	    ".size " STATIC_CALL_TRAMP_STR(name) ", . - " STATIC_CALL_TRAMP_STR(name) " \n" \
- 	    ".popsection					\n")
- 
--#define PPC_SCT_RET0		20		/* Offset of label 1 */
--#define PPC_SCT_DATA		28		/* Offset of label 2 */
-+#define PPC_SCT_INST_MODULE		0		/* Offset of instruction to update */
-+#define PPC_SCT_RET0_MODULE		20		/* Offset of label 1 */
-+#define PPC_SCT_DATA_MODULE		28		/* Offset of label 2 */
-+
-+#define PPC_SCT_INST_KERNEL		PPC_SCT_INST_MODULE
-+#define PPC_SCT_RET0_KERNEL		PPC_SCT_RET0_MODULE
-+#define PPC_SCT_DATA_KERNEL		PPC_SCT_DATA_MODULE
-+
-+#else /* !CONFIG_PPC64_ELF_ABI_V2 && !CONFIG_PPC32 */
-+#error "Unsupported ABI"
-+#endif /* CONFIG_PPC64_ELF_ABI_V2 */
- 
- #define ARCH_DEFINE_STATIC_CALL_TRAMP(name, func)	__PPC_SCT(name, "b " #func)
- #define ARCH_DEFINE_STATIC_CALL_NULL_TRAMP(name)	__PPC_SCT(name, "blr")
--#define ARCH_DEFINE_STATIC_CALL_RET0_TRAMP(name)	__PPC_SCT(name, "b .+20")
-+#define ARCH_DEFINE_STATIC_CALL_RET0_TRAMP(name)	__PPC_SCT(name, "b 1f")
- 
- #endif /* _ASM_POWERPC_STATIC_CALL_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 06d2d1f78f71..a30d0d0f5499 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -128,8 +128,9 @@ extra-y				+= vmlinux.lds
- 
- obj-$(CONFIG_RELOCATABLE)	+= reloc_$(BITS).o
- 
--obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o early_32.o static_call.o
-+obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o early_32.o
- obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
-+obj-$(CONFIG_HAVE_STATIC_CALL)	+= static_call.o
- obj-$(CONFIG_KGDB)		+= kgdb.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
- obj-$(CONFIG_SMP)		+= smp.o
-diff --git a/arch/powerpc/kernel/static_call.c b/arch/powerpc/kernel/static_call.c
-index 863a7aa24650..9211b2e189bb 100644
---- a/arch/powerpc/kernel/static_call.c
-+++ b/arch/powerpc/kernel/static_call.c
-@@ -1,33 +1,151 @@
- // SPDX-License-Identifier: GPL-2.0
-+#include <linux/bitops.h>
- #include <linux/memory.h>
- #include <linux/static_call.h>
- 
- #include <asm/code-patching.h>
- 
-+static long sign_extend_long(unsigned long value, int index)
++static bool need_r2save_stub(unsigned char st_other)
 +{
-+	if (sizeof(long) == 8)
-+		return sign_extend64(value, index);
-+	else
-+		return sign_extend32(value, index);
++	return ((st_other & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT) == 1;
 +}
 +
-+static void *ppc_function_toc(u32 *func)
+ #else
+ 
+ static func_desc_t func_desc(unsigned long addr)
+@@ -66,6 +72,11 @@ static unsigned int local_entry_offset(const Elf64_Sym *sym)
+ 	return 0;
+ }
+ 
++static bool need_r2save_stub(unsigned char st_other)
 +{
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2)) {
-+		/* There are two common global entry sequences we handle below
-+		 *
-+		 * 1. addis r2, r12, SI1
-+		 *    addi r2, SI2
-+		 *
-+		 * 2. lis r2, SI1
-+		 *    addi r2, SI2
-+		 *
-+		 * Where r12 contains the global entry point address (it is otherwise
-+		 * uninitialised, so doesn't matter what value we use if this is not
-+		 * a separate global entry point).
-+		 *
-+		 * Here we simulate running the given sequence and return the result it
-+		 * would calculate. If the sequence is not recognised we return NULL.
-+		 */
-+		u32 insn1 = *func;
-+		u32 insn2 = *(func + 1);
-+		unsigned long op_regs1 = insn1 & OP_RT_RA_MASK;
-+		unsigned long op_regs2 = insn2 & OP_RT_RA_MASK;
-+		unsigned long si1 = insn1 & OP_SI_MASK;
-+		unsigned long si2 = insn2 & OP_SI_MASK;
-+		unsigned long imm1 = sign_extend_long(si1 << 16, 31);
-+		unsigned long imm2 = sign_extend_long(si2, 15);
-+		unsigned long addr = 0;
-+
-+		/* Simulate the first instruction */
-+		if (op_regs1 == ADDIS_R2_R12)
-+			addr += (unsigned long)func + imm1;
-+		else if (op_regs1 == LIS_R2)
-+			addr += imm1;
-+		else
-+			return NULL;
-+
-+		/* Simulate the second instruction */
-+		if (op_regs2 == ADDI_R2_R2)
-+			addr += imm2;
-+		else
-+			return NULL;
-+
-+		return (void *)addr;
-+	}
-+
-+	return NULL;
++	return false;
 +}
 +
-+static bool shares_toc(void *func1, void *func2)
-+{
-+	if (IS_ENABLED(CONFIG_PPC64_ELF_ABI_V2)) {
-+		void *func1_toc;
-+		void *func2_toc;
-+
-+		if (func1 == NULL || func2 == NULL)
-+			return false;
-+
-+		/* Assume the kernel only uses a single TOC */
-+		if (core_kernel_text((unsigned long)func1) &&
-+		    core_kernel_text((unsigned long)func2))
-+			return true;
-+
-+		/* Fall back to calculating the TOC from common patterns
-+		 * if modules are involved
-+		 */
-+		func1_toc = ppc_function_toc(func1);
-+		func2_toc = ppc_function_toc(func2);
-+		return func1_toc != NULL && func2_toc != NULL && func1_toc == func2_toc;
-+	}
-+
-+	return true;
-+}
-+
-+static void *get_inst_addr(void *tramp)
-+{
-+	return tramp + (core_kernel_text((unsigned long)tramp)
-+				? PPC_SCT_INST_KERNEL
-+				: PPC_SCT_INST_MODULE);
-+}
-+
-+static void *get_ret0_addr(void *tramp)
-+{
-+	return tramp + (core_kernel_text((unsigned long)tramp)
-+				? PPC_SCT_RET0_KERNEL
-+				: PPC_SCT_RET0_MODULE);
-+}
-+
-+static void *get_data_addr(void *tramp)
-+{
-+	return tramp + (core_kernel_text((unsigned long) tramp)
-+				? PPC_SCT_DATA_KERNEL
-+				: PPC_SCT_DATA_MODULE);
-+}
-+
- void arch_static_call_transform(void *site, void *tramp, void *func, bool tail)
+ void *dereference_module_function_descriptor(struct module *mod, void *ptr)
  {
- 	int err;
- 	bool is_ret0 = (func == __static_call_return0);
--	unsigned long target = (unsigned long)(is_ret0 ? tramp + PPC_SCT_RET0 : func);
--	bool is_short = is_offset_in_branch_range((long)target - (long)tramp);
-+	bool is_short;
-+	void *target = is_ret0 ? get_ret0_addr(tramp) : func;
-+	void *tramp_inst = get_inst_addr(tramp);
- 
- 	if (!tramp)
- 		return;
- 
-+	if (is_ret0)
-+		is_short = true;
-+	else if (shares_toc(tramp, target))
-+		is_short = is_offset_in_branch_range(
-+			(long)ppc_function_entry(target) - (long)tramp_inst);
-+	else
-+		/* Combine out-of-range with not sharing a TOC. Though it's possible
-+		 * an out-of-range target shares a TOC, handling this separately
-+		 * complicates the trampoline. It's simpler to always use the global
-+		 * entry point in this case.
-+		 */
-+		is_short = false;
-+
- 	mutex_lock(&text_mutex);
- 
- 	if (func && !is_short) {
--		err = patch_instruction(tramp + PPC_SCT_DATA, ppc_inst(target));
-+		err = patch_ulong(get_data_addr(tramp), (unsigned long)target);
- 		if (err)
- 			goto out;
- 	}
- 
- 	if (!func)
--		err = patch_instruction(tramp, ppc_inst(PPC_RAW_BLR()));
-+		err = patch_instruction(tramp_inst, ppc_inst(PPC_RAW_BLR()));
- 	else if (is_short)
--		err = patch_branch(tramp, target, 0);
-+		err = patch_branch(tramp_inst, ppc_function_entry(target), 0);
- 	else
--		err = patch_instruction(tramp, ppc_inst(PPC_RAW_NOP()));
-+		err = patch_instruction(tramp_inst, ppc_inst(PPC_RAW_NOP()));
-+
- out:
- 	mutex_unlock(&text_mutex);
- 
+ 	if (ptr < (void *)mod->arch.start_opd ||
+@@ -632,7 +643,8 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 		case R_PPC_REL24:
+ 			/* FIXME: Handle weak symbols here --RR */
+ 			if (sym->st_shndx == SHN_UNDEF ||
+-			    sym->st_shndx == SHN_LIVEPATCH) {
++			    sym->st_shndx == SHN_LIVEPATCH ||
++			    need_r2save_stub(sym->st_other)) {
+ 				/* External: go via stub */
+ 				value = stub_for_addr(sechdrs, value, me,
+ 						strtab + sym->st_name);
 -- 
 2.37.3
 
