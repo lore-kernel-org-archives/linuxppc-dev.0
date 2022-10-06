@@ -4,73 +4,199 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A6E3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 22:04:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AF56C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 22:43:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mk57z5NJTz3cjY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 09:04:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mk60Q5kdmz3dtN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 09:43:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l+8brove;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=XQW+nWRK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=tiop=2h=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l+8brove;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=XQW+nWRK;
 	dkim-atps=neutral
-Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mk56y6XQlz3c3G
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 09:03:37 +1100 (AEDT)
-Received: by mail-pl1-x636.google.com with SMTP id z20so2898075plb.10
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 15:03:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:references:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date;
-        bh=LLlo0saXrZjOQwglFhSx/3IhwB4d7MYWIHDHWsDmD2M=;
-        b=l+8brove/CQUMNYcP1N9QeWx83wlhThCFQwBdwHqQ7oKYb26R9cXGaMXmcbgmose8j
-         0A6YZxM7TmDb5LL/81DhNYKZoKvd9sqTe/L2I70lKeEcUt+ODAYI/ATcMiKztNME8o07
-         KEd2NtwIP1StdpJr7vlS9pSD8hvYzaIm0DSE9W9EKM0i2oSJwmQgHgjs9a5kWtMAK8ma
-         uAk7HAo4BSlYv4/vVN4nrh7emrgOUcffA1HFQ+hZ+xdIbfDdfppQH/dM9VOvJOUd4gr2
-         6DuHywG4EAo87Ik6Ven/OK96he+C3Bkuq8ceXl1DoVitSxoSVbHltP3kxWPu8NVzZgDq
-         +4SA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:references:to:from:subject:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date;
-        bh=LLlo0saXrZjOQwglFhSx/3IhwB4d7MYWIHDHWsDmD2M=;
-        b=lFrCJcTb8Fh+vCJRL1JCP7cFAD6gGTS6RMl27/Kge1EB1DBqWsa34LH+OouxMzLuhr
-         t4TTOoxiZNv/WDK0rTfsd4GxEBhMMRRybpr4uuZvOctAOIFqJGLUlXdhsvvR9La9ujm5
-         iXs8dUqJ5XCIwIsDoOeajfhocZlp4GkavVNF07j2uJjqQ3VfwhlloJD/kSXDrN0QRJ1I
-         bqWIYLSKgK79ZBc28ekelzRZdSA/H9Hp131rkUv580zGHf9QIe/62idfiZjClTH0ywsr
-         nVk/oYQggvBqQokpvzrB0jLbG/cLhSkHV/o5oUgT+R8PnhY8cyk2/FLUM1qTuK8J62d5
-         uePQ==
-X-Gm-Message-State: ACrzQf1ddw9Wbo0kLaM74O3ZFaczMMi4bI82+I77tBraiglp36k62rlY
-	uoHGOUuz+VSrpJRUbzzpSRnT2Ryc57U=
-X-Google-Smtp-Source: AMsMyM7gQ88pZp48VhuiLgKmwQq6AwjRtevy2Y1Rxp2lo0Ep3EOdsFUl50Uv5/us9vZZ7B3MFUzvqQ==
-X-Received: by 2002:a17:902:b20a:b0:178:6f5b:f903 with SMTP id t10-20020a170902b20a00b001786f5bf903mr1621158plr.39.1665093814986;
-        Thu, 06 Oct 2022 15:03:34 -0700 (PDT)
-Received: from localhost ([118.208.156.99])
-        by smtp.gmail.com with ESMTPSA id x21-20020aa79575000000b0056270d01bbcsm98083pfq.139.2022.10.06.15.03.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 Oct 2022 15:03:33 -0700 (PDT)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 07 Oct 2022 08:03:29 +1000
-Message-Id: <CNF6HS8WBIA4.1QY9749KKU4EV@bobo>
-Subject: Re: [PATCH] powerpc/64s: POWER10 CPU Kconfig build option
-From: "Nicholas Piggin" <npiggin@gmail.com>
-To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-X-Mailer: aerc 0.11.0
-References: <20220923033004.536127-1-npiggin@gmail.com>
- <4141d141-54a8-0771-ea67-1e457e38f329@csgroup.eu>
- <CN3KCU5GOMF4.3T533MQ4U2SF0@bobo>
- <33e5c5e7-a25f-36bf-e7a1-8d6849cd4715@csgroup.eu>
-In-Reply-To: <33e5c5e7-a25f-36bf-e7a1-8d6849cd4715@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mjt9k0rCcz3bjS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 00:50:17 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id C2113B8206F;
+	Thu,  6 Oct 2022 13:50:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1536CC433B5;
+	Thu,  6 Oct 2022 13:49:57 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="XQW+nWRK"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1665064196;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=mEetLjJ38ygHBekWX+Dw1oorRVmw9Gz/icaPb6ZlUv4=;
+	b=XQW+nWRKwxnddFTGI7/ZKz5VyRlNEuklQa0u+Ig10InpOrVisjGqrd6f7GbuQRp84tPInF
+	fBPY5LYDd0f8SjNIkSIvSi4EX3Xfu2tEtQmdD02Dhr2bOlmNQ98IREjja+Z3DlOFF4ZQhX
+	tSRriBekZGRJFgALCRECJrV3N/Wp248=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id ac8c61f2 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Thu, 6 Oct 2022 13:49:56 +0000 (UTC)
+Date: Thu, 6 Oct 2022 07:49:44 -0600
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: linux-kernel@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>,
+	"Darrick J . Wong" <djwong@kernel.org>,
+	Ulf Hansson <ulf.hansson@linaro.org>,
+	dri-devel@lists.freedesktop.org,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Hans Verkuil <hverkuil@xs4all.nl>, linux-sctp@vger.kernel.org,
+	"Md . Haris Iqbal" <haris.iqbal@ionos.com>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Christoph Hellwig <hch@lst.de>,
+	Andy Gospodarek <andy@greyhouse.net>,
+	Sergey Matyukevich <geomatsi@gmail.com>,
+	Rohit Maheshwari <rohitm@chelsio.com>,
+	Michael Ellerman <mpe@ellerman.id.au>, ceph-devel@vger.kernel.org,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Jozsef Kadlecsik <kadlec@netfilter.org>,
+	Nilesh Javali <njavali@marvell.com>,
+	Jean-Paul Roubelat <jpr@f6fbb.org>,
+	Dick Kennedy <dick.kennedy@broadcom.com>,
+	Jay Vosburgh <j.vosburgh@gmail.com>,
+	Potnuri Bharat Teja <bharat@chelsio.com>,
+	Vinay Kumar Yadav <vinay.yadav@chelsio.com>,
+	linux-nfs@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+	Igor Mitsyanko <imitsyanko@quantenna.com>,
+	Andy Lutomirski <luto@kernel.org>, linux-hams@vger.kernel.org,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Trond Myklebust <trond.myklebust@hammerspace.com>,
+	linux-raid@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
+	Hante Meuleman <hante.meuleman@broadcom.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-usb@vger.kernel.org, Michael Chan <michael.chan@broadcom.com>,
+	Varun Prakash <varun@chelsio.com>,
+	Chuck Lever <chuck.lever@oracle.com>,
+	netfilter-devel@vger.kernel.org,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Jiri Olsa <jolsa@kernel.org>, Jan Kara <jack@suse.com>,
+	linux-fsdevel@vger.kernel.org,
+	Lars Ellenberg <lars.ellenberg@linbit.com>,
+	linux-media@vger.kernel.org,
+	Claudiu Beznea <claudiu.beznea@microchip.com>,
+	Sharvari Harisangam <sharvari.harisangam@nxp.com>,
+	linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Song Liu <song@kernel.org>, Eric Dumazet <edumazet@google.com>,
+	target-devel@vger.kernel.org, John Stultz <jstultz@google.com>,
+	Stanislav Fomichev <sdf@google.com>,
+	Gregory Greenman <gregory.greenman@intel.com>,
+	drbd-dev@lists.linbit.com, dev@openvswitch.org,
+	Leon Romanovsky <leon@kernel.org>, Helge Deller <deller@gmx.de>,
+	Hugh Dickins <hughd@google.com>,
+	James Smart <james.smart@broadcom.com>,
+	Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>,
+	Pravin B Shelar <pshelar@ovn.org>, Julian Anastasov <ja@ssi.bg>,
+	coreteam@netfilter.org, Veaceslav Falico <vfalico@gmail.com>,
+	Yonghong Song <yhs@fb.com>, Namjae Jeon <linkinjeon@kernel.org>,
+	linux-crypto@vger.kernel.org,
+	Santosh Shilimkar <santosh.shilimkar@oracle.com>,
+	Ganapathi Bhat <ganapathi017@gmail.com>,
+	linux-actions@lists.infradead.org,
+	Simon Horman <horms@verge.net.au>, Jaegeuk Kim <jaegeuk@kernel.org>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	Hao Luo <haoluo@google.com>, Theodore Ts'o <tytso@mit.edu>,
+	Stephen Boyd <sboyd@kernel.org>,
+	Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>,
+	Florian Westphal <fw@strlen.de>,
+	Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>,
+	Jon Maloy <jmaloy@redhat.com>, Vlad Yasevich <vyasevich@gmail.com>,
+	Anna Schumaker <anna@kernel.org>,
+	Yehezkel Bernat <YehezkelShB@gmail.com>,
+	Haoyue Xu <xuhaoyue1@hisilicon.com>,
+	Heiner Kallweit <hkallweit1@gmail.com>,
+	linux-wireless@vger.kernel.org,
+	Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	linux-fbdev@vger.kernel.org, linux-nvme@lists.infradead.org,
+	Michal Januszewski <spock@gentoo.org>,
+	linux-mtd@lists.infradead.org, kasan-dev@googlegroups.com,
+	Cong Wang <xiyou.wangcong@gmail.com>,
+	Thomas Sailer <t.sailer@alumni.ethz.ch>,
+	Ajay Singh <ajay.kathat@microchip.com>,
+	Xiubo Li <xiubli@redhat.com>, Sagi Grimberg <sagi@grimberg.me>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org,
+	lvs-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	"Naveen N . Rao" <naveen.n.rao@linux.ibm.com>,
+	Ilya Dryomov <idryomov@gmail.com>, Paolo Abeni <pabeni@redhat.com>,
+	Pablo Neira Ayuso <pablo@netfilter.org>,
+	Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>,
+	Yury Norov <yury.norov@gmail.com>,
+	"James E . J . Bottomley" <jejb@linux.ibm.com>,
+	Jamal Hadi Salim <jhs@mojatatu.com>, KP Singh <kpsingh@kernel.org>,
+	Borislav Petkov <bp@alien8.de>, Keith Busch <kbusch@kernel.org>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Franky Lin <franky.lin@broadcom.com>,
+	Arend van Spriel <aspriel@gmail.com>, linux-ext4@vger.kernel.org,
+	Wenpeng Liang <liangwenpeng@huawei.com>,
+	"Martin K . Petersen" <martin.petersen@oracle.com>,
+	Xinming Hu <huxinming820@gmail.com>,
+	linux-stm32@st-md-mailman.stormreply.com,
+	Jeff Layton <jlayton@kernel.org>, linux-xfs@vger.kernel.org,
+	netdev@vger.kernel.org, Ying Xue <ying.xue@windriver.com>,
+	Manish Rangankar <mrangankar@marvell.com>,
+	"David S . Miller" <davem@davemloft.net>,
+	Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8rgensen?= <toke@toke.dk>,
+	Vignesh Raghavendra <vigneshr@ti.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	"H . Peter Anvin" <hpa@zytor.com>,
+	Alexandre Torgue <alexandre.torgue@foss.st.com>,
+	Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org,
+	Andreas Dilger <adilger.kernel@dilger.ca>,
+	Ayush Sawal <ayush.sawal@chelsio.com>,
+	Andreas Noever <andreas.noever@gmail.com>,
+	Jiri Pirko <jiri@resnulli.us>,
+	linux-f2fs-devel@lists.sourceforge.net,
+	Jack Wang <jinpu.wang@ionos.com>,
+	Steffen Klassert <steffen.klassert@secunet.com>,
+	rds-devel@oss.oracle.com, Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-scsi@vger.kernel.org, dccp@vger.kernel.org,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Jason Gunthorpe <jgg@ziepe.ca>, SHA-cyfmac-dev-list@infineon.com,
+	Ingo Molnar <mingo@redhat.com>, Jakub Kicinski <kuba@kernel.org>,
+	John Fastabend <john.fastabend@gmail.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Michael Jamet <michael.jamet@intel.com>,
+	Kalle Valo <kvalo@kernel.org>,
+	Akinobu Mita <akinobu.mita@gmail.com>, linux-block@vger.kernel.org,
+	dmaengine@vger.kernel.org, Hannes Reinecke <hare@suse.de>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Dmitry Vyukov <dvyukov@google.com>, Jens Axboe <axboe@kernel.dk>,
+	cake@lists.bufferbloat.net, brcm80211-dev-list.pdl@broadcom.com,
+	Yishai Hadas <yishaih@nvidia.com>,
+	Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+	linuxppc-dev@lists.ozlabs.org, David Ahern <dsahern@kernel.org>,
+	Philipp Reisner <philipp.reisner@linbit.com>,
+	Stephen Hemminger <stephen@networkplumber.org>,
+	Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	tipc-discussion@lists.sourceforge.net, Thomas Graf <tgraf@suug.ch>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Sungjong Seo <sj1557.seo@samsung.com>,
+	Martin KaFai Lau <martin.lau@linux.dev>
+Subject: Re: [f2fs-dev] [PATCH v1 0/5] treewide cleanup of random integer
+ usage
+Message-ID: <Yz7c+LqDGjzd2QSd@zx2c4.com>
+References: <20221005214844.2699-1-Jason@zx2c4.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20221005214844.2699-1-Jason@zx2c4.com>
+X-Mailman-Approved-At: Fri, 07 Oct 2022 09:35:18 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,97 +211,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri Oct 7, 2022 at 4:07 AM AEST, Christophe Leroy wrote:
->
->
-> Le 23/09/2022 =C3=A0 08:23, Nicholas Piggin a =C3=A9crit=C2=A0:
-> > On Fri Sep 23, 2022 at 3:46 PM AEST, Christophe Leroy wrote:
-> >>
-> >>
-> >> Le 23/09/2022 =C3=A0 05:30, Nicholas Piggin a =C3=A9crit=C2=A0:
-> >>> This adds basic POWER10_CPU option, which builds with -mcpu=3Dpower10=
-.
-> >>>
-> >>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >>> ---
-> >>> There's quite a lot of asm and linker changes slated for the next mer=
-ge
-> >>> window already so I may leave the pcrel patch for next time. I think =
-we
-> >>> can add the basic POWER10 build option though.
-> >>>
-> >>> Thanks,
-> >>> Nick
-> >>>
-> >>>    arch/powerpc/Makefile                  | 7 ++++++-
-> >>>    arch/powerpc/platforms/Kconfig.cputype | 8 +++++++-
-> >>>    2 files changed, 13 insertions(+), 2 deletions(-)
-> >>>
-> >>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> >>> index 8a3d69b02672..ea88af26f8c6 100644
-> >>> --- a/arch/powerpc/Makefile
-> >>> +++ b/arch/powerpc/Makefile
-> >>> @@ -192,9 +192,14 @@ ifdef CONFIG_476FPE_ERR46
-> >>>    		-T $(srctree)/arch/powerpc/platforms/44x/ppc476_modules.lds
-> >>>    endif
-> >>>   =20
-> >>> -# No AltiVec or VSX instructions when building kernel
-> >>> +# No prefix or pcrel
-> >>> +KBUILD_CFLAGS +=3D $(call cc-option,-mno-prefixed)
-> >>
-> >> We have lots of code to handle prefixed instructions in code_patching,
-> >> and that code complexifies stuff and has a performance impact.
-> >> And it is only partially taken into account, areas like ftrace don't
-> >> properly take care of prefixed instructions.
-> >>
-> >> Should we get rid of prefixed instruction support completely in the
-> >> kernel, and come back to more simple code ?
-> >=20
-> > I would rather complete prefixed support in the kernel and use pcrel
-> > addressing. Actually even if we don't compile with pcrel or prefixed,
-> > there are some instructions and we will probably get more that require
-> > prefixed, possible we might want to use them in kernel. Some of it is
-> > required to handle user mode instructions too. So I think removing
-> > it is premature, but I guess it's up for debate.
->
-> Well ok, in fact I only had code_patching in mind.
->
-> Code patching is only for kernel text. Today code patching is used for=20
-> things like kprobe, ftrace, etc .... which really do not seems to be=20
-> prepared for prefixed instructions.
->
-> If you are adding -mno-prefixed, it is worth keeping that code which=20
-> sometimes gives us some headacke ?
->
-> Of course if there are plans to get real prefixed instruction in kernel=
-=20
-> code anytime soon, lets live with it, in that case the support should=20
-> get completed. But otherwise I think it would be better to get rid of it=
-=20
-> for now, and implement it completely when we need it in years.
+A v2 that won't murder your mail setup is now available here:
+https://lore.kernel.org/lkml/20221006132510.23374-1-Jason@zx2c4.com/
 
-I have a series to enable it again, just not ready for upstream yet
-but it's not all that far off.
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-September/248521.html
-
-> When I see the following, I'm having hard time believing it would work=20
-> with prefixed instructions in the kernel text:
->
-> 	typedef u32 kprobe_opcode_t;
->
-> 	struct kprobe {
-> 	...
-> 		/* Saved opcode (which has been replaced with breakpoint) */
-> 		kprobe_opcode_t opcode;
->
->
-> 	void arch_disarm_kprobe(struct kprobe *p)
-> 	{
-> 		WARN_ON_ONCE(patch_instruction(p->addr, ppc_inst(p->opcode)));
-> 	}
-
-Yeah that needs work for sure.
-
-Thanks,
-Nick
+Please do not (attempt to) post more replies to v1, as it kicks up a
+storm of angry MTAs.
