@@ -4,70 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E80AC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 21:57:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A6E3C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 22:04:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mk4zY179Dz3dsC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 08:57:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mk57z5NJTz3cjY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 09:04:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JiMSB/Aa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l+8brove;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JiMSB/Aa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l+8brove;
 	dkim-atps=neutral
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mk4yT54mjz2xZ7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 08:56:16 +1100 (AEDT)
-Received: by mail-pl1-x62c.google.com with SMTP id l4so2895613plb.8
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 14:56:16 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mk56y6XQlz3c3G
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 09:03:37 +1100 (AEDT)
+Received: by mail-pl1-x636.google.com with SMTP id z20so2898075plb.10
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 15:03:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
+        h=in-reply-to:references:to:from:subject:message-id:date
          :content-transfer-encoding:mime-version:from:to:cc:subject:date;
-        bh=xLUB0E3LfbszQ4qFdgdItsy+sBeI19HoAo47UM2h3l8=;
-        b=JiMSB/AaGi1Dt/0zATolvZ1MmhfJAuWSjFSVI8AlOkb8LoebaB3hZVTn21zom8DgpM
-         gDnkAR2oeHzdji9F9Sy11Gkuw//FMLmLSoEaNCYQiYiAVED1jws7Ejnz+vnK+SbUmuq9
-         FsxQvCkteG6HZ9ZwWzu30ooP7z+Jwbi9wPi8d9Ng/TGiPdRi3sf1otj0yakGqxYAfL3R
-         3YulMz7vY2bi3h99Oqc1VPV/FvLgTQJg1ucdviCXNBJleoeU2GEud4R/cjoY4svlmWfJ
-         wS0Qm+7+b4JWDFf2ySoA+IugHSraouxRIIM5zaWe1hlqu+6NPBD4j9R0t0E7xC7RkkwL
-         KXYQ==
+        bh=LLlo0saXrZjOQwglFhSx/3IhwB4d7MYWIHDHWsDmD2M=;
+        b=l+8brove/CQUMNYcP1N9QeWx83wlhThCFQwBdwHqQ7oKYb26R9cXGaMXmcbgmose8j
+         0A6YZxM7TmDb5LL/81DhNYKZoKvd9sqTe/L2I70lKeEcUt+ODAYI/ATcMiKztNME8o07
+         KEd2NtwIP1StdpJr7vlS9pSD8hvYzaIm0DSE9W9EKM0i2oSJwmQgHgjs9a5kWtMAK8ma
+         uAk7HAo4BSlYv4/vVN4nrh7emrgOUcffA1HFQ+hZ+xdIbfDdfppQH/dM9VOvJOUd4gr2
+         6DuHywG4EAo87Ik6Ven/OK96he+C3Bkuq8ceXl1DoVitSxoSVbHltP3kxWPu8NVzZgDq
+         +4SA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:references:to:from:subject:cc:message-id:date
+        h=in-reply-to:references:to:from:subject:message-id:date
          :content-transfer-encoding:mime-version:x-gm-message-state:from:to
          :cc:subject:date;
-        bh=xLUB0E3LfbszQ4qFdgdItsy+sBeI19HoAo47UM2h3l8=;
-        b=rLK13TpE9FzLa7cyP1z7jCL+a6Ie3zUYndHHq2whNAHqHv3+5cVfYhD38wpSAd+ypY
-         uz/CgiNyeEjRHwtH4dkuoq8wNmGhaF3cFztswaU0Yksgty7MSWC7xB3OK/QZB7mfSGqt
-         +AmZ9lb+yzXA+pToseNnDbTExj6kXrpl2TzN7fOZ2o0A3+ZhRMadRf5vruVChgAbjwol
-         SuEDvsTjRP5qii+8ab08zregD3Py2T5jMODJaTrSyL+4JxB3bdZLNq8PDxlIPLsTGjyd
-         cvTAvOqj2ZAs+fv4a80yBIS4G1Ae7CTwkFWzZMlUA8jZf3j2Da36Mmue7nrY/e7iWUL6
-         5g2w==
-X-Gm-Message-State: ACrzQf0MH6/Y1T4nm/RmN0Vauyuhdhvc2OO78gzGVZYxgBYYXWRo/GB6
-	cxYP62vYKcM5hkTR2sEK2fMuoiZGcwE=
-X-Google-Smtp-Source: AMsMyM7vBb8O9rXHs7a1gyj4sFwjyzTgCrI/WWuUSPkeD/vL5w++NDcxENhVgN5lAlaGyw6n2Ixi4g==
-X-Received: by 2002:a17:90a:4888:b0:203:6d42:ccae with SMTP id b8-20020a17090a488800b002036d42ccaemr1819174pjh.166.1665093374936;
-        Thu, 06 Oct 2022 14:56:14 -0700 (PDT)
+        bh=LLlo0saXrZjOQwglFhSx/3IhwB4d7MYWIHDHWsDmD2M=;
+        b=lFrCJcTb8Fh+vCJRL1JCP7cFAD6gGTS6RMl27/Kge1EB1DBqWsa34LH+OouxMzLuhr
+         t4TTOoxiZNv/WDK0rTfsd4GxEBhMMRRybpr4uuZvOctAOIFqJGLUlXdhsvvR9La9ujm5
+         iXs8dUqJ5XCIwIsDoOeajfhocZlp4GkavVNF07j2uJjqQ3VfwhlloJD/kSXDrN0QRJ1I
+         bqWIYLSKgK79ZBc28ekelzRZdSA/H9Hp131rkUv580zGHf9QIe/62idfiZjClTH0ywsr
+         nVk/oYQggvBqQokpvzrB0jLbG/cLhSkHV/o5oUgT+R8PnhY8cyk2/FLUM1qTuK8J62d5
+         uePQ==
+X-Gm-Message-State: ACrzQf1ddw9Wbo0kLaM74O3ZFaczMMi4bI82+I77tBraiglp36k62rlY
+	uoHGOUuz+VSrpJRUbzzpSRnT2Ryc57U=
+X-Google-Smtp-Source: AMsMyM7gQ88pZp48VhuiLgKmwQq6AwjRtevy2Y1Rxp2lo0Ep3EOdsFUl50Uv5/us9vZZ7B3MFUzvqQ==
+X-Received: by 2002:a17:902:b20a:b0:178:6f5b:f903 with SMTP id t10-20020a170902b20a00b001786f5bf903mr1621158plr.39.1665093814986;
+        Thu, 06 Oct 2022 15:03:34 -0700 (PDT)
 Received: from localhost ([118.208.156.99])
-        by smtp.gmail.com with ESMTPSA id l14-20020a170903120e00b0017f74cab9eesm96586plh.128.2022.10.06.14.56.12
+        by smtp.gmail.com with ESMTPSA id x21-20020aa79575000000b0056270d01bbcsm98083pfq.139.2022.10.06.15.03.32
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 06 Oct 2022 14:56:13 -0700 (PDT)
+        Thu, 06 Oct 2022 15:03:33 -0700 (PDT)
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 07 Oct 2022 07:56:09 +1000
-Message-Id: <CNF6C5XSIE75.3R12NULNLHEN2@bobo>
+Date: Fri, 07 Oct 2022 08:03:29 +1000
+Message-Id: <CNF6HS8WBIA4.1QY9749KKU4EV@bobo>
 Subject: Re: [PATCH] powerpc/64s: POWER10 CPU Kconfig build option
 From: "Nicholas Piggin" <npiggin@gmail.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 X-Mailer: aerc 0.11.0
 References: <20220923033004.536127-1-npiggin@gmail.com>
- <20221006195411.GS25951@gate.crashing.org>
-In-Reply-To: <20221006195411.GS25951@gate.crashing.org>
+ <4141d141-54a8-0771-ea67-1e457e38f329@csgroup.eu>
+ <CN3KCU5GOMF4.3T533MQ4U2SF0@bobo>
+ <33e5c5e7-a25f-36bf-e7a1-8d6849cd4715@csgroup.eu>
+In-Reply-To: <33e5c5e7-a25f-36bf-e7a1-8d6849cd4715@csgroup.eu>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,46 +82,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri Oct 7, 2022 at 5:54 AM AEST, Segher Boessenkool wrote:
-> Hi!
+On Fri Oct 7, 2022 at 4:07 AM AEST, Christophe Leroy wrote:
 >
-> On Fri, Sep 23, 2022 at 01:30:04PM +1000, Nicholas Piggin wrote:
-> > This adds basic POWER10_CPU option, which builds with -mcpu=3Dpower10.
 >
-> > +# No prefix or pcrel
-> > +KBUILD_CFLAGS +=3D $(call cc-option,-mno-prefixed)
-> > +KBUILD_CFLAGS +=3D $(call cc-option,-mno-pcrel)
+> Le 23/09/2022 =C3=A0 08:23, Nicholas Piggin a =C3=A9crit=C2=A0:
+> > On Fri Sep 23, 2022 at 3:46 PM AEST, Christophe Leroy wrote:
+> >>
+> >>
+> >> Le 23/09/2022 =C3=A0 05:30, Nicholas Piggin a =C3=A9crit=C2=A0:
+> >>> This adds basic POWER10_CPU option, which builds with -mcpu=3Dpower10=
+.
+> >>>
+> >>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> >>> ---
+> >>> There's quite a lot of asm and linker changes slated for the next mer=
+ge
+> >>> window already so I may leave the pcrel patch for next time. I think =
+we
+> >>> can add the basic POWER10 build option though.
+> >>>
+> >>> Thanks,
+> >>> Nick
+> >>>
+> >>>    arch/powerpc/Makefile                  | 7 ++++++-
+> >>>    arch/powerpc/platforms/Kconfig.cputype | 8 +++++++-
+> >>>    2 files changed, 13 insertions(+), 2 deletions(-)
+> >>>
+> >>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> >>> index 8a3d69b02672..ea88af26f8c6 100644
+> >>> --- a/arch/powerpc/Makefile
+> >>> +++ b/arch/powerpc/Makefile
+> >>> @@ -192,9 +192,14 @@ ifdef CONFIG_476FPE_ERR46
+> >>>    		-T $(srctree)/arch/powerpc/platforms/44x/ppc476_modules.lds
+> >>>    endif
+> >>>   =20
+> >>> -# No AltiVec or VSX instructions when building kernel
+> >>> +# No prefix or pcrel
+> >>> +KBUILD_CFLAGS +=3D $(call cc-option,-mno-prefixed)
+> >>
+> >> We have lots of code to handle prefixed instructions in code_patching,
+> >> and that code complexifies stuff and has a performance impact.
+> >> And it is only partially taken into account, areas like ftrace don't
+> >> properly take care of prefixed instructions.
+> >>
+> >> Should we get rid of prefixed instruction support completely in the
+> >> kernel, and come back to more simple code ?
+> >=20
+> > I would rather complete prefixed support in the kernel and use pcrel
+> > addressing. Actually even if we don't compile with pcrel or prefixed,
+> > there are some instructions and we will probably get more that require
+> > prefixed, possible we might want to use them in kernel. Some of it is
+> > required to handle user mode instructions too. So I think removing
+> > it is premature, but I guess it's up for debate.
 >
-> Why do you disable all prefixed insns?  What goes wrong if you don't?
+> Well ok, in fact I only had code_patching in mind.
+>
+> Code patching is only for kernel text. Today code patching is used for=20
+> things like kprobe, ftrace, etc .... which really do not seems to be=20
+> prepared for prefixed instructions.
+>
+> If you are adding -mno-prefixed, it is worth keeping that code which=20
+> sometimes gives us some headacke ?
+>
+> Of course if there are plans to get real prefixed instruction in kernel=
+=20
+> code anytime soon, lets live with it, in that case the support should=20
+> get completed. But otherwise I think it would be better to get rid of it=
+=20
+> for now, and implement it completely when we need it in years.
 
-Potentially things like kprobes.
-
-> Same question for pcrel.  I'm sure you want to optimise it better, but
-> it's not clear to me how it fails now?
-
-For pcrel addressing? Bootstrapping the C environment is one, the
-module dynamic linker is another.
-
-Some details in this series.
+I have a series to enable it again, just not ready for upstream yet
+but it's not all that far off.
 
 https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-September/248521.html
 
+> When I see the following, I'm having hard time believing it would work=20
+> with prefixed instructions in the kernel text:
 >
-> Please say in the comment what is wrong, don't spread fear :-)
+> 	typedef u32 kprobe_opcode_t;
 >
-> > +# No AltiVec or VSX or MMA instructions when building kernel
-> >  KBUILD_CFLAGS +=3D $(call cc-option,-mno-altivec)
-> >  KBUILD_CFLAGS +=3D $(call cc-option,-mno-vsx)
-> > +KBUILD_CFLAGS +=3D $(call cc-option,-mno-mma)
+> 	struct kprobe {
+> 	...
+> 		/* Saved opcode (which has been replaced with breakpoint) */
+> 		kprobe_opcode_t opcode;
 >
-> MMA code is never generated unless the code asks for it explicitly.
-> This is fundamental, not just an implementations side effect.
+>
+> 	void arch_disarm_kprobe(struct kprobe *p)
+> 	{
+> 		WARN_ON_ONCE(patch_instruction(p->addr, ppc_inst(p->opcode)));
+> 	}
 
-Well, now it double won't be generated :)
+Yeah that needs work for sure.
 
 Thanks,
 Nick
