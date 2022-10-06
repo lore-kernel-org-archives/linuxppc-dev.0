@@ -4,66 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32E39C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 22:51:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62C7CC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 11:23:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mk69f65zPz3fRt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 09:51:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MkQsr54jhz3drw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 22:23:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=POjrwExN;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=hvGmGUp7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=tiop=2h=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=tiop=2h=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=POjrwExN;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=hvGmGUp7;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjyxJ5K7Wz2xb4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 04:24:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mk7By4hKqz2xVr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 10:37:14 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 2ADE9B8210B
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 17:24:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B96F0C43470
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 17:24:47 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 6775EB821EE
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 23:37:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EC0C4C433D6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 23:37:07 +0000 (UTC)
 Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="POjrwExN"
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="hvGmGUp7"
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1665077083;
+	t=1665099424;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=hw+hnIMvKUNp0lwyCAgNJh72KYkKEhg87FRQTBs88Es=;
-	b=POjrwExNl+YXOaE1lio2t2OoJfp8Pmah83jSwtmwy+a2nmIcgGjbJmUmksnkg0epw22VVq
-	tGGHYs/cXqxakaG1JY+AKcIhkDIqLD1VU/xPH1+NYYAgl3bbbwTmxU3VYrpCk1M4Y+6MDS
-	6kdK5f+OZLONIyv9rAEIsa1XZ5KZlTQ=
-Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id de81d11b (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO)
+	bh=eDWvYu+uSvuLU1D2yrcps4Uxg3s4afpQR1DZP1HAENk=;
+	b=hvGmGUp7Jmb3qLi8iAJrLbIYXGXcdlFxHx8KU4zJBF2LcmPGPVDhufzqaz5YAX0rzdTZjJ
+	Gqef+F2rCxvCoF5CAAzWB03k+ZddCoz4bvfCdOmIJ2a1frohiIJvsfNuQaUb+Gl5xyGSJu
+	4iiKawfpVvJ6Z7vS1T3NQalWBVhUszY=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 7e5c9f9e (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO)
 	for <linuxppc-dev@lists.ozlabs.org>;
-	Thu, 6 Oct 2022 17:24:42 +0000 (UTC)
-Received: by mail-oo1-f44.google.com with SMTP id q70-20020a4a3349000000b0047f9951ad3aso1337592ooq.7
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 10:24:41 -0700 (PDT)
-X-Gm-Message-State: ACrzQf3qbWyVEczI7hGZZPINencpV5VeWVmpuOrDhLYUHVp66iVQc4Tr
-	P50CJl8SzzXF6seLciHPEaWlDcKktVbttRXH1tI=
-X-Google-Smtp-Source: AMsMyM5KG2gwBNORWG5lbntrblDeF/IiEaNCtjq1xHSusLtpHfgrAAJFtzxp/82W985F9k39J/OxSFTwH+6dW+Mrfqw=
-X-Received: by 2002:ab0:6cb0:0:b0:3d7:1184:847f with SMTP id
- j16-20020ab06cb0000000b003d71184847fmr777504uaa.49.1665077067240; Thu, 06 Oct
- 2022 10:24:27 -0700 (PDT)
+	Thu, 6 Oct 2022 23:37:03 +0000 (UTC)
+Received: by mail-qv1-f41.google.com with SMTP id c2so2151562qvo.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 16:37:01 -0700 (PDT)
+X-Gm-Message-State: ACrzQf3ZX2WdgQsiowMrhdoqPueZQqBaGh3bQVJFeyQj8T9oOVXkXoKO
+	+ZJXIu6z/kxprkQ09F4G4P/LQtAbPulglxTJPts=
+X-Google-Smtp-Source: AMsMyM5tvZWHSrcOLtkY/lX0Q7Qvr/oXlGj5vIRT4adjylKOfvaHnErU8AKkQNdqtGo/HZJDgntpViQRNpApZtsIptY=
+X-Received: by 2002:a05:6102:2908:b0:398:ac40:d352 with SMTP id
+ cz8-20020a056102290800b00398ac40d352mr1292105vsb.55.1665099409449; Thu, 06
+ Oct 2022 16:36:49 -0700 (PDT)
 MIME-Version: 1.0
+Received: by 2002:ab0:6ed0:0:b0:3d9:6dfd:499 with HTTP; Thu, 6 Oct 2022
+ 16:36:48 -0700 (PDT)
+In-Reply-To: <6396875c-146a-acf5-dd9e-7f93ba1b4bc3@csgroup.eu>
 References: <20221006165346.73159-1-Jason@zx2c4.com> <20221006165346.73159-4-Jason@zx2c4.com>
- <848ed24c-13ef-6c38-fd13-639b33809194@csgroup.eu>
-In-Reply-To: <848ed24c-13ef-6c38-fd13-639b33809194@csgroup.eu>
+ <848ed24c-13ef-6c38-fd13-639b33809194@csgroup.eu> <CAHmME9raQ4E00r9r8NyWJ17iSXE_KniTG0onCNAfMmfcGar1eg@mail.gmail.com>
+ <f10fcfbf-2da6-cf2d-6027-fbf8b52803e9@csgroup.eu> <6396875c-146a-acf5-dd9e-7f93ba1b4bc3@csgroup.eu>
 From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Date: Thu, 6 Oct 2022 11:24:16 -0600
-X-Gmail-Original-Message-ID: <CAHmME9raQ4E00r9r8NyWJ17iSXE_KniTG0onCNAfMmfcGar1eg@mail.gmail.com>
-Message-ID: <CAHmME9raQ4E00r9r8NyWJ17iSXE_KniTG0onCNAfMmfcGar1eg@mail.gmail.com>
+Date: Thu, 6 Oct 2022 17:36:48 -0600
+X-Gmail-Original-Message-ID: <CAHmME9pE4saqnwxhsAwt-xegYGjsavPOGnHCbZhUXD7kaJ+GAA@mail.gmail.com>
+Message-ID: <CAHmME9pE4saqnwxhsAwt-xegYGjsavPOGnHCbZhUXD7kaJ+GAA@mail.gmail.com>
 Subject: Re: [PATCH v3 3/5] treewide: use get_random_u32() when possible
 To: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Fri, 07 Oct 2022 09:35:18 +1100
+X-Mailman-Approved-At: Fri, 07 Oct 2022 22:22:35 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,49 +85,84 @@ Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, Ulf Hanss
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-
-On Thu, Oct 6, 2022 at 11:21 AM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
-> Le 06/10/2022 =C3=A0 18:53, Jason A. Donenfeld a =C3=A9crit :
-> > The prandom_u32() function has been a deprecated inline wrapper around
-> > get_random_u32() for several releases now, and compiles down to the
-> > exact same code. Replace the deprecated wrapper with a direct call to
-> > the real function. The same also applies to get_random_int(), which is
-> > just a wrapper around get_random_u32().
-> >
-> > Reviewed-by: Kees Cook <keescook@chromium.org>
-> > Acked-by: Toke H=C3=B8iland-J=C3=B8rgensen <toke@toke.dk> # for sch_cak=
-e
-> > Acked-by: Chuck Lever <chuck.lever@oracle.com> # for nfsd
-> > Reviewed-by: Jan Kara <jack@suse.cz> # for ext4
-> > Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
-> > ---
+On 10/6/22, Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 >
-> > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/proces=
-s.c
-> > index 0fbda89cd1bb..9c4c15afbbe8 100644
-> > --- a/arch/powerpc/kernel/process.c
-> > +++ b/arch/powerpc/kernel/process.c
-> > @@ -2308,6 +2308,6 @@ void notrace __ppc64_runlatch_off(void)
-> >   unsigned long arch_align_stack(unsigned long sp)
-> >   {
-> >       if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_s=
-pace)
-> > -             sp -=3D get_random_int() & ~PAGE_MASK;
-> > +             sp -=3D get_random_u32() & ~PAGE_MASK;
-> >       return sp & ~0xf;
 >
-> Isn't that a candidate for prandom_u32_max() ?
+> Le 06/10/2022 =C3=A0 19:31, Christophe Leroy a =C3=A9crit :
+>>
+>>
+>> Le 06/10/2022 =C3=A0 19:24, Jason A. Donenfeld a =C3=A9crit :
+>>> Hi Christophe,
+>>>
+>>> On Thu, Oct 6, 2022 at 11:21 AM Christophe Leroy
+>>> <christophe.leroy@csgroup.eu> wrote:
+>>>> Le 06/10/2022 =C3=A0 18:53, Jason A. Donenfeld a =C3=A9crit :
+>>>>> The prandom_u32() function has been a deprecated inline wrapper aroun=
+d
+>>>>> get_random_u32() for several releases now, and compiles down to the
+>>>>> exact same code. Replace the deprecated wrapper with a direct call to
+>>>>> the real function. The same also applies to get_random_int(), which i=
+s
+>>>>> just a wrapper around get_random_u32().
+>>>>>
+>>>>> Reviewed-by: Kees Cook <keescook@chromium.org>
+>>>>> Acked-by: Toke H=C3=B8iland-J=C3=B8rgensen <toke@toke.dk> # for sch_c=
+ake
+>>>>> Acked-by: Chuck Lever <chuck.lever@oracle.com> # for nfsd
+>>>>> Reviewed-by: Jan Kara <jack@suse.cz> # for ext4
+>>>>> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+>>>>> ---
+>>>>
+>>>>> diff --git a/arch/powerpc/kernel/process.c
+>>>>> b/arch/powerpc/kernel/process.c
+>>>>> index 0fbda89cd1bb..9c4c15afbbe8 100644
+>>>>> --- a/arch/powerpc/kernel/process.c
+>>>>> +++ b/arch/powerpc/kernel/process.c
+>>>>> @@ -2308,6 +2308,6 @@ void notrace __ppc64_runlatch_off(void)
+>>>>>    unsigned long arch_align_stack(unsigned long sp)
+>>>>>    {
+>>>>>        if (!(current->personality & ADDR_NO_RANDOMIZE) &&
+>>>>> randomize_va_space)
+>>>>> -             sp -=3D get_random_int() & ~PAGE_MASK;
+>>>>> +             sp -=3D get_random_u32() & ~PAGE_MASK;
+>>>>>        return sp & ~0xf;
+>>>>
+>>>> Isn't that a candidate for prandom_u32_max() ?
+>>>>
+>>>> Note that sp is deemed to be 16 bytes aligned at all time.
+>>>
+>>> Yes, probably. It seemed non-trivial to think about, so I didn't. But
+>>> let's see here... maybe it's not too bad:
+>>>
+>>> If PAGE_MASK is always ~(PAGE_SIZE-1), then ~PAGE_MASK is
+>>> (PAGE_SIZE-1), so prandom_u32_max(PAGE_SIZE) should yield the same
+>>> thing? Is that accurate? And holds across platforms (this comes up a
+>>> few places)? If so, I'll do that for a v4.
+>>>
+>>
+>> On powerpc it is always (from arch/powerpc/include/asm/page.h) :
+>>
+>> /*
+>>   * Subtle: (1 << PAGE_SHIFT) is an int, not an unsigned long. So if we
+>>   * assign PAGE_MASK to a larger type it gets extended the way we want
+>>   * (i.e. with 1s in the high bits)
+>>   */
+>> #define PAGE_MASK      (~((1 << PAGE_SHIFT) - 1))
+>>
+>> #define PAGE_SIZE        (1UL << PAGE_SHIFT)
+>>
+>>
+>> So it would work I guess.
 >
-> Note that sp is deemed to be 16 bytes aligned at all time.
+> But taking into account that sp must remain 16 bytes aligned, would it
+> be better to do something like ?
+>
+> 	sp -=3D prandom_u32_max(PAGE_SIZE >> 4) << 4;
+>
+> 	return sp;
 
-Yes, probably. It seemed non-trivial to think about, so I didn't. But
-let's see here... maybe it's not too bad:
-
-If PAGE_MASK is always ~(PAGE_SIZE-1), then ~PAGE_MASK is
-(PAGE_SIZE-1), so prandom_u32_max(PAGE_SIZE) should yield the same
-thing? Is that accurate? And holds across platforms (this comes up a
-few places)? If so, I'll do that for a v4.
+Does this assume that sp is already aligned at the beginning of the
+function? I'd assume from the function's name that this isn't the
+case?
 
 Jason
