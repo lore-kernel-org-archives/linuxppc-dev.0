@@ -4,78 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 052BFC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 11:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86F91C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 12:35:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MjqMf0BzDz3c8j
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 22:43:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MjrW76nwRz3dqK
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 23:35:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CQCw/wp1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=R4alV+IR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CQCw/wp1;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=R4alV+IR;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjqLY3kgcz30Ky
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 22:42:44 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 296Ae425011367;
-	Thu, 6 Oct 2022 11:42:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=bTRBm93w0F2WaBTEd/U8k3M7to/YHtOOTs0ZEXznUI4=;
- b=CQCw/wp1Hdd0xOxO9lcHPvYtjHfPs7+yNsmL+G+XCTWZWy6rmxdIhAZt9uhNfkr7gj5p
- AYm9UVN113Mf5YQpIQH/sV/ldFWFuEwPtVYceNuThlD1goHpPZnA37pZq/ONigPSmfdp
- 4fT3e77zI8XDJxalhAeSt2wcUhyRFpNDiNl3OP862VQnhk7YEZNAthbEgBVWkZaghE0l
- 9z8uLDc9LBomKpBHxd2Mn9RxBM2zazCPcaFW26MmWC4cq2JnNybH56ncrjPNOjF3ZnvH
- SjSYGnen83aEqamZFYDO2B1ltEY2/862lfBAxYjpp4dVN37z1Nl3+FZDO+edMLIYt6eU 3A== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k1vm4jvt1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Oct 2022 11:42:36 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
-	by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 296Bb1o1028812;
-	Thu, 6 Oct 2022 11:42:34 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma06fra.de.ibm.com with ESMTP id 3jxcthw4f8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 06 Oct 2022 11:42:34 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 296BgUpv1507978
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 6 Oct 2022 11:42:30 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A2A1DA405B;
-	Thu,  6 Oct 2022 11:42:30 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 30661A4054;
-	Thu,  6 Oct 2022 11:42:28 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.29.124])
-	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Thu,  6 Oct 2022 11:42:27 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: acme@kernel.org, jolsa@kernel.org, mpe@ellerman.id.au
-Subject: [PATCH] tools/perf: Fix cpu check to use id.cpu.cpu in aggr_printout
-Date: Thu,  6 Oct 2022 17:12:25 +0530
-Message-Id: <20221006114225.66303-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: lSogSH7B4kP3K5tI7OGmOZ4kMcZqpUBm
-X-Proofpoint-GUID: lSogSH7B4kP3K5tI7OGmOZ4kMcZqpUBm
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjrV30htgz3bjL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 23:34:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1665059659; x=1696595659;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=KLPlNjfONSRgkRmAk1/3zUaUpgzi9KonOZUB6whE/kI=;
+  b=R4alV+IRpHkSI+yb07TJtBYfCpbvQ+JHq1WE4Agreb8BmZUA4dOBYZLa
+   wpnJXkotN4xB4fTXGupjxWkqazkthv3umw36MjNW6n14zaj0qdzVMicOL
+   bq7AVBVpiIsN7evxCyeT+o6AQ4tavxzpfYLKBqHd6H/wol1fsaj5WgRkC
+   G9beWjgXEM9sdoCOp6pcZqxGEwZaFjuxR9M9U2L3tA54be+iUzS0983gX
+   cHTCfFUw/Zjkm6VTxpgZm4Pmt4AFb1LoX6EFXSi5dfDi1dqPuUy8ab/7D
+   jhjlhhdLb6jqOT8UXh1YxDpJzpSl03uC5L3799Qne2Iob7dD3X+EUwnCm
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="290687806"
+X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; 
+   d="scan'208";a="290687806"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Oct 2022 05:34:14 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="953601835"
+X-IronPort-AV: E=Sophos;i="5.95,163,1661842800"; 
+   d="scan'208";a="953601835"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga005.fm.intel.com with ESMTP; 06 Oct 2022 05:34:12 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1ogQ4o-0038tb-1b;
+	Thu, 06 Oct 2022 15:34:10 +0300
+Date: Thu, 6 Oct 2022 15:34:10 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Subject: Re: [PATCH v2 1/2] device property: Introduce
+ fwnode_device_is_compatible() helper
+Message-ID: <Yz7LQuf0L29cne3I@smile.fi.intel.com>
+References: <20221005152947.71696-1-andriy.shevchenko@linux.intel.com>
+ <20221005152947.71696-2-andriy.shevchenko@linux.intel.com>
+ <Yz3xsmy/3wlntStv@paasikivi.fi.intel.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-10-05_05,2022-10-06_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
- spamscore=0 malwarescore=0 adultscore=0 lowpriorityscore=0 impostorscore=0
- clxscore=1011 phishscore=0 suspectscore=0 priorityscore=1501
- mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2210060069
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Yz3xsmy/3wlntStv@paasikivi.fi.intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,57 +74,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, rnsastry@linux.ibm.com, kjain@linux.ibm.com, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Daniel Scally <djrscally@gmail.com>, linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-perf stat has options to aggregate the counts in different
-modes like per socket, per core etc. The function "aggr_printout"
-in util/stat-display.c which is used to print the aggregates,
-has a check for cpu in case of AGGR_NONE. This check was
-originally using condition : "if (id.cpu.cpu > -1)". But
-this got changed after commit df936cadfb58 ("perf stat: Add
-JSON output option"), which added option to output json format
-for different aggregation modes. After this commit, the
-check in "aggr_printout" is using "if (id.core > -1)".
+On Wed, Oct 05, 2022 at 09:05:54PM +0000, Sakari Ailus wrote:
+> On Wed, Oct 05, 2022 at 06:29:46PM +0300, Andy Shevchenko wrote:
 
-The old code was using "id.cpu.cpu > -1" while the new code
-is using "id.core > -1". But since the value printed is
-id.cpu.cpu, fix this check to use cpu and not core.
+...
 
-Suggested-by: James Clark <james.clark@arm.com>
-Suggested-by: Ian Rogers <irogers@google.com>
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Tested-by: Ian Rogers <irogers@google.com>
----
-Note: Details for discussion on this logic:
-https://www.spinics.net/lists/linux-perf-users/msg22473.html
+> fwnode_property_match_string() returns zero on success, therefore >= 0 is
+> not needed. I'd just use !fwnode_property_match_string(...).
 
- tools/perf/util/stat-display.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+No, it's bug in the documentation, thanks to rising an attention,
+I forgot to send a fix for it earlier.
 
-diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-index b82844cb0ce7..cf28020798ec 100644
---- a/tools/perf/util/stat-display.c
-+++ b/tools/perf/util/stat-display.c
-@@ -168,7 +168,7 @@ static void aggr_printout(struct perf_stat_config *config,
- 					id.socket,
- 					id.die,
- 					id.core);
--			} else if (id.core > -1) {
-+			} else if (id.cpu.cpu > -1) {
- 				fprintf(config->output, "\"cpu\" : \"%d\", ",
- 					id.cpu.cpu);
- 			}
-@@ -179,7 +179,7 @@ static void aggr_printout(struct perf_stat_config *config,
- 					id.die,
- 					config->csv_output ? 0 : -3,
- 					id.core, config->csv_sep);
--			} else if (id.core > -1) {
-+			} else if (id.cpu.cpu > -1) {
- 				fprintf(config->output, "CPU%*d%s",
- 					config->csv_output ? 0 : -7,
- 					id.cpu.cpu, config->csv_sep);
+> For both patches:
+> 
+> Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+
+Thanks, but as stated above the condition in my patch is correct.
+It seems due to documentation bug we have some kind of "buggy" code,
+luckily not too many to fix.
+
+That said, I'm not going to resend this until PPC (Freescale) maintainers
+ask for it. Yang, what's your vision on this series?
+
 -- 
-2.31.1
+With Best Regards,
+Andy Shevchenko
+
 
