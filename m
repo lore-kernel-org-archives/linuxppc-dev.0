@@ -4,57 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFCF1C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 12:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA697C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 17:28:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mjrcn4JFCz3chb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 23:40:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mjz1666K9z3cfQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Oct 2022 04:28:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=boaVkmFe;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=my8zw6cp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=tiop=2h=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=boaVkmFe;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=my8zw6cp;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjrTR0r3dz2xb4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 23:33:46 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4BD8A6189D;
-	Thu,  6 Oct 2022 12:33:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 84CC2C433D6;
-	Thu,  6 Oct 2022 12:33:28 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="boaVkmFe"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1665059607;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PDyor0OPorRMVekuFSJiAglRmrxBh1riIl1rICqIsks=;
-	b=boaVkmFeWj/P/2mwQH9q1gX7LNlMIfDuuF/jF0E1iusdkGap18NZ9sMOKKXCenUfGu1kBs
-	OsFuQiM99GfLC9GZQ0iQjPl+iTbCo2UXzxz3nN8lhLRAzO97rrmctM7VRTQNz+DRBcdhZZ
-	cSGHfymmDp55cC4uDg3E8k04jFUD4XI=
-Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 2c48390d (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Thu, 6 Oct 2022 12:33:26 +0000 (UTC)
-Date: Thu, 6 Oct 2022 06:33:15 -0600
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: [f2fs-dev] [PATCH v1 3/5] treewide: use get_random_u32() when
- possible
-Message-ID: <Yz7LCyIAHC6l5mG9@zx2c4.com>
-References: <20221005214844.2699-1-Jason@zx2c4.com>
- <20221005214844.2699-4-Jason@zx2c4.com>
- <20221006084331.4bdktc2zlvbaszym@quack3>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mjz034hXJz3c5p
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Oct 2022 04:27:15 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 296Gu0T2027351
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Oct 2022 17:27:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=C/CMXzI39lCt0xheu+Su9nVRshjjfK9gHa7hzwqoaoI=;
+ b=my8zw6cpjom0/XJGPErq6dZLwBjRAb+pqViPdn+tCGCmky0XwHSRb3fUoe7iuOtlCoon
+ xEPnWsnGAmBMJbXf/1/2er+Noq8Tgz3RZb8z2k15PGhbHOtkFRh1a0QBjghxnBtRSAEU
+ H76EJR71h1e9JmxifhEAXE60WvXzI8RxoMzFYGctyRBpeuf+yVPtr72QMSG8ZlKEos7b
+ YxVqibYQqH50bQw63gwEjqRJYZQLKkk82D9qz1W4Sp3gQ8rrin9f6AmeW0JDDnbuTAM2
+ NbN8adAH2a8G0NbpyzsCVDn71efTHBqa0/cqbpmq9vlxVxVcORZ7PgvOlLCaVaMGDd5X tg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k22yq8v80-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Oct 2022 17:27:11 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 296GxfLC008742
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Oct 2022 17:27:11 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k22yq8v79-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Oct 2022 17:27:10 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 296HKVoU008551;
+	Thu, 6 Oct 2022 17:27:09 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma03ams.nl.ibm.com with ESMTP id 3jxd697eqa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 06 Oct 2022 17:27:09 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 296HR6D554460774
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 6 Oct 2022 17:27:07 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D07194C046;
+	Thu,  6 Oct 2022 17:27:06 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AC4834C04A;
+	Thu,  6 Oct 2022 17:27:06 +0000 (GMT)
+Received: from [9.145.61.17] (unknown [9.145.61.17])
+	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Thu,  6 Oct 2022 17:27:06 +0000 (GMT)
+Message-ID: <4f8c2ab1-1189-9738-f457-a10935065279@linux.ibm.com>
+Date: Thu, 6 Oct 2022 19:27:06 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20221006084331.4bdktc2zlvbaszym@quack3>
-X-Mailman-Approved-At: Thu, 06 Oct 2022 23:38:28 +1100
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.3.1
+Subject: Re: [PATCH 11/17] powerpc/qspinlock: allow propagation of yield CPU
+ down the queue
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+References: <20220728063120.2867508-1-npiggin@gmail.com>
+ <20220728063120.2867508-13-npiggin@gmail.com>
+Content-Language: fr
+From: Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <20220728063120.2867508-13-npiggin@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: X_SKUMaviNX7003uQ7QLYTwSLgy8HrHx
+X-Proofpoint-ORIG-GUID: 76GbCScLWSqgc6ZxaHdqjuKNAk1_uSwE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
+ definitions=2022-10-06_04,2022-10-06_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ adultscore=0 mlxlogscore=999 lowpriorityscore=0 malwarescore=0
+ suspectscore=0 bulkscore=0 mlxscore=0 spamscore=0 clxscore=1015
+ phishscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2209130000 definitions=main-2210060099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,54 +101,209 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, "Darrick J . Wong" <djwong@kernel.org>, linux-block@vger.kernel.org, Marcelo Ricardo Leitner <marcelo.leitner@gmail.com>, dri-devel@lists.freedesktop.org, Andrii Nakryiko <andrii@kernel.org>, Hans Verkuil <hverkuil@xs4all.nl>, linux-sctp@vger.kernel.org, "Md . Haris Iqbal" <haris.iqbal@ionos.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Christoph Hellwig <hch@lst.de>, Andy Gospodarek <andy@greyhouse.net>, Sergey Matyukevich <geomatsi@gmail.com>, Rohit Maheshwari <rohitm@chelsio.com>, Jozsef Kadlecsik <kadlec@netfilter.org>, Nilesh Javali <njavali@marvell.com>, Jean-Paul Roubelat <jpr@f6fbb.org>, Dan Williams <dan.j.williams@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Jay Vosburgh <j.vosburgh@gmail.com>, Potnuri Bharat Teja <bharat@chelsio.com>, Vinay Kumar Yadav <vinay.yadav@chelsio.com>, Arend van Spriel <aspriel@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Igor Mitsyanko <imitsyanko@quantenna.com>, Andy Lutomirski <luto@kernel.org>
- , linux-hams@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Trond Myklebust <trond.myklebust@hammerspace.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Michael Chan <michael.chan@broadcom.com>, linux-kernel@vger.kernel.org, Varun Prakash <varun@chelsio.com>, David Ahern <dsahern@kernel.org>, Chuck Lever <chuck.lever@oracle.com>, netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Jan Kara <jack@suse.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Claudiu Beznea <claudiu.beznea@microchip.com>, Sharvari Harisangam <sharvari.harisangam@nxp.com>, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org, Vignesh Raghavendra <vigneshr@ti.com>, linux-wireless@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Song Liu <song@kernel.org>, Eric Dumazet <edumazet@google.com>, target-devel@vger.kernel.org, John Stultz <jst
- ultz@google.com>, Stanislav Fomichev <sdf@google.com>, Gregory Greenman <gregory.greenman@intel.com>, drbd-dev@lists.linbit.com, dev@openvswitch.org, Leon Romanovsky <leon@kernel.org>, Helge Deller <deller@gmx.de>, Hugh Dickins <hughd@google.com>, James Smart <james.smart@broadcom.com>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, Pravin B Shelar <pshelar@ovn.org>, Julian Anastasov <ja@ssi.bg>, coreteam@netfilter.org, Veaceslav Falico <vfalico@gmail.com>, Yonghong Song <yhs@fb.com>, Namjae Jeon <linkinjeon@kernel.org>, linux-media@vger.kernel.org, Ganapathi Bhat <ganapathi017@gmail.com>, linux-actions@lists.infradead.org, Simon Horman <horms@verge.net.au>, Jaegeuk Kim <jaegeuk@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Hao Luo <haoluo@google.com>, Theodore Ts'o <tytso@mit.edu>, Stephen Boyd <sboyd@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Florian Westphal <fw
- @strlen.de>, "David S . Miller" <davem@davemloft.net>, Jon Maloy <jmaloy@redhat.com>, Anna Schumaker <anna@kernel.org>, Yehezkel Bernat <YehezkelShB@gmail.com>, Jeff Layton <jlayton@kernel.org>, Haoyue Xu <xuhaoyue1@hisilicon.com>, Heiner Kallweit <hkallweit1@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-nvme@lists.infradead.org, Michal Januszewski <spock@gentoo.org>, linux-mtd@lists.infradead.org, kasan-dev@googlegroups.com, Cong Wang <xiyou.wangcong@gmail.com>, Thomas Sailer <t.sailer@alumni.ethz.ch>, Ajay Singh <ajay.kathat@microchip.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Sagi Grimberg <sagi@grimberg.me>, Daniel Borkmann <daniel@iogearbox.net>, Dennis Dalessandro <dennis.dalessandro@cornelisnetworks.com>, linux-rdma@vger.kernel.org, lvs-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Naveen N . Rao" <naveen.n.rao@linux.ibm.com>, Ilya Dryomov <idryomov@gmail.com>, Paolo Abeni <pabeni@redhat.co
- m>, Pablo Neira Ayuso <pablo@netfilter.org>, Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>, Yury Norov <yury.norov@gmail.com>, "James E . J . Bottomley" <jejb@linux.ibm.com>, Hante Meuleman <hante.meuleman@broadcom.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Borislav Petkov <bp@alien8.de>, Keith Busch <kbusch@kernel.org>, ceph-devel@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>, Franky Lin <franky.lin@broadcom.com>, linux-nfs@vger.kernel.org, linux-ext4@vger.kernel.org, Wenpeng Liang <liangwenpeng@huawei.com>, Neil Horman <nhorman@tuxdriver.com>, Xinming Hu <huxinming820@gmail.com>, linux-mmc@vger.kernel.org, Martin KaFai Lau <martin.lau@linux.dev>, linux-xfs@vger.kernel.org, Ying Xue <ying.xue@windriver.com>, Manish Rangankar <mrangankar@marvell.com>, Andreas =?utf-8?Q?F=C3=A4rber?= <afaerber@suse.de>, Toke =?utf-8?Q?H=C3=B8iland-J=C3=B8rgensen?= <toke@toke.dk>, linux-stm32@st-md-mailman.stormreply.com, Peter Zijlstra <peterz@infradead.o
- rg>, Ayush Sawal <ayush.sawal@chelsio.com>, KP Singh <kpsingh@kernel.org>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-mm@kvack.org, Andreas Dilger <adilger.kernel@dilger.ca>, Akinobu Mita <akinobu.mita@gmail.com>, "H . Peter Anvin" <hpa@zytor.com>, Andreas Noever <andreas.noever@gmail.com>, Jiri Pirko <jiri@resnulli.us>, linux-f2fs-devel@lists.sourceforge.net, Jack Wang <jinpu.wang@ionos.com>, Steffen Klassert <steffen.klassert@secunet.com>, rds-devel@oss.oracle.com, Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org, dccp@vger.kernel.org, Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@ziepe.ca>, SHA-cyfmac-dev-list@infineon.com, Ingo Molnar <mingo@redhat.com>, Jakub Kicinski <kuba@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>, John Fastabend <john.fastabend@gmail.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Manivannan Sadhasivam <mani@kernel.org>, Michael Jamet <michael.jamet@intel.com>, Kalle Valo <
- kvalo@kernel.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Jamal Hadi Salim <jhs@mojatatu.com>, linux-raid@vger.kernel.org, Thomas Graf <tgraf@suug.ch>, Hannes Reinecke <hare@suse.de>, Xiubo Li <xiubli@redhat.com>, Dmitry Vyukov <dvyukov@google.com>, Jens Axboe <axboe@kernel.dk>, cake@lists.bufferbloat.net, brcm80211-dev-list.pdl@broadcom.com, Yishai Hadas <yishaih@nvidia.com>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org, Vlad Yasevich <vyasevich@gmail.com>, Philipp Reisner <philipp.reisner@linbit.com>, Stephen Hemminger <stephen@networkplumber.org>, Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, Vinod Koul <vkoul@kernel.org>, tipc-discussion@lists.sourceforge.net, dmaengine@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>, Sungjong Seo <sj1557.seo@samsung.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 06, 2022 at 10:43:31AM +0200, Jan Kara wrote:
-> The code here is effectively doing the
+On 28/07/2022 08:31:14, Nicholas Piggin wrote:
+> Having all CPUs poll the lock word for the owner CPU that should be
+> yielded to defeats most of the purpose of using MCS queueing for
+> scalability. Yet it may be desirable for queued waiters to to yield
+> to a preempted owner.
 > 
-> 	parent_group = prandom_u32_max(ngroups);
+> s390 addreses this problem by having queued waiters sample the lock
+> word to find the owner much less frequently. In this approach, the
+> waiters never sample it directly, but the queue head propagates the
+> owner CPU back to the next waiter if it ever finds the owner has
+> been preempted. Queued waiters then subsequently propagate the owner
+> CPU back to the next waiter, and so on.
 > 
-> Similarly here we can use prandom_u32_max(ngroups) like:
+> Disable this option by default for now, i.e., no logical change.
+> ---
+>  arch/powerpc/lib/qspinlock.c | 85 +++++++++++++++++++++++++++++++++++-
+>  1 file changed, 84 insertions(+), 1 deletion(-)
 > 
-> 		if (qstr) {
-> 			...
-> 			parent_group = hinfo.hash % ngroups;
-> 		} else
-> 			parent_group = prandom_u32_max(ngroups);
+> diff --git a/arch/powerpc/lib/qspinlock.c b/arch/powerpc/lib/qspinlock.c
+> index 94f007f66942..28c85a2d5635 100644
+> --- a/arch/powerpc/lib/qspinlock.c
+> +++ b/arch/powerpc/lib/qspinlock.c
+> @@ -12,6 +12,7 @@
+>  struct qnode {
+>  	struct qnode	*next;
+>  	struct qspinlock *lock;
+> +	int		yield_cpu;
+>  	u8		locked; /* 1 if lock acquired */
+>  };
+>  
+> @@ -28,6 +29,7 @@ static int HEAD_SPINS __read_mostly = (1<<8);
+>  static bool pv_yield_owner __read_mostly = true;
+>  static bool pv_yield_allow_steal __read_mostly = false;
+>  static bool pv_yield_prev __read_mostly = true;
+> +static bool pv_yield_propagate_owner __read_mostly = true;
+>  
+>  static DEFINE_PER_CPU_ALIGNED(struct qnodes, qnodes);
+>  
+> @@ -257,13 +259,66 @@ static __always_inline void yield_head_to_locked_owner(struct qspinlock *lock, u
+>  	__yield_to_locked_owner(lock, val, paravirt, clear_mustq);
+>  }
+>  
+> +static __always_inline void propagate_yield_cpu(struct qnode *node, u32 val, int *set_yield_cpu, bool paravirt)
+> +{
+> +	struct qnode *next;
+> +	int owner;
+> +
+> +	if (!paravirt)
+> +		return;
+> +	if (!pv_yield_propagate_owner)
+> +		return;
+> +
+> +	owner = get_owner_cpu(val);
+> +	if (*set_yield_cpu == owner)
+> +		return;
+> +
+> +	next = READ_ONCE(node->next);
+> +	if (!next)
+> +		return;
+> +
+> +	if (vcpu_is_preempted(owner)) {
+> +		next->yield_cpu = owner;
+> +		*set_yield_cpu = owner;
+> +	} else if (*set_yield_cpu != -1) {
+> +		next->yield_cpu = owner;
+> +		*set_yield_cpu = owner;
+> +	}
 
-Nice catch. I'll move these to patch #1.
+This is bit confusing, the else branch is the same as the true one.
+This might be written like this:
 
+	if (vcpu_is_preempted(owner) || *set_yield_cpu != -1) {
+		next->yield_cpu = owner;
+		*set_yield_cpu = owner;
+	}
 
-> > diff --git a/fs/ext4/mmp.c b/fs/ext4/mmp.c
-> > index 9af68a7ecdcf..588cb09c5291 100644
-> > --- a/fs/ext4/mmp.c
-> > +++ b/fs/ext4/mmp.c
-> > @@ -265,7 +265,7 @@ static unsigned int mmp_new_seq(void)
-> >  	u32 new_seq;
-> >  
-> >  	do {
-> > -		new_seq = prandom_u32();
-> > +		new_seq = get_random_u32();
-> >  	} while (new_seq > EXT4_MMP_SEQ_MAX);
-> 
-> OK, here we again effectively implement prandom_u32_max(EXT4_MMP_SEQ_MAX + 1).
-> Just presumably we didn't want to use modulo here because EXT4_MMP_SEQ_MAX
-> is rather big and so the resulting 'new_seq' would be seriously
-> non-uniform.
+> +}
+> +
+>  static __always_inline void yield_to_prev(struct qspinlock *lock, struct qnode *node, int prev_cpu, bool paravirt)
+>  {
+>  	u32 yield_count;
+> +	int yield_cpu;
+>  
+>  	if (!paravirt)
+>  		goto relax;
+>  
+> +	if (!pv_yield_propagate_owner)
+> +		goto yield_prev;
+> +
+> +	yield_cpu = READ_ONCE(node->yield_cpu);
+> +	if (yield_cpu == -1) {
+> +		/* Propagate back the -1 CPU */
+> +		if (node->next && node->next->yield_cpu != -1)
+> +			node->next->yield_cpu = yield_cpu;
+> +		goto yield_prev;
+> +	}
+> +
+> +	yield_count = yield_count_of(yield_cpu);
+> +	if ((yield_count & 1) == 0)
+> +		goto yield_prev; /* owner vcpu is running */
+> +
+> +	smp_rmb();
+> +
+> +	if (yield_cpu == node->yield_cpu) {
+> +		if (node->next && node->next->yield_cpu != yield_cpu)
+> +			node->next->yield_cpu = yield_cpu;
+> +		yield_to_preempted(yield_cpu, yield_count);
+> +		return;
+> +	}
+> +
 
-I'm not handling this during this patch set, but if in the course of
-review we find enough places that want actually uniformly bounded
-integers, I'll implement efficient rejection sampling to clean up these
-cases, with something faster and general, and add a new function for it.
-So far this is the first case to come up, but we'll probably eventually
-find others. So I'll make note of this.
+In the case that test is false, this means that the lock owner has probably
+changed, why are we yeilding to the previous node instead of reading again
+the node->yield_cpu, checking against -1 value etc..?
+Yielding to the previous node is valid, but it might be better to yield to
+the owner, isn't it?
 
-Jason
+> +yield_prev:
+>  	if (!pv_yield_prev)
+>  		goto relax;
+>  
+> @@ -337,6 +392,7 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+>  	node = &qnodesp->nodes[idx];
+>  	node->next = NULL;
+>  	node->lock = lock;
+> +	node->yield_cpu = -1;
+>  	node->locked = 0;
+>  
+>  	tail = encode_tail_cpu();
+> @@ -358,13 +414,21 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+>  		while (!node->locked)
+>  			yield_to_prev(lock, node, prev_cpu, paravirt);
+>  
+> +		/* Clear out stale propagated yield_cpu */
+> +		if (paravirt && pv_yield_propagate_owner && node->yield_cpu != -1)
+> +			node->yield_cpu = -1;
+
+Why doing tests and not directly setting node->yield_cpu to -1?
+Is the write operation more costly than the 3 tests?
+
+> +
+>  		smp_rmb(); /* acquire barrier for the mcs lock */
+>  	}
+>  
+>  	if (!MAYBE_STEALERS) {
+> +		int set_yield_cpu = -1;
+> +
+>  		/* We're at the head of the waitqueue, wait for the lock. */
+> -		while ((val = READ_ONCE(lock->val)) & _Q_LOCKED_VAL)
+> +		while ((val = READ_ONCE(lock->val)) & _Q_LOCKED_VAL) {
+> +			propagate_yield_cpu(node, val, &set_yield_cpu, paravirt);
+>  			yield_head_to_locked_owner(lock, val, paravirt, false);
+> +		}
+>  
+>  		/* If we're the last queued, must clean up the tail. */
+>  		if ((val & _Q_TAIL_CPU_MASK) == tail) {
+> @@ -376,12 +440,14 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+>  		/* We must be the owner, just set the lock bit and acquire */
+>  		lock_set_locked(lock);
+>  	} else {
+> +		int set_yield_cpu = -1;
+>  		int iters = 0;
+>  		bool set_mustq = false;
+>  
+>  again:
+>  		/* We're at the head of the waitqueue, wait for the lock. */
+>  		while ((val = READ_ONCE(lock->val)) & _Q_LOCKED_VAL) {
+> +			propagate_yield_cpu(node, val, &set_yield_cpu, paravirt);
+>  			yield_head_to_locked_owner(lock, val, paravirt,
+>  					pv_yield_allow_steal && set_mustq);
+>  
+> @@ -540,6 +606,22 @@ static int pv_yield_prev_get(void *data, u64 *val)
+>  
+>  DEFINE_SIMPLE_ATTRIBUTE(fops_pv_yield_prev, pv_yield_prev_get, pv_yield_prev_set, "%llu\n");
+>  
+> +static int pv_yield_propagate_owner_set(void *data, u64 val)
+> +{
+> +	pv_yield_propagate_owner = !!val;
+> +
+> +	return 0;
+> +}
+> +
+> +static int pv_yield_propagate_owner_get(void *data, u64 *val)
+> +{
+> +	*val = pv_yield_propagate_owner;
+> +
+> +	return 0;
+> +}
+> +
+> +DEFINE_SIMPLE_ATTRIBUTE(fops_pv_yield_propagate_owner, pv_yield_propagate_owner_get, pv_yield_propagate_owner_set, "%llu\n");
+> +
+>  static __init int spinlock_debugfs_init(void)
+>  {
+>  	debugfs_create_file("qspl_steal_spins", 0600, arch_debugfs_dir, NULL, &fops_steal_spins);
+> @@ -548,6 +630,7 @@ static __init int spinlock_debugfs_init(void)
+>  		debugfs_create_file("qspl_pv_yield_owner", 0600, arch_debugfs_dir, NULL, &fops_pv_yield_owner);
+>  		debugfs_create_file("qspl_pv_yield_allow_steal", 0600, arch_debugfs_dir, NULL, &fops_pv_yield_allow_steal);
+>  		debugfs_create_file("qspl_pv_yield_prev", 0600, arch_debugfs_dir, NULL, &fops_pv_yield_prev);
+> +		debugfs_create_file("qspl_pv_yield_propagate_owner", 0600, arch_debugfs_dir, NULL, &fops_pv_yield_propagate_owner);
+>  	}
+>  
+>  	return 0;
+
