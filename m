@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A244CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 04:55:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3151DC433F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 04:56:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MjfJf18HZz3dtG
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 15:55:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MjfKd5w9Qz3dsx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 15:56:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Fcbv6b+y;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Pa5J7iVI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::62c; helo=mail-pl1-x62c.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Fcbv6b+y;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Pa5J7iVI;
 	dkim-atps=neutral
-Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mjdxq0J3kz2y8J
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 15:39:10 +1100 (AEDT)
-Received: by mail-pj1-x102c.google.com with SMTP id b15so761231pje.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Oct 2022 21:39:10 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mjf5847HDz30F7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 15:45:30 +1100 (AEDT)
+Received: by mail-pl1-x62c.google.com with SMTP id b2so671066plc.7
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Oct 2022 21:45:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=chromium.org; s=google;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:from:to:cc:subject:date;
-        bh=y1Ewt823HoXUJ+RVCiU5hfekdC+9m7ghxyBCLtj1eUk=;
-        b=Fcbv6b+yCuol0AU1mIs9HnAOz2/wjXtHru3VW95DL3V7mKymOrKADEfZ1NfF0xLiTB
-         LkCGzY8eutuXPS5+afbW7jf6o9DhcYADtCDqs8Qo8xeP+lYFZISv7p7XEeNAqavCs9/t
-         xtqe21TFW/x7aAqkAHw+ftHWXMel86ys26msI=
+        bh=BXKZz/gOYpFYEK/kvAD1ks5ZMqdWWvWPR9euDTlMinY=;
+        b=Pa5J7iVIfOPPpc5FnD+VCPFKYUv3DdEsBgX8F3veGLnr0MqCAKKnFqdt9Zn7I1vA4a
+         hp/m/n+zFRiftLounW3GI1Yh9t5CRw9Qy1PoS1A+KhEfND0rtCnNn/VAYMO7oSLOURb7
+         x/xHspG9KrvXOaDvidgpTqZEY9MLlutH21Sdk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date;
-        bh=y1Ewt823HoXUJ+RVCiU5hfekdC+9m7ghxyBCLtj1eUk=;
-        b=keB31obNu3QzJAtek0a36VmvevrsDM392irlcHZHJ203JscsJ2NcXd7nqkUETBUFYZ
-         5PSrAoJMGNELemMRj3cx8bCrUr2rSUkr/LuqyKsSpGOtTqQcgdY6YvoIbpMJm6zEKZ8m
-         zGqQ4sNZiBYD9zPWUSm8+gAyhRh1MntuOdcCgnsZd9OIU1gIXAWep/jTjxi21OD9OuhC
-         H9mwAmeTw+wxcR5tK6fwO7G5L1+9YlgVjMliHNIosGPQpQxGI28OeFoepyA8hN7RFrxQ
-         kfBkMQd3RGltkT5RzXMWhFNKJyE5sgHKbtV7rAc34wYdvOkayr+urv1wQ2OUNV25ZBaC
-         bigA==
-X-Gm-Message-State: ACrzQf3ZlmFtzLliQ/pihxhNKV8aeyS0T6QaC+2yfiUM/oUxR92Zw/oa
-	rxOw+nMBtJdtJcC4ntdMERUW1Q==
-X-Google-Smtp-Source: AMsMyM60ELYmxh+A5d0x30z3COx8LaynKqt9bJxGAbjfrLwodOIKXzOKJgIYAS8Aw4fmck7UQns81A==
-X-Received: by 2002:a17:902:db0f:b0:176:e70f:6277 with SMTP id m15-20020a170902db0f00b00176e70f6277mr2639160plx.13.1665031147915;
-        Wed, 05 Oct 2022 21:39:07 -0700 (PDT)
+        bh=BXKZz/gOYpFYEK/kvAD1ks5ZMqdWWvWPR9euDTlMinY=;
+        b=UWrAhzFEyGi1Yqsc2OM5aA4IKvUYtKyF/D4xBk0T4TNMaEDCItCkYzbdn0naCDSRn3
+         /scLWxHbw9qbXni3lxDPJXPpsse2eAEzy95P6erwjzfTwbEA7/pgciXRYgOao+eHL/I4
+         wlsxLEViyadsBNXvUdDQQQ2lzIvJGzBGh+/4T/wIl2chjN7D6CX61b/2chyXpbYlHKhT
+         Dqk916QpvpqtZZAa5zWAdO/VOgRhX1Hvr2wdkj0PJKPU0Fip/H7R8GMEEIqgVacjMldz
+         /DahB1ePZBz91UBXYLlJrORVU1LrER3z8ye0z3uNgubqeMW3oiSe+R4XUiLztk5IH6pr
+         RM5g==
+X-Gm-Message-State: ACrzQf3jTyoewX3MzsTQYByTIJlvXXqxh/xvNsygOsYwAA6ZbxO2FXxH
+	FOyj/2Z5G9Of5yaM5XRB4l2EGg==
+X-Google-Smtp-Source: AMsMyM7BFOiJDjGZF65COEMp2Clzr5vtXi0588PB1vqUCkCeq9oCGZAqcRbRAS5gmL3ROlmwc9XhOA==
+X-Received: by 2002:a17:90b:384a:b0:203:7388:64bf with SMTP id nl10-20020a17090b384a00b00203738864bfmr8697904pjb.115.1665031527009;
+        Wed, 05 Oct 2022 21:45:27 -0700 (PDT)
 Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
-        by smtp.gmail.com with ESMTPSA id d12-20020a634f0c000000b00439d071c110sm673132pgb.43.2022.10.05.21.39.05
+        by smtp.gmail.com with ESMTPSA id d5-20020a62f805000000b0054124008c14sm11733797pfh.154.2022.10.05.21.45.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Oct 2022 21:39:06 -0700 (PDT)
-Date: Wed, 5 Oct 2022 21:39:03 -0700
+        Wed, 05 Oct 2022 21:45:24 -0700 (PDT)
+Date: Wed, 5 Oct 2022 21:45:22 -0700
 From: Kees Cook <keescook@chromium.org>
 To: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Subject: Re: [PATCH v1 5/5] prandom: remove unused functions
-Message-ID: <202210052138.A585E4CC@keescook>
+Subject: Re: [PATCH v1 4/5] treewide: use get_random_bytes when possible
+Message-ID: <202210052144.5DA3690D@keescook>
 References: <20221005214844.2699-1-Jason@zx2c4.com>
- <20221005214844.2699-6-Jason@zx2c4.com>
+ <20221005214844.2699-5-Jason@zx2c4.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20221005214844.2699-6-Jason@zx2c4.com>
+In-Reply-To: <20221005214844.2699-5-Jason@zx2c4.com>
 X-Mailman-Approved-At: Thu, 06 Oct 2022 15:52:03 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,11 +85,13 @@ Cc: Andrew Lunn <andrew@lunn.ch>, "Darrick J . Wong" <djwong@kernel.org>, Ulf Ha
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 05, 2022 at 11:48:44PM +0200, Jason A. Donenfeld wrote:
-> With no callers left of prandom_u32() and prandom_bytes(), remove these
-> deprecated wrappers.
-> 
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+On Wed, Oct 05, 2022 at 11:48:43PM +0200, Jason A. Donenfeld wrote:
+> The prandom_bytes() function has been a deprecated inline wrapper around
+> get_random_bytes() for several releases now, and compiles down to the
+> exact same code. Replace the deprecated wrapper with a direct call to
+> the real function.
+
+Global search/replace matches. :)
 
 Reviewed-by: Kees Cook <keescook@chromium.org>
 
