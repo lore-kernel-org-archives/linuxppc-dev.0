@@ -4,61 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B04DC433F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Oct 2022 21:07:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CAA8C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 00:40:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MjRw64LYKz3dqD
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 08:07:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MjXfq6fPlz3cdY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Oct 2022 11:40:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nYuWKbRh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=idaYoGc2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=sakari.ailus@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nYuWKbRh;
-	dkim-atps=neutral
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjRv14l7tz2xGk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 08:06:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1665003965; x=1696539965;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=XPc4iUrJQ2pmk/YLXD4nx2V2D8aelG5jLWY8aoFlCP0=;
-  b=nYuWKbRhnNouD7dOyF12Ploe1ItXNqcYPI1p8dEMUPoYMi7p6MwzyHIO
-   1vR0jVdZduPAge3pXXIVXUk2AQOjE0kB3GCN4PRYjP0C8HZGDDFlyNGck
-   kFdRzjfXvK2Ju8P9XcwyGFDd9k3bCeUEbHdLvEZWUqc4AyEiWBw3dTM1X
-   ctJEPb6HyKdae+YClwHF7q8v+u3aFcprFmX7LfW2r9bXxK9AMvwf1qia2
-   fG0OwbjbuLpi8A3+4f3E5B/5/qVn6FFtHwwBllrmJtOH3Z3OIk80qUs3F
-   jKgZjpwxr0sn6XcgEibLs99UIl0G0Lm2mS9ADff4ePAcXPN1QUQvzrLJh
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="304266753"
-X-IronPort-AV: E=Sophos;i="5.95,161,1661842800"; 
-   d="scan'208";a="304266753"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2022 14:05:59 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10491"; a="624475355"
-X-IronPort-AV: E=Sophos;i="5.95,161,1661842800"; 
-   d="scan'208";a="624475355"
-Received: from punajuuri.fi.intel.com (HELO paasikivi.fi.intel.com) ([10.237.72.43])
-  by orsmga002-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Oct 2022 14:05:56 -0700
-Received: from paasikivi.fi.intel.com (localhost [127.0.0.1])
-	by paasikivi.fi.intel.com (Postfix) with SMTP id 0E57520352;
-	Thu,  6 Oct 2022 00:05:54 +0300 (EEST)
-Date: Wed, 5 Oct 2022 21:05:54 +0000
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v2 1/2] device property: Introduce
- fwnode_device_is_compatible() helper
-Message-ID: <Yz3xsmy/3wlntStv@paasikivi.fi.intel.com>
-References: <20221005152947.71696-1-andriy.shevchenko@linux.intel.com>
- <20221005152947.71696-2-andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MjXdm3PKJz2xWx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Oct 2022 11:39:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=idaYoGc2;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MjXdj1qk7z4x1R;
+	Thu,  6 Oct 2022 11:39:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1665016795;
+	bh=VgKyTetjBIj7t4bxbJTxgwzXjrZ/qT4U2yn9jPLKO/I=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=idaYoGc29O9AQ/WnIHughfZP/tIMSGzVi3G0CCDwO4vUPJ4sMqEPwaKbUX6n0dbNu
+	 5eA1nGksWNRgrg8xDYlWh6T3TDf5csS0YZUfEcpWQVmmfJ6UD7/DjxFyZghkj+nQ2H
+	 FMHhwfVmScm15kswukTEVcRTDNaxRQZIne49tA9ep9StUe7X2+7sKbRT9YT6pWet3v
+	 3rxYrPMy9maw+1kewL4plIh8WoS+oVWUGmiAMdMLo0shdz2NnQYMhqWeyyhPtE9v10
+	 2opqblb+5kVMJQboTvdPgqyyuMSEmgvGi39UebyPO2fA5QfnGZm1o4bS3umHajoQ/p
+	 6XNa6LOj2+qlA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Gray
+ <bgray@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v3 5/6] powerpc/64: Add support for out-of-line static
+ calls
+In-Reply-To: <b76d122b-5487-b677-11e1-58e53a6b521f@csgroup.eu>
+References: <20221005053234.29312-1-bgray@linux.ibm.com>
+ <20221005053234.29312-6-bgray@linux.ibm.com>
+ <b76d122b-5487-b677-11e1-58e53a6b521f@csgroup.eu>
+Date: Thu, 06 Oct 2022 11:39:50 +1100
+Message-ID: <878rltpyy1.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221005152947.71696-2-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,60 +63,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Daniel Scally <djrscally@gmail.com>, linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: "ajd@linux.ibm.com" <ajd@linux.ibm.com>, "peterz@infradead.org" <peterz@infradead.org>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "jpoimboe@kernel.org" <jpoimboe@kernel.org>, "jbaron@akamai.com" <jbaron@akamai.com>, "npiggin@gmail.com" <npiggin@gmail.com>, "ardb@kernel.org" <ardb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Andy,
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+> Le 05/10/2022 =C3=A0 07:32, Benjamin Gray a =C3=A9crit=C2=A0:
+>> Implement static call support for 64 bit V2 ABI. This requires making
+>> sure the TOC is kept correct across kernel-module boundaries. As a
+>> secondary concern, it tries to use the local entry point of a target
+>> wherever possible. It does so by checking if both tramp & target are
+>> kernel code, and falls back to detecting the common global entry point
+>> patterns if modules are involved. Detecting the global entry point is
+>> also required for setting the local entry point as the trampoline
+>> target: if we cannot detect the local entry point, then we need to
+>> convservatively initialise r12 and use the global entry point.
+>>=20
+>> The trampolines are marked with `.localentry NAME, 1` to make the
+>> linker save and restore the TOC on each call to the trampoline. This
+>> allows the trampoline to safely target functions with different TOC
+>> values.
+>>=20
+>> However this directive also implies the TOC is not initialised on entry
+>> to the trampoline. The kernel TOC is easily found in the PACA, but not
+>> an arbitrary module TOC. Therefore the trampoline implementation depends
+>> on whether it's in the kernel or not. If in the kernel, we initialise
+>> the TOC using the PACA. If in a module, we have to initialise the TOC
+>> with zero context, so it's quite expensive.
+>>=20
+>> Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+>
+> This looks good to me
+>
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>
+> However, thinking out loudly, I'm wondering, could we make things any=20
+> simpler when CONFIG_MODULES is not selected, or is that a too much=20
+> corner case on PPC64 ?
 
-On Wed, Oct 05, 2022 at 06:29:46PM +0300, Andy Shevchenko wrote:
-> The fwnode_device_is_compatible() helper searches for the
-> given string in the "compatible" string array property and,
-> if found, returns true.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  include/linux/property.h | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/property.h b/include/linux/property.h
-> index 1c26d263d5e4..701570423943 100644
-> --- a/include/linux/property.h
-> +++ b/include/linux/property.h
-> @@ -55,7 +55,6 @@ int device_property_read_string(struct device *dev, const char *propname,
->  int device_property_match_string(struct device *dev,
->  				 const char *propname, const char *string);
->  
-> -bool fwnode_device_is_available(const struct fwnode_handle *fwnode);
->  bool fwnode_property_present(const struct fwnode_handle *fwnode,
->  			     const char *propname);
->  int fwnode_property_read_u8_array(const struct fwnode_handle *fwnode,
-> @@ -77,6 +76,15 @@ int fwnode_property_read_string(const struct fwnode_handle *fwnode,
->  				const char *propname, const char **val);
->  int fwnode_property_match_string(const struct fwnode_handle *fwnode,
->  				 const char *propname, const char *string);
-> +
-> +bool fwnode_device_is_available(const struct fwnode_handle *fwnode);
-> +
-> +static inline
-> +bool fwnode_device_is_compatible(const struct fwnode_handle *fwnode, const char *compat)
-> +{
-> +	return fwnode_property_match_string(fwnode, "compatible", compat) >= 0;
+I'd say it's mostly a corner case.
 
-fwnode_property_match_string() returns zero on success, therefore >= 0 is
-not needed. I'd just use !fwnode_property_match_string(...).
+Obviously no distros ship with modules disabled.=20
 
-For both patches:
+AFAIK even the stripped down kernels we use in CPU bringup have modules
+enabled.
 
-Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+So I think it's probably not worth worrying about, unless there's an
+obvious and fairly simple optimisation.
 
-> +}
-> +
->  int fwnode_property_get_reference_args(const struct fwnode_handle *fwnode,
->  				       const char *prop, const char *nargs_prop,
->  				       unsigned int nargs, unsigned int index,
-
--- 
-Regards,
-
-Sakari Ailus
+cheers
