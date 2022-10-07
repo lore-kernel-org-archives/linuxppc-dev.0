@@ -4,47 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DD4EC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 01:43:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CABEC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 01:44:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MknyL52T0z3dqj
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 12:43:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MknzM5HtXz3fFL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 12:44:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=aLLFxAIJ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SzaJSg+x;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=94.23.1.103; helo=out0.migadu.com; envelope-from=jonathan.derrick@linux.dev; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=aLLFxAIJ;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=SzaJSg+x;
 	dkim-atps=neutral
-X-Greylist: delayed 142 seconds by postgrey-1.36 at boromir; Sat, 08 Oct 2022 05:09:27 AEDT
 Received: from out0.migadu.com (out0.migadu.com [94.23.1.103])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MkbtH27TQz3cBw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2022 05:09:27 +1100 (AEDT)
-Message-ID: <8a14cdb2-4de3-558f-e637-af80673c4cd9@linux.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mkc3y1dflz3c7q
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Oct 2022 05:17:48 +1100 (AEDT)
+Message-ID: <fffef6b5-bea2-cd3c-2df3-88d4ae7af2bc@linux.dev>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1665166018;
+	t=1665166665;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=wf3d7elGycEZ3Im/7mAKPHXr8Iq8F86JvYzkavEYM70=;
-	b=aLLFxAIJV42t4d243zaGIAr07Kb+NpU/kGK/mgL4YIRxQVQDkN9h6+xAS1ObQY0xAWrSrh
-	7VN7KcoKlFZmV8pc81er7g65/tCYtr2hz+oTIwMLRPRorh61LI2PuH9Un44fAtSMgtRqgT
-	VgFh/yfG0j4wE78ppQxtK4PYmgXORfM=
-Date: Fri, 7 Oct 2022 12:06:53 -0600
+	bh=dFcz/yN7wXcaRb9K/G2cyqDFxbgD5q/dM+jAi50L/mM=;
+	b=SzaJSg+xbix3lhOKao3qV1LJ9l2uLCQOFVpuvRU3DEH/BYHQ1d3AzavZY1aWXjMa/71EJL
+	Bl7t2ZssfDXH7R41uikBgs/dukAytU4Kx3XV5eFRNrb5KgmthRGjaI6RAIZDQYLdC9LzUA
+	f3YqtjOhan8ztLEjTinUoaZHgc203+k=
+Date: Fri, 7 Oct 2022 12:17:42 -0600
 MIME-Version: 1.0
-Subject: Re: [PATCH v2 1/3 RESEND] block: sed-opal: Implement
- IOC_OPAL_DISCOVERY
+Subject: Re: [PATCH v2 3/3 RESEND] block: sed-opal: keyring support for SED
+ keys
 Content-Language: en-US
 To: gjoyce@linux.vnet.ibm.com, linux-block@vger.kernel.org
 References: <20220818143045.680972-1-gjoyce@linux.vnet.ibm.com>
- <20220818143045.680972-2-gjoyce@linux.vnet.ibm.com>
+ <20220818143045.680972-4-gjoyce@linux.vnet.ibm.com>
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Jonathan Derrick <jonathan.derrick@linux.dev>
-In-Reply-To: <20220818143045.680972-2-gjoyce@linux.vnet.ibm.com>
+In-Reply-To: <20220818143045.680972-4-gjoyce@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Migadu-Flow: FLOW_OUT
@@ -64,139 +63,391 @@ Cc: axboe@kernel.dk, linux-efi@vger.kernel.org, nayna@linux.ibm.com, keyrings@vg
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Useful. Thank you
+LGTM thank you!
 
 Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
 
 On 8/18/2022 8:30 AM, gjoyce@linux.vnet.ibm.com wrote:
 > From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
 > 
-> Add IOC_OPAL_DISCOVERY ioctl to return raw discovery data to a SED Opal
-> application. This allows the application to display drive capabilities
-> and state.
+> Extend the SED block driver so it can alternatively
+> obtain a key from a sed-opal kernel keyring. The SED
+> ioctls will indicate the source of the key, either
+> directly in the ioctl data or from the keyring.
+> 
+> This allows the use of SED commands in scripts such as
+> udev scripts so that drives may be automatically unlocked
+> as they become available.
 > 
 > Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
 > ---
->  block/sed-opal.c              | 38 ++++++++++++++++++++++++++++++++---
->  include/linux/sed-opal.h      |  1 +
->  include/uapi/linux/sed-opal.h |  6 ++++++
->  3 files changed, 42 insertions(+), 3 deletions(-)
+>  block/Kconfig                 |   1 +
+>  block/sed-opal.c              | 174 +++++++++++++++++++++++++++++++++-
+>  include/linux/sed-opal.h      |   3 +
+>  include/uapi/linux/sed-opal.h |   8 +-
+>  4 files changed, 183 insertions(+), 3 deletions(-)
 > 
+> diff --git a/block/Kconfig b/block/Kconfig
+> index 50b17e260fa2..f65169e9356b 100644
+> --- a/block/Kconfig
+> +++ b/block/Kconfig
+> @@ -182,6 +182,7 @@ config BLK_DEBUG_FS_ZONED
+>  
+>  config BLK_SED_OPAL
+>  	bool "Logic for interfacing with Opal enabled SEDs"
+> +	depends on KEYS
+>  	help
+>  	Builds Logic for interfacing with Opal enabled controllers.
+>  	Enabling this option enables users to setup/unlock/lock
 > diff --git a/block/sed-opal.c b/block/sed-opal.c
-> index 9700197000f2..e4d8fbdc9dad 100644
+> index 2916b9539b84..3bdb31cf3e7c 100644
 > --- a/block/sed-opal.c
 > +++ b/block/sed-opal.c
-> @@ -426,8 +426,12 @@ static int execute_steps(struct opal_dev *dev,
->  	return error;
+> @@ -20,6 +20,9 @@
+>  #include <linux/sed-opal.h>
+>  #include <linux/string.h>
+>  #include <linux/kdev_t.h>
+> +#include <linux/key.h>
+> +#include <linux/key-type.h>
+> +#include <keys/user-type.h>
+>  
+>  #include "opal_proto.h"
+>  
+> @@ -29,6 +32,8 @@
+>  /* Number of bytes needed by cmd_finalize. */
+>  #define CMD_FINALIZE_BYTES_NEEDED 7
+>  
+> +static struct key *sed_opal_keyring;
+> +
+>  struct opal_step {
+>  	int (*fn)(struct opal_dev *dev, void *data);
+>  	void *data;
+> @@ -266,6 +271,101 @@ static void print_buffer(const u8 *ptr, u32 length)
+>  #endif
 >  }
 >  
-> -static int opal_discovery0_end(struct opal_dev *dev)
-> +static int opal_discovery0_end(struct opal_dev *dev, void *data)
->  {
-> +	struct opal_discovery *discv_out = data; /* may be NULL */
-> +	u8 __user *buf_out;
-> +	u64 len_out;
+> +/*
+> + * Allocate/update a SED Opal key and add it to the SED Opal keyring.
+> + */
+> +static int update_sed_opal_key(const char *desc, u_char *key_data, int keylen)
+> +{
+> +	key_ref_t kr;
 > +
->  	bool found_com_id = false, supported = true, single_user = false;
->  	const struct d0_header *hdr = (struct d0_header *)dev->resp;
->  	const u8 *epos = dev->resp, *cpos = dev->resp;
-> @@ -443,6 +447,15 @@ static int opal_discovery0_end(struct opal_dev *dev)
->  		return -EFAULT;
->  	}
->  
-> +	if (discv_out) {
-> +		buf_out = (u8 __user *)(uintptr_t)discv_out->data;
-> +		len_out = min_t(u64, discv_out->size, hlen);
-> +		if (buf_out && copy_to_user(buf_out, dev->resp, len_out))
-> +			return -EFAULT;
+> +	if (!sed_opal_keyring)
+> +		return -ENOKEY;
 > +
-> +		discv_out->size = hlen; /* actual size of data */
+> +	kr = key_create_or_update(make_key_ref(sed_opal_keyring, true), "user",
+> +				  desc, (const void *)key_data, keylen,
+> +				  KEY_USR_VIEW | KEY_USR_SEARCH | KEY_USR_WRITE,
+> +				  KEY_ALLOC_NOT_IN_QUOTA | KEY_ALLOC_BUILT_IN |
+> +					KEY_ALLOC_BYPASS_RESTRICTION);
+> +	if (IS_ERR(kr)) {
+> +		pr_err("Error adding SED key (%ld)\n", PTR_ERR(kr));
+> +		return PTR_ERR(kr);
 > +	}
 > +
->  	epos += hlen; /* end of buffer */
->  	cpos += sizeof(*hdr); /* current position on buffer */
->  
-> @@ -517,13 +530,13 @@ static int opal_discovery0(struct opal_dev *dev, void *data)
->  	if (ret)
->  		return ret;
->  
-> -	return opal_discovery0_end(dev);
-> +	return opal_discovery0_end(dev, data);
->  }
->  
->  static int opal_discovery0_step(struct opal_dev *dev)
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Read a SED Opal key from the SED Opal keyring.
+> + */
+> +static int read_sed_opal_key(const char *key_name, u_char *buffer, int buflen)
+> +{
+> +	int ret;
+> +	key_ref_t kref;
+> +	struct key *key;
+> +
+> +	if (!sed_opal_keyring)
+> +		return -ENOKEY;
+> +
+> +	kref = keyring_search(make_key_ref(sed_opal_keyring, true),
+> +			      &key_type_user, key_name, true);
+> +
+> +	if (IS_ERR(kref))
+> +		ret = PTR_ERR(kref);
+> +
+> +	key = key_ref_to_ptr(kref);
+> +	down_read(&key->sem);
+> +	ret = key_validate(key);
+> +	if (ret == 0) {
+> +		if (buflen > key->datalen)
+> +			buflen = key->datalen;
+> +
+> +		ret = key->type->read(key, (char *)buffer, buflen);
+> +	}
+> +	up_read(&key->sem);
+> +
+> +	key_ref_put(kref);
+> +
+> +	return ret;
+> +}
+> +
+> +static int opal_get_key(struct opal_dev *dev, struct opal_key *key)
+> +{
+> +	int ret = 0;
+> +
+> +	switch (key->key_type) {
+> +	case OPAL_INCLUDED:
+> +		/* the key is ready to use */
+> +		break;
+> +	case OPAL_KEYRING:
+> +		/* the key is in the keyring */
+> +		ret = read_sed_opal_key(OPAL_AUTH_KEY, key->key, OPAL_KEY_MAX);
+> +		if (ret > 0) {
+> +			if (ret > 255) {
+> +				ret = -ENOSPC;
+> +				goto error;
+> +			}
+> +			key->key_len = ret;
+> +			key->key_type = OPAL_INCLUDED;
+> +		}
+> +		break;
+> +	default:
+> +		ret = -EINVAL;
+> +		break;
+> +	}
+> +	if (ret < 0)
+> +		goto error;
+> +
+> +	/* must have a PEK by now or it's an error */
+> +	if (key->key_type != OPAL_INCLUDED || key->key_len == 0) {
+> +		ret = -EINVAL;
+> +		goto error;
+> +	}
+> +	return 0;
+> +error:
+> +	pr_debug("Error getting password: %d\n", ret);
+> +	return ret;
+> +}
+> +
+>  static bool check_tper(const void *data)
 >  {
->  	const struct opal_step discovery0_step = {
-> -		opal_discovery0,
-> +		opal_discovery0, NULL
+>  	const struct d0_tper_features *tper = data;
+> @@ -2204,6 +2304,9 @@ static int opal_secure_erase_locking_range(struct opal_dev *dev,
 >  	};
+>  	int ret;
 >  
->  	return execute_step(dev, &discovery0_step, 0);
-> @@ -2179,6 +2192,22 @@ static int opal_secure_erase_locking_range(struct opal_dev *dev,
+> +	ret = opal_get_key(dev, &opal_session->opal_key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, erase_steps, ARRAY_SIZE(erase_steps));
+> @@ -2237,6 +2340,9 @@ static int opal_revertlsp(struct opal_dev *dev, struct opal_revert_lsp *rev)
+>  	};
+>  	int ret;
+>  
+> +	ret = opal_get_key(dev, &rev->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, steps, ARRAY_SIZE(steps));
+> @@ -2255,6 +2361,9 @@ static int opal_erase_locking_range(struct opal_dev *dev,
+>  	};
+>  	int ret;
+>  
+> +	ret = opal_get_key(dev, &opal_session->opal_key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, erase_steps, ARRAY_SIZE(erase_steps));
+> @@ -2283,6 +2392,9 @@ static int opal_enable_disable_shadow_mbr(struct opal_dev *dev,
+>  	    opal_mbr->enable_disable != OPAL_MBR_DISABLE)
+>  		return -EINVAL;
+>  
+> +	ret = opal_get_key(dev, &opal_mbr->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, mbr_steps, ARRAY_SIZE(mbr_steps));
+> @@ -2308,6 +2420,9 @@ static int opal_set_mbr_done(struct opal_dev *dev,
+>  	    mbr_done->done_flag != OPAL_MBR_NOT_DONE)
+>  		return -EINVAL;
+>  
+> +	ret = opal_get_key(dev, &mbr_done->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, mbr_steps, ARRAY_SIZE(mbr_steps));
+> @@ -2329,6 +2444,9 @@ static int opal_write_shadow_mbr(struct opal_dev *dev,
+>  	if (info->size == 0)
+>  		return 0;
+>  
+> +	ret = opal_get_key(dev, &info->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, mbr_steps, ARRAY_SIZE(mbr_steps));
+> @@ -2385,6 +2503,9 @@ static int opal_add_user_to_lr(struct opal_dev *dev,
+>  		return -EINVAL;
+>  	}
+>  
+> +	ret = opal_get_key(dev, &lk_unlk->session.opal_key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, steps, ARRAY_SIZE(steps));
+> @@ -2407,6 +2528,10 @@ static int opal_reverttper(struct opal_dev *dev, struct opal_key *opal, bool psi
+>  
+>  	int ret;
+>  
+> +	ret = opal_get_key(dev, opal);
+> +
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	if (psid)
+> @@ -2469,6 +2594,9 @@ static int opal_lock_unlock(struct opal_dev *dev,
+>  	if (lk_unlk->session.who > OPAL_USER9)
+>  		return -EINVAL;
+>  
+> +	ret = opal_get_key(dev, &lk_unlk->session.opal_key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	ret = __opal_lock_unlock(dev, lk_unlk);
+>  	mutex_unlock(&dev->dev_lock);
+> @@ -2491,6 +2619,9 @@ static int opal_take_ownership(struct opal_dev *dev, struct opal_key *opal)
+>  	if (!dev)
+>  		return -ENODEV;
+>  
+> +	ret = opal_get_key(dev, opal);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, owner_steps, ARRAY_SIZE(owner_steps));
+> @@ -2513,6 +2644,9 @@ static int opal_activate_lsp(struct opal_dev *dev,
+>  	if (!opal_lr_act->num_lrs || opal_lr_act->num_lrs > OPAL_MAX_LRS)
+>  		return -EINVAL;
+>  
+> +	ret = opal_get_key(dev, &opal_lr_act->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, active_steps, ARRAY_SIZE(active_steps));
+> @@ -2531,6 +2665,9 @@ static int opal_setup_locking_range(struct opal_dev *dev,
+>  	};
+>  	int ret;
+>  
+> +	ret = opal_get_key(dev, &opal_lrs->session.opal_key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, lr_steps, ARRAY_SIZE(lr_steps));
+> @@ -2557,6 +2694,14 @@ static int opal_set_new_pw(struct opal_dev *dev, struct opal_new_pw *opal_pw)
+>  	ret = execute_steps(dev, pw_steps, ARRAY_SIZE(pw_steps));
+>  	mutex_unlock(&dev->dev_lock);
+>  
+> +	if (ret)
+> +		return ret;
+> +
+> +	/* update keyring with new password */
+> +	ret = update_sed_opal_key(OPAL_AUTH_KEY,
+> +				  opal_pw->new_user_pw.opal_key.key,
+> +				  opal_pw->new_user_pw.opal_key.key_len);
+> +
 >  	return ret;
 >  }
 >  
-> +static int opal_get_discv(struct opal_dev *dev, struct opal_discovery *discv)
-> +{
-> +	const struct opal_step discovery0_step = {
-> +		opal_discovery0, discv
-> +	};
-> +	int ret = 0;
-> +
-> +	mutex_lock(&dev->dev_lock);
-> +	setup_opal_dev(dev);
-> +	ret = execute_step(dev, &discovery0_step, 0);
-> +	mutex_unlock(&dev->dev_lock);
+> @@ -2577,6 +2722,9 @@ static int opal_activate_user(struct opal_dev *dev,
+>  		return -EINVAL;
+>  	}
+>  
+> +	ret = opal_get_key(dev, &opal_session->opal_key);
 > +	if (ret)
 > +		return ret;
-> +	return discv->size; /* modified to actual length of data */
-> +}
-> +
->  static int opal_erase_locking_range(struct opal_dev *dev,
->  				    struct opal_session_info *opal_session)
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  	ret = execute_steps(dev, act_steps, ARRAY_SIZE(act_steps));
+> @@ -2663,6 +2811,9 @@ static int opal_generic_read_write_table(struct opal_dev *dev,
 >  {
-> @@ -2685,6 +2714,9 @@ int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *arg)
->  	case IOC_OPAL_GENERIC_TABLE_RW:
->  		ret = opal_generic_read_write_table(dev, p);
->  		break;
-> +	case IOC_OPAL_DISCOVERY:
-> +		ret = opal_get_discv(dev, p);
-> +		break;
->  	default:
->  		break;
->  	}
+>  	int ret, bit_set;
+>  
+> +	ret = opal_get_key(dev, &rw_tbl->key);
+> +	if (ret)
+> +		return ret;
+>  	mutex_lock(&dev->dev_lock);
+>  	setup_opal_dev(dev);
+>  
+> @@ -2694,9 +2845,9 @@ int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *arg)
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EACCES;
+>  	if (!dev)
+> -		return -ENOTSUPP;
+> +		return -EOPNOTSUPP;
+>  	if (!dev->supported)
+> -		return -ENOTSUPP;
+> +		return -EOPNOTSUPP;
+>  
+>  	p = memdup_user(arg, _IOC_SIZE(cmd));
+>  	if (IS_ERR(p))
+> @@ -2765,3 +2916,22 @@ int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *arg)
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(sed_ioctl);
+> +
+> +static int __init sed_opal_init(void)
+> +{
+> +	struct key *kr;
+> +
+> +	kr = keyring_alloc(".sed_opal",
+> +			   GLOBAL_ROOT_UID, GLOBAL_ROOT_GID, current_cred(),
+> +			   (KEY_POS_ALL & ~KEY_POS_SETATTR) | KEY_USR_VIEW |
+> +			   KEY_USR_READ | KEY_USR_SEARCH | KEY_USR_WRITE,
+> +			   KEY_ALLOC_NOT_IN_QUOTA,
+> +			   NULL, NULL);
+> +	if (IS_ERR(kr))
+> +		return PTR_ERR(kr);
+> +
+> +	sed_opal_keyring = kr;
+> +
+> +	return 0;
+> +}
+> +late_initcall(sed_opal_init);
 > diff --git a/include/linux/sed-opal.h b/include/linux/sed-opal.h
-> index 1ac0d712a9c3..9197b7a628f2 100644
+> index 3a6082ff97e7..ed21e47bf773 100644
 > --- a/include/linux/sed-opal.h
 > +++ b/include/linux/sed-opal.h
-> @@ -43,6 +43,7 @@ static inline bool is_sed_ioctl(unsigned int cmd)
->  	case IOC_OPAL_MBR_DONE:
->  	case IOC_OPAL_WRITE_SHADOW_MBR:
->  	case IOC_OPAL_GENERIC_TABLE_RW:
-> +	case IOC_OPAL_DISCOVERY:
->  		return true;
->  	}
->  	return false;
+> @@ -24,6 +24,9 @@ bool opal_unlock_from_suspend(struct opal_dev *dev);
+>  struct opal_dev *init_opal_dev(void *data, sec_send_recv *send_recv);
+>  int sed_ioctl(struct opal_dev *dev, unsigned int cmd, void __user *ioctl_ptr);
+>  
+> +#define	OPAL_AUTH_KEY           "opal-boot-pin"
+> +#define	OPAL_AUTH_KEY_PREV      "opal-boot-pin-prev"
+> +
+>  static inline bool is_sed_ioctl(unsigned int cmd)
+>  {
+>  	switch (cmd) {
 > diff --git a/include/uapi/linux/sed-opal.h b/include/uapi/linux/sed-opal.h
-> index 6f5af1a84213..89dd108b426f 100644
+> index bc91987a6328..852d3098ec00 100644
 > --- a/include/uapi/linux/sed-opal.h
 > +++ b/include/uapi/linux/sed-opal.h
-> @@ -132,6 +132,11 @@ struct opal_read_write_table {
->  	__u64 priv;
+> @@ -44,10 +44,16 @@ enum opal_lock_state {
+>  	OPAL_LK = 0x04, /* 0100 */
 >  };
 >  
-> +struct opal_discovery {
-> +	__u64 data;
-> +	__u64 size;
+> +enum opal_key_type {
+> +	OPAL_INCLUDED = 0,	/* key[] is the key */
+> +	OPAL_KEYRING,		/* key is in keyring */
 > +};
 > +
->  #define IOC_OPAL_SAVE		    _IOW('p', 220, struct opal_lock_unlock)
->  #define IOC_OPAL_LOCK_UNLOCK	    _IOW('p', 221, struct opal_lock_unlock)
->  #define IOC_OPAL_TAKE_OWNERSHIP	    _IOW('p', 222, struct opal_key)
-> @@ -148,5 +153,6 @@ struct opal_read_write_table {
->  #define IOC_OPAL_MBR_DONE           _IOW('p', 233, struct opal_mbr_done)
->  #define IOC_OPAL_WRITE_SHADOW_MBR   _IOW('p', 234, struct opal_shadow_mbr)
->  #define IOC_OPAL_GENERIC_TABLE_RW   _IOW('p', 235, struct opal_read_write_table)
-> +#define IOC_OPAL_DISCOVERY          _IOW('p', 236, struct opal_discovery)
+>  struct opal_key {
+>  	__u8 lr;
+>  	__u8 key_len;
+> -	__u8 __align[6];
+> +	__u8 key_type;
+> +	__u8 __align[5];
+>  	__u8 key[OPAL_KEY_MAX];
+>  };
 >  
->  #endif /* _UAPI_SED_OPAL_H */
