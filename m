@@ -4,36 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68A7EC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 19:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6112C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Oct 2022 21:02:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MlFsc6YVjz3dst
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 06:41:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=vz7s=2j=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MlHgg701Hz3dt1
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 08:02:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=lpPo/Fws;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=lpPo/Fws;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MlFs26VQyz3000
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2022 06:40:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ml8Sj1vwFz3blY
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2022 02:37:40 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id E09E3B80BD9;
-	Sat,  8 Oct 2022 19:40:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63B91C433D6;
-	Sat,  8 Oct 2022 19:40:20 +0000 (UTC)
-Date: Sat, 8 Oct 2022 15:40:16 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: [RFC PATCH 0/5] Generic IPI sending tracepoint
-Message-ID: <20221008154016.0f7ecd8f@rorschach.local.home>
-In-Reply-To: <Y0CFnWDpMNGajIRD@fuller.cnet>
-References: <20221007154145.1877054-1-vschneid@redhat.com>
-	<Y0CFnWDpMNGajIRD@fuller.cnet>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id ACC8A60112;
+	Sat,  8 Oct 2022 15:37:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6325DC433D6;
+	Sat,  8 Oct 2022 15:37:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1665243455;
+	bh=iZs4LS2c78mWTK7VP9rYv0Gd7Qjrrk7FRFLOtLI7jIE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lpPo/FwsRx8A1pEIFq0YgzBE1yJUA/ftclR7pjjmkm3BCTs9ykaCaGipjTgZ2RrqF
+	 G0/1Rl4a9+kU2ICW186Oe5J0xg7g1U3glZrfVWobe1UK+MUIqWbN273i1QVNGsmeQ9
+	 ddRoAQjkMz3vc5+dmmxBpuMuIV8SZkRQZD25nr8M=
+Date: Sat, 8 Oct 2022 17:38:15 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Subject: Re: [PATCH v5 0/7] treewide cleanup of random integer usage
+Message-ID: <Y0GZZ71Ugh9Ev99R@kroah.com>
+References: <20221008055359.286426-1-Jason@zx2c4.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221008055359.286426-1-Jason@zx2c4.com>
+X-Mailman-Approved-At: Sun, 09 Oct 2022 08:01:49 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,35 +57,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Valentin Schneider <vschneid@redhat.com>, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lis
- ts.infradead.org, linux-parisc@vger.kernel.org, Daniel Bristot de Oliveira <bristot@redhat.com>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, x86@kernel.org, Vignesh Raghavendra <vigneshr@ti.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, kernel-janitors@vger.kernel.org, KP Singh <kpsingh@kernel.org>, dri-devel@lists.freedesktop.org, patches@lists.linux.dev, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, linux-mtd@lists.infradead.org, kasan-dev@googlegroups.com, "H . Peter Anvin" <hpa@zytor.com>, Andreas Noever <andreas.noever@gmail.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.o
+ rg>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Jozsef Kadlecsik <kadlec@netfilter.org>, Jason Gunthorpe <jgg@ziepe.ca>, Dave Airlie <airlied@redhat.com>, Paolo Abeni <pabeni@redhat.com>, "James E . J . Bottomley" <jejb@linux.ibm.com>, Pablo Neira Ayuso <pablo@netfilter.org>, linux-media@vger.kernel.org, Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>, Yury Norov <yury.norov@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-block@vger.kernel.org, Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>, linux-nvme@lists.infradead.org, loongarch@lists.linux.dev, Jakub Kicinski <kuba@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, linux-mmc@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+ , Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Jan Kara <jack@suse.com>, Thomas Graf <tgraf@suug.ch>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 7 Oct 2022 17:01:33 -0300
-Marcelo Tosatti <mtosatti@redhat.com> wrote:
+On Fri, Oct 07, 2022 at 11:53:52PM -0600, Jason A. Donenfeld wrote:
+> Changes v4->v5:
+> - Coccinelle is now used for as much mechanical aspects as possible,
+>   with mechanical parts split off from non-mechanical parts. This should
+>   drastically reduce the amount of code that needs to be reviewed
+>   carefully. Each commit mentions now if it was done by hand or is
+>   mechanical.
 
-> > As for the targeted CPUs, the existing tracepoint does export them, albeit in
-> > cpumask form, which is quite inconvenient from a tooling perspective. For
-> > instance, as far as I'm aware, it's not possible to do event filtering on a
-> > cpumask via trace-cmd.  
-> 
-> https://man7.org/linux/man-pages/man1/trace-cmd-set.1.html
-> 
->        -f filter
->            Specify a filter for the previous event. This must come after
->            a -e. This will filter what events get recorded based on the
->            content of the event. Filtering is passed to the kernel
->            directly so what filtering is allowed may depend on what
->            version of the kernel you have. Basically, it will let you
->            use C notation to check if an event should be processed or
->            not.
-> 
->                ==, >=, <=, >, <, &, |, && and ||
-> 
->            The above are usually safe to use to compare fields.
+All look good to me, thanks for the cleanups.
 
-We could always add an "isset(x)" filter ;-)
-
--- Steve
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
