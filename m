@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 498FBC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 10:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6436C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 10:02:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mlcyk6Wdvz3f51
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 21:01:50 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MlczJ41nmz3f06
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 21:02:20 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mlcx1111Zz3bjD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2022 21:00:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mlcx32mwPz3dqn
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Oct 2022 21:00:23 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mlcx06mwlz4xGd;
-	Sun,  9 Oct 2022 21:00:20 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Mlcwy4RTvz4x1F;
+	Sun,  9 Oct 2022 21:00:18 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20221004132952.984341-1-npiggin@gmail.com>
-References: <20221004132952.984341-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s/interrupt: stack backtrace fix
-Message-Id: <166530952750.1856352.16376738835487370865.b4-ty@ellerman.id.au>
-Date: Sun, 09 Oct 2022 20:58:47 +1100
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220920131157.1032707-1-mpe@ellerman.id.au>
+References: <20220920131157.1032707-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64: Remove unused prom_init_toc symbols
+Message-Id: <166530952655.1856352.16953718961291017894.b4-ty@ellerman.id.au>
+Date: Sun, 09 Oct 2022 20:58:46 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,19 +45,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 4 Oct 2022 23:29:52 +1000, Nicholas Piggin wrote:
-> The value of the stack frame regs marker that gets saved on the
-> stack in interrupt entry code does not match the regs marker value,
-> which breaks stack frame marker matching.
+On Tue, 20 Sep 2022 23:11:57 +1000, Michael Ellerman wrote:
+> Commit 24d33ac5b8ff ("powerpc/64s: Make prom_init require RELOCATABLE")
+> made prom_init depend on CONFIG_RELOCATABLE.
 > 
-> This stray instruction looks to have been introduced in a mismerge.
+> But it missed cleaning up a case in the linker script for RELOCATABLE=n,
+> and associated symbols. Remove them now.
 > 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64s/interrupt: stack backtrace fix
-      https://git.kernel.org/powerpc/c/b2e82e495a528eed77c15f3923c2b049a21d7280
+[1/1] powerpc/64: Remove unused prom_init_toc symbols
+      https://git.kernel.org/powerpc/c/0c32903197ce9f7119aee75a6bcaa4b49e0cd21a
 
 cheers
