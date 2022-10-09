@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CD18C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 17:32:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72BF6C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 21:18:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MlpyP0DvQz3dx1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 04:32:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MlvzJ6Jhlz3ds4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 08:18:20 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gGMq9knb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gGMq9knb;
+	dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mlpxj3rcXz2yxw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2022 04:31:33 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4MlpxX3ZsJz9t4C;
-	Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KcTURc9U1h5g; Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4MlpxX2pXcz9snc;
-	Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4FEE48B770;
-	Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id R4LggZwx4-Zh; Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.15])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2659E8B767;
-	Sun,  9 Oct 2022 19:31:28 +0200 (CEST)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 299HVHIe750018
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sun, 9 Oct 2022 19:31:17 +0200
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 299HVGv0750015;
-	Sun, 9 Oct 2022 19:31:16 +0200
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc: Use swapper_pg_dir instead of init_mm->pgd
-Date: Sun,  9 Oct 2022 19:31:05 +0200
-Message-Id: <9792b4281cae63e9c5692951b0ff2da14cfef79b.1665336655.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.37.1
-MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1665336663; l=875; s=20211009; h=from:subject:message-id; bh=pLVlLp6cQz2Sk70ufJdb24H6byBNfUxOLSMwc2ttIyg=; b=59zIGlmaUG958zUNnAn2+/5aGsOfXO3BWbAp6c9aSS0bRH5QlUvkRocne93+MqvCUPewm87La5OB +yw2CZVtCkYvl+1ptsov7idTlmy0p537giO+tSjdvPVdO9/lFSHu
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MlvyG6t12z2xjj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2022 08:17:26 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id E9B9BB80DC9;
+	Sun,  9 Oct 2022 21:17:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 86564C4347C;
+	Sun,  9 Oct 2022 21:17:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1665350237;
+	bh=D74XGDY0AjKTNtkw0xUbEB6QSJ1u5+Xpx3ddWubXG80=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
+	b=gGMq9knbUi4Ax+zO3B5ZTyymLExoMlwEdI1AU4dSszEWjPw8AedXjgqpUgaNZbPGE
+	 c8DHkgeKvMJ3+7znCo6K8gTvruKiVZnyA5BkC5UMHfk8LDeH7zLcC3Che1+0LMK8fw
+	 ZznZTYge2XFnyoCAA542bJRoS6LCbMOQMr3ZTUCs8ag5iSvoCPy4ttbMBBtwZhtFGX
+	 YhjD4pW4IAbxj6clavzi9fPkhZTTZFrgyiB8xbZRVhfeiJZdFM8YAc66A56VlCn5Qm
+	 ULWur7nfXQKyNdHiaotwYZph9RlTmq68gE6gxtpMqm11abFYB/gFNpmgmdqj/W4OPN
+	 h+cn9C0D7ouPQ==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 747AFE21EC5;
+	Sun,  9 Oct 2022 21:17:17 +0000 (UTC)
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.1-1 tag
+From: pr-tracker-bot@kernel.org
+In-Reply-To: <87edvhntv0.fsf@mpe.ellerman.id.au>
+References: <87edvhntv0.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <87edvhntv0.fsf@mpe.ellerman.id.au>
+X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.1-1
+X-PR-Tracked-Commit-Id: 376b3275c19f83d373e841e9af2d7658693190b9
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 4899a36f91a9f9b06878471096bd143e7253006d
+Message-Id: <166535023747.11566.620649606369998979.pr-tracker-bot@kernel.org>
+Date: Sun, 09 Oct 2022 21:17:17 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,35 +66,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: david@redhat.com, linux-kernel@vger.kernel.org, wsa+renesas@sang-engineering.com, nicholas@linux.ibm.com, windhl@126.com, cuigaosheng1@huawei.com, mikey@neuling.org, paul@paul-moore.com, aneesh.kumar@linux.ibm.com, haren@linux.ibm.com, joel@jms.id.au, lukas.bulwahn@gmail.com, linux@roeck-us.net, nathanl@linux.ibm.com, ajd@linux.ibm.com, ye.xingchen@zte.com.cn, npiggin@gmail.com, nathan@kernel.org, rmclure@linux.ibm.com, hbathini@linux.ibm.com, atrajeev@linux.vnet.ibm.com, yuanjilin@cdjrlc.com, pali@kernel.org, farosas@linux.ibm.com, geoff@infradead.org, Linus Torvalds <torvalds@linux-foundation.org>, gustavoars@kernel.org, lihuafei1@huawei.com, zhengyongjun3@huawei.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-init_mm->pgd is always swapper_pg_dir[] which is known
-at build time.
+The pull request you sent on Sun, 09 Oct 2022 22:01:39 +1100:
 
-Directly use the later instead of loading it from init_mm
-struct at every time.
+> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.1-1
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/pgtable.h | 3 +++
- 1 file changed, 3 insertions(+)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/4899a36f91a9f9b06878471096bd143e7253006d
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 283f40d05a4d..f6843e6294d9 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -48,6 +48,9 @@ struct mm_struct;
- /* Keep these as a macros to avoid include dependency mess */
- #define pte_page(x)		pfn_to_page(pte_pfn(x))
- #define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
-+
-+#define pgd_offset_k(address)		pgd_offset_pgd(swapper_pg_dir, (address))
-+
- /*
-  * Select all bits except the pfn
-  */
+Thank you!
+
 -- 
-2.37.1
-
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
