@@ -4,55 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84290C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 22:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B46EC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Oct 2022 22:17:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mlwy25PX7z3dsD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 09:02:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MlxHZ2cz5z3dqW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 09:17:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=YgHbN0I0;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=RVxnEoNn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=aaew=2k=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MlxGY2NN9z2xJ8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2022 09:16:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=YgHbN0I0;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=RVxnEoNn;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MlkfW5CqGz2xDN
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2022 01:18:11 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 9F728B80C91;
-	Sun,  9 Oct 2022 14:18:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 659D2C433D6;
-	Sun,  9 Oct 2022 14:17:59 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="YgHbN0I0"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1665325077;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oirLAgHKzqbm2tDuRRRruxvBPFu6OuA1m1Bdo0JewVo=;
-	b=YgHbN0I0lUsk61F/tkacjTtELz9m0jTOee92icnhvNyHJrs9iBf1nxk5rIk4LCzkioh8sG
-	190YFxxX+8obr4IDytSpJV/y+LGJPtZT2kSp6+N5MRfHp0a/WJLUeHRU53NaAsEmu2d/gM
-	WcwjBCYWAwT/EnbHfbZZP/9zFIVJmUM=
-Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 76b4077f (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Sun, 9 Oct 2022 14:17:57 +0000 (UTC)
-Date: Sun, 9 Oct 2022 08:17:41 -0600
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v5 0/7] treewide cleanup of random integer usage
-Message-ID: <Y0LYBaooZKDbL93G@zx2c4.com>
-References: <20221008055359.286426-1-Jason@zx2c4.com>
- <202210082028.692DFA21@keescook>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MlxGS5W22z4wgv;
+	Mon, 10 Oct 2022 09:16:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=201702; t=1665353793;
+	bh=5JXiyZ2rBUBWg3NdZnRUOBYGxdaJVI3zNREgAnnnSGE=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=RVxnEoNnLYmLN/XeKRBBN0MbOXQ7XdNGTwIFR7MAqcDRQC+OXtn6AWacO5gOP8gJP
+	 pairn8Mfsct4dLSrLqwliTM9oUgUXDPB2m04UNsCzJncJ9IUO6xkSqOLJj2qfCIFnj
+	 5w2iCiFpfYsFHYY4KCHtxRQ//JycHRaIsKMKx+PAPPBdMsWizVTQu9cfsAO8reCMp6
+	 SJMo7QCx3AKrCy+OT91tXDROL4CJMvHvAZZ5KfPsVTGb5LRepEisAPHmuQVDfLo1hI
+	 8RvipvyxQorPHaOXKeGeqvacFqTPPAlzRZ9nLR7VGKgepxnV7rN0SvmxCUnDJ0xmJF
+	 0gXpZ1KGBKcbA==
+Date: Mon, 10 Oct 2022 09:16:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Masahiro Yamada <masahiroy@kernel.org>
+Subject: Re: linux-next: manual merge of the powerpc tree with the kbuild
+ tree
+Message-ID: <20221010091614.20a89f56@canb.auug.org.au>
+In-Reply-To: <20221004091205.2677b823@canb.auug.org.au>
+References: <20221004091205.2677b823@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <202210082028.692DFA21@keescook>
-X-Mailman-Approved-At: Mon, 10 Oct 2022 09:01:26 +1100
+Content-Type: multipart/signed; boundary="Sig_/.km7qOSO.2uHzBoxFdOk.nC";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,27 +59,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-wireless@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, x86@kernel.org, Vignesh Raghavendra <vigneshr@ti.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, kernel-janitors@vger.kernel.org, KP Singh <kpsingh@kernel.org>, dri-devel@lists.freedesktop.org, patches@lists.linux.dev, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, kasan-dev@googlegroups.com, "H . Peter Anvin" <hpa@zytor.com>, Andreas Noever <andreas.noever@gmail.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai C
- hen <chenhuacai@kernel.org>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Jozsef Kadlecsik <kadlec@netfilter.org>, Jason Gunthorpe <jgg@ziepe.ca>, Dave Airlie <airlied@redhat.com>, Paolo Abeni <pabeni@redhat.com>, "James E . J . Bottomley" <jejb@linux.ibm.com>, Pablo Neira Ayuso <pablo@netfilter.org>, linux-media@vger.kernel.org, Marco Elver <elver@google.com>, Yury Norov <yury.norov@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-block@vger.kernel.org, Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>, linux-nvme@lists.infradead.org, loongarch@lists.linux.dev, Jakub Kicinski <kuba@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, linux-mmc@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore 
- Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org, Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Jan Kara <jack@suse.com>, Thomas Graf <tgraf@suug.ch>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Oct 08, 2022 at 08:41:14PM -0700, Kees Cook wrote:
-> On Fri, Oct 07, 2022 at 11:53:52PM -0600, Jason A. Donenfeld wrote:
-> > This is a five part treewide cleanup of random integer handling. The
-> > rules for random integers are:
-> 
-> Reviewing the delta between of my .cocci rules and your v5, everything
-> matches, except for get_random_int() conversions for files not in
-> your tree:
-> [...]
-> So, I guess I mean to say that "prandom: remove unused functions" is
-> going to cause some pain. :) Perhaps don't push that to -next, and do a
-> final pass next merge window to catch any new stuff, and then send those
-> updates and the removal before -rc1 closes?
+--Sig_/.km7qOSO.2uHzBoxFdOk.nC
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Ooof. Actually I think what I'll do is include a suggested diff for the
-merge commit that fixes up the remaining two thankfully trivial cases.
+Hi all,
 
-Jason
+On Tue, 4 Oct 2022 09:12:05 +1100 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>=20
+> Today's linux-next merge of the powerpc tree got a conflict in:
+>=20
+>   arch/powerpc/kernel/Makefile
+>=20
+> between commit:
+>=20
+>   321648455061 ("kbuild: use obj-y instead extra-y for objects placed at =
+the head")
+>=20
+> from the kbuild tree and commit:
+>=20
+>   dfc3095cec27 ("powerpc: Remove CONFIG_FSL_BOOKE")
+>=20
+> from the powerpc tree.
+>=20
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
+>=20
+> --=20
+> Cheers,
+> Stephen Rothwell
+>=20
+> diff --cc arch/powerpc/kernel/Makefile
+> index ad3decb9f20b,1f121c188805..000000000000
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@@ -118,12 -116,12 +116,12 @@@ obj-$(CONFIG_PPC_E500)		+=3D cpu_setup_e5
+>   obj-$(CONFIG_PPC_DOORBELL)	+=3D dbell.o
+>   obj-$(CONFIG_JUMP_LABEL)	+=3D jump_label.o
+>  =20
+>  -extra-$(CONFIG_PPC64)		:=3D head_64.o
+>  -extra-$(CONFIG_PPC_BOOK3S_32)	:=3D head_book3s_32.o
+>  -extra-$(CONFIG_40x)		:=3D head_40x.o
+>  -extra-$(CONFIG_44x)		:=3D head_44x.o
+>  -extra-$(CONFIG_PPC_85xx)	:=3D head_85xx.o
+>  -extra-$(CONFIG_PPC_8xx)		:=3D head_8xx.o
+>  +obj-$(CONFIG_PPC64)		+=3D head_64.o
+>  +obj-$(CONFIG_PPC_BOOK3S_32)	+=3D head_book3s_32.o
+>  +obj-$(CONFIG_40x)		+=3D head_40x.o
+>  +obj-$(CONFIG_44x)		+=3D head_44x.o
+> - obj-$(CONFIG_FSL_BOOKE)		+=3D head_fsl_booke.o
+> ++obj-$(CONFIG_PPC_85xx)		:=3D head_85xx.o
+>  +obj-$(CONFIG_PPC_8xx)		+=3D head_8xx.o
+>   extra-y				+=3D vmlinux.lds
+>  =20
+>   obj-$(CONFIG_RELOCATABLE)	+=3D reloc_$(BITS).o
+
+This is now a conflict between the kbuild tree and Linus' tree.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/.km7qOSO.2uHzBoxFdOk.nC
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmNDSC8ACgkQAVBC80lX
+0Gy6egf8CKc2goJR5uR31lWy7MtzaXaEXtSJhagzpfue8Ykt1sikkbMLJt+i2WVt
+zK2/ehfB9wV6o37xfSdeL3slBnX7bkhqEI6oolypnozHXRArTYbtCO1uVs0cO2kR
++vR1h/TzNcApDlPnZ6DKEjpVDAv3uQyFFuMy9CrTR8lq4ZR7xL/5l9ksfcd02vOO
++aSrN0UDZ05BeFF5AzQs7wBl4iBrDqr+1atpqtxxSmyAJqs+yT2w8mjov8+u2x2p
+HUL/F+PepQhGYLFY+M1x56VYH8BLx2SPBc1wM+LZtfGPIYCV/Aw8Ma8i6VKhV2a1
+hnOJqR8ie93KM+zhra1hgZrxlurK+g==
+=ID1k
+-----END PGP SIGNATURE-----
+
+--Sig_/.km7qOSO.2uHzBoxFdOk.nC--
