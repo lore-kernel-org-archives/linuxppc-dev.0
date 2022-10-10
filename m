@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DEB8C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 00:35:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93649C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 00:36:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mm0Lz14F8z3dwQ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 11:35:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mm0N11Ycnz3f0q
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Oct 2022 11:36:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jUshfk4W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qBRO1Tya;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jUshfk4W;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qBRO1Tya;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mm0Fk4TN1z3bjc
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mm0Fk41gNz2yJQ
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Oct 2022 11:31:05 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29A0IEEv025523;
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 299NR9od024580;
 	Mon, 10 Oct 2022 00:30:39 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=Bcrzk33vNaa3RpMYHgLPkFNg9qHzXppyI/lvXZeUCDI=;
- b=jUshfk4WUSuiGTBVmjgrrZcUheO5805uvpb5LFjlDmZgV9ocNExYqLnOJ13btU47dQxX
- wb6cTfkIGvJhUb1Chsz2hQa8+W4Q4qpSpxzWO6a6NZwIL3RPzmTkYcRTCa+9s0bl2lHU
- bar/ghqFhpD++ltVlZ/E3wEPmsUsRFZ4uc4VG3aFvCbzUAKLYwUsGTTq0B0EuzMZ4DT6
- eknEye7TxZpjI7Tmj0d+Tz1hXK0kU1q57IgpfwBwe+3jNk1Co4oXo+hYJ7ap8EJD9aA1
- mQIRpOlcAAm6R6kdmjmoI700s4Mp2NITjusEI6uA7DYcWEkHYyhWXWpMRNvrPcrrmAmU Fg== 
+ bh=6jRzs0vGdfePZHWsxv0FN0NpYcLQI6j7e4PTsb4bLYo=;
+ b=qBRO1Tya/VDRNfdHlH10sur+WfDTgmw79EAiUtKZaxHlaXOpApeco49o+X9OG13qMdq8
+ m9b1FJ8XRHoexUwkKhvh1p6H0F4mOa8xqY/a+X7Kkko8EyD/6fY6VIYWJqsEzQaFECxQ
+ Af2S4eMIjAyf3ghOX06g/sBmp9kcYp8dIgIGaDfnepaorx6kup2BF99OBQSW7ziagUpk
+ bjuYkn4M3x1QdvKYswCaqPq9wPv5N27/nrfB8u/KtrtEAFul8xP1DFJ4mjxMad7hhfCv
+ 0iqphuUg67glVOEFTYYZYMMOtZ1FrQdZqQiBTza1cnghcOvdqgkDd6vgvxE+1bhScrSQ ag== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3k7uv96y-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3ju6mh1c-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Oct 2022 00:30:38 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29A0TH1B015688;
+	Mon, 10 Oct 2022 00:30:39 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29A0PQ7G030363;
 	Mon, 10 Oct 2022 00:30:38 GMT
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3k7uv967-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3ju6mh0t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 10 Oct 2022 00:30:38 +0000
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29A0KriH028930;
+	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29A0L3lu028961;
 	Mon, 10 Oct 2022 00:30:36 GMT
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
-	by ppma04ams.nl.ibm.com with ESMTP id 3k30u9a0v6-1
+Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+	by ppma04ams.nl.ibm.com with ESMTP id 3k30u9a0v5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 10 Oct 2022 00:30:36 +0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29A0UYQZ7209574
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
+	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29A0V4G850528514
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Oct 2022 00:30:34 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0E40CAE053;
+	Mon, 10 Oct 2022 00:31:04 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0E41011C04C;
 	Mon, 10 Oct 2022 00:30:34 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 62143AE04D;
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6188D11C04A;
 	Mon, 10 Oct 2022 00:30:33 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
 	Mon, 10 Oct 2022 00:30:33 +0000 (GMT)
 Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 85CFB6060A;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8FC3E60636;
 	Mon, 10 Oct 2022 11:30:30 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 1/6] powerpc/code-patching: Implement generic text patching function
-Date: Mon, 10 Oct 2022 11:29:52 +1100
-Message-Id: <20221010002957.128276-2-bgray@linux.ibm.com>
+Subject: [PATCH v4 4/6] static_call: Move static call selftest to static_call_selftest.c
+Date: Mon, 10 Oct 2022 11:29:55 +1100
+Message-Id: <20221010002957.128276-5-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20221010002957.128276-1-bgray@linux.ibm.com>
 References: <20221010002957.128276-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: OZLUW2jWMCycRAedqStLRZwMN0LCRvmR
-X-Proofpoint-GUID: S363xOpEY4sbWMn3U1znqkaJMtsWZz_U
+X-Proofpoint-GUID: sdm0PKn4d8zhkL0Gw8dM4TwIPNesaBcC
+X-Proofpoint-ORIG-GUID: U98A-TiVgUbVlb9GnXACdad7oFwkPU5d
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
  definitions=2022-10-07_04,2022-10-07_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- lowpriorityscore=0 phishscore=0 adultscore=0 bulkscore=0 mlxlogscore=770
- mlxscore=0 priorityscore=1501 suspectscore=0 impostorscore=0 clxscore=1015
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
+ lowpriorityscore=0 spamscore=0 bulkscore=0 priorityscore=1501
+ clxscore=1015 mlxscore=0 suspectscore=0 malwarescore=0 impostorscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2209130000 definitions=main-2210090155
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,202 +105,130 @@ Cc: ajd@linux.ibm.com, peterz@infradead.org, Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Adds a generic memory patching mechanism for patches of size int or long
-bytes.
-
-The patch_instruction function is reimplemented in terms of this
-more generic function. This generic implementation allows patching of
-arbitrary long data, such as pointers on 64-bit. As a performance
-optimisation the patch will unconditionally flush the icache, as
-patch_instruction is used significantly more often and in more
-performance sensitive contexts (e.g., ftrace activation).
-
-On 32-bit patch_int is marked noinline to prevent a mis-optimisation.
-Without noinline, inside patch_branch the compiler may inline all the
-way to do_patch_memory, preventing the compiler from inlining
-do_patch_memory into patch_int. This would needlessly force patch_int
-to be a branch to do_patch_memory.
-
-The 'IS_ENABLED(CONFIG_PPC64) && ' part of the patch size condition
-helps GCC inline __patch_memory properly. Only 64-bit requires
-doubleword writes anyway, as ints and longs are the same size on 32-bit.
+These tests are out-of-line only, so moving them to the
+their own file allows them to be run when an arch does
+not implement inline static calls.
 
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/include/asm/code-patching.h | 29 ++++++++++
- arch/powerpc/lib/code-patching.c         | 73 ++++++++++++++++++------
- 2 files changed, 85 insertions(+), 17 deletions(-)
+ kernel/Makefile               |  1 +
+ kernel/static_call_inline.c   | 43 -----------------------------------
+ kernel/static_call_selftest.c | 41 +++++++++++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 43 deletions(-)
+ create mode 100644 kernel/static_call_selftest.c
 
-diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-index 3f881548fb61..170bfa848c7c 100644
---- a/arch/powerpc/include/asm/code-patching.h
-+++ b/arch/powerpc/include/asm/code-patching.h
-@@ -72,7 +72,36 @@ static inline int create_branch(ppc_inst_t *instr, const u32 *addr,
- int create_cond_branch(ppc_inst_t *instr, const u32 *addr,
- 		       unsigned long target, int flags);
- int patch_branch(u32 *addr, unsigned long target, int flags);
-+
-+/* patch_uint and patch_ulong must only be called on addresses where the patch
-+ * does not cross a cacheline, otherwise it may not be flushed properly and
-+ * mixes of new and stale data may be observed.
-+ *
-+ * patch_instruction and other instruction patchers automatically satisfy this
-+ * requirement due to instruction alignment requirements.
-+ */
-+
-+int patch_uint(void *addr, unsigned int val);
-+
-+#ifdef CONFIG_PPC64
-+
-+int patch_ulong(void *addr, unsigned long val);
- int patch_instruction(u32 *addr, ppc_inst_t instr);
-+
-+#else
-+
-+static inline int patch_ulong(void *addr, unsigned long val)
-+{
-+	return patch_uint(addr, val);
-+}
-+
-+static inline int patch_instruction(u32 *addr, ppc_inst_t instr)
-+{
-+	return patch_uint(addr, ppc_inst_val(instr));
-+}
-+
-+#endif
-+
- int raw_patch_instruction(u32 *addr, ppc_inst_t instr);
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 318789c728d3..8ce8beaa3cc0 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -113,6 +113,7 @@ obj-$(CONFIG_KCSAN) += kcsan/
+ obj-$(CONFIG_SHADOW_CALL_STACK) += scs.o
+ obj-$(CONFIG_HAVE_STATIC_CALL) += static_call.o
+ obj-$(CONFIG_HAVE_STATIC_CALL_INLINE) += static_call_inline.o
++obj-$(CONFIG_STATIC_CALL_SELFTEST) += static_call_selftest.o
+ obj-$(CONFIG_CFI_CLANG) += cfi.o
  
- static inline unsigned long patch_site_addr(s32 *site)
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 125c55e3e148..e41c0ccec79f 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -15,20 +15,24 @@
- #include <asm/code-patching.h>
- #include <asm/inst.h>
- 
--static int __patch_instruction(u32 *exec_addr, ppc_inst_t instr, u32 *patch_addr)
-+static int __patch_memory(void *patch_addr, unsigned long val, void *exec_addr,
-+			  bool is_dword)
- {
--	if (!ppc_inst_prefixed(instr)) {
--		u32 val = ppc_inst_val(instr);
--
--		__put_kernel_nofault(patch_addr, &val, u32, failed);
--	} else {
--		u64 val = ppc_inst_as_ulong(instr);
-+	/* Prefixed instruction may cross cacheline if cacheline smaller than 64 bytes */
-+	BUILD_BUG_ON(IS_ENABLED(CONFIG_PPC64) && L1_CACHE_BYTES < 64);
- 
-+	if (IS_ENABLED(CONFIG_PPC64) && unlikely(is_dword))
- 		__put_kernel_nofault(patch_addr, &val, u64, failed);
--	}
-+	else
-+		__put_kernel_nofault(patch_addr, &val, u32, failed);
- 
--	asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (patch_addr),
--							    "r" (exec_addr));
-+	/* Assume data is inside a single cacheline */
-+	dcbst(patch_addr);
-+	mb(); /* sync */
-+	/* Flush on the EA that may be executed in case of a non-coherent icache */
-+	icbi(exec_addr);
-+	mb(); /* sync */
-+	isync();
- 
+ obj-$(CONFIG_PERF_EVENTS) += events/
+diff --git a/kernel/static_call_inline.c b/kernel/static_call_inline.c
+index dc5665b62814..64d04d054698 100644
+--- a/kernel/static_call_inline.c
++++ b/kernel/static_call_inline.c
+@@ -498,46 +498,3 @@ int __init static_call_init(void)
  	return 0;
- 
-@@ -38,7 +42,10 @@ static int __patch_instruction(u32 *exec_addr, ppc_inst_t instr, u32 *patch_addr
- 
- int raw_patch_instruction(u32 *addr, ppc_inst_t instr)
- {
--	return __patch_instruction(addr, instr, addr);
-+	if (ppc_inst_prefixed(instr))
-+		return __patch_memory(addr, ppc_inst_as_ulong(instr), addr, true);
-+	else
-+		return __patch_memory(addr, ppc_inst_val(instr), addr, false);
  }
- 
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
-@@ -149,7 +156,7 @@ static void unmap_patch_area(unsigned long addr)
- 	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
- }
- 
--static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
-+static int __do_patch_memory(void *addr, unsigned long val, bool is_dword)
- {
- 	int err;
- 	u32 *patch_addr;
-@@ -166,7 +173,7 @@ static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
- 	if (radix_enabled())
- 		asm volatile("ptesync": : :"memory");
- 
--	err = __patch_instruction(addr, instr, patch_addr);
-+	err = __patch_memory(patch_addr, val, addr, is_dword);
- 
- 	pte_clear(&init_mm, text_poke_addr, pte);
- 	flush_tlb_kernel_range(text_poke_addr, text_poke_addr + PAGE_SIZE);
-@@ -174,7 +181,7 @@ static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
- 	return err;
- }
- 
--int patch_instruction(u32 *addr, ppc_inst_t instr)
-+static int do_patch_memory(void *addr, unsigned long val, bool is_dword)
- {
- 	int err;
- 	unsigned long flags;
-@@ -186,15 +193,47 @@ int patch_instruction(u32 *addr, ppc_inst_t instr)
- 	 */
- 	if (!IS_ENABLED(CONFIG_STRICT_KERNEL_RWX) ||
- 	    !static_branch_likely(&poking_init_done))
--		return raw_patch_instruction(addr, instr);
-+		return __patch_memory(addr, val, addr, is_dword);
- 
- 	local_irq_save(flags);
--	err = __do_patch_instruction(addr, instr);
-+	err = __do_patch_memory(addr, val, is_dword);
- 	local_irq_restore(flags);
- 
- 	return err;
- }
--NOKPROBE_SYMBOL(patch_instruction);
+ early_initcall(static_call_init);
+-
+-#ifdef CONFIG_STATIC_CALL_SELFTEST
+-
+-static int func_a(int x)
+-{
+-	return x+1;
+-}
+-
+-static int func_b(int x)
+-{
+-	return x+2;
+-}
+-
+-DEFINE_STATIC_CALL(sc_selftest, func_a);
+-
+-static struct static_call_data {
+-      int (*func)(int);
+-      int val;
+-      int expect;
+-} static_call_data [] __initdata = {
+-      { NULL,   2, 3 },
+-      { func_b, 2, 4 },
+-      { func_a, 2, 3 }
+-};
+-
+-static int __init test_static_call_init(void)
+-{
+-      int i;
+-
+-      for (i = 0; i < ARRAY_SIZE(static_call_data); i++ ) {
+-	      struct static_call_data *scd = &static_call_data[i];
+-
+-              if (scd->func)
+-                      static_call_update(sc_selftest, scd->func);
+-
+-              WARN_ON(static_call(sc_selftest)(scd->val) != scd->expect);
+-      }
+-
+-      return 0;
+-}
+-early_initcall(test_static_call_init);
+-
+-#endif /* CONFIG_STATIC_CALL_SELFTEST */
+diff --git a/kernel/static_call_selftest.c b/kernel/static_call_selftest.c
+new file mode 100644
+index 000000000000..246ad89f64eb
+--- /dev/null
++++ b/kernel/static_call_selftest.c
+@@ -0,0 +1,41 @@
++// SPDX-License-Identifier: GPL-2.0
++#include <linux/static_call.h>
 +
-+#ifdef CONFIG_PPC64
-+
-+int patch_uint(void *addr, unsigned int val)
++static int func_a(int x)
 +{
-+	return do_patch_memory(addr, val, false);
++	return x+1;
 +}
-+NOKPROBE_SYMBOL(patch_uint)
 +
-+int patch_ulong(void *addr, unsigned long val)
++static int func_b(int x)
 +{
-+	return do_patch_memory(addr, val, true);
++	return x+2;
 +}
-+NOKPROBE_SYMBOL(patch_ulong)
 +
-+int patch_instruction(u32 *addr, ppc_inst_t instr)
++DEFINE_STATIC_CALL(sc_selftest, func_a);
++
++static struct static_call_data {
++	int (*func)(int);
++	int val;
++	int expect;
++} static_call_data [] __initdata = {
++	{ NULL,   2, 3 },
++	{ func_b, 2, 4 },
++	{ func_a, 2, 3 }
++};
++
++static int __init test_static_call_init(void)
 +{
-+	if (ppc_inst_prefixed(instr))
-+		return patch_ulong(addr, ppc_inst_as_ulong(instr));
-+	else
-+		return patch_uint(addr, ppc_inst_val(instr));
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(static_call_data); i++ ) {
++		struct static_call_data *scd = &static_call_data[i];
++
++		if (scd->func)
++			static_call_update(sc_selftest, scd->func);
++
++		WARN_ON(static_call(sc_selftest)(scd->val) != scd->expect);
++	}
++
++	return 0;
 +}
-+NOKPROBE_SYMBOL(patch_instruction)
-+
-+#else
-+
-+noinline int patch_uint(void *addr, unsigned int val)
-+{
-+	return do_patch_memory(addr, val, false);
-+}
-+NOKPROBE_SYMBOL(patch_uint)
-+
-+#endif
- 
- int patch_branch(u32 *addr, unsigned long target, int flags)
- {
++early_initcall(test_static_call_init);
 -- 
 2.37.3
 
