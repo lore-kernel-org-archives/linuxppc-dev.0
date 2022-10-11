@@ -4,94 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24E76C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 00:02:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E3F9C433F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 00:14:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MmbYz2KJqz3dwR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 11:02:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mmbqp1nHjz3dt6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 11:14:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nUvkvxmJ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=baVHqYzU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=ame8=2m=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nUvkvxmJ;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=baVHqYzU;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MmbXt1NZWz3cB6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2022 11:01:17 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29AMVA2B022603;
-	Tue, 11 Oct 2022 00:00:38 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=MUav98Gqd8+jnPeoXL3mH1XPkjFXSCLleskfAKiCeP0=;
- b=nUvkvxmJSWQzRAcDKpK9n3/z4s7vmVQJxV4/k8z07b7LnWl0gbSJMVZP6E6un2y731hZ
- dULr2wD58tYfAXP78lLZTxvc9U4bjDa+kq4Fgsqq7y1ktA7APwmFoYdMQwfNJj2gkCKU
- 2VZc/bLGK/KG8k5GeCKainf1RMy34l6vbCyprdPsckLeN03qKiXvP5KttjvbdrLBWa5y
- q0nZe0lagWTo9MjobPBbKIEnc0VdIx2XuQX6/oT5Ns/r1qywbNGTeuPbNBMkQrOyyXHu
- untFZCJOxOcRQ3Dr/TcRBkJ0fLWe/NbhKPyLVSEx3Zw20OrfYJpmfg0GmreTBU4bgiIL MQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3k7vx7j1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Oct 2022 00:00:37 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29B007R9013158;
-	Tue, 11 Oct 2022 00:00:36 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3k3k7vx7h0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Oct 2022 00:00:36 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29ANodQl023738;
-	Tue, 11 Oct 2022 00:00:34 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma04ams.nl.ibm.com with ESMTP id 3k30u9bdw0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Oct 2022 00:00:34 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29ANtoIK25755940
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Oct 2022 23:55:50 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0A59A52052;
-	Tue, 11 Oct 2022 00:00:32 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5EA555204F;
-	Tue, 11 Oct 2022 00:00:31 +0000 (GMT)
-Received: from [9.43.172.4] (unknown [9.43.172.4])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mmbpm2DTHz2xHL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2022 11:13:20 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 1A07A602EB;
-	Tue, 11 Oct 2022 11:00:18 +1100 (AEDT)
-Message-ID: <d402a6a0a11d84906ecba3909f4c8f880298dc0f.camel@linux.ibm.com>
+	by ams.source.kernel.org (Postfix) with ESMTPS id 1349FB81109;
+	Tue, 11 Oct 2022 00:13:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2B4EC433C1;
+	Tue, 11 Oct 2022 00:13:11 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="baVHqYzU"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1665447190;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=94ts48M5SS/tRVfqd8nSNQ/13AHlnM6HqjRShHGswCc=;
+	b=baVHqYzUL1gentYHvD6fPlG0Rb53MTQ0jrOPGbtJum4eGZHwX4iHRYu7M2+8beK8paCZuO
+	IA86oNdZ7QtjjqxfCKesku3xkVm1z7K3oONecZqnI1Ed/5J7SHcHAMk1kzMCd8i8hW1psG
+	M6dUNb2cBChpFLE6K78/fPrPMoo82oA=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 4857d14e (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Tue, 11 Oct 2022 00:13:09 +0000 (UTC)
+Date: Mon, 10 Oct 2022 18:13:03 -0600
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Andrew Donnellan <ajd@linux.ibm.com>
 Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.1-1 tag
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        Michael Ellerman
-	 <mpe@ellerman.id.au>, rmclure@linux.ibm.com
-Date: Tue, 11 Oct 2022 11:00:15 +1100
-In-Reply-To: <Y0ScAhqysKK6Hrks@zx2c4.com>
-References: <87edvhntv0.fsf@mpe.ellerman.id.au> <Y0RxpSFyn9m68zIb@zx2c4.com>
-	 <Y0R6fcvgGA858TQA@zx2c4.com> <Y0ScAhqysKK6Hrks@zx2c4.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.3-1 
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 36w4YCAQ4nTGdgqjFxiN2AM5kFcUeosw
-X-Proofpoint-GUID: IdWhmLj7iNQ56oqIgH1w5wqO-vj6xDLc
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+Message-ID: <Y0S1DxwKCm0aVQjT@zx2c4.com>
+References: <87edvhntv0.fsf@mpe.ellerman.id.au>
+ <Y0RxpSFyn9m68zIb@zx2c4.com>
+ <Y0R6fcvgGA858TQA@zx2c4.com>
+ <Y0ScAhqysKK6Hrks@zx2c4.com>
+ <d402a6a0a11d84906ecba3909f4c8f880298dc0f.camel@linux.ibm.com>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.528,FMLib:17.11.122.1
- definitions=2022-10-10_12,2022-10-10_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- lowpriorityscore=0 phishscore=0 adultscore=0 bulkscore=0 mlxlogscore=905
- mlxscore=0 priorityscore=1501 suspectscore=0 impostorscore=0 clxscore=1011
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2210100139
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <d402a6a0a11d84906ecba3909f4c8f880298dc0f.camel@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,71 +66,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: david@redhat.com, linux-kernel@vger.kernel.org, wsa+renesas@sang-engineering.com, nicholas@linux.ibm.com, windhl@126.com, cuigaosheng1@huawei.com, mikey@neuling.org, paul@paul-moore.com, aneesh.kumar@linux.ibm.com, haren@linux.ibm.com, joel@jms.id.au, lukas.bulwahn@gmail.com, linux@roeck-us.net, nathanl@linux.ibm.com, ye.xingchen@zte.com.cn, npiggin@gmail.com, nathan@kernel.org, hbathini@linux.ibm.com, atrajeev@linux.vnet.ibm.com, yuanjilin@cdjrlc.com, pali@kernel.org, farosas@linux.ibm.com, geoff@infradead.org, Linus Torvalds <torvalds@linux-foundation.org>, gustavoars@kernel.org, lihuafei1@huawei.com, zhengyongjun3@huawei.com, linuxppc-dev@lists.ozlabs.org
+Cc: david@redhat.com, linux-kernel@vger.kernel.org, wsa+renesas@sang-engineering.com, nicholas@linux.ibm.com, windhl@126.com, cuigaosheng1@huawei.com, mikey@neuling.org, paul@paul-moore.com, haren@linux.ibm.com, joel@jms.id.au, lukas.bulwahn@gmail.com, linux@roeck-us.net, nathanl@linux.ibm.com, ye.xingchen@zte.com.cn, npiggin@gmail.com, nathan@kernel.org, rmclure@linux.ibm.com, hbathini@linux.ibm.com, atrajeev@linux.vnet.ibm.com, yuanjilin@cdjrlc.com, pali@kernel.org, farosas@linux.ibm.com, geoff@infradead.org, Linus Torvalds <torvalds@linux-foundation.org>, gustavoars@kernel.org, lihuafei1@huawei.com, aneesh.kumar@linux.ibm.com, zhengyongjun3@huawei.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2022-10-10 at 16:26 -0600, Jason A. Donenfeld wrote:
-> 
-> Bisected:
-> 
-> 7e92e01b724526b98cbc7f03dd4afa0295780d56 is the first bad commit
-> commit 7e92e01b724526b98cbc7f03dd4afa0295780d56
-> Author: Rohan McLure <rmclure@linux.ibm.com>
-> Date:   Wed Sep 21 16:56:01 2022 +1000
-> 
->     powerpc: Provide syscall wrapper
-> 
->     Implement syscall wrapper as per s390, x86, arm64. When enabled
->     cause handlers to accept parameters from a stack frame rather
-> than
->     from user scratch register state. This allows for user registers
-> to be
->     safely cleared in order to reduce caller influence on speculation
->     within syscall routine. The wrapper is a macro that emits syscall
->     handler symbols that call into the target handler, obtaining its
->     parameters from a struct pt_regs on the stack.
-> 
->     As registers are already saved to the stack prior to calling
->     system_call_exception, it appears that this function is executed
-> more
->     efficiently with the new stack-pointer convention than with
-> parameters
->     passed by registers, avoiding the allocation of a stack frame for
-> this
->     method. On a 32-bit system, we see >20% performance increases on
-> the
->     null_syscall microbenchmark, and on a Power 8 the performance
-> gains
->     amortise the cost of clearing and restoring registers which is
->     implemented at the end of this series, seeing final result of
-> ~5.6%
->     performance improvement on null_syscall.
-> 
->     Syscalls are wrapped in this fashion on all platforms except for
-> the
->     Cell processor as this commit does not provide SPU support. This
-> can be
->     quickly fixed in a successive patch, but requires
-> spu_sys_callback to
->     allocate a pt_regs structure to satisfy the wrapped calling
-> convention.
-> 
->     Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
->     Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
->     Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
->     Reviewed-by: Nicholas Piggin <npiggin@gmai.com>
->     [mpe: Make incompatible with COMPAT to retain clearing of high
-> bits of args]
->     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->     Link:
-> https://lore.kernel.org/r/20220921065605.1051927-22-rmclure@linux.ibm.com
+Hi Andrew,
 
-Thanks for bisecting, this is interesting! Could you provide your
-.config and the environment you're running in? Your reproducer doesn't
-seem to trigger it on my baremetal POWER8 pseries_le_defconfig.
+On Tue, Oct 11, 2022 at 11:00:15AM +1100, Andrew Donnellan wrote:
+> Thanks for bisecting, this is interesting! Could you provide your
+> .config and the environment you're running in? Your reproducer doesn't
+> seem to trigger it on my baremetal POWER8 pseries_le_defconfig.
 
--- 
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+Sure.
 
+.config: https://xn--4db.cc/NemFt2Vs (change CONFIG_INITRAMFS_SOURCE)
+Toolchain: https://download.wireguard.com/qemu-test/toolchains/20211123/powerpc-linux-musl-cross.tgz
+
+You can also just run:
+
+  ARCH=powerpc make -C tools/testing/selftests/wireguard/qemu -j$(nproc)
+
+And that'll assemble the whole thing.
+
+Jason
