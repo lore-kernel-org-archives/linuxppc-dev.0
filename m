@@ -4,87 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40279C433F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 16:41:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5063C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 03:29:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mn1l02TR1z3blt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 03:41:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MnJ6D6C09z3bjh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 14:29:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A+FV3O0W;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A+FV3O0W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AJFptayV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vschneid@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A+FV3O0W;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=A+FV3O0W;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AJFptayV;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mn1jt2QdDz30Mn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 03:40:33 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1665506430;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3pR097ooCx/8nlTemhEf/WDhel/4mmcsp3Jh/tnUV8M=;
-	b=A+FV3O0WHCmo+SwD1nwchs7jR+YgzkGCAwje9Xx3LqMKaKhNYS22PO9aAlAwPJn07I5J2/
-	kpV/PO/oqIwdn/6o7zffLkdhZI0qNV9qD7Fex2Kug3yazce+8QPRClHb1QT7y44M5ZDAjI
-	W5+8s3e6cgGXu8OzkGbgwLWyS5n4UjQ=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1665506430;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=3pR097ooCx/8nlTemhEf/WDhel/4mmcsp3Jh/tnUV8M=;
-	b=A+FV3O0WHCmo+SwD1nwchs7jR+YgzkGCAwje9Xx3LqMKaKhNYS22PO9aAlAwPJn07I5J2/
-	kpV/PO/oqIwdn/6o7zffLkdhZI0qNV9qD7Fex2Kug3yazce+8QPRClHb1QT7y44M5ZDAjI
-	W5+8s3e6cgGXu8OzkGbgwLWyS5n4UjQ=
-Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
- [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-646-5zVc7kB-MlmTB0MjqkxLdQ-1; Tue, 11 Oct 2022 12:40:29 -0400
-X-MC-Unique: 5zVc7kB-MlmTB0MjqkxLdQ-1
-Received: by mail-wm1-f71.google.com with SMTP id h129-20020a1c2187000000b003bf635eac31so5665558wmh.4
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2022 09:40:29 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=3pR097ooCx/8nlTemhEf/WDhel/4mmcsp3Jh/tnUV8M=;
-        b=ts09Tgh3xCvOlX3iriOA6au+x3fEBvypSgBGSKkzvaJzjJ+aZnrRfpbTS+btp3beeP
-         17Vets5o46uJjwOJDsJS9TOwcEaZjAKsICS4DXxE0+ptKER6km+zgwyEZlZ85Kfz9g6j
-         7A8+rAgMz7wglrC3vcArRh55RC6Vmb2RgtSjVQWA9N2ltQkWsbpP4IuobOE90g1vWPzq
-         l7o4rq5rLeBwziZoXogVApmcYy8tq2B8RdH1X4rQcoNs60jRDOaxp6zSB6YIbSonVnji
-         ysPvby2rmjwWimnFgKNJduJOXq9CHxrJs6ETdBG3u4h6abuHmftc35xQSULnXUP652Ez
-         73Kw==
-X-Gm-Message-State: ACrzQf3fjG1wDZeY4WYAQf07oYepu+m/wxNi5s/pmtYWZfwP07PjZapR
-	n4SH44yFWKfk2FeZIMNyZzan6EF/4vmKvHBJglIWujlHTcRGsP5o5Z4Oatzq0Dy+YjXdu0mwce9
-	O2/bFD5s1+hm4KqCVMDu34jRSlg==
-X-Received: by 2002:a5d:59a7:0:b0:230:3652:1aa with SMTP id p7-20020a5d59a7000000b00230365201aamr8455629wrr.308.1665506428138;
-        Tue, 11 Oct 2022 09:40:28 -0700 (PDT)
-X-Google-Smtp-Source: AMsMyM4XCj7SFWdE6E5DxEmMGEk+A0mlMYyEPprqhbmdn8jGtDu/Z9OxlEVw6NK6vPTlYZN68wZltQ==
-X-Received: by 2002:a5d:59a7:0:b0:230:3652:1aa with SMTP id p7-20020a5d59a7000000b00230365201aamr8455591wrr.308.1665506427912;
-        Tue, 11 Oct 2022 09:40:27 -0700 (PDT)
-Received: from vschneid.remote.csb ([104.132.153.106])
-        by smtp.gmail.com with ESMTPSA id y3-20020a7bcd83000000b003a3170a7af9sm7900578wmj.4.2022.10.11.09.40.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Oct 2022 09:40:27 -0700 (PDT)
-From: Valentin Schneider <vschneid@redhat.com>
-To: Daniel Bristot de Oliveira <bristot@redhat.com>
-Subject: Re: [RFC PATCH 0/5] Generic IPI sending tracepoint
-In-Reply-To: <3e680bb9-9896-3665-dd59-4f2e6f8205bb@redhat.com>
-References: <20221007154145.1877054-1-vschneid@redhat.com>
- <Y0CFnWDpMNGajIRD@fuller.cnet> <xhsmhilkqfi7z.mognet@vschneid.remote.csb>
- <3e680bb9-9896-3665-dd59-4f2e6f8205bb@redhat.com>
-Date: Tue, 11 Oct 2022 17:40:26 +0100
-Message-ID: <xhsmhfsfufh51.mognet@vschneid.remote.csb>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MnB9t6tx3z2xG9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 10:01:54 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 40993B817C0;
+	Tue, 11 Oct 2022 23:01:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9723CC433D6;
+	Tue, 11 Oct 2022 23:01:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1665529308;
+	bh=gCI+X2WOw4l6GrJak35sDaAf8gDE0fXgutS5wo82m0c=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=AJFptayVxOqteJVOLykn7hUdHTEFBSFYdPDnURZs6EbQ5lnc5EDwMPEWLIY2Zkc6k
+	 ToDJ69GFb03nJ1ZHa3Bu1XZh90AT8husNifCGxqExcBTtq73zRbzdbLGz1yV1PS0BR
+	 YgADbRNTz4kaxl1FPtL5h69IOLIEA3uAgLFu6LoZOj6vAhrzGGJogNzed4iTNoQ9kU
+	 RplOVmj/pT0WrloWUBcPNyJldLUtdrL9BReJJkpTFUke93m8zD4dIphjguaBr6M6BU
+	 xC/9Fc6Zmo9mtTlbNcRQZT+mur3mj5hpEnCkCHrxZUfVSrUfpxEhWQqxTOA+fraPtq
+	 COtQHCYR1WDtw==
+Date: Tue, 11 Oct 2022 16:01:44 -0700
+From: Jakub Kicinski <kuba@kernel.org>
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Subject: Re: [PATCH v6 0/7] treewide cleanup of random integer usage
+Message-ID: <20221011160144.1c0dc2af@kernel.org>
+In-Reply-To: <20221010230613.1076905-1-Jason@zx2c4.com>
+References: <20221010230613.1076905-1-Jason@zx2c4.com>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Wed, 12 Oct 2022 14:28:17 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,31 +60,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.i
- nfradead.org, linux-parisc@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>, linux-kernel@vger.kernel.org, Douglas RAILLARD <douglas.raillard@arm.com>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S.
- Miller" <davem@davemloft.net>
+Cc: linux-wireless@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, x86@kernel.org, Vignesh Raghavendra <vigneshr@ti.com>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, kernel-janitors@vger.kernel.org, KP Singh <kpsingh@kernel.org>, dri-devel@lists.freedesktop.org, patches@lists.linux.dev, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, kasan-dev@googlegroups.com, "H . Peter
+ Anvin" <hpa@zytor.com>, Andreas Noever <andreas.noever@gmail.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, Jozsef Kadlecsik <kadlec@netfilter.org>, Jason Gunthorpe <jgg@ziepe.ca>, Dave Airlie <airlied@redhat.com>, Paolo Abeni <pabeni@redhat.com>, "James E . J .
+ Bottomley" <jejb@linux.ibm.com>, Pablo Neira Ayuso <pablo@netfilter.org>, linux-media@vger.kernel.org, Marco Elver <elver@google.com>, Kees Cook <keescook@chromium.org>, Yury Norov <yury.norov@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-block@vger.kernel.org, Richard Weinberger <richard@nod.at>, Borislav Petkov <bp@alien8.de>, linux-nvme@lists.infradead.org, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, Jens Axboe <axboe@kernel.dk>, linux-mmc@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org, Christoph =?UTF-8?B?QsO2aG13YWxkZXI=?= <christoph.boehmwalder@l
+ inbit.com>, linux-crypto@vger.kernel.org, Jan Kara <jack@suse.com>, Thomas Graf <tgraf@suug.ch>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/10/22 18:22, Daniel Bristot de Oliveira wrote:
-> On 10/11/22 18:17, Valentin Schneider wrote:
->> Thinking out loud, it makes way more sense to record a cpumask in the
->> tracepoint, but perhaps we could have a postprocessing step to transform
->> those into N events each targeting a single CPU?
->
-> My approach on the tracers/rtla is to make the simple things in kernel, and beautify
-> things in user-space.
->
-> You could keep the tracepoint as a mask, and then make it pretty, like cpus=3-5,8
-> in user-space. For example with a trace-cmd/perf loadable plugin, libtracefs helper.
->
+On Mon, 10 Oct 2022 17:06:06 -0600 Jason A. Donenfeld wrote:
+> - If you want a secure or an insecure random u64, use get_random_u64().
+> - If you want a secure or an insecure random u32, use get_random_u32().
+>   * The old function prandom_u32() has been deprecated for a while now
+>     and is just a wrapper around get_random_u32(). Same for
+>     get_random_int().
+> - If you want a secure or an insecure random u16, use get_random_u16().
+> - If you want a secure or an insecure random u8, use get_random_u8().
+> - If you want secure or insecure random bytes, use get_random_bytes().
+>   * The old function prandom_bytes() has been deprecated for a while now
+>     and has long been a wrapper around get_random_bytes().
+> - If you want a non-uniform random u32, u16, or u8 bounded by a certain
+>   open interval maximum, use prandom_u32_max().
+>   * I say "non-uniform", because it doesn't do any rejection sampling or
+>     divisions. Hence, it stays within the prandom_* namespace.
 
-That's a nice idea, the one downside I see is that means registering an
-event handler for all events with cpumasks rather than directly targeting
-cpumask fields, but that doesn't look too horrible. I'll dig a bit in that
-direction.
-
-> For rtla I was thinking to make a new tool to parse them. and make it pretty there.
->
-> -- Daniel
-
+Acked-by: Jakub Kicinski <kuba@kernel.org>
