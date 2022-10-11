@@ -4,56 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AD98C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 15:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4B1CC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 15:09:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MmzgJ3r2Zz3br0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 02:08:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MmzhL1GhVz3dql
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 02:09:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Wa80gUpm;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=sVlHbFHK;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ovKQUGCK;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uJSEikp3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=Wa80gUpm;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=sVlHbFHK;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ovKQUGCK;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=uJSEikp3;
 	dkim-atps=neutral
 Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MmzfG4mwQz2xJ8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 02:07:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MmzfH1M7Vz2yJQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 02:07:19 +1100 (AEDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 6E9331F92C;
-	Tue, 11 Oct 2022 15:07:15 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 66CA31FE4C;
+	Tue, 11 Oct 2022 15:07:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1665500835; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=augkMaHC0I3987qNRIF51UWxwXfQVd4W0P3vSWtiW3A=;
-	b=Wa80gUpmnS80wGfuFNXI8eLmNbkVfqGbcqrI87D2xq9esfzINaw1pW4avYlf5oqkjOfsTx
-	1y2GddS3vaSGgVulIjjlxdfehOV2J+yN+lK5H7FZOdiFFwOdrdAzn9EiwEcSfCBZ+MVlGb
-	BLQ/7KvZPXoc5c4vsyr9c8m8WuilTR0=
+	t=1665500836; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=f8b0mC6JZGDRuIjT+QaUdtL9/4bk3rT57EU7ZAcT7xs=;
+	b=ovKQUGCKMzOO0825XDQzqoogCg47dLyOnth9ZDuCM2WHt5v0U445z+NuPvYjVNm9zCVigI
+	kNkMI27fd+Yi70+WlfcyL4n0sP3ExhvJsS7KDsFqmWDH6rspKIr4i1bZB4qSaLGHBZMjxv
+	uc9RUaJZFBuPWX0tLgDtcEyHGup/gHM=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1665500835;
+	s=susede2_ed25519; t=1665500836;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=augkMaHC0I3987qNRIF51UWxwXfQVd4W0P3vSWtiW3A=;
-	b=sVlHbFHKcjJzfAEcRKkPoJhoMeTiylWiFbigThyguhm0FHcIOFOVrevwfqatSGpUb1BulE
-	Hz9IaqJX5x+g2FAQ==
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=f8b0mC6JZGDRuIjT+QaUdtL9/4bk3rT57EU7ZAcT7xs=;
+	b=uJSEikp3EEP9Z72yZh0V4gdE0c+4ypoIgKU40FwuYlKNL8UPaLo6CyC5zOU0c4bzffdbd4
+	7FCNlSdiRi3nYYDg==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 977B6139ED;
-	Tue, 11 Oct 2022 15:07:14 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id D70B6139ED;
+	Tue, 11 Oct 2022 15:07:15 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id h/MJI6KGRWPUTAAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Tue, 11 Oct 2022 15:07:14 +0000
+	id yMBXM6OGRWPUTAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Tue, 11 Oct 2022 15:07:15 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: javierm@redhat.com,
 	airlied@linux.ie,
@@ -66,10 +70,12 @@ To: javierm@redhat.com,
 	paulus@samba.org,
 	geert@linux-m68k.org,
 	mark.cave-ayland@ilande.co.uk
-Subject: [PATCH v5 0/5] drm: Add driver for PowerPC OF displays
-Date: Tue, 11 Oct 2022 17:07:07 +0200
-Message-Id: <20221011150712.3928-1-tzimmermann@suse.de>
+Subject: [PATCH v5 2/5] drm/ofdrm: Add CRTC state
+Date: Tue, 11 Oct 2022 17:07:09 +0200
+Message-Id: <20221011150712.3928-3-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20221011150712.3928-1-tzimmermann@suse.de>
+References: <20221011150712.3928-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -87,48 +93,99 @@ Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmerman
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerPC's Open Firmware offers a simple display buffer for graphics
-output. Add ofdrm, a DRM driver for the device. As with the existing
-simpledrm driver, the graphics hardware is pre-initialized by the
-firmware. The driver only provides blitting, no actual DRM modesetting
-is possible.
+Add a dedicated CRTC state to ofdrm to later store information for
+palette updates.
 
-Patch 1 adds ofdrm, which has again been significantly reworked.
-The FWFB library has been removed infavor of various functions in
-existing DRM helper libraries. Ofdrm now supports damage iterators
-and synchronization for imported GEM BOs.
+v3:
+	* rework CRTC state helpers (Javier)
 
-Patches 2 to 4 add support for color management. The code has been
-taken from fbdev's offb. I have no hardware available for testing the
-functionality. Qemu's stdvga apparently does not support gamma tables
-in RGB modes. I verified that the color management code is executed
-by running Gnome's night-mode settings, but the display's color tone
-does not change.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Reviewed-by: Javier Martinez Canillas <javierm@redhat.com>
+---
+ drivers/gpu/drm/tiny/ofdrm.c | 59 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 56 insertions(+), 3 deletions(-)
 
-Patch 5, which is new in version 4 of this patchset, adds support for
-big-endian scanout buffers. It works at least with qemu's ppc64
-emulation. Fbdev emulation and pixman rendering works. GL rendering
-produces incorrect colors.
-
-Tested by running fbdev emulation, Wayland Gnome, and Weston on qemu's
-ppc64le and ppc64 emulation. 
-
-Thomas Zimmermann (5):
-  drm/ofdrm: Add ofdrm for Open Firmware framebuffers
-  drm/ofdrm: Add CRTC state
-  drm/ofdrm: Add per-model device function
-  drm/ofdrm: Support color management
-  drm/ofdrm: Support big-endian scanout buffers
-
- MAINTAINERS                         |    1 +
- drivers/gpu/drm/drm_format_helper.c |   10 +
- drivers/gpu/drm/tiny/Kconfig        |   13 +
- drivers/gpu/drm/tiny/Makefile       |    1 +
- drivers/gpu/drm/tiny/ofdrm.c        | 1424 +++++++++++++++++++++++++++
- drivers/video/fbdev/Kconfig         |    1 +
- 6 files changed, 1450 insertions(+)
- create mode 100644 drivers/gpu/drm/tiny/ofdrm.c
-
+diff --git a/drivers/gpu/drm/tiny/ofdrm.c b/drivers/gpu/drm/tiny/ofdrm.c
+index 96a46078ade8..6782589ff9fa 100644
+--- a/drivers/gpu/drm/tiny/ofdrm.c
++++ b/drivers/gpu/drm/tiny/ofdrm.c
+@@ -278,6 +278,21 @@ static struct resource *ofdrm_find_fb_resource(struct ofdrm_device *odev,
+  * Modesetting
+  */
+ 
++struct ofdrm_crtc_state {
++	struct drm_crtc_state base;
++};
++
++static struct ofdrm_crtc_state *to_ofdrm_crtc_state(struct drm_crtc_state *base)
++{
++	return container_of(base, struct ofdrm_crtc_state, base);
++}
++
++static void ofdrm_crtc_state_destroy(struct ofdrm_crtc_state *ofdrm_crtc_state)
++{
++	__drm_atomic_helper_crtc_destroy_state(&ofdrm_crtc_state->base);
++	kfree(ofdrm_crtc_state);
++}
++
+ /*
+  * Support all formats of OF display and maybe more; in order
+  * of preference. The display's update function will do any
+@@ -431,13 +446,51 @@ static const struct drm_crtc_helper_funcs ofdrm_crtc_helper_funcs = {
+ 	.atomic_check = ofdrm_crtc_helper_atomic_check,
+ };
+ 
++static void ofdrm_crtc_reset(struct drm_crtc *crtc)
++{
++	struct ofdrm_crtc_state *ofdrm_crtc_state =
++		kzalloc(sizeof(*ofdrm_crtc_state), GFP_KERNEL);
++
++	if (crtc->state)
++		ofdrm_crtc_state_destroy(to_ofdrm_crtc_state(crtc->state));
++
++	if (ofdrm_crtc_state)
++		__drm_atomic_helper_crtc_reset(crtc, &ofdrm_crtc_state->base);
++	else
++		__drm_atomic_helper_crtc_reset(crtc, NULL);
++}
++
++static struct drm_crtc_state *ofdrm_crtc_atomic_duplicate_state(struct drm_crtc *crtc)
++{
++	struct drm_device *dev = crtc->dev;
++	struct drm_crtc_state *crtc_state = crtc->state;
++	struct ofdrm_crtc_state *new_ofdrm_crtc_state;
++
++	if (drm_WARN_ON(dev, !crtc_state))
++		return NULL;
++
++	new_ofdrm_crtc_state = kzalloc(sizeof(*new_ofdrm_crtc_state), GFP_KERNEL);
++	if (!new_ofdrm_crtc_state)
++		return NULL;
++
++	__drm_atomic_helper_crtc_duplicate_state(crtc, &new_ofdrm_crtc_state->base);
++
++	return &new_ofdrm_crtc_state->base;
++}
++
++static void ofdrm_crtc_atomic_destroy_state(struct drm_crtc *crtc,
++					    struct drm_crtc_state *crtc_state)
++{
++	ofdrm_crtc_state_destroy(to_ofdrm_crtc_state(crtc_state));
++}
++
+ static const struct drm_crtc_funcs ofdrm_crtc_funcs = {
+-	.reset = drm_atomic_helper_crtc_reset,
++	.reset = ofdrm_crtc_reset,
+ 	.destroy = drm_crtc_cleanup,
+ 	.set_config = drm_atomic_helper_set_config,
+ 	.page_flip = drm_atomic_helper_page_flip,
+-	.atomic_duplicate_state = drm_atomic_helper_crtc_duplicate_state,
+-	.atomic_destroy_state = drm_atomic_helper_crtc_destroy_state,
++	.atomic_duplicate_state = ofdrm_crtc_atomic_duplicate_state,
++	.atomic_destroy_state = ofdrm_crtc_atomic_destroy_state,
+ };
+ 
+ static int ofdrm_connector_helper_get_modes(struct drm_connector *connector)
 -- 
 2.37.3
 
