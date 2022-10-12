@@ -4,66 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05BA4C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 04:04:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 718F1C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 06:14:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MnJvS2TSXz3dsy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 15:04:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PqB0yhjx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PqB0yhjx;
-	dkim-atps=neutral
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MnMnS4WFbz3c4B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 17:14:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=lihuafei1@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MnJsP5l13z2xHw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 15:03:03 +1100 (AEDT)
-Received: by mail-pl1-x635.google.com with SMTP id i6so10061032pli.12
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2022 21:03:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6fsq8d8o8NqkJCmcTaHLZmccIkhkF64BPG0szpw2iUs=;
-        b=PqB0yhjx3Rg5XJ/kmvvAbowt92Uur0/5ynpFy4qrX0GE/TQXiTP17Vm5H1vUuqe/sp
-         /yhLfvsnEVLVLd6ndZs4bEtZ+UW5yElzzcBmahf4BKLl3+lgn8qAHAAdXganU2cVlEcJ
-         GH+k0FKASdSdd0qEkrhbJ+S+LJDHNtpI17qvYdug1QO+AAZp90CW/PhZlgOlScB0UM+Y
-         fCBymU4zgvJG6C68yLqQc4QhQLB1HrvK4k2cmk8I9y5eltZdKN86EwiyCkQvunclp7ws
-         2bEC7F+0LlQuagUPhAGeM9IdKzCRsf6vj5D6KrUWSZn97IJnC94kfDetqw0jRYO6x2zZ
-         CNmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6fsq8d8o8NqkJCmcTaHLZmccIkhkF64BPG0szpw2iUs=;
-        b=7w2rUlMMO3U/fSh/yteiJDgGWEqEimYIlbjZxKEtMNa+VVO6PN1m7LKKKByBtBvoHq
-         FclL5J5+mO6X9xxmQ+Mv391wguta4n3Wz0kUJiQ5nexfA4fvmIyd8oSO9feo3vNJ6eQ1
-         gCUvasoVdmE/sxcRq1G62jO3EKj8p/XdKbJL9Sde+nkP0Pn225tJWcOaou2ii4V/vnNb
-         ZL6jTX+8CgcfRW75dIHwnaPFqifKYDyiRFWwUCju0Quu/LpDoZER4wmSoQW1hRRmSXr7
-         g7vV/3tREl5IACXN2FtYaxuA4vvhUVLB5alPyVtv/chmj9grYVURxYzHQPrxChscY+nH
-         cIaQ==
-X-Gm-Message-State: ACrzQf0WcLJal4KfVwj1lNuOQ787ky43XzQ6cE1+Am/IWjauU5RDAevq
-	A2v/OjtaWoQpjtI4V9xtjxB+YkRv610=
-X-Google-Smtp-Source: AMsMyM5iSOJfmrP1vfjH33E3RZab7LJr2mI5mOKNJ1Of0Bydv/zNPlf9nlvXAvgaGA+hlK4OYoeUcg==
-X-Received: by 2002:a17:902:7043:b0:184:40e5:b5e7 with SMTP id h3-20020a170902704300b0018440e5b5e7mr2952497plt.98.1665547379126;
-        Tue, 11 Oct 2022 21:02:59 -0700 (PDT)
-Received: from bobo.ozlabs.ibm.com ([118.208.156.99])
-        by smtp.gmail.com with ESMTPSA id w11-20020a170902e88b00b0017e64da44c5sm9447140plg.203.2022.10.11.21.02.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Oct 2022 21:02:58 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/32: fix syscall wrappers with 64-bit arguments of unaligned register-pairs
-Date: Wed, 12 Oct 2022 13:53:34 +1000
-Message-Id: <20221012035335.866440-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.37.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MnMmp0QZkz2xtF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 17:14:15 +1100 (AEDT)
+Received: from dggemv704-chm.china.huawei.com (unknown [172.30.72.56])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4MnMfs3xR3zHtwG;
+	Wed, 12 Oct 2022 14:09:09 +0800 (CST)
+Received: from kwepemm600010.china.huawei.com (7.193.23.86) by
+ dggemv704-chm.china.huawei.com (10.3.19.47) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Wed, 12 Oct 2022 14:14:08 +0800
+Received: from [10.67.110.237] (10.67.110.237) by
+ kwepemm600010.china.huawei.com (7.193.23.86) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Wed, 12 Oct 2022 14:14:08 +0800
+Subject: Re: [PATCH] powerpc/kprobes: Fix null pointer reference in
+ arch_prepare_kprobe()
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, <jniethe5@gmail.com>,
+	<mpe@ellerman.id.au>
+References: <20220923093253.177298-1-lihuafei1@huawei.com>
+ <1664530538.ke6dp49pwh.naveen@linux.ibm.com>
+From: Li Huafei <lihuafei1@huawei.com>
+Message-ID: <de8e524d-02b3-c2d0-45c3-5cc1e5556660@huawei.com>
+Date: Wed, 12 Oct 2022 14:14:07 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.9.0
 MIME-Version: 1.0
+In-Reply-To: <1664530538.ke6dp49pwh.naveen@linux.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.67.110.237]
+X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
+ kwepemm600010.china.huawei.com (7.193.23.86)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,226 +57,196 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, npiggin@gmail.com, rostedt@goodmis.org, linuxppc-dev@lists.ozlabs.org, mhiramat@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc 32-bit system call (and function) calling convention for 64-bit
-arguments requires the next available odd-pair (two sequential registers
-with the first being odd-numbered) from the standard register argument
-allocation.
 
-The first argument register is r3, so a 64-bit argument that appears at
-an even position in the argument list must skip a register (unless there
-were preceeding 64-bit arguments, which might throw things off). This
-requires non-standard compat definitions to deal with the holes in the
-argument register allocation.
+On 2022/9/30 17:47, Naveen N. Rao wrote:
+> Li Huafei wrote:
+>> I found a null pointer reference in arch_prepare_kprobe():
+> 
+> Good find!
+> 
 
-With pt_regs syscall wrappers which use a standard mapper to map pt_regs
-GPRs to function arguments, 32-bit kernels hit the same basic problem,
-the standard definitions don't cope with the unused argument registers.
+Hi Naveen,
 
-Fix this by having 32-bit kernels share those syscall definitions with
-compat.
+Thank you for the review.
 
-Thanks to Jason for spending a lot of time finding and bisecting this and
-developing a trivial reproducer. The perfect bug report.
+>>
+>>   # echo 'p cmdline_proc_show' > kprobe_events
+>>   # echo 'p cmdline_proc_show+16' >> kprobe_events
+> 
+> I think we should extend multiple_kprobes selftest to also place
+> contiguous probes to catch such errors.
+> 
+Yes. But each architecture implementation is different and it looks a
+little difficult to decide which offsets need to be tested.
 
-Reported-by: Jason A. Donenfeld <Jason@zx2c4.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Since posting the patch in the bug thread:
-- dropped sync_file_range2 from the ppc32 syscalls.
-- updated some comments on sys_ppc32.c, which now has a different
-  purpose.
-- still have not explicitly tested all convrted syscalls on ppc32
-  (I don't have a great ppc32 environment to test such things,
-  will have to try rectify that...).
-- Build fixes from mpe.
-- Thanks to jms and mpe for helping with debugging.
+>>   [   67.278533][  T122] Kernel attempted to read user page (0) -
+>> exploitattempt? (uid: 0)
+>>   [   67.279326][  T122] BUG: Kernel NULL pointer dereference on read
+>> at 0x00000000
+>>   [   67.279738][  T122] Faulting instruction address: 0xc000000000050bfc
+>>   [   67.280486][  T122] Oops: Kernel access of bad area, sig: 11 [#1]
+>>   [   67.280846][  T122] LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048
+>> NUMA PowerNV
+>>   [   67.281435][  T122] Modules linked in:
+>>   [   67.281903][  T122] CPU: 0 PID: 122 Comm: sh Not tainted
+>> 6.0.0-rc3-00007-gdcf8e5633e2e #10
+>>   [   67.282547][  T122] NIP:  c000000000050bfc LR: c000000000050bec
+>> CTR:0000000000005bdc
+>>   [   67.282920][  T122] REGS: c0000000348475b0 TRAP: 0300   Not
+>> tainted (6.0.0-rc3-00007-gdcf8e5633e2e)
+>>   [   67.283424][  T122] MSR:  9000000000009033
+>> <SF,HV,EE,ME,IR,DR,RI,LE> CR: 88002444  XER: 20040006
+>>   [   67.284023][  T122] CFAR: c00000000022d100 DAR: 0000000000000000
+>> DSISR: 40000000 IRQMASK: 0
+>>   [   67.284023][  T122] GPR00: c000000000050bec c000000034847850
+>> c0000000013f6100 c000000001fb7718
+>>   [   67.284023][  T122] GPR04: c000000000515c10 c000000000e5fe08
+>> c00000000133da60 c000000004839300
+>>   [   67.284023][  T122] GPR08: c0000000014ffb98 0000000000000000
+>> c000000000515c0c c000000000e18576
+>>   [   67.284023][  T122] GPR12: c000000000e60170 c0000000015a0000
+>> 00000001155e0460 0000000000000000
+>>   [   67.284023][  T122] GPR16: 0000000000000000 00007fffe8eeb3c8
+>> 0000000116320728 0000000000000000
+>>   [   67.284023][  T122] GPR20: 0000000116320720 0000000000000000
+>> c0000000012fa918 0000000000000006
+>>   [   67.284023][  T122] GPR24: c0000000014ffb98 c0000000011ed360
+>> 0000000000000000 c000000001fb7928
+>>   [   67.284023][  T122] GPR28: 0000000000000000 0000000000000000
+>> 000000007c0802a6 c000000001fb7918
+>>   [   67.287799][  T122] NIP [c000000000050bfc]
+>> arch_prepare_kprobe+0x10c/0x2d0
+>>   [   67.288490][  T122] LR [c000000000050bec]
+>> arch_prepare_kprobe+0xfc/0x2d0
+>>   [   67.289025][  T122] Call Trace:
+>>   [   67.289268][  T122] [c000000034847850] [c0000000012f77a0]
+>> 0xc0000000012f77a0 (unreliable)
+>>   [   67.289999][  T122] [c0000000348478d0] [c000000000231320]
+>> register_kprobe+0x3c0/0x7a0
+>>   [   67.290439][  T122] [c000000034847940] [c0000000002938c0]
+>> __register_trace_kprobe+0x140/0x1a0
+>>   [   67.290898][  T122] [c0000000348479b0] [c0000000002944c4]
+>> __trace_kprobe_create+0x794/0x1040
+>>   [   67.291330][  T122] [c000000034847b60] [c0000000002a1614]
+>> trace_probe_create+0xc4/0xe0
+>>   [   67.291717][  T122] [c000000034847bb0] [c00000000029363c]
+>> create_or_delete_trace_kprobe+0x2c/0x80
+>>   [   67.292158][  T122] [c000000034847bd0] [c000000000264420]
+>> trace_parse_run_command+0xf0/0x210
+>>   [   67.292611][  T122] [c000000034847c70] [c0000000002934a0]
+>> probes_write+0x20/0x40
+>>   [   67.292996][  T122] [c000000034847c90] [c00000000045e98c]
+>> vfs_write+0xfc/0x450
+>>   [   67.293356][  T122] [c000000034847d50] [c00000000045eec4]
+>> ksys_write+0x84/0x140
+>>   [   67.293716][  T122] [c000000034847da0] [c00000000002e4fc]
+>> system_call_exception+0x17c/0x3a0
+>>   [   67.294186][  T122] [c000000034847e10] [c00000000000c0e8]
+>> system_call_vectored_common+0xe8/0x278
+>>   [   67.294680][  T122] --- interrupt: 3000 at 0x7fffa5682de0
+>>   [   67.294937][  T122] NIP:  00007fffa5682de0 LR: 0000000000000000
+>> CTR:0000000000000000
+>>   [   67.295313][  T122] REGS: c000000034847e80 TRAP: 3000   Not
+>> tainted (6.0.0-rc3-00007-gdcf8e5633e2e)
+>>   [   67.295725][  T122] MSR:  900000000280f033
+>> <SF,HV,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 44002408  XER: 00000000
+>>   [   67.296291][  T122] IRQMASK: 0
+>>   [   67.296291][  T122] GPR00: 0000000000000004 00007fffe8eeaec0
+>> 00007fffa5757300 0000000000000001
+>>   [   67.296291][  T122] GPR04: 0000000116329c60 0000000000000017
+>> 0000000000116329 0000000000000000
+>>   [   67.296291][  T122] GPR08: 0000000000000006 0000000000000000
+>> 0000000000000000 0000000000000000
+>>   [   67.296291][  T122] GPR12: 0000000000000000 00007fffa580ac60
+>> 00000001155e0460 0000000000000000
+>>   [   67.296291][  T122] GPR16: 0000000000000000 00007fffe8eeb3c8
+>> 0000000116320728 0000000000000000
+>>   [   67.296291][  T122] GPR20: 0000000116320720 0000000000000000
+>> 0000000000000000 0000000000000002
+>>   [   67.296291][  T122] GPR24: 00000001163206f0 0000000000000020
+>> 00007fffe8eeafa0 0000000000000001
+>>   [   67.296291][  T122] GPR28: 0000000000000000 0000000000000017
+>> 0000000116329c60 0000000000000001
+>>   [   67.299570][  T122] NIP [00007fffa5682de0] 0x7fffa5682de0
+>>   [   67.299837][  T122] LR [0000000000000000] 0x0
+>>   [   67.300072][  T122] --- interrupt: 3000
+>>   [   67.300447][  T122] Instruction dump:
+>>   [   67.300736][  T122] 386319d8 481342f5 60000000 60000000 60000000
+>> e87f0028 3863fffc 481dc4d1
+>>   [   67.301230][  T122] 60000000 2c230000 41820018 e9230058
+>> <81290000> 552936be 2c090001 4182018c
+>>   [   67.302102][  T122] ---[ end trace 0000000000000000 ]---
+>>   [   67.302496][  T122]
+> 
+> Please consider trimming the backtrace to only capture the necessary
+> information:
+> https://docs.kernel.org/process/submitting-patches.html#backtraces-in-commit-mesages
+> 
+> 
+Thank you for the reminder. Michael has modified it when merging in,
+thanks Michael.
 
-Thanks,
-Nick
-
- arch/powerpc/include/asm/syscalls.h      | 16 ++++++++++
- arch/powerpc/kernel/Makefile             |  1 +
- arch/powerpc/kernel/sys_ppc32.c          | 38 ++++++++++++++++++------
- arch/powerpc/kernel/syscalls/syscall.tbl | 16 ++++++----
- 4 files changed, 56 insertions(+), 15 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 9840d572da55..a1142496cd58 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -89,6 +89,22 @@ long compat_sys_rt_sigreturn(void);
-  * responsible for combining parameter pairs.
-  */
- 
-+#ifdef CONFIG_PPC32
-+long sys_ppc_pread64(unsigned int fd,
-+		     char __user *ubuf, compat_size_t count,
-+		     u32 reg6, u32 pos1, u32 pos2);
-+long sys_ppc_pwrite64(unsigned int fd,
-+		      const char __user *ubuf, compat_size_t count,
-+		      u32 reg6, u32 pos1, u32 pos2);
-+long sys_ppc_readahead(int fd, u32 r4,
-+		       u32 offset1, u32 offset2, u32 count);
-+long sys_ppc_truncate64(const char __user *path, u32 reg4,
-+		        unsigned long len1, unsigned long len2);
-+long sys_ppc_ftruncate64(unsigned int fd, u32 reg4,
-+			 unsigned long len1, unsigned long len2);
-+long sys_ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
-+			 size_t len, int advice);
-+#endif
- #ifdef CONFIG_COMPAT
- long compat_sys_mmap2(unsigned long addr, size_t len,
- 		      unsigned long prot, unsigned long flags,
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 1f121c188805..d382564034a7 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -73,6 +73,7 @@ obj-y				:= cputable.o syscalls.o \
- obj-y				+= ptrace/
- obj-$(CONFIG_PPC64)		+= setup_64.o irq_64.o\
- 				   paca.o nvram_64.o note.o
-+obj-$(CONFIG_PPC32)		+= sys_ppc32.o
- obj-$(CONFIG_COMPAT)		+= sys_ppc32.o signal_32.o
- obj-$(CONFIG_VDSO32)		+= vdso32_wrapper.o
- obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
-diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
-index dcc3c9fd4cfd..6bdfe11a7689 100644
---- a/arch/powerpc/kernel/sys_ppc32.c
-+++ b/arch/powerpc/kernel/sys_ppc32.c
-@@ -1,13 +1,23 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- * sys_ppc32.c: Conversion between 32bit and 64bit native syscalls.
-+ * sys_ppc32.c: 32-bit system calls with complex calling conventions.
-  *
-  * Copyright (C) 2001 IBM
-  * Copyright (C) 1997,1998 Jakub Jelinek (jj@sunsite.mff.cuni.cz)
-  * Copyright (C) 1997 David S. Miller (davem@caip.rutgers.edu)
-  *
-- * These routines maintain argument size conversion between 32bit and 64bit
-- * environment.
-+ * 32-bit system calls with 64-bit arguments pass those in register pairs.
-+ * This must be specially dealt with on 64-bit kernels. The compat_arg_u64_dual
-+ * in generic compat syscalls is not always usable because the register
-+ * pairing is constrained depending on preceeding arguments.
-+ *
-+ * An analogous problem exists on 32-bit kernels with ARCH_HAS_SYSCALL_WRAPPER,
-+ * the defined system call functions take the pt_regs as an argument, and there
-+ * is a mapping macro which maps registers to arguments
-+ * (SC_POWERPC_REGS_TO_ARGS) which also does not deal with these 64-bit
-+ * arguments.
-+ *
-+ * This file contains these system calls.
-  */
- 
- #include <linux/kernel.h>
-@@ -47,7 +57,17 @@
- #include <asm/syscalls.h>
- #include <asm/switch_to.h>
- 
--COMPAT_SYSCALL_DEFINE6(ppc_pread64,
-+#ifdef CONFIG_PPC32
-+#define PPC32_SYSCALL_DEFINE4	SYSCALL_DEFINE4
-+#define PPC32_SYSCALL_DEFINE5	SYSCALL_DEFINE5
-+#define PPC32_SYSCALL_DEFINE6	SYSCALL_DEFINE6
-+#else
-+#define PPC32_SYSCALL_DEFINE4	COMPAT_SYSCALL_DEFINE4
-+#define PPC32_SYSCALL_DEFINE5	COMPAT_SYSCALL_DEFINE5
-+#define PPC32_SYSCALL_DEFINE6	COMPAT_SYSCALL_DEFINE6
-+#endif
-+
-+PPC32_SYSCALL_DEFINE6(ppc_pread64,
- 		       unsigned int, fd,
- 		       char __user *, ubuf, compat_size_t, count,
- 		       u32, reg6, u32, pos1, u32, pos2)
-@@ -55,7 +75,7 @@ COMPAT_SYSCALL_DEFINE6(ppc_pread64,
- 	return ksys_pread64(fd, ubuf, count, merge_64(pos1, pos2));
- }
- 
--COMPAT_SYSCALL_DEFINE6(ppc_pwrite64,
-+PPC32_SYSCALL_DEFINE6(ppc_pwrite64,
- 		       unsigned int, fd,
- 		       const char __user *, ubuf, compat_size_t, count,
- 		       u32, reg6, u32, pos1, u32, pos2)
-@@ -63,28 +83,28 @@ COMPAT_SYSCALL_DEFINE6(ppc_pwrite64,
- 	return ksys_pwrite64(fd, ubuf, count, merge_64(pos1, pos2));
- }
- 
--COMPAT_SYSCALL_DEFINE5(ppc_readahead,
-+PPC32_SYSCALL_DEFINE5(ppc_readahead,
- 		       int, fd, u32, r4,
- 		       u32, offset1, u32, offset2, u32, count)
- {
- 	return ksys_readahead(fd, merge_64(offset1, offset2), count);
- }
- 
--COMPAT_SYSCALL_DEFINE4(ppc_truncate64,
-+PPC32_SYSCALL_DEFINE4(ppc_truncate64,
- 		       const char __user *, path, u32, reg4,
- 		       unsigned long, len1, unsigned long, len2)
- {
- 	return ksys_truncate(path, merge_64(len1, len2));
- }
- 
--COMPAT_SYSCALL_DEFINE4(ppc_ftruncate64,
-+PPC32_SYSCALL_DEFINE4(ppc_ftruncate64,
- 		       unsigned int, fd, u32, reg4,
- 		       unsigned long, len1, unsigned long, len2)
- {
- 	return ksys_ftruncate(fd, merge_64(len1, len2));
- }
- 
--COMPAT_SYSCALL_DEFINE6(ppc32_fadvise64,
-+PPC32_SYSCALL_DEFINE6(ppc32_fadvise64,
- 		       int, fd, u32, unused, u32, offset1, u32, offset2,
- 		       size_t, len, int, advice)
- {
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index 2bca64f96164..e9e0df4f9a61 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -228,8 +228,10 @@
- 176	64	rt_sigtimedwait			sys_rt_sigtimedwait
- 177	nospu 	rt_sigqueueinfo			sys_rt_sigqueueinfo		compat_sys_rt_sigqueueinfo
- 178	nospu 	rt_sigsuspend			sys_rt_sigsuspend		compat_sys_rt_sigsuspend
--179	common	pread64				sys_pread64			compat_sys_ppc_pread64
--180	common	pwrite64			sys_pwrite64			compat_sys_ppc_pwrite64
-+179	32	pread64				sys_ppc_pread64			compat_sys_ppc_pread64
-+179	64	pread64				sys_pread64
-+180	32	pwrite64			sys_ppc_pwrite64		compat_sys_ppc_pwrite64
-+180	64	pwrite64			sys_pwrite64
- 181	common	chown				sys_chown
- 182	common	getcwd				sys_getcwd
- 183	common	capget				sys_capget
-@@ -242,10 +244,11 @@
- 188	common 	putpmsg				sys_ni_syscall
- 189	nospu	vfork				sys_vfork
- 190	common	ugetrlimit			sys_getrlimit			compat_sys_getrlimit
--191	common	readahead			sys_readahead			compat_sys_ppc_readahead
-+191	32	readahead			sys_ppc_readahead		compat_sys_ppc_readahead
-+191	64	readahead			sys_readahead
- 192	32	mmap2				sys_mmap2			compat_sys_mmap2
--193	32	truncate64			sys_truncate64			compat_sys_ppc_truncate64
--194	32	ftruncate64			sys_ftruncate64			compat_sys_ppc_ftruncate64
-+193	32	truncate64			sys_ppc_truncate64		compat_sys_ppc_truncate64
-+194	32	ftruncate64			sys_ppc_ftruncate64		compat_sys_ppc_ftruncate64
- 195	32	stat64				sys_stat64
- 196	32	lstat64				sys_lstat64
- 197	32	fstat64				sys_fstat64
-@@ -288,7 +291,8 @@
- 230	common	io_submit			sys_io_submit			compat_sys_io_submit
- 231	common	io_cancel			sys_io_cancel
- 232	nospu	set_tid_address			sys_set_tid_address
--233	common	fadvise64			sys_fadvise64			compat_sys_ppc32_fadvise64
-+233	32	fadvise64			sys_ppc32_fadvise64		compat_sys_ppc32_fadvise64
-+233	64	fadvise64			sys_fadvise64
- 234	nospu	exit_group			sys_exit_group
- 235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
- 236	common	epoll_create			sys_epoll_create
--- 
-2.37.2
-
+>>
+>> The address being probed has some special:
+>>
+>>   cmdline_proc_show: Probe based on ftrace
+>>   cmdline_proc_show+16: Probe for the next instruction at the ftrace
+>> location
+>>
+>> The ftrace-based kprobe does not generate kprobe::ainsn::insn, it gets
+>> set to NULL. In arch_prepare_kprobe() it will check for:
+>>
+>>   ...
+>>   prev = get_kprobe(p->addr - 1);
+>>   preempt_enable_no_resched();
+>>   if (prev && ppc_inst_prefixed(ppc_inst_read(prev->ainsn.insn))) {
+>>   ...
+>>
+>> If prev is based on ftrace, 'ppc_inst_read(prev->ainsn.insn)' will occur
+>> with a null pointer reference. At this point prev->addr will not be a
+>> prefixed instruction, so the check can be skipped.
+>>
+>> Check if prev is ftrace-based kprobe before reading 'prev->ainsn.insn'
+>> to fix this problem.
+>>
+>> Fixes: b4657f7650ba ("powerpc/kprobes: Don't allow breakpoints on
+>> suffixes")
+>> Signed-off-by: Li Huafei <lihuafei1@huawei.com>
+>> ---
+>>  arch/powerpc/kernel/kprobes.c | 7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/kprobes.c
+>> b/arch/powerpc/kernel/kprobes.c
+>> index 912d4f8a13be..9f6cbbd56809 100644
+>> --- a/arch/powerpc/kernel/kprobes.c
+>> +++ b/arch/powerpc/kernel/kprobes.c
+>> @@ -161,7 +161,12 @@ int arch_prepare_kprobe(struct kprobe *p)
+>>      preempt_disable();
+>>      prev = get_kprobe(p->addr - 1);
+>>      preempt_enable_no_resched();
+>> -    if (prev && ppc_inst_prefixed(ppc_inst_read(prev->ainsn.insn))) {
+>> +    /*
+>> +     * When prev is a ftrace-based kprobe, we don't have an insn, and it
+>> +     * doesn't probe for prefixed instruction.
+>> +     */
+>> +    if (prev && !kprobe_ftrace(prev) &&
+>> +        ppc_inst_prefixed(ppc_inst_read(prev->ainsn.insn))) {
+>>          printk("Cannot register a kprobe on the second word of
+>> prefixed instruction\n");
+>>          ret = -EINVAL;
+>>      }
+> 
+> It's fine to keep the if condition on a single line.
+> 
+> Other than that, thanks for the fix!
+> Reviewed-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> 
+> 
+> - Naveen
+> 
+> .
