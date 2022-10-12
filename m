@@ -4,65 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C514C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Oct 2022 21:39:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33C4EC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 04:04:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mn8M54f30z2xyB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 08:39:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MnJtR32R4z3c2v
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 15:03:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wC/hF1Ny;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TuFbMswD;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=iES0p44t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wC/hF1Ny;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=TuFbMswD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=iES0p44t;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mn8L053pvz2xtF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 08:38:48 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out2.suse.de (Postfix) with ESMTP id AF61F1FCF3;
-	Tue, 11 Oct 2022 21:38:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1665524323; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HT6Li+iF0Huei/eJnoHamNCOr9aOW9HkL2tj0lBESgY=;
-	b=wC/hF1Ny/hJY1jVHKsfExaX1+zfDSb84W4lZvBkL+iDBhyznquBZjNxSyD9cZMmCysJGlG
-	eLJjFboUoFgxjA53maP3cgAQ9cgMM7URWuOtal12f5VFZwGgu34cVl07FXWdLCdgGsFrpf
-	56vveVxG5mDY9Q/vF3X46n70Jj1HjtA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1665524323;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=HT6Li+iF0Huei/eJnoHamNCOr9aOW9HkL2tj0lBESgY=;
-	b=TuFbMswDOmZrTi3o8o5XH75BlGDCDWOHBFECy7skP9CenomkVYx40wAF/SE46A1oZgE16J
-	oRs90C7DUPM6StAw==
-Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id 979B32C141;
-	Tue, 11 Oct 2022 21:38:42 +0000 (UTC)
-Date: Tue, 11 Oct 2022 23:38:41 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-Message-ID: <20221011213841.GA28810@kitsune.suse.cz>
-References: <20220928105010.18880-1-tzimmermann@suse.de>
- <20220928105010.18880-6-tzimmermann@suse.de>
- <23333ff7-3ae1-494f-7abe-62da6698fd00@redhat.com>
- <83071743-a7f2-f761-baa3-da688f26b5e3@suse.de>
- <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MnJsP5pRbz2xtF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Oct 2022 15:03:04 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id l4so15118885plb.8
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Oct 2022 21:03:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=czJrj/731IUlvmoVQv8+EB2Iw53LGmAfM1eDO+tGk7M=;
+        b=iES0p44tkSov9mAQ1iwQeEwpr2WkeblkbjINuFVKjky5j6OVDtjIw+qJGpJkj4GP8i
+         FH611H9QnYI08XmUCVQwJ2aeSG5tr7pIHacCDmmhEtlvxDBX/3N5b6Iw/K1oq2Te/Ao7
+         +j1Nnew2r3dsykbSC+IuMYOQL5O9eck+407s6FKCqKqj52tcfOlAtEIHogdvwfLQlgiZ
+         6tY7fxncDNzG98hqSaycSP2axlJu9ANZDWWxQQnlBGF+QANONdl+yTOy+ADlK73FTTbf
+         jnA5vdH5y6sRcaiL3ENT4RSSrQ6PBRMFigpOSYhfEfwG+tCadQGRuosqLV1m/dZpsDSG
+         SQ0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=czJrj/731IUlvmoVQv8+EB2Iw53LGmAfM1eDO+tGk7M=;
+        b=s+0zJyn5kwP3jwK/TX7lfgj8PfJjh3xjutR4qr+4lVSVyJXjYmY3hjDRuzC9+sh3GR
+         1RAft3KpA/GwZS3ae8S490Zl/k+L7L177mjXEdfm0iIX6xPjML53odWi0kW6IqmmyZJY
+         lblWjOgKBbZ1Cd9eKjV2TW0+XiO3C+8vay+Ws5WUQsQgV1fe1A7pRF1FNnPzNAPBu3Ag
+         ihw58luH/jjsiJDYc9bpBvhv5mrcRhhQ/nOU14lYKsJ6mNSY3mH4GKNgcERo9dwgeKJe
+         7NH47yFJpunMP+MPWs3dV4vYjc8OU6jRNW4f05kdF+VKLLteC7ejpg571NcpoynuxiIc
+         NRrg==
+X-Gm-Message-State: ACrzQf06FqwwCWHbchR7AVTHdfl7Mh1ztFZ5Bbk/b/1aAJZB1MThGteH
+	gLi0NB9HK4FWji2yhqTvebGM5DUv3xU=
+X-Google-Smtp-Source: AMsMyM6JAMDkk1mgKqWJTfLjoP/PnCxAvDYWQXI5XV2hCQf3Y4hBbP+IDI8dUxvwb1E0D9U8j9YEhA==
+X-Received: by 2002:a17:902:f60b:b0:178:6a49:d4e3 with SMTP id n11-20020a170902f60b00b001786a49d4e3mr28200346plg.75.1665547382565;
+        Tue, 11 Oct 2022 21:03:02 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com ([118.208.156.99])
+        by smtp.gmail.com with ESMTPSA id w11-20020a170902e88b00b0017e64da44c5sm9447140plg.203.2022.10.11.21.02.59
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 11 Oct 2022 21:03:01 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc: move sync_file_range2 compat definition
+Date: Wed, 12 Oct 2022 13:53:35 +1000
+Message-Id: <20221012035335.866440-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20221012035335.866440-1-npiggin@gmail.com>
+References: <20221012035335.866440-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,62 +78,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, David Airlie <airlied@linux.ie>, Helge Deller <deller@gmx.de>, linuxppc-dev@lists.ozlabs.org, mark.cave-ayland@ilande.co.uk, Javier Martinez Canillas <javierm@redhat.com>, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, maxime@cerno.tech, Daniel Vetter <daniel@ffwll.ch>, Geert Uytterhoeven <geert@linux-m68k.org>, sam@ravnborg.org
+Cc: "Jason A . Donenfeld" <Jason@zx2c4.com>, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 11, 2022 at 10:06:59PM +0200, Arnd Bergmann wrote:
-> On Tue, Oct 11, 2022, at 1:30 PM, Thomas Zimmermann wrote:
-> > Am 11.10.22 um 09:46 schrieb Javier Martinez Canillas:
-> >>> +static bool display_get_big_endian_of(struct drm_device *dev, struct device_node *of_node)
-> >>> +{
-> >>> +	bool big_endian;
-> >>> +
-> >>> +#ifdef __BIG_ENDIAN
-> >>> +	big_endian = true;
-> >>> +	if (of_get_property(of_node, "little-endian", NULL))
-> >>> +		big_endian = false;
-> >>> +#else
-> >>> +	big_endian = false;
-> >>> +	if (of_get_property(of_node, "big-endian", NULL))
-> >>> +		big_endian = true;
-> >>> +#endif
-> >>> +
-> >>> +	return big_endian;
-> >>> +}
-> >>> +
-> >> 
-> >> Ah, I see. The heuristic then is whether the build is BE or LE or if the Device
-> >> Tree has an explicit node defining the endianess. The patch looks good to me:
-> >
-> > Yes. I took this test from offb.
-> 
-> Has the driver been tested with little-endian kernels though? While
-> ppc32 kernels are always BE, you can build kernels as either big-endian
-> or little-endian for most (modern) powerpc64 and arm/arm64 hardware,
-> and I don't see why that should change the defaults of the driver
-> when describing the same framebuffer hardware.
+sync_file_range2 is not a special unaligned-odd-pair calling convention
+syscall, it's just a regular one that does not have a generic compat
+definition. Move it out of sys_ppc32.c and into syscalls.c.
 
-The original code was added with
-commit 7f29b87a7779 ("powerpc: offb: add support for foreign endianness")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+This one doesn't fix anything and is not required for the previous
+fix, so it could be merged later. Now that we've repurposed sys_ppc32.c
+for the difficult syscalls and compat syscalls live all over the kernel
+now anyway, IMO it's makes things less confusing to move this.
 
-The hardware is either big-endian or runtime-switchable-endian. It makes
-sense to assume big-endian when runnig big-endian and the DT does not
-specify endian which is likely on a historical system.
+Thanks,
+Nick
 
-It also makes sense to assume that on system with
-runtime-switchable-endian the DT specifies the framebuffer endian.
+ arch/powerpc/include/asm/syscalls.h | 23 ++++++++++++-----------
+ arch/powerpc/kernel/sys_ppc32.c     | 11 -----------
+ arch/powerpc/kernel/syscalls.c      | 11 +++++++++++
+ 3 files changed, 23 insertions(+), 22 deletions(-)
 
-If systems that only do little-endian exist or emerge later then it also
-makes sense to assume that the framebuffer matches the host if not
-specified.
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index a1142496cd58..810ce45d670b 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -79,8 +79,20 @@ long compat_sys_old_getrlimit(unsigned int resource,
+ 			      struct compat_rlimit __user *rlim);
+ long compat_sys_sigreturn(void);
+ long compat_sys_rt_sigreturn(void);
++long compat_sys_ppc_sync_file_range2(int fd, unsigned int flags,
++				     unsigned int offset1,
++				     unsigned int offset2,
++				     unsigned int nbytes1,
++				     unsigned int nbytes2);
+ #endif /* CONFIG_COMPAT */
+ 
++#if defined(CONFIG_PPC32) || defined(CONFIG_COMPAT)
++long sys_ppc_fadvise64_64(int fd, int advice,
++			  u32 offset_high, u32 offset_low,
++			  u32 len_high, u32 len_low);
++#endif
++
++
+ /*
+  * Architecture specific signatures required by long long munging:
+  * The 32 bit ABI passes long longs in an odd even register pair.
+@@ -123,19 +135,8 @@ long compat_sys_ppc_ftruncate64(unsigned int fd, u32 reg4,
+ 				unsigned long len1, unsigned long len2);
+ long compat_sys_ppc32_fadvise64(int fd, u32 unused, u32 offset1, u32 offset2,
+ 				size_t len, int advice);
+-long compat_sys_ppc_sync_file_range2(int fd, unsigned int flags,
+-				     unsigned int offset1,
+-				     unsigned int offset2,
+-				     unsigned int nbytes1,
+-				     unsigned int nbytes2);
+ #endif /* CONFIG_COMPAT */
+ 
+-#if defined(CONFIG_PPC32) || defined(CONFIG_COMPAT)
+-long sys_ppc_fadvise64_64(int fd, int advice,
+-			  u32 offset_high, u32 offset_low,
+-			  u32 len_high, u32 len_low);
+-#endif
+-
+ #else
+ 
+ #define __SYSCALL_WITH_COMPAT(nr, native, compat)	__SYSCALL(nr, native)
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 6bdfe11a7689..53927abcda82 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -111,14 +111,3 @@ PPC32_SYSCALL_DEFINE6(ppc32_fadvise64,
+ 	return ksys_fadvise64_64(fd, merge_64(offset1, offset2), len,
+ 				 advice);
+ }
+-
+-COMPAT_SYSCALL_DEFINE6(ppc_sync_file_range2,
+-		       int, fd, unsigned int, flags,
+-		       unsigned int, offset1, unsigned int, offset2,
+-		       unsigned int, nbytes1, unsigned int, nbytes2)
+-{
+-	loff_t offset = merge_64(offset1, offset2);
+-	loff_t nbytes = merge_64(nbytes1, nbytes2);
+-
+-	return ksys_sync_file_range(fd, offset, nbytes, flags);
+-}
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index 68ebb23a5af4..8bdc41879045 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -97,6 +97,17 @@ COMPAT_SYSCALL_DEFINE1(ppc64_personality, unsigned long, personality)
+ {
+ 	return do_ppc64_personality(personality);
+ }
++
++COMPAT_SYSCALL_DEFINE6(ppc_sync_file_range2,
++		       int, fd, unsigned int, flags,
++		       unsigned int, offset1, unsigned int, offset2,
++		       unsigned int, nbytes1, unsigned int, nbytes2)
++{
++	loff_t offset = merge_64(offset1, offset2);
++	loff_t nbytes = merge_64(nbytes1, nbytes2);
++
++	return ksys_sync_file_range(fd, offset, nbytes, flags);
++}
+ #endif /* CONFIG_COMPAT */
+ #endif /* CONFIG_PPC64 */
+ 
+-- 
+2.37.2
 
-I don't really see a problem here.
-
-BTW is this used on arm and on what platform?
-
-I do not see any bindings in dts.
-
-Thanks
-
-Michal
