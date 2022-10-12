@@ -4,36 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 444BDC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 11:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A95CDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Oct 2022 21:29:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mp6yG3Nhrz3dyv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 22:40:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=strlen.de (client-ip=2a0a:51c0:0:12e:520::1; helo=chamillionaire.breakpoint.cc; envelope-from=fw@strlen.de; receiver=<UNKNOWN>)
-X-Greylist: delayed 2560 seconds by postgrey-1.36 at boromir; Thu, 13 Oct 2022 21:59:35 AEDT
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc [IPv6:2a0a:51c0:0:12e:520::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mnm5B1L28z3dtV
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 08:29:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.86.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=<UNKNOWN>)
+Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.86.151])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mp63W6XhQz2xtF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 21:59:35 +1100 (AEDT)
-Received: from fw by Chamillionaire.breakpoint.cc with local (Exim 4.92)
-	(envelope-from <fw@strlen.de>)
-	id 1oivGV-00028B-QF; Thu, 13 Oct 2022 12:16:35 +0200
-Date: Thu, 13 Oct 2022 12:16:35 +0200
-From: Florian Westphal <fw@strlen.de>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Subject: Re: [PATCH v6 5/7] treewide: use get_random_u32() when possible
-Message-ID: <20221013101635.GB11818@breakpoint.cc>
-References: <20221010230613.1076905-1-Jason@zx2c4.com>
- <20221010230613.1076905-6-Jason@zx2c4.com>
- <3026360.ZldQQBzMgz@eto.sf-tec.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mnm4V5JvXz2yQg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 08:29:12 +1100 (AEDT)
+Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
+ uk-mta-269-WPghBqosPyeNkdeVSYELTw-1; Wed, 12 Oct 2022 22:29:04 +0100
+X-MC-Unique: WPghBqosPyeNkdeVSYELTw-1
+Received: from AcuMS.Aculab.com (10.202.163.6) by AcuMS.aculab.com
+ (10.202.163.6) with Microsoft SMTP Server (TLS) id 15.0.1497.38; Wed, 12 Oct
+ 2022 22:29:02 +0100
+Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
+ id 15.00.1497.040; Wed, 12 Oct 2022 22:29:02 +0100
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Joe Perches' <joe@perches.com>, "Jason A. Donenfeld" <Jason@zx2c4.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v1 3/5] treewide: use get_random_u32() when possible
+Thread-Topic: [PATCH v1 3/5] treewide: use get_random_u32() when possible
+Thread-Index: AQHY3m9QJDmwhr5XuUa4Hi/RfD23ja4LRXVg
+Date: Wed, 12 Oct 2022 21:29:02 +0000
+Message-ID: <d45bd258e033453b85a137112e7694e1@AcuMS.aculab.com>
+References: <20221005214844.2699-1-Jason@zx2c4.com>
+	 <20221005214844.2699-4-Jason@zx2c4.com>
+ <f8ad3ba44d28dec1a5f7626b82c5e9c2aeefa729.camel@perches.com>
+In-Reply-To: <f8ad3ba44d28dec1a5f7626b82c5e9c2aeefa729.camel@perches.com>
+Accept-Language: en-GB, en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.202.205.107]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3026360.ZldQQBzMgz@eto.sf-tec.de>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Mailman-Approved-At: Thu, 13 Oct 2022 22:37:49 +1100
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: aculab.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,17 +60,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-wireless@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-nvme@lists.infradead.org, patches@lists.linux.dev, linux-mm@kvack.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, linux-rdma@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com, linux-mips@vger.kernel.org, linux-media@vger.kernel.org, linux-um@lists.infradead.org, linux-block@vger.kernel.org, Thomas Graf <tgraf@suug.ch>, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-sctp@vger.kernel.org" <linux-sctp@vger.kernel.org>, "target-devel@vger.kernel.org" <target-devel@vger.kernel.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, "drbd-dev@lists.linbit.com" <drbd-dev@lists.linbit.com>, "dev@openvswitch.org" <dev@openvswitch.org>, "rds-devel@oss.oracle.com" <rds-devel@oss.oracle.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "dccp@vger.kernel.org" <dccp@vger.kernel.org>, "linux-rdma@vger.kernel.org" <linux-rdma@vger.kernel.org>, "kasan-dev@googlegroups.com" <kasan-dev@googlegroups.com>, "lvs-devel@vger.kernel.org" <lvs-devel@vger.kernel.o
+ rg>, "SHA-cyfmac-dev-list@infineon.com" <SHA-cyfmac-dev-list@infineon.com>, "coreteam@netfilter.org" <coreteam@netfilter.org>, "netfilter-devel@vger.kernel.org" <netfilter-devel@vger.kernel.org>, "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, "linux-actions@lists.infradead.org" <linux-actions@lists.infradead.org>, "brcm80211-dev-list.pdl@broadcom.com" <brcm80211-dev-list.pdl@broadcom.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-nvme@lists.infradead.org" <linux-nvme@lists.infradead.org>, "linux-hams@vger.kernel.org" <linux-hams@vger.kernel.org>, "ceph-devel@vger.kernel.org" <ceph-devel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "cake@lists.bufferbloat.net" <cake@lists.bufferbloat.net>, "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>, "linux-raid@vger.kernel.o
+ rg" <linux-raid@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "linux-f2fs-devel@lists.sourceforge.net" <linux-f2fs-devel@lists.sourceforge.net>, "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>, "tipc-discussion@lists.sourceforge.net" <tipc-discussion@lists.sourceforge.net>, "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rolf Eike Beer <eike-kernel@sf-tec.de> wrote:
-> Florian, can you comment and maybe fix it?
+From: Joe Perches
+> Sent: 12 October 2022 20:17
+>=20
+> On Wed, 2022-10-05 at 23:48 +0200, Jason A. Donenfeld wrote:
+> > The prandom_u32() function has been a deprecated inline wrapper around
+> > get_random_u32() for several releases now, and compiles down to the
+> > exact same code. Replace the deprecated wrapper with a direct call to
+> > the real function.
+> []
+> > diff --git a/drivers/infiniband/hw/cxgb4/cm.c b/drivers/infiniband/hw/c=
+xgb4/cm.c
+> []
+> > @@ -734,7 +734,7 @@ static int send_connect(struct c4iw_ep *ep)
+> >  =09=09=09=09   &ep->com.remote_addr;
+> >  =09int ret;
+> >  =09enum chip_type adapter_type =3D ep->com.dev->rdev.lldi.adapter_type=
+;
+> > -=09u32 isn =3D (prandom_u32() & ~7UL) - 1;
+> > +=09u32 isn =3D (get_random_u32() & ~7UL) - 1;
+>=20
+> trivia:
+>=20
+> There are somewhat odd size mismatches here.
+>=20
+> I had to think a tiny bit if random() returned a value from 0 to 7
+> and was promoted to a 64 bit value then truncated to 32 bit.
+>=20
+> Perhaps these would be clearer as ~7U and not ~7UL
 
-Can't comment, do not remember -- this was 5 years ago.
+That makes no difference - the compiler will generate the same code.
 
-> Or you wanted to move the variable before the loop and keep the random state
-> between the loops and only reseed when all '1' bits have been consumed.
+The real question is WTF is the code doing?
+The '& ~7u' clears the bottom 3 bits.
+The '- 1' then sets the bottom 3 bits and decrements the
+(random) high bits.
 
-Probably.  No clue, best to NOT change it to not block Jasons series and
-then just simplify this and remove all the useless shifts.
+So is the same as get_random_u32() | 7.
+But I bet the coder had something else in mind.
+
+=09David
+
+-
+Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
+PT, UK
+Registration No: 1397386 (Wales)
+
