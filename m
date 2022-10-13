@@ -4,69 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF0A3C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 11:39:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 444BDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 11:40:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mp6xg3qSWz3dtW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 22:39:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=k4/rn0ND;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=ville.syrjala@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=k4/rn0ND;
-	dkim-atps=neutral
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mp6yG3Nhrz3dyv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Oct 2022 22:40:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=strlen.de (client-ip=2a0a:51c0:0:12e:520::1; helo=chamillionaire.breakpoint.cc; envelope-from=fw@strlen.de; receiver=<UNKNOWN>)
+X-Greylist: delayed 2560 seconds by postgrey-1.36 at boromir; Thu, 13 Oct 2022 21:59:35 AEDT
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc [IPv6:2a0a:51c0:0:12e:520::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MnbRS5GKBz3bjX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 02:00:03 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1665586804; x=1697122804;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=p5FnZ4+f6pmWst9wSfrEJB9i2nRqQShtidpftxEjnbE=;
-  b=k4/rn0NDF0J2cHR0rRdy3Ww4lzeVFJz5efWFGMon6C1w+0h0EAASwG9Z
-   x8YKSDWYjfxpOE5jE2aylmCjcnTTGNqpJikbgSrTQ/CJ5O929q1O+iGOj
-   JQ0MRSPqIfXDfe7LrXI6XyMwE5o3Eed9a9OSXJjC4sXzh1Tgm8B61wLX6
-   A0uFfHjjZQq03w/nu0egityXuLJkARoNH8TkHtecY4vcpArAY3uM9EdDZ
-   KMlEyM/thwN5+YqF2X8ksGNHdVHWO/4ZJXCVInDPHmW/B8VUBajmGL8dh
-   osBjnzbQtnbkR/6U62Y4l9Yz9C3jGoRHTe12xhwrOp+nhxOEHRzItDodw
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10497"; a="331308573"
-X-IronPort-AV: E=Sophos;i="5.95,179,1661842800"; 
-   d="scan'208";a="331308573"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2022 07:59:51 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10497"; a="731455010"
-X-IronPort-AV: E=Sophos;i="5.95,179,1661842800"; 
-   d="scan'208";a="731455010"
-Received: from stinkpipe.fi.intel.com (HELO stinkbox) ([10.237.72.191])
-  by fmsmga002.fm.intel.com with SMTP; 12 Oct 2022 07:59:46 -0700
-Received: by stinkbox (sSMTP sendmail emulation); Wed, 12 Oct 2022 17:59:45 +0300
-Date: Wed, 12 Oct 2022 17:59:45 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Subject: Re: [PATCH v4 5/5] drm/ofdrm: Support big-endian scanout buffers
-Message-ID: <Y0bWYb0z1HZ2PztG@intel.com>
-References: <9162f41f-28c3-493c-ab54-b1c4a2fdf494@app.fastmail.com>
- <fda959d7-1bae-716f-f01b-66d9db9096e0@suse.de>
- <654e3cfe-80d7-46c9-8e5e-461846e4df35@app.fastmail.com>
- <866c7033-0d4e-7b5d-008c-8eb16f99498b@suse.de>
- <f26ca6a1-feb1-4822-ac96-bc484b22f8a0@app.fastmail.com>
- <c80a6e2d-a3b9-8186-cc95-97c4775171ed@suse.de>
- <fc33ebf7-ecb7-4686-ac31-0118a40595f6@app.fastmail.com>
- <0a15ecf5-939d-3b00-bcde-0fc7b449cfda@suse.de>
- <76d8a408-fc3e-4bd1-91c5-8278f7469979@app.fastmail.com>
- <a81e1acf-64dd-f69d-d97f-4a1af534e8e6@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mp63W6XhQz2xtF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 21:59:35 +1100 (AEDT)
+Received: from fw by Chamillionaire.breakpoint.cc with local (Exim 4.92)
+	(envelope-from <fw@strlen.de>)
+	id 1oivGV-00028B-QF; Thu, 13 Oct 2022 12:16:35 +0200
+Date: Thu, 13 Oct 2022 12:16:35 +0200
+From: Florian Westphal <fw@strlen.de>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Subject: Re: [PATCH v6 5/7] treewide: use get_random_u32() when possible
+Message-ID: <20221013101635.GB11818@breakpoint.cc>
+References: <20221010230613.1076905-1-Jason@zx2c4.com>
+ <20221010230613.1076905-6-Jason@zx2c4.com>
+ <3026360.ZldQQBzMgz@eto.sf-tec.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a81e1acf-64dd-f69d-d97f-4a1af534e8e6@suse.de>
-X-Patchwork-Hint: comment
+In-Reply-To: <3026360.ZldQQBzMgz@eto.sf-tec.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-Mailman-Approved-At: Thu, 13 Oct 2022 22:37:49 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -79,44 +45,17 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, David Airlie <airlied@linux.ie>, Helge Deller <deller@gmx.de>, linuxppc-dev@lists.ozlabs.org, mark.cave-ayland@ilande.co.uk, Javier Martinez Canillas <javierm@redhat.com>, dri-devel@lists.freedesktop.org, Paul Mackerras <paulus@samba.org>, Maxime Ripard <maxime@cerno.tech>, Daniel Vetter <daniel@ffwll.ch>, Geert Uytterhoeven <geert@linux-m68k.org>, Michal Suchanek <msuchanek@suse.de>, sam@ravnborg.org
+Cc: linux-wireless@vger.kernel.org, "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-nvme@lists.infradead.org, patches@lists.linux.dev, linux-mm@kvack.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, linux-rdma@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com, linux-mips@vger.kernel.org, linux-media@vger.kernel.org, linux-um@lists.infradead.org, linux-block@vger.kernel.org, Thomas Graf <tgraf@suug.ch>, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Florian Westphal <fw@strlen.de>, linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 12, 2022 at 04:31:14PM +0200, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 12.10.22 um 15:12 schrieb Arnd Bergmann:
-> > On Wed, Oct 12, 2022, at 2:00 PM, Thomas Zimmermann wrote:
-> >>
-> >> Could well be. But ofdrm intents to replace offb and this test has
-> >> worked well in offb for almost 15 yrs. If there are bug reports, I'm
-> >> happy to take patches, but until then I see no reason to change it.
-> > 
-> > I wouldn't change the code in offb unless a user reports a bug,
-> > but I don't see a point in adding the same mistake to ofdrm if we
-> > know it can't work on real hardware.
-> 
-> As I said, this has worked with offb and apparently on real hardware. 
-> For all I know, ATI hardware (before it became AMD) was used in PPC 
-> Macintoshs and assumed big-endian access on those machines.
+Rolf Eike Beer <eike-kernel@sf-tec.de> wrote:
+> Florian, can you comment and maybe fix it?
 
-At least mach64 class hardware has two frame buffer apertures, and
-byte swapping can be configured separately for each. But that means
-you only get correct byte swapping for at most two bpps at the same
-time (and that only if you know which aperture to access each time).
-IIRC Rage 128 already has the surface register stuff where you
-could byte swap a limited set of ranges independently. And old
-mga hardware has just one byte swap setting for the whole frame
-buffer aperture, so only one bpp at a time.
+Can't comment, do not remember -- this was 5 years ago.
 
-That kind of horrible limitations of the byte swappers is the
-main reason why I wanted to make drm fourcc endianness explicit.
-Simply assuming host endianness would end in tears on big endian
-as soon as you need to access stuff with two bpps at the same time.
-Much better to just switch off those useless byte swappers and
-swap by hand when necessary.
+> Or you wanted to move the variable before the loop and keep the random state
+> between the loops and only reseed when all '1' bits have been consumed.
 
--- 
-Ville Syrjälä
-Intel
+Probably.  No clue, best to NOT change it to not block Jasons series and
+then just simplify this and remove all the useless shifts.
