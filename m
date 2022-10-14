@@ -4,66 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2045CC43217
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 15:59:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FBA8C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 16:00:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mprgb2jPSz3cdy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Oct 2022 02:59:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mprhb53Kpz3dtW
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Oct 2022 03:00:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=m5i1o0Ap;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=de2qcklm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ventanamicro.com (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=ajones@ventanamicro.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ventanamicro.com (client-ip=2a00:1450:4864:20::530; helo=mail-ed1-x530.google.com; envelope-from=ajones@ventanamicro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=m5i1o0Ap;
+	dkim=pass (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=de2qcklm;
 	dkim-atps=neutral
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+Received: from mail-ed1-x530.google.com (mail-ed1-x530.google.com [IPv6:2a00:1450:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MprfW509jz3c74
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MprfW4tTCz3c6r
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Oct 2022 02:58:57 +1100 (AEDT)
-Received: by mail-ej1-x629.google.com with SMTP id d26so11445830ejc.8
+Received: by mail-ed1-x530.google.com with SMTP id a67so7403185edf.12
         for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2022 08:58:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=ventanamicro.com; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=W5eO6i8yGqM/Qk/helghde+sK2B6uuy7iGWdi59LQv0=;
-        b=m5i1o0Ap34XB2wlP21XgYIqsVDRRQOqNgXMX5tJzWsaI6hGrAZN9MXRzGc93zF2XPA
-         8L/SLRgslFncCk0nXLKfro+LvVAuBiIJEkGi+kku5MAuwTr4Av+VkPDyus9j5yCxKY0e
-         YOtAgl4m9DWHQK3UYRyVu1beWyQGVeOVcZD55vwQwp4fSb0QhgMCnZzRu0uhrRUo1Tvq
-         XZgdlHZK3gCz7g4TIGW4i3ZvbPG7Gm3XysvcL00yJwc2GO4L3l9DhN608jkbddOb/W9j
-         f6nCuDr1Hx3UpL7i6FB65/PdJkLsqhTn6pdhYB+vtA5dMZT/TwoMfVhWXkBkx0/mc7XG
-         dKSg==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=XBIOqGjmdzThiZsnnbTdUiYSPQXS/qp/QRUJHndogxY=;
+        b=de2qcklml8jKYdhJlyXqmJXoz8FYGzMVRLfN9JcOUqf4UOLuKCrWZr59qwP/CI15i8
+         9ZEYt9iqHJUORqeLDasCpf2TvKXJ2eNiOMML8Fk+bz7YKFJbV57Ez3yS2OMYxbifi8aU
+         80V2z5mOPzJ5j+SPiaK/ExtA7pvzSXkVFgQy9BgPDzmgfE18Klp1ebv/IKnNb6TVl3x7
+         K0gO3P8T9E6LTR2oS1WZnI3pbS2vkD6iCSFlqd/rinFyB9u6Ftb/GsYDL097UX4vn1na
+         X5w9kGup7pabQp9pwZ84Krxhofd+fyywuWkx0d61FPGLmHqmWuc2PbVNpdjodZPMfLJV
+         6NYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=W5eO6i8yGqM/Qk/helghde+sK2B6uuy7iGWdi59LQv0=;
-        b=OP9lFS930HnkcH/T51E3HrBgHPmNzytzexwE1F8ApeRQp5JZFig6CLVJ1NfqEBTTnK
-         0Tf2xfjdkp0Px/aLeIzo7ikc3ZAKx+Q4XjdQ3rp1lpqZcxJaQtlnTcs21hi4k4muuEWw
-         An9YhvEwq+pNQlvYExxTjATMfv2KTEk/657hxs/D/LIAXKYmPASX03ewwsCWJnCJul7j
-         MQZ64cnmaFs0ktdZSFN/Vw4rgmm5/l4Ex9DbOao7arI2uptqNBlxh9DrxzRC/E3oBwAp
-         njR9Y+o+2W+k1xc7Ha9dr+qVFYE+jvLmAYmQ2nSiEO+GyNZiXm14K6c4IXmDeJK3SD9o
-         5vBA==
-X-Gm-Message-State: ACrzQf3Z+RqH7nw1YyZFINVxYqxobPwVX5DMB8bIExok0hah08ZvNV0U
-	0B8Eq8DPUbAqxc9KvR8yZu+f5w==
-X-Google-Smtp-Source: AMsMyM7W6+fPu+mWcsl2mA5mLUmVxJY6ZAokGeJNv3DvlB68CliPDKXds+EoUBatPkHWx2Y7U7pt8g==
-X-Received: by 2002:a17:907:94c9:b0:78d:3544:ff0a with SMTP id dn9-20020a17090794c900b0078d3544ff0amr3984138ejc.386.1665763126950;
-        Fri, 14 Oct 2022 08:58:46 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XBIOqGjmdzThiZsnnbTdUiYSPQXS/qp/QRUJHndogxY=;
+        b=2YiYsGeS9LD8hObW7cE5SMagjdieXejUa7G+9bDyFqGXefYvWzKxxO/xN839f7hfco
+         m6SEof4mIaAgKdFhby7kjng9QZ/TF0N1pDsNvYypf9jsx2qsyMxcS32TtbkSvNtDjxt6
+         sHPjf0lf+X8/QhW8JrTOSJ91lniDAPwu4DEY00hOWFl7HbZ06Y4Ux8Eh6YsuxBpUD1dd
+         M7ENeuJ3Mb/woqElJFiK3ES6S3TigShMEdboTyC7oTR/GuKia61S698SvTz3fIHgdZs6
+         14g1EZS1hesrXhC8/3Moe1ufx43MUVhmiP+/I33nJw4bQJOOwMsUAtBvU87RL4xRRnT3
+         Sg8A==
+X-Gm-Message-State: ACrzQf34TYj+ap3bACZdkkel7R3CvHet4AKrVQbSCylcZM4YdSmGkPSc
+	SRCiy/4YEYkC/TNlMupNbSo0Ng==
+X-Google-Smtp-Source: AMsMyM7AeOygOXkM1z/GTKaGU+3a1Uh1fQyGWBmDx0oj1luEK/7mcX83iQG4d2XLgbn9xXhJP10WDg==
+X-Received: by 2002:a05:6402:3485:b0:45c:d688:6848 with SMTP id v5-20020a056402348500b0045cd6886848mr4672473edc.279.1665763129826;
+        Fri, 14 Oct 2022 08:58:49 -0700 (PDT)
 Received: from localhost (cst2-173-61.cust.vodafone.cz. [31.30.173.61])
-        by smtp.gmail.com with ESMTPSA id z5-20020a170906944500b007262a5e2204sm1693950ejx.153.2022.10.14.08.58.46
+        by smtp.gmail.com with ESMTPSA id 12-20020a170906300c00b0077a1dd3e7b7sm1746796ejz.102.2022.10.14.08.58.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Oct 2022 08:58:46 -0700 (PDT)
+        Fri, 14 Oct 2022 08:58:49 -0700 (PDT)
 From: Andrew Jones <ajones@ventanamicro.com>
 To: x86@kernel.org,
 	linux-riscv@lists.infradead.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH v3 0/2] Fix /proc/cpuinfo cpumask warning
-Date: Fri, 14 Oct 2022 17:58:43 +0200
-Message-Id: <20221014155845.1986223-1-ajones@ventanamicro.com>
+Subject: [PATCH v3 2/2] x86: Fix /proc/cpuinfo cpumask warning
+Date: Fri, 14 Oct 2022 17:58:45 +0200
+Message-Id: <20221014155845.1986223-3-ajones@ventanamicro.com>
 X-Mailer: git-send-email 2.37.3
+In-Reply-To: <20221014155845.1986223-1-ajones@ventanamicro.com>
+References: <20221014155845.1986223-1-ajones@ventanamicro.com>
 MIME-Version: 1.0
 Content-type: text/plain
 Content-Transfer-Encoding: 8bit
@@ -96,41 +99,33 @@ start and next seq operations implement a pattern like
           break;
       show(n);
   }
-    
-which will issue the warning when reading /proc/cpuinfo.
+
+which will issue the warning when reading /proc/cpuinfo. Ensure no
+warning is generated by validating the cpu index before calling
+cpumask_next().
 
 [*] Warnings will only appear with DEBUG_PER_CPU_MAPS enabled.
 
-This series address the issue for x86 and riscv, but from a quick
-grep of cpuinfo seq operations, I think at least openrisc, powerpc,
-and s390 also need an equivalent patch. While the test is simple (see
-next paragraph) I'm not equipped to test on each architecture.
-
-To test, just build a kernel with DEBUG_PER_CPU_MAPS enabled, boot to
-a shell, do 'cat /proc/cpuinfo', and look for a kernel warning.
-
-While the patches are being posted together in a series since they're
-for two different architectures they don't necessarily need to go
-through the same tree.
-
-v3:
-  - Change condition from >= to == in order to still get a warning
-    for > as that's unexpected. [Yury]
-  - Picked up tags on the riscv patch
-
-v2:
-  - Added all the information I should have in the first place
-    to the commit message [Boris]
-  - Changed style of fix [Boris]
-
-Andrew Jones (2):
-  RISC-V: Fix /proc/cpuinfo cpumask warning
-  x86: Fix /proc/cpuinfo cpumask warning
-
- arch/riscv/kernel/cpu.c    | 3 +++
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Cc: Yury Norov <yury.norov@gmail.com>
+---
  arch/x86/kernel/cpu/proc.c | 3 +++
- 2 files changed, 6 insertions(+)
+ 1 file changed, 3 insertions(+)
 
+diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
+index 099b6f0d96bd..de3f93ac6e49 100644
+--- a/arch/x86/kernel/cpu/proc.c
++++ b/arch/x86/kernel/cpu/proc.c
+@@ -153,6 +153,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 
+ static void *c_start(struct seq_file *m, loff_t *pos)
+ {
++	if (*pos == nr_cpu_ids)
++		return NULL;
++
+ 	*pos = cpumask_next(*pos - 1, cpu_online_mask);
+ 	if ((*pos) < nr_cpu_ids)
+ 		return &cpu_data(*pos);
 -- 
 2.37.3
 
