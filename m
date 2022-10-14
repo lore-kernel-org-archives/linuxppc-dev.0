@@ -4,70 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3371C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 00:23:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCAA6C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 03:08:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MpRtm30l4z3f3P
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 11:23:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MpWYp6QVKz3dsK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Oct 2022 14:08:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=lOjwKHTB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=j/614PaH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=lOjwKHTB;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=j/614PaH;
 	dkim-atps=neutral
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MpRnZ1pCRz3drM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2022 11:18:42 +1100 (AEDT)
-Received: by mail-pj1-x1032.google.com with SMTP id cl1so3352596pjb.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 17:18:42 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MpWXh6QC2z3bj8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Oct 2022 14:07:48 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id c24so3576527plo.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Oct 2022 20:07:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=4Ht4DDfk0IlevsHoueEEzscu1HrfR9JzCfeWIl90Nsc=;
-        b=lOjwKHTBEUu31/ubyikFBa93sskjUu68zqrBMv920Ul1kr2bUq3UwJmJauOunLXMQ/
-         xNqya9ggQ414743TSvhzxc6wRkCyp2qr/wOTwCVVXWPwI4aOY2DDh8rpl2Wy5JFqUnB8
-         3mlEpk2RrcHSClpdwsAn+IOhXlTQV5wIZFfl7HOhutwbLCrvJwz2iSDatcbjvpzqvDfk
-         Mbg1zuY9jxBX4BDvJtqnZkTUb8gjIoCV7h+MQPL8ypoZ7fV0HrVOyg9yuaD2qM0l6/yn
-         TER+q7vhytS8zwrJheoWq2qzSGyJWddhxhOtKqY881DmGsr96xM8jpJBVA/G1KQHCC95
-         SFKg==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=m+Py/OynLN1dc8/m6hIl6sKvHR1UkBmJQ1rYnYYoA5U=;
+        b=j/614PaHkXRd3CET+x2nqVS9ejGjQy8Gc2cbJtaW+7hZJAwpRZH53tcFxwyaYS359X
+         WD7hOm8MplhAYJAZ6Vfi7K9a8R8oWF8L+kLgG+BPkXTtf8hBw6JMVGTxp1p6f2n/uo1g
+         LGdqAoPOlzkAeSTmTIngn81jxngB/EFNHx2qIpC92peZkqjmy/jK+Ti2NZAovbj4XAVT
+         jFUDUC6gNvB97cOvYSmLM3dTYd3GBYnxSfCdboe7TEyDy/b9+Hz+Y10Qz+C9JRjRbnZu
+         Xum7IRROXu/s2ub3w4moU/6N2c9QtzJ1ReuciNxKcx8TvpuNLTGduo6BI3x/h1lHHly5
+         WlJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=4Ht4DDfk0IlevsHoueEEzscu1HrfR9JzCfeWIl90Nsc=;
-        b=al0WdJs5bB4e6vuPEpc1jOXBm1UavpHFr0Mf18RI9UK2lTLW+Mhbc0pj2qAS/9Eobq
-         eVxgn+O2Z31BVKi6tjYuUckiEYWBdzaKHEjCsXmHZkkBql8Nm3i3lQuIVXQ9BpZ6ElF2
-         ZkzKz9zI+qTRsEdkgFYpzqyAMsNSxRXDC4htgY6rT9GOUcE7IqXhacA6zvEhjUwwTyGM
-         SCW+qp8ns+PZ1SS48TTyZCzKgwBrKpd89aP9C6fvhunknKdWfwIVYvT5Tbcu7i0iyaWW
-         5ppXhOpngIavUlhAATi74ppV4zuJNaCzJtyOVOzg6xoVorc5UwQhOxCe0VbtxrpVxx9G
-         bfWQ==
-X-Gm-Message-State: ACrzQf39rwSQ9Oh1n87O1zKiGvr3o1uYbjG5sqoueLgmvht2tyOKQn7w
-	qliw5rxTZFr7zYM8uL0mKcU=
-X-Google-Smtp-Source: AMsMyM5XMAT+0ThPLH+AynVDh7FWux96Aayw+U/jCDptAJJSthOju6CkhL2qqbkNmH4Fhb9u9q17ug==
-X-Received: by 2002:a17:903:11c7:b0:178:afa2:43fd with SMTP id q7-20020a17090311c700b00178afa243fdmr2285174plh.126.1665706720097;
-        Thu, 13 Oct 2022 17:18:40 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
-        by smtp.gmail.com with ESMTPSA id l10-20020a170902f68a00b0017834a6966csm400431plg.176.2022.10.13.17.18.39
+        bh=m+Py/OynLN1dc8/m6hIl6sKvHR1UkBmJQ1rYnYYoA5U=;
+        b=s0DOCGynEbdWizKOf+0M7dgxA1gSczGQEvOZ1c+qipGgvws1heh/rDQwEYT7ciY1GK
+         M+hlktMnlZASaxsIMoN98IQZt6EMiDG8gwkSPB6zEgCO6WpsUD8qE/UdaMOKsLjBjG7d
+         v/hdqjwG98HtssNDjtTwYPu9nVEnLN5d+WhmM11KtB2Hhn6PZ1MWXgDnnGh2NJ3T6uwD
+         LHAAM/BM2FKmRTEAQKJQIP1Axz/40p0s2G+85ws6YXqeqb14e5iigPyUGGF0OzeWwLH5
+         xYnqJZMVFfClYtBo4eGwYYlr01SdE0Xt2RONT66Hd7zoM6VnwqB86XVRTVVaxotABPY0
+         4lqA==
+X-Gm-Message-State: ACrzQf3Q8HKCFAb/BLi/j13BiD4xJHtcNMMXxAo1yL+t3E+SEsluOP4f
+	Mn38LNHg49nrN7n/7JSTMghrtubhnyc=
+X-Google-Smtp-Source: AMsMyM6GHplyGin/d1ZaoRUEiASfYqmtXAJkCSAxlw/0oCKBWPN9VJhR+uVTRw9EHAwdTviR85Af1g==
+X-Received: by 2002:a17:903:1105:b0:178:ae31:aad with SMTP id n5-20020a170903110500b00178ae310aadmr3068687plh.3.1665716866263;
+        Thu, 13 Oct 2022 20:07:46 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com ([1.146.77.96])
+        by smtp.gmail.com with ESMTPSA id ij4-20020a170902ab4400b0017f8edd3d8asm523443plb.177.2022.10.13.20.07.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Oct 2022 17:18:39 -0700 (PDT)
-Date: Thu, 13 Oct 2022 17:18:38 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 3/3] powerpc/64s: make linear_map_hash_lock a raw spinlock
-Message-ID: <20221014001838.GF412544@roeck-us.net>
-References: <20221013230710.1987253-1-npiggin@gmail.com>
- <20221013230710.1987253-3-npiggin@gmail.com>
+        Thu, 13 Oct 2022 20:07:45 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/2] powerpc/64/interrupt: Prevent NMI PMI causing a dangerous warning
+Date: Fri, 14 Oct 2022 13:07:29 +1000
+Message-Id: <20221014030729.2077151-3-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20221014030729.2077151-1-npiggin@gmail.com>
+References: <20221014030729.2077151-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221013230710.1987253-3-npiggin@gmail.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,67 +78,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Miehlbradt <nicholas@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Oct 14, 2022 at 09:07:10AM +1000, Nicholas Piggin wrote:
-> This lock is taken while the raw kfence_freelist_lock is held, so it
-> must also be a raw spinlock, as reported by lockdep when raw lock
-> nesting checking is enabled.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+NMI PMIs really should not return using the normal interrupt_return
+function. If such a PMI hits in code returning to user with the context
+switched to user mode, this warning can fire. This was enough to cause
+crashes when reproducing on 64s, because another perf interrupt would
+hit while reporting bug, and that would cause another bug, and so on
+until smashing the stack.
 
-Tested-by: Guenter Roeck <linux@roeck-us.net>
+Work around that particular crash for now by just disabling that context
+warning for PMIs. This is a hack and not a complete fix, there could be
+other such problems lurking in corners. But it does fix the known crash.
 
-> ---
->  arch/powerpc/mm/book3s64/hash_utils.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
-> index df008edf7be0..6df4c6d38b66 100644
-> --- a/arch/powerpc/mm/book3s64/hash_utils.c
-> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
-> @@ -1981,7 +1981,7 @@ long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
->  }
->  
->  #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KFENCE)
-> -static DEFINE_SPINLOCK(linear_map_hash_lock);
-> +static DEFINE_RAW_SPINLOCK(linear_map_hash_lock);
->  
->  static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
->  {
-> @@ -2005,10 +2005,10 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
->  				    mmu_linear_psize, mmu_kernel_ssize);
->  
->  	BUG_ON (ret < 0);
-> -	spin_lock(&linear_map_hash_lock);
-> +	raw_spin_lock(&linear_map_hash_lock);
->  	BUG_ON(linear_map_hash_slots[lmi] & 0x80);
->  	linear_map_hash_slots[lmi] = ret | 0x80;
-> -	spin_unlock(&linear_map_hash_lock);
-> +	raw_spin_unlock(&linear_map_hash_lock);
->  }
->  
->  static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
-> @@ -2018,14 +2018,14 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
->  	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
->  
->  	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
-> -	spin_lock(&linear_map_hash_lock);
-> +	raw_spin_lock(&linear_map_hash_lock);
->  	if (!(linear_map_hash_slots[lmi] & 0x80)) {
-> -		spin_unlock(&linear_map_hash_lock);
-> +		raw_spin_unlock(&linear_map_hash_lock);
->  		return;
->  	}
->  	hidx = linear_map_hash_slots[lmi] & 0x7f;
->  	linear_map_hash_slots[lmi] = 0;
-> -	spin_unlock(&linear_map_hash_lock);
-> +	raw_spin_unlock(&linear_map_hash_lock);
->  	if (hidx & _PTEIDX_SECONDARY)
->  		hash = ~hash;
->  	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-> -- 
-> 2.37.2
-> 
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/exceptions-64e.S |  7 +++++++
+ arch/powerpc/kernel/exceptions-64s.S |  7 +++++++
+ arch/powerpc/kernel/interrupt.c      | 12 +++++++++---
+ 3 files changed, 23 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 930e36099015..2f68fb2ee4fc 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -813,6 +813,13 @@ kernel_dbg_exc:
+ 	EXCEPTION_COMMON(0x260)
+ 	CHECK_NAPPING()
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
++	/*
++	 * XXX: Returning from performance_monitor_exception taken as a
++	 * soft-NMI (Linux irqs disabled) may be risky to use interrupt_return
++	 * and could cause bugs in return or elsewhere. That case should just
++	 * restore registers and return. There is a workaround for one known
++	 * problem in interrupt_exit_kernel_prepare().
++	 */
+ 	bl	performance_monitor_exception
+ 	b	interrupt_return
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 5381a43e50fe..7ca55ac7bb87 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -2357,6 +2357,13 @@ EXC_VIRT_END(performance_monitor, 0x4f00, 0x20)
+ EXC_COMMON_BEGIN(performance_monitor_common)
+ 	GEN_COMMON performance_monitor
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
++	/*
++	 * XXX: Returning from performance_monitor_exception taken as a
++	 * soft-NMI (Linux irqs disabled) may be risky to use interrupt_return
++	 * and could cause bugs in return or elsewhere. That case should just
++	 * restore registers and return. There is a workaround for one known
++	 * problem in interrupt_exit_kernel_prepare().
++	 */
+ 	bl	performance_monitor_exception
+ 	b	interrupt_return_srr
+ 
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index f9db0a172401..7bc93367de68 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -374,10 +374,16 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
+ 	if (regs_is_unrecoverable(regs))
+ 		unrecoverable_exception(regs);
+ 	/*
+-	 * CT_WARN_ON comes here via program_check_exception,
+-	 * so avoid recursion.
++	 * CT_WARN_ON comes here via program_check_exception, so avoid
++	 * recursion.
++	 *
++	 * Skip the assertion on PMIs to work around a problem caused by NMI
++	 * PMIs incorrectly taking this interrupt return path, it's possible
++	 * for this to hit after interrupt exit to user switches context to
++	 * user. See also the comment in the performance monitor handler in
++	 * exceptions-64e/s.S
+ 	 */
+-	if (TRAP(regs) != INTERRUPT_PROGRAM)
++	if (TRAP(regs) != INTERRUPT_PROGRAM && TRAP(regs) != INTERRUPT_PERFMON)
+ 		CT_WARN_ON(ct_state() == CONTEXT_USER);
+ 
+ 	kuap = kuap_get_and_assert_locked();
+-- 
+2.37.2
+
