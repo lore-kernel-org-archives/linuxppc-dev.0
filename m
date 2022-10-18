@@ -4,57 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD45AC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Oct 2022 20:47:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D6EDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Oct 2022 20:49:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MsQss1tcMz305W
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 07:47:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.219.41; helo=mail-qv1-f41.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-qv1-f41.google.com (mail-qv1-f41.google.com [209.85.219.41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MsQvv5MWhz3f2J
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 07:49:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L0kwJK1D;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+d635785a9d1969ab94fa+6995+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L0kwJK1D;
+	dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ms5KN6wl2z2xBV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2022 18:36:55 +1100 (AEDT)
-Received: by mail-qv1-f41.google.com with SMTP id i9so8837109qvu.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2022 00:36:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Mwq8mRE5qiqVJEFTV8PMaTxlxiFl0HRvXCI1ESDIAgA=;
-        b=6bv5iKb4bGjIUnOrFcPFVu6vfMRMf03XuLlXJNnyrDP0fuS5nS+dXy6UlfMU21wUII
-         wn+vL8o7DJNJi15P5U87+8cXAUFF+vcCDoySwi8X8VpxL2UEhyhX/jCof/qrnhEmdQ2o
-         zsP4A8JRTbFiE/ZhQ3ft2wB2rJGkCprfauTo5IO7i1k4GPe3quCvwoU6n5wvb/cv9QzL
-         h9wlUWNJOmSPHErJTdbVD21FiMYtb6gkU9OaSNCW6gCSJb17VjGlX1Q8tryJrsgYplCR
-         1DdNy2b4uFhTQytHe4/e7vmfydVf4KYvDAXXeAiBNKRXPBXBxW9jNTM5K7lNzuy6vQHQ
-         B5hQ==
-X-Gm-Message-State: ACrzQf2F332CYOHxoKJFgOR3zB7O4kYTZA4Piz2c+lfC16FFw/mnNQ5X
-	TfYPJU8piYD6OZvWGb5xVsi7w+El9rmtdz6z
-X-Google-Smtp-Source: AMsMyM4TO2rohnsNqn8RjbdpvaS+eeG/dGtzAOZL55Bt+p3Hp1/LkC+LSgijf7fNuYQz9+fEkL6KXQ==
-X-Received: by 2002:a0c:a9d0:0:b0:4b4:3f85:f282 with SMTP id c16-20020a0ca9d0000000b004b43f85f282mr1356936qvb.24.1666078611673;
-        Tue, 18 Oct 2022 00:36:51 -0700 (PDT)
-Received: from mail-yb1-f171.google.com (mail-yb1-f171.google.com. [209.85.219.171])
-        by smtp.gmail.com with ESMTPSA id w18-20020a05620a425200b006eeb25369e9sm1866673qko.25.2022.10.18.00.36.51
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 18 Oct 2022 00:36:51 -0700 (PDT)
-Received: by mail-yb1-f171.google.com with SMTP id 126so16010495ybw.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2022 00:36:51 -0700 (PDT)
-X-Received: by 2002:a81:848c:0:b0:356:e173:2c7a with SMTP id
- u134-20020a81848c000000b00356e1732c7amr1276352ywf.502.1666078253767; Tue, 18
- Oct 2022 00:30:53 -0700 (PDT)
-MIME-Version: 1.0
-References: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
-In-Reply-To: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 18 Oct 2022 09:30:42 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWwAgPkifAkah7MoBKBoyB4tb+HM5cgvenwNFaAfbg+UQ@mail.gmail.com>
-Message-ID: <CAMuHMdWwAgPkifAkah7MoBKBoyB4tb+HM5cgvenwNFaAfbg+UQ@mail.gmail.com>
-Subject: Re: [PATCH] mm: remove kern_addr_valid() completely
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ms63d1CHzz2yQl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2022 19:10:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=JDMMgGHS9LCKyODLO9uQrrR+709UAysRPcPI7Amnu5I=; b=L0kwJK1DnnjMw8tyn0zVMoz+EY
+	2IdplpiHntqnGfoLw4L5aFPbyXl4OPx9n/tpBwGF5wDiG6FL+r+Um3IlVMzFNgTV/m5ZcUvIlS2Ob
+	RrHxqkgyiUMQaBA5lpP3gmxEowU/lCegyk+WGXUAAEVF6HQj3gKNX2E/AQeJR9mlBt36SBb1LDzny
+	8SthHBt1duKxxVZCWmL2Ea/bbg8i/0WDdmu2vCVA21SOp/DNxrKkT+Wv/bzXP0dLWLheBOZfbgKKe
+	UaOoUUHpegGOY5zcQb7I5kXzbmzJH8PgEcu2PoJun9+uZEvGUJ6a+d3bpoO7jJKD1nPp7fZWNjihD
+	hzu7tJ0w==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1okhfO-004K9Q-CP; Tue, 18 Oct 2022 08:09:38 +0000
+Date: Tue, 18 Oct 2022 01:09:38 -0700
+From: Christoph Hellwig <hch@infradead.org>
 To: Kefeng Wang <wangkefeng.wang@huawei.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH] mm: remove kern_addr_valid() completely
+Message-ID: <Y05fQrd4TYaOnks/@infradead.org>
+References: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-Mailman-Approved-At: Wed, 19 Oct 2022 07:46:46 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -68,32 +58,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, Andy Lutomirski <luto@kernel.org>, linux-sh@vger.kernel.org, Christian Borntraeger <borntraeger@linux.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Greg Ungerer <gerg
- @linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Richard Henderson <richard.henderson@linaro.org>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, li
- nux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+ @linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Richard Henderson <richard.henderson@linaro.org>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.fr
+ anken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Oct 18, 2022 at 9:25 AM Kefeng Wang <wangkefeng.wang@huawei.com> wrote:
-> Most architectures(except arm64/x86/sparc) simply return 1 for
-> kern_addr_valid(), which is only used in read_kcore(), and it
-> calls copy_from_kernel_nofault() which could check whether the
-> address is a valid kernel address, so no need kern_addr_valid(),
-> let's remove unneeded kern_addr_valid() completely.
->
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Thanks, this is long overdue!
 
->  arch/m68k/include/asm/pgtable_mm.h        |  2 -
->  arch/m68k/include/asm/pgtable_no.h        |  1 -
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> [m68k]
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Acked-by: Christoph Hellwig <hch@lst.de>
