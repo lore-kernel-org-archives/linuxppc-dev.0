@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CD69C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Oct 2022 23:19:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 306E4C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Oct 2022 23:20:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MsVDV56w2z3f2B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 10:19:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MsVFh4lTsz3f02
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 10:20:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qaw2t0wL;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=eUxXP6NC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=40.107.8.75; helo=eur04-vi1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qaw2t0wL;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=eUxXP6NC;
 	dkim-atps=neutral
 Received: from EUR04-VI1-obe.outbound.protection.outlook.com (mail-eopbgr80075.outbound.protection.outlook.com [40.107.8.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MsV472n8Bz2xZp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2022 10:11:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MsV492bLcz2xk6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Oct 2022 10:11:53 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=a/yoBNuCdHKzCHftVbvxuLHPp84b8DgECp/gqlzhBIAAs0pN2V8Bs0XNX+RshH7WsI7+Twd3VfHuF4Bz0Pym4JGHHdK+AGarOmAhcPswf1iXWP0zB3zPGNGbu8/iN2FX0D3dAr/6Gf2Cd+N03F099FsoFQdB26jSY+slu8RTHdehBzY7H/zIBrFaPahVAjF4ca/5DdLPj/x30gtkGhS24HiPodSO6yyiFGtXwwAVHc6Lp+QoQgUEvbxYP/L2z/LCew13B+Nm4Kn0bxaiQ4W7rPAUAK9AKijE3iKZe3lmiRnxQPWLeepB23LwfEIje1pEZsVOAF5a8pLxlEJHBtkH7g==
+ b=eWmWiY6HXWF2Zwgsw8ltXkuH7sK3enJpH4cJkNH+NFHyFAvGCs0p7iIdEd5cgqy6gMHhMagVe8os0Q+APCAh+9jpRuoKTmuaeYvcD2qMwfrHmII0NJhas2br6I0/+zy+67WUVqvTmjb9xn8pmaZ7mIDEAXVdb+KHcqhgDGeq12QrIvCIv1S706l9+iy6kYY6Hwwv5ysRd1AwDirypJ8pdreR9LbJFxBCBQfTS0UBOD5RhDQxllGCF0VgVjoj7ilSp51lIdsQFtvw7PfqCUFUgK2GCD28Lpo6YLTv8uCoDD5ymADd5GT2Hyvh6e2m0OIs0N5aOfhNvDZ3+WZThoxisw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=SkYKwvMqL99mlQrVS3hHZ3x4LOcthYYfh12oDwFTxYE=;
- b=fw/3x36FZ1vB1/flDcKNT6yJwRSXZ3R7LfB8PmJ+JUGV6Zjl7ZkY/ef+SIEc1MwQoNKd8syt2eNa6stOg7o2JBC6SaAbu2gcvqp2gry40okPHuCEv8tl+ytPZVjHlM57DeQ0qS5mNMAyPPOR7fu0nLLNRFaBxzRdINhx4SEFjfULATrejIIwYhldvl0UJEzJraqclCXORhaXCXVexUKimSGTFXj9eOHOrC8PDlGT7Fmb62QxLSXD7MqaZkvdDRjC3b/NWMNPGP4iTn0qAjGMeYeaOiRbcbLNX5w+tHRxoc1mOSCDl6sMRHZR7iCr9/xh7TNtgE6616IWw0/cvF0u5g==
+ bh=1U/01l0e2dithoMlaIAqdfzbPV9jw2reG9G7wp+CC9g=;
+ b=BBrv/7WqO3zybohZg7Gjk6JzIuFLDaI4pofAyI6kztTxeTmiBlpOPtgEToNnWD9m1UI0yno0g5bHK9UyNJQ3asB9yFLsGE0lHepvhBYMVenD9P82nz6q56cd9fG0BIonySLs6vrbvCJFqtsCJxC8UVHqDpl8hVX+etoWL5ToCPDGJHhIndjjZKADZUzRQfUetdanCt+7lSVuf7MKg9xGgWof2puittxHAvpEGuwg6tugv3x4+uCAm45zkJxPd6SGWFhWU+TlIDG2uEu8L+cjghCxjRaFGBvcPX6/M/uWr9gjXj3dl33V9P4ZavVHLuwd3Ng8USUG+4GqDREAOajPww==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
  dkim=pass header.d=seco.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=SkYKwvMqL99mlQrVS3hHZ3x4LOcthYYfh12oDwFTxYE=;
- b=qaw2t0wLbWj5Fsw8uBo9xrHwR8tdoMgUJX7wEnyAENvSKJfJcmiXv3Ra0JV8YghK4ZHptOU1gdrnnmn7u0fevmKw269UlllBZYqOzwFb8tDtqETTXpDoIQcH8UyFYiaQSTjlzXCLkusj4NCKCBs+B/7IvQOuysSYGUIEaOrFhHLkSHmOz3BF95RjjWRJajV8S6HnaQqJt5tHoQ2fEnnvG/JVEgczPQvXlpGAjFp80i0TmnuMPeVkYHJOH7bTY3tnNIiTrmhnlxJtk9dg57mbZ+6mXa4eVzb8zPeHpgVCeo2IebidPlQ1KrEuwznsIh4pH8Uw52VVpUZ5ZXgMKAR84Q==
+ bh=1U/01l0e2dithoMlaIAqdfzbPV9jw2reG9G7wp+CC9g=;
+ b=eUxXP6NC6OOiEy/gDc3IdUDQ8zR549HgIw8AYCCcAr19ZP2sSHaOpmLLbtjJqZsy+FXamEkpLQLlzFgLIR6paiUyIwii/O3SaJBggCQ8I19qNuCWBLfDu+YJ1iDIG/ncWLXLNgUbIz3w+g3fsH7tkxixvCUdF8sm8TDnmelAC/7Qt3ZL76y0KrL8jNU/TdOe/Xt/4c05PaNoOtCoXmq5ygISK8smveLloyHdZW6dZmLz71evzsz85fe6d3cHw5iem4l64LRuLtMaMAVlI+nWu7PZPNKtqt4euuUiTYqy5ScNYOswbnXXoKZ7kr1cQNN7ZJeI6lOD0G35EBPRKH0NYg==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=seco.com;
 Received: from DB7PR03MB4972.eurprd03.prod.outlook.com (2603:10a6:10:7d::22)
  by DBAPR03MB6421.eurprd03.prod.outlook.com (2603:10a6:10:198::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5723.26; Tue, 18 Oct
- 2022 23:11:37 +0000
+ 2022 23:11:27 +0000
 Received: from DB7PR03MB4972.eurprd03.prod.outlook.com
  ([fe80::204a:de22:b651:f86d]) by DB7PR03MB4972.eurprd03.prod.outlook.com
  ([fe80::204a:de22:b651:f86d%6]) with mapi id 15.20.5723.034; Tue, 18 Oct 2022
- 23:11:37 +0000
+ 23:11:27 +0000
 From: Sean Anderson <sean.anderson@seco.com>
 To: Vinod Koul <vkoul@kernel.org>,
 	Kishon Vijay Abraham I <kishon@ti.com>,
 	linux-phy@lists.infradead.org
-Subject: [PATCH v7 8/8] [WIP] arm64: dts: ls1088ardb: Add serdes bindings
-Date: Tue, 18 Oct 2022 19:11:12 -0400
-Message-Id: <20221018231112.2142074-9-sean.anderson@seco.com>
+Subject: [PATCH v7 2/8] dt-bindings: phy: Add Lynx 10G phy binding
+Date: Tue, 18 Oct 2022 19:11:06 -0400
+Message-Id: <20221018231112.2142074-3-sean.anderson@seco.com>
 X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
 In-Reply-To: <20221018231112.2142074-1-sean.anderson@seco.com>
 References: <20221018231112.2142074-1-sean.anderson@seco.com>
@@ -64,51 +64,51 @@ X-ClientProxiedBy: MN2PR18CA0007.namprd18.prod.outlook.com
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: DB7PR03MB4972:EE_|DBAPR03MB6421:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6a2cd09a-579b-4e41-611d-08dab15e1b4b
+X-MS-Office365-Filtering-Correlation-Id: ce9789f2-3774-4528-c2a0-08dab15e153d
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	JaJ3M6FayGY9xZ77eh/rM/Y06uho5XRlyp+Qwtzkg3BaeCvXkX1iwgmByYBADYcS8hDLSzpAxsj3YS8c5G0dQhIlSHhVWbRjOsHalDKLCn3ZDPTAbk3RQBcLosIgOZNuuyX9AgkQbHJuwv44qYapTtNR+anWMpta4pDJ9nhdNeXzcNaimf7c2+XU4o4m8zRPYbzMTiiOZNOKh3VHRewyYc9smFHk7Je6sVYDSaupvmOaLja4T+1Ag09bFIOOeMDEO1Kp9rnHYKKAl0RTg4nTgZHXAZtU86cWwcDkqJH/8bY+cdP3eMaunJLww98gSBDQxQXKBNLrlVBe4vO1q+nEqTRhTgSg/Xm0iQhvqClhGsw1spF/p/9vhM3A3UVFl2QDwmxTDvCusNTT9UFZ/MtgWo2fWWQVuH/IOzuLD4UgqvUnQj3xMVOX+dqdm0Yc1eETodUHFlzhQknXhMAdiZspiPw4wtpovn0hGunPnYPxoH0AyOfutIdb3ln+xL5W4qg9oVMDdNdDZJqbReag+EQh6IJkbHL7rGV8naLI65bHdgAfOjgW5gPY0bjmFdRFILp12WDM9MTgcBIyjwmmfHbN7R3pQPKOOj0FonMWCFZvx5ImtuhxG35k7Vq658t6JEQg+M+AnyJ/GyM2FurzSooTZn2imY6iG5IMAkKsY6hPlQQ1j4U+DYPSG9BqoxQkzhz1XVMLzzu5KZtH4XUtYUVfgEOKxgwvutzF5r1oEBQl4R9zv5Pr/4sD5FRxA/oe4bkd
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR03MB4972.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(346002)(376002)(136003)(396003)(366004)(39840400004)(451199015)(6506007)(6512007)(110136005)(26005)(86362001)(66476007)(8676002)(38350700002)(7416002)(5660300002)(36756003)(44832011)(2906002)(8936002)(4326008)(66556008)(38100700002)(41300700001)(66946007)(83380400001)(316002)(1076003)(52116002)(6486002)(2616005)(186003)(478600001)(54906003)(6666004);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	shblc5wFqWz/1XNMPNU7pBMozChKoJzvcH8QoPjL2093sIDkESU0pWe+TJo0e0t0/mJXe8KynS83jOv/aX9Rp8xjBaNjfORg194uPACMV16D5ysTjRiUTsTr50YX0hJ/GWIOCYcSOxKeGxQ+K8KYy7UYtv0ufqAuwP+l//n4/70Cv6A169xhOadPvoSCczr3eWmx9EyiiGpqM6gpMDmVGqoApwWxbUhh4c3x4XwQ75dBTrMZ3KMUOG+CAie9MhTbR3DCzGC6OTHf3OR97UgtCX/xM5Q3moHZAM8QyLo75OAH1PgguCADUwgxrPqUW+x84OCNo7FNlN02rQ4vlz7sWbUZuaywx7Euvwl+GEJfFPlD1cc1M4V/YeYRACc3Ca9Mk0fMPjSblM4imdfUzzVdR6eFRP9K/a1A6UI7gW5n4sQtbJgm3Ak5JsaxsXJTcgk5M/S8bjFf8gBiNChQC6HpIVLRfcgralU08oIpOX++YNaAebcBCM+nqABDNWz6dZe4AWyYPXinAD57mYLgkRNRhoEkRKVACzIwGLJhmZkYB/LLYV2oeJflGzpFr+8lrmPrMVw3nSnaqa3198p/gETXSLkUA+A/yYcT2ekgcU0fIlGlyDR3WLCyOrc/ichU47Jp3jsQgISR2fxQJF4YkCxatU5SB6rURarcOvhBUxsWKrD8BVJ7SnDKmPgzQou6JPmPcMiNnO1cmy2FLlisOwxUllwL1V/uYi/Cpml+Rg/+IklyjL3luhVMpEX/H/mFOg/RQp2tGV02pkyMqQ2aRnZrGS3ABfz0YGJwodjQ21mXwN8=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB7PR03MB4972.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(346002)(376002)(136003)(396003)(366004)(39840400004)(451199015)(6506007)(6512007)(110136005)(26005)(86362001)(66476007)(8676002)(38350700002)(7416002)(5660300002)(36756003)(44832011)(2906002)(8936002)(4326008)(66556008)(38100700002)(41300700001)(66946007)(83380400001)(316002)(1076003)(52116002)(6486002)(966005)(2616005)(186003)(478600001)(54906003)(6666004);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?98trJZPTKZ3Dmcsu4HtT7uwnMdlrgCb+WZPLUJwgkHy5geKm7IUSe4WTw74A?=
- =?us-ascii?Q?Et2Esor6Gg19jL4EZQo5lncOZYGmly0MP8yHhSwir9jHK7farvJM7tmEe9kj?=
- =?us-ascii?Q?WVh7KV9gReByQqZB+o6xmQQBTF/vg+lmn1gXU3AHx/PuWqrvyHBdgkgUJ4yX?=
- =?us-ascii?Q?K8CSQTZErqpURcve50hVSeMIyfbl5aK1F2h12pmsebS0y6uAsDCk5Y/bk8ia?=
- =?us-ascii?Q?N2rxkxlyRxOoCvR7EwH3RFk1U89iGUm756HB4HOHdzgrh6uQM27NGcggZv+3?=
- =?us-ascii?Q?Lp0oQdu2v0H/DTjQ5EozGWfIcpiK0557ax0G/hoYRaq/b0cJTYq65E20T+qY?=
- =?us-ascii?Q?L0ZxoAI2+OIrxp8zLq7P7mtmKAe9BMiHIehrlCI3q3wTHO1a3TYjAO5NZD7u?=
- =?us-ascii?Q?Qi35RyMQptQzXM9cW0JWDNFU1LXcPAi/tIwD6SbwJ/JCZCS9hYzW9NGczDEB?=
- =?us-ascii?Q?83LXbWh2FBtB6aGaBBG5hVhFV8L/uMCUJ2smsjEnBmPZKjm0w/XRpNrDLtji?=
- =?us-ascii?Q?Vfczp9Avgd6v+u6OSEGYLZIjtjgQ730dlnIPahzQvqfdUuumqbGrY0obDhvP?=
- =?us-ascii?Q?VSpByL7EGbIXOBHKbgip4PYISTqOTalP35X6uIGP9QqWNhPKx429bja7U3U8?=
- =?us-ascii?Q?ucG55192xyy1gKQLOtQkLpQY9MJdV45GmC3WUanxqWnu8vLCL1W3QLxubj+D?=
- =?us-ascii?Q?PTPGSZtwMJ+9cqiUHSRmgsBw763nbmQECi4y3TmFAoh25TlWHedoZkrUy/dJ?=
- =?us-ascii?Q?BGkU0V9eqCX1UIne7Z8HuEwTxrIgwA1/JbLopAKgd6y2wrvA66tVs3w6ky6U?=
- =?us-ascii?Q?ARe2QDrUGJFl17hthUYr7fm3iHWeFj/0e4Xqjagalxccd5+xcJuRYxQCwDXz?=
- =?us-ascii?Q?BlBNibNBkC9UNpbLV18/n3qvcT1b5wS4Zbp1XDYn3HF0qdG4AUWlXNNW2Kff?=
- =?us-ascii?Q?8LBBT0LHk17FbdvCh9DYRXCMuO0g/bSS5cws8J9HWdoNris4+Vq3+n3SmvFk?=
- =?us-ascii?Q?GHw2wXexbhA9ljrO7CPKeB++cEuATxQWQfYo5wnNw6zCHwJF5Mku0a/h4dm5?=
- =?us-ascii?Q?o0w6sW9/Xj5rapLQs6n/o32hpiI0dnW/Xu7HxSRUKwHL+cjArGmWrRIIVUfs?=
- =?us-ascii?Q?KSxhnqXMoRuuWYyxR65jEuBMtmVKv1yo5ZozofWU/IIL2OVWzkdlwWEOpXj9?=
- =?us-ascii?Q?xBdh8Ha9DLuw3CIPI+myQBBbmjjZHUMfvFlbZmmvcQdw6l026Z+9pAZKO7bl?=
- =?us-ascii?Q?Ki8V5Jtvtl3qCcc+t/VTVT+xXcGd9vpzqsFWisTFfYUDgJuXVcZbeBzFlbLb?=
- =?us-ascii?Q?+fV9UTnx5+3nEWCMrOPjc5bIJhZdRTQ0gQl+q/qzuFkgDHzCAV7G57l0/Zdw?=
- =?us-ascii?Q?Tci8BxW0CH0T+kNi7DdZQJW1vC5pMrBqwa5FozV064CKuSNxeDMbU52xTcR8?=
- =?us-ascii?Q?1ocsR9Ac8FGxIPDORlSk7BI7GuXfY/SZbBEzRpPTIck59QTGlj5Ova+YaC7W?=
- =?us-ascii?Q?0Qwmaq6QMHo5zHh8dswmBeJnGYkW0PNhCm1akzuTnGPQtyoOv3S5tEiOGi1q?=
- =?us-ascii?Q?TDWOEUgJhKiGt6RehNiBYIfdY7GTnPjJm9hL2NV1KRm44tlCBm5c6KhVRLYs?=
- =?us-ascii?Q?mQ=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?Mi8nTfNaIIAcxz0FYiiYTmGkkcZVfzUVi/qcEVhoqz9XeVNTJ+lw8fTFHve0?=
+ =?us-ascii?Q?7mHxYPR+hPUVqGRes8JHHUGfJ9y5mBenY4R0lmg0lq2gBEBtqEOctpCfmVYP?=
+ =?us-ascii?Q?Du5iH7YR3edMS8X/dAam3N5fxyVPrKMmz3dZuzAPadJ3GrvzwTQNvUBWdDDv?=
+ =?us-ascii?Q?b7ZHcDVznoLT2Y0yIMlSYhzjWogl5knu3UXH3sRSj36bOIZOwzFxDL1ZO7+O?=
+ =?us-ascii?Q?qxntSytSlfXC8xRPH96OwH+4AEXuVhK050sahpLGqUj0/XwTIWDfq/1R3D3w?=
+ =?us-ascii?Q?n/lz9s+Q63py7G73RqVee6KR6jIAkR3VYFhtvnCKAGG4AASLpmd34zBlykgV?=
+ =?us-ascii?Q?mHpPaZyH2Eml5IrLdFlNeslytmbIExAt4sWtUzODhJ+wnJ9R4E1hFTUo4XXM?=
+ =?us-ascii?Q?VTt7OOSdRGAFaNg/fyan53cRb8U8Z5W1kifdsCCLTSUfMg6OKDjPW9+ZzwFp?=
+ =?us-ascii?Q?nEurWsggVzIYiu1G9Srmu0655zFGR2v588YivZwksZg/Pqk5Ph//ulZep1s1?=
+ =?us-ascii?Q?aVc0Njybi87ldjchDteVfwTS6sNICMuW4uHXRwmm+I5mvg98BTeRFZHA7n3C?=
+ =?us-ascii?Q?C0FklW2cf2TvRjyxR4TEueWLSPqTmURdweBRw2nVaKU854FxkgGXKamLaOKn?=
+ =?us-ascii?Q?Aq6JUbAgK/3fQMEsh+cvlogbd4q4+eCTry6A80NRMD8Qedjym2qA+83Pj1io?=
+ =?us-ascii?Q?cGMSTNoZPVGuVKnegNfB/JSY9OVwESuUhyfT8czySfGvd9bKjzcvRNKwVy19?=
+ =?us-ascii?Q?0NdwI/hP1+OGvHtr5peeF9DcQKyxo/YjShH+SilvL6LWzceP44OpnQLMhiJT?=
+ =?us-ascii?Q?cT4lFD92CiZ13DHQSIQTkhC0LSdOhnMQODASoG9jhUKx/2UZCKa5OUkEZhp4?=
+ =?us-ascii?Q?LFvjlVADdlqs0pBUokngrCFruprpgznwHrq/fhot8mXAzO6O4fVpNNItYz4F?=
+ =?us-ascii?Q?MGnLLf9lHV2lzTQnVFNgWTTM6U9ewZtlBtydSX5+uZf2dV6x4i9+jA+S4fDe?=
+ =?us-ascii?Q?vSitRHbZwAoiAR8xbRW2EpwH3b+g0g6KwbGqRCE8mMlpd9ZVD7GIZeyXmpla?=
+ =?us-ascii?Q?kAFKj/ZeM2jedMuwu7+jYxat3MvZix21MwkJ5y114WG0v4FGZAXhr/Cizp3v?=
+ =?us-ascii?Q?rh/eeWzzomDACh4sQZCgv2TOyxW/+RJLIoKliv6eXkvJ/TDKKgYPxb5q4+MM?=
+ =?us-ascii?Q?pXRP8A0gFtAKWKwkFow1dPY2XEOBrqke5qNX4HUaov5meD3bPAEc9L7aorwM?=
+ =?us-ascii?Q?iIH0XFuAyXQ+uHNFJaPszcKRupsnDP6Za6qlyiJqDqnigpbYRo8Co+OkItQd?=
+ =?us-ascii?Q?A5Ue17xOBZLmhWWIxXGFrVA5cG6ejBbIiWfYvrhgfDc8E+/tN4gaZcG89OYY?=
+ =?us-ascii?Q?u7ANU1h/5S7VqhcFT7F2qIaS4Qszjsrw1btzMmjzGBwwfujHWmR8g7B6LPq5?=
+ =?us-ascii?Q?2HU1dPoJXfuxdBUQQbewb//kI+pbNrioSFgpBXBOLHraQ6e3bRGZ0UvBDKwF?=
+ =?us-ascii?Q?3iaG7FWMA1Co6ufxrdOqlzXKzCu3y1sBUm2wCGf++WF2XR9GwzGZGLs2tPEh?=
+ =?us-ascii?Q?zwQc2iY9Mv4obChrbtHogoiuMkTnib9TwgqqBSrBlndtXbqmHPlmF8sOn6oq?=
+ =?us-ascii?Q?ww=3D=3D?=
 X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6a2cd09a-579b-4e41-611d-08dab15e1b4b
+X-MS-Exchange-CrossTenant-Network-Message-Id: ce9789f2-3774-4528-c2a0-08dab15e153d
 X-MS-Exchange-CrossTenant-AuthSource: DB7PR03MB4972.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Oct 2022 23:11:37.1032
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Oct 2022 23:11:26.9476
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 9AAmZlzBIr4fRD1u3LB8tcJcufu+kW0L2nsTozSc9YyWUiddYwxQBc8ypAkjn45sMi8OIiDIg3lzyrTHMcDDJw==
+X-MS-Exchange-CrossTenant-UserPrincipalName: +0LYwhg1Q+2vJrTCPMdlxeMqcR0Qt8bAKrwBdifz2J8ZyzGMfL6FWdcLyFuK8UINECEMw7/bc49jdEKiAo0f5g==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBAPR03MB6421
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -121,276 +121,307 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a first stab at adding serdes support on the LS1088A. Linux
-hangs around when the serdes is initialized if the si5341 is enabled, so
-it's commented out. The MC firmware needs to be fairly new (it must
-support DPAA2_MAC_FEATURE_PROTOCOL_CHANGE), and the DPC needs to set the
-macs to MAC_LINK_TYPE_BACKPLANE. For this reason, I think this will be
-difficult to do in a backwards-compatible manner. I have not finished
-testing this, but hopefully it can be a good starting point.
+This adds a binding for the SerDes module found on QorIQ processors.
+Each phy is a subnode of the top-level device, possibly supporting
+multiple lanes and protocols. This "thick" #phy-cells is used due to
+allow for better organization of parameters. Note that the particular
+parameters necessary to select a protocol-controller/lane combination
+vary across different SoCs, and even within different SerDes on the same
+SoC.
+
+The driver is designed to be able to completely reconfigure lanes at
+runtime. Generally, the phy consumer can select the appropriate
+protocol using set_mode.
+
+There are two PLLs, each of which can be used as the master clock for
+each lane. Each PLL has its own reference. For the moment they are
+required, because it simplifies the driver implementation. Absent
+reference clocks can be modeled by a fixed-clock with a rate of 0.
 
 Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-
+Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 ---
 
-(no changes since v4)
+Changes in v7:
+- Use double quotes everywhere in yaml
+
+Changes in v6:
+- fsl,type -> phy-type
 
 Changes in v4:
-- Convert to new bindings
+- Use subnodes to describe lane configuration, instead of describing
+  PCCRs. This is the same style used by phy-cadence-sierra et al.
 
- .../boot/dts/freescale/fsl-ls1088a-rdb.dts    | 161 ++++++++++++++++++
- 1 file changed, 161 insertions(+)
+Changes in v3:
+- Manually expand yaml references
+- Add mode configuration to device tree
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1088a-rdb.dts
-index 1bfbce69cc8b..5c502048d887 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a-rdb.dts
-@@ -10,17 +10,138 @@
- 
- /dts-v1/;
- 
-+#include <dt-bindings/phy/phy.h>
+Changes in v2:
+- Rename to fsl,lynx-10g.yaml
+- Refer to the device in the documentation, rather than the binding
+- Move compatible first
+- Document phy cells in the description
+- Allow a value of 1 for phy-cells. This allows for compatibility with
+  the similar (but according to Ioana Ciornei different enough) lynx-28g
+  binding.
+- Remove minItems
+- Use list for clock-names
+- Fix example binding having too many cells in regs
+- Add #clock-cells. This will allow using assigned-clocks* to configure
+  the PLLs.
+- Document the structure of the compatible strings
+
+ .../devicetree/bindings/phy/fsl,lynx-10g.yaml | 236 ++++++++++++++++++
+ 1 file changed, 236 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+
+diff --git a/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml b/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+new file mode 100644
+index 000000000000..f326fdc159c5
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+@@ -0,0 +1,236 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/phy/fsl,lynx-10g.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
- #include "fsl-ls1088a.dtsi"
- 
- / {
- 	model = "LS1088A RDB Board";
- 	compatible = "fsl,ls1088a-rdb", "fsl,ls1088a";
++title: NXP Lynx 10G SerDes
 +
-+	clocks {
-+		si5341_xtal: clock-48mhz {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+			clock-frequency = <48000000>;
-+		};
++maintainers:
++  - Sean Anderson <sean.anderson@seco.com>
 +
-+		clk_100mhz: clock-100mhz {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+			clock-frequency = <100000000>;
-+		};
++description: |
++  These Lynx "SerDes" devices are found in NXP's QorIQ line of processors. The
++  SerDes provides up to eight lanes. Each lane may be configured individually,
++  or may be combined with adjacent lanes for a multi-lane protocol. The SerDes
++  supports a variety of protocols, including up to 10G Ethernet, PCIe, SATA, and
++  others. The specific protocols supported for each lane depend on the
++  particular SoC.
 +
-+		clk_156mhz: clock-156mhz {
-+			compatible = "fixed-clock";
-+			#clock-cells = <0>;
-+			clock-frequency = <156250000>;
-+		};
-+	};
++properties:
++  compatible:
++    items:
++      - enum:
++          - fsl,ls1046a-serdes
++          - fsl,ls1088a-serdes
++      - const: fsl,lynx-10g
 +
-+	ovdd: regulator-1v8 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "ovdd";
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <1800000>;
-+	};
++  "#address-cells":
++    const: 1
 +
-+	dvdd: regulator-3v3 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "dvdd";
-+		regulator-min-microvolt = <3300000>;
-+		regulator-max-microvolt = <3300000>;
-+	};
++  "#size-cells":
++    const: 0
 +
-+};
++  "#clock-cells":
++    const: 1
++    description: |
++      The cell contains an ID as described in dt-bindings/clock/fsl,lynx-10g.h.
++      Note that when assigning a rate to a PLL, the PLL's rate is divided by
++      1000 to avoid overflow. A rate of 5000000 corresponds to 5GHz.
 +
-+&serdes1 {
-+	//clocks = <&si5341 0 8>, <&si5341 0 9>;
-+	clocks = <&clk_100mhz>, <&clk_156mhz>;
-+	clock-names = "ref0", "ref1";
-+	status = "okay";
++  clocks:
++    maxItems: 2
++    description: |
++      Clock for each PLL reference clock input.
 +
-+	serdes1_0: phy@0 {
-+		#phy-cells = <0>;
-+		reg = <0>;
++  clock-names:
++    minItems: 2
++    maxItems: 2
++    items:
++      enum:
++        - ref0
++        - ref1
 +
-+		/* SG2 */
-+		sgmii-3 {
-+			fsl,pccr = <0x8>;
-+			fsl,index = <3>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_2500BASEX>;
-+		};
++  reg:
++    maxItems: 1
 +
-+		/* XFI2 */
-+		xfi-1 {
-+			fsl,pccr = <0xb>;
-+			fsl,index = <1>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_10GBASER>;
-+		};
-+	};
++patternProperties:
++  "^phy@":
++    type: object
 +
-+	serdes1_1: phy@1 {
-+		#phy-cells = <0>;
-+		reg = <1>;
++    description: |
++      A contiguous group of lanes which will be configured together. Each group
++      corresponds to one phy device. Lanes not described by any group will be
++      left as-is.
 +
-+		/* SG1 */
-+		sgmii-2 {
-+			fsl,pccr = <0x8>;
-+			fsl,index = <2>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_2500BASEX>;
-+		};
++    properties:
++      "#phy-cells":
++        const: 0
 +
-+		/*
-+		 * XFI2
-+		 * Table 23-1 and section 23.5.16.4 disagree; this reflects the
-+		 * table.
-+		 */
-+		xfi-0 {
-+			fsl,pccr = <0xb>;
-+			fsl,index = <0>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_10GBASER>;
-+		};
-+	};
++      reg:
++        minItems: 1
++        maxItems: 8
++        description:
++          The lanes in the group. These must be listed in order. The first lane
++          will have the FIRST_LANE bit set in GCR0. The order of lanes also
++          determines the reset order (TRSTDIR).
 +
-+	serdes1_2: phy@2 {
-+		#phy-cells = <0>;
-+		reg = <2>;
++    patternProperties:
++      "^(q?sgmii|xfi)":
++        type: object
 +
-+		/* QSGb */
-+		qsgmii-1 {
-+			fsl,pccr = <0x9>;
-+			fsl,index = <1>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_QSGMII>;
-+		};
-+	};
++        description: |
++          A protocol controller which may control the group of lanes. Each
++          controller is selected through the PCCRs. In addition to protocols
++          desired for use by the OS, protocols which may have been configured
++          by the bootloader must also be described. This ensures that only one
++          protocol controller is attached to a group of lanes at once.
 +
-+	serdes1_3: phy@2 {
-+		#phy-cells = <0>;
-+		reg = <2>;
++        properties:
++          fsl,pccr:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            description: |
++              The index of the PCCR which configures this protocol controller.
++              This is the same as the register name suffix. For example, PCCR8
++              would use a value of 8 for an offset of 0x220 (0x200 + 4 * 8).
 +
-+		/* QSGa */
-+		qsgmii-0 {
-+			fsl,pccr = <0x9>;
-+			fsl,index = <0>;
-+			fsl,cfg = <0x1>;
-+			phy-type = <PHY_TYPE_QSGMII>;
-+		};
-+	};
-+};
++          fsl,index:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            description: |
++              The index of the protocol controller. This corresponds to the
++              suffix in the documentation. For example, PEXa would be 0, PEXb
++              1, etc. Generally, higher fields occupy lower bits.
 +
-+&dpmac1 {
-+	phys = <&serdes1_1>;
- };
- 
- &dpmac2 {
- 	phy-handle = <&mdio2_aquantia_phy>;
- 	phy-connection-type = "10gbase-r";
- 	pcs-handle = <&pcs2>;
-+	phys = <&serdes1_0>;
- };
- 
- &dpmac3 {
-@@ -28,6 +149,7 @@ &dpmac3 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs3_0>;
-+	phys = <&serdes1_3>;
- };
- 
- &dpmac4 {
-@@ -35,6 +157,7 @@ &dpmac4 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs3_1>;
-+	phys = <&serdes1_3>;
- };
- 
- &dpmac5 {
-@@ -42,6 +165,7 @@ &dpmac5 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs3_2>;
-+	phys = <&serdes1_3>;
- };
- 
- &dpmac6 {
-@@ -49,6 +173,7 @@ &dpmac6 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs3_3>;
-+	phys = <&serdes1_3>;
- };
- 
- &dpmac7 {
-@@ -56,6 +181,7 @@ &dpmac7 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs7_0>;
-+	phys = <&serdes1_2>;
- };
- 
- &dpmac8 {
-@@ -63,6 +189,7 @@ &dpmac8 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs7_1>;
-+	phys = <&serdes1_2>;
- };
- 
- &dpmac9 {
-@@ -70,6 +197,7 @@ &dpmac9 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs7_2>;
-+	phys = <&serdes1_2>;
- };
- 
- &dpmac10 {
-@@ -77,6 +205,7 @@ &dpmac10 {
- 	phy-connection-type = "qsgmii";
- 	managed = "in-band-status";
- 	pcs-handle = <&pcs7_3>;
-+	phys = <&serdes1_2>;
- };
- 
- &emdio1 {
-@@ -142,6 +271,38 @@ i2c-switch@77 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
-+		i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x1>;
++          fsl,cfg:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            minimum: 1
++            description: |
++              The configuration value to program into the protocol controller
++              field.
 +
-+			si5341: clock-generator@74 {
-+				#address-cells = <1>;
-+				#clock-cells = <2>;
-+				#size-cells = <0>;
-+				compatible = "silabs,si5341";
-+				reg = <0x74>;
-+				clocks = <&si5341_xtal>;
-+				clock-names = "xtal";
-+				vdd-supply = <&ovdd>;
-+				vdda-supply = <&dvdd>;
-+				vddo8-supply = <&ovdd>;
-+				vddo9-supply = <&ovdd>;
-+				silabs,iovdd-33;
-+				status = "disabled";
++          phy-type:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            enum:
++              - 8 # PHY_TYPE_SGMII
++              - 9 # PHY_TYPE_QSGMII
++              - 13 # PHY_TYPE_2500BASEX
++              - 14 # PHY_TYPE_10GBASER
++            description: |
++              The category of protocols supported by this controller. See
++              "dt-bindings/phy/phy.h" for the relevant definitions. Individual
++              protocols are selected by the phy consumer. The availability of
++              1000BASE-KX and 10GBASE-KR depends on the SoC.
 +
-+				out@8 {
-+					reg = <8>;
-+					silabs,format = <1>;
-+				};
++              - PHY_TYPE_SGMII: 1000BASE-X, SGMII, and 1000BASE-KX
++              - PHY_TYPE_2500BASEX: 2500BASE-X, 1000BASE-X, SGMII, and
++                                    1000BASE-KX
++              - PHY_TYPE_QSGMII: QSGMII
++              - PHY_TYPE_10GBASER: 10GBASE-R and 10GBASE-KR
 +
-+				out@9 {
-+					reg = <9>;
-+					silabs,format = <1>;
-+				};
-+			};
-+		};
++        required:
++          - fsl,pccr
++          - fsl,index
++          - fsl,cfg
++          - phy-type
 +
- 		i2c@2 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
++        additionalProperties: false
++
++    required:
++      - "#phy-cells"
++      - reg
++
++    additionalProperties: false
++
++required:
++  - "#address-cells"
++  - "#clock-cells"
++  - "#size-cells"
++  - compatible
++  - clocks
++  - clock-names
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/phy/phy.h>
++
++    serdes1: serdes@1ea0000 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++      #clock-cells = <1>;
++      compatible = "fsl,ls1046a-serdes", "fsl,lynx-10g";
++      reg = <0x1ea0000 0x2000>;
++      clocks = <&clk_100mhz>, <&clk_156mhz>;
++      clock-names = "ref0", "ref1";
++
++      serdes1_0: phy@0 {
++        #phy-cells = <0>;
++        reg = <0>;
++
++        /* SGMII.6 */
++        sgmii-0 {
++          fsl,pccr = <0x8>;
++          fsl,index = <0>;
++          fsl,cfg = <0x1>;
++          phy-type = <PHY_TYPE_SGMII>;
++        };
++      };
++
++      serdes1_1: phy@1 {
++        #phy-cells = <0>;
++        reg = <1>;
++
++        /* SGMII.5 */
++        sgmii-1 {
++          fsl,pccr = <0x8>;
++          fsl,index = <1>;
++          fsl,cfg = <0x1>;
++          phy-type = <PHY_TYPE_2500BASEX>;
++        };
++      };
++
++      serdes1_2: phy@2 {
++        #phy-cells = <0>;
++        reg = <2>;
++
++        /* SGMII.10 */
++        sgmii-2 {
++          fsl,pccr = <0x8>;
++          fsl,index = <2>;
++          fsl,cfg = <0x1>;
++          phy-type = <PHY_TYPE_2500BASEX>;
++        };
++
++        /* XFI.10 */
++        xfi-0 {
++          fsl,pccr = <0xb>;
++          fsl,index = <0>;
++          fsl,cfg = <0x2>;
++          phy-type = <PHY_TYPE_10GBASER>;
++        };
++      };
++
++      serdes1_3: phy@3 {
++        #phy-cells = <0>;
++        reg = <3>;
++
++        /* SGMII.9 */
++        sgmii-3 {
++          fsl,pccr = <0x8>;
++          fsl,index = <3>;
++          fsl,cfg = <0x1>;
++          phy-type = <PHY_TYPE_2500BASEX>;
++        };
++
++        /* XFI.9 */
++        xfi-9 {
++          fsl,pccr = <0xb>;
++          fsl,index = <1>;
++          fsl,cfg = <0x1>;
++          phy-type = <PHY_TYPE_10GBASER>;
++        };
++      };
++    };
++...
 -- 
 2.35.1.1320.gc452695387.dirty
 
