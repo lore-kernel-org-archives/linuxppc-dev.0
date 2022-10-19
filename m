@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D6EDC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Oct 2022 20:49:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D36EC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 19:56:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MsQvv5MWhz3f2J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 07:49:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mt1gm6GtNz3drs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 06:56:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L0kwJK1D;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AS1bySSu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+d635785a9d1969ab94fa+6995+infradead.org+hch@bombadil.srs.infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L0kwJK1D;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AS1bySSu;
 	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ms63d1CHzz2yQl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Oct 2022 19:10:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
-	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=JDMMgGHS9LCKyODLO9uQrrR+709UAysRPcPI7Amnu5I=; b=L0kwJK1DnnjMw8tyn0zVMoz+EY
-	2IdplpiHntqnGfoLw4L5aFPbyXl4OPx9n/tpBwGF5wDiG6FL+r+Um3IlVMzFNgTV/m5ZcUvIlS2Ob
-	RrHxqkgyiUMQaBA5lpP3gmxEowU/lCegyk+WGXUAAEVF6HQj3gKNX2E/AQeJR9mlBt36SBb1LDzny
-	8SthHBt1duKxxVZCWmL2Ea/bbg8i/0WDdmu2vCVA21SOp/DNxrKkT+Wv/bzXP0dLWLheBOZfbgKKe
-	UaOoUUHpegGOY5zcQb7I5kXzbmzJH8PgEcu2PoJun9+uZEvGUJ6a+d3bpoO7jJKD1nPp7fZWNjihD
-	hzu7tJ0w==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1okhfO-004K9Q-CP; Tue, 18 Oct 2022 08:09:38 +0000
-Date: Tue, 18 Oct 2022 01:09:38 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Kefeng Wang <wangkefeng.wang@huawei.com>
-Subject: Re: [PATCH] mm: remove kern_addr_valid() completely
-Message-ID: <Y05fQrd4TYaOnks/@infradead.org>
-References: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mt1fg62TWz301Z
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2022 06:55:07 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id CF940B825E2;
+	Wed, 19 Oct 2022 19:55:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59AABC433D6;
+	Wed, 19 Oct 2022 19:55:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1666209301;
+	bh=rWNcMUcG9DDNLMyAn9aOc5PTGDK+JqC/MOVV6hh0TP0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=AS1bySSuzt+v9qgP9nV4W0vcNULhVRnV+aVK+fHcxSdO2qnAx0mHBUYS/2UMN/l+c
+	 ZB2ih7HSz9gX2L92v/AYZq0T4faa4J6z1Hccthvtt722q+PTH8wTXhMxeUL9qAOt5W
+	 eDe95lTcW9FsELfdPte8ZT1T5vONtwIfP1tZwLHT/30JarfrKyUEDlC4hXNITGj9M0
+	 WKENOhumsKWpgDPNZHyJi2NZyX9jivbIIOP6qahufWn7y4aTMzdJWprc+ZT39jE29V
+	 ujZ9lax01KINQ3L8m5mI/lNZolvX4OQ8j8W/zr6NwQNXox1MDBKXPtqjBcoGFgtgss
+	 Vm8j7doGKP3qg==
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Subject: [PATCH] PCI: Remove unnecessary of_irq.h includes
+Date: Wed, 19 Oct 2022 14:54:51 -0500
+Message-Id: <20221019195452.37606-1-helgaas@kernel.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221018074014.185687-1-wangkefeng.wang@huawei.com>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
-X-Mailman-Approved-At: Wed, 19 Oct 2022 07:46:46 +1100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,12 +57,202 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, Andy Lutomirski <luto@kernel.org>, linux-sh@vger.kernel.org, Christian Borntraeger <borntraeger@linux.ibm.com>, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Greg Ungerer <gerg
- @linux-m68k.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Chris Zankel <chris@zankel.net>, Richard Henderson <richard.henderson@linaro.org>, Heiko Carstens <hca@linux.ibm.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, x86@kernel.org, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.fr
- anken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Michal Simek <michal.simek@amd.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, Scott Branden <sb
+ randen@broadcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Thanks, this is long overdue!
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-Acked-by: Christoph Hellwig <hch@lst.de>
+Many host controller drivers #include <linux/of_irq.h> even though they
+don't need it.  Remove the unnecessary #includes.
+
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/pci/controller/cadence/pci-j721e.c   | 1 -
+ drivers/pci/controller/dwc/pci-layerscape.c  | 1 -
+ drivers/pci/controller/dwc/pcie-armada8k.c   | 1 -
+ drivers/pci/controller/dwc/pcie-tegra194.c   | 1 -
+ drivers/pci/controller/pci-v3-semi.c         | 1 -
+ drivers/pci/controller/pci-xgene-msi.c       | 1 -
+ drivers/pci/controller/pci-xgene.c           | 1 -
+ drivers/pci/controller/pcie-altera-msi.c     | 1 -
+ drivers/pci/controller/pcie-iproc-platform.c | 1 -
+ drivers/pci/controller/pcie-iproc.c          | 1 -
+ drivers/pci/controller/pcie-microchip-host.c | 1 -
+ drivers/pci/controller/pcie-rockchip-host.c  | 1 -
+ drivers/pci/controller/pcie-xilinx-cpm.c     | 1 -
+ drivers/pci/controller/pcie-xilinx-nwl.c     | 1 -
+ 14 files changed, 14 deletions(-)
+
+diff --git a/drivers/pci/controller/cadence/pci-j721e.c b/drivers/pci/controller/cadence/pci-j721e.c
+index a82f845cc4b5..cc83a8925ce0 100644
+--- a/drivers/pci/controller/cadence/pci-j721e.c
++++ b/drivers/pci/controller/cadence/pci-j721e.c
+@@ -15,7 +15,6 @@
+ #include <linux/mfd/syscon.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+-#include <linux/of_irq.h>
+ #include <linux/pci.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/regmap.h>
+diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
+index 879b8692f96a..ed5fb492fe08 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape.c
++++ b/drivers/pci/controller/dwc/pci-layerscape.c
+@@ -13,7 +13,6 @@
+ #include <linux/init.h>
+ #include <linux/of_pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_address.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/pci/controller/dwc/pcie-armada8k.c b/drivers/pci/controller/dwc/pcie-armada8k.c
+index dc469ef8e99b..5c999e15c357 100644
+--- a/drivers/pci/controller/dwc/pcie-armada8k.c
++++ b/drivers/pci/controller/dwc/pcie-armada8k.c
+@@ -21,7 +21,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/resource.h>
+ #include <linux/of_pci.h>
+-#include <linux/of_irq.h>
+ 
+ #include "pcie-designware.h"
+ 
+diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
+index 1b6b437823d2..02d78a12b6e7 100644
+--- a/drivers/pci/controller/dwc/pcie-tegra194.c
++++ b/drivers/pci/controller/dwc/pcie-tegra194.c
+@@ -21,7 +21,6 @@
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_pci.h>
+ #include <linux/pci.h>
+ #include <linux/phy/phy.h>
+diff --git a/drivers/pci/controller/pci-v3-semi.c b/drivers/pci/controller/pci-v3-semi.c
+index 154a5398633c..784fcf35599c 100644
+--- a/drivers/pci/controller/pci-v3-semi.c
++++ b/drivers/pci/controller/pci-v3-semi.c
+@@ -22,7 +22,6 @@
+ #include <linux/kernel.h>
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_pci.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/pci/controller/pci-xgene-msi.c b/drivers/pci/controller/pci-xgene-msi.c
+index bfa259781b69..5efc6e56559f 100644
+--- a/drivers/pci/controller/pci-xgene-msi.c
++++ b/drivers/pci/controller/pci-xgene-msi.c
+@@ -10,7 +10,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/msi.h>
+-#include <linux/of_irq.h>
+ #include <linux/irqchip/chained_irq.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/pci/controller/pci-xgene.c b/drivers/pci/controller/pci-xgene.c
+index 549d3bd6d1c2..887b4941ff32 100644
+--- a/drivers/pci/controller/pci-xgene.c
++++ b/drivers/pci/controller/pci-xgene.c
+@@ -14,7 +14,6 @@
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_pci.h>
+ #include <linux/pci.h>
+ #include <linux/pci-acpi.h>
+diff --git a/drivers/pci/controller/pcie-altera-msi.c b/drivers/pci/controller/pcie-altera-msi.c
+index 7b1d3ebc34ec..89110b879d5f 100644
+--- a/drivers/pci/controller/pcie-altera-msi.c
++++ b/drivers/pci/controller/pcie-altera-msi.c
+@@ -13,7 +13,6 @@
+ #include <linux/module.h>
+ #include <linux/msi.h>
+ #include <linux/of_address.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_pci.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/pci/controller/pcie-iproc-platform.c b/drivers/pci/controller/pcie-iproc-platform.c
+index 538115246c79..4142a73e611d 100644
+--- a/drivers/pci/controller/pcie-iproc-platform.c
++++ b/drivers/pci/controller/pcie-iproc-platform.c
+@@ -12,7 +12,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/phy/phy.h>
+ 
+diff --git a/drivers/pci/controller/pcie-iproc.c b/drivers/pci/controller/pcie-iproc.c
+index 2519201b0e51..83029bdfd884 100644
+--- a/drivers/pci/controller/pcie-iproc.c
++++ b/drivers/pci/controller/pcie-iproc.c
+@@ -18,7 +18,6 @@
+ #include <linux/platform_device.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+ #include <linux/phy/phy.h>
+ 
+diff --git a/drivers/pci/controller/pcie-microchip-host.c b/drivers/pci/controller/pcie-microchip-host.c
+index 7263d175b5ad..937a79bcfddc 100644
+--- a/drivers/pci/controller/pcie-microchip-host.c
++++ b/drivers/pci/controller/pcie-microchip-host.c
+@@ -12,7 +12,6 @@
+ #include <linux/module.h>
+ #include <linux/msi.h>
+ #include <linux/of_address.h>
+-#include <linux/of_irq.h>
+ #include <linux/of_pci.h>
+ #include <linux/pci-ecam.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/pci/controller/pcie-rockchip-host.c b/drivers/pci/controller/pcie-rockchip-host.c
+index 7352b5ff8d35..c96c0f454570 100644
+--- a/drivers/pci/controller/pcie-rockchip-host.c
++++ b/drivers/pci/controller/pcie-rockchip-host.c
+@@ -28,7 +28,6 @@
+ #include <linux/of_device.h>
+ #include <linux/of_pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/of_irq.h>
+ #include <linux/pci.h>
+ #include <linux/pci_ids.h>
+ #include <linux/phy/phy.h>
+diff --git a/drivers/pci/controller/pcie-xilinx-cpm.c b/drivers/pci/controller/pcie-xilinx-cpm.c
+index e4ab48041eb6..4a787a941674 100644
+--- a/drivers/pci/controller/pcie-xilinx-cpm.c
++++ b/drivers/pci/controller/pcie-xilinx-cpm.c
+@@ -16,7 +16,6 @@
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/of_irq.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
+ #include <linux/pci-ecam.h>
+diff --git a/drivers/pci/controller/pcie-xilinx-nwl.c b/drivers/pci/controller/pcie-xilinx-nwl.c
+index 40d070e54ad2..f0271b6c6f8d 100644
+--- a/drivers/pci/controller/pcie-xilinx-nwl.c
++++ b/drivers/pci/controller/pcie-xilinx-nwl.c
+@@ -17,7 +17,6 @@
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/of_irq.h>
+ #include <linux/pci.h>
+ #include <linux/pci-ecam.h>
+ #include <linux/platform_device.h>
+-- 
+2.25.1
+
