@@ -4,61 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD38BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 14:42:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3AE41C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Oct 2022 15:05:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mstjc0grlz3chb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 01:42:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MsvDK2pnPz3dsN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 02:05:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LqqliPiE;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=CJ0wkcfD;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=4/3XcDP9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=john.ogness@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LqqliPiE;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=CJ0wkcfD;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=4/3XcDP9;
 	dkim-atps=neutral
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MsthV5fhBz2xGJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2022 01:41:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666190475; x=1697726475;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=6v6qLdtYAoaiS5TSUCzJk/2BpQGCWyMLYrB07TdQAKY=;
-  b=LqqliPiE0QhLhqQ8FKVBt7QNiKFjn84JQh4si4aTM3rFMlbzTrNLngDL
-   Z9ZmL38mSMf5nlB0j0XKiJ4yi14Hex3+pnPM6anOI2Xmh4scEUh3G6IGc
-   58QKSYj4urylp2oVo+iEOJJScMASSI0zNZcR8p1KC58f3dAitlzZykO6T
-   /n7Mjjql77YbZSApc+Nrcg4NAOvSEApM4dSQ+HON+Xy5pYJ4VMM76j0Bj
-   eZ40/8cHLKRpur4WSNueT6Lr9h0zq8zz8YkWGQmyjO0CR0YiDBJG/5OWX
-   I+4pjsybx+UxBBZYNATcq+ThQkvbDtpTwTXkyVAPDN2hPrDgDmy79KTID
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10505"; a="392730208"
-X-IronPort-AV: E=Sophos;i="5.95,196,1661842800"; 
-   d="scan'208";a="392730208"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Oct 2022 07:40:58 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10505"; a="692416016"
-X-IronPort-AV: E=Sophos;i="5.95,196,1661842800"; 
-   d="scan'208";a="692416016"
-Received: from lkp-server02.sh.intel.com (HELO b6d29c1a0365) ([10.239.97.151])
-  by fmsmga008.fm.intel.com with ESMTP; 19 Oct 2022 07:40:55 -0700
-Received: from kbuild by b6d29c1a0365 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1olAFV-00006T-2P;
-	Wed, 19 Oct 2022 14:40:49 +0000
-Date: Wed, 19 Oct 2022 22:40:39 +0800
-From: kernel test robot <lkp@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [linux-next:master] BUILD REGRESSION
- a72b55bc981b62f7186600d06d1824f1d0612b27
-Message-ID: <63500c67.OtDDn8C+xvHrmrIj%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MsvCD266mz2yZd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2022 02:04:24 +1100 (AEDT)
+From: John Ogness <john.ogness@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1666191367;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=q43bR7EIdzwEejtqYY/+0pBZ/1DlBf/ms3Th4977RU4=;
+	b=CJ0wkcfDAIYxYlfRDwtWDHTwKRBKnIGO7mDk96DEhEfPYYF1oPQuNnmaWMjNVFx82t2g2p
+	vzwkF94n0h7nEyhv0U93cY/SDg0gFrPMaHBWZPIoWnM4PkhT8ENrt1zwlq56m266UfO6ok
+	E2Pf4W9zbKKXLfOeDb67zW0A+t3HCRbpaPaonrDqlLifvlY/UNRbzMHnKW0rU52czq11LU
+	2QA4703MQAMlTBiSbe41rKt7kIT0G7svma7Brz2sKaxLCd0oZwJQ/auRydmpv7zgddgQ7Z
+	KT6cqgK7jbmb4Yo+LE3H9hyyE9UAia6OLCMO0LrI4vSPeblK36wIq1qdR3Gn5A==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1666191367;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=q43bR7EIdzwEejtqYY/+0pBZ/1DlBf/ms3Th4977RU4=;
+	b=4/3XcDP9JpywLbtVPvYMt3perm+LULFBKeOfwGqUTnu4+/A8q5xycmiCMFah2+WEFeLmuc
+	PyYB51N0P1g/zmCw==
+To: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH printk v2 10/38] tty: hvc: use console_is_enabled()
+Date: Wed, 19 Oct 2022 17:01:32 +0206
+Message-Id: <20221019145600.1282823-11-john.ogness@linutronix.de>
+In-Reply-To: <20221019145600.1282823-1-john.ogness@linutronix.de>
+References: <20221019145600.1282823-1-john.ogness@linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,220 +65,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ntfs3@lists.linux.dev, Linux Memory Management List <linux-mm@kvack.org>, linux-mediatek@lists.infradead.org, linux-ext4@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, Xianting Tian <xianting.tian@linux.alibaba.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Shile Zhang <shile.zhang@linux.alibaba.com>, linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Sergey Senozhatsky <senozhatsky@chromium.org>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jirislaby@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
-branch HEAD: a72b55bc981b62f7186600d06d1824f1d0612b27  Add linux-next specific files for 20221019
+Replace (console->flags & CON_ENABLED) usage with console_is_enabled().
 
-Error/Warning reports:
+Signed-off-by: John Ogness <john.ogness@linutronix.de>
+---
+ drivers/tty/hvc/hvc_console.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-https://lore.kernel.org/linux-mm/202210090954.pTR6m6rj-lkp@intel.com
-https://lore.kernel.org/linux-mm/202210110857.9s0tXVNn-lkp@intel.com
-https://lore.kernel.org/linux-mm/202210111318.mbUfyhps-lkp@intel.com
-https://lore.kernel.org/llvm/202210060148.UXBijOcS-lkp@intel.com
-
-Error/Warning: (recently discovered and may have been fixed)
-
-ERROR: modpost: "devm_ioremap_resource" [drivers/dma/idma64.ko] undefined!
-ERROR: modpost: "devm_ioremap_resource" [drivers/dma/qcom/hdma.ko] undefined!
-arch/arm64/kernel/alternative.c:199:6: warning: no previous prototype for 'apply_alternatives_vdso' [-Wmissing-prototypes]
-arch/arm64/kernel/alternative.c:295:14: warning: no previous prototype for 'alt_cb_patch_nops' [-Wmissing-prototypes]
-arch/powerpc/mm/nohash/e500.c:314:21: error: no previous prototype for 'relocate_init' [-Werror=missing-prototypes]
-fs/ext4/super.c:1744:19: warning: 'deprecated_msg' defined but not used [-Wunused-const-variable=]
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-|-- arm64-allyesconfig
-|   |-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-alt_cb_patch_nops
-|   `-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-apply_alternatives_vdso
-|-- arm64-randconfig-c041-20221019
-|   |-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-alt_cb_patch_nops
-|   `-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-apply_alternatives_vdso
-|-- arm64-randconfig-s031-20221019
-|   |-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-alt_cb_patch_nops
-|   |-- arch-arm64-kernel-alternative.c:warning:no-previous-prototype-for-apply_alternatives_vdso
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-priv1-got-restricted-__le16-addressable-usertype-fc_len
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-unsigned-short-usertype-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_len-got-unsigned-short-usertype
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_tag-got-unsigned-short-usertype
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-initializer-(different-base-types)-expected-int-tag-got-restricted-__le16-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:restricted-__le16-degrades-to-integer
-|   |-- fs-ntfs3-index.c:sparse:sparse:restricted-__le32-degrades-to-integer
-|   |-- fs-ntfs3-namei.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-restricted-__le16-const-usertype-s1-got-unsigned-short
-|   `-- fs-ntfs3-namei.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-restricted-__le16-const-usertype-s2-got-unsigned-short
-|-- i386-allyesconfig
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-defconfig
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-randconfig-a003
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-randconfig-a005
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-randconfig-a012
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-randconfig-a014
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- i386-randconfig-a016
-|   `-- fs-ext4-super.c:warning:deprecated_msg-defined-but-not-used
-|-- microblaze-randconfig-s033-20221019
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-priv1-got-restricted-__le16-addressable-usertype-fc_len
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-unsigned-short-usertype-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_len-got-unsigned-short-usertype
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_tag-got-unsigned-short-usertype
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-initializer-(different-base-types)-expected-int-tag-got-restricted-__le16-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:restricted-__le16-degrades-to-integer
-|   |-- fs-ntfs3-index.c:sparse:sparse:restricted-__le32-degrades-to-integer
-|   |-- fs-ntfs3-namei.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-restricted-__le16-const-usertype-s1-got-unsigned-short
-|   `-- fs-ntfs3-namei.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-restricted-__le16-const-usertype-s2-got-unsigned-short
-|-- openrisc-randconfig-s052-20221019
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-priv1-got-restricted-__le16-addressable-usertype-fc_len
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-int-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-argument-(different-base-types)-expected-unsigned-short-usertype-tag-got-restricted-__le16-addressable-usertype-fc_tag
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_len-got-unsigned-short-usertype
-|   |-- fs-ext4-fast_commit.c:sparse:sparse:incorrect-type-in-assignment-(different-base-types)-expected-restricted-__le16-usertype-fc_tag-got-unsigned-short-usertype
-clang_recent_errors
-|-- hexagon-defconfig
-|   `-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|-- hexagon-randconfig-r013-20221019
-|   |-- drivers-phy-mediatek-phy-mtk-tphy.c:warning:result-of-comparison-of-constant-with-expression-of-type-typeof-(_Generic((mask_)-char:(unsigned-char)-unsigned-char:(unsigned-char)-signed-char:(unsigned-c
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- hexagon-randconfig-r031-20221019
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- hexagon-randconfig-r036-20221019
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmnewmap
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmsetvec
-|   `-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-memset
-|-- hexagon-randconfig-r041-20221018
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmnewmap
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmsetvec
-|   `-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-memset
-|-- hexagon-randconfig-r045-20221018
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmnewmap
-|   |-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-__vmsetvec
-|   `-- ld.lld:error:vmlinux.a(arch-hexagon-kernel-head.o):(.init.text):relocation-R_HEX_B22_PCREL-out-of-range:is-not-in-references-memset
-|-- i386-randconfig-a002
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- i386-randconfig-a004
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- i386-randconfig-a011
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- i386-randconfig-a013
-|   `-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|-- i386-randconfig-a015
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   `-- fs-ntfs3-namei.c:warning:variable-uni1-is-used-uninitialized-whenever-if-condition-is-true
-|-- powerpc-buildonly-randconfig-r004-20221019
-|   |-- drivers-phy-mediatek-phy-mtk-hdmi-mt2701.c:warning:result-of-comparison-of-constant-with-expression-of-type-typeof-(_Generic((mask_)-char:(unsigned-char)-unsigned-char:(unsigned-char)-signed-char:(uns
-|   |-- drivers-phy-mediatek-phy-mtk-hdmi-mt8173.c:warning:result-of-comparison-of-constant-with-expression-of-type-typeof-(_Generic((mask_)-char:(unsigned-char)-unsigned-char:(unsigned-char)-signed-char:(uns
-|   |-- drivers-phy-mediatek-phy-mtk-mipi-dsi-mt8173.c:warning:result-of-comparison-of-constant-with-expression-of-type-typeof-(_Generic((mask_)-char:(unsigned-char)-unsigned-char:(unsigned-char)-signed-char:
-|   `-- drivers-phy-mediatek-phy-mtk-mipi-dsi-mt8183.c:warning:result-of-comparison-of-constant-with-expression-of-type-typeof-(_Generic((mask_)-char:(unsigned-char)-unsigned-char:(unsigned-char)-signed-char:
-|-- powerpc-mvme5100_defconfig
-|   `-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|-- riscv-randconfig-r024-20221019
-|   |-- fs-ext4-super.c:warning:unused-variable-deprecated_msg
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-get_symbol_pos:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_num_syms
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-get_symbol_pos:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_offsets
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-kallsyms_lookup_name:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_names
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-kallsyms_lookup_name:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_num_syms
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-kallsyms_lookup_name:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_offsets
-|   |-- ld.lld:error:vmlinux.a(kernel-kallsyms.o):(function-kallsyms_lookup_name:.text):relocation-R_RISCV_PCREL_HI20-out-of-range:is-not-in-references-kallsyms_relative_base
-
-elapsed time: 725m
-
-configs tested: 77
-configs skipped: 3
-
-gcc tested configs:
-arc                              alldefconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-m68k                       m5208evb_defconfig
-powerpc                    klondike_defconfig
-x86_64                          rhel-8.3-func
-i386                                defconfig
-x86_64                    rhel-8.3-kselftests
-arc                                 defconfig
-x86_64                           rhel-8.3-syz
-arm                                 defconfig
-x86_64                        randconfig-a013
-i386                          randconfig-a014
-x86_64                        randconfig-a004
-x86_64                              defconfig
-x86_64                        randconfig-a011
-arc                  randconfig-r043-20221018
-x86_64                         rhel-8.3-kunit
-loongarch                         allnoconfig
-x86_64                        randconfig-a002
-riscv                randconfig-r042-20221018
-x86_64                           rhel-8.3-kvm
-alpha                               defconfig
-i386                             allyesconfig
-x86_64                        randconfig-a015
-i386                          randconfig-a012
-s390                 randconfig-r044-20221018
-x86_64                        randconfig-a006
-arm64                            allyesconfig
-i386                          randconfig-a016
-x86_64                               rhel-8.3
-sh                          polaris_defconfig
-i386                          randconfig-a001
-arm                              allyesconfig
-i386                          randconfig-a003
-mips                         cobalt_defconfig
-x86_64                           allyesconfig
-sh                             shx3_defconfig
-i386                          randconfig-a005
-powerpc                           allnoconfig
-m68k                             allmodconfig
-powerpc                          allmodconfig
-arc                              allyesconfig
-mips                             allyesconfig
-s390                             allmodconfig
-alpha                            allyesconfig
-s390                                defconfig
-sh                               allmodconfig
-arc                         haps_hs_defconfig
-ia64                             allmodconfig
-arc                           tb10x_defconfig
-sparc                             allnoconfig
-m68k                             allyesconfig
-m68k                        mvme16x_defconfig
-s390                             allyesconfig
-arm                         cm_x300_defconfig
-sh                   sh7724_generic_defconfig
-sh                           se7712_defconfig
-
-clang tested configs:
-hexagon                             defconfig
-hexagon              randconfig-r045-20221018
-i386                          randconfig-a013
-x86_64                        randconfig-a016
-i386                          randconfig-a011
-x86_64                        randconfig-a012
-mips                        bcm63xx_defconfig
-x86_64                        randconfig-a005
-x86_64                        randconfig-a001
-x86_64                        randconfig-a014
-hexagon              randconfig-r041-20221018
-x86_64                        randconfig-a003
-i386                          randconfig-a015
-i386                          randconfig-a002
-i386                          randconfig-a006
-i386                          randconfig-a004
-powerpc                      obs600_defconfig
-x86_64                          rhel-8.3-rust
-powerpc                    mvme5100_defconfig
-
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 4802cfaa107f..6d1d7b72488c 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -265,7 +265,7 @@ static void hvc_port_destruct(struct tty_port *port)
+ static void hvc_check_console(int index)
+ {
+ 	/* Already enabled, bail out */
+-	if (hvc_console.flags & CON_ENABLED)
++	if (console_is_enabled(&hvc_console))
+ 		return;
+ 
+  	/* If this index is what the user requested, then register
 -- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+2.30.2
+
