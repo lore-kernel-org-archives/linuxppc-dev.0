@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFDF7C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 10:02:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFB48C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 10:03:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MtNSW3QQCz3drb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 21:02:35 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MtNT5214vz3dsr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 21:03:05 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtNRx0cmJz3c69
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtNRx5Vslz3c69
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Oct 2022 21:02:05 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MtNRv2hfsz4xGQ;
-	Thu, 20 Oct 2022 21:02:03 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MtNRt4Jxbz4xG9;
+	Thu, 20 Oct 2022 21:02:02 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, fbarrat@linux.ibm.com
-In-Reply-To: <aaad8813b4762a6753cfcd0b605a7574a5192ec7.camel@linux.ibm.com>
-References: <aaad8813b4762a6753cfcd0b605a7574a5192ec7.camel@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/pseries/vas: Add VAS IRQ primary handler
-Message-Id: <166626010855.237349.2129238862469049267.b4-ty@ellerman.id.au>
-Date: Thu, 20 Oct 2022 21:01:48 +1100
+To: mpe@ellerman.id.au, Haren Myneni <haren@linux.ibm.com>, nathanl@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+In-Reply-To: <efa9c16e4a78dda4567a16f13dabfd73cb4674a2.camel@linux.ibm.com>
+References: <efa9c16e4a78dda4567a16f13dabfd73cb4674a2.camel@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: Use lparcfg to reconfig VAS windows for DLPAR CPU
+Message-Id: <166626010935.237349.12980991434334935565.b4-ty@ellerman.id.au>
+Date: Thu, 20 Oct 2022 21:01:49 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,21 +45,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 09 Oct 2022 20:41:25 -0700, Haren Myneni wrote:
-> irq_default_primary_handler() can be used only with IRQF_ONESHOT
-> flag, but the flag disables IRQ before executing the thread handler
-> and enables it after the interrupt is handled. But this IRQ disable
-> sets the VAS IRQ OFF state in the hypervisor. In case if NX faults
-> during this window, the hypervisor will not deliver the fault
-> interrupt to the partition and the user space may wait continuously
-> for the CSB update. So use VAS specific IRQ handler instead of
-> calling the default primary handler.
+On Thu, 06 Oct 2022 22:29:59 -0700, Haren Myneni wrote:
+> The hypervisor assigns VAS (Virtual Accelerator Switchboard)
+> windows depends on cores configured in LPAR. The kernel uses
+> OF reconfig notifier to reconfig VAS windows for DLPAR CPU event.
+> In the case of shared CPU mode partition, the hypervisor assigns
+> VAS windows depends on CPU entitled capacity, not based on vcpus.
+> When the user changes CPU entitled capacity for the partition,
+> drmgr uses /proc/ppc64/lparcfg interface to notify the kernel.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/pseries/vas: Add VAS IRQ primary handler
-      https://git.kernel.org/powerpc/c/89ed0b769d6adf30364f60e6b1566961821a9893
+[1/1] powerpc/pseries: Use lparcfg to reconfig VAS windows for DLPAR CPU
+      https://git.kernel.org/powerpc/c/2147783d6bf0b7ca14c72a25527dc5135bd17f65
 
 cheers
