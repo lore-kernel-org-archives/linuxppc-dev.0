@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D90EC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 17:34:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF8FDC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 17:57:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MtZTZ3DyFz3f2d
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 04:34:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mtb0W3sQFz3dsL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 04:57:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P87iXru8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g+bZZVbO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=P87iXru8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g+bZZVbO;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtZNb181wz3cf9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 04:29:51 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29KH8fCD006852;
-	Thu, 20 Oct 2022 17:29:41 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtZzQ6S0Cz3042
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 04:56:34 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29KHi2gt009713;
+	Thu, 20 Oct 2022 17:56:25 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ssjuG5ns7acSWCcPsh0tdJJspVRt5qdge8t+tAiQTWg=;
- b=P87iXru8HO94WRRGCz7z3OXqGOlYzI7KdBe9fX7CXzJsBTTLbOMx4oMxmg4TQwhOAM49
- d3PVI6hG3TrZrK1XboqSMSYCuKTEvfOdEqnta2/aRs9GccA1HcDX5HzwfrAPN5tN7b6G
- fJEkN7u2hpI3f+6x+zAKkjeLKkxBex/IGYvtyH+DyBc3SdVumLVxEuWK1cXZABzuunbv
- /vS7kcA5Dl3iro4jwRLqe303Q5dKM45rVE7TSCPqVbuf3pox/bKkFQ6bHMFk6kH9I5/U
- zWic8rYKUkM6l/TQ3MZWO66+3zcqaWBOu7BBHk9eua7SmathP1BjulH9ZDZKGNH0QWrK aA== 
+ bh=3hiT01nD5TtLtMwsv2ShIrj5BOX8BSgatv+rX0KVDU4=;
+ b=g+bZZVbOXhBfyxO67Cx22658yN3D3jFuhXV6WwWfj1ygCQeu1TmYmdspFeU7S4S8dZtP
+ L3KlAH2H+Rui9S5mTr5DSyUDf+07IoS/TZ78CKCAubwdn4erOifPHieyg3bzNo3eWI1O
+ Gl10Q7CkcqOpL9AEzngUxCUTf48xN4E3RgB+YV5BaYiunSC73XKVY04zXAqSsN9qwGFc
+ eZ/nNnliKEXcqdKzOJdhLRIG5lhhI+79mppjxTN0F3uGm35boGMQPr2QlyILIQaExXBX
+ b9szwc/OwEgJVGiyktWnSmPh1p0yQmfRAiWwTARKJOUY2uzXtMUNXjoP0P1kFR7f8JVT Cg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kbafkgnq9-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kbb07g968-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Oct 2022 17:29:41 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29KHChlR027776;
-	Thu, 20 Oct 2022 17:29:41 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kbafkgnnp-1
+	Thu, 20 Oct 2022 17:56:25 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29KHk8SG015893;
+	Thu, 20 Oct 2022 17:56:24 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kbb07g93q-4
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Oct 2022 17:29:41 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29KHPxTC031638;
-	Thu, 20 Oct 2022 17:29:37 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma04fra.de.ibm.com with ESMTP id 3k7mg96ycy-1
+	Thu, 20 Oct 2022 17:56:24 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29KHQbxh032019;
+	Thu, 20 Oct 2022 17:29:33 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma06ams.nl.ibm.com with ESMTP id 3kajmrt0k2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 20 Oct 2022 17:29:37 +0000
+	Thu, 20 Oct 2022 17:29:32 +0000
 Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29KHTZ4Z55378190
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29KHTUCt60293550
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 20 Oct 2022 17:29:35 GMT
+	Thu, 20 Oct 2022 17:29:30 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0B5D442042;
-	Thu, 20 Oct 2022 17:29:35 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 97BE242041;
+	Thu, 20 Oct 2022 17:29:30 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2FD1042041;
-	Thu, 20 Oct 2022 17:29:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C50704203F;
+	Thu, 20 Oct 2022 17:29:28 +0000 (GMT)
 Received: from li-NotSettable.ibm.com.com (unknown [9.43.39.233])
 	by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Thu, 20 Oct 2022 17:29:32 +0000 (GMT)
+	Thu, 20 Oct 2022 17:29:28 +0000 (GMT)
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 5/5] powerpc/kprobes: Remove unnecessary headers from kprobes
-Date: Thu, 20 Oct 2022 22:59:01 +0530
-Message-Id: <bf3c70d498a24a0c466657f396291f2298744ef8.1666262278.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH 3/5] powerpc/kprobes: Use preempt_enable() rather than the no_resched variant
+Date: Thu, 20 Oct 2022 22:58:59 +0530
+Message-Id: <72639f75fe66f931ec8c2165276ffbfb0fe1006f.1666262278.git.naveen.n.rao@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <cover.1666262278.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1666262278.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: IPxAs-0Shr417IYH_vpZiMGrYjNgDY2R
-X-Proofpoint-GUID: XWWp7iHk3KqxbmL-QplPHUJFL1_z3U_b
+X-Proofpoint-GUID: Sr32IqmDhloJzX0dIwmI9KGGpbU-NZtN
+X-Proofpoint-ORIG-GUID: 0jBnZRdE4x06VlImNqSdRj1Hu3MosLvL
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-10-20_08,2022-10-20_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 clxscore=1015
- priorityscore=1501 suspectscore=0 malwarescore=0 bulkscore=0
- impostorscore=0 spamscore=0 adultscore=0 mlxscore=0 lowpriorityscore=0
- mlxlogscore=913 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2210200101
+ definitions=2022-10-20_09,2022-10-20_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
+ suspectscore=0 phishscore=0 impostorscore=0 mlxlogscore=820 bulkscore=0
+ adultscore=0 clxscore=1015 spamscore=0 priorityscore=1501 malwarescore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2209130000
+ definitions=main-2210200105
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,43 +100,75 @@ Cc: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org, Masami Hi
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Many of these headers are not necessary since those are included
-indirectly, or the code using those headers has been removed.
+preempt_enable_no_resched() is just the same as preempt_enable() when we
+are in a irqs disabled context. kprobe_handler() and the post/fault
+handlers are all called with irqs disabled. As such, convert those to
+just use preempt_enable().
 
+Reported-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/kprobes-ftrace.c | 4 ----
- arch/powerpc/kernel/kprobes.c        | 2 --
- 2 files changed, 6 deletions(-)
+ arch/powerpc/kernel/kprobes.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
-index 072ebe7f290ba7..08ed8a158fd724 100644
---- a/arch/powerpc/kernel/kprobes-ftrace.c
-+++ b/arch/powerpc/kernel/kprobes-ftrace.c
-@@ -7,10 +7,6 @@
-  *		  IBM Corporation
-  */
- #include <linux/kprobes.h>
--#include <linux/ptrace.h>
--#include <linux/hardirq.h>
--#include <linux/preempt.h>
--#include <linux/ftrace.h>
- 
- /* Ftrace callback handler for kprobes */
- void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
 diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 86ca5a61ea9afb..3bf2507f07e6c6 100644
+index 88f42de681e1f8..86ca5a61ea9afb 100644
 --- a/arch/powerpc/kernel/kprobes.c
 +++ b/arch/powerpc/kernel/kprobes.c
-@@ -14,8 +14,6 @@
-  */
+@@ -369,7 +369,7 @@ int kprobe_handler(struct pt_regs *regs)
  
- #include <linux/kprobes.h>
--#include <linux/ptrace.h>
--#include <linux/preempt.h>
- #include <linux/extable.h>
- #include <linux/kdebug.h>
- #include <linux/slab.h>
+ 			if (ret > 0) {
+ 				restore_previous_kprobe(kcb);
+-				preempt_enable_no_resched();
++				preempt_enable();
+ 				return 1;
+ 			}
+ 		}
+@@ -382,7 +382,7 @@ int kprobe_handler(struct pt_regs *regs)
+ 	if (p->pre_handler && p->pre_handler(p, regs)) {
+ 		/* handler changed execution path, so skip ss setup */
+ 		reset_current_kprobe();
+-		preempt_enable_no_resched();
++		preempt_enable();
+ 		return 1;
+ 	}
+ 
+@@ -395,7 +395,7 @@ int kprobe_handler(struct pt_regs *regs)
+ 
+ 			kcb->kprobe_status = KPROBE_HIT_SSDONE;
+ 			reset_current_kprobe();
+-			preempt_enable_no_resched();
++			preempt_enable();
+ 			return 1;
+ 		}
+ 	}
+@@ -404,7 +404,7 @@ int kprobe_handler(struct pt_regs *regs)
+ 	return 1;
+ 
+ no_kprobe:
+-	preempt_enable_no_resched();
++	preempt_enable();
+ 	return ret;
+ }
+ NOKPROBE_SYMBOL(kprobe_handler);
+@@ -490,7 +490,7 @@ int kprobe_post_handler(struct pt_regs *regs)
+ 	}
+ 	reset_current_kprobe();
+ out:
+-	preempt_enable_no_resched();
++	preempt_enable();
+ 
+ 	/*
+ 	 * if somebody else is singlestepping across a probe point, msr
+@@ -529,7 +529,7 @@ int kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+ 			restore_previous_kprobe(kcb);
+ 		else
+ 			reset_current_kprobe();
+-		preempt_enable_no_resched();
++		preempt_enable();
+ 		break;
+ 	case KPROBE_HIT_ACTIVE:
+ 	case KPROBE_HIT_SSDONE:
 -- 
 2.38.0
 
