@@ -4,49 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20174C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 15:05:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19031C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 17:18:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MtWB42zRNz3dwZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 02:05:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MtZ7t29tRz3dtM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 04:18:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvmtWob5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BHWtPITh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fvmtWob5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BHWtPITh;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtW934YcJz3bjg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 02:04:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtZ6n4GCjz3bjj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 04:17:53 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id BD8DD61BB6;
-	Thu, 20 Oct 2022 15:04:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE56FC433C1;
-	Thu, 20 Oct 2022 15:04:35 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 9E8B461CD4;
+	Thu, 20 Oct 2022 17:17:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C4F2C433C1;
+	Thu, 20 Oct 2022 17:17:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1666278276;
-	bh=MRWW87pAsq3Ov7I38XJfjHIT6/6rcGMTIKudamH/Qlc=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=fvmtWob5RXz/kHLTL1TNBOAyteTHgsKDs4ZTjevlmoHIwxTjMd0nHa/IJPz0Bqkkm
-	 ACdZeNHLrRH+6y5zswwgfHPmTvxDu75CA8nbwp7RKnHlIuMqln7eIskaTwbhmpZewT
-	 KVgKEOET44WVom2LR3A3I+QIYGZyJc62sUPg4agsLtmbZzDt3ZqTt09OXKTpApPPGw
-	 gk6b9kg8u38YOwSVK2VXY83opXqL6uuA5lx7BKQI8usJHilEMYH8sGqNo88EMFvPgt
-	 mN0/wxxiGAPaMYBiC0DwgBywEJONrUS11+7Miwv0T25KrHYUaFo/K6Gy1GR3Et/cEe
-	 KMdiC587G7e6w==
-Date: Thu, 20 Oct 2022 10:04:34 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: kernel test robot <lkp@intel.com>
+	s=k20201202; t=1666286268;
+	bh=1rp6r0y4uMJZEDwYCK7LlaG7tkovwCKcpoYZi+svkvc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=BHWtPIThNHNWJkMHYj+qfboxeq2h8Jd4t7AvVxcs2vf23nVosXm1bzJlgx3tWVUex
+	 MJLk0OBtTYqYHNMCRZT8ZW+Ljp3HrznaR2wmUVnC5D/5vnXj+sZm+sPgmPEIq29Obn
+	 R0sLdstA4kZBnKOohQei2Om5V+u89uaQznkEOOpU1hlE49xVtv8Tzf3JeYziH2XvwG
+	 05DEJB3fvKlyfHe3zJOMoFfqcInbTAbWMGjhPAJfLos9uIQFKKzkUsh3dYat9Vv3t2
+	 yc+7e5Vz8pOzB3M2DQTJQU7KWXJkXDmjFOF+lxs5XQng96/+NFcjhsIskWs3BYl/cF
+	 Cnz1QgSmqupXQ==
+Received: by pali.im (Postfix)
+	id 678B080E; Thu, 20 Oct 2022 19:17:45 +0200 (CEST)
+Date: Thu, 20 Oct 2022 19:17:45 +0200
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
 Subject: Re: [PATCH] PCI: Remove unnecessary of_irq.h includes
-Message-ID: <20221020150434.GA121028@bhelgaas>
+Message-ID: <20221020171745.jxne3unbiq5qt2vq@pali>
+References: <Y1D2ubkwXqwx9LWD@wendy>
+ <20221020134547.GA94120@bhelgaas>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20221020134101.GA90102@bhelgaas>
+In-Reply-To: <20221020134547.GA94120@bhelgaas>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,44 +63,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Michal Simek <monstr@monstr.eu>, kbuild-all@lists.01.org, Scott Branden <sbranden@broa
- dcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, llvm@lists.linux.dev, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, kernel test robot <lkp@intel.com>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, bcm-kernel-feedback-list@broadcom.com, Mingkai Hu <mingkai.hu@nxp.com>, Shawn Lin <shawn.lin@rock-chips.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Roy Zang <roy.zang@nxp.com>, Michal Simek <monstr@monstr.e
+ u>, kbuild-all@lists.01.org, Scott Branden <sbranden@broadcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 20, 2022 at 08:41:01AM -0500, Bjorn Helgaas wrote:
-> On Thu, Oct 20, 2022 at 04:09:37PM +0800, kernel test robot wrote:
-> > Hi Bjorn,
-> > 
-> > I love your patch! Yet something to improve:
-> > 
-> > [auto build test ERROR on helgaas-pci/next]
-> > [also build test ERROR on xilinx-xlnx/master rockchip/for-next linus/master v6.1-rc1 next-20221020]
-> > [If your patch is applied to the wrong git tree, kindly drop us a note.
-> > And when submitting patch, we suggest to use '--base' as documented in
-> > https://git-scm.com/docs/git-format-patch#_base_tree_information]
-> > 
-> > url:    https://github.com/intel-lab-lkp/linux/commits/Bjorn-Helgaas/PCI-Remove-unnecessary-of_irq-h-includes/20221020-100633
-> > base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
-> > patch link:    https://lore.kernel.org/r/20221019195452.37606-1-helgaas%40kernel.org
-> > patch subject: [PATCH] PCI: Remove unnecessary of_irq.h includes
-> > config: ia64-randconfig-r026-20221020
-> > compiler: ia64-linux-gcc (GCC) 12.1.0
-> > reproduce (this is a W=1 build):
-> >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-> >         chmod +x ~/bin/make.cross
-> >         # https://github.com/intel-lab-lkp/linux/commit/273a24b16a40ffd6a64c6c55aecbfae00a1cd996
-> >         git remote add linux-review https://github.com/intel-lab-lkp/linux
-> >         git fetch --no-tags linux-review Bjorn-Helgaas/PCI-Remove-unnecessary-of_irq-h-includes/20221020-100633
-> >         git checkout 273a24b16a40ffd6a64c6c55aecbfae00a1cd996
-> >         # save the config file
-> >         mkdir build_dir && cp config build_dir/.config
-> >         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=ia64 SHELL=/bin/bash drivers/pci/controller/
+On Thursday 20 October 2022 08:45:47 Bjorn Helgaas wrote:
+> [+cc Pali, heads-up for trivial addition of <linux/irqdomain.h> to
+> pci-mvebu.c]
+...
+> pci-mvebu.c also relies on getting <linux/irqdomain.h> via
+> <linux/of_irq.h>, but it actually depends on of_irq.h, so I'll just
+> add an irqdomain.h include there.
 > 
-> FYI, the instructions above didn't work for me.  Missing "config".
+> Bjorn
+> 
 
-Sorry, my fault, "config" was a MIME attachment.  Possibly update the
-instructions:
-
-  - # save the config file
-  + # save the config file from the MIME attachment
+Ok, that is fine!
