@@ -4,59 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E270AC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Oct 2022 20:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB3BDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 00:53:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mtdsy0XZgz3dt3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 07:07:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MtmDs1JqBz3dsx
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Oct 2022 11:53:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HoP+2256;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IyFqw50U;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=tony.luck@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com; envelope-from=rong.a.chen@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HoP+2256;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IyFqw50U;
 	dkim-atps=neutral
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mtdrs21RJz3c5v
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 07:05:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MtmCp1wpGz3bY8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Oct 2022 11:52:53 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666296365; x=1697832365;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:content-transfer-encoding:in-reply-to;
-  bh=Df31rUtnrw/F7hIheI4Cx6bl73pYnzh4BvNXaOx9ZRU=;
-  b=HoP+2256JznQBKZuVzj+ZmLwLvUvEnvrutucaVuKba0gy+NQWcOHDTRc
-   ZgzcbCYwfMsGrwDHEqliqRSIq345PvT1t5HcsF0eFubEbdyWbm7dIU0y8
-   +ztWjTHGYQw7xhQCRCVP/uS5i3PfPzDlK14uPhDEQ0r6CuTTU855AQeUi
-   eTGH1tsEpIQWxUh6/JVfRcq/M6Oi9LRdwAOVEODlSmZN6c7QxatgH/4Tl
-   2gRZTh/PQC636B7pfhKBfUoO8WT+ePllPUCDvwwWOZaQijsepxkvueg3m
-   qC9QnzxpzBqQx1uRsYDjFMQXRKFDqnGw8bsQvsBIJwtKBCuUATD8Dm2w4
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="307922666"
-X-IronPort-AV: E=Sophos;i="5.95,199,1661842800"; 
-   d="scan'208";a="307922666"
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 13:05:47 -0700
-X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="632471154"
-X-IronPort-AV: E=Sophos;i="5.95,199,1661842800"; 
-   d="scan'208";a="632471154"
-Received: from agluck-desk3.sc.intel.com ([172.25.222.78])
-  by fmsmga007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 13:05:46 -0700
-Date: Thu, 20 Oct 2022 13:05:45 -0700
-From: Tony Luck <tony.luck@intel.com>
-To: Shuai Xue <xueshuai@linux.alibaba.com>
-Subject: Re: [PATCH v2] mm, hwpoison: Try to recover from copy-on write faults
-Message-ID: <Y1GqGbBNk6fX/OnD@agluck-desk3.sc.intel.com>
-References: <SJ1PR11MB60838C1F65CA293188BB442DFC289@SJ1PR11MB6083.namprd11.prod.outlook.com>
- <20221019170835.155381-1-tony.luck@intel.com>
- <893b681b-726e-94e3-441e-4d68c767778a@linux.alibaba.com>
+  t=1666313574; x=1697849574;
+  h=subject:to:cc:references:from:message-id:date:
+   mime-version:in-reply-to:content-transfer-encoding;
+  bh=t8eukQQRNGfAZeDiwMZwSJzWT294/JgXyPrPo/qNp6g=;
+  b=IyFqw50UHMGGeuE0dJ3zUUd1hM/5FJfUSOyMuUdE69laLYnaG7S2cQJc
+   WWTz3FTO62IXJVjw335ss/4anhNIIMQtCsOpdEE7BVHK+xjUNDnicb6u4
+   gC3wVDsbIs6u1cXBhUchqIoOwOQg19EmZGYarj407mtj+vdqXLzqVR4+Z
+   tsm9zQywssH9OU/6tWM0oWwysHyO2zqfoDJRP4gOZvpIemUxfR5kFQYNG
+   vJjRMUJK18lSj3anC8w56omXnOMEuclr6yez6M6eQvymJfbWfKwrHR+cb
+   0Ns941e2K5iU+wGlXdOcJGSwJZF97eIAYyjQdsdq4ixILOLpb28cv/DlK
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="290186748"
+X-IronPort-AV: E=Sophos;i="5.95,200,1661842800"; 
+   d="scan'208";a="290186748"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 17:52:50 -0700
+X-IronPort-AV: E=McAfee;i="6500,9779,10506"; a="608037424"
+X-IronPort-AV: E=Sophos;i="5.95,200,1661842800"; 
+   d="scan'208";a="608037424"
+Received: from rongch2-mobl.ccr.corp.intel.com (HELO [10.249.172.222]) ([10.249.172.222])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2022 17:52:42 -0700
+Subject: Re: [kbuild-all] Re: [PATCH] PCI: Remove unnecessary of_irq.h
+ includes
+To: Bjorn Helgaas <helgaas@kernel.org>, kernel test robot <lkp@intel.com>
+References: <20221020150731.GA121202@bhelgaas>
+From: "Chen, Rong A" <rong.a.chen@intel.com>
+Message-ID: <9ac1f194-cef3-68bf-25e2-4bc6c0dbefce@intel.com>
+Date: Fri, 21 Oct 2022 08:52:40 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Firefox/78.0 Thunderbird/78.12.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <893b681b-726e-94e3-441e-4d68c767778a@linux.alibaba.com>
+In-Reply-To: <20221020150731.GA121202@bhelgaas>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,166 +69,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Naoya Horiguchi <naoya.horiguchi@nec.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Nicholas Piggin <npiggin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Dan Williams <dan.j.williams@intel.com>
+Cc: =?UTF-8?Q?Krzysztof_Wilczy=c5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, llvm@lists.linux.dev, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, linux-riscv@lists.infradead.org, Toan Le <toan@os.amperecomputing.com>, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, bcm-kernel-feedback-list@broadcom.com, Mingkai Hu <mingkai.hu@nxp.com>, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Roy Zang <roy.zang@nxp.com>, Michal Simek <monstr@monstr.eu>, kbuild-all@lists.01.org, Scott 
+ Branden <sbranden@broadcom.com>, Daire McNa mara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Oct 20, 2022 at 09:57:04AM +0800, Shuai Xue wrote:
+
+
+On 10/20/2022 11:07 PM, Bjorn Helgaas wrote:
+> On Thu, Oct 20, 2022 at 10:13:10PM +0800, kernel test robot wrote:
+>> Hi Bjorn,
+>>
+>> I love your patch! Yet something to improve:
+>>
+>> [auto build test ERROR on helgaas-pci/next]
+>> [also build test ERROR on xilinx-xlnx/master rockchip/for-next linus/master v6.1-rc1 next-20221020]
+>> [If your patch is applied to the wrong git tree, kindly drop us a note.
+>> And when submitting patch, we suggest to use '--base' as documented in
+>> https://git-scm.com/docs/git-format-patch#_base_tree_information]
+>>
+>> url:    https://github.com/intel-lab-lkp/linux/commits/Bjorn-Helgaas/PCI-Remove-unnecessary-of_irq-h-includes/20221020-100633
+>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
+>> patch link:    https://lore.kernel.org/r/20221019195452.37606-1-helgaas%40kernel.org
+>> patch subject: [PATCH] PCI: Remove unnecessary of_irq.h includes
+>> config: s390-randconfig-r044-20221019
+>> compiler: clang version 16.0.0 (https://github.com/llvm/llvm-project 791a7ae1ba3efd6bca96338e10ffde557ba83920)
+>> reproduce (this is a W=1 build):
+>>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>          chmod +x ~/bin/make.cross
+>>          # install s390 cross compiling tool for clang build
+>>          # apt-get install binutils-s390x-linux-gnu
+>>          # https://github.com/intel-lab-lkp/linux/commit/273a24b16a40ffd6a64c6c55aecbfae00a1cd996
+>>          git remote add linux-review https://github.com/intel-lab-lkp/linux
+>>          git fetch --no-tags linux-review Bjorn-Helgaas/PCI-Remove-unnecessary-of_irq-h-includes/20221020-100633
+>>          git checkout 273a24b16a40ffd6a64c6c55aecbfae00a1cd996
+>>          # save the config file
+>>          mkdir build_dir && cp config build_dir/.config
+>>          COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash drivers/pci/controller/
 > 
+> Maybe more user error?
 > 
-> 在 2022/10/20 AM1:08, Tony Luck 写道:
-> > If the kernel is copying a page as the result of a copy-on-write
-> > fault and runs into an uncorrectable error, Linux will crash because
-> > it does not have recovery code for this case where poison is consumed
-> > by the kernel.
-> > 
-> > It is easy to set up a test case. Just inject an error into a private
-> > page, fork(2), and have the child process write to the page.
-> > 
-> > I wrapped that neatly into a test at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/aegl/ras-tools.git
-> > 
-> > just enable ACPI error injection and run:
-> > 
-> >   # ./einj_mem-uc -f copy-on-write
-> > 
-> > Add a new copy_user_highpage_mc() function that uses copy_mc_to_kernel()
-> > on architectures where that is available (currently x86 and powerpc).
-> > When an error is detected during the page copy, return VM_FAULT_HWPOISON
-> > to caller of wp_page_copy(). This propagates up the call stack. Both x86
-> > and powerpc have code in their fault handler to deal with this code by
-> > sending a SIGBUS to the application.
+>    $ COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=s390 SHELL=/bin/bash drivers/pci/controller/
+>    Compiler will be installed in /home/bjorn/0day
+>    make --keep-going HOSTCC=/home/bjorn/0day/clang/bin/clang CC=/home/bjorn/0day/clang/bin/clang OBJCOPY=/usr/s390x-linux-gnu/bin/objcopy AR=llvm-ar NM=llvm-nm STRIP=llvm-strip OBJDUMP=llvm-objdump OBJSIZE=llvm-size READELF=llvm-readelf HOSTCXX=clang++ HOSTAR=llvm-ar CROSS_COMPILE=s390x-linux-gnu- --jobs=16 W=1 O=build_dir ARCH=s390 SHELL=/bin/bash drivers/pci/controller/
+>    make[1]: Entering directory '/home/bjorn/linux/build_dir'
+>      SYNC    include/config/auto.conf.cmd
+>      GEN     Makefile
+>    scripts/Kconfig.include:40: linker 's390x-linux-gnu-ld' not found
+
+
+Hi Bjorn,
+
+You may need to install the below package, or similar package for other OS:
+
+$ dpkg -S /usr/bin/s390x-linux-gnu-ld
+binutils-s390x-linux-gnu: /usr/bin/s390x-linux-gnu-ld
+
+ >>          # install s390 cross compiling tool for clang build
+ >>          # apt-get install binutils-s390x-linux-gnu
+
+Best Regards,
+Rong Chen
+
+>    make[3]: *** [../scripts/kconfig/Makefile:77: syncconfig] Error 1
+>    make[2]: *** [../Makefile:697: syncconfig] Error 2
+>    make[1]: *** [/home/bjorn/linux/Makefile:798: include/config/auto.conf.cmd] Error 2
+>    make[1]: Failed to remake makefile 'include/config/auto.conf.cmd'.
+>    make[1]: Failed to remake makefile 'include/config/auto.conf'.
+>      GEN     Makefile
+>    Error: kernelrelease not valid - run 'make prepare' to update it
+>    ../scripts/mkcompile_h: 19: s390x-linux-gnu-ld: not found
+>    make[1]: Target 'drivers/pci/controller/' not remade because of errors.
+>    make[1]: Leaving directory '/home/bjorn/linux/build_dir'
+>    make: *** [Makefile:231: __sub-make] Error 2
+>    make: Target 'drivers/pci/controller/' not remade because of errors.
+> _______________________________________________
+> kbuild-all mailing list -- kbuild-all@lists.01.org
+> To unsubscribe send an email to kbuild-all-leave@lists.01.org
 > 
-> Does it send SIGBUS to only child process or both parent and child process?
-
-This only sends a SIGBUS to the process that wrote the page (typically
-the child, but also possible that the parent is the one that does the
-write that causes the COW).
-
-> > 
-> > Note that this patch avoids a system crash and signals the process that
-> > triggered the copy-on-write action. It does not take any action for the
-> > memory error that is still in the shared page. To handle that a call to
-> > memory_failure() is needed. 
-> 
-> If the error page is not poisoned, should the return value of wp_page_copy
-> be VM_FAULT_HWPOISON or VM_FAULT_SIGBUS? When is_hwpoison_entry(entry) or
-> PageHWPoison(page) is true, do_swap_page return VM_FAULT_HWPOISON to caller.
-> And when is_swapin_error_entry is true, do_swap_page return VM_FAULT_SIGBUS.
-
-The page has uncorrected data in it, but this patch doesn't mark it
-as poisoned.  Returning VM_FAULT_SIGBUS would send an "ordinary" SIGBUS
-that doesn't include the BUS_MCEERR_AR and "lsb" information. It would
-also skip the:
-
-	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n"
-
-console message. So might result in confusion and attepmts to debug a
-s/w problem with the application instead of blaming the death on a bad
-DIMM.
-
-> > But this cannot be done from wp_page_copy()
-> > because it holds mmap_lock(). Perhaps the architecture fault handlers
-> > can deal with this loose end in a subsequent patch?
-
-I started looking at this for x86 ... but I have changed my mind
-about this being a good place for a fix. When control returns back
-to the architecture fault handler it no longer has easy access to
-the physical page frame number. It has the virtual address, so it
-could descend back into somee new mm/memory.c function to get the
-physical address ... but that seems silly.
-
-I'm experimenting with using sched_work() to handle the call to
-memory_failure() (echoing what the machine check handler does using
-task_work)_add() to avoid the same problem of not being able to directly
-call memory_failure()).
-
-So far it seems to be working. Patch below (goes on top of original
-patch ... well on top of the internal version with mods based on
-feedback from Dan Williams ... but should show the general idea)
-
-With this patch applied the page does get unmapped from all users.
-Other tasks that shared the page will get a SIGBUS if they attempt
-to access it later (from the page fault handler because of
-is_hwpoison_entry() as you mention above.
-
--Tony
-
-From d3879e83bf91cd6c61e12d32d3e15eb6ef069204 Mon Sep 17 00:00:00 2001
-From: Tony Luck <tony.luck@intel.com>
-Date: Thu, 20 Oct 2022 09:57:28 -0700
-Subject: [PATCH] mm, hwpoison: Call memory_failure() for source page of COW
- failure
-
-Cannot call memory_failure() directly from the fault handler because
-mmap_lock (and others) are held.
-
-It is important, but not urgent, to mark the source page as h/w poisoned
-and unmap it from other tasks.
-
-Use schedule_work() to queue a request to call memory_failure() for the
-page with the error.
-
-Signed-off-by: Tony Luck <tony.luck@intel.com>
----
- mm/memory.c | 35 ++++++++++++++++++++++++++++++++++-
- 1 file changed, 34 insertions(+), 1 deletion(-)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index b6056eef2f72..4a1304cf1f4e 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2848,6 +2848,37 @@ static inline int pte_unmap_same(struct vm_fault *vmf)
- 	return same;
- }
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+struct pfn_work {
-+	struct work_struct work;
-+	unsigned long pfn;
-+};
-+
-+static void do_sched_memory_failure(struct work_struct *w)
-+{
-+	struct pfn_work *p = container_of(w, struct pfn_work, work);
-+
-+	memory_failure(p->pfn, 0);
-+	kfree(p);
-+}
-+
-+static void sched_memory_failure(unsigned long pfn)
-+{
-+	struct pfn_work *p;
-+
-+	p = kmalloc(sizeof *p, GFP_KERNEL);
-+	if (!p)
-+		return;
-+	INIT_WORK(&p->work, do_sched_memory_failure);
-+	p->pfn = pfn;
-+	schedule_work(&p->work);
-+}
-+#else
-+static void sched_memory_failure(unsigned long pfn)
-+{
-+}
-+#endif
-+
- /*
-  * Return:
-  *	0:		copied succeeded
-@@ -2866,8 +2897,10 @@ static inline int __wp_page_copy_user(struct page *dst, struct page *src,
- 	unsigned long addr = vmf->address;
- 
- 	if (likely(src)) {
--		if (copy_mc_user_highpage(dst, src, addr, vma))
-+		if (copy_mc_user_highpage(dst, src, addr, vma)) {
-+			sched_memory_failure(page_to_pfn(src));
- 			return -EHWPOISON;
-+		}
- 		return 0;
- 	}
- 
--- 
-2.37.3
-
