@@ -4,70 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 074C9ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 12:23:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40991C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Oct 2022 10:22:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MwvPd2RSLz3cCn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 23:23:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MvcpZ3vS0z3dwH
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Oct 2022 21:22:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DBx9J7RT;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=wOx3mp5k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::234; helo=mail-lj1-x234.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=DBx9J7RT;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=wOx3mp5k;
 	dkim-atps=neutral
-Received: from mail-lj1-x234.google.com (mail-lj1-x234.google.com [IPv6:2a00:1450:4864:20::234])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MwvNZ01ylz2xfV
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 23:22:52 +1100 (AEDT)
-Received: by mail-lj1-x234.google.com with SMTP id z24so2524640ljn.4
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 05:22:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=Y2dftzokVagW1NbsihVeFfV7KhU75z+A9+bOluSjCvY=;
-        b=DBx9J7RTxs4jDAz7lRIoDNqosSvctOg1QPzn7FV2aLWeproz1aCaQMKhCB0IC3hflk
-         NkBK2x75an1lKBdpdpEXOFGo1nSZZ8ixYHtLX5Y97Ka4rNU5VVoNmNJCNO5cJqjJFigh
-         a3kVBbm7RGEg8m4dSmaDxAxR5jvwzF0I4+5gRZ/hDu9LEYi1WEteZ+1mSTgB9JxaMrEj
-         y0tUaV5eSigbbQmN1B5fNYYjAgZ+57/ayq/i825n21I9+nNQHL5QjY45JssqSXvH//0a
-         zPX6svt7+vfiE3kC+ETFbQb5Z+KonMp6d1BSctq0aPQux6wvxK8sgqGuTmNjCR+eHyca
-         xwmQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Y2dftzokVagW1NbsihVeFfV7KhU75z+A9+bOluSjCvY=;
-        b=nznk0M66UB1asHl7iHQOnGy7WdXCueeREIbNwrSrmTUoVBFpZBOPGnnQ9Q0EdAs9bh
-         4dUwcAaSU1GdO7uTgMzdOYh0dECyfNB+3w3HGpZn9MQN2Fgse+KOaq14iS3mCJD+6zer
-         Wf64+/tMrIiNvmcqgUxwDjrzKSeqOvfcqmDS1AjGUDGWDj9fiawjDaNbOWw7h8HuORet
-         oNjL9Dt04vkYQI+TcqGVAP0TI/7BbvoOjbNVYNrk145TArygBTMIPXuWCI/bdHB8iuut
-         m2SNbvTUzVTa5x6MUKL1W4pE9nlPVeeUz0PVlUogZeTKIxm2ZWhsJdPJm4EprL/UccNy
-         A9Fw==
-X-Gm-Message-State: ACrzQf36ZzzwzBHMEq4H8JoORPDjvpzYYlza8ijwNMcHMTh4lzGGqpqa
-	GsRu8lVGJl/oCDZNMAJeuFETWQ==
-X-Google-Smtp-Source: AMsMyM41L8nLr9Hx51j7f3hQp+pQCT+pio/X+snwW/xqXDxG7Hix8S7fRMaXs9FJJRTFfMPF0garoQ==
-X-Received: by 2002:a05:651c:1590:b0:26c:4311:9b84 with SMTP id h16-20020a05651c159000b0026c43119b84mr12835020ljq.152.1666614166054;
-        Mon, 24 Oct 2022 05:22:46 -0700 (PDT)
-Received: from fedora.. ([85.235.10.72])
-        by smtp.gmail.com with ESMTPSA id 6-20020ac24846000000b0048a9b197863sm1858671lfy.235.2022.10.24.05.22.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Oct 2022 05:22:45 -0700 (PDT)
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Li Yang <leoyang.li@nxp.com>
-Subject: [PATCH] soc: fsl: qe: Avoid using gpio_to_desc()
-Date: Mon, 24 Oct 2022 14:22:41 +0200
-Message-Id: <20221024122241.9463-1-linus.walleij@linaro.org>
-X-Mailer: git-send-email 2.37.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MvcnW6x75z2xJ7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Oct 2022 21:21:34 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 6C67860AC1;
+	Sat, 22 Oct 2022 10:21:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B97FEC433D6;
+	Sat, 22 Oct 2022 10:21:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1666434090;
+	bh=4VayhwOVTKVAjPqqz97sF96LRLG+KRcajksLHZHtUxk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=wOx3mp5ksWJtvhNhAOmZUG8X3+HuRkTdY9Nc7h6cWFEIxsW4svt4t9REDVX0plI4T
+	 0jvG2TdFgRx98jdox1K2bPVjxSRKOYymF+6X8vmbsIcB0hIMeoD9P7/9qN6LIAT+Ko
+	 fQekZTeUTocY/mdL9wRqCZaeHaw+pLcmNqIWDT+k=
+Date: Sat, 22 Oct 2022 12:21:27 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Jason A. Donenfeld" <Jason@zx2c4.com>
+Subject: Re: [PATCH v1 0/5] convert tree to
+ get_random_u32_{below,above,between}()
+Message-ID: <Y1PEJxnlY7dh4yK8@kroah.com>
+References: <20221022014403.3881893-1-Jason@zx2c4.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221022014403.3881893-1-Jason@zx2c4.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,71 +57,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org, Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: "Darrick J . Wong" <djwong@kernel.org>, linux-mips@vger.kernel.org, Andreas Dilger <adilger.kernel@dilger.ca>, Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@nvidia.com>, Catalin Marinas <catalin.marinas@arm.com>, Jakub Kicinski <kuba@kernel.org>, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-block@vger.kernel.org, SeongJae Park <sj@kernel.org>, loongarch@lists.linux.dev, Jaegeuk Kim <jaegeuk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, netdev@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <c
+ hristoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We want to get rid of the old GPIO numberspace, so instead of
-calling gpio_to_desc() we get the gpio descriptor for the requested
-line from the device tree directly without passing through the
-GPIO numberspace, and then we get the gpiochip from the descriptor.
+On Fri, Oct 21, 2022 at 09:43:58PM -0400, Jason A. Donenfeld wrote:
+> Hey everyone,
+> 
+> Here's the second and final tranche of tree-wide conversions to get
+> random integer handling a bit tamer. It's predominantly another
+> Coccinelle-based patchset.
+> 
+> First we s/prandom_u32_max/get_random_u32_below/, since the former is
+> just a deprecated alias for the latter. Then in the next commit we can
+> remove prandom_u32_max all together. I'm quite happy about finally being
+> able to do that. It means that prandom.h is now only for deterministic and 
+> repeatable randomness, not non-deterministic/cryptographic randomness.
+> That line is no longer blurred.
+> 
+> Then, in order to clean up a bunch of inefficient patterns, we introduce
+> two trivial static inline helper functions built on top of
+> get_random_u32_below: get_random_u32_above and get_random_u32_between.
+> These are pretty straight forward to use and understand. Then the final
+> two patches convert some gnarly open-coded number juggling to use these
+> helpers.
+> 
+> I've used Coccinelle for all the treewide patches, so hopefully review
+> is rather uneventful. I didn't accept all of the changes that Coccinelle
+> proposed, though, as these tend to be somewhat context-specific. I erred
+> on the side of just going with the most obvious cases, at least this
+> time through. And then we can address more complicated cases through
+> actual maintainer trees.
+> 
+> Since get_random_u32_below() sits in my random.git tree, these patches
+> too will flow through that same tree.
+> 
+> Regards,
+> Jason
 
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-gpio@vger.kernel.org
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- drivers/soc/fsl/qe/gpio.c | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 99f7de43c3c6..cc5602b679fe 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -13,10 +13,8 @@
- #include <linux/err.h>
- #include <linux/io.h>
- #include <linux/of.h>
--#include <linux/of_gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/gpio/driver.h>
--/* FIXME: needed for gpio_to_chip() get rid of this */
--#include <linux/gpio.h>
- #include <linux/slab.h>
- #include <linux/export.h>
- #include <soc/fsl/qe/qe.h>
-@@ -161,6 +159,7 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 	struct qe_pin *qe_pin;
- 	struct gpio_chip *gc;
- 	struct qe_gpio_chip *qe_gc;
-+	struct gpio_desc *gpiod;
- 	int err;
- 	unsigned long flags;
- 
-@@ -170,14 +169,21 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
--	err = of_get_gpio(np, index);
--	if (err < 0)
-+	gpiod = fwnode_gpiod_get_index(of_fwnode_handle(np), NULL, index, GPIOD_ASIS, "qe");
-+	if (IS_ERR(gpiod)) {
-+		err = PTR_ERR(gpiod);
- 		goto err0;
--	gc = gpio_to_chip(err);
-+	}
-+	if (!gpiod) {
-+		err = -EINVAL;
-+		goto err0;
-+	}
-+	gc = gpiod_to_chip(gpiod);
- 	if (WARN_ON(!gc)) {
- 		err = -ENODEV;
- 		goto err0;
- 	}
-+	gpiod_put(gpiod);
- 
- 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
- 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
--- 
-2.34.1
-
+Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
