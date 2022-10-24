@@ -4,89 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C544C3A59D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 04:34:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 007B5C38A2D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 05:18:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mwj0665b4z3bjh
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 15:34:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mwjyv1qFmz3bqw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 16:18:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=PpJQRu9b;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=QSRUH/h8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ceYlKdLo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=66.111.4.224; helo=new2-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=PpJQRu9b;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=QSRUH/h8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ceYlKdLo;
 	dkim-atps=neutral
-Received: from new2-smtp.messagingengine.com (new2-smtp.messagingengine.com [66.111.4.224])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mwhz30MQJz3bnM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 15:33:34 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailnew.nyi.internal (Postfix) with ESMTP id 4FA9E5800DE;
-	Mon, 24 Oct 2022 00:33:31 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute3.internal (MEProxy); Mon, 24 Oct 2022 00:33:31 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
-	:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:sender:subject:subject:to:to; s=fm1; t=1666586011; x=
-	1666593211; bh=GPE7rK5ZoLarbQEJTIQYWsXD2B4K3gZrdcp5Xh8TWXw=; b=P
-	pJQRu9bBLsvUGFpFVIcsTaHHs09Cj5XnFjmS9UqgTvQb0unSN+HLTzaSTGS7r6QI
-	Jc6lWP7jsSAmBjLhZ4xVF7aYP3XowmoBg3FFRvj5vIxX1ABv62JBlGoSkblf+AvC
-	vEwhH9OcCujmxV7puvBOmxorkMH0k/Mo1xcEy1FkYqRFLteI6ibqDKLizSOHWfP9
-	5qBaiYMJIWvPQXWlRAGix4isqFaSVvWm8zuV8Qlz8V7EU3F0/ZOOaaZZWpBF4OUa
-	GIN/gcjQmVCBjvraxdkMm10OT2nkIN73rmInoyFUmeqzHLe4qgf/rU5CdTknA0E5
-	eSXWXyoFmaPXbipvHtOQg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1666586011; x=
-	1666593211; bh=GPE7rK5ZoLarbQEJTIQYWsXD2B4K3gZrdcp5Xh8TWXw=; b=Q
-	SRUH/h8soDTSSDcMEXMiYmiZ2BhRxlHv4wW1C4mq2LGPPxZuPV2v+dDHSjSKjedI
-	SUqlqRHb66aOdCc6hKA2OusDl+m+MTUfkA6o40GqXfTE5A/TKI+8flzoIGVv6dNG
-	IfY9O+n43KW1gHXCt+HwYRubm6S9X7ibXYk8C9Bn7zeR2F3tL6RuseViWtMY7KcM
-	Gogl5385WgBpSPM3jH1YqizxDq0XLlGLUju865L9O/pEFmTmhNBm19wvmKbnaBCa
-	1X6GvxuIjbGowNZpYT8GkbSg/zAYPk30eZjdPNvmd+cFXSAenrySjUzOXEIyZ+Uf
-	69WPPkFAaeFSvXqcWA3lw==
-X-ME-Sender: <xms:kRVWY34fHL-14goDpbfdUyGMBhRox1JphwrfNLf3FzvonE0rETqqvQ>
-    <xme:kRVWY864YjcfLrKfAsVddmQ6v-k4hjcQFU1M3RFJIE1GkpxZWoYXB-EB6ul2jmzMX
-    MNiEXqHOlt7JIXY0Q>
-X-ME-Received: <xmr:kRVWY-cbWkAenccOPhhqIjVwetadGQENeht96aermFRGThCW7s6FVLBF7CCN2er88ru3xAnSZqS22wseH46T8DlsFw6x-eKM4u-KRmnpV0sIxw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvfedrgedtfedgkeeiucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    gfrhhlucfvnfffucdluddtmdenucfjughrpefkuffhvfevffgjfhgtgfgfggesthgsredt
-    tderjeenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruh
-    hsshgvlhhlrdgttgeqnecuggftrfgrthhtvghrnhepffeihfduhefgteevvddvhfekfeeg
-    hefhleduffejtdevjeelhfeileethedvgfegnecuffhomhgrihhnpehgihhthhhusgdrtg
-    homhenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehr
-    uhhstghurhesrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:kRVWY4LXRqsKEDoiywlXpYfZfOx6oy8cgCEspKqIyIpeDUk5a9dEvw>
-    <xmx:kRVWY7JS5Db4oeEVi6NZnOfWRUwa4KwJ46OVlgwIt4M33wRYXLvDrw>
-    <xmx:kRVWYxy-gZrtLreGUkUvztddUXeQvRBiy36C0GH3hD3_cg-DNNFe_A>
-    <xmx:mxVWY2n3C4xrlZmC8OJ-qT8yZbMAZVJyorHjbLtOQDzWTl1_Mx7AQw>
-Feedback-ID: i4421424f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
- 24 Oct 2022 00:33:17 -0400 (EDT)
-Message-ID: <6426e8cf8d3bb2fff1403038ef627548f07cef32.camel@russell.cc>
-Subject: Re: [PATCH] powerpc: replace ternary operator with min()
-From: Russell Currey <ruscur@russell.cc>
-To: KaiLong Wang <wangkailong@jari.cn>, mpe@ellerman.id.au,
- npiggin@gmail.com,  christophe.leroy@csgroup.eu, farosas@linux.ibm.com,
- mirq-linux@rere.qmqm.pl,  dmitry.osipenko@collabora.com,
- kda@linux-powerpc.org,  naveen.n.rao@linux.vnet.ibm.com
-Date: Mon, 24 Oct 2022 15:33:15 +1100
-In-Reply-To: <4ebda26c.346.18404df6852.Coremail.wangkailong@jari.cn>
-References: <4ebda26c.346.18404df6852.Coremail.wangkailong@jari.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mwjxn6b78z2xb4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 16:17:33 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29O485nd001486;
+	Mon, 24 Oct 2022 05:17:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=V67z7SGiVhJbkDGJtlj76kx1jLM77jC0oONGJegvl6s=;
+ b=ceYlKdLoF0ehO4plpF0P/pdrwICjO3yiPAR8bYCXFuNUyEQTQFd/ZYDDOlZ6CKrBjGaf
+ iufbcGJG2b15uMsMTW8Yqf+k4Ys+tb0TYJvC8QCoPnYf1zk9zd38+kgtDiAgEDNoKbui
+ k/+UiJtRMf5vnwVfpJ1ClJ+81OGkeXHk2wAo/M9wmjf4qdAW3R1kRnbG9V/n+COANQg+
+ eHL6jYPynI0Y8hLGFXrhnwTdbTzl7UiO5jLY07um355hNC2mhK0csH82dZ42TATUbUQW
+ t8tFMAfPS9ErAbJ7IyIU0ZJnAmpxmnzmXSyd58jEDqU6oAl2JCNKoMRxPILC9mkkmKEz vg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kctghp8d8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Oct 2022 05:17:23 +0000
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29O5GkWT021338;
+	Mon, 24 Oct 2022 05:17:23 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kctghp8ck-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Oct 2022 05:17:23 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29O55elQ008058;
+	Mon, 24 Oct 2022 05:17:21 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma04fra.de.ibm.com with ESMTP id 3kc859j1f7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 24 Oct 2022 05:17:20 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29O5HIRi2228836
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 24 Oct 2022 05:17:18 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9E47852050;
+	Mon, 24 Oct 2022 05:17:18 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id F34595204E;
+	Mon, 24 Oct 2022 05:17:17 +0000 (GMT)
+Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 29EB560648;
+	Mon, 24 Oct 2022 16:17:11 +1100 (AEDT)
+Message-ID: <dd9844b8444e22257b4cdb1fce5877f0086bd63b.camel@linux.ibm.com>
+Subject: Re: [PATCH v8 5/6] powerpc/code-patching: Use temporary mm for
+ Radix MMU
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 24 Oct 2022 16:17:10 +1100
+In-Reply-To: <21abdd4a7ee1cacc4847ab7424f45117f0d147ee.camel@russell.cc>
+References: <20221021052238.580986-1-bgray@linux.ibm.com>
+	 <20221021052238.580986-6-bgray@linux.ibm.com>
+	 <21abdd4a7ee1cacc4847ab7424f45117f0d147ee.camel@russell.cc>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.44.4 (3.44.4-2.fc36) 
 MIME-Version: 1.0
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: SX0X5n2Qj_d8PMcXPhyNrTLXM0j3RTMq
+X-Proofpoint-GUID: INRy58KygdxD8y-ealQSAkXy9NZEXKF6
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-10-23_02,2022-10-21_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
+ priorityscore=1501 clxscore=1015 impostorscore=0 bulkscore=0
+ suspectscore=0 mlxlogscore=999 lowpriorityscore=0 mlxscore=0 phishscore=0
+ spamscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2209130000 definitions=main-2210240032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,48 +102,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: jniethe5@gmail.com, npiggin@gmail.com, cmr@bluescreens.de, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-T24gU3VuLCAyMDIyLTEwLTIzIGF0IDIwOjQ0ICswODAwLCBLYWlMb25nIFdhbmcgd3JvdGU6Cj4g
-Rml4IHRoZSBmb2xsb3dpbmcgY29jY2ljaGVjayB3YXJuaW5nOgo+IAo+IGFyY2gvcG93ZXJwYy94
-bW9uL3htb24uYzoyOTg3OiBXQVJOSU5HIG9wcG9ydHVuaXR5IGZvciBtaW4oKQo+IGFyY2gvcG93
-ZXJwYy94bW9uL3htb24uYzoyNTgzOiBXQVJOSU5HIG9wcG9ydHVuaXR5IGZvciBtaW4oKQo+IAo+
-IFNpZ25lZC1vZmYtYnk6IEthaUxvbmcgV2FuZyA8d2FuZ2thaWxvbmdAamFyaS5jbj4KCkhlbGxv
-LAoKVGhpcyBmYWlscyB0byBjb21waWxlIG9uIHNvbWUgcGxhdGZvcm1zL2NvbXBpbGVycyBzaW5j
-ZSBuIGlzIGEgbG9uZyBhbmQKMTYgaXMgYW4gaW50LCBleHBhbmRpbmcgdG86CgpyID0gX19idWls
-dGluX2Nob29zZV9leHByKAoJKCghIShzaXplb2YoKHR5cGVvZihuKSAqKTEgPT0gKHR5cGVvZigx
-NikgKikxKSkpICYmCgkgKChzaXplb2YoaW50KSA9PQoJICAgc2l6ZW9mKCooOCA/ICgodm9pZCAq
-KSgobG9uZykobikqMGwpKSA6IChpbnQgKik4KSkpICYmCgkgIChzaXplb2YoaW50KSA9PQoJICAg
-c2l6ZW9mKCooOCA/ICgodm9pZCAqKSgobG9uZykoMTYpICogMGwpKSA6CgkJCShpbnQgKik4KSkp
-KSksCgkoKG4pIDwgKDE2KSA/IChuKSA6ICgxNikpLCAoewoJCXR5cGVvZihuKSBfX1VOSVFVRV9J
-RF9fX3gwID0gKG4pOwoJCXR5cGVvZigxNikgX19VTklRVUVfSURfX195MSA9ICgxNik7CgkJKChf
-X1VOSVFVRV9JRF9fX3gwKSA8IChfX1VOSVFVRV9JRF9fX3kxKSA/CgkJCSAoX19VTklRVUVfSURf
-X194MCkgOgoJCQkgKF9fVU5JUVVFX0lEX19feTEpKTsKCX0pKTsKCkhlcmUncyB0aGUgZnVsbCBi
-dWlsZCBmYWlsdXJlIGFzIGZvdW5kIGJ5IHNub3dwYXRjaDoKaHR0cHM6Ly9naXRodWIuY29tL3J1
-c2N1ci9saW51eC1jaS9hY3Rpb25zL3J1bnMvMzMwODg4MDU2Mi9qb2JzLzU0NjE1NzkwNDgjc3Rl
-cDo0Ojg5CgpZb3Ugc2hvdWxkIHVzZSBtaW5fdChsb25nLCBuLCAxNikgaW5zdGVhZC4KCi0gUnVz
-c2VsbAoKPiAtLS0KPiDCoGFyY2gvcG93ZXJwYy94bW9uL3htb24uYyB8IDQgKystLQo+IMKgMSBm
-aWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0t
-Z2l0IGEvYXJjaC9wb3dlcnBjL3htb24veG1vbi5jIGIvYXJjaC9wb3dlcnBjL3htb24veG1vbi5j
-Cj4gaW5kZXggZjUxYzg4MmJmOTAyLi5hNzc1MWNkMmNjOWQgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9w
-b3dlcnBjL3htb24veG1vbi5jCj4gKysrIGIvYXJjaC9wb3dlcnBjL3htb24veG1vbi5jCj4gQEAg
-LTI1ODAsNyArMjU4MCw3IEBAIHN0YXRpYyB2b2lkIHhtb25fcmF3ZHVtcCAodW5zaWduZWQgbG9u
-ZyBhZHJzLAo+IGxvbmcgbmR1bXApCj4gwqDCoMKgwqDCoMKgwqDCoHVuc2lnbmVkIGNoYXIgdGVt
-cFsxNl07Cj4gwqAKPiDCoMKgwqDCoMKgwqDCoMKgZm9yIChuID0gbmR1bXA7IG4gPiAwOykgewo+
-IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByID0gbiA8IDE2PyBuOiAxNjsKPiArwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgciA9IG1pbihuLCAxNik7Cj4gwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqBuciA9IG1yZWFkKGFkcnMsIHRlbXAsIHIpOwo+IMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgYWRycyArPSBucjsKPiDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoGZvciAobSA9IDA7IG0gPCByOyArK20pIHsKPiBAQCAtMjk4NCw3ICsyOTg0
-LDcgQEAgcHJkdW1wKHVuc2lnbmVkIGxvbmcgYWRycywgbG9uZyBuZHVtcCkKPiDCoMKgwqDCoMKg
-wqDCoMKgZm9yIChuID0gbmR1bXA7IG4gPiAwOykgewo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgcHJpbnRmKFJFRywgYWRycyk7Cj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqBwdXRjaGFyKCcgJyk7Cj4gLcKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHIgPSBu
-IDwgMTY/IG46IDE2Owo+ICvCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByID0gbWluKG4s
-IDE2KTsKPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoG5yID0gbXJlYWQoYWRycywg
-dGVtcCwgcik7Cj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBhZHJzICs9IG5yOwo+
-IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgZm9yIChtID0gMDsgbSA8IHI7ICsrbSkg
-ewoK
+On Mon, 2022-10-24 at 14:45 +1100, Russell Currey wrote:
+> On Fri, 2022-10-21 at 16:22 +1100, Benjamin Gray wrote:
+> > From: "Christopher M. Riedl" <cmr@bluescreens.de>
+> >=20
+> > x86 supports the notion of a temporary mm which restricts access to
+> > temporary PTEs to a single CPU. A temporary mm is useful for
+> > situations
+> > where a CPU needs to perform sensitive operations (such as patching
+> > a
+> > STRICT_KERNEL_RWX kernel) requiring temporary mappings without
+> > exposing
+> > said mappings to other CPUs. Another benefit is that other CPU TLBs
+> > do
+> > not need to be flushed when the temporary mm is torn down.
+> >=20
+> > Mappings in the temporary mm can be set in the userspace portion of
+> > the
+> > address-space.
+> >=20
+> > Interrupts must be disabled while the temporary mm is in use. HW
+> > breakpoints, which may have been set by userspace as watchpoints on
+> > addresses now within the temporary mm, are saved and disabled when
+> > loading the temporary mm. The HW breakpoints are restored when
+> > unloading
+> > the temporary mm. All HW breakpoints are indiscriminately disabled
+> > while
+> > the temporary mm is in use - this may include breakpoints set by
+> > perf.
+> >=20
+> > Use the `poking_init` init hook to prepare a temporary mm and
+> > patching
+> > address. Initialize the temporary mm by copying the init mm. Choose
+> > a
+> > randomized patching address inside the temporary mm userspace
+> > address
+> > space. The patching address is randomized between PAGE_SIZE and
+> > DEFAULT_MAP_WINDOW-PAGE_SIZE.
+> >=20
+> > Bits of entropy with 64K page size on BOOK3S_64:
+> >=20
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bits of entropy =3D log=
+2(DEFAULT_MAP_WINDOW_USER64 /
+> > PAGE_SIZE)
+> >=20
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0PAGE_SIZE=3D64K, DEFAUL=
+T_MAP_WINDOW_USER64=3D128TB
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bits of entropy =3D log=
+2(128TB / 64K)
+> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bits of entropy =3D 31
+> >=20
+> > The upper limit is DEFAULT_MAP_WINDOW due to how the Book3s64 Hash
+> > MMU
+> > operates - by default the space above DEFAULT_MAP_WINDOW is not
+> > available. Currently the Hash MMU does not use a temporary mm so
+> > technically this upper limit isn't necessary; however, a larger
+> > randomization range does not further "harden" this overall approach
+> > and
+> > future work may introduce patching with a temporary mm on Hash as
+> > well.
+> >=20
+> > Randomization occurs only once during initialization for each CPU
+> > as
+> > it
+> > comes online.
+> >=20
+> > The patching page is mapped with PAGE_KERNEL to set EAA[0] for the
+> > PTE
+> > which ignores the AMR (so no need to unlock/lock KUAP) according to
+> > PowerISA v3.0b Figure 35 on Radix.
+> >=20
+> > Based on x86 implementation:
+> >=20
+> > commit 4fc19708b165
+> > ("x86/alternatives: Initialize temporary mm for patching")
+> >=20
+> > and:
+> >=20
+> > commit b3fd8e83ada0
+> > ("x86/alternatives: Use temporary mm for text poking")
+> >=20
+> > ---
+>=20
+> Is the section following the --- your addendum to Chris' patch?=C2=A0 Tha=
+t
+> cuts it off from git, including your signoff.=C2=A0 It'd be better to hav=
+e
+> it together as one commit message and note the bits you contributed
+> below the --- after your signoff.
+>=20
+> Commits where you're modifying someone else's previous work should
+> include their signoff above yours, as well.
 
+Addendum to his wording, to break it off from the "From..." section
+(which is me splicing together his comments from previous patches with
+some minor changes to account for the patch changes). I found out
+earlier today that Git will treat it as a comment :(
+
+I'll add the signed off by back, I wasn't sure whether to leave it
+there after making changes (same in patch 2).
+=C2=A0
+> > +static int __do_patch_instruction_mm(u32 *addr, ppc_inst_t instr)
+> > +{
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int err;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0u32 *patch_addr;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long text_poke_addr=
+;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0pte_t *pte;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0unsigned long pfn =3D get_pa=
+tch_pfn(addr);
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct mm_struct *patching_m=
+m;
+> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct temp_mm_state prev;
+>=20
+> Reverse christmas tree?=C2=A0 If we care
+
+Currently it's mirroring the __do_patch_instruction declarations, with
+extra ones at the bottom.
