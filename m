@@ -4,51 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5379C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Oct 2022 19:46:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D885C38A2D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 05:03:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MvsKm07Qvz3dsc
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Oct 2022 06:46:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MwjdR6P0rz3cBc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 16:03:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QH1i6VZD;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=r24wFPf2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=sj@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QH1i6VZD;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=r24wFPf2;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mvqy80kWJz303N
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2022 05:44:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MwjcN6CThz2xf6
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 16:02:27 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id EF5F5B80171;
-	Sat, 22 Oct 2022 18:44:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3F6AC433D7;
-	Sat, 22 Oct 2022 18:44:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1666464281;
-	bh=rOUU30Ns40RaPB0p9BJDk4013bR8TLp0a0aP/lu3CGw=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QH1i6VZDzmLtoKIfZRdZlY5d0nnl5DOOq4/LqxYE5FlmXq1e/ayVWYrKNPQTQfyTm
-	 lDWgFVezS94kXpPQqLVZatcxNDhidctINkWrhuWdQswTmu6mz+CfseCYZ+3W8aNf/D
-	 BNkZScXW3d2V3kASY+/66HDGLtFJ5ipyIa5e8xIAsg2O2gipHt0u3nXAKd6fgttKgZ
-	 NC4qpNwwmaHrG3GXHMyiFE9RiFlknggaV/ZCAfsoGqw84Y8dfHy2yZiRWd2Z5DPiV2
-	 OT+zRHLzLLt4Xmw92V6rNOqAbn6uKoF3nU46vq2IUtHpqclZiRhC/zWn5A1+rqtQtz
-	 yzpn0LslOhDww==
-From: SeongJae Park <sj@kernel.org>
+	by ams.source.kernel.org (Postfix) with ESMTPS id 6BF8EB8085C;
+	Mon, 24 Oct 2022 05:02:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 757FDC433D6;
+	Mon, 24 Oct 2022 05:02:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1666587741;
+	bh=oLNeae/g3E6G/Ls0ICeBdFZ3JmsZl6TCaf+9G+ZQyuc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=r24wFPf2OoXaZUv1hRwUhK0LG70rwvP8C4wk+P2MA2QLtc5OBc85KnMDgO5frfUt/
+	 4Ep80Vjk9MFiaue7+edpKlQI7zLMePRUhPgBOsO2uFwBve4/EOVn8iH4PxA2E9Kzkc
+	 zxaSOCwadEVS4BIhzeo+C2+7Hb2+R7OTJnv2Kc/s=
+Date: Mon, 24 Oct 2022 07:03:12 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Subject: Re: [PATCH v1 1/5] treewide: use get_random_u32_below() instead of deprecated function
-Date: Sat, 22 Oct 2022 18:44:36 +0000
-Message-Id: <20221022184436.33750-1-sj@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20221022014403.3881893-2-Jason@zx2c4.com>
-References: 
+Subject: Re: [PATCH v1 0/2] cleanup stackprotector canary generation
+Message-ID: <Y1YckAwiLBh8sxao@kroah.com>
+References: <20221023203208.118919-1-Jason@zx2c4.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Sun, 23 Oct 2022 06:46:01 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221023203208.118919-1-Jason@zx2c4.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,34 +56,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: damon@lists.linux.dev, "Darrick J . Wong" <djwong@kernel.org>, linux-mips@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org, Andreas Dilger <adilger.kernel@dilger.ca>, Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@nvidia.com>, Catalin Marinas <catalin.marinas@arm.com>, Jakub Kicinski <kuba@kernel.org>, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-block@vger.kernel.org, SeongJae Park <sj@kernel.org>, loongarch@lists.linux.dev, Jaegeuk Kim <jaegeuk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-m
- mc@vger.kernel.org, linux-kernel@vger.kernel.org, =?UTF-8?q?Christoph=20B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, "H . Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Chris Zankel <chris@zankel.net>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, linuxppc-dev@lists.o
+ zlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Jason,
-
-Cc-ing damon@lists.linux.dev and linux-mm@kvack.org.
-
-On Fri, 21 Oct 2022 21:43:59 -0400 "Jason A. Donenfeld" <Jason@zx2c4.com> wrote:
-
-> This is a simple mechanical transformation done by:
+On Sun, Oct 23, 2022 at 10:32:06PM +0200, Jason A. Donenfeld wrote:
+> Stack canary generation currently lives partially in random.h, where it
+> doesn't belong, and is in general a bit overcomplicated. This small
+> patchset fixes up both issues. I'll take these in my tree, unless
+> somebody else prefers to do so.
 > 
-> @@
-> expression E;
-> @@
-> - prandom_u32_max(E)
-> + get_random_u32_below(E)
-> 
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
-> ---
-[...]
->  include/linux/damon.h                         |  2 +-
+> Cc: Albert Ou <aou@eecs.berkeley.edu>
+> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Chris Zankel <chris@zankel.net>
+> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Cc: Dave Hansen <dave.hansen@linux.intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Guo Ren <guoren@kernel.org>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: Max Filippov <jcmvbkbc@gmail.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Cc: Palmer Dabbelt <palmer@dabbelt.com>
+> Cc: Paul Walmsley <paul.walmsley@sifive.com>
+> Cc: Rich Felker <dalias@libc.org>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-csky@vger.kernel.org
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-riscv@lists.infradead.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: linux-xtensa@linux-xtensa.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: x86@kernel.org
 
-For the damon.h part,
-
-Reviewed-by: SeongJae Park <sj@kernel.org>
-
-
-Thanks,
-SJ
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
