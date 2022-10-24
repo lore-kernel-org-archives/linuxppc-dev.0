@@ -4,60 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02009C38A2D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 16:44:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0BEB9C67871
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 20:02:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mx1BK0fJHz3cCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 03:44:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=R/LWqL0H;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=xank=2z=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=R/LWqL0H;
-	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mx5Zb45WGz3ccp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 07:02:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bluescreens.de (client-ip=80.241.56.172; helo=mout-p-202.mailbox.org; envelope-from=cmr@bluescreens.de; receiver=<UNKNOWN>)
+X-Greylist: delayed 381 seconds by postgrey-1.36 at boromir; Tue, 25 Oct 2022 02:46:14 AEDT
+Received: from mout-p-202.mailbox.org (mout-p-202.mailbox.org [80.241.56.172])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mx19D6Stbz2xgG
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2022 03:43:28 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MwzvB3grVz2yZd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2022 02:46:14 +1100 (AEDT)
+Received: from smtp2.mailbox.org (smtp2.mailbox.org [IPv6:2001:67c:2050:b231:465::2])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-384) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id DC75FB81612;
-	Mon, 24 Oct 2022 16:43:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 495C4C433D7;
-	Mon, 24 Oct 2022 16:43:19 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="R/LWqL0H"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1666629797;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jVwnCaFZdOk86y5jBEGAHVTaPFA8qqxydDorS9HQrxk=;
-	b=R/LWqL0HmERHhgI7BdwcGOaB3Q8XsPIH6B/Gdo3HJUMIuT9hwUE+2aIfUs7T5AhOI79Jt6
-	d8ngYNFZKfkYsUwIv2qdXPqC/aoaC88pmme7vJsjJeVfqbHgYDfmh3RufMLuzpN+0qp8US
-	fVJyhkYuwNudc5bRrrZ+Jls0DQkggGI=
-Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 885087f8 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Mon, 24 Oct 2022 16:43:17 +0000 (UTC)
-Date: Mon, 24 Oct 2022 18:43:09 +0200
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Theodore Ts'o <tytso@mit.edu>
-Subject: Re: [PATCH v1 0/5] convert tree to
- get_random_u32_{below,above,between}()
-Message-ID: <Y1bAnU4pCczkw5j8@zx2c4.com>
-References: <20221022014403.3881893-1-Jason@zx2c4.com>
- <20221021205522.6b56fd24@kernel.org>
- <Y1NwJJOIB4gI5G11@zx2c4.com>
- <20221021223242.05df0a5b@kernel.org>
- <Y1OD2tdVwQsydSNV@zx2c4.com>
- <20221021230322.00dd045c@kernel.org>
- <Y1WtAZfciG1z2CC7@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Y1WtAZfciG1z2CC7@mit.edu>
+	by mout-p-202.mailbox.org (Postfix) with ESMTPS id 4Mwzlc49Xcz9sTs;
+	Mon, 24 Oct 2022 17:39:40 +0200 (CEST)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 24 Oct 2022 10:39:34 -0500
+Message-Id: <CNU9LN3VHE7I.3QD0LRZKFY948@sierra>
+Subject: Re: [PATCH v8 5/6] powerpc/code-patching: Use temporary mm for
+ Radix MMU
+From: "Christopher M. Riedl" <cmr@bluescreens.de>
+To: "Benjamin Gray" <bgray@linux.ibm.com>, "Russell Currey"
+ <ruscur@russell.cc>, <linuxppc-dev@lists.ozlabs.org>
+References: <20221021052238.580986-1-bgray@linux.ibm.com>
+ <20221021052238.580986-6-bgray@linux.ibm.com>
+ <21abdd4a7ee1cacc4847ab7424f45117f0d147ee.camel@russell.cc>
+ <dd9844b8444e22257b4cdb1fce5877f0086bd63b.camel@linux.ibm.com>
+In-Reply-To: <dd9844b8444e22257b4cdb1fce5877f0086bd63b.camel@linux.ibm.com>
+X-Rspamd-Queue-Id: 4Mwzlc49Xcz9sTs
+X-Mailman-Approved-At: Tue, 25 Oct 2022 07:00:53 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,37 +51,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Darrick J . Wong" <djwong@kernel.org>, linux-mips@vger.kernel.org, netdev@vger.kernel.org, Andreas Dilger <adilger.kernel@dilger.ca>, Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@nvidia.com>, Catalin Marinas <catalin.marinas@arm.com>, Jakub Kicinski <kuba@kernel.org>, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Heiko Carstens <hca@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-block@vger.kernel.org, SeongJae Park <sj@kernel.org>, loongarch@lists.linux.dev, Jaegeuk Kim <jaegeuk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Christoph =?utf-8?Q?B=C3
- =B6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: jniethe5@gmail.com, ajd@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Oct 23, 2022 at 05:07:13PM -0400, Theodore Ts'o wrote:
-> On Fri, Oct 21, 2022 at 11:03:22PM -0700, Jakub Kicinski wrote:
-> > On Sat, 22 Oct 2022 07:47:06 +0200 Jason A. Donenfeld wrote:
-> > > On Fri, Oct 21, 2022 at 10:32:42PM -0700, Jakub Kicinski wrote:
-> > > > But whatever. I mean - hopefully there aren't any conflicts in the ~50
-> > > > networking files you touch. I just wish that people didn't pipe up with
-> > > > the tree wide changes right after the merge window. Feels like the
-> > > > worst possible timing.  
-> > > 
-> > > Oh, if the timing is what makes this especially worrisome, I have
-> > > no qualms about rebasing much later, and reposting this series then.
-> > > I'll do that.
-> > 
-> > Cool, thanks! I promise to not be grumpy if you repost around rc6 :)
-> 
-> One way of making things less painful for the stable branch and for
-> the upstream branch is to *add* new helpers instead of playing
-> replacement games like s/prandom_u32_max/get_random_u32_below/.  This
-> is what causes the patch conflict problems.
-> 
-> One advantage of at least adding the new functions to the stable
-> branches, even if we don't do the wholesale replacement, is that it
+On Mon Oct 24, 2022 at 12:17 AM CDT, Benjamin Gray wrote:
+> On Mon, 2022-10-24 at 14:45 +1100, Russell Currey wrote:
+> > On Fri, 2022-10-21 at 16:22 +1100, Benjamin Gray wrote:
+> > > From: "Christopher M. Riedl" <cmr@bluescreens.de>
+> > >
 
-That's a good idea. I'll also save the removal commit, anyhow, for a
-separate thing at the end of 6.2 rc1, so that -next doesn't have issues
-either.  That's how things wound up going down for the first tranche of
-these, and that worked well.
+-----%<------
 
-Jason
+> > >
+> > > ---
+> >
+> > Is the section following the --- your addendum to Chris' patch?=C2=A0 T=
+hat
+> > cuts it off from git, including your signoff.=C2=A0 It'd be better to h=
+ave
+> > it together as one commit message and note the bits you contributed
+> > below the --- after your signoff.
+> >
+> > Commits where you're modifying someone else's previous work should
+> > include their signoff above yours, as well.
+>
+> Addendum to his wording, to break it off from the "From..." section
+> (which is me splicing together his comments from previous patches with
+> some minor changes to account for the patch changes). I found out
+> earlier today that Git will treat it as a comment :(
+>
+> I'll add the signed off by back, I wasn't sure whether to leave it
+> there after making changes (same in patch 2).
+> =C2=A0
+
+This commit has lots of my words so should probably keep the sign-off - if =
+only
+to guarantee that blame is properly directed at me for any nonsense therein=
+ ^^.
+
+Patch 2 probably doesn't need my sign-off any more - iirc, I actually defen=
+ded
+the BUG_ON()s (which are WARN_ON()s now) at some point.
