@@ -4,75 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B43C1C38A2D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Oct 2022 20:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41F9CFA373E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 18:52:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mx5Z06d5Mz3cC6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 07:01:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mxh015LVrz3cDP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 05:52:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=sGYDK7eI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J4QLU/fM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=philmd@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=sGYDK7eI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=J4QLU/fM;
 	dkim-atps=neutral
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mwk6n5gsGz2xJF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Oct 2022 16:25:20 +1100 (AEDT)
-Received: by mail-wr1-x429.google.com with SMTP id k8so5692553wrh.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Oct 2022 22:25:20 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=xZk2YhOyCsD5JgZA8622Psb4g9tdzFicF6waMAEX+tE=;
-        b=sGYDK7eIYH5PqH/5Acy0XyaEjCscnyemwFKPlv0plAI4IwAFCznfoGKOXs1a7qYDrr
-         ly2ism/XDhfqN7P+LUkOQ+8zw1DW3s9014bL3MpmA/VeepyZ997065xLFYnKak1tqGkq
-         FoBa0umV34QeH83RdEplTs4i5Q4cLt0MSci1zU3y4K+5MRKk5kvOo6/OmTyP65vvmeaX
-         Q5fVy3H/6NpDIslefYS/jRvBlP4GCt+4AychccYkqmARW0YsM+HURsaQVLlgY4KIgMaO
-         8B0U5afdOstZ9Xnrvl2gDFtoZcogvKS6fdmiHd2ZOE5f9wxSOHws4RH0J6kyMAnRSo9m
-         cgVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=xZk2YhOyCsD5JgZA8622Psb4g9tdzFicF6waMAEX+tE=;
-        b=ihSqbSNmErt35/psqaJbRVbFBFNytKaxQ9eVFSg2wV5cHsjRi/F3fDCQ3/nZhzU/d1
-         knfznihfPFOTXQ73B9mjcbxfvUrEtG4A1ddXRzVx82863EDeEdGnOhjgYg1F1NYkd4zy
-         uHKtDSLf1t4LnBFdmiivsg4XGlKtTR4KhZGFj2SwfFwbIxmRRG/UVqTMLSXBM/nraXO+
-         VZntoiPaDNcU2J+Jcb8SY+zf7XlEVxUvFHeAWCnpeECs0HUp7lXlymX0tRP8BxLKFQux
-         2xVVVpkmlWfNtzc4c99xIJ6ZN+YojDyIMCKgEOFZ6PeANE1gJSCJE32HL6KOTqAK7Pyp
-         JfLA==
-X-Gm-Message-State: ACrzQf0hxiHx7cm31E6rEp6sSuwhsbxfgS0CmI8M2j4IFTP/zJKDx9KL
-	abk8cNCDaYiHIGvmACMZn0V4ZQ==
-X-Google-Smtp-Source: AMsMyM6QxHnKrRaxO/sgu91YoPZwLII9g5woi4tdrjAvc7GmkjpM0AXJ+q3phtLN49229n5kcuKDXw==
-X-Received: by 2002:adf:e196:0:b0:236:740f:f234 with SMTP id az22-20020adfe196000000b00236740ff234mr996926wrb.518.1666589113331;
-        Sun, 23 Oct 2022 22:25:13 -0700 (PDT)
-Received: from [10.50.0.10] (ec2-54-194-108-71.eu-west-1.compute.amazonaws.com. [54.194.108.71])
-        by smtp.gmail.com with ESMTPSA id c11-20020a05600c0a4b00b003c6f27d275dsm7317108wmq.33.2022.10.23.22.25.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 23 Oct 2022 22:25:12 -0700 (PDT)
-Message-ID: <5f4b9276-92bf-2e04-8a42-8f416526b3a6@linaro.org>
-Date: Mon, 24 Oct 2022 07:25:08 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mxgz20cz9z307C
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 05:51:57 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 12E8B61AED;
+	Tue, 25 Oct 2022 18:51:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39CD1C433C1;
+	Tue, 25 Oct 2022 18:51:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1666723915;
+	bh=w401ZqDLSQ8ZKux9B2AAv7FrlhU6ZkoTx88TnOOAwyI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=J4QLU/fMBNMsjryLn9Wukcgo2ksbMucxKSGb8TDhyj7H976UpEuI3o9YKREB4iNeo
+	 O7Vaq+gUbC7IzWXni8INXiA23itd9JgEvpyQnKkr5FUfpTllP7DkSk/vo5PpYbUGjB
+	 B1D3cfHi1zO0qSLbl+9ML5vzw8VPaBkJfq2ETCnasmUCf4h0JjtnlsucyieL20A7tc
+	 HWsbHuUT6Z43exTpPelJp+WVotI+DfgAYLz3RAkNLqDA4BpnWzxkSdlE8Ch8COL9ds
+	 RM4cQuVtwBEmLeM19zvutW8FRJXIXUVnC3QnKUzjl60ktpxCNAJhOgz643K/bK9HXc
+	 qQgo1O8wJaEwQ==
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Subject: [PATCH v2 1/4] PCI: altera-msi: Include <linux/irqdomain.h> explicitly
+Date: Tue, 25 Oct 2022 13:51:44 -0500
+Message-Id: <20221025185147.665365-2-helgaas@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221025185147.665365-1-helgaas@kernel.org>
+References: <20221025185147.665365-1-helgaas@kernel.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.3.2
-Subject: Re: [PATCH v1 1/2] stackprotector: move CANARY_MASK and
- get_random_canary() into stackprotector.h
-Content-Language: en-US
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>, linux-kernel@vger.kernel.org
-References: <20221023203208.118919-1-Jason@zx2c4.com>
- <20221023203208.118919-2-Jason@zx2c4.com>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20221023203208.118919-2-Jason@zx2c4.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Tue, 25 Oct 2022 07:00:53 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,28 +59,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, "H . Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Chris Zankel <chris@zankel.net>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mips@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, l
- inuxppc-dev@lists.ozlabs.org
+Cc: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Michal Simek <michal.simek@amd.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, Scott Branden <sb
+ randen@broadcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23/10/22 22:32, Jason A. Donenfeld wrote:
-> This has nothing to do with random.c and everything to do with stack
-> protectors. Yes, it uses randomness. But many things use randomness.
-> random.h and random.c are concerned with the generation of randomness,
-> not with each and every use. So move this function into the more
-> specific stackprotector.h file where it belongs.
-> 
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
-> ---
->   arch/x86/kernel/cpu/common.c   |  2 +-
->   arch/x86/kernel/setup_percpu.c |  2 +-
->   arch/x86/kernel/smpboot.c      |  2 +-
->   arch/x86/xen/enlighten_pv.c    |  2 +-
->   include/linux/random.h         | 19 -------------------
->   include/linux/stackprotector.h | 19 +++++++++++++++++++
->   kernel/fork.c                  |  2 +-
->   7 files changed, 24 insertions(+), 24 deletions(-)
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+pcie-altera-msi.c uses irq_domain_add_linear() and related interfaces, so
+it needs <linux/irqdomain.h> but doesn't include it directly; it relies on
+the fact that <linux/of_irq.h> includes it.
+
+But pcie-altera-msi.c *doesn't* need <linux/of_irq.h> itself.  Include
+<linux/irqdomain.h> directly to remove this implicit dependency so a future
+patch can drop <linux/of_irq.h>.
+
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/pci/controller/pcie-altera-msi.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/controller/pcie-altera-msi.c b/drivers/pci/controller/pcie-altera-msi.c
+index 7b1d3ebc34ec..4366e042e98b 100644
+--- a/drivers/pci/controller/pcie-altera-msi.c
++++ b/drivers/pci/controller/pcie-altera-msi.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/interrupt.h>
+ #include <linux/irqchip/chained_irq.h>
++#include <linux/irqdomain.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/msi.h>
+-- 
+2.25.1
 
