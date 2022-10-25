@@ -4,92 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40732C04A95
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 04:51:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84F75C04A95
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 14:03:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MxKKd5K1cz3f5d
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 15:51:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MxYZT56vcz3cFM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 01:03:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mgoi7BC/;
+	dkim=pass (1024-bit key; unprotected) header.d=nec.com header.i=@nec.com header.a=rsa-sha256 header.s=selector1 header.b=FCdznO4i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nec.com (client-ip=40.107.114.56; helo=jpn01-tyc-obe.outbound.protection.outlook.com; envelope-from=naoya.horiguchi@nec.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mgoi7BC/;
+	dkim=pass (1024-bit key; unprotected) header.d=nec.com header.i=@nec.com header.a=rsa-sha256 header.s=selector1 header.b=FCdznO4i;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from JPN01-TYC-obe.outbound.protection.outlook.com (mail-tycjpn01on2056.outbound.protection.outlook.com [40.107.114.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MxK9R1dlGz3bjl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2022 15:44:43 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 29P4fwhk014672;
-	Tue, 25 Oct 2022 04:44:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=ecLKq/Fq+cWjwAxxOLP4rLWiZsu/EOeMYXdFXqYTC1o=;
- b=mgoi7BC/aoNWwtcJq9/mPxI2N0jN/VJWsKNHT7gGUEcQZgtbqBimc6+++JqCcsup1tCq
- tNWF1nqnVEx+5wDeUCyf4iRPQJEwtsDszRNex26EmNdNaetnguUEmzXEHDEons2ZE64m
- /Y0FXs5tT9qP0UP7kVXyQ1+EOxegVFUrsExu9niExAroKcdQuAz0amtNuic4iWSqU+7m
- G+bqbKUK6WELVjmGh23LmYARD79WFoCj6j5O0ctELKX0c5+PkU2ry8uIGw48Vy2JgiZh
- D1r0X+OtGu16ZfqRZb0WO8Z8BdXj2R2N5/aQKyx7RQ+Kl+yf6/LGbsMBrwnttrozQRjx cg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ke90fg1uk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Oct 2022 04:44:30 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 29P4h4nI023131;
-	Tue, 25 Oct 2022 04:44:30 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ke90fg1tt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Oct 2022 04:44:29 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 29P4KZbw011885;
-	Tue, 25 Oct 2022 04:44:27 GMT
-Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma03ams.nl.ibm.com with ESMTP id 3kdugas0e1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Oct 2022 04:44:27 +0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 29P4ixQn30212356
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 25 Oct 2022 04:44:59 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 423B342047;
-	Tue, 25 Oct 2022 04:44:25 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 966404203F;
-	Tue, 25 Oct 2022 04:44:24 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Tue, 25 Oct 2022 04:44:24 +0000 (GMT)
-Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 55CE160806;
-	Tue, 25 Oct 2022 15:44:21 +1100 (AEDT)
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v9 6/7] powerpc/code-patching: Use temporary mm for Radix MMU
-Date: Tue, 25 Oct 2022 15:44:08 +1100
-Message-Id: <20221025044409.448755-7-bgray@linux.ibm.com>
-X-Mailer: git-send-email 2.37.3
-In-Reply-To: <20221025044409.448755-1-bgray@linux.ibm.com>
-References: <20221025044409.448755-1-bgray@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MxLXd2Vhxz30NN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Oct 2022 16:46:22 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Yv+EcXx92DzoYKbSuf98Zgrjn8yqRJKGlfRzWLygl/57GLPL4o4dnzCaSDkg7dyuyA48oLR2JyOclf8HISPInUGRoZAgfx+mWSWGTnNim7j2fVa/Toz082CrPVfd+PZVtd3VcHWd/RlPXT2PVRfj/lC63+2T/hVnm53ZP7z0UnebTlN1RS8trFJ2cwnUyVm0sMll2/x11rZUGaHiqxvO2Wt9P3+tIfMjJhqpJj/+ANet7IWl5pKewHCOiNF9/jdS5X/w0TjaZRuYhLtVbsu6p+6JqakMBjYA66UdKEofn+Ta/5SIjt3Uv+7X8vx3Ne/H/jUKJfAWGXZ0hci3Mlzd8Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=CN3XB0szcBvfdJX51zMMFDQlsgA1zRnlB8ULuMj2HQQ=;
+ b=DCNJ2h47HKDfhV0MpzAPZS9OrwiBavBC593RXvTfnA+BGU+wIZOYYTiz9rboPkp7csh5JFWmFS82zzSF/E9/uDt6X3h5VAKJL41Cx6+bBduUpw6HjJsyowDeGkGTloXvibxoYJHyZbnPbePcNLtxc4dozUsC+Pq6iPQLSKLRDKx1HkY1bNxhubsl2jr102OoFUbdJWWnoarWDEt/v4NJJu02qxgcYE+/rDnNr/muB+8Dxks5r4gS9yN3nIWgDfeyR8xL2qFAN0+Sqf5DyBsDewbpsuomhZWJlogOhyAVz6cM7T2+ClYA40SkJnBYJa8f4d5prkCTpu1q0EO+SBhTZg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nec.com; dmarc=pass action=none header.from=nec.com; dkim=pass
+ header.d=nec.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nec.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=CN3XB0szcBvfdJX51zMMFDQlsgA1zRnlB8ULuMj2HQQ=;
+ b=FCdznO4i9xVLOk9/cMx8wJOhGzUc/oLq48sPqRH9YhAhvn1FZLTWjr/491X+o6mu0GvxwjB9b5O8i9oVp1fDG7PYpFRHvkpCEfQ1yUzkAxHfunaq0LAScjcdG0XyTvP9p2oDvbFhwLZr/ZMfZQ8tH6iupdsxMbMVVTmTM4pSjzI=
+Received: from TYWPR01MB8591.jpnprd01.prod.outlook.com (2603:1096:400:13c::10)
+ by OSYPR01MB5478.jpnprd01.prod.outlook.com (2603:1096:604:8b::9) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5746.28; Tue, 25 Oct
+ 2022 05:46:02 +0000
+Received: from TYWPR01MB8591.jpnprd01.prod.outlook.com
+ ([fe80::9f34:8082:cd2f:589c]) by TYWPR01MB8591.jpnprd01.prod.outlook.com
+ ([fe80::9f34:8082:cd2f:589c%9]) with mapi id 15.20.5746.025; Tue, 25 Oct 2022
+ 05:46:02 +0000
+From: =?utf-8?B?SE9SSUdVQ0hJIE5BT1lBKOWggOWPo+OAgOebtOS5nyk=?=
+	<naoya.horiguchi@nec.com>
+To: Tony Luck <tony.luck@intel.com>
+Subject: Re: [PATCH v3 1/2] mm, hwpoison: Try to recover from copy-on write
+ faults
+Thread-Topic: [PATCH v3 1/2] mm, hwpoison: Try to recover from copy-on write
+ faults
+Thread-Index: AQHY5YfuqnTlA9XAIkuqDDkdUh6m9q4enw6A
+Date: Tue, 25 Oct 2022 05:46:01 +0000
+Message-ID: <20221025054559.GA4093658@hori.linux.bs1.fc.nec.co.jp>
+References: <20221019170835.155381-1-tony.luck@intel.com>
+ <20221021200120.175753-1-tony.luck@intel.com>
+ <20221021200120.175753-2-tony.luck@intel.com>
+In-Reply-To: <20221021200120.175753-2-tony.luck@intel.com>
+Accept-Language: ja-JP, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nec.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: TYWPR01MB8591:EE_|OSYPR01MB5478:EE_
+x-ms-office365-filtering-correlation-id: fdaf64b7-9ebf-47ff-7fb8-08dab64c3377
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  BnrIKCaK2d1ZNKWw+/ajmkCNImy9MeNIwyONEfrTnCI6jwgySUGYW3D9qOHoWZqNY13zruMD5ybhXebZ+Hveb3rYBn+c+HCd8hSIy7XBqS1Wm53AJu/rVnurXijckGtxMzVPXNqqYHgZxJUTtOGYnmOYJ07vgFZJBX9krUcYXa4zV8N8vfTuDAcTZ9vxsb6uZemQmO3ZlCfgy/HNhmjth6paV8Qmcqec96RhLtMstT5LeMHap/KZHuIASElPy8LODLkH4YoIg5jhHGJpS2e0RoLfnkLUuo2gjeQ7q1BVuVAllCo6zF9NSem3w7u8q7qyEZLwkOzoKx4P3RnRFIvftM75d8nkWdaoY9kp2P15yhl06Nc2NWYnMskfzeaNrgg0F7aMvEQjvaaUC5Y4Zfja1oSZBru0SAv9UwU3x5jx//llETyqZMyP+CYxnMBC+aZAVhJ86JBxpLj42Mph4RVyXM6EoKih40TJfX8SmOz6K67kTDYFYL66T885EGHzsx48Wx0LmFDGGrpSLcGskpEHRTYkNbJmpxpmlNcUHYPT3NbSCCK/XZNV+yfb+LBVpAEY+OAyeqGvXyqmA6su7GAeea63o6I3EoddLKOJGoct7+wQDX+CMHFS05IJ+0ntJWC+/J6FMCr2uQJtteAOu1U8/J2KMJeRhQm2EryQCtTrTtGJbEmzgsGJwvqIbdyITN8wXUd1wVPrHqXxASV9s5pNRxlLLHj94xb7h3eAvyFzLc5AfPKBV6wnz2tWp4OMy2aJvb9qD3jlRl2qmjisGfcBsg==
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:TYWPR01MB8591.jpnprd01.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(39860400002)(376002)(136003)(396003)(346002)(366004)(451199015)(41300700001)(316002)(66556008)(66946007)(76116006)(54906003)(6916009)(7416002)(8676002)(8936002)(5660300002)(66899015)(64756008)(66446008)(66476007)(4326008)(2906002)(38100700002)(82960400001)(71200400001)(6486002)(478600001)(6506007)(85182001)(6512007)(9686003)(26005)(1076003)(186003)(33656002)(86362001)(122000001)(83380400001)(38070700005);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?NitjMXZaZzhHRHZ2SlRTYjRzaGF1bjBucy84SFRhZDROMHpWZWFFMWQ1Nmor?=
+ =?utf-8?B?bnNZTld4eWNPS211S0NpdmUzbzJEaUt2clF1Y1dvdjliYVR0WEdmbUdMNTdO?=
+ =?utf-8?B?UHVjbmViMFRNODkwVTdyVHJUcHJUV1BTMFFZbTBHQ1pTdlN6VlcvYVVLN0J2?=
+ =?utf-8?B?cU5KeXgxSU56S2hTNktnUlpaY2daQTh3K3lxWFVXcWVUdVlYMXNsSnhqZXFN?=
+ =?utf-8?B?Qjkzc0E3OUJpZy9BenN0dERSYUdjenJqbldzK1pvVCtLeVZUaUhkcWtTUE00?=
+ =?utf-8?B?VExEZXZncitQbjgzL3lEMEt6ZmVtcmFsazNDM1hJbVE2M1QrTFU1TTljMjFP?=
+ =?utf-8?B?aUFhV1UrcHZudWxzYjNMMGx4Tm5oUnYwZTJjS1BjbDlLSGo5M1JBdGozY3NY?=
+ =?utf-8?B?d1dza3JwN2R1enhsR3o0V3EvdE5TWTA4MkUzOFZhZGp0TjR2cFBSbkFCZ01L?=
+ =?utf-8?B?QjBBczF5UlA0Smlqd0tOMGtGUE1LT3pLb3F2WjYyRG03MnptaEU0UDBGOVpx?=
+ =?utf-8?B?QUZ2T08vbWs5QlpNaWlqL0RFZE9BWnFZVC9BQjlkaGw1ckQ1VzdEeGVHb1dt?=
+ =?utf-8?B?ZE5oWWhCeW4rVS9sUktkZnJDUDJpMkFoRDVZVkg3QVdwVlZ1ckxVaUdnZysw?=
+ =?utf-8?B?MURGOXMrc1VmL2k5RytNNmNrK2I1clBJelR1TXJ3VmN3U28zNmJwdGxFTTJ0?=
+ =?utf-8?B?MFcydTVtbURXQXo4ekRvQ0xIQVp2VHpwdUFxUmJIQWhrdWN0MkgwVnlOYWNl?=
+ =?utf-8?B?bUdBNlJmZnN0eHpxWHNUcW5qUGRRUEJMNlczQVNQa1B0Tnk5TzRlODZOSGNr?=
+ =?utf-8?B?YU1CQU1BWW5tdFovZEZXVEhxNE40RDY2MExLNCtzOWlOeEoxK2hJSURhMUpo?=
+ =?utf-8?B?MUNWTkR2K01zcXNYd3lEYmg5THhwWno0VGNEMnEyM3BmL2QzMDBkaTBVNnBo?=
+ =?utf-8?B?RDNQYkNUUTQ5aFhuanFaRHU3aXg1b1VzK2U1ZXJWeFFpYTMvanJKS2xNRUxZ?=
+ =?utf-8?B?T2pyUFlxTFlKcW5kT2x1MXFvOC84elRHcDk2d0RQRy9Vem80OEZad0h4dGN6?=
+ =?utf-8?B?MzJldnpibVl4emZvVGpJaW1mU2x3WHFKajRtd1JnY0xOSTd6a2lCU202UnFB?=
+ =?utf-8?B?aDljamxyUGJqclAyeCszVFZVWCtuaXRKemg3SkFuQnJ2UHV3RHQ5Q0U3Y1Fn?=
+ =?utf-8?B?aHhyLzhUOVBnS0xLdlZQamVHb29pcnJ0TjlMZ0h2dFY3VnV3YmREbm9vZWk3?=
+ =?utf-8?B?Zm1vMnlZSGorNHRpZFp5NTQxTUpCaWdNTmwyQzdKR3JSVXA4U0duemJqNi9p?=
+ =?utf-8?B?N3hkcmNVV3Jzb1hUbEVUV1VCVzZqZjRLVTM4aTI4YUJxNGNCWHpKSG1HdWVh?=
+ =?utf-8?B?bEplSHJyL2Nja0tCdUN3QkFwcEpYa0lQelhXRWwwb1M1ZzJFNE5FYzJuVmtB?=
+ =?utf-8?B?UzJsRXllUTFUR3VFeU53a1EwRVoyVndOdm5ra2RCQlU5TFdMV21WdWFXUGtp?=
+ =?utf-8?B?WEhkSGYzQlIrdzRDQTl2Z2ZYMVBta3NUNWU0b0dwODA3bDFwbEJnRG9yR0Zr?=
+ =?utf-8?B?MXpUSmhBN3RMOXgyamNYUUxaeW81THgyYThXMUJnT1RFdC9MS3Rid2pXMlhW?=
+ =?utf-8?B?Z1pFYUs4K1IrK3dPQlRYbERGMVYvZUdPdEhlZFlmNXJwN29pYlp0TXlPdDVD?=
+ =?utf-8?B?dEJKWnlxUkdpSm1aR0dJMittQVZYS3N0QjBiUEhQWHBCVHREa0FXSHBMbGwr?=
+ =?utf-8?B?S29qQUJTTmxBY1p0TDI4Tzdldnh1SHJXTjRnd2QzZzBpQXBvWGZVRXZ2TjZa?=
+ =?utf-8?B?VzZCeUV5RUw5Tk9BZ0VyYjJBY05CMktpQVJhaFR4TDVxNEVMN3Rxa2x0VFpK?=
+ =?utf-8?B?aGZULzgyMnU2Qjg3MktRWm42L282RWFJbDBDLy8rQWh0d2c4R2FOU0pMV0FE?=
+ =?utf-8?B?SXlxOW9QUFhueGpQaDdhdE1ZanArUCtyRXBURVNHM0dwaWdkV3pxOHBubHEz?=
+ =?utf-8?B?UFpyL0tKcmM2azR1VjdLVUs3Y3FFVXcwTzFiTEhqMEJEL2ZRejcvdTRncGV2?=
+ =?utf-8?B?Znc4QzRUeGwvQmR5UkRwMGtrbWhCaENOdVhVaFcrOFg0Q3oxY0hObjZqaUI2?=
+ =?utf-8?B?S1J0eVAzaWxSVnkweWM2R0RSOXNMV0tqbUFTQXhEWkNYZGprVm9yS1RrR2N1?=
+ =?utf-8?B?aFE9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <9DE2D02488DDE742A5D112EF3350D2B8@jpnprd01.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: iYU7ZizgND-DrFI7LUPsHTvS7n5nNFxo
-X-Proofpoint-ORIG-GUID: TB7jhUkI9lCEGbfLkLId8fOKSv8xP3AE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-10-24_09,2022-10-21_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 priorityscore=1501
- bulkscore=0 mlxlogscore=999 impostorscore=0 lowpriorityscore=0
- phishscore=0 clxscore=1015 malwarescore=0 suspectscore=0 spamscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2209130000 definitions=main-2210250024
+X-OriginatorOrg: nec.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: TYWPR01MB8591.jpnprd01.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fdaf64b7-9ebf-47ff-7fb8-08dab64c3377
+X-MS-Exchange-CrossTenant-originalarrivaltime: 25 Oct 2022 05:46:02.2960
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: e67df547-9d0d-4f4d-9161-51c6ed1f7d11
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: thcaCTEcX8JDGIkWg0Z4A1tbcC2aA7bEBWpZFS77Q556fHg/k5HzEF+3U++X2fqZ/mpsh5AaXCMYIIcwUsUa5A==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: OSYPR01MB5478
+X-Mailman-Approved-At: Wed, 26 Oct 2022 01:02:51 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,370 +137,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, jniethe5@gmail.com, Benjamin Gray <bgray@linux.ibm.com>, npiggin@gmail.com, cmr@bluescreens.de
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Nicholas Piggin <npiggin@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Shuai Xue <xueshuai@linux.alibaba.com>, Andrew Morton <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dan Williams <dan.j.williams@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Christopher M. Riedl" <cmr@bluescreens.de>
-
-x86 supports the notion of a temporary mm which restricts access to
-temporary PTEs to a single CPU. A temporary mm is useful for situations
-where a CPU needs to perform sensitive operations (such as patching a
-STRICT_KERNEL_RWX kernel) requiring temporary mappings without exposing
-said mappings to other CPUs. Another benefit is that other CPU TLBs do
-not need to be flushed when the temporary mm is torn down.
-
-Mappings in the temporary mm can be set in the userspace portion of the
-address-space.
-
-Interrupts must be disabled while the temporary mm is in use. HW
-breakpoints, which may have been set by userspace as watchpoints on
-addresses now within the temporary mm, are saved and disabled when
-loading the temporary mm. The HW breakpoints are restored when unloading
-the temporary mm. All HW breakpoints are indiscriminately disabled while
-the temporary mm is in use - this may include breakpoints set by perf.
-
-Use the `poking_init` init hook to prepare a temporary mm and patching
-address. Initialize the temporary mm by copying the init mm. Choose a
-randomized patching address inside the temporary mm userspace address
-space. The patching address is randomized between PAGE_SIZE and
-DEFAULT_MAP_WINDOW-PAGE_SIZE.
-
-Bits of entropy with 64K page size on BOOK3S_64:
-
-	bits of entropy = log2(DEFAULT_MAP_WINDOW_USER64 / PAGE_SIZE)
-
-	PAGE_SIZE=64K, DEFAULT_MAP_WINDOW_USER64=128TB
-	bits of entropy = log2(128TB / 64K)
-	bits of entropy = 31
-
-The upper limit is DEFAULT_MAP_WINDOW due to how the Book3s64 Hash MMU
-operates - by default the space above DEFAULT_MAP_WINDOW is not
-available. Currently the Hash MMU does not use a temporary mm so
-technically this upper limit isn't necessary; however, a larger
-randomization range does not further "harden" this overall approach and
-future work may introduce patching with a temporary mm on Hash as well.
-
-Randomization occurs only once during initialization for each CPU as it
-comes online.
-
-The patching page is mapped with PAGE_KERNEL to set EAA[0] for the PTE
-which ignores the AMR (so no need to unlock/lock KUAP) according to
-PowerISA v3.0b Figure 35 on Radix.
-
-Based on x86 implementation:
-
-commit 4fc19708b165
-("x86/alternatives: Initialize temporary mm for patching")
-
-and:
-
-commit b3fd8e83ada0
-("x86/alternatives: Use temporary mm for text poking")
-
-From: Benjamin Gray <bgray@linux.ibm.com>
-
-Synchronisation is done according to ISA 3.1B Book 3 Chapter 13
-"Synchronization Requirements for Context Alterations". Switching the mm
-is a change to the PID, which requires a CSI before and after the change,
-and a hwsync between the last instruction that performs address
-translation for an associated storage access.
-
-Instruction fetch is an associated storage access, but the instruction
-address mappings are not being changed, so it should not matter which
-context they use. We must still perform a hwsync to guard arbitrary
-prior code that may have accessed a userspace address.
-
-TLB invalidation is local and VA specific. Local because only this core
-used the patching mm, and VA specific because we only care that the
-writable mapping is purged. Leaving the other mappings intact is more
-efficient, especially when performing many code patches in a row (e.g.,
-as ftrace would).
-
-Signed-off-by: Christopher M. Riedl <cmr@bluescreens.de>
-Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
----
-v9:	* Add back Christopher M. Riedl signed-off-by
-	* Remove temp_mm_state
----
- arch/powerpc/lib/code-patching.c | 221 ++++++++++++++++++++++++++++++-
- 1 file changed, 216 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index b0a12b2d5a9b..3fe99d0086fc 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -4,12 +4,17 @@
-  */
- 
- #include <linux/kprobes.h>
-+#include <linux/mmu_context.h>
-+#include <linux/random.h>
- #include <linux/vmalloc.h>
- #include <linux/init.h>
- #include <linux/cpuhotplug.h>
- #include <linux/uaccess.h>
- #include <linux/jump_label.h>
- 
-+#include <asm/debug.h>
-+#include <asm/pgalloc.h>
-+#include <asm/tlb.h>
- #include <asm/tlbflush.h>
- #include <asm/page.h>
- #include <asm/code-patching.h>
-@@ -42,11 +47,54 @@ int raw_patch_instruction(u32 *addr, ppc_inst_t instr)
- }
- 
- #ifdef CONFIG_STRICT_KERNEL_RWX
-+
- static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
-+static DEFINE_PER_CPU(struct mm_struct *, cpu_patching_mm);
-+static DEFINE_PER_CPU(unsigned long, cpu_patching_addr);
-+static DEFINE_PER_CPU(pte_t *, cpu_patching_pte);
- 
- static int map_patch_area(void *addr, unsigned long text_poke_addr);
- static void unmap_patch_area(unsigned long addr);
- 
-+static bool mm_patch_enabled(void)
-+{
-+	return IS_ENABLED(CONFIG_SMP) && radix_enabled();
-+}
-+
-+/*
-+ * The following applies for Radix MMU. Hash MMU has different requirements,
-+ * and so is not supported.
-+ *
-+ * Changing mm requires context synchronising instructions on both sides of
-+ * the context switch, as well as a hwsync between the last instruction for
-+ * which the address of an associated storage access was translated using
-+ * the current context.
-+ *
-+ * switch_mm_irqs_off() performs an isync after the context switch. It is
-+ * the responsibility of the caller to perform the CSI and hwsync before
-+ * starting/stopping the temp mm.
-+ */
-+static struct mm_struct *start_using_temp_mm(struct mm_struct *temp_mm)
-+{
-+	struct mm_struct *orig_mm = current->active_mm;
-+
-+	lockdep_assert_irqs_disabled();
-+	switch_mm_irqs_off(orig_mm, temp_mm, current);
-+
-+	WARN_ON(!mm_is_thread_local(temp_mm));
-+
-+	suspend_breakpoints();
-+	return orig_mm;
-+}
-+
-+static void stop_using_temp_mm(struct mm_struct *temp_mm,
-+			       struct mm_struct *orig_mm)
-+{
-+	lockdep_assert_irqs_disabled();
-+	switch_mm_irqs_off(temp_mm, orig_mm, current);
-+	restore_breakpoints();
-+}
-+
- static int text_area_cpu_up(unsigned int cpu)
- {
- 	struct vm_struct *area;
-@@ -80,14 +128,127 @@ static int text_area_cpu_down(unsigned int cpu)
- 	return 0;
- }
- 
-+static int text_area_cpu_up_mm(unsigned int cpu)
-+{
-+	struct mm_struct *mm;
-+	unsigned long addr;
-+	pgd_t *pgdp;
-+	p4d_t *p4dp;
-+	pud_t *pudp;
-+	pmd_t *pmdp;
-+	pte_t *ptep;
-+
-+	mm = copy_init_mm();
-+	if (WARN_ON(!mm))
-+		goto fail_no_mm;
-+
-+	/*
-+	 * Choose a random page-aligned address from the interval
-+	 * [PAGE_SIZE .. DEFAULT_MAP_WINDOW - PAGE_SIZE].
-+	 * The lower address bound is PAGE_SIZE to avoid the zero-page.
-+	 */
-+	addr = (1 + (get_random_long() % (DEFAULT_MAP_WINDOW / PAGE_SIZE - 2))) << PAGE_SHIFT;
-+
-+	/*
-+	 * PTE allocation uses GFP_KERNEL which means we need to
-+	 * pre-allocate the PTE here because we cannot do the
-+	 * allocation during patching when IRQs are disabled.
-+	 */
-+	pgdp = pgd_offset(mm, addr);
-+
-+	p4dp = p4d_alloc(mm, pgdp, addr);
-+	if (WARN_ON(!p4dp))
-+		goto fail_no_p4d;
-+
-+	pudp = pud_alloc(mm, p4dp, addr);
-+	if (WARN_ON(!pudp))
-+		goto fail_no_pud;
-+
-+	pmdp = pmd_alloc(mm, pudp, addr);
-+	if (WARN_ON(!pmdp))
-+		goto fail_no_pmd;
-+
-+	ptep = pte_alloc_map(mm, pmdp, addr);
-+	if (WARN_ON(!ptep))
-+		goto fail_no_pte;
-+
-+	this_cpu_write(cpu_patching_mm, mm);
-+	this_cpu_write(cpu_patching_addr, addr);
-+	this_cpu_write(cpu_patching_pte, ptep);
-+
-+	return 0;
-+
-+fail_no_pte:
-+	pmd_free(mm, pmdp);
-+	mm_dec_nr_pmds(mm);
-+fail_no_pmd:
-+	pud_free(mm, pudp);
-+	mm_dec_nr_puds(mm);
-+fail_no_pud:
-+	p4d_free(patching_mm, p4dp);
-+fail_no_p4d:
-+	mmput(mm);
-+fail_no_mm:
-+	return -ENOMEM;
-+}
-+
-+static int text_area_cpu_down_mm(unsigned int cpu)
-+{
-+	struct mm_struct *mm;
-+	unsigned long addr;
-+	pte_t *ptep;
-+	pmd_t *pmdp;
-+	pud_t *pudp;
-+	p4d_t *p4dp;
-+	pgd_t *pgdp;
-+
-+	mm = this_cpu_read(cpu_patching_mm);
-+	addr = this_cpu_read(cpu_patching_addr);
-+
-+	pgdp = pgd_offset(mm, addr);
-+	p4dp = p4d_offset(pgdp, addr);
-+	pudp = pud_offset(p4dp, addr);
-+	pmdp = pmd_offset(pudp, addr);
-+	ptep = pte_offset_map(pmdp, addr);
-+
-+	pte_free(mm, ptep);
-+	pmd_free(mm, pmdp);
-+	pud_free(mm, pudp);
-+	p4d_free(mm, p4dp);
-+	/* pgd is dropped in mmput */
-+
-+	mm_dec_nr_ptes(mm);
-+	mm_dec_nr_pmds(mm);
-+	mm_dec_nr_puds(mm);
-+
-+	mmput(mm);
-+
-+	this_cpu_write(cpu_patching_mm, NULL);
-+	this_cpu_write(cpu_patching_addr, 0);
-+	this_cpu_write(cpu_patching_pte, NULL);
-+
-+	return 0;
-+}
-+
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(poking_init_done);
- 
- void __init poking_init(void)
- {
--	WARN_ON(cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
--				  "powerpc/text_poke:online",
--				  text_area_cpu_up,
--				  text_area_cpu_down) < 0);
-+	int ret;
-+
-+	if (mm_patch_enabled())
-+		ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
-+					"powerpc/text_poke_mm:online",
-+					text_area_cpu_up_mm,
-+					text_area_cpu_down_mm);
-+	else
-+		ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
-+					"powerpc/text_poke:online",
-+					text_area_cpu_up,
-+					text_area_cpu_down);
-+
-+	/* cpuhp_setup_state returns >= 0 on success */
-+	WARN_ON(ret < 0);
- 
- 	static_branch_enable(&poking_init_done);
- }
-@@ -145,6 +306,53 @@ static void unmap_patch_area(unsigned long addr)
- 	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
- }
- 
-+static int __do_patch_instruction_mm(u32 *addr, ppc_inst_t instr)
-+{
-+	int err;
-+	u32 *patch_addr;
-+	unsigned long text_poke_addr;
-+	pte_t *pte;
-+	unsigned long pfn = get_patch_pfn(addr);
-+	struct mm_struct *patching_mm;
-+	struct mm_struct *orig_mm;
-+
-+	patching_mm = __this_cpu_read(cpu_patching_mm);
-+	pte = __this_cpu_read(cpu_patching_pte);
-+	text_poke_addr = __this_cpu_read(cpu_patching_addr);
-+	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
-+
-+	if (unlikely(!patching_mm))
-+		return -ENOMEM;
-+
-+	set_pte_at(patching_mm, text_poke_addr, pte, pfn_pte(pfn, PAGE_KERNEL));
-+
-+	/* order PTE update before use, also serves as the hwsync */
-+	asm volatile("ptesync": : :"memory");
-+
-+	/* order context switch after arbitrary prior code */
-+	isync();
-+
-+	orig_mm = start_using_temp_mm(patching_mm);
-+
-+	err = __patch_instruction(addr, instr, patch_addr);
-+
-+	/* hwsync performed by __patch_instruction (sync) if successful */
-+	if (err)
-+		mb();  /* sync */
-+
-+	/* context synchronisation performed by __patch_instruction (isync or exception) */
-+	stop_using_temp_mm(patching_mm, orig_mm);
-+
-+	pte_clear(patching_mm, text_poke_addr, pte);
-+	/*
-+	 * ptesync to order PTE update before TLB invalidation done
-+	 * by radix__local_flush_tlb_page_psize (in _tlbiel_va)
-+	 */
-+	local_flush_tlb_page_psize(patching_mm, text_poke_addr, mmu_virtual_psize);
-+
-+	return err;
-+}
-+
- static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
- {
- 	int err;
-@@ -189,7 +397,10 @@ static int do_patch_instruction(u32 *addr, ppc_inst_t instr)
- 		return raw_patch_instruction(addr, instr);
- 
- 	local_irq_save(flags);
--	err = __do_patch_instruction(addr, instr);
-+	if (mm_patch_enabled())
-+		err = __do_patch_instruction_mm(addr, instr);
-+	else
-+		err = __do_patch_instruction(addr, instr);
- 	local_irq_restore(flags);
- 
- 	WARN_ON(!err && !ppc_inst_equal(instr, ppc_inst_read(addr)));
--- 
-2.37.3
-
+T24gRnJpLCBPY3QgMjEsIDIwMjIgYXQgMDE6MDE6MTlQTSAtMDcwMCwgVG9ueSBMdWNrIHdyb3Rl
+Og0KPiBJZiB0aGUga2VybmVsIGlzIGNvcHlpbmcgYSBwYWdlIGFzIHRoZSByZXN1bHQgb2YgYSBj
+b3B5LW9uLXdyaXRlDQo+IGZhdWx0IGFuZCBydW5zIGludG8gYW4gdW5jb3JyZWN0YWJsZSBlcnJv
+ciwgTGludXggd2lsbCBjcmFzaCBiZWNhdXNlDQo+IGl0IGRvZXMgbm90IGhhdmUgcmVjb3Zlcnkg
+Y29kZSBmb3IgdGhpcyBjYXNlIHdoZXJlIHBvaXNvbiBpcyBjb25zdW1lZA0KPiBieSB0aGUga2Vy
+bmVsLg0KPiANCj4gSXQgaXMgZWFzeSB0byBzZXQgdXAgYSB0ZXN0IGNhc2UuIEp1c3QgaW5qZWN0
+IGFuIGVycm9yIGludG8gYSBwcml2YXRlDQo+IHBhZ2UsIGZvcmsoMiksIGFuZCBoYXZlIHRoZSBj
+aGlsZCBwcm9jZXNzIHdyaXRlIHRvIHRoZSBwYWdlLg0KPiANCj4gSSB3cmFwcGVkIHRoYXQgbmVh
+dGx5IGludG8gYSB0ZXN0IGF0Og0KPiANCj4gICBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2Nt
+L2xpbnV4L2tlcm5lbC9naXQvYWVnbC9yYXMtdG9vbHMuZ2l0DQo+IA0KPiBqdXN0IGVuYWJsZSBB
+Q1BJIGVycm9yIGluamVjdGlvbiBhbmQgcnVuOg0KPiANCj4gICAjIC4vZWlual9tZW0tdWMgLWYg
+Y29weS1vbi13cml0ZQ0KPiANCj4gQWRkIGEgbmV3IGNvcHlfdXNlcl9oaWdocGFnZV9tYygpIGZ1
+bmN0aW9uIHRoYXQgdXNlcyBjb3B5X21jX3RvX2tlcm5lbCgpDQo+IG9uIGFyY2hpdGVjdHVyZXMg
+d2hlcmUgdGhhdCBpcyBhdmFpbGFibGUgKGN1cnJlbnRseSB4ODYgYW5kIHBvd2VycGMpLg0KPiBX
+aGVuIGFuIGVycm9yIGlzIGRldGVjdGVkIGR1cmluZyB0aGUgcGFnZSBjb3B5LCByZXR1cm4gVk1f
+RkFVTFRfSFdQT0lTT04NCj4gdG8gY2FsbGVyIG9mIHdwX3BhZ2VfY29weSgpLiBUaGlzIHByb3Bh
+Z2F0ZXMgdXAgdGhlIGNhbGwgc3RhY2suIEJvdGggeDg2DQo+IGFuZCBwb3dlcnBjIGhhdmUgY29k
+ZSBpbiB0aGVpciBmYXVsdCBoYW5kbGVyIHRvIGRlYWwgd2l0aCB0aGlzIGNvZGUgYnkNCj4gc2Vu
+ZGluZyBhIFNJR0JVUyB0byB0aGUgYXBwbGljYXRpb24uDQo+IA0KPiBOb3RlIHRoYXQgdGhpcyBw
+YXRjaCBhdm9pZHMgYSBzeXN0ZW0gY3Jhc2ggYW5kIHNpZ25hbHMgdGhlIHByb2Nlc3MgdGhhdA0K
+PiB0cmlnZ2VyZWQgdGhlIGNvcHktb24td3JpdGUgYWN0aW9uLiBJdCBkb2VzIG5vdCB0YWtlIGFu
+eSBhY3Rpb24gZm9yIHRoZQ0KPiBtZW1vcnkgZXJyb3IgdGhhdCBpcyBzdGlsbCBpbiB0aGUgc2hh
+cmVkIHBhZ2UuIFRvIGhhbmRsZSB0aGF0IGEgY2FsbCB0bw0KPiBtZW1vcnlfZmFpbHVyZSgpIGlz
+IG5lZWRlZC4gQnV0IHRoaXMgY2Fubm90IGJlIGRvbmUgZnJvbSB3cF9wYWdlX2NvcHkoKQ0KPiBi
+ZWNhdXNlIGl0IGhvbGRzIG1tYXBfbG9jaygpLiBQZXJoYXBzIHRoZSBhcmNoaXRlY3R1cmUgZmF1
+bHQgaGFuZGxlcnMNCj4gY2FuIGRlYWwgd2l0aCB0aGlzIGxvb3NlIGVuZCBpbiBhIHN1YnNlcXVl
+bnQgcGF0Y2g/DQo+IA0KPiBPbiBJbnRlbC94ODYgdGhpcyBsb29zZSBlbmQgd2lsbCBvZnRlbiBi
+ZSBoYW5kbGVkIGF1dG9tYXRpY2FsbHkgYmVjYXVzZQ0KPiB0aGUgbWVtb3J5IGNvbnRyb2xsZXIg
+cHJvdmlkZXMgYW4gYWRkaXRpb25hbCBub3RpZmljYXRpb24gb2YgdGhlIGgvdw0KPiBwb2lzb24g
+aW4gbWVtb3J5LCB0aGUgaGFuZGxlciBmb3IgdGhpcyB3aWxsIGNhbGwgbWVtb3J5X2ZhaWx1cmUo
+KS4gVGhpcw0KPiBpc24ndCBhIDEwMCUgc29sdXRpb24uIElmIHRoZXJlIGFyZSBtdWx0aXBsZSBl
+cnJvcnMsIG5vdCBhbGwgbWF5IGJlDQo+IGxvZ2dlZCBpbiB0aGlzIHdheS4NCj4gDQo+IFJldmll
+d2VkLWJ5OiBEYW4gV2lsbGlhbXMgPGRhbi5qLndpbGxpYW1zQGludGVsLmNvbT4NCj4gU2lnbmVk
+LW9mZi1ieTogVG9ueSBMdWNrIDx0b255Lmx1Y2tAaW50ZWwuY29tPg0KDQpUaGFuayB5b3UgZm9y
+IHRoZSB1cGRhdGUuIExvb2tzIGdvb2QgdG8gbWUuDQoNClJldmlld2VkLWJ5OiBOYW95YSBIb3Jp
+Z3VjaGkgPG5hb3lhLmhvcmlndWNoaUBuZWMuY29tPg==
