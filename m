@@ -4,46 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86B40FA3740
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 18:53:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC4EEC38A2D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 18:54:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mxh11743Wz3bn4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 05:53:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mxh221NZbz3cKb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 05:54:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lXeX/X72;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rw8vTMAJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lXeX/X72;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rw8vTMAJ;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mxgz36kW1z30NN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 05:51:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mxgz46kxgz3blY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 05:52:00 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 0268DB81E82;
-	Tue, 25 Oct 2022 18:51:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BBA9C433D6;
-	Tue, 25 Oct 2022 18:51:53 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 91E9DB80D56;
+	Tue, 25 Oct 2022 18:51:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0986C433D6;
+	Tue, 25 Oct 2022 18:51:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1666723913;
-	bh=sbHHHHik1ots3ugg9bWS1aJ74WP1MU5+FlwWTqdu/Ic=;
-	h=From:To:Cc:Subject:Date:From;
-	b=lXeX/X72neXmJl7dxIPdLhMBZaIRV+QjRLeYOxd3IpR9dHMztEdyHCFsbemC+gf0c
-	 vLbToENare7yvqy/PTS6N/+zOqcxiTJyiuaOhhBFHZyPHWrfTOlyfxcYjam0opx+CW
-	 0bdI8NX8dYCIibHoXynU8oMsSr/pDu3Jvz+V3waE6x+/tijZCg0do5RyR8HMGxc4rv
-	 1baPQXAGZu0nU+uhDcrdYTrwLvlk82MpWyFD1ukLMrmGLCmhfJjiXML0rAky3rtpAI
-	 RTFwGGJNP8D7U13bX6/0IwViYbwezcAFbjx0Uzc6c3YYRUIkx2amVjpQkw7a1h9i28
-	 lf+zoKvu4kyfg==
+	s=k20201202; t=1666723917;
+	bh=F248mcLTvmzVsBq/X1m/ocM22o9h6YtGlwDEshOxlPY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=Rw8vTMAJJn48s4bvfO6Bdgr2bmmMcPtUVeGHnWLqabdStTnd84O2cNJCdnah3qblM
+	 WWpP5rdddCb3KLJ1CK0CWJ4PaKwIDvaQgNg1S+Azmg5MP9wmEha2ab7BpGjTiswfK8
+	 F+H6+jHCPFq534N8LGUozPZtN0VoOnG6QKwu9ibleMESoVzSlKmEQOgCOLDTM2sgMO
+	 emwtLiDmnnlDhNnhup24CEx2x/RqPl04Vwjx/3TBkx1VOAlMqlofAQF+/sCnKf7jFk
+	 IShCcyXKF18kUnbyvkOmFVv+Zpofd3m/ZPKx7+Q4Z2A2dDvxY5oDryockcgW7lUc+B
+	 UuXJ+QAYliQFQ==
 From: Bjorn Helgaas <helgaas@kernel.org>
 To: Lorenzo Pieralisi <lpieralisi@kernel.org>
-Subject: [PATCH v2 0/4] PCI: Remove unnecessary <linux/of_irq.h> includes
-Date: Tue, 25 Oct 2022 13:51:43 -0500
-Message-Id: <20221025185147.665365-1-helgaas@kernel.org>
+Subject: [PATCH v2 2/4] PCI: microchip: Include <linux/irqdomain.h> explicitly
+Date: Tue, 25 Oct 2022 13:51:45 -0500
+Message-Id: <20221025185147.665365-3-helgaas@kernel.org>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20221025185147.665365-1-helgaas@kernel.org>
+References: <20221025185147.665365-1-helgaas@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -64,41 +66,31 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Bjorn Helgaas <bhelgaas@google.com>
 
-Many host controller drivers #include <linux/of_irq.h> even though they
-don't need it.  Remove the unnecessary #includes.
+pcie-microchip-host.c uses irq_domain_add_linear() and related interfaces,
+so it needs <linux/irqdomain.h> but doesn't include it directly; it relies
+on the fact that <linux/of_irq.h> includes it.
 
-v1: https://lore.kernel.org/all/20221019195452.37606-1-helgaas@kernel.org/
+But pcie-microchip-host.c *doesn't* need <linux/of_irq.h> itself.  Include
+<linux/irqdomain.h> directly to remove this implicit dependency so a future
+patch can drop <linux/of_irq.h>.
 
-Changes from v1 to v2:
-  - Include <linux/irqdomain.h> explicitly in altera-msi and microchip,
-    which don't need <linux/of_irq.h> itself, but relied on it to include
-    <linux/irqdomain.h>
-  - Include <linux/irqdomain.h> explicitly in mvebu, which needs both it
-    and <linux/of_irq.h>
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/pci/controller/pcie-microchip-host.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Bjorn Helgaas (4):
-  PCI: altera-msi: Include <linux/irqdomain.h> explicitly
-  PCI: microchip: Include <linux/irqdomain.h> explicitly
-  PCI: mvebu: Include <linux/irqdomain.h> explicitly
-  PCI: Remove unnecessary <linux/of_irq.h> includes
-
- drivers/pci/controller/cadence/pci-j721e.c   | 1 -
- drivers/pci/controller/dwc/pci-layerscape.c  | 1 -
- drivers/pci/controller/dwc/pcie-armada8k.c   | 1 -
- drivers/pci/controller/dwc/pcie-tegra194.c   | 1 -
- drivers/pci/controller/pci-mvebu.c           | 1 +
- drivers/pci/controller/pci-v3-semi.c         | 1 -
- drivers/pci/controller/pci-xgene-msi.c       | 1 -
- drivers/pci/controller/pci-xgene.c           | 1 -
- drivers/pci/controller/pcie-altera-msi.c     | 2 +-
- drivers/pci/controller/pcie-iproc-platform.c | 1 -
- drivers/pci/controller/pcie-iproc.c          | 1 -
- drivers/pci/controller/pcie-microchip-host.c | 2 +-
- drivers/pci/controller/pcie-rockchip-host.c  | 1 -
- drivers/pci/controller/pcie-xilinx-cpm.c     | 1 -
- drivers/pci/controller/pcie-xilinx-nwl.c     | 1 -
- 15 files changed, 3 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/pci/controller/pcie-microchip-host.c b/drivers/pci/controller/pcie-microchip-host.c
+index 7263d175b5ad..57b2a62f52c8 100644
+--- a/drivers/pci/controller/pcie-microchip-host.c
++++ b/drivers/pci/controller/pcie-microchip-host.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/irqchip/chained_irq.h>
++#include <linux/irqdomain.h>
+ #include <linux/module.h>
+ #include <linux/msi.h>
+ #include <linux/of_address.h>
 -- 
 2.25.1
 
