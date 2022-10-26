@@ -4,52 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79780C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 07:02:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8093CFA373D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 08:35:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4My0B34Qx0z3cJ2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 18:02:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4My2F02966z3cGH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 19:35:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=vAaNfkKp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=RF5f23X3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=vAaNfkKp;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=RF5f23X3;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4My0901kpmz2xYy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 18:01:39 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 13DA961D52;
-	Wed, 26 Oct 2022 07:01:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DBF68C433D7;
-	Wed, 26 Oct 2022 07:01:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1666767695;
-	bh=4EA7mnqZIfsfgQs35vZ0Oeva6CAWg2MlREbIG63FG2w=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=vAaNfkKpnq6T2ATH2P1eptSG2vWxLS48UV729kmn80ggth23fKRVR16O31dRmB5xC
-	 3/3oubYXCu6pzFNa3rX/Y2AIowlybdzHmSoYv7fzNEBWy7uHZublQgNzKKA3E8Iv1B
-	 u/CI7+/Ptf433yt9tcoBj59n/2lidNrMgwAz9fBE=
-Date: Wed, 26 Oct 2022 09:02:28 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Vishal Chourasia <vishalc@linux.vnet.ibm.com>
-Subject: Re: sched/debug: CPU hotplug operation suffers in a large cpu systems
-Message-ID: <Y1jbhCYfktL51zNB@kroah.com>
-References: <Y01UWQL2y2r69sBX@li-05afa54c-330e-11b2-a85c-e3f3aa0db1e9.ibm.com>
- <Y01kc4g9CVmoyOxj@hirez.programming.kicks-ass.net>
- <Y01sk3l8yCMvhvYm@kroah.com>
- <Y06B0pr8hpwzxEzI@li-05afa54c-330e-11b2-a85c-e3f3aa0db1e9.ibm.com>
- <Y06ISBWhJflnV+NI@kroah.com>
- <Y1jVjX9FUuUilcjA@li-05afa54c-330e-11b2-a85c-e3f3aa0db1e9.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4My2Cx0STcz3bjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 19:34:19 +1100 (AEDT)
+Received: by mail-lf1-x12c.google.com with SMTP id j16so7543867lfe.12
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 01:34:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=bNn3eWuA3AWM0RIAow9RlqRwoa5twz63NOiZnmeo3eQ=;
+        b=RF5f23X39jnoHypbuiZJzhbtfAW6XZL6cbsFW1s8Uv7PWpmGdMp/INQMRrzfSmRQ4A
+         fSSt7Eu89X1jYp+RZ45VumtDisnkVcHqQQO74X/hVeLbgXhVtSQXiPd6GQd51xBoOy+O
+         FlmXkZ10naRWifVjfeulWz8ap+47VkkYoSZfbus9ie8WmyyHojDBhHsv6xVqrrBubnKy
+         2zgj70y0L+BazIVI8I3gV4F9HUzGDFtUxu5fM2png+4wPhH/R81/QqU//X2D0C+9maSj
+         fbJ55tgRMf4ncBD0oMJ/BlJrRJ4RAqWorPQv6rDJEDhB3cVfU6vBMiqes+UmbI41fD1l
+         lyRA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=bNn3eWuA3AWM0RIAow9RlqRwoa5twz63NOiZnmeo3eQ=;
+        b=PcjqUXQy7RCU5a+4m4DRW7/AYXMej8+beTjVKrFf4r8c/Ax+AWhts3aItl9O06Dfsj
+         CFbyS3JxUDGwo9Sfp18YDmcO12yupR0w2vIy3zXSCn5lcKoyO5giJVscFeEHRlkvU/OS
+         /FjlSZ67+Lje64fNuuCSXrgOtFYOSWwAjdWkLb3uf1GrKGlgOcqDX6TzFVaomagPJL5X
+         vkOeEVapZqNXRR0RLaBLURKXV6J0L1gfMajOx80ID/JOHU7NkWTrpBL0KdTp1bC6+sN/
+         MzTzJ0B1hk6j1+9n9R5z79LEBYAj3xwtZvefl7ZaPQgbRM6PPXOTfhnYz56NVf43kLhj
+         0Epg==
+X-Gm-Message-State: ACrzQf0ettGltT64yXar+6ePOAmoRrR2MZ93wPYOHhuudehFog8OJYCD
+	mXawNIO0/BK3XjJ8QFb2uNcdEw==
+X-Google-Smtp-Source: AMsMyM7BSY2ZR8CJPxdKa0hNALY8JKlCUFoXG3mwzoQaU+1XeZe6e+usB7xjmYEWbXbXpTlsXWBvlg==
+X-Received: by 2002:a05:6512:1289:b0:4a2:61ca:319a with SMTP id u9-20020a056512128900b004a261ca319amr14584527lfs.428.1666773252759;
+        Wed, 26 Oct 2022 01:34:12 -0700 (PDT)
+Received: from fedora.. ([85.235.10.72])
+        by smtp.gmail.com with ESMTPSA id u5-20020a05651220c500b004a65780e4cfsm761516lfr.106.2022.10.26.01.34.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 26 Oct 2022 01:34:12 -0700 (PDT)
+From: Linus Walleij <linus.walleij@linaro.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Li Yang <leoyang.li@nxp.com>
+Subject: [PATCH v2] soc: fsl: qe: Avoid using gpio_to_desc()
+Date: Wed, 26 Oct 2022 10:33:48 +0200
+Message-Id: <20221026083348.107431-1-linus.walleij@linaro.org>
+X-Mailer: git-send-email 2.37.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Y1jVjX9FUuUilcjA@li-05afa54c-330e-11b2-a85c-e3f3aa0db1e9.ibm.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,38 +79,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ritesh.list@gmail.com, vschneid@redhat.com, vincent.guittot@linaro.org, srikar@linux.vnet.ibm.com, Peter Zijlstra <peterz@infradead.org>, aneesh.kumar@linux.ibm.com, linux-kernel@vger.kernel.org, sshegde@linux.ibm.com, mingo@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org, Bartosz Golaszewski <brgl@bgdev.pl>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Oct 26, 2022 at 12:07:01PM +0530, Vishal Chourasia wrote:
-> On Tue, Oct 18, 2022 at 01:04:40PM +0200, Greg Kroah-Hartman wrote:
-> 
-> > Why do you need to?  What tools require these debugfs files to be
-> > present?
-> 
-> We are not entirely sure what applications (if any) might be using this interface.
+We want to get rid of the old GPIO numberspace, so instead of
+calling gpio_to_desc() we get the gpio descriptor for the requested
+line from the device tree directly without passing through the
+GPIO numberspace, and then we get the gpiochip from the descriptor.
 
-Then just disable it and see what happens :)
+Cc: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: linux-gpio@vger.kernel.org
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ChangeLog v1->v2:
+- Add back the <linux/of_gpio.h> include: we are using the
+  mm_of_gpio_chip, which should be fixed, but not now.
+---
+ drivers/soc/fsl/qe/gpio.c | 17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
 
-> > And if you only have 7-8 files per CPU, that does not seem like a lot of
-> > files overall (14000-16000)?  If you only offline 1 cpu, how is removing
-> > 7 or 8 files a bottleneck?  Do you really offline 1999 cpus for a 2k
-> > system?
-> 
-> It's 7-8 files per domain per cpu, so, in a system with approx 2k cpus and five
-> domains, the total file count goes above 70k-80k files. And, when we offline 1
-> CPU, the entire directory is rebuilt, resulting in creation of all the files
-> again.
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 99f7de43c3c6..68d48430ab33 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -14,9 +14,8 @@
+ #include <linux/io.h>
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+-/* FIXME: needed for gpio_to_chip() get rid of this */
+-#include <linux/gpio.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
+ #include <soc/fsl/qe/qe.h>
+@@ -161,6 +160,7 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
+ 	struct qe_pin *qe_pin;
+ 	struct gpio_chip *gc;
+ 	struct qe_gpio_chip *qe_gc;
++	struct gpio_desc *gpiod;
+ 	int err;
+ 	unsigned long flags;
+ 
+@@ -170,14 +170,21 @@ struct qe_pin *qe_pin_request(struct device_node *np, int index)
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+-	err = of_get_gpio(np, index);
+-	if (err < 0)
++	gpiod = fwnode_gpiod_get_index(of_fwnode_handle(np), NULL, index, GPIOD_ASIS, "qe");
++	if (IS_ERR(gpiod)) {
++		err = PTR_ERR(gpiod);
+ 		goto err0;
+-	gc = gpio_to_chip(err);
++	}
++	if (!gpiod) {
++		err = -EINVAL;
++		goto err0;
++	}
++	gc = gpiod_to_chip(gpiod);
+ 	if (WARN_ON(!gc)) {
+ 		err = -ENODEV;
+ 		goto err0;
+ 	}
++	gpiod_put(gpiod);
+ 
+ 	if (!of_device_is_compatible(gc->of_node, "fsl,mpc8323-qe-pario-bank")) {
+ 		pr_debug("%s: tried to get a non-qe pin\n", __func__);
+-- 
+2.34.1
 
-Perhaps change the logic to not rebuild the whole thing and instead just
-remove the required files?
-
-Or as I mentioned before, you can move debugfs to use kernfs, which
-should resolve most of these issues automatically.  Why not take the
-time to do that which will solve the problem no matter what gets added
-in the future in other subsystems?
-
-thanks,
-
-greg k-h
