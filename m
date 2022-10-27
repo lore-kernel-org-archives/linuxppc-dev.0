@@ -4,50 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2430AC38A2D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Oct 2022 18:56:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2554FA3740
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 16:46:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mxh423cvcz3cLm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Oct 2022 05:56:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mys5Z4HlMz3cH9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 03:46:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BXu0HXtu;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z7vJkI3S;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::f34; helo=mail-qv1-xf34.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BXu0HXtu;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=z7vJkI3S;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qv1-xf34.google.com (mail-qv1-xf34.google.com [IPv6:2607:f8b0:4864:20::f34])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mxgz70KB5z3c69
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Oct 2022 05:52:03 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 2BF3661AC1;
-	Tue, 25 Oct 2022 18:52:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B11A1C433C1;
-	Tue, 25 Oct 2022 18:52:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1666723921;
-	bh=24HtZK+64pLjoLqyjcZ8BB1o6F2FHMPWQnmPxc1FREE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BXu0HXtunY8YsogpiEksmr93n4mws9Q2kUIDlnfxJn0KFEMaWDlWMo4Dxa+IB6mHP
-	 ZnHHrLX9qrFSoVXQZumVgtIlcToiLp32NVkbYBEZREYLQm2X32mHrgdZjtZOkDcwsE
-	 +0+MksywdKu70mT7YCdNXMoW0ggPwIOH4KL1zdt1pmG9hN8lbBHRFP2rpoTtlca0Si
-	 +SkpVvu17UJekXd/a8EnVbkMjodJUwQP28GWj+WbPqqb0Jl+j12br5KoiVjKpG0Bpm
-	 YXbf2FOgVM7zyBp9XS2l257UtHmrhdb+uJH/M/f+mJwt/kAqJ7fmE/1/YIiavJJsE3
-	 H+tMjBA2IC+Yw==
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Lorenzo Pieralisi <lpieralisi@kernel.org>
-Subject: [PATCH v2 4/4] PCI: Remove unnecessary <linux/of_irq.h> includes
-Date: Tue, 25 Oct 2022 13:51:47 -0500
-Message-Id: <20221025185147.665365-5-helgaas@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20221025185147.665365-1-helgaas@kernel.org>
-References: <20221025185147.665365-1-helgaas@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mys4W2sPgz30JR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 03:45:44 +1100 (AEDT)
+Received: by mail-qv1-xf34.google.com with SMTP id x13so1833388qvn.6
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2022 09:45:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=o8E7f+pbai6yNionn/RucFtJANfu+mS+MIa2K7Eho/8=;
+        b=z7vJkI3Sc3woYN3W1CoV94ELnbBfBwnApLU5+2VLwFinpR5/nT4L711ilpekqYgNcC
+         ukQAnfFpt0DZ3pNmN1snpxXrKx/mt0z/leChy5W2pSjYibqelOFNWafYk5FZW1EBdIBU
+         ieAJUANrvOPu06uXKZewj3T4bfK/EJ4Wg+bHUO53SOr1dZkOa4n5/fh7iyqInnn0rw7A
+         ZUPYTMp0iiMt3VQNO7I2KOboAamniF7cM4HtugId3udr0Bvog/ezITI2vEc30/djD6IM
+         WOfg0HP9hne7Pc+0MsIyhW89Y1m1D9/7x5mRE0wsZHsJs6u7C8yHSTBzDTTHFQ5UYBSx
+         Yw3A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=o8E7f+pbai6yNionn/RucFtJANfu+mS+MIa2K7Eho/8=;
+        b=AGgQmrQaNg0CgdTfGvnHq9GMFbkz4ZxWt3bvnUx5Dki5hdFoLMStsQdWHy+W2LAVEx
+         3bCuJj3nOXMLmj03QXiMmW9bUUoaA+lolrG2xyF8R4LjnbGddxrI7H07z9rH5ll8ePJH
+         n/hPDmb7S6+AKVlnIzx65cDL02bVOe3tCeEmcsh7v6SgB6fK60b4usQpYx5XS7ymwVvI
+         +2pdmXAEogGxxu7YkROFxwYBiGHFK+vVrzfDOaye7tp+OQLZ0yocomYCiyGeI7CGW1hu
+         zQQafPkp4KeN1stiri6SxOgxD3a/Dq0K+vdPJV2b4I0fkhYo2RlYeCYNJRO5Sf2yojlR
+         Gz3A==
+X-Gm-Message-State: ACrzQf28sEFAMEjn95HInj/NAVDyqwfZMd27Ug5WxgbEv/9NZ440ayzE
+	oEbewusT6nk7G0XXem+tCJjmoQ==
+X-Google-Smtp-Source: AMsMyM57a6LQobl39EIHUvYv9F9ueqjvF0NgC33FdCUUNQFRFn6DRCQ8utqMeylgbUFbcEJxjucwNQ==
+X-Received: by 2002:a05:6214:2aa4:b0:4b3:fcfb:6479 with SMTP id js4-20020a0562142aa400b004b3fcfb6479mr42265023qvb.127.1666889141013;
+        Thu, 27 Oct 2022 09:45:41 -0700 (PDT)
+Received: from [192.168.1.11] ([64.57.193.93])
+        by smtp.gmail.com with ESMTPSA id bq33-20020a05620a46a100b006bb366779a4sm1293337qkb.6.2022.10.27.09.45.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 27 Oct 2022 09:45:40 -0700 (PDT)
+Message-ID: <f1f514d3-cab5-9502-02f6-0a1b84067eab@linaro.org>
+Date: Thu, 27 Oct 2022 12:45:38 -0400
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Subject: Re: [PATCH 1/3] ASoC: dt-bindings: fsl,sai: Add compatible string for
+ i.MX93 platform
+Content-Language: en-US
+To: Chancel Liu <chancel.liu@nxp.com>, lgirdwood@gmail.com,
+ broonie@kernel.org, perex@perex.cz, tiwai@suse.com,
+ alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, devicetree@vger.kernel.org,
+ krzysztof.kozlowski+dt@linaro.org, shengjiu.wang@gmail.com,
+ Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+References: <20221027060311.2549711-1-chancel.liu@nxp.com>
+ <20221027060311.2549711-2-chancel.liu@nxp.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20221027060311.2549711-2-chancel.liu@nxp.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,202 +89,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Michal Simek <michal.simek@amd.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, Scott Branden <sb
- randen@broadcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+On 27/10/2022 02:03, Chancel Liu wrote:
+> Add compatible string "fsl,imx93-sai" for i.MX93 platform
+> 
+> Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+> ---
+>  Documentation/devicetree/bindings/sound/fsl,sai.yaml | 1 +
 
-Many host controller drivers #include <linux/of_irq.h> even though they
-don't need it.  Remove the unnecessary #includes.
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/pci/controller/cadence/pci-j721e.c   | 1 -
- drivers/pci/controller/dwc/pci-layerscape.c  | 1 -
- drivers/pci/controller/dwc/pcie-armada8k.c   | 1 -
- drivers/pci/controller/dwc/pcie-tegra194.c   | 1 -
- drivers/pci/controller/pci-v3-semi.c         | 1 -
- drivers/pci/controller/pci-xgene-msi.c       | 1 -
- drivers/pci/controller/pci-xgene.c           | 1 -
- drivers/pci/controller/pcie-altera-msi.c     | 1 -
- drivers/pci/controller/pcie-iproc-platform.c | 1 -
- drivers/pci/controller/pcie-iproc.c          | 1 -
- drivers/pci/controller/pcie-microchip-host.c | 1 -
- drivers/pci/controller/pcie-rockchip-host.c  | 1 -
- drivers/pci/controller/pcie-xilinx-cpm.c     | 1 -
- drivers/pci/controller/pcie-xilinx-nwl.c     | 1 -
- 14 files changed, 14 deletions(-)
+Acked-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-diff --git a/drivers/pci/controller/cadence/pci-j721e.c b/drivers/pci/controller/cadence/pci-j721e.c
-index a82f845cc4b5..cc83a8925ce0 100644
---- a/drivers/pci/controller/cadence/pci-j721e.c
-+++ b/drivers/pci/controller/cadence/pci-j721e.c
-@@ -15,7 +15,6 @@
- #include <linux/mfd/syscon.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/pci.h>
- #include <linux/pm_runtime.h>
- #include <linux/regmap.h>
-diff --git a/drivers/pci/controller/dwc/pci-layerscape.c b/drivers/pci/controller/dwc/pci-layerscape.c
-index 879b8692f96a..ed5fb492fe08 100644
---- a/drivers/pci/controller/dwc/pci-layerscape.c
-+++ b/drivers/pci/controller/dwc/pci-layerscape.c
-@@ -13,7 +13,6 @@
- #include <linux/init.h>
- #include <linux/of_pci.h>
- #include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/of_address.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/pci/controller/dwc/pcie-armada8k.c b/drivers/pci/controller/dwc/pcie-armada8k.c
-index dc469ef8e99b..5c999e15c357 100644
---- a/drivers/pci/controller/dwc/pcie-armada8k.c
-+++ b/drivers/pci/controller/dwc/pcie-armada8k.c
-@@ -21,7 +21,6 @@
- #include <linux/platform_device.h>
- #include <linux/resource.h>
- #include <linux/of_pci.h>
--#include <linux/of_irq.h>
- 
- #include "pcie-designware.h"
- 
-diff --git a/drivers/pci/controller/dwc/pcie-tegra194.c b/drivers/pci/controller/dwc/pcie-tegra194.c
-index 1b6b437823d2..02d78a12b6e7 100644
---- a/drivers/pci/controller/dwc/pcie-tegra194.c
-+++ b/drivers/pci/controller/dwc/pcie-tegra194.c
-@@ -21,7 +21,6 @@
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/of_gpio.h>
--#include <linux/of_irq.h>
- #include <linux/of_pci.h>
- #include <linux/pci.h>
- #include <linux/phy/phy.h>
-diff --git a/drivers/pci/controller/pci-v3-semi.c b/drivers/pci/controller/pci-v3-semi.c
-index 154a5398633c..784fcf35599c 100644
---- a/drivers/pci/controller/pci-v3-semi.c
-+++ b/drivers/pci/controller/pci-v3-semi.c
-@@ -22,7 +22,6 @@
- #include <linux/kernel.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
--#include <linux/of_irq.h>
- #include <linux/of_pci.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/pci/controller/pci-xgene-msi.c b/drivers/pci/controller/pci-xgene-msi.c
-index bfa259781b69..5efc6e56559f 100644
---- a/drivers/pci/controller/pci-xgene-msi.c
-+++ b/drivers/pci/controller/pci-xgene-msi.c
-@@ -10,7 +10,6 @@
- #include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/msi.h>
--#include <linux/of_irq.h>
- #include <linux/irqchip/chained_irq.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/pci/controller/pci-xgene.c b/drivers/pci/controller/pci-xgene.c
-index 549d3bd6d1c2..887b4941ff32 100644
---- a/drivers/pci/controller/pci-xgene.c
-+++ b/drivers/pci/controller/pci-xgene.c
-@@ -14,7 +14,6 @@
- #include <linux/init.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
--#include <linux/of_irq.h>
- #include <linux/of_pci.h>
- #include <linux/pci.h>
- #include <linux/pci-acpi.h>
-diff --git a/drivers/pci/controller/pcie-altera-msi.c b/drivers/pci/controller/pcie-altera-msi.c
-index 4366e042e98b..65e8a20cc442 100644
---- a/drivers/pci/controller/pcie-altera-msi.c
-+++ b/drivers/pci/controller/pcie-altera-msi.c
-@@ -14,7 +14,6 @@
- #include <linux/module.h>
- #include <linux/msi.h>
- #include <linux/of_address.h>
--#include <linux/of_irq.h>
- #include <linux/of_pci.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/pci/controller/pcie-iproc-platform.c b/drivers/pci/controller/pcie-iproc-platform.c
-index 538115246c79..4142a73e611d 100644
---- a/drivers/pci/controller/pcie-iproc-platform.c
-+++ b/drivers/pci/controller/pcie-iproc-platform.c
-@@ -12,7 +12,6 @@
- #include <linux/platform_device.h>
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
--#include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/phy/phy.h>
- 
-diff --git a/drivers/pci/controller/pcie-iproc.c b/drivers/pci/controller/pcie-iproc.c
-index 2519201b0e51..83029bdfd884 100644
---- a/drivers/pci/controller/pcie-iproc.c
-+++ b/drivers/pci/controller/pcie-iproc.c
-@@ -18,7 +18,6 @@
- #include <linux/platform_device.h>
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
--#include <linux/of_irq.h>
- #include <linux/of_platform.h>
- #include <linux/phy/phy.h>
- 
-diff --git a/drivers/pci/controller/pcie-microchip-host.c b/drivers/pci/controller/pcie-microchip-host.c
-index 57b2a62f52c8..0ebf7015e9af 100644
---- a/drivers/pci/controller/pcie-microchip-host.c
-+++ b/drivers/pci/controller/pcie-microchip-host.c
-@@ -13,7 +13,6 @@
- #include <linux/module.h>
- #include <linux/msi.h>
- #include <linux/of_address.h>
--#include <linux/of_irq.h>
- #include <linux/of_pci.h>
- #include <linux/pci-ecam.h>
- #include <linux/platform_device.h>
-diff --git a/drivers/pci/controller/pcie-rockchip-host.c b/drivers/pci/controller/pcie-rockchip-host.c
-index 7352b5ff8d35..c96c0f454570 100644
---- a/drivers/pci/controller/pcie-rockchip-host.c
-+++ b/drivers/pci/controller/pcie-rockchip-host.c
-@@ -28,7 +28,6 @@
- #include <linux/of_device.h>
- #include <linux/of_pci.h>
- #include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include <linux/phy/phy.h>
-diff --git a/drivers/pci/controller/pcie-xilinx-cpm.c b/drivers/pci/controller/pcie-xilinx-cpm.c
-index e4ab48041eb6..4a787a941674 100644
---- a/drivers/pci/controller/pcie-xilinx-cpm.c
-+++ b/drivers/pci/controller/pcie-xilinx-cpm.c
-@@ -16,7 +16,6 @@
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
- #include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
- #include <linux/pci-ecam.h>
-diff --git a/drivers/pci/controller/pcie-xilinx-nwl.c b/drivers/pci/controller/pcie-xilinx-nwl.c
-index 40d070e54ad2..f0271b6c6f8d 100644
---- a/drivers/pci/controller/pcie-xilinx-nwl.c
-+++ b/drivers/pci/controller/pcie-xilinx-nwl.c
-@@ -17,7 +17,6 @@
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
- #include <linux/of_platform.h>
--#include <linux/of_irq.h>
- #include <linux/pci.h>
- #include <linux/pci-ecam.h>
- #include <linux/platform_device.h>
--- 
-2.25.1
+Best regards,
+Krzysztof
 
