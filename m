@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D28EAFA3740
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 19:15:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB004ECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 19:16:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MywPP0WDvz3cL1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 06:15:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MywQR1ywcz3cMT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 06:16:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=PgzwRG/9;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=yy4aPtiQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=40.107.21.46; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=PgzwRG/9;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=yy4aPtiQ;
 	dkim-atps=neutral
 Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2046.outbound.protection.outlook.com [40.107.21.46])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MywKB6qQQz3cBX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 06:11:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MywKC4DZNz3cBf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 06:11:59 +1100 (AEDT)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=j23sbdoAsskjk/iIr9UY+xDL4pOp8PAm3MkxIJaL9lcnJTgZQzO0XBO001MdmErm4vP2KAjUZBsPWsooPnVaL4tCnXAVv38hB3wRj1nLvfwloQhb5ojy4CIQHUwkQOGCaGN4GAwFE65U0BQ6yeaY66c5holBJPRH7fPyY4fSxxjC3NqfDW+nfextbO5ZXG4z++dBnRt1NwaHcqfXygm119VgvuZEtE/OKfi8/PBvydnyyokSgoWIuyJ2+yWFa661g58BWA0JQrpKAjj3YbQiSVF5XH69GVKu8YQ8zZLgRdMjuePxEHFxyeGZBKC3jMtOXt89ToIwzV9GFkvOPu8A4w==
+ b=Qvsv75ZN/fRpReQ3TmNCztxMllEfQBHmFNTlZtU/5295Ln8jZmNA0z1seCeirtiHXJmnU+7F8lvq7YE8+J+57m85ZFTig7gcO2NyHHiE6Tei2l/ZyM1bxbMrKuE6z8KH87hGc2PIHGUts8HF/yjDJBqHHWcmYHotzd0PQlErRWkVlJhyeNI6vZMSuuTbTx03CQSJBN9wqKIQKCSyQvab30Z8PE1swjcDAd1BE6RGNArdE2ZikxsWtmVUqV7ERY3bNTiwoxjRkAitfTimrcRCuF3EKZLN+sqlxVxdU52pg1gVNOOpLxK5PHhgmVszosJwWU59Q169I1CjFNUALS1jwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=nHfrKvIf6uhW+PIvN7eGwoBrowmdKIkqx5wJ0m5ZL2o=;
- b=Nkbe03CwAmHJY4FOpoJToNWeF8smaJpWPPkFY+KFbWHkggQLfjtOwpWl6g1bjytQNjGu5HnqLnYUU2G4CxDqKV3a1p97Mido2OR6gv9ISCEFodgND2xScUJ6ksRyL6nrb1KzS22wmNmF16fM0GO1qGObWjBAdgGpeFbfxgFFwS6m8PTf0NkhowwnzFOnO9o5jXquxhHaWoFq7ZUoTo3U8P3+UNFc2b1zAJOzxJbt3MiHWOJXFXaG3dD3Ne9MWuY5ifcT+txbZTy56xm57m3eIXe4annIy/rrpDX5AJn9uWWvW/PC35gO/LBK6VQ7+Aw/btK/Pi9BgvJvpU8V6KuPxg==
+ bh=Nqu94qYNvf9w4pfsAbSJlc3AqtD97kwBepOGm9ixucs=;
+ b=OcF0WUclUCiVPMNJ/KliTjBlQgHp177YnfRa1IbrEkwUMC74q96ZWAmqxPOIee0G193JehaBOGuqMss+Tpds+y/zIlGbBHYpcVnoIwkMB4fTF5ZA3qG65PSJZxeTobIaK59SyN12IG5N2rvdbA5xbt3y/lJfoVRc8Hu7jL1l+TnF4B0OQhuUgqoaQDV+M4Bje5MW/AvbV1SAT22jM1Q65UZ97FSGQuY/fxBkihLFMF7SypK/zzMfQJ1By0xuOKl0OxQoC0/xJoLF3L8IxrBCyfILG6mwSHmJ/z5NJjmtD/xbNT63dWY//qwCoWdCBv8CxnSThe3X2eVXVfBvyB/SSw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
  dkim=pass header.d=seco.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=nHfrKvIf6uhW+PIvN7eGwoBrowmdKIkqx5wJ0m5ZL2o=;
- b=PgzwRG/9ry9JBvju1rWSB3P0CV15tKWLcYzfBAYlFruTzu4sE8HtyFM5oEr4fTQVl3i1Fw7Od26Devr3MRUFoNgQlR4EZxJ5MXBUmqC1eAR0ZI8PE410PpEpylZvgXRUY7GfH06fzEHadMA2u6P+oJiZDzNwngH/lZjP07uDlmMzxXqdGVPxQ7upp4lUtDfK85Hg/RM6A9f4qyeTjUHFyCewtPZbNJhfSm8cbU3kecRQXX2x9kLXiXLj+gbpRYQomhCOyVGxSJA0lEKdo02Dw57Xi/c4QqP2qi1cAB/qfxDwo5mRb43uldUIO7+YLiFK2Y8yFKNyHSrc6IC9bIshLQ==
+ bh=Nqu94qYNvf9w4pfsAbSJlc3AqtD97kwBepOGm9ixucs=;
+ b=yy4aPtiQ3ar4rY7u7JZDohnKMvI2VSzlUf/6ioBaviflIueOXRba/+EdM5UAgQDUhkeR58NUaNweLe61j1XpCaVqlSv5NR/6oeSVBhWYz+OzNz+wOgdCK4AvUCWcgXWazUWwzWOl2Bpst8hFtJuUcuKBNZcvjp5lh3+NgV9ITY7MqXmaVJ2P2/uvbTc7fBWEffP8AnrgpryhKaEQmC7dPw56NC8w+UBENi0kmOx200il+r0BJnnSt9VafhSfALq8V8Y0YxLVkQMh2nwPGMYkgpHdZ7fjDdxclFYWFvYkGoRNZXNEQMP8zb+bpoThGKLFkE7IbeZLv9uhxdxEcRu8aw==
 Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=seco.com;
 Received: from VI1PR03MB4973.eurprd03.prod.outlook.com (2603:10a6:803:c5::12)
  by AS2PR03MB9648.eurprd03.prod.outlook.com (2603:10a6:20b:5e8::16) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5746.21; Thu, 27 Oct
- 2022 19:11:34 +0000
+ 2022 19:11:40 +0000
 Received: from VI1PR03MB4973.eurprd03.prod.outlook.com
  ([fe80::3d5c:1e59:4df8:975d]) by VI1PR03MB4973.eurprd03.prod.outlook.com
  ([fe80::3d5c:1e59:4df8:975d%6]) with mapi id 15.20.5769.014; Thu, 27 Oct 2022
- 19:11:34 +0000
+ 19:11:40 +0000
 From: Sean Anderson <sean.anderson@seco.com>
 To: Vinod Koul <vkoul@kernel.org>,
 	Kishon Vijay Abraham I <kishon@ti.com>,
 	linux-phy@lists.infradead.org
-Subject: [PATCH v8 3/9] dt-bindings: clock: Add ids for Lynx 10g PLLs
-Date: Thu, 27 Oct 2022 15:11:07 -0400
-Message-Id: <20221027191113.403712-4-sean.anderson@seco.com>
+Subject: [PATCH v8 5/9] arm64: dts: ls1046a: Add serdes bindings
+Date: Thu, 27 Oct 2022 15:11:09 -0400
+Message-Id: <20221027191113.403712-6-sean.anderson@seco.com>
 X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
 In-Reply-To: <20221027191113.403712-1-sean.anderson@seco.com>
 References: <20221027191113.403712-1-sean.anderson@seco.com>
@@ -64,51 +64,51 @@ X-ClientProxiedBy: BL1PR13CA0218.namprd13.prod.outlook.com
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
 X-MS-TrafficTypeDiagnostic: VI1PR03MB4973:EE_|AS2PR03MB9648:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0b9c6f79-4a1b-4985-93f0-08dab84f107c
+X-MS-Office365-Filtering-Correlation-Id: 2276313a-cecc-4770-1c80-08dab84f1394
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	hhuha1gLAFUqGsMsv/OLrvb5az19+g1JvF4H2HQhsbvtGP5re38zf8xUc1S+Hlz8o4Vtj8dfu0uxF3YnX2QUKVoDdq80ZVn8DMnccmmUibN2m7Xbp98PVSHcxYJHqNmlxHuos+3bd7CPKE6EykPr7a9xomZIKFICBtgEZh1hP93dtTD7oGgH0Zwt2+chwddS3shBB2aK4kUd4zkmAlPALrMPe9P1j+LySgn53onQXcA4ofjdjPX6CN8wYw+ZneQqxkmn2iQ/nVRaSVegUjO8dpcHK3f3bJWnZatup71t4/vgyxK00VCzaYhGmqAt3M8DW0zTr8KPBMrBoAO0DOfbTv6LnPI61/zv84voonvlHmbY84/nl96XdqtsHfXAEenFEq4Y5bs8vM3rkRBbwnq3zvPrKZB+KDagRhZj6x0yNiTaqOHjzw9o1T5XNgg5pNBo1Q1xkc67rF9iVWq0CsGcYQ0/67St06bgOZA1z9k2D9sBnUySCemWDLRhuQkzu9o+EUKsz34QeWT83reMOJJqEij72NsbVWK3mzbW50WL8P86u6AFaoe90Prc6D779k2MhIHA8+1972DznKrqt4tB7/9/TSEolf9lwaMCfmSAVcadpUHd8jtmsKz1mb5UkLeXLb/t+6VQePTp6fKEDlxmWwx00TGXZcyuATEpUokDMY7tTP0voZLGyZiSZN7/kd5ngDB5RS8YbArez9YX/ROdoHrYLdPIdQTG1Z6VoJm6akTcuH1Jbh7eV/VLOOguAFr/fn0xNbpM3H1/I4INtu2pxQ==
+X-Microsoft-Antispam-Message-Info: 	Uhs5k7dGt8wUhlE1r0PUM3TLcqp3r2PjG2T9Cas9o+Hr4dB9xuLkQwf83Wv0+qg/Y1praP1jx7eQStxj2FJ9xTz5zhGP+SMR731qzNrBzbjK7oJBmVGHWL+q2CiiiY39QhoDyw9+0eaXsNnspOWU3hcmTn6J1H13Qy2ShBVQEnS66ZR/qAeShJNegY6ZJRjsZLWTXC7IXLKLk0m0nWIKVeVLPChzaReCaLckCCd4MHr11DGWwaLwLgOmILa6/7NdntyxLNrzkGnkbmSDwpdn0fLwsJR64P1af0e1kKNs7vJI3IXMjEgWYwYMa/So3RonSb2iykspgJv9eNbWwlEacCz32CcH3M1mM4gfPn/2c97nt4s0UwSndkwuZHd+TtXNlo1cfskDwNRSm8lvQ227v44NRasFLv2hOyT/AQt77Mfdz/oEA5oT6lEcsmYipBnNts7X0kRPzTRQO6rpKQNKDCZxF2Mj/wVFGajs6FEjN9DnyyXexTmsjQG5MvchA4IzBzGfxjYHMLXV0g7H8RYkDQwKKxjVwjQm7sbuz8bzTPj3X+SthioCClOSpwdBu/ZGonLwdAedZ05loV8aBUi/ammF6OYCDOP+BtetzLzVpdpo+IC3o2KX0yND3vTYHH9S+4KZ7mzitdilsnaxXHhQ6XgmEkKabVqGcX0zxGngIr5jAn53yONQTsN4ozLp8KKb7/sxeZSHYJhGHAE4aeLflWEaEaqzvHzoMR4uaU+JupV37GQRw/jQAesoOykv5shh
 X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR03MB4973.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(39850400004)(366004)(396003)(376002)(346002)(136003)(451199015)(110136005)(478600001)(5660300002)(54906003)(83380400001)(38100700002)(6486002)(7416002)(2906002)(44832011)(36756003)(66556008)(66946007)(8676002)(41300700001)(66476007)(316002)(4326008)(8936002)(6512007)(1076003)(186003)(2616005)(6666004)(86362001)(38350700002)(26005)(52116002)(6506007);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?w1C7P7+8H2JStgJGPlDjrJDY2jclMy9M2bAoIoeh9BHbmoXClJ9zutGgFPNT?=
- =?us-ascii?Q?GNB4PHGnYtFs618e6EylzoKBdY8qCISXs6wlzmOad+/DVPmslEy5ORdcEqiP?=
- =?us-ascii?Q?lBP0iZSx+z0QBvZgyY+Wj5szr4lawreozj4mv/k/ZiL9H9JqUOW4T9qobdUY?=
- =?us-ascii?Q?8sH/kv9QVB3lbmoybeogTw46XgfGK6UvRGMdZX2Bha3CLM9lrY3rzd82F8CF?=
- =?us-ascii?Q?jVWxW2uLIw65//+hOxfjJTUxqcyt72r1dwshxHbHB8fZrkAUx7t6VYxZikmF?=
- =?us-ascii?Q?qSbJjrWAl6dnck9Bh28gX4vGf47ttzPGuLln0C+5SY3Jr9loR16i5qqaidcK?=
- =?us-ascii?Q?TC/JgylkKrWd3XZCXronwuHRh7aOaw23nIb5tl02hVdQ1PZyX7zepKFTDGSF?=
- =?us-ascii?Q?viU6oPu5OFGi71Wak1nX88OnFssq2kVaeMIQQ6ynZPbkvgUq7q5LrwLVtQRd?=
- =?us-ascii?Q?S1oFna0mnaM5NxLiaUAYscz/ghSdlT2H3hMtoQPf0Xr6is/iaRHSY5+zpClj?=
- =?us-ascii?Q?0tzL9lPGbvTR6J1j3Eha9m/nCdOUC6F/kijVAo8sSXXRpbyIB5H4sFzjlXxG?=
- =?us-ascii?Q?9CXjW3Uxyb4VC5OKIRl6REMRIaYR91RoUpab6ifKMiaCoMkBxIvjwO+lMwnP?=
- =?us-ascii?Q?B3Ge0YigCP5t36qM/5BwzYfjHHu9775Tx80xHiaHHQBCd49T4ZGmbGJuKHX6?=
- =?us-ascii?Q?PzPlPsCezz9xqRExS3C1lVBxBoxK3EwMroSa+grLr1ATYFrL2n5RJ5zMDZ4C?=
- =?us-ascii?Q?pHHoZOfnQkq9tnbjq6hhSw1sHiG7GQEGIdl10nMVKuWBUNlqvz9LbuZZTp/B?=
- =?us-ascii?Q?bKo/L+53oADOnjXlxLJ8F0YsTP7lEm+ycETG+cFUhvb2OK51A1HXFAwuLrK1?=
- =?us-ascii?Q?QNvWTS3QEslqwG5DXrtGUNvsAjOKIv2gGNJwApdeaeBzfPcooRin7qT1h4gj?=
- =?us-ascii?Q?v1EzR1x3ySekgP9we5LNBAmmKFEUxm+gH5U8KTIZPrJmr2jSYF/qGNawrtVU?=
- =?us-ascii?Q?DVgd2fo0bmFEw0ChNvw4YhF1QYAtiMJ5V8n/+VJeGu5c4GKkfSI+pwofNu+F?=
- =?us-ascii?Q?kUJJqYfCVoJPShx+OSpn/4pbhBWyWHHNooZ9qKxqTBTlIMm9zJBOQ6F3gELr?=
- =?us-ascii?Q?ylQ/ciBWMG1YX7u3Wr7upo6/i6OGoOwdE0xp0VMU2qUq0qGgw88zWvUiEzRT?=
- =?us-ascii?Q?TVCdC7IQn5C1Nlgomijq3LBdl/Wa8MEq+5OaQ/mYe8dnIAT3V/vfyM8T+/wr?=
- =?us-ascii?Q?5Gzdar6oD9bOW2y0Av1YcTUZawxMvT0ipD5yESQttmgwyZK5Z8qxREZa2N60?=
- =?us-ascii?Q?Wt+wqGFCZUbQ+Jsu9SS1SSDXMgb71ZW51u+yoztN97Vs379Xr8sbBB+A1P7O?=
- =?us-ascii?Q?eG3StOajpkBta3H2yZ908Yp/CpEP5Xddur/FwDCLk4KR3YDTJknrcvcBFd8q?=
- =?us-ascii?Q?hsaqVw3fYN1HCa6lR1W0SJi4hMlyrYMZE9WFW1kpYfCjUjA/sZMSDP7T5vGV?=
- =?us-ascii?Q?FuNkyqkpbUC+9ZUrmc3Ys3k8EnaW/J5gR1vWH34WJ60Cmt4pHiQL9pFR7Ed2?=
- =?us-ascii?Q?A3IBO0rwggjjb3VpyoU8FMnf6QzGE0ZuhkzbrF9OZ47BxyPZkh6Wa5rxRwEi?=
- =?us-ascii?Q?jA=3D=3D?=
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?7GSwFOeN29wnZRH2eQD6d3CJCXhuOZEUA7mmYwdBfBNikyKus4YyWSR3anaV?=
+ =?us-ascii?Q?/S8w8cV2Rc6M6lwSEqCQQl3p96ypzP+ghnxXcntEDczvEmFEXhu5BfvMBBuJ?=
+ =?us-ascii?Q?/rIU/Q5LBBckxl3PgyaTWXbQjOYBdYwk7sTKPuUqRhvDE6Kp4phGlxcAKm8q?=
+ =?us-ascii?Q?P64RVX11pE2mrTkmo91QD8+S0FhJ4cZljHadHk0Iwo+wdyy3nITtSqVZFzmO?=
+ =?us-ascii?Q?KvVNwxajOBpiCfEznTLV3pHaKXEY6BLLo25p2o20o69emu17Pyiw7mMOUWJN?=
+ =?us-ascii?Q?/inPGgjghRczz0b3mFXW3c/4LA/Va8XLijbUIVaWRRTouXIz+Aj8L8aklxLx?=
+ =?us-ascii?Q?99gjDSLwRUJbRzkg7j6FGqGqBY59SsPcSwYJZJ6HHNiuPWW+C4/BnfcEMnoc?=
+ =?us-ascii?Q?jc7C4JI//uSvMdj84Mvn65YyvR32DmK5G74ZASJyEwdMeXZau+4/3gcUaHQA?=
+ =?us-ascii?Q?v8xuycSYYL5hGH6etOVt7VGt0UYi73qLYP9jol+5JfZwnod0RH+bgWYO1np+?=
+ =?us-ascii?Q?EKBdO3kzi7z8jJm+Jw9sMvvfMouPwiYEcqWR/PSyqHXCe1WfMi82T8gq/3MG?=
+ =?us-ascii?Q?us334Jee86pFCh9dFRmnBCKM0qsxX+jodSsXEasiqFcNFzTg+SKXbdPc56Eq?=
+ =?us-ascii?Q?tTHDr6AUx8m5I8lkJPnf97y2C4mV5oF1FABToZzF9T6TCSZ8SiaD29Q+pdMA?=
+ =?us-ascii?Q?Gxa7snfh9wZL/26TfMz5CO1rzpsbQsPZCz/5ATeN1MTCAwfrS4VIiaein64R?=
+ =?us-ascii?Q?GKfnwSEjouG0E11g3dZRPNl3AM/zZZDH1iRllf1FygsZuXVx/LT5fWGrRWij?=
+ =?us-ascii?Q?txaa+MiZiPgTpngkXf2OR+ej2JXzd4jowWWv0kSP0B1xSLl572NB3Nc920H/?=
+ =?us-ascii?Q?3se6aFZgAWSWf1q1wmcuxNSbCvISJgdzyp058d26jrDx7aVsSeu9sYqTnB6p?=
+ =?us-ascii?Q?PHf7WM6VhgI8E37A7ynS6fGrHarPkyOQcxt8chCm9Qli9FkLfH0rWvLYG2la?=
+ =?us-ascii?Q?iUdTfYx6n4P5qItBR3NfHJXiEmn4vhbrxSDR299C2XTFELqfWoaBRKoET/zN?=
+ =?us-ascii?Q?792C06EX2+Ljdliwa2WymEqRl8ceebIB3Mi1NLxOeiW2KTdC1E29hAPqI5vJ?=
+ =?us-ascii?Q?//itRwD+/jUZUW65Y6Q+v8m2tZNLim1aaKyD2BRrHpSF9hoX0lUtf4E/SOsB?=
+ =?us-ascii?Q?GwUyH4TYVxUzYgVMscENoTXJs77dOKohhWaHEHAVxS2vGM9smmrR5uZOzuik?=
+ =?us-ascii?Q?XfBEKbej/8MGKi8B1OoUsIjdqmvTeQD4cUYzZgCrGJrtwa+R8Q2py3Rh8xvC?=
+ =?us-ascii?Q?lgw3npCKy/4nPvEv/g/okSwmS3RJhsCQ9Q4w1om6VUqb07XkjNBjzR+m7SPz?=
+ =?us-ascii?Q?RTO/rYXlxRLJ1NCEj49/AEyVHoU9l/G69q5VHx27C2mJTZzYMC6jQsa1mIjA?=
+ =?us-ascii?Q?VxZDpKu18vRTsFpvtyYFDyiFvdfXh2APxcLAKfAT11wyHfH+G9HqvGQTnas3?=
+ =?us-ascii?Q?35ovRoV/m/Yzk0TEXUuO2g3d1P5BLbD56VN66Pw4HSM7la7fu82WzRn6Gs/V?=
+ =?us-ascii?Q?efTz53Wsmwuf5q2A2u+8peZSJ1kn+443pjez/+d/21ldDrC4snKUZll3CqzZ?=
+ =?us-ascii?Q?Dw=3D=3D?=
 X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0b9c6f79-4a1b-4985-93f0-08dab84f107c
+X-MS-Exchange-CrossTenant-Network-Message-Id: 2276313a-cecc-4770-1c80-08dab84f1394
 X-MS-Exchange-CrossTenant-AuthSource: VI1PR03MB4973.eurprd03.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Oct 2022 19:11:34.5967
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Oct 2022 19:11:40.0966
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 0NkzkqhUkfZ+kDLcyAE/O5bAGIsJ/zzZnPAI8cNEA0xmerZ+4ySXTrcT85wBFv/PS0mZ+ospwsauO2lxclXyMA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: 8CflItTMhAQrV8E/lFsLXNEq7WlEKjhvLvM7sNAOpyQdiJeUxDdFTycQ/AOp7Nc37NTJNx5oOMD/2QCiDuWNwg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR03MB9648
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -121,56 +121,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds ids for the Lynx 10g SerDes's internal PLLs. These may be used
-with assigned-clock* to specify a particular frequency to use. For
-example, to set the second PLL (at offset 0x20)'s frequency, use
-LYNX10G_PLLa(1). These are for use only in the device tree, and are not
-otherwise used by the driver.
+This adds bindings for the SerDes devices. They are disabled by default
+to prevent any breakage on existing boards.
 
 Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-Acked-by: Rob Herring <robh@kernel.org>
 ---
 
-(no changes since v6)
-
-Changes in v6:
-- frequence -> frequency
-
-Changes in v5:
-- Update commit description
-- Dual id header
+(no changes since v4)
 
 Changes in v4:
-- New
+- Convert to new bindings
 
- include/dt-bindings/clock/fsl,lynx-10g.h | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
- create mode 100644 include/dt-bindings/clock/fsl,lynx-10g.h
+Changes in v3:
+- Describe modes in device tree
 
-diff --git a/include/dt-bindings/clock/fsl,lynx-10g.h b/include/dt-bindings/clock/fsl,lynx-10g.h
-new file mode 100644
-index 000000000000..15362ae85304
---- /dev/null
-+++ b/include/dt-bindings/clock/fsl,lynx-10g.h
-@@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
-+/*
-+ * Copyright (C) 2022 Sean Anderson <sean.anderson@seco.com>
-+ */
+Changes in v2:
+- Use one phy cell for SerDes1, since no lanes can be grouped
+- Disable SerDes by default to prevent breaking boards inadvertently.
+
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+index 3d9e29824bb2..8f986b4f5efc 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+@@ -423,6 +423,24 @@ sfp: efuse@1e80000 {
+ 			clock-names = "sfp";
+ 		};
+ 
++		serdes1: serdes@1ea0000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			#clock-cells = <1>;
++			compatible = "fsl,ls1046a-serdes", "fsl,lynx-10g";
++			reg = <0x0 0x1ea0000 0x0 0x2000>;
++			status = "disabled";
++		};
 +
-+#ifndef __DT_BINDINGS_CLK_LYNX_10G_H
-+#define __DT_BINDINGS_CLK_LYNX_10G_H
++		serdes2: serdes@1eb0000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			#clock-cells = <1>;
++			compatible = "fsl,ls1046a-serdes", "fsl,lynx-10g";
++			reg = <0x0 0x1eb0000 0x0 0x2000>;
++			status = "disabled";
++		};
 +
-+#define LYNX10G_CLKS_PER_PLL 2
-+
-+#define LYNX10G_PLLa(a)		((a) * LYNX10G_CLKS_PER_PLL)
-+#define LYNX10G_PLLa_EX_DLY(a)	((a) * LYNX10G_CLKS_PER_PLL + 1)
-+
-+#endif /* __DT_BINDINGS_CLK_LYNX_10G_H */
+ 		dcfg: dcfg@1ee0000 {
+ 			compatible = "fsl,ls1046a-dcfg", "syscon";
+ 			reg = <0x0 0x1ee0000 0x0 0x1000>;
 -- 
 2.35.1.1320.gc452695387.dirty
 
