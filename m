@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02FDCC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 02:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90FF3FA3741
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 02:54:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MyVcG05w1z3cJX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 13:53:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MyVdG6NWGz3cKW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Oct 2022 13:54:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mVbIO1VQ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVPAPVlt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=mVbIO1VQ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RVPAPVlt;
 	dkim-atps=neutral
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MyVbD64dJz3bm6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2022 13:52:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MyVbD4pbMz30MT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Oct 2022 13:52:40 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1666839161; x=1698375161;
+  t=1666839160; x=1698375160;
   h=date:from:to:cc:subject:message-id:mime-version:
    content-transfer-encoding;
-  bh=1JIDE3rveBxf9oqvlNLx3kjnmVhkmYAWkY3ZRbdGFss=;
-  b=mVbIO1VQV5tBea16LI7tV6XzE5tDa+3dP2PIDSaOibs3VyP2xer3nX9K
-   jc+XL3HXW+EzCSb+sTRDftMe8FtGrFK80ChHqeTSVnbo+qL9pOjQo+c6j
-   g7hc0dkRJZxBLOegyui5NIo+h8H3R4au4yC5Osu2iwVDLcusnbqoxQnGF
-   9toNbknR6MpB/P+fcgKy+7BJuhBmy3s99Tk2l20GsBLMf92SC60zJgM4M
-   kj1r+fhIR6rc0itnicSl3ys1YoCJsYHKTUktGU8k8WHUgT4vaEkOjfLkm
-   MXihg44YURUQt32Q4IEKaAgstWTofevyGpnhTbOpEqhB6dWl0Zvct2W7M
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10512"; a="309810221"
+  bh=Wdyn8Z+zGiu1mbvKf/yKN81jR6jVsCb7hcaM9fFrXi8=;
+  b=RVPAPVlthl//20H2/eC36oY1c+8XBX9UULOyV+P0kRVxwQnSKrqCY+v9
+   btfiMqHvhopVl96ylT4FCG/qhIQGdv3VS6qMEGRe7W25uKAv/VDELBFuV
+   gRx6I9iXAQXrlTVN/E8OYVEHrKD/wyiuOdWv0g6y3kEARUGYINyhbyU5O
+   e0JrRO2M4GQYhaylnLKWAnzmsPRMSFXltCaoB/gOyCP5f9s6K0DdXqaqJ
+   J1+qfqJXqDTy4CeOa+uQK+TVDJg/nBR6ydix2/8qo8dbEqQ6V+5V8V1Rn
+   OrqrWXYWJyJQCUVxvAxdLnjK7jdr7chazG2uPEc0CJCwVxVTzuZSdscaX
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10512"; a="305729421"
 X-IronPort-AV: E=Sophos;i="5.95,215,1661842800"; 
-   d="scan'208";a="309810221"
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2022 19:52:31 -0700
+   d="scan'208";a="305729421"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Oct 2022 19:52:31 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10512"; a="961461896"
+X-IronPort-AV: E=McAfee;i="6500,9779,10512"; a="695628614"
 X-IronPort-AV: E=Sophos;i="5.95,215,1661842800"; 
-   d="scan'208";a="961461896"
+   d="scan'208";a="695628614"
 Received: from lkp-server02.sh.intel.com (HELO b6d29c1a0365) ([10.239.97.151])
-  by fmsmga005.fm.intel.com with ESMTP; 26 Oct 2022 19:52:30 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 26 Oct 2022 19:52:30 -0700
 Received: from kbuild by b6d29c1a0365 with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1ont0P-0008A5-1l;
+	id 1ont0P-0008A0-1d;
 	Thu, 27 Oct 2022 02:52:29 +0000
-Date: Thu, 27 Oct 2022 10:52:05 +0800
+Date: Thu, 27 Oct 2022 10:51:55 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes] BUILD SUCCESS
- e59b3399fde5e173b026d4952b215043e77b4521
-Message-ID: <6359f255.5lxgwDR4R6GhoSHi%lkp@intel.com>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 65722736c3baf29e02e964a09e85c9ef71c48e8d
+Message-ID: <6359f24b.zQJwuJ/nURVrHcT9%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,8 +74,8 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-branch HEAD: e59b3399fde5e173b026d4952b215043e77b4521  KVM: PPC: BookS PR-KVM and BookE do not support context tracking
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: 65722736c3baf29e02e964a09e85c9ef71c48e8d  powerpc/64s/interrupt: Fix clear of PACA_IRQS_HARD_DIS when returning to soft-masked context
 
 elapsed time: 724m
 
@@ -128,13 +128,13 @@ ia64                             allmodconfig
 arc                  randconfig-r043-20221026
 s390                 randconfig-r044-20221026
 riscv                randconfig-r042-20221026
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
 m68k                            q40_defconfig
 arm                           imxrt_defconfig
 arm                         assabet_defconfig
 arm                          gemini_defconfig
-arm64                            allyesconfig
-arm                                 defconfig
-arm                              allyesconfig
 mips                            ar7_defconfig
 arc                            hsdk_defconfig
 arm                             ezx_defconfig
