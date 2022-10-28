@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ACC2ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 11:51:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD4BFECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 11:51:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4MzLVS2HLDz3cJ7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 22:51:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4MzLW220Crz3f3M
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 22:51:58 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4MzLTr5P2tz3cC0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 22:50:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4MzLTs5TCtz3cC0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 22:50:57 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MzLTr48Pdz4wgr;
-	Fri, 28 Oct 2022 22:50:56 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4MzLTs0zBdz4x1V;
+	Fri, 28 Oct 2022 22:50:57 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20221006140413.126443-1-npiggin@gmail.com>
-References: <20221006140413.126443-1-npiggin@gmail.com>
-Subject: Re: (subset) [PATCH 0/4] powerpc: misc interrupt and context tracking fixes
-Message-Id: <166695778801.1609528.7830840855528110755.b4-ty@ellerman.id.au>
-Date: Fri, 28 Oct 2022 22:49:48 +1100
+In-Reply-To: <20221013230710.1987253-1-npiggin@gmail.com>
+References: <20221013230710.1987253-1-npiggin@gmail.com>
+Subject: Re: [PATCH 1/3] powerpc/64s: Add lockdep for HPTE lock
+Message-Id: <166695778345.1609528.8674193804254145251.b4-ty@ellerman.id.au>
+Date: Fri, 28 Oct 2022 22:49:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Nicholas Miehlbradt <nicholas@linux.ibm.com>, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 7 Oct 2022 00:04:09 +1000, Nicholas Piggin wrote:
-> These are several fixes for regressions and bugs that can crash
-> the host.
+On Fri, 14 Oct 2022 09:07:08 +1000, Nicholas Piggin wrote:
+> Add lockdep annotation for the HPTE bit-spinlock. Modern systems don't
+> take the tlbie lock, so this shows up some of the same lockdep warnings
+> that were being reported by the ppc970. And they're not taken in exactly
+> the same places so this is nice to have in its own right.
 > 
-> Thanks,
-> Nick
 > 
-> Nicholas Piggin (4):
->   KVM: PPC: BookS PR-KVM and BookE do not support context tracking
->   powerpc/64s/interrupt: Perf NMI should not take normal exit path
->   powerpc/64e/interrupt: Prevent NMI PMI causing a dangerous warning
->   powerpc/64: Fix perf profiling asynchronous interrupt handlers
-> 
-> [...]
 
 Applied to powerpc/fixes.
 
-[2/4] powerpc/64s/interrupt: Perf NMI should not take normal exit path
-      https://git.kernel.org/powerpc/c/dc398a084d459f065658855454e09f2778f8c5cc
+[1/3] powerpc/64s: Add lockdep for HPTE lock
+      https://git.kernel.org/powerpc/c/be83d5485da549d934ec65463ea831709f2827b1
+[2/3] powerpc/64s: make HPTE lock and native_tlbie_lock irq-safe
+      https://git.kernel.org/powerpc/c/35159b5717fa9c6031fdd6a2193c7a3dc717ce33
+[3/3] powerpc/64s: make linear_map_hash_lock a raw spinlock
+      https://git.kernel.org/powerpc/c/b12eb279ff552bd67c167b0fe701ae602aa7311e
 
 cheers
