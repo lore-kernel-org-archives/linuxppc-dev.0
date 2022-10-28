@@ -4,47 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32BC3ECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 01:20:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5150FFA373D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 01:37:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Mz4Vs3MVbz3cMf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 12:20:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.189; helo=szxga03-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [45.249.212.189])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Mz4sV4KRkz3cJ2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Oct 2022 12:37:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsMbOGhL;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PsMbOGhL;
+	dkim-atps=neutral
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mz4VF0qHNz2xKV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 12:20:15 +1100 (AEDT)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.55])
-	by szxga03-in.huawei.com (SkyGuard) with ESMTP id 4Mz4Qm4hLyzJnNK;
-	Fri, 28 Oct 2022 09:17:20 +0800 (CST)
-Received: from [10.67.102.169] (10.67.102.169) by
- canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Fri, 28 Oct 2022 09:20:08 +0800
-Subject: Re: [PATCH v4 2/2] arm64: support batched/deferred tlb shootdown
- during page reclamation
-To: Punit Agrawal <punit.agrawal@bytedance.com>, Barry Song
-	<21cnbao@gmail.com>
-References: <20220921084302.43631-1-yangyicong@huawei.com>
- <20220921084302.43631-3-yangyicong@huawei.com>
- <168eac93-a6ee-0b2e-12bb-4222eff24561@arm.com>
- <8e391962-4e3a-5a56-64b4-78e8637e3b8c@huawei.com>
- <CAGsJ_4z=dZbrAUD9jczT08S3qi_ep-h+EK35UfayVk1S+Cnp2A@mail.gmail.com>
- <ecd161db-b290-7997-a81e-a0a00bd1c599@arm.com> <87o7tx5oyx.fsf@stealth>
-From: Yicong Yang <yangyicong@huawei.com>
-Message-ID: <bc44cf85-aee9-03ca-9911-dbd904a43cc8@huawei.com>
-Date: Fri, 28 Oct 2022 09:20:08 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Mz4rP5LH6z3bjr
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Oct 2022 12:36:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1666920965; x=1698456965;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=wa4X0CcpxywLPNOBTaDbb32Oi0niCJTm8EbnPBgUfOQ=;
+  b=PsMbOGhLZCSaogiE6unqpmfqrSsM1qlVS/DqnA3UqV5b2B77plea2Ihz
+   hFnslmlMm31uK2RlpskeYTpJW9uhqpik9aB/Jlb/i58PokqVmXQiUUXTv
+   MJRXI4pRDIxW8lIP/dqD1G1wE5sG4Laz8geBzWwF0Z7oGgrQ5ntKGb/YA
+   pw73ZlyE3VDfqqAwgwFiPoFq3l2yj//Ap/MJM8jeblhG1hNOOhq3e3Rnw
+   vDIf50Zte7AmNm2EmZrVlXtqvj0+PAskDUB4ovdwS6qNCUMfHw6oIY0iC
+   T9zcP3rlYxQfS8U6WrHnplSF3BoOPuigN2idb5hXTzN8q8OZzPX5Cw65S
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10513"; a="335021263"
+X-IronPort-AV: E=Sophos;i="5.95,219,1661842800"; 
+   d="scan'208";a="335021263"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2022 18:35:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10513"; a="610575661"
+X-IronPort-AV: E=Sophos;i="5.95,219,1661842800"; 
+   d="scan'208";a="610575661"
+Received: from lkp-server02.sh.intel.com (HELO b6d29c1a0365) ([10.239.97.151])
+  by orsmga006.jf.intel.com with ESMTP; 27 Oct 2022 18:35:56 -0700
+Received: from kbuild by b6d29c1a0365 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1ooEHr-0009LB-2d;
+	Fri, 28 Oct 2022 01:35:55 +0000
+Date: Fri, 28 Oct 2022 09:35:20 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:merge] BUILD SUCCESS
+ eb05539de71d4784705d3e502d951ac17fea05e3
+Message-ID: <635b31d8.P+r2qi+Yd+vrf4Rz%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-In-Reply-To: <87o7tx5oyx.fsf@stealth>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.102.169]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- canpemm500009.china.huawei.com (7.192.105.203)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,84 +70,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, prime.zeng@hisilicon.com, Anshuman Khandual <anshuman.khandual@arm.com>, linux-doc@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, yangyicong@hisilicon.com, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, guojian@oppo.com, linux-riscv@lists.infradead.org, will@kernel.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, x86@kernel.org, Mel Gorman <mgorman@suse.de>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, Barry Song <v-songbaohua@oppo.com>, openrisc@lists.librecores.org, darren@os.amperecomputing.com, linux-arm-kernel@lists.infradead.org, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2022/10/27 22:19, Punit Agrawal wrote:
-> 
-> [ Apologies for chiming in late in the conversation ]
-> 
-> Anshuman Khandual <anshuman.khandual@arm.com> writes:
-> 
->> On 9/28/22 05:53, Barry Song wrote:
->>> On Tue, Sep 27, 2022 at 10:15 PM Yicong Yang <yangyicong@huawei.com> wrote:
->>>>
->>>> On 2022/9/27 14:16, Anshuman Khandual wrote:
->>>>> [...]
->>>>>
->>>>> On 9/21/22 14:13, Yicong Yang wrote:
->>>>>> +static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
->>>>>> +{
->>>>>> +    /* for small systems with small number of CPUs, TLB shootdown is cheap */
->>>>>> +    if (num_online_cpus() <= 4)
->>>>>
->>>>> It would be great to have some more inputs from others, whether 4 (which should
->>>>> to be codified into a macro e.g ARM64_NR_CPU_DEFERRED_TLB, or something similar)
->>>>> is optimal for an wide range of arm64 platforms.
->>>>>
->>>
->>> I have tested it on a 4-cpus and 8-cpus machine. but i have no machine
->>> with 5,6,7
->>> cores.
->>> I saw improvement on 8-cpus machines and I found 4-cpus machines don't need
->>> this patch.
->>>
->>> so it seems safe to have
->>> if (num_online_cpus()  < 8)
->>>
->>>>
->>>> Do you prefer this macro to be static or make it configurable through kconfig then
->>>> different platforms can make choice based on their own situations? It maybe hard to
->>>> test on all the arm64 platforms.
->>>
->>> Maybe we can have this default enabled on machines with 8 and more cpus and
->>> provide a tlbflush_batched = on or off to allow users enable or
->>> disable it according
->>> to their hardware and products. Similar example: rodata=on or off.
->>
->> No, sounds bit excessive. Kernel command line options should not be added
->> for every possible run time switch options.
->>
->>>
->>> Hi Anshuman, Will,  Catalin, Andrew,
->>> what do you think about this approach?
->>>
->>> BTW, haoxin mentioned another important user scenarios for tlb bach on arm64:
->>> https://lore.kernel.org/lkml/393d6318-aa38-01ed-6ad8-f9eac89bf0fc@linux.alibaba.com/
->>>
->>> I do believe we need it based on the expensive cost of tlb shootdown in arm64
->>> even by hardware broadcast.
->>
->> Alright, for now could we enable ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH selectively
->> with CONFIG_EXPERT and for num_online_cpus()  > 8 ?
-> 
-> When running the test program in the commit in a VM, I saw benefits from
-> the patches at all sizes from 2, 4, 8, 32 vcpus. On the test machine,
-> ptep_clear_flush() went from ~1% in the unpatched version to not showing
-> up.
-> 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: eb05539de71d4784705d3e502d951ac17fea05e3  Automatic merge of 'fixes' into merge (2022-10-27 22:29)
 
-Maybe you're booting VM on a server with more than 32 cores and Barry tested
-on his 4 CPUs embedded platform. I guess a 4 CPU VM is not fully equivalent to
-a 4 CPU real machine as the tbli and dsb in the VM may influence the host
-as well.
+elapsed time: 724m
 
-> Yicong mentioned that he didn't see any benefit for <= 4 CPUs but is
-> there any overhead? I am wondering what are the downsides of enabling
-> the config by default.
-> 
-> Thanks,
-> Punit
-> .
-> 
+configs tested: 58
+configs skipped: 2
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arc                                 defconfig
+s390                             allmodconfig
+alpha                               defconfig
+s390                             allyesconfig
+s390                                defconfig
+arm                                 defconfig
+x86_64                           rhel-8.3-syz
+um                             i386_defconfig
+x86_64                         rhel-8.3-kunit
+x86_64                           rhel-8.3-kvm
+um                           x86_64_defconfig
+x86_64                              defconfig
+m68k                             allmodconfig
+alpha                            allyesconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+i386                                defconfig
+arm                              allyesconfig
+arc                  randconfig-r043-20221027
+sh                               allmodconfig
+arm64                            allyesconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+x86_64                           allyesconfig
+arc                              allyesconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                          rhel-8.3-func
+x86_64                               rhel-8.3
+i386                             allyesconfig
+i386                          randconfig-a005
+ia64                             allmodconfig
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
+x86_64                        randconfig-a004
+x86_64                        randconfig-a002
+i386                          randconfig-a014
+i386                          randconfig-a012
+i386                          randconfig-a016
+x86_64                        randconfig-a006
+
+clang tested configs:
+hexagon              randconfig-r041-20221027
+riscv                randconfig-r042-20221027
+i386                          randconfig-a002
+hexagon              randconfig-r045-20221027
+i386                          randconfig-a004
+s390                 randconfig-r044-20221027
+i386                          randconfig-a006
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                        randconfig-a012
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+i386                          randconfig-a013
+i386                          randconfig-a011
+i386                          randconfig-a015
+x86_64                        randconfig-a005
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
