@@ -4,39 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AC5AECAAA1
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Oct 2022 17:31:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D33BECAAA1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Oct 2022 19:45:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N0jxP3264z3cMc
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 04:31:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=leemhuis.info (client-ip=80.237.130.52; helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info; receiver=<UNKNOWN>)
-X-Greylist: delayed 2648 seconds by postgrey-1.36 at boromir; Mon, 31 Oct 2022 04:30:32 AEDT
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N0mw04pshz3cJX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 06:45:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=YcrjoliI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=fXiXfJlV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=YcrjoliI;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=fXiXfJlV;
+	dkim-atps=neutral
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com [66.111.4.26])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N0jwm05TKz2ywY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 04:30:31 +1100 (AEDT)
-Received: from [2a02:8108:963f:de38:eca4:7d19:f9a2:22c5]; authenticated
-	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-	id 1opBRw-0005y7-8Z; Sun, 30 Oct 2022 17:46:16 +0100
-Message-ID: <28bb92a2-851d-cccc-2c1b-2f5a21fc49c1@leemhuis.info>
-Date: Sun, 30 Oct 2022 17:46:15 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
-Subject: Re: Issues with the first PowerPC updates for the kernel 6.1
- #forregzbot
-Content-Language: en-US, de-DE
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "regressions@lists.linux.dev" <regressions@lists.linux.dev>
-References: <6C70D01A-B819-40BC-94F7-5BA6D8109134@xenosoft.de>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <6C70D01A-B819-40BC-94F7-5BA6D8109134@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1667151032;edd23d9b;
-X-HE-SMSGID: 1opBRw-0005y7-8Z
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N0mts2PWWz2y35
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 06:44:03 +1100 (AEDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.nyi.internal (Postfix) with ESMTP id A44805C0089;
+	Sun, 30 Oct 2022 15:43:59 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute3.internal (MEProxy); Sun, 30 Oct 2022 15:43:59 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to; s=fm3; t=1667159039; x=1667245439; bh=RY8rR7d4cE
+	K7NC6MNjZkdPe/HCyeseCpAgG3zsf1oFk=; b=YcrjoliI5+x+26qfOLGHfPUW1b
+	qU8XZI0CuCoGGlynz6VHuMwKQgnpjmEdiUYNgkepEDFpZarXzoNTOQg5zlceb2d3
+	GWNWjoECBrMCu+9Y7lZu7MMoWcWHjvxC0Qq46xQsfesWj2Mq2CPEq0XPrT12kCwD
+	AdTal9HPHKRLLsLxuiz7RNoqLE5RbJ417VSBO5JkiATosnnHRMfzT3Mg2ht26lji
+	Q+KAFBf2YRsiVutOqaYR8dUeM8pAinz0Kf+vSF0PR4VH8k6A7LQ1LaaxUIXNBKs+
+	OoZvOqOMHJD+l0N39qjsIgND6FGN3CvnZeW0vVBq98gNVRu5i1nvlNSe//dg==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+	:feedback-id:from:from:in-reply-to:in-reply-to:message-id
+	:mime-version:references:reply-to:sender:subject:subject:to:to
+	:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm3; t=1667159039; x=1667245439; bh=RY8rR7d4cEK7NC6MNjZkdPe/HCye
+	seCpAgG3zsf1oFk=; b=fXiXfJlVaJsIP0etUaLKATAEWXIJPWQwukqvKUQReUic
+	VpRgp8IWtc883+ewGCFEeNCGZdHXm45PDYx0zcCSbK4JJv85CxeCG3SXQWVIy/lJ
+	5dwMbTbqZ8m+VKXqlDxqI3oHf9e1pcLNpXc7iy8Mv61ihbXb6VEA7KmiKWCTD/8+
+	NE3/VuM1BWMjH79UmkqO04RFswt84KvkbKlmWefsdq2E3t/S0dA2OCIoF6MAKag1
+	dHGR10fCv4+vRQwhv95jpTI7mFDc4O0TimnuTYuxE9kJKvIbGl9zVGR7UW2yGpZd
+	BDxehaqKwW8jlxDh4/69KZi0cSb5AHdSSv7RKfifVA==
+X-ME-Sender: <xms:_9NeY0nfd2oTuTAU37H_3cwVCNli3u2cvb0xZ6OGYqCvnI-_zTFjig>
+    <xme:_9NeYz3E53TOptTNEnT_RqVNrcHPL1QWTZSYzKdyQ1IttBQ-6zamqjecDdaLE3kPX
+    _ABj2K2E8TlOY91x1E>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvgedruddtgddufedtucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepvefhffeltdegheeffffhtdegvdehjedtgfekueevgfduffettedtkeekueef
+    hedunecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpe
+    dtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:_9NeYyq0mca0jk1oPnzO_1b3uW-tGsbvnXwE1oB3TtzjIOUuRmpD1w>
+    <xmx:_9NeYwne6m5NNbU7wsOB8lIsW9xsWLoYE_cfgvhxMmCUeOHsZbPT5A>
+    <xmx:_9NeYy1kDPgpA7i8BevqiE8nKN5X06I_CABi6m-_oOP-PvMRicW67A>
+    <xmx:_9NeY39B0vW1_qD6BrVS7cHfnJaIHElkZpkuLFEt23uRvB9qcojhLQ>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 1B0F4B60089; Sun, 30 Oct 2022 15:43:59 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.7.0-alpha0-1087-g968661d8e1-fm-20221021.001-g968661d8
+Mime-Version: 1.0
+Message-Id: <8d567e4a-6972-458d-b220-eec56ba52ed9@app.fastmail.com>
+In-Reply-To: <87h6zlgwb1.fsf@igel.home>
+References: <20220921065605.1051927-1-rmclure@linux.ibm.com>
+ <20220921065605.1051927-22-rmclure@linux.ibm.com> <87h6zlgwb1.fsf@igel.home>
+Date: Sun, 30 Oct 2022 20:43:38 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Andreas Schwab" <schwab@linux-m68k.org>,
+ "Rohan McLure" <rmclure@linux.ibm.com>
+Subject: Re: [PATCH v6 21/25] powerpc: Provide syscall wrapper
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,60 +93,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[Note: this mail is primarily send for documentation purposes and/or for
-regzbot, my Linux kernel regression tracking bot. That's why I removed
-most or all folks from the list of recipients, but left any that looked
-like a mailing lists. These mails usually contain '#forregzbot' in the
-subject, to make them easy to spot and filter out.]
+On Sun, Oct 30, 2022, at 16:34, Andreas Schwab wrote:
+> This breaks powerpc32.  The fallocate syscall misinterprets its
+> arguments.
 
-[TLDR: I'm adding this regression report to the list of tracked
-regressions; all text from me you find below is based on a few templates
-paragraphs you might have encountered already already in similar form.]
+It was fixed in
 
-Hi, this is your Linux kernel regression tracker.
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e237506238352f3bfa9cf3983cdab873e35651eb
 
-On 12.10.22 08:51, Christian Zigotzky wrote:
-> Hi All,
-> 
-> I use the Nemo board with a PASemi PA6T CPU and have some issues since the first PowerPC updates for the kernel 6.1.
-> 
-> I successfully compiled the git kernel with the first PowerPC updates two days ago.
-> 
-> Unfortunately this kernel is really dangerous. Many things for example Network Manager and LightDM don't work anymore and produced several gigabyte of config files till the partition has been filled.
-> 
-> I deleted some files like the resolv.conf that had a size over 200 GB!
-> 
-> Unfortunately, MintPPC was still damaged. For example LightDM doesn't work anymore and the MATE desktop doesn't display any icons anymore because Caja wasn't able to reserve memory anymore.
-> 
-> In this case, bisecting isn't an option and I have to wait some weeks. It is really difficult to find the issue if the userland will damaged again and again.
-
-Thanks for the report. To be sure below issue doesn't fall through the
-cracks unnoticed, I'm adding it to regzbot, my Linux kernel regression
-tracking bot:
-
-#regzbot ^introduced c2e7a19827eec443a7cb
-#regzbot title ppc: PASemi PA6T CPU: Network Manager and LightDM and
-fill volume with data
-#regzbot ignore-activity
-
-This isn't a regression? This issue or a fix for it are already
-discussed somewhere else? It was fixed already? You want to clarify when
-the regression started to happen? Or point out I got the title or
-something else totally wrong? Then just reply -- ideally with also
-telling regzbot about it, as explained here:
-https://linux-regtracking.leemhuis.info/tracked-regression/
-
-Reminder for developers: When fixing the issue, add 'Link:' tags
-pointing to the report (the mail this one replies to), as explained for
-in the Linux kernel's documentation; above webpage explains why this is
-important for tracked regressions.
-
-Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
-
-P.S.: As the Linux kernel's regression tracker I deal with a lot of
-reports and sometimes miss something important when writing mails like
-this. If that's the case here, don't hesitate to tell me in a public
-reply, it's in everyone's interest to set the public record straight.
+     Arnd
