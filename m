@@ -4,52 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B073C38A02
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 03:10:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F369C38A02
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 05:55:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N0ynk4pP1z3c81
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 14:10:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N12Sj0rqdz3c9x
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 16:55:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Rf3xJ5FY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AQfG0Zav;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N0ymg296Sz3bc4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 14:09:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Rf3xJ5FY;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AQfG0Zav;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4N0ymf21HWz4xG6;
-	Mon, 31 Oct 2022 14:09:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1667185762;
-	bh=IyANIFo/8HBGd/DYPBGKhTkiktTsCGnlYM/01HsTLkg=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=Rf3xJ5FYfdjl5QkDmVfwVgga4ppYxi4P2Jq9R4D+i9MUG3Jp8V+5+1godFNlQtOZY
-	 z4c3p9GXiVFhlI6UJfcym/pdgdjFiytWV758bghav8mfPPkzIW1gND+/GQtjnWJoum
-	 EZtLywRjPptemRy+uMnwZX6JD3A05/JbOtiX/g4f267WPuzwXbp9SiFA+2D5TLY6TJ
-	 QF0iHrX9y7iOc1EB6VoLJjdJgiGx792Gz4FZRZQlrJKvp08ERDU57c6po0QbSc0nVA
-	 72XmKtOW9bzyVax2Ni7hEqs7KkSvblI5J1mqfc2DQuOtl9sDV6TrqIeaZ8fKTy9o6Y
-	 9788mZvDPQr2Q==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andreas Schwab <schwab@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v6 21/25] powerpc: Provide syscall wrapper
-In-Reply-To: <87y1sxf55p.fsf@igel.home>
-References: <20220921065605.1051927-1-rmclure@linux.ibm.com>
- <20220921065605.1051927-22-rmclure@linux.ibm.com>
- <87h6zlgwb1.fsf@igel.home>
- <8d567e4a-6972-458d-b220-eec56ba52ed9@app.fastmail.com>
- <87y1sxf55p.fsf@igel.home>
-Date: Mon, 31 Oct 2022 14:09:19 +1100
-Message-ID: <87wn8gsn8g.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N12Rd3rTGz3bjj
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 16:54:52 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id k22so9824645pfd.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2022 22:54:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VENAdKjEzGpRrZXrowBGNJwY7kBSqfqcx4l5RfKHG50=;
+        b=AQfG0ZavveKPxwqC53nfpvm0GC1Utj7v5jNUOcCD2PhpLUMg/7+ENm9vcpP7j7zL7n
+         hLdod8RMWJ1ZYTw05175yWlP/ebz539K5D9cGpuL7du4l0dDRDdbHRCfrpLcj4pBms/+
+         bDXCeCRr3PAB0gRVQxfUN4FxqWf5JE9OkrV9x7AXSeKlW2Xv9uopAPIdJzinlcI4jAQV
+         82TN2z/plXmYsTtMXwdnWzgvlwR1bggqLFzXQT9TbUzl+a/qv5aKdrwVS39tfyyzHej1
+         Wjg1F6rTvyM3s8EEArQuurzeWjtTYWzdwPY8bqsdgBbAEwIDZNQ6fxAgU+cb3LgRajvk
+         AiRQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VENAdKjEzGpRrZXrowBGNJwY7kBSqfqcx4l5RfKHG50=;
+        b=o5s8E/c7LPq6IlF46i1rQNeqeb1AGPPqa8eivjd17azVTlCgU04vhlWnPxKbKUuZA5
+         zBM67mR6qQIpXiPcMAk8hututxLtLFW0tKUKFwBDeztLNgkagA6JIb9I0hY0sDjAZGMS
+         xNl6JvKqLpNJUhaJzxF/AxywIcBctgDabhb8Gxe87QlKFy1MdnSDcf36n8tTTUwxamn9
+         M9hSqJg3XVIxPQ4+G7Mferpfil0Db4PidwTElfKI2xGUnvQhVuQVwnaif4eor35QMvWp
+         UDPQ2ItKQ0p7g1O4MiQ0jmBZxGigdK4ZQOgSIUFYxMgewQsxTL8go3GsYrDZGlbWxR/n
+         Pugw==
+X-Gm-Message-State: ACrzQf1+hKMHulR6Cb2vZwpNfVzJ44Q+l+M8/UZlPKSlPqJeXUubNaFW
+	c2c6v9453sH0r/ed3VUZ0UB1txKrRD8=
+X-Google-Smtp-Source: AMsMyM4NvQjqxAmd1wVW1ssGQO0tkeN8eeckqbiAhVLpT+Q4z/U1JXom4CTQ/vW2RvJ6ioLfqMH3iw==
+X-Received: by 2002:a05:6a00:2382:b0:56c:b4d3:9057 with SMTP id f2-20020a056a00238200b0056cb4d39057mr12859542pfc.40.1667195690231;
+        Sun, 30 Oct 2022 22:54:50 -0700 (PDT)
+Received: from bobo.ozlabs.ibm.com (193-116-106-251.tpgi.com.au. [193.116.106.251])
+        by smtp.gmail.com with ESMTPSA id d62-20020a623641000000b005627ddbc7a4sm3599599pfa.191.2022.10.30.22.54.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 30 Oct 2022 22:54:49 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 01/19] powerpc/perf: callchain validate kernel stack pointer bounds
+Date: Mon, 31 Oct 2022 15:54:22 +1000
+Message-Id: <20221031055440.3594315-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20221031055440.3594315-1-npiggin@gmail.com>
+References: <20221031055440.3594315-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,19 +78,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andreas Schwab <schwab@linux-m68k.org> writes:
-> On Okt 30 2022, Arnd Bergmann wrote:
->
->> On Sun, Oct 30, 2022, at 16:34, Andreas Schwab wrote:
->>> This breaks powerpc32.  The fallocate syscall misinterprets its
->>> arguments.
->>
->> It was fixed in
->
-> Nope.
+The interrupt frame detection and loads from the hypothetical pt_regs
+are not bounds-checked. The next-frame validation only bounds-checks
+STACK_FRAME_OVERHEAD, which does not include the pt_regs. Add another
+test for this.
 
-Ack.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+Could the user set r1 to be equal to the address matching the first
+interrupt frame - STACK_INT_FRAME_SIZE, which is in the previous page
+due to the kernel redzone, and induce the kernel to load the marker from
+there? Possibly it could cause a crash at least.
+
+It also seems a bit rude to put a fancy next-frame-validation out in
+perf/ rather than with the rest of the frame validation code.
+
+Thanks,
+Nick
+
+ arch/powerpc/perf/callchain.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+index 082f6d0308a4..8718289c051d 100644
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -61,6 +61,7 @@ perf_callchain_kernel(struct perf_callchain_entry_ctx *entry, struct pt_regs *re
+ 		next_sp = fp[0];
+ 
+ 		if (next_sp == sp + STACK_INT_FRAME_SIZE &&
++		    validate_sp(sp, current, STACK_INT_FRAME_SIZE) &&
+ 		    fp[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
+ 			/*
+ 			 * This looks like an interrupt frame for an
+-- 
+2.37.2
+
