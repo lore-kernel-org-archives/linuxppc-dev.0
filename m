@@ -4,64 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FF36FA3740
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 05:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3721C38A02
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 05:57:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N12Tj4WYKz3bym
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 16:56:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N12Vk2B02z3dvG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Oct 2022 16:57:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DScf6Dmm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JRq6GaG1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::531; helo=mail-pg1-x531.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=DScf6Dmm;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=JRq6GaG1;
 	dkim-atps=neutral
-Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
+Received: from mail-pg1-x531.google.com (mail-pg1-x531.google.com [IPv6:2607:f8b0:4864:20::531])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N12Rd3Kv3z2ygC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 16:54:52 +1100 (AEDT)
-Received: by mail-pj1-x1036.google.com with SMTP id u8-20020a17090a5e4800b002106dcdd4a0so14980234pji.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2022 22:54:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N12Rg3Hptz2ygC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Oct 2022 16:54:55 +1100 (AEDT)
+Received: by mail-pg1-x531.google.com with SMTP id h193so1135444pgc.10
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Oct 2022 22:54:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=se3q0Sc63N8ec1lsUADCKnNvzxyV//wSu7eaF78udvw=;
-        b=DScf6DmmcGt5TofMVW0REkldJkbIn8BpAUWRQ22uDdQM+x60QYwy0TZ1kaGSiKPuH9
-         E9VLO7MMOuonaHxsVVygDt1+F6YL2dVlc9fRqLWxNu+0YEX2cTh2qPK+o/0o4BUEzHKv
-         VAVWUJXjJPeyH3hjLpDykiIhI8PzI6rvMgZWvww3SHXNVrL2f5+pvJmo13a38gLeo94c
-         Rtee6VoLmIXyda6S/o0RRGtEIeHVqKGsdbGHUiqUW3HmlTLicwrJ81q6dZvaQFcmhlXA
-         knynr6ZtL7rx8vO/MwQvUXn0ZrbRRYrvUWC6pyFc603FZ077gMTHZK3Hh0EC5f6kgUDb
-         O/lQ==
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WRuFoJst6qFyhTCk1lHltjd/22AEakekbUAT3ErVngw=;
+        b=JRq6GaG12wdldEEV7GkB+NQJyJwi1p/T+SWRDl61RnHXkMcTTdoykULTtJeBIKQL+7
+         FQNmhMOGuP6GRSs/Ih7Jv73uiBGU7SOwgqp0GhCYaAaqQXg8dm3dH2gzo9bSw+uNqdsN
+         nVZHSL7DrbinCSFIWNsUial0iRosR/PDyXeSogIQ8AZFYrAF9UX1d4Y5tRmxdhCJZ3Fk
+         BCN5LxY4JYHfWWukWUuD9MZ6WkDj3ytu8KbAkRZdC6Vs5Go0fiiEYKTTYEsfa99mHs67
+         99CYKc3aG9Gz0MyUEM+zn/K4Wq7VKMqXg+EaoVBPa6xD5TIDnHvXRzoC+Qs4Vkrztcyk
+         vyxw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=se3q0Sc63N8ec1lsUADCKnNvzxyV//wSu7eaF78udvw=;
-        b=YvS3zPPSlXp/FapsIQn0z8/TK0BiQL1Oflj6itkktqTK07KiF3Omt1+kJ/E7qVfSKZ
-         g0M2zHW6cy618dg1D9Rvn751vfQNnLQm1twbakxeZ16somiSTHVtHZV1VeW+qNNy+npP
-         PFbyYLrEU6eZ3v2JQvwx/R/FAr9h2Xczsq9fFGXizbz/YQ9Uc0DJon0RmV/BUXG8f6T/
-         K1Odp5wdzaylyt7+TgT2vFoOVOOHuiB1N8fLyjGE4Hy/8iqsTymtA9GrkZyBich7KDkn
-         kRTi8zGGXeAuMO+TdTvv78DcQ3R5e/ee908ztoI0f0YKGPzGFgKhiAVT+tuwf7r7jPRj
-         RQxg==
-X-Gm-Message-State: ACrzQf0gcrV0CrxmsSPIeG9qa+ojU0I1amqq+PtdxjDKfyEWML6HREyY
-	FLB0HlYXD6MCQLe5R0QLMjj47FbjRTg=
-X-Google-Smtp-Source: AMsMyM6eWMSjamFP7yhoXDIel1PPPdS+cKqqoeBLxGkbE34zFEUPgvFaqlbqsHTb0H6yR3l6jhgPjw==
-X-Received: by 2002:a17:90b:400e:b0:213:de3a:a20e with SMTP id ie14-20020a17090b400e00b00213de3aa20emr4393672pjb.195.1667195687615;
-        Sun, 30 Oct 2022 22:54:47 -0700 (PDT)
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WRuFoJst6qFyhTCk1lHltjd/22AEakekbUAT3ErVngw=;
+        b=WlDWWKCVJsEmixXBZBcxn70hp/nGpIpTRCt622tNrx0hR+QT2KFSAl/n/npT9EYkFl
+         yQiTLcRhs1HNfDzAt7p/OHxROr0JDkbgCY/T5zHI9OK/z9DoL1+xRMbGXlug//hIwQle
+         NLPlRHhFcDirE2yZ8qT1pqW8vwSuDizHSrsYX3j6iN21vD7pc/fwDNOOHEoSE4AErVZk
+         pTM3uoTe+0vWQJnLFrfyYyKPMUle8rQsC5Z0mafIEqyjm/xusrX5Bucc8jU4CW2yFe9r
+         AAEnUpBgd2dND00UA1LkS6y18xdlaNLeXOKsDzvJhGIey8DhbqfxlHdBzVqQbUcPUj9V
+         mqvA==
+X-Gm-Message-State: ACrzQf2UU6CvAArD+ZzqMgAoAIGIirdEocLU1RAO/4Hxd6DXQrOmaAyd
+	bMUDb9X1yc9oEkFeOZbZfmzv4rQMsSU=
+X-Google-Smtp-Source: AMsMyM4IYPKlsFqHRPgjK3dxSJbfNFYWGwm4SN35O5EqCvFnohmfJ1kr5s22gxlZgh9RCMURR11N+g==
+X-Received: by 2002:a63:450c:0:b0:443:94a1:3703 with SMTP id s12-20020a63450c000000b0044394a13703mr10849801pga.565.1667195692763;
+        Sun, 30 Oct 2022 22:54:52 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (193-116-106-251.tpgi.com.au. [193.116.106.251])
-        by smtp.gmail.com with ESMTPSA id d62-20020a623641000000b005627ddbc7a4sm3599599pfa.191.2022.10.30.22.54.45
+        by smtp.gmail.com with ESMTPSA id d62-20020a623641000000b005627ddbc7a4sm3599599pfa.191.2022.10.30.22.54.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Oct 2022 22:54:46 -0700 (PDT)
+        Sun, 30 Oct 2022 22:54:52 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 00/19] Remove STACK_FRAME_OVERHEAD
-Date: Mon, 31 Oct 2022 15:54:21 +1000
-Message-Id: <20221031055440.3594315-1-npiggin@gmail.com>
+Subject: [RFC PATCH 02/19] powerpc: Rearrange copy_thread child stack creation
+Date: Mon, 31 Oct 2022 15:54:23 +1000
+Message-Id: <20221031055440.3594315-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20221031055440.3594315-1-npiggin@gmail.com>
+References: <20221031055440.3594315-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,75 +82,55 @@ Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is some quick hacking, hardly tested but might have potential.
+This makes it a bit clearer where the stack frame is created, and will
+allow easier use of some of the stack offset constants in a later
+change.
 
-I think we're not validating the perf kernel stack walker bounds
-quite correctly, and not setting up decent stack frames for the child
-in copy_thread. So at least those two things we could do. Maybe
-patch 1 should go upstream as a fix.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/process.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (19):
-  powerpc/perf: callchain validate kernel stack pointer bounds
-  powerpc: Rearrange copy_thread child stack creation
-  powerpc/64: Remove asm interrupt tracing call helpers
-  powerpc/pseries: hvcall stack frame overhead
-  powerpc/32: Use load and store multiple in GPR save/restore macros
-  powerpc: simplify ppc_save_regs
-  powerpc: add definition for pt_regs offset within an interrupt frame
-  powerpc: add a definition for the marker offset within the interrupt
-    frame
-  powerpc: Rename STACK_FRAME_MARKER and derive it from frame offset
-  powerpc: add a define for the user interrupt frame size
-  powerpc: add a define for the switch frame size and regs offset
-  powerpc: copy_thread fill in interrupt frame marker and back chain
-  powerpc: copy_thread add a back chain to the switch stack frame
-  powerpc: split validate_sp into two functions
-  powerpc: allow minimum sized kernel stack frames
-  powerpc/64: ELFv2 use minimal stack frames in int and switch frame
-    sizes
-  powerpc: remove STACK_FRAME_OVERHEAD
-  powerpc: change stack marker memory operations to 32-bit
-  powerpc/64: ELFv2 use reserved word in the stack frame for the regs
-    marker
-
- arch/powerpc/include/asm/irqflags.h           | 29 -------
- arch/powerpc/include/asm/ppc_asm.h            | 18 +++-
- arch/powerpc/include/asm/processor.h          | 15 +++-
- arch/powerpc/include/asm/ptrace.h             | 41 +++++++---
- arch/powerpc/kernel/asm-offsets.c             |  9 +-
- arch/powerpc/kernel/entry_32.S                | 14 ++--
- arch/powerpc/kernel/exceptions-64e.S          | 44 +++++-----
- arch/powerpc/kernel/exceptions-64s.S          | 82 +++++++++----------
- arch/powerpc/kernel/head_32.h                 |  4 +-
- arch/powerpc/kernel/head_40x.S                |  2 +-
- arch/powerpc/kernel/head_44x.S                |  6 +-
- arch/powerpc/kernel/head_64.S                 |  6 +-
- arch/powerpc/kernel/head_85xx.S               |  8 +-
- arch/powerpc/kernel/head_8xx.S                |  2 +-
- arch/powerpc/kernel/head_book3s_32.S          |  4 +-
- arch/powerpc/kernel/head_booke.h              |  4 +-
- arch/powerpc/kernel/interrupt_64.S            | 32 ++++----
- arch/powerpc/kernel/irq.c                     |  4 +-
- arch/powerpc/kernel/kgdb.c                    |  2 +-
- arch/powerpc/kernel/misc_32.S                 |  2 +-
- arch/powerpc/kernel/misc_64.S                 |  4 +-
- arch/powerpc/kernel/optprobes_head.S          |  4 +-
- arch/powerpc/kernel/ppc_save_regs.S           | 58 ++++---------
- arch/powerpc/kernel/process.c                 | 54 +++++++-----
- arch/powerpc/kernel/smp.c                     |  2 +-
- arch/powerpc/kernel/stacktrace.c              | 10 +--
- arch/powerpc/kernel/tm.S                      |  8 +-
- arch/powerpc/kernel/trace/ftrace_mprofile.S   |  2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S       |  2 +-
- .../lib/test_emulate_step_exec_instr.S        |  2 +-
- arch/powerpc/perf/callchain.c                 |  9 +-
- arch/powerpc/platforms/pseries/hvCall.S       | 38 +++++----
- arch/powerpc/xmon/xmon.c                      | 10 +--
- 33 files changed, 263 insertions(+), 268 deletions(-)
-
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 67da147fe34d..acfa197fb2df 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1726,13 +1726,16 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 
+ 	klp_init_thread_info(p);
+ 
++	/* Create initial stack frame. */
++	sp -= (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD);
++	((unsigned long *)sp)[0] = 0;
++
+ 	/* Copy registers */
+-	sp -= sizeof(struct pt_regs);
+-	childregs = (struct pt_regs *) sp;
++	childregs = (struct pt_regs *)(sp + STACK_FRAME_OVERHEAD);
+ 	if (unlikely(args->fn)) {
+ 		/* kernel thread */
+ 		memset(childregs, 0, sizeof(struct pt_regs));
+-		childregs->gpr[1] = sp + sizeof(struct pt_regs);
++		childregs->gpr[1] = sp + (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD);
+ 		/* function */
+ 		if (args->fn)
+ 			childregs->gpr[14] = ppc_function_entry((void *)args->fn);
+@@ -1767,7 +1770,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 			f = ret_from_fork;
+ 	}
+ 	childregs->msr &= ~(MSR_FP|MSR_VEC|MSR_VSX);
+-	sp -= STACK_FRAME_OVERHEAD;
+ 
+ 	/*
+ 	 * The way this works is that at some point in the future
+@@ -1777,7 +1779,6 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 	 * do some house keeping and then return from the fork or clone
+ 	 * system call, using the stack frame created above.
+ 	 */
+-	((unsigned long *)sp)[0] = 0;
+ 	sp -= sizeof(struct pt_regs);
+ 	kregs = (struct pt_regs *) sp;
+ 	sp -= STACK_FRAME_OVERHEAD;
 -- 
 2.37.2
 
