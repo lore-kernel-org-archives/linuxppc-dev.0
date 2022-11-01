@@ -4,60 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A55BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Nov 2022 16:48:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84A6FC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Nov 2022 18:38:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N1wtt59gbz3cTC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Nov 2022 03:48:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N1zKz6ZZYz3cj6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Nov 2022 05:38:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=pwYeez9A;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WH0xDV9+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.52; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=pwYeez9A;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=WH0xDV9+;
 	dkim-atps=neutral
-Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.52])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N1wsn5PyLz3cB9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2022 03:47:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1667321195;
-    s=strato-dkim-0002; d=xenosoft.de;
-    h=In-Reply-To:References:Cc:To:From:Subject:Date:Message-ID:Cc:Date:
-    From:Subject:Sender;
-    bh=sRA+R+erH5GYriaScj6WWbiZoG3tjBoAHNV+4p/C6gs=;
-    b=pwYeez9A7sOD0pfF54XFtXVj6zTgUhUGFUpgLoGqtlMSIV5FvUci3x96jq1tRfVGSt
-    qjvWz5TRFJSiIWARzhM4TQhLKgLSjQ62d+uaHPtcEPmFzgqSUGnEfWjpQepEd6r/3/m0
-    5uH2J/yQWSULpXC7dOAh3M9WRp4TPMhvFJEy0UUZKEN5FajnDdQ6rH5qeyhZ2c+NyXXf
-    btg+RfVd4DlAQHDdZ9B9eKBdUgzngDoR7tywZmuUaxXMW1yxKd0LZnk+Omr5RXJrRnVl
-    wOy8nprKf6MgBpHamgPZ2hnpzKQk0HWwYNJgaR1O5r60nTXpJ+X+qMTZm58p8FHI7xke
-    JpTg==
-Authentication-Results: strato.com;
-    dkim=none
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBfio0GngadwjUusj7u9k6Li7VMT6oYim+5mIM"
-X-RZG-CLASS-ID: mo00
-Received: from [IPV6:2a02:8109:8980:4474:1c36:8e8e:5c6:18ac]
-    by smtp.strato.de (RZmta 48.2.1 AUTH)
-    with ESMTPSA id e28afdyA1GkXKle
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-	(Client did not present a certificate);
-    Tue, 1 Nov 2022 17:46:33 +0100 (CET)
-Message-ID: <0e3f130a-f3f0-1352-14a5-dfc5076a38fe@xenosoft.de>
-Date: Tue, 1 Nov 2022 17:46:30 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N1zJw197Lz3bjF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Nov 2022 05:37:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1667327840; x=1698863840;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=d6/cbBcMNfeimM1FGz6vyvbXexN5NXh2jTB/u0TrsIk=;
+  b=WH0xDV9+XkN11e6RtQHkT1RUUYacCBYGUIGW0AkD5ROk4xY91oJHQS7n
+   8UHWoFvWn6eT9in1pC1m3gFkpjBhY11OM+aw+/Ol3reh48lXeobriCGzk
+   ZKAFqP+uQtEijKlexrsmMTWYuSMQ7Rc/exIxah/3/i/lJ7R7qcISpthrc
+   rkRPLjd4Ji4YCC62JBWKKoG8Dc0iQ3cDghOhkWiG3dc7Fo1fd2tp9wQii
+   7iKVHQlSE12WOmkcyAwiorNM64QxOfuSI/6QNLtg52j3Z+YvD0fbAb1Ry
+   Ipu9M95hB5wcfghRhQu3jR62vj+OIJQxx9ao95SpKk7iNu5mNB7aGGuAY
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="310310696"
+X-IronPort-AV: E=Sophos;i="5.95,231,1661842800"; 
+   d="scan'208";a="310310696"
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Nov 2022 11:37:08 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10518"; a="963221647"
+X-IronPort-AV: E=Sophos;i="5.95,231,1661842800"; 
+   d="scan'208";a="963221647"
+Received: from lkp-server02.sh.intel.com (HELO b6d29c1a0365) ([10.239.97.151])
+  by fmsmga005.fm.intel.com with ESMTP; 01 Nov 2022 11:37:07 -0700
+Received: from kbuild by b6d29c1a0365 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1opw8I-000DvF-1i;
+	Tue, 01 Nov 2022 18:37:06 +0000
+Date: Wed, 02 Nov 2022 02:36:40 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 02a771c9a68a9f08cce4ec5e324fb1bc4dce7202
+Message-ID: <63616738./v3x6NPE7BUlY5+G%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.4.1
-Subject: Issues with the first PowerPC updates for the kernel 6.1
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <87y1tfl1pt.fsf@mpe.ellerman.id.au>
- <BCDB3B67-48A1-45E6-806D-2501C7EA6D8C@xenosoft.de>
- <fe06590f-6db6-f5cc-72ec-e635f66f3d3b@xenosoft.de>
- <cdfd1d7e-f462-9b1b-f281-f227b44b2dee@xenosoft.de>
-In-Reply-To: <cdfd1d7e-f462-9b1b-f281-f227b44b2dee@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,145 +70,140 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Darren Stevens <darren@stevens-zone.net>, Andrew Donnellan <ajd@linux.ibm.com>, npiggin@gmail.com, rmclure@linux.ibm.com, mad skateman <madskateman@gmail.com>, Olof Johansson <olof@lixom.net>, Trevor Dickinson <rtd2@xtra.co.nz>, Christian Zigotzky <info@xenosoft.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 30 October 2022 at 02:30 pm, Christian Zigotzky wrote:
-> On 29 October 2022 at 01:44 pm, Christian Zigotzky wrote:
->> On 17 October 2022 at 09:53 am, Christian Zigotzky wrote:
->>>> On 17. Oct 2022, at 02:43, Michael Ellerman <mpe@ellerman.id.au> 
->>>> wrote:
->>>> Previously BIG_ENDIAN && GENERIC_CPU would use -mcpu=power5, now it 
->>>> uses
->>>> -mcpu=power4.
->>> Maybe this is the issue. We will wait and not release the RC1 for 
->>> testing because it is a risk for our testers to test these new 
->>> kernels because of this issue.
->>>
->>>>
->>>> cheers
->>>>
->>>>
->> I compiled the RC2 of kernel 6.1 today.
->>
->> After the first boot of the RC2, the file system was immediately to 
->> 100% used.  This is the same issue we have seen with the git kernel 3 
->> weeks ago.
->>
->> The Cyrus+ and Nemo boards are affected.
->>
->> I wrote 3 weeks ago:
->>
->> Hi All,
->>
->> I successfully compiled the latest git kernel with the first PowerPC 
->> updates yesterday.
->>
->> Unfortunately this kernel is really dangerous. Many things for 
->> example Network Manager and LightDM don't work anymore and produced 
->> several gigabyte of config files till the partition has been filled.
->>
->> I deleted some files like the resolv.conf that had a size over 200 GB!
->>
->> Unfortunately, MintPPC was still damaged. For example LightDM doesn't 
->> work anymore and the MATE desktop doesn't display any icons anymore 
->> because Caja wasn't able to reserve memory anymore.
->>
->> In this case, bisecting isn't an option and I have to wait some 
->> weeks. It is really difficult to find the issue if the userland will 
->> damaged again and again.
->>
->> Cheers,
->> Christian
->>
->> ---
->>
->> Maybe there is an issue in my kernel configs. Could you please check 
->> the configs? Please find attached the configs. Could you please test 
->> the RC2 on your FSL and pasemi machines?
->>
->> Thanks,
->> Christian
->>
-> Hi All,
->
-> I bisected today because Void PPC is recovering after a reboot. Memory 
-> space is released again. [1]
->
-> Result: c2e7a19827eec443a7cbe85e8d959052412d6dc3 (powerpc: Use generic 
-> fallocate compatibility syscall) is the first bad commit. [2]
->
-> I was able to create a patch for reverting this bad commit. [3]
->
-> I compiled the kernel with this patch. After that the kernel works 
-> without any problems.
->
-> Please check the first bad commit. [2]
->
-> Thanks,
-> Christian
->
->
-> [1] https://forum.hyperion-entertainment.com/viewtopic.php?p=56099#p56099
-> [2] 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c2e7a19827eec443a7cbe85e8d959052412d6dc3
-> [3] syscall.patch:
->
-> diff -rupN a/arch/powerpc/include/asm/syscalls.h 
-> b/arch/powerpc/include/asm/syscalls.h
-> --- a/arch/powerpc/include/asm/syscalls.h       2022-10-30 
-> 13:53:28.956001116 +0100
-> +++ b/arch/powerpc/include/asm/syscalls.h       2022-10-30 
-> 13:55:39.166300756 +0100
-> @@ -15,6 +15,7 @@
->  #include <asm/unistd.h>
->  #include <asm/ucontext.h>
->
-> +long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2, 
-> u32 len1, u32 len2);
->  #ifndef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
->  long sys_ni_syscall(void);
->  #else
-> diff -rupN a/arch/powerpc/include/asm/unistd.h 
-> b/arch/powerpc/include/asm/unistd.h
-> --- a/arch/powerpc/include/asm/unistd.h 2022-10-30 13:53:28.957001103 
-> +0100
-> +++ b/arch/powerpc/include/asm/unistd.h 2022-10-30 13:56:44.851441888 
-> +0100
-> @@ -45,7 +45,6 @@
->  #define __ARCH_WANT_SYS_UTIME
->  #define __ARCH_WANT_SYS_NEWFSTATAT
->  #define __ARCH_WANT_COMPAT_STAT
-> -#define __ARCH_WANT_COMPAT_FALLOCATE
->  #define __ARCH_WANT_COMPAT_SYS_SENDFILE
->  #endif
->  #define __ARCH_WANT_SYS_FORK
-> diff -rupN a/arch/powerpc/kernel/sys_ppc32.c 
-> b/arch/powerpc/kernel/sys_ppc32.c
-> --- a/arch/powerpc/kernel/sys_ppc32.c   2022-10-30 13:53:28.967000972 
-> +0100
-> +++ b/arch/powerpc/kernel/sys_ppc32.c   2022-10-30 13:58:28.993078689 
-> +0100
-> @@ -97,6 +97,13 @@ PPC32_SYSCALL_DEFINE4(ppc_truncate64,
->         return ksys_truncate(path, merge_64(len1, len2));
->  }
->
-> +long compat_sys_fallocate(int fd, int mode, u32 offset1, u32 offset2,
-> +                                    u32 len1, u32 len2)
-> +{
-> +       return ksys_fallocate(fd, mode, merge_64(offset1, offset2),
-> +                            merge_64(len1, len2));
-> +}
-> +
->  PPC32_SYSCALL_DEFINE4(ppc_ftruncate64,
->                        unsigned int, fd, u32, reg4,
->                        unsigned long, len1, unsigned long, len2)
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: 02a771c9a68a9f08cce4ec5e324fb1bc4dce7202  powerpc/32: Select ARCH_SPLIT_ARG64
 
-Hello,
+elapsed time: 720m
 
-I compiled the RC3 of kernel 6.1 today. Unfortunately the issue still 
-exists. I still need the patch above for a working kernel.
+configs tested: 115
+configs skipped: 3
 
-Cheers,
-Christian
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arc                                 defconfig
+alpha                               defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+s390                             allmodconfig
+s390                                defconfig
+alpha                            allyesconfig
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
+arc                              allyesconfig
+i386                                defconfig
+s390                             allyesconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+x86_64                              defconfig
+arc                  randconfig-r043-20221101
+x86_64                        randconfig-a013
+x86_64                               rhel-8.3
+powerpc                          allmodconfig
+x86_64                        randconfig-a011
+x86_64                           allyesconfig
+x86_64               randconfig-k001-20221031
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+mips                             allyesconfig
+x86_64                        randconfig-a002
+powerpc                           allnoconfig
+x86_64                        randconfig-a015
+sh                               allmodconfig
+x86_64                        randconfig-a006
+x86_64                        randconfig-a004
+ia64                             allmodconfig
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+mips                           jazz_defconfig
+arm                           tegra_defconfig
+mips                 decstation_r4k_defconfig
+arm                          lpd270_defconfig
+i386                             allyesconfig
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                         lubbock_defconfig
+powerpc                      chrp32_defconfig
+m68k                                defconfig
+arm                            mps2_defconfig
+i386                 randconfig-a016-20221031
+i386                 randconfig-a012-20221031
+i386                 randconfig-a015-20221031
+i386                 randconfig-a013-20221031
+i386                 randconfig-a014-20221031
+i386                 randconfig-a011-20221031
+powerpc                         wii_defconfig
+sh                           sh2007_defconfig
+sparc                             allnoconfig
+xtensa                    smp_lx200_defconfig
+arm                          gemini_defconfig
+sh                 kfr2r09-romimage_defconfig
+xtensa                       common_defconfig
+i386                 randconfig-c001-20221031
+i386                          randconfig-c001
+x86_64               randconfig-a016-20221031
+x86_64               randconfig-a011-20221031
+x86_64               randconfig-a013-20221031
+x86_64               randconfig-a012-20221031
+x86_64               randconfig-a014-20221031
+x86_64               randconfig-a015-20221031
+sh                          rsk7203_defconfig
+m68k                       bvme6000_defconfig
+arm                           viper_defconfig
+arm                        mini2440_defconfig
+powerpc                      mgcoge_defconfig
+powerpc                 mpc834x_itx_defconfig
+mips                       bmips_be_defconfig
+mips                         db1xxx_defconfig
+arm                          pxa910_defconfig
+xtensa                generic_kc705_defconfig
+m68k                            mac_defconfig
+mips                            gpr_defconfig
+sh                              ul2_defconfig
+powerpc                 mpc8540_ads_defconfig
+openrisc                       virt_defconfig
+powerpc                 canyonlands_defconfig
+
+clang tested configs:
+hexagon              randconfig-r041-20221101
+hexagon              randconfig-r045-20221101
+riscv                randconfig-r042-20221101
+x86_64                        randconfig-a012
+s390                 randconfig-r044-20221101
+x86_64                        randconfig-a001
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+x86_64               randconfig-a005-20221031
+x86_64               randconfig-a006-20221031
+x86_64               randconfig-a004-20221031
+x86_64               randconfig-a001-20221031
+x86_64               randconfig-a003-20221031
+x86_64               randconfig-a002-20221031
+mips                        bcm63xx_defconfig
+powerpc                          allyesconfig
+arm                    vt8500_v6_v7_defconfig
+arm                     am200epdkit_defconfig
+arm                       spear13xx_defconfig
+arm                              alldefconfig
+powerpc                   bluestone_defconfig
+arm                        magician_defconfig
+
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
