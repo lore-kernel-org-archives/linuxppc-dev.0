@@ -4,90 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0FDAC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Nov 2022 22:48:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92776C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Nov 2022 22:48:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N2hqj36DPz3dsg
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 09:48:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N2hrl0nwXz3dvb
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 09:48:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qjMcr3T8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FDiqPetI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qjMcr3T8;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FDiqPetI;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N2hnc6C1jz2xkD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N2hnd0kLRz2y34
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Nov 2022 09:46:12 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A2MdJEj012195;
-	Wed, 2 Nov 2022 22:46:07 GMT
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A2MZr0w028733;
+	Wed, 2 Nov 2022 22:46:08 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=6fY84lVQWnXDfe5/YGOfNEereqdAz0d6w9o3518OCd4=;
- b=qjMcr3T8gPyDJPrljbabK35e5Dkx00iq7P62DjkntRi/6nwUyHbBCwmTiFDtBe74pxaG
- nY+vnR8SJvJ/Ox9t4ZLFaSXu1lPgZhnz/CDAyAVf7Jo4Tk8T6XLtfJ0nedVTXthr929N
- ArUDcbQvacQxov6Ai973SO2YzE0PZ+jXdy86GIKp86Z+9QnfIx8uRTB8t9YLpquwEbpg
- ESz6+lyLumnmUlYJh9MsVfMBWZwrqeodUJRzUwi2MwFQ5iQD1tac3w1dopcmmW0ZNnpG
- 5beEYbaOgFfpQ1hQAwrzIHu63RKVHdFmuj+EZkR1VfyWtiD9BbV659kedUh3YHF6K2Cq OQ== 
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=JnR+v6lUm9iq/mdocXrvQnLrN4hXsnekgYZZ86jcxlI=;
+ b=FDiqPetIXACO1S4JannaHM5w87LOH0ztDaFfOc3BE3lC1ZIYUcZrm3TuZD8OwcBxC4pX
+ NyqEJWu2lugoNtb9zvBCbiUIDD/X3w+XAnPITrI254fFzW/lOVHLVE0B5H9Tz5uTUUnL
+ Fv6uOXyZiZW1k5CHx5wJYrCtUaLhLazYHusr/JWz6HRCwY0YaWUpTiSwjygDO/qqaqzy
+ pKcBuG+tsIPtdQevTwsAV+LCeqXpJj6NMxJUxTN6Rm9Di6KM3RmxWVN8l2w2/xaqAeW7
+ gCH7htQiLql1eqS6W170/8yygCnE09D9DCBqtg5G8G9DEinFMFsRovc7DAIiCHHaStV0 KQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3km0u4s5y0-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3km0kq9jbb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 02 Nov 2022 22:46:07 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A2MdNW9012290;
-	Wed, 2 Nov 2022 22:46:06 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3km0u4s5x8-1
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A2Mbfu9011333;
+	Wed, 2 Nov 2022 22:46:07 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3km0kq9jar-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Nov 2022 22:46:06 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A2MZM7p021144;
-	Wed, 2 Nov 2022 22:46:04 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma01fra.de.ibm.com with ESMTP id 3kgut9dqhn-1
+	Wed, 02 Nov 2022 22:46:07 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A2MZXK3020026;
+	Wed, 2 Nov 2022 22:46:05 GMT
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+	by ppma03fra.de.ibm.com with ESMTP id 3kgut8nq9f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 02 Nov 2022 22:46:04 +0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A2Mk2pu47055340
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A2Mk2nA66126144
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 2 Nov 2022 22:46:02 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6BF844C046;
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6EB15A405C;
 	Wed,  2 Nov 2022 22:46:02 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 14B7D4C04A;
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 19743A405B;
 	Wed,  2 Nov 2022 22:46:02 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
 	Wed,  2 Nov 2022 22:46:02 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DB93360100;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E11DE6010C;
 	Thu,  3 Nov 2022 09:46:00 +1100 (AEDT)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/4] powerpc/64: Add INTERRUPT_SANITIZE_REGISTERS Kconfig
-Date: Thu,  3 Nov 2022 09:45:25 +1100
-Message-Id: <20221102224528.639894-1-rmclure@linux.ibm.com>
+Subject: [PATCH 3/4] powerpc/64e: Clear gprs on interrupt routine entry on Book3E
+Date: Thu,  3 Nov 2022 09:45:27 +1100
+Message-Id: <20221102224528.639894-3-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20221102224528.639894-1-rmclure@linux.ibm.com>
+References: <20221102224528.639894-1-rmclure@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: -XmOwKMFKz1NWTHxMPPlCPMSYAtTymCh
-X-Proofpoint-GUID: Zj8VZm9N9fwV0m9cNGpopIfGEZXPf3d2
+X-Proofpoint-ORIG-GUID: qRsv-YaN1EwbDyinQWhUAsV_luN_bPSk
+X-Proofpoint-GUID: 65R4OnbJ7vN9-_cKr1wMAyBycCx9gT6o
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.205,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-02_15,2022-11-02_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- bulkscore=0 adultscore=0 spamscore=0 mlxlogscore=507 phishscore=0
- clxscore=1015 impostorscore=0 malwarescore=0 priorityscore=1501 mlxscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211020149
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ priorityscore=1501 lowpriorityscore=0 impostorscore=0 mlxlogscore=675
+ clxscore=1015 spamscore=0 phishscore=0 mlxscore=0 bulkscore=0
+ malwarescore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2210170000 definitions=main-2211020149
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,49 +105,55 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add Kconfig option for enabling clearing of registers on arrival in an
-interrupt handler. This reduces the speculation influence of registers
-on kernel internals. The option will be consumed by 64-bit systems that
-feature speculation and wish to implement this mitigation.
+Zero GPRS r14-r31 on entry into the kernel for interrupt sources to
+limit influence of user-space values in potential speculation gadgets.
+Prior to this commit, all other GPRS are reassigned during the common
+prologue to interrupt handlers and so need not be zeroised explicitly.
 
-This patch only introduces the Kconfig option, no actual mitigations.
-
-The primary overhead of this mitigation lies in an increased number of
-registers that must be saved and restored by interrupt handlers on
-Book3S systems. Enable by default on Book3E systems, which prior to
-this patch eagerly save and restore register state, meaning that the
-mitigation when implemented will have minimal overhead.
+This may be done safely, without loss of register state prior to the
+interrupt, as the common prologue saves the initial values of
+non-volatiles, which are unconditionally restored in interrupt_64.S.
+Mitigation defaults to enabled by INTERRUPT_SANITIZE_REGISTERS.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
 ---
 Resubmitting patches as their own series after v6 partially merged:
 Link: https://lore.kernel.org/all/166488988686.779920.13794870102696416283.b4-ty@ellerman.id.au/t/
-V5: New patch
----
- arch/powerpc/Kconfig | 9 +++++++++
- 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2ca5418457ed..9d3d20c6f365 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -529,6 +529,15 @@ config HOTPLUG_CPU
+V4: New patch.
+V5: Depend on Kconfig option. Remove ZEROIZE_NVGPRS on bad kernel
+stack handler.
+V6: Change name of zeroize macro to be consistent with Book3S.
+---
+ arch/powerpc/kernel/exceptions-64e.S | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 2f68fb2ee4fc..91d8019123c2 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -358,6 +358,11 @@ ret_from_mc_except:
+ 	std	r14,PACA_EXMC+EX_R14(r13);				    \
+ 	std	r15,PACA_EXMC+EX_R15(r13)
  
- 	  Say N if you are unsure.
++#ifdef CONFIG_INTERRUPT_SANITIZE_REGISTERS
++#define SANITIZE_ZEROIZE_NVGPRS()	ZEROIZE_NVGPRS()
++#else
++#define SANITIZE_ZEROIZE_NVGPRS()
++#endif
  
-+config INTERRUPT_SANITIZE_REGISTERS
-+	bool "Clear gprs on interrupt arrival"
-+	depends on PPC64 && ARCH_HAS_SYSCALL_WRAPPER
-+	default PPC_BOOK3E_64
-+	help
-+	  Reduce the influence of user register state on interrupt handlers and
-+	  syscalls through clearing user state from registers before handling
-+	  the exception.
-+
- config PPC_QUEUED_SPINLOCKS
- 	bool "Queued spinlocks" if EXPERT
- 	depends on SMP
+ /* Core exception code for all exceptions except TLB misses. */
+ #define EXCEPTION_COMMON_LVL(n, scratch, excf)				    \
+@@ -394,7 +399,8 @@ exc_##n##_common:							    \
+ 	std	r12,STACK_FRAME_OVERHEAD-16(r1); /* mark the frame */	    \
+ 	std	r3,_TRAP(r1);		/* set trap number		*/  \
+ 	std	r0,RESULT(r1);		/* clear regs->result */	    \
+-	SAVE_NVGPRS(r1);
++	SAVE_NVGPRS(r1);						    \
++	SANITIZE_ZEROIZE_NVGPRS();	/* minimise speculation influence */
+ 
+ #define EXCEPTION_COMMON(n) \
+ 	EXCEPTION_COMMON_LVL(n, SPRN_SPRG_GEN_SCRATCH, PACA_EXGEN)
 -- 
 2.34.1
 
