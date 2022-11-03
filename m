@@ -4,69 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE23AC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 14:27:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 375B8C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 15:03:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N35g818Npz3cMw
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 01:27:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N36Sx4nXsz3cKj
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 02:03:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=WTZ/fhxM;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=QSTgD6Nc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ventanamicro.com (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=ajones@ventanamicro.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ventanamicro.com header.i=@ventanamicro.com header.a=rsa-sha256 header.s=google header.b=WTZ/fhxM;
+	dkim=pass (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=QSTgD6Nc;
 	dkim-atps=neutral
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 73079 seconds by postgrey-1.36 at boromir; Fri, 04 Nov 2022 02:02:20 AEDT
+Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N35d43nj3z3cBP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 01:25:09 +1100 (AEDT)
-Received: by mail-wr1-x433.google.com with SMTP id a14so3031649wru.5
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Nov 2022 07:25:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=yyXCEm+SN4JTuAX2T0R90Ie6jT6YR0PIuexybyKvkXE=;
-        b=WTZ/fhxMJ71jLlitDHXKYaXGnn95ODQizEyx4pjZLu/FU2YdbKeNAo0B/NktNH9Hif
-         0ihHLDxTp8U29NT+XMIjwbpXih+rDpGbzPso+IRrM4OQEis6MRNHdhg2+L+2iQ5ZiErf
-         H2C2UNKqEdpYeg1ou6yBgu5uGp5t6In0MkSQENq2IWAYTPdvvddzhf9M2SUHCjdkNqlP
-         pTfB+d1W2bpoY+NqsMD0CmY3+w2XyTZf6ZrvG8psupb3sY6BjQWTaeaT9RFdOarIdWjn
-         Jj663Dqz2gYFZNCYKSrBaU2MDDJrY91RmxP0f4HXzCqrYeVlqsItUMv2dSlq4XkDrWmi
-         x2Hw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=yyXCEm+SN4JTuAX2T0R90Ie6jT6YR0PIuexybyKvkXE=;
-        b=ftf5xwjzQd+USbAidhwhU70h+/VD+Q2EGddZstSWGANJcDvLDqnAwer1QWjt1LJVdm
-         rxxcUU3gdlrwjQGCXxrF9qjlUlmj+isxeioXilmjbv3ZGeFgGo0pjpBnj7FwPIS/SILy
-         tL6OJZaaL8B36Qh4RQOfG70z1wgZsxwSgXaQce51uA90VRqB9gcPBJMWlhw9q41vY5Cn
-         QeDadryMUP/r6SwEqf1EfbtK5iTqYcNnS99P22L2RCVsy6oNxaQHa8vJA1xGblOBBopF
-         ktUf3eemCh5UsZB5X3X4PZnFTQyroc0EAT28v/q4OJqYKSbRLb1asTbkKmjG2+5jBU9L
-         YhdQ==
-X-Gm-Message-State: ACrzQf3W2lD/l3GQd6R72VcuUoOIV/n+BqX6sO55i8Cnm4LL9zdjhlC+
-	2inl45uOEpThHUdHYCZVZ+KHIg==
-X-Google-Smtp-Source: AMsMyM5hdXBUu8yo8VO7zyELnZCeDW54TPy5bvl1rmzeZB7u0GPP01rGpP4zIsPcikd5aOtl3C5pdw==
-X-Received: by 2002:a5d:654d:0:b0:235:197d:72d1 with SMTP id z13-20020a5d654d000000b00235197d72d1mr18800468wrv.680.1667485505908;
-        Thu, 03 Nov 2022 07:25:05 -0700 (PDT)
-Received: from localhost (2001-1ae9-1c2-4c00-748-2a9a-a2a6-1362.ip6.tmcz.cz. [2001:1ae9:1c2:4c00:748:2a9a:a2a6:1362])
-        by smtp.gmail.com with ESMTPSA id z7-20020a5d6547000000b0023662245d3csm992994wrv.95.2022.11.03.07.25.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Nov 2022 07:25:05 -0700 (PDT)
-From: Andrew Jones <ajones@ventanamicro.com>
-To: x86@kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v4 0/1] Fix /proc/cpuinfo cpumask warning
-Date: Thu,  3 Nov 2022 15:25:03 +0100
-Message-Id: <20221103142504.278543-1-ajones@ventanamicro.com>
-X-Mailer: git-send-email 2.37.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N36Rw1Yq0z3bjX
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 02:02:19 +1100 (AEDT)
+Received: from zn.tnic (p200300ea9733e7e7329c23fffea6a903.dip0.t-ipconnect.de [IPv6:2003:ea:9733:e7e7:329c:23ff:fea6:a903])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id E2C1D1EC0528;
+	Thu,  3 Nov 2022 16:02:15 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+	t=1667487736;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+	bh=5zOKDwJu4FB0xil2b5a/FPJvsZt45ByyRxSMQsaaDR8=;
+	b=QSTgD6Ncd3yLcOSJYmXGo3EY1DApfHw02ztOKs7k0PAMuO15QSqsfMgfLs99GK7c8D6O5M
+	EIOEJproe4r8R5EXjhGGomlU7hRESTU4jQUJYXGQ2n64qCj7A3JMaFvsauSzmA31U5bm9T
+	1HVpbEVPWdzipSAdtoW/ML7JHqLy6kc=
+Date: Thu, 3 Nov 2022 16:02:12 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Andrew Jones <ajones@ventanamicro.com>
+Subject: Re: [PATCH v3 2/2] x86: Fix /proc/cpuinfo cpumask warning
+Message-ID: <Y2PX9GfxWYh6+XGT@zn.tnic>
+References: <20221028074828.b66uuqqfbrnjdtab@kamzik>
+ <Y1vrMMtRwb0Lekl0@yury-laptop>
+ <Y1vvMlwf/4EA/8WW@zn.tnic>
+ <CAAH8bW_DkvPCH0-q2Bfe0OJ72r63mRM3GP7NKOFrhe3zMO2gbQ@mail.gmail.com>
+ <Y1v+Ed6mRN9gisJS@zn.tnic>
+ <20221031080604.6xei6c4e3ckhsvmy@kamzik>
+ <Y1+OUawGJDjh4DOJ@zn.tnic>
+ <20221031100327.r7tswmpszvs5ot5n@kamzik>
+ <Y2K6clNJBn0SbWU+@zn.tnic>
+ <20221103125945.lrr5oxxmylwpam53@kamzik>
 MIME-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20221103125945.lrr5oxxmylwpam53@kamzik>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,57 +66,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Yury Norov <yury.norov@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org, Stafford Horne <shorne@gmail.com>, openrisc@lists.librecores.org
+Cc: Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Vasily Gorbik <gor@linux.ibm.com>, Yury Norov <yury.norov@gmail.com>, Heiko Carstens <hca@linux.ibm.com>, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, openrisc@lists.librecores.org, Ingo Molnar <mingo@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-riscv <linux-riscv@lists.infradead.org>, "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT" <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>, Albert Ou <aou@eecs.berkeley.edu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 78e5a3399421 ("cpumask: fix checking valid cpu range") started
-issuing warnings[1] when cpu indices equal to nr_cpu_ids - 1 were passed
-to cpumask_next* functions. The commit has since been reverted with
-commit 80493877d7d0 ("Revert "cpumask: fix checking valid cpu range"."),
-which raises the question as to how much this proposed patch is needed.
-Additionally, there's some discussion as to whether or not cpumask_next()
-should even be validating its inputs[2]. So, with that in mind, I'm fine
-with the patch being dropped. However, it may still be reasonable to add
-the checking to /proc/cpuinfo until cpumask_next has made changes and
-better documented its API.
+On Thu, Nov 03, 2022 at 01:59:45PM +0100, Andrew Jones wrote:
+> The patch I'm proposing ensures cpumask_next()'s range, which is actually
+> [-1, nr_cpus_ids - 1),
 
-[1] Warnings will only appear with DEBUG_PER_CPU_MAPS enabled.
-[2] https://lore.kernel.org/all/CAHk-=wihz-GXx66MmEyaADgS1fQE_LDcB9wrHAmkvXkd8nx9tA@mail.gmail.com/
+Lemme make sure I understand it correctly: on the upper boundary, if you
+supply for n the value nr_cpu_ids - 2, then it will return potentially
+the last bit if the mask is set, i.e., the one at position (nr_cpu_ids - 1).
 
-This series addresses the issue for x86. riscv has already merged an
-equivalent patch (v3 of this series). Also, from a quick grep of cpuinfo
-seq operations, I think at least openrisc, powerpc, and s390 could get an
-equivalent patch. While the test is simple (see next paragraph) I'm not
-equipped to test on each architecture.
+If you supply nr_cpus_ids - 1, then it'll return nr_cpu_ids to signal no
+further bits set.
 
-To test, just build a kernel with DEBUG_PER_CPU_MAPS enabled, boot to
-a shell, do 'cat /proc/cpuinfo', and look for a kernel warning.
+Yes, no?
 
-v4:
-  - The riscv patch has already been merged.
-  - Mostly rewrote the cover letter as the situation has changed since
-    78e5a3399421 was reverted.
-  - Rewrote the commit message in order to try an better clarify things
-    and also to add the reference to the revert commit, which results in
-    the commit no longer claiming its a 'fix' in its summary. [Boris]
+> I'll send a v4 with another stab at the commit message.
 
-v3:
-  - Change condition from >= to == in order to still get a warning
-    for > as that's unexpected. [Yury]
-  - Picked up tags on the riscv patch
+Yes, and it is still an unreadable mess: "A kernel compiled with commit
+... but not its revert... " Nope.
 
-v2:
-  - Added all the information I should have in the first place
-    to the commit message [Boris]
-  - Changed style of fix [Boris]
+First make sure cpumask_next()'s valid accepted range has been settled
+upon, has been explicitly documented in a comment above it and then I'll
+take a patch that fixes whatever is there to fix.
 
-Andrew Jones (1):
-  x86: cpuinfo: Ensure inputs to cpumask_next are valid
+Callers should not have to filter values before passing them in - the
+function either returns an error or returns the next bit in the mask.
 
- arch/x86/kernel/cpu/proc.c | 3 +++
- 1 file changed, 3 insertions(+)
+This thing:
+
+	if (*pos == nr_cpu_ids)
+
+but then to pass in pos - 1:
+
+	*pos = cpumask_next(*pos - 1
+
+looks to me like the interface needs more cooking.
+
+Thx.
 
 -- 
-2.37.3
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
