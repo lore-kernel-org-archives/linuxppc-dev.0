@@ -4,56 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D474C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 16:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2091C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 17:14:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N38tn59Ldz3f8V
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 03:52:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N39Mq74mMz3cJ2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 04:13:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=GEBGVYys;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Hlb6Zeul;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=2a01:4f8:190:11c2::b:1457; helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=GEBGVYys;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Hlb6Zeul;
 	dkim-atps=neutral
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N38qP72hPz3f3v
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 03:49:21 +1100 (AEDT)
-Received: from zn.tnic (p200300ea9733e7e7329c23fffea6a903.dip0.t-ipconnect.de [IPv6:2003:ea:9733:e7e7:329c:23ff:fea6:a903])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id E3F291EC04F0;
-	Thu,  3 Nov 2022 17:49:09 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-	t=1667494150;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-	bh=2ASRoXT4dNz3rsz3g7wk4DQzgAno9/V5MAy7ltfZSS0=;
-	b=GEBGVYysxzMU6LGJTmZd7M+/R/6mbCD6zp4ZSzgggbaUSAV0SVqDm2Gc6AAhFjue3w91tt
-	IAhvE9D7fZ+NRgIf5TsYL8evNAQClXdM104Vgktn6WclPvN36r3al1OF9AVLqkFvz+Oj+i
-	92QAmiYx47vWftNfKrMeen4/XGStEic=
-Date: Thu, 3 Nov 2022 17:49:06 +0100
-From: Borislav Petkov <bp@alien8.de>
-To: yury.norov@gmail.com
-Subject: Re: [PATCH v3 2/2] x86: Fix /proc/cpuinfo cpumask warning
-Message-ID: <Y2PxAiJ1yNzcUSgs@zn.tnic>
-References: <CAAH8bW_DkvPCH0-q2Bfe0OJ72r63mRM3GP7NKOFrhe3zMO2gbQ@mail.gmail.com>
- <Y1v+Ed6mRN9gisJS@zn.tnic>
- <20221031080604.6xei6c4e3ckhsvmy@kamzik>
- <Y1+OUawGJDjh4DOJ@zn.tnic>
- <20221031100327.r7tswmpszvs5ot5n@kamzik>
- <Y2K6clNJBn0SbWU+@zn.tnic>
- <20221103125945.lrr5oxxmylwpam53@kamzik>
- <Y2PX9GfxWYh6+XGT@zn.tnic>
- <20221103153404.uh77nrdkowrxj6cr@kamzik>
- <Y2PsvvOWVs9ZLBsp@yury-laptop>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N39Ll1zbBz3bqt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 04:13:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1667495583; x=1699031583;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=7YpyRAArYVbF9WNy66xCFId6MSUjEg0Z+IBgztnk6pE=;
+  b=Hlb6ZeulMNX84C8TzIaZhHQn6gv37m+rlTiiG7xUDZa5z5AqG6LAKBxd
+   F1i4/4LUYkTcYIKFQzg7ittzY02I7oK1toTCbcKcKepKj3NJhDQY3OsqT
+   H7s0qunnFJ3qSAW6utqhozubObK3Zg0nquAtt6LnPDgUHNFvgEVWK2iey
+   EB+l4FaOmmN+SRiXuYNPjRZtfLDle8dewhZjZJuamv7nE+Todemy/Rdue
+   y8o6n1l3bT89kIMvx9Gl2P8jp30mnjOd5PDTkI6E/605Nl8fX2XKNgod9
+   YRi4oVIb2NK5/biG9yMcqCQ3L4oI8yZG2L0nDTAOv6oy7tDIXA7ylWfpL
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="307364180"
+X-IronPort-AV: E=Sophos;i="5.96,134,1665471600"; 
+   d="scan'208";a="307364180"
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2022 10:12:57 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="666046647"
+X-IronPort-AV: E=Sophos;i="5.96,134,1665471600"; 
+   d="scan'208";a="666046647"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga008.jf.intel.com with ESMTP; 03 Nov 2022 10:12:50 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1oqdlm-006wiw-0o;
+	Thu, 03 Nov 2022 19:12:46 +0200
+Date: Thu, 3 Nov 2022 19:12:45 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH v2 4/4] pcmcia: Convert to use
+ pci_bus_for_each_resource_p()
+Message-ID: <Y2P2ja26ikNecTsv@smile.fi.intel.com>
+References: <20221103164644.70554-1-andriy.shevchenko@linux.intel.com>
+ <20221103164644.70554-5-andriy.shevchenko@linux.intel.com>
+ <Y2P0XCNJvTVuziO7@owl.dominikbrodowski.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Y2PsvvOWVs9ZLBsp@yury-laptop>
+In-Reply-To: <Y2P0XCNJvTVuziO7@owl.dominikbrodowski.net>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,52 +74,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, x86@kernel.org, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Dave Hansen <dave.hansen@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, openrisc@lists.librecores.org, Ingo Molnar <mingo@redhat.com>, Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-riscv <linux-riscv@lists.infradead.org>, "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT" <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>, Albert Ou <aou@eecs.berkeley.edu>
+Cc: linux-pci@vger.kernel.org, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, Bjorn Helgaas <helgaas@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, =?iso-8859-1?Q?Micka=EBl_Sala=FCn?= <mic@digikod.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-kernel@vger.kernel.org, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 03, 2022 at 09:30:54AM -0700, yury.norov@gmail.com wrote:a
-> Callers should pass sane arguments into internal functions if they
-> expect sane output.
+On Thu, Nov 03, 2022 at 06:03:24PM +0100, Dominik Brodowski wrote:
+> Am Thu, Nov 03, 2022 at 06:46:44PM +0200 schrieb Andy Shevchenko:
 
-What internal function? It's in a global header.
+...
 
-> The API not exported to userspace shouldn't sanity-check all inputs
-> arguments.
+> > -
+> > -	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
+> > -		res = s->cb_dev->bus->resource[i];
+> > -#else
+> > -	pci_bus_for_each_resource(s->cb_dev->bus, res, i) {
+> >  #endif
+> > +
+> > +	pci_bus_for_each_resource_p(s->cb_dev->bus, res) {
+> >  		if (!res)
+> >  			continue;
+> 
+> Doesn't this remove the proper iterator for X86? Even if that is the right
+> thing to do, it needs an explict explanation.
 
-That doesn't have anything to do with userspace at all.
+I dunno what was in 2010, but reading code now I have found no differences in
+the logic on how resources are being iterated in these two pieces of code.
 
-APIs exported to the rest of the kernel should very well check their
-inputs. Otherwise they're not APIs - just some random functions which
-are visible to the compiler.
+But fine, I will add a line to a commit message about this change.
 
-> So, the portable code shouldn't expect from cpumasks more than
-> documentation said: for a _valid_ offset cpumask_next() returns next
-> set bit or >= nr_cpu_ids.
-
-Lemme quote from my previous mail:
-
-"First make sure cpumask_next()'s valid accepted range has been settled
-upon, has been explicitly documented"
-
-So where is that valid range documented?
-
-> cpumask_check() has been broken for years. Attempting to fix it faced
-> so much resistance, that I had to revert the patch.
-
-The suggestion on that thread made sense: you first fix the callers and
-then the interface. Just like any other "broken" kernel API.
-
-Nothing's stopping you from fixing it properly - it'll just take a while
-and if it is such a widely used interface, you probably should come up
-with a strategy first how to fix it without impacting current use.
-
-Interfaces and their in-kernel users get refactored constantly.
-
-Thx.
+Considering this is done, can you issue your conditional tag so I will
+incorporate it in v3?
 
 -- 
-Regards/Gruss,
-    Boris.
+With Best Regards,
+Andy Shevchenko
 
-https://people.kernel.org/tglx/notes-about-netiquette
+
