@@ -4,19 +4,18 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B49E3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 17:14:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45842C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 17:26:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N39NS1T61z3dtp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 04:14:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N39fD4VNWz3dvl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 04:26:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=dominikbrodowski.net (client-ip=136.243.71.142; helo=isilmar-4.linta.de; envelope-from=linux@dominikbrodowski.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 588 seconds by postgrey-1.36 at boromir; Fri, 04 Nov 2022 04:13:31 AEDT
 Received: from isilmar-4.linta.de (isilmar-4.linta.de [136.243.71.142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N39MH2yHdz3cMv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 04:13:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N39dc2JWVz3bc4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 04:25:56 +1100 (AEDT)
 X-isilmar-external: YES
 X-isilmar-external: YES
 X-isilmar-external: YES
@@ -46,22 +45,24 @@ X-isilmar-external: YES
 X-isilmar-external: YES
 X-isilmar-external: YES
 Received: from owl.dominikbrodowski.net (owl.brodo.linta [10.2.0.111])
-	by isilmar-4.linta.de (Postfix) with ESMTPSA id EACA0201349;
-	Thu,  3 Nov 2022 17:03:34 +0000 (UTC)
+	by isilmar-4.linta.de (Postfix) with ESMTPSA id 5C1742013E3;
+	Thu,  3 Nov 2022 17:25:53 +0000 (UTC)
 Received: by owl.dominikbrodowski.net (Postfix, from userid 1000)
-	id 7BB42801C7; Thu,  3 Nov 2022 18:03:24 +0100 (CET)
-Date: Thu, 3 Nov 2022 18:03:24 +0100
+	id 6880A8024B; Thu,  3 Nov 2022 18:25:45 +0100 (CET)
+Date: Thu, 3 Nov 2022 18:25:45 +0100
 From: Dominik Brodowski <linux@dominikbrodowski.net>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Subject: Re: [PATCH v2 4/4] pcmcia: Convert to use
  pci_bus_for_each_resource_p()
-Message-ID: <Y2P0XCNJvTVuziO7@owl.dominikbrodowski.net>
+Message-ID: <Y2P5mRt//Pp6XTLT@owl.dominikbrodowski.net>
 References: <20221103164644.70554-1-andriy.shevchenko@linux.intel.com>
  <20221103164644.70554-5-andriy.shevchenko@linux.intel.com>
+ <Y2P0XCNJvTVuziO7@owl.dominikbrodowski.net>
+ <Y2P2ja26ikNecTsv@smile.fi.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20221103164644.70554-5-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <Y2P2ja26ikNecTsv@smile.fi.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,62 +78,37 @@ Cc: linux-pci@vger.kernel.org, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelga
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Am Thu, Nov 03, 2022 at 06:46:44PM +0200 schrieb Andy Shevchenko:
-> The pci_bus_for_each_resource_p() hides the iterator loop since
-> it may be not used otherwise. With this, we may drop that iterator
-> variable definition.
+Am Thu, Nov 03, 2022 at 07:12:45PM +0200 schrieb Andy Shevchenko:
+> On Thu, Nov 03, 2022 at 06:03:24PM +0100, Dominik Brodowski wrote:
+> > Am Thu, Nov 03, 2022 at 06:46:44PM +0200 schrieb Andy Shevchenko:
+> 
+> ...
+> 
+> > > -
+> > > -	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
+> > > -		res = s->cb_dev->bus->resource[i];
+> > > -#else
+> > > -	pci_bus_for_each_resource(s->cb_dev->bus, res, i) {
+> > >  #endif
+> > > +
+> > > +	pci_bus_for_each_resource_p(s->cb_dev->bus, res) {
+> > >  		if (!res)
+> > >  			continue;
+> > 
+> > Doesn't this remove the proper iterator for X86? Even if that is the right
+> > thing to do, it needs an explict explanation.
+> 
+> I dunno what was in 2010, but reading code now I have found no differences in
+> the logic on how resources are being iterated in these two pieces of code.
+> 
+> But fine, I will add a line to a commit message about this change.
+> 
+> Considering this is done, can you issue your conditional tag so I will
+> incorporate it in v3?
 
-Thanks for your patch!
+Certainly, feel free to add
 
-> diff --git a/drivers/pcmcia/rsrc_nonstatic.c b/drivers/pcmcia/rsrc_nonstatic.c
-> index ad1141fddb4c..9d92d4bb6239 100644
-> --- a/drivers/pcmcia/rsrc_nonstatic.c
-> +++ b/drivers/pcmcia/rsrc_nonstatic.c
-> @@ -934,7 +934,7 @@ static int adjust_io(struct pcmcia_socket *s, unsigned int action, unsigned long
->  static int nonstatic_autoadd_resources(struct pcmcia_socket *s)
->  {
->  	struct resource *res;
-> -	int i, done = 0;
-> +	int done = 0;
->  
->  	if (!s->cb_dev || !s->cb_dev->bus)
->  		return -ENODEV;
-> @@ -960,12 +960,9 @@ static int nonstatic_autoadd_resources(struct pcmcia_socket *s)
->  	 */
->  	if (s->cb_dev->bus->number == 0)
->  		return -EINVAL;
-> -
-> -	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
-> -		res = s->cb_dev->bus->resource[i];
-> -#else
-> -	pci_bus_for_each_resource(s->cb_dev->bus, res, i) {
->  #endif
-> +
-> +	pci_bus_for_each_resource_p(s->cb_dev->bus, res) {
->  		if (!res)
->  			continue;
-
-Doesn't this remove the proper iterator for X86? Even if that is the right
-thing to do, it needs an explict explanation.
-
->  
-> diff --git a/drivers/pcmcia/yenta_socket.c b/drivers/pcmcia/yenta_socket.c
-> index 3966a6ceb1ac..b200f2b99a7a 100644
-> --- a/drivers/pcmcia/yenta_socket.c
-> +++ b/drivers/pcmcia/yenta_socket.c
-> @@ -673,9 +673,8 @@ static int yenta_search_res(struct yenta_socket *socket, struct resource *res,
->  			    u32 min)
->  {
->  	struct resource *root;
-> -	int i;
->  
-> -	pci_bus_for_each_resource(socket->dev->bus, root, i) {
-> +	pci_bus_for_each_resource_p(socket->dev->bus, root) {
->  		if (!root)
->  			continue;
->  
-
-That looks fine!
+	Acked-by: Dominik Brodowski <linux@dominikbrodowski.net>
 
 Thanks,
 	Dominik
