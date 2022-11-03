@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0896DC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 16:47:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC130C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Nov 2022 16:48:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N38nT1Mtvz3cKY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 03:47:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N38pT11kGz3dtt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 03:48:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=FgFTxlGY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AtJUzZOI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mga12.intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=FgFTxlGY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AtJUzZOI;
 	dkim-atps=neutral
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N38mQ0WP2z3bkx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N38mQ5jCNz3bqt
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Nov 2022 03:46:44 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1667494006; x=1699030006;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=EaNuN468AX7oVVNzygbZKjeVdiuKUVO8jdpIxMpvwBE=;
-  b=FgFTxlGYFEym0m7S5cHToIWtQtsUi1jwKUgsMgsrKeyQkkRpHz18Dswb
-   RkTURzzvszIQBX2nOc5UA+C9f8juGaYJzClev5+zjVAagvk45dZtd10Of
-   CQx9kF6JhQV8vD5sl/vzNZ82CsKSXhj9YbU8M5eHRqR/RiG4DQgd3XkQm
-   lXNjN6+dEfWxYV09Nu9p85kuApkSNy5Z4YWKwR/lFYcVe3/faYgoLensY
-   pFvK7sRkTOlSNkBHyLlRVOs41wOzGF6NEsbI4xuVaeT3m16Cp01Hdp330
-   EZOSdTGhf8Rdu5G6xTHtd0A6GUa/gW9qXb+DdZVkmj7rYa51CbpgQ6EoS
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="336435564"
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=6sEwb2LvPX9v9prH3mu2nEGi0LVqQc1+Me9tIfh9Gsk=;
+  b=AtJUzZOI1I9INN5+xLh99EE3yMHYPjcFxPAgrv11mAj4PeqcIaGppTL7
+   71ug7w8HokaVM79Qlv3+uvmI4KKh80symCNJPOs1FmPNRBpUWUtJTN0N9
+   9tsBt61le45bqCpro50n/SKNq+sOovI/Jd9pmV/UclizGauZuYjvVzY1E
+   J2zruy73ZSbVz68vlDEaowCNlNqG2h1HzzNyD7EFsl6U389VycOkIeNWs
+   7SFQwUJW7CvUBrduQf8bT8TebcfgCCdhJPZlwsQOlz5HzmvbQrq1VU7Ex
+   VQTZAVYUvWmlQpGdPyhIxyxzWvyzR9lJeRqX8knoGNWTX8BJUJVGN6eiV
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="289455788"
 X-IronPort-AV: E=Sophos;i="5.96,134,1665471600"; 
-   d="scan'208";a="336435564"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2022 09:46:36 -0700
+   d="scan'208";a="289455788"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Nov 2022 09:46:36 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="809735378"
+X-IronPort-AV: E=McAfee;i="6500,9779,10520"; a="629408020"
 X-IronPort-AV: E=Sophos;i="5.96,134,1665471600"; 
-   d="scan'208";a="809735378"
+   d="scan'208";a="629408020"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga005.jf.intel.com with ESMTP; 03 Nov 2022 09:46:29 -0700
+  by orsmga007.jf.intel.com with ESMTP; 03 Nov 2022 09:46:29 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id B75E129D; Thu,  3 Nov 2022 18:46:52 +0200 (EET)
+	id 858A5F7; Thu,  3 Nov 2022 18:46:52 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -65,12 +65,10 @@ To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	sparclinux@vger.kernel.org,
 	linux-pci@vger.kernel.org,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH v2 3/4] EISA: Convert to use pci_bus_for_each_resource_p()
-Date: Thu,  3 Nov 2022 18:46:43 +0200
-Message-Id: <20221103164644.70554-4-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 0/4] PCI: Add pci_dev_for_each_resource() helper and refactor bus one
+Date: Thu,  3 Nov 2022 18:46:40 +0200
+Message-Id: <20221103164644.70554-1-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221103164644.70554-1-andriy.shevchenko@linux.intel.com>
-References: <20221103164644.70554-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -88,38 +86,51 @@ Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Oleksandr Tyshchenko <oleks
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pci_bus_for_each_resource_p() hides the iterator loop since
-it may be not used otherwise. With this, we may drop that iterator
-variable definition.
+Provide two new helper macros to iterate over PCI device resources and
+convert users.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/eisa/pci_eisa.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Looking at it, refactor existing pci_bus_for_each_resource() and convert
+users accordingly.
 
-diff --git a/drivers/eisa/pci_eisa.c b/drivers/eisa/pci_eisa.c
-index 930c2332c3c4..907b86384396 100644
---- a/drivers/eisa/pci_eisa.c
-+++ b/drivers/eisa/pci_eisa.c
-@@ -20,8 +20,8 @@ static struct eisa_root_device pci_eisa_root;
- 
- static int __init pci_eisa_init(struct pci_dev *pdev)
- {
--	int rc, i;
- 	struct resource *res, *bus_res = NULL;
-+	int rc;
- 
- 	if ((rc = pci_enable_device (pdev))) {
- 		dev_err(&pdev->dev, "Could not enable device\n");
-@@ -38,7 +38,7 @@ static int __init pci_eisa_init(struct pci_dev *pdev)
- 	 * eisa_root_register() can only deal with a single io port resource,
- 	*  so we use the first valid io port resource.
- 	 */
--	pci_bus_for_each_resource(pdev->bus, res, i)
-+	pci_bus_for_each_resource_p(pdev->bus, res)
- 		if (res && (res->flags & IORESOURCE_IO)) {
- 			bus_res = res;
- 			break;
+This applies on top of this patch Mika sent out earlier:
+https://lore.kernel.org/linux-pci/20221103103254.30497-1-mika.westerberg@linux.intel.com/
+
+Changelog v2:
+- refactor to have two macros
+- refactor existing pci_bus_for_each_resource() in the same way and
+  convert users
+
+Andy Shevchenko (3):
+  PCI: Split pci_bus_for_each_resource_p() out of
+    pci_bus_for_each_resource()
+  EISA: Convert to use pci_bus_for_each_resource_p()
+  pcmcia: Convert to use pci_bus_for_each_resource_p()
+
+Mika Westerberg (1):
+  PCI: Introduce pci_dev_for_each_resource()
+
+ .clang-format                      |  3 +++
+ arch/alpha/kernel/pci.c            |  5 ++---
+ arch/arm/kernel/bios32.c           | 16 ++++++-------
+ arch/mips/pci/pci-legacy.c         |  3 +--
+ arch/powerpc/kernel/pci-common.c   |  5 ++---
+ arch/sparc/kernel/leon_pci.c       |  5 ++---
+ arch/sparc/kernel/pci.c            | 10 ++++-----
+ arch/sparc/kernel/pcic.c           |  5 ++---
+ drivers/eisa/pci_eisa.c            |  4 ++--
+ drivers/pci/bus.c                  |  7 +++---
+ drivers/pci/hotplug/shpchp_sysfs.c |  8 +++----
+ drivers/pci/pci.c                  |  5 ++---
+ drivers/pci/probe.c                |  2 +-
+ drivers/pci/remove.c               |  5 ++---
+ drivers/pci/setup-bus.c            | 36 ++++++++++++------------------
+ drivers/pci/setup-res.c            |  4 +---
+ drivers/pci/xen-pcifront.c         |  4 +---
+ drivers/pcmcia/rsrc_nonstatic.c    |  9 +++-----
+ drivers/pcmcia/yenta_socket.c      |  3 +--
+ include/linux/pci.h                | 25 +++++++++++++++++----
+ 20 files changed, 78 insertions(+), 86 deletions(-)
+
 -- 
 2.35.1
 
