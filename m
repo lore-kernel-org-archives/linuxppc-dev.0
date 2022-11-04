@@ -4,81 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45F6CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 17:30:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A686C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Nov 2022 17:31:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N3nhF6RXXz3f41
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Nov 2022 04:30:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N3njH0Mvxz3f3x
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Nov 2022 04:31:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJ0USxOo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZvxJmWWI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJ0USxOo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZvxJmWWI;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N3nf84jwqz30JR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2022 04:28:32 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A4H1C06003854;
-	Fri, 4 Nov 2022 17:28:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N3nfB6fvXz30JR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Nov 2022 04:28:34 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A4GS9Eg026289;
+	Fri, 4 Nov 2022 17:28:22 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=+cgZ5aRHXs8ZYwDYviWjMej/pLSxtUZVnIdL4GreqrQ=;
- b=pJ0USxOofbiakFc5HmAD4Qh65eXnBc67zMkwhD96j0COmvZ6e9ir5o22m5t95pHcgQPp
- RBScDkSsgTPQtuTWQnMogInUK1nj+yQaf081rsWBXsyuISE/sGYIWw9WEHAtWfWR1L2e
- 6G/OpX9GDq3FuKisdgCiA95Qtt8KYoPx8LDD7Z45kMNy4jDCfFYCf8U0X8k9qLSK/LEm
- /oPgYgrq62F+yyqelJ0+X/DkTohtrHDwvt06gvWgx0Pzjn1PDE3bpg+lsJhxJr938dqY
- ffkDLrLMu2kwESpXcHAAARoJU9osxMmQem5n3GDsAAN2oPdz5/2kQaDekg6iSM686Bgk bg== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=xLVnxFhsTfvLMg70f7DTF+jcvYHRHaDMiW1Z2gAS05w=;
+ b=ZvxJmWWIZfqHdQAgCx0I041LVZdlZxTb92yUca9gF/I2I/4yaMYPgB3ClXWaMg2z/CK9
+ FPg2Qq27+FmdLQWXYHrLxMW3ndraBI6XvpNjjQgy0VQC38MD1LylwcvMqO9+CQddQj7B
+ KSnmK9EUggL54I8nWqhyCQxmS95ColPIW0E5veSuxWQW1zR9cZUTk8jQElVevD7F9M0F
+ ciFmgjEWdfyKkXZnO8OfdtqprQ363c8dBH/fZShVgnVzzqSJ7QUKvZ4gCTBB03oXVxDe
+ Q2LSyYnBjFbz/jUD0uPmBK3IAOBEnFtKdQ4Ii5P2Mukqcwe7EUJFlpFh2kVJXDhNMSHQ fg== 
 Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kmyqw6xnb-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kmpn9ytw9-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 04 Nov 2022 17:28:14 +0000
+	Fri, 04 Nov 2022 17:28:21 +0000
 Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A4HLYUA013386;
-	Fri, 4 Nov 2022 17:28:12 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma05fra.de.ibm.com with ESMTP id 3kjepeds82-1
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A4HLXGw013375;
+	Fri, 4 Nov 2022 17:28:19 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma05fra.de.ibm.com with ESMTP id 3kjepeds84-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 04 Nov 2022 17:28:12 +0000
+	Fri, 04 Nov 2022 17:28:19 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A4HS9U361342068
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A4HSHZ366060774
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 4 Nov 2022 17:28:09 GMT
+	Fri, 4 Nov 2022 17:28:17 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B1EE011C04C;
-	Fri,  4 Nov 2022 17:28:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F3F7E11C050;
+	Fri,  4 Nov 2022 17:28:16 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1270611C04A;
-	Fri,  4 Nov 2022 17:28:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 9D97911C04C;
+	Fri,  4 Nov 2022 17:28:16 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Fri,  4 Nov 2022 17:28:09 +0000 (GMT)
+	Fri,  4 Nov 2022 17:28:16 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ibmuc.com (unknown [9.43.196.228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9148060126;
-	Sat,  5 Nov 2022 04:28:05 +1100 (AEDT)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8E2E060126;
+	Sat,  5 Nov 2022 04:28:13 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 0/6] VMAP_STACK support for book3s64
-Date: Sat,  5 Nov 2022 04:27:31 +1100
-Message-Id: <20221104172737.391978-1-ajd@linux.ibm.com>
+Subject: [RFC PATCH 3/6] powerpc/powernv: Keep MSR in register across OPAL entry/return path
+Date: Sat,  5 Nov 2022 04:27:34 +1100
+Message-Id: <20221104172737.391978-4-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221104172737.391978-1-ajd@linux.ibm.com>
+References: <20221104172737.391978-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 8xya95ZM08HjOMrCYO5451kTLxgVvEEb
-X-Proofpoint-GUID: 8xya95ZM08HjOMrCYO5451kTLxgVvEEb
+X-Proofpoint-GUID: k6knRXBgC5VDTprdqCXsWMuhfWDuOFeV
+X-Proofpoint-ORIG-GUID: k6knRXBgC5VDTprdqCXsWMuhfWDuOFeV
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-04_11,2022-11-03_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- priorityscore=1501 adultscore=0 malwarescore=0 suspectscore=0 phishscore=0
- clxscore=1011 spamscore=0 mlxscore=0 mlxlogscore=999 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 malwarescore=0
+ spamscore=0 mlxlogscore=914 lowpriorityscore=0 impostorscore=0
+ clxscore=1015 adultscore=0 bulkscore=0 suspectscore=0 priorityscore=1501
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2210170000 definitions=main-2211040108
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,88 +98,95 @@ Cc: linux-hardening@vger.kernel.org, cmr@bluescreens.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series begins implementing VMAP_STACK support for book3s64 platforms,
-building on the existing 32-bit work that Christophe Leroy has done.
+When we enter and return from an OPAL call, there's three pieces of state
+we have to save and restore: the stack pointer, the PACA pointer, and the
+MSR. However, there's only two registers that OPAL is guaranteed to
+preserve for us (r1 for the stack pointer and r13 for the PACA), so the MSR
+gets saved on the stack.
 
-Right now, it doesn't boot on my POWER9 machine - I'm sending this as is because
-I'm about to go on holidays for a couple of weeks, and I'll pick it up once I'm
-back.
+This becomes problematic when we enable VMAP_STACK, as we need to re-enable
+translation in order to access the virtually mapped stack... and to
+re-enable translation, we need to restore the MSR.
 
-The primary issue is the amount of arch code that has to run in real mode for
-some reason or another - this includes OPAL, the cpu idle driver, KVM, and a
-few other bits and pieces.
+Keep the MSR in r13, and instead store the PACA pointer on the stack - we
+can restore the MSR first, then restore the PACA into r13.
 
-Right now, VMAP_STACK is only enabled if KVM_BOOK3S_64_HV=n - I'm working on
-patches for KVM support but they're not quite ready yet.
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+ .../powerpc/platforms/powernv/opal-wrappers.S | 43 +++++++++++--------
+ 1 file changed, 26 insertions(+), 17 deletions(-)
 
-If anyone has better suggestions for the extremely ugly approach to fixing
-OPAL calls, suggest away!
-
-Andrew Donnellan (6):
-  powerpc/64s: Fix assembly to support larger values of THREAD_SIZE
-  powerpc/64s: Helpers to switch between linear and vmapped stack
-    pointers
-  powerpc/powernv: Keep MSR in register across OPAL entry/return path
-  powerpc/powernv: Convert pointers to physical addresses in OPAL call
-    args
-  powerpc/powernv/idle: Convert stack pointer to physical address
-  powerpc/64s: Enable CONFIG_VMAP_STACK
-
- arch/powerpc/include/asm/asm-compat.h         |  2 +
- arch/powerpc/include/asm/book3s/64/stack.h    | 71 +++++++++++++++++++
- arch/powerpc/include/asm/opal.h               |  1 +
- arch/powerpc/include/asm/paca.h               |  4 ++
- arch/powerpc/include/asm/processor.h          |  6 ++
- arch/powerpc/kernel/asm-offsets.c             |  8 +++
- arch/powerpc/kernel/entry_64.S                | 11 ++-
- arch/powerpc/kernel/irq.c                     |  8 ++-
- arch/powerpc/kernel/misc_64.S                 |  4 +-
- arch/powerpc/kernel/process.c                 |  8 +++
- arch/powerpc/kernel/smp.c                     |  7 ++
- arch/powerpc/kvm/book3s_hv_builtin.c          |  2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S       |  3 +-
- arch/powerpc/mm/book3s64/slb.c                | 11 ++-
- arch/powerpc/platforms/Kconfig.cputype        |  1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c  | 20 +++---
- arch/powerpc/platforms/powernv/idle.c         | 47 +++++++++++-
- arch/powerpc/platforms/powernv/ocxl.c         |  3 +-
- arch/powerpc/platforms/powernv/opal-core.c    |  4 +-
- arch/powerpc/platforms/powernv/opal-dump.c    |  6 +-
- arch/powerpc/platforms/powernv/opal-elog.c    | 10 +--
- arch/powerpc/platforms/powernv/opal-fadump.c  | 12 ++--
- arch/powerpc/platforms/powernv/opal-flash.c   |  5 +-
- arch/powerpc/platforms/powernv/opal-hmi.c     |  3 +-
- arch/powerpc/platforms/powernv/opal-irqchip.c |  4 +-
- arch/powerpc/platforms/powernv/opal-lpc.c     |  8 +--
- arch/powerpc/platforms/powernv/opal-nvram.c   |  4 +-
- arch/powerpc/platforms/powernv/opal-power.c   |  4 +-
- .../powerpc/platforms/powernv/opal-powercap.c |  2 +-
- arch/powerpc/platforms/powernv/opal-prd.c     |  6 +-
- arch/powerpc/platforms/powernv/opal-psr.c     |  2 +-
- arch/powerpc/platforms/powernv/opal-rtc.c     |  2 +-
- arch/powerpc/platforms/powernv/opal-secvar.c  |  9 ++-
- arch/powerpc/platforms/powernv/opal-sensor.c  |  4 +-
- .../powerpc/platforms/powernv/opal-sysparam.c |  4 +-
- .../powerpc/platforms/powernv/opal-wrappers.S | 43 ++++++-----
- arch/powerpc/platforms/powernv/opal-xscom.c   |  2 +-
- arch/powerpc/platforms/powernv/opal.c         | 16 ++---
- arch/powerpc/platforms/powernv/pci-ioda.c     | 14 ++--
- arch/powerpc/platforms/powernv/pci.c          | 25 ++++---
- arch/powerpc/platforms/powernv/setup.c        |  2 +-
- arch/powerpc/platforms/powernv/smp.c          |  2 +-
- arch/powerpc/sysdev/xics/icp-opal.c           |  2 +-
- arch/powerpc/sysdev/xics/ics-opal.c           |  8 +--
- arch/powerpc/sysdev/xive/native.c             | 33 +++++----
- arch/powerpc/xmon/xmon.c                      |  4 ++
- drivers/char/ipmi/ipmi_powernv.c              |  6 +-
- drivers/char/powernv-op-panel.c               |  2 +-
- drivers/i2c/busses/i2c-opal.c                 |  2 +-
- drivers/leds/leds-powernv.c                   |  6 +-
- drivers/mtd/devices/powernv_flash.c           |  4 +-
- drivers/rtc/rtc-opal.c                        |  4 +-
- 52 files changed, 347 insertions(+), 134 deletions(-)
- create mode 100644 arch/powerpc/include/asm/book3s/64/stack.h
-
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 0ed95f753416..d692869ee0ce 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -23,40 +23,49 @@
+ _GLOBAL_TOC(__opal_call)
+ 	mflr	r0
+ 	std	r0,PPC_LR_STKOFF(r1)
+-	ld	r12,STK_PARAM(R12)(r1)
+-	li	r0,MSR_IR|MSR_DR|MSR_LE
+-	andc	r12,r12,r0
+ 	LOAD_REG_ADDR(r11, opal_return)
+ 	mtlr	r11
+ 	LOAD_REG_ADDR(r11, opal)
+ 	ld	r2,0(r11)
+ 	ld	r11,8(r11)
+ 	mtspr	SPRN_HSRR0,r11
+-	mtspr	SPRN_HSRR1,r12
++
+ 	/* set token to r0 */
+ 	ld	r0,STK_PARAM(R11)(r1)
++
++	/*
++	 * We need to keep the MSR value in a register that is preserved by
++	 * OPAL, so that we don't need to access the stack before we restore
++	 * the MSR, as the stack may be vmalloced and thus require MMU.
++	 *
++	 * Move the PACA from R13 into the stack red zone, and put MSR in R13.
++	 */
++	std	r13,-8(r1)
++	ld	r13,STK_PARAM(R12)(r1)
++
++	/* Switch off MMU, LE */
++	li	r11,MSR_IR|MSR_DR|MSR_LE
++	andc	r11,r13,r11
++
++	mtspr	SPRN_HSRR1,r11
+ 	hrfid
+ opal_return:
+ 	/*
+ 	 * Restore MSR on OPAL return. The MSR is set to big-endian.
+ 	 */
+ #ifdef __BIG_ENDIAN__
+-	ld	r11,STK_PARAM(R12)(r1)
+-	mtmsrd	r11
++	mtmsrd	r13
+ #else
+ 	/* Endian can only be switched with rfi, must byte reverse MSR load */
+-	.short 0x4039	 /* li r10,STK_PARAM(R12)		*/
+-	.byte (STK_PARAM(R12) >> 8) & 0xff
+-	.byte STK_PARAM(R12) & 0xff
+-
+-	.long 0x280c6a7d /* ldbrx r11,r10,r1			*/
+-	.long 0x05009f42 /* bcl 20,31,$+4			*/
+-	.long 0xa602487d /* mflr r10				*/
+-	.long 0x14004a39 /* addi r10,r10,20			*/
+-	.long 0xa64b5a7d /* mthsrr0 r10				*/
+-	.long 0xa64b7b7d /* mthsrr1 r11				*/
+-	.long 0x2402004c /* hrfid				*/
++	.long 0x05009f42 /* bcl 20,31,$+4   (LR <- next insn addr)	*/
++	.long 0xa602487d /* mflr r10					*/
++	.long 0x14004a39 /* addi r10,r10,20 (r10 <- addr after #endif)	*/
++	.long 0xa64b5a7d /* mthsrr0 r10	    (new NIP)			*/
++	.long 0xa64bbb7d /* mthsrr1 r13	    (new MSR)			*/
++	.long 0x2402004c /* hrfid					*/
+ #endif
++	/* Restore PACA */
++	ld	r13,-8(r1)
+ 	LOAD_PACA_TOC()
+ 	ld	r0,PPC_LR_STKOFF(r1)
+ 	mtlr	r0
 -- 
 2.38.1
 
