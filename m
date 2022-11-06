@@ -4,84 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B639C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Nov 2022 21:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 820A1C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Nov 2022 21:10:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N56Rr4Vdrz3cQk
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Nov 2022 08:09:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N56T11K4sz3cLq
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Nov 2022 08:10:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QTlLeOTY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kbNAHBCE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QTlLeOTY;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kbNAHBCE;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N56Qq3w1Rz2xG6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2022 08:08:19 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A6KY9bE029827;
-	Sun, 6 Nov 2022 21:08:08 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N56R00xXKz3cJQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2022 08:08:27 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A6IUAFO011922;
+	Sun, 6 Nov 2022 21:08:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=FCFmmf5SMlz4D4zKWJbVwaLDA71ZZuVqOiFaCs4nqXY=;
- b=QTlLeOTYDd7A2oozuLhuTb0TjcuCsgNgzdNuWOdTUSbpd0rH83ostwjx5QjdfTy7TLRa
- 3+wPGuGmI8o1mBSXjLAUEXodyKnSMxYBYEyzU0zO/kOFN4osqqtiaTSUEJPoVh/UfQAs
- vXm/1LglvyPApCfg5Qp/nmtIUL27UFY13NOX7p1cFuoDDjGXu9WHQihEe/40w1KxoSiw
- C05hj2BV+JgI5EtTG5Z2t88PP17A6rNKH7sj5xCYDnBwkHrT/f2WQ/ofRWvRp6cP8Htf
- Fr3xErmq0TEh8e0mmDE6zj6P+t69Ac6+E3Ti29FM/6zgLAXGZ4FYJY/IKSrzOzr0WvRE gA== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=Dqgb6V30u6xH6F66DO7gRqyHAW/t9HZRw8bgLYM5ckw=;
+ b=kbNAHBCErfLINFOuOiMPnoow6F32B88f+tjTazQiuPItwxFaLqOFg4jGjJBGnleBifxS
+ fGxv0C7G85ivViME9xVq+b0qRDoa4RMlSaTj71Gug7Z0ct/3GK3AxX57IzWt6CiDEl20
+ HmXcAkK8oqYvdfcNf7NaoqokjRghSo1ts3ITGhUfKnSGcIpjy/hu4vzlTW70gLjTlnzl
+ Gp0unEnMzEQ7XXVSTfK35kuWILVLLwtzGXCppQsYYx3+NGxfW22T5CakTN4t+nGP0nf1
+ mPcPyV25jyZLY8iiuJJMh7ssdwpOf0oL9vLjfuoZ59RdGJjvtivgkzsKMWGUMbv04O/P oQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1f652ak-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1tecujy-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:08 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A6L87SQ001447;
-	Sun, 6 Nov 2022 21:08:07 GMT
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1f652a8-1
+	Sun, 06 Nov 2022 21:08:17 +0000
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A6KtCZS004297;
+	Sun, 6 Nov 2022 21:08:17 GMT
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1tecuje-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:07 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A6L6Eh8012622;
-	Sun, 6 Nov 2022 21:08:05 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma04fra.de.ibm.com with ESMTP id 3kngmqh79j-1
+	Sun, 06 Nov 2022 21:08:16 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A6L5621016614;
+	Sun, 6 Nov 2022 21:08:14 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma02fra.de.ibm.com with ESMTP id 3kngpgh73j-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:05 +0000
+	Sun, 06 Nov 2022 21:08:14 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A6L2N8P44630406
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A6L8BB837683662
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 6 Nov 2022 21:02:23 GMT
+	Sun, 6 Nov 2022 21:08:11 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 47D3A11C050;
-	Sun,  6 Nov 2022 21:08:02 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1824A11C050;
+	Sun,  6 Nov 2022 21:08:11 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 171B311C04A;
-	Sun,  6 Nov 2022 21:07:58 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 3FDAB11C04C;
+	Sun,  6 Nov 2022 21:08:07 +0000 (GMT)
 Received: from li-4b5937cc-25c4-11b2-a85c-cea3a66903e4.ibm.com.com (unknown [9.211.78.124])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Sun,  6 Nov 2022 21:07:57 +0000 (GMT)
+	Sun,  6 Nov 2022 21:08:07 +0000 (GMT)
 From: Nayna Jain <nayna@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 0/4] powerpc/pseries: expose firmware security variables via filesystem
-Date: Sun,  6 Nov 2022 16:07:40 -0500
-Message-Id: <20221106210744.603240-1-nayna@linux.ibm.com>
+Subject: [PATCH 2/4] fs: define a firmware security filesystem named fwsecurityfs
+Date: Sun,  6 Nov 2022 16:07:42 -0500
+Message-Id: <20221106210744.603240-3-nayna@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 4ST7mGbUOu9sIIIKura1pB350hQLJg8K
-X-Proofpoint-GUID: OqnmsFptL42RZI1SpLC9JCSG9pasCybZ
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20221106210744.603240-1-nayna@linux.ibm.com>
+References: <20221106210744.603240-1-nayna@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: K3_cqkK3xbQIHy73A5pjMwCCpwqxa3JZ
+X-Proofpoint-ORIG-GUID: k5ARmYELm2Mnq7-NXOeNpwZ_BKzPCB6-
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-06_14,2022-11-03_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
- lowpriorityscore=0 phishscore=0 adultscore=0 bulkscore=0 mlxlogscore=999
- impostorscore=0 suspectscore=0 priorityscore=1501 mlxscore=0 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
+ lowpriorityscore=0 spamscore=0 malwarescore=0 mlxlogscore=999
+ suspectscore=0 phishscore=0 priorityscore=1501 adultscore=0 bulkscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2210170000 definitions=main-2211060188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,126 +100,420 @@ Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, Andrew Don
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerVM provides an isolated Platform KeyStore (PKS)[1] storage allocation
-for each logical partition (LPAR) with individually managed access controls
-to store sensitive information securely. The Linux kernel can access this
-storage by interfacing with the hypervisor using a new set of hypervisor
-calls.
- 
-The PowerVM guest secure boot feature intends to use PKS for the purpose of
-storing public keys. Secure boot requires public keys in order to verify
-GRUB and the boot kernel. To allow authenticated manipulation of keys, PKS
-supports variables to store key authorities namely, PK and KEK. Other
-variables are used to store code signing keys, db and grubdb. It also
-supports deny lists to disallow booting GRUB or kernels even if they are
-signed with valid keys. This is done via deny list databases stored in dbx
-and sbat variables. These variables are stored in PKS and are managed and
-controlled by firmware.
+securityfs is meant for Linux security subsystems to expose policies/logs
+or any other information. However, there are various firmware security
+features which expose their variables for user management via the kernel.
+There is currently no single place to expose these variables. Different
+platforms use sysfs/platform specific filesystem(efivarfs)/securityfs
+interface as they find it appropriate. Thus, there is a gap in kernel
+interfaces to expose variables for security features.
 
-The purpose of this patchset is to add the userspace interface to manage
-these variables.
+Define a firmware security filesystem (fwsecurityfs) to be used by
+security features enabled by the firmware. These variables are platform
+specific. This filesystem provides platforms a way to implement their
+ own underlying semantics by defining own inode and file operations.
 
-Currently, OpenPOWER exposes variables via sysfs, while EFI platforms have
-used sysfs and then moved to their own efivarfs filesystem. The recent
-coco feature uses securityfs to expose secrets to TEEs. All of these
-environments are different both syntactically and semantically.
+Similar to securityfs, the firmware security filesystem is recommended
+to be exposed on a well known mount point /sys/firmware/security.
+Platforms can define their own directory or file structure under this path.
 
-securityfs is meant for Linux security subsystems to expose policies, logs,
-and other information and it does not interact with firmware for managing
-these variables. However, there are various firmware security features that
-expose their variables for user management via pseudo filesystems as
-discussed above. There is currently no single place to expose these
-variables. Different platforms use sysfs, platform-specific filesystems
-such as efivars, or securityfs as they have found appropriate. This has
-resulted in interfaces scattered around the tree. The multiple interfac
- problem can be addressed by providing a single pseudo filesystem for all
-platforms to expose their variables for firmware security features. Doing
-so simplifies the interface for users of these platforms.
+Example:
 
-This patchset introduces a new firmware security pseudo filesystem,
-fwsecurityfs. Any platform can expose the variables that are required by
-firmware security features via this interface. It provides a common place
-for exposing variables managed by firmware while still allowing platforms
-to implement their own underlying semantics.
+# mount -t fwsecurityfs fwsecurityfs /sys/firmware/security
 
-This design consists of two parts:
+# cd /sys/firmware/security/
 
-1. Firmware security filesystem (fwsecurityfs) that provides platforms
-   with APIs to create their own underlying directory and file structure.
-   It should be mounted on a new well-known mountpoint,
-   /sys/firmware/security.
-2. Platform-specific layer for these variables that implements underlying
-   semantics. Platforms can expose their variables as files allowing
-   read/write/add/delete operations by defining their own inode and file
-   functions.
-
-This patchset adds:
-1. An update to the PLPKS driver to support the signed update H_CALL for
-   authenticated variables used in guest secure boot.
-2. A firmware security filesystem named fwsecurityfs.
-3. An interface to expose secure variables stored in the LPAR's PKS via
-   fwsecurityfs.
- 
-Note: This patchset is not intended to modify existing interfaces already
-used by OpenPOWER or EFI but rather to ensure that new similar interfaces
-have a common base going forward.
-
-The first patch related to PLPKS driver is dependent on bugfixes posted
-as part of patchset[4].
-
-Changelog:
-
-First non-RFC version after RFC versions[2,3].
-Feedback from non-RFC version are included to update fwsecurityfs.
- * PLPKS driver patch had been upstreamed separately. In this set, Patch 1
- updates existing driver to include signed update support.
- * Fix fwsecurityfs to also pin the file system, refactor and cleanup. The
- consideration of namespacing has been done and is concluded that currently
- no firmware object or entity is handled by namespacing. The purpose of
- fwsecurityfs is to expose firmware space which is similar to exposing
- space in TPM. And TPM is also not currently namespaced. If containers have
- to make use of some such space in the future, it would have to be some
- software space. With that, this currently only considers the host using the
- firmware space.
- * Fix secvars support for powerpc. It supports policy handling within the
- kernel, supports UCS2 naming and cleanups.
- * Read-only PLPKS configuration is exposed.
- * secvars directory is now moved within a new parent directory plpks.
- * Patch is now no more an RFC version.
-
-[1] https://community.ibm.com/community/user/power/blogs/chris-engel1/2020/11/20/powervm-introduces-the-platform-keystore
-[2] RFC v2: https://lore.kernel.org/linuxppc-dev/20220622215648.96723-1-nayna@linux.ibm.com/ 
-[3] RFC v1: https://lore.kernel.org/linuxppc-dev/20220122005637.28199-1-nayna@linux.ibm.com/
-[4] https://lore.kernel.org/linuxppc-dev/20221106205839.600442-1-nayna@linux.ibm.com/T/#t
-
-Nayna Jain (4):
-  powerpc/pseries: Add new functions to PLPKS driver
-  fs: define a firmware security filesystem named fwsecurityfs
-  powerpc/pseries: initialize fwsecurityfs with plpks arch-specific
-    structure
-  powerpc/pseries: expose authenticated variables stored in LPAR PKS
-
- arch/powerpc/include/asm/hvcall.h             |   3 +-
- arch/powerpc/platforms/pseries/Kconfig        |  20 +
- arch/powerpc/platforms/pseries/Makefile       |   2 +
- .../platforms/pseries/fwsecurityfs_arch.c     | 124 ++++++
- arch/powerpc/platforms/pseries/plpks.c        | 112 +++++-
- arch/powerpc/platforms/pseries/plpks.h        |  38 ++
- arch/powerpc/platforms/pseries/secvars.c      | 365 ++++++++++++++++++
- fs/Kconfig                                    |   1 +
- fs/Makefile                                   |   1 +
- fs/fwsecurityfs/Kconfig                       |  14 +
- fs/fwsecurityfs/Makefile                      |  10 +
- fs/fwsecurityfs/super.c                       | 263 +++++++++++++
- include/linux/fwsecurityfs.h                  |  33 ++
- include/uapi/linux/magic.h                    |   1 +
- 14 files changed, 981 insertions(+), 6 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/fwsecurityfs_arch.c
- create mode 100644 arch/powerpc/platforms/pseries/secvars.c
+Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+---
+ fs/Kconfig                   |   1 +
+ fs/Makefile                  |   1 +
+ fs/fwsecurityfs/Kconfig      |  14 ++
+ fs/fwsecurityfs/Makefile     |  10 ++
+ fs/fwsecurityfs/super.c      | 263 +++++++++++++++++++++++++++++++++++
+ include/linux/fwsecurityfs.h |  29 ++++
+ include/uapi/linux/magic.h   |   1 +
+ 7 files changed, 319 insertions(+)
  create mode 100644 fs/fwsecurityfs/Kconfig
  create mode 100644 fs/fwsecurityfs/Makefile
  create mode 100644 fs/fwsecurityfs/super.c
  create mode 100644 include/linux/fwsecurityfs.h
 
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 2685a4d0d353..2a24f1c779dd 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -275,6 +275,7 @@ config ARCH_HAS_GIGANTIC_PAGE
+ 
+ source "fs/configfs/Kconfig"
+ source "fs/efivarfs/Kconfig"
++source "fs/fwsecurityfs/Kconfig"
+ 
+ endmenu
+ 
+diff --git a/fs/Makefile b/fs/Makefile
+index 4dea17840761..b945019a9bbe 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -134,6 +134,7 @@ obj-$(CONFIG_F2FS_FS)		+= f2fs/
+ obj-$(CONFIG_CEPH_FS)		+= ceph/
+ obj-$(CONFIG_PSTORE)		+= pstore/
+ obj-$(CONFIG_EFIVAR_FS)		+= efivarfs/
++obj-$(CONFIG_FWSECURITYFS)		+= fwsecurityfs/
+ obj-$(CONFIG_EROFS_FS)		+= erofs/
+ obj-$(CONFIG_VBOXSF_FS)		+= vboxsf/
+ obj-$(CONFIG_ZONEFS_FS)		+= zonefs/
+diff --git a/fs/fwsecurityfs/Kconfig b/fs/fwsecurityfs/Kconfig
+new file mode 100644
+index 000000000000..1dc2ee831eda
+--- /dev/null
++++ b/fs/fwsecurityfs/Kconfig
+@@ -0,0 +1,14 @@
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# Copyright (C) 2022 IBM Corporation
++# Author: Nayna Jain <nayna@linux.ibm.com>
++#
++
++config FWSECURITYFS
++	bool "Enable the fwsecurityfs filesystem"
++	help
++	  This will build fwsecurityfs filesystem which should be mounted
++	  on /sys/firmware/security. This filesystem can be used by
++	  platform to expose firmware-managed variables.
++
++	  If you are unsure how to answer this question, answer N.
+diff --git a/fs/fwsecurityfs/Makefile b/fs/fwsecurityfs/Makefile
+new file mode 100644
+index 000000000000..5c7b76228ebb
+--- /dev/null
++++ b/fs/fwsecurityfs/Makefile
+@@ -0,0 +1,10 @@
++# SPDX-License-Identifier: GPL-2.0-only
++#
++# Copyright (C) 2022 IBM Corporation
++# Author: Nayna Jain <nayna@linux.ibm.com>
++#
++# Makefile for the firmware security filesystem
++
++obj-$(CONFIG_FWSECURITYFS)		+= fwsecurityfs.o
++
++fwsecurityfs-objs			:= super.o
+diff --git a/fs/fwsecurityfs/super.c b/fs/fwsecurityfs/super.c
+new file mode 100644
+index 000000000000..99ca4da4ab63
+--- /dev/null
++++ b/fs/fwsecurityfs/super.c
+@@ -0,0 +1,263 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2022 IBM Corporation
++ * Author: Nayna Jain <nayna@linux.ibm.com>
++ */
++
++#include <linux/fs.h>
++#include <linux/fs_context.h>
++#include <linux/pagemap.h>
++#include <linux/init.h>
++#include <linux/namei.h>
++#include <linux/magic.h>
++#include <linux/fwsecurityfs.h>
++
++static struct super_block *fwsecsb;
++static struct vfsmount *mount;
++static int mount_count;
++static bool fwsecurityfs_initialized;
++
++static void fwsecurityfs_free_inode(struct inode *inode)
++{
++	free_inode_nonrcu(inode);
++}
++
++static const struct super_operations fwsecurityfs_super_operations = {
++	.statfs = simple_statfs,
++	.free_inode = fwsecurityfs_free_inode,
++};
++
++static int fwsecurityfs_fill_super(struct super_block *sb,
++				   struct fs_context *fc)
++{
++	static const struct tree_descr files[] = {{""}};
++	int rc;
++
++	rc = simple_fill_super(sb, FWSECURITYFS_MAGIC, files);
++	if (rc)
++		return rc;
++
++	sb->s_op = &fwsecurityfs_super_operations;
++
++	fwsecsb = sb;
++
++	rc = arch_fwsecurityfs_init();
++
++	if (!rc)
++		fwsecurityfs_initialized = true;
++
++	return rc;
++}
++
++static int fwsecurityfs_get_tree(struct fs_context *fc)
++{
++	return get_tree_single(fc, fwsecurityfs_fill_super);
++}
++
++static const struct fs_context_operations fwsecurityfs_context_ops = {
++	.get_tree	= fwsecurityfs_get_tree,
++};
++
++static int fwsecurityfs_init_fs_context(struct fs_context *fc)
++{
++	fc->ops = &fwsecurityfs_context_ops;
++
++	return 0;
++}
++
++static void fwsecurityfs_kill_sb(struct super_block *sb)
++{
++	kill_litter_super(sb);
++
++	fwsecurityfs_initialized = false;
++}
++
++static struct file_system_type fs_type = {
++	.owner =	THIS_MODULE,
++	.name =		"fwsecurityfs",
++	.init_fs_context = fwsecurityfs_init_fs_context,
++	.kill_sb =	fwsecurityfs_kill_sb,
++};
++
++static struct dentry *fwsecurityfs_create_dentry(const char *name, umode_t mode,
++						 u16 filesize,
++						 struct dentry *parent,
++						 struct dentry *dentry, void *data,
++						 const struct file_operations *fops,
++						 const struct inode_operations *iops)
++{
++	struct inode *inode;
++	int rc;
++	struct inode *dir;
++	struct dentry *ldentry = dentry;
++
++	/* Calling simple_pin_fs() while initial mount in progress results in recursive
++	 * call to mount.
++	 */
++	if (fwsecurityfs_initialized) {
++		rc = simple_pin_fs(&fs_type, &mount, &mount_count);
++		if (rc)
++			return ERR_PTR(rc);
++	}
++
++	dir = d_inode(parent);
++
++	/* For userspace created files, lock is already taken. */
++	if (!dentry)
++		inode_lock(dir);
++
++	if (!dentry) {
++		ldentry = lookup_one_len(name, parent, strlen(name));
++		if (IS_ERR(ldentry))
++			goto out;
++
++		if (d_really_is_positive(ldentry)) {
++			rc = -EEXIST;
++			goto out1;
++		}
++	}
++
++	inode = new_inode(dir->i_sb);
++	if (!inode) {
++		rc = -ENOMEM;
++		goto out1;
++	}
++
++	inode->i_ino = get_next_ino();
++	inode->i_mode = mode;
++	inode->i_atime = current_time(inode);
++	inode->i_mtime = current_time(inode);
++	inode->i_ctime = current_time(inode);
++	inode->i_private = data;
++
++	if (S_ISDIR(mode)) {
++		inode->i_op = iops ? iops : &simple_dir_inode_operations;
++		inode->i_fop = &simple_dir_operations;
++		inc_nlink(inode);
++		inc_nlink(dir);
++	} else {
++		inode->i_fop = fops ? fops : &simple_dir_operations;
++	}
++
++	if (S_ISREG(mode)) {
++		inode_lock(inode);
++		i_size_write(inode, filesize);
++		inode_unlock(inode);
++	}
++	d_instantiate(ldentry, inode);
++
++	/* dget() here is required for userspace created files. */
++	if (dentry)
++		dget(ldentry);
++
++	if (!dentry)
++		inode_unlock(dir);
++
++	return ldentry;
++
++out1:
++	ldentry = ERR_PTR(rc);
++
++out:
++	if (fwsecurityfs_initialized)
++		simple_release_fs(&mount, &mount_count);
++
++	if (!dentry)
++		inode_unlock(dir);
++
++	return ldentry;
++}
++
++struct dentry *fwsecurityfs_create_file(const char *name, umode_t mode,
++					u16 filesize, struct dentry *parent,
++					struct dentry *dentry, void *data,
++					const struct file_operations *fops)
++{
++	if (!parent)
++		return ERR_PTR(-EINVAL);
++
++	return fwsecurityfs_create_dentry(name, mode, filesize, parent,
++					  dentry, data, fops, NULL);
++}
++EXPORT_SYMBOL_GPL(fwsecurityfs_create_file);
++
++struct dentry *fwsecurityfs_create_dir(const char *name, umode_t mode,
++				       struct dentry *parent,
++				       const struct inode_operations *iops)
++{
++	if (!parent) {
++		if (!fwsecsb)
++			return ERR_PTR(-EIO);
++		parent = fwsecsb->s_root;
++	}
++
++	return fwsecurityfs_create_dentry(name, mode, 0, parent, NULL, NULL,
++					  NULL, iops);
++}
++EXPORT_SYMBOL_GPL(fwsecurityfs_create_dir);
++
++static int fwsecurityfs_remove_dentry(struct dentry *dentry)
++{
++	struct inode *dir;
++
++	if (!dentry || IS_ERR(dentry))
++		return -EINVAL;
++
++	dir = d_inode(dentry->d_parent);
++	inode_lock(dir);
++	if (simple_positive(dentry)) {
++		dget(dentry);
++		if (d_is_dir(dentry))
++			simple_rmdir(dir, dentry);
++		else
++			simple_unlink(dir, dentry);
++		d_delete(dentry);
++		dput(dentry);
++	}
++	inode_unlock(dir);
++
++	/* Once fwsecurityfs_initialized is set to true, calling this for
++	 * removing files created during initial mount might result in
++	 * imbalance of simple_pin_fs() and simple_release_fs() calls.
++	 */
++	if (fwsecurityfs_initialized)
++		simple_release_fs(&mount, &mount_count);
++
++	return 0;
++}
++
++int fwsecurityfs_remove_dir(struct dentry *dentry)
++{
++	if (!d_is_dir(dentry))
++		return -EPERM;
++
++	return fwsecurityfs_remove_dentry(dentry);
++}
++EXPORT_SYMBOL_GPL(fwsecurityfs_remove_dir);
++
++int fwsecurityfs_remove_file(struct dentry *dentry)
++{
++	return fwsecurityfs_remove_dentry(dentry);
++};
++EXPORT_SYMBOL_GPL(fwsecurityfs_remove_file);
++
++static int __init fwsecurityfs_init(void)
++{
++	int rc;
++
++	rc = sysfs_create_mount_point(firmware_kobj, "security");
++	if (rc)
++		return rc;
++
++	rc = register_filesystem(&fs_type);
++	if (rc) {
++		sysfs_remove_mount_point(firmware_kobj, "security");
++		return rc;
++	}
++
++	return 0;
++}
++core_initcall(fwsecurityfs_init);
++MODULE_DESCRIPTION("Firmware Security Filesystem");
++MODULE_AUTHOR("Nayna Jain");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/fwsecurityfs.h b/include/linux/fwsecurityfs.h
+new file mode 100644
+index 000000000000..ed8f328f3133
+--- /dev/null
++++ b/include/linux/fwsecurityfs.h
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2022 IBM Corporation
++ * Author: Nayna Jain <nayna@linux.ibm.com>
++ */
++
++#ifndef _FWSECURITYFS_H_
++#define _FWSECURITYFS_H_
++
++#include <linux/ctype.h>
++#include <linux/fs.h>
++
++struct dentry *fwsecurityfs_create_file(const char *name, umode_t mode,
++					u16 filesize, struct dentry *parent,
++					struct dentry *dentry, void *data,
++					const struct file_operations *fops);
++
++int fwsecurityfs_remove_file(struct dentry *dentry);
++struct dentry *fwsecurityfs_create_dir(const char *name, umode_t mode,
++				       struct dentry *parent,
++				       const struct inode_operations *iops);
++int fwsecurityfs_remove_dir(struct dentry *dentry);
++
++static int arch_fwsecurityfs_init(void)
++{
++	return 0;
++}
++
++#endif /* _FWSECURITYFS_H_ */
+diff --git a/include/uapi/linux/magic.h b/include/uapi/linux/magic.h
+index 6325d1d0e90f..553a5fdfabce 100644
+--- a/include/uapi/linux/magic.h
++++ b/include/uapi/linux/magic.h
+@@ -53,6 +53,7 @@
+ #define QNX4_SUPER_MAGIC	0x002f		/* qnx4 fs detection */
+ #define QNX6_SUPER_MAGIC	0x68191122	/* qnx6 fs detection */
+ #define AFS_FS_MAGIC		0x6B414653
++#define FWSECURITYFS_MAGIC         0x5345434e      /* "SECM" */
+ 
+ 
+ #define REISERFS_SUPER_MAGIC	0x52654973	/* used by gcc */
 -- 
 2.31.1
+
