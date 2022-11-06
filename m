@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D57D5C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Nov 2022 21:11:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 145C3C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Nov 2022 21:12:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N56V22NsVz3cJp
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Nov 2022 08:11:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N56W33sMGz3f3Z
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Nov 2022 08:11:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tetFKxEj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lv2qo9eF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tetFKxEj;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lv2qo9eF;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N56R30l7Bz3cHl
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2022 08:08:30 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A6GpqkP007325;
-	Sun, 6 Nov 2022 21:08:22 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N56R33jZFz30hw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Nov 2022 08:08:31 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A6Go9d7010545;
+	Sun, 6 Nov 2022 21:08:13 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=IQsnQ0ZKluqSboJqzc22REjjigAMqIndSiKKso4ysoA=;
- b=tetFKxEj5HqociJEbpCgIGtEMd+Z+TTf2XQECVsX3ccbYmJsDGfb64DF2TJIPab159OD
- vJlbOIHWf4CmnF9gimbBR5hWYOPya0dofLeKygrOBOOBIx/ZeLZvlDTPhlVnqlsY1i3R
- vgXk57SvFRnlf6gGJlprrN1Ykc61GzXc9dcw+ZeG5Q1YJtRHVdkZvqkuMXjhNp/eTdYK
- e41Gc0rYHSCm1uXkOl6DiwYLMtPrhQ+jmdTty3YbL9F3FQviCjNXl8OaK2vy3oobIuM+
- Gjd6sGJhJ0JStYyStkT0lGCPD7t6JFmSNQjzKiXh2O7WEgVSeE4dCb7Y6PLqL8t56jM5 sA== 
+ bh=vyKXMiJNltHgwUz76VjitY5UHxk/04FjszPG4Qsf8gI=;
+ b=lv2qo9eFFhk3xL/pW2aYjcbbT8EFSsOxP14ahAlv1Z4A8sP4x7/RXnRooOO9rpVNHPOJ
+ YTpE/yzRtn4s1z6Qea0CgOKqPLfGHZAkDOA0A1EATpg/Osgwag7hhO+/lIQUckfyZJuj
+ B+FpAgtAlaEqVZ//uSIMFjDBoptAdOdumQxtO5OB71Tf46WzjJlGDcw7BZGK9aVl7Ded
+ 29RkUewpHihuOmYHGU3qvX+FYhwkNNeykKFkt4rIn6IiGK4YPxpwKYihe9vc93IdDMH5
+ HxEgvS/HbzZl/Q2jFWgNrX4hLbRgHqgvHVx5bWrEXnvmyKFUzmMdUruSah9RHgIpLgo3 Jg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1mrvxt2-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1utvtfk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:22 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A6L8Lx4025479;
-	Sun, 6 Nov 2022 21:08:21 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1mrvxsh-1
+	Sun, 06 Nov 2022 21:08:13 +0000
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A6L3BZp025014;
+	Sun, 6 Nov 2022 21:08:12 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kp1utvtf5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:21 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A6L5oEW017575;
-	Sun, 6 Nov 2022 21:08:19 GMT
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
-	by ppma06ams.nl.ibm.com with ESMTP id 3kngnc9q4t-1
+	Sun, 06 Nov 2022 21:08:12 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A6L6Bfn012616;
+	Sun, 6 Nov 2022 21:08:10 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma04fra.de.ibm.com with ESMTP id 3kngmqh79p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 06 Nov 2022 21:08:18 +0000
+	Sun, 06 Nov 2022 21:08:10 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A6L8FkS3342990
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A6L86Uq60883340
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 6 Nov 2022 21:08:15 GMT
+	Sun, 6 Nov 2022 21:08:07 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4212111C04A;
-	Sun,  6 Nov 2022 21:08:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id DBCCB11C04C;
+	Sun,  6 Nov 2022 21:08:06 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6217511C04C;
-	Sun,  6 Nov 2022 21:08:11 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id ACC1511C04A;
+	Sun,  6 Nov 2022 21:08:02 +0000 (GMT)
 Received: from li-4b5937cc-25c4-11b2-a85c-cea3a66903e4.ibm.com.com (unknown [9.211.78.124])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Sun,  6 Nov 2022 21:08:11 +0000 (GMT)
+	Sun,  6 Nov 2022 21:08:02 +0000 (GMT)
 From: Nayna Jain <nayna@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH 3/4] powerpc/pseries: initialize fwsecurityfs with plpks arch-specific structure
-Date: Sun,  6 Nov 2022 16:07:43 -0500
-Message-Id: <20221106210744.603240-4-nayna@linux.ibm.com>
+Subject: [PATCH 1/4] powerpc/pseries: Add new functions to PLPKS driver
+Date: Sun,  6 Nov 2022 16:07:41 -0500
+Message-Id: <20221106210744.603240-2-nayna@linux.ibm.com>
 X-Mailer: git-send-email 2.31.1
 In-Reply-To: <20221106210744.603240-1-nayna@linux.ibm.com>
 References: <20221106210744.603240-1-nayna@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: gnoaMLvNd0-ijIFGJkLq3FgJgaDSk6qV
-X-Proofpoint-ORIG-GUID: rdvdkE7aGcukAqtXArd8UuCui4ydUdbV
+X-Proofpoint-GUID: 7YCJKVa3OSt0_THGSkn_BGba6mQ2w3mA
+X-Proofpoint-ORIG-GUID: HjjwrpVYZbrllcQTouJXDFGYBBKTAB2M
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-06_14,2022-11-03_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
- bulkscore=0 phishscore=0 spamscore=0 clxscore=1015 priorityscore=1501
- mlxscore=0 adultscore=0 impostorscore=0 mlxlogscore=999 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2211060188
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 bulkscore=0
+ mlxlogscore=999 clxscore=1015 impostorscore=0 malwarescore=0
+ lowpriorityscore=0 mlxscore=0 adultscore=0 spamscore=0 phishscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211060188
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,204 +100,251 @@ Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, Andrew Don
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PowerVM PLPKS variables are exposed via fwsecurityfs.
+PowerVM stores authenticated variables in the PowerVM LPAR Platform
+KeyStore(PLPKS).
 
-Initialize fwsecurityfs arch-specific structure with plpks configuration.
-
-Eg:
-
-[root@ltcfleet35-lp1 config]# pwd
-/sys/firmware/security/plpks/config
-[root@ltcfleet35-lp1 config]# ls -ltrh
-total 0
--r--r--r-- 1 root root 1 Sep 28 15:01 version
--r--r--r-- 1 root root 4 Sep 28 15:01 used_space
--r--r--r-- 1 root root 4 Sep 28 15:01 total_size
--r--r--r-- 1 root root 2 Sep 28 15:01 max_object_size
--r--r--r-- 1 root root 2 Sep 28 15:01 max_object_label_size
+Add signed update H_CALL to PLPKS driver to support authenticated
+variables. Additionally, expose config values outside the PLPKS
+driver.
 
 Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/Kconfig        |  10 ++
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- .../platforms/pseries/fwsecurityfs_arch.c     | 116 ++++++++++++++++++
- include/linux/fwsecurityfs.h                  |   4 +
- 4 files changed, 131 insertions(+)
- create mode 100644 arch/powerpc/platforms/pseries/fwsecurityfs_arch.c
+ arch/powerpc/include/asm/hvcall.h      |   3 +-
+ arch/powerpc/platforms/pseries/plpks.c | 112 +++++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/plpks.h |  35 ++++++++
+ 3 files changed, 144 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index a3b4d99567cb..5fb45e601982 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -162,6 +162,16 @@ config PSERIES_PLPKS
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index 95fd7f9485d5..33b26c0cb69b 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -336,7 +336,8 @@
+ #define H_SCM_FLUSH		0x44C
+ #define H_GET_ENERGY_SCALE_INFO	0x450
+ #define H_WATCHDOG		0x45C
+-#define MAX_HCALL_OPCODE	H_WATCHDOG
++#define H_PKS_SIGNED_UPDATE	0x454
++#define MAX_HCALL_OPCODE	H_PKS_SIGNED_UPDATE
  
- 	  If unsure, select N.
+ /* Scope args for H_SCM_UNBIND_ALL */
+ #define H_UNBIND_SCOPE_ALL (0x1)
+diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
+index 4edd1585e245..d0fa7b55a900 100644
+--- a/arch/powerpc/platforms/pseries/plpks.c
++++ b/arch/powerpc/platforms/pseries/plpks.c
+@@ -40,6 +40,10 @@ static u16 ospasswordlength;
+ // Retrieved with H_PKS_GET_CONFIG
+ static u16 maxpwsize;
+ static u16 maxobjsize;
++static s16 maxobjlabelsize;
++static u32 totalsize;
++static u32 usedspace;
++static u8 version;
  
-+config PSERIES_FWSECURITYFS_ARCH
-+	select FWSECURITYFS
-+	bool "Support fwsecurityfs for pseries"
-+	help
-+	  Enable fwsecurityfs arch specific code. This would initialize
-+	  the firmware security filesystem with initial platform specific
-+	  structure.
-+
-+	  If you are unsure how to use it, say N.
-+
- config PAPR_SCM
- 	depends on PPC_PSERIES && MEMORY_HOTPLUG && LIBNVDIMM
- 	tristate "Support for the PAPR Storage Class Memory interface"
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 92310202bdd7..2903cff26258 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
- obj-$(CONFIG_PPC_SVM)		+= svm.o
- obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
- obj-$(CONFIG_PSERIES_PLPKS) += plpks.o
-+obj-$(CONFIG_PSERIES_FWSECURITYFS_ARCH) += fwsecurityfs_arch.o
- 
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PPC_VAS)		+= vas.o vas-sysfs.o
-diff --git a/arch/powerpc/platforms/pseries/fwsecurityfs_arch.c b/arch/powerpc/platforms/pseries/fwsecurityfs_arch.c
-new file mode 100644
-index 000000000000..b43bd3cf7889
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/fwsecurityfs_arch.c
-@@ -0,0 +1,116 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Initialize fwsecurityfs with POWER LPAR Platform KeyStore (PLPKS)
-+ * Copyright (C) 2022 IBM Corporation
-+ * Author: Nayna Jain <nayna@linux.ibm.com>
-+ *
-+ */
-+
-+#include <linux/fwsecurityfs.h>
-+#include "plpks.h"
-+
-+static struct dentry *plpks_dir;
-+
-+static ssize_t plpks_config_file_read(struct file *file, char __user *userbuf,
-+				      size_t count, loff_t *ppos)
-+{
-+	u8 out[4];
-+	u32 outlen;
-+	size_t size;
-+	char *name;
-+	u32 data;
-+
-+	name = file_dentry(file)->d_iname;
-+
-+	if (strcmp(name, "max_object_size") == 0) {
-+		outlen = sizeof(u16);
-+		data = plpks_get_maxobjectsize();
-+	} else if (strcmp(name, "max_object_label_size") == 0) {
-+		outlen = sizeof(u16);
-+		data = plpks_get_maxobjectlabelsize();
-+	} else if (strcmp(name, "total_size") == 0) {
-+		outlen = sizeof(u32);
-+		data = plpks_get_totalsize();
-+	} else if (strcmp(name, "used_space") == 0) {
-+		outlen = sizeof(u32);
-+		data = plpks_get_usedspace();
-+	} else if (strcmp(name, "version") == 0) {
-+		outlen = sizeof(u8);
-+		data = plpks_get_version();
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	memcpy(out, &data, outlen);
-+
-+	size = simple_read_from_buffer(userbuf, count, ppos, out, outlen);
-+
-+	return size;
-+}
-+
-+static const struct file_operations plpks_config_file_operations = {
-+	.open   = simple_open,
-+	.read   = plpks_config_file_read,
-+	.llseek = no_llseek,
-+};
-+
-+static int create_plpks_dir(void)
-+{
-+	struct dentry *config_dir;
-+	struct dentry *fdentry;
-+
-+	if (!IS_ENABLED(CONFIG_PSERIES_PLPKS) || !plpks_is_available()) {
-+		pr_warn("Platform KeyStore is not available on this LPAR\n");
-+		return 0;
-+	}
-+
-+	plpks_dir = fwsecurityfs_create_dir("plpks", S_IFDIR | 0755, NULL,
-+					    NULL);
-+	if (IS_ERR(plpks_dir)) {
-+		pr_err("Unable to create PLPKS dir: %ld\n", PTR_ERR(plpks_dir));
-+		return PTR_ERR(plpks_dir);
-+	}
-+
-+	config_dir = fwsecurityfs_create_dir("config", S_IFDIR | 0755, plpks_dir, NULL);
-+	if (IS_ERR(config_dir)) {
-+		pr_err("Unable to create config dir: %ld\n", PTR_ERR(config_dir));
-+		return PTR_ERR(config_dir);
-+	}
-+
-+	fdentry = fwsecurityfs_create_file("max_object_size", S_IFREG | 0444,
-+					   sizeof(u16), config_dir, NULL, NULL,
-+					   &plpks_config_file_operations);
-+	if (IS_ERR(fdentry))
-+		pr_err("Could not create max object size %ld\n", PTR_ERR(fdentry));
-+
-+	fdentry = fwsecurityfs_create_file("max_object_label_size", S_IFREG | 0444,
-+					   sizeof(u16), config_dir, NULL, NULL,
-+					   &plpks_config_file_operations);
-+	if (IS_ERR(fdentry))
-+		pr_err("Could not create max object label size %ld\n", PTR_ERR(fdentry));
-+
-+	fdentry = fwsecurityfs_create_file("total_size", S_IFREG | 0444,
-+					   sizeof(u32), config_dir, NULL, NULL,
-+					   &plpks_config_file_operations);
-+	if (IS_ERR(fdentry))
-+		pr_err("Could not create total size %ld\n", PTR_ERR(fdentry));
-+
-+	fdentry = fwsecurityfs_create_file("used_space", S_IFREG | 0444,
-+					   sizeof(u32), config_dir, NULL, NULL,
-+					   &plpks_config_file_operations);
-+	if (IS_ERR(fdentry))
-+		pr_err("Could not create used space %ld\n", PTR_ERR(fdentry));
-+
-+	fdentry = fwsecurityfs_create_file("version", S_IFREG | 0444,
-+					   sizeof(u8), config_dir, NULL, NULL,
-+					   &plpks_config_file_operations);
-+	if (IS_ERR(fdentry))
-+		pr_err("Could not create version %ld\n", PTR_ERR(fdentry));
-+
-+	return 0;
-+}
-+
-+int arch_fwsecurityfs_init(void)
-+{
-+	return create_plpks_dir();
-+}
-diff --git a/include/linux/fwsecurityfs.h b/include/linux/fwsecurityfs.h
-index ed8f328f3133..38fcb3cb374e 100644
---- a/include/linux/fwsecurityfs.h
-+++ b/include/linux/fwsecurityfs.h
-@@ -21,9 +21,13 @@ struct dentry *fwsecurityfs_create_dir(const char *name, umode_t mode,
- 				       const struct inode_operations *iops);
- int fwsecurityfs_remove_dir(struct dentry *dentry);
- 
-+#ifdef CONFIG_PSERIES_FWSECURITYFS_ARCH
-+int arch_fwsecurityfs_init(void);
-+#else
- static int arch_fwsecurityfs_init(void)
+ struct plpks_auth {
+ 	u8 version;
+@@ -87,6 +91,12 @@ static int pseries_status_to_err(int rc)
+ 		err = -ENOENT;
+ 		break;
+ 	case H_BUSY:
++	case H_LONG_BUSY_ORDER_1_MSEC:
++	case H_LONG_BUSY_ORDER_10_MSEC:
++	case H_LONG_BUSY_ORDER_100_MSEC:
++	case H_LONG_BUSY_ORDER_1_SEC:
++	case H_LONG_BUSY_ORDER_10_SEC:
++	case H_LONG_BUSY_ORDER_100_SEC:
+ 		err = -EBUSY;
+ 		break;
+ 	case H_AUTHORITY:
+@@ -187,14 +197,17 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
+ 				     u16 namelen)
  {
+ 	struct label *label;
+-	size_t slen;
++	size_t slen = 0;
+ 
+ 	if (!name || namelen > MAX_NAME_SIZE)
+ 		return ERR_PTR(-EINVAL);
+ 
+-	slen = strlen(component);
+-	if (component && slen > sizeof(label->attr.prefix))
+-		return ERR_PTR(-EINVAL);
++	/* Support NULL component for signed updates */
++	if (component) {
++		slen = strlen(component);
++		if (slen > sizeof(label->attr.prefix))
++			return ERR_PTR(-EINVAL);
++	}
+ 
+ 	label = kzalloc(sizeof(*label), GFP_KERNEL);
+ 	if (!label)
+@@ -240,10 +253,51 @@ static int _plpks_get_config(void)
+ 
+ 	maxpwsize = be16_to_cpu(config.maxpwsize);
+ 	maxobjsize = be16_to_cpu(config.maxobjsize);
++	maxobjlabelsize = be16_to_cpu(config.maxobjlabelsize) -
++			  MAX_LABEL_ATTR_SIZE;
++	maxobjlabelsize = maxobjlabelsize < 0 ? 0 : maxobjlabelsize;
++	totalsize = be32_to_cpu(config.totalsize);
++	usedspace = be32_to_cpu(config.usedspace);
+ 
  	return 0;
  }
-+#endif
  
- #endif /* _FWSECURITYFS_H_ */
++u8 plpks_get_version(void)
++{
++	return version;
++}
++
++u16 plpks_get_maxobjectsize(void)
++{
++	return maxobjsize;
++}
++
++u16 plpks_get_maxobjectlabelsize(void)
++{
++	return maxobjlabelsize;
++}
++
++u32 plpks_get_totalsize(void)
++{
++	return totalsize;
++}
++
++u32 plpks_get_usedspace(void)
++{
++	return usedspace;
++}
++
++bool plpks_is_available(void)
++{
++	int rc;
++
++	rc = _plpks_get_config();
++	if (rc)
++		return false;
++
++	return true;
++}
++
+ static int plpks_confirm_object_flushed(struct label *label,
+ 					struct plpks_auth *auth)
+ {
+@@ -277,6 +331,54 @@ static int plpks_confirm_object_flushed(struct label *label,
+ 	return rc;
+ }
+ 
++int plpks_signed_update_var(struct plpks_var var, u64 flags)
++{
++	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
++	int rc;
++	struct label *label;
++	struct plpks_auth *auth;
++	u64 continuetoken = 0;
++
++	if (!var.data || var.datalen <= 0 || var.namelen > MAX_NAME_SIZE)
++		return -EINVAL;
++
++	if (!(var.policy & SIGNEDUPDATE))
++		return -EINVAL;
++
++	auth = construct_auth(PKS_OS_OWNER);
++	if (IS_ERR(auth))
++		return PTR_ERR(auth);
++
++	label = construct_label(var.component, var.os, var.name, var.namelen);
++	if (IS_ERR(label)) {
++		rc = PTR_ERR(label);
++		goto out;
++	}
++
++	do {
++		rc = plpar_hcall9(H_PKS_SIGNED_UPDATE, retbuf,
++				  virt_to_phys(auth), virt_to_phys(label),
++				  label->size, var.policy, flags,
++				  virt_to_phys(var.data), var.datalen,
++				  continuetoken);
++
++		continuetoken = retbuf[0];
++		rc = pseries_status_to_err(rc);
++	} while (rc == -EBUSY);
++
++	if (!rc) {
++		rc = plpks_confirm_object_flushed(label, auth);
++		rc = pseries_status_to_err(rc);
++	}
++
++	kfree(label);
++out:
++	kfree(auth);
++
++	return rc;
++}
++EXPORT_SYMBOL(plpks_signed_update_var);
++
+ int plpks_write_var(struct plpks_var var)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
+@@ -323,7 +425,7 @@ int plpks_remove_var(char *component, u8 varos, struct plpks_var_name vname)
+ 	struct label *label;
+ 	int rc;
+ 
+-	if (!component || vname.namelen > MAX_NAME_SIZE)
++	if (vname.namelen > MAX_NAME_SIZE)
+ 		return -EINVAL;
+ 
+ 	auth = construct_auth(PKS_OS_OWNER);
+diff --git a/arch/powerpc/platforms/pseries/plpks.h b/arch/powerpc/platforms/pseries/plpks.h
+index 275ccd86bfb5..fb483658549f 100644
+--- a/arch/powerpc/platforms/pseries/plpks.h
++++ b/arch/powerpc/platforms/pseries/plpks.h
+@@ -40,6 +40,11 @@ struct plpks_var_name_list {
+ 	struct plpks_var_name varlist[];
+ };
+ 
++/**
++ * Updates the authenticated variable. It expects NULL as the component.
++ */
++int plpks_signed_update_var(struct plpks_var var, u64 flags);
++
+ /**
+  * Writes the specified var and its data to PKS.
+  * Any caller of PKS driver should present a valid component type for
+@@ -68,4 +73,34 @@ int plpks_read_fw_var(struct plpks_var *var);
+  */
+ int plpks_read_bootloader_var(struct plpks_var *var);
+ 
++/**
++ * Returns if PKS is available on this LPAR.
++ */
++bool plpks_is_available(void);
++
++/**
++ * Returns version of the Platform KeyStore.
++ */
++u8 plpks_get_version(void);
++
++/**
++ * Returns maximum object size supported by Platform KeyStore.
++ */
++u16 plpks_get_maxobjectsize(void);
++
++/**
++ * Returns maximum object label size supported by Platform KeyStore.
++ */
++u16 plpks_get_maxobjectlabelsize(void);
++
++/**
++ * Returns total size of the configured Platform KeyStore.
++ */
++u32 plpks_get_totalsize(void);
++
++/**
++ * Returns used space from the total size of the Platform KeyStore.
++ */
++u32 plpks_get_usedspace(void);
++
+ #endif
 -- 
 2.31.1
 
