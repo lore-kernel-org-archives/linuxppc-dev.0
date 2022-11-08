@@ -4,71 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6962C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32154C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:48:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6FtH6fWZz3f35
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:47:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6FvJ3ncGz3dsy
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:48:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ftWxPl3+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E+MpEv9I;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=TL2hFGur;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ftWxPl3+;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E+MpEv9I;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=TL2hFGur;
 	dkim-atps=neutral
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6FsG0yndz3c1K
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:46:40 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id d20so13758275plr.10
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2022 09:46:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=cjSjC5m99kmUUHYC704oOlI8KJi6LTudhKVnFW3q+Mo=;
-        b=ftWxPl3+8IfelsK/irLrvblaLrX6dvTk43ZU1RGb7E7QhEuhpuFGQnZUs1B/6eqA8Y
-         9uQybJjBJrLcnswih9ZuqdP/IGzw5N1LHsBYZwMjKm4pxbrW1ieLuxCyIbeQvnPHGIX9
-         KlKI+02Y2PtkvzGrkUCj7EVO4k0DJZDFtOtuUtFMvCioPX+FiFS160StdFwaRhG4AwZY
-         /X/0r60JYMQEe4UtsauftLe+islfrGWTT7n2RWyEhP6x94J5Vb4QTPr7DjEYHP04yepW
-         KF97tjKStfZxjB8uLonmnyGRloE774fNFuZ/STi6vuLRLYYB1EDXjhtfDOqD4TBoTzbU
-         ZVkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=cjSjC5m99kmUUHYC704oOlI8KJi6LTudhKVnFW3q+Mo=;
-        b=H03ktnF7w2TgtFv0jPk22f+MUQNV9FBcTEEfZiZTQ4iVhj6nwt3lxN6LLGqJlrJC73
-         ILEkHoMCFyu3gVtn5Ev5hQ7imohqV51d0myNDB3isRa3EBUUXMlfoV8AjbC0FpGh6l0o
-         C1iccdT96mwKqMwfYDItTO1ofmq9x17VNgM5D/0KZtFu47Ci21kpqgcTYCqpAtZUXEki
-         h80UeofAzouQhD1m8+QsLp3b7pA5iohjgjs2VEMxbZ2+1Z3YRsj2Gv/g4x0um5QL2Sab
-         2TWgjXTrekH7imoEYvXG0TxFm3qQBQ9WjEOUbpv1hzRaMZT6MvwoFVy4d6BfjBzDYriQ
-         YzDg==
-X-Gm-Message-State: ACrzQf1QWxMiQt6xxqMBXis3olnKL6GjSewHRsTuOZ+5EICMXp3rfy4K
-	LGPq5xPyM+/D0dKGhZWfsV2tYg==
-X-Google-Smtp-Source: AMsMyM6IejjlUU0y+myBNmX6xdBJY00CqsdAF2QTJKOsZh5WixYj1ODA6TQRcmab3f8JPfGm8K7ciQ==
-X-Received: by 2002:a17:902:ea04:b0:187:4923:56f4 with SMTP id s4-20020a170902ea0400b00187492356f4mr35142106plg.97.1667929596484;
-        Tue, 08 Nov 2022 09:46:36 -0800 (PST)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id b9-20020a170902d50900b00185402cfedesm7283578plg.246.2022.11.08.09.46.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Nov 2022 09:46:35 -0800 (PST)
-Date: Tue, 8 Nov 2022 17:46:32 +0000
-From: Sean Christopherson <seanjc@google.com>
-To: Isaku Yamahata <isaku.yamahata@gmail.com>
-Subject: Re: [PATCH 00/44] KVM: Rework kvm_init() and hardware enabling
-Message-ID: <Y2qV+IGKyKQItMj2@google.com>
-References: <20221102231911.3107438-1-seanjc@google.com>
- <20221104071749.GC1063309@ls.amr.corp.intel.com>
- <Y2V1oslbw24/2Opd@google.com>
- <20221107214634.GE1063309@ls.amr.corp.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Fst5TDqz3dwc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:47:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1667929631;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BQ7PDKfmtoPRA+bF4Km9GFm2Sx9d/OhosQnplgpAu2o=;
+	b=E+MpEv9I4APiY3QydHByg76/+0F1VQWm4KUF9UN1Q3AYAHj+WuCu9tKtLjlC5bDqCDyjaO
+	O1v1cfw37ZED14pyT5F5Vn5qIAgKebOzUR9OJ4j4l/QffOvN28+RfkWdaXJNppVEodQPB6
+	EIzUdv+PM+FZiGERbGa43PksCfEAfaY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1667929632;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BQ7PDKfmtoPRA+bF4Km9GFm2Sx9d/OhosQnplgpAu2o=;
+	b=TL2hFGurMruwwzlLQjnvk46mYZssIW1oepq2n4j7zPOGHnuaQB8ESwAh3Jdw4psMOXrjPJ
+	dqMM0/WQKN1dHLYnT4Xyex8eRhVPyFJmp2rrY/HdFA9t5ewclHnJnpoAfdwcC1LQGRmC8J
+	H1KItv7y2CHbu5yt76jQChIoqdqVmZo=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-539-GTbBNtcrM_6NpAte7C8S-Q-1; Tue, 08 Nov 2022 12:47:06 -0500
+X-MC-Unique: GTbBNtcrM_6NpAte7C8S-Q-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id EC2DA3C0F7EA;
+	Tue,  8 Nov 2022 17:47:04 +0000 (UTC)
+Received: from t480s.fritz.box (unknown [10.39.194.18])
+	by smtp.corp.redhat.com (Postfix) with ESMTP id F0672C15BB5;
+	Tue,  8 Nov 2022 17:47:01 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 2/7] mm/mprotect: minor can_change_pte_writable() cleanups
+Date: Tue,  8 Nov 2022 18:46:47 +0100
+Message-Id: <20221108174652.198904-3-david@redhat.com>
+In-Reply-To: <20221108174652.198904-1-david@redhat.com>
+References: <20221108174652.198904-1-david@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221107214634.GE1063309@ls.amr.corp.intel.com>
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,87 +78,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Rosato <mjrosato@linux.ibm.com>, David Hildenbrand <david@redhat.com>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Fabiano Rosas <farosas@linux.ibm.com>, 
- linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrea Arcangeli <aarcange@redhat.com>, David Hildenbrand <david@redhat.com>, linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <anshuman.khandual@arm.com>, Dave Chinner <david@fromorbit.com>, Mel Gorman <mgorman@techsingularity.net>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Hugh Dickins <hughd@google.com>, Nadav Amit <namit@vmware.com>, Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 07, 2022, Isaku Yamahata wrote:
-> On Fri, Nov 04, 2022 at 08:27:14PM +0000,
-> Sean Christopherson <seanjc@google.com> wrote:
-> 
-> > On Fri, Nov 04, 2022, Isaku Yamahata wrote:
-> > > Thanks for the patch series. I the rebased TDX KVM patch series and it worked.
-> > > Since cpu offline needs to be rejected in some cases(To keep at least one cpu
-> > > on a package), arch hook for cpu offline is needed.
-> > 
-> > I hate to bring this up because I doubt there's a real use case for SUSPEND with
-> > TDX, but the CPU offline path isn't just for true offlining of CPUs.  When the
-> > system enters SUSPEND, only the initiating CPU goes through kvm_suspend()+kvm_resume(),
-> > all responding CPUs go through CPU offline+online.  I.e. disallowing all CPUs from
-> > going "offline" will prevent suspending the system.
-> 
-> The current TDX KVM implementation disallows CPU package from offline only when
-> TDs are running.  If no TD is running, CPU offline is allowed.  So before
-> SUSPEND, TDs need to be killed via systemd or something.  After killing TDs, the
-> system can enter into SUSPEND state.
+We want to replicate this code for handling PMDs soon.
 
-Ah, I assumed offlining was disallowed if TDX was enabled.
+(1) No need to crash the kernel, warning and rejecting is good enough. As
+    this will no longer get optimized out, drop the pte_write() check: no
+    harm would be done.
 
-> > I don't see anything in the TDX series or the specs that suggests suspend+resume
-> > is disallowed when TDX is enabled, so blocking that seems just as wrong as
-> > preventing software from soft-offlining CPUs.
-> 
-> When it comes to SUSPEND, it means suspend-to-idle, ACPI S1, S3, or S4.
-> suspend-to-idle doesn't require CPU offline.
-> 
-> Although CPU related spec doesn't mention about S3, the ACPI spec says
-> 
->   7.4.2.2 System _S1 State (Sleeping with Processor Context Maintained)
->   The processor-complex context is maintained.
-> 
->   7.4.2.4 System _S3 State or 7.4.2.5 System _S4 State
->   The processor-complex context is not maintained.
-> 
-> It's safe to say the processor context related to TDX is complex, I think.
-> Let me summarize the situation. What do you think?
-> 
-> - While no TD running:
->   No additional limitation on CPU offline.
-> 
-> - On TD creation:
->   If any of whole cpu package is software offlined, TD creation fails.
->   Alternative: forcibly online necessary CPUs, create TD, and offline CPUs
+(2) Add a comment why PROT_NONE mapped pages are excluded.
 
-The alternative isn't really viable because there's no way the kernel can guarantee
-a CPU can be onlined, i.e. the kernel would need to fallback of disallowing TD
-creation anyways.
+(3) Add a comment regarding MAP_SHARED handling and why we rely on the
+    dirty bit in the PTE.
 
-> - TD running:
->   Although it's not required to keep all CPU packages online, keep CPU package
->   from offlining for TD destruction.
-> 
-> - TD destruction:
->   If any of whole cpu package is software offlined, TD destruction fails.
->   The current implementation prevents any cpu package from offlinining during
->   TD running.
->   Alternative:
->   - forcibly online necessary CPUs, destruct TD, and offline CPUs again and
->     allow CPU package to offline
->   - Stash TDX resources somewhere. When cpu packages are onlined, free those
->     release.
-> 
-> - On SUSPEND:
->   TODO: Allow CPU offline if S1 is requested.
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ mm/mprotect.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
 
-Is this actually a TODO?  I assume the kernel doesn't actually try to offline
-CPUs in this case, i.e. it Just Works.
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 86a28c0e190f..72aabffb7871 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -44,8 +44,10 @@ static inline bool can_change_pte_writable(struct vm_area_struct *vma,
+ {
+ 	struct page *page;
+ 
+-	VM_BUG_ON(!(vma->vm_flags & VM_WRITE) || pte_write(pte));
++	if (WARN_ON_ONCE(!(vma->vm_flags & VM_WRITE)))
++		return false;
+ 
++	/* Don't touch entries that are not even readable. */
+ 	if (pte_protnone(pte))
+ 		return false;
+ 
+@@ -59,15 +61,22 @@ static inline bool can_change_pte_writable(struct vm_area_struct *vma,
+ 
+ 	if (!(vma->vm_flags & VM_SHARED)) {
+ 		/*
+-		 * We can only special-case on exclusive anonymous pages,
+-		 * because we know that our write-fault handler similarly would
+-		 * map them writable without any additional checks while holding
+-		 * the PT lock.
++		 * Writable MAP_PRIVATE mapping: We can only special-case on
++		 * exclusive anonymous pages, because we know that our
++		 * write-fault handler similarly would map them writable without
++		 * any additional checks while holding the PT lock.
+ 		 */
+ 		page = vm_normal_page(vma, addr, pte);
+ 		return page && PageAnon(page) && PageAnonExclusive(page);
+ 	}
+ 
++	/*
++	 * Writable MAP_SHARED mapping: "clean" might indicate that the FS still
++	 * needs a real write-fault for writenotify
++	 * (see vma_wants_writenotify()). If "dirty", the assumption is that the
++	 * FS was already notified and we can simply mark the PTE writable
++	 * just like the write-fault handler would do.
++	 */
+ 	return pte_dirty(pte);
+ }
+ 
+-- 
+2.38.1
 
->   - suspend-to-idle: nothing to do because cpu offline isn't required
->   - ACPI S1: Need to allow offline CPUs.  This can be implemented by referencing
->     suspend_state_t pm_suspend_target_state is PM_SUSPEND_TO_STANBY.
->   - ACPI S3/S4: refuse cpu offline.  The system needs to kill all TDs before
->     starting SUSPEND process. This is what is implemented.
-
-Looks good, disallowing SUSPEND with active TDs is a reasonable tradeoff.  As
-above, I highly doubt anyone actually cares.
