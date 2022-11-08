@@ -4,73 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 514EEC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 05:30:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6E2FC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 05:44:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N5xXJ5hY7z3cNj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 16:30:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N5xrN0LWLz3cK7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 16:44:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=dWZgkYim;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=XNdeC13p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=isaku.yamahata@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=dWZgkYim;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=XNdeC13p;
 	dkim-atps=neutral
-X-Greylist: delayed 5271 seconds by postgrey-1.36 at boromir; Tue, 08 Nov 2022 16:29:59 AEDT
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N5xWC2xdtz3byZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2022 16:29:57 +1100 (AEDT)
-Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A80OPcn018481;
-	Tue, 8 Nov 2022 04:02:00 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type : content-transfer-encoding; s=corp-2022-7-12;
- bh=vhki7AWn4DB4TB80ppOU0xCmjR5k3ntJWa9wkDVW4xY=;
- b=dWZgkYimNTofNNddspjaV/WqbMbGN631/ujTMwoFM3Y3VCFbmMMist2wdXShecxCUxGr
- KEicZBPbvTHIX8xgNQ9lQEJO9+fJB2rDzYzuaCCpy1Bzc5Z/1nncokpYSPuyfgoHVyjE
- yATw+oEPJjv6Kzy5XGXEaErLIT74NsKhBlfAozwVxJ4BIh3xym2nqKbnZKv4SZF8sKdU
- llttSwRDchmNnbfmHbBAaB2s6ONG8qPc9W8vtSGgN6UBt8fz1MwrauG+N/c2QmVbQGGo
- 8Z+i2LHXcY27rVMv5ejcnkxmZDge2+qYqNxLgE/1SSaJcQnTM24s6E66iIoupkeXULAY +w== 
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.appoci.oracle.com [130.35.103.27])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3kngk6e5jq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 08 Nov 2022 04:01:59 +0000
-Received: from pps.filterd (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 2A82jbvP025580;
-	Tue, 8 Nov 2022 04:01:58 GMT
-Received: from pps.reinject (localhost [127.0.0.1])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 3kpcqfh3sk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 08 Nov 2022 04:01:58 +0000
-Received: from iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A841vcg022774;
-	Tue, 8 Nov 2022 04:01:58 GMT
-Received: from ca-mkp.mkp.ca.oracle.com (ca-mkp.ca.oracle.com [10.156.108.201])
-	by iadpaimrmta03.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTP id 3kpcqfh3s5-2;
-	Tue, 08 Nov 2022 04:01:58 +0000
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-To: Brian King <brking@linux.vnet.ibm.com>, tyreld@linux.ibm.com
-Subject: Re: [PATCH] ibmvfc: Avoid path failures during live migration
-Date: Mon,  7 Nov 2022 23:01:49 -0500
-Message-Id: <166787992422.644674.5896898503757774773.b4-ty@oracle.com>
-X-Mailer: git-send-email 2.36.1
-In-Reply-To: <20221026181356.148517-1-brking@linux.vnet.ibm.com>
-References: <20221026181356.148517-1-brking@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N5xqM3wSDz3c1K
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Nov 2022 16:43:57 +1100 (AEDT)
+Received: by mail-pl1-x62b.google.com with SMTP id v17so13254950plo.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Nov 2022 21:43:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=3UicMHRBXNKZ6klzBYtNlGfdpT3ipHtBcp9O7LuoFbE=;
+        b=XNdeC13pb4LjOBaRWcKMBNqFRJ+RgsbfVoNw18z5L+vfkg1SZceZjUxbLhiIy1qySy
+         Y4hI02da8j9ev8qt2sUsGeUiOSLlDAUgz5JUplPGm8kAk4jLtNdmDFZCCStM1EGIelNU
+         pjjtL4FSGAVwgisQucoSj4vLVpkgLqzZdzX9wYytiy3sfYNB3aYKj8S/Nug5gaKAa8gA
+         /5oDb+KCNmSa3bC/jNyCQmeij+quPN3cyVSSr1ovXCPVJxrqYAAydTsm3Q4bRt6yNhxm
+         6FVSyKTuVZN23UWZkdV6Uc7djgZpboRwjQPImKvKrchYImM3eB6pVBMtJk1jJ8Nfk6ob
+         kIoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=3UicMHRBXNKZ6klzBYtNlGfdpT3ipHtBcp9O7LuoFbE=;
+        b=S2CmnEPxXvCEcbzHhTRN23lLhCg76X8qXN/3Y5F0RKYRxbb26uWqEiQ0/6xSXWkbeX
+         Q+qVYzMdFUhC9Pfhvlcmzgb0UJwpHAoKIRZNoUIN9r4Ty0h1opF5t8dvy7cvu8hCYlwm
+         9KTCf9yVPM5Dg1KVlMqWA/2tMfXHA084nZIvteREvq+lMgO4CSBZtCKX8YBlN6ok1fUn
+         sbUJ3Mg8O3doTnwNdREUzk59zFTKbrMnrGw751xBKI0sCe3xZFnFrwPNxPdcvraqPuga
+         UkvYGW1jYU+OvanHIgQNKlD1n5RQxVdejY2/s5aemKrFFMwvGBb58Hs87UGDWr2HwdPZ
+         LODQ==
+X-Gm-Message-State: ACrzQf3d+6hIjF2Wa/oSzO6vOL6qal+5RcvvOY9ER3mw2a0TgWbOcDn7
+	26NDpuxPrzEZmfN43FuT5hM=
+X-Google-Smtp-Source: AMsMyM6Ssf7qu6Zt1cmqzeY+6ksfJF4jyx1t2euaZBhwzvq5JPVY+8zsaODdG48vWXQYQDWTdtSyvw==
+X-Received: by 2002:a17:90b:4a04:b0:213:587b:204e with SMTP id kk4-20020a17090b4a0400b00213587b204emr55088612pjb.98.1667886235549;
+        Mon, 07 Nov 2022 21:43:55 -0800 (PST)
+Received: from localhost ([192.55.54.55])
+        by smtp.gmail.com with ESMTPSA id k21-20020a628415000000b0056bb06ce1cfsm5614872pfd.97.2022.11.07.21.43.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Nov 2022 21:43:55 -0800 (PST)
+Date: Mon, 7 Nov 2022 21:43:54 -0800
+From: Isaku Yamahata <isaku.yamahata@gmail.com>
+To: "Huang, Kai" <kai.huang@intel.com>
+Subject: Re: [PATCH 00/44] KVM: Rework kvm_init() and hardware enabling
+Message-ID: <20221108054354.GA1708572@ls.amr.corp.intel.com>
+References: <20221102231911.3107438-1-seanjc@google.com>
+ <20221104071749.GC1063309@ls.amr.corp.intel.com>
+ <Y2V1oslbw24/2Opd@google.com>
+ <20221107214634.GE1063309@ls.amr.corp.intel.com>
+ <bf29fe1ac84cae8ddb06e566b56c653600a1901c.camel@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-07_11,2022-11-07_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=939 adultscore=0 mlxscore=0
- suspectscore=0 spamscore=0 malwarescore=0 bulkscore=0 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2211080020
-X-Proofpoint-ORIG-GUID: ndflzHfDZ1a-tE8DwEItnpEFqd4oi3pT
-X-Proofpoint-GUID: ndflzHfDZ1a-tE8DwEItnpEFqd4oi3pT
+In-Reply-To: <bf29fe1ac84cae8ddb06e566b56c653600a1901c.camel@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,27 +83,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>
+Cc: "mjrosato@linux.ibm.com" <mjrosato@linux.ibm.com>, "david@redhat.com" <david@redhat.com>, "anup@brainfault.org" <anup@brainfault.org>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>, "isaku.yamahata@gmail.com" <isaku.yamahata@gmail.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "aleksandar.qemu.devel@gmail.com" <aleksandar.qemu.devel@gmail.com>, "james.morse@arm.com" <james.morse@arm.com>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "Gao, Chao" <chao.gao@intel.com>, "farman@linux.ibm.com" <farman@linux.ibm.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>
+ , "Yao, Yuan" <yuan.yao@intel.com>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "tglx@linutronix.de" <tglx@linutronix.de>, "alexandru.elisei@arm.com" <alexandru.elisei@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, "Yamahata, Isaku" <isaku.yamahata@intel.com>, "atishp@atishpatra.org" <atishp@atishpatra.org>, "farosas@linux.ibm.com" <farosas@linux.ibm.com>, "Christopherson,, Sean" <seanjc@google.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "oliver.upton@linux.dev" <oliver.upton@linux.dev>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "maz@kernel.org" <maz@kernel.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "vkuznets@redhat.com" <vkuznets@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 26 Oct 2022 13:13:56 -0500, Brian King wrote:
+On Tue, Nov 08, 2022 at 01:09:27AM +0000,
+"Huang, Kai" <kai.huang@intel.com> wrote:
 
-> This patch fixes an issue reported when performing a live
-> migration when multipath is configured with a short fast
-> fail timeout of 5 seconds and also to have no_path_retry
-> set to fail. In this scenario, all paths would go into the
-> devloss state while the ibmvfc driver went through discovery
-> to log back in. On a loaded system, the discovery might
-> take longer than 5 seconds, which was resulting in all paths
-> being marked failed, which then resulted in a read only filesystem.
+> On Mon, 2022-11-07 at 13:46 -0800, Isaku Yamahata wrote:
+> > > On Fri, Nov 04, 2022, Isaku Yamahata wrote:
+> > > > Thanks for the patch series. I the rebased TDX KVM patch series and it
+> > > > worked.
+> > > > Since cpu offline needs to be rejected in some cases(To keep at least one
+> > > > cpu
+> > > > on a package), arch hook for cpu offline is needed.
+> > > 
+> > > I hate to bring this up because I doubt there's a real use case for SUSPEND
+> > > with
+> > > TDX, but the CPU offline path isn't just for true offlining of CPUs.  When
+> > > the
+> > > system enters SUSPEND, only the initiating CPU goes through
+> > > kvm_suspend()+kvm_resume(),
+> > > all responding CPUs go through CPU offline+online.  I.e. disallowing all
+> > > CPUs from
+> > > going "offline" will prevent suspending the system.
+> > 
+> > The current TDX KVM implementation disallows CPU package from offline only
+> > when
+> > TDs are running.  If no TD is running, CPU offline is allowed.  So before
+> > SUSPEND, TDs need to be killed via systemd or something.  After killing TDs,
+> > the
+> > system can enter into SUSPEND state.
 > 
-> [...]
+> This seems not correct.  You need one cpu for each to be online in order to
+> create TD as well, as TDH.MNG.KEY.CONFIG needs to be called on all packages,
+> correct?
 
-Applied to 6.1/scsi-fixes, thanks!
-
-[1/1] ibmvfc: Avoid path failures during live migration
-      https://git.kernel.org/mkp/scsi/c/62fa3ce05d5d
-
+That's correct. In such case, the creation of TD fails.  TD creation checks if
+at least one cpu is online on all CPU packages.  If no, error.
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+Isaku Yamahata <isaku.yamahata@gmail.com>
