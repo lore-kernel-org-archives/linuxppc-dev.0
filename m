@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 113C2C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3603C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:54:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6G0V50lTz3f9n
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:52:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6G1g3cPKz3f3v
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:53:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dZ1ebvj+;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dZ1ebvj+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZvbeP534;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZvbeP534;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dZ1ebvj+;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dZ1ebvj+;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZvbeP534;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZvbeP534;
 	dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Ft06ckjz3cV8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:47:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Ft601GZz3dvG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:47:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1667929638;
+	s=mimecast20190719; t=1667929643;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NDs1IzHuZwBiKepSKbrZlERPsRkua37TGdaig5O5yJI=;
-	b=dZ1ebvj+xqt+cFJa6647Ra4Z7RZLrMa+SBRtr31XI9lUsjvvxhFVT/kpJXyErf3L8fFTwg
-	mMBliVKfn39uFU2dPz8eI66H49sKPkWXfEVQevt8IeRfWhlpk7zi6aG4S60+poJQ7Zr5Xq
-	TPu5g/ZPOff3xX5uMP6thPE3Y3T7vLM=
+	bh=oG73sr0tgN0FOFIU5VbItTzL5MpyEbutOOG4W8LKcXk=;
+	b=ZvbeP5342zsfZJHfOmmsBqyqWk0D4tmVG0hS7ePGs8Pu+eoiEr+U236BKxJKl3OtjxY1wS
+	pa1ldjQkG9KruPZy2e7inQwq6ShqY8sxTC3urritRJy/QkPaob5qQYw6BD03GHJPFI3lkh
+	9UVQUO8LdjpADvsmABW4lJCdYZDIOoQ=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1667929638;
+	s=mimecast20190719; t=1667929643;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=NDs1IzHuZwBiKepSKbrZlERPsRkua37TGdaig5O5yJI=;
-	b=dZ1ebvj+xqt+cFJa6647Ra4Z7RZLrMa+SBRtr31XI9lUsjvvxhFVT/kpJXyErf3L8fFTwg
-	mMBliVKfn39uFU2dPz8eI66H49sKPkWXfEVQevt8IeRfWhlpk7zi6aG4S60+poJQ7Zr5Xq
-	TPu5g/ZPOff3xX5uMP6thPE3Y3T7vLM=
+	bh=oG73sr0tgN0FOFIU5VbItTzL5MpyEbutOOG4W8LKcXk=;
+	b=ZvbeP5342zsfZJHfOmmsBqyqWk0D4tmVG0hS7ePGs8Pu+eoiEr+U236BKxJKl3OtjxY1wS
+	pa1ldjQkG9KruPZy2e7inQwq6ShqY8sxTC3urritRJy/QkPaob5qQYw6BD03GHJPFI3lkh
+	9UVQUO8LdjpADvsmABW4lJCdYZDIOoQ=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-15-wU7JcHhbNo6cqAi4ce8Eog-1; Tue, 08 Nov 2022 12:47:12 -0500
-X-MC-Unique: wU7JcHhbNo6cqAi4ce8Eog-1
+ us-mta-487-MVOniqjjPC2Up2bMBAXNcQ-1; Tue, 08 Nov 2022 12:47:19 -0500
+X-MC-Unique: MVOniqjjPC2Up2bMBAXNcQ-1
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
 	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E2F97811E67;
-	Tue,  8 Nov 2022 17:47:11 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id D98388027EC;
+	Tue,  8 Nov 2022 17:47:18 +0000 (UTC)
 Received: from t480s.fritz.box (unknown [10.39.194.18])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id D5E6CC15BB5;
-	Tue,  8 Nov 2022 17:47:08 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id AB74BC15BB5;
+	Tue,  8 Nov 2022 17:47:15 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/7] mm/mprotect: factor out check whether manual PTE write upgrades are required
-Date: Tue,  8 Nov 2022 18:46:49 +0100
-Message-Id: <20221108174652.198904-5-david@redhat.com>
+Subject: [PATCH v2 6/7] mm: remove unused savedwrite infrastructure
+Date: Tue,  8 Nov 2022 18:46:51 +0100
+Message-Id: <20221108174652.198904-7-david@redhat.com>
 In-Reply-To: <20221108174652.198904-1-david@redhat.com>
 References: <20221108174652.198904-1-david@redhat.com>
 MIME-Version: 1.0
@@ -82,87 +82,274 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>, David Hildenbrand <david@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Let's factor the check out into vma_wants_manual_pte_write_upgrade(), to be
-reused in NUMA hinting fault context soon.
+NUMA hinting no longer uses savedwrite, let's rip it out.
+
+... and while at it, drop __pte_write() and __pmd_write() on ppc64.
 
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- include/linux/mm.h | 16 ++++++++++++++--
- mm/mprotect.c      | 17 ++++-------------
- 2 files changed, 18 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 80 +-------------------
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c          |  2 +-
+ include/linux/pgtable.h                      | 24 ------
+ mm/debug_vm_pgtable.c                        | 32 --------
+ 4 files changed, 5 insertions(+), 133 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 517c8cc8ccb9..4a7c10bed8bd 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1975,6 +1975,20 @@ extern unsigned long move_page_tables(struct vm_area_struct *vma,
- #define  MM_CP_UFFD_WP_ALL                 (MM_CP_UFFD_WP | \
- 					    MM_CP_UFFD_WP_RESOLVE)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index c436d8422654..cb4c67bf45d7 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -401,35 +401,9 @@ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+ #define __HAVE_ARCH_PMDP_CLEAR_YOUNG_FLUSH
+ #define pmdp_clear_flush_young pmdp_test_and_clear_young
  
-+int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot);
-+static inline bool vma_wants_manual_pte_write_upgrade(struct vm_area_struct *vma)
-+{
-+	/*
-+	 * We want to check manually if we can change individual PTEs writable
-+	 * if we can't do that automatically for all PTEs in a mapping. For
-+	 * private mappings, that's always the case when we have write
-+	 * permissions as we properly have to handle COW.
-+	 */
-+	if (vma->vm_flags & VM_SHARED)
-+		return vma_wants_writenotify(vma, vma->vm_page_prot);
-+	return !!(vma->vm_flags & VM_WRITE);
-+
-+}
- extern unsigned long change_protection(struct mmu_gather *tlb,
- 			      struct vm_area_struct *vma, unsigned long start,
- 			      unsigned long end, pgprot_t newprot,
-@@ -2114,8 +2128,6 @@ static inline int pte_devmap(pte_t pte)
+-static inline int __pte_write(pte_t pte)
+-{
+-	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_WRITE));
+-}
+-
+-#ifdef CONFIG_NUMA_BALANCING
+-#define pte_savedwrite pte_savedwrite
+-static inline bool pte_savedwrite(pte_t pte)
+-{
+-	/*
+-	 * Saved write ptes are prot none ptes that doesn't have
+-	 * privileged bit sit. We mark prot none as one which has
+-	 * present and pviliged bit set and RWX cleared. To mark
+-	 * protnone which used to have _PAGE_WRITE set we clear
+-	 * the privileged bit.
+-	 */
+-	return !(pte_raw(pte) & cpu_to_be64(_PAGE_RWX | _PAGE_PRIVILEGED));
+-}
+-#else
+-#define pte_savedwrite pte_savedwrite
+-static inline bool pte_savedwrite(pte_t pte)
+-{
+-	return false;
+-}
+-#endif
+-
+ static inline int pte_write(pte_t pte)
+ {
+-	return __pte_write(pte) || pte_savedwrite(pte);
++	return !!(pte_raw(pte) & cpu_to_be64(_PAGE_WRITE));
  }
+ 
+ static inline int pte_read(pte_t pte)
+@@ -441,24 +415,16 @@ static inline int pte_read(pte_t pte)
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+ {
+-	if (__pte_write(*ptep))
++	if (pte_write(*ptep))
+ 		pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 0);
+-	else if (unlikely(pte_savedwrite(*ptep)))
+-		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 0);
+ }
+ 
+ #define __HAVE_ARCH_HUGE_PTEP_SET_WRPROTECT
+ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 					   unsigned long addr, pte_t *ptep)
+ {
+-	/*
+-	 * We should not find protnone for hugetlb, but this complete the
+-	 * interface.
+-	 */
+-	if (__pte_write(*ptep))
++	if (pte_write(*ptep))
+ 		pte_update(mm, addr, ptep, _PAGE_WRITE, 0, 1);
+-	else if (unlikely(pte_savedwrite(*ptep)))
+-		pte_update(mm, addr, ptep, 0, _PAGE_PRIVILEGED, 1);
+ }
+ 
+ #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+@@ -535,36 +501,6 @@ static inline int pte_protnone(pte_t pte)
+ 	return (pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_PTE | _PAGE_RWX)) ==
+ 		cpu_to_be64(_PAGE_PRESENT | _PAGE_PTE);
+ }
+-
+-#define pte_mk_savedwrite pte_mk_savedwrite
+-static inline pte_t pte_mk_savedwrite(pte_t pte)
+-{
+-	/*
+-	 * Used by Autonuma subsystem to preserve the write bit
+-	 * while marking the pte PROT_NONE. Only allow this
+-	 * on PROT_NONE pte
+-	 */
+-	VM_BUG_ON((pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_RWX | _PAGE_PRIVILEGED)) !=
+-		  cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED));
+-	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_PRIVILEGED));
+-}
+-
+-#define pte_clear_savedwrite pte_clear_savedwrite
+-static inline pte_t pte_clear_savedwrite(pte_t pte)
+-{
+-	/*
+-	 * Used by KSM subsystem to make a protnone pte readonly.
+-	 */
+-	VM_BUG_ON(!pte_protnone(pte));
+-	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PRIVILEGED));
+-}
+-#else
+-#define pte_clear_savedwrite pte_clear_savedwrite
+-static inline pte_t pte_clear_savedwrite(pte_t pte)
+-{
+-	VM_WARN_ON(1);
+-	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
+-}
+ #endif /* CONFIG_NUMA_BALANCING */
+ 
+ static inline bool pte_hw_valid(pte_t pte)
+@@ -641,8 +577,6 @@ static inline unsigned long pte_pfn(pte_t pte)
+ /* Generic modifiers for PTE bits */
+ static inline pte_t pte_wrprotect(pte_t pte)
+ {
+-	if (unlikely(pte_savedwrite(pte)))
+-		return pte_clear_savedwrite(pte);
+ 	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
+ }
+ 
+@@ -1139,8 +1073,6 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
+ #define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+-#define pmd_mk_savedwrite(pmd)	pte_pmd(pte_mk_savedwrite(pmd_pte(pmd)))
+-#define pmd_clear_savedwrite(pmd)	pte_pmd(pte_clear_savedwrite(pmd_pte(pmd)))
+ 
+ #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+ #define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
+@@ -1162,8 +1094,6 @@ static inline int pmd_protnone(pmd_t pmd)
+ #endif /* CONFIG_NUMA_BALANCING */
+ 
+ #define pmd_write(pmd)		pte_write(pmd_pte(pmd))
+-#define __pmd_write(pmd)	__pte_write(pmd_pte(pmd))
+-#define pmd_savedwrite(pmd)	pte_savedwrite(pmd_pte(pmd))
+ 
+ #define pmd_access_permitted pmd_access_permitted
+ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
+@@ -1241,10 +1171,8 @@ static inline int __pmdp_test_and_clear_young(struct mm_struct *mm,
+ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pmd_t *pmdp)
+ {
+-	if (__pmd_write((*pmdp)))
++	if (pmd_write(*pmdp))
+ 		pmd_hugepage_update(mm, addr, pmdp, _PAGE_WRITE, 0);
+-	else if (unlikely(pmd_savedwrite(*pmdp)))
+-		pmd_hugepage_update(mm, addr, pmdp, 0, _PAGE_PRIVILEGED);
+ }
+ 
+ /*
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 5a05953ae13f..9182324dbef9 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -265,7 +265,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		}
+ 		pte = kvmppc_read_update_linux_pte(ptep, writing);
+ 		if (pte_present(pte) && !pte_protnone(pte)) {
+-			if (writing && !__pte_write(pte))
++			if (writing && !pte_write(pte))
+ 				/* make the actual HPTE be read-only */
+ 				ptel = hpte_make_readonly(ptel);
+ 			is_ci = pte_ci(pte);
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index a108b60a6962..35c80f4f06ec 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -485,30 +485,6 @@ static inline pte_t pte_sw_mkyoung(pte_t pte)
+ #define pte_sw_mkyoung	pte_sw_mkyoung
  #endif
  
--int vma_wants_writenotify(struct vm_area_struct *vma, pgprot_t vm_page_prot);
+-#ifndef pte_savedwrite
+-#define pte_savedwrite pte_write
+-#endif
 -
- extern pte_t *__get_locked_pte(struct mm_struct *mm, unsigned long addr,
- 			       spinlock_t **ptl);
- static inline pte_t *get_locked_pte(struct mm_struct *mm, unsigned long addr,
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 72aabffb7871..fe22db2c9cdd 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -558,8 +558,8 @@ mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 	struct mm_struct *mm = vma->vm_mm;
- 	unsigned long oldflags = vma->vm_flags;
- 	long nrpages = (end - start) >> PAGE_SHIFT;
-+	unsigned int mm_cp_flags = 0;
- 	unsigned long charged = 0;
--	bool try_change_writable;
- 	pgoff_t pgoff;
- 	int error;
+-#ifndef pte_mk_savedwrite
+-#define pte_mk_savedwrite pte_mkwrite
+-#endif
+-
+-#ifndef pte_clear_savedwrite
+-#define pte_clear_savedwrite pte_wrprotect
+-#endif
+-
+-#ifndef pmd_savedwrite
+-#define pmd_savedwrite pmd_write
+-#endif
+-
+-#ifndef pmd_mk_savedwrite
+-#define pmd_mk_savedwrite pmd_mkwrite
+-#endif
+-
+-#ifndef pmd_clear_savedwrite
+-#define pmd_clear_savedwrite pmd_wrprotect
+-#endif
+-
+ #ifndef __HAVE_ARCH_PMDP_SET_WRPROTECT
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ static inline void pmdp_set_wrprotect(struct mm_struct *mm,
+diff --git a/mm/debug_vm_pgtable.c b/mm/debug_vm_pgtable.c
+index 2b61fde8c38c..c631ade3f1d2 100644
+--- a/mm/debug_vm_pgtable.c
++++ b/mm/debug_vm_pgtable.c
+@@ -171,18 +171,6 @@ static void __init pte_advanced_tests(struct pgtable_debug_args *args)
+ 	ptep_get_and_clear_full(args->mm, args->vaddr, args->ptep, 1);
+ }
  
-@@ -637,20 +637,11 @@ mprotect_fixup(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 	 * held in write mode.
- 	 */
- 	vma->vm_flags = newflags;
--	/*
--	 * We want to check manually if we can change individual PTEs writable
--	 * if we can't do that automatically for all PTEs in a mapping. For
--	 * private mappings, that's always the case when we have write
--	 * permissions as we properly have to handle COW.
--	 */
--	if (vma->vm_flags & VM_SHARED)
--		try_change_writable = vma_wants_writenotify(vma, vma->vm_page_prot);
--	else
--		try_change_writable = !!(vma->vm_flags & VM_WRITE);
-+	if (vma_wants_manual_pte_write_upgrade(vma))
-+		mm_cp_flags |= MM_CP_TRY_CHANGE_WRITABLE;
- 	vma_set_page_prot(vma);
+-static void __init pte_savedwrite_tests(struct pgtable_debug_args *args)
+-{
+-	pte_t pte = pfn_pte(args->fixed_pte_pfn, args->page_prot_none);
+-
+-	if (!IS_ENABLED(CONFIG_NUMA_BALANCING))
+-		return;
+-
+-	pr_debug("Validating PTE saved write\n");
+-	WARN_ON(!pte_savedwrite(pte_mk_savedwrite(pte_clear_savedwrite(pte))));
+-	WARN_ON(pte_savedwrite(pte_clear_savedwrite(pte_mk_savedwrite(pte))));
+-}
+-
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ static void __init pmd_basic_tests(struct pgtable_debug_args *args, int idx)
+ {
+@@ -302,22 +290,6 @@ static void __init pmd_leaf_tests(struct pgtable_debug_args *args)
+ 	WARN_ON(!pmd_leaf(pmd));
+ }
  
--	change_protection(tlb, vma, start, end, vma->vm_page_prot,
--			  try_change_writable ? MM_CP_TRY_CHANGE_WRITABLE : 0);
-+	change_protection(tlb, vma, start, end, vma->vm_page_prot, mm_cp_flags);
+-static void __init pmd_savedwrite_tests(struct pgtable_debug_args *args)
+-{
+-	pmd_t pmd;
+-
+-	if (!IS_ENABLED(CONFIG_NUMA_BALANCING))
+-		return;
+-
+-	if (!has_transparent_hugepage())
+-		return;
+-
+-	pr_debug("Validating PMD saved write\n");
+-	pmd = pfn_pmd(args->fixed_pmd_pfn, args->page_prot_none);
+-	WARN_ON(!pmd_savedwrite(pmd_mk_savedwrite(pmd_clear_savedwrite(pmd))));
+-	WARN_ON(pmd_savedwrite(pmd_clear_savedwrite(pmd_mk_savedwrite(pmd))));
+-}
+-
+ #ifdef CONFIG_HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD
+ static void __init pud_basic_tests(struct pgtable_debug_args *args, int idx)
+ {
+@@ -451,7 +423,6 @@ static void __init pmd_advanced_tests(struct pgtable_debug_args *args) { }
+ static void __init pud_advanced_tests(struct pgtable_debug_args *args) { }
+ static void __init pmd_leaf_tests(struct pgtable_debug_args *args) { }
+ static void __init pud_leaf_tests(struct pgtable_debug_args *args) { }
+-static void __init pmd_savedwrite_tests(struct pgtable_debug_args *args) { }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
  
- 	/*
- 	 * Private VM_LOCKED VMA becoming writable: trigger COW to avoid major
+ #ifdef CONFIG_HAVE_ARCH_HUGE_VMAP
+@@ -1288,9 +1259,6 @@ static int __init debug_vm_pgtable(void)
+ 	pmd_leaf_tests(&args);
+ 	pud_leaf_tests(&args);
+ 
+-	pte_savedwrite_tests(&args);
+-	pmd_savedwrite_tests(&args);
+-
+ 	pte_special_tests(&args);
+ 	pte_protnone_tests(&args);
+ 	pmd_protnone_tests(&args);
 -- 
 2.38.1
 
