@@ -4,62 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E33B5C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:50:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36595C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Nov 2022 17:51:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6FxK1YXbz3f7s
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:50:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6FyK3wTPz3f7T
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:51:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SeYjbLWh;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SeYjbLWh;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f/qc6/LI;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f/qc6/LI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SeYjbLWh;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SeYjbLWh;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f/qc6/LI;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=f/qc6/LI;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Fsv01P5z3dxq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:47:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Fsw1nN3z3dv9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 04:47:15 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1667929629;
+	s=mimecast20190719; t=1667929633;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ZHIUqQjgTcrrLQjjH6jvIopGCgDdzoOnD2NdhMSGVIY=;
-	b=SeYjbLWhl4Fht2IEqEVmolUsNr3QYP6yp4e4ddm/mnixqu50++uO84pSd7DU+QUcBksz6k
-	pwoXK7abIjBpevXsEKG0xmRiTANB6E8QIjwIdbr5t/I2xjkvZyI/dmnjStu52X2aum5uSA
-	gYWkdku0qZctP8THJd4y3UjXYMiXsNU=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qF4AawT1CUSPT7cjLSeaKxf0IPbLFxKsvIIMhgx85ZA=;
+	b=f/qc6/LIBCWEfPLJ1lo69/XQuKosAqCS1RtjYF7XVgt1X32pu2iyPtG2kLjEcovjbYiWqX
+	NU/EeAZW5MWMAHgRUo5vSDluPcZpVL5e2N9+2XTCK96xh0qOkcfVbEaeBTWIkLRn6B4DCF
+	Em2z90KNbyFpK6h8J+oMWSRmIHxdT/s=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1667929629;
+	s=mimecast20190719; t=1667929633;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ZHIUqQjgTcrrLQjjH6jvIopGCgDdzoOnD2NdhMSGVIY=;
-	b=SeYjbLWhl4Fht2IEqEVmolUsNr3QYP6yp4e4ddm/mnixqu50++uO84pSd7DU+QUcBksz6k
-	pwoXK7abIjBpevXsEKG0xmRiTANB6E8QIjwIdbr5t/I2xjkvZyI/dmnjStu52X2aum5uSA
-	gYWkdku0qZctP8THJd4y3UjXYMiXsNU=
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=qF4AawT1CUSPT7cjLSeaKxf0IPbLFxKsvIIMhgx85ZA=;
+	b=f/qc6/LIBCWEfPLJ1lo69/XQuKosAqCS1RtjYF7XVgt1X32pu2iyPtG2kLjEcovjbYiWqX
+	NU/EeAZW5MWMAHgRUo5vSDluPcZpVL5e2N9+2XTCK96xh0qOkcfVbEaeBTWIkLRn6B4DCF
+	Em2z90KNbyFpK6h8J+oMWSRmIHxdT/s=
 Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
  [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-392-mHodWVn8NdeSar_igPbYsg-1; Tue, 08 Nov 2022 12:46:58 -0500
-X-MC-Unique: mHodWVn8NdeSar_igPbYsg-1
+ us-mta-611-fLpLc06yPnybKLVzRDVTAg-1; Tue, 08 Nov 2022 12:47:09 -0500
+X-MC-Unique: fLpLc06yPnybKLVzRDVTAg-1
 Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
 	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5F17B382F649;
-	Tue,  8 Nov 2022 17:46:57 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 85E9A3806738;
+	Tue,  8 Nov 2022 17:47:08 +0000 (UTC)
 Received: from t480s.fritz.box (unknown [10.39.194.18])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 8E65DC15BB5;
-	Tue,  8 Nov 2022 17:46:53 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 57D3FC15BB5;
+	Tue,  8 Nov 2022 17:47:05 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/7] mm/autonuma: replace savedwrite infrastructure
-Date: Tue,  8 Nov 2022 18:46:45 +0100
-Message-Id: <20221108174652.198904-1-david@redhat.com>
+Subject: [PATCH v2 3/7] mm/huge_memory: try avoiding write faults when changing PMD protection
+Date: Tue,  8 Nov 2022 18:46:48 +0100
+Message-Id: <20221108174652.198904-4-david@redhat.com>
+In-Reply-To: <20221108174652.198904-1-david@redhat.com>
+References: <20221108174652.198904-1-david@redhat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
@@ -78,100 +82,82 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>, David Hildenbrand <david@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series is based on mm-unstable.
+Let's replicate what we have for PTEs in can_change_pte_writable() also
+for PMDs.
 
-As discussed in my talk at LPC, we can reuse the same mechanism for
-deciding whether to map a pte writable when upgrading permissions via
-mprotect() -- e.g., PROT_READ -> PROT_READ|PROT_WRITE -- to replace the
-savedwrite infrastructure used for NUMA hinting faults (e.g., PROT_NONE
--> PROT_READ|PROT_WRITE).
+While this might look like a pure performance improvement, we'll us this to
+get rid of savedwrite handling in do_huge_pmd_numa_page() next. Place
+do_huge_pmd_numa_page() strategically good for that purpose.
 
-Instead of maintaining previous write permissions for a pte/pmd, we
-re-determine if the pte/pmd can be writable. The big benefit is that we
-have a common logic for deciding whether we can map a pte/pmd writable on
-protection changes.
+Note that MM_CP_TRY_CHANGE_WRITABLE is currently only set when we come
+via mprotect_fixup().
 
-For private mappings, there should be no difference -- from
-what I understand, that is what autonuma benchmarks care about.
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ mm/huge_memory.c | 38 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 36 insertions(+), 2 deletions(-)
 
-I ran autonumabench for v1 on a system with 2 NUMA nodes, 96 GiB each via:
-	perf stat --null --repeat 10
-The numa01 benchmark is quite noisy in my environment and I failed to
-reduce the noise so far.
-
-numa01:
-	mm-unstable:   146.88 +- 6.54 seconds time elapsed  ( +-  4.45% )
-	mm-unstable++: 147.45 +- 13.39 seconds time elapsed  ( +-  9.08% )
-
-numa02:
-	mm-unstable:   16.0300 +- 0.0624 seconds time elapsed  ( +-  0.39% )
-	mm-unstable++: 16.1281 +- 0.0945 seconds time elapsed  ( +-  0.59% )
-
-It is worth noting that for shared writable mappings that require
-writenotify, we will only avoid write faults if the pte/pmd is dirty
-(inherited from the older mprotect logic). If we ever care about optimizing
-that further, we'd need a different mechanism to identify whether the FS
-still needs to get notified on the next write access.
-
-In any case, such an optimiztion will then not be autonuma-specific,
-but mprotect() permission upgrades would similarly benefit from it.
-
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Dave Chinner <david@fromorbit.com>
-Cc: Nadav Amit <namit@vmware.com>
-Cc: Peter Xu <peterx@redhat.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Hugh Dickins <hughd@google.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-
-v1 -> v2:
-* "mm/mprotect: factor out check whether manual PTE write upgrades are
-   required"
- -> Added
-* "mm/autonuma: use can_change_(pte|pmd)_writable() to replace savedwrite"
- -> Simplify and don't opimize for failed migration
- -> Update patch description
-
-RFC -> v1:
-* "mm/mprotect: allow clean exclusive anon pages to be writable"
- -> Move comment change to patch #2
-* "mm/mprotect: minor can_change_pte_writable() cleanups"
- -> Adjust comments
-* "mm/huge_memory: try avoiding write faults when changing PMD protection"
- -> Fix wrong check
-* "selftests/vm: anon_cow: add mprotect() optimiation tests"
- -> Add basic tests for the mprotect() optimization
-
-David Hildenbrand (6):
-  mm/mprotect: minor can_change_pte_writable() cleanups
-  mm/huge_memory: try avoiding write faults when changing PMD protection
-  mm/mprotect: factor out check whether manual PTE write upgrades are
-    required
-  mm/autonuma: use can_change_(pte|pmd)_writable() to replace savedwrite
-  mm: remove unused savedwrite infrastructure
-  selftests/vm: anon_cow: add mprotect() optimization tests
-
-Nadav Amit (1):
-  mm/mprotect: allow clean exclusive anon pages to be writable
-
- arch/powerpc/include/asm/book3s/64/pgtable.h | 80 +-------------------
- arch/powerpc/kvm/book3s_hv_rm_mmu.c          |  2 +-
- include/linux/mm.h                           | 18 ++++-
- include/linux/pgtable.h                      | 24 ------
- mm/debug_vm_pgtable.c                        | 32 --------
- mm/huge_memory.c                             | 64 ++++++++++++----
- mm/ksm.c                                     |  9 +--
- mm/memory.c                                  | 16 +++-
- mm/mprotect.c                                | 50 ++++++------
- tools/testing/selftests/vm/anon_cow.c        | 49 +++++++++++-
- 10 files changed, 158 insertions(+), 186 deletions(-)
-
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 1d47b3f7b877..eeba9c00df62 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1344,6 +1344,36 @@ vm_fault_t do_huge_pmd_wp_page(struct vm_fault *vmf)
+ 	return VM_FAULT_FALLBACK;
+ }
+ 
++static inline bool can_change_pmd_writable(struct vm_area_struct *vma,
++					   unsigned long addr, pmd_t pmd)
++{
++	struct page *page;
++
++	if (WARN_ON_ONCE(!(vma->vm_flags & VM_WRITE)))
++		return false;
++
++	/* Don't touch entries that are not even readable (NUMA hinting). */
++	if (pmd_protnone(pmd))
++		return false;
++
++	/* Do we need write faults for softdirty tracking? */
++	if (vma_soft_dirty_enabled(vma) && !pmd_soft_dirty(pmd))
++		return false;
++
++	/* Do we need write faults for uffd-wp tracking? */
++	if (userfaultfd_huge_pmd_wp(vma, pmd))
++		return false;
++
++	if (!(vma->vm_flags & VM_SHARED)) {
++		/* See can_change_pte_writable(). */
++		page = vm_normal_page_pmd(vma, addr, pmd);
++		return page && PageAnon(page) && PageAnonExclusive(page);
++	}
++
++	/* See can_change_pte_writable(). */
++	return pmd_dirty(pmd);
++}
++
+ /* FOLL_FORCE can write to even unwritable PMDs in COW mappings. */
+ static inline bool can_follow_write_pmd(pmd_t pmd, struct page *page,
+ 					struct vm_area_struct *vma,
+@@ -1847,13 +1877,17 @@ int change_huge_pmd(struct mmu_gather *tlb, struct vm_area_struct *vma,
+ 		 */
+ 		entry = pmd_clear_uffd_wp(entry);
+ 	}
++
++	/* See change_pte_range(). */
++	if ((cp_flags & MM_CP_TRY_CHANGE_WRITABLE) && !pmd_write(entry) &&
++	    can_change_pmd_writable(vma, addr, entry))
++		entry = pmd_mkwrite(entry);
++
+ 	ret = HPAGE_PMD_NR;
+ 	set_pmd_at(mm, addr, pmd, entry);
+ 
+ 	if (huge_pmd_needs_flush(oldpmd, entry))
+ 		tlb_flush_pmd_range(tlb, addr, HPAGE_PMD_SIZE);
+-
+-	BUG_ON(vma_is_anonymous(vma) && !preserve_write && pmd_write(entry));
+ unlock:
+ 	spin_unlock(ptl);
+ 	return ret;
 -- 
 2.38.1
 
