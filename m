@@ -4,89 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B34EC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F41C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:57:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6Xjs5bSZz3f68
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 15:56:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6Xkv1ZqXz3f5Q
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 15:57:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oh9NrUs2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTGGblUW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oh9NrUs2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTGGblUW;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Xch2T60z307C
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Xch2MBvz303P
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 15:51:47 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A94k2HY029926;
-	Wed, 9 Nov 2022 04:51:36 GMT
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A93hqc4009291;
+	Wed, 9 Nov 2022 04:51:38 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=UGb1t5dgWWIhDJLlC2n/RBsLh9/5pNfbJxY0UcBYoEU=;
- b=oh9NrUs2WDvj9mUOP6OawTH9ItUQ26RblpSiYGq/wB0DY6d6FnF9p7ZaYVMe2G/JlLzL
- L4706ZHNLbkWnlEex9MkvNTEqe0cSDKpYZnwAMxhWXOVvfXbWOlbRSWfepqrcgMLvs4m
- UPI5gh15vTuUmX1cC/CCDpdr79wXqy2tTg29JXHwiZZ9Qsbw25+KqLtvAGvPFKvg6mo4
- 9NGIy9zvz4KB8zRLFrAFFMn861V8srTtVcmfy++HIKyGGvxyUXyL2SCWeJAHMoG+fMSo
- Jaego8bZoZQqokMYM8yULp4Ivy1we4b/sx+AH5QDTy+Errs+BVMcxsb3Xl+hYB5IRLyD /Q== 
+ bh=3iTsWVdBewQ6GSk1wfDs+ZRhchCLreXFIsd+U0L8Fbo=;
+ b=mTGGblUW3ap+hS+f/QLZ0oskwifWwjqCuzJ9jBdC+lVk4kAw4c+0UEj2snYgCUTMcJDI
+ hI0GSRQDAtMr2rVEt/ro9GuZS/P98IiOoavPH7xuGH2ixwnkdHKrohHsQmxPELxX9Hrv
+ wnYvhl83K2x4UOad5CiiSZv6Ql61NZeq2tLN9SD1IY8VZxqBxUS+wY3Cpnqu5shc1Rza
+ UZ9tCfPCEgO0bJkdh3lK56UQsoeh/5H7DRtT1+ip+XTuLtrL1ZsAb0qD4mQO8ADCOI7v
+ 1rGlqROgCNKfdrL7YtGnT0THlATDv8vKITKD36+axeh9bEbACltFttl3AJvPVXm0RtHZ 8g== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr2vx4y10-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr4j5jmwd-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Nov 2022 04:51:36 +0000
-Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A941OAA025329;
+	Wed, 09 Nov 2022 04:51:38 +0000
+Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A94oG7j004792;
+	Wed, 9 Nov 2022 04:51:37 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr4j5jmuu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Nov 2022 04:51:37 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A94oBLK031236;
 	Wed, 9 Nov 2022 04:51:35 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr2vx4y0a-1
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma06ams.nl.ibm.com with ESMTP id 3kngncd3cg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 09 Nov 2022 04:51:35 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A94pF8A014683;
-	Wed, 9 Nov 2022 04:51:34 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma04ams.nl.ibm.com with ESMTP id 3kngqdd1vr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Nov 2022 04:51:33 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A94jl3Z50004258
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A94pX034063828
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 9 Nov 2022 04:45:47 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 493C25204F;
-	Wed,  9 Nov 2022 04:51:31 +0000 (GMT)
+	Wed, 9 Nov 2022 04:51:33 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2C410A405C;
+	Wed,  9 Nov 2022 04:51:33 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 82C83A4054;
+	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9FA2D5204E;
-	Wed,  9 Nov 2022 04:51:30 +0000 (GMT)
+	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
 Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BA42A60371;
-	Wed,  9 Nov 2022 15:51:28 +1100 (AEDT)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 030EC6083C;
+	Wed,  9 Nov 2022 15:51:29 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 1/9] powerpc: Allow clearing and restoring registers independent of saved breakpoint state
-Date: Wed,  9 Nov 2022 15:51:04 +1100
-Message-Id: <20221109045112.187069-2-bgray@linux.ibm.com>
+Subject: [PATCH v10 9/9] powerpc/code-patching: Consolidate and cache per-cpu patching context
+Date: Wed,  9 Nov 2022 15:51:12 +1100
+Message-Id: <20221109045112.187069-10-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221109045112.187069-1-bgray@linux.ibm.com>
 References: <20221109045112.187069-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: O9tbWHY9AQp6WoDtvlTXZYXJBko4Fx7o
-X-Proofpoint-GUID: tFLUn__9L0TaNBjXyIureBIwKco88d9A
+X-Proofpoint-GUID: 7MMCeKG2zeviAQ62321mkvcU7TT0qf-E
+X-Proofpoint-ORIG-GUID: E_uXsmLFLGS37vd9LnBia701GGEHnTmQ
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-08_06,2022-11-08_01,2022-06-22_01
+ definitions=2022-11-09_01,2022-11-08_01,2022-06-22_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- impostorscore=0 phishscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- adultscore=0 mlxlogscore=407 spamscore=0 clxscore=1015 mlxscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211090028
+ lowpriorityscore=0 mlxlogscore=911 phishscore=0 impostorscore=0
+ spamscore=0 priorityscore=1501 clxscore=1015 bulkscore=0 mlxscore=0
+ adultscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2210170000 definitions=main-2211090032
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,108 +105,130 @@ Cc: ajd@linux.ibm.com, jniethe5@gmail.com, Benjamin Gray <bgray@linux.ibm.com>, 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Jordan Niethe <jniethe5@gmail.com>
+With the temp mm context support, there are CPU local variables to hold
+the patch address and pte. Use these in the non-temp mm path as well
+instead of adding a level of indirection through the text_poke_area
+vm_struct and pointer chasing the pte.
 
-For the coming temporary mm used for instruction patching, the
-breakpoint registers need to be cleared to prevent them from
-accidentally being triggered. As soon as the patching is done, the
-breakpoints will be restored.
+As both paths use these fields now, there is no need to let unreferenced
+variables be dropped by the compiler, so it is cleaner to merge them into
+a single context struct. This has the additional benefit of removing a
+redundant CPU local pointer, as only one of cpu_patching_mm /
+text_poke_area is ever used, while remaining well-typed. It also groups
+each CPU's data into a single cacheline.
 
-The breakpoint state is stored in the per-cpu variable current_brk[].
-Add a suspend_breakpoints() function which will clear the breakpoint
-registers without touching the state in current_brk[]. Add a pair
-function restore_breakpoints() which will move the state in
-current_brk[] back to the registers.
-
-Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
-v10:	* Unchanged
-v9:	* Renamed ____set_breakpoint to set_hw_breakpoint
-	* Renamed pause/unpause to suspend/restore
-	* Removed unrelated whitespace change
+v10:	* Mention cache benefits
+v9:	* Consolidate patching context into single struct
 ---
- arch/powerpc/include/asm/debug.h |  2 ++
- arch/powerpc/kernel/process.c    | 38 +++++++++++++++++++++++++++++---
- 2 files changed, 37 insertions(+), 3 deletions(-)
+ arch/powerpc/lib/code-patching.c | 49 +++++++++++++++++++-------------
+ 1 file changed, 30 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
-index 86a14736c76c..51c744608f37 100644
---- a/arch/powerpc/include/asm/debug.h
-+++ b/arch/powerpc/include/asm/debug.h
-@@ -46,6 +46,8 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
- #endif
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 5b0022997296..2e10df464a2b 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -48,10 +48,16 @@ int raw_patch_instruction(u32 *addr, ppc_inst_t instr)
  
- void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk);
-+void suspend_breakpoints(void);
-+void restore_breakpoints(void);
- bool ppc_breakpoint_available(void);
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- extern void do_send_trap(struct pt_regs *regs, unsigned long address,
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 67da147fe34d..5d5109ed01a5 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -862,10 +862,8 @@ static inline int set_breakpoint_8xx(struct arch_hw_breakpoint *brk)
+ #ifdef CONFIG_STRICT_KERNEL_RWX
+ 
+-static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
+-static DEFINE_PER_CPU(struct mm_struct *, cpu_patching_mm);
+-static DEFINE_PER_CPU(unsigned long, cpu_patching_addr);
+-static DEFINE_PER_CPU(pte_t *, cpu_patching_pte);
++struct patch_context {
++	union {
++		struct vm_struct *text_poke_area;
++		struct mm_struct *mm;
++	};
++	unsigned long addr;
++	pte_t * pte;
++};
++
++static DEFINE_PER_CPU(struct patch_context, cpu_patching_context);
+ 
+ static int map_patch_area(void *addr, unsigned long text_poke_addr);
+ static void unmap_patch_area(unsigned long addr);
+@@ -116,14 +122,19 @@ static int text_area_cpu_up(unsigned int cpu)
+ 
+ 	unmap_patch_area(addr);
+ 
+-	this_cpu_write(text_poke_area, area);
++	this_cpu_write(cpu_patching_context.text_poke_area, area);
++	this_cpu_write(cpu_patching_context.addr, addr);
++	this_cpu_write(cpu_patching_context.pte, virt_to_kpte(addr));
+ 
  	return 0;
  }
  
--void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
-+static void set_hw_breakpoint(int nr, struct arch_hw_breakpoint *brk)
+ static int text_area_cpu_down(unsigned int cpu)
  {
--	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
--
- 	if (dawr_enabled())
- 		// Power8 or later
- 		set_dawr(nr, brk);
-@@ -879,6 +877,12 @@ void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
- 		WARN_ON_ONCE(1);
+-	free_vm_area(this_cpu_read(text_poke_area));
++	free_vm_area(this_cpu_read(cpu_patching_context.text_poke_area));
++	this_cpu_write(cpu_patching_context.text_poke_area, NULL);
++	this_cpu_write(cpu_patching_context.addr, 0);
++	this_cpu_write(cpu_patching_context.pte, NULL);
+ 	return 0;
  }
  
-+void __set_breakpoint(int nr, struct arch_hw_breakpoint *brk)
-+{
-+	memcpy(this_cpu_ptr(&current_brk[nr]), brk, sizeof(*brk));
-+	set_hw_breakpoint(nr, brk);
-+}
-+
- /* Check if we have DAWR or DABR hardware */
- bool ppc_breakpoint_available(void)
+@@ -167,9 +178,9 @@ static int text_area_cpu_up_mm(unsigned int cpu)
+ 		goto fail_no_pte;
+ 	pte_unmap_unlock(pte, ptl);
+ 
+-	this_cpu_write(cpu_patching_mm, mm);
+-	this_cpu_write(cpu_patching_addr, addr);
+-	this_cpu_write(cpu_patching_pte, pte);
++	this_cpu_write(cpu_patching_context.mm, mm);
++	this_cpu_write(cpu_patching_context.addr, addr);
++	this_cpu_write(cpu_patching_context.pte, pte);
+ 
+ 	return 0;
+ 
+@@ -181,12 +192,12 @@ static int text_area_cpu_up_mm(unsigned int cpu)
+ 
+ static int text_area_cpu_down_mm(unsigned int cpu)
  {
-@@ -891,6 +895,34 @@ bool ppc_breakpoint_available(void)
+-	put_patching_mm(this_cpu_read(cpu_patching_mm),
+-			this_cpu_read(cpu_patching_addr));
++	put_patching_mm(this_cpu_read(cpu_patching_context.mm),
++			this_cpu_read(cpu_patching_context.addr));
+ 
+-	this_cpu_write(cpu_patching_mm, NULL);
+-	this_cpu_write(cpu_patching_addr, 0);
+-	this_cpu_write(cpu_patching_pte, NULL);
++	this_cpu_write(cpu_patching_context.mm, NULL);
++	this_cpu_write(cpu_patching_context.addr, 0);
++	this_cpu_write(cpu_patching_context.pte, NULL);
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL_GPL(ppc_breakpoint_available);
+@@ -278,9 +289,9 @@ static int __do_patch_instruction_mm(u32 *addr, ppc_inst_t instr)
+ 	struct mm_struct *patching_mm;
+ 	struct mm_struct *orig_mm;
  
-+/* Disable the breakpoint in hardware without touching current_brk[] */
-+void suspend_breakpoints(void)
-+{
-+	struct arch_hw_breakpoint brk = {0};
-+	int i;
-+
-+	if (!ppc_breakpoint_available())
-+		return;
-+
-+	for (i = 0; i < nr_wp_slots(); i++)
-+		set_hw_breakpoint(i, &brk);
-+}
-+
-+/*
-+ * Re-enable breakpoints suspended by suspend_breakpoints() in hardware
-+ * from current_brk[]
-+ */
-+void restore_breakpoints(void)
-+{
-+	int i;
-+
-+	if (!ppc_breakpoint_available())
-+		return;
-+
-+	for (i = 0; i < nr_wp_slots(); i++)
-+		set_hw_breakpoint(i, this_cpu_ptr(&current_brk[i]));
-+}
-+
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	patching_mm = __this_cpu_read(cpu_patching_mm);
+-	pte = __this_cpu_read(cpu_patching_pte);
+-	text_poke_addr = __this_cpu_read(cpu_patching_addr);
++	patching_mm = __this_cpu_read(cpu_patching_context.mm);
++	pte = __this_cpu_read(cpu_patching_context.pte);
++	text_poke_addr = __this_cpu_read(cpu_patching_context.addr);
+ 	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
  
- static inline bool tm_enabled(struct task_struct *tsk)
+ 	__set_pte_at(patching_mm, text_poke_addr, pte, pfn_pte(pfn, PAGE_KERNEL), 0);
+@@ -320,10 +331,10 @@ static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
+ 	pte_t *pte;
+ 	unsigned long pfn = get_patch_pfn(addr);
+ 
+-	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr & PAGE_MASK;
++	text_poke_addr = (unsigned long)__this_cpu_read(cpu_patching_context.addr) & PAGE_MASK;
+ 	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
+ 
+-	pte = virt_to_kpte(text_poke_addr);
++	pte = __this_cpu_read(cpu_patching_context.pte);
+ 	__set_pte_at(&init_mm, text_poke_addr, pte, pfn_pte(pfn, PAGE_KERNEL), 0);
+ 	/* See ptesync comment in radix__set_pte_at() */
+ 	if (radix_enabled())
 -- 
 2.38.1
 
