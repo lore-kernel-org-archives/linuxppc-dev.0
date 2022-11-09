@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F41C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21C4DC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:58:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6Xkv1ZqXz3f5Q
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 15:57:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6Xlw5N4vz3f24
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 15:58:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTGGblUW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fc5tsqfX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mTGGblUW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Fc5tsqfX;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Xch2MBvz303P
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Xch32hZz3bhv
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 15:51:47 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A93hqc4009291;
-	Wed, 9 Nov 2022 04:51:38 GMT
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A94R1Iv002515;
+	Wed, 9 Nov 2022 04:51:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=3iTsWVdBewQ6GSk1wfDs+ZRhchCLreXFIsd+U0L8Fbo=;
- b=mTGGblUW3ap+hS+f/QLZ0oskwifWwjqCuzJ9jBdC+lVk4kAw4c+0UEj2snYgCUTMcJDI
- hI0GSRQDAtMr2rVEt/ro9GuZS/P98IiOoavPH7xuGH2ixwnkdHKrohHsQmxPELxX9Hrv
- wnYvhl83K2x4UOad5CiiSZv6Ql61NZeq2tLN9SD1IY8VZxqBxUS+wY3Cpnqu5shc1Rza
- UZ9tCfPCEgO0bJkdh3lK56UQsoeh/5H7DRtT1+ip+XTuLtrL1ZsAb0qD4mQO8ADCOI7v
- 1rGlqROgCNKfdrL7YtGnT0THlATDv8vKITKD36+axeh9bEbACltFttl3AJvPVXm0RtHZ 8g== 
+ bh=N1tS4X8+heTzkVXLVHBoP4F5d0jgs2004snFBcHMPrE=;
+ b=Fc5tsqfXVggc+Tm13qznraTY6y4rtnM82kpl0oiTqkRT/rKO2i8+AVG8FV0P4h1U4tQD
+ /SfkUjXOJ0bbDqBD6rDiHOB185OfOpY8vtxpVmC9HNHavnx0n50K/mEl318fY8W1t8uy
+ yOzt820LWNS1rNKUh37oQrIyCBvoQFNeQdgw//hb/N5vDTmxv+hULox5HdeFgMC95tPZ
+ sYUoIohUcmiZPrDQ8twePK8qjlBRuzuP3c8orpBUUAHyJlyu1Hn90/x57nEJoI7/3yrQ
+ tDV5OEzVVr5YCP3jk8sfOocvEHGBe8pnsRh5rFyZoha2lO5eTQtwdrB2tuTA71MeYUzW Yg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr4j5jmwd-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr56mh8ad-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Nov 2022 04:51:38 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A94oG7j004792;
-	Wed, 9 Nov 2022 04:51:37 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr4j5jmuu-1
+	Wed, 09 Nov 2022 04:51:36 +0000
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A94V0wD029077;
+	Wed, 9 Nov 2022 04:51:36 GMT
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr56mh899-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Nov 2022 04:51:37 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A94oBLK031236;
-	Wed, 9 Nov 2022 04:51:35 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma06ams.nl.ibm.com with ESMTP id 3kngncd3cg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 09 Nov 2022 04:51:35 +0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A94pX034063828
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 09 Nov 2022 04:51:36 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A94pUCX014752;
 	Wed, 9 Nov 2022 04:51:33 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C410A405C;
-	Wed,  9 Nov 2022 04:51:33 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 82C83A4054;
-	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma04ams.nl.ibm.com with ESMTP id 3kngqdd1vs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Nov 2022 04:51:33 +0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com [9.149.105.59])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A94pV3r4063822
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 9 Nov 2022 04:51:31 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 541A5A404D;
+	Wed,  9 Nov 2022 04:51:31 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A973AA4040;
+	Wed,  9 Nov 2022 04:51:30 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
+	by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Wed,  9 Nov 2022 04:51:30 +0000 (GMT)
 Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 030EC6083C;
-	Wed,  9 Nov 2022 15:51:29 +1100 (AEDT)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CC4886038E;
+	Wed,  9 Nov 2022 15:51:28 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v10 9/9] powerpc/code-patching: Consolidate and cache per-cpu patching context
-Date: Wed,  9 Nov 2022 15:51:12 +1100
-Message-Id: <20221109045112.187069-10-bgray@linux.ibm.com>
+Subject: [PATCH v10 3/9] powerpc/mm: Remove extern from function prototypes
+Date: Wed,  9 Nov 2022 15:51:06 +1100
+Message-Id: <20221109045112.187069-4-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221109045112.187069-1-bgray@linux.ibm.com>
 References: <20221109045112.187069-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 7MMCeKG2zeviAQ62321mkvcU7TT0qf-E
-X-Proofpoint-ORIG-GUID: E_uXsmLFLGS37vd9LnBia701GGEHnTmQ
+X-Proofpoint-GUID: RAR7cPrRCiG-PW9Q3poePFprc68GGT-s
+X-Proofpoint-ORIG-GUID: w7XTdfAtoNcCeQoc1rUwmDWD_SUg-Xk8
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-09_01,2022-11-08_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- lowpriorityscore=0 mlxlogscore=911 phishscore=0 impostorscore=0
- spamscore=0 priorityscore=1501 clxscore=1015 bulkscore=0 mlxscore=0
- adultscore=0 malwarescore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2210170000 definitions=main-2211090032
+ definitions=2022-11-08_06,2022-11-08_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ impostorscore=0 phishscore=0 malwarescore=0 lowpriorityscore=0
+ suspectscore=0 spamscore=0 bulkscore=0 mlxlogscore=662 adultscore=0
+ mlxscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211090028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,130 +105,108 @@ Cc: ajd@linux.ibm.com, jniethe5@gmail.com, Benjamin Gray <bgray@linux.ibm.com>, 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With the temp mm context support, there are CPU local variables to hold
-the patch address and pte. Use these in the non-temp mm path as well
-instead of adding a level of indirection through the text_poke_area
-vm_struct and pointer chasing the pte.
-
-As both paths use these fields now, there is no need to let unreferenced
-variables be dropped by the compiler, so it is cleaner to merge them into
-a single context struct. This has the additional benefit of removing a
-redundant CPU local pointer, as only one of cpu_patching_mm /
-text_poke_area is ever used, while remaining well-typed. It also groups
-each CPU's data into a single cacheline.
+Remove the extern keyword from function declarations. It is redundant
+and would cause inconsistent style when new functions are added without
+it.
 
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
-v10:	* Mention cache benefits
-v9:	* Consolidate patching context into single struct
+v10:	* New in v10 for consistency with new functions
 ---
- arch/powerpc/lib/code-patching.c | 49 +++++++++++++++++++-------------
- 1 file changed, 30 insertions(+), 19 deletions(-)
+ .../include/asm/book3s/64/tlbflush-hash.h     | 19 +++++++++---------
+ arch/powerpc/include/asm/nohash/tlbflush.h    | 20 +++++++++----------
+ 2 files changed, 18 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-index 5b0022997296..2e10df464a2b 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -48,10 +48,16 @@ int raw_patch_instruction(u32 *addr, ppc_inst_t instr)
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+index fab8332fe1ad..3c89e625e620 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+@@ -22,7 +22,7 @@ struct ppc64_tlb_batch {
+ };
+ DECLARE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
  
- #ifdef CONFIG_STRICT_KERNEL_RWX
+-extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
++void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
  
--static DEFINE_PER_CPU(struct vm_struct *, text_poke_area);
--static DEFINE_PER_CPU(struct mm_struct *, cpu_patching_mm);
--static DEFINE_PER_CPU(unsigned long, cpu_patching_addr);
--static DEFINE_PER_CPU(pte_t *, cpu_patching_pte);
-+struct patch_context {
-+	union {
-+		struct vm_struct *text_poke_area;
-+		struct mm_struct *mm;
-+	};
-+	unsigned long addr;
-+	pte_t * pte;
-+};
-+
-+static DEFINE_PER_CPU(struct patch_context, cpu_patching_context);
+ #define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
  
- static int map_patch_area(void *addr, unsigned long text_poke_addr);
- static void unmap_patch_area(unsigned long addr);
-@@ -116,14 +122,19 @@ static int text_area_cpu_up(unsigned int cpu)
+@@ -51,14 +51,13 @@ static inline void arch_leave_lazy_mmu_mode(void)
  
- 	unmap_patch_area(addr);
+ #define arch_flush_lazy_mmu_mode()      do {} while (0)
  
--	this_cpu_write(text_poke_area, area);
-+	this_cpu_write(cpu_patching_context.text_poke_area, area);
-+	this_cpu_write(cpu_patching_context.addr, addr);
-+	this_cpu_write(cpu_patching_context.pte, virt_to_kpte(addr));
+-extern void hash__tlbiel_all(unsigned int action);
++void hash__tlbiel_all(unsigned int action);
  
- 	return 0;
- }
- 
- static int text_area_cpu_down(unsigned int cpu)
+-extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
+-			    int ssize, unsigned long flags);
+-extern void flush_hash_range(unsigned long number, int local);
+-extern void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+-				pmd_t *pmdp, unsigned int psize, int ssize,
+-				unsigned long flags);
++void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
++		     unsigned long flags);
++void flush_hash_range(unsigned long number, int local);
++void flush_hash_hugepage(unsigned long vsid, unsigned long addr, pmd_t *pmdp,
++			 unsigned int psize, int ssize, unsigned long flags);
+ static inline void hash__local_flush_tlb_mm(struct mm_struct *mm)
  {
--	free_vm_area(this_cpu_read(text_poke_area));
-+	free_vm_area(this_cpu_read(cpu_patching_context.text_poke_area));
-+	this_cpu_write(cpu_patching_context.text_poke_area, NULL);
-+	this_cpu_write(cpu_patching_context.addr, 0);
-+	this_cpu_write(cpu_patching_context.pte, NULL);
- 	return 0;
  }
+@@ -111,11 +110,11 @@ static inline void hash__flush_tlb_kernel_range(unsigned long start,
  
-@@ -167,9 +178,9 @@ static int text_area_cpu_up_mm(unsigned int cpu)
- 		goto fail_no_pte;
- 	pte_unmap_unlock(pte, ptl);
  
--	this_cpu_write(cpu_patching_mm, mm);
--	this_cpu_write(cpu_patching_addr, addr);
--	this_cpu_write(cpu_patching_pte, pte);
-+	this_cpu_write(cpu_patching_context.mm, mm);
-+	this_cpu_write(cpu_patching_context.addr, addr);
-+	this_cpu_write(cpu_patching_context.pte, pte);
+ struct mmu_gather;
+-extern void hash__tlb_flush(struct mmu_gather *tlb);
++void hash__tlb_flush(struct mmu_gather *tlb);
  
- 	return 0;
+ #ifdef CONFIG_PPC_64S_HASH_MMU
+ /* Private function for use by PCI IO mapping code */
+-extern void __flush_hash_table_range(unsigned long start, unsigned long end);
++void __flush_hash_table_range(unsigned long start, unsigned long end);
+ void flush_hash_table_pmd_range(struct mm_struct *mm, pmd_t *pmd, unsigned long addr);
+ #else
+ static inline void __flush_hash_table_range(unsigned long start, unsigned long end) { }
+diff --git a/arch/powerpc/include/asm/nohash/tlbflush.h b/arch/powerpc/include/asm/nohash/tlbflush.h
+index bdaf34ad41ea..0cef5e4f8d92 100644
+--- a/arch/powerpc/include/asm/nohash/tlbflush.h
++++ b/arch/powerpc/include/asm/nohash/tlbflush.h
+@@ -28,8 +28,7 @@ struct mm_struct;
  
-@@ -181,12 +192,12 @@ static int text_area_cpu_up_mm(unsigned int cpu)
+ #define MMU_NO_CONTEXT      	((unsigned int)-1)
  
- static int text_area_cpu_down_mm(unsigned int cpu)
- {
--	put_patching_mm(this_cpu_read(cpu_patching_mm),
--			this_cpu_read(cpu_patching_addr));
-+	put_patching_mm(this_cpu_read(cpu_patching_context.mm),
-+			this_cpu_read(cpu_patching_context.addr));
+-extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+-			    unsigned long end);
++void flush_tlb_range(struct vm_area_struct *vma, unsigned long start, unsigned long end);
  
--	this_cpu_write(cpu_patching_mm, NULL);
--	this_cpu_write(cpu_patching_addr, 0);
--	this_cpu_write(cpu_patching_pte, NULL);
-+	this_cpu_write(cpu_patching_context.mm, NULL);
-+	this_cpu_write(cpu_patching_context.addr, 0);
-+	this_cpu_write(cpu_patching_context.pte, NULL);
- 
- 	return 0;
+ #ifdef CONFIG_PPC_8xx
+ static inline void local_flush_tlb_mm(struct mm_struct *mm)
+@@ -55,19 +54,18 @@ static inline void flush_tlb_kernel_range(unsigned long start, unsigned long end
+ 		asm volatile ("sync; tlbia; isync" : : : "memory");
  }
-@@ -278,9 +289,9 @@ static int __do_patch_instruction_mm(u32 *addr, ppc_inst_t instr)
- 	struct mm_struct *patching_mm;
- 	struct mm_struct *orig_mm;
+ #else
+-extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
+-extern void local_flush_tlb_mm(struct mm_struct *mm);
+-extern void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
++void flush_tlb_kernel_range(unsigned long start, unsigned long end);
++void local_flush_tlb_mm(struct mm_struct *mm);
++void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
  
--	patching_mm = __this_cpu_read(cpu_patching_mm);
--	pte = __this_cpu_read(cpu_patching_pte);
--	text_poke_addr = __this_cpu_read(cpu_patching_addr);
-+	patching_mm = __this_cpu_read(cpu_patching_context.mm);
-+	pte = __this_cpu_read(cpu_patching_context.pte);
-+	text_poke_addr = __this_cpu_read(cpu_patching_context.addr);
- 	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
+-extern void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+-				   int tsize, int ind);
++void __local_flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
++			    int tsize, int ind);
+ #endif
  
- 	__set_pte_at(patching_mm, text_poke_addr, pte, pfn_pte(pfn, PAGE_KERNEL), 0);
-@@ -320,10 +331,10 @@ static int __do_patch_instruction(u32 *addr, ppc_inst_t instr)
- 	pte_t *pte;
- 	unsigned long pfn = get_patch_pfn(addr);
- 
--	text_poke_addr = (unsigned long)__this_cpu_read(text_poke_area)->addr & PAGE_MASK;
-+	text_poke_addr = (unsigned long)__this_cpu_read(cpu_patching_context.addr) & PAGE_MASK;
- 	patch_addr = (u32 *)(text_poke_addr + offset_in_page(addr));
- 
--	pte = virt_to_kpte(text_poke_addr);
-+	pte = __this_cpu_read(cpu_patching_context.pte);
- 	__set_pte_at(&init_mm, text_poke_addr, pte, pfn_pte(pfn, PAGE_KERNEL), 0);
- 	/* See ptesync comment in radix__set_pte_at() */
- 	if (radix_enabled())
+ #ifdef CONFIG_SMP
+-extern void flush_tlb_mm(struct mm_struct *mm);
+-extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+-extern void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr,
+-			     int tsize, int ind);
++void flush_tlb_mm(struct mm_struct *mm);
++void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
++void __flush_tlb_page(struct mm_struct *mm, unsigned long vmaddr, int tsize, int ind);
+ #else
+ #define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
+ #define flush_tlb_page(vma,addr)	local_flush_tlb_page(vma,addr)
 -- 
 2.38.1
 
