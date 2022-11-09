@@ -4,74 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC5A7C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 01:48:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A42AC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 04:52:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6SYC2gkJz3cct
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 12:48:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N6Xdm2cs9z3dv8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 15:52:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=oCh9xJ9o;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WhuO6UEX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=oCh9xJ9o;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WhuO6UEX;
 	dkim-atps=neutral
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6SX73pfrz2xkD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 12:47:35 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id g24so15774392plq.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Nov 2022 17:47:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=GFiQ8yrjAlu5znJjGKWnW7N78yY9mCgalJ70ibzG+ng=;
-        b=oCh9xJ9oUKKILoRe5QDlFP54kKTfklbomAYRLGMq9JZosnmEb3/63FkNJ1FQoEMtsh
-         Wrp/BB0+uHZjVR59x+5BrwuSAWI8GsxvloqqNQtBqTnWcCi1Z2lJFT3TkKjYtHZc2rd8
-         TVJopvWQi5VSzvOiQLFti098ESk4tvS+m6Msy8L+M8xFkvp24omusHsF0aMHYVMuX6tr
-         Lsg/PgSWPisnKTIDajNwVgMPJB7PGOxoMovrHzyI9hhsu0rCVl3UKx6veQlmnyOhQawD
-         /u8A8i85p7d8/QqBYtHUyG+dZqpokD4xLreaIjwqFslkh0MPzcozYjXIh5dMtgkFV23n
-         8Tzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=GFiQ8yrjAlu5znJjGKWnW7N78yY9mCgalJ70ibzG+ng=;
-        b=4vVb6MFc2VlQkqwqjP688evCtWYEjaI+++vw86zC8NvPLxlyotyqm1AbV0eCi3zXOe
-         5wN83IT/My8J+GcdpbkaTpWiyCtSLpPTGiFE4cDlHHPK8PMNxGzhPdaqA3cJkbXSLiVO
-         6HZs2lV6VboqC1qlFg1VwWfBxoJo05eb9NJUeqad4IeyYFmpK87SVW6tvQMWfemLXGhb
-         ZOkrX5kSLAKT+zfy3amCr+by+IWhNGPnMBIF/pDif1hrAkaoOU4g+8wfTqAXrI/rClZ3
-         so9sqWx8tqiSI30zuMO+33D0UoUl08kH1f6m+j820lz12il+pATn+KlUVArPZMUNRxCi
-         VAZA==
-X-Gm-Message-State: ACrzQf11Lv8n35ioTZi4VgQezZS5fhaa9esycQ3xYuXZ2ZoSAFE77UvH
-	4d3YNooKxbZYmwvgS/lPV9M=
-X-Google-Smtp-Source: AMsMyM6UqZa83zJujrnKHC7JbTzJ9UswKPa4PYCmrh7ZZB9x/ofQrmMFZjXxbjS+NZx7WWsvqdGGAQ==
-X-Received: by 2002:a17:903:2c2:b0:182:df88:e6d3 with SMTP id s2-20020a17090302c200b00182df88e6d3mr58216653plk.81.1667958453283;
-        Tue, 08 Nov 2022 17:47:33 -0800 (PST)
-Received: from localhost.localdomain ([114.242.248.205])
-        by smtp.gmail.com with ESMTPSA id y123-20020a623281000000b0056bb4dc8164sm6992779pfy.193.2022.11.08.17.47.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Nov 2022 17:47:32 -0800 (PST)
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
-To: mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	atrajeev@linux.vnet.ibm.com,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	lance@osuosl.org,
-	paulmck@kernel.org,
-	rcu@vger.kernel.org
-Subject: [PATCH linux-next][RFC]powerpc: move pseries interrupt cleanup code to under __cpu_disable
-Date: Wed,  9 Nov 2022 09:47:06 +0800
-Message-Id: <20221109014706.10484-1-zhouzhouyi@gmail.com>
-X-Mailer: git-send-email 2.34.1
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6Xch3nfVz3c6d
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Nov 2022 15:51:47 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.5/8.17.1.5) with ESMTP id 2A92j5Ks025125;
+	Wed, 9 Nov 2022 04:51:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : content-transfer-encoding
+ : mime-version; s=pp1; bh=ZBGUMPUY3g5BSAqg/1MCPVUPaWexqPyHy60P3/pyn74=;
+ b=WhuO6UEXB5nMuTBRgT22S3knYgYMpaoYo0ShGhjUzwzPxt64LLNZLvXvSGyWaVvQwxan
+ Z33BXvPpc4v2WBmg57AsFVqZrk08SDhgQdh7ydxdqGQNLQjcDUyQKpf3PrjgaDbNQECW
+ f4359DEzjNxqUze932T5uDMHw+XZMXm97bQZ5ucm3v1ETy+61DqW6nKMMxCKWS6JPCJ9
+ 89ryGRtUha9VsEJr3Jqnd/OqNc3UF4Vm0aAoW5xTC18N5AIh3XhneWlTALaUtRRt2jbE
+ cc0/hIFIziBBFhNrDFVbHUaAMzbWLbAiRpvvB8L8huGb++KsVsdtslUN9iIubw4dVKEq +g== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr3pv3ucx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Nov 2022 04:51:37 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2A94KWGK005340;
+	Wed, 9 Nov 2022 04:51:37 GMT
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kr3pv3uc1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Nov 2022 04:51:37 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2A94pOP2014740;
+	Wed, 9 Nov 2022 04:51:35 GMT
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+	by ppma04ams.nl.ibm.com with ESMTP id 3kngqdd1vv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 09 Nov 2022 04:51:35 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
+	by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2A94pWYA61866490
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 9 Nov 2022 04:51:33 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DC3F811C054;
+	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3DD6511C04A;
+	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Wed,  9 Nov 2022 04:51:32 +0000 (GMT)
+Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E11C960810;
+	Wed,  9 Nov 2022 15:51:28 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v10 6/9] powerpc/mm: Remove flush_all_mm, local_flush_all_mm
+Date: Wed,  9 Nov 2022 15:51:09 +1100
+Message-Id: <20221109045112.187069-7-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221109045112.187069-1-bgray@linux.ibm.com>
+References: <20221109045112.187069-1-bgray@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: xvwrauGG-8GId-2IQK6Ui7Pa9yeOZ6pI
+X-Proofpoint-ORIG-GUID: zbzACr4NNjgzWwyllFJHssVzUgRsx9UQ
 Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-11-09_01,2022-11-08_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
+ impostorscore=0 adultscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0
+ mlxlogscore=878 suspectscore=0 clxscore=1015 priorityscore=1501
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211090028
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,81 +101,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Cc: ajd@linux.ibm.com, jniethe5@gmail.com, Benjamin Gray <bgray@linux.ibm.com>, npiggin@gmail.com, cmr@bluescreens.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-According to
-Link: https://lore.kernel.org/lkml/20220914021528.15946-1-zhouzhouyi@gmail.com/T/
-Link: https://lore.kernel.org/lkml/CN6WCMKCWHOG.LT2QV3910UJ2@bobo/
+These functions were introduced for "cxl: Enable global TLBIs for cxl
+contexts" [1], which ended up using them for Radix only. They were never
+implemented on Hash (and creating an implementation appears to be
+difficult), so nothing can actually rely on them.
 
-During the cpu offlining, the sub functions of xive_teardown_cpu will
-call __lock_acquire when CONFIG_LOCKDEP=y. The latter function will
-travel RCU protected list, so "WARNING: suspicious RCU usage" will be
-triggered.
+They behave differently to the existing surrounding functions too, in
+that they actually need to do something on Hash. The other functions
+are primarily for use in generic code that expects their definitions,
+but Hash updates the TLB during PTE updates.
 
-According to Documentation/core-api/cpu_hotplug.rst:
-__cpu_disable should shut down the interrupt handler.
+After replacing the only usage with the Radix specific version, there
+are no more users of these functions, and given they are not implemented
+anyway it is safe to delete them.
 
-This patch move pseries interrupt cleanup code to under __cpu_disable.
+[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20170903181513.29635-1-fbarrat@linux.vnet.ibm.com/
 
-RCU torture tested in ppc VM of Open Source Lab of Oregon State University,
-by comparing the test results, our fix don't introduce new bugs and fixed
-previous "WARNING: suspicious RCU usage" bugs.
-
-Suggested-by: Nicholas Piggin <npiggin@gmail.com> 
-Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 ---
-Dear PPC and RCU developers
+v10:	* New in v10 to remove the hash__ set of functions
+---
+ .../include/asm/book3s/64/tlbflush-hash.h     | 22 -------------------
+ arch/powerpc/include/asm/book3s/64/tlbflush.h | 15 -------------
+ 2 files changed, 37 deletions(-)
 
-I tries do move pseries interrupt cleanup code to under __cpu_disable.
-During this process, I learn the XIVE interrupt controller architecture
-by debugging the qemu virtual machine, and reading the following documents:
-Link: https://www.qemu.org/docs/master/specs/ppc-spapr-xive.html
-Link: https://www.qemu.org/docs/master/specs/ppc-xive.html
-It is a fruitful journey, thank you for you guidance ;-)
-
-I also tested the patch in ppc VM of Open Source Lab of Oregon
-State University by invoking
-tools/testing/selftests/rcutorture/bin/torture.sh
-
-Thanks again
-Zhouyi
---
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index e0a7ac5db15d..c7c86ea0a74d 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -62,12 +62,7 @@ static void pseries_cpu_offline_self(void)
- {
- 	unsigned int hwcpu = hard_smp_processor_id();
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+index 38d31c2489d3..cdbb1a04bb52 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
+@@ -59,28 +59,6 @@ void flush_hash_range(unsigned long number, int local);
+ void flush_hash_hugepage(unsigned long vsid, unsigned long addr, pmd_t *pmdp,
+ 			 unsigned int psize, int ssize, unsigned long flags);
  
--	local_irq_disable();
- 	idle_task_exit();
--	if (xive_enabled())
--		xive_teardown_cpu();
--	else
--		xics_teardown_cpu();
+-static inline void hash__local_flush_all_mm(struct mm_struct *mm)
+-{
+-	/*
+-	 * There's no Page Walk Cache for hash, so what is needed is
+-	 * the same as flush_tlb_mm(), which doesn't really make sense
+-	 * with hash. So the only thing we could do is flush the
+-	 * entire LPID! Punt for now, as it's not being used.
+-	 */
+-	WARN_ON_ONCE(1);
+-}
+-
+-static inline void hash__flush_all_mm(struct mm_struct *mm)
+-{
+-	/*
+-	 * There's no Page Walk Cache for hash, so what is needed is
+-	 * the same as flush_tlb_mm(), which doesn't really make sense
+-	 * with hash. So the only thing we could do is flush the
+-	 * entire LPID! Punt for now, as it's not being used.
+-	 */
+-	WARN_ON_ONCE(1);
+-}
+-
+ struct mmu_gather;
+ void hash__tlb_flush(struct mmu_gather *tlb);
  
- 	unregister_slb_shadow(hwcpu);
- 	rtas_stop_self();
-@@ -96,3 +91,10 @@ static int pseries_cpu_disable(void)
- 
- 	cleanup_cpu_mmu_context();
-
-+	local_irq_disable();
-+
-+	if (xive_enabled())
-+		xive_teardown_cpu();
-+	else
-+		xics_teardown_cpu();
-+
-	return 0;
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index 2254a40f0564..c56a0aee8124 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -86,13 +86,6 @@ static inline void local_flush_tlb_page(struct vm_area_struct *vma,
+ 		radix__local_flush_tlb_page(vma, vmaddr);
  }
  
+-static inline void local_flush_all_mm(struct mm_struct *mm)
+-{
+-	if (radix_enabled())
+-		return radix__local_flush_all_mm(mm);
+-	return hash__local_flush_all_mm(mm);
+-}
+-
+ static inline void tlb_flush(struct mmu_gather *tlb)
+ {
+ 	if (radix_enabled())
+@@ -112,17 +105,9 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
+ 	if (radix_enabled())
+ 		radix__flush_tlb_page(vma, vmaddr);
+ }
+-
+-static inline void flush_all_mm(struct mm_struct *mm)
+-{
+-	if (radix_enabled())
+-		return radix__flush_all_mm(mm);
+-	return hash__flush_all_mm(mm);
+-}
+ #else
+ #define flush_tlb_mm(mm)		local_flush_tlb_mm(mm)
+ #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
+-#define flush_all_mm(mm)		local_flush_all_mm(mm)
+ #endif /* CONFIG_SMP */
+ 
+ #define flush_tlb_fix_spurious_fault flush_tlb_fix_spurious_fault
 -- 
-2.25.1
+2.38.1
 
