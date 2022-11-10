@@ -4,50 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61F77C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 16:35:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7A29C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 16:50:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N7SBJ4vzbz3f32
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 03:35:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N7SWZ6l8pz3cfX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 03:50:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=prm2DHsV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=OOR4bwRU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::102f; helo=mail-pj1-x102f.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=prm2DHsV;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=OOR4bwRU;
 	dkim-atps=neutral
-X-Greylist: delayed 1891 seconds by postgrey-1.36 at boromir; Fri, 11 Nov 2022 03:34:41 AEDT
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N7S9F5VS6z3cKL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2022 03:34:41 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=D8Um2SWESyWwAoQ0Hp9/x5Na8vtfvbENXwnpCxX3ROY=; b=prm2DHsV5YAlzHXZNaeodoW5qC
-	KVVvbi+niGkOnDkEvts551Z+HwtHFPgpmktCmgRrcb0AlY/sV9SjYkuMr7//dCosqX+cHwzBAcIl8
-	51BgYUtbIUd847zJCt9gtMNirT5IcN7UXZGK2iU+5LK8KT+fnoZAvqaRT2ddP2LCgJ9Q=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1ot9zi-0022yz-Er; Thu, 10 Nov 2022 17:01:34 +0100
-Date: Thu, 10 Nov 2022 17:01:34 +0100
-From: Andrew Lunn <andrew@lunn.ch>
-To: Vladimir Oltean <vladimir.oltean@nxp.com>
-Subject: Re: [PATCH net-next v2 00/11] net: pcs: Add support for devices
- probed in the "usual" manner
-Message-ID: <Y20gXppMemnHSTG9@lunn.ch>
-References: <20221103210650.2325784-1-sean.anderson@seco.com>
- <20221109224110.erfaftzja4fybdbc@skbuf>
- <bcb87445-d80d-fea0-82f2-a15b20baaf06@seco.com>
- <20221110152925.3gkkp5opf74oqrxb@skbuf>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N7SVW2thrz3cLW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2022 03:49:38 +1100 (AEDT)
+Received: by mail-pj1-x102f.google.com with SMTP id b11so2007201pjp.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2022 08:49:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=rPjVc+C4keVB9JNeySRKdiTbUPe13351AhOJe9TtZf8=;
+        b=OOR4bwRUplBbyMMh2BEwu+86VP3qxijSJnezQ7clymoLz9HUcLonm3WyVFc88kB5fY
+         O/E+L3vna3lCH6PwuGGALEpEbdqf//FCQPJXnQH0fruVZmuKpiXxpksMlHLNli5FBIVk
+         yHcqF3ftlcFWSWpaRO18yKIRlZ4MLKYwLTrjNA/qL4cv528Rj8wkmrotYw4AfXaxmJus
+         pcCX78Uh4a0+xqNPkY5yiRwsOaQfBATcwvX2XL8kq2aQkn5xXT0ESqE2s4sWnkM2XUP1
+         lN0YUhWFEsDiU77d2rUZObTRDQeLPD96HT9QdyztVtB+kfc9jl7KnKnrsPBskzRSRVH/
+         XRTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=rPjVc+C4keVB9JNeySRKdiTbUPe13351AhOJe9TtZf8=;
+        b=QrfrJjX6M3sV/dpdCiIAVFxNC7BpgLBiTROaNjAPapU1TpNkJD/GYQN5N197sgQCUO
+         i7cDhj8nnOwdjssOMj0CvSYTfG7+y/wEgTWQIcmZcCKBeKcJPAjsYG28KespHLh/xLtV
+         HBf8qkCTVkzP2hWXALNMBq9qvHo91PXDY6p4m9bIa6QC6CDKHIg6PXDyHjzBfT2Ssi3w
+         KLr4VFMZinhD1miTSHsqyJl8Ebnt6PVxnLU8t/NhhM1FcNV7RZ8v+gA95j0nxj3rqEHj
+         pwB8mFQTLouvVe6Zfb0nBdQq8ch1P1O1fmLrgYaudY/EyQWhzz6afqYKu4ncloKnSdPP
+         nEqw==
+X-Gm-Message-State: ACrzQf28J4mY/tKtpbwkQ4e6WIB+7xMkWCdxY8oTGAFCYFel7dDA7ks9
+	3kNoZXHqTOOg83sjPdKQT7In0Q==
+X-Google-Smtp-Source: AMsMyM7nQN/gdgW0z481CkQ/WjHrrL4d++/kzaSXhuKO9UuGt09a3AowKSZBoBJ0HDICWxNrCbdrGA==
+X-Received: by 2002:a17:902:d50c:b0:187:460:bf9c with SMTP id b12-20020a170902d50c00b001870460bf9cmr65545589plg.4.1668098974180;
+        Thu, 10 Nov 2022 08:49:34 -0800 (PST)
+Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
+        by smtp.gmail.com with ESMTPSA id c3-20020a17090a020300b00205d85cfb30sm3288107pjc.20.2022.11.10.08.49.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Nov 2022 08:49:33 -0800 (PST)
+Date: Thu, 10 Nov 2022 16:49:29 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Robert Hoo <robert.hu@linux.intel.com>
+Subject: Re: [PATCH 37/44] KVM: Rename and move CPUHP_AP_KVM_STARTING to
+ ONLINE section
+Message-ID: <Y20rmaU14rZFFCZI@google.com>
+References: <20221102231911.3107438-1-seanjc@google.com>
+ <20221102231911.3107438-38-seanjc@google.com>
+ <301a8a33a5cbe5b4fd3efe03b05bb8410a46e9f5.camel@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20221110152925.3gkkp5opf74oqrxb@skbuf>
+In-Reply-To: <301a8a33a5cbe5b4fd3efe03b05bb8410a46e9f5.camel@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,41 +80,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Madalin Bucur <madalin.bucur@nxp.com>, Eric Dumazet <edumazet@google.com>, Paul Mackerras <paulus@samba.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, "UNGLinuxDriver@microchip.com" <UNGLinuxDriver@microchip.com>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Saravana Kannan <saravanak@google.com>, Sean Anderson <sean.anderson@seco.com>, Russell King <linux@armlinux.org.uk>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Vivien Didelot <vivien.didelot@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Claudiu Manoil <claudiu.manoil@nxp.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux
- -kernel@vger.kernel.org>, Leo Li <leoyang.li@nxp.com>, Vladimir Oltean <olteanv@gmail.com>, Shawn Guo <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>, Heiner Kallweit <hkallweit1@gmail.com>
+Cc: Matthew Rosato <mjrosato@linux.ibm.com>, David Hildenbrand <david@redhat.com>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Fabiano Rosas <farosas@linux.ibm.com>, 
+ linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 10, 2022 at 03:29:26PM +0000, Vladimir Oltean wrote:
-> On Thu, Nov 10, 2022 at 09:55:32AM -0500, Sean Anderson wrote:
-> > On 11/9/22 17:41, Vladimir Oltean wrote:
-> > > On Thu, Nov 03, 2022 at 05:06:39PM -0400, Sean Anderson wrote:
-> > >> Several (later) patches in this series cannot be applied until a stable
-> > >> release has occured containing the dts updates.
-> > > 
-> > > New kernels must remain compatible with old device trees.
-> > 
-> > Well, this binding is not present in older device trees, so it needs to
-> > be added before these patches can be applied. It also could be possible
-> > to manually bind the driver using e.g. a helper function (like what is
-> > done with lynx_pcs_create_on_bus). Of course this would be tricky,
-> > because we would need to unbind any generic phy driver attached, but
-> > avoid unbinding an existing Lynx PCS driver.
+On Thu, Nov 10, 2022, Robert Hoo wrote:
+> > -static int kvm_starting_cpu(unsigned int cpu)
+> > +static int kvm_online_cpu(unsigned int cpu)
+> >  {
+> > +	int ret = 0;
+> > +
+> >  	raw_spin_lock(&kvm_count_lock);
+> > -	if (kvm_usage_count)
+> > +	/*
+> > +	 * Abort the CPU online process if hardware virtualization
+> > cannot
+> > +	 * be enabled. Otherwise running VMs would encounter
+> > unrecoverable
+> > +	 * errors when scheduled to this CPU.
+> > +	 */
+> > +	if (kvm_usage_count) {
+> > +		WARN_ON_ONCE(atomic_read(&hardware_enable_failed));
+> > +
+> >  		hardware_enable_nolock(NULL);
+> > +		if (atomic_read(&hardware_enable_failed)) {
+> > +			atomic_set(&hardware_enable_failed, 0);
 > 
-> If you know the value of the MII_PHYSID1 and MII_PHYSID2 registers for
-> these PCS devices, would it be possible to probe them in a generic way
-> as MDIO devices, if they lack a compatible string?
+> I see other places using this hardware_enable_failed with atomic_inc(),
+> should here use atomic_dec() instead of straightly set to 0?
 
-That is not how it currently works. If a device on an MDIO bus has a
-compatible, it is assumed to be an mdio device, and it is probed in a
-generic way as an sort of mdio device. It could be an Ethernet switch,
-or Broadcom has some generic PHYs which are mdio devices, etc.
+Meh, both options are flawed.  E.g. if hardware_enable_failed was left dangling
+(the WARN above), then atomic_dec() won't remedy the problem and KVM will reject
+onlining CPUs indefinitely.  Forcing the atomic back to '0' will remedy that
+particular issue, but could lead to problems if there are other bugs.
 
-If there is no compatible, the ID registers are read and it is assumed
-to be a PHY. It will be probed as a PHY. The probe() function will be
-given a phydev etc.
+> Though here is embraced by spin_lock, hardware_enable_nolock() can be
+> invoked in other places in parallel?
 
-It will need some core changes to allow an mdio device to be probed
-via the ID registers.
+Only because of a KVM bug, which gets fixed in the next patch:
 
-    Andrew
+  KVM: Disable CPU hotplug during hardware enabling
