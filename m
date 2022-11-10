@@ -4,73 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D82EC43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 16:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80FF6C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 21:03:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N7SkP4PGnz3f3x
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 03:59:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N7Z7d5vy3z3f3w
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 08:03:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LnpIznW5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iJwMckJy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LnpIznW5;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iJwMckJy;
 	dkim-atps=neutral
-Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N7SjN6ZHHz2x9J
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2022 03:59:03 +1100 (AEDT)
-Received: by mail-pl1-x632.google.com with SMTP id p21so1875643plr.7
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2022 08:59:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=++qaNnNL5OJX09F4SmymJbSNGTe4YNGKf8knlNeZLIM=;
-        b=LnpIznW50UbJYIR0PEtWeJYNJ+5rH6MIlZozMzFMTwSQvTcP33ucW9c9lQSevvLDXI
-         QyB5+yXhMZUDNlkwdSbDFjM7JR9S8ttOodJeLQApsp/g1X2g7iaiRMpztbbtLirGmHXP
-         Ok5MPlCZ4tZXNzdoN/5EaAFNU5i/kMEU+Pj6UbsvHwVNko95a9bIdjWXiNhQrkyCMZcF
-         1gbXxHeTac5BLcvPalQHTWFwjbFrO0re69/ZDM4/c7ATiGknmYZEnSteDE0eFOsuiUGv
-         o02wNWrUZNQBtGle02WgOsPhE6Inb5/XeEtyenAcor9m9bnEppDYL8UdqJt6p1agDB2o
-         ED2w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=++qaNnNL5OJX09F4SmymJbSNGTe4YNGKf8knlNeZLIM=;
-        b=3O/nAwpVIEvIl6obY4p7BgKCBLKYdRhd0e5HjazbiAQSG8Z4bppE4O+v/BXj8xGViL
-         te7J0XXU8/FQN6KFZ/dG3Bbig0Dgb56GYRgDbwyz2PoLE6Kl6cRTz0VKjhOrMLxmsciF
-         ld9XqTtfPluw9LP+Nhc8gChc22cfwn/QdeUsJMoQBTjTpXbqMIYHWzzapfpfhxljdrji
-         2HyapaOvrjcMQcRNzaClci62QJS1xycIfE++gYb+KLo+8Gt0Z7kiMH4A1Ao3LQhHSzCC
-         73KSKIY+ojLIyLY7kf0/jBDooyogloDC4TFKsAVb7Er5Jr0YZvyiFUrVZ3J687nHp0RZ
-         fmjw==
-X-Gm-Message-State: ANoB5pkGc+dSwhBoBOYTLgv7FS5RHW68PXul+ios7i4jtt7q90c7DWrb
-	Y1ZJhKFComCfqrJe7LJ5J2+L7A==
-X-Google-Smtp-Source: AA0mqf4HLI0425WgRwXjVOczy7lGJ1ZoFRhJMikRvyU6kmBBe6o5W1MVmVmeziJeqm75+QzM+47Lew==
-X-Received: by 2002:a17:902:6aca:b0:188:736c:befa with SMTP id i10-20020a1709026aca00b00188736cbefamr1100928plt.8.1668099540938;
-        Thu, 10 Nov 2022 08:59:00 -0800 (PST)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id n63-20020a17090a5ac500b00200461cfa99sm3302123pji.11.2022.11.10.08.59.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Nov 2022 08:59:00 -0800 (PST)
-Date: Thu, 10 Nov 2022 16:58:56 +0000
-From: Sean Christopherson <seanjc@google.com>
-To: "Huang, Kai" <kai.huang@intel.com>
-Subject: Re: [PATCH 38/44] KVM: Disable CPU hotplug during hardware enabling
-Message-ID: <Y20t0AMNqvtyOwp2@google.com>
-References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-39-seanjc@google.com>
- <88e920944de70e7d69a98f74005b49c59b5aaa3b.camel@intel.com>
- <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N7Z6S6LSNz2xG6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2022 08:02:40 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 14F1361E56;
+	Thu, 10 Nov 2022 21:02:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2AFFAC433C1;
+	Thu, 10 Nov 2022 21:02:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1668114157;
+	bh=dFjwsB2x4Vktj11UP1nFbKy1JuZUspP3pjwcHIsSSnc=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=iJwMckJy0uCcByLR5dTqb/sLhh/p4neWekIYZaZ3yeonbwH09ch8EqoG8ecGOC/gh
+	 LxSdAJBLbKmEE3CXGDI3A7Vc6BCxXLJ/bsFq5hQJgqS/nai15IhiKGetEeKH4+vpT2
+	 j9Ld+7uAe0Uz9IipZQ/88pm8pLqURo9XzvxQWuunebeReJqpcbJfuCN8BWniAwIWF9
+	 a+ZwQoYjb1mS5vRmT3xSXjeYdGWxfBo/pZQHhYRV38fM2nHaPFfGhzmt8f50haLCEQ
+	 7sSMDQr3yt4Z74/HTNY4ceRxsq+32kGBXwaNszYjSX1Y2pvyiMxqjjRM7Gykh+Y6zM
+	 XSZjD4/Y6CHGA==
+Date: Thu, 10 Nov 2022 15:02:35 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Subject: Re: [PATCH v3 0/5] PCI: Remove unnecessary <linux/of_irq.h> includes
+Message-ID: <20221110210235.GA671572@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
+In-Reply-To: <20221031153954.1163623-1-helgaas@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,65 +58,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mjrosato@linux.ibm.com" <mjrosato@linux.ibm.com>, "david@redhat.com" <david@redhat.com>, "Yao, Yuan" <yuan.yao@intel.com>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, "maz@kernel.org" <maz@kernel.org>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "aleksandar.qemu.devel@gmail.com" <aleksandar.qemu.devel@gmail.com>, "james.morse@arm.com" <james.morse@arm.com>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "Gao, Chao" <chao.gao@intel.com>, "farman@linux.ibm.com" <farman@linux.ibm.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, "kvm@vger.kernel.org" <kvm@vg
- er.kernel.org>, "atishp@atishpatra.org" <atishp@atishpatra.org>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "tglx@linutronix.de" <tglx@linutronix.de>, "alexandru.elisei@arm.com" <alexandru.elisei@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Yamahata, Isaku" <isaku.yamahata@intel.com>, "farosas@linux.ibm.com" <farosas@linux.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "oliver.upton@linux.dev" <oliver.upton@linux.dev>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "anup@brainfault.org" <anup@brainfault.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "vkuznets@redhat.com" <vkuznets@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Minghuan Lian <minghuan.Lian@nxp.com>, Conor Dooley <conor.dooley@microchip.com>, Thierry Reding <thierry.reding@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Bharat Kumar Gogada <bharat.kumar.gogada@amd.com>, Toan Le <toan@os.amperecomputing.com>, linux-riscv@lists.infradead.org, Kishon Vijay Abraham I <kishon@kernel.org>, Rob Herring <robh@kernel.org>, Joyce Ooi <joyce.ooi@intel.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org, Shawn Lin <shawn.lin@rock-chips.com>, Ray Jui <rjui@broadcom.com>, linux-tegra@vger.kernel.org, linux-omap@vger.kernel.org, Michal Simek <michal.simek@amd.com>, Mingkai Hu <mingkai.hu@nxp.com>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, Scott Branden <sbra
+ nden@broadcom.com>, Daire McNamara <daire.mcnamara@microchip.com>, linux-kernel@vger.kernel.org, Tom Joseph <tjoseph@cadence.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 10, 2022, Huang, Kai wrote:
-> On Thu, 2022-11-10 at 01:33 +0000, Huang, Kai wrote:
-> > > @@ -9283,7 +9283,13 @@ static int
-> > > kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
-> > >  	int cpu = smp_processor_id();
-> > >  	struct cpuinfo_x86 *c = &cpu_data(cpu);
-> > >  
-> > > -	WARN_ON(!irqs_disabled());
-> > > +	/*
-> > > +	 * Compatibility checks are done when loading KVM and when enabling
-> > > +	 * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
-> > > +	 * compatible, i.e. KVM should never perform a compatibility check
-> > > on
-> > > +	 * an offline CPU.
-> > > +	 */
-> > > +	WARN_ON(!irqs_disabled() && cpu_active(cpu));
-> > >  
-> > 
-> > Also, the logic of:
-> > 
-> > 	!irqs_disabled() && cpu_active(cpu)
-> > 
-> > is quite weird.
-> > 
-> > The original "WARN(!irqs_disabled())" is reasonable because in STARTING
-> > section
-> > the IRQ is indeed disabled.
-> > 
-> > But this doesn't make sense anymore after we move to ONLINE section, in which
-> > IRQ has already been enabled (see start_secondary()).  IIUC the WARN_ON()
-> > doesn't get exploded is purely because there's an additional cpu_active(cpu)
-> > check.
-> > 
-> > So, a more reasonable check should be something like:
-> > 
-> > 	WARN_ON(irqs_disabled() || cpu_active(cpu) || !cpu_online(cpu));
-> > 
-> > Or we can simply do:
-> > 
-> > 	WARN_ON(!cpu_online(cpu) || cpu_active(cpu));
-> > 
-> > (because I don't know whether it's possible IRQ can somehow get disabled in
-> > ONLINE section).
-> > 
-> > Btw above is purely based on code analysis, but I haven't done any test.
+On Mon, Oct 31, 2022 at 10:39:49AM -0500, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> Hmm.. I wasn't thinking thoroughly.  I forgot CPU compatibility check also
-> happens on all online cpus when loading KVM.  For this case, IRQ is disabled and
-> cpu_active() is true.  For the hotplug case, IRQ is enabled but  cpu_active() is
-> false.
+> Many host controller drivers #include <linux/of_irq.h> even though they
+> don't need it.  Remove the unnecessary #includes.
 > 
-> So WARN_ON(!irqs_disabled() && cpu_active(cpu)) looks reasonable.  Sorry for the
-> noise.  Just needed some time to connect the comment with the code.
+> v2: https://lore.kernel.org/r/20221025185147.665365-1-helgaas@kernel.org/
+> v1: https://lore.kernel.org/r/20221019195452.37606-1-helgaas@kernel.org/
+> 
+> Changes from v2 to v3:
+>   - Include <linux/irqdomain.h> explicitly in xgene-msi, which doesn't need
+>     <linux/of_irq.h> itself, but relied on it to include
+>     <linux/irqdomain.h>.  On x86, this was covered up by the fact that
+>     <linux/msi.h> includes <asm/msi.h>, which includes <asm/irqdomain.h>,
+>     which includes <linux/irqdomain.h>.  But on parisc, <asm/msi.h> is
+>     actually asm-generic/msi.h, which does *not* include
+>     <linux/irqdomain.h>
+>   - Pick up tags from Conor Dooley and Thomas Petazzoni
+> 
+> Changes from v1 to v2:
+>   - Include <linux/irqdomain.h> explicitly in altera-msi and microchip,
+>     which don't need <linux/of_irq.h> itself, but relied on it to include
+>     <linux/irqdomain.h>
+>   - Include <linux/irqdomain.h> explicitly in mvebu, which needs both it
+>     and <linux/of_irq.h>
+> 
+> Bjorn Helgaas (5):
+>   PCI: altera-msi: Include <linux/irqdomain.h> explicitly
+>   PCI: microchip: Include <linux/irqdomain.h> explicitly
+>   PCI: mvebu: Include <linux/irqdomain.h> explicitly
+>   PCI: xgene-msi: Include <linux/irqdomain.h> explicitly
+>   PCI: Remove unnecessary <linux/of_irq.h> includes
+> 
+>  drivers/pci/controller/cadence/pci-j721e.c   | 1 -
+>  drivers/pci/controller/dwc/pci-layerscape.c  | 1 -
+>  drivers/pci/controller/dwc/pcie-armada8k.c   | 1 -
+>  drivers/pci/controller/dwc/pcie-tegra194.c   | 1 -
+>  drivers/pci/controller/pci-mvebu.c           | 1 +
+>  drivers/pci/controller/pci-v3-semi.c         | 1 -
+>  drivers/pci/controller/pci-xgene-msi.c       | 2 +-
+>  drivers/pci/controller/pci-xgene.c           | 1 -
+>  drivers/pci/controller/pcie-altera-msi.c     | 2 +-
+>  drivers/pci/controller/pcie-iproc-platform.c | 1 -
+>  drivers/pci/controller/pcie-iproc.c          | 1 -
+>  drivers/pci/controller/pcie-microchip-host.c | 2 +-
+>  drivers/pci/controller/pcie-rockchip-host.c  | 1 -
+>  drivers/pci/controller/pcie-xilinx-cpm.c     | 1 -
+>  drivers/pci/controller/pcie-xilinx-nwl.c     | 1 -
+>  15 files changed, 4 insertions(+), 14 deletions(-)
 
-No worries, more than once while working through this code, I've considered setting
-up one of those evidence boards from the movies with string and push pins to help
-connect all the dots.
+I put these on a pci/kbuild branch that I propose to merge in after
+everything else.  Lorenzo, let me know if you prefer another approach.
+
+Bjorn
