@@ -4,35 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D336BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Nov 2022 17:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D82EC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 16:59:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N6snk15z6z3f4C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Nov 2022 04:45:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=<UNKNOWN>)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N7SkP4PGnz3f3x
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 03:59:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LnpIznW5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LnpIznW5;
+	dkim-atps=neutral
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N6sn244jhz3cB8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2022 04:45:10 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id DFD19B81F54;
-	Wed,  9 Nov 2022 17:45:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63DE8C433D6;
-	Wed,  9 Nov 2022 17:44:59 +0000 (UTC)
-Date: Wed, 9 Nov 2022 17:44:56 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Jason A. Donenfeld" <Jason@zx2c4.com>
-Subject: Re: [PATCH v1 2/2] stackprotector: actually use get_random_canary()
-Message-ID: <Y2vnGFuj5N9/o/Ia@arm.com>
-References: <20221023203208.118919-1-Jason@zx2c4.com>
- <20221023203208.118919-3-Jason@zx2c4.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N7SjN6ZHHz2x9J
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Nov 2022 03:59:03 +1100 (AEDT)
+Received: by mail-pl1-x632.google.com with SMTP id p21so1875643plr.7
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Nov 2022 08:59:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=++qaNnNL5OJX09F4SmymJbSNGTe4YNGKf8knlNeZLIM=;
+        b=LnpIznW50UbJYIR0PEtWeJYNJ+5rH6MIlZozMzFMTwSQvTcP33ucW9c9lQSevvLDXI
+         QyB5+yXhMZUDNlkwdSbDFjM7JR9S8ttOodJeLQApsp/g1X2g7iaiRMpztbbtLirGmHXP
+         Ok5MPlCZ4tZXNzdoN/5EaAFNU5i/kMEU+Pj6UbsvHwVNko95a9bIdjWXiNhQrkyCMZcF
+         1gbXxHeTac5BLcvPalQHTWFwjbFrO0re69/ZDM4/c7ATiGknmYZEnSteDE0eFOsuiUGv
+         o02wNWrUZNQBtGle02WgOsPhE6Inb5/XeEtyenAcor9m9bnEppDYL8UdqJt6p1agDB2o
+         ED2w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=++qaNnNL5OJX09F4SmymJbSNGTe4YNGKf8knlNeZLIM=;
+        b=3O/nAwpVIEvIl6obY4p7BgKCBLKYdRhd0e5HjazbiAQSG8Z4bppE4O+v/BXj8xGViL
+         te7J0XXU8/FQN6KFZ/dG3Bbig0Dgb56GYRgDbwyz2PoLE6Kl6cRTz0VKjhOrMLxmsciF
+         ld9XqTtfPluw9LP+Nhc8gChc22cfwn/QdeUsJMoQBTjTpXbqMIYHWzzapfpfhxljdrji
+         2HyapaOvrjcMQcRNzaClci62QJS1xycIfE++gYb+KLo+8Gt0Z7kiMH4A1Ao3LQhHSzCC
+         73KSKIY+ojLIyLY7kf0/jBDooyogloDC4TFKsAVb7Er5Jr0YZvyiFUrVZ3J687nHp0RZ
+         fmjw==
+X-Gm-Message-State: ANoB5pkGc+dSwhBoBOYTLgv7FS5RHW68PXul+ios7i4jtt7q90c7DWrb
+	Y1ZJhKFComCfqrJe7LJ5J2+L7A==
+X-Google-Smtp-Source: AA0mqf4HLI0425WgRwXjVOczy7lGJ1ZoFRhJMikRvyU6kmBBe6o5W1MVmVmeziJeqm75+QzM+47Lew==
+X-Received: by 2002:a17:902:6aca:b0:188:736c:befa with SMTP id i10-20020a1709026aca00b00188736cbefamr1100928plt.8.1668099540938;
+        Thu, 10 Nov 2022 08:59:00 -0800 (PST)
+Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
+        by smtp.gmail.com with ESMTPSA id n63-20020a17090a5ac500b00200461cfa99sm3302123pji.11.2022.11.10.08.59.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Nov 2022 08:59:00 -0800 (PST)
+Date: Thu, 10 Nov 2022 16:58:56 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: "Huang, Kai" <kai.huang@intel.com>
+Subject: Re: [PATCH 38/44] KVM: Disable CPU hotplug during hardware enabling
+Message-ID: <Y20t0AMNqvtyOwp2@google.com>
+References: <20221102231911.3107438-1-seanjc@google.com>
+ <20221102231911.3107438-39-seanjc@google.com>
+ <88e920944de70e7d69a98f74005b49c59b5aaa3b.camel@intel.com>
+ <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20221023203208.118919-3-Jason@zx2c4.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,25 +82,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, "H . Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Nicholas Piggin <npiggin@gmail.com>, Borislav Petkov <bp@alien8.de>, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Chris Zankel <chris@zankel.net>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, linuxppc-dev@l
- ists.ozlabs.org
+Cc: "mjrosato@linux.ibm.com" <mjrosato@linux.ibm.com>, "david@redhat.com" <david@redhat.com>, "Yao, Yuan" <yuan.yao@intel.com>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, "maz@kernel.org" <maz@kernel.org>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "aleksandar.qemu.devel@gmail.com" <aleksandar.qemu.devel@gmail.com>, "james.morse@arm.com" <james.morse@arm.com>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "Gao, Chao" <chao.gao@intel.com>, "farman@linux.ibm.com" <farman@linux.ibm.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, "kvm@vger.kernel.org" <kvm@vg
+ er.kernel.org>, "atishp@atishpatra.org" <atishp@atishpatra.org>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "tglx@linutronix.de" <tglx@linutronix.de>, "alexandru.elisei@arm.com" <alexandru.elisei@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Yamahata, Isaku" <isaku.yamahata@intel.com>, "farosas@linux.ibm.com" <farosas@linux.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "oliver.upton@linux.dev" <oliver.upton@linux.dev>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "anup@brainfault.org" <anup@brainfault.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "vkuznets@redhat.com" <vkuznets@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Oct 23, 2022 at 10:32:08PM +0200, Jason A. Donenfeld wrote:
-> The RNG always mixes in the Linux version extremely early in boot. It
-> also always includes a cycle counter, not only during early boot, but
-> each and every time it is invoked prior to being fully initialized.
-> Together, this means that the use of additional xors inside of the
-> various stackprotector.h files is superfluous and over-complicated.
-> Instead, we can get exactly the same thing, but better, by just calling
-> `get_random_canary()`.
+On Thu, Nov 10, 2022, Huang, Kai wrote:
+> On Thu, 2022-11-10 at 01:33 +0000, Huang, Kai wrote:
+> > > @@ -9283,7 +9283,13 @@ static int
+> > > kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
+> > >  	int cpu = smp_processor_id();
+> > >  	struct cpuinfo_x86 *c = &cpu_data(cpu);
+> > >  
+> > > -	WARN_ON(!irqs_disabled());
+> > > +	/*
+> > > +	 * Compatibility checks are done when loading KVM and when enabling
+> > > +	 * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
+> > > +	 * compatible, i.e. KVM should never perform a compatibility check
+> > > on
+> > > +	 * an offline CPU.
+> > > +	 */
+> > > +	WARN_ON(!irqs_disabled() && cpu_active(cpu));
+> > >  
+> > 
+> > Also, the logic of:
+> > 
+> > 	!irqs_disabled() && cpu_active(cpu)
+> > 
+> > is quite weird.
+> > 
+> > The original "WARN(!irqs_disabled())" is reasonable because in STARTING
+> > section
+> > the IRQ is indeed disabled.
+> > 
+> > But this doesn't make sense anymore after we move to ONLINE section, in which
+> > IRQ has already been enabled (see start_secondary()).  IIUC the WARN_ON()
+> > doesn't get exploded is purely because there's an additional cpu_active(cpu)
+> > check.
+> > 
+> > So, a more reasonable check should be something like:
+> > 
+> > 	WARN_ON(irqs_disabled() || cpu_active(cpu) || !cpu_online(cpu));
+> > 
+> > Or we can simply do:
+> > 
+> > 	WARN_ON(!cpu_online(cpu) || cpu_active(cpu));
+> > 
+> > (because I don't know whether it's possible IRQ can somehow get disabled in
+> > ONLINE section).
+> > 
+> > Btw above is purely based on code analysis, but I haven't done any test.
 > 
-> Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
-> ---
->  arch/arm/include/asm/stackprotector.h     |  9 +--------
->  arch/arm64/include/asm/stackprotector.h   |  9 +--------
+> Hmm.. I wasn't thinking thoroughly.  I forgot CPU compatibility check also
+> happens on all online cpus when loading KVM.  For this case, IRQ is disabled and
+> cpu_active() is true.  For the hotplug case, IRQ is enabled but  cpu_active() is
+> false.
+> 
+> So WARN_ON(!irqs_disabled() && cpu_active(cpu)) looks reasonable.  Sorry for the
+> noise.  Just needed some time to connect the comment with the code.
 
-For arm64:
-
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+No worries, more than once while working through this code, I've considered setting
+up one of those evidence boards from the movies with string and push pins to help
+connect all the dots.
