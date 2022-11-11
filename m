@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1FADC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 376A2C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:21:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N817s3RHFz3f5t
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:20:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N818s5Blwz3flB
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:21:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Sw1lJkOU;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=CEwbqwdL;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=qtOLrPfL;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9t/bFWqC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Sw1lJkOU;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=CEwbqwdL;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=qtOLrPfL;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=9t/bFWqC;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p45MMBz3fJd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p45Rydz3fJh
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:00 +1100 (AEDT)
-Message-ID: <20221111122015.807616900@linutronix.de>
+Message-ID: <20221111122015.271447896@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174916;
+	s=2020; t=1668174902;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=643AGhyNZmR2aie2PCCrOjp31nEV6JyyeqqH5V3vLDo=;
-	b=Sw1lJkOUvkZ0DIAcRPl+ie495eVa6MbYCglERsRGFe8w0Y5OR00lTVkULAo3m3suKSbjrP
-	0ow0a6Nw5jI91aq9J3EGWRZoVNumWiEKlIlIXZxwTYrItsHWIo3QClO8S/4rXyABHAgyRd
-	VLCJNs9QTCInxzPdTphoMGKQBBAQzQYXZZzvOmqqZ5Wydl5zhwLSMUpWma3gufRqtR7R7c
-	Q7e/lmelPnuCPGVViHH7TrfQy0Chs28OJpRiQP92j/k5T4lQXPSjBLR5hGCMjSgcBdnQev
-	9JltwNMmtLP7XxpQGxTpy8LoCtAOCTdKp0RybLPEIGZ6vG3MULDpIUQfdcegHw==
+	 references:references; bh=uSFXy88Ws6eNkV/cYwDRULmA+6GRqcWIzt5ADLcbTDw=;
+	b=qtOLrPfLAgkAZVy6NU1Qu4bTgTB43Bj44kvSwwsRH2ZnPNV8dgX7HwnPsn22qu8w9m7yL2
+	A97svlVBbgwk1Kouj39B9/00uFrvjnNmfsSosW6KlZXHE8ipZjQ0zh2qu2h4JEOniktLvM
+	DdJLcXVpW+4EUh71Wah1RWNgffLHTJmi70jycylYYTUnXe5mTgu11BanYjAsDqbjHjh5Cj
+	jNVdIefLpB/Et84Tmy/wCrmUO2sDcrVo8lhj8nIcgrZW5QGFV0eKkEMimQbvvAjsRl/0w+
+	VdXkapfyi/PEEHMzxyAKo9mdYdwp3K4g/p7Prgjc0/kxGJjy/daFCUOg+YK/3w==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174916;
+	s=2020e; t=1668174902;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=643AGhyNZmR2aie2PCCrOjp31nEV6JyyeqqH5V3vLDo=;
-	b=CEwbqwdLhlbEE3zKR1PyZBZm1Iv1k/zk7+gvTQLDniqqGqeEfGsMiJ+J0PDZl7Nx3yuYOM
-	y3Rvy6Y7JuG7mMBQ==
+	 references:references; bh=uSFXy88Ws6eNkV/cYwDRULmA+6GRqcWIzt5ADLcbTDw=;
+	b=9t/bFWqCfq8f0C3vQmoP3/db8s/pcp6OGrpaut5YexKKU5gS1ZtJ1Y4TbyTmvAad70QZt8
+	pyB9AsmnH5FIAdCA==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 38/39] genirq/msi: Remove msi_domain_ops::msi_check()
+Subject: [patch 29/39] PCI/MSI: Move pci_msi_enabled() to api.c
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:55:15 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:55:01 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,76 +64,83 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No more users.
+From: Ahmed S. Darwish <darwi@linutronix.de>
 
+To distangle the maze in msi.c, all exported device-driver MSI APIs are
+now to be grouped in one file, api.c.
+
+Move pci_msi_enabled() and make its kernel-doc comprehensive.
+
+Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/msi.h |    4 ----
- kernel/irq/msi.c    |   17 +----------------
- 2 files changed, 1 insertion(+), 20 deletions(-)
 
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -288,7 +288,6 @@ struct msi_domain_info;
-  * @get_hwirq:		Retrieve the resulting hw irq number
-  * @msi_init:		Domain specific init function for MSI interrupts
-  * @msi_free:		Domain specific function to free a MSI interrupts
-- * @msi_check:		Callback for verification of the domain/info/dev data
-  * @msi_prepare:	Prepare the allocation of the interrupts in the domain
-  * @set_desc:		Set the msi descriptor for an interrupt
-  * @domain_alloc_irqs:	Optional function to override the default allocation
-@@ -326,9 +325,6 @@ struct msi_domain_ops {
- 	void		(*msi_free)(struct irq_domain *domain,
- 				    struct msi_domain_info *info,
- 				    unsigned int virq);
--	int		(*msi_check)(struct irq_domain *domain,
--				     struct msi_domain_info *info,
--				     struct device *dev);
- 	int		(*msi_prepare)(struct irq_domain *domain,
- 				       struct device *dev, int nvec,
- 				       msi_alloc_info_t *arg);
---- a/kernel/irq/msi.c
-+++ b/kernel/irq/msi.c
-@@ -617,17 +617,9 @@ static int msi_domain_ops_init(struct ir
- 	return 0;
+---
+ drivers/pci/msi/api.c | 12 ++++++++++++
+ drivers/pci/msi/msi.c | 14 +-------------
+ drivers/pci/msi/msi.h |  3 +++
+ 3 files changed, 16 insertions(+), 13 deletions(-)
+---
+diff --git a/drivers/pci/msi/api.c b/drivers/pci/msi/api.c
+index 473df7ba0584..ee9ed5ccd94d 100644
+--- a/drivers/pci/msi/api.c
++++ b/drivers/pci/msi/api.c
+@@ -307,3 +307,15 @@ void pci_free_irq_vectors(struct pci_dev *dev)
+ 	pci_disable_msi(dev);
  }
+ EXPORT_SYMBOL(pci_free_irq_vectors);
++
++/**
++ * pci_msi_enabled() - Are MSI(-X) interrupts enabled system-wide?
++ *
++ * Return: true if MSI has not been globally disabled through ACPI FADT,
++ * PCI bridge quirks, or the "pci=nomsi" kernel command-line option.
++ */
++int pci_msi_enabled(void)
++{
++	return pci_msi_enable;
++}
++EXPORT_SYMBOL(pci_msi_enabled);
+diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
+index d78646d1c116..59c33bc7fe81 100644
+--- a/drivers/pci/msi/msi.c
++++ b/drivers/pci/msi/msi.c
+@@ -13,7 +13,7 @@
+ #include "../pci.h"
+ #include "msi.h"
  
--static int msi_domain_ops_check(struct irq_domain *domain,
--				struct msi_domain_info *info,
--				struct device *dev)
--{
--	return 0;
--}
--
- static struct msi_domain_ops msi_domain_ops_default = {
- 	.get_hwirq		= msi_domain_ops_get_hwirq,
- 	.msi_init		= msi_domain_ops_init,
--	.msi_check		= msi_domain_ops_check,
- 	.msi_prepare		= msi_domain_ops_prepare,
- 	.set_desc		= msi_domain_ops_set_desc,
- 	.domain_alloc_irqs	= __msi_domain_alloc_irqs,
-@@ -655,8 +647,6 @@ static void msi_domain_update_dom_ops(st
- 		ops->get_hwirq = msi_domain_ops_default.get_hwirq;
- 	if (ops->msi_init == NULL)
- 		ops->msi_init = msi_domain_ops_default.msi_init;
--	if (ops->msi_check == NULL)
--		ops->msi_check = msi_domain_ops_default.msi_check;
- 	if (ops->msi_prepare == NULL)
- 		ops->msi_prepare = msi_domain_ops_default.msi_prepare;
- 	if (ops->set_desc == NULL)
-@@ -707,13 +697,8 @@ int msi_domain_prepare_irqs(struct irq_d
+-static int pci_msi_enable = 1;
++int pci_msi_enable = 1;
+ int pci_msi_ignore_mask;
+ 
+ void pci_msi_update_mask(struct msi_desc *desc, u32 clear, u32 set)
+@@ -864,15 +864,3 @@ void pci_no_msi(void)
  {
- 	struct msi_domain_info *info = domain->host_data;
- 	struct msi_domain_ops *ops = info->ops;
--	int ret;
+ 	pci_msi_enable = 0;
+ }
 -
--	ret = ops->msi_check(domain, info, dev);
--	if (ret == 0)
--		ret = ops->msi_prepare(domain, dev, nvec, arg);
- 
--	return ret;
-+	return ops->msi_prepare(domain, dev, nvec, arg);
+-/**
+- * pci_msi_enabled - is MSI enabled?
+- *
+- * Returns true if MSI has not been disabled by the command-line option
+- * pci=nomsi.
+- **/
+-int pci_msi_enabled(void)
+-{
+-	return pci_msi_enable;
+-}
+-EXPORT_SYMBOL(pci_msi_enabled);
+diff --git a/drivers/pci/msi/msi.h b/drivers/pci/msi/msi.h
+index 77e2587f7e4f..f3f4ede53171 100644
+--- a/drivers/pci/msi/msi.h
++++ b/drivers/pci/msi/msi.h
+@@ -84,6 +84,9 @@ static inline __attribute_const__ u32 msi_multi_mask(struct msi_desc *desc)
+ 	return (1 << (1 << desc->pci.msi_attrib.multi_cap)) - 1;
  }
  
- int msi_domain_populate_irqs(struct irq_domain *domain, struct device *dev,
++/* Subsystem variables */
++extern int pci_msi_enable;
++
+ /* MSI internal functions invoked from the public APIs */
+ void pci_msi_shutdown(struct pci_dev *dev);
+ void pci_msix_shutdown(struct pci_dev *dev);
 
