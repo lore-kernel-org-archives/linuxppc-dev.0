@@ -4,52 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43B22C43219
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 13:56:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1029CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:00:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N80c142v4z3cbV
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 00:56:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N80jD20xkz3dwc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:00:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uOX0P7JY;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IbSEAj1F;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2Fw81I21;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=nfZOapQu;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uOX0P7JY;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=IbSEAj1F;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2Fw81I21;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=nfZOapQu;
 	dkim-atps=neutral
-X-Greylist: delayed 60 seconds by postgrey-1.36 at boromir; Sat, 12 Nov 2022 00:55:23 AEDT
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80Zz4Clyz3cJF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 00:55:23 +1100 (AEDT)
-Message-ID: <20221111122015.865042356@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hF5NZ1z3cF6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 00:59:57 +1100 (AEDT)
+Message-ID: <20221111122013.772447165@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174918;
+	s=2020; t=1668174859;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=KlmWSrD822PE2zOCQUPKNeyY1BUX75wWYBCy1LY/Ddo=;
-	b=uOX0P7JY4JDZrhpHSa4G1IGNcgMKKOEotn3WaD7e11QG/6dfy0hAWm6VlqdtkgWxscy2j2
-	vg8RZD2L7my03vFnseCP0zLzRVNFtmog03/OZWe8j+dCe3360GRdm7D7Ro+eFucXWe1cGt
-	B1TbYs1Kn3thlD7fo2rbFIumODHXMAxjO1WybkfUU98oPmOGMfEeOcgke6duFUhpjCZKei
-	OKjgabNkcGtNWaX2DdmfmLk843sFhP8s/1IrxWyfYUmW6Aek0x8nC5F0XV+DOF6doD4AUQ
-	pelYpWuMy5qNR57TeK4q2muF+jZFU5A0mAMkigQCBXCSX0sc7psCpSz6yuOhBg==
+	 references:references; bh=A5gxwhjOfYDDe9pKor0TACcvTNvwKPr4BmNEQMHYUXM=;
+	b=2Fw81I21MoAKaeHMvY8ErYps4l1IO750NK6h0Rw5RZWIkRe1THjaR3X9HOgWaw0l0mTY3s
+	Ll/dD746mdb0yAlQ0ov5sWM+AUpitCcs3HH2sgJgDOjn4vJMHJ7fU7zVpfvS6ftBxmpMqN
+	3lNkZB4zUY5dQCXSdvJRx9miYjQo5pscOVVZiUT43KjB5ToV7Gf6LBOoyJeBaDHV34hPBt
+	Kov5aUw/Nj5pOGw+zbQh01L3MNB9F/dqZYgM8k0EV9pZZdCg7t9WZLyUA2eNreUXI3U/Xg
+	YGxOHz7tgOcX14fftMFVLmC0ys4b/FRIRn7D0mnNGwj+0dhV8PWJeucTy3fKZg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174918;
+	s=2020e; t=1668174859;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=KlmWSrD822PE2zOCQUPKNeyY1BUX75wWYBCy1LY/Ddo=;
-	b=IbSEAj1FCCNGEuhGibqJgPyd7PCqcVB4JEhzyivG+QUYDdfm3d+uCQ5/9YQCI9bNGUKlUx
-	zljP/0HV6LO8O0BA==
+	 references:references; bh=A5gxwhjOfYDDe9pKor0TACcvTNvwKPr4BmNEQMHYUXM=;
+	b=nfZOapQueWw+bWDWb8DtO7mx9RdWBuPX7UZNwtQUy7EXN7HJhuDTmRaao/o2kWTcYU4fDr
+	5a1Y5VotFiqrI7Bg==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 39/39] x86/apic: Remove X86_IRQ_ALLOC_CONTIGUOUS_VECTORS
+Subject: [patch 03/39] iommu/amd: Remove bogus check for multi MSI-X
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:55:17 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:54:19 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,118 +64,23 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that the PCI/MSI core code does early checking for multi-MSI support
-X86_IRQ_ALLOC_CONTIGUOUS_VECTORS is not required anymore.
-
-Remove the flag and rely on MSI_FLAG_MULTI_PCI_MSI.
+PCI/Multi-MSI is MSI specific and not supported for MSI-X
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86/include/asm/irqdomain.h    |    4 +---
- arch/x86/kernel/apic/msi.c          |    6 ++----
- arch/x86/kernel/apic/vector.c       |    4 ----
- drivers/iommu/amd/iommu.c           |    7 -------
- drivers/iommu/intel/irq_remapping.c |    7 -------
- drivers/pci/controller/pci-hyperv.c |   15 +--------------
- 6 files changed, 4 insertions(+), 39 deletions(-)
+ drivers/iommu/amd/iommu.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/arch/x86/include/asm/irqdomain.h
-+++ b/arch/x86/include/asm/irqdomain.h
-@@ -7,9 +7,7 @@
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- enum {
--	/* Allocate contiguous CPU vectors */
--	X86_IRQ_ALLOC_CONTIGUOUS_VECTORS		= 0x1,
--	X86_IRQ_ALLOC_LEGACY				= 0x2,
-+	X86_IRQ_ALLOC_LEGACY				= 0x1,
- };
- 
- extern int x86_fwspec_is_ioapic(struct irq_fwspec *fwspec);
---- a/arch/x86/kernel/apic/msi.c
-+++ b/arch/x86/kernel/apic/msi.c
-@@ -161,12 +161,10 @@ int pci_msi_prepare(struct irq_domain *d
- 		    msi_alloc_info_t *arg)
- {
- 	init_irq_alloc_info(arg, NULL);
--	if (to_pci_dev(dev)->msix_enabled) {
-+	if (to_pci_dev(dev)->msix_enabled)
- 		arg->type = X86_IRQ_ALLOC_TYPE_PCI_MSIX;
--	} else {
-+	else
- 		arg->type = X86_IRQ_ALLOC_TYPE_PCI_MSI;
--		arg->flags |= X86_IRQ_ALLOC_CONTIGUOUS_VECTORS;
--	}
- 
- 	return 0;
- }
---- a/arch/x86/kernel/apic/vector.c
-+++ b/arch/x86/kernel/apic/vector.c
-@@ -539,10 +539,6 @@ static int x86_vector_alloc_irqs(struct
- 	if (disable_apic)
- 		return -ENXIO;
- 
--	/* Currently vector allocator can't guarantee contiguous allocations */
--	if ((info->flags & X86_IRQ_ALLOC_CONTIGUOUS_VECTORS) && nr_irqs > 1)
--		return -ENOSYS;
--
- 	/*
- 	 * Catch any attempt to touch the cascade interrupt on a PIC
- 	 * equipped system.
 --- a/drivers/iommu/amd/iommu.c
 +++ b/drivers/iommu/amd/iommu.c
-@@ -3297,13 +3297,6 @@ static int irq_remapping_alloc(struct ir
- 	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI)
+@@ -3294,8 +3294,7 @@ static int irq_remapping_alloc(struct ir
+ 
+ 	if (!info)
+ 		return -EINVAL;
+-	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI &&
+-	    info->type != X86_IRQ_ALLOC_TYPE_PCI_MSIX)
++	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI)
  		return -EINVAL;
  
--	/*
--	 * With IRQ remapping enabled, don't need contiguous CPU vectors
--	 * to support multiple MSI interrupts.
--	 */
--	if (info->type == X86_IRQ_ALLOC_TYPE_PCI_MSI)
--		info->flags &= ~X86_IRQ_ALLOC_CONTIGUOUS_VECTORS;
--
- 	sbdf = get_devid(info);
- 	if (sbdf < 0)
- 		return -EINVAL;
---- a/drivers/iommu/intel/irq_remapping.c
-+++ b/drivers/iommu/intel/irq_remapping.c
-@@ -1337,13 +1337,6 @@ static int intel_irq_remapping_alloc(str
- 	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI)
- 		return -EINVAL;
- 
--	/*
--	 * With IRQ remapping enabled, don't need contiguous CPU vectors
--	 * to support multiple MSI interrupts.
--	 */
--	if (info->type == X86_IRQ_ALLOC_TYPE_PCI_MSI)
--		info->flags &= ~X86_IRQ_ALLOC_CONTIGUOUS_VECTORS;
--
- 	ret = irq_domain_alloc_irqs_parent(domain, virq, nr_irqs, arg);
- 	if (ret < 0)
- 		return ret;
---- a/drivers/pci/controller/pci-hyperv.c
-+++ b/drivers/pci/controller/pci-hyperv.c
-@@ -611,20 +611,7 @@ static unsigned int hv_msi_get_int_vecto
- 	return cfg->vector;
- }
- 
--static int hv_msi_prepare(struct irq_domain *domain, struct device *dev,
--			  int nvec, msi_alloc_info_t *info)
--{
--	int ret = pci_msi_prepare(domain, dev, nvec, info);
--
--	/*
--	 * By using the interrupt remapper in the hypervisor IOMMU, contiguous
--	 * CPU vectors is not needed for multi-MSI
--	 */
--	if (info->type == X86_IRQ_ALLOC_TYPE_PCI_MSI)
--		info->flags &= ~X86_IRQ_ALLOC_CONTIGUOUS_VECTORS;
--
--	return ret;
--}
-+#define hv_msi_prepare		pci_msi_prepare
- 
- /**
-  * hv_arch_irq_unmask() - "Unmask" the IRQ by setting its current
+ 	/*
 
