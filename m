@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2E69C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:32:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A2EC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:33:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N81QD20z9z3g8k
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:32:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N81RD3Xmvz3cNN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:33:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pRX56ARt;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AJ1J3mtq;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pZhlEC8H;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XzyeTFE4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pRX56ARt;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AJ1J3mtq;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=pZhlEC8H;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XzyeTFE4;
 	dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80pN3PXYz3fKx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80pN5KVJz3fL8
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:16 +1100 (AEDT)
-Message-ID: <20221111122014.927531290@linutronix.de>
+Message-ID: <20221111122015.691357406@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174892;
+	s=2020; t=1668174913;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=uefv1SQ/kFaCIoG5nEqNjtgMsMbRPxf/+/AfGMMS3ME=;
-	b=pRX56ARtPVj6OyQEIMCqiah6CjQfsbUUjLKE1htpO78jveI+lbUJsRZyFxv6ZjkAjUyoAN
-	OmuwsBOTCOZcYbdo31sYBZJJ2JMMjsySbe+r7TtEcQbauOlB6obK1AaxPUm0xLZPC4vEfj
-	fcveslvLUX0yyTCArZBpUr0GgvLaxk/Zt48uV76R6Xz6gsOtk073eqv6iPhtoDfylIPEcH
-	5WvyxYOkjFBFl2nOpoe9vzRcON0FKzSVhz9TXniJi/Fp6trJaG8/k4uD/ZGjZ0rqx/oUuu
-	l8gSGVtbJBM/cwnAWhdq2WZdx3Vm6vpnKMcgPrP6Bm73HGnTvINn1tgoOm64CA==
+	 references:references; bh=ZT2wqZQe1H/I6Zbp9NC+LKW2/0gzRDmAQRTFrKQsKJ4=;
+	b=pZhlEC8HQoltxfUbzgMXHkDfB0GRlxnLvSjN1dc3PiVBo8WSLYIF9ktMwc0XjNYb4kLS8+
+	FqTCjJWZeq1j8WqGwul0V0shm019qcC15aTTmWrBmibPa4iyBaHln17GO+B7a+FZ7HzxkG
+	0nigWZfumb9aUEbIyEZcIeoXLpiQyjkTbnipeH21yJ5xwmTxonq864TxZUl+LihVftel2x
+	Ph1PWWqEcs7OLda5Ee6GdGF+KAXyt4i9XvX9Y9f9J76I48MVaA77REkSGiMVd5hEo8Wn9s
+	7pMPZ0LZKwuqpeWH/NkpM1YFXBbaazZjlZyRkesNTxkBHo+2AUSp+C++9BSUwA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174892;
+	s=2020e; t=1668174913;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=uefv1SQ/kFaCIoG5nEqNjtgMsMbRPxf/+/AfGMMS3ME=;
-	b=AJ1J3mtq3gNBb0E5N58gtI7ISk9ECj7NVJw8fMFn44Fh4eLBVHxpY55lAGhoZtOWr1SC8R
-	peJFrH/L1nyrdiAg==
+	 references:references; bh=ZT2wqZQe1H/I6Zbp9NC+LKW2/0gzRDmAQRTFrKQsKJ4=;
+	b=XzyeTFE4zXDDmgsFpNdLl62MN8+2pdKYw4Ip6qUuQqqfIw4P9A9EW8A7NpauZTzTWtO0LS
+	F5TDeOWU93205LDg==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 23/39] PCI/MSI: Move pci_alloc_irq_vectors_affinity() to api.c
+Subject: [patch 36/39] PCI/MSI: Validate MSIX contiguous restriction early
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:51 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:55:12 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,163 +64,61 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ahmed S. Darwish <darwi@linutronix.de>
+With interrupt domains the sanity check for MSI-X vector validation can be
+done _before_ any allocation happens. The sanity check only applies to the
+allocation functions which have an 'entries' array argument. The entries
+array is filled by the caller with the requested MSI-X indicies. Some drivers
+have gaps in the index space which is not supported on all architectures.
 
-To distangle the maze in msi.c, all exported device-driver MSI APIs are
-now to be grouped in one file, api.c.
+The PCI/MSI irqdomain has a 'feature' bit to enforce this validation late
+during the allocation phase.
 
-Move pci_alloc_irq_vectors_affinity() and let its kernel-doc reference
-pci_alloc_irq_vectors() documentation added in parent commit.
+Just do it right away before doing any other work along with the other
+sanity checks on that array.
 
-Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ drivers/pci/msi/msi.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
----
- drivers/pci/msi/api.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++-
- drivers/pci/msi/msi.c | 65 +----------------------------------------------------
- 2 files changed, 59 insertions(+), 65 deletions(-)
----
-diff --git a/drivers/pci/msi/api.c b/drivers/pci/msi/api.c
-index 1714905943fb..8546749afa6e 100644
---- a/drivers/pci/msi/api.c
-+++ b/drivers/pci/msi/api.c
-@@ -123,3 +123,62 @@ int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
- 					      flags, NULL);
- }
- EXPORT_SYMBOL(pci_alloc_irq_vectors);
-+
-+/**
-+ * pci_alloc_irq_vectors_affinity() - Allocate multiple device interrupt
-+ *                                    vectors with affinity requirements
-+ * @dev:      the PCI device to operate on
-+ * @min_vecs: minimum required number of vectors (must be >= 1)
-+ * @max_vecs: maximum desired number of vectors
-+ * @flags:    allocation flags, as in pci_alloc_irq_vectors()
-+ * @affd:     affinity requirements (can be %NULL).
-+ *
-+ * Same as pci_alloc_irq_vectors(), but with the extra @affd parameter.
-+ * Check that function docs, and &struct irq_affinity, for more details.
-+ */
-+int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
-+				   unsigned int max_vecs, unsigned int flags,
-+				   struct irq_affinity *affd)
-+{
-+	struct irq_affinity msi_default_affd = {0};
-+	int nvecs = -ENOSPC;
-+
-+	if (flags & PCI_IRQ_AFFINITY) {
-+		if (!affd)
-+			affd = &msi_default_affd;
-+	} else {
-+		if (WARN_ON(affd))
-+			affd = NULL;
-+	}
-+
-+	if (flags & PCI_IRQ_MSIX) {
-+		nvecs = __pci_enable_msix_range(dev, NULL, min_vecs, max_vecs,
-+						affd, flags);
-+		if (nvecs > 0)
-+			return nvecs;
-+	}
-+
-+	if (flags & PCI_IRQ_MSI) {
-+		nvecs = __pci_enable_msi_range(dev, min_vecs, max_vecs, affd);
-+		if (nvecs > 0)
-+			return nvecs;
-+	}
-+
-+	/* use legacy IRQ if allowed */
-+	if (flags & PCI_IRQ_LEGACY) {
-+		if (min_vecs == 1 && dev->irq) {
-+			/*
-+			 * Invoke the affinity spreading logic to ensure that
-+			 * the device driver can adjust queue configuration
-+			 * for the single interrupt case.
-+			 */
-+			if (affd)
-+				irq_create_affinity_masks(1, affd);
-+			pci_intx(dev, 1);
-+			return 1;
-+		}
-+	}
-+
-+	return nvecs;
-+}
-+EXPORT_SYMBOL(pci_alloc_irq_vectors_affinity);
-diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
-index 6700ef1c734e..a028774f438d 100644
 --- a/drivers/pci/msi/msi.c
 +++ b/drivers/pci/msi/msi.c
-@@ -887,71 +887,6 @@ int __pci_enable_msix_range(struct pci_dev *dev,
+@@ -725,13 +725,17 @@ static int msix_capability_init(struct p
+ 	return ret;
  }
  
- /**
-- * pci_alloc_irq_vectors_affinity - allocate multiple IRQs for a device
-- * @dev:		PCI device to operate on
-- * @min_vecs:		minimum number of vectors required (must be >= 1)
-- * @max_vecs:		maximum (desired) number of vectors
-- * @flags:		flags or quirks for the allocation
-- * @affd:		optional description of the affinity requirements
-- *
-- * Allocate up to @max_vecs interrupt vectors for @dev, using MSI-X or MSI
-- * vectors if available, and fall back to a single legacy vector
-- * if neither is available.  Return the number of vectors allocated,
-- * (which might be smaller than @max_vecs) if successful, or a negative
-- * error code on error. If less than @min_vecs interrupt vectors are
-- * available for @dev the function will fail with -ENOSPC.
-- *
-- * To get the Linux IRQ number used for a vector that can be passed to
-- * request_irq() use the pci_irq_vector() helper.
-- */
--int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
--				   unsigned int max_vecs, unsigned int flags,
--				   struct irq_affinity *affd)
--{
--	struct irq_affinity msi_default_affd = {0};
--	int nvecs = -ENOSPC;
--
--	if (flags & PCI_IRQ_AFFINITY) {
--		if (!affd)
--			affd = &msi_default_affd;
--	} else {
--		if (WARN_ON(affd))
--			affd = NULL;
--	}
--
--	if (flags & PCI_IRQ_MSIX) {
--		nvecs = __pci_enable_msix_range(dev, NULL, min_vecs, max_vecs,
--						affd, flags);
--		if (nvecs > 0)
--			return nvecs;
--	}
--
--	if (flags & PCI_IRQ_MSI) {
--		nvecs = __pci_enable_msi_range(dev, min_vecs, max_vecs, affd);
--		if (nvecs > 0)
--			return nvecs;
--	}
--
--	/* use legacy IRQ if allowed */
--	if (flags & PCI_IRQ_LEGACY) {
--		if (min_vecs == 1 && dev->irq) {
--			/*
--			 * Invoke the affinity spreading logic to ensure that
--			 * the device driver can adjust queue configuration
--			 * for the single interrupt case.
--			 */
--			if (affd)
--				irq_create_affinity_masks(1, affd);
--			pci_intx(dev, 1);
--			return 1;
--		}
--	}
--
--	return nvecs;
--}
--EXPORT_SYMBOL(pci_alloc_irq_vectors_affinity);
--
--/**
-  * pci_free_irq_vectors - free previously allocated IRQs for a device
-  * @dev:		PCI device to operate on
-  *
+-static bool pci_msix_validate_entries(struct msix_entry *entries, int nvec, int hwsize)
++static bool pci_msix_validate_entries(struct pci_dev *dev, struct msix_entry *entries,
++				      int nvec, int hwsize)
+ {
++	bool nogap;
+ 	int i, j;
+ 
+ 	if (!entries)
+ 		return true;
+ 
++	nogap = pci_msi_domain_supports(dev, MSI_FLAG_MSIX_CONTIGUOUS, DENY_LEGACY);
++
+ 	for (i = 0; i < nvec; i++) {
+ 		/* Entry within hardware limit? */
+ 		if (entries[i].entry >= hwsize)
+@@ -742,6 +746,9 @@ static bool pci_msix_validate_entries(st
+ 			if (entries[i].entry == entries[j].entry)
+ 				return false;
+ 		}
++		/* Check for unsupported gaps */
++		if (nogap && entries[i].entry != i)
++			return false;
+ 	}
+ 	return true;
+ }
+@@ -773,7 +780,7 @@ int __pci_enable_msix_range(struct pci_d
+ 	if (hwsize < 0)
+ 		return hwsize;
+ 
+-	if (!pci_msix_validate_entries(entries, nvec, hwsize))
++	if (!pci_msix_validate_entries(dev, entries, nvec, hwsize))
+ 		return -EINVAL;
+ 
+ 	/* PCI_IRQ_VIRTUAL is a horrible hack! */
 
