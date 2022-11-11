@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15589C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:23:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62CE1C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:24:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N81Ct4G3wz3f8r
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:23:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N81Dt6XK9z3frh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:24:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KgXVLrX3;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+iwkwvNE;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cMGjLzZL;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=GqtozON3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KgXVLrX3;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+iwkwvNE;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cMGjLzZL;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=GqtozON3;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p603Jjz3fJk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:02 +1100 (AEDT)
-Message-ID: <20221111122015.574339988@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p74t79z3fK7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:03 +1100 (AEDT)
+Message-ID: <20221111122014.984490384@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174910;
+	s=2020; t=1668174893;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=Msjel7aC5+Im+aQvsAthw2RuYInXdUWBTW//73XVYm0=;
-	b=KgXVLrX3pE/nIoqiS99qR5s9yOIMz/R1VaPvfyv2loIU5hDglv67gRX6pyou1DtK60H8cv
-	9GpmCDddO9kcF85adqjHiYF1bQ5d87zXTRgP0UgAlqGixa7Beb5iGb+pdp3Q4PG+f1toDz
-	X83uOxv0BEfIdDiW+VJKmP5sHOk9JHA4UYsiIbRMhD1dFrLSv8FyNxH9l8a1jx+W7F1ES2
-	mgqX8q8gvQYFh0AjANuSBzI/kXzbuI16QPGuQiCAWc2j/5+ePYMfVnyMFOtmr8uagWYcXr
-	mb6yiiUo1myYYM3ShslmbhVM3mpnldYVdu78xh8u5sdNukY35Vk1Ij8AFOxhaw==
+	 references:references; bh=bxe0AjpBaoDMg06CufdaCUWamwxhkdwl4bTBiQjCzNI=;
+	b=cMGjLzZLtmJIj58oYr5P3Ok8YQZLmzLoqv8TcqjtDHGQGStfIwRRz5FAYENf+XUzKGvFfS
+	U1HqMwbCGOu0ahCBvnP2LQuO4FVRfi6O6k8841mBDJLItntDNq2ICHJfGF8UOnvYlFZE1u
+	MX98Yle05T3N1FhK+437CoOLSQfAyuWBThsr5H67RoLT46/GqCnJG2QP2J6tNr1wDFi7CZ
+	uGECO372Vzpln/6RAnJjnLmcyJnBJYPQkkFr8QpGCUaz1gFD7VWXhMt+ebnZbvAhE0jFBC
+	vOwD7a/CNm1eMI6JXWXXhXxMeCiz1a0yK3djJ5QxUfmSDOqc5eODC3QC3m22Cg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174910;
+	s=2020e; t=1668174893;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=Msjel7aC5+Im+aQvsAthw2RuYInXdUWBTW//73XVYm0=;
-	b=+iwkwvNEn54tR9xz7jcZGiqa+56HiFP8TiLT8JYtzPWGMO6Z8uVywQslTWiMPsVIVC4Jkm
-	pdv9Nt05hulH8fCQ==
+	 references:references; bh=bxe0AjpBaoDMg06CufdaCUWamwxhkdwl4bTBiQjCzNI=;
+	b=GqtozON3j5ddGqHse/b7ZFUeu9EaxdoXxaDKXGoeMNdAqhq3kEXBAFF/JTK28GaSU9IPnt
+	NQvt0Gobxx0TOqBQ==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 34/39] PCI/MSI: Reject multi-MSI early
+Subject: [patch 24/39] PCI/MSI: Move pci_irq_vector() to api.c
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:55:09 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:54:53 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,91 +64,85 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When hierarchical MSI interrupt domains are enabled then there is no point
-to do tons of work and detect the missing support for multi-MSI late in the
-allocation path.
+From: Ahmed S. Darwish <darwi@linutronix.de>
 
-Just query the domain feature flags right away. The query function is going
-to be used for other purposes later and has a mode argument which influences
-the result:
+To distangle the maze in msi.c, all exported device-driver MSI APIs are
+now to be grouped in one file, api.c.
 
-  ALLOW_LEGACY returns true when:
-     - there is no irq domain attached (legacy support)
-     - there is a irq domain attached which has the feature flag set
+Move pci_irq_vector() and let its kernel-doc match the rest of the file.
 
-  DENY_LEGACY returns only true when:
-     - there is a irq domain attached which has the feature flag set
-
-This allows to use the function universally without ifdeffery in the
-calling code.
-
+Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/pci/msi/irqdomain.c |   22 ++++++++++++++++++++++
- drivers/pci/msi/msi.c       |    4 ++++
- drivers/pci/msi/msi.h       |    9 +++++++++
- 3 files changed, 35 insertions(+)
 
---- a/drivers/pci/msi/irqdomain.c
-+++ b/drivers/pci/msi/irqdomain.c
-@@ -187,6 +187,28 @@ struct irq_domain *pci_msi_create_irq_do
+---
+ drivers/pci/msi/api.c | 23 +++++++++++++++++++++++
+ drivers/pci/msi/msi.c | 24 ------------------------
+ 2 files changed, 23 insertions(+), 24 deletions(-)
+---
+diff --git a/drivers/pci/msi/api.c b/drivers/pci/msi/api.c
+index 8546749afa6e..0f1ec87e3f9f 100644
+--- a/drivers/pci/msi/api.c
++++ b/drivers/pci/msi/api.c
+@@ -182,3 +182,26 @@ int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+ 	return nvecs;
  }
- EXPORT_SYMBOL_GPL(pci_msi_create_irq_domain);
- 
+ EXPORT_SYMBOL(pci_alloc_irq_vectors_affinity);
++
 +/**
-+ * pci_msi_domain_supports - Check for support of a particular feature flag
-+ * @pdev:		The PCI device to operate on
-+ * @feature_mask:	The feature mask to check for (full match)
-+ * @mode:		If ALLOW_LEGACY this grants the feature when there is no irq domain
-+ *			associated to the device. If DENY_LEGACY the lack of an irq domain
-+ *			makes the feature unsupported
++ * pci_irq_vector() - Get Linux IRQ number of a device interrupt vector
++ * @dev: the PCI device to operate on
++ * @nr:  device-relative interrupt vector index (0-based); has different
++ *       meanings, depending on interrupt mode
++ *         MSI-X        the index in the MSI-X vector table
++ *         MSI          the index of the enabled MSI vectors
++ *         INTx         must be 0
++ *
++ * Return: the Linux IRQ number, or -EINVAL if @nr is out of range
 + */
-+bool pci_msi_domain_supports(struct pci_dev *pdev, unsigned int feature_mask,
-+			     enum support_mode mode)
++int pci_irq_vector(struct pci_dev *dev, unsigned int nr)
 +{
-+	struct msi_domain_info *info;
-+	struct irq_domain *domain;
++	unsigned int irq;
 +
-+	domain = dev_get_msi_domain(&pdev->dev);
++	if (!dev->msi_enabled && !dev->msix_enabled)
++		return !nr ? dev->irq : -EINVAL;
 +
-+	if (!domain || !irq_domain_is_hierarchy(domain))
-+		return mode == ALLOW_LEGACY;
-+	info = domain->host_data;
-+	return (info->flags & feature_mask) == feature_mask;
++	irq = msi_get_virq(&dev->dev, nr);
++	return irq ? irq : -EINVAL;
 +}
-+
- /*
-  * Users of the generic MSI infrastructure expect a device to have a single ID,
-  * so with DMA aliases we have to pick the least-worst compromise. Devices with
++EXPORT_SYMBOL(pci_irq_vector);
+diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
+index a028774f438d..38ad2fe4b85c 100644
 --- a/drivers/pci/msi/msi.c
 +++ b/drivers/pci/msi/msi.c
-@@ -347,6 +347,10 @@ static int msi_capability_init(struct pc
- 	struct msi_desc *entry;
- 	int ret;
+@@ -900,30 +900,6 @@ void pci_free_irq_vectors(struct pci_dev *dev)
+ EXPORT_SYMBOL(pci_free_irq_vectors);
  
-+	/* Reject multi-MSI early on irq domain enabled architectures */
-+	if (nvec > 1 && !pci_msi_domain_supports(dev, MSI_FLAG_MULTI_PCI_MSI, ALLOW_LEGACY))
-+		return 1;
-+
- 	/*
- 	 * Disable MSI during setup in the hardware, but mark it enabled
- 	 * so that setup code can evaluate it.
---- a/drivers/pci/msi/msi.h
-+++ b/drivers/pci/msi/msi.h
-@@ -97,6 +97,15 @@ int __pci_enable_msix_range(struct pci_d
- void __pci_restore_msi_state(struct pci_dev *dev);
- void __pci_restore_msix_state(struct pci_dev *dev);
- 
-+/* irq_domain related functionality */
-+
-+enum support_mode {
-+	ALLOW_LEGACY,
-+	DENY_LEGACY,
-+};
-+
-+bool pci_msi_domain_supports(struct pci_dev *dev, unsigned int feature_mask, enum support_mode mode);
-+
- /* Legacy (!IRQDOMAIN) fallbacks */
- 
- #ifdef CONFIG_PCI_MSI_ARCH_FALLBACKS
+ /**
+- * pci_irq_vector - return Linux IRQ number of a device vector
+- * @dev:	PCI device to operate on
+- * @nr:		Interrupt vector index (0-based)
+- *
+- * @nr has the following meanings depending on the interrupt mode:
+- *   MSI-X:	The index in the MSI-X vector table
+- *   MSI:	The index of the enabled MSI vectors
+- *   INTx:	Must be 0
+- *
+- * Return: The Linux interrupt number or -EINVAl if @nr is out of range.
+- */
+-int pci_irq_vector(struct pci_dev *dev, unsigned int nr)
+-{
+-	unsigned int irq;
+-
+-	if (!dev->msi_enabled && !dev->msix_enabled)
+-		return !nr ? dev->irq : -EINVAL;
+-
+-	irq = msi_get_virq(&dev->dev, nr);
+-	return irq ? irq : -EINVAL;
+-}
+-EXPORT_SYMBOL(pci_irq_vector);
+-
+-/**
+  * pci_irq_get_affinity - return the affinity of a particular MSI vector
+  * @dev:	PCI device to operate on
+  * @nr:		device-relative interrupt vector index (0-based).
 
