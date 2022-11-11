@@ -4,37 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EB32C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:36:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBEE1C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:56:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N81Vf6m4rz3fgb
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:36:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=realitydiluted.com (client-ip=63.228.164.32; helo=home.bethel-hill.org; envelope-from=sjhill@realitydiluted.com; receiver=<UNKNOWN>)
-Received: from home.bethel-hill.org (home.bethel-hill.org [63.228.164.32])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N81xr3Dhcz3f4s
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:56:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=yangyingliang@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N81JL2qGgz3fWc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:27:46 +1100 (AEDT)
-Received: by home.bethel-hill.org with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-	(Exim 4.89)
-	(envelope-from <sjhill@realitydiluted.com>)
-	id 1otV0Q-0007VH-Tr; Fri, 11 Nov 2022 14:27:43 +0000
-Message-ID: <f7bf5383-eebd-8ab9-59b0-4fc159d61926@realitydiluted.com>
-Date: Fri, 11 Nov 2022 08:27:41 -0600
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N81x949xxz2xHK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:56:13 +1100 (AEDT)
+Received: from dggpemm500023.china.huawei.com (unknown [172.30.72.56])
+	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4N81wW5KMJzHvjy;
+	Fri, 11 Nov 2022 22:55:39 +0800 (CST)
+Received: from dggpemm500007.china.huawei.com (7.185.36.183) by
+ dggpemm500023.china.huawei.com (7.185.36.83) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2375.31; Fri, 11 Nov 2022 22:56:06 +0800
+Received: from huawei.com (10.175.103.91) by dggpemm500007.china.huawei.com
+ (7.185.36.183) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.31; Fri, 11 Nov
+ 2022 22:56:05 +0800
+From: Yang Yingliang <yangyingliang@huawei.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] cxl: fix possible null-ptr-deref in cxl_guest_init_afu|adapter()
+Date: Fri, 11 Nov 2022 22:54:39 +0800
+Message-ID: <20221111145440.2426970-1-yangyingliang@huawei.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: Writing not working to CPLD/FPGA.
-Content-Language: en-US
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <8893e416-007c-f7b8-3b67-2ceec7db2e01@realitydiluted.com>
- <4521e89b-a05b-a7b5-4fe0-35f7c898eb8f@csgroup.eu>
-From: "Steven J. Hill" <sjhill@realitydiluted.com>
-In-Reply-To: <4521e89b-a05b-a7b5-4fe0-35f7c898eb8f@csgroup.eu>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------4PMjUFIV9bZLNZruGaloV0Kw"
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.175.103.91]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+ dggpemm500007.china.huawei.com (7.185.36.183)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -46,50 +50,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: fbarrat@linux.ibm.com, gregkh@linuxfoundation.org, ajd@linux.ibm.com, arnd@arndb.de, yangyingliang@huawei.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------4PMjUFIV9bZLNZruGaloV0Kw
-Content-Type: multipart/mixed; boundary="------------VEMhonIi5vdbd1pjV9MKKQXV";
- protected-headers="v1"
-From: "Steven J. Hill" <sjhill@realitydiluted.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Message-ID: <f7bf5383-eebd-8ab9-59b0-4fc159d61926@realitydiluted.com>
-Subject: Re: Writing not working to CPLD/FPGA.
-References: <8893e416-007c-f7b8-3b67-2ceec7db2e01@realitydiluted.com>
- <4521e89b-a05b-a7b5-4fe0-35f7c898eb8f@csgroup.eu>
-In-Reply-To: <4521e89b-a05b-a7b5-4fe0-35f7c898eb8f@csgroup.eu>
+If device_register() fails in cxl_register_afu|adapter(), the device
+is not added, device_unregister() can not be called in the error path,
+otherwise it will cause a null-ptr-deref because of removing not added
+device.
 
---------------VEMhonIi5vdbd1pjV9MKKQXV
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+As comment of device_register() says, it should use put_device() to give
+up the reference in the error path. So split device_unregister() into
+device_del() and put_device(), then goes to put dev when register fails.
 
-T24gMTEvMTEvMjIgMDI6NTMsIENocmlzdG9waGUgTGVyb3kgd3JvdGU6DQo+IA0KPiBGaXJz
-dCBvZiBhbGwsIGtlcm5lbCAzLjEyIGlzIHByZWhpc3RvcmljLiBIYXZlIHlvdSB0cmllZCB3
-aXRoIGxhdGVzdA0KPiBrZXJuZWwsIG9yIGF0IGxlYXN0IHdpdGggb25lIG9mIHRoZSBsb25n
-IHRlcm0gc3VwcG9ydCByZWxlYXNlcyAoc2VlDQo+IGh0dHBzOi8vd3d3Lmtlcm5lbC5vcmcv
-Y2F0ZWdvcnkvcmVsZWFzZXMuaHRtbCkgPw0KPiANCkl0IGlzIHdoYXQgbXkgY3VzdG9tZXIg
-d2FudHMuIEZvciB0aGlzIHByb2plY3QsIHVwZ3JhZGluZyB0aGUga2VybmVsIGlzIG5vdCAN
-CmFuIG9wdGlvbi4gSSBhbSB1c2luZyB0aGUgSU8gYWNjZXNzb3Igb3V0X2JlMzIoKSBhbG9u
-ZyB3aXRoIGEgQkFUOg0KDQogICAgc2V0YmF0KDYsIDB4ZTUwMDAwMDAwLCAweGU1MDAwMDAw
-LCA0MDk2KjEwMjQsIFBBR0VfS0VSTkVMX05DRyk7DQoNClRoZXJlIGFyZSBubyBwYW5pY3Mg
-b3IgZXJyb3JzLiBUaGUgd3JpdGVzIGFyZSBqdXN0IHNpbGVudGx5IGlnbm9yZWQuDQoNCi1T
-dGV2ZQ0K
+Fixes: 14baf4d9c739 ("cxl: Add guest-specific code")
+Signed-off-by: Yang Yingliang <yangyingliang@huawei.com>
+---
+ drivers/misc/cxl/guest.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
---------------VEMhonIi5vdbd1pjV9MKKQXV--
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 375f692ae9d6..fb95a2d5cef4 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -965,10 +965,10 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 	 * if it returns an error!
+ 	 */
+ 	if ((rc = cxl_register_afu(afu)))
+-		goto err_put1;
++		goto err_put_dev;
+ 
+ 	if ((rc = cxl_sysfs_afu_add(afu)))
+-		goto err_put1;
++		goto err_del_dev;
+ 
+ 	/*
+ 	 * pHyp doesn't expose the programming models supported by the
+@@ -984,7 +984,7 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 		afu->modes_supported = CXL_MODE_DIRECTED;
+ 
+ 	if ((rc = cxl_afu_select_best_mode(afu)))
+-		goto err_put2;
++		goto err_remove_sysfs;
+ 
+ 	adapter->afu[afu->slice] = afu;
+ 
+@@ -1004,10 +1004,12 @@ int cxl_guest_init_afu(struct cxl *adapter, int slice, struct device_node *afu_n
+ 
+ 	return 0;
+ 
+-err_put2:
++err_remove_sysfs:
+ 	cxl_sysfs_afu_remove(afu);
+-err_put1:
+-	device_unregister(&afu->dev);
++err_del_dev:
++	device_del(&afu->dev);
++err_put_dev:
++	put_device(&afu->dev);
+ 	free = false;
+ 	guest_release_serr_irq(afu);
+ err2:
+@@ -1141,18 +1143,20 @@ struct cxl *cxl_guest_init_adapter(struct device_node *np, struct platform_devic
+ 	 * even if it returns an error!
+ 	 */
+ 	if ((rc = cxl_register_adapter(adapter)))
+-		goto err_put1;
++		goto err_put_dev;
+ 
+ 	if ((rc = cxl_sysfs_adapter_add(adapter)))
+-		goto err_put1;
++		goto err_del_dev;
+ 
+ 	/* release the context lock as the adapter is configured */
+ 	cxl_adapter_context_unlock(adapter);
+ 
+ 	return adapter;
+ 
+-err_put1:
+-	device_unregister(&adapter->dev);
++err_del_dev:
++	device_del(&adapter->dev);
++err_put_dev:
++	put_device(&adapter->dev);
+ 	free = false;
+ 	cxl_guest_remove_chardev(adapter);
+ err1:
+-- 
+2.25.1
 
---------------4PMjUFIV9bZLNZruGaloV0Kw
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
-
------BEGIN PGP SIGNATURE-----
-
-wmMEABEIACMWIQQ7FeQaKpedass6DAiDIrkfYhzfpwUCY25b3gUDAAAAAAAKCRCDIrkfYhzfp72b
-AJ9N+YfizM9GhyRl1tmN8Si6gyIfdQCgmvziZHFMXtfVOLgx/gjS6Ak3flw=
-=yHO7
------END PGP SIGNATURE-----
-
---------------4PMjUFIV9bZLNZruGaloV0Kw--
