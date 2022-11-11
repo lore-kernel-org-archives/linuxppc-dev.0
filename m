@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C03F7C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37730C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:17:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N813j2zbQz3fc9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:16:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N814j5DV8z3fTK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:17:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bh65FM3W;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fjsDWHhh;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=oC1efg0/;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=VBvji6Cx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bh65FM3W;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fjsDWHhh;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=oC1efg0/;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=VBvji6Cx;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p15mmyz3fJF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p15gT2z3fJD
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:04:57 +1100 (AEDT)
-Message-ID: <20221111122014.582175082@linutronix.de>
+Message-ID: <20221111122014.870888193@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174882;
+	s=2020; t=1668174890;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=ZVOHAcQR6Ck8rZV367QnK3ufgoDh454h+k8+8chi22c=;
-	b=bh65FM3Wv1jgNy8JX9L/1h1sGC4JvcUj61n/CAa1/GaCVxHMEPoCPnVUHAszASJJtm3aaS
-	3x6eK0/psnmrUrulQRoR5ceAXqPNIu5rg86zlhB9eMwtawFq4LqR95vhHRBEGkpP1ZUhLI
-	nx+/v0r5xer11C1uLUi6/+zJz7nVSZOxDdgzI5tBPppvRovDqei+NkoMPwRggvR7n4XCqt
-	9qLbz9iXA2wI612maBZ+ywD0003Dp8VskJPB1CdTnzmeLisdjUb1V+0D+cbhpDSUo4BMF8
-	Ouy3gyMODMFyV9HGrxTx1HaFzMxnwY7YjVbWPP6ycv/4SosoyJug988nOd5IvQ==
+	 references:references; bh=r4FcKRBwb0S/6DX5J7gWRuaqhtaapFFj+24TyV6TJ3Q=;
+	b=oC1efg0/7x7qL8AThd8flu4wRif16nNAbDPPmci8lhL2eADwgyBsYfEPHZSyI4yt8S+KJs
+	Fly00rs/559MEIcgi9Gpww+9i6Iy4cQ3IWLL7y6p4eOn3TnfrtdrN2roLpKG6K+9zqLY4v
+	g1KKU7xm4GzvZba1B8TViWnJhxeB7nJLyuymIW3Ni5ndgdwq/NUfrTUVt45sm3FKPWkwHK
+	3z1dwn6Fp7VjupcerdcMuAQAoVkB3fPh1EGTAU5atc2aHrIgDue3GqFMP23kj9jVwEFGY8
+	CIsWWqG23OelAGykN8OM25EcPbMu1aReKe9VPoRftrGjpfFHeLaNv3kuAzWvyA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174882;
+	s=2020e; t=1668174890;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=ZVOHAcQR6Ck8rZV367QnK3ufgoDh454h+k8+8chi22c=;
-	b=fjsDWHhhpyTkJ9A+o8h8oPspQFyMSpDqgwLBYxxiAcwxwbku+4D8UnAXoP0KekhsWD5xFC
-	fd6YzUcVRwgcIGDg==
+	 references:references; bh=r4FcKRBwb0S/6DX5J7gWRuaqhtaapFFj+24TyV6TJ3Q=;
+	b=VBvji6CxYo3GJQJlKIkZ/fYFOTR9TrLHNIQBSnUKIR7abDARxG+AtzidhVRS0UQrQpqhJD
+	8rkdL7juWBEUqVBw==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 17/39] PCI/MSI: Get rid of externs in msi.h
+Subject: [patch 22/39] PCI/MSI: Move pci_alloc_irq_vectors() to api.c
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:42 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:54:50 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,37 +60,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org, Jason Gunthorpe <jgg@mellanox.com>, Allen Hubbe <allenbh@gmail.com>, Kevin Tian <kevin.tian@intel.com>, "Ahmed S. Darwish" <darwi@linutronix.de>, Jon Mason <jdmason@kudzu.us>, linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>, Reinette Chatre <reinette.chatre@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marc Zyngier <maz@kernel.org>, Logan Gunthorpe <logang@deltatee.com>
+Cc: , linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org, Jason Gunthorpe <jgg@mellanox.com>, Allen Hubbe <allenbh@gmail.com>, Kevin Tian <kevin.tian@intel.com>, "Ahmed S. Darwish" <darwi@linutronix.de>, Jon Mason <jdmason@kudzu.us>, linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>, Reinette Chatre <reinette.chatre@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Marc Zyngier <maz@kernel.org>, Logan Gunthorpe <logang@deltatee.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Ahmed S. Darwish <darwi@linutronix.de>
 
-Follow the style of <linux/pci.h>
+To distangle the maze in msi.c, all exported device-driver MSI APIs are
+now to be grouped in one file, api.c.
+
+Make pci_alloc_irq_vectors() a real function instead of wrapper and add
+proper kernel doc to it.
 
 Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/pci/msi/msi.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/drivers/pci/msi/msi.h
-+++ b/drivers/pci/msi/msi.h
-@@ -5,12 +5,12 @@
+---
+ drivers/pci/msi/api.c | 33 +++++++++++++++++++++++++++++++++
+ include/linux/pci.h   | 17 +++++++++--------
+ 2 files changed, 42 insertions(+), 8 deletions(-)
+---
+diff --git a/drivers/pci/msi/api.c b/drivers/pci/msi/api.c
+index d48050555d55..1714905943fb 100644
+--- a/drivers/pci/msi/api.c
++++ b/drivers/pci/msi/api.c
+@@ -90,3 +90,36 @@ int pci_enable_msix_range(struct pci_dev *dev, struct msix_entry *entries,
+ 	return __pci_enable_msix_range(dev, entries, minvec, maxvec, NULL, 0);
+ }
+ EXPORT_SYMBOL(pci_enable_msix_range);
++
++/**
++ * pci_alloc_irq_vectors() - Allocate multiple device interrupt vectors
++ * @dev:      the PCI device to operate on
++ * @min_vecs: minimum required number of vectors (must be >= 1)
++ * @max_vecs: maximum desired number of vectors
++ * @flags:    One or more of:
++ *            %PCI_IRQ_MSIX      Allow trying MSI-X vector allocations
++ *            %PCI_IRQ_MSI       Allow trying MSI vector allocations
++ *            %PCI_IRQ_LEGACY    Allow trying legacy INTx interrupts, if
++ *                               and only if @min_vecs == 1
++ *            %PCI_IRQ_AFFINITY  Auto-manage IRQs affinity by spreading
++ *                               the vectors around available CPUs
++ *
++ * Allocate up to @max_vecs interrupt vectors on device. MSI-X irq
++ * vector allocation has a higher precedence over plain MSI, which has a
++ * higher precedence over legacy INTx emulation.
++ *
++ * Upon a successful allocation, the caller should use pci_irq_vector()
++ * to get the Linux IRQ number to be passed to request_threaded_irq().
++ * The driver must call pci_free_irq_vectors() on cleanup.
++ *
++ * Return: number of allocated vectors (which might be smaller than
++ * @max_vecs), -ENOSPC if less than @min_vecs interrupt vectors are
++ * available, other errnos otherwise.
++ */
++int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
++			  unsigned int max_vecs, unsigned int flags)
++{
++	return pci_alloc_irq_vectors_affinity(dev, min_vecs, max_vecs,
++					      flags, NULL);
++}
++EXPORT_SYMBOL(pci_alloc_irq_vectors);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 2bda4a4e47e8..6a356a39ba94 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1553,6 +1553,8 @@ static inline int pci_enable_msix_exact(struct pci_dev *dev,
+ 		return rc;
+ 	return 0;
+ }
++int pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
++			  unsigned int max_vecs, unsigned int flags);
+ int pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+ 				   unsigned int max_vecs, unsigned int flags,
+ 				   struct irq_affinity *affd);
+@@ -1586,6 +1588,13 @@ pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+ 		return 1;
+ 	return -ENOSPC;
+ }
++static inline int
++pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
++		      unsigned int max_vecs, unsigned int flags)
++{
++	return pci_alloc_irq_vectors_affinity(dev, min_vecs, max_vecs,
++					      flags, NULL);
++}
  
- #define msix_table_size(flags)	((flags & PCI_MSIX_FLAGS_QSIZE) + 1)
- 
--extern int pci_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
--extern void pci_msi_teardown_msi_irqs(struct pci_dev *dev);
-+int pci_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-+void pci_msi_teardown_msi_irqs(struct pci_dev *dev);
- 
- #ifdef CONFIG_PCI_MSI_ARCH_FALLBACKS
--extern int pci_msi_legacy_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
--extern void pci_msi_legacy_teardown_msi_irqs(struct pci_dev *dev);
-+int pci_msi_legacy_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-+void pci_msi_legacy_teardown_msi_irqs(struct pci_dev *dev);
- #else
- static inline int pci_msi_legacy_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+ static inline void pci_free_irq_vectors(struct pci_dev *dev)
  {
+@@ -1900,14 +1909,6 @@ pci_alloc_irq_vectors_affinity(struct pci_dev *dev, unsigned int min_vecs,
+ }
+ #endif /* CONFIG_PCI */
+ 
+-static inline int
+-pci_alloc_irq_vectors(struct pci_dev *dev, unsigned int min_vecs,
+-		      unsigned int max_vecs, unsigned int flags)
+-{
+-	return pci_alloc_irq_vectors_affinity(dev, min_vecs, max_vecs, flags,
+-					      NULL);
+-}
+-
+ /* Include architecture-dependent settings and functions */
+ 
+ #include <asm/pci.h>
 
