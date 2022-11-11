@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1685C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EF9FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:09:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N80tF2495z3f4s
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:08:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N80vP0Blkz3f5T
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:09:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=43XNu7V6;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=r6FLcQ/X;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rM3Hvm2A;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=61OFjcyS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=43XNu7V6;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=r6FLcQ/X;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=rM3Hvm2A;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=61OFjcyS;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hL03BPz3dts
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:00:01 +1100 (AEDT)
-Message-ID: <20221111122014.237221143@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hM4Rhhz3cMw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:00:03 +1100 (AEDT)
+Message-ID: <20221111122013.947071142@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174872;
+	s=2020; t=1668174864;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=i6lv85ZNUn8jbTiqiaOVEezDOQ2OYDxW2lkZxbSQfPs=;
-	b=43XNu7V6lxNjeSplgzaxAS44tgV1Hxus/MQ0Rod85yoWEU9uzoUV0/Gvo4MbkhRTwi9Tzn
-	K+wX7sK78xcXVDD899/v4pK5j+RLz0Ao3nSp2UCpEepJa70aoQnMHmpP19VhP2+pwR4qww
-	0tGVylR7vtiM38R3uV3EvetHi2nC3skf1+FL3cNo1DnnGoJtSoTvvwyivArsgTeJicRErs
-	l1UHy/+fO39St2quL4Q1Hy4tm4W1uszLlCgDZRMWKSkBfgmRsWXid7/6U9QZn+s1br0VHF
-	drP8Q36KtsFNrJNa9PZHRRkcIy1K7rYVmLVVutyERWy8ViXgAtWWWRTnnNlHgA==
+	 references:references; bh=DzwMVitVEwpsnJRYX1GqcWllvAqc3k0vBxAI8Er+FBs=;
+	b=rM3Hvm2A/73BTlgf/cJ63LRmKDRdAAwY5hxOMDRVqxPwJ3lk7tngBwLUDRQqeuz3V9+rh2
+	UK742ef9qcpZt85XVhtCPr67bCbu6J8HmHF9/OXUHWpBeASoZHKjXY5LPgDIXkVvpfcUrh
+	0Fy4d5HpPhKpH8TTLrDqDqP9eJUC4nLW6rPv1G/xbxvW0jE9wO+lR5tz8qZ51i7kz2/WdY
+	HNOhZ6XfV5J0TFdNls9y7zjvYcuIerly6Q1R1KkISjg1mNrIwlh4L7Xc9RsSXApFGVviKb
+	+27SOaCWk/l8xdmgBcHsAANAKPHRSa11nAfqQyh5L2hBCPUHmS6cP+bbtIJm3A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174872;
+	s=2020e; t=1668174864;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=i6lv85ZNUn8jbTiqiaOVEezDOQ2OYDxW2lkZxbSQfPs=;
-	b=r6FLcQ/XkDdVENpg6jrJnxOUENgvyAqRux+b2LWEAUoE54RxJtQQhVavaj2vznzl/JqrCy
-	KnNE4MphZHlzBvCQ==
+	 references:references; bh=DzwMVitVEwpsnJRYX1GqcWllvAqc3k0vBxAI8Er+FBs=;
+	b=61OFjcySwk55/wM8ZG3QX632+240BfUAoDJeeBKxzaHUj49wFuflEH1l5zdnt0rEJuHj6f
+	WudG4TZAewxnW2BQ==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject:  [patch 11/39] genirq/irqdomain: Move bus token enum into a seperate header
+Subject: [patch 06/39] genirq/msi: Add missing kernel doc to msi_next_desc()
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:32 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:54:23 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,80 +64,21 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Split the bus token defines out into a seperate header file to avoid
-inclusion of irqdomain.h in msi.h.
+W=1 complains about this.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- include/linux/irqdomain.h      |   22 +---------------------
- include/linux/irqdomain_defs.h |   26 ++++++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 21 deletions(-)
+ kernel/irq/msi.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -31,6 +31,7 @@
- #define _LINUX_IRQDOMAIN_H
- 
- #include <linux/types.h>
-+#include <linux/irqdomain_defs.h>
- #include <linux/irqhandler.h>
- #include <linux/of.h>
- #include <linux/mutex.h>
-@@ -68,27 +69,6 @@ struct irq_fwspec {
- void of_phandle_args_to_fwspec(struct device_node *np, const u32 *args,
- 			       unsigned int count, struct irq_fwspec *fwspec);
- 
--/*
-- * Should several domains have the same device node, but serve
-- * different purposes (for example one domain is for PCI/MSI, and the
-- * other for wired IRQs), they can be distinguished using a
-- * bus-specific token. Most domains are expected to only carry
-- * DOMAIN_BUS_ANY.
-- */
--enum irq_domain_bus_token {
--	DOMAIN_BUS_ANY		= 0,
--	DOMAIN_BUS_WIRED,
--	DOMAIN_BUS_GENERIC_MSI,
--	DOMAIN_BUS_PCI_MSI,
--	DOMAIN_BUS_PLATFORM_MSI,
--	DOMAIN_BUS_NEXUS,
--	DOMAIN_BUS_IPI,
--	DOMAIN_BUS_FSL_MC_MSI,
--	DOMAIN_BUS_TI_SCI_INTA_MSI,
--	DOMAIN_BUS_WAKEUP,
--	DOMAIN_BUS_VMD_MSI,
--};
--
+--- a/kernel/irq/msi.c
++++ b/kernel/irq/msi.c
+@@ -282,6 +282,7 @@ EXPORT_SYMBOL_GPL(msi_first_desc);
  /**
-  * struct irq_domain_ops - Methods for irq_domain objects
-  * @match: Match an interrupt controller device node to a host, returns
---- /dev/null
-+++ b/include/linux/irqdomain_defs.h
-@@ -0,0 +1,26 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _LINUX_IRQDOMAIN_DEFS_H
-+#define _LINUX_IRQDOMAIN_DEFS_H
-+
-+/*
-+ * Should several domains have the same device node, but serve
-+ * different purposes (for example one domain is for PCI/MSI, and the
-+ * other for wired IRQs), they can be distinguished using a
-+ * bus-specific token. Most domains are expected to only carry
-+ * DOMAIN_BUS_ANY.
-+ */
-+enum irq_domain_bus_token {
-+	DOMAIN_BUS_ANY		= 0,
-+	DOMAIN_BUS_WIRED,
-+	DOMAIN_BUS_GENERIC_MSI,
-+	DOMAIN_BUS_PCI_MSI,
-+	DOMAIN_BUS_PLATFORM_MSI,
-+	DOMAIN_BUS_NEXUS,
-+	DOMAIN_BUS_IPI,
-+	DOMAIN_BUS_FSL_MC_MSI,
-+	DOMAIN_BUS_TI_SCI_INTA_MSI,
-+	DOMAIN_BUS_WAKEUP,
-+	DOMAIN_BUS_VMD_MSI,
-+};
-+
-+#endif /* _LINUX_IRQDOMAIN_DEFS_H */
+  * msi_next_desc - Get the next MSI descriptor of a device
+  * @dev:	Device to operate on
++ * @filter:	Descriptor state filter
+  *
+  * The first invocation of msi_next_desc() has to be preceeded by a
+  * successful invocation of __msi_first_desc(). Consecutive invocations are
 
