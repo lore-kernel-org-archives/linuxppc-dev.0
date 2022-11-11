@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33CBC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80D62C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:06:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N80pF0cm1z3fKS
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:05:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N80qD1FL8z3fFp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:06:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KIxoGLm3;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=uMHNBoXC;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Q+w7rfhi;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=cdP8Z8xV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KIxoGLm3;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=uMHNBoXC;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Q+w7rfhi;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=cdP8Z8xV;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hJ50hhz3cV8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hJ5pn0z3cZp
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:00:00 +1100 (AEDT)
-Message-ID: <20221111122014.409654736@linutronix.de>
+Message-ID: <20221111122013.831151822@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174877;
+	s=2020; t=1668174861;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=ihQb1Hr2tFB57KaqSJ6TMuVbBaKbPYZLQeHvg5ugyrc=;
-	b=KIxoGLm3fdgX8mVYTA3gqrUlF6RwTtW90vYGHTzR9LA4zR9jAvDQ3Mz275nIl+k1FsCVo8
-	BDasSMGgRPumnK+XCfXPGjj7fbt46WHiGID8auAQfUb2Fb1FPhMqiq4S5Vfu8sZEu1C9Y8
-	MQnr0/wDyfTzrL68KxmtWwLyR/P+t79hViR57xRScUXMobFg6K+I2h8IV+wgT+yxvAvOM7
-	7uVe7yokIXo/LjW9ONZit1EjWi5RuhSl2zMdJxNHQ3BUemd1RxyK5J0d706hKkPPOlSxn2
-	x/CvdueaKYFaZ+eSmgX5gR3aO6NPOicaxHiLhYOGfhjwy5k+jQQsoBWV8i2oLA==
+	 references:references; bh=hXGyAAuT/IU9qjkYv54P57CF8Kg9D2gsGu3taE3+4kw=;
+	b=Q+w7rfhi1CD/id8ozBrg2Q21W5nVKor55fq9WBt8lCSQOVHcaMdncE2KL8ROw5Fn3DJ9Wy
+	C6Gq/MFoG/TdPdL4180NCcfok/4hREfFzaUBJ2BmjZ4CE+WN7WxTwWtSOLaJ3+LD9kYY1j
+	TeMFKUGxFAbHhfzCAwnA3C119hea+KSW+lcpY1H4pdCjjM97PrlqTIGom3CT1l9I0ocFXD
+	G10ovxb7yJ25ZsdRupfmuMU0Sra+dE3GF4bYWQ/7cPGDS+UTUyJkHMxazfENu7wjY2KpoV
+	n9hEYT+9jQQ5Lr1oLQSUrUgQfs9mO1k5gyzHqyjF8kOdb1h0q7MIXG+o1lSBMA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174877;
+	s=2020e; t=1668174861;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=ihQb1Hr2tFB57KaqSJ6TMuVbBaKbPYZLQeHvg5ugyrc=;
-	b=uMHNBoXC2VwEdIAQL/VEAVQGgdOqIQAKBY94YN3/zPMpA2g+0keRMDIAeVH1iiSVA9XOms
-	zwnFBQCZgvigUJCQ==
+	 references:references; bh=hXGyAAuT/IU9qjkYv54P57CF8Kg9D2gsGu3taE3+4kw=;
+	b=cdP8Z8xVU6B5EEH8jHzk7TfeiPxnZMmWed+TgxJS3tdmgdVHc4X28EdbDT2icsz8tJCHaq
+	CTp0kZmpTRg7YJAA==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 14/39] PCI/MSI: Let the MSI core free descriptors
+Subject:  [patch 04/39] genirq/msi: Use MSI_DESC_ALL in msi_add_simple_msi_descs()
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:37 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:54:20 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,43 +64,24 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ahmed S. Darwish <darwi@linutronix.de>
+There are no associated MSI descriptors in the requested range when the MSI
+descriptor allocation fails. Use MSI_DESC_ALL as the filter which prepares
+the next step to get rid of the filter for freeing.
 
-Let the core do the freeing of descriptors and just keep it around for the
-legacy case.
-
-Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/pci/msi/irqdomain.c |   10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ kernel/irq/msi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/pci/msi/irqdomain.c
-+++ b/drivers/pci/msi/irqdomain.c
-@@ -24,11 +24,12 @@ void pci_msi_teardown_msi_irqs(struct pc
- 	struct irq_domain *domain;
- 
- 	domain = dev_get_msi_domain(&dev->dev);
--	if (domain && irq_domain_is_hierarchy(domain))
-+	if (domain && irq_domain_is_hierarchy(domain)) {
- 		msi_domain_free_irqs_descs_locked(domain, &dev->dev);
--	else
-+	} else {
- 		pci_msi_legacy_teardown_msi_irqs(dev);
--	msi_free_msi_descs(&dev->dev);
-+		msi_free_msi_descs(&dev->dev);
-+	}
+--- a/kernel/irq/msi.c
++++ b/kernel/irq/msi.c
+@@ -120,7 +120,7 @@ static int msi_add_simple_msi_descs(stru
+ fail_mem:
+ 	ret = -ENOMEM;
+ fail:
+-	msi_free_msi_descs_range(dev, MSI_DESC_NOTASSOCIATED, index, last);
++	msi_free_msi_descs_range(dev, MSI_DESC_ALL, index, last);
+ 	return ret;
  }
  
- /**
-@@ -170,6 +171,9 @@ struct irq_domain *pci_msi_create_irq_do
- 	if (info->flags & MSI_FLAG_USE_DEF_CHIP_OPS)
- 		pci_msi_domain_update_chip_ops(info);
- 
-+	/* Let the core code free MSI descriptors when freeing interrupts */
-+	info->flags |= MSI_FLAG_FREE_MSI_DESCS;
-+
- 	info->flags |= MSI_FLAG_ACTIVATE_EARLY | MSI_FLAG_DEV_SYSFS;
- 	if (IS_ENABLED(CONFIG_GENERIC_IRQ_RESERVATION_MODE))
- 		info->flags |= MSI_FLAG_MUST_REACTIVATE;
 
