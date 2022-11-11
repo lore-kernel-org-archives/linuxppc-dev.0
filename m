@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EED4BC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:15:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 264B8C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:15:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N811j3Pnrz3fQL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:15:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N812j4XXBz3fRH
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:15:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=d/SC/+T3;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=eImqZwzo;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=VRE7MeUl;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=3NdsAzuz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=d/SC/+T3;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=eImqZwzo;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=VRE7MeUl;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=3NdsAzuz;
 	dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80hc4wp9z3cNb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:00:16 +1100 (AEDT)
-Message-ID: <20221111122013.713848846@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p15SZQz3fJB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:04:57 +1100 (AEDT)
+Message-ID: <20221111122015.749446904@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174857;
+	s=2020; t=1668174915;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=lEZvgy6HHUzbXINFeZhEm07cTVI+tuFx6PeXgAOnbxo=;
-	b=d/SC/+T3CdcHrZ8MbLToM6SSgF7cmkTyPqkaOcSGfaaP5mtPj0fjgr8rnBLbwbwdHmYuYk
-	7SKAOEcT6nKblCt9++hnKZvd+jnkTl1ZCW97zgckpAOxOBJmCDcHjFZupqhfm+PjbkhQpC
-	Ckkz+Hj5GFVPZ1huA0zuyZ4hM4+gKcRlEFFA6OkAyaW7XRBfOils813Wxb61S8hx7uF8YS
-	FPIL8fs5LmFd8YyN/0q1ix84xHIH4WCefuDCyBQmTAKbmEhRdRl4r/t8EE8uoiDCjoenXT
-	EZBdsG29ygGfSFeQEzfgGUkF5RfcjPEM2Ne/1LcpX0GDjhCM/BBOezUEg+g0jQ==
+	 references:references; bh=Ih0SYkcSYwketpyalRo87sRSG9j843DJDGdjQI9dFbE=;
+	b=VRE7MeUlB+cCM6U0cjMzbGN3WDIQa4HFZh7046HSLFSqzZZR+YCs/CdvdLqq6MWSGZekns
+	H/dGx3if2rOBFQbosYmjXgs8H6R5QzfT4Wx9HUiK3bRvDeCd3Y2/aKwsZmLgcB2RLXpdOs
+	oVkPfJgyTtJEli4A4Tu93d2MK7EdOeIEH+Y0BZTm7D17rn3qKvvsqjvAZrJgzd7vVJM1e9
+	1Z0lHU2nKsnKqYI3bqO1EqiYcRaa2k7iEq2ImYpiFsxIhbdqk1xQCU1UqPFsjb5fWestXq
+	04JcUcgHgsR+8pKz5h9KEtGpLzv4hoUBfbtq/MJ4c2jMIoOztbmH2Ysjx6MsoQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174857;
+	s=2020e; t=1668174915;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=lEZvgy6HHUzbXINFeZhEm07cTVI+tuFx6PeXgAOnbxo=;
-	b=eImqZwzolHHQM3N4D4bpfBwXxwGdxDtOGKetRv0eo1dAL0/gfurg2TqhJroXzqv0ZskPkU
-	k56t5cHRVmzfcUCQ==
+	 references:references; bh=Ih0SYkcSYwketpyalRo87sRSG9j843DJDGdjQI9dFbE=;
+	b=3NdsAzuzZxu0dT7r41E3zPAtIf/iHCijDpTpmlZOnjI92Lbu6pLEazC2N//W9XAeQ4XAqW
+	7LzccZ7efW9feDBw==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 02/39] iommu/vt-d: Remove bogus check for multi MSI-X
+Subject: [patch 37/39] PCI/MSI: Remove redundant msi_check() callback
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:17 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:55:14 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,23 +64,83 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PCI/Multi-MSI is MSI specific and not supported for MSI-X.
+All these sanity checks are now done _before_ any allocation work
+happens. No point in doing it twice.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/iommu/intel/irq_remapping.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/pci/msi/irqdomain.c |   48 --------------------------------------------
+ 1 file changed, 48 deletions(-)
 
---- a/drivers/iommu/intel/irq_remapping.c
-+++ b/drivers/iommu/intel/irq_remapping.c
-@@ -1334,8 +1334,7 @@ static int intel_irq_remapping_alloc(str
+--- a/drivers/pci/msi/irqdomain.c
++++ b/drivers/pci/msi/irqdomain.c
+@@ -64,51 +64,6 @@ static irq_hw_number_t pci_msi_domain_ca
+ 		(pci_domain_nr(dev->bus) & 0xFFFFFFFF) << 27;
+ }
  
- 	if (!info || !iommu)
- 		return -EINVAL;
--	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI &&
--	    info->type != X86_IRQ_ALLOC_TYPE_PCI_MSIX)
-+	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI)
- 		return -EINVAL;
+-static inline bool pci_msi_desc_is_multi_msi(struct msi_desc *desc)
+-{
+-	return !desc->pci.msi_attrib.is_msix && desc->nvec_used > 1;
+-}
+-
+-/**
+- * pci_msi_domain_check_cap - Verify that @domain supports the capabilities
+- *			      for @dev
+- * @domain:	The interrupt domain to check
+- * @info:	The domain info for verification
+- * @dev:	The device to check
+- *
+- * Returns:
+- *  0 if the functionality is supported
+- *  1 if Multi MSI is requested, but the domain does not support it
+- *  -ENOTSUPP otherwise
+- */
+-static int pci_msi_domain_check_cap(struct irq_domain *domain,
+-				    struct msi_domain_info *info,
+-				    struct device *dev)
+-{
+-	struct msi_desc *desc = msi_first_desc(dev, MSI_DESC_ALL);
+-
+-	/* Special handling to support __pci_enable_msi_range() */
+-	if (pci_msi_desc_is_multi_msi(desc) &&
+-	    !(info->flags & MSI_FLAG_MULTI_PCI_MSI))
+-		return 1;
+-
+-	if (desc->pci.msi_attrib.is_msix) {
+-		if (!(info->flags & MSI_FLAG_PCI_MSIX))
+-			return -ENOTSUPP;
+-
+-		if (info->flags & MSI_FLAG_MSIX_CONTIGUOUS) {
+-			unsigned int idx = 0;
+-
+-			/* Check for gaps in the entry indices */
+-			msi_for_each_desc(desc, dev, MSI_DESC_ALL) {
+-				if (desc->msi_index != idx++)
+-					return -ENOTSUPP;
+-			}
+-		}
+-	}
+-	return 0;
+-}
+-
+ static void pci_msi_domain_set_desc(msi_alloc_info_t *arg,
+ 				    struct msi_desc *desc)
+ {
+@@ -118,7 +73,6 @@ static void pci_msi_domain_set_desc(msi_
  
- 	/*
+ static struct msi_domain_ops pci_msi_domain_ops_default = {
+ 	.set_desc	= pci_msi_domain_set_desc,
+-	.msi_check	= pci_msi_domain_check_cap,
+ };
+ 
+ static void pci_msi_domain_update_dom_ops(struct msi_domain_info *info)
+@@ -130,8 +84,6 @@ static void pci_msi_domain_update_dom_op
+ 	} else {
+ 		if (ops->set_desc == NULL)
+ 			ops->set_desc = pci_msi_domain_set_desc;
+-		if (ops->msi_check == NULL)
+-			ops->msi_check = pci_msi_domain_check_cap;
+ 	}
+ }
+ 
 
