@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 158CAC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15589C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Nov 2022 14:23:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4N81Bt3BHgz3fCR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:23:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4N81Ct4G3wz3f8r
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Nov 2022 01:23:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Er02kSdm;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=sZGbJ5v4;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KgXVLrX3;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+iwkwvNE;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Er02kSdm;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=sZGbJ5v4;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KgXVLrX3;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+iwkwvNE;
 	dkim-atps=neutral
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p45Fz5z3fBk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:00 +1100 (AEDT)
-Message-ID: <20221111122014.813792885@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4N80p603Jjz3fJk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Nov 2022 01:05:02 +1100 (AEDT)
+Message-ID: <20221111122015.574339988@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668174889;
+	s=2020; t=1668174910;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=+/SWQaPmmzQa3dI8BJSuUqTvToJtImL4OX5ekaSehDs=;
-	b=Er02kSdmpSjpT/V3BnAH5gksYjlj5/BOkn1q9Xk0ByEwka7MmN00jjbggDtJ7CZn4JzwVE
-	ER6d7eoeYN47fJi4hCN+Sok9ndfjzIKmFHUZu8xK7YQJ47q/TvEcVto6FzM6vIyHsnRgqs
-	YgL6IDrUPtVRYLx8axV/P7RZ1srb/8C9YsnF4lxfzZyBgLgb+RhJZcNxQctOuwT0brjkvo
-	VQDsYYqQscWHYak5X6s3xXhnNBK0x1opWlUPifFxluya48bGoRG9NqWQhRGYw04zGbfIJF
-	I2et5ZGYIRLFpCoOT2KjezCk3ej3bKoSX7SQxaCNCf/G+6nDFBugigSPpvStew==
+	 references:references; bh=Msjel7aC5+Im+aQvsAthw2RuYInXdUWBTW//73XVYm0=;
+	b=KgXVLrX3pE/nIoqiS99qR5s9yOIMz/R1VaPvfyv2loIU5hDglv67gRX6pyou1DtK60H8cv
+	9GpmCDddO9kcF85adqjHiYF1bQ5d87zXTRgP0UgAlqGixa7Beb5iGb+pdp3Q4PG+f1toDz
+	X83uOxv0BEfIdDiW+VJKmP5sHOk9JHA4UYsiIbRMhD1dFrLSv8FyNxH9l8a1jx+W7F1ES2
+	mgqX8q8gvQYFh0AjANuSBzI/kXzbuI16QPGuQiCAWc2j/5+ePYMfVnyMFOtmr8uagWYcXr
+	mb6yiiUo1myYYM3ShslmbhVM3mpnldYVdu78xh8u5sdNukY35Vk1Ij8AFOxhaw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668174889;
+	s=2020e; t=1668174910;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=+/SWQaPmmzQa3dI8BJSuUqTvToJtImL4OX5ekaSehDs=;
-	b=sZGbJ5v4ibSkVPeghlcKhY6RC7l93AZXEiSKmfJOLLjyOWr1rWHGxN49ajUHEOk1wCsitu
-	8ECbcklJiJTpKNDA==
+	 references:references; bh=Msjel7aC5+Im+aQvsAthw2RuYInXdUWBTW//73XVYm0=;
+	b=+iwkwvNEn54tR9xz7jcZGiqa+56HiFP8TiLT8JYtzPWGMO6Z8uVywQslTWiMPsVIVC4Jkm
+	pdv9Nt05hulH8fCQ==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 21/39] PCI/MSI: Move pci_enable_msix_range() to api.c
+Subject: [patch 34/39] PCI/MSI: Reject multi-MSI early
 References: <20221111120501.026511281@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Fri, 11 Nov 2022 14:54:48 +0100 (CET)
+Date: Fri, 11 Nov 2022 14:55:09 +0100 (CET)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,124 +64,91 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ahmed S. Darwish <darwi@linutronix.de>
+When hierarchical MSI interrupt domains are enabled then there is no point
+to do tons of work and detect the missing support for multi-MSI late in the
+allocation path.
 
-To distangle the maze in msi.c, all exported device-driver MSI APIs are
-now to be grouped in one file, api.c.
+Just query the domain feature flags right away. The query function is going
+to be used for other purposes later and has a mode argument which influences
+the result:
 
-Move pci_enable_msix_range() and make its kernel-doc comprehensive.
+  ALLOW_LEGACY returns true when:
+     - there is no irq domain attached (legacy support)
+     - there is a irq domain attached which has the feature flag set
 
-Signed-off-by: Ahmed S. Darwish <darwi@linutronix.de>
+  DENY_LEGACY returns only true when:
+     - there is a irq domain attached which has the feature flag set
+
+This allows to use the function universally without ifdeffery in the
+calling code.
+
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ drivers/pci/msi/irqdomain.c |   22 ++++++++++++++++++++++
+ drivers/pci/msi/msi.c       |    4 ++++
+ drivers/pci/msi/msi.h       |    9 +++++++++
+ 3 files changed, 35 insertions(+)
 
----
- drivers/pci/msi/api.c | 32 ++++++++++++++++++++++++++++++++
- drivers/pci/msi/msi.c | 30 ++++--------------------------
- drivers/pci/msi/msi.h |  3 +++
- 3 files changed, 39 insertions(+), 26 deletions(-)
----
-diff --git a/drivers/pci/msi/api.c b/drivers/pci/msi/api.c
-index 63d7f8f6a284..d48050555d55 100644
---- a/drivers/pci/msi/api.c
-+++ b/drivers/pci/msi/api.c
-@@ -58,3 +58,35 @@ void pci_disable_msi(struct pci_dev *dev)
- 	msi_unlock_descs(&dev->dev);
+--- a/drivers/pci/msi/irqdomain.c
++++ b/drivers/pci/msi/irqdomain.c
+@@ -187,6 +187,28 @@ struct irq_domain *pci_msi_create_irq_do
  }
- EXPORT_SYMBOL(pci_disable_msi);
-+
+ EXPORT_SYMBOL_GPL(pci_msi_create_irq_domain);
+ 
 +/**
-+ * pci_enable_msix_range() - Enable MSI-X interrupt mode on device
-+ * @dev:     the PCI device to operate on
-+ * @entries: input/output parameter, array of MSI-X configuration entries
-+ * @minvec:  minimum required number of MSI-X vectors
-+ * @maxvec:  maximum desired number of MSI-X vectors
-+ *
-+ * Legacy device driver API to enable MSI-X interrupt mode on device and
-+ * configure its MSI-X capability structure as appropriate.  The passed
-+ * @entries array must have each of its members "entry" field set to a
-+ * desired (valid) MSI-X vector number, where the range of valid MSI-X
-+ * vector numbers can be queried through pci_msix_vec_count().  If
-+ * successful, the driver must invoke pci_disable_msix() on cleanup.
-+ *
-+ * NOTE: The newer pci_alloc_irq_vectors() / pci_free_irq_vectors() API
-+ * pair should, in general, be used instead.
-+ *
-+ * Return: number of MSI-X vectors allocated (which might be smaller
-+ * than @maxvecs), where Linux IRQ numbers for such allocated vectors
-+ * are saved back in the @entries array elements' "vector" field. Return
-+ * -ENOSPC if less than @minvecs interrupt vectors are available.
-+ * Return -EINVAL if one of the passed @entries members "entry" field
-+ * was invalid or a duplicate, or if plain MSI interrupts mode was
-+ * earlier enabled on device. Return other errnos otherwise.
++ * pci_msi_domain_supports - Check for support of a particular feature flag
++ * @pdev:		The PCI device to operate on
++ * @feature_mask:	The feature mask to check for (full match)
++ * @mode:		If ALLOW_LEGACY this grants the feature when there is no irq domain
++ *			associated to the device. If DENY_LEGACY the lack of an irq domain
++ *			makes the feature unsupported
 + */
-+int pci_enable_msix_range(struct pci_dev *dev, struct msix_entry *entries,
-+			  int minvec, int maxvec)
++bool pci_msi_domain_supports(struct pci_dev *pdev, unsigned int feature_mask,
++			     enum support_mode mode)
 +{
-+	return __pci_enable_msix_range(dev, entries, minvec, maxvec, NULL, 0);
++	struct msi_domain_info *info;
++	struct irq_domain *domain;
++
++	domain = dev_get_msi_domain(&pdev->dev);
++
++	if (!domain || !irq_domain_is_hierarchy(domain))
++		return mode == ALLOW_LEGACY;
++	info = domain->host_data;
++	return (info->flags & feature_mask) == feature_mask;
 +}
-+EXPORT_SYMBOL(pci_enable_msix_range);
-diff --git a/drivers/pci/msi/msi.c b/drivers/pci/msi/msi.c
-index 98f07ad9af62..6700ef1c734e 100644
++
+ /*
+  * Users of the generic MSI infrastructure expect a device to have a single ID,
+  * so with DMA aliases we have to pick the least-worst compromise. Devices with
 --- a/drivers/pci/msi/msi.c
 +++ b/drivers/pci/msi/msi.c
-@@ -844,10 +844,10 @@ int __pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec,
- 	}
- }
+@@ -347,6 +347,10 @@ static int msi_capability_init(struct pc
+ 	struct msi_desc *entry;
+ 	int ret;
  
--static int __pci_enable_msix_range(struct pci_dev *dev,
--				   struct msix_entry *entries, int minvec,
--				   int maxvec, struct irq_affinity *affd,
--				   int flags)
-+int __pci_enable_msix_range(struct pci_dev *dev,
-+			    struct msix_entry *entries, int minvec,
-+			    int maxvec, struct irq_affinity *affd,
-+			    int flags)
- {
- 	int rc, nvec = maxvec;
- 
-@@ -887,28 +887,6 @@ static int __pci_enable_msix_range(struct pci_dev *dev,
- }
- 
- /**
-- * pci_enable_msix_range - configure device's MSI-X capability structure
-- * @dev: pointer to the pci_dev data structure of MSI-X device function
-- * @entries: pointer to an array of MSI-X entries
-- * @minvec: minimum number of MSI-X IRQs requested
-- * @maxvec: maximum number of MSI-X IRQs requested
-- *
-- * Setup the MSI-X capability structure of device function with a maximum
-- * possible number of interrupts in the range between @minvec and @maxvec
-- * upon its software driver call to request for MSI-X mode enabled on its
-- * hardware device function. It returns a negative errno if an error occurs.
-- * If it succeeds, it returns the actual number of interrupts allocated and
-- * indicates the successful configuration of MSI-X capability structure
-- * with new allocated MSI-X interrupts.
-- **/
--int pci_enable_msix_range(struct pci_dev *dev, struct msix_entry *entries,
--		int minvec, int maxvec)
--{
--	return __pci_enable_msix_range(dev, entries, minvec, maxvec, NULL, 0);
--}
--EXPORT_SYMBOL(pci_enable_msix_range);
--
--/**
-  * pci_alloc_irq_vectors_affinity - allocate multiple IRQs for a device
-  * @dev:		PCI device to operate on
-  * @min_vecs:		minimum number of vectors required (must be >= 1)
-diff --git a/drivers/pci/msi/msi.h b/drivers/pci/msi/msi.h
-index 00bb98d5bb0e..8c4a5289432d 100644
++	/* Reject multi-MSI early on irq domain enabled architectures */
++	if (nvec > 1 && !pci_msi_domain_supports(dev, MSI_FLAG_MULTI_PCI_MSI, ALLOW_LEGACY))
++		return 1;
++
+ 	/*
+ 	 * Disable MSI during setup in the hardware, but mark it enabled
+ 	 * so that setup code can evaluate it.
 --- a/drivers/pci/msi/msi.h
 +++ b/drivers/pci/msi/msi.h
-@@ -88,8 +88,11 @@ static inline __attribute_const__ u32 msi_multi_mask(struct msi_desc *desc)
- void pci_msi_shutdown(struct pci_dev *dev);
- void pci_free_msi_irqs(struct pci_dev *dev);
- int __pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec, struct irq_affinity *affd);
-+int __pci_enable_msix_range(struct pci_dev *dev, struct msix_entry *entries, int minvec,
-+			    int maxvec,  struct irq_affinity *affd, int flags);
+@@ -97,6 +97,15 @@ int __pci_enable_msix_range(struct pci_d
+ void __pci_restore_msi_state(struct pci_dev *dev);
+ void __pci_restore_msix_state(struct pci_dev *dev);
  
- /* Legacy (!IRQDOMAIN) fallbacks */
++/* irq_domain related functionality */
 +
++enum support_mode {
++	ALLOW_LEGACY,
++	DENY_LEGACY,
++};
++
++bool pci_msi_domain_supports(struct pci_dev *dev, unsigned int feature_mask, enum support_mode mode);
++
+ /* Legacy (!IRQDOMAIN) fallbacks */
+ 
  #ifdef CONFIG_PCI_MSI_ARCH_FALLBACKS
- int pci_msi_legacy_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
- void pci_msi_legacy_teardown_msi_irqs(struct pci_dev *dev);
 
