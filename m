@@ -4,40 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50BDCC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Nov 2022 03:17:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B3CBC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Nov 2022 03:35:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NBBDw05BCz3f9v
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Nov 2022 14:17:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NBBfJ4Bhsz3cKM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Nov 2022 14:35:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
 Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBBCZ2Sqfz3cKn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 14:16:10 +1100 (AEDT)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.56])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4NBB6Y5fkczqSLj;
-	Tue, 15 Nov 2022 11:11:49 +0800 (CST)
-Received: from localhost.localdomain (10.67.164.66) by
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBBdj6LZxz3bhR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 14:35:19 +1100 (AEDT)
+Received: from canpemm500009.china.huawei.com (unknown [172.30.72.54])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4NBBXf463pzqSRP;
+	Tue, 15 Nov 2022 11:30:58 +0800 (CST)
+Received: from [10.67.102.169] (10.67.102.169) by
  canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2375.31; Tue, 15 Nov 2022 11:15:36 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <akpm@linux-foundation.org>, <linux-mm@kvack.org>,
+ 15.1.2375.31; Tue, 15 Nov 2022 11:34:44 +0800
+Subject: Re: [PATCH v5 2/2] arm64: support batched/deferred tlb shootdown
+ during page reclamation
+To: Anshuman Khandual <anshuman.khandual@arm.com>,
+	<akpm@linux-foundation.org>, <linux-mm@kvack.org>,
 	<linux-arm-kernel@lists.infradead.org>, <x86@kernel.org>,
-	<catalin.marinas@arm.com>, <will@kernel.org>, <anshuman.khandual@arm.com>,
-	<linux-doc@vger.kernel.org>
-Subject: [PATCH v6 1/2] mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
-Date: Tue, 15 Nov 2022 11:14:24 +0800
-Message-ID: <20221115031425.44640-2-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20221115031425.44640-1-yangyicong@huawei.com>
-References: <20221115031425.44640-1-yangyicong@huawei.com>
+	<catalin.marinas@arm.com>, <will@kernel.org>, <linux-doc@vger.kernel.org>
+References: <20221028081255.19157-1-yangyicong@huawei.com>
+ <20221028081255.19157-3-yangyicong@huawei.com>
+ <86fbdc8c-0dcb-9b8f-d843-63460d8b1d6a@arm.com>
+ <9982dac0-9f2e-112a-d440-467c8e8f8aa4@huawei.com>
+ <40f1b5ad-2165-bb81-1ff5-89786373fa14@arm.com>
+From: Yicong Yang <yangyicong@huawei.com>
+Message-ID: <5bbd5364-fcec-5fc2-4780-e9b44f2ab135@huawei.com>
+Date: Tue, 15 Nov 2022 11:34:44 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.5.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.67.164.66]
-X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
+In-Reply-To: <40f1b5ad-2165-bb81-1ff5-89786373fa14@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.67.102.169]
+X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
  canpemm500009.china.huawei.com (7.192.105.203)
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -51,78 +57,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, guojian@oppo.com, linux-riscv@lists.infradead.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, Barry Song <baohua@kernel.org>, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
+Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, Nadav Amit <namit@vmware.com>, guojian@oppo.com, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, Mel Gorman <mgorman@suse.de>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, Barry Song <v-songbaohua@oppo.com>, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+On 2022/11/14 22:19, Anshuman Khandual wrote:
+> 
+> 
+> On 11/14/22 14:16, Yicong Yang wrote:
+>> On 2022/11/14 11:29, Anshuman Khandual wrote:
+>>>
+>>> On 10/28/22 13:42, Yicong Yang wrote:
+>>>> +static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
+>>>> +{
+>>>> +	/*
+>>>> +	 * TLB batched flush is proved to be beneficial for systems with large
+>>>> +	 * number of CPUs, especially system with more than 8 CPUs. TLB shutdown
+>>>> +	 * is cheap on small systems which may not need this feature. So use
+>>>> +	 * a threshold for enabling this to avoid potential side effects on
+>>>> +	 * these platforms.
+>>>> +	 */
+>>>> +	if (num_online_cpus() <= CONFIG_ARM64_NR_CPUS_FOR_BATCHED_TLB)
+>>>> +		return false;
+>>>> +
+>>>> +#ifdef CONFIG_ARM64_WORKAROUND_REPEAT_TLBI
+>>>> +	if (unlikely(this_cpu_has_cap(ARM64_WORKAROUND_REPEAT_TLBI)))
+>>>> +		return false;
+>>>> +#endif
+>>> should_defer_flush() is immediately followed by set_tlb_ubc_flush_pending() which calls
+>>> arch_tlbbatch_add_mm(), triggering the actual TLBI flush via __flush_tlb_page_nosync().
+>>> It should be okay to check capability with this_cpu_has_cap() as the entire call chain
+>>> here is executed on the same cpu. But just wondering if cpus_have_const_cap() would be
+>>> simpler, consistent, and also cost effective ?
+>>>
+>> ok. Checked cpus_have_const_cap() I think it matches your words.
+>>
+>>> Regardless, a comment is needed before the #ifdef block explaining why it does not make
+>>> sense to defer/batch when __tlbi()/__tlbi_user() implementation will execute 'dsb(ish)'
+>>> between two TLBI instructions to workaround the errata.
+>>>
+>> The workaround for the errata mentioned the affected platforms need the tlbi+dsb to be done
+>> twice, so I'm not sure if we defer the final dsb will cause any problem so I think the judgement
+>> here is used for safety. I have no such platform to test if it's ok to defer the last dsb.
+> 
+> We should not defer TLB flush on such systems, as ensured by the above test and 'false'
+> return afterwards. The only question is whether this decision should be taken at a CPU
+> level (which is affected by the errata) or the whole system level.
+> 
+> What is required now
+> 
+> - Replace this_cpu_has_cap() with cpus_have_const_cap ?
+> - Add the following comment before the #ifdef check
+> 
 
-The entire scheme of deferred TLB flush in reclaim path rests on the
-fact that the cost to refill TLB entries is less than flushing out
-individual entries by sending IPI to remote CPUs. But architecture
-can have different ways to evaluate that. Hence apart from checking
-TTU_BATCH_FLUSH in the TTU flags, rest of the decision should be
-architecture specific.
+Have respin the series according to the above comments:
+https://lore.kernel.org/lkml/20221115031425.44640-3-yangyicong@huawei.com/
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-[https://lore.kernel.org/linuxppc-dev/20171101101735.2318-2-khandual@linux.vnet.ibm.com/]
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
-[Rebase and fix incorrect return value type]
-Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
-Reviewed-by: Barry Song <baohua@kernel.org>
-Tested-by: Punit Agrawal <punit.agrawal@bytedance.com>
----
- arch/x86/include/asm/tlbflush.h | 12 ++++++++++++
- mm/rmap.c                       |  9 +--------
- 2 files changed, 13 insertions(+), 8 deletions(-)
+Thanks.
 
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index cda3118f3b27..8a497d902c16 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -240,6 +240,18 @@ static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
- 	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
- }
- 
-+static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
-+{
-+	bool should_defer = false;
-+
-+	/* If remote CPUs need to be flushed then defer batch the flush */
-+	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
-+		should_defer = true;
-+	put_cpu();
-+
-+	return should_defer;
-+}
-+
- static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
- {
- 	/*
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 2ec925e5fa6a..a9ab10bc0144 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -685,17 +685,10 @@ static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-  */
- static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
- {
--	bool should_defer = false;
--
- 	if (!(flags & TTU_BATCH_FLUSH))
- 		return false;
- 
--	/* If remote CPUs need to be flushed then defer batch the flush */
--	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
--		should_defer = true;
--	put_cpu();
--
--	return should_defer;
-+	return arch_tlbbatch_should_defer(mm);
- }
- 
- /*
--- 
-2.24.0
-
+> /*
+>  * TLB flush deferral is not required on systems, which are affected with
+>  * ARM64_WORKAROUND_REPEAT_TLBI, as __tlbi()/__tlbi_user() implementation
+>  * will have two consecutive TLBI instructions with a dsb(ish) in between
+>  * defeating the purpose (i.e save overall 'dsb ish' cost).
+>  */
+> 
+> .
+> 
