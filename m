@@ -4,74 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3EC5C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Nov 2022 20:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 346BEC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 04:03:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NBczG0Gl6z3cN0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 07:22:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=QoLsrppx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::52b; helo=mail-pg1-x52b.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=QoLsrppx;
-	dkim-atps=neutral
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NBqD24F2Lz3f3J
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 15:03:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.216.48; helo=mail-pj1-f48.google.com; envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBcyC54Kvz3bXR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 07:21:07 +1100 (AEDT)
-Received: by mail-pg1-x52b.google.com with SMTP id b62so14403010pgc.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 12:21:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=XxrH205VSL6PuZxNZy5QSHBg1esXqApruwRLQHoD1FQ=;
-        b=QoLsrppxCqrrm8Et/yxXiG7qWE0hiOrc+RLWkwKVvGYvEXTURW54Ct7G0aFnW7vDom
-         O3WnXZWOxSKhgS+uv00LIKaFYAiY4w1O0HuVw0sHlWnVNkXyDKqsQfpccjPy0o//76Ot
-         9HbC7sv+GYjRBhUyAvWsaFUrflZFb6BoKafnLIcIXy0vGyf6tKbOGR6vv68o6WUCslEQ
-         BOT4pCgeSJnKExa2xfKvrZGwBZhzuokrCi6o4yMRfhSIGNbmSd/1S94WiYpeZI3RH1jS
-         tMxrZXr8PoWD2Hx+ZMuaUIAmz2hZjOEiOFHGi/ELuekxNrIkmFIAeW4IyLdTJL7wajgf
-         6FdQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBqCP6wYpz30Qt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 15:03:12 +1100 (AEDT)
+Received: by mail-pj1-f48.google.com with SMTP id w3-20020a17090a460300b00218524e8877so1745776pjg.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 20:03:11 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=XxrH205VSL6PuZxNZy5QSHBg1esXqApruwRLQHoD1FQ=;
-        b=4DcYHe8ATAV2sZzPBSQ7Euh8ngxrQpbK/Lul7nXDxGC2z3jC7rvYUNblgfYx8+Pf7/
-         DAQEQ5dtwNxku7i9e1HD/azn0HagMJ4MiEl2CM0kuaad03gkMNZr4/NTuzLp036sXg+M
-         YftvHc0dMZFtMJFq9zK/PP/X9Gcj+RcbCF0/+XqCbcQ1AI0jPKuTm5WJIvNlwHfGnp8U
-         NsccfewuBrtQwEvA/BI+qMO+ke7njzV6tDTT5MhVbe00K8VNJvrx8Kx3h54T7zWATFH/
-         ItX3F6by6/NOlrfjwLcrSnIfx0LPlLvzwpnfCKziHjNJMMtuNc7H7+00zoOuZxaVzFv5
-         KKDw==
-X-Gm-Message-State: ANoB5pnISWLBqFWQVLmAkCGcwFTU43hYuO/zilbo56cE4hXsHH4fPG3Y
-	Og3fTm5E9iBjE6LJ0NSmxYArMg==
-X-Google-Smtp-Source: AA0mqf7I+HCT8JLUK2SnELicaIfj+5Xh/wdDfnKOa9DuiFN7rhFS7bzZLz9XVMfRQzvW4tmCjZQXQw==
-X-Received: by 2002:aa7:9493:0:b0:56b:9ae8:ca05 with SMTP id z19-20020aa79493000000b0056b9ae8ca05mr19812088pfk.59.1668543664233;
-        Tue, 15 Nov 2022 12:21:04 -0800 (PST)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id o15-20020a170902d4cf00b001754fa42065sm10448477plg.143.2022.11.15.12.21.03
+        bh=1zIzDKHHVNaVurdU/es7VrrKvHMyE/kDIQtf0pEpjIw=;
+        b=oDzy/GgHfr0JAJyKvnmd/rSUenjJonezWQLnv8cFRIJuyb+Wza8SQArKiYm4lt4eTA
+         XM8nc8ZlUgEoBSBURZ4lkZuFqW+hQO3zCQxqM/4zlyieHEbnA86nrGsUly+MZie1bx+a
+         dRk+mjzSxWEPgZDygBmNDd7HyfYWu7UG/jbffwQKAdQSfiaMWoBJwBFFnUooorK6KtKU
+         jsTuax3ih7xwJ1aAl4V35/6KRUB2O8SO0WoWjgRy7MFtSDHPZ2KIIbCAjsBaEx391ybq
+         7Mvh/TMwTguLonEo0xWdcTaM8ZbWZNlFkL2GO789tmQtW7B6bPpMJkTMFUv0+Ij72nEm
+         ekOw==
+X-Gm-Message-State: ANoB5pl5BnE8mXntCxNRPMAaH73W/Ka5BJ0cv7EyP8KJ3fZ56efESGEq
+	eZzz7hFXNVoYU9SxL0iucVI=
+X-Google-Smtp-Source: AA0mqf6hyhoq112sIKQo2v/k51nNvfWIgxwNBEvlAx1Pthk/+MTebE7MSfBKsrWrQE5FLsqcaK8YIQ==
+X-Received: by 2002:a17:90a:3f89:b0:217:90e0:3f8c with SMTP id m9-20020a17090a3f8900b0021790e03f8cmr1687555pjc.192.1668571388739;
+        Tue, 15 Nov 2022 20:03:08 -0800 (PST)
+Received: from rocinante (fpd11144dd.ap.nuro.jp. [209.17.68.221])
+        by smtp.gmail.com with ESMTPSA id nl8-20020a17090b384800b0020d48bc6661sm390550pjb.31.2022.11.15.20.03.02
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Nov 2022 12:21:03 -0800 (PST)
-Date: Tue, 15 Nov 2022 20:21:00 +0000
-From: Sean Christopherson <seanjc@google.com>
-To: "Huang, Kai" <kai.huang@intel.com>
-Subject: Re: [PATCH 38/44] KVM: Disable CPU hotplug during hardware enabling
-Message-ID: <Y3P0rAjywL1a7Pme@google.com>
-References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-39-seanjc@google.com>
- <88e920944de70e7d69a98f74005b49c59b5aaa3b.camel@intel.com>
- <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
- <Y3PzhANShVlTXVg1@google.com>
+        Tue, 15 Nov 2022 20:03:08 -0800 (PST)
+Date: Wed, 16 Nov 2022 13:03:01 +0900
+From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v3 0/4] PCI: Add pci_dev_for_each_resource() helper and
+Message-ID: <Y3Rg9dGmzZl4GJU5@rocinante>
+References: <20221114185822.65038-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Y3PzhANShVlTXVg1@google.com>
+In-Reply-To: <20221114185822.65038-1-andriy.shevchenko@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,69 +61,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "mjrosato@linux.ibm.com" <mjrosato@linux.ibm.com>, "david@redhat.com" <david@redhat.com>, "Yao, Yuan" <yuan.yao@intel.com>, "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, "maz@kernel.org" <maz@kernel.org>, "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "aleksandar.qemu.devel@gmail.com" <aleksandar.qemu.devel@gmail.com>, "james.morse@arm.com" <james.morse@arm.com>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, "Gao, Chao" <chao.gao@intel.com>, "farman@linux.ibm.com" <farman@linux.ibm.com>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, "suzuki.poulose@arm.com" <suzuki.poulose@arm.com>, "kvm@vger.kernel.org" <kvm@vg
- er.kernel.org>, "atishp@atishpatra.org" <atishp@atishpatra.org>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, "tglx@linutronix.de" <tglx@linutronix.de>, "alexandru.elisei@arm.com" <alexandru.elisei@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Yamahata, Isaku" <isaku.yamahata@intel.com>, "farosas@linux.ibm.com" <farosas@linux.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "oliver.upton@linux.dev" <oliver.upton@linux.dev>, "palmer@dabbelt.com" <palmer@dabbelt.com>, "kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, "anup@brainfault.org" <anup@brainfault.org>, "pbonzini@redhat.com" <pbonzini@redhat.com>, "vkuznets@redhat.com" <vkuznets@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-pci@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, Bjorn Helgaas <helgaas@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, linux-kernel@vger.kernel.org, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, linux-alpha@vger.kernel.org, linuxppc-de
+ v@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Nov 15, 2022, Sean Christopherson wrote:
-> On Thu, Nov 10, 2022, Huang, Kai wrote:
-> > On Thu, 2022-11-10 at 01:33 +0000, Huang, Kai wrote:
-> > > > @@ -9283,7 +9283,13 @@ static int
-> > > > kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
-> > > > †	int cpu = smp_processor_id();
-> > > > †	struct cpuinfo_x86 *c = &cpu_data(cpu);
-> > > > †
-> > > > -	WARN_ON(!irqs_disabled());
-> > > > +	/*
-> > > > +	 * Compatibility checks are done when loading KVM and when enabling
-> > > > +	 * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
-> > > > +	 * compatible, i.e. KVM should never perform a compatibility check
-> > > > on
-> > > > +	 * an offline CPU.
-> > > > +	 */
-> > > > +	WARN_ON(!irqs_disabled() && cpu_active(cpu));
-> > > > †
-> > > 
-> > > Also, the logic of:
-> > > 
-> > > 	!irqs_disabled() && cpu_active(cpu)
-> > > 
-> > > is quite weird.
-> > > 
-> > > The original "WARN(!irqs_disabled())" is reasonable because in STARTING
-> > > section
-> > > the IRQ is indeed disabled.
-> > > 
-> > > But this doesn't make sense anymore after we move to ONLINE section, in which
-> > > IRQ has already been enabled (see start_secondary()).† IIUC the WARN_ON()
-> > > doesn't get exploded is purely because there's an additional cpu_active(cpu)
-> > > check.
-> > > 
-> > > So, a more reasonable check should be something like:
-> > > 
-> > > 	WARN_ON(irqs_disabled() || cpu_active(cpu) || !cpu_online(cpu));
-> > > 
-> > > Or we can simply do:
-> > > 
-> > > 	WARN_ON(!cpu_online(cpu) || cpu_active(cpu));
-> > > 
-> > > (because I don't know whether it's possible IRQ can somehow get disabled in
-> > > ONLINE section).
-> > > 
-> > > Btw above is purely based on code analysis, but I haven't done any test.
-> > 
-> > Hmm.. I wasn't thinking thoroughly.  I forgot CPU compatibility check also
-> > happens on all online cpus when loading KVM.  For this case, IRQ is disabled and
-> > cpu_active() is true.  For the hotplug case, IRQ is enabled but  cpu_active() is
-> > false.
-> 
-> Actually, you're right (and wrong).  You're right in that the WARN is flawed.  And
-> the reason for that is because you're wrong about the hotplug case.  In this version
-> of things, the compatibility checks are routed through hardware enabling, i.e. this
-> flow is used only when loading KVM.  This helper should only be called via SMP function
-> call, which means that IRQs should always be disabled.
+Hello,
 
-Grr, but not routing through this helper is flawed in that KVM doesn't do the
-CR4 checks in the hardware enabling case.  Don't think that changes the WARN, but
-other patches in this series need tweaks.
+> Provide two new helper macros to iterate over PCI device resources and
+> convert users.
+> 
+> Looking at it, refactor existing pci_bus_for_each_resource() and convert
+> users accordingly.
+> 
+> This applies on top of this patch Mika sent out earlier:
+> https://lore.kernel.org/r/20221114115953.40236-1-mika.westerberg@linux.intel.com
+> 
+> Changelog v3:
+> - rebased on top of v2 by Mika, see above
+> - added tag to pcmcia patch (Dominik)
+[...]
+
+Thank you Andy for all the improvements and Mika for the idea!
+
+For the whole series:
+  Reviewed-by: Krzysztof Wilczy≈Ñski <kw@linux.com>
+
+Looks very nice!
+
+	Krzysztof
