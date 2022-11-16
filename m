@@ -4,54 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87D5AC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 17:04:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4660C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 17:05:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NC8Xg6ndbz3f3Z
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 04:04:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NC8Yh0kLZz3f5k
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 04:05:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KDnklEjx;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/lLRXLA6;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=p5NIRSDR;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=78yxMdLZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KDnklEjx;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=/lLRXLA6;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=p5NIRSDR;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=78yxMdLZ;
 	dkim-atps=neutral
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NC8Vf4w0Xz3cB8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 04:02:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NC8WJ0ckVz3cTC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 04:03:08 +1100 (AEDT)
 From: Thomas Gleixner <tglx@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1668618150;
+	s=2020; t=1668618185;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=73/k+Pqe+eIdLrX5pigBKT2S4Kr0WftEUmk46mQSZq4=;
-	b=KDnklEjxF7By95INYq+dtxZdCdY/C01Z76Y3GVUU4F3KTF6wB9npHtyJk3/UAgAb2A+Kl2
-	OO8l0ogbhCgtGOzGSm278d7Ntq9gnX5OWX3a6rnZ4IXbyxowohL3X/waIh8pZdLxNBb0T6
-	AL5Ba0JCMIs8eN7MF+cdBQIMfREMbj5b283h9U+0gizZueBJ2TbopR81DOJDkA+yLscvLG
-	5FHYQIDq160F+/ffXyNSwf1Pr1MYqKx6AnPF4ABlFzMU4zcMo5Y3U2X2+lhW6JuSf+6b83
-	w3dIwnYYAiAmM5Vry7hYiK9ZrD8cGZlRqSpgOZrAqzDh3QEn/1udH8Sv89Gl7w==
+	bh=eOfL205iUtArVsJR5Cv2Qtv3GplSQquUjpKC4BPz1VQ=;
+	b=p5NIRSDRdgNg6sjXezPWC2TxqPe4xfBPWZPlRq8AEA+qx8f8LwxdiY6BdbvqwFwhOm29Vy
+	TaLKsf6n+wkRGox3pcK4qVEcl6c26bXvfM1KmJX3PrPOWwOYIQxt4oOWY7Ga2LD0021F8h
+	p5+FwT1n0Dcp+DGtS0QSwAw/kahUq5WSdDie+MF66QsWtLakAl4cBB4ddCY8iRiJj5FZtT
+	nh541QKhFZbf2fpNYqTYfZy5d3Et363GISC8S389rbYTkjtF+hMnzGQjEWU2RQKhiBLSGT
+	Q8kpS0iEIcnCwAJK2Z/3UpzF5uIZlyEYC9VqBUHMFRMgWsP8LCgtE9p62TVgOg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1668618150;
+	s=2020e; t=1668618185;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=73/k+Pqe+eIdLrX5pigBKT2S4Kr0WftEUmk46mQSZq4=;
-	b=/lLRXLA6lsq9XHJeSKJip6VCUSvS/TfY12kAhlPgvsYIqLFWJcn73WeC2hRsndLX2l+7Fj
-	tgC7oNEGsKmJLACQ==
+	bh=eOfL205iUtArVsJR5Cv2Qtv3GplSQquUjpKC4BPz1VQ=;
+	b=78yxMdLZgx5iu9Ei93SsTPYjPK3n8cN81g/Po4FLgS4BlUxWJhZUPkYMuviNPQ0E4/exmA
+	3OJ7HD4B1ghQ8qCg==
 To: Ashok Raj <ashok.raj@intel.com>
-Subject: Re: [patch 02/39] iommu/vt-d: Remove bogus check for multi MSI-X
-In-Reply-To: <Y3UHVGptkWZnIEgI@a4bf019067fa.jf.intel.com>
+Subject: Re: [patch 03/39] iommu/amd: Remove bogus check for multi MSI-X
+In-Reply-To: <Y3UJkEb7ejrxbW22@a4bf019067fa.jf.intel.com>
 References: <20221111120501.026511281@linutronix.de>
- <20221111122013.713848846@linutronix.de>
- <Y3UHVGptkWZnIEgI@a4bf019067fa.jf.intel.com>
-Date: Wed, 16 Nov 2022 18:02:30 +0100
-Message-ID: <87wn7uq1cp.ffs@tglx>
+ <20221111122013.772447165@linutronix.de>
+ <Y3UJkEb7ejrxbW22@a4bf019067fa.jf.intel.com>
+Date: Wed, 16 Nov 2022 18:03:04 +0100
+Message-ID: <87tu2yq1br.ffs@tglx>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,20 +70,20 @@ Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Lorenzo Pieralisi 
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 16 2022 at 07:52, Ashok Raj wrote:
-> On Fri, Nov 11, 2022 at 02:54:17PM +0100, Thomas Gleixner wrote:
->> PCI/Multi-MSI is MSI specific and not supported for MSI-X.
+On Wed, Nov 16 2022 at 08:02, Ashok Raj wrote:
+> On Fri, Nov 11, 2022 at 02:54:19PM +0100, Thomas Gleixner wrote:
+>> PCI/Multi-MSI is MSI specific and not supported for MSI-X
 >> 
 >> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 >> ---
->>  drivers/iommu/intel/irq_remapping.c |    3 +--
+>>  drivers/iommu/amd/iommu.c |    3 +--
 >>  1 file changed, 1 insertion(+), 2 deletions(-)
 >> 
->> --- a/drivers/iommu/intel/irq_remapping.c
->> +++ b/drivers/iommu/intel/irq_remapping.c
->> @@ -1334,8 +1334,7 @@ static int intel_irq_remapping_alloc(str
+>> --- a/drivers/iommu/amd/iommu.c
+>> +++ b/drivers/iommu/amd/iommu.c
+>> @@ -3294,8 +3294,7 @@ static int irq_remapping_alloc(struct ir
 >>  
->>  	if (!info || !iommu)
+>>  	if (!info)
 >>  		return -EINVAL;
 >> -	if (nr_irqs > 1 && info->type != X86_IRQ_ALLOC_TYPE_PCI_MSI &&
 >> -	    info->type != X86_IRQ_ALLOC_TYPE_PCI_MSIX)
@@ -93,18 +93,8 @@ On Wed, Nov 16 2022 at 07:52, Ashok Raj wrote:
 >>  	/*
 >> 
 >
-> This check is only making sure that when multi-msi is requested that the
-> type has to be either MSI/MSIX.
+> nit:
+>
+> maybe better to merge patch2/3 since both seem related?
 
-MSI-X does not support multi vector allocations on a single entry.
-
-> Wouldn't this change return -EINVAL when type = MSIX?
-
-Rightfully so. MSIX vectors are allocated one by one. Has been that way
-forever.
-
-Thanks,
-
-        tglx
-
-
+What's better about it? It's two different drivers.
