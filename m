@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E45F3C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:40:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42DE2C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:43:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NC01h2wXSz3fNf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:40:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NC04s6XXQz3fGd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:43:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hwWhhQCb;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hwWhhQCb;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EJHHdFmK;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EJHHdFmK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hwWhhQCb;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=hwWhhQCb;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EJHHdFmK;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=EJHHdFmK;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBzmv4pnwz3f32
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:29:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBznJ4mhkz3f3w
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:29:40 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1668594557;
+	s=mimecast20190719; t=1668594578;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ddMjxbE+d57ySmRYhTvAErVzb9ykjmc/iLClBCHgJ7c=;
-	b=hwWhhQCb9J5G2PUYpiEbIIDQ905iD55CpVdw/OqIcwM3G4C/z9Y/AH/7+8LX2HZjlzGFm9
-	o4jZ53v9w+KSRC/BL1iCE+RpKMlqWPHwVoOH7MHmjWThZ4VPJ/TS6R+ai9cj3D4KR5P5xN
-	Z/6n25FQcSBbh2lX+QHlKAW3WIQkfZs=
+	bh=rGA6GaR1az8P6UEdLsolXmCEn/P8qFigXL+8tO23Tsc=;
+	b=EJHHdFmKn0s21LvsKtFCIUgcD7Rl9F4uQfi0qOoDrm+aXCjmBdxO11ovrhGwNJfh+Zv9U/
+	ghbTglOEtsR8VJzae6LtBDtcj9CWPlCRtcWq8anQ7MLpkHDa4oDyYKlpAKRnA5S0FfRUyw
+	i0kDQick9LglVnA9rcX6Zrqcp7AR2uU=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1668594557;
+	s=mimecast20190719; t=1668594578;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ddMjxbE+d57ySmRYhTvAErVzb9ykjmc/iLClBCHgJ7c=;
-	b=hwWhhQCb9J5G2PUYpiEbIIDQ905iD55CpVdw/OqIcwM3G4C/z9Y/AH/7+8LX2HZjlzGFm9
-	o4jZ53v9w+KSRC/BL1iCE+RpKMlqWPHwVoOH7MHmjWThZ4VPJ/TS6R+ai9cj3D4KR5P5xN
-	Z/6n25FQcSBbh2lX+QHlKAW3WIQkfZs=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=rGA6GaR1az8P6UEdLsolXmCEn/P8qFigXL+8tO23Tsc=;
+	b=EJHHdFmKn0s21LvsKtFCIUgcD7Rl9F4uQfi0qOoDrm+aXCjmBdxO11ovrhGwNJfh+Zv9U/
+	ghbTglOEtsR8VJzae6LtBDtcj9CWPlCRtcWq8anQ7MLpkHDa4oDyYKlpAKRnA5S0FfRUyw
+	i0kDQick9LglVnA9rcX6Zrqcp7AR2uU=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-281-3wHpF2z_Ol-w_Oz0Io_Gqg-1; Wed, 16 Nov 2022 05:29:09 -0500
-X-MC-Unique: 3wHpF2z_Ol-w_Oz0Io_Gqg-1
+ us-mta-166-zpGAvGWpOfO4G6I5WZe6qQ-1; Wed, 16 Nov 2022 05:29:34 -0500
+X-MC-Unique: zpGAvGWpOfO4G6I5WZe6qQ-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
 	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id ED87586F130;
-	Wed, 16 Nov 2022 10:29:07 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2B0731C0A10A;
+	Wed, 16 Nov 2022 10:29:33 +0000 (UTC)
 Received: from t480s.fritz.box (unknown [10.39.193.216])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 0046B2027064;
-	Wed, 16 Nov 2022 10:29:00 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id 82BA82028E8F;
+	Wed, 16 Nov 2022 10:29:25 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH mm-unstable v1 14/20] drm/etnaviv: remove FOLL_FORCE usage
-Date: Wed, 16 Nov 2022 11:26:53 +0100
-Message-Id: <20221116102659.70287-15-david@redhat.com>
+Subject: [PATCH mm-unstable v1 17/20] drm/exynos: remove FOLL_FORCE usage
+Date: Wed, 16 Nov 2022 11:26:56 +0100
+Message-Id: <20221116102659.70287-18-david@redhat.com>
 In-Reply-To: <20221116102659.70287-1-david@redhat.com>
 References: <20221116102659.70287-1-david@redhat.com>
 MIME-Version: 1.0
@@ -78,66 +78,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, David Hildenbrand <david@redhat.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, Russell King <linux+etnaviv@armlinux.org.uk>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kerne
- l@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, Christian Gmeiner <christian.gmeiner@gmail.com>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Hildenbrand <david@redhat.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Kyungmin Park <kyungmin.park@samsung.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Inki Dae <inki.dae@samsung.com>, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kernel@lists.in
+ fradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, Seung-Woo Kim <sw0312.kim@samsung.com>, linux-mips@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-GUP now supports reliable R/O long-term pinning in COW mappings, such
-that we break COW early. MAP_SHARED VMAs only use the shared zeropage so
-far in one corner case (DAXFS file with holes), which can be ignored
-because GUP does not support long-term pinning in fsdax (see
-check_vma_flags()).
+FOLL_FORCE is really only for ptrace access. As we unpin the pinned pages
+using unpin_user_pages_dirty_lock(true), the assumption is that all these
+pages are writable.
 
-commit cd5297b0855f ("drm/etnaviv: Use FOLL_FORCE for userptr")
-documents that FOLL_FORCE | FOLL_WRITE was really only used for reliable
-R/O pinning.
+FOLL_FORCE in this case seems to be a legacy leftover. Let's just remove
+it.
 
-Consequently, FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM is no longer required
-for reliable R/O long-term pinning: FOLL_LONGTERM is sufficient. So stop
-using FOLL_FORCE, which is really only for ptrace access.
-
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Russell King <linux+etnaviv@armlinux.org.uk>
-Cc: Christian Gmeiner <christian.gmeiner@gmail.com>
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: Seung-Woo Kim <sw0312.kim@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
 Cc: David Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- drivers/gpu/drm/etnaviv/etnaviv_gem.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/exynos/exynos_drm_g2d.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/etnaviv/etnaviv_gem.c b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
-index cc386f8a7116..efe2240945d0 100644
---- a/drivers/gpu/drm/etnaviv/etnaviv_gem.c
-+++ b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
-@@ -638,6 +638,7 @@ static int etnaviv_gem_userptr_get_pages(struct etnaviv_gem_object *etnaviv_obj)
- 	struct page **pvec = NULL;
- 	struct etnaviv_gem_userptr *userptr = &etnaviv_obj->userptr;
- 	int ret, pinned = 0, npages = etnaviv_obj->base.size >> PAGE_SHIFT;
-+	unsigned int gup_flags = FOLL_LONGTERM;
+diff --git a/drivers/gpu/drm/exynos/exynos_drm_g2d.c b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+index 471fd6c8135f..e19c2ceb3759 100644
+--- a/drivers/gpu/drm/exynos/exynos_drm_g2d.c
++++ b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
+@@ -477,7 +477,7 @@ static dma_addr_t *g2d_userptr_get_dma_addr(struct g2d_data *g2d,
+ 	}
  
- 	might_lock_read(&current->mm->mmap_lock);
- 
-@@ -648,14 +649,15 @@ static int etnaviv_gem_userptr_get_pages(struct etnaviv_gem_object *etnaviv_obj)
- 	if (!pvec)
- 		return -ENOMEM;
- 
-+	if (!userptr->ro)
-+		gup_flags |= FOLL_WRITE;
-+
- 	do {
- 		unsigned num_pages = npages - pinned;
- 		uint64_t ptr = userptr->ptr + pinned * PAGE_SIZE;
- 		struct page **pages = pvec + pinned;
- 
--		ret = pin_user_pages_fast(ptr, num_pages,
--					  FOLL_WRITE | FOLL_FORCE | FOLL_LONGTERM,
--					  pages);
-+		ret = pin_user_pages_fast(ptr, num_pages, gup_flags, pages);
- 		if (ret < 0) {
- 			unpin_user_pages(pvec, pinned);
- 			kvfree(pvec);
+ 	ret = pin_user_pages_fast(start, npages,
+-				  FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM,
++				  FOLL_WRITE | FOLL_LONGTERM,
+ 				  g2d_userptr->pages);
+ 	if (ret != npages) {
+ 		DRM_DEV_ERROR(g2d->dev,
 -- 
 2.38.1
 
