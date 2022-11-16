@@ -4,38 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AB5C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 02:52:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A4F6C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 04:42:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NBnds6d1jz3cNG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 13:52:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NBndG0KCmz30NN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 13:51:58 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2060D13D5;
-	Tue, 15 Nov 2022 18:51:32 -0800 (PST)
-Received: from [10.162.40.17] (unknown [10.162.40.17])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D8A1C3F663;
-	Tue, 15 Nov 2022 18:51:15 -0800 (PST)
-Message-ID: <01ffa482-8d59-4cf9-f103-fb39a987873d@arm.com>
-Date: Wed, 16 Nov 2022 08:21:12 +0530
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NBr4R4J1nz3cD7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 15:42:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=fC+sD3bB;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=fC+sD3bB;
+	dkim-atps=neutral
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBr3M6PKFz2xjw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 15:41:18 +1100 (AEDT)
+Received: by mail-pj1-x1032.google.com with SMTP id q1-20020a17090a750100b002139ec1e999so1258439pjk.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 20:41:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=Dx07O4hUo8odhvUQirYJUM2J8hFmSO39h1+XVMNT/Cc=;
+        b=fC+sD3bBKzlaMYUFSfrDP5eVh6wpIjNi1x3mwHJ0IA2isQFszVGgqzTVTVibAFvulv
+         lWPg9XkV1kUA6f+1dcmidDL49hhzY8hcGvgf70uXdLxh1Q+vXeeQ9NbLnAB/GQOltwYB
+         ueeYMHOP53HC1X4Y/yEm9FQAl98SVtKWLdGsxZTMAqV05DwfOJN7QIDz6yPMOJ7sVYKj
+         W9SuTPn9YdpO/uO9Z3jXwrl/UJrfMxZztfcjQGu1QV7PqA4yPxfVxkgeY1jfhsqdkuQv
+         qDF8A4Yh0KXFhqlwMffxckNRorPaaPo+Evi8yTuWDNZ7Aq/byl38cO49YNi3uL7yq0BO
+         xsoA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Dx07O4hUo8odhvUQirYJUM2J8hFmSO39h1+XVMNT/Cc=;
+        b=QwhVor0RXFMwnkNq2jFBjJPfxk1BJrB7SwLpremEO6eXi7Q2NUqduODjyPTMWIbbXn
+         Z5hBr0ebD5vsGAKOM6IFF6bAySIDwx2VRljeqp5oI+wSbKO4oTGulNE6fyro9Wg9g1xo
+         ltwnIZ0I+MgqrmoTrjxn+whiMlzsbtziKhi9Sqb0wgb3duJn7ohs2xVwOis+RVsDBzCN
+         Hhc0KZee5KYSmU6ya5iE/FhUtr/aIWQmpT3GB2/sRhU1gDbdvt7PpVtiAPpHath2dSPg
+         ERpyLitapH8o2p8TwMVnd2Bv9qbJe29eVWTv66STqlROctz9G9OSZViEiDDn0MGldhRr
+         ADVg==
+X-Gm-Message-State: ANoB5pkV+zokQlZ9bU2CdNu2HmHfaxQqCwQ+P9zsr59dtJCHJOhzzAh7
+	Yvz0/F5JqZfWq0WKP5AZdIIg/oPYyas=
+X-Google-Smtp-Source: AA0mqf4Yqb9NG/h8a1EgOIBqvJC40hgP8NRZiasPLJYpo3qJl2iM2la7JPL1MVDaNgUW3mck+Sa2fg==
+X-Received: by 2002:a17:90a:c214:b0:218:3623:6ec5 with SMTP id e20-20020a17090ac21400b0021836236ec5mr1817712pjt.124.1668573675096;
+        Tue, 15 Nov 2022 20:41:15 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (193-116-82-39.tpgi.com.au. [193.116.82.39])
+        by smtp.gmail.com with ESMTPSA id y10-20020a170902d64a00b00177f4ef7970sm10867066plh.11.2022.11.15.20.40.03
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Nov 2022 20:40:23 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix writable sections being moved into the rodata region
+Date: Wed, 16 Nov 2022 14:39:53 +1000
+Message-Id: <20221116043954.3307852-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.2
-Subject: Re: [PATCH v6 2/2] arm64: support batched/deferred tlb shootdown
- during page reclamation
-Content-Language: en-US
-To: Nadav Amit <namit@vmware.com>, Yicong Yang <yangyicong@huawei.com>
-References: <20221115031425.44640-1-yangyicong@huawei.com>
- <20221115031425.44640-3-yangyicong@huawei.com>
- <0D3A45FE-5367-40CD-A035-37F6EE98B25E@vmware.com>
- <91e4804d-cb99-fd22-dafd-2f418f5c7ba9@huawei.com>
- <E3756C83-767A-4C68-AE3F-8C979F47A029@vmware.com>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-In-Reply-To: <E3756C83-767A-4C68-AE3F-8C979F47A029@vmware.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -48,46 +75,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "wangkefeng.wang@huawei.com" <wangkefeng.wang@huawei.com>, "prime.zeng@hisilicon.com" <prime.zeng@hisilicon.com>, "guojian@oppo.com" <guojian@oppo.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, kernel list <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>, "punit.agrawal@bytedance.com" <punit.agrawal@bytedance.com>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, linux-s390 <linux-s390@vger.kernel.org>, "zhangshiming@oppo.com" <zhangshiming@oppo.com>, "lipeifeng@oppo.com" <lipeifeng@oppo.com>, Jonathan Corbet <corbet@lwn.net>, X86 ML <x86@kernel.org>, Barry Song <21cnbao@gmail.com>, Mel Gorman <mgorman@suse.de>, Arnd Bergmann <arnd@arndb.de>, "realmz6@gmail.com" <realmz6@gmail.com>, Barry Song <v-songbaohua@oppo.com>, "openrisc@lists.librecores.org" <openrisc@lists.librecores.org>, "darren@os.amperecomputing.com" <darren
- @os.amperecomputing.com>, "yangyicong@hisilicon.com" <yangyicong@hisilicon.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, haoxin <xhao@linux.alibaba.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "huzhanyuan@oppo.com" <huzhanyuan@oppo.com>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+.data.rel.ro*  catches .data.rel.root_cpuacct, and the kernel crashes on
+a store in css_clear_dir. At least we know read-only data protection is
+working...
 
+Fixes: b6adc6d6d3272 ("powerpc/build: move .data.rel.ro, .sdata2 to read-only")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/vmlinux.lds.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On 11/16/22 07:26, Nadav Amit wrote:
-> On Nov 15, 2022, at 5:50 PM, Yicong Yang <yangyicong@huawei.com> wrote:
-> 
->> !! External Email
->>
->> On 2022/11/16 7:38, Nadav Amit wrote:
->>> On Nov 14, 2022, at 7:14 PM, Yicong Yang <yangyicong@huawei.com> wrote:
->>>
->>>> diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
->>>> index 8a497d902c16..5bd78ae55cd4 100644
->>>> --- a/arch/x86/include/asm/tlbflush.h
->>>> +++ b/arch/x86/include/asm/tlbflush.h
->>>> @@ -264,7 +264,8 @@ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
->>>> }
->>>>
->>>> static inline void arch_tlbbatch_add_mm(struct arch_tlbflush_unmap_batch *batch,
->>>> -                                    struct mm_struct *mm)
->>>> +                                    struct mm_struct *mm,
->>>> +                                    unsigned long uaddr)
->>>
->>> Logic-wise it looks fine. I notice the “v6", and it should not be blocking,
->>> but I would note that the name "arch_tlbbatch_add_mm()” does not make much
->>> sense once the function also takes an address.
->>
->> ok the add_mm should still apply to x86 since the address is not used, but not for arm64.
->>
->>> It could’ve been something like arch_set_tlb_ubc_flush_pending() but that’s
->>> too long. I’m not very good with naming, but the current name is not great.
->>
->> What about arch_tlbbatch_add_pending()? Considering the x86 is pending the flush operation
->> while arm64 is pending the sychronization operation, arch_tlbbatch_add_pending() should
->> make sense to both.
-> 
-> Sounds reasonable. Thanks.
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 7786e3ac7611..8c3862b4c259 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -142,7 +142,7 @@ SECTIONS
+ #endif
+ 
+ 	.data.rel.ro : AT(ADDR(.data.rel.ro) - LOAD_OFFSET) {
+-		*(.data.rel.ro*)
++		*(.data.rel.ro .data.rel.ro.*)
+ 	}
+ 
+ 	.branch_lt : AT(ADDR(.branch_lt) - LOAD_OFFSET) {
+-- 
+2.37.2
 
-+1, agreed.
