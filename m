@@ -4,98 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFB85C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:51:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D84CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 23:57:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NC0Gk1tVDz3fLg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:51:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NCKhr1P8gz3dtx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 10:57:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256 header.s=google header.b=f2SpOZdE;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=goQ4eWiA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ffwll.ch (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=daniel@ffwll.ch; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=7/5/=3q=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=ffwll.ch header.i=@ffwll.ch header.a=rsa-sha256 header.s=google header.b=f2SpOZdE;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=goQ4eWiA;
 	dkim-atps=neutral
-Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NC0FV117bz3fFP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:50:37 +1100 (AEDT)
-Received: by mail-ej1-x634.google.com with SMTP id gv23so10364260ejb.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 02:50:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ffwll.ch; s=google;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=mdwJ/650wADnRoR72oyZkQ8DiIzSWQSpq6IdxtCR+gY=;
-        b=f2SpOZdEZzXCSPn0ykm1oJX1As7I6xxh5wr16pOd/kbA5OOiuO0Y4IWH35k28OjNoj
-         wHiTHItpgbOeFMLRaKE+zMy2u3TZ9N8dtmICEQujo3Me7a5E74OF+31ufRLy1oYVFEA1
-         T3Nbw0vHjZlr/vzIiD2dpwD9w/oFbF5Q800Lc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references
-         :mail-followup-to:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mdwJ/650wADnRoR72oyZkQ8DiIzSWQSpq6IdxtCR+gY=;
-        b=zhk4OoiKXdhDwjcuV+GRNyElLQ5IF1LvK+H2RosQVYmcskKAXkF+KC86eP2TNPtHE6
-         IBmP44IlJySw3peK7sxWWXJ7UTIdENC/RddaycwrpYwdVb01XmTSSX8VArerd2Z01gb6
-         iBcieDTFKAJA+dfqB05DZnqpG5863NtA45I++4tZCre98za69CzqFVNYfcf8jGpwKmmT
-         we873yj5PD3QbUdvWk2mH8vRV+n+DKI3jbe9UHhmQQYGPU0DmaZZbSUIezhl6HAhQZHI
-         R/6Fo8m+UXkHreej7eUs8tkTaaChr/gZxYqjeExrHALUff0wri6bR40YtMtxohNibKZk
-         nHNg==
-X-Gm-Message-State: ANoB5pkZWLi0wimhwJmSFUUJSFucdz/yiVg2Aut1TUBqUAj0xg+g99B/
-	gpFSqOmxX3Obk1d63f5vtvleuw==
-X-Google-Smtp-Source: AA0mqf4MgV0oW/LCUugReHUpBkpepoZ7Vy6UeNXMZ5Yjky+iNhPczOtY8K1ul1dtRtcsoxT6/N3VKQ==
-X-Received: by 2002:a17:906:78e:b0:7a1:e52e:bddb with SMTP id l14-20020a170906078e00b007a1e52ebddbmr16502698ejc.685.1668595834073;
-        Wed, 16 Nov 2022 02:50:34 -0800 (PST)
-Received: from phenom.ffwll.local (212-51-149-33.fiber7.init7.net. [212.51.149.33])
-        by smtp.gmail.com with ESMTPSA id jw17-20020a17090776b100b0078b1ff41f05sm6758790ejc.43.2022.11.16.02.50.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Nov 2022 02:50:33 -0800 (PST)
-Date: Wed, 16 Nov 2022 11:50:31 +0100
-From: Daniel Vetter <daniel@ffwll.ch>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH mm-unstable v1 16/20] mm/frame-vector: remove FOLL_FORCE
- usage
-Message-ID: <Y3TAd14jCBSKeqsL@phenom.ffwll.local>
-Mail-Followup-To: David Hildenbrand <david@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	dri-devel@lists.freedesktop.org, Hans Verkuil <hverkuil@xs4all.nl>,
-	linux-mm@kvack.org, Nadav Amit <namit@vmware.com>,
-	linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org,
-	Shuah Khan <shuah@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Andrea Arcangeli <aarcange@redhat.com>,
-	linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org,
-	x86@kernel.org, Hugh Dickins <hughd@google.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Christoph Hellwig <hch@infradead.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>,
-	linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-	John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org,
-	etnaviv@lists.freedesktop.org,
-	Alex Williamson <alex.williamson@redhat.com>,
-	Peter Xu <peterx@redhat.com>,
-	Muchun Song <songmuchun@bytedance.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	Oded Gabbay <ogabbay@kernel.org>, linux-mips@vger.kernel.org,
-	Tomasz Figa <tfiga@chromium.org>, linux-perf-users@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Mike Kravetz <mike.kravetz@oracle.com>
-References: <20221116102659.70287-1-david@redhat.com>
- <20221116102659.70287-17-david@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NCKgk69n0z3bm9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 10:56:02 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 83BF56204E;
+	Wed, 16 Nov 2022 23:55:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AABDBC433D6;
+	Wed, 16 Nov 2022 23:55:55 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="goQ4eWiA"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1668642952;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=sM9LBQZ376u5w/8PZH+YQVlUaxTNIyanmkjPT3FYfMU=;
+	b=goQ4eWiAvkZqWkfss8gq1ex5AtlA/ahfxEBk6r2fheEdHDzxQqDvdaI7jHnRtKQZacSknN
+	xALKJahBGIU2w4KpYkodsz6zSfQUgQjwtn/9XiLQzmbduxm8SAGcIyMTbNpEffPJ6eVtj8
+	fknlTQXlnEW5l9AjbJbPQ6U48mWYP8U=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 48c033fa (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Wed, 16 Nov 2022 23:55:51 +0000 (UTC)
+Date: Thu, 17 Nov 2022 00:55:47 +0100
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH v2 3/3] treewide: use get_random_u32_between() when
+ possible
+Message-ID: <Y3V4g8eorwiU++Y3@zx2c4.com>
+References: <20221114164558.1180362-1-Jason@zx2c4.com>
+ <20221114164558.1180362-4-Jason@zx2c4.com>
+ <202211161436.A45AD719A@keescook>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20221116102659.70287-17-david@redhat.com>
-X-Operating-System: Linux phenom 5.19.0-2-amd64 
+In-Reply-To: <202211161436.A45AD719A@keescook>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,57 +65,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Vlastimil Babka <vbabka@suse.cz>, Greg Kroah-Hartman <gregkh@linux
- foundation.org>, Oded Gabbay <ogabbay@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Tomasz Figa <tfiga@chromium.org>, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: "Darrick J . Wong" <djwong@kernel.org>, patches@lists.linux.dev, netdev@vger.kernel.org, Andreas Dilger <adilger.kernel@dilger.ca>, ydroneaud@opteya.com, Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@nvidia.com>, Catalin Marinas <catalin.marinas@arm.com>, Jakub Kicinski <kuba@kernel.org>, linux-mips@vger.kernel.org, linux-media@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-block@vger.kernel.org, SeongJae Park <sj@kernel.org>, loongarch@lists.linux.dev, Jaegeuk Kim <jaegeuk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mmc@vger.kernel.org, linux-kerne
+ l@vger.kernel.org, Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 16, 2022 at 11:26:55AM +0100, David Hildenbrand wrote:
-> FOLL_FORCE is really only for ptrace access. According to commit
-> 707947247e95 ("media: videobuf2-vmalloc: get_userptr: buffers are always
-> writable"), get_vaddr_frames() currently pins all pages writable as a
-> workaround for issues with read-only buffers.
+On Wed, Nov 16, 2022 at 02:43:13PM -0800, Kees Cook wrote:
+> On Mon, Nov 14, 2022 at 05:45:58PM +0100, Jason A. Donenfeld wrote:
+> > -				(get_random_u32_below(1024) + 1) * PAGE_SIZE;
+> > +				get_random_u32_between(1, 1024 + 1) * PAGE_SIZE;
 > 
-> FOLL_FORCE, however, seems to be a legacy leftover as it predates
-> commit 707947247e95 ("media: videobuf2-vmalloc: get_userptr: buffers are
-> always writable"). Let's just remove it.
+> I really don't like "between". Can't this be named "inclusive" (and
+> avoid adding 1 everywhere, which seems ugly), or at least named
+> something less ambiguous?
 > 
-> Once the read-only buffer issue has been resolved, FOLL_WRITE could
-> again be set depending on the DMA direction.
+> > -		n = get_random_u32_below(100) + 1;
+> > +		n = get_random_u32_between(1, 101);
 > 
-> Cc: Hans Verkuil <hverkuil@xs4all.nl>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Tomasz Figa <tfiga@chromium.org>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+> Because I find this much less readable. "Below 100" is clear: 0-99
+> inclusive, plus 1, so 1-100 inclusive. "Between 1 and 101" is not obvious
+> to me to mean: 1-100 inclusive.
+> 
+> These seem so much nicer:
+> 	get_random_u32_inclusive(1, 1024)
+> 	get_random_u32_inclusive(1, 100)
 
-Also code I looked at while looking at follow_pfn stuff
+Yann pointed out something similar -- the half-closed interval being
+confusing -- and while I was initially dismissive, I've warmed up to
+doing this fully closed after sending a diff of that:
 
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+https://lore.kernel.org/lkml/Y3Qt8HiXj8giOnZy@zx2c4.com/
 
-> ---
->  drivers/media/common/videobuf2/frame_vector.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/media/common/videobuf2/frame_vector.c b/drivers/media/common/videobuf2/frame_vector.c
-> index 542dde9d2609..062e98148c53 100644
-> --- a/drivers/media/common/videobuf2/frame_vector.c
-> +++ b/drivers/media/common/videobuf2/frame_vector.c
-> @@ -50,7 +50,7 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
->  	start = untagged_addr(start);
->  
->  	ret = pin_user_pages_fast(start, nr_frames,
-> -				  FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM,
-> +				  FOLL_WRITE | FOLL_LONGTERM,
->  				  (struct page **)(vec->ptrs));
->  	if (ret > 0) {
->  		vec->got_ref = true;
-> -- 
-> 2.38.1
-> 
+So okay, let's say that I'll implement the inclusive version instead. We
+now have two problems to solve:
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+1) How/whether to make f(0, UR2_MAX) safe,
+   - without additional 64-bit arithmetic,
+   - minimizing the number of branches.
+   I have a few ideas I'll code golf for a bit.
+
+2) What to call it:
+   - between I still like, because it mirrors "I'm thinking of a number
+     between 1 and 10 and..." that everybody knows,
+   - inclusive I guess works, but it's not a preposition,
+   - bikeshed color #3?
+
+I think I can make progress with (1) alone by fiddling around with
+godbolt enough, like usual. I could use some more ideas for (2) though.
+
+Jason
