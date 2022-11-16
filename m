@@ -4,52 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 346BEC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 04:03:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7AFBC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:36:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NBqD24F2Lz3f3J
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 15:03:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.216.48; helo=mail-pj1-f48.google.com; envelope-from=kswilczynski@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-pj1-f48.google.com (mail-pj1-f48.google.com [209.85.216.48])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NBzxV0V1fz3f65
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:36:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HyVSO6Oq;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BnVUZyRH;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HyVSO6Oq;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BnVUZyRH;
+	dkim-atps=neutral
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBqCP6wYpz30Qt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 15:03:12 +1100 (AEDT)
-Received: by mail-pj1-f48.google.com with SMTP id w3-20020a17090a460300b00218524e8877so1745776pjg.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Nov 2022 20:03:11 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=1zIzDKHHVNaVurdU/es7VrrKvHMyE/kDIQtf0pEpjIw=;
-        b=oDzy/GgHfr0JAJyKvnmd/rSUenjJonezWQLnv8cFRIJuyb+Wza8SQArKiYm4lt4eTA
-         XM8nc8ZlUgEoBSBURZ4lkZuFqW+hQO3zCQxqM/4zlyieHEbnA86nrGsUly+MZie1bx+a
-         dRk+mjzSxWEPgZDygBmNDd7HyfYWu7UG/jbffwQKAdQSfiaMWoBJwBFFnUooorK6KtKU
-         jsTuax3ih7xwJ1aAl4V35/6KRUB2O8SO0WoWjgRy7MFtSDHPZ2KIIbCAjsBaEx391ybq
-         7Mvh/TMwTguLonEo0xWdcTaM8ZbWZNlFkL2GO789tmQtW7B6bPpMJkTMFUv0+Ij72nEm
-         ekOw==
-X-Gm-Message-State: ANoB5pl5BnE8mXntCxNRPMAaH73W/Ka5BJ0cv7EyP8KJ3fZ56efESGEq
-	eZzz7hFXNVoYU9SxL0iucVI=
-X-Google-Smtp-Source: AA0mqf6hyhoq112sIKQo2v/k51nNvfWIgxwNBEvlAx1Pthk/+MTebE7MSfBKsrWrQE5FLsqcaK8YIQ==
-X-Received: by 2002:a17:90a:3f89:b0:217:90e0:3f8c with SMTP id m9-20020a17090a3f8900b0021790e03f8cmr1687555pjc.192.1668571388739;
-        Tue, 15 Nov 2022 20:03:08 -0800 (PST)
-Received: from rocinante (fpd11144dd.ap.nuro.jp. [209.17.68.221])
-        by smtp.gmail.com with ESMTPSA id nl8-20020a17090b384800b0020d48bc6661sm390550pjb.31.2022.11.15.20.03.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Nov 2022 20:03:08 -0800 (PST)
-Date: Wed, 16 Nov 2022 13:03:01 +0900
-From: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v3 0/4] PCI: Add pci_dev_for_each_resource() helper and
-Message-ID: <Y3Rg9dGmzZl4GJU5@rocinante>
-References: <20221114185822.65038-1-andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBzmH1VLmz3dvD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:28:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1668594524;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xyj8jS+C9wqOk3KceDQTo75wMiWZgljnGSBlM8HQloY=;
+	b=HyVSO6OqC/gyAIUuVMXoeM1X2q2HGXEdNdaxMdk2Vy95oyYuYPYs+2QP7j1mdL7FrioHdX
+	TbTBqLLcuZ5eaT45BNKl7jbv+D65zT6ecgXqA8ct3duF5iZHVlUxfGqv+aN60svjE9SLxy
+	2lfc7aOUpVzBnsMZbN7Cm+/iLDmyMoE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1668594525;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=xyj8jS+C9wqOk3KceDQTo75wMiWZgljnGSBlM8HQloY=;
+	b=BnVUZyRHK+4hkdUyHoKp3oVDJxdrX4eDGvyeXVFJUyGQpD95iMuvxXfNZKgeD2zck2oAk/
+	8ljOvYQFRr1etK1xmw8+L3K/35RmeBw6u8dCHj8givBe8MP8iU0AZVH/Z0pivNwQogOTsV
+	txlplTPPPjredz0HO5NtMvkDgm8Dtg4=
+Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
+ [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ us-mta-156-1i0B0n5wO9KbojDzH-noSA-1; Wed, 16 Nov 2022 05:28:39 -0500
+X-MC-Unique: 1i0B0n5wO9KbojDzH-noSA-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 6CE1B86F132;
+	Wed, 16 Nov 2022 10:28:37 +0000 (UTC)
+Received: from t480s.fritz.box (unknown [10.39.193.216])
+	by smtp.corp.redhat.com (Postfix) with ESMTP id D7D7C2028E8F;
+	Wed, 16 Nov 2022 10:28:29 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH mm-unstable v1 10/20] RDMA/umem: remove FOLL_FORCE usage
+Date: Wed, 16 Nov 2022 11:26:49 +0100
+Message-Id: <20221116102659.70287-11-david@redhat.com>
+In-Reply-To: <20221116102659.70287-1-david@redhat.com>
+References: <20221116102659.70287-1-david@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20221114185822.65038-1-andriy.shevchenko@linux.intel.com>
+X-Scanned-By: MIMEDefang 3.1 on 10.11.54.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,32 +78,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, Bjorn Helgaas <helgaas@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, =?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, linux-kernel@vger.kernel.org, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, linux-alpha@vger.kernel.org, linuxppc-de
- v@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Hildenbrand <david@redhat.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.or
+ g, Oded Gabbay <ogabbay@kernel.org>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Leon Romanovsky <leonro@nvidia.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+GUP now supports reliable R/O long-term pinning in COW mappings, such
+that we break COW early. MAP_SHARED VMAs only use the shared zeropage so
+far in one corner case (DAXFS file with holes), which can be ignored
+because GUP does not support long-term pinning in fsdax (see
+check_vma_flags()).
 
-> Provide two new helper macros to iterate over PCI device resources and
-> convert users.
-> 
-> Looking at it, refactor existing pci_bus_for_each_resource() and convert
-> users accordingly.
-> 
-> This applies on top of this patch Mika sent out earlier:
-> https://lore.kernel.org/r/20221114115953.40236-1-mika.westerberg@linux.intel.com
-> 
-> Changelog v3:
-> - rebased on top of v2 by Mika, see above
-> - added tag to pcmcia patch (Dominik)
-[...]
+Consequently, FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM is no longer required
+for reliable R/O long-term pinning: FOLL_LONGTERM is sufficient. So stop
+using FOLL_FORCE, which is really only for ptrace access.
 
-Thank you Andy for all the improvements and Mika for the idea!
+Tested-by: Leon Romanovsky <leonro@nvidia.com> # Over mlx4 and mlx5.
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Cc: Leon Romanovsky <leon@kernel.org>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ drivers/infiniband/core/umem.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-For the whole series:
-  Reviewed-by: Krzysztof Wilczyński <kw@linux.com>
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index 86d479772fbc..755a9c57db6f 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -156,7 +156,7 @@ struct ib_umem *ib_umem_get(struct ib_device *device, unsigned long addr,
+ 	struct mm_struct *mm;
+ 	unsigned long npages;
+ 	int pinned, ret;
+-	unsigned int gup_flags = FOLL_WRITE;
++	unsigned int gup_flags = FOLL_LONGTERM;
+ 
+ 	/*
+ 	 * If the combination of the addr and size requested for this memory
+@@ -210,8 +210,8 @@ struct ib_umem *ib_umem_get(struct ib_device *device, unsigned long addr,
+ 
+ 	cur_base = addr & PAGE_MASK;
+ 
+-	if (!umem->writable)
+-		gup_flags |= FOLL_FORCE;
++	if (umem->writable)
++		gup_flags |= FOLL_WRITE;
+ 
+ 	while (npages) {
+ 		cond_resched();
+@@ -219,7 +219,7 @@ struct ib_umem *ib_umem_get(struct ib_device *device, unsigned long addr,
+ 					  min_t(unsigned long, npages,
+ 						PAGE_SIZE /
+ 						sizeof(struct page *)),
+-					  gup_flags | FOLL_LONGTERM, page_list);
++					  gup_flags, page_list);
+ 		if (pinned < 0) {
+ 			ret = pinned;
+ 			goto umem_release;
+-- 
+2.38.1
 
-Looks very nice!
-
-	Krzysztof
