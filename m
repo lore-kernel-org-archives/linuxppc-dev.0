@@ -4,64 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 323C9C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:42:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD1F8C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 10:44:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NC03j63M4z3fT0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:42:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NC06v1CxLz3fY3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 21:44:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+lc3Q9Z;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KXl78EDb;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YzfTmHen;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IZwRB+Sh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=c+lc3Q9Z;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KXl78EDb;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YzfTmHen;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IZwRB+Sh;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBzn85BCrz3cMS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:29:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NBznb4Bxvz3dv0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 21:29:55 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1668594569;
+	s=mimecast20190719; t=1668594592;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=G0FpSSTO1Nfi3hHjZY1vs8kl28xrhbJvR/VmU2bZlrg=;
-	b=c+lc3Q9ZJTbnMBMVTIGm57g+AWk9tBbJZmuB/aj9gmDfTcstw2nuRWDGVLHY+FvJ3JjVCc
-	rREfTaMhmsZLDckloQtPPslPUcLZ24Tev0u0lrkXD2Q5DYTqsnvMIT+7W73WF0NVSb5lut
-	FyoSEnpItVrJCRVevsX3IgZtsfhmlYo=
+	bh=AW87fgh+ucyp6GPfn9nwvdCWqoK4NWdmiMJ3qK4gV9o=;
+	b=YzfTmHenzVjFzwCRu5tnXCPCpbkjxKgI/mFsWqByBYhXkZnnE61IeW/diMUPbbS3KVRvbV
+	vtHbUnWGaui/FJ9RSafP5fi3iOYy7UjuQL6V7NcMDiZb216inSW6l7Ze09KkwfZnHIoH5z
+	WR2pLokjzNDBOKpReK6jKFGPBblTWe4=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1668594570;
+	s=mimecast20190719; t=1668594593;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=G0FpSSTO1Nfi3hHjZY1vs8kl28xrhbJvR/VmU2bZlrg=;
-	b=KXl78EDbiAsX1Ipc7Klvgmiq3VCDLgTAv30Ux56S8uHM36BQnANQL1C0lmgvjQjigxj4kX
-	685ktq5CkbovVVbxHIFuttVAhA0QWkrfvqz7rcNGXBNalOu0QCu9De1bxxkTR183J0oANo
-	lruIq30a1+4Ck//E11qUm2SW7kNlS4I=
+	bh=AW87fgh+ucyp6GPfn9nwvdCWqoK4NWdmiMJ3qK4gV9o=;
+	b=IZwRB+Sh3VKPw3JNpGQd/cMKPnOK0UcRermpy4lpx/7VJDttXcwvbAG6BlcrMDvgtOWTZz
+	gDwIJl465VAYUslXd43b+FdPamvW5EcrxsEuq9jzTk8mmu9KDeFs32ZUDldmhjh7WpVpk/
+	MlugDzmqPkIwDz8DxJ0sKRgwPqSflQI=
 Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
  [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-652-smSH3VzZPoqE7rq7qnypxQ-1; Wed, 16 Nov 2022 05:29:26 -0500
-X-MC-Unique: smSH3VzZPoqE7rq7qnypxQ-1
+ us-mta-533-2lbboRpqNXmL5tQ6NMs1RA-1; Wed, 16 Nov 2022 05:29:49 -0500
+X-MC-Unique: 2lbboRpqNXmL5tQ6NMs1RA-1
 Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.rdu2.redhat.com [10.11.54.4])
 	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 2D136101A528;
-	Wed, 16 Nov 2022 10:29:25 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id E748387A9E1;
+	Wed, 16 Nov 2022 10:29:47 +0000 (UTC)
 Received: from t480s.fritz.box (unknown [10.39.193.216])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id AF3102024CC8;
-	Wed, 16 Nov 2022 10:29:15 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id AD0942028E8F;
+	Wed, 16 Nov 2022 10:29:40 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH mm-unstable v1 16/20] mm/frame-vector: remove FOLL_FORCE usage
-Date: Wed, 16 Nov 2022 11:26:55 +0100
-Message-Id: <20221116102659.70287-17-david@redhat.com>
+Subject: [PATCH mm-unstable v1 19/20] habanalabs: remove FOLL_FORCE usage
+Date: Wed, 16 Nov 2022 11:26:58 +0100
+Message-Id: <20221116102659.70287-20-david@redhat.com>
 In-Reply-To: <20221116102659.70287-1-david@redhat.com>
 References: <20221116102659.70287-1-david@redhat.com>
 MIME-Version: 1.0
@@ -78,46 +78,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Hildenbrand <david@redhat.com>, dri-devel@lists.freedesktop.org, Hans Verkuil <hverkuil@xs4all.nl>, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, Mauro Carvalho Chehab
-  <mchehab@kernel.org>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, linux-mips@vger.kernel.org, Tomasz Figa <tfiga@chromium.org>, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Hildenbrand <david@redhat.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>
+ , linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-FOLL_FORCE is really only for ptrace access. According to commit
-707947247e95 ("media: videobuf2-vmalloc: get_userptr: buffers are always
-writable"), get_vaddr_frames() currently pins all pages writable as a
-workaround for issues with read-only buffers.
+FOLL_FORCE is really only for ptrace access. As we unpin the pinned pages
+using unpin_user_pages_dirty_lock(true), the assumption is that all these
+pages are writable.
 
-FOLL_FORCE, however, seems to be a legacy leftover as it predates
-commit 707947247e95 ("media: videobuf2-vmalloc: get_userptr: buffers are
-always writable"). Let's just remove it.
+FOLL_FORCE in this case seems to be due to copy-and-past from other
+drivers. Let's just remove it.
 
-Once the read-only buffer issue has been resolved, FOLL_WRITE could
-again be set depending on the DMA direction.
-
-Cc: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Tomasz Figa <tfiga@chromium.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+Acked-by: Oded Gabbay <ogabbay@kernel.org>
+Cc: Oded Gabbay <ogabbay@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- drivers/media/common/videobuf2/frame_vector.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/misc/habanalabs/common/memory.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/media/common/videobuf2/frame_vector.c b/drivers/media/common/videobuf2/frame_vector.c
-index 542dde9d2609..062e98148c53 100644
---- a/drivers/media/common/videobuf2/frame_vector.c
-+++ b/drivers/media/common/videobuf2/frame_vector.c
-@@ -50,7 +50,7 @@ int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
- 	start = untagged_addr(start);
+diff --git a/drivers/misc/habanalabs/common/memory.c b/drivers/misc/habanalabs/common/memory.c
+index ef28f3b37b93..e35cca96bbef 100644
+--- a/drivers/misc/habanalabs/common/memory.c
++++ b/drivers/misc/habanalabs/common/memory.c
+@@ -2312,8 +2312,7 @@ static int get_user_memory(struct hl_device *hdev, u64 addr, u64 size,
+ 	if (!userptr->pages)
+ 		return -ENOMEM;
  
- 	ret = pin_user_pages_fast(start, nr_frames,
--				  FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM,
-+				  FOLL_WRITE | FOLL_LONGTERM,
- 				  (struct page **)(vec->ptrs));
- 	if (ret > 0) {
- 		vec->got_ref = true;
+-	rc = pin_user_pages_fast(start, npages,
+-				 FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM,
++	rc = pin_user_pages_fast(start, npages, FOLL_WRITE | FOLL_LONGTERM,
+ 				 userptr->pages);
+ 
+ 	if (rc != npages) {
 -- 
 2.38.1
 
