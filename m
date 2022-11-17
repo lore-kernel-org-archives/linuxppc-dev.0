@@ -4,73 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15C35C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 00:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3159C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 02:06:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NCLpp3vxNz3f3v
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 11:47:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NCNZB5X0sz3dxq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 13:06:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=l2lxIbef;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=oBVYY4GH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=dvcg=3r=zx2c4.com=jason@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=l2lxIbef;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=oBVYY4GH;
 	dkim-atps=neutral
-Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NCLn92HDPz3cKn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 11:45:49 +1100 (AEDT)
-Received: by mail-qv1-xf2f.google.com with SMTP id w10so225924qvr.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 16:45:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=6GmH5bBgQAPTYyWGM7n52ZkzuQiQsRGb4mBRnSjjrbs=;
-        b=l2lxIbefVRjdcatsHe8zxGxmcFT5QX0zkZlGmTA+6hS7woiLsGV9I6bNGV4zHN8kjb
-         l2p/UcY6CYSTNWmi7VujvEPDLopmeYV5y04nexmylfHHZLvrChhtK9ZoFHB8KXFnQm2L
-         u2KxlP3m/08gOzMOWFz7wJqhAgcRBAizzZiUHkaGNmUyt44/uIl+uDznkLyQC/8LtiyK
-         IYJyOaMVreNHxUrE7KnyIf6buUGiBVrXdyfdI9hycSXNdg6N07L9Zen1tNKJCn4NMx7j
-         3tR7ySmG4oePdK/F1paF+sUf2cgVO41erHwEOTLPwwAJA2UwmtpAOpPTOIoYWmh1mJkM
-         +oJg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=6GmH5bBgQAPTYyWGM7n52ZkzuQiQsRGb4mBRnSjjrbs=;
-        b=a0PbI63e53lmqBZm6CQQ+GZbTgHRsr+P+aTUzOQianU5kESoqOGaivqAcMYJqcSqW3
-         banqD6UZ7GPsiYR+Wl2LtET0mO1QCOredyl9jQUayv3GXAqLIG0j3QO1BAVnZHu99A9V
-         oD5LOZ0h4darWs5G2vYqTCaTskIDue99M9MFwpMKpWlpZmOMOaS/2dUyutAJXRELOcq/
-         KH8CDnyE2jXzfSwqBxwAwrZvc9qL75wN1QzsVmOWtYUrXbtfJrYNkz4XrIrXAGvjqD+1
-         IKiG8mbyGthjC1FGACZ8pJxv+5dOdlD0clmHotg+MX0LwGsoRetfOe1XqqBkc8LPnNTc
-         IKAg==
-X-Gm-Message-State: ANoB5plZQVbByUO3DeRr3wv0mjcm73VAZJBlUxzr70/Ety7+rEhgPYS6
-	S08UTtc+qW1zR9vq1yb5mCmxrw==
-X-Google-Smtp-Source: AA0mqf6kOndX6mF3jdPV+JEPNJmYotlDtU6GG3yPlrdGFCMTOM0aazChCn63y+VS5Enp4BFgjok9CA==
-X-Received: by 2002:a05:6214:7f3:b0:4c6:5acc:1e24 with SMTP id bp19-20020a05621407f300b004c65acc1e24mr626072qvb.61.1668645946250;
-        Wed, 16 Nov 2022 16:45:46 -0800 (PST)
-Received: from ziepe.ca (hlfxns017vw-47-55-122-23.dhcp-dynamic.fibreop.ns.bellaliant.net. [47.55.122.23])
-        by smtp.gmail.com with ESMTPSA id h2-20020ac85042000000b003a606428a59sm2189506qtm.91.2022.11.16.16.45.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 16 Nov 2022 16:45:45 -0800 (PST)
-Received: from jgg by wakko with local (Exim 4.95)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1ovT2G-0066Tl-Ts;
-	Wed, 16 Nov 2022 20:45:44 -0400
-Date: Wed, 16 Nov 2022 20:45:44 -0400
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH mm-unstable v1 11/20] RDMA/usnic: remove FOLL_FORCE usage
-Message-ID: <Y3WEONlxYkwrglYR@ziepe.ca>
-References: <20221116102659.70287-1-david@redhat.com>
- <20221116102659.70287-12-david@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NCNY72JP2z3cLF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 13:05:31 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id C0E69B81F86;
+	Thu, 17 Nov 2022 02:05:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B916CC433D6;
+	Thu, 17 Nov 2022 02:05:21 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="oBVYY4GH"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1668650720;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=dEJat997gDB284IQJDfbqi4/5IXvytYbwgZCPi3gI8M=;
+	b=oBVYY4GH+szvpy7v+MDpWl7rIbq1Ag0+XjaiW9ivB+W/ypTPzWGRKmZ5grHtl0NRu+tdAw
+	OceXtZlFIdzaNyPTBIDx5ZFzB/5YparpWLHfLRzfitegfl7G9s7sam3TuLTYL+fICnJhuN
+	DFCVAmQjhuCf5Jl3bBUK1aEXDFPWY+A=
+Received: 	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id ca8ad650 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Thu, 17 Nov 2022 02:05:19 +0000 (UTC)
+Date: Thu, 17 Nov 2022 03:05:14 +0100
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH v2 3/3] treewide: use get_random_u32_between() when
+ possible
+Message-ID: <Y3WW2lOgoYLKQeve@zx2c4.com>
+References: <20221114164558.1180362-1-Jason@zx2c4.com>
+ <20221114164558.1180362-4-Jason@zx2c4.com>
+ <202211161436.A45AD719A@keescook>
+ <Y3V4g8eorwiU++Y3@zx2c4.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20221116102659.70287-12-david@redhat.com>
+In-Reply-To: <Y3V4g8eorwiU++Y3@zx2c4.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,31 +66,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nelson Escobar <neescoba@cisco.com>, linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Christian Benvenuti <benve@cisco.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kernel@lists.infrade
- ad.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: "Darrick J . Wong" <djwong@kernel.org>, patches@lists.linux.dev, netdev@vger.kernel.org, Andreas Dilger <adilger.kernel@dilger.ca>, ydroneaud@opteya.com, Herbert Xu <herbert@gondor.apana.org.au>, Richard Weinberger <richard@nod.at>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Jason Gunthorpe <jgg@nvidia.com>, Catalin Marinas <catalin.marinas@arm.com>, Jakub Kicinski <kuba@kernel.org>, linux-mips@vger.kernel.org, linux-media@vger.kernel.org, Heiko Carstens <hca@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-block@vger.kernel.org, SeongJae Park <sj@kernel.org>, loongarch@lists.linux.dev, Jaegeuk Kim <jaegeuk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Theodore Ts'o <tytso@mit.edu>, linux-parisc@vger.kernel.org, "Martin K . Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-mmc@vger.kernel.org, linux-kerne
+ l@vger.kernel.org, Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph.boehmwalder@linbit.com>, linux-crypto@vger.kernel.org, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 16, 2022 at 11:26:50AM +0100, David Hildenbrand wrote:
-> GUP now supports reliable R/O long-term pinning in COW mappings, such
-> that we break COW early. MAP_SHARED VMAs only use the shared zeropage so
-> far in one corner case (DAXFS file with holes), which can be ignored
-> because GUP does not support long-term pinning in fsdax (see
-> check_vma_flags()).
-> 
-> Consequently, FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM is no longer required
-> for reliable R/O long-term pinning: FOLL_LONGTERM is sufficient. So stop
-> using FOLL_FORCE, which is really only for ptrace access.
-> 
-> Cc: Christian Benvenuti <benve@cisco.com>
-> Cc: Nelson Escobar <neescoba@cisco.com>
-> Cc: Jason Gunthorpe <jgg@ziepe.ca>
-> Cc: Leon Romanovsky <leon@kernel.org>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  drivers/infiniband/hw/usnic/usnic_uiom.c | 9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
+On Thu, Nov 17, 2022 at 12:55:47AM +0100, Jason A. Donenfeld wrote:
+> 1) How/whether to make f(0, UR2_MAX) safe,
+>    - without additional 64-bit arithmetic,
+>    - minimizing the number of branches.
+>    I have a few ideas I'll code golf for a bit.
+> I think I can make progress with (1) alone by fiddling around with
+> godbolt enough, like usual.
 
-Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+The code gen is definitely worse.
+
+Original half-open interval:
+
+    return floor + get_random_u32_below(ceil - floor);
+
+Suggested fully closed interval:
+	
+    ceil = ceil - floor + 1;
+    return likely(ceil) ? floor + get_random_u32_below(ceil) : get_random_u32();
+
+Is the worse code gen actually worth it? Options:
+
+ a) Decide worse codegen is worth it.
+ b) Declare f(0, U32_MAX) undefined and just not handle it.
+ c) Stick with original half-open interval that doesn't have this problem.
 
 Jason
