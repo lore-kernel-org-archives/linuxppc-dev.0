@@ -4,92 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CB9CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Nov 2022 23:45:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC7AEC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 00:46:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NCKRc5mSjz3chn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 10:45:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NCLnp0kd2z3cNY
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Nov 2022 11:46:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C41DMRDD;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=NKUDG6/H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::72a; helo=mail-qk1-x72a.google.com; envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=C41DMRDD;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=NKUDG6/H;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-qk1-x72a.google.com (mail-qk1-x72a.google.com [IPv6:2607:f8b0:4864:20::72a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NCKQY21n1z3bnM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 10:44:36 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AGNgMTD018883;
-	Wed, 16 Nov 2022 23:44:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : reply-to : to : cc : date : in-reply-to : references : content-type
- : mime-version : content-transfer-encoding; s=pp1;
- bh=J1gnzsf/D1YTJY8T2+5NQLgeCtaYrxMGyExgYqnS8Wg=;
- b=C41DMRDD5aHvopRQA7Xc7BtxHDLvZO/6OXZMKnUQ5KQi1Bzz/OKsMo2qrglSffZOVCVr
- ZZgnR5EtEg8Q4yzOjiCcGH+iLlmRokr1+rs0HhRkgPQaimZaEsW2Uy9YAGb9KnmBnveh
- BPYtqLX1Hh2V/z4itIqhMME3k7H02jUyR5rmaSIz+djK6WB/zXsM3NLUDtNvkYgtOrsw
- 3v3lxYlmZegfFX/39R+AVsGulYi0/VMSDQ1PF1/eJxzCenTEhKSoyHVf/pju6fdBJRkt
- rjPKTSHe90fhbVgNgV+qcpjCOvmEXVpFXHCZU+CGUKtMP+Pz7WfMZpU81xpPqhjOSTGe qg== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kw9s7010n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Nov 2022 23:44:23 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AGNgWF8019113;
-	Wed, 16 Nov 2022 23:44:22 GMT
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kw9s7010g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Nov 2022 23:44:22 +0000
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
-	by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AGNZJHV020230;
-	Wed, 16 Nov 2022 23:44:22 GMT
-Received: from b03cxnp07027.gho.boulder.ibm.com (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
-	by ppma03dal.us.ibm.com with ESMTP id 3kt34a4ymw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 16 Nov 2022 23:44:22 +0000
-Received: from smtpav02.dal12v.mail.ibm.com ([9.208.128.128])
-	by b03cxnp07027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AGNiK7941681590
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 16 Nov 2022 23:44:21 GMT
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A6EC95805A;
-	Wed, 16 Nov 2022 23:44:20 +0000 (GMT)
-Received: from smtpav02.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5577858051;
-	Wed, 16 Nov 2022 23:44:19 +0000 (GMT)
-Received: from sig-9-65-207-159.ibm.com (unknown [9.65.207.159])
-	by smtpav02.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 16 Nov 2022 23:44:19 +0000 (GMT)
-Message-ID: <c24c0f7c81ff24d791974ff7945e710b489b7e01.camel@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 2/3] powerpc/pseries: PLPKS SED Opal keystore support
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-To: "Elliott, Robert (Servers)" <elliott@hpe.com>,
-        "linux-block@vger.kernel.org"
-	 <linux-block@vger.kernel.org>
-Date: Wed, 16 Nov 2022 17:44:18 -0600
-In-Reply-To: <MW5PR84MB1842689FD13382CAFCC260D8AB5F9@MW5PR84MB1842.NAMPRD84.PROD.OUTLOOK.COM>
-References: <20220819223138.1457091-1-gjoyce@linux.vnet.ibm.com>
-	 <20220819223138.1457091-3-gjoyce@linux.vnet.ibm.com>
-	 <MW5PR84MB1842689FD13382CAFCC260D8AB5F9@MW5PR84MB1842.NAMPRD84.PROD.OUTLOOK.COM>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: JgbknSy7aXhV73SxJYXrtnAvcD7UjiHr
-X-Proofpoint-GUID: nGERouHv7XWg6rQBOqOkw7vipn-DPvyA
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-16_03,2022-11-16_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1011
- mlxlogscore=999 spamscore=0 suspectscore=0 bulkscore=0 phishscore=0
- priorityscore=1501 impostorscore=0 adultscore=0 lowpriorityscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211160161
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NCLmm1q8Gz30Ky
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Nov 2022 11:45:27 +1100 (AEDT)
+Received: by mail-qk1-x72a.google.com with SMTP id g10so230410qkl.6
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Nov 2022 16:45:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=HEOs2OljVpzFekHebtNmxJNTS1biZDzbDC+7E+gbGXE=;
+        b=NKUDG6/HRBHYArrki2ErKlKAFAloDP3syGXEvUqNJ9D2fVrZim0dI4zYfgnJWEKy+2
+         eIgPOs+mttvXhYUIJL/UppN4gHtQqcQpWlrONSgHhATtfRfLqa70r2Y5AFUtDhoXumLz
+         QwAO0SpqErl+SpXb2isD+wqK260zhrI3m0OcjGKZmRIuadG54e+ieDR5HURAecTq4gww
+         +4XuPNBvBD2G5dec/bz8Eh9V9EDh1RbiHGn8GIrcO4V8END9r1k5y0xfRAbT/lxmG9Cm
+         d4SXiY9+ZupOQT/Gb+ZePnA6lwtOPkxvxI9tRVsC2WHBPZX7s+xnX8nZsTymxhqmYSZB
+         7vEA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=HEOs2OljVpzFekHebtNmxJNTS1biZDzbDC+7E+gbGXE=;
+        b=7HU5/Kt59l8MIXt691ZisnZzjdyPx3TxZ+a0bJjm5Ccvs4PuhEKa+7SquUiBPq01Cz
+         Gi8ZyqMZdfq9eNisCXBpMW5hK7DPHI7nB9QtaxOcbZNy65tUr12jMhHCZv44zF/CsWz3
+         8bBjVuW7bOojxQdC9mHuth+PSp9Nw36hBFF4AcsD3NMas0kaynm671CqtNtp0saoPSK9
+         05VGamM+rHz+HalOpfCEfnZDvqRXBsjwc7OOb4jI1SY0z89NXTeQdyQYIhexIzhxJHSV
+         TcVL5BVRB+aHPjaV7f8kIMc5S6Q4sb++15hdpE40rngg65NeRB8QDhmyCgrDPwmNeFcE
+         BDYw==
+X-Gm-Message-State: ANoB5pm9RvKtCHYjR+qSXltQmk86FuiwgWln/q/tprQINBdzDrE53abj
+	fXwVNNq1QMq337kEzy5uJaTsWA==
+X-Google-Smtp-Source: AA0mqf7xjJLeTnaPhhrans4JhE0iVba1LlwPzkyl9vYE07B6pyjsI7ODbIFQEN1WHHyVUFKfNxMUWg==
+X-Received: by 2002:a05:620a:1455:b0:6ee:80b5:32d3 with SMTP id i21-20020a05620a145500b006ee80b532d3mr22079595qkl.237.1668645923644;
+        Wed, 16 Nov 2022 16:45:23 -0800 (PST)
+Received: from ziepe.ca (hlfxns017vw-47-55-122-23.dhcp-dynamic.fibreop.ns.bellaliant.net. [47.55.122.23])
+        by smtp.gmail.com with ESMTPSA id n7-20020ac86747000000b00399ad646794sm9480378qtp.41.2022.11.16.16.45.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Nov 2022 16:45:22 -0800 (PST)
+Received: from jgg by wakko with local (Exim 4.95)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1ovT1t-0066TN-E8;
+	Wed, 16 Nov 2022 20:45:21 -0400
+Date: Wed, 16 Nov 2022 20:45:21 -0400
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH mm-unstable v1 10/20] RDMA/umem: remove FOLL_FORCE usage
+Message-ID: <Y3WEIVROhUPTtaeQ@ziepe.ca>
+References: <20221116102659.70287-1-david@redhat.com>
+ <20221116102659.70287-11-david@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221116102659.70287-11-david@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,51 +82,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: gjoyce@linux.vnet.ibm.com
-Cc: "axboe@kernel.dk" <axboe@kernel.dk>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "nayna@linux.ibm.com" <nayna@linux.ibm.com>, "dhowells@redhat.com" <dhowells@redhat.com>, "jarkko@kernel.org" <jarkko@kernel.org>, "keyrings@vger.kernel.org" <keyrings@vger.kernel.org>, "jonathan.derrick@linux.dev" <jonathan.derrick@linux.dev>, "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "msuchanek@suse.de" <msuchanek@suse.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, lin
+ ux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Leon Romanovsky <leonro@nvidia.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2022-10-07 at 19:09 +0000, Elliott, Robert (Servers) wrote:
-> > -----Original Message-----
-> > From: gjoyce@linux.vnet.ibm.com <gjoyce@linux.vnet.ibm.com>
-> > Sent: Friday, August 19, 2022 5:32 PM
-> > To: linux-block@vger.kernel.org
-> > Cc: linuxppc-dev@lists.ozlabs.org; jonathan.derrick@linux.dev;
-> > brking@linux.vnet.ibm.com; msuchanek@suse.de; mpe@ellerman.id.au;
-> > nayna@linux.ibm.com; axboe@kernel.dk; akpm@linux-foundation.org;
-> > gjoyce@linux.vnet.ibm.com; linux-efi@vger.kernel.org;
-> > keyrings@vger.kernel.org; dhowells@redhat.com; jarkko@kernel.org
-> > Subject: [PATCH v4 2/3] powerpc/pseries: PLPKS SED Opal keystore
-> > support
-> > 
-> > +++ b/arch/powerpc/platforms/pseries/plpks_sed_ops.c
-> ...
-> > +struct plpks_sed_object_data {
-> > +	u_char version;
-> > +	u_char pad1[7];
-> > +	u_long authority;
-> > +	u_long range;
-> > +	u_int  key_len;
-> > +	u_char key[32];
-> > +};
-> ...
-> > +/*
-> > + * Read the SED Opal key from PLPKS given the label
-> > + */
-> > +int sed_read_key(char *keyname, char *key, u_int *keylen)
-> > +{
-> ...
-> > +	*keylen = be32_to_cpu(data->key_len);
-> > +
-> > +	if (var.data) {
-> > +		memcpy(key, var.data + offset, var.datalen - offset);
-> > +		key[*keylen] = '\0';
+On Wed, Nov 16, 2022 at 11:26:49AM +0100, David Hildenbrand wrote:
+> GUP now supports reliable R/O long-term pinning in COW mappings, such
+> that we break COW early. MAP_SHARED VMAs only use the shared zeropage so
+> far in one corner case (DAXFS file with holes), which can be ignored
+> because GUP does not support long-term pinning in fsdax (see
+> check_vma_flags()).
 > 
-> Is there a guarantee that key_len is always < sizeof key, or
-> does that need to be checked in more places?
+> Consequently, FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM is no longer required
+> for reliable R/O long-term pinning: FOLL_LONGTERM is sufficient. So stop
+> using FOLL_FORCE, which is really only for ptrace access.
+> 
+> Tested-by: Leon Romanovsky <leonro@nvidia.com> # Over mlx4 and mlx5.
+> Cc: Jason Gunthorpe <jgg@ziepe.ca>
+> Cc: Leon Romanovsky <leon@kernel.org>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
+> ---
+>  drivers/infiniband/core/umem.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
-Changed keylen paramter to be the maximum size that it copied. This 
-will help avoid buffer overwrite.
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 
-
+Jason
