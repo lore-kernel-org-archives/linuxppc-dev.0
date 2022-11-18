@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CD84C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Nov 2022 23:36:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6809FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Nov 2022 23:36:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDY7g0pQHz3cfX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 10:35:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDY8G0m0Jz3f8T
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 10:36:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
 Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDY7403zBz3bXR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 10:35:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDY7g2KXJz3f5b
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 10:35:59 +1100 (AEDT)
 Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
 	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
 	(Exim 4.92)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8j-0002hB-Tz; Fri, 18 Nov 2022 23:47:17 +0100
+	id 1owA8n-0002eo-9u; Fri, 18 Nov 2022 23:47:21 +0100
 Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
 	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8g-0058VA-An; Fri, 18 Nov 2022 23:47:15 +0100
+	id 1owA8f-0058Up-Cw; Fri, 18 Nov 2022 23:47:14 +0100
 Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
 	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8g-0000Aj-Fv; Fri, 18 Nov 2022 23:47:14 +0100
+	id 1owA8f-0000AS-GR; Fri, 18 Nov 2022 23:47:13 +0100
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
 To: Angel Iglesias <ang.iglesiasg@gmail.com>,
 	Lee Jones <lee.jones@linaro.org>,
 	Grant Likely <grant.likely@linaro.org>,
 	Wolfram Sang <wsa@kernel.org>,
 	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Petr Machata <petrm@nvidia.com>,
-	Peter Rosin <peda@axentia.se>,
-	Crt Mori <cmo@melexis.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 293/606] macintosh: windfarm_fcu_controls: Convert to i2c's .probe_new()
-Date: Fri, 18 Nov 2022 23:40:27 +0100
-Message-Id: <20221118224540.619276-294-uwe@kleine-koenig.org>
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Minghao Chi <chi.minghao@zte.com.cn>
+Subject: [PATCH 289/606] macintosh: ams/ams-i2c: Convert to i2c's .probe_new()
+Date: Fri, 18 Nov 2022 23:40:23 +0100
+Message-Id: <20221118224540.619276-290-uwe@kleine-koenig.org>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
 References: <20221118224540.619276-1-uwe@kleine-koenig.org>
@@ -73,32 +73,42 @@ can be trivially converted.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- drivers/macintosh/windfarm_fcu_controls.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/macintosh/ams/ams-i2c.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
-index c5b1ca5bcd73..e027d889d7e8 100644
---- a/drivers/macintosh/windfarm_fcu_controls.c
-+++ b/drivers/macintosh/windfarm_fcu_controls.c
-@@ -514,8 +514,7 @@ static int wf_fcu_init_chip(struct wf_fcu_priv *pv)
- 	return 0;
+diff --git a/drivers/macintosh/ams/ams-i2c.c b/drivers/macintosh/ams/ams-i2c.c
+index 3ded340699fb..a4a1035eb412 100644
+--- a/drivers/macintosh/ams/ams-i2c.c
++++ b/drivers/macintosh/ams/ams-i2c.c
+@@ -56,8 +56,7 @@ enum ams_i2c_cmd {
+ 	AMS_CMD_START,
+ };
+ 
+-static int ams_i2c_probe(struct i2c_client *client,
+-			 const struct i2c_device_id *id);
++static int ams_i2c_probe(struct i2c_client *client);
+ static void ams_i2c_remove(struct i2c_client *client);
+ 
+ static const struct i2c_device_id ams_id[] = {
+@@ -70,7 +69,7 @@ static struct i2c_driver ams_i2c_driver = {
+ 	.driver = {
+ 		.name   = "ams",
+ 	},
+-	.probe          = ams_i2c_probe,
++	.probe_new      = ams_i2c_probe,
+ 	.remove         = ams_i2c_remove,
+ 	.id_table       = ams_id,
+ };
+@@ -155,8 +154,7 @@ static void ams_i2c_get_xyz(s8 *x, s8 *y, s8 *z)
+ 	*z = ams_i2c_read(AMS_DATAZ);
  }
  
--static int wf_fcu_probe(struct i2c_client *client,
--			const struct i2c_device_id *id)
-+static int wf_fcu_probe(struct i2c_client *client)
+-static int ams_i2c_probe(struct i2c_client *client,
+-			 const struct i2c_device_id *id)
++static int ams_i2c_probe(struct i2c_client *client)
  {
- 	struct wf_fcu_priv *pv;
- 
-@@ -590,7 +589,7 @@ static struct i2c_driver wf_fcu_driver = {
- 		.name	= "wf_fcu",
- 		.of_match_table = wf_fcu_of_id,
- 	},
--	.probe		= wf_fcu_probe,
-+	.probe_new	= wf_fcu_probe,
- 	.remove		= wf_fcu_remove,
- 	.id_table	= wf_fcu_id,
- };
+ 	int vmaj, vmin;
+ 	int result;
 -- 
 2.38.1
 
