@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE0CCC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Nov 2022 15:10:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 518B5C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Nov 2022 15:11:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDKwd150fz3f6b
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 02:10:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDKxf4Y7tz3f8b
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 02:11:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OCbxc/k2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZTW33fyG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OCbxc/k2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZTW33fyG;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDKsV4df0z3bZY
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 02:07:58 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AIE7oQn010972
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:55 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDKsX50FKz3bZY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 02:08:00 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AIE7G1V005136
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:58 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=EEgu1nalrqG9sem+zUqYR22MjLKJmimIMMUhSSfB89E=;
- b=OCbxc/k2/ThXQxJnuyBUk59kNxibQNvmIeVm3w3BSXIBzLnrijeXGzoGYdxknf+xgmzE
- ZYoWS1ZCB+W/bB6qzlFi9tqRkbbIflGWeImTCiCjLSBlh026zJT+dLEHp+fSXwozZ7zt
- SEBX2tb+ZD6FpRcYi5/aaZW8GSuUWt3XB4GM2AV0+jcl0A/6v6XDVlUZG5lf/7LW2Hfc
- 2GhT6LuUxEZhR525ms4ue2X6vXKYq3+ZOh+5Yy8r/Dz2x6LrM+PX0aU3y+4rsj66hIzz
- Ix6pavLAasXtRq6tRLKGxmXszx6HO5XqrRlJbgyD99HpQ9pZNwiU1WW7bLKMr5+l+120 Cg== 
+ bh=foh1qqdEJ5MRAzJJjlRJgrupl2evtqnjDVkupRQ8n8Y=;
+ b=ZTW33fyGMurzpPgN8bNaMYwr9rmXx/6PeOUFGNLnPBzeK+7nkU9IBKnZ3gCsvHPhldLp
+ dbh5XTT39aZRkdfypwsDfrs2LDwwNwjA5I7bFHTMD7yBXlaWykf2FWv7zxLjcmwz6qw6
+ cP5bZsPK2g8r9OYMePpOrFiP7ZUSZp3yRxRu9ZHHgXCoN/YEQRJpJasxpt5d2TPTEzNV
+ M9jGQIiICx4e9woFhvVf5+/Wc9CZFcxs670vb50RGTP1j5Ew06K0IEdBrtgTAnvficzg
+ It84U5eUGL2UmP38sWuhEFm8TaZBI9ivXtsoh+WcW6JEJT74Bbn2Y+wRV/SlyX54gFTU rg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kx156fwhe-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kx7suyh0q-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:55 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AIE9wLi017743
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:54 GMT
-Received: from ppma05wdc.us.ibm.com (1b.90.2fa9.ip4.static.sl-reverse.com [169.47.144.27])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3kx156fwhb-1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:57 +0000
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AIEmvfW011542
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 15:07:57 GMT
+Received: from ppma02wdc.us.ibm.com (aa.5b.37a9.ip4.static.sl-reverse.com [169.55.91.170])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3kx7suyh03-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Nov 2022 15:07:54 +0000
-Received: from pps.filterd (ppma05wdc.us.ibm.com [127.0.0.1])
-	by ppma05wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AIF6rgZ015384;
-	Fri, 18 Nov 2022 15:07:54 GMT
-Received: from b03cxnp07029.gho.boulder.ibm.com (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
-	by ppma05wdc.us.ibm.com with ESMTP id 3kt34ag7tv-1
+	Fri, 18 Nov 2022 15:07:57 +0000
+Received: from pps.filterd (ppma02wdc.us.ibm.com [127.0.0.1])
+	by ppma02wdc.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AIF6mKq014736;
+	Fri, 18 Nov 2022 15:07:56 GMT
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com [9.57.198.23])
+	by ppma02wdc.us.ibm.com with ESMTP id 3kt34a88d1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 18 Nov 2022 15:07:54 +0000
-Received: from smtpav04.dal12v.mail.ibm.com ([9.208.128.131])
-	by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AIF7pdb39780880
+	Fri, 18 Nov 2022 15:07:56 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com ([9.208.128.117])
+	by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AIF7sfN5833312
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 18 Nov 2022 15:07:51 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AC83358064;
-	Fri, 18 Nov 2022 15:07:52 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 92B6558056;
-	Fri, 18 Nov 2022 15:07:52 +0000 (GMT)
+	Fri, 18 Nov 2022 15:07:55 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BFB4358066;
+	Fri, 18 Nov 2022 15:07:54 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 905E358059;
+	Fri, 18 Nov 2022 15:07:54 +0000 (GMT)
 Received: from localhost (unknown [9.211.69.164])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 18 Nov 2022 15:07:52 +0000 (GMT)
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 18 Nov 2022 15:07:54 +0000 (GMT)
 From: Nathan Lynch <nathanl@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/13] powerpc/rtasd: use correct OF API for event scan rate
-Date: Fri, 18 Nov 2022 09:07:40 -0600
-Message-Id: <20221118150751.469393-3-nathanl@linux.ibm.com>
+Subject: [PATCH 06/13] powerpc/rtas: clean up rtas_error_log_max initialization
+Date: Fri, 18 Nov 2022 09:07:44 -0600
+Message-Id: <20221118150751.469393-7-nathanl@linux.ibm.com>
 X-Mailer: git-send-email 2.37.3
 In-Reply-To: <20221118150751.469393-1-nathanl@linux.ibm.com>
 References: <20221118150751.469393-1-nathanl@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: iypr4WI1wSDQwb4R7FLdneWk8KmCvfPU
-X-Proofpoint-GUID: KtRPaqZvy-w2pVMp4E5A7viAgBqe2rb0
+X-Proofpoint-ORIG-GUID: CO396bauL_XhvdN5zsVg-5bq4g-43Vfc
+X-Proofpoint-GUID: Um7eZJMhPglROP0NjBNAhkADil5j7hAI
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-18_02,2022-11-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
- bulkscore=0 clxscore=1011 mlxscore=0 malwarescore=0 mlxlogscore=999
- impostorscore=0 priorityscore=1501 suspectscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211180084
+ definitions=2022-11-18_03,2022-11-18_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ lowpriorityscore=0 priorityscore=1501 impostorscore=0 clxscore=1015
+ spamscore=0 mlxscore=0 bulkscore=0 mlxlogscore=999 phishscore=0
+ malwarescore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2210170000 definitions=main-2211180088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,50 +100,96 @@ Cc: tyreld@linux.ibm.com, nnac123@linux.ibm.com, ldufour@linux.ibm.com, ajd@linu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-rtas_token() should be used only for properties that are RTAS function
-tokens. "rtas-event-scan-rate" does not contain a function token, but it
-has the same size/format as token properties so reading it with
-rtas_token() happens to work.
+The code in rtas_get_error_log_max() doesn't cause problems in
+practice, but there are no measures to ensure that the lazy
+initialization of the static rtas_error_log_max variable is atomic,
+and it's not worth adding them.
 
-Convert to of_property_read_u32().
+Initialize the static rtas_error_log_max variable at boot when we're
+single-threaded instead of lazily on first use. Use the more
+appropriate of_property_read_u32() API instead of rtas_token() to
+consult the "rtas-error-log-max" property, which is not the name of an
+RTAS function. Convert use of printk() to pr_warn() and distinguish
+the possible error cases.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtasd.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/rtas.c | 37 ++++++++++++++++++++++++++-----------
+ 1 file changed, 26 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 5270b450bbde..cc56ac6ba4b0 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -9,6 +9,7 @@
- #include <linux/errno.h>
- #include <linux/sched.h>
- #include <linux/kernel.h>
-+#include <linux/of.h>
- #include <linux/poll.h>
- #include <linux/proc_fs.h>
- #include <linux/init.h>
-@@ -499,6 +500,8 @@ EXPORT_SYMBOL_GPL(rtas_cancel_event_scan);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 51f0508593a7..3fa84c247415 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -353,6 +353,9 @@ int rtas_service_present(const char *service)
+ EXPORT_SYMBOL(rtas_service_present);
  
- static int __init rtas_event_scan_init(void)
- {
-+	int err;
+ #ifdef CONFIG_RTAS_ERROR_LOGGING
 +
- 	if (!machine_is(pseries) && !machine_is(chrp))
- 		return 0;
++static u32 rtas_error_log_max __ro_after_init = RTAS_ERROR_LOG_MAX;
++
+ /*
+  * Return the firmware-specified size of the error log buffer
+  *  for all rtas calls that require an error buffer argument.
+@@ -360,21 +363,30 @@ EXPORT_SYMBOL(rtas_service_present);
+  */
+ int rtas_get_error_log_max(void)
+ {
+-	static int rtas_error_log_max;
+-	if (rtas_error_log_max)
+-		return rtas_error_log_max;
+-
+-	rtas_error_log_max = rtas_token ("rtas-error-log-max");
+-	if ((rtas_error_log_max == RTAS_UNKNOWN_SERVICE) ||
+-	    (rtas_error_log_max > RTAS_ERROR_LOG_MAX)) {
+-		printk (KERN_WARNING "RTAS: bad log buffer size %d\n",
+-			rtas_error_log_max);
+-		rtas_error_log_max = RTAS_ERROR_LOG_MAX;
+-	}
+ 	return rtas_error_log_max;
+ }
+ EXPORT_SYMBOL(rtas_get_error_log_max);
  
-@@ -509,8 +512,8 @@ static int __init rtas_event_scan_init(void)
- 		return -ENODEV;
- 	}
++static void __init init_error_log_max(void)
++{
++	static const char propname[] __initconst = "rtas-error-log-max";
++	u32 max;
++
++	if (of_property_read_u32(rtas.dev, propname, &max)) {
++		pr_warn("%s not found, using default of %u\n",
++			propname, RTAS_ERROR_LOG_MAX);
++		max = RTAS_ERROR_LOG_MAX;
++	}
++
++	if (max > RTAS_ERROR_LOG_MAX) {
++		pr_warn("%s = %u, clamping max error log size to %u\n",
++			propname, max, RTAS_ERROR_LOG_MAX);
++		max = RTAS_ERROR_LOG_MAX;
++	}
++
++	rtas_error_log_max = max;
++}
++
  
--	rtas_event_scan_rate = rtas_token("rtas-event-scan-rate");
--	if (rtas_event_scan_rate == RTAS_UNKNOWN_SERVICE) {
-+	err = of_property_read_u32(rtas.dev, "rtas-event-scan-rate", &rtas_event_scan_rate);
-+	if (err) {
- 		printk(KERN_ERR "rtasd: no rtas-event-scan-rate on system\n");
- 		return -ENODEV;
- 	}
+ static char rtas_err_buf[RTAS_ERROR_LOG_MAX];
+ static int rtas_last_error_token;
+@@ -432,6 +444,7 @@ static char *__fetch_rtas_last_error(char *altbuf)
+ #else /* CONFIG_RTAS_ERROR_LOGGING */
+ #define __fetch_rtas_last_error(x)	NULL
+ #define get_errorlog_buffer()		NULL
++static void __init init_error_log_max(void) {}
+ #endif
+ 
+ 
+@@ -1341,6 +1354,8 @@ void __init rtas_initialize(void)
+ 	no_entry = of_property_read_u32(rtas.dev, "linux,rtas-entry", &entry);
+ 	rtas.entry = no_entry ? rtas.base : entry;
+ 
++	init_error_log_max();
++
+ 	/*
+ 	 * Discover these now to avoid device tree lookups in the
+ 	 * panic path.
 -- 
 2.37.1
 
