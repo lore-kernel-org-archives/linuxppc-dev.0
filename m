@@ -4,53 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6809FC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Nov 2022 23:36:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CBBCC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 00:22:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDY8G0m0Jz3f8T
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 10:36:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDZ9s3SSPz3f3n
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 11:22:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HlA1H0xw;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=54xzcv2k;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=darwi@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=HlA1H0xw;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=54xzcv2k;
+	dkim-atps=neutral
+X-Greylist: delayed 345 seconds by postgrey-1.36 at boromir; Fri, 18 Nov 2022 23:40:12 AEDT
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDY7g2KXJz3f5b
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 10:35:59 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8n-0002eo-9u; Fri, 18 Nov 2022 23:47:21 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8f-0058Up-Cw; Fri, 18 Nov 2022 23:47:14 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1owA8f-0000AS-GR; Fri, 18 Nov 2022 23:47:13 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>
-To: Angel Iglesias <ang.iglesiasg@gmail.com>,
-	Lee Jones <lee.jones@linaro.org>,
-	Grant Likely <grant.likely@linaro.org>,
-	Wolfram Sang <wsa@kernel.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Minghao Chi <chi.minghao@zte.com.cn>
-Subject: [PATCH 289/606] macintosh: ams/ams-i2c: Convert to i2c's .probe_new()
-Date: Fri, 18 Nov 2022 23:40:23 +0100
-Message-Id: <20221118224540.619276-290-uwe@kleine-koenig.org>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
-References: <20221118224540.619276-1-uwe@kleine-koenig.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDGb03n0rz3c8V
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Nov 2022 23:40:12 +1100 (AEDT)
+Date: Fri, 18 Nov 2022 13:34:12 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1668774854;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wC43CUGHQ/5Kf6dfYdK3BkocoYb1pAZJ53OoTDcNf8Y=;
+	b=HlA1H0xw89I6mNXZxJfbzjZ9tZMqyfafZ+aFSsNCpLNVFZG4Syb23GWBxogyjR8JsPjoz+
+	VaJuo4yvuubjsDScFNOYEhnvI/JnS50bh59eCBKM3N2Hq305ykQSGUWvNmepJIi6ASnhEc
+	Egre6BUTheWsCqNBhLfaHD5mXybAE0gZ+FrjXOTtPkHjlj1OyuGGhfr+5pqAEy+A0dS6jh
+	kcjwSSW9Tqj8sV8GpamJiaL4VlNH9fNu7sKS2Z78pFtMLjks7075EQmH7e+rMAWL9esRD6
+	dFYnvxDpqSenJCJPs1AmOrXBDZqyETwBR2olcWtWGEx6Ik89o+rGvcZQw37D4g==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1668774854;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=wC43CUGHQ/5Kf6dfYdK3BkocoYb1pAZJ53OoTDcNf8Y=;
+	b=54xzcv2ka0wlcFsUA4oLtl2S4yVRp9s6mDU2H/QJ/HHTk3ITsJRt1buBfx5tYa3HRGPopw
+	Vlw+RnH01UQJ2kAg==
+From: "Ahmed S. Darwish" <darwi@linutronix.de>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [patch 23/39] PCI/MSI: Move pci_alloc_irq_vectors_affinity() to
+ api.c
+Message-ID: <Y3d7xJ5hvhxlRrOE@lx-t490>
+References: <20221111122014.927531290@linutronix.de>
+ <20221116162322.GA1115421@bhelgaas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221116162322.GA1115421@bhelgaas>
+X-Mailman-Approved-At: Sat, 19 Nov 2022 11:21:11 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,53 +68,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, kernel@pengutronix.de, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-pci@vger.kernel.org, Will Deacon <will@kernel.org>, Dan Williams <dan.j.williams@intel.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org, Jason Gunthorpe <jgg@mellanox.com>, Allen Hubbe <allenbh@gmail.com>, Kevin Tian <kevin.tian@intel.com>, Jon Mason <jdmason@kudzu.us>, linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, Reinette Chatre <reinette.chatre@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Marc Zyngier <maz@kernel.org>, Logan Gunthorpe <logang@deltatee.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+On Wed, Nov 16, 2022 at 10:23:22AM -0600, Bjorn Helgaas wrote:
+> On Fri, Nov 11, 2022 at 02:54:51PM +0100, Thomas Gleixner wrote:
+...
+> > +
+> > +/**
+> > + * pci_alloc_irq_vectors_affinity() - Allocate multiple device interrupt
+> > + *                                    vectors with affinity requirements
+> > + * @dev:      the PCI device to operate on
+> > + * @min_vecs: minimum required number of vectors (must be >= 1)
+> > + * @max_vecs: maximum desired number of vectors
+> > + * @flags:    allocation flags, as in pci_alloc_irq_vectors()
+> > + * @affd:     affinity requirements (can be %NULL).
+> > + *
+> > + * Same as pci_alloc_irq_vectors(), but with the extra @affd parameter.
+> > + * Check that function docs, and &struct irq_affinity, for more details.
+>
+> Is "&struct irq_affinity" some kernel-doc syntax, or is the "&"
+> superfluous?
+>
 
-The probe function doesn't make use of the i2c_device_id * parameter so it
-can be trivially converted.
+Hmmm, I stole it from Documentation/doc-guide/kernel-doc.rst. htmldoc
+parses it and generates a link to the referenced structure's kernel-doc.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
- drivers/macintosh/ams/ams-i2c.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+But, yeah, this was literally the first usage of such a doc pattern in
+the entire kernel's C code :)
 
-diff --git a/drivers/macintosh/ams/ams-i2c.c b/drivers/macintosh/ams/ams-i2c.c
-index 3ded340699fb..a4a1035eb412 100644
---- a/drivers/macintosh/ams/ams-i2c.c
-+++ b/drivers/macintosh/ams/ams-i2c.c
-@@ -56,8 +56,7 @@ enum ams_i2c_cmd {
- 	AMS_CMD_START,
- };
- 
--static int ams_i2c_probe(struct i2c_client *client,
--			 const struct i2c_device_id *id);
-+static int ams_i2c_probe(struct i2c_client *client);
- static void ams_i2c_remove(struct i2c_client *client);
- 
- static const struct i2c_device_id ams_id[] = {
-@@ -70,7 +69,7 @@ static struct i2c_driver ams_i2c_driver = {
- 	.driver = {
- 		.name   = "ams",
- 	},
--	.probe          = ams_i2c_probe,
-+	.probe_new      = ams_i2c_probe,
- 	.remove         = ams_i2c_remove,
- 	.id_table       = ams_id,
- };
-@@ -155,8 +154,7 @@ static void ams_i2c_get_xyz(s8 *x, s8 *y, s8 *z)
- 	*z = ams_i2c_read(AMS_DATAZ);
- }
- 
--static int ams_i2c_probe(struct i2c_client *client,
--			 const struct i2c_device_id *id)
-+static int ams_i2c_probe(struct i2c_client *client)
- {
- 	int vmaj, vmin;
- 	int result;
--- 
-2.38.1
+Thanks,
 
+--
+Ahmed S. Darwish
+Linutronix GmbH
