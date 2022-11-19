@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB171C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 11:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D8D2C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 11:49:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDsPT3XmHz3fCr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 22:49:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDsQ31xqDz3fDK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 22:49:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=heyquark.com (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=ash@heyquark.com; receiver=<UNKNOWN>)
 Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDsKQ2Jr0z3dvQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDsKQ4HCxz3dvm
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 22:45:30 +1100 (AEDT)
 Received: from relay9-d.mail.gandi.net (unknown [217.70.183.199])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 7B7E6C1757
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 11:31:50 +0000 (UTC)
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id 185D8C2132
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 11:32:08 +0000 (UTC)
 Received: (Authenticated sender: ash@heyquark.com)
-	by mail.gandi.net (Postfix) with ESMTPSA id 92C19FF809;
-	Sat, 19 Nov 2022 11:31:36 +0000 (UTC)
+	by mail.gandi.net (Postfix) with ESMTPSA id A0B42FF803;
+	Sat, 19 Nov 2022 11:31:52 +0000 (UTC)
 From: Ash Logan <ash@heyquark.com>
 To: krzysztof.kozlowski+dt@linaro.org,
 	paulus@samba.org,
@@ -30,9 +30,9 @@ To: krzysztof.kozlowski+dt@linaro.org,
 	benh@kernel.crashing.org,
 	segher@kernel.crashing.org,
 	pali@kernel.org
-Subject: [PATCH v4 06/11] powerpc: wiiu: udbg support for latteipc
-Date: Sat, 19 Nov 2022 22:30:36 +1100
-Message-Id: <20221119113041.284419-7-ash@heyquark.com>
+Subject: [PATCH v4 08/11] powerpc: wiiu: latte interrupt controller support
+Date: Sat, 19 Nov 2022 22:30:38 +1100
+Message-Id: <20221119113041.284419-9-ash@heyquark.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221119113041.284419-1-ash@heyquark.com>
 References: <20220628133144.142185-1-ash@heyquark.com>
@@ -54,304 +54,340 @@ Cc: devicetree@vger.kernel.org, linkmauve@linkmauve.fr, linux-kernel@vger.kernel
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add support for using the Latte chipset IPC for udbg on the Nintendo Wii
-U console.
-These messages can then be received by a special firmware running on the
-"Starbuck" coprocessor.
+Add support for the "Latte" interrupt controller in the Nintendo Wii U.
+This controller is used for the entire SoC and is wired to a cascade
+interrupt on the Espresso controller.
 
 Signed-off-by: Ash Logan <ash@heyquark.com>
+Co-developed-by: Roberto Van Eeden <rw-r-r-0644@protonmail.com>
+Signed-off-by: Roberto Van Eeden <rw-r-r-0644@protonmail.com>
 ---
-v2->v3: Fix a missing declaration issue by including latteipc_udbg.h.
-v3->v4: Add missing of.h includes.
+v2->v3: Make latte_pic_get_irq static.
 
- arch/powerpc/Kconfig.debug                  |   9 ++
- arch/powerpc/include/asm/udbg.h             |   1 +
- arch/powerpc/kernel/head_book3s_32.S        |  20 ++++
- arch/powerpc/kernel/udbg.c                  |   3 +
- arch/powerpc/platforms/wiiu/Kconfig         |  13 ++
- arch/powerpc/platforms/wiiu/Makefile        |   2 +
- arch/powerpc/platforms/wiiu/udbg_latteipc.c | 126 ++++++++++++++++++++
- arch/powerpc/platforms/wiiu/udbg_latteipc.h |  27 +++++
- 8 files changed, 201 insertions(+)
- create mode 100644 arch/powerpc/platforms/wiiu/udbg_latteipc.c
- create mode 100644 arch/powerpc/platforms/wiiu/udbg_latteipc.h
+ arch/powerpc/platforms/wiiu/Kconfig     |   1 +
+ arch/powerpc/platforms/wiiu/Makefile    |   2 +-
+ arch/powerpc/platforms/wiiu/latte-pic.c | 259 ++++++++++++++++++++++++
+ arch/powerpc/platforms/wiiu/latte-pic.h |  23 +++
+ 4 files changed, 284 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/wiiu/latte-pic.c
+ create mode 100644 arch/powerpc/platforms/wiiu/latte-pic.h
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 6aaf8dc60610..b87343b0d1b4 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -254,6 +254,15 @@ config PPC_EARLY_DEBUG_USBGECKO
- 	  Select this to enable early debugging for Nintendo GameCube/Wii
- 	  consoles via an external USB Gecko adapter.
- 
-+config PPC_EARLY_DEBUG_LATTEIPC
-+	bool "Early debugging through Latte chipset IPC"
-+	depends on WIIU
-+	select LATTEIPC_UDBG
-+	help
-+	  Select this to enable early debugging for Nintendo Wii U consoles via
-+	  chipset IPC to the security coprocessor. This assumes a firmware is
-+	  running on the coprocessor to receive messages.
-+
- config PPC_EARLY_DEBUG_PS3GELIC
- 	bool "Early debugging through the PS3 Ethernet port"
- 	depends on PPC_PS3
-diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/udbg.h
-index b1f094728b35..ef1367f146fd 100644
---- a/arch/powerpc/include/asm/udbg.h
-+++ b/arch/powerpc/include/asm/udbg.h
-@@ -53,6 +53,7 @@ void __init udbg_init_ps3gelic(void);
- void __init udbg_init_debug_opal_raw(void);
- void __init udbg_init_debug_opal_hvsi(void);
- void __init udbg_init_debug_16550(void);
-+void __init udbg_init_latteipc(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
-index 519b60695167..5b3b1c971feb 100644
---- a/arch/powerpc/kernel/head_book3s_32.S
-+++ b/arch/powerpc/kernel/head_book3s_32.S
-@@ -164,6 +164,9 @@ __after_mmu_off:
- #ifdef CONFIG_PPC_EARLY_DEBUG_USBGECKO
- 	bl	setup_usbgecko_bat
- #endif
-+#ifdef CONFIG_PPC_EARLY_DEBUG_LATTEIPC
-+	bl	setup_latteipc_bat
-+#endif
- 
- /*
-  * Call setup_cpu for CPU 0 and initialize 6xx Idle
-@@ -1201,4 +1204,21 @@ setup_usbgecko_bat:
- 	blr
- #endif
- 
-+#ifdef CONFIG_PPC_EARLY_DEBUG_LATTEIPC
-+setup_latteipc_bat:
-+	/* prepare a BAT for early io */
-+	lis	r8, 0x0d80
-+
-+	/*
-+	 * The virtual address used must match the virtual address
-+	 * associated to the fixmap entry FIX_EARLY_DEBUG_BASE.
-+	 */
-+	lis	r11, 0xfffe	/* top 128K */
-+	ori	r8, r8, 0x002a	/* uncached, guarded ,rw */
-+	ori	r11, r11, 0x2	/* 128K, Vs=1, Vp=0 */
-+	mtspr	SPRN_DBAT1L, r8
-+	mtspr	SPRN_DBAT1U, r11
-+	blr
-+#endif
-+
- 	.data
-diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
-index 92b3fc258d11..b2ec88ef3cc1 100644
---- a/arch/powerpc/kernel/udbg.c
-+++ b/arch/powerpc/kernel/udbg.c
-@@ -69,6 +69,9 @@ void __init udbg_early_init(void)
- 	udbg_init_debug_opal_hvsi();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_16550)
- 	udbg_init_debug_16550();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_LATTEIPC)
-+	/* For use on Nintendo Wii U */
-+	udbg_init_latteipc();
- #endif
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG
 diff --git a/arch/powerpc/platforms/wiiu/Kconfig b/arch/powerpc/platforms/wiiu/Kconfig
-index 3834834c6bd7..8dfd6ac8774d 100644
+index 8dfd6ac8774d..40ecba8396a7 100644
 --- a/arch/powerpc/platforms/wiiu/Kconfig
 +++ b/arch/powerpc/platforms/wiiu/Kconfig
-@@ -6,3 +6,16 @@ config WIIU
+@@ -3,6 +3,7 @@
+ config WIIU
+ 	bool "Nintendo Wii U"
+ 	depends on PPC_BOOK3S_32
++	select IRQ_DOMAIN_HIERARCHY
  	help
  	  Select WIIU if configuring for the Nintendo Wii U.
  	  More information at: <https://linux-wiiu.org/>
-+
-+config LATTEIPC_UDBG
-+	bool "Chipset IPC udbg console for the Nintendo Wii U"
-+	depends on WIIU
-+	help
-+	  If you say yes to this option, support will be included for the
-+	  Wii U's chipset IPC as a udbg console.
-+	  These IPC messages can be received by a firmware running on the
-+	  console's "Starbuck" security coprocessor.
-+
-+	  This driver bypasses the IPC layer completely.
-+
-+	  If in doubt, say N here.
 diff --git a/arch/powerpc/platforms/wiiu/Makefile b/arch/powerpc/platforms/wiiu/Makefile
-index f66554cd5c45..b1e0e1307f6e 100644
+index aabf4b43e806..fa16c60261e6 100644
 --- a/arch/powerpc/platforms/wiiu/Makefile
 +++ b/arch/powerpc/platforms/wiiu/Makefile
-@@ -1 +1,3 @@
+@@ -1,4 +1,4 @@
  # SPDX-License-Identifier: GPL-2.0
-+
-+obj-$(CONFIG_LATTEIPC_UDBG) += udbg_latteipc.o
-diff --git a/arch/powerpc/platforms/wiiu/udbg_latteipc.c b/arch/powerpc/platforms/wiiu/udbg_latteipc.c
+ 
+-obj-$(CONFIG_WIIU) += espresso-pic.o
++obj-$(CONFIG_WIIU) += espresso-pic.o latte-pic.o
+ obj-$(CONFIG_LATTEIPC_UDBG) += udbg_latteipc.o
+diff --git a/arch/powerpc/platforms/wiiu/latte-pic.c b/arch/powerpc/platforms/wiiu/latte-pic.c
 new file mode 100644
-index 000000000000..9f46a0d19e81
+index 000000000000..7e3f49844166
 --- /dev/null
-+++ b/arch/powerpc/platforms/wiiu/udbg_latteipc.c
-@@ -0,0 +1,126 @@
++++ b/arch/powerpc/platforms/wiiu/latte-pic.c
+@@ -0,0 +1,259 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * Nintendo Wii U udbg support (to Starbuck coprocessor, via chipset IPC)
++ * Nintendo Wii U "Latte" interrupt controller support.
++ * This is the controller for all the SoC devices, and has a cascade interrupt for the Espresso
++ * CPU interrupt controller.
 + *
 + * Copyright (C) 2022 The linux-wiiu Team
 + *
-+ * Based on arch/powerpc/platforms/embedded6xx/udbgecko_udbg.c
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008-2009 Albert Herranz
++ * Based on hlwd-pic.c
++ * Copyright (C) 2009 The GameCube Linux Team
++ * Copyright (C) 2009 Albert Herranz
 + */
 +
-+#include <mm/mmu_decl.h>
++#define DRV_MODULE_NAME "latte-pic"
++#define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
 +
-+#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/irq.h>
 +#include <linux/of.h>
 +#include <linux/of_address.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/fixmap.h>
++#include <linux/of_irq.h>
++#include <linux/irqdomain.h>
++#include <linux/io.h>
++#include "latte-pic.h"
 +
-+#include "udbg_latteipc.h"
-+
-+#define LT_MMIO_BASE ((phys_addr_t)0x0d800000)
-+#define LT_IPC_PPCMSG 0x00
-+#define LT_IPC_PPCCTRL 0x04
-+#define LT_IPC_PPCCTRL_X1 0x01
-+
-+#define WIIU_LOADER_CMD_PRINT 0x01000000
-+
-+void __iomem *latteipc_io_base;
++static DEFINE_PER_CPU(struct lt_pic *, lt_pic_cpu);
 +
 +/*
-+ * Transmits a character.
-+ * Sends over IPC to linux-loader for printing.
++ * IRQ chip operations
++ * These handle both AHBALL and AHBLT IRQs, with AHBLT mapped above 32
 + */
-+static void latteipc_udbg_putc(char c)
++
++static void latte_pic_mask_and_ack(struct irq_data *d)
 +{
-+	void __iomem *ppcmsg_reg = latteipc_io_base + LT_IPC_PPCMSG;
-+	void __iomem *ppcctrl_reg = latteipc_io_base + LT_IPC_PPCCTRL;
++	struct lt_pic *pic = *this_cpu_ptr(&lt_pic_cpu);
++	u32 irq = irqd_to_hwirq(d);
 +
-+	out_be32(ppcmsg_reg, WIIU_LOADER_CMD_PRINT | (c << 16));
-+	out_be32(ppcctrl_reg, LT_IPC_PPCCTRL_X1);
++	if (irq < LATTE_AHBALL_NR_IRQS) {
++		u32 mask = 1 << irq;
 +
-+	while (in_be32(ppcctrl_reg) & LT_IPC_PPCCTRL_X1)
-+		barrier();
-+}
++		out_be32(&pic->ahball_icr, mask);
++		clrbits32(&pic->ahball_imr, mask);
++	} else {
++		u32 mask = 1 << (irq - 32);
 +
-+/*
-+ * Retrieves and prepares the virtual address needed to access the hardware.
-+ */
-+static void __iomem *latteipc_udbg_setup_ipc_io_base(struct device_node *np)
-+{
-+	void __iomem *ipc_io_base = NULL;
-+	phys_addr_t paddr;
-+	const unsigned int *reg;
-+
-+	reg = of_get_property(np, "reg", NULL);
-+	if (reg) {
-+		paddr = of_translate_address(np, reg);
-+		if (paddr)
-+			ipc_io_base = ioremap(paddr, reg[1]);
++		out_be32(&pic->ahblt_icr, mask);
++		clrbits32(&pic->ahblt_imr, mask);
 +	}
-+	return ipc_io_base;
++}
++
++static void latte_pic_ack(struct irq_data *d)
++{
++	struct lt_pic *pic = *this_cpu_ptr(&lt_pic_cpu);
++	u32 irq = irqd_to_hwirq(d);
++
++	if (irq < LATTE_AHBALL_NR_IRQS) {
++		u32 mask = 1 << irq;
++
++		out_be32(&pic->ahball_icr, mask);
++	} else {
++		u32 mask = 1 << (irq - 32);
++
++		out_be32(&pic->ahblt_icr, mask);
++	}
++}
++
++static void latte_pic_mask(struct irq_data *d)
++{
++	struct lt_pic *pic = *this_cpu_ptr(&lt_pic_cpu);
++	u32 irq = irqd_to_hwirq(d);
++
++	if (irq < LATTE_AHBALL_NR_IRQS) {
++		u32 mask = 1 << irq;
++
++		clrbits32(&pic->ahball_imr, mask);
++	} else {
++		u32 mask = 1 << (irq - 32);
++
++		clrbits32(&pic->ahblt_imr, mask);
++	}
++}
++
++static void latte_pic_unmask(struct irq_data *d)
++{
++	struct lt_pic *pic = *this_cpu_ptr(&lt_pic_cpu);
++	u32 irq = irqd_to_hwirq(d);
++
++	if (irq < LATTE_AHBALL_NR_IRQS) {
++		u32 mask = 1 << irq;
++
++		setbits32(&pic->ahball_imr, mask);
++	} else {
++		u32 mask = 1 << (irq - 32);
++
++		setbits32(&pic->ahblt_imr, mask);
++	}
++}
++
++static struct irq_chip latte_pic = {
++	.name = "latte-pic",
++	.irq_ack = latte_pic_ack,
++	.irq_mask_ack = latte_pic_mask_and_ack,
++	.irq_mask = latte_pic_mask,
++	.irq_unmask = latte_pic_unmask,
++};
++
++/*
++ * Domain ops
++ */
++
++static int latte_pic_match(struct irq_domain *h, struct device_node *node,
++			   enum irq_domain_bus_token bus_token)
++{
++	if (h->fwnode == &node->fwnode) {
++		pr_debug("%s IRQ matches with this driver\n", node->name);
++		return 1;
++	}
++	return 0;
++}
++
++static int latte_pic_alloc(struct irq_domain *h, unsigned int virq,
++			   unsigned int nr_irqs, void *arg)
++{
++	unsigned int i;
++	struct irq_fwspec *fwspec = arg;
++	irq_hw_number_t hwirq = fwspec->param[0];
++
++	for (i = 0; i < nr_irqs; i++) {
++		irq_set_chip_data(virq + i, h->host_data);
++		irq_set_status_flags(virq + i, IRQ_LEVEL);
++		irq_set_chip_and_handler(virq + i, &latte_pic,
++					 handle_level_irq);
++		irq_domain_set_hwirq_and_chip(h, virq + i, hwirq + i,
++					      &latte_pic, h->host_data);
++	}
++	return 0;
++}
++
++static void latte_pic_free(struct irq_domain *h, unsigned int virq,
++			   unsigned int nr_irqs)
++{
++	pr_debug("free\n");
++}
++
++const struct irq_domain_ops latte_pic_ops = {
++	.match = latte_pic_match,
++	.alloc = latte_pic_alloc,
++	.free = latte_pic_free,
++};
++
++/*
++ * Determinate if there are interrupts pending
++ * Checks AHBALL (0-32) and AHBLT (32-64)
++ */
++static unsigned int latte_pic_get_irq(struct irq_domain *h)
++{
++	struct lt_pic *pic = *this_cpu_ptr(&lt_pic_cpu);
++	u32 irq_status, irq;
++
++	/* Check AHBALL first */
++	irq_status = in_be32(&pic->ahball_icr) & in_be32(&pic->ahball_imr);
++
++	if (irq_status == 0) {
++		/* Try AHBLT */
++		irq_status =
++			in_be32(&pic->ahblt_icr) & in_be32(&pic->ahblt_imr);
++		if (irq_status == 0)
++			return 0; /* No IRQs pending */
++
++		/* AHBLT is mapped above 32 (LATTE_AHBALL_NR_IRQS) */
++		irq = __ffs(irq_status) + LATTE_AHBALL_NR_IRQS;
++		return irq_linear_revmap(h, irq);
++	}
++
++	irq = __ffs(irq_status);
++	return irq_linear_revmap(h, irq);
 +}
 +
 +/*
-+ * Latte IPC udbg support initialization.
++ * Cascade IRQ handler
 + */
-+void __init latteipc_udbg_init(void)
++static void latte_irq_cascade(struct irq_desc *desc)
 +{
-+	struct device_node *np;
-+	void __iomem *ipc_io_base;
++	struct irq_domain *irq_domain = irq_desc_get_handler_data(desc);
++	struct irq_chip *chip = irq_desc_get_chip(desc);
++	unsigned int virq;
 +
-+	if (latteipc_io_base)
-+		udbg_printf("%s: early -> final\n", __func__);
++	raw_spin_lock(&desc->lock);
++	chip->irq_mask(&desc->irq_data); /* IRQ_LEVEL */
++	raw_spin_unlock(&desc->lock);
 +
-+	np = of_find_compatible_node(NULL, NULL, "nintendo,latte-ipc");
++	virq = latte_pic_get_irq(irq_domain);
++	if (virq)
++		generic_handle_irq(virq);
++	else
++		pr_err("spurious interrupt!\n");
++
++	raw_spin_lock(&desc->lock);
++	chip->irq_ack(&desc->irq_data); /* IRQ_LEVEL */
++	if (!irqd_irq_disabled(&desc->irq_data) && chip->irq_unmask)
++		chip->irq_unmask(&desc->irq_data);
++	raw_spin_unlock(&desc->lock);
++}
++
++void __init latte_pic_init(void)
++{
++	struct device_node *np =
++		of_find_compatible_node(NULL, NULL, "nintendo,latte-pic");
++	struct irq_domain *host;
++	struct resource res;
++	int irq_cascade;
++	void __iomem *regbase;
++	unsigned int cpu;
++
 +	if (!np) {
-+		udbg_printf("%s: IPC node not found\n", __func__);
++		pr_err("could not find device node\n");
++		return;
++	}
++	if (!of_get_property(np, "interrupts", NULL)) {
++		pr_err("could not find cascade interrupt!\n");
 +		goto out;
 +	}
 +
-+	ipc_io_base = latteipc_udbg_setup_ipc_io_base(np);
-+	if (!ipc_io_base) {
-+		udbg_printf("%s: failed to setup IPC io base\n", __func__);
-+		goto done;
++	if (of_address_to_resource(np, 0, &res)) {
++		pr_err("could not find resource address\n");
++		goto out;
 +	}
 +
-+	udbg_putc = latteipc_udbg_putc;
-+	udbg_printf("latteipc_udbg: ready\n");
++	regbase = ioremap(res.start, resource_size(&res));
++	if (IS_ERR(regbase)) {
++		pr_err("could not map controller\n");
++		goto out;
++	}
 +
-+done:
-+	of_node_put(np);
++	for_each_present_cpu(cpu) {
++		struct lt_pic **pic = per_cpu_ptr(&lt_pic_cpu, cpu);
++
++		/* Compute pic address */
++		*pic = regbase + (sizeof(struct lt_pic) * cpu);
++
++		/* Mask and Ack CPU IRQs */
++		out_be32(&(*pic)->ahball_imr, 0);
++		out_be32(&(*pic)->ahball_icr, 0xFFFFFFFF);
++	}
++
++	host = irq_domain_add_linear(np,
++				     LATTE_AHBALL_NR_IRQS + LATTE_AHBLT_NR_IRQS,
++				     &latte_pic_ops, NULL);
++	if (!host) {
++		pr_err("failed to allocate irq_domain\n");
++		goto out;
++	}
++
++	irq_cascade = irq_of_parse_and_map(np, 0);
++	irq_set_chained_handler_and_data(irq_cascade, latte_irq_cascade, host);
++
 +out:
-+	return;
++	of_node_put(np);
 +}
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_LATTEIPC
-+
-+void __init udbg_init_latteipc(void)
-+{
-+	/*
-+	 * At this point we have a BAT already setup that enables I/O
-+	 * to the IPC hardware.
-+	 *
-+	 * The BAT uses a virtual address range reserved at the fixmap.
-+	 * This must match the virtual address configured in
-+	 * head_32.S:setup_latteipc_bat().
-+	 */
-+	latteipc_io_base = (void __iomem *)__fix_to_virt(FIX_EARLY_DEBUG_BASE);
-+
-+	/* Assume a firmware is present, add hooks */
-+	udbg_putc = latteipc_udbg_putc;
-+
-+	/*
-+	 * Prepare again the same BAT for MMU_init.
-+	 * This allows udbg I/O to continue working after the MMU is
-+	 * turned on for real.
-+	 * It is safe to continue using the same virtual address as it is
-+	 * a reserved fixmap area.
-+	 */
-+	setbat(1, (unsigned long)latteipc_io_base, LT_MMIO_BASE, 128 * 1024,
-+	       PAGE_KERNEL_NCG);
-+}
-+
-+#endif /* CONFIG_PPC_EARLY_DEBUG_LATTEIPC */
-diff --git a/arch/powerpc/platforms/wiiu/udbg_latteipc.h b/arch/powerpc/platforms/wiiu/udbg_latteipc.h
+diff --git a/arch/powerpc/platforms/wiiu/latte-pic.h b/arch/powerpc/platforms/wiiu/latte-pic.h
 new file mode 100644
-index 000000000000..ca6d34e49158
+index 000000000000..7021d9497d35
 --- /dev/null
-+++ b/arch/powerpc/platforms/wiiu/udbg_latteipc.h
-@@ -0,0 +1,27 @@
++++ b/arch/powerpc/platforms/wiiu/latte-pic.h
+@@ -0,0 +1,23 @@
 +/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
-+ * Nintendo Wii U udbg support (to Starbuck coprocessor, via chipset IPC)
++ * Nintendo Wii U "Latte" interrupt controller support
 + *
 + * Copyright (C) 2022 The linux-wiiu Team
-+ *
-+ * Based on arch/powerpc/platforms/embedded6xx/udbgecko_udbg.h
-+ * Copyright (C) 2008-2009 The GameCube Linux Team
-+ * Copyright (C) 2008-2009 Albert Herranz
 + */
 +
-+#ifndef __LATTEIPC_UDBG_H
-+#define __LATTEIPC_UDBG_H
++#ifndef __LATTE_PIC_H
++#define __LATTE_PIC_H
 +
-+#ifdef CONFIG_LATTEIPC_UDBG
++struct lt_pic {
++	__be32 ahball_icr;	/* Triggered AHB IRQs (all) */
++	__be32 ahblt_icr;	/* Triggered AHB IRQs (latte only) */
++	__be32 ahball_imr;	/* Allowed AHB IRQs (all) */
++	__be32 ahblt_imr;	/* Allowed AHB IRQs (latte only) */
++} __packed;
 +
-+void __init latteipc_udbg_init(void);
++#define LATTE_AHBALL_NR_IRQS    32
++#define LATTE_AHBLT_NR_IRQS     32
 +
-+#else
++void latte_pic_init(void);
 +
-+static inline void __init latteipc_udbg_init(void)
-+{
-+}
-+
-+#endif /* CONFIG_LATTEIPC_UDBG */
-+
-+#endif /* __LATTEIPC_UDBG_H */
++#endif
 -- 
 2.38.1
 
