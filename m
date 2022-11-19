@@ -4,21 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADFAEC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 11:33:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76CFCC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 11:45:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDs3r2QnWz3f5n
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 22:33:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=heyquark.com (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=ash@heyquark.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 75 seconds by postgrey-1.36 at boromir; Sat, 19 Nov 2022 22:32:26 AEDT
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDsKv33Mfz3f5x
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 22:45:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=heyquark.com (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=ash@heyquark.com; receiver=<UNKNOWN>)
+Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDs2L5sZJz3ccn
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 22:32:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDsKG733tz3045
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 22:45:22 +1100 (AEDT)
+Received: from relay9-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::229])
+	by mslow1.mail.gandi.net (Postfix) with ESMTP id 7805FC0F8C
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 11:31:34 +0000 (UTC)
 Received: (Authenticated sender: ash@heyquark.com)
-	by mail.gandi.net (Postfix) with ESMTPSA id B1936FF803;
-	Sat, 19 Nov 2022 11:32:16 +0000 (UTC)
+	by mail.gandi.net (Postfix) with ESMTPSA id 7F523FF805;
+	Sat, 19 Nov 2022 11:31:20 +0000 (UTC)
 From: Ash Logan <ash@heyquark.com>
 To: krzysztof.kozlowski+dt@linaro.org,
 	paulus@samba.org,
@@ -28,9 +30,9 @@ To: krzysztof.kozlowski+dt@linaro.org,
 	benh@kernel.crashing.org,
 	segher@kernel.crashing.org,
 	pali@kernel.org
-Subject: [PATCH v4 11/11] powerpc: wiiu: add minimal default config
-Date: Sat, 19 Nov 2022 22:30:41 +1100
-Message-Id: <20221119113041.284419-12-ash@heyquark.com>
+Subject: [PATCH v4 04/11] powerpc: wiiu: introduce wiiu platform
+Date: Sat, 19 Nov 2022 22:30:34 +1100
+Message-Id: <20221119113041.284419-5-ash@heyquark.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221119113041.284419-1-ash@heyquark.com>
 References: <20220628133144.142185-1-ash@heyquark.com>
@@ -52,28 +54,62 @@ Cc: devicetree@vger.kernel.org, linkmauve@linkmauve.fr, linux-kernel@vger.kernel
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Adds a bare-minimum config to get a kernel compiled. Will need some more
-interesting options once a storage device to boot from is added.
+Adds empty platforms/wiiu for Nintendo Wii U console
 
 Signed-off-by: Ash Logan <ash@heyquark.com>
 ---
- arch/powerpc/configs/wiiu_defconfig | 7 +++++++
- 1 file changed, 7 insertions(+)
- create mode 100644 arch/powerpc/configs/wiiu_defconfig
+v2->v3: Add help text for CONFIG_WIIU.
 
-diff --git a/arch/powerpc/configs/wiiu_defconfig b/arch/powerpc/configs/wiiu_defconfig
+ arch/powerpc/platforms/Kconfig       | 1 +
+ arch/powerpc/platforms/Makefile      | 1 +
+ arch/powerpc/platforms/wiiu/Kconfig  | 8 ++++++++
+ arch/powerpc/platforms/wiiu/Makefile | 1 +
+ 4 files changed, 11 insertions(+)
+ create mode 100644 arch/powerpc/platforms/wiiu/Kconfig
+ create mode 100644 arch/powerpc/platforms/wiiu/Makefile
+
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index d41dad227de8..c4a9c3c0b409 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -22,6 +22,7 @@ source "arch/powerpc/platforms/40x/Kconfig"
+ source "arch/powerpc/platforms/amigaone/Kconfig"
+ source "arch/powerpc/platforms/book3s/Kconfig"
+ source "arch/powerpc/platforms/microwatt/Kconfig"
++source "arch/powerpc/platforms/wiiu/Kconfig"
+ 
+ config KVM_GUEST
+ 	bool "KVM Guest support"
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index 94470fb27c99..944ddd938711 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -24,3 +24,4 @@ obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+ obj-$(CONFIG_AMIGAONE)		+= amigaone/
+ obj-$(CONFIG_PPC_BOOK3S)	+= book3s/
+ obj-$(CONFIG_PPC_MICROWATT)	+= microwatt/
++obj-$(CONFIG_WIIU)		+= wiiu/
+diff --git a/arch/powerpc/platforms/wiiu/Kconfig b/arch/powerpc/platforms/wiiu/Kconfig
 new file mode 100644
-index 000000000000..a761ebcdd9f2
+index 000000000000..3834834c6bd7
 --- /dev/null
-+++ b/arch/powerpc/configs/wiiu_defconfig
-@@ -0,0 +1,7 @@
-+# CONFIG_PPC_CHRP is not set
-+# CONFIG_PPC_PMAC is not set
-+CONFIG_WIIU=y
-+# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
-+CONFIG_HIGHMEM=y
-+CONFIG_STRICT_KERNEL_RWX=y
-+CONFIG_PPC_EARLY_DEBUG=y
++++ b/arch/powerpc/platforms/wiiu/Kconfig
+@@ -0,0 +1,8 @@
++# SPDX-License-Identifier: GPL-2.0
++
++config WIIU
++	bool "Nintendo Wii U"
++	depends on PPC_BOOK3S_32
++	help
++	  Select WIIU if configuring for the Nintendo Wii U.
++	  More information at: <https://linux-wiiu.org/>
+diff --git a/arch/powerpc/platforms/wiiu/Makefile b/arch/powerpc/platforms/wiiu/Makefile
+new file mode 100644
+index 000000000000..f66554cd5c45
+--- /dev/null
++++ b/arch/powerpc/platforms/wiiu/Makefile
+@@ -0,0 +1 @@
++# SPDX-License-Identifier: GPL-2.0
 -- 
 2.38.1
 
