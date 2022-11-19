@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2D45C43217
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 02:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9418CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 02:15:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDcd36frKz2yRS
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 13:13:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NDcgZ5xHwz3f3P
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 13:15:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OXRAjHX0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LhxdTLee;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OXRAjHX0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LhxdTLee;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDcby2W8Nz3010
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 13:12:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDcfZ2y37z2x9C
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 13:14:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id E14FEB82679;
-	Sat, 19 Nov 2022 02:12:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D7A0C433C1;
-	Sat, 19 Nov 2022 02:12:08 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1EDED62837;
+	Sat, 19 Nov 2022 02:14:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 787F2C433C1;
+	Sat, 19 Nov 2022 02:14:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1668823929;
-	bh=fTsos0t8V/7ytUC0Vqd4gBJMZRDd/hQkclnB477cRzA=;
+	s=k20201202; t=1668824067;
+	bh=OvQ1e3jmtfV4wEihgDgauKDzIR3WutwV7g39nsP/k1o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OXRAjHX0nPIDLP6+d6/0ExwsmiXmT7w4qKxzhb8ZCZ1T2RVYLrf9aBgLxc5veGn0d
-	 Xod/iHfKAVKvo3RNLPaDg+U7lYXOLfb3u/ZFjloMEHHQ/Q5/5xb2P5/T/X0Ep0+nzs
-	 0KJ4orvNlTKCBcnxsLTN/s1OLxFgewV8DYPPC6QostABicAIWGENnhL/EaSUlzUMUQ
-	 Vc9YuyCBKlu+xzpNj/mw0JsGD2x/9d0/LBkOgihVFd0y2Q52U6kH1XhsLOsXVV5qLL
-	 r+sj9Ajp3Avkaw2/SPP4FBJhNu9mCwpFlCgxcNuqC8BaqO8JpcRBdjq/zd5K7aCiCe
-	 ysomRUIVLdP2Q==
+	b=LhxdTLeeQ4/0f3XZb5CcjmzpIy0+LUwl2BBcvKdKn3o4CsmdLDaq0bY0q3GlYZicL
+	 xoHrUp9X5YCppbrE85yNYoLRs7QtgRGRiKhxqgv8TcgFIyyobzysuSpWwLm3zjY4qD
+	 nCmoMpZrO+Rr5ksJH5eivQprvRkchOR+i3GIg2Xuohbd3c+lsVMaQtwPbFsHKdwm6F
+	 S8JOv6C/cI8aY3Qp4e0hwigy39Cjcf2LMvaRbTFSMHv1zAP0oArlmKv9IMcEd4N+Vq
+	 MCgQtHw/1KvMkxz0UmckCHrnfsjShNcrcMJLcXI2WhYOCXISz6w9RFvdFMRWpELeJy
+	 iDqX41PsLEKFA==
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 6.0 23/44] scsi: ibmvfc: Avoid path failures during live migration
-Date: Fri, 18 Nov 2022 21:11:03 -0500
-Message-Id: <20221119021124.1773699-23-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.15 18/27] scsi: ibmvfc: Avoid path failures during live migration
+Date: Fri, 18 Nov 2022 21:13:43 -0500
+Message-Id: <20221119021352.1774592-18-sashal@kernel.org>
 X-Mailer: git-send-email 2.35.1
-In-Reply-To: <20221119021124.1773699-1-sashal@kernel.org>
-References: <20221119021124.1773699-1-sashal@kernel.org>
+In-Reply-To: <20221119021352.1774592-1-sashal@kernel.org>
+References: <20221119021352.1774592-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -90,7 +90,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 00684e11976b..1a0c0b7289d2 100644
+index b3531065a438..45ef78f388dc 100644
 --- a/drivers/scsi/ibmvscsi/ibmvfc.c
 +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
 @@ -708,8 +708,13 @@ static void ibmvfc_init_host(struct ibmvfc_host *vhost)
