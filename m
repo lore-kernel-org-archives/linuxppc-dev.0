@@ -4,102 +4,102 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EB42C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Nov 2022 23:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D6FDC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Nov 2022 23:30:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NFmtr5N9Sz3cMk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 10:29:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NFmvt4r42z3f8P
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 10:30:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHLRfuFK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Oj8AnefC;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NFmpl3qSfz30Bp
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NFmpl5vYPz30Bp
 	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2022 10:25:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHLRfuFK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Oj8AnefC;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4NFmpj0yv8z4xN3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2022 10:25:33 +1100 (AEDT)
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4NFmpl5V0Nz4x1V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2022 10:25:35 +1100 (AEDT)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4NFmpj0vtDz4xN6; Mon, 21 Nov 2022 10:25:33 +1100 (AEDT)
+	id 4NFmpl5RKXz4xN3; Mon, 21 Nov 2022 10:25:35 +1100 (AEDT)
 Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CHLRfuFK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Oj8AnefC;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4NFmph5jvkz4xN3
-	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2022 10:25:32 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AKJ2cGE001446;
-	Sun, 20 Nov 2022 23:25:20 GMT
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4NFmpl2S0Zz4x1V
+	for <linuxppc-dev@ozlabs.org>; Mon, 21 Nov 2022 10:25:35 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AKIkpg7011822;
+	Sun, 20 Nov 2022 23:25:27 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=VTLtnbk1Jd2TrFcygwlJmF6mDlAwX5YbvH5zF5VOvXk=;
- b=CHLRfuFKRXVuZXUDBL0g5+acmYoDuCAZV11uiwP7kri/7UxyiZhktuwuAff/hxB6MHmn
- QL91QwTpGZ70fwTQLDKVM1yqC7hnJuQCf3oDKy2QcyLjJL2WV12VqF3rwI2dLhMH1atm
- IB0nuBNhUK9fKIdp1cdshpwbGfW2DqePz1RGcey+GD9z0unei1OrVbu2xsGcmq1frc7O
- zQbItx5qpZaY3MbiLZZvyuL2dvmoFVhuCtgAwMx5sZkWyvp4vlWu0rrCUjP7LKEktQdN
- tXZhbAFTxTwwSGtYHVmZm9ZhNwiRjR9rjCEqvBy1cVXYmvRBmNHSsyiQN+xcFtJeeJVJ CA== 
+ bh=aAkS39ydzLZNTS5+a5oiZS8jFlZTwHNtovZcvecmMb8=;
+ b=Oj8AnefCs6t50MsbKxsYJZsic8cVVKKVEkpf/VV+DERsOsXouBa22oLu8+EZZfz80THn
+ kXidPnUuaVZLQZdIXGHgV9CNvjo28K9sumk5oKv0zTMbWZ1c7PHGoaakUXjVrv1JZvk0
+ bndCWhXnGs47YyuMitFxHEzl4JFDnBh/9JMAyDdDSoR8463Kqp7b2EjpZn1JVvLTIH5U
+ Hka5r6fV2gDQRxtyu4GHwlsbAo+v1H0IuHPP+YeCB61QAstiW3rGiMJCYjlJpn7enAgm
+ KjBmBtQxDFiCdZeEBJuSQeskzoTs6CKPCFbsRwxaqk/xdAhSEKbzqbgY/R+MhUbw/XGT Mw== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ky8khj6gm-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ky8qt23ee-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 20 Nov 2022 23:25:20 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AKN1fKY016392;
-	Sun, 20 Nov 2022 23:25:19 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3ky8khj6fu-1
+	Sun, 20 Nov 2022 23:25:26 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AKNPQxj010429;
+	Sun, 20 Nov 2022 23:25:26 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3ky8qt23e6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 20 Nov 2022 23:25:19 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AKNLDVC007763;
-	Sun, 20 Nov 2022 23:25:17 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma02fra.de.ibm.com with ESMTP id 3kxps8sbdw-1
+	Sun, 20 Nov 2022 23:25:26 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AKNL21V022145;
+	Sun, 20 Nov 2022 23:25:24 GMT
+Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
+	by ppma06ams.nl.ibm.com with ESMTP id 3kxpdhste3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 20 Nov 2022 23:25:17 +0000
+	Sun, 20 Nov 2022 23:25:24 +0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AKNPE9Q66781584
+	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AKNQ2qX32178528
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 20 Nov 2022 23:25:14 GMT
+	Sun, 20 Nov 2022 23:26:02 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 92391AE051;
-	Sun, 20 Nov 2022 23:25:14 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 2D6F5AE051;
+	Sun, 20 Nov 2022 23:25:22 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 908BDAE04D;
-	Sun, 20 Nov 2022 23:25:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C683BAE04D;
+	Sun, 20 Nov 2022 23:25:19 +0000 (GMT)
 Received: from sjain014.ibmuc.com (unknown [9.43.9.248])
 	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Sun, 20 Nov 2022 23:25:12 +0000 (GMT)
+	Sun, 20 Nov 2022 23:25:19 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v5 1/6] powerpc/kexec: turn some static helper functions public
-Date: Mon, 21 Nov 2022 04:55:03 +0530
-Message-Id: <20221120232508.327554-2-sourabhjain@linux.ibm.com>
+Subject: [PATCH v5 4/6] powerpc/crash: add crash CPU hotplug support
+Date: Mon, 21 Nov 2022 04:55:06 +0530
+Message-Id: <20221120232508.327554-5-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221120232508.327554-1-sourabhjain@linux.ibm.com>
 References: <20221120232508.327554-1-sourabhjain@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: JzOiYhOZcwLbqw6zpMrG4A2hbRe9F4f_
-X-Proofpoint-ORIG-GUID: LrkMqnEgpClWvVL9AFTMiMmHnol_oHn_
+X-Proofpoint-ORIG-GUID: 9hCnRUVEbZgw-PN0vbwXWaw3uI5KICzp
+X-Proofpoint-GUID: w3bjhh9K6pW84FGOGNQAFj1CcPXiDs4X
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-20_13,2022-11-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=999 malwarescore=0 lowpriorityscore=0 spamscore=0
- clxscore=1015 adultscore=0 impostorscore=0 mlxscore=0 bulkscore=0
- suspectscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2210170000 definitions=main-2211200194
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ mlxlogscore=999 bulkscore=0 spamscore=0 adultscore=0 suspectscore=0
+ lowpriorityscore=0 mlxscore=0 malwarescore=0 priorityscore=1501
+ clxscore=1015 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211200194
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,411 +115,213 @@ Cc: mahesh@linux.vnet.ibm.com, eric.devolder@oracle.com, kexec@lists.infradead.o
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Move update_cpus_node and get_crash_memory_ranges functions from
-kexec/file_load.c to kexec/core_64.c to make these functions usable
-by other kexec compoenets.
+Introduce powerpc crash hotplug handler to update the necessary kexec
+segments on CPU/Memory hotplug events. A common crash hotplug handler is
+triggered from generic infrastructure for both CPU/Memory hot un/plugged
+events but in this patch, only CPU un/plugged events are introduced. The
+memory hotplug support is added in upcoming patches.
 
-Later in the series, both functions are used for in-kernel updates to
-kexec segments in the event of CPU/Memory hotplug for both kexec_load
-and kexec_file_load system call.
+The elfcorehdr segment is used to exchange the CPU and other dump related
+information between the kernels. Ideally, the elfcorehdr segment needs to
+be recreated on CPU hotplug events to reflect the changes. But on PowerPC
+elfcorehdr is built with all possible CPUs instead of just online CPUs
+hence no elfcorehdr segment update/recreation is needed.
 
-No functional change intended.
+In addition to elfcorehdr there is one more kexec segment that holds CPU
+data FDT (Flattened Device Tree). To boot the PowerPC kernel the crashing
+CPU has to be part of the FDT segment. If the kdump kernel doesn't find
+the crashing CPU in the FDT segment, it fails to boot.
+
+The only action needed on PowerPC to handle the crash CPU hotplug event
+is to add hot added CPUs in the FDT segment to avoid kdump kernel boot
+failure in case the system crashes on hot added CPU.
+
+So for the CPU hot add events, the FDT segment is updated with hot added
+CPU and Since there is no need to remove the hot unplugged CPUs from the
+FDT segment hence no action taken on CPU hot remove event in PowerPC arch
+crash hotplug handler.
+
+To accommodate a growing number of CPUs, FDT is built with additional
+buffer space to ensure that it can hold all possible CPUs.
+
+The changes done here will also work for kexec_load system call given
+that the kexec tool builds the FDT segment with additional space to
+accommodate all possible CPUs as it is done for kexec_file_load system
+call in the kernel.
+
+Since memory crash hotplug support is not there yet the crash hotplug
+handler simply warns the user and returns.
 
 Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 ---
- arch/powerpc/include/asm/kexec.h  |   6 ++
- arch/powerpc/kexec/core_64.c      | 166 ++++++++++++++++++++++++++++++
- arch/powerpc/kexec/file_load_64.c | 162 -----------------------------
- 3 files changed, 172 insertions(+), 162 deletions(-)
+ arch/powerpc/include/asm/kexec.h |  4 ++
+ arch/powerpc/kexec/core_64.c     | 43 ++++++++++++++++++++
+ arch/powerpc/kexec/elf_64.c      | 70 ++++++++++++++++++++++++++++++--
+ 3 files changed, 114 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-index a1ddba01e7d13..8090ad7d97d9d 100644
+index fee742ddaf9a6..a4c0a035cb407 100644
 --- a/arch/powerpc/include/asm/kexec.h
 +++ b/arch/powerpc/include/asm/kexec.h
-@@ -99,6 +99,12 @@ void relocate_new_kernel(unsigned long indirection_page, unsigned long reboot_co
+@@ -108,6 +108,10 @@ int get_crash_memory_ranges(struct crash_mem **mem_ranges);
  
- void kexec_copy_flush(struct kimage *image);
- 
-+#ifdef CONFIG_PPC64
-+struct crash_mem;
-+int update_cpus_node(void *fdt);
-+int get_crash_memory_ranges(struct crash_mem **mem_ranges);
-+#endif
+ int machine_kexec_post_load(struct kimage *image);
+ #define machine_kexec_post_load machine_kexec_post_load
 +
- #if defined(CONFIG_CRASH_DUMP) && defined(CONFIG_PPC_RTAS)
- void crash_free_reserved_phys_range(unsigned long begin, unsigned long end);
- #define crash_free_reserved_phys_range crash_free_reserved_phys_range
++void arch_crash_handle_hotplug_event(struct kimage *image, unsigned int hp_action);
++#define arch_crash_handle_hotplug_event arch_crash_handle_hotplug_event
++
+ #endif
+ #endif
+ 
 diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-index a79e28c91e2be..0b292f93a74cc 100644
+index 0b8e2f8084afb..3dea1ce6b469c 100644
 --- a/arch/powerpc/kexec/core_64.c
 +++ b/arch/powerpc/kexec/core_64.c
-@@ -17,6 +17,8 @@
- #include <linux/cpu.h>
- #include <linux/hardirq.h>
- #include <linux/of.h>
-+#include <linux/libfdt.h>
-+#include <linux/memblock.h>
- 
- #include <asm/page.h>
- #include <asm/current.h>
-@@ -30,6 +32,8 @@
- #include <asm/hw_breakpoint.h>
- #include <asm/svm.h>
- #include <asm/ultravisor.h>
-+#include <asm/kexec_ranges.h>
-+#include <asm/crashdump-ppc64.h>
- 
- int machine_kexec_prepare(struct kimage *image)
- {
-@@ -377,6 +381,168 @@ void default_machine_kexec(struct kimage *image)
- 	/* NOTREACHED */
+@@ -570,6 +570,49 @@ int update_cpus_node(void *fdt)
+ 	return ret;
  }
  
++#if defined(CONFIG_HOTPLUG_CPU)
 +/**
-+ * get_crash_memory_ranges - Get crash memory ranges. This list includes
-+ *                           first/crashing kernel's memory regions that
-+ *                           would be exported via an elfcore.
-+ * @mem_ranges:              Range list to add the memory ranges to.
++ * arch_crash_hotplug_handler() - Handle hotplug kexec segements changes FDT, elfcorehdr
++ * @image: the active struct kimage
++ * @hp_action: the hot un/plug action being handled
 + *
-+ * Returns 0 on success, negative errno on error.
++ * To accurately reflect CPU hot un/plug changes, the FDT must be updated with the
++ * new list of CPUs.
 + */
-+int get_crash_memory_ranges(struct crash_mem **mem_ranges)
++void arch_crash_handle_hotplug_event(struct kimage *image, unsigned int hp_action)
 +{
-+	phys_addr_t base, end;
-+	struct crash_mem *tmem;
-+	u64 i;
-+	int ret;
++	void *fdt;
 +
-+	for_each_mem_range(i, &base, &end) {
-+		u64 size = end - base;
++	/* No action needed for CPU hot-unplug */
++	if (hp_action == KEXEC_CRASH_HP_REMOVE_CPU)
++		return;
 +
-+		/* Skip backup memory region, which needs a separate entry */
-+		if (base == BACKUP_SRC_START) {
-+			if (size > BACKUP_SRC_SIZE) {
-+				base = BACKUP_SRC_END + 1;
-+				size -= BACKUP_SRC_SIZE;
-+			} else
-+				continue;
-+		}
-+
-+		ret = add_mem_range(mem_ranges, base, size);
-+		if (ret)
-+			goto out;
-+
-+		/* Try merging adjacent ranges before reallocation attempt */
-+		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
-+			sort_memory_ranges(*mem_ranges, true);
++	/* crash update on memory hotplug is not support yet */
++	if (hp_action == KEXEC_CRASH_HP_REMOVE_MEMORY || hp_action == KEXEC_CRASH_HP_ADD_MEMORY) {
++		pr_info_once("crash hp: crash update is not supported with memory hotplug\n");
++		return;
 +	}
 +
-+	/* Reallocate memory ranges if there is no space to split ranges */
-+	tmem = *mem_ranges;
-+	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
-+		tmem = realloc_mem_ranges(mem_ranges);
-+		if (!tmem)
-+			goto out;
++	/* Must have valid FDT index */
++	if (image->arch.fdt_index < 0) {
++		pr_err("crash hp: unable to locate FDT segment");
++		return;
 +	}
 +
-+	/* Exclude crashkernel region */
-+	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
-+	if (ret)
-+		goto out;
++	fdt = __va((void *)image->segment[image->arch.fdt_index].mem);
 +
-+	/*
-+	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
-+	 *        regions are exported to save their context at the time of
-+	 *        crash, they should actually be backed up just like the
-+	 *        first 64K bytes of memory.
-+	 */
-+	ret = add_rtas_mem_range(mem_ranges);
-+	if (ret)
-+		goto out;
++	/* Temporarily invalidate the crash image while it is replaced */
++	xchg(&kexec_crash_image, NULL);
 +
-+	ret = add_opal_mem_range(mem_ranges);
-+	if (ret)
-+		goto out;
++	/* update FDT to refelect changes to CPU resrouces */
++	if (update_cpus_node(fdt))
++		pr_err("crash hp: failed to update crash FDT");
 +
-+	/* create a separate program header for the backup region */
-+	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
-+	if (ret)
-+		goto out;
-+
-+	sort_memory_ranges(*mem_ranges, false);
-+out:
-+	if (ret)
-+		pr_err("Failed to setup crash memory ranges\n");
-+	return ret;
++	/* The crash image is now valid once again */
++	xchg(&kexec_crash_image, image);
 +}
-+
-+/**
-+ * add_node_props - Reads node properties from device node structure and add
-+ *                  them to fdt.
-+ * @fdt:            Flattened device tree of the kernel
-+ * @node_offset:    offset of the node to add a property at
-+ * @dn:             device node pointer
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
-+{
-+	int ret = 0;
-+	struct property *pp;
-+
-+	if (!dn)
-+		return -EINVAL;
-+
-+	for_each_property_of_node(dn, pp) {
-+		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
-+		if (ret < 0) {
-+			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
-+			return ret;
-+		}
-+	}
-+	return ret;
-+}
-+
-+/**
-+ * update_cpus_node - Update cpus node of flattened device tree using of_root
-+ *                    device node.
-+ * @fdt:              Flattened device tree of the kernel.
-+ *
-+ * Returns 0 on success, negative errno on error.
-+ */
-+int update_cpus_node(void *fdt)
-+{
-+	struct device_node *cpus_node, *dn;
-+	int cpus_offset, cpus_subnode_offset, ret = 0;
-+
-+	cpus_offset = fdt_path_offset(fdt, "/cpus");
-+	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
-+		pr_err("Malformed device tree: error reading /cpus node: %s\n",
-+		       fdt_strerror(cpus_offset));
-+		return cpus_offset;
-+	}
-+
-+	if (cpus_offset > 0) {
-+		ret = fdt_del_node(fdt, cpus_offset);
-+		if (ret < 0) {
-+			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
-+			return -EINVAL;
-+		}
-+	}
-+
-+	/* Add cpus node to fdt */
-+	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
-+	if (cpus_offset < 0) {
-+		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
-+		return -EINVAL;
-+	}
-+
-+	/* Add cpus node properties */
-+	cpus_node = of_find_node_by_path("/cpus");
-+	ret = add_node_props(fdt, cpus_offset, cpus_node);
-+	of_node_put(cpus_node);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Loop through all subnodes of cpus and add them to fdt */
-+	for_each_node_by_type(dn, "cpu") {
-+		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
-+		if (cpus_subnode_offset < 0) {
-+			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
-+			       fdt_strerror(cpus_subnode_offset));
-+			ret = cpus_subnode_offset;
-+			goto out;
-+		}
-+
-+		ret = add_node_props(fdt, cpus_subnode_offset, dn);
-+		if (ret < 0)
-+			goto out;
-+	}
-+out:
-+	of_node_put(dn);
-+	return ret;
-+}
++#endif
 +
  #ifdef CONFIG_PPC_64S_HASH_MMU
  /* Values we need to export to the second kernel via the device tree. */
  static unsigned long htab_base;
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index a0af9966a8f07..ca65aa3a69240 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -130,81 +130,6 @@ static int get_usable_memory_ranges(struct crash_mem **mem_ranges)
- 	return ret;
- }
+diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
+index 6272d49b49eb4..9af4072dbf220 100644
+--- a/arch/powerpc/kexec/elf_64.c
++++ b/arch/powerpc/kexec/elf_64.c
+@@ -24,6 +24,64 @@
+ #include <linux/slab.h>
+ #include <linux/types.h>
  
--/**
-- * get_crash_memory_ranges - Get crash memory ranges. This list includes
-- *                           first/crashing kernel's memory regions that
-- *                           would be exported via an elfcore.
-- * @mem_ranges:              Range list to add the memory ranges to.
-- *
-- * Returns 0 on success, negative errno on error.
-- */
--static int get_crash_memory_ranges(struct crash_mem **mem_ranges)
--{
--	phys_addr_t base, end;
--	struct crash_mem *tmem;
--	u64 i;
--	int ret;
--
--	for_each_mem_range(i, &base, &end) {
--		u64 size = end - base;
--
--		/* Skip backup memory region, which needs a separate entry */
--		if (base == BACKUP_SRC_START) {
--			if (size > BACKUP_SRC_SIZE) {
--				base = BACKUP_SRC_END + 1;
--				size -= BACKUP_SRC_SIZE;
--			} else
--				continue;
--		}
--
--		ret = add_mem_range(mem_ranges, base, size);
--		if (ret)
--			goto out;
--
--		/* Try merging adjacent ranges before reallocation attempt */
--		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
--			sort_memory_ranges(*mem_ranges, true);
--	}
--
--	/* Reallocate memory ranges if there is no space to split ranges */
--	tmem = *mem_ranges;
--	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
--		tmem = realloc_mem_ranges(mem_ranges);
--		if (!tmem)
--			goto out;
--	}
--
--	/* Exclude crashkernel region */
--	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
--	if (ret)
--		goto out;
--
--	/*
--	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
--	 *        regions are exported to save their context at the time of
--	 *        crash, they should actually be backed up just like the
--	 *        first 64K bytes of memory.
--	 */
--	ret = add_rtas_mem_range(mem_ranges);
--	if (ret)
--		goto out;
--
--	ret = add_opal_mem_range(mem_ranges);
--	if (ret)
--		goto out;
--
--	/* create a separate program header for the backup region */
--	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
--	if (ret)
--		goto out;
--
--	sort_memory_ranges(*mem_ranges, false);
--out:
--	if (ret)
--		pr_err("Failed to setup crash memory ranges\n");
--	return ret;
--}
--
- /**
-  * get_reserved_memory_ranges - Get reserve memory ranges. This list includes
-  *                              memory regions that should be added to the
-@@ -952,93 +877,6 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
- 	return (unsigned int)(usm_entries * sizeof(u64));
- }
++#include <asm/kvm_book3s_asm.h>
++
++#if defined(CONFIG_HOTPLUG_CPU)
++/**
++ * get_cpu_node_sz() - Calculate the space needed to store a CPU device
++ * type node in FDT. The calculation is done based on the existing CPU node
++ * in unflatten device tree. Loop through all the properties of the very
++ * first CPU type device node found in unflatten device tree and returns
++ * the sum of the property length and property string size of all properties
++ * of a CPU node.
++ */
++static int get_cpu_node_sz(void)
++{
++	struct device_node *dn;
++	struct property *pp;
++	int cpu_node_size = 0;
++
++	dn = of_find_node_by_type(NULL, "cpu");
++
++	if (!dn) {
++		pr_warn("Unable to locate cpu device_type node.\n");
++		return 0;
++	}
++
++	/* Every node in FDT starts with FDT_BEGIN_NODE and ends with
++	 * FDT_END_NODE that takes one byte each.
++	 */
++	cpu_node_size = 2;
++
++	for_each_property_of_node(dn, pp) {
++		/**
++		 * For each property add two bytes extra. One for string null
++		 * character for property name and other for FDT property start
++		 * tag FDT_PROP.
++		 */
++		cpu_node_size += pp->length + strlen(pp->name) + 2;
++	}
++	return cpu_node_size;
++}
++
++/*
++ * get_crash_fdt_mem_sz() - calcuate mem size for crash kernel FDT
++ * @fdt: pointer to crash kernel FDT
++ *
++ * Calculate the buffer space needed to accommodate more CPU nodes in
++ * crash FDT post capture kernel load due to CPU hotplug events.
++ */
++static unsigned int get_crash_fdt_mem_sz(void *fdt)
++{
++	int fdt_cpu_nodes_sz, offline_cpu_cnt;
++
++	offline_cpu_cnt = (num_possible_cpus() - num_present_cpus()) / MAX_SMT_THREADS;
++	fdt_cpu_nodes_sz = get_cpu_node_sz() * offline_cpu_cnt;
++
++	return fdt_totalsize(fdt) + fdt_cpu_nodes_sz;
++}
++#endif
++
+ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 			unsigned long kernel_len, char *initrd,
+ 			unsigned long initrd_len, char *cmdline,
+@@ -119,15 +177,21 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
+ 	fdt_pack(fdt);
  
--/**
-- * add_node_props - Reads node properties from device node structure and add
-- *                  them to fdt.
-- * @fdt:            Flattened device tree of the kernel
-- * @node_offset:    offset of the node to add a property at
-- * @dn:             device node pointer
-- *
-- * Returns 0 on success, negative errno on error.
-- */
--static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
--{
--	int ret = 0;
--	struct property *pp;
--
--	if (!dn)
--		return -EINVAL;
--
--	for_each_property_of_node(dn, pp) {
--		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
--		if (ret < 0) {
--			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
--			return ret;
--		}
--	}
--	return ret;
--}
--
--/**
-- * update_cpus_node - Update cpus node of flattened device tree using of_root
-- *                    device node.
-- * @fdt:              Flattened device tree of the kernel.
-- *
-- * Returns 0 on success, negative errno on error.
-- */
--static int update_cpus_node(void *fdt)
--{
--	struct device_node *cpus_node, *dn;
--	int cpus_offset, cpus_subnode_offset, ret = 0;
--
--	cpus_offset = fdt_path_offset(fdt, "/cpus");
--	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
--		pr_err("Malformed device tree: error reading /cpus node: %s\n",
--		       fdt_strerror(cpus_offset));
--		return cpus_offset;
--	}
--
--	if (cpus_offset > 0) {
--		ret = fdt_del_node(fdt, cpus_offset);
--		if (ret < 0) {
--			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
--			return -EINVAL;
--		}
--	}
--
--	/* Add cpus node to fdt */
--	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
--	if (cpus_offset < 0) {
--		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
--		return -EINVAL;
--	}
--
--	/* Add cpus node properties */
--	cpus_node = of_find_node_by_path("/cpus");
--	ret = add_node_props(fdt, cpus_offset, cpus_node);
--	of_node_put(cpus_node);
--	if (ret < 0)
--		return ret;
--
--	/* Loop through all subnodes of cpus and add them to fdt */
--	for_each_node_by_type(dn, "cpu") {
--		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
--		if (cpus_subnode_offset < 0) {
--			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
--			       fdt_strerror(cpus_subnode_offset));
--			ret = cpus_subnode_offset;
--			goto out;
--		}
--
--		ret = add_node_props(fdt, cpus_subnode_offset, dn);
--		if (ret < 0)
--			goto out;
--	}
--out:
--	of_node_put(dn);
--	return ret;
--}
--
- static int copy_property(void *fdt, int node_offset, const struct device_node *dn,
- 			 const char *propname)
- {
+ 	kbuf.buffer = fdt;
+-	kbuf.bufsz = kbuf.memsz = fdt_totalsize(fdt);
++	kbuf.bufsz = fdt_totalsize(fdt);
+ 	kbuf.buf_align = PAGE_SIZE;
+ 	kbuf.top_down = true;
+ 	kbuf.mem = KEXEC_BUF_MEM_UNKNOWN;
+ 
+ #if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_MEMORY_HOTPLUG)
+-	image->arch.fdt_index = image->nr_segments;
++	if (image->type == KEXEC_TYPE_CRASH) {
++		kbuf.memsz = get_crash_fdt_mem_sz(fdt);
++		fdt_set_totalsize(fdt, kbuf.memsz);
++		image->arch.fdt_index = image->nr_segments;
++	} else
+ #endif
+-	kbuf.memsz = fdt_totalsize(fdt);
++	{
++		kbuf.memsz = fdt_totalsize(fdt);
++	}
+ 
+ 	ret = kexec_add_buffer(&kbuf);
+ 	if (ret)
 -- 
 2.38.1
 
