@@ -4,54 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 718ACC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 07:32:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFF70C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 11:56:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NDljk6gkqz3f40
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Nov 2022 18:32:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NG5Sb1VD7z3cFZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 22:55:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=seXipkg9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nasKYIyg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=patchwork-bot+chrome-platform@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::132; helo=mail-lf1-x132.google.com; envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=seXipkg9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=nasKYIyg;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-lf1-x132.google.com (mail-lf1-x132.google.com [IPv6:2a00:1450:4864:20::132])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NDkmv1s8vz3bgR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Nov 2022 17:50:23 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id B256EB82713;
-	Sat, 19 Nov 2022 06:50:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5944BC433D6;
-	Sat, 19 Nov 2022 06:50:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1668840616;
-	bh=ak6M5fgrTHQ1MM2vf+n5AubLq+AMYqmK/RRzz3/3gig=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=seXipkg9CAyFA9/DRpiD01V8ITXAB4g0Feuk+M72plAUXo40561rs1dMVurztjC0R
-	 UGqXlOdf3JC5VrI2IWVezRWqsbHRKhLTyD3mEBicEAh2WBWvOY+SAmQ5aoJgjdz1Vk
-	 5aq4YUvgNncdPRSw5IsP6xY0s8PudX8SdTsR/EyWyOmZxNi+pkZtOu70losD9BrvnB
-	 Du21LerJzoVvVs4d9eSLNMvDcUU7T0jOw29zyRduMgSnRBWCRcfu03u6uXJN2UHbLy
-	 DMpzJwBt86Z35Odc5hTd6y/3r7eqH4zheZmOWuKtOuYVHcjUBHn5l00sWabdAIfdsG
-	 FRNiHf2EtKUDg==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 37F78E29F44;
-	Sat, 19 Nov 2022 06:50:16 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NG5RW2cMSz2y35
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2022 22:55:01 +1100 (AEDT)
+Received: by mail-lf1-x132.google.com with SMTP id bp15so18427441lfb.13
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Nov 2022 03:55:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=af1VZGobUWOKXyys0cwh+/X4l043mxb0kQ0938lhC9g=;
+        b=nasKYIygcKtv5eHl4E69KiaF3gOw4nYBb052HsvK0RIXiwvbd+1HFswdT3ofU91EQA
+         JHllsEcvzVXtuhpNOlRYSizq7U+3P115gRCDtfSVeEQaDDMyaHpt8Cw+Uve3VSEEvf+W
+         l7YoYmYRksPGiL9z6QshCQHpDADAilKM2KZlfl/FHLNRSZBCIxtVaNzaveXx3w5n4hWd
+         sgU1rfiMpnksDuG/PPUQLKeLD8rBxnXN4rY0YtbJK8azVrNFnRg/TGC/8JWvnWboGdRA
+         gZGpXfcnAGF+SvZ4dA++OWMIYhAg/EbRqBw8E+ESa/uYkj9VGjy7Tx9QSM9Zvoz3mQ/I
+         rMmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=af1VZGobUWOKXyys0cwh+/X4l043mxb0kQ0938lhC9g=;
+        b=a0MN9kUU5VH4+fV8YNyDwW92cNIT9FuWGbPLkos+uha1ZNkFMyL2e1IUl0Gbyuha3j
+         /p/M+K5058R9Ox4KmDFQzDg4QAuXkwOd4VxGYu2hYobUMLGOc7IjI+AluE4jU3w9NPBJ
+         TNWxeNGKGFwrmatIv9ykLpzhjRridgE5MkPRK0Ru+hrflxc52MZViN93HDZMSG1ApxUy
+         jon0yC0t1/hS6asCTibPdDDRQWspYF5S9q5k65Xn0WUcNwSxwYSyYUcOd9uCB4QX1awN
+         KjRz0ZaaH/0o6tPZoAY/YSjSmWExKQ0whL0/kr859vRKQnvWLIXOd2JukLxocwmm173b
+         5ATw==
+X-Gm-Message-State: ANoB5pk/GO75E6KADauaMSzQGkBDP7aRHDm79RAsIfIBxh0caqIDVxDG
+	YqttxBhSPUYP4RwgD1ijp7FjdOq6jc4xNr/55DUen5lzdIqo
+X-Google-Smtp-Source: AA0mqf4e2Pk/hLwgqWs1NClFL7JxlrwUkjXAZhKBFxQU/iQc4bx1R+B8k/twHnT4tmTRit45QN0nF8M0f2ngMyygN8w=
+X-Received: by 2002:ac2:41d9:0:b0:4b1:4d9f:2204 with SMTP id
+ d25-20020ac241d9000000b004b14d9f2204mr5525490lfi.22.1669031697577; Mon, 21
+ Nov 2022 03:54:57 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
-From: patchwork-bot+chrome-platform@kernel.org
-Message-Id:  <166884061622.19423.870710096225259467.git-patchwork-notify@kernel.org>
-Date: Sat, 19 Nov 2022 06:50:16 +0000
-References: <20221118224540.619276-1-uwe@kleine-koenig.org>
-In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
-To: =?utf-8?q?Uwe_Kleine-K=C3=B6nig_=3Cuwe=40kleine-koenig=2Eorg=3E?=@ci.codeaurora.org
-X-Mailman-Approved-At: Sat, 19 Nov 2022 18:30:59 +1100
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Mon, 21 Nov 2022 19:54:46 +0800
+Message-ID: <CAFgQCTuz3n5uNKwOOXaL9xT-ftJT0nfo4OfdNepvMGbi0Zqh7Q@mail.gmail.com>
+Subject: 
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/mixed; boundary="0000000000007464f605edf9b93a"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,38 +70,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linux-staging@lists.linux.dev, linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, lee.jones@linaro.org, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, grant.likely@linaro.org, linux-media@vger.kernel.org, devicetree@vger.kernel.org, linux-watchdog@vger.kernel.org, chrome-platform@lists.linux.dev, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, ang.iglesiasg@gmail.com, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel@puri.sm, patches@ope
- nsource.cirrus.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, wsa@kernel.org, linux-crypto@vger.kernel.org, kernel@pengutronix.de, netdev@vger.kernel.org, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Coiby Xu <coxu@redhat.com>, =?UTF-8?Q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+--0000000000007464f605edf9b93a
+Content-Type: text/plain; charset="UTF-8"
 
-This patch was applied to chrome-platform/linux.git (for-kernelci)
-by Tzung-Bi Shih <tzungbi@kernel.org>:
+Hello Powerpc folks,
 
-On Fri, 18 Nov 2022 23:35:34 +0100 you wrote:
-> Hello,
-> 
-> since commit b8a1a4cd5a98 ("i2c: Provide a temporary .probe_new()
-> call-back type") from 2016 there is a "temporary" alternative probe
-> callback for i2c drivers.
-> 
-> This series completes all drivers to this new callback (unless I missed
-> something). It's based on current next/master.
-> A part of the patches depend on commit 662233731d66 ("i2c: core:
-> Introduce i2c_client_get_device_id helper function"), there is a branch that
-> you can pull into your tree to get it:
-> 
-> [...]
+I encounter an kdump bug, which I bisect and pin commit 174db9e7f775
+("powerpc/pseries/pci: Add support of MSI domains to PHB hotplug")
 
-Here is the summary with links:
-  - [512/606] platform/chrome: cros_ec: Convert to i2c's .probe_new()
-    https://git.kernel.org/chrome-platform/c/f9e510dc92df
+In that case, using Fedora 36 as host, the mentioned commit as the
+guest kernel, and virto-block disk, the kdump kernel will hang:
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+[    0.000000] Kernel command line: elfcorehdr=0x22c00000
+no_timer_check net.ifnames=0 console=tty0 console=hvc0,115200n8
+irqpoll maxcpus=1 noirqdistrib reset_devices cgroup_disable=memory
+     numa=off udev.children-max=2 ehea.use_mcs=0 panic=10
+kvm_cma_resv_ratio=0 transparent_hugepage=never novmcoredd
+hugetlb_cma=0
+    ...
+    [    7.763260] virtio_blk virtio2: 32/0/0 default/read/poll queues
+    [    7.771391] virtio_blk virtio2: [vda] 20971520 512-byte logical
+blocks (10.7 GB/10.0 GiB)
+    [   68.398234] systemd-udevd[187]: virtio2: Worker [190]
+processing SEQNUM=1193 is taking a long time
+    [  188.398258] systemd-udevd[187]: virtio2: Worker [190]
+processing SEQNUM=1193 killed
 
 
+During my test, I found that in very rare cases, the kdump can success
+(I guess it may be due to the cpu id).  And if using either maxcpus=2
+or using scsi-disk, then kdump can also success.  And before the
+mentioned commit, kdump can also success.
+
+The attachment contains the xml to reproduce that bug.
+
+Do you have any ideas?
+
+Thanks
+
+--0000000000007464f605edf9b93a
+Content-Type: text/xml; charset="US-ASCII"; name="virtblk-hang.xml"
+Content-Disposition: attachment; filename="virtblk-hang.xml"
+Content-Transfer-Encoding: base64
+Content-ID: <f_laqq9w330>
+X-Attachment-Id: f_laqq9w330
+
+PGRvbWFpbiB0eXBlPSJrdm0iPgogIDxuYW1lPnJoZWw5PC9uYW1lPgogIDx1dWlkPjYyNjZjMWMx
+LTFlNzQtNDA0Ni1iOTU5LTMzZDk0ODc3YjM4NzwvdXVpZD4KICA8bWV0YWRhdGE+CiAgICA8bGli
+b3NpbmZvOmxpYm9zaW5mbyB4bWxuczpsaWJvc2luZm89Imh0dHA6Ly9saWJvc2luZm8ub3JnL3ht
+bG5zL2xpYnZpcnQvZG9tYWluLzEuMCI+CiAgICAgIDxsaWJvc2luZm86b3MgaWQ9Imh0dHA6Ly9y
+ZWRoYXQuY29tL3JoZWwvOC11bmtub3duIi8+CiAgICA8L2xpYm9zaW5mbzpsaWJvc2luZm8+CiAg
+PC9tZXRhZGF0YT4KICA8bWVtb3J5IHVuaXQ9IktpQiI+MTY3NzcyMTY8L21lbW9yeT4KICA8Y3Vy
+cmVudE1lbW9yeSB1bml0PSJLaUIiPjE2Nzc3MjE2PC9jdXJyZW50TWVtb3J5PgogIDx2Y3B1IHBs
+YWNlbWVudD0ic3RhdGljIj4xNjwvdmNwdT4KICA8b3M+CiAgICA8dHlwZSBhcmNoPSJwcGM2NGxl
+IiBtYWNoaW5lPSJwc2VyaWVzLXJoZWw4LjYuMCI+aHZtPC90eXBlPgogICAgPGJvb3QgZGV2PSJo
+ZCIvPgogIDwvb3M+CiAgPGNwdSBtb2RlPSJjdXN0b20iIG1hdGNoPSJleGFjdCIgY2hlY2s9Im5v
+bmUiPgogICAgPG1vZGVsIGZhbGxiYWNrPSJmb3JiaWQiPlBPV0VSOTwvbW9kZWw+CiAgPC9jcHU+
+CiAgPGNsb2NrIG9mZnNldD0idXRjIi8+CiAgPG9uX3Bvd2Vyb2ZmPmRlc3Ryb3k8L29uX3Bvd2Vy
+b2ZmPgogIDxvbl9yZWJvb3Q+cmVzdGFydDwvb25fcmVib290PgogIDxvbl9jcmFzaD5kZXN0cm95
+PC9vbl9jcmFzaD4KICA8ZGV2aWNlcz4KICAgIDxlbXVsYXRvcj4vdXNyL2xpYmV4ZWMvcWVtdS1r
+dm08L2VtdWxhdG9yPgogICAgPGRpc2sgdHlwZT0iZmlsZSIgZGV2aWNlPSJkaXNrIj4KICAgICAg
+PGRyaXZlciBuYW1lPSJxZW11IiB0eXBlPSJxY293MiIvPgogICAgICA8c291cmNlIGZpbGU9Ii92
+YXIvbGliL2xpYnZpcnQvaW1hZ2VzL3JoZWwtZ3Vlc3QtaW1hZ2UtOS4xLTIwMjIwNzAxLjAucHBj
+NjRsZS5xY293MiIvPgogICAgICA8dGFyZ2V0IGRldj0idmRhIiBidXM9InZpcnRpbyIvPgogICAg
+ICA8YWRkcmVzcyB0eXBlPSJwY2kiIGRvbWFpbj0iMHgwMDAwIiBidXM9IjB4MDAiIHNsb3Q9IjB4
+MDQiIGZ1bmN0aW9uPSIweDAiLz4KICAgIDwvZGlzaz4KICAgIDxjb250cm9sbGVyIHR5cGU9InVz
+YiIgaW5kZXg9IjAiIG1vZGVsPSJxZW11LXhoY2kiIHBvcnRzPSIxNSI+CiAgICAgIDxhZGRyZXNz
+IHR5cGU9InBjaSIgZG9tYWluPSIweDAwMDAiIGJ1cz0iMHgwMCIgc2xvdD0iMHgwMiIgZnVuY3Rp
+b249IjB4MCIvPgogICAgPC9jb250cm9sbGVyPgogICAgPGNvbnRyb2xsZXIgdHlwZT0icGNpIiBp
+bmRleD0iMCIgbW9kZWw9InBjaS1yb290Ij4KICAgICAgPG1vZGVsIG5hbWU9InNwYXByLXBjaS1o
+b3N0LWJyaWRnZSIvPgogICAgICA8dGFyZ2V0IGluZGV4PSIwIi8+CiAgICA8L2NvbnRyb2xsZXI+
+CiAgICA8Y29udHJvbGxlciB0eXBlPSJ2aXJ0aW8tc2VyaWFsIiBpbmRleD0iMCI+CiAgICAgIDxh
+ZGRyZXNzIHR5cGU9InBjaSIgZG9tYWluPSIweDAwMDAiIGJ1cz0iMHgwMCIgc2xvdD0iMHgwMyIg
+ZnVuY3Rpb249IjB4MCIvPgogICAgPC9jb250cm9sbGVyPgogICAgPGludGVyZmFjZSB0eXBlPSJu
+ZXR3b3JrIj4KCSAgICA8bWFjIGFkZHJlc3M9IjUyOjU0OjAwOjc0OmM5OjUwIi8+CgkgICAgPHNv
+dXJjZSBuZXR3b3JrPSJkZWZhdWx0Ii8+CgkgICAgPG1vZGVsIHR5cGU9InZpcnRpbyIvPgoJICAg
+IDxhZGRyZXNzIHR5cGU9InBjaSIgZG9tYWluPSIweDAwMDAiIGJ1cz0iMHgwMCIgc2xvdD0iMHgw
+MSIgZnVuY3Rpb249IjB4MCIvPgogICAgPC9pbnRlcmZhY2U+CiAgICA8c2VyaWFsIHR5cGU9InB0
+eSI+CiAgICAgIDx0YXJnZXQgdHlwZT0ic3BhcHItdmlvLXNlcmlhbCIgcG9ydD0iMCI+CiAgICAg
+ICAgPG1vZGVsIG5hbWU9InNwYXByLXZ0eSIvPgogICAgICA8L3RhcmdldD4KICAgICAgPGFkZHJl
+c3MgdHlwZT0ic3BhcHItdmlvIiByZWc9IjB4MzAwMDAwMDAiLz4KICAgIDwvc2VyaWFsPgogICAg
+PGNvbnNvbGUgdHlwZT0icHR5Ij4KCiAgICAgIDx0YXJnZXQgdHlwZT0ic2VyaWFsIiBwb3J0PSIw
+Ii8+CiAgICAgIDxhZGRyZXNzIHR5cGU9InNwYXByLXZpbyIgcmVnPSIweDMwMDAwMDAwIi8+CiAg
+ICA8L2NvbnNvbGU+CiAgICA8Y2hhbm5lbCB0eXBlPSJ1bml4Ij4KICAgICAgPHRhcmdldCB0eXBl
+PSJ2aXJ0aW8iIG5hbWU9Im9yZy5xZW11Lmd1ZXN0X2FnZW50LjAiLz4KICAgICAgPGFkZHJlc3Mg
+dHlwZT0idmlydGlvLXNlcmlhbCIgY29udHJvbGxlcj0iMCIgYnVzPSIwIiBwb3J0PSIxIi8+CiAg
+ICA8L2NoYW5uZWw+CiAgICA8aW5wdXQgdHlwZT0idGFibGV0IiBidXM9InVzYiI+CiAgICAgIDxh
+ZGRyZXNzIHR5cGU9InVzYiIgYnVzPSIwIiBwb3J0PSIxIi8+CiAgICA8L2lucHV0PgogICAgPGlu
+cHV0IHR5cGU9ImtleWJvYXJkIiBidXM9InVzYiI+CiAgICAgIDxhZGRyZXNzIHR5cGU9InVzYiIg
+YnVzPSIwIiBwb3J0PSIyIi8+CiAgICA8L2lucHV0PgogICAgPHRwbSBtb2RlbD0idHBtLXNwYXBy
+Ij4KICAgICAgPGJhY2tlbmQgdHlwZT0iZW11bGF0b3IiIHZlcnNpb249IjIuMCIvPgogICAgICA8
+YWRkcmVzcyB0eXBlPSJzcGFwci12aW8iIHJlZz0iMHgwMDAwNDAwMCIvPgogICAgPC90cG0+CiAg
+ICA8Z3JhcGhpY3MgdHlwZT0idm5jIiBwb3J0PSItMSIgYXV0b3BvcnQ9InllcyI+CiAgICAgIDxs
+aXN0ZW4gdHlwZT0iYWRkcmVzcyIvPgogICAgPC9ncmFwaGljcz4KICAgIDxhdWRpbyBpZD0iMSIg
+dHlwZT0ibm9uZSIvPgogICAgPHZpZGVvPgogICAgICA8bW9kZWwgdHlwZT0idmdhIiB2cmFtPSIx
+NjM4NCIgaGVhZHM9IjEiIHByaW1hcnk9InllcyIvPgogICAgICA8YWRkcmVzcyB0eXBlPSJwY2ki
+IGRvbWFpbj0iMHgwMDAwIiBidXM9IjB4MDAiIHNsb3Q9IjB4MDciIGZ1bmN0aW9uPSIweDAiLz4K
+ICAgIDwvdmlkZW8+CiAgICA8bWVtYmFsbG9vbiBtb2RlbD0idmlydGlvIj4KICAgICAgPGFkZHJl
+c3MgdHlwZT0icGNpIiBkb21haW49IjB4MDAwMCIgYnVzPSIweDAwIiBzbG90PSIweDA1IiBmdW5j
+dGlvbj0iMHgwIi8+CiAgICA8L21lbWJhbGxvb24+CiAgICA8cm5nIG1vZGVsPSJ2aXJ0aW8iPgog
+ICAgICA8YmFja2VuZCBtb2RlbD0icmFuZG9tIj4vZGV2L3VyYW5kb208L2JhY2tlbmQ+CiAgICAg
+IDxhZGRyZXNzIHR5cGU9InBjaSIgZG9tYWluPSIweDAwMDAiIGJ1cz0iMHgwMCIgc2xvdD0iMHgw
+NiIgZnVuY3Rpb249IjB4MCIvPgogICAgPC9ybmc+CiAgICA8cGFuaWMgbW9kZWw9InBzZXJpZXMi
+Lz4KICA8L2RldmljZXM+CjwvZG9tYWluPgo=
+--0000000000007464f605edf9b93a--
