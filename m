@@ -4,73 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CCE6C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 14:04:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B966C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Nov 2022 14:15:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NG8Jk0WDrz3cMH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 01:04:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=LmOnMjf/;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=LmOnMjf/;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=hansenpartnership.com (client-ip=2607:fcd0:100:8a00::2; helo=bedivere.hansenpartnership.com; envelope-from=james.bottomley@hansenpartnership.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=LmOnMjf/;
-	dkim=pass (1024-bit key) header.d=hansenpartnership.com header.i=@hansenpartnership.com header.a=rsa-sha256 header.s=20151216 header.b=LmOnMjf/;
-	dkim-atps=neutral
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com [IPv6:2607:fcd0:100:8a00::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NG8YC1gxZz3dxq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 01:15:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=46.105.45.231; helo=8.mo548.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 2429 seconds by postgrey-1.36 at boromir; Tue, 22 Nov 2022 01:14:37 AEDT
+Received: from 8.mo548.mail-out.ovh.net (8.mo548.mail-out.ovh.net [46.105.45.231])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NG8Hf1TVJz3c71
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2022 01:03:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1669039402;
-	bh=S0ZSP+LpMvn5EG+QMrGCuiVBzAD0TgzklGkqSoGsMpY=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=LmOnMjf/PWybJ5EX60Fa9yOKxgTbOvaRNaY04/paLbN5uH4o4lPv4ZMxd1OjFSPog
-	 Jb7NDJz0ZFryHqV2O6+rSEhBsA6OMwneoaJQKNnz1xxYLQrFIAyv+iok9dE2vugAWJ
-	 Tb5oPQaOnH+VFy7FEgUaIo3Nvkw17Gh0THyBTrw0=
-Received: from localhost (localhost [127.0.0.1])
-	by bedivere.hansenpartnership.com (Postfix) with ESMTP id 747E11286581;
-	Mon, 21 Nov 2022 09:03:22 -0500 (EST)
-Received: from bedivere.hansenpartnership.com ([127.0.0.1])
-	by localhost (bedivere.hansenpartnership.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AUktWLsrhDZo; Mon, 21 Nov 2022 09:03:22 -0500 (EST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-	d=hansenpartnership.com; s=20151216; t=1669039402;
-	bh=S0ZSP+LpMvn5EG+QMrGCuiVBzAD0TgzklGkqSoGsMpY=;
-	h=Message-ID:Subject:From:To:Date:In-Reply-To:References:From;
-	b=LmOnMjf/PWybJ5EX60Fa9yOKxgTbOvaRNaY04/paLbN5uH4o4lPv4ZMxd1OjFSPog
-	 Jb7NDJz0ZFryHqV2O6+rSEhBsA6OMwneoaJQKNnz1xxYLQrFIAyv+iok9dE2vugAWJ
-	 Tb5oPQaOnH+VFy7FEgUaIo3Nvkw17Gh0THyBTrw0=
-Received: from lingrow.int.hansenpartnership.com (unknown [IPv6:2601:5c4:4302:c21::c14])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(Client did not present a certificate)
-	by bedivere.hansenpartnership.com (Postfix) with ESMTPSA id A207B1286558;
-	Mon, 21 Nov 2022 09:03:20 -0500 (EST)
-Message-ID: <10c85b8f4779700b82596c4a968daead65a29801.camel@HansenPartnership.com>
-Subject: Re: [PATCH 2/4] fs: define a firmware security filesystem named
- fwsecurityfs
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 21 Nov 2022 09:03:18 -0500
-In-Reply-To: <Y3tbhmL4oG1YTyT/@kroah.com>
-References: <20221106210744.603240-1-nayna@linux.ibm.com>
-	 <20221106210744.603240-3-nayna@linux.ibm.com> <Y2uvUFQ9S2oaefSY@kroah.com>
-	 <8447a726-c45d-8ebb-2a74-a4d759631e64@linux.vnet.ibm.com>
-	 <Y2zLRw/TzV/sWgqO@kroah.com>
-	 <44191f02-7360-bca3-be8f-7809c1562e68@linux.vnet.ibm.com>
-	 <Y3anQukokMcQr+iE@kroah.com>
-	 <d615180d-6fe5-d977-da6a-e88fd8bf5345@linux.vnet.ibm.com>
-	 <Y3pSF2MRIXd6aH14@kroah.com>
-	 <88111914afc6204b2a3fb82ded5d9bfb6420bca6.camel@HansenPartnership.com>
-	 <Y3tbhmL4oG1YTyT/@kroah.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.42.4 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NG8XY57pWz3c71
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2022 01:14:33 +1100 (AEDT)
+Received: from mxplan5.mail.ovh.net (unknown [10.108.4.102])
+	by mo548.mail-out.ovh.net (Postfix) with ESMTPS id 6C2302422E;
+	Mon, 21 Nov 2022 12:57:17 +0000 (UTC)
+Received: from kaod.org (37.59.142.100) by DAG4EX2.mxp5.local (172.16.2.32)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.16; Mon, 21 Nov
+ 2022 13:57:16 +0100
+Authentication-Results: garm.ovh; auth=pass (GARM-100R003451810f8-7c3a-435c-bfd4-d3ca38bdca17,
+                    3566E06BB212195A431F287D26CC7E6D91335DD7) smtp.auth=clg@kaod.org
+X-OVh-ClientIp: 82.64.250.170
+Message-ID: <61dc96ad-f60e-932f-c063-d1b377006b78@kaod.org>
+Date: Mon, 21 Nov 2022 13:57:16 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: // a kdump hang caused by PPC pci patch series
+Content-Language: en-US
+To: Pingfan Liu <kernelfans@gmail.com>, linuxppc-dev
+	<linuxppc-dev@lists.ozlabs.org>
+References: <CAFgQCTuz3n5uNKwOOXaL9xT-ftJT0nfo4OfdNepvMGbi0Zqh7Q@mail.gmail.com>
+ <CAFgQCTv6R_P0W16ak=9D481NKWqaXwd26CKHHqRbuMygP1u4Aw@mail.gmail.com>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+In-Reply-To: <CAFgQCTv6R_P0W16ak=9D481NKWqaXwd26CKHHqRbuMygP1u4Aw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [37.59.142.100]
+X-ClientProxiedBy: DAG2EX2.mxp5.local (172.16.2.12) To DAG4EX2.mxp5.local
+ (172.16.2.32)
+X-Ovh-Tracer-GUID: 1ecdde95-3bd1-40c2-a7fb-d4f9ba5dbbf1
+X-Ovh-Tracer-Id: 8479433675835280349
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvgedrheeigdeghecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfevfhfhjggtgfhisehtjeertddtfeejnecuhfhrohhmpeevrogurhhitgcunfgvucfiohgrthgvrhcuoegtlhhgsehkrghougdrohhrgheqnecuggftrfgrthhtvghrnhepuedutdetleegjefhieekgeffkefhleevgfefjeevffejieevgeefhefgtdfgiedtnecukfhppeduvdejrddtrddtrddupdefjedrheelrddugedvrddutddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeotghlgheskhgrohgurdhorhhgqedpnhgspghrtghpthhtohepuddprhgtphhtthhopehkvghrnhgvlhhfrghnshesghhmrghilhdrtghomhdplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdptghogihusehrvgguhhgrthdrtghomhdpoffvtefjohhsthepmhhoheegkedpmhhouggvpehsmhhtphhouhht
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,102 +61,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, Nayna <nayna@linux.vnet.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org, npiggin@gmail.com, Dov Murik <dovmurik@linux.ibm.com>, Dave Hansen <dave.hansen@intel.com>, linux-security-module <linux-security-module@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org, George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Stefan Berger <stefanb@linux.ibm.com>
+Cc: Coiby Xu <coxu@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2022-11-21 at 12:05 +0100, Greg Kroah-Hartman wrote:
-> On Sun, Nov 20, 2022 at 10:14:26PM -0500, James Bottomley wrote:
-> > On Sun, 2022-11-20 at 17:13 +0100, Greg Kroah-Hartman wrote:
-> > > On Sat, Nov 19, 2022 at 01:20:09AM -0500, Nayna wrote:
-> > > > 
-> > > > On 11/17/22 16:27, Greg Kroah-Hartman wrote:
-> > > > > On Mon, Nov 14, 2022 at 06:03:43PM -0500, Nayna wrote:
-> > > > > > On 11/10/22 04:58, Greg Kroah-Hartman wrote:
-> > [...]
-> > > > > > > I do not understand, sorry.  What does namespaces have to
-> > > > > > > do
-> > > > > > > with this?
-> > > > > > > sysfs can already handle namespaces just fine, why not
-> > > > > > > use
-> > > > > > > that?
-> > > > > > Firmware objects are not namespaced. I mentioned it here as
-> > > > > > an
-> > > > > > example of the difference between firmware and kernel
-> > > > > > objects.
-> > > > > > It is also in response to the feedback from James Bottomley
-> > > > > > in
-> > > > > > RFC v2 [
-> > > > > > https://lore.kernel.org/linuxppc-dev/41ca51e8db9907d9060cc38ad
-> > > > > > b59a66dcae4c59b.camel@HansenPartnership.com/].
-> > > > > I do not understand, sorry.  Do you want to use a namespace
-> > > > > for
-> > > > > these or not?  The code does not seem to be using
-> > > > > namespaces. 
-> > > > > You can use sysfs with, or without, a namespace so I don't
-> > > > > understand the issue here.
-> > > > > 
-> > > > > With your code, there is no namespace.
-> > > > 
-> > > > You are correct. There's no namespace for these.
-> > > 
-> > > So again, I do not understand.  Do you want to use filesystem
-> > > namespaces, or do you not?
-> > 
-> > Since this seems to go back to my email quoted again, let me
-> > repeat: the question isn't if this patch is namespaced; I think
-> > you've agreed several times it isn't.  The question is if the
-> > exposed properties would ever need to be namespaced.  This is a
-> > subtle and complex question which isn't at all explored by the
-> > above interchange.
-> > 
-> > > How again can you not use sysfs or securityfs due to namespaces? 
-> > > What is missing?
-> > 
-> > I already explained in the email that sysfs contains APIs like
-> > simple_pin_... which are completely inimical to namespacing.
+On 11/21/22 12:57, Pingfan Liu wrote:
+> Sorry that forget a subject.
 > 
-> Then how does the networking code handle the namespace stuff in
-> sysfs?
-> That seems to work today, or am I missing something?
+> On Mon, Nov 21, 2022 at 7:54 PM Pingfan Liu <kernelfans@gmail.com> wrote:
+>>
+>> Hello Powerpc folks,
+>>
+>> I encounter an kdump bug, which I bisect and pin commit 174db9e7f775
+>> ("powerpc/pseries/pci: Add support of MSI domains to PHB hotplug")
+>> In that case, using Fedora 36 as host, the mentioned commit as the
+>> guest kernel, and virto-block disk, the kdump kernel will hang:
 
-have you actually tried?
+The host kernel should be using the PowerNV platform and not pseries
+or are you running a nested L2 guest on KVM/pseries L1 ?
 
-jejb@lingrow:~> sudo unshare --net bash
-lingrow:/home/jejb # ls /sys/class/net/
-lo  tun0  tun10  wlan0
-lingrow:/home/jejb # ip link show
-1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN mode DEFAULT group
-default qlen 1000
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+And as far as I remember, the patch above only impacts the IBM PowerVM
+hypervisor, not KVM, and PHB hotplug, or kdump induces some hot-plugging
+I am not aware of.
 
-So, as you see, I've entered a network namespace and ip link shows me
-the only interface I can see in that namespace (a down loopback) but
-sysfs shows me every interface on the system outside the namespace.
+Also, if indeed, this is a L2 guest, the XIVE interrupt controller is
+emulated in QEMU, "info pic" should return:
 
-This is pretty much the story of containers and sysfs: if you mount it
-inside the container, it leaks information about the host
-configuration.  Since I created a container with full root, I could
-actually fiddle with the host network parameters on interfaces I
-shouldn't be able to see within the container using sysfs ... which is
-one reason we try to persuade people to use a user namespace instead of
-full root.
- 
-> If the namespace support needs to be fixed up in sysfs (or in
-> securityfs), then great, let's do that, and not write a whole new
-> filesystem just because that's not done.
+   ...
+   irqchip: emulated
 
-As I said: a fix is proposed for securityfs.  I think everyone in
-containers concluded long ago that sysfs is too big an Augean Stable.
+>>
+>> [    0.000000] Kernel command line: elfcorehdr=0x22c00000
+>> no_timer_check net.ifnames=0 console=tty0 console=hvc0,115200n8
+>> irqpoll maxcpus=1 noirqdistrib reset_devices cgroup_disable=memory
+>>       numa=off udev.children-max=2 ehea.use_mcs=0 panic=10
+>> kvm_cma_resv_ratio=0 transparent_hugepage=never novmcoredd
+>> hugetlb_cma=0
+>>      ...
+>>      [    7.763260] virtio_blk virtio2: 32/0/0 default/read/poll queues
+>>      [    7.771391] virtio_blk virtio2: [vda] 20971520 512-byte logical
+>> blocks (10.7 GB/10.0 GiB)
+>>      [   68.398234] systemd-udevd[187]: virtio2: Worker [190]
+>> processing SEQNUM=1193 is taking a long time
+>>      [  188.398258] systemd-udevd[187]: virtio2: Worker [190]
+>> processing SEQNUM=1193 killed
+>>
+>>
+>> During my test, I found that in very rare cases, the kdump can success
+>> (I guess it may be due to the cpu id).  And if using either maxcpus=2
+>> or using scsi-disk, then kdump can also success.  And before the
+>> mentioned commit, kdump can also success.
+>>
+>> The attachment contains the xml to reproduce that bug.
+>>
+>> Do you have any ideas?
 
-> Also this patch series also doesn't handle namespaces, so again, I am
-> totally confused as to why this is even being discussed...
+Most certainly an interrupt not being delivered. You can check the status
+on the host with :
 
-Well, it's not my patch.  I came into this saying *if* there was ever a
-reason to namespace these parameters then please don't use interfaces
-inimical to namespacing.  My personal view is that this should all just
-go in securityfs because that defers answering the question of whether
-it would eventually be namespaced.
+   virsh qemu-monitor-command --hmp <domain>  "info pic"
 
-James
 
+
+Thanks,
+
+C.
