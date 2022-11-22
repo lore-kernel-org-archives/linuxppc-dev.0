@@ -4,79 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 111A9C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 06:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17836C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 06:59:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NGZWJ4vK8z3cJF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 17:45:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NGZqv2Kkfz3dvC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 17:59:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BA3AuiEg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXAF9KV1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BA3AuiEg;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXAF9KV1;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NGZRB4HxZz3bjY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2022 17:41:26 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AM4wSsG018518;
-	Tue, 22 Nov 2022 06:41:19 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NGZpr2zF6z2y84
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2022 17:58:27 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AM6RpLW026562;
+	Tue, 22 Nov 2022 06:58:25 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=DTUlXyfX6Bu1QorTkZgko2Jl1wQKjzEVjEZO+9+k5Vc=;
- b=BA3AuiEgUjc9vcBndjeCFWhxFUw54Kt8isUdZbkdL2LojgfR8YIOod2QjnFALu+3H3uA
- S+C9TSMLrOpMySiZdS7QR6/wc7hsKPM1bzkXJ3WUJlTyS9MsZArU4RCFtL6VRfMt6U5M
- WaqIanAcDB9YOc78Jt6aC8esRUtc7dhqH7Zqlv5vb+FT0dEpbgJRQlNpv9W6NSu+myAT
- nIA+zqIs8zoeP5lMBneygz6NJWR9kCQOegNYZVnbGwfY/a0X1FJY0Vv6kQXNdkuv2RX9
- dWzBV0VyAgWVGqLsBIk8xGa75/W3m7UG9r1XGxN9VsrMpMLOwkk7hDgIb/ZlbdYTjtO0 4g== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m0qv9a1qm-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=5pxbyUKe9ZR1oWS5eRv22aN+gYJLb8E6kGk2PODD/Y8=;
+ b=nXAF9KV1WYNs0VTjVzSD6JJ9VOSQ3EgBERsTmq5i0GzaOg/OqeL7WYuMPpoYwdthL0Lo
+ FilfRzdjWLveUcBcBBsjbDKC3yEtr/XESgKZHIM11ygvtry/45vcuXE270iGk2jRwSKF
+ hjtBWmE8jqhUYoEmnffSSB3bhZs7VIFiRJGEHX6RbqBARAjYTttJv/pwKMMqaMzIZa8A
+ qsT1WU30RlqhG9pYEwnMAlLJvXIfEDPuBttiF2nHete/wTwVrESkif4HNTtJYwf38Pps
+ ZvcjP+QiNrcNZ6rXXDWXUWiud7ORIaj6DuBof704XcClkKGamAthCeN9T0Hk/PA1zut1 3Q== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m0s68gheq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 06:41:19 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AM6bgU9004949;
-	Tue, 22 Nov 2022 06:41:17 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-	by ppma04fra.de.ibm.com with ESMTP id 3kxps8tqux-1
+	Tue, 22 Nov 2022 06:58:24 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AM6p6TB003851;
+	Tue, 22 Nov 2022 06:58:22 GMT
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+	by ppma04ams.nl.ibm.com with ESMTP id 3kxps8upng-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 06:41:17 +0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AM6fFOO63570200
+	Tue, 22 Nov 2022 06:58:22 +0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com [9.149.105.58])
+	by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AM6wKUD64487850
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 22 Nov 2022 06:41:15 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EFD9D11C050;
-	Tue, 22 Nov 2022 06:41:14 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D494211C04A;
-	Tue, 22 Nov 2022 06:41:13 +0000 (GMT)
-Received: from li-NotSettable.ibm.com.com (unknown [9.43.65.119])
-	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
-	Tue, 22 Nov 2022 06:41:13 +0000 (GMT)
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 2/3] selftests/powerpc: Bump up rlimit for perf-hwbreak test
-Date: Tue, 22 Nov 2022 12:10:53 +0530
-Message-Id: <187fed5843cecc1e5066677b6296ee88337d7bef.1669096083.git.naveen.n.rao@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <cover.1669096083.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1669096083.git.naveen.n.rao@linux.vnet.ibm.com>
+	Tue, 22 Nov 2022 06:58:20 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 289124C046;
+	Tue, 22 Nov 2022 06:58:20 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C7DE04C040;
+	Tue, 22 Nov 2022 06:58:19 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Tue, 22 Nov 2022 06:58:19 +0000 (GMT)
+Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (unknown [9.177.66.201])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D4B29600F3;
+	Tue, 22 Nov 2022 17:58:14 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v1 0/7] Expand selftest utils
+Date: Tue, 22 Nov 2022 17:57:19 +1100
+Message-Id: <20221122065726.100111-1-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: CxDCckPF1-KDJFE6ykATtCcm-vk4ZgxA
-X-Proofpoint-ORIG-GUID: CxDCckPF1-KDJFE6ykATtCcm-vk4ZgxA
+X-Proofpoint-ORIG-GUID: PHNP0KwutzEg-hZdEmAMJhOieq7sFGkz
+X-Proofpoint-GUID: PHNP0KwutzEg-hZdEmAMJhOieq7sFGkz
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-22_02,2022-11-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- spamscore=0 phishscore=0 adultscore=0 mlxlogscore=999 priorityscore=1501
- impostorscore=0 bulkscore=0 malwarescore=0 mlxscore=0 suspectscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
+ impostorscore=0 mlxlogscore=999 spamscore=0 clxscore=1011 bulkscore=0
+ adultscore=0 priorityscore=1501 malwarescore=0 lowpriorityscore=0
+ mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2210170000 definitions=main-2211220047
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -89,53 +91,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rohan Deshpande <rohan_d@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Gray <bgray@linux.ibm.com>, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The systemwide perf hardware breakpoint test tries to open a perf event
-on each cpu. On large systems, we run out of file descriptors and fail
-the test. Instead, have the test set the file descriptor limit to an
-arbitraty high value.
+Started this when writing tests for a feature I'm working on, needing a way to
+read/write numbers to system files. After writing some utils to safely handle
+file IO and parsing, I realised I'd made the ~6th file read/write implementation
+and only(?) number parser that checks all the failure modes when expecting to
+parse a single number from a file.
 
-Reported-by: Rohan Deshpande <rohan_d@linux.vnet.ibm.com>
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- .../testing/selftests/powerpc/ptrace/perf-hwbreak.c  | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+So these utils ended up becoming this series. I also modified some other test
+utils I came across while doing so. My understanding is selftests are not expected
+to be backported, so I wasn't concerned about only introducing new utils and leaving
+the existing implementations be.
 
-diff --git a/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
-index ea5e14ecbf309f..866e5be48ee33a 100644
---- a/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
-+++ b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
-@@ -26,6 +26,7 @@
- #include <sys/ioctl.h>
- #include <sys/wait.h>
- #include <sys/ptrace.h>
-+#include <sys/resource.h>
- #include <sys/sysinfo.h>
- #include <asm/ptrace.h>
- #include <elf.h>
-@@ -140,8 +141,19 @@ static void disable_fds(int *fd, int n)
- 
- static int perf_systemwide_event_open(int *fd, __u32 type, __u64 addr, __u64 len)
- {
-+	struct rlimit rlim;
- 	int i = 0;
- 
-+	if (getrlimit(RLIMIT_NOFILE, &rlim)) {
-+		perror("getrlimit");
-+		return -1;
-+	}
-+	rlim.rlim_cur = 65536;
-+	if (setrlimit(RLIMIT_NOFILE, &rlim)) {
-+		perror("setrlimit");
-+		return -1;
-+	}
-+
- 	/* Assume online processors are 0 to nprocs for simplisity */
- 	for (i = 0; i < nprocs; i++) {
- 		fd[i] = perf_cpu_event_open(i, type, addr, len);
--- 
+Changes:
+- Use the mtfspr/mfspr macros where possible over inline asm
+- Fix potential non-null terminated buffer in ptrace tests
+- Add read_file / write_file to read and write raw bytes given appropriate
+  path and buffers. Replace hand rolled read/write with this where easy.
+- Make read/write_debugfs_file work on byte buffers and introduce
+  read/write_debugfs_int for int specific contents. This more naturally aligns
+  with the read/write_file functions, and allows for future *_long, *_ulong
+  variants when required.
+- Add an error checking number parser. It's an ugly function generating macro.
+  The issue is the result param type can't be made generic, so there needs to
+  be a separate definition per type (or at least for signed/unsigned). Also
+  can't seem to use generics with the variable type declaration, so the max
+  sized type for the input sign has to be specified manually.
+  It's at least grep-able and language servers recognise it as defining
+  parse_int, etc., though.
+- Add the read_long, write_long, etc., utils that combine file IO and parsing.
+  These are the utils I really wanted, useful for system files that are just
+  numbers.
+- Add an allocating file read for when the buffer is potentially too big to
+  preallocate on the stack or needs to live especially long.
+
+
+Benjamin Gray (7):
+  selftests/powerpc: Use mfspr/mtspr macros
+  selftests/powerpc: Add ptrace setup_core_pattern() null-terminator
+  selftests/powerpc: Add generic read/write file util
+  selftests/powerpc: Add read/write debugfs file, int
+  selftests/powerpc: Parse long/unsigned long value safely
+  selftests/powerpc: Add {read,write}_{long,ulong}
+  selftests/powerpc: Add automatically allocating read_file
+
+ tools/testing/selftests/powerpc/dscr/dscr.h   |  56 +---
+ .../selftests/powerpc/dscr/dscr_sysfs_test.c  |  23 +-
+ .../testing/selftests/powerpc/include/utils.h |  18 +-
+ .../selftests/powerpc/nx-gzip/gzfht_test.c    |  52 +--
+ tools/testing/selftests/powerpc/pmu/lib.c     |  35 +-
+ .../selftests/powerpc/ptrace/core-pkey.c      |  28 +-
+ .../selftests/powerpc/ptrace/ptrace-hwbreak.c |   6 +-
+ .../testing/selftests/powerpc/ptrace/ptrace.h |   5 +-
+ .../selftests/powerpc/security/entry_flush.c  |  12 +-
+ .../selftests/powerpc/security/flush_utils.c  |   3 +-
+ .../selftests/powerpc/security/rfi_flush.c    |  12 +-
+ .../powerpc/security/uaccess_flush.c          |  18 +-
+ .../selftests/powerpc/syscalls/Makefile       |   2 +-
+ .../selftests/powerpc/syscalls/rtas_filter.c  |  80 +----
+ tools/testing/selftests/powerpc/utils.c       | 314 ++++++++++++++----
+ 15 files changed, 341 insertions(+), 323 deletions(-)
+
+
+base-commit: 247f34f7b80357943234f93f247a1ae6b6c3a740
+--
 2.38.1
-
