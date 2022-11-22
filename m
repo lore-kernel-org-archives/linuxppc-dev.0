@@ -4,95 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0274C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 23:22:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2434CC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 23:40:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NH0fH1bSKz3dxq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 10:22:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NH12s1t69z3f35
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 10:40:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JHAeISiJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YxB+eGrq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JHAeISiJ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YxB+eGrq;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NH0dF16DWz2x9J
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 10:21:36 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AMMIkd7039599;
-	Tue, 22 Nov 2022 23:21:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- subject : to : cc : references : from : in-reply-to : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=oC+XCMatKOqJAPTjzW1TpIq92DjrOmvsufQ1aYb6wEU=;
- b=JHAeISiJntvnrNOSKgwUl5BmInZf6wvMboXQNH3jh5MtYpsdcxBdqea9PsEM7t1/+P6O
- chyy8BDAEdXl51nS+4Dte6sI1ueFQAdkhOyE9iAFhvQs22jb+pYl0cXS4WCwRGMObkSg
- Q88nvP1kjW0iY52MpecarOSbFabU17jKc3VdH3ffDZr4a3ei/DjSEzZf4XsS9YOzRosV
- gPgQucSKzmfVzE7jCn7oDevFId4fYryM9f3Q0JYmuxRcEfH3DulaODY747B6ccWeWoHx
- 3oVGGcPuJmJ3tqH9jbC99dEpDfyt2coTD6wn3D+K1giLjAuPYE/WBE6BC9DrDDAb00+w nQ== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m10ff3hwq-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NH11r5yFhz300l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 10:39:28 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AMND25w031086;
+	Tue, 22 Nov 2022 23:39:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=y9NwiyaAyko9Bxl4KDhwRGthR364Cj3FAVjovSAT9S4=;
+ b=YxB+eGrq4kuLeZYcCtt0Za6ZlmCXegGEvYZUVvs+FXZwvd/GkRLzI01yrl95oOMQe/E3
+ Y8AGRJmjOBuyYHkCU06seqVAt6pSvLGyS+hxsLihez5RqFnVn+Ywi8uqpcoPwSFjKmTL
+ vHVhQ6uFZOO0o0Jbf88nyMrt+j4M2qscNWLy+/2jJ5eyNx01j6JZ0VqwjRo9XKnnZHJb
+ 6R6yp4NlrAzq5xQXmaqOOo9X1O8a0qwP2JMLLYrMq4Sg7g92JMIO0cTQZVL2bTNAq7Ci
+ huNT6D/PI1QrkMLQ9Pvw3eyW2uXLnUaB5/WT+u9LoAtX/IayLvpIZdD9uCmTAF5lu+FS Tw== 
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m0y4w6y58-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 23:21:16 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2AMNAaos017423;
-	Tue, 22 Nov 2022 23:21:16 GMT
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m10ff3hw3-1
+	Tue, 22 Nov 2022 23:39:25 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+	by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AMN6UwN001299;
+	Tue, 22 Nov 2022 23:12:02 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+	by ppma06fra.de.ibm.com with ESMTP id 3kxpdj3jmg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 23:21:15 +0000
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
-	by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AMN5Xx3030809;
-	Tue, 22 Nov 2022 23:21:14 GMT
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com [9.57.198.27])
-	by ppma03dal.us.ibm.com with ESMTP id 3kxpsacwxe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 23:21:14 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com ([9.208.128.115])
-	by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AMNLDAp65274116
+	Tue, 22 Nov 2022 23:12:02 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AMN5kb549414436
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 22 Nov 2022 23:21:13 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D9DB458060;
-	Tue, 22 Nov 2022 23:21:12 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1EF435803F;
-	Tue, 22 Nov 2022 23:21:11 +0000 (GMT)
-Received: from [9.163.61.172] (unknown [9.163.61.172])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 22 Nov 2022 23:21:11 +0000 (GMT)
-Message-ID: <d3e8df29-d9b0-5e8e-4a53-d191762fe7f2@linux.vnet.ibm.com>
-Date: Tue, 22 Nov 2022 18:21:10 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.12.0
-Subject: Re: [PATCH 2/4] fs: define a firmware security filesystem named
- fwsecurityfs
-Content-Language: en-US
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-References: <20221106210744.603240-1-nayna@linux.ibm.com>
- <20221106210744.603240-3-nayna@linux.ibm.com> <Y2uvUFQ9S2oaefSY@kroah.com>
- <8447a726-c45d-8ebb-2a74-a4d759631e64@linux.vnet.ibm.com>
- <20221119114234.nnfxsqx4zxiku2h6@riteshh-domain>
-From: Nayna <nayna@linux.vnet.ibm.com>
-In-Reply-To: <20221119114234.nnfxsqx4zxiku2h6@riteshh-domain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: rx6IXruI8J7qA8U13iaDwj3sbvme2lXD
-X-Proofpoint-GUID: pm16FMvUALsLfnxbRgs7NJS99XGmi9by
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	Tue, 22 Nov 2022 23:05:46 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ECF8B5204E;
+	Tue, 22 Nov 2022 23:11:59 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4EEAB5204F;
+	Tue, 22 Nov 2022 23:11:59 +0000 (GMT)
+Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ABA5160151;
+	Wed, 23 Nov 2022 10:11:56 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/7] Expand selftest utils
+Date: Wed, 23 Nov 2022 10:10:56 +1100
+Message-Id: <20221122231103.15829-1-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.38.1
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 6qS62Rr60axVkNQje3wJe9klem1hMQ7U
+X-Proofpoint-ORIG-GUID: 6qS62Rr60axVkNQje3wJe9klem1hMQ7U
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
  definitions=2022-11-22_13,2022-11-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
- priorityscore=1501 spamscore=0 clxscore=1011 lowpriorityscore=0
- bulkscore=0 suspectscore=0 impostorscore=0 malwarescore=0 mlxscore=0
- adultscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211220174
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxlogscore=999
+ phishscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0 mlxscore=0
+ adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
+ priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211220177
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,203 +88,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-efi@vger.kernel.org, Andrew Donnellan <ajd@linux.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nayna Jain <nayna@linux.ibm.com>, linux-kernel@vger.kernel.org, npiggin@gmail.com, Dov Murik <dovmurik@linux.ibm.com>, Dave Hansen <dave.hansen@intel.com>, linux-security-module <linux-security-module@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, linux-fsdevel@vger.kernel.org, George Wilson <gcwilson@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, "Serge E. Hallyn" <serge@hallyn.com>, Stefan Berger <stefanb@linux.ibm.com>
+Cc: Benjamin Gray <bgray@linux.ibm.com>, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+(No changes to contents from v1, added signed-off-by's and fixed up commit messages)
 
-On 11/19/22 06:48, Ritesh Harjani (IBM) wrote:
-> Hello Nayna,
+Started this when writing tests for a feature I'm working on, needing a way to
+read/write numbers to system files. After writing some utils to safely handle
+file IO and parsing, I realised I'd made the ~6th file read/write implementation
+and only(?) number parser that checks all the failure modes when expecting to
+parse a single number from a file.
 
-Hi Ritesh,
+So these utils ended up becoming this series. I also modified some other test
+utils I came across while doing so. My understanding is selftests are not expected
+to be backported, so I wasn't concerned about only introducing new utils and leaving
+the existing implementations be.
 
->
-> On 22/11/09 03:10PM, Nayna wrote:
->> On 11/9/22 08:46, Greg Kroah-Hartman wrote:
->>> On Sun, Nov 06, 2022 at 04:07:42PM -0500, Nayna Jain wrote:
->>>> securityfs is meant for Linux security subsystems to expose policies/logs
->>>> or any other information. However, there are various firmware security
->>>> features which expose their variables for user management via the kernel.
->>>> There is currently no single place to expose these variables. Different
->>>> platforms use sysfs/platform specific filesystem(efivarfs)/securityfs
->>>> interface as they find it appropriate. Thus, there is a gap in kernel
->>>> interfaces to expose variables for security features.
->>>>
->>>> Define a firmware security filesystem (fwsecurityfs) to be used by
->>>> security features enabled by the firmware. These variables are platform
->>>> specific. This filesystem provides platforms a way to implement their
->>>>    own underlying semantics by defining own inode and file operations.
->>>>
->>>> Similar to securityfs, the firmware security filesystem is recommended
->>>> to be exposed on a well known mount point /sys/firmware/security.
->>>> Platforms can define their own directory or file structure under this path.
->>>>
->>>> Example:
->>>>
->>>> # mount -t fwsecurityfs fwsecurityfs /sys/firmware/security
->>> Why not juset use securityfs in /sys/security/firmware/ instead?  Then
->>> you don't have to create a new filesystem and convince userspace to
->>> mount it in a specific location?
-> I am also curious to know on why not use securityfs, given the similarity
-> between the two. :)
-> More specifics on that below...
->
->>  From man 5 sysfs page:
->>
->> /sys/firmware: This subdirectory contains interfaces for viewing and
->> manipulating firmware-specific objects and attributes.
->>
->> /sys/kernel: This subdirectory contains various files and subdirectories
->> that provide information about the running kernel.
->>
->> The security variables which are being exposed via fwsecurityfs are managed
->> by firmware, stored in firmware managed space and also often consumed by
->> firmware for enabling various security features.
-> That's ok. As I see it users of securityfs can define their own fileops
-> (like how you are doing in fwsecurityfs).
-> See securityfs_create_file() & securityfs_create_symlink(), can accept the fops
-> & iops. Except maybe securityfs_create_dir(), that could be since there might
-> not be a usecase for it. But do you also need it in your case is the question to
-> ask.
+Changes:
+- Use the mtfspr/mfspr macros where possible over inline asm
+- Fix potential non-null terminated buffer in ptrace tests
+- Add read_file / write_file to read and write raw bytes given appropriate
+  path and buffers. Replace hand rolled read/write with this where easy.
+- Make read/write_debugfs_file work on byte buffers and introduce
+  read/write_debugfs_int for int specific contents. This more naturally aligns
+  with the read/write_file functions, and allows for future *_long, *_ulong
+  variants when required.
+- Add an error checking number parser. It's an ugly function generating macro.
+  The issue is the result param type can't be made generic, so there needs to
+  be a separate definition per type (or at least for signed/unsigned). Also
+  can't seem to use generics with the variable type declaration, so the max
+  sized type for the input sign has to be specified manually.
+  It's at least grep-able and language servers recognise it as defining
+  parse_int, etc., though.
+- Add the read_long, write_long, etc., utils that combine file IO and parsing.
+  These are the utils I really wanted, useful for system files that are just
+  numbers.
+- Add an allocating file read for when the buffer is potentially too big to
+  preallocate on the stack or needs to live especially long.
 
-Please refer to the function plpks_secvars_init() in Patch 4/4.
 
->
->>  From git commit b67dbf9d4c1987c370fd18fdc4cf9d8aaea604c2, the purpose of
->> securityfs(/sys/kernel/security) is to provide a common place for all kernel
->> LSMs. The idea of
-> Which was then seperated out by commit,
-> da31894ed7b654e2 ("securityfs: do not depend on CONFIG_SECURITY").
->
-> securityfs now has a seperate CONFIG_SECURITYFS config option. In fact I was even
-> thinking of why shouldn't we move security/inode.c into fs/securityfs/inode.c .
-> fs/* is a common place for all filesystems. Users of securityfs can call it's
-> exported kernel APIs to create files/dirs/symlinks.
->
-> If we move security/inode.c to fs/security/inode.c, then...
-> ...below call within securityfs_init() should be moved into some lsm sepecific
-> file.
->
-> #ifdef CONFIG_SECURITY
-> static struct dentry *lsm_dentry;
-> static ssize_t lsm_read(struct file *filp, char __user *buf, size_t count,
-> 			loff_t *ppos)
-> {
-> 	return simple_read_from_buffer(buf, count, ppos, lsm_names,
-> 		strlen(lsm_names));
-> }
->
-> static const struct file_operations lsm_ops = {
-> 	.read = lsm_read,
-> 	.llseek = generic_file_llseek,
-> };
-> #endif
->
-> securityfs_init()
->
-> #ifdef CONFIG_SECURITY
-> 	lsm_dentry = securityfs_create_file("lsm", 0444, NULL, NULL,
-> 						&lsm_ops);
-> #endif
->
-> So why not move it? Maybe others, can comment more on whether it's a good idea
-> to move security/inode.c into fs/security/inode.c?
-> This should then help others identify securityfs filesystem in fs/security/
-> for everyone to notice and utilize for their use?
->> fwsecurityfs(/sys/firmware/security) is to similarly provide a common place
->> for all firmware security objects.
->>
->> /sys/firmware already exists. The patch now defines a new /security
->> directory in it for firmware security features. Using /sys/kernel/security
->> would mean scattering firmware objects in multiple places and confusing the
->> purpose of /sys/kernel and /sys/firmware.
-> We can also think of it this way that, all security related exports should
-> happen via /sys/kernel/security/. Then /sys/kernel/security/firmware/ becomes
-> the security related firmware exports.
->
-> If you see find /sys -iname firmware, I am sure you will find other firmware
-> specifics directories related to other specific subsystems
-> (e.g.
-> root@qemu:/home/qemu# find /sys -iname firmware
-> /sys/devices/ndbus0/nmem0/firmware
-> /sys/devices/ndbus0/firmware
-> /sys/firmware
-> )
->
-> But it could be, I am not an expert here, although I was thinking a good
-> Documentation might solve this problem.
+Benjamin Gray (7):
+  selftests/powerpc: Use mfspr/mtspr macros
+  selftests/powerpc: Add ptrace setup_core_pattern() null-terminator
+  selftests/powerpc: Add generic read/write file util
+  selftests/powerpc: Add read/write debugfs file, int
+  selftests/powerpc: Parse long/unsigned long value safely
+  selftests/powerpc: Add {read,write}_{long,ulong}
+  selftests/powerpc: Add automatically allocating read_file
 
-Documentation on 
-sysfs(https://man7.org/linux/man-pages/man5/sysfs.5.html) already 
-differentiates /sys/firmware and /sys/kernel as I responded earlier.  
-The objects we are exposing are firmware objects and not kernel objects.
+ tools/testing/selftests/powerpc/dscr/dscr.h   |  56 +---
+ .../selftests/powerpc/dscr/dscr_sysfs_test.c  |  23 +-
+ .../testing/selftests/powerpc/include/utils.h |  18 +-
+ .../selftests/powerpc/nx-gzip/gzfht_test.c    |  52 +--
+ tools/testing/selftests/powerpc/pmu/lib.c     |  35 +-
+ .../selftests/powerpc/ptrace/core-pkey.c      |  28 +-
+ .../selftests/powerpc/ptrace/ptrace-hwbreak.c |   6 +-
+ .../testing/selftests/powerpc/ptrace/ptrace.h |   5 +-
+ .../selftests/powerpc/security/entry_flush.c  |  12 +-
+ .../selftests/powerpc/security/flush_utils.c  |   3 +-
+ .../selftests/powerpc/security/rfi_flush.c    |  12 +-
+ .../powerpc/security/uaccess_flush.c          |  18 +-
+ .../selftests/powerpc/syscalls/Makefile       |   2 +-
+ .../selftests/powerpc/syscalls/rtas_filter.c  |  80 +----
+ tools/testing/selftests/powerpc/utils.c       | 314 ++++++++++++++----
+ 15 files changed, 341 insertions(+), 323 deletions(-)
 
->
->> Even though fwsecurityfs code is based on securityfs, since the two
->> filesystems expose different types of objects and have different
->> requirements, there are distinctions:
->>
->> 1. fwsecurityfs lets users create files in userspace, securityfs only allows
->> kernel subsystems to create files.
-> Sorry could you please elaborate how? both securityfs & fwsecurityfs
-> calls simple_fill_super() which uses the same inode (i_op) and inode file
-> operations (i_fop) from fs/libfs.c for their root inode. So how it is enabling
-> user (as in userspace) to create a file in this filesystem?
->
-> So am I missing anything?
 
-The ability to let user(as in userspace) to create a file in a 
-filesystem comes by allowing to define inode operations.
-
-Please look at the implementation differences for functions 
-xxx_create_dir() and xxx_create_dentry() of securityfs vs fwsecurityfs.  
-Also refer to Patch 4/4 for use of fwsecurityfs_create_dir() where inode 
-operations are defined.
-
->
->> 2. firmware and kernel objects may have different requirements. For example,
->> consideration of namespacing. As per my understanding, namespacing is
->> applied to kernel resources and not firmware resources. That's why it makes
->> sense to add support for namespacing in securityfs, but we concluded that
->> fwsecurityfs currently doesn't need it. Another but similar example of it
-> It "currently" doesn't need it. But can it in future? Then why not go with
-> securityfs which has an additional namespacing feature available?
-> That's actually also the point of utilizing an existing FS which can get
-> features like this in future. As long as it doesn't affect the functionality
-> of your use case, we simply need not reject securityfs, no?
-
-Thanks for your review and feedback. To summarize:
-
- From the perspective of our use case, we need to expose firmware 
-security objects to userspace for management. Not all of the objects 
-pre-exist and we would like to allow root to create them from userspace.
-
- From a unification perspective, I have considered a common location at 
-/sys/firmware/security for managing any platform's security objects. And 
-I've proposed a generic filesystem, which could be used by any platform 
-to represent firmware security objects via /sys/firmware/security.
-
-Here are some alternatives to generic filesystem in discussion:
-
-1. Start with a platform-specific filesystem. If more platforms would 
-like to use the approach, it can be made generic. We would still have a 
-common location of /sys/firmware/security and new code would live in 
-arch. This is my preference and would be the best fit for our use case.
-
-2. Use securityfs.  This would mean modifying it to satisfy other use 
-cases, including supporting userspace file creation. I don't know if the 
-securityfs maintainer would find that acceptable. I would also still 
-want some way to expose variables at /sys/firmware/security.
-
-3. Use a sysfs-based approach. This would be a platform-specific 
-implementation. However, sysfs has a similar issue to securityfs for 
-file creation. When I tried it in RFC v1[1], I had to implement a 
-workaround to achieve that.
-
-[1] 
-https://lore.kernel.org/linuxppc-dev/20220122005637.28199-3-nayna@linux.ibm.com/
-
-Thanks & Regards,
-
-      - Nayna
-
+base-commit: 247f34f7b80357943234f93f247a1ae6b6c3a740
+--
+2.38.1
