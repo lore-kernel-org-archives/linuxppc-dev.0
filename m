@@ -4,39 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A71E0C433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 13:19:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D67BC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 13:34:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NHMCm0N6tz3f39
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 00:19:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=srs0=+b1z=3x=xs4all.nl=hverkuil@kernel.org; receiver=<UNKNOWN>)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NHMYC64Fgz3dvC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 00:34:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LOl7Q4n4;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LOl7Q4n4;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHMC56ynrz3c5w
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2022 00:18:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHMXD4d3gz3c8C
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2022 00:33:32 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 1B64861C4E;
-	Wed, 23 Nov 2022 13:18:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 74BDEC433C1;
-	Wed, 23 Nov 2022 13:18:32 +0000 (UTC)
-Message-ID: <e0701648-fec1-f1fd-0c69-8ed85e162a01@xs4all.nl>
-Date: Wed, 23 Nov 2022 14:18:31 +0100
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 5552961C65;
+	Wed, 23 Nov 2022 13:33:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8BB36C433D6;
+	Wed, 23 Nov 2022 13:33:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1669210409;
+	bh=o5a/1D++1Mz35bMC46Wx3lUgNniBZ5e14zrk6/8nSLA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=LOl7Q4n4cEl48OuaUSA+Bgl0IZTxdonu6mUt/hJRzmYjzYC5vh9Aa2N3ZXMxrUR/6
+	 48m+AKkRf2fO3muoslzGBzQUQBe2NxHZTgy+eHvpR+Au3yxQ2og13EtKoKPsTf8Wyg
+	 nwUHbaUgC/sR+weWCCWEzz0ML39ZkwLmTORo98UEeKQs4s5cDDnvO08asxGGog6Ydz
+	 eBDgNoiqpV5wqgiRgNG0A/FUmd9zgySBEdzk5Ud2AYI+S2ARX0UaCBcxxK1s3revGZ
+	 GA8gUTbE00d7ixoql1pdSKm1bZNED2WAN8pFIiz5zQiXrapqcLWoVFoJCyl8cfqdRy
+	 8bN3OuFhi7ziQ==
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+	id E73C84034E; Wed, 23 Nov 2022 10:33:26 -0300 (-03)
+Date: Wed, 23 Nov 2022 10:33:26 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ian Rogers <irogers@google.com>
+Subject: Re: [PATCH] perf test: Skip watchpoint tests if no watchpoints
+ available
+Message-ID: <Y34hJrqCzSE+W+X9@kernel.org>
+References: <20221121102747.208289-1-naveen.n.rao@linux.vnet.ibm.com>
+ <a9f0f8f1-96cd-f6a8-9dda-d4744b938f97@csgroup.eu>
+ <CAP-5=fXJf+1V5RF-m3e+AhK0Qg-yaJ1_2HL0CTOvp1xkK-1fDg@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.1
-Subject: Re: [PATCH mm-unstable v1 15/20] media: pci/ivtv: remove FOLL_FORCE
- usage
-Content-Language: en-US
-To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
-References: <20221116102659.70287-1-david@redhat.com>
- <20221116102659.70287-16-david@redhat.com>
-From: Hans Verkuil <hverkuil@xs4all.nl>
-In-Reply-To: <20221116102659.70287-16-david@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <CAP-5=fXJf+1V5RF-m3e+AhK0Qg-yaJ1_2HL0CTOvp1xkK-1fDg@mail.gmail.com>
+X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,66 +66,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-arm-kernel@lists.infradead.org, Andy Walls <awalls@md.metrocast.net>, linuxppc-dev@lists.
- ozlabs.org, Oded Gabbay <ogabbay@kernel.org>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
+Cc: Ravi Bangoria <ravi.bangoria@amd.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-perf-users@vger.kernel.org" <linux-perf-users@vger.kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Disha Goel <disgoel@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 16/11/2022 11:26, David Hildenbrand wrote:
-> FOLL_FORCE is really only for ptrace access. R/O pinning a page is
-> supposed to fail if the VMA misses proper access permissions (no VM_READ).
+Em Tue, Nov 22, 2022 at 12:57:05PM -0800, Ian Rogers escreveu:
+> On Tue, Nov 22, 2022 at 11:19 AM Christophe Leroy
+> <christophe.leroy@csgroup.eu> wrote:
+> >
+> >
+> >
+> > Le 21/11/2022 à 11:27, Naveen N. Rao a écrit :
+> > > On IBM Power9, perf watchpoint tests fail since no hardware breakpoints
+> > > are available. Detect this by checking the error returned by
+> > > perf_event_open() and skip the tests in that case.
+> > >
+> > > Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
+> > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > > ---
+> > >   tools/perf/tests/wp.c | 12 +++++++-----
+> > >   1 file changed, 7 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/tools/perf/tests/wp.c b/tools/perf/tests/wp.c
+> > > index 56455da30341b4..cc8719609b19ea 100644
+> > > --- a/tools/perf/tests/wp.c
+> > > +++ b/tools/perf/tests/wp.c
+> > > @@ -59,8 +59,10 @@ static int __event(int wp_type, void *wp_addr, unsigned long wp_len)
+> > >       get__perf_event_attr(&attr, wp_type, wp_addr, wp_len);
+> > >       fd = sys_perf_event_open(&attr, 0, -1, -1,
+> > >                                perf_event_open_cloexec_flag());
+> > > -     if (fd < 0)
+> > > +     if (fd < 0) {
+> > > +             fd = -errno;
+> > >               pr_debug("failed opening event %x\n", attr.bp_type);
+> > > +     }
+> >
+> > Do you really need that ?
+> >
+> > Can't you directly check errno in the caller ?
 > 
-> Let's just remove FOLL_FORCE usage here; there would have to be a pretty
-> good reason to allow arbitrary drivers to R/O pin pages in a PROT_NONE
-> VMA. Most probably, FOLL_FORCE usage is just some legacy leftover.
-
-I'm pretty sure about that as well, so:
-
-Acked-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
-
-Regards,
-
-	Hans
-
+> errno is very easily clobbered and not clearly set on success - ie,
+> it'd be better not to do that.
 > 
-> Cc: Andy Walls <awalls@md.metrocast.net>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  drivers/media/pci/ivtv/ivtv-udma.c | 2 +-
->  drivers/media/pci/ivtv/ivtv-yuv.c  | 5 ++---
->  2 files changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/media/pci/ivtv/ivtv-udma.c b/drivers/media/pci/ivtv/ivtv-udma.c
-> index 210be8290f24..99b9f55ca829 100644
-> --- a/drivers/media/pci/ivtv/ivtv-udma.c
-> +++ b/drivers/media/pci/ivtv/ivtv-udma.c
-> @@ -115,7 +115,7 @@ int ivtv_udma_setup(struct ivtv *itv, unsigned long ivtv_dest_addr,
->  
->  	/* Pin user pages for DMA Xfer */
->  	err = pin_user_pages_unlocked(user_dma.uaddr, user_dma.page_count,
-> -			dma->map, FOLL_FORCE);
-> +			dma->map, 0);
->  
->  	if (user_dma.page_count != err) {
->  		IVTV_DEBUG_WARN("failed to map user pages, returned %d instead of %d\n",
-> diff --git a/drivers/media/pci/ivtv/ivtv-yuv.c b/drivers/media/pci/ivtv/ivtv-yuv.c
-> index 4ba10c34a16a..582146f8d70d 100644
-> --- a/drivers/media/pci/ivtv/ivtv-yuv.c
-> +++ b/drivers/media/pci/ivtv/ivtv-yuv.c
-> @@ -63,12 +63,11 @@ static int ivtv_yuv_prep_user_dma(struct ivtv *itv, struct ivtv_user_dma *dma,
->  
->  	/* Pin user pages for DMA Xfer */
->  	y_pages = pin_user_pages_unlocked(y_dma.uaddr,
-> -			y_dma.page_count, &dma->map[0], FOLL_FORCE);
-> +			y_dma.page_count, &dma->map[0], 0);
->  	uv_pages = 0; /* silence gcc. value is set and consumed only if: */
->  	if (y_pages == y_dma.page_count) {
->  		uv_pages = pin_user_pages_unlocked(uv_dma.uaddr,
-> -				uv_dma.page_count, &dma->map[y_pages],
-> -				FOLL_FORCE);
-> +				uv_dma.page_count, &dma->map[y_pages], 0);
->  	}
->  
->  	if (y_pages != y_dma.page_count || uv_pages != uv_dma.page_count) {
+> Acked-by: Ian Rogers <irogers@google.com>
+
+Thanks, applied.
+
+- Arnaldo
 
