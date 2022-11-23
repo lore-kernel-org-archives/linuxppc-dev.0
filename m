@@ -4,79 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2434CC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Nov 2022 23:40:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22E67C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 02:24:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NH12s1t69z3f35
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 10:40:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NH4h83dwlz3f32
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 13:24:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YxB+eGrq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=LJY60C9h;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=zhouzhouyi@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YxB+eGrq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=LJY60C9h;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NH11r5yFhz300l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 10:39:28 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AMND25w031086;
-	Tue, 22 Nov 2022 23:39:26 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=y9NwiyaAyko9Bxl4KDhwRGthR364Cj3FAVjovSAT9S4=;
- b=YxB+eGrq4kuLeZYcCtt0Za6ZlmCXegGEvYZUVvs+FXZwvd/GkRLzI01yrl95oOMQe/E3
- Y8AGRJmjOBuyYHkCU06seqVAt6pSvLGyS+hxsLihez5RqFnVn+Ywi8uqpcoPwSFjKmTL
- vHVhQ6uFZOO0o0Jbf88nyMrt+j4M2qscNWLy+/2jJ5eyNx01j6JZ0VqwjRo9XKnnZHJb
- 6R6yp4NlrAzq5xQXmaqOOo9X1O8a0qwP2JMLLYrMq4Sg7g92JMIO0cTQZVL2bTNAq7Ci
- huNT6D/PI1QrkMLQ9Pvw3eyW2uXLnUaB5/WT+u9LoAtX/IayLvpIZdD9uCmTAF5lu+FS Tw== 
-Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m0y4w6y58-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 23:39:25 +0000
-Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
-	by ppma06fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AMN6UwN001299;
-	Tue, 22 Nov 2022 23:12:02 GMT
-Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
-	by ppma06fra.de.ibm.com with ESMTP id 3kxpdj3jmg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 22 Nov 2022 23:12:02 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-	by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AMN5kb549414436
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 22 Nov 2022 23:05:46 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ECF8B5204E;
-	Tue, 22 Nov 2022 23:11:59 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4EEAB5204F;
-	Tue, 22 Nov 2022 23:11:59 +0000 (GMT)
-Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ABA5160151;
-	Wed, 23 Nov 2022 10:11:56 +1100 (AEDT)
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/7] Expand selftest utils
-Date: Wed, 23 Nov 2022 10:10:56 +1100
-Message-Id: <20221122231103.15829-1-bgray@linux.ibm.com>
-X-Mailer: git-send-email 2.38.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NH4g1601Rz3cMw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 13:23:24 +1100 (AEDT)
+Received: by mail-pl1-x636.google.com with SMTP id p12so15408426plq.4
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Nov 2022 18:23:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=MhsEomGEcHS0ITrqbixOcvOCHqtbhvqSM8S3bsVjuhw=;
+        b=LJY60C9hm82Ajktbt56J964gyIfZ54hQakqP+9JsoTzhGcASSBupESEzfFhC1ztM2s
+         HiL53/9c/jaw0PF9LDHlu1OHxtZ2zagtdcaTeGlcX8TOV3lPjekZupUIO/wpULT7kaSl
+         mbMKtQWl6b3azlYxFblm+q1LmMXohPIsnCVnd32al1eRsrrMQiEFVe3ADMw2hy8agotb
+         nRcNg3zkbYFf/w5Nlc/4VEKUYEu/hebU4TbfMGgCe8p5AmeG+YsSCzYCLWe/2OD//+nv
+         pJr2gzQe/jsJiCFB3Ev7gSgUq58EUZcR/M5Xn0R/pbnBVn70C58QPMrcHmBOp1LwiV5s
+         +VTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=MhsEomGEcHS0ITrqbixOcvOCHqtbhvqSM8S3bsVjuhw=;
+        b=mYP/B+9t6hZQRKJGg7QPT07YBe0gurd0QXSJ2Bw9klRAt5g4OU++xf2BbmUL2hH4uE
+         q26hp5P/clwSwXu1YcHgsnmvJMcCh+1Q0b9Pu1e4FAjOUdoWqe9WD7q+2LQAjNI3tA7P
+         Nh0nUOHoUjKyaxc4OHEwvH/yuGsnF+KGa1a1bJs8bvT0bmhlJIBu3aVxeykUwQ921GZw
+         HSlWTBG7HFM0r7QX6/WZt/iLIjU540HGhcE1GHqaKQJIvR5Sh2dIkua1A7sro5+VTXvA
+         zlLHh8Qg/NYZboDPLzQXkMUdkacHnVIprP1w1QZSgPVV41O1+SgiKMVqzm1krxOZLRY4
+         R9AA==
+X-Gm-Message-State: ANoB5plfA/NnbPpFuOipwb7KTvYKamEI1DrAoX+JNyYivSVNv7EmmV1G
+	0lagoRmMUBdWQrkgWTIHqLhkbl/O7KA3xTbFG2Q=
+X-Google-Smtp-Source: AA0mqf5DzRfWvrQG/Bl7rr76l1lOWBNm9IPBe18oEPOXIHBRs4mQ59hc13n+lkHpHP9XCgc3CCVrsr6dKZEPIGA4J0Y=
+X-Received: by 2002:a17:90a:9403:b0:218:6a4e:e44a with SMTP id
+ r3-20020a17090a940300b002186a4ee44amr29392875pjo.6.1669170202991; Tue, 22 Nov
+ 2022 18:23:22 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 6qS62Rr60axVkNQje3wJe9klem1hMQ7U
-X-Proofpoint-ORIG-GUID: 6qS62Rr60axVkNQje3wJe9klem1hMQ7U
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-22_13,2022-11-18_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxlogscore=999
- phishscore=0 lowpriorityscore=0 spamscore=0 bulkscore=0 mlxscore=0
- adultscore=0 malwarescore=0 impostorscore=0 suspectscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2210170000 definitions=main-2211220177
+References: <20221121035140.118651-1-zhouzhouyi@gmail.com> <20221122013754.GY4001@paulmck-ThinkPad-P17-Gen-1>
+In-Reply-To: <20221122013754.GY4001@paulmck-ThinkPad-P17-Gen-1>
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+Date: Wed, 23 Nov 2022 10:23:11 +0800
+Message-ID: <CAABZP2z5CLJg4tabNwDMopiNZTZYGC++Z9w6ZOhhGrXQHGMGUA@mail.gmail.com>
+Subject: Re: [PATCH linux-next][RFC]torture: avoid offline tick_do_timer_cpu
+To: paulmck@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,73 +73,137 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Benjamin Gray <bgray@linux.ibm.com>, ajd@linux.ibm.com
+Cc: dave@stgolabs.net, josh@joshtriplett.org, linux-kernel@vger.kernel.org, fweisbec@gmail.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-(No changes to contents from v1, added signed-off-by's and fixed up commit messages)
+On Tue, Nov 22, 2022 at 9:37 AM Paul E. McKenney <paulmck@kernel.org> wrote:
+>
+> On Mon, Nov 21, 2022 at 11:51:40AM +0800, Zhouyi Zhou wrote:
+> > During CPU-hotplug torture (CONFIG_NO_HZ_FULL=y), if we try to
+> > offline tick_do_timer_cpu, the operation will fail because in
+> > function tick_nohz_cpu_down:
+> > ```
+> > if (tick_nohz_full_running && tick_do_timer_cpu == cpu)
+> >       return -EBUSY;
+> > ```
+> > Above bug was first discovered in torture tests performed in PPC VM
+> > of Open Source Lab of Oregon State University, and reproducable in RISC-V
+> > and X86-64 (with additional kernel commandline cpu0_hotplug).
+> >
+> > In this patch, we avoid offline tick_do_timer_cpu by distribute
+> > the offlining cpu among remaining cpus.
+> >
+> > Signed-off-by: Zhouyi Zhou <zhouzhouyi@gmail.com>
+>
+> Good show chasing this down!
+Thank Paul for your guidance and encouragement!
+>
+> A couple of questions below.
+The answers below.
+>
+> > ---
+> >  include/linux/tick.h        |  1 +
+> >  kernel/time/tick-common.c   |  1 +
+> >  kernel/time/tick-internal.h |  1 -
+> >  kernel/torture.c            | 10 ++++++++++
+> >  4 files changed, 12 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/include/linux/tick.h b/include/linux/tick.h
+> > index bfd571f18cfd..23cc0b205853 100644
+> > --- a/include/linux/tick.h
+> > +++ b/include/linux/tick.h
+> > @@ -14,6 +14,7 @@
+> >  #include <linux/rcupdate.h>
+> >
+> >  #ifdef CONFIG_GENERIC_CLOCKEVENTS
+> > +extern int tick_do_timer_cpu __read_mostly;
+> >  extern void __init tick_init(void);
+> >  /* Should be core only, but ARM BL switcher requires it */
+> >  extern void tick_suspend_local(void);
+> > diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+> > index 46789356f856..87b9b9afa320 100644
+> > --- a/kernel/time/tick-common.c
+> > +++ b/kernel/time/tick-common.c
+> > @@ -48,6 +48,7 @@ ktime_t tick_next_period;
+> >   *    procedure also covers cpu hotplug.
+> >   */
+> >  int tick_do_timer_cpu __read_mostly = TICK_DO_TIMER_BOOT;
+> > +EXPORT_SYMBOL_GPL(tick_do_timer_cpu);
+> >  #ifdef CONFIG_NO_HZ_FULL
+> >  /*
+> >   * tick_do_timer_boot_cpu indicates the boot CPU temporarily owns
+> > diff --git a/kernel/time/tick-internal.h b/kernel/time/tick-internal.h
+> > index 649f2b48e8f0..8953dca10fdd 100644
+> > --- a/kernel/time/tick-internal.h
+> > +++ b/kernel/time/tick-internal.h
+> > @@ -15,7 +15,6 @@
+> >
+> >  DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
+> >  extern ktime_t tick_next_period;
+> > -extern int tick_do_timer_cpu __read_mostly;
+> >
+> >  extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
+> >  extern void tick_handle_periodic(struct clock_event_device *dev);
+> > diff --git a/kernel/torture.c b/kernel/torture.c
+> > index 789aeb0e1159..bccbdd33dda2 100644
+> > --- a/kernel/torture.c
+> > +++ b/kernel/torture.c
+> > @@ -33,6 +33,7 @@
+> >  #include <linux/delay.h>
+> >  #include <linux/stat.h>
+> >  #include <linux/slab.h>
+> > +#include <linux/tick.h>
+> >  #include <linux/trace_clock.h>
+> >  #include <linux/ktime.h>
+> >  #include <asm/byteorder.h>
+> > @@ -358,7 +359,16 @@ torture_onoff(void *arg)
+> >                       schedule_timeout_interruptible(HZ / 10);
+> >                       continue;
+> >               }
+> > +#ifdef CONFIG_NO_HZ_FULL
+> > +             /* do not offline tick do timer cpu */
+> > +             if (tick_nohz_full_running) {
+> > +                     cpu = (torture_random(&rand) >> 4) % maxcpu;
+> > +                     if (cpu >= tick_do_timer_cpu)
+>
+> Why is this ">=" instead of "=="?
+I use probability theory here to let the remaining cpu distribute evenly.
+Example:
+we have cpus: 0 1 2 3 4 5 6 7
+maxcpu = 7
+tick_do_timer_cpu = 2
+remaining cpus are: 0 1 3 4 5 6 7
+if the offline cpu candidate is 2, then the result cpu is 2+1
+else if the offline cpu candidate is 3, then the result cpu is 3+1
+...
+else if the offline cpu candidate is 6, then the result cpu is 6+1
+>
+> > +                             cpu = (cpu + 1) % (maxcpu + 1);
+we could just use cpu = cpu + 1 here
+> > +             } else
+> > +#else
+> >               cpu = (torture_random(&rand) >> 4) % (maxcpu + 1);
+> > +#endif
+>
+> What happens if the value of tick_do_timer_cpu changes between the time of
+> the check above and the call to torture_offline() below?  Alternatively,
+> how is such a change in value prevented?
+I did a preliminary research about the above question, this is quite
+complicated for me
+(because I think I must not bring locks to kernel just because our
+test frame need them),
+Please give me some days to perform intensive research.
 
-Started this when writing tests for a feature I'm working on, needing a way to
-read/write numbers to system files. After writing some utils to safely handle
-file IO and parsing, I realised I'd made the ~6th file read/write implementation
-and only(?) number parser that checks all the failure modes when expecting to
-parse a single number from a file.
-
-So these utils ended up becoming this series. I also modified some other test
-utils I came across while doing so. My understanding is selftests are not expected
-to be backported, so I wasn't concerned about only introducing new utils and leaving
-the existing implementations be.
-
-Changes:
-- Use the mtfspr/mfspr macros where possible over inline asm
-- Fix potential non-null terminated buffer in ptrace tests
-- Add read_file / write_file to read and write raw bytes given appropriate
-  path and buffers. Replace hand rolled read/write with this where easy.
-- Make read/write_debugfs_file work on byte buffers and introduce
-  read/write_debugfs_int for int specific contents. This more naturally aligns
-  with the read/write_file functions, and allows for future *_long, *_ulong
-  variants when required.
-- Add an error checking number parser. It's an ugly function generating macro.
-  The issue is the result param type can't be made generic, so there needs to
-  be a separate definition per type (or at least for signed/unsigned). Also
-  can't seem to use generics with the variable type declaration, so the max
-  sized type for the input sign has to be specified manually.
-  It's at least grep-able and language servers recognise it as defining
-  parse_int, etc., though.
-- Add the read_long, write_long, etc., utils that combine file IO and parsing.
-  These are the utils I really wanted, useful for system files that are just
-  numbers.
-- Add an allocating file read for when the buffer is potentially too big to
-  preallocate on the stack or needs to live especially long.
-
-
-Benjamin Gray (7):
-  selftests/powerpc: Use mfspr/mtspr macros
-  selftests/powerpc: Add ptrace setup_core_pattern() null-terminator
-  selftests/powerpc: Add generic read/write file util
-  selftests/powerpc: Add read/write debugfs file, int
-  selftests/powerpc: Parse long/unsigned long value safely
-  selftests/powerpc: Add {read,write}_{long,ulong}
-  selftests/powerpc: Add automatically allocating read_file
-
- tools/testing/selftests/powerpc/dscr/dscr.h   |  56 +---
- .../selftests/powerpc/dscr/dscr_sysfs_test.c  |  23 +-
- .../testing/selftests/powerpc/include/utils.h |  18 +-
- .../selftests/powerpc/nx-gzip/gzfht_test.c    |  52 +--
- tools/testing/selftests/powerpc/pmu/lib.c     |  35 +-
- .../selftests/powerpc/ptrace/core-pkey.c      |  28 +-
- .../selftests/powerpc/ptrace/ptrace-hwbreak.c |   6 +-
- .../testing/selftests/powerpc/ptrace/ptrace.h |   5 +-
- .../selftests/powerpc/security/entry_flush.c  |  12 +-
- .../selftests/powerpc/security/flush_utils.c  |   3 +-
- .../selftests/powerpc/security/rfi_flush.c    |  12 +-
- .../powerpc/security/uaccess_flush.c          |  18 +-
- .../selftests/powerpc/syscalls/Makefile       |   2 +-
- .../selftests/powerpc/syscalls/rtas_filter.c  |  80 +----
- tools/testing/selftests/powerpc/utils.c       | 314 ++++++++++++++----
- 15 files changed, 341 insertions(+), 323 deletions(-)
-
-
-base-commit: 247f34f7b80357943234f93f247a1ae6b6c3a740
---
-2.38.1
+Thanks again
+Cheers
+Zhouyi
+>
+>                                                         Thanx, Paul
+>
+> >               if (!torture_offline(cpu,
+> >                                    &n_offline_attempts, &n_offline_successes,
+> >                                    &sum_offline, &min_offline, &max_offline))
+> > --
+> > 2.34.1
+> >
