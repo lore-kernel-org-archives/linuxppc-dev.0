@@ -4,49 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDD41C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 09:12:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BF0DC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 10:03:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NHFkZ1Qllz3dvB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 20:12:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NHGsw4gxBz3f3b
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 21:03:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tTDWWV/i;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L3GMSKCq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tTDWWV/i;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=L3GMSKCq;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHFjW42R4z3cGD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 20:11:11 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id D064361B14;
-	Wed, 23 Nov 2022 09:11:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 72099C433D7;
-	Wed, 23 Nov 2022 09:11:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1669194667;
-	bh=GXMwyAFHH9LtUUd0vupv4sOaQtEdgJicv+5Xo2PzPp4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tTDWWV/i8ylNnUWJxVvj8KqwYxHX714nE3j4F0xJMRsvPCoterdNRmDk2JVHw2ajU
-	 yug61nlIFnIfEZBwTnbV2scDW45w4UM/28BUclpF6i65Q2wCz75leSH2ppLd7S/vLn
-	 SOQIULes3lczErsuWPh0jNlPEVMEAiyjU+1jWeQ0=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 5.4 027/156] perf stat: Fix printing os->prefix in CSV metrics output
-Date: Wed, 23 Nov 2022 09:49:44 +0100
-Message-Id: <20221123084558.941921215@linuxfoundation.org>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221123084557.816085212@linuxfoundation.org>
-References: <20221123084557.816085212@linuxfoundation.org>
-User-Agent: quilt/0.67
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHGrm2n87z3bYF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 21:02:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=83MdFbKu6KOPOEKDlo0HlMJgvVO0m/fdLoc4Thdcuh4=; b=L3GMSKCqIzE5TXY6NpR87122vy
+	5RVcYocIKBTqMAxQaZoiJ26f3xxpygT4Hf/l2rSm5zmBMLR9K2N/2mPp+cYoJ9/mUTY8NWl8ziZpr
+	kX70BA8Srb3jpD9hxth5wGoV8JGwXqz91SC2E4uajGOgkWPwuWd9aGQRRqTeLbJRPtftMFidcYzu6
+	aeqZhh3wKtR1ExxNNJg94/SzeQmae/PxjwijVcftwjeDJ1SLenmjfGsRmTG6ahE+iW4jpu7JwIvlK
+	UATAjIgUlUhR+dPn+PQe8PPqZxCNT+h+O1AT3+4VJZzlLiJT9C0NEReTJ/xl/Xz2JGTLsr0h9Y+vU
+	52fM13JQ==;
+Received: from [2601:1c2:d80:3110::a2e7]
+	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1oxmaD-00GBoz-D2; Wed, 23 Nov 2022 10:02:21 +0000
+Message-ID: <25c22370-b67a-33a6-f1e6-abf70760d866@infradead.org>
+Date: Wed, 23 Nov 2022 02:02:18 -0800
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH -next] fbdev: offb: allow build when DRM_OFDRM=m
+Content-Language: en-US
+To: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+References: <20221123031605.16680-1-rdunlap@infradead.org>
+ <4b10b87d-f255-4839-8700-858d98ffb801@app.fastmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <4b10b87d-f255-4839-8700-858d98ffb801@app.fastmail.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,128 +60,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, Ian Rogers <irogers@google.com>, Andi Kleen <ak@linux.intel.com>, Nageswara R Sastry <rnsastry@linux.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, patches@lists.linux.dev, Arnaldo Carvalho de Melo <acme@redhat.com>, Athira Jajeev <atrajeev@linux.vnet.ibm.com>, James Clark <james.clark@arm.com>, Jiri Olsa <jolsa@kernel.org>, Kajol Jain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, Masahiro Yamada <masahiroy@kernel.org>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>, Michal Suchanek <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Hi Arnd,
 
-[ Upstream commit ad353b710c7493df3d4fc2d3a51819126bed2e81 ]
+On 11/23/22 01:08, Arnd Bergmann wrote:
+> On Wed, Nov 23, 2022, at 04:16, Randy Dunlap wrote:
+>> Fix build when CONFIG_FB_OF=y and CONFIG_DRM_OFDRM=m.
+>> When the latter symbol is =m, kconfig downgrades (limits) the 'select's
+>> under FB_OF to modular (=m). This causes undefined symbol references:
+>>
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): 
+>> undefined reference to `cfb_fillrect'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): 
+>> undefined reference to `cfb_copyarea'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): 
+>> undefined reference to `cfb_imageblit'
+>>
+>> Fix this by allowing FB_OF any time that DRM_OFDRM != y so that the
+>> selected FB_CFB_* symbols will become =y instead of =m.
+>>
+>> In tristate logic (for DRM_OFDRM), this changes the dependency from
+>>     !DRM_OFDRM	== 2 - 1 == 1 => modular only (or disabled)
+>> to (boolean)
+>>     DRM_OFDRM != y == y, allowing the 'select's to cause the
+>> FB_CFB_* symbols to =y instead of =m.
+>>
+> 
+> Is it actually a useful configuration to have OFDRM=m and
+> FB_OF=y though? I would expect in that case that the OFDRM
+> driver never binds to a device because it's already owned
+> by FB_OF.
+> 
+>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -455,7 +455,7 @@ config FB_ATARI
+>>  config FB_OF
+>>  	bool "Open Firmware frame buffer device support"
+>>  	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
+>> -	depends on !DRM_OFDRM
+>> +	depends on DRM_OFDRM != y
+>>  	select APERTURE_HELPERS
+> 
+> I would instead make this 'depends on DRM_OFDRM=n', which
+> completely eliminates configs that have both driver enabled.
 
-'perf stat' with CSV output option prints an extra empty string as first
-field in metrics output line.  Sample output below:
+Yep, that works for me. Thanks.
 
-	# ./perf stat -x, --per-socket -a -C 1 ls
-	S0,1,1.78,msec,cpu-clock,1785146,100.00,0.973,CPUs utilized
-	S0,1,26,,context-switches,1781750,100.00,0.015,M/sec
-	S0,1,1,,cpu-migrations,1780526,100.00,0.561,K/sec
-	S0,1,1,,page-faults,1779060,100.00,0.561,K/sec
-	S0,1,875807,,cycles,1769826,100.00,0.491,GHz
-	S0,1,85281,,stalled-cycles-frontend,1767512,100.00,9.74,frontend cycles idle
-	S0,1,576839,,stalled-cycles-backend,1766260,100.00,65.86,backend cycles idle
-	S0,1,288430,,instructions,1762246,100.00,0.33,insn per cycle
-====>	,S0,1,,,,,,,2.00,stalled cycles per insn
+Thomas, Michal, are you OK with that change?
 
-The above command line uses field separator as "," via "-x," option and
-per-socket option displays socket value as first field. But here the
-last line for "stalled cycles per insn" has "," in the beginning.
+> A nicer change would be to make FB_OF a tristate symbol,
+> which makes it possible to load one of the two modules if
+> both are enabled =m, while only allowing one of them to
+> be =y if the other is completely disabled. It looks like
+> offb was originally written to be usable as a loadable module,
+> but Kconfig has prevented this since at least the start of
+> the git history.
 
-Sample output using interval mode:
-
-	# ./perf stat -I 1000 -x, --per-socket -a -C 1 ls
-	0.001813453,S0,1,1.87,msec,cpu-clock,1872052,100.00,0.002,CPUs utilized
-	0.001813453,S0,1,2,,context-switches,1868028,100.00,1.070,K/sec
-	------
-	0.001813453,S0,1,85379,,instructions,1856754,100.00,0.32,insn per cycle
-====>	0.001813453,,S0,1,,,,,,,1.34,stalled cycles per insn
-
-Above result also has an extra CSV separator after
-the timestamp. Patch addresses extra field separator
-in the beginning of the metric output line.
-
-The counter stats are displayed by function
-"perf_stat__print_shadow_stats" in code
-"util/stat-shadow.c". While printing the stats info
-for "stalled cycles per insn", function "new_line_csv"
-is used as new_line callback.
-
-The new_line_csv function has check for "os->prefix"
-and if prefix is not null, it will be printed along
-with cvs separator.
-Snippet from "new_line_csv":
-	if (os->prefix)
-               fprintf(os->fh, "%s%s", os->prefix, config->csv_sep);
-
-Here os->prefix gets printed followed by ","
-which is the cvs separator. The os->prefix is
-used in interval mode option ( -I ), to print
-time stamp on every new line. But prefix is
-already set to contain CSV separator when used
-in interval mode for CSV option.
-
-Reference: Function "static void print_interval"
-Snippet:
-	sprintf(prefix, "%6lu.%09lu%s", ts->tv_sec, ts->tv_nsec, config->csv_sep);
-
-Also if prefix is not assigned (if not used with
--I option), it gets set to empty string.
-Reference: function printout() in util/stat-display.c
-Snippet:
-	.prefix = prefix ? prefix : "",
-
-Since prefix already set to contain cvs_sep in interval
-option, patch removes printing config->csv_sep in
-new_line_csv function to avoid printing extra field.
-
-After the patch:
-
-	# ./perf stat -x, --per-socket -a -C 1 ls
-	S0,1,2.04,msec,cpu-clock,2045202,100.00,1.013,CPUs utilized
-	S0,1,2,,context-switches,2041444,100.00,979.289,/sec
-	S0,1,0,,cpu-migrations,2040820,100.00,0.000,/sec
-	S0,1,2,,page-faults,2040288,100.00,979.289,/sec
-	S0,1,254589,,cycles,2036066,100.00,0.125,GHz
-	S0,1,82481,,stalled-cycles-frontend,2032420,100.00,32.40,frontend cycles idle
-	S0,1,113170,,stalled-cycles-backend,2031722,100.00,44.45,backend cycles idle
-	S0,1,88766,,instructions,2030942,100.00,0.35,insn per cycle
-	S0,1,,,,,,,1.27,stalled cycles per insn
-
-Fixes: 92a61f6412d3a09d ("perf stat: Implement CSV metrics output")
-Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-Reviewed-By: Kajol Jain <kjain@linux.ibm.com>
-Signed-off-by: Athira Jajeev <atrajeev@linux.vnet.ibm.com>
-Tested-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Ian Rogers <irogers@google.com>
-Cc: James Clark <james.clark@arm.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Link: https://lore.kernel.org/r/20221018085605.63834-1-atrajeev@linux.vnet.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- tools/perf/util/stat-display.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-index 93147cc40162..e18c26501a7f 100644
---- a/tools/perf/util/stat-display.c
-+++ b/tools/perf/util/stat-display.c
-@@ -193,7 +193,7 @@ static void new_line_csv(struct perf_stat_config *config, void *ctx)
- 
- 	fputc('\n', os->fh);
- 	if (os->prefix)
--		fprintf(os->fh, "%s%s", os->prefix, config->csv_sep);
-+		fprintf(os->fh, "%s", os->prefix);
- 	aggr_printout(config, os->evsel, os->id, os->nr);
- 	for (i = 0; i < os->nfields; i++)
- 		fputs(config->csv_sep, os->fh);
 -- 
-2.35.1
-
-
-
+~Randy
