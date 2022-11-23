@@ -4,67 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8F64C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 11:03:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58B8FC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 13:18:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NHJCN5QXnz3f52
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Nov 2022 22:03:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zte.com.cn (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=zhang.songyi@zte.com.cn; receiver=<UNKNOWN>)
-X-Greylist: delayed 457 seconds by postgrey-1.36 at boromir; Wed, 23 Nov 2022 20:15:27 AEDT
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NHMBk1bqcz3f58
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 00:18:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=+b1z=3x=xs4all.nl=hverkuil@kernel.org; receiver=<UNKNOWN>)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHFpR6PZTz3cGD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 20:15:26 +1100 (AEDT)
-Received: from mxde.zte.com.cn (unknown [10.35.20.121])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4NHFdZ1yRtz1DDw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 17:07:46 +0800 (CST)
-Received: from mxus.zte.com.cn (unknown [10.207.168.7])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mxde.zte.com.cn (FangMail) with ESMTPS id 4NHFd63ssnzBf6M0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 17:07:22 +0800 (CST)
-Received: from mxhk.zte.com.cn (unknown [192.168.250.137])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mxus.zte.com.cn (FangMail) with ESMTPS id 4NHFcP2ZNkz9tyD6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 17:06:45 +0800 (CST)
-Received: from mxct.zte.com.cn (unknown [192.168.251.13])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NHFcH07HLz8RV6G
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Nov 2022 17:06:39 +0800 (CST)
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHMB35k2Cz3bP1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Nov 2022 00:17:47 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4NHFc36spTz4y0tt;
-	Wed, 23 Nov 2022 17:06:27 +0800 (CST)
-Received: from xaxapp01.zte.com.cn ([10.88.40.50])
-	by mse-fl1.zte.com.cn with SMTP id 2AN96HLb057157;
-	Wed, 23 Nov 2022 17:06:17 +0800 (+08)
-	(envelope-from zhang.songyi@zte.com.cn)
-Received: from mapi (xaxapp02[null])
-	by mapi (Zmail) with MAPI id mid31;
-	Wed, 23 Nov 2022 17:06:19 +0800 (CST)
-Date: Wed, 23 Nov 2022 17:06:19 +0800 (CST)
-X-Zmail-TransId: 2afa637de28bffffffffb1842df1
-X-Mailer: Zmail v1.0
-Message-ID: <202211231706198927223@zte.com.cn>
-Mime-Version: 1.0
-From: <zhang.songyi@zte.com.cn>
-To: <arnd@arndb.de>
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIHBvd2VycGMvY2VsbC9heG9uX21zaTogcmVwbGFjZSBERUZJTkVfU0lNUExFX0FUVFJJQlVURSB3aXRoCiBERUZJTkVfREVCVUdGU19BVFRSSUJVVEU=?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 2AN96HLb057157
-X-Fangmail-Gw-Spam-Type: 0
-X-FangMail-Miltered: at cgslv5.04-192.168.251.14.novalocal with ID 637DE2E1.000 by FangMail milter!
-X-FangMail-Envelope: 1669194466/4NHFdZ1yRtz1DDw/637DE2E1.000/10.35.20.121/[10.35.20.121]/mxde.zte.com.cn/<zhang.songyi@zte.com.cn>
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 637DE2E1.000/4NHFdZ1yRtz1DDw
-X-Mailman-Approved-At: Wed, 23 Nov 2022 22:03:15 +1100
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 0D2BB61CAD;
+	Wed, 23 Nov 2022 13:17:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC3BFC433D6;
+	Wed, 23 Nov 2022 13:17:36 +0000 (UTC)
+Message-ID: <73481668-9c41-7d01-d328-bd137a57c0b3@xs4all.nl>
+Date: Wed, 23 Nov 2022 14:17:35 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.1
+Subject: Re: [PATCH mm-unstable v1 13/20] media: videobuf-dma-sg: remove
+ FOLL_FORCE usage
+Content-Language: en-US
+To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
+References: <20221116102659.70287-1-david@redhat.com>
+ <20221116102659.70287-14-david@redhat.com>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+In-Reply-To: <20221116102659.70287-14-david@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,42 +48,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, zhang.songyi@zte.com.cn
+Cc: linux-ia64@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, linux-kselftest@vger.kernel.org, sparclinux@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Andrea Arcangeli <aarcange@redhat.com>, linux-samsung-soc@vger.kernel.org, linux-rdma@vger.kernel.org, David Airlie <airlied@gmail.com>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, Alex Williamson <alex.williamson@redhat.com>, Peter Xu <peterx@redhat.com>, Muchun Song <songmuchun@bytedance.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Oded Gabbay <ogabbay@kerne
+ l.org>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.org, linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Lucas Stach <l.stach@pengutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: zhang songyi <zhang.songyi@zte.com.cn>
+On 16/11/2022 11:26, David Hildenbrand wrote:
+> GUP now supports reliable R/O long-term pinning in COW mappings, such
+> that we break COW early. MAP_SHARED VMAs only use the shared zeropage so
+> far in one corner case (DAXFS file with holes), which can be ignored
+> because GUP does not support long-term pinning in fsdax (see
+> check_vma_flags()).
+> 
+> Consequently, FOLL_FORCE | FOLL_WRITE | FOLL_LONGTERM is no longer required
+> for reliable R/O long-term pinning: FOLL_LONGTERM is sufficient. So stop
+> using FOLL_FORCE, which is really only for ptrace access.
+> 
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 
-Fix the following coccicheck warning:
-/arch/powerpc/platforms/cell/axon_msi.c:457:0-23: WARNING:
-fops_msic should be defined with DEFINE_DEBUGFS_ATTRIBUTE
+Acked-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
 
-Signed-off-by: zhang songyi <zhang.songyi@zte.com.cn>
----
- arch/powerpc/platforms/cell/axon_msi.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Looks good!
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 5b012abca773..ab080b5022ff 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -454,7 +454,7 @@ static int msic_get(void *data, u64 *val)
-        return 0;
- }
+	Hans
 
--DEFINE_SIMPLE_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
-+DEFINE_DEBUGFS_ATTRIBUTE(fops_msic, msic_get, msic_set, "%llu\n");
+> ---
+>  drivers/media/v4l2-core/videobuf-dma-sg.c | 14 +++++---------
+>  1 file changed, 5 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2-core/videobuf-dma-sg.c
+> index f75e5eedeee0..234e9f647c96 100644
+> --- a/drivers/media/v4l2-core/videobuf-dma-sg.c
+> +++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
+> @@ -151,17 +151,16 @@ static void videobuf_dma_init(struct videobuf_dmabuf *dma)
+>  static int videobuf_dma_init_user_locked(struct videobuf_dmabuf *dma,
+>  			int direction, unsigned long data, unsigned long size)
+>  {
+> +	unsigned int gup_flags = FOLL_LONGTERM;
+>  	unsigned long first, last;
+> -	int err, rw = 0;
+> -	unsigned int flags = FOLL_FORCE;
+> +	int err;
+>  
+>  	dma->direction = direction;
+>  	switch (dma->direction) {
+>  	case DMA_FROM_DEVICE:
+> -		rw = READ;
+> +		gup_flags |= FOLL_WRITE;
+>  		break;
+>  	case DMA_TO_DEVICE:
+> -		rw = WRITE;
+>  		break;
+>  	default:
+>  		BUG();
+> @@ -177,14 +176,11 @@ static int videobuf_dma_init_user_locked(struct videobuf_dmabuf *dma,
+>  	if (NULL == dma->pages)
+>  		return -ENOMEM;
+>  
+> -	if (rw == READ)
+> -		flags |= FOLL_WRITE;
+> -
+>  	dprintk(1, "init user [0x%lx+0x%lx => %lu pages]\n",
+>  		data, size, dma->nr_pages);
+>  
+> -	err = pin_user_pages(data & PAGE_MASK, dma->nr_pages,
+> -			     flags | FOLL_LONGTERM, dma->pages, NULL);
+> +	err = pin_user_pages(data & PAGE_MASK, dma->nr_pages, gup_flags,
+> +			     dma->pages, NULL);
+>  
+>  	if (err != dma->nr_pages) {
+>  		dma->nr_pages = (err >= 0) ? err : 0;
 
- void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
- {
-@@ -475,6 +475,7 @@ void axon_msi_debug_setup(struct device_node *dn, struct axon_msic *msic)
-
-        snprintf(name, sizeof(name), "msic_%d", of_node_to_nid(dn));
-
--       debugfs_create_file(name, 0600, arch_debugfs_dir, msic, &fops_msic);
-+       debugfs_create_file_unsafe(name, 0600, arch_debugfs_dir,
-+                                  msic, &fops_msic);
- }
- #endif /* DEBUG */
---
-2.15.2
