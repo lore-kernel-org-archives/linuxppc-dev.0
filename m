@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D4D0C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 13:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9595C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 13:51:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NHzMH03Qkz3dvV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Nov 2022 00:27:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NHztv1Zpdz3f5M
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Nov 2022 00:51:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GlKThzKx;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hi20oGxz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GlKThzKx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hi20oGxz;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHzLG4b22z3cG9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2022 00:27:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NHzsj1v1Zz3dvj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2022 00:50:49 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 6032362111;
-	Thu, 24 Nov 2022 13:27:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A1A6C433D6;
-	Thu, 24 Nov 2022 13:26:51 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 028D6620F4;
+	Thu, 24 Nov 2022 13:50:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6776AC4347C;
+	Thu, 24 Nov 2022 13:50:38 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1669296419;
+	s=k20201202; t=1669297846;
 	bh=vSDY92xmrOtkiq1FJrC4dGUzlqSkjlYU9twgxHBDx1E=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=GlKThzKxKhC23cCCs9TD97Ki98PxWTZ4U4GGNHqAoquE+4kuWhNWaxPoQPCk0uei7
-	 BUiWWVufvjzHt4eQdZ0dB1rSsyQjbML0Cn/dInof/naaueWAZTGNi3ydktLTn01Yre
-	 nrQUAFadEiDlG5Gb5HYUtYcJ1SCy0yLrUgl9VIwOinY1E7NKMfUcrX6vjw3P8Q8E/B
-	 un9634LBLLJ5J6ezGVmN6LpFOeGn/P/G48OhN/1LBFYEid/vLzu3Z32i8PLScUqbyT
-	 N8IaQb0IVk8pv/1Hw+r+9EZgECdRflNPxFYPo32woXedfNjvc/2TBZgKAPl3GQgzF2
-	 iJvkdjZ9IgJ1w==
+	b=Hi20oGxzkmEg74j6qRD7Lfpoa1kcTrQCKK089dVyyzd4Ms62GyYEcriKLOdYnSnIB
+	 BaTy90c7xln7bVVdzp+tZfTor2YCDJ4PfhCFqr+4U1blkF+BSGk+wqWNbDs1GjRxEP
+	 5zngiMi62+XsaI5cdT+5MW5QXkwvuvZTdh1mYSgYk++n5bXwjsiaFEUQhZ7smrgwyJ
+	 TLSH8t2DGrVJraC9jirkwbs0YSutluzSGLevyrPQzPM1RecM+sjiSCNDXdUbmWoX0j
+	 UbEkRvn5n0p6b+FOMJ6yy/o81uO1xyfZHDSqUS0YA3une+k6GKCtZ+YH0Sav4kxmgU
+	 3opwvJAPSvwcQ==
 From: Mark Brown <broonie@kernel.org>
-To: Angel Iglesias <ang.iglesiasg@gmail.com>, Lee Jones <lee.jones@linaro.org>, Grant Likely <grant.likely@linaro.org>,
- Wolfram Sang <wsa@kernel.org>, Uwe Kleine-König <uwe@kleine-koenig.org>
+To: Wolfram Sang <wsa@kernel.org>, Angel Iglesias <ang.iglesiasg@gmail.com>, Lee Jones <lee.jones@linaro.org>,
+ Grant Likely <grant.likely@linaro.org>, Uwe Kleine-König <uwe@kleine-koenig.org>
 In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
 References: <20221118224540.619276-1-uwe@kleine-koenig.org>
 Subject: Re: (subset) [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
-Message-Id: <166929641104.251383.2794823399583000124.b4-ty@kernel.org>
-Date: Thu, 24 Nov 2022 13:26:51 +0000
+Message-Id: <166929783812.276133.16916757100694771073.b4-ty@kernel.org>
+Date: Thu, 24 Nov 2022 13:50:38 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -61,7 +61,7 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, alsa-devel@alsa-project.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org, linux-staging@lists.linux.dev, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Purism Kernel Team <kernel@puri.sm>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-k
+Cc: alsa-devel@alsa-project.org, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org, linux-staging@lists.linux.dev, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, linux-actions@lists.infradead.org, linux-gpio@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Purism Kernel Team <kernel@puri.sm>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-k
  ernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-crypto@vger.kernel.org, kernel@pengutronix.de, patches@opensource.cirrus.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
