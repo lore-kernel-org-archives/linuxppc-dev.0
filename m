@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5531EC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 15:16:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D64B9C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Nov 2022 15:39:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NJ1mx5N7rz3f3y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Nov 2022 02:16:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NJ2Gm1VY7z3f3Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Nov 2022 02:39:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hj/R3teu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bxbfW3D2;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hj/R3teu;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bxbfW3D2;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NJ1lt1gLGz3c4B
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2022 02:15:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NJ2Fl2fFDz3cHl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Nov 2022 02:38:19 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 168F2B827FF;
-	Thu, 24 Nov 2022 15:15:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7997C433B5;
-	Thu, 24 Nov 2022 15:15:40 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 88C74B8284B;
+	Thu, 24 Nov 2022 15:38:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64C55C433D6;
+	Thu, 24 Nov 2022 15:38:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1669302948;
+	s=k20201202; t=1669304295;
 	bh=vSDY92xmrOtkiq1FJrC4dGUzlqSkjlYU9twgxHBDx1E=;
 	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=Hj/R3teuOXbJhLjEIKPLLmxWhHXMEkNOCI4I9RXPi/XTt4vMZrFGydSQJM0ezsZF9
-	 Nxj+vqwZHpMqzpD2iag7xptGV4JRAHMc3ZH46iKcSjFd7EfWld1E2A9XinKZQkAjiB
-	 QqfvAJ8suINRFJhVSqMgvd01DMQV66gS+F12NkyYtQlVkYidZWz6L6Y9MLHeRoBnXC
-	 0f9bBJyncxgdLEszUPwu0zrPWZKDQgHePX69owXUuSUyznysSXXCezmfLBD7isQVS8
-	 B0cy0JQcjKfLTsmclzYm/qT8INcIwd++GHyXkr6Jq9Z0HNE7iwTaoPmYUN3CJBx0mw
-	 eW6ADSX0FfZ2w==
+	b=bxbfW3D2/A7i5smFIpcvTHWNYe0UgNdkEF9lDIZ4Olpq82olRHeMcMSEzUSvX0HAn
+	 gKfYfK/Mm9cNYE+UgPkjT7dbR8ldTwc1hHwZqnIXXjW+HcXhjBwmOi+brjb1bzlCFX
+	 sNQdLO+YMREvCIHKjn7H75ZiTwmm+NNWMQ7yB1OccgGIrFvAI9YMaenPg9V0jDDYYN
+	 4Vs88Y62hgZKsZy8IvFJK8kjQnfwIhCngG+bODRFOsrofRn8z6HwXTWe5l2uwvbYbQ
+	 DBPC34l9snSoY1NNkVISkO+SHb4GDKkdOLxjPE8xpIup3HU7crHhlS7+Zu0Dz61Eeu
+	 ndfT9o7XXod/w==
 From: Mark Brown <broonie@kernel.org>
-To: Angel Iglesias <ang.iglesiasg@gmail.com>, Grant Likely <grant.likely@linaro.org>, Lee Jones <lee.jones@linaro.org>,
- Uwe Kleine-König <uwe@kleine-koenig.org>, Wolfram Sang <wsa@kernel.org>
+To: Grant Likely <grant.likely@linaro.org>, Uwe Kleine-König <uwe@kleine-koenig.org>, Lee Jones <lee.jones@linaro.org>,
+ Wolfram Sang <wsa@kernel.org>, Angel Iglesias <ang.iglesiasg@gmail.com>
 In-Reply-To: <20221118224540.619276-1-uwe@kleine-koenig.org>
 References: <20221118224540.619276-1-uwe@kleine-koenig.org>
 Subject: Re: (subset) [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
-Message-Id: <166930294048.380009.2445779534079023591.b4-ty@kernel.org>
-Date: Thu, 24 Nov 2022 15:15:40 +0000
+Message-Id: <166930428712.403984.2532283689808315264.b4-ty@kernel.org>
+Date: Thu, 24 Nov 2022 15:38:07 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
