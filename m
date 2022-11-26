@@ -4,57 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3A20C43217
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Nov 2022 15:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27161C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Nov 2022 15:45:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NLTbh6VpCz3f3g
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Nov 2022 02:17:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NKGJm2ZDTz3f5q
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Nov 2022 02:45:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LWdLqZwi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kpYYeFZW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=/mbj=34=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com; envelope-from=andriy.shevchenko@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LWdLqZwi;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kpYYeFZW;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NLTZh3wQzz30JR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2022 02:16:28 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 0CEADB80DED;
-	Mon, 28 Nov 2022 15:16:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BC551C433C1;
-	Mon, 28 Nov 2022 15:16:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1669648583;
-	bh=CftQAWJINFkcBXFRaam8ztLdzPBn/UXPQX4/Gi/9C8s=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-	b=LWdLqZwioKj4CDnukK8FxxVYevFWUtGTt7rEqdQazh4LYBX0V01z05EInRZvSPX7h
-	 8D+M6HVAzmYUflEGglRW2VFV2XUzCeqSh47GyjdDojHj62/Qgepv33ZukwlR1hkFuu
-	 Pv5KYxXHX4mjmoGVFem+529NOQWe4CeaRMEgHJHwxnJ1IZgFzaq1wngwaNOw2tV0ZJ
-	 ZfYWMXyXJynrVlTf6nb6v1+mOsG0ATOtB9gZQUg5Mi+Mep2hxWdqBBzHEdUuUpU1TR
-	 RW8GBPFKEv7k9o8iod6XMb8rbLCBnm18aYZL0TlVssdIwrLsPlqpBjHPcrA+z1T+YD
-	 otf4fb5/2jsSg==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 5D3A95C0BA0; Mon, 28 Nov 2022 07:16:23 -0800 (PST)
-Date: Mon, 28 Nov 2022 07:16:23 -0800
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH linux-next][RFC]torture: avoid offline tick_do_timer_cpu
-Message-ID: <20221128151623.GI4001@paulmck-ThinkPad-P17-Gen-1>
-References: <20221121035140.118651-1-zhouzhouyi@gmail.com>
- <87y1rxwsse.ffs@tglx>
- <CAABZP2xNTbrx9iV+KH3VZx1c9Yi97+izNA=XSJQBuOJ4WENFZg@mail.gmail.com>
- <87v8n0woxv.ffs@tglx>
- <20221127175317.GF4001@paulmck-ThinkPad-P17-Gen-1>
- <87sfi3wl8z.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NKGHh3gyRz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Nov 2022 02:44:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1669477456; x=1701013456;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=TYZva1qhZaDDzx7ssD6565IlpCg24ayIFbcaC7tY8Tc=;
+  b=kpYYeFZWfR98ToB4QhZ2T8NZj8HKl7h+wcfI15XRGoE+9FZ5D6wPh48M
+   pwsHA9Yl4+8k45AybR+xSAb7IRwIPpLCw4GlCCKnRBbt842h2GgHo4c6G
+   f8b8Rmx1ed+CldtaxQbEmS021BXeUAC8pxLpxGnTlMnzQvHFrr/FgWQyA
+   ydKevZai1zqNMclmtdkCRa+Y2/NXcbjuhI15Mtr51VudCCLqUqscu0S8D
+   Kpc1JJnNlvXrSmCSNNSlrGxh7s6GFiP+Bs/nupSD/hJp7VYmsI0j4k2ed
+   yNGbZtEL+cElnU6MiQz266csJ6bdh5oyFBVKav5Dn1bXgu9OyaEG5xnKN
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10543"; a="376747253"
+X-IronPort-AV: E=Sophos;i="5.96,196,1665471600"; 
+   d="scan'208";a="376747253"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Nov 2022 07:44:06 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10543"; a="620587303"
+X-IronPort-AV: E=Sophos;i="5.96,196,1665471600"; 
+   d="scan'208";a="620587303"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga006.jf.intel.com with ESMTP; 26 Nov 2022 07:43:54 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+	(envelope-from <andriy.shevchenko@intel.com>)
+	id 1oyxLL-000Bco-1n;
+	Sat, 26 Nov 2022 17:43:51 +0200
+Date: Sat, 26 Nov 2022 17:43:51 +0200
+From: Andy Shevchenko <andriy.shevchenko@intel.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 000/606] i2c: Complete conversion to i2c_probe_new
+Message-ID: <Y4I0N3KpU/LSJYpd@smile.fi.intel.com>
+References: <20221118224540.619276-1-uwe@kleine-koenig.org>
+ <20221122185818.3740200d@jic23-huawei>
+ <20221122201654.5rdaisqho33buibj@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <87sfi3wl8z.ffs@tglx>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20221122201654.5rdaisqho33buibj@pengutronix.de>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,80 +74,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: paulmck@kernel.org
-Cc: dave@stgolabs.net, linuxppc-dev@lists.ozlabs.org, josh@joshtriplett.org, linux-kernel@vger.kernel.org, Zhouyi Zhou <zhouzhouyi@gmail.com>, fweisbec@gmail.com, mingo@kernel.org
+Cc: alsa-devel@alsa-project.org, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, linux-rtc@vger.kernel.org, chrome-platform@lists.linux.dev, linux-samsung-soc@vger.kernel.org, linux-staging@lists.linux.dev, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, linux-serial@vger.kernel.org, linux-input@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>, linux-pm@vger.kernel.org, linux-actions@lists.infradead.org, Wolfram Sang <wsa@kernel.org>, linux-gpio@vger.kernel.org, Angel Iglesias <ang.iglesiasg@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-
+ amlogic@lists.infradead.org, openipmi-developer@lists.sourceforge.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Purism Kernel Team <kernel@puri.sm>, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-crypto@vger.kernel.org, kernel@pengutronix.de, patches@opensource.cirrus.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Nov 28, 2022 at 09:12:28AM +0100, Thomas Gleixner wrote:
-> On Sun, Nov 27 2022 at 09:53, Paul E. McKenney wrote:
-> > On Sun, Nov 27, 2022 at 01:40:28PM +0100, Thomas Gleixner wrote:
-> >> There are quite some reasons why a CPU-hotplug or a hot-unplug operation
-> >> can fail, which is not a fatal problem, really.
-> >> 
-> >> So if a CPU hotplug operation fails, then why can't the torture test
-> >> just move on and validate that the system still behaves correctly?
-> >> 
-> >> That gives us more coverage than just testing the good case and giving
-> >> up when something unexpected happens.
-> >
-> > Agreed, with access to a function like the tick_nohz_full_timekeeper()
-> > suggested earlier in this email thread, then yes, it would make sense to
-> > try to offline the CPU anyway, then forgive the failure in cases where
-> > the CPU matches that indicated by tick_nohz_full_timekeeper().
+On Tue, Nov 22, 2022 at 09:16:54PM +0100, Uwe Kleine-König wrote:
+> On Tue, Nov 22, 2022 at 06:58:18PM +0000, Jonathan Cameron wrote:
+
+> > Queued all of the below:
+> > with one tweaked as per your suggestion and the highlighted one dropped on basis
+> > I was already carrying the equivalent - as you pointed out.
+> > 
+> > I was already carrying the required dependency.
+> > 
+> > Includes the IIO ones in staging.
+> > 
+
+> > p.s. I perhaps foolishly did this in a highly manual way so as to
+> > also pick up Andy's RB.  So might have dropped one...
 > 
-> Why special casing this? There are other valid reasons why offlining can
-> fail. So we special case timekeeper today and then next week we special
-> case something else just because. That does not make sense. If it fails
-> there is a reason and you can log it. The important part is that the
-> system is functional and stable after the fail and the rollback.
-
-Perhaps there are other valid reasons, but they have not been showing up
-in my torture-test runs for well over a decade.  Not saying that they
-don't happen, of course.  But if they involved (say) cgroups, then my
-test setup would not exercise them.
-
-So are you looking to introduce spurious CPU-hotplug failures?  If so,
-these will also affect things like suspend/resume.  Plus it will make
-it much more difficult to detect real but intermittent CPU-hotplug bugs,
-which is the motivation for special-casing the tick_nohz_full_timekeeper()
-failures.
-
-So we should discuss introduciton of any spurious failures that might
-be under consideration.
-
-Independently of that, the torture_onoff() functions can of course keep
-some sort of histogram of the failure return codes.  Or are there other
-failure indications that should be captured?
-
-> >> I even argue that the torture test should inject random failures into
-> >> the hotplug state machine to achieve extended code coverage.
-> >
-> > I could imagine torture_onoff() telling various CPU-hotplug notifiers
-> > to refuse the transition using some TBD interface.
+> You could have done:
 > 
-> There is already an interface which is exposed to sysfs which allows you
-> to enforce a "fail" at a defined hotplug state.
+> 	H=$(git rev-parse @)
+> 	b4 am -P 49-190 20221118224540.619276-1-uwe@kleine-koenig.org
+> 	git am ...
+> 	git filter-branch -f --msg-filter "grep -v 'Signed-off-by: Jonathan'; echo 'Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>'; echo 'Signed-off-by: Jonathan Cameron <jic23@kernel.org>'" $H..
+> 
+> (untested, but you get the idea).
 
-If you would like me to be testing this as part of my normal testing
-regimen, I will need an in-kernel interface.  Such an interface is of
-course not needed for modprobe-style testing, in which case the script
-doing the modprobe and rmmod can of course manipulate the sysfs files.
-But I don't do that sort of testing very often.  And when I do, it is
-almost always with kernels configured for Meta's fleet, which almost
-never do CPU-offline operations.
+That's, for example (just last from the history as is), how I usually do it
+(tested):
 
-							Thanx, Paul
+ git filter-branch --msg-filter 'sed -e "/Signed-off-by: Andy Shevchenko/ a Tested-by: Daniel Scally <dan.scally@ideasonboard.com>"' -f HEAD~4..HEAD
 
-> > That would better test the CPU-hotplug common code's ability to deal
-> > with failures.
-> 
-> Correct.
-> 
-> > Or did you have something else/additional in mind?
-> 
-> No.
-> 
-> Thanks,
-> 
->         tglx
+
+-- 
+With Best Regards,
+Andy Shevchenko
+
+
