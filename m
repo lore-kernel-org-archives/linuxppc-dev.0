@@ -4,42 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71AF8C43217
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Nov 2022 00:05:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9A59C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Nov 2022 05:11:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NJsSb4LyJz3f7V
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Nov 2022 11:05:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NK0Fh668vz3f7k
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Nov 2022 16:11:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=EsUHG75+;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=paSSMypW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=paSSMypW;
+	dkim-atps=neutral
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NJsRH74Qzz3f4J
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2022 11:04:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-	MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-ID:
-	Content-Description:In-Reply-To:References;
-	bh=fCEpozuQZzSMlmSX68RJLiCk4zrpL6chfzTq9T/Cx5k=; b=EsUHG75+oID3GB27Y6g35LNJqk
-	uHV7H16V2AyNE9Jjrx5LcQPqA/7lRSatnFyjSsmv79n+xloLV5EdP5ct+xZ8ruRygleiDumHWKfzK
-	S+rH5/exa9VjcJqkwLGnH5bXeUy2Ml//sDH2MHlDC/gr7vmLxer2HPFg8MXv0UNcqlpjPLnuXG6r7
-	7fSvb5ynnF2yi9bVA3b4w+xqb27ZKPhojSap/CmdWytflOHw1QyNS2X8mSUzNBne+FEZPapvec5ZE
-	dVG2zaTgtidnqvc9J5awYuFTWkQ10LI6xLfBytJmpKoTvn4L6ytYKPXLHHkIXFvDSUoAb3Lru3zad
-	ll2nv8yA==;
-Received: from [2601:1c2:d80:3110::a2e7] (helo=casper.infradead.org)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1oyig1-00A0ud-R3; Sat, 26 Nov 2022 00:04:14 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fbdev: make offb driver tristate
-Date: Fri, 25 Nov 2022 16:04:01 -0800
-Message-Id: <20221126000401.25302-1-rdunlap@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NK0DY2Z2Dz3cNY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Nov 2022 16:10:36 +1100 (AEDT)
+From: =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=weissschuh.net;
+	s=mail; t=1669439428;
+	bh=EVRYLbXJT4r/tavtjYFvtvsmMIF+T3VXJ7DLMO3Mjvk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=paSSMypWqVVc32GQycN1h492cMml4NmI5izRh13kXBEGH0rcARgKWWqbWxS9t/GFi
+	 Y3JPOXI3Y2gJSAOicOpaqKoffFmR/u0ztBX4hdNwOJ13/bSxFNcTY45IxjTk5CK10L
+	 hFlS2jno+wK3Zvsm4cwRbo9gpl18+MQwYKAIJ6Bc=
+To: Luis Chamberlain <mcgrof@kernel.org>,
+	Russ Weight <russell.h.weight@intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/3] init/version.c: remove #include <generated/utsversion.h>
+Date: Sat, 26 Nov 2022 06:10:01 +0100
+Message-Id: <20221126051002.123199-3-linux@weissschuh.net>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221126051002.123199-1-linux@weissschuh.net>
+References: <20221126051002.123199-1-linux@weissschuh.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1669439380; l=867; i=linux@weissschuh.net; s=20211113; h=from:subject; bh=EVRYLbXJT4r/tavtjYFvtvsmMIF+T3VXJ7DLMO3Mjvk=; b=F1HxhTKHtpXu/BykxEW66XOAnX88KtYknMzBSigNB14Ozcd2B3B2rppXzAUGtYP2vqAnS1LWKQit 0PUndB9uBZRUnE2ncW+8Kkw6N2OVHHp2fLHhO7W+ChZnDKTkwUJI
+X-Developer-Key: i=linux@weissschuh.net; a=ed25519; pk=9LP6KM4vD/8CwHW7nouRBhWLyQLcK1MkP6aTZbzUlj4=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -52,52 +57,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>, Arnd Bergmann <arnd@arndb.de>, Masahiro Yamada <masahiroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Thomas Zimmermann <tzimmermann@suse.de>, =?UTF-8?q?Michal=20Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org, Helge Deller <deller@gmx.de>
+Cc: Masahiro Yamada <masahiroy@kernel.org>, =?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <linux@weissschuh.net>, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make the offb (Open Firmware frame buffer) driver tristate,
-i.e., so that it can be built as a loadable module.
+Commit 2df8220cc511 ("kbuild: build init/built-in.a just once") moved
+the usage of the define UTS_VERSION to the file version-timestamp.c.
 
-However, it still depends on the setting of DRM_OFDRM
-so that both of these drivers cannot be builtin at the same time
-nor can one be builtin and the other one a loadable module.
+version-timestamp.c in turn is included from version.c but already
+includes utsversion.h itself properly.
 
-Build-tested successfully with all combination of DRM_OFDRM and FB_OF.
+The unneeded include of utsversion.h from version.c can be dropped.
 
-This fixes a build issue that Michal reported when FB_OF=y and
-DRM_OFDRM=m:
-
-powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): undefined reference to `cfb_fillrect'
-powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): undefined reference to `cfb_copyarea'
-powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): undefined reference to `cfb_imageblit'
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Suggested-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Masahiro Yamada <masahiroy@kernel.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Michal Suchánek <msuchanek@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: Helge Deller <deller@gmx.de>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-
+Fixes: 2df8220cc511 ("kbuild: build init/built-in.a just once")
+Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- drivers/video/fbdev/Kconfig |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ init/version.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -456,8 +456,8 @@ config FB_ATARI
- 	  chipset found in Ataris.
+diff --git a/init/version.c b/init/version.c
+index 01d4ab05f0ba..f117921811b4 100644
+--- a/init/version.c
++++ b/init/version.c
+@@ -15,7 +15,6 @@
+ #include <linux/printk.h>
+ #include <linux/uts.h>
+ #include <linux/utsname.h>
+-#include <generated/utsrelease.h>
+ #include <linux/proc_ns.h>
  
- config FB_OF
--	bool "Open Firmware frame buffer device support"
--	depends on (FB = y) && PPC && (!PPC_PSERIES || PCI)
-+	tristate "Open Firmware frame buffer device support"
-+	depends on FB && PPC && (!PPC_PSERIES || PCI)
- 	depends on !DRM_OFDRM
- 	select APERTURE_HELPERS
- 	select FB_CFB_FILLRECT
+ static int __init early_hostname(char *arg)
+-- 
+2.38.1
+
