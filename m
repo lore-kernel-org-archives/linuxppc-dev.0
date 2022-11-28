@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74CFAC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Nov 2022 04:23:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31B08C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Nov 2022 04:24:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NLC4x0gcjz3f8r
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Nov 2022 15:23:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NLC5y5pkJz3f7r
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Nov 2022 15:24:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZMze0eDf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T7B9BJXl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZMze0eDf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T7B9BJXl;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NLC1s1rzSz3cJY
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2022 15:20:32 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AS2MZZ5016588;
-	Mon, 28 Nov 2022 04:20:31 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NLC1s5X20z3cJY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2022 15:20:33 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AS2Q4xn014028;
+	Mon, 28 Nov 2022 04:20:30 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=tV/ZSbf6YsXyd9f1RIzDvuowKYXsiD/d3TFeujuftyk=;
- b=ZMze0eDfUfmYcOgfWqlpmC3keLgj8pXlSdLB2oSN8CCHzb4JzYsC+Eh3h0RKpSohFCDy
- R7YL3gvjitRR7ErFH3O5fK+tOJpuffP4MdgyF7bykffQhUEUmITXAmimh5v6eaeD+ADP
- OBdIeyBOypC3whijqzb9vp+lh4d/0is7ota0W/veyDAYXqKm1A9BocTd1RSlpuSt5PJX
- JL6cRvTbPeXlVxbNFZNlGW4Gbi6z6zdoGcZrS3yUSXtyrSaGn/PTgTMXSantBjlFyqxr
- RnjfLr5+UHUehh+MZ/31Np1lFfuV0dlWfJheTiZhp/8CjUQHEP2p8811dUKvoOmmwjsi vw== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m3vmr587w-1
+ bh=DmUFeQdZwwMIl5Cy8ERLqu6FsUKEaiyDrWhOJxt6ey0=;
+ b=T7B9BJXlfR4Hvw3JEtTgHTqV7JzG52jGE8oQrluKCSjLeQIsb1rrTVk6j33GPrGeTRr9
+ BKSpKwIME55IDxF1jyj2ahsXBygVSn83CbKZ08EE1eiOSVV0Hz8QhDhONt2yyD5KWIUo
+ 1UDiqaFLuBjCMYEeUcpUfENaS9afdPvayNuh3IDlYv6NI6eu0Haiudn/9U1QnrSgQicq
+ Mcz6JY0qzaEd/O0Y6jAjfiTW1IPTfuXcrPjfstD4m/0omJpjWheTQEod/Z7fOyKzTXJI
+ Qtknard7WM8AMQ0/D/3gyrY1mIvezZAW73/Q9PiWwg2NRJKbaTVgYQQzkMgfLs4xp/ET Og== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3m3vr152rq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 28 Nov 2022 04:20:30 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AS45SMY025479;
+	Mon, 28 Nov 2022 04:20:29 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AS45NpP009252;
 	Mon, 28 Nov 2022 04:20:28 GMT
 Received: from b06avi18878370.portsmouth.uk.ibm.com (b06avi18878370.portsmouth.uk.ibm.com [9.149.26.194])
-	by ppma04ams.nl.ibm.com with ESMTP id 3m3ae99wq5-1
+	by ppma04fra.de.ibm.com with ESMTP id 3m3ae91d00-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Mon, 28 Nov 2022 04:20:27 +0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
-	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AS4L8pD12845806
+	by b06avi18878370.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AS4L8U8787198
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Mon, 28 Nov 2022 04:21:08 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A5C2A11C052;
+	by IMSVA (Postfix) with ESMTP id A591F11C04C;
 	Mon, 28 Nov 2022 04:20:25 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0729E11C04A;
+	by IMSVA (Postfix) with ESMTP id 076B511C050;
 	Mon, 28 Nov 2022 04:20:25 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
@@ -60,29 +60,29 @@ Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E7173600D5;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EF08260312;
 	Mon, 28 Nov 2022 15:20:22 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/7] selftests/powerpc: Use mfspr/mtspr macros
-Date: Mon, 28 Nov 2022 15:19:42 +1100
-Message-Id: <20221128041948.58339-2-bgray@linux.ibm.com>
+Subject: [PATCH v3 4/7] selftests/powerpc: Add read/write debugfs file, int
+Date: Mon, 28 Nov 2022 15:19:45 +1100
+Message-Id: <20221128041948.58339-5-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221128041948.58339-1-bgray@linux.ibm.com>
 References: <20221128041948.58339-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: to_PilLVVM3znbO-DyLAy7orIeUXJChc
-X-Proofpoint-ORIG-GUID: to_PilLVVM3znbO-DyLAy7orIeUXJChc
+X-Proofpoint-ORIG-GUID: lQLvtjBG9eyhKNqmSnxu8WsL9HYsz2VY
+X-Proofpoint-GUID: lQLvtjBG9eyhKNqmSnxu8WsL9HYsz2VY
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-28_04,2022-11-25_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 spamscore=0
- priorityscore=1501 mlxlogscore=999 impostorscore=0 mlxscore=0 bulkscore=0
- phishscore=0 lowpriorityscore=0 malwarescore=0 adultscore=0 clxscore=1015
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2211280026
+ definitions=2022-11-28_03,2022-11-25_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ impostorscore=0 suspectscore=0 mlxlogscore=999 clxscore=1015
+ malwarescore=0 lowpriorityscore=0 mlxscore=0 spamscore=0 adultscore=0
+ phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2211280026
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,125 +98,275 @@ Cc: Benjamin Gray <bgray@linux.ibm.com>, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-No need to write inline asm for mtspr/mfspr, we have macros for this
-in reg.h
+Debugfs files are not always integers, so make *_file return/write a
+byte buffer, and *_int deal with int values specifically. This increases
+consistency with the other file read/write helpers.
 
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
- tools/testing/selftests/powerpc/dscr/dscr.h     | 17 +++++------------
- .../selftests/powerpc/ptrace/ptrace-hwbreak.c   |  6 ++----
- tools/testing/selftests/powerpc/ptrace/ptrace.h |  5 +----
- .../selftests/powerpc/security/flush_utils.c    |  3 ++-
- 4 files changed, 10 insertions(+), 21 deletions(-)
+ .../testing/selftests/powerpc/include/utils.h |  6 ++--
+ .../selftests/powerpc/security/entry_flush.c  | 12 +++----
+ .../selftests/powerpc/security/rfi_flush.c    | 12 +++----
+ .../powerpc/security/uaccess_flush.c          | 18 +++++-----
+ tools/testing/selftests/powerpc/utils.c       | 34 ++++++++++++-------
+ 5 files changed, 47 insertions(+), 35 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr.h b/tools/testing/selftests/powerpc/dscr/dscr.h
-index 13e9b9e28e2c..b703714e7d98 100644
---- a/tools/testing/selftests/powerpc/dscr/dscr.h
-+++ b/tools/testing/selftests/powerpc/dscr/dscr.h
-@@ -23,6 +23,7 @@
- #include <sys/stat.h>
- #include <sys/wait.h>
+diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
+index 70885e5814a8..de5e3790f397 100644
+--- a/tools/testing/selftests/powerpc/include/utils.h
++++ b/tools/testing/selftests/powerpc/include/utils.h
+@@ -35,8 +35,10 @@ int pick_online_cpu(void);
  
-+#include "reg.h"
- #include "utils.h"
+ int read_file(const char *path, char *buf, size_t count, size_t *len);
+ int write_file(const char *path, const char *buf, size_t count);
+-int read_debugfs_file(char *debugfs_file, int *result);
+-int write_debugfs_file(char *debugfs_file, int result);
++int read_debugfs_file(const char *debugfs_file, char *buf, size_t count);
++int write_debugfs_file(const char *debugfs_file, const char *buf, size_t count);
++int read_debugfs_int(const char *debugfs_file, int *result);
++int write_debugfs_int(const char *debugfs_file, int result);
+ int read_sysfs_file(char *debugfs_file, char *result, size_t result_size);
+ int perf_event_open_counter(unsigned int type,
+ 			    unsigned long config, int group_fd);
+diff --git a/tools/testing/selftests/powerpc/security/entry_flush.c b/tools/testing/selftests/powerpc/security/entry_flush.c
+index 68ce377b205e..e01c573deadd 100644
+--- a/tools/testing/selftests/powerpc/security/entry_flush.c
++++ b/tools/testing/selftests/powerpc/security/entry_flush.c
+@@ -34,18 +34,18 @@ int entry_flush_test(void)
+ 	// The PMU event we use only works on Power7 or later
+ 	SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
  
- #define THREADS		100	/* Max threads */
-@@ -41,31 +42,23 @@
- /* Prilvilege state DSCR access */
- inline unsigned long get_dscr(void)
- {
--	unsigned long ret;
--
--	asm volatile("mfspr %0,%1" : "=r" (ret) : "i" (SPRN_DSCR_PRIV));
--
--	return ret;
-+	return mfspr(SPRN_DSCR_PRIV);
- }
- 
- inline void set_dscr(unsigned long val)
- {
--	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR_PRIV));
-+	mtspr(SPRN_DSCR_PRIV, val);
- }
- 
- /* Problem state DSCR access */
- inline unsigned long get_dscr_usr(void)
- {
--	unsigned long ret;
--
--	asm volatile("mfspr %0,%1" : "=r" (ret) : "i" (SPRN_DSCR));
--
--	return ret;
-+	return mfspr(SPRN_DSCR);
- }
- 
- inline void set_dscr_usr(unsigned long val)
- {
--	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
-+	mtspr(SPRN_DSCR, val);
- }
- 
- /* Default DSCR access */
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c b/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-index a0635a3819aa..1345e9b9af0f 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-@@ -23,6 +23,7 @@
- #include <sys/syscall.h>
- #include <linux/limits.h>
- #include "ptrace.h"
-+#include "reg.h"
- 
- #define SPRN_PVR	0x11F
- #define PVR_8xx		0x00500000
-@@ -620,10 +621,7 @@ static int ptrace_hwbreak(void)
- 
- int main(int argc, char **argv, char **envp)
- {
--	int pvr = 0;
--	asm __volatile__ ("mfspr %0,%1" : "=r"(pvr) : "i"(SPRN_PVR));
--	if (pvr == PVR_8xx)
--		is_8xx = true;
-+	is_8xx = mfspr(SPRN_PVR) == PVR_8xx;
- 
- 	return test_harness(ptrace_hwbreak, "ptrace-hwbreak");
- }
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-index 4e0233c0f2b3..04788e5fc504 100644
---- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-@@ -745,10 +745,7 @@ int show_tm_spr(pid_t child, struct tm_spr_regs *out)
- /* Analyse TEXASR after TM failure */
- inline unsigned long get_tfiar(void)
- {
--	unsigned long ret;
--
--	asm volatile("mfspr %0,%1" : "=r" (ret) : "i" (SPRN_TFIAR));
--	return ret;
-+	return mfspr(SPRN_TFIAR);
- }
- 
- void analyse_texasr(unsigned long texasr)
-diff --git a/tools/testing/selftests/powerpc/security/flush_utils.c b/tools/testing/selftests/powerpc/security/flush_utils.c
-index 4d95965cb751..9c5c00e04f63 100644
---- a/tools/testing/selftests/powerpc/security/flush_utils.c
-+++ b/tools/testing/selftests/powerpc/security/flush_utils.c
-@@ -14,6 +14,7 @@
- #include <string.h>
- #include <stdio.h>
- #include <sys/utsname.h>
-+#include "reg.h"
- #include "utils.h"
- #include "flush_utils.h"
- 
-@@ -79,5 +80,5 @@ void set_dscr(unsigned long val)
- 		init = 1;
+-	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/rfi_flush debugfs file");
+ 		SKIP_IF(1);
  	}
  
--	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
-+	mtspr(SPRN_DSCR, val);
+-	if (read_debugfs_file("powerpc/entry_flush", &entry_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/entry_flush", &entry_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/entry_flush debugfs file");
+ 		SKIP_IF(1);
+ 	}
+ 
+ 	if (rfi_flush_orig != 0) {
+-		if (write_debugfs_file("powerpc/rfi_flush", 0) < 0) {
++		if (write_debugfs_int("powerpc/rfi_flush", 0) < 0) {
+ 			perror("error writing to powerpc/rfi_flush debugfs file");
+ 			FAIL_IF(1);
+ 		}
+@@ -105,7 +105,7 @@ int entry_flush_test(void)
+ 
+ 	if (entry_flush == entry_flush_orig) {
+ 		entry_flush = !entry_flush_orig;
+-		if (write_debugfs_file("powerpc/entry_flush", entry_flush) < 0) {
++		if (write_debugfs_int("powerpc/entry_flush", entry_flush) < 0) {
+ 			perror("error writing to powerpc/entry_flush debugfs file");
+ 			return 1;
+ 		}
+@@ -120,12 +120,12 @@ int entry_flush_test(void)
+ 
+ 	set_dscr(0);
+ 
+-	if (write_debugfs_file("powerpc/rfi_flush", rfi_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/rfi_flush", rfi_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/rfi_flush debugfs file");
+ 		return 1;
+ 	}
+ 
+-	if (write_debugfs_file("powerpc/entry_flush", entry_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/entry_flush", entry_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/entry_flush debugfs file");
+ 		return 1;
+ 	}
+diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tools/testing/selftests/powerpc/security/rfi_flush.c
+index f73484a6470f..6bedc86443a6 100644
+--- a/tools/testing/selftests/powerpc/security/rfi_flush.c
++++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
+@@ -34,18 +34,18 @@ int rfi_flush_test(void)
+ 	// The PMU event we use only works on Power7 or later
+ 	SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
+ 
+-	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/rfi_flush debugfs file");
+ 		SKIP_IF(1);
+ 	}
+ 
+-	if (read_debugfs_file("powerpc/entry_flush", &entry_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/entry_flush", &entry_flush_orig) < 0) {
+ 		have_entry_flush = 0;
+ 	} else {
+ 		have_entry_flush = 1;
+ 
+ 		if (entry_flush_orig != 0) {
+-			if (write_debugfs_file("powerpc/entry_flush", 0) < 0) {
++			if (write_debugfs_int("powerpc/entry_flush", 0) < 0) {
+ 				perror("error writing to powerpc/entry_flush debugfs file");
+ 				return 1;
+ 			}
+@@ -105,7 +105,7 @@ int rfi_flush_test(void)
+ 
+ 	if (rfi_flush == rfi_flush_orig) {
+ 		rfi_flush = !rfi_flush_orig;
+-		if (write_debugfs_file("powerpc/rfi_flush", rfi_flush) < 0) {
++		if (write_debugfs_int("powerpc/rfi_flush", rfi_flush) < 0) {
+ 			perror("error writing to powerpc/rfi_flush debugfs file");
+ 			return 1;
+ 		}
+@@ -120,13 +120,13 @@ int rfi_flush_test(void)
+ 
+ 	set_dscr(0);
+ 
+-	if (write_debugfs_file("powerpc/rfi_flush", rfi_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/rfi_flush", rfi_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/rfi_flush debugfs file");
+ 		return 1;
+ 	}
+ 
+ 	if (have_entry_flush) {
+-		if (write_debugfs_file("powerpc/entry_flush", entry_flush_orig) < 0) {
++		if (write_debugfs_int("powerpc/entry_flush", entry_flush_orig) < 0) {
+ 			perror("unable to restore original value of powerpc/entry_flush "
+ 			       "debugfs file");
+ 			return 1;
+diff --git a/tools/testing/selftests/powerpc/security/uaccess_flush.c b/tools/testing/selftests/powerpc/security/uaccess_flush.c
+index cf80f960e38a..fcf23ea9b183 100644
+--- a/tools/testing/selftests/powerpc/security/uaccess_flush.c
++++ b/tools/testing/selftests/powerpc/security/uaccess_flush.c
+@@ -36,30 +36,30 @@ int uaccess_flush_test(void)
+ 	// The PMU event we use only works on Power7 or later
+ 	SKIP_IF(!have_hwcap(PPC_FEATURE_ARCH_2_06));
+ 
+-	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/rfi_flush", &rfi_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/rfi_flush debugfs file");
+ 		SKIP_IF(1);
+ 	}
+ 
+-	if (read_debugfs_file("powerpc/entry_flush", &entry_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/entry_flush", &entry_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/entry_flush debugfs file");
+ 		SKIP_IF(1);
+ 	}
+ 
+-	if (read_debugfs_file("powerpc/uaccess_flush", &uaccess_flush_orig) < 0) {
++	if (read_debugfs_int("powerpc/uaccess_flush", &uaccess_flush_orig) < 0) {
+ 		perror("Unable to read powerpc/entry_flush debugfs file");
+ 		SKIP_IF(1);
+ 	}
+ 
+ 	if (rfi_flush_orig != 0) {
+-		if (write_debugfs_file("powerpc/rfi_flush", 0) < 0) {
++		if (write_debugfs_int("powerpc/rfi_flush", 0) < 0) {
+ 			perror("error writing to powerpc/rfi_flush debugfs file");
+ 			FAIL_IF(1);
+ 		}
+ 	}
+ 
+ 	if (entry_flush_orig != 0) {
+-		if (write_debugfs_file("powerpc/entry_flush", 0) < 0) {
++		if (write_debugfs_int("powerpc/entry_flush", 0) < 0) {
+ 			perror("error writing to powerpc/entry_flush debugfs file");
+ 			FAIL_IF(1);
+ 		}
+@@ -119,7 +119,7 @@ int uaccess_flush_test(void)
+ 
+ 	if (uaccess_flush == uaccess_flush_orig) {
+ 		uaccess_flush = !uaccess_flush_orig;
+-		if (write_debugfs_file("powerpc/uaccess_flush", uaccess_flush) < 0) {
++		if (write_debugfs_int("powerpc/uaccess_flush", uaccess_flush) < 0) {
+ 			perror("error writing to powerpc/uaccess_flush debugfs file");
+ 			return 1;
+ 		}
+@@ -134,17 +134,17 @@ int uaccess_flush_test(void)
+ 
+ 	set_dscr(0);
+ 
+-	if (write_debugfs_file("powerpc/rfi_flush", rfi_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/rfi_flush", rfi_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/rfi_flush debugfs file");
+ 		return 1;
+ 	}
+ 
+-	if (write_debugfs_file("powerpc/entry_flush", entry_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/entry_flush", entry_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/entry_flush debugfs file");
+ 		return 1;
+ 	}
+ 
+-	if (write_debugfs_file("powerpc/uaccess_flush", uaccess_flush_orig) < 0) {
++	if (write_debugfs_int("powerpc/uaccess_flush", uaccess_flush_orig) < 0) {
+ 		perror("unable to restore original value of powerpc/uaccess_flush debugfs file");
+ 		return 1;
+ 	}
+diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
+index 861b1f7aa95f..8593e67ce779 100644
+--- a/tools/testing/selftests/powerpc/utils.c
++++ b/tools/testing/selftests/powerpc/utils.c
+@@ -95,6 +95,24 @@ int read_auxv(char *buf, ssize_t buf_size)
+ 	return 0;
  }
+ 
++int read_debugfs_file(const char *subpath, char *buf, size_t count)
++{
++	char path[PATH_MAX] = "/sys/kernel/debug/";
++
++	strncat(path, subpath, sizeof(path) - strlen(path) - 1);
++
++	return read_file(path, buf, count, NULL);
++}
++
++int write_debugfs_file(const char *subpath, const char *buf, size_t count)
++{
++	char path[PATH_MAX] = "/sys/kernel/debug/";
++
++	strncat(path, subpath, sizeof(path) - strlen(path) - 1);
++
++	return write_file(path, buf, count);
++}
++
+ void *find_auxv_entry(int type, char *auxv)
+ {
+ 	ElfW(auxv_t) *p;
+@@ -187,16 +205,12 @@ int read_sysfs_file(char *fpath, char *result, size_t result_size)
+ 	return read_file(path, result, result_size, NULL);
+ }
+ 
+-int read_debugfs_file(char *debugfs_file, int *result)
++int read_debugfs_int(const char *debugfs_file, int *result)
+ {
+ 	int err;
+-	char path[PATH_MAX];
+ 	char value[16] = {0};
+ 
+-	strcpy(path, "/sys/kernel/debug/");
+-	strncat(path, debugfs_file, PATH_MAX - strlen(path) - 1);
+-
+-	if ((err = read_file(path, value, sizeof(value) - 1, NULL)))
++	if ((err = read_debugfs_file(debugfs_file, value, sizeof(value) - 1)))
+ 		return err;
+ 
+ 	*result = atoi(value);
+@@ -204,17 +218,13 @@ int read_debugfs_file(char *debugfs_file, int *result)
+ 	return 0;
+ }
+ 
+-int write_debugfs_file(char *debugfs_file, int result)
++int write_debugfs_int(const char *debugfs_file, int result)
+ {
+-	char path[PATH_MAX];
+ 	char value[16];
+ 
+-	strcpy(path, "/sys/kernel/debug/");
+-	strncat(path, debugfs_file, PATH_MAX - strlen(path) - 1);
+-
+ 	snprintf(value, 16, "%d", result);
+ 
+-	return write_file(path, value, strlen(value));
++	return write_debugfs_file(debugfs_file, value, strlen(value));
+ }
+ 
+ static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
 -- 
 2.38.1
 
