@@ -4,57 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3646EC47089
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Nov 2022 01:58:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CB73C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Nov 2022 03:04:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NLlqH58wQz3f2y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Nov 2022 12:58:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NLnH24jrcz3f3L
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Nov 2022 14:03:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bd+lP5H1;
+	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=U3syMjEr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=song@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bd+lP5H1;
+	dkim=pass (1024-bit key; secure) header.d=jms.id.au header.i=@jms.id.au header.a=rsa-sha256 header.s=google header.b=U3syMjEr;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NLlpC6Fthz2xGq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2022 12:57:23 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 83EFA6152B
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2022 01:57:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E4430C433B5
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2022 01:57:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1669687039;
-	bh=RR3l04y9mI6dUbLc2VgWj7KfTEgIhi84deXgt2t8g8I=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=bd+lP5H1ZonmaSTZAWSB4ReBy/DwkSVI6jWbHxgQNxSC0w50c7lnODTIzXYBDcQ7T
-	 T/leNw/QTL63YtLQZJH5c7X1so28BCgBWNFj/MQZumtFY3gyHxM4YetPzhsywvdRi7
-	 tUNZHknN83zWD+y6usiSTBnr+EnDPBwqk/Ma0ceVx9v0NZKHiy1aHROHSUylmyvXFu
-	 rO16hrXiYEchzTaTLbhGQi0lCNRuXMwRi02q0jWAZe5T8hvKeMhQhtLz9+2Kx2w1VQ
-	 nEvX3wGqHOhlgDslSPmGjDRBjjo2mh4lmP2aIOTQRpsfxxcMygRxhZA4sz8fDCwCc7
-	 BErs3piClv6iw==
-Received: by mail-ej1-f52.google.com with SMTP id b2so14087037eja.7
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2022 17:57:19 -0800 (PST)
-X-Gm-Message-State: ANoB5pmH3ynSOAdzkZ6VR3Ci+xnx4yg3NwQmlbTK9X1HrQMCtKyZNzfz
-	S380x/dN3AnHwpiNagWyFAmTx3MDC+ZBIcFDsRg=
-X-Google-Smtp-Source: AA0mqf7QPwy/gfx9+IQQdiRZ+nRvnL+Bi5qWVedX/jzBfS+m5qi3GdnOmGsm1gidpRnJ5G9t/0ENmzcMuZIq+IlBP8s=
-X-Received: by 2002:a17:906:3954:b0:7bf:852b:e23c with SMTP id
- g20-20020a170906395400b007bf852be23cmr7332813eje.614.1669687038069; Mon, 28
- Nov 2022 17:57:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NLnFz6bVCz3bjd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Nov 2022 14:03:03 +1100 (AEDT)
+Received: by mail-wm1-x32f.google.com with SMTP id i204-20020a1c3bd5000000b003d0683389e1so14723wma.4
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Nov 2022 19:03:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=jms.id.au; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Rlsa2wTfZduiT8voqybsJJ6jfGuEqqziQrK4IJ8IF3M=;
+        b=U3syMjEr3XY0hAQlGY0Ta5Et9JQb7PvTzy9jqYXgsWSPVGjf89o+1jxLtvQVbzlw39
+         8pmtdYz5rJBNOM9k8DzTgYWlHC6nIcwX1PMLdkWV3m6xPrpVEyzh5fS8GHSAvShkAQio
+         8Oqns2QOeFJaSWlECWwUupHpCtELhsPZestG4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Rlsa2wTfZduiT8voqybsJJ6jfGuEqqziQrK4IJ8IF3M=;
+        b=VvCZAXZCMzpOuSSXwM1ybL5uoR700TtBK3QlA+nsnmpm5uuaJiPGP1NNfWo95uJPsx
+         0eK/QWycAPMFBmMQjxNEPdmUulHi3AKSeUVNV6KCH4ZzANaHRqDvVPhUn+LvU/fl0yOo
+         ez1OOPXOKSY7ZGT5el8CztZ2xqhxTitEvzQlJC3e0DpFjTiitRSTmhGWSMFDV1Afoc11
+         jO20VomRHxe4VFs28p8G+x0Y06QtV6m5f2AKx5pUXw6DOgmLAblWs30qB1lc4SW+BAVR
+         Otz0+fcnUrg1QXDd4MLwla2zjf8DSD/RTtBezUGrs17XKWCiznrA7furEVW9zXXQYDu1
+         hblQ==
+X-Gm-Message-State: ANoB5pmvws1H1THf1YjjTAb+V5hBB3lWALMfepZiaVkOQ5gzgGb3LPUN
+	CJnyTwMg2yhboh14iMZxgGk0OgHgbxdL+qOny48=
+X-Google-Smtp-Source: AA0mqf5UT7P5fanFqvO0Me0G0g1g2xyl1YA95sKCQPRNcUCfHlQYS05aofz35CDPsEHGu6zOvg3EIcndxnJ0AWF4I+Q=
+X-Received: by 2002:a05:600c:4f83:b0:3cf:8b32:a52 with SMTP id
+ n3-20020a05600c4f8300b003cf8b320a52mr44369208wmq.72.1669690978119; Mon, 28
+ Nov 2022 19:02:58 -0800 (PST)
 MIME-Version: 1.0
-References: <20220901171252.2148348-1-song@kernel.org> <Y3expGRt4cPoZgHL@alley>
-In-Reply-To: <Y3expGRt4cPoZgHL@alley>
-From: Song Liu <song@kernel.org>
-Date: Mon, 28 Nov 2022 17:57:06 -0800
-X-Gmail-Original-Message-ID: <CAPhsuW4qYpX7wzHn5J5Hn9cnOFSZwwQPCjTM_HPTt_zbBS03ww@mail.gmail.com>
-Message-ID: <CAPhsuW4qYpX7wzHn5J5Hn9cnOFSZwwQPCjTM_HPTt_zbBS03ww@mail.gmail.com>
-Subject: Re: [PATCH v6] livepatch: Clear relocation targets on a module removal
-To: Petr Mladek <pmladek@suse.com>
+References: <20221128041539.1742489-1-npiggin@gmail.com>
+In-Reply-To: <20221128041539.1742489-1-npiggin@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Tue, 29 Nov 2022 03:02:45 +0000
+Message-ID: <CACPK8XddAwhkaneb4RF4dxgEPZJiEUBGiJEEhQ12E898HF9N9w@mail.gmail.com>
+Subject: Re: [PATCH v6 0/4] Option to build big-endian with ELFv2 ABI
+To: Nicholas Piggin <npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,226 +70,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jikos@kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, joe.lawrence@redhat.com, Josh Poimboeuf <jpoimboe@redhat.com>, live-patching@vger.kernel.org, mbenes@suse.cz, linuxppc-dev@lists.ozlabs.org, jpoimboe@kernel.org
+Cc: Luis Chamberlain <mcgrof@kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 18, 2022 at 8:24 AM Petr Mladek <pmladek@suse.com> wrote:
+On Mon, 28 Nov 2022 at 04:16, Nicholas Piggin <npiggin@gmail.com> wrote:
 >
-[...]
-
-> >
-> > +#ifdef CONFIG_LIVEPATCH
-> > +void clear_relocate_add(Elf64_Shdr *sechdrs,
-> > +                    const char *strtab,
-> > +                    unsigned int symindex,
-> > +                    unsigned int relsec,
-> > +                    struct module *me)
-> > +{
-> > +     unsigned int i;
-> > +     Elf64_Rela *rela = (void *)sechdrs[relsec].sh_addr;
-> > +     Elf64_Sym *sym;
-> > +     unsigned long *location;
-> > +     const char *symname;
-> > +     u32 *instruction;
-> > +
-> > +     pr_debug("Clearing ADD relocate section %u to %u\n", relsec,
-> > +              sechdrs[relsec].sh_info);
-> > +
-> > +     for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
-> > +             location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
-> > +                     + rela[i].r_offset;
-> > +             sym = (Elf64_Sym *)sechdrs[symindex].sh_addr
-> > +                     + ELF64_R_SYM(rela[i].r_info);
-> > +             symname = me->core_kallsyms.strtab
-> > +                     + sym->st_name;
-> > +
-> > +             if (ELF64_R_TYPE(rela[i].r_info) != R_PPC_REL24)
-> > +                     continue;
-> > +             /*
-> > +              * reverse the operations in apply_relocate_add() for case
-> > +              * R_PPC_REL24.
-> > +              */
-> > +             if (sym->st_shndx != SHN_UNDEF &&
-> > +                 sym->st_shndx != SHN_LIVEPATCH)
-> > +                     continue;
-> > +
-> > +             instruction = (u32 *)location;
-> > +             if (is_mprofile_ftrace_call(symname))
-> > +                     continue;
-> > +
-> > +             if (!instr_is_relative_link_branch(ppc_inst(*instruction)))
-> > +                     continue;
-> > +
-> > +             instruction += 1;
-> > +             patch_instruction(instruction, ppc_inst(PPC_RAW_NOP()));
-> > +     }
-> > +
-> > +}
+> This is hopefully the final attempt. Luis was happy for the module
+> patch to go via the powerpc tree, so I've put the the ELFv2 for big
+> endian build patches into the series. Hopefully we can deprecate
+> the ELFv1 ABI
 >
-> This looks like a lot of duplicated code. Isn't it?
+> Since v5, I cleaned up patch 2 as per Christophe's review. And patch
+> 4 I removed the EXPERT depends so it's easier to test. It's marked as
+> experimental, but we should soon make it default and try to deprecate
+> the v1 ABI so we can eventually remove it.
 
-TBH, I think the duplicated code is not really bad.
+Reviewed-by: Joel Stanley <joel@jms.id.au>
 
-apply_relocate_add() is a much more complicated function, I would
-rather not mess it up to make this function a little simpler.
-
-[...]
+I did some builds and boot tested them in qemu fine.
 
 >
-> This duplicates a lot of code. Please, rename apply_relocate_add() the
-> same way as __apply_clear_relocate_add() and add the "apply" parameter.
-> Then add the wrappers for this:
+> Thanks,
+> Nick
 >
-> int write_relocate_add(Elf64_Shdr *sechdrs,
->                        const char *strtab,
->                        unsigned int symindex,
->                        unsigned int relsec,
->                        struct module *me,
->                        bool apply)
-> {
->         int ret;
->         bool early = me->state == MODULE_STATE_UNFORMED;
->         void *(*write)(void *, const void *, size_t) = memcpy;
+> Nicholas Piggin (4):
+>   module: add module_elf_check_arch for module-specific checks
+>   powerpc/64: Add module check for ELF ABI version
+>   powerpc/64: Add big-endian ELFv2 flavour to crypto VMX asm generation
+>   powerpc/64: Option to build big-endian with ELFv2 ABI
 >
->         if (!early) {
->                 write = text_poke;
->                 mutex_lock(&text_mutex);
->         }
-
-How about we move the "early" logic into __write_relocate_add()?
-
+>  arch/powerpc/Kconfig                   | 21 +++++++++++++++++++++
+>  arch/powerpc/kernel/module_64.c        | 10 ++++++++++
+>  arch/powerpc/platforms/Kconfig.cputype |  4 ++--
+>  drivers/crypto/vmx/Makefile            | 12 +++++++++++-
+>  drivers/crypto/vmx/ppc-xlate.pl        | 10 ++++++----
+>  include/linux/moduleloader.h           |  3 +++
+>  kernel/module/main.c                   | 10 ++++++++++
+>  7 files changed, 63 insertions(+), 7 deletions(-)
 >
->         ret = __write_relocate_add(sechdrs, strtab, symindex, relsec, me,
->                                          write, apply);
+> --
+> 2.37.2
 >
->         if (!early) {
->                 text_poke_sync();
->                 mutex_unlock(&text_mutex);
->         }
->
->         return ret;
-> }
->
-> int apply_relocate_add(Elf64_Shdr *sechdrs,
->                        const char *strtab,
->                        unsigned int symindex,
->                        unsigned int relsec,
->                        struct module *me)
-> {
->         return write_relocate_add(sechdrs, strtab, symindex, relsec, me, true);
-
-Then we just call __write_relocate_add() from here...
-
-> }
->
-> #ifdef CONFIG_LIVEPATCH
-> void apply_relocate_add(Elf64_Shdr *sechdrs,
->                         const char *strtab,
->                         unsigned int symindex,
->                         unsigned int relsec,
->                         struct module *me)
-> {
->         write_relocate_add(sechdrs, strtab, symindex, relsec, me, false);
-
-and here.
-
-
-> }
-> #endif
->
->
-> > +#endif
-> > +
-> >  #endif
-> >
-> >  int module_finalize(const Elf_Ehdr *hdr,
-> > --- a/kernel/livepatch/core.c
-> > +++ b/kernel/livepatch/core.c
-> > @@ -316,6 +316,45 @@ int klp_apply_section_relocs(struct module *pmod, Elf_Shdr *sechdrs,
-> >       return apply_relocate_add(sechdrs, strtab, symndx, secndx, pmod);
-> >  }
-> >
-> > +static void klp_clear_object_relocations(struct module *pmod,
-> > +                                     struct klp_object *obj)
-> > +{
-> > +     int i, cnt;
-> > +     const char *objname, *secname;
-> > +     char sec_objname[MODULE_NAME_LEN];
-> > +     Elf_Shdr *sec;
-> > +
-> > +     objname = klp_is_module(obj) ? obj->name : "vmlinux";
-> > +
-> > +     /* For each klp relocation section */
-> > +     for (i = 1; i < pmod->klp_info->hdr.e_shnum; i++) {
-> > +             sec = pmod->klp_info->sechdrs + i;
-> > +             secname = pmod->klp_info->secstrings + sec->sh_name;
-> > +             if (!(sec->sh_flags & SHF_RELA_LIVEPATCH))
-> > +                     continue;
-> > +
-> > +             /*
-> > +              * Format: .klp.rela.sec_objname.section_name
-> > +              * See comment in klp_resolve_symbols() for an explanation
-> > +              * of the selected field width value.
-> > +              */
-> > +             secname = pmod->klp_info->secstrings + sec->sh_name;
-> > +             cnt = sscanf(secname, ".klp.rela.%55[^.]", sec_objname);
-> > +             if (cnt != 1) {
-> > +                     pr_err("section %s has an incorrectly formatted name\n",
-> > +                            secname);
-> > +                     continue;
-> > +             }
-
-Actually, I think we don't need the cnt check here. Once it is removed,
-there isn't much duplicated logic.
-
-> > +
-> > +             if (strcmp(objname, sec_objname))
-> > +                     continue;
-> > +
-> > +             clear_relocate_add(pmod->klp_info->sechdrs,
-> > +                                pmod->core_kallsyms.strtab,
-> > +                                pmod->klp_info->symndx, i, pmod);
-> > +     }
-> > +}
->
-> Huh, this duplicates a lot of tricky code.
->
-> It is even worse because this squashed code from two functions
-> klp_apply_section_relocs() and klp_apply_object_relocs()
-> into a single function. As a result, the code duplication is not
-> even obvious.
->
-> Also the suffix "_reloacations() does not match the suffix of
-> the related funciton:
->
->         + klp_apply_object_relocs()             (existing)
->         + klp_clear_object_relocations()        (new)
->
-> This all would complicate maintenance of the code.
->
-> Please, implement a common:
->
-> int klp_write_section_relocs(struct module *pmod, Elf_Shdr *sechdrs,
->                              const char *shstrtab, const char *strtab,
->                              unsigned int symndx, unsigned int secndx,
->                              const char *objname, bool apply);
->
-> and
->
-> int klp_write_object_relocs(struct klp_patch *patch,
->                             struct klp_object *obj,
->                             bool apply);
->
-> and add the respective wrappers:
->
-> int klp_apply_section_relocs();   /* also needed in module/main.c */
-> int klp_apply_object_relocs();
-> void klp_clear_object_relocs();
-
-With the above simplification (removing cnt check), do we still need
-all these wrappers? Personally, I think they will make the code more
-difficult to follow..
-
-Thanks,
-Song
