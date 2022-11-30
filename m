@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4FCAFC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:45:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A29DC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:46:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ8H007rz3ghH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:45:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ8z6ZWNz3gm1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:46:27 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtc3McBz3f9V
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtd0Xg7z3bc6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:01 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtc2BYMz4xZg;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtc6Lw2z4xYQ;
 	Wed, 30 Nov 2022 20:34:00 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20221006105653.115829-1-npiggin@gmail.com>
-References: <20221006105653.115829-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc: remove the last remnants of cputime_t
-Message-Id: <166980024581.3017288.18071933598504987111.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:24:05 +1100
+In-Reply-To: <20220909052312.63916-1-npiggin@gmail.com>
+References: <20220909052312.63916-1-npiggin@gmail.com>
+Subject: Re: [PATCH v3] powerpc: add compile-time support for lbarx, lharx
+Message-Id: <166980023268.3017288.6016044517272868268.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:52 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,20 +45,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 Oct 2022 20:56:53 +1000, Nicholas Piggin wrote:
-> cputime_t was a core kernel type, removed by commits
-> ed5c8c854f2b..b672592f0221. As explained in commit b672592f0221
-> ("sched/cputime: Remove generic asm headers"), the final cleanup
-> is for the arch to provide cputime_to_nsec[s](). Commit ade7667a981b
-> ("powerpc: Add cputime_to_nsecs()") did that, but justdidn't remove
-> the then-unused cputime_to_usecs(), cputime_t type, and associated
-> remnants.
+On Fri, 9 Sep 2022 15:23:12 +1000, Nicholas Piggin wrote:
+> ISA v2.06 (POWER7 and up) as well as e6500 support lbarx and lharx.
+> Add a compile option that allows code to use it, and add support in
+> cmpxchg and xchg 8 and 16 bit values without shifting and masking.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: remove the last remnants of cputime_t
-      https://git.kernel.org/powerpc/c/f985adaf2ff934ec869b32ca1f7f97e2825e3a49
+[1/1] powerpc: add compile-time support for lbarx, lharx
+      https://git.kernel.org/powerpc/c/b86cf14f240e002e001fd4f2bf49114c7836fd5c
 
 cheers
