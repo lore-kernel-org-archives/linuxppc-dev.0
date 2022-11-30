@@ -4,72 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF8D6C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 23:03:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B5C7C4708D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 23:10:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMvrT73d5z3bf4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 10:03:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMw0n6p2bz3bWP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 10:10:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=NnMo7/46;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=S5armvpc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::430; helo=mail-pf1-x430.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::249; helo=mail-oi1-x249.google.com; envelope-from=3sukhywykdlkrdzmibfnnfkd.bnlkhmtwoob-cdukhrsr.nykzar.nqf@flex--seanjc.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=NnMo7/46;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=S5armvpc;
 	dkim-atps=neutral
-Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+Received: from mail-oi1-x249.google.com (mail-oi1-x249.google.com [IPv6:2607:f8b0:4864:20::249])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMvqP0Qgwz304s
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 10:02:23 +1100 (AEDT)
-Received: by mail-pf1-x430.google.com with SMTP id 140so198987pfz.6
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 15:02:23 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMvzq2grxz304s
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 10:09:41 +1100 (AEDT)
+Received: by mail-oi1-x249.google.com with SMTP id bf10-20020a056808190a00b0035a0a5ab8b6so114661oib.11
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 15:09:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=nHOMyfsfvQkL/nShVDUzK82mKXXqJYsG0axSizIXaLY=;
-        b=NnMo7/46lbMBrXBXQZRYVq3GggYMT+7jEJcq9CL/cSVNfI9/zGr929gpN24qaTzNDj
-         EuAX3kX5hoFkykznYnPSEMhpqrvV96Ls6XOPXnZJFhl++LMNCZ1xBLhLYGuEyeIeBOlg
-         1Pda6St2Grg/DjBtBU5P+snxis04vfL2wZmjtsQkvZDNryITBkJPcp25ppL/joru6uaX
-         pdFAr7CPrxA89GBOBBQLxyhlYq8vGrdtF3rzEmU5z3DvHeLGy15BW/hWdiMul0LnS4v8
-         aUBoc+y5QRGugr1owVbIQyI2ZzhFRbthIb2QpbXN2iQwGAYLSCnMYOTrkzCCC2hVImkh
-         7vwA==
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=Ol+f04sMmomAVy3XzqNXK+ShxWrn6gIN96B7OKl5yaM=;
+        b=S5armvpc10OdJc+V4p2ZjsfPOSB2+gt+Iv6GXjLvIxarCpnvSzXAszP1ZRQLfxrpVn
+         4VKntdMIRcH9d5x9XG1oGb5HbZFayk+JATeZBYQSlvM+DpwmfecZQ8AsDtvEHJv8Um6T
+         UA3gJNgXD7v57R6+HWMBuEe+F5z07hORTUOLfSKyijFbwT8eHearvUCVMdt7/m5zjOT/
+         RJHYTQwmhGaPhaOc8DfHyXLVsjojQiPBCzNQuFpX8g3cosCwY+5F+o1XrOjsJNDhsv4X
+         dI+LD+RMI6RHxUg1kkU/xRepaC5EvnuL3x5vvCzRlD3QPj+jjInfZWGepttgPw2FHtVt
+         S1mQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=nHOMyfsfvQkL/nShVDUzK82mKXXqJYsG0axSizIXaLY=;
-        b=OW7Y9vWqzvek2ubdUKVRQ38RgAtqETqsE0ZKUDmIiNkSOiX9D51fgVPGIshxYrjGlK
-         BkHOBA/3hV8dLAWgAyUryhKughHRgl3Z8UlY8eVrFDXoKjr3d5rRQiDNPNWNFakB9x1R
-         uUk7uJitbqgJemImUcn5uja+2DcYsoPPz65VpsKlUP0PoDM/atfvJpZqorHaUSo9rYvG
-         M62AnH9/k89JXrJdqjHvfuja0gDUqvge1M/qtnj1UHuW8BLVKZQZYdl4xoA9bvr6Ixfu
-         UI/NVeGuQCaMzzUcz+AoFgzHchElI/cF3XSJyi6AbCcLb+r4C/IwZh+Zc5N0d5z7/f6N
-         HuzA==
-X-Gm-Message-State: ANoB5pnA/8CDI/lKbsJxpQhkYFebCpNftKizm7sQfe3+c5mpXxDxp8+o
-	6cczRanjbWxLSn3EmZL/kYNIAw==
-X-Google-Smtp-Source: AA0mqf5Nj1181KAxR2A/WI368LXBMRYoBlCi8ORJRhPIy6nAs8C080UTF7/1gaOFg5Avl9sdvRAfNA==
-X-Received: by 2002:a63:2361:0:b0:45f:f8df:108e with SMTP id u33-20020a632361000000b0045ff8df108emr37236360pgm.127.1669849341423;
-        Wed, 30 Nov 2022 15:02:21 -0800 (PST)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id a6-20020a624d06000000b005633a06ad67sm509519pfb.64.2022.11.30.15.02.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Nov 2022 15:02:20 -0800 (PST)
-Date: Wed, 30 Nov 2022 23:02:16 +0000
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Ol+f04sMmomAVy3XzqNXK+ShxWrn6gIN96B7OKl5yaM=;
+        b=YsfONxWIfeLgjMHkxrGjd06jxLkjwEzzFgsbuHEq6xdU16vmJpYbzfaPPQGl8t9HM1
+         BIFtgJX4/M98BEXywEsmqybNBqQnfEXTRmzHS0g4ckjczP709AXD4v67K6aW2WG1xaK5
+         zUN6yFIXAKmaMHlsjhtZHU1zKCf6jDnupkUmJcKki71UkyDcUAGjjh5huEUxeTFjUdaQ
+         zki9Hz17B2kNn9daYY3jRdafNLZH858qe3qSo9/koHiegZqM3s2CD2EGW3ECa0ieLbmb
+         xTEbopaLwFHTOZi62DnvP069NW35RuKldxfQXZQz4JtAHiB86HAVTNpOABak1FnXZsVz
+         xA4Q==
+X-Gm-Message-State: ANoB5pm6CSCAcn4QhZRuKjwFw9melMfIwfCleFRlijaiky9b42f0gugt
+	KHt+zl3nelvCrWcm4BoI/InZK4dBzSg=
+X-Google-Smtp-Source: AA0mqf5M2pMTumXNgDe8Hfk4OhWDWk4TI1AuNKSU3xW+oTTlboWhE7bh5wRjvWcn8RwiB3BV7R0iM4jxw2w=
+X-Received: from zagreus.c.googlers.com ([fda3:e722:ac3:cc00:7f:e700:c0a8:5c37])
+ (user=seanjc job=sendgmr) by 2002:a05:6870:bb1a:b0:143:74c2:f928 with SMTP id
+ nw26-20020a056870bb1a00b0014374c2f928mr15086226oab.64.1669849778974; Wed, 30
+ Nov 2022 15:09:38 -0800 (PST)
+Date: Wed, 30 Nov 2022 23:08:45 +0000
+In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
+Mime-Version: 1.0
+References: <20221130230934.1014142-1-seanjc@google.com>
+X-Mailer: git-send-email 2.38.1.584.g0f3c55d4c2-goog
+Message-ID: <20221130230934.1014142-2-seanjc@google.com>
+Subject: [PATCH v2 01/50] KVM: Register /dev/kvm as the _very_ last thing
+ during initialization
 From: Sean Christopherson <seanjc@google.com>
-To: Robert Hoo <robert.hu@linux.intel.com>
-Subject: Re: [PATCH 32/44] KVM: x86: Unify pr_fmt to use module name for all
- KVM modules
-Message-ID: <Y4fg+MO2DusqMSZO@google.com>
-References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-33-seanjc@google.com>
- <ff0e8701d02ee161d064f92c8b742c2cc061bce0.camel@linux.intel.com>
- <Y20r2NR9MaBbOGLn@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Y20r2NR9MaBbOGLn@google.com>
+To: Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, 
+	Huacai Chen <chenhuacai@kernel.org>, 
+	Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, 
+	Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+	Matthew Rosato <mjrosato@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, 
+	Sean Christopherson <seanjc@google.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
+	David Woodhouse <dwmw2@infradead.org>, Paul Durrant <paul@xen.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,18 +84,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Rosato <mjrosato@linux.ibm.com>, David Hildenbrand <david@redhat.com>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Fabiano Rosas <farosas@linux.ibm.com>, 
- linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Sean Christopherson <seanjc@google.com>
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Chao Gao <chao.gao@intel.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Yuan Yao <yuan.yao@intel.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, =?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Fabiano Rosas <farosas@linux.ibm.com>, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Nov 10, 2022, Sean Christopherson wrote:
-> On Thu, Nov 10, 2022, Robert Hoo wrote:
-> > After this patch set, still find some printk()s left in arch/x86/kvm/*,
-> > consider clean all of them up?
-> 
-> Hmm, yeah, I suppose at this point it makes sense to tack on a patch to clean
-> them up.
+Register /dev/kvm, i.e. expose KVM to userspace, only after all other
+setup has completed.  Once /dev/kvm is exposed, userspace can start
+invoking KVM ioctls, creating VMs, etc...  If userspace creates a VM
+before KVM is done with its configuration, bad things may happen, e.g.
+KVM will fail to properly migrate vCPU state if a VM is created before
+KVM has registered preemption notifiers.
 
-Actually, I'm going to pass on this for now.  The series is already too big.  I'll
-add this to my todo list for the future.
+Cc: stable@vger.kernel.org
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ virt/kvm/kvm_main.c | 31 ++++++++++++++++++++++---------
+ 1 file changed, 22 insertions(+), 9 deletions(-)
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 1782c4555d94..b60abb03606b 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5919,12 +5919,6 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+ 
+ 	kvm_chardev_ops.owner = module;
+ 
+-	r = misc_register(&kvm_dev);
+-	if (r) {
+-		pr_err("kvm: misc device register failed\n");
+-		goto out_unreg;
+-	}
+-
+ 	register_syscore_ops(&kvm_syscore_ops);
+ 
+ 	kvm_preempt_ops.sched_in = kvm_sched_in;
+@@ -5933,11 +5927,24 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+ 	kvm_init_debug();
+ 
+ 	r = kvm_vfio_ops_init();
+-	WARN_ON(r);
++	if (WARN_ON_ONCE(r))
++		goto err_vfio;
++
++	/*
++	 * Registration _must_ be the very last thing done, as this exposes
++	 * /dev/kvm to userspace, i.e. all infrastructure must be setup!
++	 */
++	r = misc_register(&kvm_dev);
++	if (r) {
++		pr_err("kvm: misc device register failed\n");
++		goto err_register;
++	}
+ 
+ 	return 0;
+ 
+-out_unreg:
++err_register:
++	kvm_vfio_ops_exit();
++err_vfio:
+ 	kvm_async_pf_deinit();
+ out_free_4:
+ 	for_each_possible_cpu(cpu)
+@@ -5963,8 +5970,14 @@ void kvm_exit(void)
+ {
+ 	int cpu;
+ 
+-	debugfs_remove_recursive(kvm_debugfs_dir);
++	/*
++	 * Note, unregistering /dev/kvm doesn't strictly need to come first,
++	 * fops_get(), a.k.a. try_module_get(), prevents acquiring references
++	 * to KVM while the module is being stopped.
++	 */
+ 	misc_deregister(&kvm_dev);
++
++	debugfs_remove_recursive(kvm_debugfs_dir);
+ 	for_each_possible_cpu(cpu)
+ 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
+ 	kmem_cache_destroy(kvm_vcpu_cache);
+-- 
+2.38.1.584.g0f3c55d4c2-goog
+
