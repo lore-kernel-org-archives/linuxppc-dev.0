@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57CCCC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:55:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C343C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:56:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZMR0KTnz3hpx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:55:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZN05rFFz3htB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:56:00 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtw4Vcrz3bXd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYty1fhBz3fB3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:18 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtw14nfz4y4d;
-	Wed, 30 Nov 2022 20:34:16 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtx0P3Vz4yFl;
+	Wed, 30 Nov 2022 20:34:17 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: benh@kernel.crashing.org, Li zeming <zeming@nfschina.com>
-In-Reply-To: <20220707015352.3391-1-zeming@nfschina.com>
-References: <20220707015352.3391-1-zeming@nfschina.com>
-Subject: Re: [PATCH] macintosh/ams/ams: Add header file macro definition
-Message-Id: <166980022660.3017288.7896305939076980976.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:46 +1100
+In-Reply-To: <20220707015949.3733-1-zeming@nfschina.com>
+References: <20220707015949.3733-1-zeming@nfschina.com>
+Subject: Re: [PATCH] macintosh/windfarm_pid: Add header file macro definition
+Message-Id: <166980022736.3017288.3449497203584355891.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:47 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,18 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kernel@nfschina.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 7 Jul 2022 09:53:52 +0800, Li zeming wrote:
-> Add header file macro definition.
+On Thu, 7 Jul 2022 09:59:49 +0800, Li zeming wrote:
+> I think the header file could avoid redefinition errors.
+>  at compile time by adding macro definitions.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] macintosh/ams/ams: Add header file macro definition
-      https://git.kernel.org/powerpc/c/2dfcace75e1e1dfbd89af63fce1bfe8aebe38427
+[1/1] macintosh/windfarm_pid: Add header file macro definition
+      https://git.kernel.org/powerpc/c/e3e528d29d13c01289f382a0d3ddb5312ac3dae3
 
 cheers
