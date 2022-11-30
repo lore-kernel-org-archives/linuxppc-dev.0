@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41DCEC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:48:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 038F3C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:49:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZCr5s2Rz3g24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:48:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZDQ40RNz3h6y
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:49:26 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtk3bNnz3fQT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtm1fjcz3f2k
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:08 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtj2PK0z4xvr;
-	Wed, 30 Nov 2022 20:34:05 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtk6q3lz4xvp;
+	Wed, 30 Nov 2022 20:34:06 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Stephen Kitt <steve@sk2.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <20220616170425.1346081-1-steve@sk2.org>
-References: <20220616170425.1346081-1-steve@sk2.org>
-Subject: Re: [PATCH v2] macintosh: via-pmu-backlight: Use backlight helper
-Message-Id: <166980022506.3017288.12402115611479311613.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:45 +1100
+To: studentxswpy@163.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20220802074148.3213659-1-studentxswpy@163.com>
+References: <20220802074148.3213659-1-studentxswpy@163.com>
+Subject: Re: [PATCH] mm: check the return value of ioremap() in macio_init()
+Message-Id: <166980022967.3017288.12712189262010498821.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:49 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Hacash Robot <hacashRobot@santino.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 16 Jun 2022 19:04:24 +0200, Stephen Kitt wrote:
-> backlight_properties.fb_blank is deprecated. The states it represents
-> are handled by other properties; but instead of accessing those
-> properties directly, drivers should use the helpers provided by
-> backlight.h.
+On Tue, 2 Aug 2022 15:41:48 +0800, studentxswpy@163.com wrote:
+> From: Xie Shaowen <studentxswpy@163.com>
 > 
-> Instead of retrieving the backlight brightness in struct
-> backlight_properties manually, and then checking whether the backlight
-> should be on at all, use backlight_get_brightness() which does all
-> this and insulates this from future changes.
+> The function ioremap() in macio_init() can fail, so
+> its return value should be checked.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] macintosh: via-pmu-backlight: Use backlight helper
-      https://git.kernel.org/powerpc/c/a0542d2c45a64162e63ad2d80684e57de0566271
+[1/1] mm: check the return value of ioremap() in macio_init()
+      https://git.kernel.org/powerpc/c/dbaa3105736d4d73063ea0a3b01cd7fafce924e6
 
 cheers
