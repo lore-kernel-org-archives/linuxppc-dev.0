@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 708E8C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E347EC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:33:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMYsG0XSJz3fDT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:32:50 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMYsq3Vzhz3chw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:33:19 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqc0yJjz2xVr
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqc3Ctgz2xVr
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:24 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqY25wxz4x1R;
-	Wed, 30 Nov 2022 20:31:21 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqc1qY0z4xN4;
+	Wed, 30 Nov 2022 20:31:24 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Haowen Bai <baihaowen@meizu.com>, masahiroy@kernel.org, benh@kernel.crashing.org, adobriyan@gmail.com
-In-Reply-To: <1647484554-13258-1-git-send-email-baihaowen@meizu.com>
-References: <1647484554-13258-1-git-send-email-baihaowen@meizu.com>
-Subject: Re: [PATCH] macintosh: adb: Fix warning comparing pointer to 0
-Message-Id: <166980021723.3017288.15149086182238298951.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:37 +1100
+In-Reply-To: <1647484359-12402-1-git-send-email-baihaowen@meizu.com>
+References: <1647484359-12402-1-git-send-email-baihaowen@meizu.com>
+Subject: Re: [PATCH] macintosh: windfarm_pm81: Fix warning comparing pointer to 0
+Message-Id: <166980021571.3017288.17433555641122824381.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:35 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,14 +46,14 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 17 Mar 2022 10:35:54 +0800, Haowen Bai wrote:
+On Thu, 17 Mar 2022 10:32:39 +0800, Haowen Bai wrote:
 > Avoid pointer type value compared with 0 to make code clear.
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] macintosh: adb: Fix warning comparing pointer to 0
-      https://git.kernel.org/powerpc/c/2f59562c140d3119328f869126e8e593a99a392f
+[1/1] macintosh: windfarm_pm81: Fix warning comparing pointer to 0
+      https://git.kernel.org/powerpc/c/e0acfdd13474815696595206e11169736b4bca9d
 
 cheers
