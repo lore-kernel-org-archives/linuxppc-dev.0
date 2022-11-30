@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FCDDC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:36:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0AC0C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:36:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMYxH6h9Sz3fkq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:36:19 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMYxs2rqNz3fpg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:36:49 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqk4KvRz3bdf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYql1K06z3bf2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:31 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqk3D0wz4xP9;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYql064Fz4x1R;
 	Wed, 30 Nov 2022 20:31:30 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <65f76300de07091a59a042a3db2d0ce9b939a05c.1664346532.git.christophe.leroy@csgroup.eu>
-References: <65f76300de07091a59a042a3db2d0ce9b939a05c.1664346532.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/8xx: Simplify pte_update() with 16k pages
-Message-Id: <166980023807.3017288.13472562694365213076.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:58 +1100
+To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <ec79f462a3bfa8365b7df505e574d5d85246bc68.1646818177.git.christophe.leroy@csgroup.eu>
+References: <ec79f462a3bfa8365b7df505e574d5d85246bc68.1646818177.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Remove find_current_mm_pte()
+Message-Id: <166980022119.3017288.6532732356016650095.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:41 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,24 +46,19 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 28 Sep 2022 08:29:00 +0200, Christophe Leroy wrote:
-> While looking at code generated for code patching, I saw that
-> pte_clear generated:
+On Wed, 9 Mar 2022 10:29:50 +0100, Christophe Leroy wrote:
+> Last usage of find_current_mm_pte() was removed by
+> commit 15759cb054ef ("powerpc/perf/callchain: Use
+> __get_user_pages_fast in read_user_stack_slow")
 > 
->  2d8:	38 a0 00 00 	li      r5,0
->  2dc:	38 e0 10 00 	li      r7,4096
->  2e0:	39 00 20 00 	li      r8,8192
->  2e4:	39 40 30 00 	li      r10,12288
->  2e8:	90 a9 00 00 	stw     r5,0(r9)
->  2ec:	90 e9 00 04 	stw     r7,4(r9)
->  2f0:	91 09 00 08 	stw     r8,8(r9)
->  2f4:	91 49 00 0c 	stw     r10,12(r9)
+> Remove it.
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/8xx: Simplify pte_update() with 16k pages
-      https://git.kernel.org/powerpc/c/f2c45962cc618c12f69fd46e6ebc20b9cd7f15ac
+[1/1] powerpc: Remove find_current_mm_pte()
+      https://git.kernel.org/powerpc/c/e75d07bd8303588c33e6f1f180a9081fb58c872e
 
 cheers
