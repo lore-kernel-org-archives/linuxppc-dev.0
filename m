@@ -4,76 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03CD9C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:27:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B77CCC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 21:28:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMrP63XJYz3cjF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 07:27:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sAz+w9HC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sAz+w9HC;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMskc0JP5z3bjx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 08:28:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+X-Greylist: delayed 2381 seconds by postgrey-1.36 at boromir; Thu, 01 Dec 2022 08:27:33 AEDT
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMrK12qWbz3bXG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 07:24:21 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2AUJmjHO023681;
-	Wed, 30 Nov 2022 20:24:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=KrYnveB3F7AMJZT1G/mARxgnu1ORcUWgMJN69w3bDGg=;
- b=sAz+w9HCL6DQFEFeZLqnk70tHg3eYhlrGcdI96vTGalK9NhL00+rz4CfljbK2lDbh0eE
- rQ9Z7nwzJ6mB2hyz8Rib8gLUWYBfCP71d+idkcm6ou1VbWaUcYlaBX6RfzAb7tfBgmAI
- hNv6k+4T4kYD7akbKn+yRBBLexpd+QZKEzduemb0+0ibDGWz+UIH8FoHP76VkRVTn+J1
- cXw7WlTpjB+Dhwj3dY2AU4s/ZUamHnGCOnFl1j3M/V0kc373K1kOvkL1O9z1yt6iXh1k
- Sxsa9CHgkd26dzItNnp2k0/fkWn2gTHSj0QSSu2i+EseP5c75OjH/dJSICVj1tZWxnPP aw== 
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m6dnp8tms-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Nov 2022 20:24:03 +0000
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
-	by ppma03dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2AUKK5XX019854;
-	Wed, 30 Nov 2022 20:24:02 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([9.208.130.100])
-	by ppma03dal.us.ibm.com with ESMTP id 3m3ae9wqmx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 30 Nov 2022 20:24:02 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2AUKO1xk38666542
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 30 Nov 2022 20:24:01 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AD52B58059;
-	Wed, 30 Nov 2022 20:24:01 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9DBE458058;
-	Wed, 30 Nov 2022 20:24:00 +0000 (GMT)
-Received: from rhel-laptop.ibm.com.com (unknown [9.160.99.100])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 30 Nov 2022 20:24:00 +0000 (GMT)
-From: gjoyce@linux.vnet.ibm.com
-To: linux-block@vger.kernel.org
-Subject: [PATCH v5 0/3] generic and PowerPC SED Opal keystore
-Date: Wed, 30 Nov 2022 14:23:55 -0600
-Message-Id: <20221130202358.18034-1-gjoyce@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMsjx6cW4z2xZp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 08:27:33 +1100 (AEDT)
+Received: from [2601:447:c680:c050::b821]
+	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <oss@buserror.net>)
+	id 1p0TxY-00ENdm-6p; Wed, 30 Nov 2022 14:45:36 -0600
+Message-ID: <3d1a6cde6c8e108be77fa4a47666e14d06a91d74.camel@buserror.net>
+From: Crystal Wood <oss@buserror.net>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 30 Nov 2022 14:45:34 -0600
+In-Reply-To: <20221128043623.1745708-1-npiggin@gmail.com>
+References: <20221128043623.1745708-1-npiggin@gmail.com>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.44.4-0ubuntu1 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: T1lAll5lfCjKFXthkRJbODLuh9EXdAEQ
-X-Proofpoint-ORIG-GUID: T1lAll5lfCjKFXthkRJbODLuh9EXdAEQ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.895,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-11-30_04,2022-11-30_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxscore=0
- phishscore=0 mlxlogscore=950 malwarescore=0 spamscore=0 adultscore=0
- suspectscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2210170000 definitions=main-2211300141
+X-SA-Exim-Connect-IP: 2601:447:c680:c050::b821
+X-SA-Exim-Rcpt-To: npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, laurentiu.tudor@nxp.com, shentey@gmail.com, qemu-ppc@nongnu.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [RFC PATCH] Disable Book-E KVM support?
+X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,53 +50,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, gjoyce@linux.vnet.ibm.com, nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: qemu-ppc@nongnu.org, Bernhard Beschow <shentey@gmail.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+On Mon, 2022-11-28 at 14:36 +1000, Nicholas Piggin wrote:
+> BookE KVM is in a deep maintenance state, I'm not sure how much testing
+> it gets. I don't have a test setup, and it does not look like QEMU has
+> any HV architecture enabled. It hasn't been too painful but there are
+> some cases where it causes a bit of problem not being able to test, e.g.,
+>=20
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-November/251452.html
+>=20
+> Time to begin removal process, or are there still people using it? I'm
+> happy to to keep making occasional patches to try keep it going if
+> there are people testing upstream. Getting HV support into QEMU would
+> help with long term support, not sure how big of a job that would be.
 
-Changelog v5:
-        - added check for key length based on review comment by
-	  "Elliott, Robert (Servers)" <elliott@hpe.com>
+Not sure what you mean about QEMU not having e500 HV support?  I don't know=
+ if
+it's bitrotted, but it's there.
 
-Changelog v4:
-        - scope reduced to cover just SED Opal keys
-        - base SED Opal keystore is now in SED block driver
-        - removed use of enum to indicate type
-        - refactored common code into common function that read and
-          write use
-        - removed cast to void
-        - added use of SED Opal keystore functions to SED block driver
+I don't know whether anyone is still using this, but if they are, it's
+probably e500mc and not e500v2 (which involved a bunch of hacks to get almo=
+st-
+sorta-usable performance out of hardware not designed for virtualization). =
+ I
+do see that there have been a few recent patches on QEMU e500 (beyond the
+treewide cleanup type stuff), though I don't know if they're using KVM.  CC=
+ing
+them and the QEMU list.
 
-Generic functions have been defined for accessing SED Opal keys.
-The generic functions are defined as weak so that they may be superseded
-by keystore specific versions.
+I have an e6500 I could occasionally test on, if it turns out people do sti=
+ll
+care about this.  Don't count me as the use case, though. :-)
 
-PowerPC/pseries versions of these functions provide read/write access
-to SED Opal keys in the PLPKS keystore.
+FWIW, as far as the RECONCILE_IRQ_STATE issue, that used to be done in
+kvmppc_handle_exit(), but was moved in commit 9bd880a2c882 to be "cleaner a=
+nd
+faster". :-P
 
-The SED block driver has been modified to read the SED Opal
-keystore to populate a key in the SED Opal keyring. Changes to the
-SED Opal key will be written to the SED Opal keystore.
-
-
-Greg Joyce (3):
-  block: sed-opal: SED Opal keystore
-  powerpc/pseries: PLPKS SED Opal keystore support
-  block: sed-opal: keystore access for SED Opal keys
-
- arch/powerpc/platforms/pseries/Makefile       |   1 +
- .../powerpc/platforms/pseries/plpks_sed_ops.c | 129 ++++++++++++++++++
- block/Makefile                                |   2 +-
- block/sed-opal-key.c                          |  23 ++++
- block/sed-opal.c                              |  18 ++-
- include/linux/sed-opal-key.h                  |  15 ++
- 6 files changed, 185 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks_sed_ops.c
- create mode 100644 block/sed-opal-key.c
- create mode 100644 include/linux/sed-opal-key.h
-
--- 
-gjoyce@linux.vnet.ibm.com
+-Crystal
 
