@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13305C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:40:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B66AEC433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:40:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ1r5LJZz2xDv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:40:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ2Q35MGz3gBx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:40:46 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqr3ZWfz3bfy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqs0qztz3bf7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:37 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqr2S0vz4xZp;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqr6mR0z4xN4;
 	Wed, 30 Nov 2022 20:31:36 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Finn Thain <fthain@linux-m68k.org>
-In-Reply-To: <0c11c0770fc4ec7e80a4b2e0ffce1055b792cfdb.1647854880.git.fthain@linux-m68k.org>
-References: <0c11c0770fc4ec7e80a4b2e0ffce1055b792cfdb.1647854880.git.fthain@linux-m68k.org>
-Subject: Re: [PATCH v2] macintosh/via-pmu: Avoid compiler warnings when CONFIG_PROC_FS is disabled
-Message-Id: <166980022042.3017288.9367198168572746077.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:40 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, "Gustavo A. R. Silva" <gustavoars@kernel.org>
+In-Reply-To: <YySE6FHiOcbWWR+9@work>
+References: <YySE6FHiOcbWWR+9@work>
+Subject: Re: [PATCH][next] powerpc/xmon: Fix -Wswitch-unreachable warning in bpt_cmds
+Message-Id: <166980023574.3017288.3366504099438296796.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:55 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Randy Dunlap <rdunlap@infradead.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hardening@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 21 Mar 2022 20:28:00 +1100, Finn Thain wrote:
-> drivers/macintosh/via-pmu.c:897:12: warning: 'pmu_battery_proc_show' defined but not used [-Wunused-function]
->  static int pmu_battery_proc_show(struct seq_file *m, void *v)
->             ^~~~~~~~~~~~~~~~~~~~~
-> drivers/macintosh/via-pmu.c:871:12: warning: 'pmu_irqstats_proc_show' defined but not used [-Wunused-function]
->  static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
->             ^~~~~~~~~~~~~~~~~~~~~~
-> drivers/macintosh/via-pmu.c:860:12: warning: 'pmu_info_proc_show' defined but not used [-Wunused-function]
->  static int pmu_info_proc_show(struct seq_file *m, void *v)
->             ^~~~~~~~~~~~~~~~~~
+On Fri, 16 Sep 2022 15:15:04 +0100, Gustavo A. R. Silva wrote:
+> When building with automatic stack variable initialization, GCC 12
+> complains about variables defined outside of switch case statements.
+> Move the variable into the case that uses it, which silences the warning:
+> 
+> arch/powerpc/xmon/xmon.c: In function ‘bpt_cmds’:
+> arch/powerpc/xmon/xmon.c:1529:13: warning: statement will never be executed [-Wswitch-unreachable]
+>  1529 |         int mode;
+>       |             ^~~~
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] macintosh/via-pmu: Avoid compiler warnings when CONFIG_PROC_FS is disabled
-      https://git.kernel.org/powerpc/c/27f9690a81d7acf185b78be8d03d4b3a243116b1
+[1/1] powerpc/xmon: Fix -Wswitch-unreachable warning in bpt_cmds
+      https://git.kernel.org/powerpc/c/1c4a4a4c8410be4a231a58b23e7a30923ff954ac
 
 cheers
