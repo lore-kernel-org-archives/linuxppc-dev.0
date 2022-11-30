@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74CDDC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:51:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03FEEC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:52:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZGj0KBFz3g6k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:51:25 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZHQ391Wz3hL8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:52:02 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtp59hpz3fBB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtq34cKz3fRK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:11 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtp3ymsz4xTy;
-	Wed, 30 Nov 2022 20:34:10 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtq1KH2z4xvS;
+	Wed, 30 Nov 2022 20:34:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: npiggin@gmail.com, christophe.leroy@csgroup.eu, Xiu Jianfeng <xiujianfeng@huawei.com>, mpe@ellerman.id.au
-In-Reply-To: <20220911084344.196353-1-xiujianfeng@huawei.com>
-References: <20220911084344.196353-1-xiujianfeng@huawei.com>
-Subject: Re: [PATCH] powerpc: pasemi: add __init/__exit annotations to module init/exit funcs
-Message-Id: <166980023346.3017288.17763205017508366460.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:53 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, Tiezhu Yang <yangtiezhu@loongson.cn>
+In-Reply-To: <1668764429-11540-1-git-send-email-yangtiezhu@loongson.cn>
+References: <1668764429-11540-1-git-send-email-yangtiezhu@loongson.cn>
+Subject: Re: [PATCH] powerpc: Use "grep -E" instead of "egrep"
+Message-Id: <166980026260.3017288.14087410885102368341.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:24:22 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -46,14 +46,19 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 11 Sep 2022 16:43:44 +0800, Xiu Jianfeng wrote:
-> Add missing __init/__exit annotations to module init/exit funcs.
+On Fri, 18 Nov 2022 17:40:29 +0800, Tiezhu Yang wrote:
+> The latest version of grep claims the egrep is now obsolete so the build
+> now contains warnings that look like:
+> 	egrep: warning: egrep is obsolescent; using grep -E
+> fix this up by moving the related file to use "grep -E" instead.
 > 
+>   sed -i "s/egrep/grep -E/g" `grep egrep -rwl arch/powerpc`
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: pasemi: add __init/__exit annotations to module init/exit funcs
-      https://git.kernel.org/powerpc/c/d87a233717da400792fa601b29fa74a7d28e03c2
+[1/1] powerpc: Use "grep -E" instead of "egrep"
+      https://git.kernel.org/powerpc/c/a9ffb8ee7b65a468474d6a2be7e9cca4b8f8ea5f
 
 cheers
