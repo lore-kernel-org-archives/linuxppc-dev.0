@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6839C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A11C8C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:44:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ6Z28K1z3gXg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:44:22 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ781YJ2z3gZx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:44:52 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYr00dYpz3bjY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtb1mxdz3fPB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:33:59 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqw67Phz4xbN;
-	Wed, 30 Nov 2022 20:31:40 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtZ6Cjbz4xZp;
+	Wed, 30 Nov 2022 20:33:58 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20221006032019.1128624-1-mpe@ellerman.id.au>
-References: <20221006032019.1128624-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc: Make instruction dump work with scripts/decodecode
-Message-Id: <166980024503.3017288.6934056498312508193.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:24:05 +1100
+To: Nayna Jain <nayna@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20221106205839.600442-1-nayna@linux.ibm.com>
+References: <20221106205839.600442-1-nayna@linux.ibm.com>
+Subject: Re: [PATCH 0/6] powerpc/pseries - bugfixes/cleanups for PLPKS driver
+Message-Id: <166980025961.3017288.7063318917911926713.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:24:19 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: gjoyce@linux.vnet.ibm.com, George Wilson <gcwilson@linux.ibm.com>, bjking1@us.ibm.com, npiggin@gmail.com, Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 6 Oct 2022 14:20:18 +1100, Michael Ellerman wrote:
-> Matt reported that scripts/decodecode doesn't work for the instruction
-> dump in the powerpc oops output. Although there are scripts around that
-> can decode it, it would be preferable if the standard in-tree script
-> worked.
+On Sun, 6 Nov 2022 15:58:33 -0500, Nayna Jain wrote:
+> This patchset fixes some bugs and does some cleanups.
 > 
-> All other arches prefix the instruction dump with "Code:", and that's
-> what the script looks for, so use that.
+> Nayna Jain (6):
+>   powerpc/pseries: fix the object owners enum value in plpks driver
+>   powerpc/pseries: Fix the H_CALL error code in PLPKS driver
+>   powerpc/pseries: Return -EIO instead of -EINTR for H_ABORTED error
+>   powerpc/pseries: cleanup error logs in plpks driver
+>   powerpc/pseries: replace kmalloc with kzalloc in PLPKS driver
+>   powerpc/pseries: fix plpks_read_var() code for different consumers
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: Make instruction dump work with scripts/decodecode
-      https://git.kernel.org/powerpc/c/3e65412709293d5fb65249408e8e801b23b72635
-[2/2] powerpc: Print instruction dump on a single line
-      https://git.kernel.org/powerpc/c/d90bb7b4fdaff3f2fa68c7af85de2ce9e70189b1
+[1/6] powerpc/pseries: fix the object owners enum value in plpks driver
+      https://git.kernel.org/powerpc/c/2330757e0be0acad88852e211dcd6106390a729b
+[2/6] powerpc/pseries: Fix the H_CALL error code in PLPKS driver
+      https://git.kernel.org/powerpc/c/af223e1728c448073d1e12fe464bf344310edeba
+[3/6] powerpc/pseries: Return -EIO instead of -EINTR for H_ABORTED error
+      https://git.kernel.org/powerpc/c/bb8e4c7cb759b90a04f2e94056b50288ff46a0ed
+[4/6] powerpc/pseries: cleanup error logs in plpks driver
+      https://git.kernel.org/powerpc/c/8888ea772972323362660e9a1339175294664a6c
+[5/6] powerpc/pseries: replace kmalloc with kzalloc in PLPKS driver
+      https://git.kernel.org/powerpc/c/212dd5cfbee7815f3c665a51c501701edb881599
+[6/6] powerpc/pseries: fix plpks_read_var() code for different consumers
+      https://git.kernel.org/powerpc/c/1f622f3f80cbf8999ff5955a2fcfbd801a1f32e0
 
 cheers
