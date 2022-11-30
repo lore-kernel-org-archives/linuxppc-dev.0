@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03FEEC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:52:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5FE3C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:52:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZHQ391Wz3hL8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:52:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZJ02F1Jz3hTB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:52:32 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtq34cKz3fRK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtr1PNFz3fB5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:12 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtq1KH2z4xvS;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtr00R1z4y3V;
 	Wed, 30 Nov 2022 20:34:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, Tiezhu Yang <yangtiezhu@loongson.cn>
-In-Reply-To: <1668764429-11540-1-git-send-email-yangtiezhu@loongson.cn>
-References: <1668764429-11540-1-git-send-email-yangtiezhu@loongson.cn>
-Subject: Re: [PATCH] powerpc: Use "grep -E" instead of "egrep"
-Message-Id: <166980026260.3017288.14087410885102368341.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:24:22 +1100
+To: Yang Yingliang <yangyingliang@huawei.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20221111145440.2426970-1-yangyingliang@huawei.com>
+References: <20221111145440.2426970-1-yangyingliang@huawei.com>
+Subject: Re: [PATCH 1/2] cxl: fix possible null-ptr-deref in cxl_guest_init_afu|adapter()
+Message-Id: <166980026116.3017288.8069429950909068729.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:24:21 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: fbarrat@linux.ibm.com, gregkh@linuxfoundation.org, ajd@linux.ibm.com, arnd@arndb.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 18 Nov 2022 17:40:29 +0800, Tiezhu Yang wrote:
-> The latest version of grep claims the egrep is now obsolete so the build
-> now contains warnings that look like:
-> 	egrep: warning: egrep is obsolescent; using grep -E
-> fix this up by moving the related file to use "grep -E" instead.
+On Fri, 11 Nov 2022 22:54:39 +0800, Yang Yingliang wrote:
+> If device_register() fails in cxl_register_afu|adapter(), the device
+> is not added, device_unregister() can not be called in the error path,
+> otherwise it will cause a null-ptr-deref because of removing not added
+> device.
 > 
->   sed -i "s/egrep/grep -E/g" `grep egrep -rwl arch/powerpc`
+> As comment of device_register() says, it should use put_device() to give
+> up the reference in the error path. So split device_unregister() into
+> device_del() and put_device(), then goes to put dev when register fails.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Use "grep -E" instead of "egrep"
-      https://git.kernel.org/powerpc/c/a9ffb8ee7b65a468474d6a2be7e9cca4b8f8ea5f
+[1/2] cxl: fix possible null-ptr-deref in cxl_guest_init_afu|adapter()
+      https://git.kernel.org/powerpc/c/f949ccee1dde970bc77dc871b4f0b5e651577344
+[2/2] cxl: fix possible null-ptr-deref in cxl_pci_init_afu|adapter()
+      https://git.kernel.org/powerpc/c/8bf03f557d6c6e108cf47bea32f4a68e276e1157
 
 cheers
