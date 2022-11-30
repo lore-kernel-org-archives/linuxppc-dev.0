@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5D6DC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6839C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:44:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ603YK7z3fmv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:43:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ6Z28K1z3gXg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:44:22 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqy3t30z3bgX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYr00dYpz3bjY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:44 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqx6ywtz4xN8;
-	Wed, 30 Nov 2022 20:31:41 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqw67Phz4xbN;
+	Wed, 30 Nov 2022 20:31:40 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20220809105425.424045-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20220809105425.424045-1-naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/ftrace: Ignore weak functions
-Message-Id: <166980023046.3017288.11082860988132310643.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:50 +1100
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20221006032019.1128624-1-mpe@ellerman.id.au>
+References: <20221006032019.1128624-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc: Make instruction dump work with scripts/decodecode
+Message-Id: <166980024503.3017288.6934056498312508193.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:24:05 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 9 Aug 2022 16:24:25 +0530, Naveen N. Rao wrote:
-> Extend commit b39181f7c6907d ("ftrace: Add FTRACE_MCOUNT_MAX_OFFSET to
-> avoid adding weak function") to ppc32 and ppc64 -mprofile-kernel by
-> defining FTRACE_MCOUNT_MAX_OFFSET.
+On Thu, 6 Oct 2022 14:20:18 +1100, Michael Ellerman wrote:
+> Matt reported that scripts/decodecode doesn't work for the instruction
+> dump in the powerpc oops output. Although there are scripts around that
+> can decode it, it would be preferable if the standard in-tree script
+> worked.
 > 
-> For ppc64 -mprofile-kernel ABI, we can have two instructions at function
-> entry for TOC setup followed by 'mflr r0' and 'bl _mcount'. So, the
-> mcount location is at most the 4th instruction in a function. For ppc32,
-> mcount location is always the 3rd instruction in a function, preceded by
-> 'mflr r0' and 'stw r0,4(r1)'.
+> All other arches prefix the instruction dump with "Code:", and that's
+> what the script looks for, so use that.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/ftrace: Ignore weak functions
-      https://git.kernel.org/powerpc/c/7af82ff90a2b0690c2c45818fcce4c4ac3b187f3
+[1/2] powerpc: Make instruction dump work with scripts/decodecode
+      https://git.kernel.org/powerpc/c/3e65412709293d5fb65249408e8e801b23b72635
+[2/2] powerpc: Print instruction dump on a single line
+      https://git.kernel.org/powerpc/c/d90bb7b4fdaff3f2fa68c7af85de2ce9e70189b1
 
 cheers
