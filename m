@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54A9FC433FE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54E34C433FE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:54:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZKk0Bcfz3gD0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:54:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZLH6Qgyz3g72
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:54:31 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtt1n1Lz3fRR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYtv0Xckz3fB5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:34:15 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYts4wb1z4y42;
-	Wed, 30 Nov 2022 20:34:13 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYtt6Lwnz4y47;
+	Wed, 30 Nov 2022 20:34:14 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Yang Yingliang <yangyingliang@huawei.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20221017032333.1852406-1-yangyingliang@huawei.com>
-References: <20221017032333.1852406-1-yangyingliang@huawei.com>
-Subject: Re: [PATCH] powerpc/xive: add missing iounmap() in error path in xive_spapr_populate_irq_data()
-Message-Id: <166980024810.3017288.10212728445066769277.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:24:08 +1100
+In-Reply-To: <20221104032551.1075335-1-yangyingliang@huawei.com>
+References: <20221104032551.1075335-1-yangyingliang@huawei.com>
+Subject: Re: [PATCH v2] macintosh: fix possible memory leak in macio_add_one_device()
+Message-Id: <166980022889.3017288.9700736451986386499.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:48 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: clg@kaod.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 17 Oct 2022 11:23:33 +0800, Yang Yingliang wrote:
-> If remapping 'data->trig_page' fails, the 'data->eoi_mmio' need be unmapped
-> before returning from xive_spapr_populate_irq_data().
+On Fri, 4 Nov 2022 11:25:51 +0800, Yang Yingliang wrote:
+> Afer commit 1fa5ae857bb1 ("driver core: get rid of struct device's
+> bus_id string array"), the name of device is allocated dynamically,
+> it need be freed when of_device_register() fails, call put_device()
+> to give up the reference that hold in device_initialize(), so that
+> it can be freed in kobject_cleanup() when the refcount hit to 0.
+> macio device is freed in macio_release_dev(), so the kfree() can be
+> removed.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/xive: add missing iounmap() in error path in xive_spapr_populate_irq_data()
-      https://git.kernel.org/powerpc/c/8b49670f3bb3f10cd4d5a6dca17f5a31b173ecdc
+[1/1] macintosh: fix possible memory leak in macio_add_one_device()
+      https://git.kernel.org/powerpc/c/5ca86eae55a2f006e6c1edd2029b2cacb6979515
 
 cheers
