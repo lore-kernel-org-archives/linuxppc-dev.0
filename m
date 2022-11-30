@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD02AC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:39:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13305C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 09:40:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ1H3frkz3g6B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:39:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NMZ1r5LJZz2xDv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Nov 2022 20:40:16 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqq6sqcz3bbD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NMYqr3ZWfz3bfy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 20:31:36 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqq5gTcz4xZl;
-	Wed, 30 Nov 2022 20:31:35 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NMYqr2S0vz4xZp;
+	Wed, 30 Nov 2022 20:31:36 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-In-Reply-To: <YzKSLcrYmV5kjyeX@google.com>
-References: <YzKSLcrYmV5kjyeX@google.com>
-Subject: Re: [PATCH] powerpc/warp: switch to using gpiod API
-Message-Id: <166980023651.3017288.11616818512076872736.b4-ty@ellerman.id.au>
-Date: Wed, 30 Nov 2022 20:23:56 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Finn Thain <fthain@linux-m68k.org>
+In-Reply-To: <0c11c0770fc4ec7e80a4b2e0ffce1055b792cfdb.1647854880.git.fthain@linux-m68k.org>
+References: <0c11c0770fc4ec7e80a4b2e0ffce1055b792cfdb.1647854880.git.fthain@linux-m68k.org>
+Subject: Re: [PATCH v2] macintosh/via-pmu: Avoid compiler warnings when CONFIG_PROC_FS is disabled
+Message-Id: <166980022042.3017288.9367198168572746077.b4-ty@ellerman.id.au>
+Date: Wed, 30 Nov 2022 20:23:40 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Randy Dunlap <rdunlap@infradead.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 26 Sep 2022 23:03:25 -0700, Dmitry Torokhov wrote:
-> This switches PIKA Warp away from legacy gpio API and to newer gpiod
-> API, so that we can eventually deprecate the former.
-> 
-> Because LEDs are normally driven by leds-gpio driver, but the
-> platform code also wants to access the LEDs during thermal shutdown,
-> and gpiod API does not allow locating GPIO without requesting it,
-> the platform code is now responsible for locating GPIOs through device
-> tree and requesting them. It then constructs platform data for
-> leds-gpio platform device and registers it. This allows platform
-> code to retain access to LED GPIO descriptors and use them when needed.
+On Mon, 21 Mar 2022 20:28:00 +1100, Finn Thain wrote:
+> drivers/macintosh/via-pmu.c:897:12: warning: 'pmu_battery_proc_show' defined but not used [-Wunused-function]
+>  static int pmu_battery_proc_show(struct seq_file *m, void *v)
+>             ^~~~~~~~~~~~~~~~~~~~~
+> drivers/macintosh/via-pmu.c:871:12: warning: 'pmu_irqstats_proc_show' defined but not used [-Wunused-function]
+>  static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
+>             ^~~~~~~~~~~~~~~~~~~~~~
+> drivers/macintosh/via-pmu.c:860:12: warning: 'pmu_info_proc_show' defined but not used [-Wunused-function]
+>  static int pmu_info_proc_show(struct seq_file *m, void *v)
+>             ^~~~~~~~~~~~~~~~~~
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/warp: switch to using gpiod API
-      https://git.kernel.org/powerpc/c/1892e87a3e9170146549779622cb844582f1e2bb
+[1/1] macintosh/via-pmu: Avoid compiler warnings when CONFIG_PROC_FS is disabled
+      https://git.kernel.org/powerpc/c/27f9690a81d7acf185b78be8d03d4b3a243116b1
 
 cheers
