@@ -4,49 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F40CFC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 02:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFC59C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 05:22:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN0ts70f8z3bfW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 13:50:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=loongson.cn (client-ip=114.242.206.163; helo=loongson.cn; envelope-from=yangtiezhu@loongson.cn; receiver=<UNKNOWN>)
-Received: from loongson.cn (mail.loongson.cn [114.242.206.163])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN0t86QtRz30R8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 13:50:07 +1100 (AEDT)
-Received: from loongson.cn (unknown [113.200.148.30])
-	by gateway (Coremail) with SMTP id _____8Bx1vBYFohjmHwCAA--.5793S3;
-	Thu, 01 Dec 2022 10:50:00 +0800 (CST)
-Received: from linux.localdomain (unknown [113.200.148.30])
-	by localhost.localdomain (Coremail) with SMTP id AQAAf8BxTuBVFohjHwQjAA--.21270S2;
-	Thu, 01 Dec 2022 10:49:58 +0800 (CST)
-From: Tiezhu Yang <yangtiezhu@loongson.cn>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Shuah Khan <shuah@kernel.org>
-Subject: [PATCH] selftests: powerpc: Use "grep -E" instead of "egrep"
-Date: Thu,  1 Dec 2022 10:49:57 +0800
-Message-Id: <1669862997-31335-1-git-send-email-yangtiezhu@loongson.cn>
-X-Mailer: git-send-email 2.1.0
-X-CM-TRANSID: AQAAf8BxTuBVFohjHwQjAA--.21270S2
-X-CM-SenderInfo: p1dqw3xlh2x3gn0dqz5rrqw2lrqou0/
-X-Coremail-Antispam: 1Uk129KBjvJXoW7uFWUCFyxXF1ktF47ur45Wrg_yoW8Gw1xpa
-	48C34YvrZagFy7XF4UGF42gFW8KF4kArW8WFWrJrWDZFs8Zas2qryftF47JFnxWrWkta1r
-	ua9akayFkr47G3DanT9S1TB71UUUUUJqnTZGkaVYY2UrUUUUj1kv1TuYvTs0mT0YCTnIWj
-	qI5I8CrVACY4xI64kE6c02F40Ex7xfYxn0WfASr-VFAUDa7-sFnT9fnUUIcSsGvfJTRUUU
-	b3kYFVCjjxCrM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_Wr0E3s
-	1l1IIY67AEw4v_Jrv_JF1l8cAvFVAK0II2c7xJM28CjxkF64kEwVA0rcxSw2x7M28EF7xv
-	wVC0I7IYx2IY67AKxVW8JVW5JwA2z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVW8JVWxJwA2z4
-	x0Y4vEx4A2jsIE14v26r4UJVWxJr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4UJVWxJr1l
-	n4kS14v26r1Y6r17M2AIxVAIcxkEcVAq07x20xvEncxIr21l57IF6xkI12xvs2x26I8E6x
-	ACxx1l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r126r1DMcIj6I8E
-	87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IYc2Ij64vIr41l42xK82
-	IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1l4IxYO2xFxVAFwI0_Jrv_JF1lx2Iq
-	xVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r
-	126r1DMIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY
-	6xkF7I0E14v26r1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67
-	AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x
-	07j5xhLUUUUU=
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NN4G103KXz3bbc
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 16:22:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J5OxG6kI;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN4Dx4ryYz30QQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 16:21:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J5OxG6kI;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NN4Dq6Zmxz4x1V;
+	Thu,  1 Dec 2022 16:21:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1669872096;
+	bh=N0orzYmQiDoqaJ7NYGjlM3UnNxlX/cknbPTGfPB6WFM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=J5OxG6kIMoR1klHiq+pJUaSgDwQrXyp2IQVExgmmPNs6d5M2zalc/rFARJpzB6LCF
+	 mIrvgM+Yk6zmcYrbL1HL6byl4gygucjhaR6xhicDvgiER8ov5k6cvGvblLKfkLL79G
+	 Qr4K7TgrY7ozLHH4Rz1BcWO+Y6BxcTIrY8j51NIdM6oHGO3QrlQNIe919bNypOKqe4
+	 YHuJsYYV/nFeRurQTMfOCln/DE+Mz3BkBkR/vDvI86w1ePXtODUCbkiSWEC3PK7pVj
+	 7hgwt5pYqLFahDmf67Gs9PQJ8p24LtR4/LQuAP00TNjl2lawnoAD2XkoV81D7xf9C5
+	 T4FWO6qMAX8YQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sean Christopherson <seanjc@google.com>, Paolo Bonzini
+ <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen
+ <chenhuacai@kernel.org>, Aleksandar Markovic
+ <aleksandar.qemu.devel@gmail.com>, Anup Patel <anup@brainfault.org>, Paul
+ Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>,
+ Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>,
+ Claudio Imbrenda <imbrenda@linux.ibm.com>, Matthew Rosato
+ <mjrosato@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, Sean
+ Christopherson <seanjc@google.com>, Vitaly Kuznetsov
+ <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>, Paul Durrant
+ <paul@xen.org>
+Subject: Re: [PATCH v2 26/50] KVM: PPC: Move processor compatibility check
+ to module init
+In-Reply-To: <20221130230934.1014142-27-seanjc@google.com>
+References: <20221130230934.1014142-1-seanjc@google.com>
+ <20221130230934.1014142-27-seanjc@google.com>
+Date: Thu, 01 Dec 2022 16:21:31 +1100
+Message-ID: <87cz93snqc.fsf@mpe.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,46 +71,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org
+Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Chao Gao <chao.gao@intel.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Yuan Yao <yuan.yao@intel.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Fabiano Rosas <farosas@linux.ibm.com>, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The latest version of grep claims the egrep is now obsolete so the build
-now contains warnings that look like:
-	egrep: warning: egrep is obsolescent; using grep -E
-fix this using "grep -E" instead.
+Sean Christopherson <seanjc@google.com> writes:
+> Move KVM PPC's compatibility checks to their respective module_init()
+> hooks, there's no need to wait until KVM's common compat check, nor is
+> there a need to perform the check on every CPU (provided by common KVM's
+> hook), as the compatibility checks operate on global data.
+>
+>   arch/powerpc/include/asm/cputable.h: extern struct cpu_spec *cur_cpu_sp=
+ec;
+>   arch/powerpc/kvm/book3s.c: return 0
+>   arch/powerpc/kvm/e500.c: strcmp(cur_cpu_spec->cpu_name, "e500v2")
+>   arch/powerpc/kvm/e500mc.c: strcmp(cur_cpu_spec->cpu_name, "e500mc")
+>                              strcmp(cur_cpu_spec->cpu_name, "e5500")
+>                              strcmp(cur_cpu_spec->cpu_name, "e6500")
 
-  sed -i "s/egrep/grep -E/g" `grep egrep -rwl tools/testing/selftests/powerpc`
+I'm not sure that output is really useful in the change log unless you
+explain more about what it is.
 
-Here are the steps to install the latest grep:
+> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+> index 57e0ad6a2ca3..795667f7ebf0 100644
+> --- a/arch/powerpc/kvm/e500mc.c
+> +++ b/arch/powerpc/kvm/e500mc.c
+> @@ -388,6 +388,10 @@ static int __init kvmppc_e500mc_init(void)
+>  {
+>  	int r;
+>=20=20
+> +	r =3D kvmppc_e500mc_check_processor_compat();
+> +	if (r)
+> +		return kvmppc_e500mc;
+=20
+This doesn't build:
 
-  wget http://ftp.gnu.org/gnu/grep/grep-3.8.tar.gz
-  tar xf grep-3.8.tar.gz
-  cd grep-3.8 && ./configure && make
-  sudo make install
-  export PATH=/usr/local/bin:$PATH
+linux/arch/powerpc/kvm/e500mc.c: In function =E2=80=98kvmppc_e500mc_init=E2=
+=80=99:
+linux/arch/powerpc/kvm/e500mc.c:391:13: error: implicit declaration of func=
+tion =E2=80=98kvmppc_e500mc_check_processor_compat=E2=80=99; did you mean =
+=E2=80=98kvmppc_core_check_processor_compat=E2=80=99? [-Werror=3Dimplicit-f=
+unction-declaration]
+  391 |         r =3D kvmppc_e500mc_check_processor_compat();
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |             kvmppc_core_check_processor_compat
+linux/arch/powerpc/kvm/e500mc.c:393:24: error: =E2=80=98kvmppc_e500mc=E2=80=
+=99 undeclared (first use in this function); did you mean =E2=80=98kvm_ops_=
+e500mc=E2=80=99?
+  393 |                 return kvmppc_e500mc;
+      |                        ^~~~~~~~~~~~~
+      |                        kvm_ops_e500mc
+linux/arch/powerpc/kvm/e500mc.c:393:24: note: each undeclared identifier is=
+ reported only once for each function it appears in
 
-Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
----
 
-As Shuah suggested, this patch should go through powerpc/linux.git
+It needs the delta below to compile.
 
- tools/testing/selftests/powerpc/scripts/hmi.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+With that:
 
-diff --git a/tools/testing/selftests/powerpc/scripts/hmi.sh b/tools/testing/selftests/powerpc/scripts/hmi.sh
-index dcdb392..bcc7b6b 100755
---- a/tools/testing/selftests/powerpc/scripts/hmi.sh
-+++ b/tools/testing/selftests/powerpc/scripts/hmi.sh
-@@ -36,7 +36,7 @@ trap "ppc64_cpu --smt-snooze-delay=100" 0 1
- 
- # for each chip+core combination
- # todo - less fragile parsing
--egrep -o 'OCC: Chip [0-9a-f]+ Core [0-9a-f]' < /sys/firmware/opal/msglog |
-+grep -E -o 'OCC: Chip [0-9a-f]+ Core [0-9a-f]' < /sys/firmware/opal/msglog |
- while read chipcore; do
- 	chip=$(echo "$chipcore"|awk '{print $3}')
- 	core=$(echo "$chipcore"|awk '{print $5}')
--- 
-2.1.0
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
+cheers
+
+
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index 795667f7ebf0..4564aa27edcf 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -168,7 +168,7 @@ static void kvmppc_core_vcpu_put_e500mc(struct kvm_vcpu=
+ *vcpu)
+ 	kvmppc_booke_vcpu_put(vcpu);
+ }
+=20
+-int kvmppc_core_check_processor_compat(void)
++int kvmppc_e500mc_check_processor_compat(void)
+ {
+ 	int r;
+=20
+@@ -390,7 +390,7 @@ static int __init kvmppc_e500mc_init(void)
+=20
+ 	r =3D kvmppc_e500mc_check_processor_compat();
+ 	if (r)
+-		return kvmppc_e500mc;
++		goto err_out;
+=20
+ 	r =3D kvmppc_booke_init();
+ 	if (r)
