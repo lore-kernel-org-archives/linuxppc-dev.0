@@ -4,62 +4,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFC59C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 05:22:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7FA4C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 06:07:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN4G103KXz3bbc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 16:22:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NN5Fg0sPCz3bfm
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:07:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J5OxG6kI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mVx70s5s;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mVx70s5s;
+	dkim-atps=neutral
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN4Dx4ryYz30QQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 16:21:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=J5OxG6kI;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NN4Dq6Zmxz4x1V;
-	Thu,  1 Dec 2022 16:21:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1669872096;
-	bh=N0orzYmQiDoqaJ7NYGjlM3UnNxlX/cknbPTGfPB6WFM=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=J5OxG6kIMoR1klHiq+pJUaSgDwQrXyp2IQVExgmmPNs6d5M2zalc/rFARJpzB6LCF
-	 mIrvgM+Yk6zmcYrbL1HL6byl4gygucjhaR6xhicDvgiER8ov5k6cvGvblLKfkLL79G
-	 Qr4K7TgrY7ozLHH4Rz1BcWO+Y6BxcTIrY8j51NIdM6oHGO3QrlQNIe919bNypOKqe4
-	 YHuJsYYV/nFeRurQTMfOCln/DE+Mz3BkBkR/vDvI86w1ePXtODUCbkiSWEC3PK7pVj
-	 7hgwt5pYqLFahDmf67Gs9PQJ8p24LtR4/LQuAP00TNjl2lawnoAD2XkoV81D7xf9C5
-	 T4FWO6qMAX8YQ==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen
- <chenhuacai@kernel.org>, Aleksandar Markovic
- <aleksandar.qemu.devel@gmail.com>, Anup Patel <anup@brainfault.org>, Paul
- Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>, Matthew Rosato
- <mjrosato@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>, Sean
- Christopherson <seanjc@google.com>, Vitaly Kuznetsov
- <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>, Paul Durrant
- <paul@xen.org>
-Subject: Re: [PATCH v2 26/50] KVM: PPC: Move processor compatibility check
- to module init
-In-Reply-To: <20221130230934.1014142-27-seanjc@google.com>
-References: <20221130230934.1014142-1-seanjc@google.com>
- <20221130230934.1014142-27-seanjc@google.com>
-Date: Thu, 01 Dec 2022 16:21:31 +1100
-Message-ID: <87cz93snqc.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN5Dd6Zl6z2ybK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 17:06:25 +1100 (AEDT)
+Received: by mail-pg1-x530.google.com with SMTP id v3so798517pgh.4
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 22:06:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:references:from:subject:cc:to:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=lMH0ATn2kfqCA2p4BpkUcziG4fvRGUL36gS2KjfmHyU=;
+        b=mVx70s5s37n/6iFRtXW3+N2c7PKWUE14EYB1T5AXO7JmPa1xICx/BWilXM7liDl4ln
+         7vheD9ob+xb9XlTlXAA+MjkmvZJS5rDK7mrPMK2l9CCCFJfrJ+hTgsoTUUECCeMXp0jP
+         3GlEsQiK80wYmr4ZpgvWUanLpa4fkzkobZK9yaKNF0yQHP2oYl6eH9B430dCDR6weAdu
+         z503M5enZMuGRlp7oDCXT3QfJ/SrZzI87+NpGOxye+FEz8CWyJuVfTkJvs46RTlnrYI4
+         ErrGKmr24kHmI7/YwYVwBwngEkNbLWbIfFB9/Gy6kzdHX4/8iHHgkuDDqzjylbG4FPNG
+         zmxg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:references:from:subject:cc:to:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=lMH0ATn2kfqCA2p4BpkUcziG4fvRGUL36gS2KjfmHyU=;
+        b=Lq9GteXaZB/s9GS7N0U6KnixO9eAInC360ZNHG+pSsg+0IEompf3cnFt11BXZJSIFw
+         yN0QLw4BPSIhv5QysZu9MkLL+8kkMifMHwG/ByC02yBGDdcv78/z5smAwronTzXVAwop
+         q+sd31e1ZwxBMikwlCjQrVJpDB9qoVketoLLfsixU0kvEHZoy9tCCgoGxcXstJPGsy7S
+         oS02xZ+ePqN27f9VtPJWymyP3mbRRqSjnD64e6y049nZ5Pqv/L6rlwcuzMLbYdMj343F
+         FOLRrSVwLstCQYH1lJUBxQ0sk5yolH2jCwp9YSQw9RYMcoMRB/7KxnNL2VpZ+Cc9c1vj
+         jWzA==
+X-Gm-Message-State: ANoB5pl93CKv7IPy/HiX+r6boQssi5vy7vzT4GzWymDKh2xG84uwAdjd
+	VS6iWHPh/yDj5JXXF30RgSA=
+X-Google-Smtp-Source: AA0mqf4Wjj3l5HxopWPdIVe688Ysw/iFKRIsVINi313YGWq6D0wEOVAfZSFkebzE481/lNYL5VolYg==
+X-Received: by 2002:a05:6a00:2:b0:576:14a5:359 with SMTP id h2-20020a056a00000200b0057614a50359mr2374514pfk.26.1669874782542;
+        Wed, 30 Nov 2022 22:06:22 -0800 (PST)
+Received: from localhost ([61.68.162.196])
+        by smtp.gmail.com with ESMTPSA id jc18-20020a17090325d200b001891a17bd93sm2618454plb.43.2022.11.30.22.06.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 30 Nov 2022 22:06:21 -0800 (PST)
+Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 01 Dec 2022 16:06:16 +1000
+Message-Id: <COQ97E42D81J.FQM2WRVT7HIY@bobo>
+To: "Crystal Wood" <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC PATCH] Disable Book-E KVM support?
+From: "Nicholas Piggin" <npiggin@gmail.com>
+X-Mailer: aerc 0.13.0
+References: <20221128043623.1745708-1-npiggin@gmail.com>
+ <3d1a6cde6c8e108be77fa4a47666e14d06a91d74.camel@buserror.net>
+In-Reply-To: <3d1a6cde6c8e108be77fa4a47666e14d06a91d74.camel@buserror.net>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,89 +80,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Chao Gao <chao.gao@intel.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Yuan Yao <yuan.yao@intel.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Fabiano Rosas <farosas@linux.ibm.com>, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Cc: Bernhard Beschow <shentey@gmail.com>, qemu-ppc@nongnu.org, Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sean Christopherson <seanjc@google.com> writes:
-> Move KVM PPC's compatibility checks to their respective module_init()
-> hooks, there's no need to wait until KVM's common compat check, nor is
-> there a need to perform the check on every CPU (provided by common KVM's
-> hook), as the compatibility checks operate on global data.
+On Thu Dec 1, 2022 at 6:45 AM AEST, Crystal Wood wrote:
+> On Mon, 2022-11-28 at 14:36 +1000, Nicholas Piggin wrote:
+> > BookE KVM is in a deep maintenance state, I'm not sure how much testing
+> > it gets. I don't have a test setup, and it does not look like QEMU has
+> > any HV architecture enabled. It hasn't been too painful but there are
+> > some cases where it causes a bit of problem not being able to test, e.g=
+.,
+> >=20
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-November/251452.ht=
+ml
+> >=20
+> > Time to begin removal process, or are there still people using it? I'm
+> > happy to to keep making occasional patches to try keep it going if
+> > there are people testing upstream. Getting HV support into QEMU would
+> > help with long term support, not sure how big of a job that would be.
 >
->   arch/powerpc/include/asm/cputable.h: extern struct cpu_spec *cur_cpu_sp=
-ec;
->   arch/powerpc/kvm/book3s.c: return 0
->   arch/powerpc/kvm/e500.c: strcmp(cur_cpu_spec->cpu_name, "e500v2")
->   arch/powerpc/kvm/e500mc.c: strcmp(cur_cpu_spec->cpu_name, "e500mc")
->                              strcmp(cur_cpu_spec->cpu_name, "e5500")
->                              strcmp(cur_cpu_spec->cpu_name, "e6500")
+> Not sure what you mean about QEMU not having e500 HV support?  I don't kn=
+ow if
+> it's bitrotted, but it's there.
+>
+> I don't know whether anyone is still using this, but if they are, it's
+> probably e500mc and not e500v2 (which involved a bunch of hacks to get al=
+most-
+> sorta-usable performance out of hardware not designed for virtualization)=
+.  I
+> do see that there have been a few recent patches on QEMU e500 (beyond the
+> treewide cleanup type stuff), though I don't know if they're using KVM.  =
+CCing
+> them and the QEMU list.
 
-I'm not sure that output is really useful in the change log unless you
-explain more about what it is.
+Well I could be wrong about it, but it doesn't look it implements LPIDR
+or GSPRs. The only use of MSR_GS seems to be a couple of places
+including an instruction that aborts because no HV implementation. It
+does have an MMU index selector but before d764184ddb22 that apparently
+didn't really work.
 
-> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-> index 57e0ad6a2ca3..795667f7ebf0 100644
-> --- a/arch/powerpc/kvm/e500mc.c
-> +++ b/arch/powerpc/kvm/e500mc.c
-> @@ -388,6 +388,10 @@ static int __init kvmppc_e500mc_init(void)
->  {
->  	int r;
->=20=20
-> +	r =3D kvmppc_e500mc_check_processor_compat();
-> +	if (r)
-> +		return kvmppc_e500mc;
-=20
-This doesn't build:
+QEMU probably should be able to run BookE KVM in PR mode at least.
 
-linux/arch/powerpc/kvm/e500mc.c: In function =E2=80=98kvmppc_e500mc_init=E2=
-=80=99:
-linux/arch/powerpc/kvm/e500mc.c:391:13: error: implicit declaration of func=
-tion =E2=80=98kvmppc_e500mc_check_processor_compat=E2=80=99; did you mean =
-=E2=80=98kvmppc_core_check_processor_compat=E2=80=99? [-Werror=3Dimplicit-f=
-unction-declaration]
-  391 |         r =3D kvmppc_e500mc_check_processor_compat();
-      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |             kvmppc_core_check_processor_compat
-linux/arch/powerpc/kvm/e500mc.c:393:24: error: =E2=80=98kvmppc_e500mc=E2=80=
-=99 undeclared (first use in this function); did you mean =E2=80=98kvm_ops_=
-e500mc=E2=80=99?
-  393 |                 return kvmppc_e500mc;
-      |                        ^~~~~~~~~~~~~
-      |                        kvm_ops_e500mc
-linux/arch/powerpc/kvm/e500mc.c:393:24: note: each undeclared identifier is=
- reported only once for each function it appears in
+> I have an e6500 I could occasionally test on, if it turns out people do s=
+till
+> care about this.  Don't count me as the use case, though. :-)
 
+Do you have a KVM setup on it? And it works with recentish upstream?
 
-It needs the delta below to compile.
+> FWIW, as far as the RECONCILE_IRQ_STATE issue, that used to be done in
+> kvmppc_handle_exit(), but was moved in commit 9bd880a2c882 to be "cleaner=
+ and
+> faster". :-P
 
-With that:
+Yeah that was probably reasonable at the time, that was the common way
+to do it and thie patch avoids an unnecessary expensive write to MSR
+(which my patch retains).
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+I think it must have always clobbered r4 though. It's possible it wasn't
+tested with the right build option, or the right tracer active, or maybe
+the call was simple enough that it was lucky and the compiler didn't use
+r4. Easy bug to miss when it's not obvious that macro can call into C.
 
-cheers
-
-
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 795667f7ebf0..4564aa27edcf 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -168,7 +168,7 @@ static void kvmppc_core_vcpu_put_e500mc(struct kvm_vcpu=
- *vcpu)
- 	kvmppc_booke_vcpu_put(vcpu);
- }
-=20
--int kvmppc_core_check_processor_compat(void)
-+int kvmppc_e500mc_check_processor_compat(void)
- {
- 	int r;
-=20
-@@ -390,7 +390,7 @@ static int __init kvmppc_e500mc_init(void)
-=20
- 	r =3D kvmppc_e500mc_check_processor_compat();
- 	if (r)
--		return kvmppc_e500mc;
-+		goto err_out;
-=20
- 	r =3D kvmppc_booke_init();
- 	if (r)
+Thanks,
+Nick
