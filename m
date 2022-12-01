@@ -4,88 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32207C4321E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 06:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9BACDC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 06:23:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN5bm3qP8z3bfw
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:23:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NN5cm6TcZz3bhY
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:23:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=benboeckel.net header.i=@benboeckel.net header.a=rsa-sha256 header.s=fm1 header.b=k1flX33X;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=F3i2JKvW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PvHY6dBE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=benboeckel.net (client-ip=66.111.4.25; helo=out1-smtp.messagingengine.com; envelope-from=me@benboeckel.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::22a; helo=mail-oi1-x22a.google.com; envelope-from=sergio.paracuellos@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=benboeckel.net header.i=@benboeckel.net header.a=rsa-sha256 header.s=fm1 header.b=k1flX33X;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=F3i2JKvW;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=PvHY6dBE;
 	dkim-atps=neutral
-X-Greylist: delayed 576 seconds by postgrey-1.36 at boromir; Thu, 01 Dec 2022 14:55:52 AEDT
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com [66.111.4.25])
+Received: from mail-oi1-x22a.google.com (mail-oi1-x22a.google.com [IPv6:2607:f8b0:4864:20::22a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN2L016YMz30R8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 14:55:52 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.nyi.internal (Postfix) with ESMTP id 8C7DF5C00C1;
-	Wed, 30 Nov 2022 22:46:10 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute3.internal (MEProxy); Wed, 30 Nov 2022 22:46:10 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=benboeckel.net;
-	 h=cc:cc:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm1; t=1669866370; x=1669952770; bh=IE
-	SJHOtcUSkXCEqZm4KWkM9Tzwy8cx/dN5nGJgfkLqE=; b=k1flX33XzZRRIa3rZE
-	tsZ4vckUNst/LFgq6QK7J5TfgGd0DnaNrZ/KihsGoNY5jvS7ZMGOsVHFuex2uZex
-	6U/Zs/3pEQPGz/Rzy7MTuFSkW4QOb1Kso+XXy1R52xqcv4ZKFk+yzBHtzgP2NzYN
-	NQ3f3aCDJCYpKKTe5ogNBvcuUKg3duL7IkC1mJWcMgKebpdg/CdOO496dwjQMe24
-	ctLKE7SlSZWWTBsC5FZ8gWMWrOth45SD+cPUqyDJfE5xb7Hr+PWF4iF2UbwWYeuS
-	4hiS5H2eNj3mmtV30vx1Zjo3325IUyumSfQH3RWKBMBH740l8vvkxZtEw0gDSVCm
-	lviA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
-	:feedback-id:from:from:in-reply-to:in-reply-to:message-id
-	:mime-version:references:reply-to:sender:subject:subject:to:to
-	:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
-	fm1; t=1669866370; x=1669952770; bh=IESJHOtcUSkXCEqZm4KWkM9Tzwy8
-	cx/dN5nGJgfkLqE=; b=F3i2JKvWwHf9O9SeM58LC+fDBrkr5Z1r3FReoTT05GhZ
-	KtNFZkmdgyUlCJThjYgzyDjctMHRmTDb145k9/Zt6BiuC0MuZOyJs4MFMSLTQFNv
-	0uU3JQpdO/5xZ9HHkLjkZ9KWgweSMcUKHGajlhIsq29uzv6jQpVgLa1XKQBXYqYF
-	svXG4zMkm8NbHwB+2AgsYpeo6BfsvRdHpfu5Gvh6cEIDuaUoXpuLiOD1DwaMBhrV
-	ReXnbXFIHtfDPMQLTPG8bhwXENWvBgjYQIu+GcyBmRsTCSWqbnqZLBMiWTXiNs5F
-	9hmeWLA8bYC1/CNNyQvjgixT5SK5gD1FqJSCPpJ9VA==
-X-ME-Sender: <xms:gSOIYzrtNsFK4azwOefuQEHzCsDdqZsiXfcEYmvodhbqD4L2hbYAZQ>
-    <xme:gSOIY9o58-I4dkg5qGrsKMhcqrTqAvAYkiVt-ptVlF7V-e29pOcQdHHY60jJl1FJA
-    di7DikeECYWZJyefOo>
-X-ME-Received: <xmr:gSOIYwPW4X8BdSCu1hTAxWUhWznDwgFRNqb4jpR8sh7BDi6m057tmuCR4GDcDo5nY2gVyMQ8ItgSvK1TtKsoOGCWAPDanCIg1ORs>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrtdeggdeigecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpeffhffvvefukfhfgggtuggjfgesthdtredttderjeenucfhrhhomhepuegvnhcu
-    uehovggtkhgvlhcuoehmvgessggvnhgsohgvtghkvghlrdhnvghtqeenucggtffrrghtth
-    gvrhhnpeffleegffevleekffekheeigfdtleeuvddtgffhtddvfefgjeehffduueevkedv
-    vdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmvg
-    essggvnhgsohgvtghkvghlrdhnvght
-X-ME-Proxy: <xmx:giOIY249FoMgjmgBy8iZTsDxXHAdJ31kwUiqJGtMCZUaqFN-7i8sYg>
-    <xmx:giOIYy7AVA08T-sADk_N2-1pcrE84kvyJJQw8VP4mZpWoqpG-Zjk4w>
-    <xmx:giOIY-jDDWFaCqF27SV4S7jybNr1M2UxV1x4dNoEj4OeQfo4nNbmhw>
-    <xmx:giOIY_y5Q_Fj--2gXXFj2JnWgr1NOE4A9ltKtUVJMmIr-OYJbRj1XQ>
-Feedback-ID: iffc1478b:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 30 Nov 2022 22:46:09 -0500 (EST)
-Date: Wed, 30 Nov 2022 22:46:09 -0500
-From: Ben Boeckel <me@benboeckel.net>
-To: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/3] block: sed-opal: keyring support for SED keys
-Message-ID: <Y4gjgf2xHOYTVnSc@farprobe>
-References: <20221129232506.3735672-1-gjoyce@linux.vnet.ibm.com>
- <20221129232506.3735672-4-gjoyce@linux.vnet.ibm.com>
- <c78edd60-b6ae-6ec0-9ce4-73b9a92b9b32@suse.de>
- <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN5C506L6z30Qq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 17:05:02 +1100 (AEDT)
+Received: by mail-oi1-x22a.google.com with SMTP id e205so988895oif.11
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 22:05:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SQ6eCCvP2RIqVFnGOfA4yG/2BtjQTMpdxc/JWs/IikY=;
+        b=PvHY6dBEyebJE6QNI6Wjq2MneXIl4rTpGS7fBC7Qv6R/Yiga7OIh4/Pj4BgHnrpndG
+         GrmgooNZOVFverQjG/PwQwa+jNTTeu5eaofi0fQ6sUgKspL/GgqiAAoT7DsAPA/bcNeL
+         CuuBxemNVt9HiH103qegQcLdL8byYtx9q2Sy8nfwvxBZulJQ2g5EAZZ4I/KTXdccwea1
+         xayFiXCzBGxNpmCBPyhigLfeSVQaNBWPI/KTZtc4+CqnxGM8xxSJGEpvpTJVaXAoUIMI
+         LhDFRKO2nzxUjEipEZonE2WghJNoafzVk4PIFC+1xTm7vj4OLlTNuK0dUH2dye1MdJio
+         EOHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SQ6eCCvP2RIqVFnGOfA4yG/2BtjQTMpdxc/JWs/IikY=;
+        b=wkT1UzsnKP5mhywV60tR+Epn3vNTUgfdCzNBO16EiQbvErUClfIb7Z+1d5Q21EZCuc
+         pDPv2Uj/okszf9UyDkDWISdklheErvELcEGJIpOEF4qfMj6e7llM8kdLpFIgV+Pore9q
+         sOrAMHUaPxjlWadqIouC5yKCmFsWjQeAdJz2RD/R6l+abvKOk44KT1B+2TIZSBlKIlQC
+         tN9Vw88QPGJG8kuUaLY1ZSa99lx7uGjAbxNHbS3stZXK+KnmJoBVw482SdUKNKE2t0WP
+         xpys0iL98d7RRQ8ttm1zg+fqh+X3hiiUtAS/Av2YA7Rx52y4NFG2d4k7GOrP/tnJQj4T
+         8NeQ==
+X-Gm-Message-State: ANoB5pl14brahfb7h/aORb0rkFAPFZKcfEW8CdUuuQsNgU6PvL7h5he9
+	B3L+1yQX9XGvpdvp48qvdOglE/ZdnAXtzDlmdGQ=
+X-Google-Smtp-Source: AA0mqf5l2e4XTILLZHTH7QTRBPvz28RAyHNavvCrAHgTBlylFcIYKmUFvkgoGR7uLixlsP/mcB3a5GSDsiHvA3KSd08=
+X-Received: by 2002:aca:60c6:0:b0:35a:51fc:2134 with SMTP id
+ u189-20020aca60c6000000b0035a51fc2134mr22358640oib.144.1669874698405; Wed, 30
+ Nov 2022 22:04:58 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
-User-Agent: Mutt/2.2.7 (2022-08-07)
+References: <20221130141040.32447-1-arinc.unal@arinc9.com> <20221130141040.32447-5-arinc.unal@arinc9.com>
+In-Reply-To: <20221130141040.32447-5-arinc.unal@arinc9.com>
+From: Sergio Paracuellos <sergio.paracuellos@gmail.com>
+Date: Thu, 1 Dec 2022 07:04:47 +0100
+Message-ID: <CAMhs-H_yk4_ieChz9ZaMgZiQNSO7RxhAXPN0nHWWxbox=qY_mw@mail.gmail.com>
+Subject: Re: [PATCH 4/5] mips: dts: remove label = "cpu" from DSA dt-binding
+To: =?UTF-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Thu, 01 Dec 2022 17:22:05 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,30 +76,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: axboe@kernel.dk, nayna@linux.ibm.com, linux-block@vger.kernel.org, keyrings@vger.kernel.org, Hannes Reinecke <hare@suse.de>, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Heiko Stuebner <heiko@sntech.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Tim Harvey <tharvey@gateworks.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, Konrad Dybcio <konrad.dybcio@somainline.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Stefan Agner <stefan@agner.ch>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Oleksij Rempel <linux@rempel-privat.de>, Fabio Estevam <festevam@gmail.com>, Peng Fan <peng.fan@nxp.com>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Holland <samuel@sholland.org>, Gregory Clement <gregory.clement@bootlin.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens
+ @csie.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, Ray Jui <rjui@broadcom.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Frank Wunderlich <frank-w@public-files.de>, Hauke Mehrtens <hauke@hauke-m.de>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Scott Branden <sbranden@broadcom.com>, netdev@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, Rasm
+ us Villemoes <rasmus.villemoes@prevas.dk>, Nicolas Ferre <nicolas.ferre@microchip.com>, "David S. Miller" <davem@davemloft.net>, linux-renesas-soc@vger.kernel.org, linux-sunxi@lists.linux.dev, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Claudiu Beznea <claudiu.beznea@microchip.com>, Michael Riesch <michael.riesch@wolfvision.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 30, 2022 at 09:19:25 -0600, Greg Joyce wrote:
-> On Wed, 2022-11-30 at 08:00 +0100, Hannes Reinecke wrote:
-> > On 11/30/22 00:25, gjoyce@linux.vnet.ibm.com wrote:
-> > > +	case OPAL_KEYRING:
-> > > +		/* the key is in the keyring */
-> > > +		ret = read_sed_opal_key(OPAL_AUTH_KEY, key->key,
-> > > OPAL_KEY_MAX);
-> > > +		if (ret > 0) {
-> > > +			if (ret > 255) {
-> > 
-> > Why is a key longer than 255 an error?
-> > If this is a requirement, why not move the check into
-> > read_sed_opal_key() such that one only has to check for
-> > ret < 0 on errors?
-> 
-> The check is done here because the SED Opal spec stipulates 255 as the
-> maximum key length. The key length (key->key_len) in the existing data
-> structures is __u8, so a length greater than 255 can not be conveyed.
-> For defensive purposes, I though it best to check here.
+On Wed, Nov 30, 2022 at 3:14 PM Ar=C4=B1n=C3=A7 =C3=9CNAL <arinc.unal@arinc=
+9.com> wrote:
+>
+> This is not used by the DSA dt-binding, so remove it from all devicetrees=
+.
+>
+> Signed-off-by: Ar=C4=B1n=C3=A7 =C3=9CNAL <arinc.unal@arinc9.com>
+> ---
+>  arch/mips/boot/dts/ralink/mt7621.dtsi | 1 -
 
-Perhaps naming it `OPAL_MAX_KEY_LEN` would help clarify this?
+Acked-by: Sergio Paracuellos <sergio.paracuellos@gmail.com>
 
---Ben
+Thanks,
+    Sergio Paracuellos
