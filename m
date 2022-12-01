@@ -4,86 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01AF3C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:46:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06705C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:46:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNlx1yLtz3bjv
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:46:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNmy4RW0z3chm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:46:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AzHg60Uf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZRHyoajE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32c; helo=mail-wm1-x32c.google.com; envelope-from=xadimgnik@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=ribalda@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AzHg60Uf;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=ZRHyoajE;
 	dkim-atps=neutral
-Received: from mail-wm1-x32c.google.com (mail-wm1-x32c.google.com [IPv6:2a00:1450:4864:20::32c])
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNCNJ3Qznz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 21:43:28 +1100 (AEDT)
-Received: by mail-wm1-x32c.google.com with SMTP id l39-20020a05600c1d2700b003cf93c8156dso1160389wms.4
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 02:43:28 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNCxc60FBz30Qq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 22:08:50 +1100 (AEDT)
+Received: by mail-ed1-x535.google.com with SMTP id s5so1831594edc.12
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 03:08:49 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:organization:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=34xRbeJm4Ksf3agn72vdHuQrCy+xFaOAkMI20jSUs8E=;
-        b=AzHg60UfqWIuniRDwSV0kUn58L84AxRbLj1KxaWUpkExnaz9Jf0mpMJsRIxs0KObgd
-         soQ1W7t6DClFqZL5Sz4pVLJxPODSdcfWH2JFiVW2zEBMerlLvjkR1+DJoc4+WpNBKL+I
-         PW6xkLEEUmN/Se6yT0vIWJph39WzqIA+SJPH1Jsv7h7dKXsKvjwPoKUClZhTIgXjAbFD
-         m9zWUx0GIE8Dv1vkZzsH73Fq4mPpvgYZnpRmT8AL17xzVUC4+XcR3wej4y3vY5DfOIdr
-         5pF7L9v5/ffa3NIJyyFg3JxW0kRC69giw2m5lejSbkJhsGZxR9w1oE4BDHpBORKVLYtO
-         3/ZQ==
+        d=chromium.org; s=google;
+        h=cc:to:message-id:date:from:content-transfer-encoding:mime-version
+         :subject:from:to:cc:subject:date:message-id:reply-to;
+        bh=lGm4cyBDbhcC+E+E+8rSuqE3igb1lprN1pN6/M3QLys=;
+        b=ZRHyoajEwFC4By5LI1rVbOp/xLGzBq//9Xi/KMCz0lo8z9Pc1kxGrZQGSfdmpQmaMd
+         1GnniREAshZoCU4tyHuy1piJbRVEDqwJVixje9ZJzJ77PtUXKFFljT/b8/IV0BWReOGd
+         SqBdcc0wshVkJyGCE+uvwuRmeLcgRNVAq9pdQ=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:organization:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=34xRbeJm4Ksf3agn72vdHuQrCy+xFaOAkMI20jSUs8E=;
-        b=XoXKNOhm0Ucm4Bmd4bJhDOrZUhlUff4JcUZXFsqTLOc0RLLMZL9r4oM/CTCV2iP/74
-         3PwAIJjvi4rQygwJcZEt9+rxMxWyRvaLdp1DJUH4wquJKlbzItT0qt4c22iNSXxODaqN
-         uk+zEkv9t1yMNrfzZSENaWznqXLfa5vwrdwTvmzWaaIkCnhNosjjE+iegzth+Mfap4j3
-         Xfvq40/Rup4l+BKzheRPjQIpMnqFPjZQbEHwvMyE+FUx/pcW0z7D5JoCJ8+4rTZO/Q/b
-         09B4ESPAxS3VPdHSvAws2B+Zd1ccc8UIfuLZ9jqfKtAZ2zpOqJJuz+x/9tjCTcmQvqV7
-         HTkg==
-X-Gm-Message-State: ANoB5pk+enBcQ8Qu03sIxRHGywr75RAAiBMpEwjLOzQbHXWYuuNLQSBq
-	tgGgTuOrHmOmjFU2n9z7TAw=
-X-Google-Smtp-Source: AA0mqf6f8L9W/LFpuxiieU1hwL0SgbBmWKJep4VDP/7W75bGJuJSe0KFg6OoADvN7w7dpRP5siL0uQ==
-X-Received: by 2002:a05:600c:1f16:b0:3cf:66a2:d440 with SMTP id bd22-20020a05600c1f1600b003cf66a2d440mr47429561wmb.108.1669891402569;
-        Thu, 01 Dec 2022 02:43:22 -0800 (PST)
-Received: from [192.168.0.248] (54-240-197-238.amazon.com. [54.240.197.238])
-        by smtp.gmail.com with ESMTPSA id i10-20020a1c540a000000b003cfc02ab8basm8303094wmb.33.2022.12.01.02.43.20
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Dec 2022 02:43:22 -0800 (PST)
-From: Paul Durrant <xadimgnik@gmail.com>
-X-Google-Original-From: Paul Durrant <paul@xen.org>
-Message-ID: <aa3be096-4f05-b653-b801-e102abe01903@xen.org>
-Date: Thu, 1 Dec 2022 10:43:18 +0000
+        h=cc:to:message-id:date:from:content-transfer-encoding:mime-version
+         :subject:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=lGm4cyBDbhcC+E+E+8rSuqE3igb1lprN1pN6/M3QLys=;
+        b=MGrM6zR7OAK6jAykE3glc4qPvcfSqqLuQsiE90+ApjIgIs+yrFTasPAMFgxO+IQpTg
+         /7/W8ztUHAVJRD+Srcg+QQkh4HDJIOfuZYBl5MoLcNOc9aHzeEdAjtAwCCmymNAm/mMr
+         bb0Zeyv12yMe/yxfPjHYlz3E7wYzSkio7nH6CeiArkBEqYF6D2jq8hX18VWkMsxryneA
+         fz5DvaxyptOIeaXlZ0FpDfqrtZ2A+FRlBuNyUNxfp8tF9WTEM2ge3o7qiBctqNomVN0T
+         fpGiMDNv2ZS2i9ubTdnXjHmM8EirbK1Ym1BBrNID8gG6eZJ9o9gn5/kiqlm35VmPNH3s
+         MNmg==
+X-Gm-Message-State: ANoB5pmEJ449jAKetc4tF5peSksg/83HNFE3ZsQEH7RqVIoTHhaMUrKi
+	1WmVXF+RoE8tqw4lP3kDuLfD9MKTAdZuJjj0
+X-Google-Smtp-Source: AA0mqf5zzNn9de5BfFPh0J6RLCpw0dw9HFYWDLvw7kVxPfSHwhQH5HyYQ8cKCqwRv03JB5G51Q4CsA==
+X-Received: by 2002:a05:6402:4516:b0:467:b88c:f3af with SMTP id ez22-20020a056402451600b00467b88cf3afmr43151776edb.24.1669892925587;
+        Thu, 01 Dec 2022 03:08:45 -0800 (PST)
+Received: from alco.roam.corp.google.com ([2620:0:1059:10:f554:724a:f89a:73db])
+        by smtp.gmail.com with ESMTPSA id v17-20020a170906293100b0078e0973d1f5sm1663824ejd.0.2022.12.01.03.08.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Dec 2022 03:08:44 -0800 (PST)
+Subject:  [PATCH v8 0/3] ASoC: SOF: Fix deadlock when shutdown a frozen userspace
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.0
-Subject: Re: [PATCH v2 34/50] KVM: x86: Unify pr_fmt to use module name for
- all KVM modules
-Content-Language: en-US
-To: Sean Christopherson <seanjc@google.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Marc Zyngier <maz@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>,
- Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>,
- Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>,
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>,
- Matthew Rosato <mjrosato@linux.ibm.com>, Eric Farman <farman@linux.ibm.com>,
- Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>
-References: <20221130230934.1014142-1-seanjc@google.com>
- <20221130230934.1014142-35-seanjc@google.com>
-Organization: Xen Project
-In-Reply-To: <20221130230934.1014142-35-seanjc@google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIACSLiGMC/3XPzWrDMAwA4FcpPs8jln/b095j7CA7SmNoHbDXwF
+ by7tN2HDY6CAk+/TxFo5qpicvpKSrtueWtcBFeTiKtWK4k88y1gAlAKfCylVkuleibpCJSRgMEDU
+ 4wiNhIxoolrUzK43bj5prb51a//hbsitN7d9au5CStN06hdo4SvKW1bvf8uL9u9So+eNIOYw2s54
+ AGLOHZOd3Reqw1awSa0WuVUJmONmNtfi9n50z0C2DsaDvWlrWhmSNOIeLU0W6sHWtN58lavTiDtq
+ P9WHvW3Es2wMIP/P/7OI4f/KJYEyACAAA=
+From: Ricardo Ribalda <ribalda@chromium.org>
+Date: Thu, 01 Dec 2022 12:08:20 +0100
+Message-Id: <20221127-snd-freeze-v8-0-3bc02d09f2ce@chromium.org>
+To: Juergen Gross <jgross@suse.com>, Mark Brown <broonie@kernel.org>,
+ Chromeos Kdump <chromeos-kdump@google.com>,
+ Daniel Baluta <daniel.baluta@nxp.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Len Brown <len.brown@intel.com>, Ard Biesheuvel <ardb@kernel.org>,
+ Ranjani Sridharan <ranjani.sridharan@linux.intel.com>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Eric Biederman <ebiederm@xmission.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Jaroslav Kysela <perex@perex.cz>,
+ Joel Fernandes <joel@joelfernandes.org>, Liam Girdwood <lgirdwood@gmail.com>,
+ Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Pavel Machek <pavel@ucw.cz>,
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+ Kai Vehmanen <kai.vehmanen@linux.intel.com>,
+ Steven Rostedt <rostedt@goodmis.org>, "K. Y. Srinivasan" <kys@microsoft.com>,
+ Ingo Molnar <mingo@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Dexuan Cui <decui@microsoft.com>, Takashi Iwai <tiwai@suse.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Bard Liao <yung-chuan.liao@linux.intel.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>,
+ x86@kernel.org
+X-Mailer: b4 0.11.0-dev-696ae
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4368; i=ribalda@chromium.org;
+ h=from:subject:message-id; bh=Rud9IUdbPKIRkkkE6G4uaTZbcmuiccX+lZS5manvrHM=;
+ b=owEBbQKS/ZANAwAKAdE30T7POsSIAcsmYgBjiIsuiQZl7CGQiKdplkqC0gHCzURIkJXoavQjeFfS
+ sEPmEE6JAjMEAAEKAB0WIQREDzjr+/4oCDLSsx7RN9E+zzrEiAUCY4iLLgAKCRDRN9E+zzrEiIaWD/
+ 9SLVqH6ELG3Nj4DmzbcOc+YbsFvyvs/zS4DGTKOm4a1dsJ6EojOhIs9fpuGLT8o3p3+9VsWHC0In/y
+ k6Iuhsi7YI2K91jtIDrxVIf4dUlmsglcYsc4qe5s+tqH0tWT7y7OlpaNM4+W605lNX2FMTKjGgKfHe
+ jHVMfBfB0ebLbt7OhLXieR55yYucbmtChn3v49MHNc8u6oY5Zy9bC4bNkMJDJtd+ce/qqb8Bp4QeMA
+ rOQjtJMeieO5qtXaDb8EfsUc4gu1PYL42HfoTN2sr18FL9SKNzVejr4Jq0RhUCNg/rf+Oqoqn7EEmV
+ sjud45VDHbBcOD8OQJa/GQAuRwLJQYje6ycI76nIB/gnEiR08+uB3nK3tlAkKMMWbb4wS5vuWnCX2U
+ 3YF/ZK8xWASICm+G0JmfVBdajYCKUxaboXr7DPbP7oCUFU3bLEQqtBpNgeyfU46D4Q0gnTD8/frbVt
+ UgY++3lpoKK+Pxg3zbTIKOvN4fumazPJdSB+a586EbWiw7LhOtWns3EsiPZqFybXoW0BptbVq0Aqan
+ TLmIsVZkJSOl85YER762XGxsWyl9LeYioTLO/h4ozDLEbfseFlKxfz67nGgS7NBgsHBJDuc7Pu2/XP
+ dfaTOEkimDz87TdwqvVEa5v67H9Ve4p2lif6Z3g7ymf71PA6yB0dtq2z/ZqQ==
+X-Developer-Key: i=ribalda@chromium.org; a=openpgp;
+ fpr=9EC3BB66E2FC129A6F90B39556A0D81F9F782DA9
 X-Mailman-Approved-At: Fri, 02 Dec 2022 04:43:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -96,47 +115,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, David Hildenbrand <david@redhat.com>, Atish Patra <atishp@atishpatra.org>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Chao Gao <chao.gao@intel.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Yuan Yao <yuan.yao@intel.com>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isaku.yamahata@intel.com>, =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>, Fabiano Rosas <farosas@linux.ibm.com>, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Cc: alsa-devel@alsa-project.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, kexec@lists.infradead.org, linux-hyperv@vger.kernel.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Ricardo Ribalda <ribalda@chromium.org>, xen-devel@lists.xenproject.org, linuxppc-dev@lists.ozlabs.org, sound-open-firmware@alsa-project.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 30/11/2022 23:09, Sean Christopherson wrote:
-> Define pr_fmt using KBUILD_MODNAME for all KVM x86 code so that printks
-> use consistent formatting across common x86, Intel, and AMD code.  In
-> addition to providing consistent print formatting, using KBUILD_MODNAME,
-> e.g. kvm_amd and kvm_intel, allows referencing SVM and VMX (and SEV and
-> SGX and ...) as technologies without generating weird messages, and
-> without causing naming conflicts with other kernel code, e.g. "SEV: ",
-> "tdx: ", "sgx: " etc.. are all used by the kernel for non-KVM subsystems.
-> 
-> Opportunistically move away from printk() for prints that need to be
-> modified anyways, e.g. to drop a manual "kvm: " prefix.
-> 
-> Opportunistically convert a few SGX WARNs that are similarly modified to
-> WARN_ONCE; in the very unlikely event that the WARNs fire, odds are good
-> that they would fire repeatedly and spam the kernel log without providing
-> unique information in each print.
-> 
-> Note, defining pr_fmt yields undesirable results for code that uses KVM's
-> printk wrappers, e.g. vcpu_unimpl().  But, that's a pre-existing problem
-> as SVM/kvm_amd already defines a pr_fmt, and thankfully use of KVM's
-> wrappers is relatively limited in KVM x86 code.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
-[snip]
-> diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
-> index b246decb53a9..3bf7d69373cf 100644
-> --- a/arch/x86/kvm/xen.c
-> +++ b/arch/x86/kvm/xen.c
-> @@ -5,6 +5,7 @@
->    *
->    * KVM Xen emulation
->    */
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->   
->   #include "x86.h"
->   #include "xen.h"
+Since: 83bfc7e793b5 ("ASoC: SOF: core: unregister clients and machine drivers in .shutdown")
+we wait for all the workloads to be completed during shutdown. This was done to 
+avoid a stall once the device is started again.
 
-Reviewed-by: Paul Durrant <paul@xen.org>
+Unfortunately this has the side effect of stalling kexec(), if the userspace
+is frozen. Let's handle that case.
 
+To: Joel Fernandes <joel@joelfernandes.org>
+To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+To: Liam Girdwood <lgirdwood@gmail.com>
+To: Peter Ujfalusi <peter.ujfalusi@linux.intel.com>
+To: Bard Liao <yung-chuan.liao@linux.intel.com>
+To: Ranjani Sridharan <ranjani.sridharan@linux.intel.com>
+To: Kai Vehmanen <kai.vehmanen@linux.intel.com>
+To: Daniel Baluta <daniel.baluta@nxp.com>
+To: Mark Brown <broonie@kernel.org>
+To: Jaroslav Kysela <perex@perex.cz>
+To: Takashi Iwai <tiwai@suse.com>
+To: Eric Biederman <ebiederm@xmission.com>
+To: Chromeos Kdump <chromeos-kdump@google.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: "K. Y. Srinivasan" <kys@microsoft.com>
+To: Haiyang Zhang <haiyangz@microsoft.com>
+To: Wei Liu <wei.liu@kernel.org>
+To: Dexuan Cui <decui@microsoft.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@redhat.com>
+To: Borislav Petkov <bp@alien8.de>
+To: Dave Hansen <dave.hansen@linux.intel.com>
+To: x86@kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+To: Juergen Gross <jgross@suse.com>
+To: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+To: Ard Biesheuvel <ardb@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <len.brown@intel.com>
+Cc: stable@vger.kernel.org
+Cc: sound-open-firmware@alsa-project.org
+Cc: alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
+Cc: kexec@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-hyperv@vger.kernel.org
+Cc: xen-devel@lists.xenproject.org
+Cc: linux-efi@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
+---
+Changes in v8:
+- Wrap pm_freezing and kexec_inprogress in functions.
+- Do not run snd_sof_machine_unregister(sdev, pdata) during kexec (Thanks Kai).
+- Link to v7: https://lore.kernel.org/r/20221127-snd-freeze-v7-0-127c582f1ca4@chromium.org
+
+Changes in v7:
+- Fix commit message (Thanks Pierre-Louis).
+- Link to v6: https://lore.kernel.org/r/20221127-snd-freeze-v6-0-3e90553f64a5@chromium.org
+
+Changes in v6:
+- Check if we are in kexec with the userspace frozen.
+- Link to v5: https://lore.kernel.org/r/20221127-snd-freeze-v5-0-4ededeb08ba0@chromium.org
+
+Changes in v5:
+- Edit subject prefix.
+- Link to v4: https://lore.kernel.org/r/20221127-snd-freeze-v4-0-51ca64b7f2ab@chromium.org
+
+Changes in v4:
+- Do not call snd_sof_machine_unregister from shutdown.
+- Link to v3: https://lore.kernel.org/r/20221127-snd-freeze-v3-0-a2eda731ca14@chromium.org
+
+Changes in v3:
+- Wrap pm_freezing in a function.
+- Link to v2: https://lore.kernel.org/r/20221127-snd-freeze-v2-0-d8a425ea9663@chromium.org
+
+Changes in v2:
+- Only use pm_freezing if CONFIG_FREEZER .
+- Link to v1: https://lore.kernel.org/r/20221127-snd-freeze-v1-0-57461a366ec2@chromium.org
+
+---
+Ricardo Ribalda (3):
+      kexec: Refactor kexec_in_progress into a function
+      freezer: refactor pm_freezing into a function.
+      ASoC: SOF: Fix deadlock when shutdown a frozen userspace
+
+ arch/powerpc/platforms/pseries/vio.c |  2 +-
+ arch/x86/kernel/cpu/mshyperv.c       |  6 +++---
+ arch/x86/xen/enlighten_hvm.c         |  2 +-
+ drivers/firmware/efi/efi.c           |  2 +-
+ drivers/pci/pci-driver.c             |  2 +-
+ include/linux/freezer.h              |  3 ++-
+ include/linux/kexec.h                |  5 ++---
+ kernel/freezer.c                     |  3 +--
+ kernel/kexec_core.c                  | 12 ++++++++++--
+ kernel/power/process.c               | 24 ++++++++++++++++++++----
+ sound/soc/sof/core.c                 |  9 ++++++---
+ 11 files changed, 48 insertions(+), 22 deletions(-)
+---
+base-commit: 4312098baf37ee17a8350725e6e0d0e8590252d4
+change-id: 20221127-snd-freeze-1ee143228326
+
+Best regards,
+-- 
+Ricardo Ribalda <ribalda@chromium.org>
