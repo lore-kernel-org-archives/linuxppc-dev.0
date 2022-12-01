@@ -4,57 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 453ABC43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA85DC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:43:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNd22Bcfz3bfm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:40:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QS9dXU4Q;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QS9dXU4Q;
-	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNjL01mWz3bh0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:43:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ore@pengutronix.de; receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNNbz3D5Nz2xrL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 04:39:11 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 66A21B81FBF;
-	Thu,  1 Dec 2022 17:39:07 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9063C433C1;
-	Thu,  1 Dec 2022 17:39:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1669916346;
-	bh=EQiwzs8F1/qVmkVpXCClLWzdE+Wc1pX7zMIG7mNXbv8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=QS9dXU4QLiEZW5ErRsJA5lWiHpLrRUa1h5LOICfJ36ph0K51kSOFwnbiFC/3pn1u+
-	 R5++oOy+mQtkZr3a5f14FktlINBt20oLbSN/rIhR2iM7JN2qRw974J2bWG5q6ZqNQi
-	 EfYyjAJQaADJSs9JW2nutw7ZaGoA6qj0kRm9wVBWAPN91zlEkv8JvQU0U6yJK87mmh
-	 dd2628oqaGM2OwpilLKvys6RYmdC5rRyG8gBoG9MA5Ue7Y3+bceY+QCC1KN5p6uk2d
-	 W96pSkpEYanCf3kn6sw1218+juUkxA91q7GIHAuhCnkY3WscYQxFt4vkp4Uk62hssS
-	 QXYdhW/LHL3pA==
-Received: by pali.im (Postfix)
-	id C653C5CD; Thu,  1 Dec 2022 18:39:02 +0100 (CET)
-Date: Thu, 1 Dec 2022 18:39:02 +0100
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 5/5] powerpc: dts: remove label = "cpu" from DSA
- dt-binding
-Message-ID: <20221201173902.zrtpeq4mkk3i3vpk@pali>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN5h03zGKz2x9L
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 17:26:40 +1100 (AEDT)
+Received: from ptx.hi.pengutronix.de ([2001:67c:670:100:1d::c0])
+	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1p0cpU-0005yr-J8; Thu, 01 Dec 2022 07:13:52 +0100
+Received: from ore by ptx.hi.pengutronix.de with local (Exim 4.92)
+	(envelope-from <ore@pengutronix.de>)
+	id 1p0cpS-0002De-7V; Thu, 01 Dec 2022 07:13:50 +0100
+Date: Thu, 1 Dec 2022 07:13:50 +0100
+From: Oleksij Rempel <o.rempel@pengutronix.de>
+To: =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>
+Subject: Re: [PATCH 4/5] mips: dts: remove label = "cpu" from DSA dt-binding
+Message-ID: <20221201061350.GE19642@pengutronix.de>
 References: <20221130141040.32447-1-arinc.unal@arinc9.com>
- <20221130141040.32447-6-arinc.unal@arinc9.com>
- <87a647s8zg.fsf@mpe.ellerman.id.au>
+ <20221130141040.32447-5-arinc.unal@arinc9.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <87a647s8zg.fsf@mpe.ellerman.id.au>
-User-Agent: NeoMutt/20180716
+In-Reply-To: <20221130141040.32447-5-arinc.unal@arinc9.com>
+X-Sent-From: Pengutronix Hildesheim
+X-URL: http://www.pengutronix.de/
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c0
+X-SA-Exim-Mail-From: ore@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailman-Approved-At: Fri, 02 Dec 2022 04:43:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,69 +57,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marek =?utf-8?B?QmVow7pu?= <kabel@kernel.org>, devicetree@vger.kernel.org, =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Heiko Stuebner <heiko@sntech.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Tim Harvey <tharvey@gateworks.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, Konrad Dybcio <konrad.dybcio@somainline.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Stefan Agner <stefan@agner.ch>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Oleksij Rempel <linux@rempel-privat.de>, Fabio Estevam <festevam@gmail.com>, Peng Fan <peng.fan@nxp.com>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Holland <samuel@sholland.org>, Gregory Clement <gregory.clement@bootlin.com>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, Sergio Paracuellos <sergio.paracuellos@gmail.com>, Che
+ n-Yu Tsai <wens@csie.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, Ray Jui <rjui@broadcom.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, devicetree@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Frank Wunderlich <frank-w@public-files.de>, Hauke Mehrtens <hauke@hauke-m.de>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, linux-rockchip@lists.infradead.org, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Scott Branden <sbranden@broadcom.com>, netdev@vger.kerne
+ l.org, Bjorn Andersson <andersson@kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Nicolas Ferre <nicolas.ferre@microchip.com>, "David S. Miller" <davem@davemloft.net>, linux-renesas-soc@vger.kernel.org, linux-sunxi@lists.linux.dev, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Claudiu Beznea <claudiu.beznea@microchip.com>, Michael Riesch <michael.riesch@wolfvision.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thursday 01 December 2022 21:40:03 Michael Ellerman wrote:
-> Arınç ÜNAL <arinc.unal@arinc9.com> writes:
-> > This is not used by the DSA dt-binding, so remove it from all devicetrees.
-> >
-> > Signed-off-by: Arınç ÜNAL <arinc.unal@arinc9.com>
-> > ---
-> >  arch/powerpc/boot/dts/turris1x.dts | 2 --
-> >  1 file changed, 2 deletions(-)
+On Wed, Nov 30, 2022 at 05:10:39PM +0300, Arınç ÜNAL wrote:
+> This is not used by the DSA dt-binding, so remove it from all devicetrees.
 > 
-> Adding Pali to Cc.
+> Signed-off-by: Arınç ÜNAL <arinc.unal@arinc9.com>
+> ---
+>  arch/mips/boot/dts/qca/ar9331.dtsi    | 1 -
+>  arch/mips/boot/dts/ralink/mt7621.dtsi | 1 -
+>  2 files changed, 2 deletions(-)
 > 
-> These were only recently updated in commit:
-> 
->   8bf056f57f1d ("powerpc: dts: turris1x.dts: Fix labels in DSA cpu port nodes")
-> 
-> Which said:
-> 
->   DSA cpu port node has to be marked with "cpu" label.
-> 
-> But if the binding doesn't use them then I'm confused why they needed to
-> be updated.
-> 
-> cheers
+> diff --git a/arch/mips/boot/dts/qca/ar9331.dtsi b/arch/mips/boot/dts/qca/ar9331.dtsi
+> index c4102b280b47..768ac0f869b1 100644
+> --- a/arch/mips/boot/dts/qca/ar9331.dtsi
+> +++ b/arch/mips/boot/dts/qca/ar9331.dtsi
+> @@ -176,7 +176,6 @@ ports {
+>  
+>  						switch_port0: port@0 {
+>  							reg = <0x0>;
+> -							label = "cpu";
+>  							ethernet = <&eth1>;
+>  
+>  							phy-mode = "gmii";
 
-I was told by Marek (CCed) that DSA port connected to CPU should have
-label "cpu" and not "cpu<number>". Modern way for specifying CPU port is
-by defining reference to network device, which there is already (&enet1
-and &enet0). So that change just "fixed" incorrect naming cpu0 and cpu1.
+Reviewed-by: Oleksij Rempel <o.rempel@pengutronix.de>
 
-So probably linux kernel does not need label = "cpu" in DTS anymore. But
-this is not the reason to remove this property. Linux kernel does not
-use lot of other nodes and properties too... Device tree should describe
-hardware and not its usage in Linux. "label" property is valid in device
-tree and it exactly describes what or where is this node connected. And
-it may be used for other systems.
+Thx! 
 
-So I do not see a point in removing "label" properties from turris1x.dts
-file, nor from any other dts file.
-
-> 
-> > diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
-> > index 045af668e928..3841c8d96d00 100644
-> > --- a/arch/powerpc/boot/dts/turris1x.dts
-> > +++ b/arch/powerpc/boot/dts/turris1x.dts
-> > @@ -147,7 +147,6 @@ ports {
-> >  
-> >  					port@0 {
-> >  						reg = <0>;
-> > -						label = "cpu";
-> >  						ethernet = <&enet1>;
-> >  						phy-mode = "rgmii-id";
-> >  
-> > @@ -184,7 +183,6 @@ port@5 {
-> >  
-> >  					port@6 {
-> >  						reg = <6>;
-> > -						label = "cpu";
-> >  						ethernet = <&enet0>;
-> >  						phy-mode = "rgmii-id";
-> >  
-> > -- 
-> > 2.34.1
+-- 
+Pengutronix e.K.                           |                             |
+Steuerwalder Str. 21                       | http://www.pengutronix.de/  |
+31137 Hildesheim, Germany                  | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
