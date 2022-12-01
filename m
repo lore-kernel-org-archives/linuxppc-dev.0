@@ -4,74 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C78E8C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:55:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E72FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 22:50:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNyj1RlCz3fWM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:55:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNWVp5sFMz3bgD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 09:50:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=exIoeOCr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lo1VVBU0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ribalda@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=exIoeOCr;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lo1VVBU0;
 	dkim-atps=neutral
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNHKm5q5rz3bW7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 00:41:32 +1100 (AEDT)
-Received: by mail-pf1-x435.google.com with SMTP id x66so1902833pfx.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 05:41:32 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNWTl4qp7z3bPR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 09:49:14 +1100 (AEDT)
+Received: by mail-pj1-x1029.google.com with SMTP id l22-20020a17090a3f1600b00212fbbcfb78so6599780pjc.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 14:49:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=tKguKo1XmUP31FlNvdaT70p0o/lwuxyZc7lK6ytX1QU=;
-        b=exIoeOCrlPb+Uw2FGLRsALkrLYWj9cDaTvcr81Evjsi5DXIR/uPZJTWsXlu/PiLLI3
-         HTBr5t4pzsWnn6M0lC4H5pNT0n3aLXEpcSRixu/mfsu8XeXoSArYBYlbqRz6mRys5h3T
-         IyXf+jqyVq8u6L+O/LqO4biBjWXlb+7RKXSc0=
+        d=google.com; s=20210112;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=mKF7ACqUicTgwRFQrz4oBsMFvmn+mRrenbI3VwK9VtA=;
+        b=Lo1VVBU0quIBqwSjUL/IX6jsQ3Rcbq3kNXFx1b09LmjnR9bQqqs8Qnjl452IWYkBSY
+         P1KTyvwrHEdLgoshrms0r4SI8z1ngo83OqCHRxrURyBE+yArcM+Cs5TCeq44GobVkF0m
+         IuDj+iWRP2zVVwjI1HJslgwJO64iafu01Owc+4A3/mvkEjyzFr8iFAR19fNs0LBLJTf3
+         Kg1ZIMc5fZ0ipGhmHdhLOXnD8uVTRyQX02DQttBjsyjAKjRvEJFav2gCuZ5FSQ6cpVhK
+         zD3GLCkmoDFgDHZV7t7XBqH0jElTPRdTcydGeJqtHoccQFH5HqfiAwKx6tg04wXmDFCc
+         QADQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=tKguKo1XmUP31FlNvdaT70p0o/lwuxyZc7lK6ytX1QU=;
-        b=lwG0FK9xDDbglavGSmuIYh9M3wS0UVpFQ6SsFKNo4V73xRa0lfGVJHglRshQ9wQ/LI
-         SbuHQJSzl2pDEcP5oFqFaGTJAOrYWk1P5k8Xw9n1N6T5I3OFbpnZo9kOMDytNnquWrm3
-         5S9NTwRkp0nfGwxdhUu8+Y3oLQF4ZjmBI6v2B2ArAWvwoY8vfAWchRaMQjgmxwD+HYcX
-         2MMOr66biaK6V1442ecD0gXB5U3WupVH25jVDJH64Vu624O3ko2Fjbj6ddayMudDLPuy
-         vil4HCVGVdFwBDeSqOgtrwqcpAfG56lIfacXsiX+gjGMb/QQWhBJuDTwHv8hi4umtT6P
-         oVaw==
-X-Gm-Message-State: ANoB5pk0hgQwQmUoZp01T+GGy3lk1cLzVwo1eqR0H1Y81ZhkANFWA1fA
-	4F6NN7ovVQ3ZPufb+l3JSa/f/NsN15d2tS11
-X-Google-Smtp-Source: AA0mqf6w9Kgk/AqJOrHZeFkzssj25vk32kiiGVxrQGskjg7dIE1/b7B6PxSXyXfzQJbQXpY0Wnogsw==
-X-Received: by 2002:a63:d009:0:b0:477:173c:7c9e with SMTP id z9-20020a63d009000000b00477173c7c9emr41141229pgf.94.1669902089394;
-        Thu, 01 Dec 2022 05:41:29 -0800 (PST)
-Received: from mail-pf1-f178.google.com (mail-pf1-f178.google.com. [209.85.210.178])
-        by smtp.gmail.com with ESMTPSA id a14-20020a170902ecce00b00186bc66d2cbsm3670091plh.73.2022.12.01.05.41.28
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 01 Dec 2022 05:41:29 -0800 (PST)
-Received: by mail-pf1-f178.google.com with SMTP id 21so1895445pfw.4
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 05:41:28 -0800 (PST)
-X-Received: by 2002:a92:ca89:0:b0:302:385e:eeb4 with SMTP id
- t9-20020a92ca89000000b00302385eeeb4mr24829482ilo.66.1669901667796; Thu, 01
- Dec 2022 05:34:27 -0800 (PST)
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mKF7ACqUicTgwRFQrz4oBsMFvmn+mRrenbI3VwK9VtA=;
+        b=flxS9u4Vg0uyPFXK3lQPRcvhB8fMVn4IRQeP1xsUrwo/qJ0p10YXxRh2hm8HRIb8G9
+         whaTPRhKyM6L/C/8GsSeUFYJqbtTVLQ1MMmINwrHt7ZX7jdsx/hIh06ENIj239gusOfT
+         geQQ/g4cGdENP/8x66BUZOwyS0ZR+6fy/swm+7oefepkWmxBJ+hYNVR4K8CkdfEhPqdb
+         WhZ9jJzQj3SGDc/qgSf3ziiBVSOrZaSBUsFynmxa+Gy1luDUysFuaAcRYsgjJyXBVuWW
+         Mjc/A6iIbsCyJdZw0FKe5xQK7e03mvgoIsIMy5E4sElPdQ9OtFVPA774R169s4TA4wjO
+         /DCg==
+X-Gm-Message-State: ANoB5plIjc+gLaE7EmYNtQcSmeFJOVEvWpeh6v1hQyiK8Wtoze9facA2
+	FSWJxjGBP81qrsTg2EQ26xKhjg==
+X-Google-Smtp-Source: AA0mqf4Wt8uYV/bEa16p+0WrrISPwxZH3fHAX4g+Oh8a2UKzOEMh4LEyPBB3ZTgiAtA3/myS/mdVQA==
+X-Received: by 2002:a17:903:32ce:b0:189:a0eb:4a26 with SMTP id i14-20020a17090332ce00b00189a0eb4a26mr13829305plr.162.1669934951343;
+        Thu, 01 Dec 2022 14:49:11 -0800 (PST)
+Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
+        by smtp.gmail.com with ESMTPSA id c73-20020a624e4c000000b0056bc742d21esm3854175pfb.176.2022.12.01.14.49.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Dec 2022 14:49:10 -0800 (PST)
+Date: Thu, 1 Dec 2022 22:49:06 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>
+Subject: Re: [PATCH v2 21/50] KVM: MIPS: Hardcode callbacks to hardware
+ virtualization extensions
+Message-ID: <Y4kvYlCbhj87rceF@google.com>
+References: <20221130230934.1014142-1-seanjc@google.com>
+ <20221130230934.1014142-22-seanjc@google.com>
+ <beb697c2-dfad-780e-4638-76b229f28731@linaro.org>
 MIME-Version: 1.0
-References: <20221127-snd-freeze-v8-0-3bc02d09f2ce@chromium.org>
- <20221127-snd-freeze-v8-3-3bc02d09f2ce@chromium.org> <716e5175-7a44-7ae8-b6bb-10d9807552e6@suse.com>
- <CANiDSCtwSb50sjn5tM7jJ6W2UpeKzpuzng+RdJuywiC3-j2zdg@mail.gmail.com> <d3730d1d-6f92-700a-06c4-0e0a35e270b0@suse.com>
-In-Reply-To: <d3730d1d-6f92-700a-06c4-0e0a35e270b0@suse.com>
-From: Ricardo Ribalda <ribalda@chromium.org>
-Date: Thu, 1 Dec 2022 14:34:16 +0100
-X-Gmail-Original-Message-ID: <CANiDSCtm7dCst_atiWk=ZcK_D3=VzvD0+kWXVQr4gEn--JjGkw@mail.gmail.com>
-Message-ID: <CANiDSCtm7dCst_atiWk=ZcK_D3=VzvD0+kWXVQr4gEn--JjGkw@mail.gmail.com>
-Subject: Re: [PATCH v8 3/3] ASoC: SOF: Fix deadlock when shutdown a frozen userspace
-To: Oliver Neukum <oneukum@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 02 Dec 2022 04:43:21 +1100
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <beb697c2-dfad-780e-4638-76b229f28731@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,74 +82,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Baluta <daniel.baluta@nxp.com>, alsa-devel@alsa-project.org, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-hyperv@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, linux-efi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Joel Fernandes <joel@joelfernandes.org>, "K. Y. Srinivasan" <kys@microsoft.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Ard Biesheuvel <ardb@kernel.org>, sound-open-firmware@alsa-project.org, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wei Liu <wei.liu@kernel.org>, Takashi Iwai <tiwai@suse.com>, Dexuan Cui <decui@microsoft.com>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, Chromeos Kdump <chromeos-kdump@google.com>, xen-devel@lists.xenproject.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, Steven Rostedt <rostedt@goodmis.org>, Mark Brown <broonie@ker
- nel.org>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Juergen Gross <jgross@suse.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, kexec@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isak
+ u.yamahata@intel.com>, Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Oliver
+On Thu, Dec 01, 2022, Philippe Mathieu-Daudé wrote:
+> On 1/12/22 00:09, Sean Christopherson wrote:
+> > Now that KVM no longer supports trap-and-emulate (see commit 45c7e8af4a5e
+> > "MIPS: Remove KVM_TE support"), hardcode the MIPS callbacks to the
+> > virtualization callbacks.
+> > 
+> > Harcoding the callbacks eliminates the technically-unnecessary check on
+> > non-NULL kvm_mips_callbacks in kvm_arch_init().  MIPS has never supported
+> > multiple in-tree modules, i.e. barring an out-of-tree module, where
+> > copying and renaming kvm.ko counts as "out-of-tree", KVM could never
+> > encounter a non-NULL set of callbacks during module init.
+> > 
+> > The callback check is also subtly broken, as it is not thread safe,
+> > i.e. if there were multiple modules, loading both concurrently would
+> > create a race between checking and setting kvm_mips_callbacks.
+> > 
+> > Given that out-of-tree shenanigans are not the kernel's responsibility,
+> > hardcode the callbacks to simplify the code.
+> > 
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   arch/mips/include/asm/kvm_host.h |  2 +-
+> >   arch/mips/kvm/Makefile           |  2 +-
+> >   arch/mips/kvm/callback.c         | 14 --------------
+> >   arch/mips/kvm/mips.c             |  9 ++-------
+> >   arch/mips/kvm/vz.c               |  7 ++++---
+> >   5 files changed, 8 insertions(+), 26 deletions(-)
+> >   delete mode 100644 arch/mips/kvm/callback.c
+> > 
+> > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> > index 28f0ba97db71..2803c9c21ef9 100644
+> > --- a/arch/mips/include/asm/kvm_host.h
+> > +++ b/arch/mips/include/asm/kvm_host.h
+> > @@ -758,7 +758,7 @@ struct kvm_mips_callbacks {
+> >   	void (*vcpu_reenter)(struct kvm_vcpu *vcpu);
+> >   };
+> >   extern struct kvm_mips_callbacks *kvm_mips_callbacks;
+> 
+> IIUC we could even constify this pointer.
 
-On Thu, 1 Dec 2022 at 14:22, 'Oliver Neukum' via Chromeos Kdump
-<chromeos-kdump@google.com> wrote:
->
-> On 01.12.22 14:03, Ricardo Ribalda wrote:
->
-> Hi,
->
-> > This patchset does not modify this behaviour. It simply fixes the
-> > stall for kexec().
-> >
-> > The  patch that introduced the stall:
-> > 83bfc7e793b5 ("ASoC: SOF: core: unregister clients and machine drivers
-> > in .shutdown")
->
-> That patch is problematic. I would go as far as saying that
-> it needs to be reverted.
->
+Good point.  Protecting the pointer itself is a bit gross, but it is a nice
+stopgap until the callbacks are gone.  I'll fold this in.  Thanks!
 
-It fixes a real issue. We have not had any complaints until we tried
-to kexec in the platform.
-I wont recommend reverting it until we have an alternative implementation.
-
-kexec is far less common than suspend/reboot.
-
-> > was sent as a generalised version of:
-> > https://github.com/thesofproject/linux/pull/3388
-> >
-> > AFAIK, we would need a similar patch for every single board.... which
-> > I am not sure it is doable in a reasonable timeframe.
-> >
-> > On the meantime this seems like a decent compromises. Yes, a
-> > miss-behaving userspace can still stall during suspend, but that was
-> > not introduced in this patch.
->
-> Well, I mean if you know what wrong then I'd say at least return to
-> a sanely broken state.
->
-> The whole approach is wrong. You need to be able to deal with user
-> space talking to removed devices by returning an error and keeping
-> the resources association with the open file allocated until
-> user space calls close()
-
-In general, the whole shutdown is broken for all the subsystems ;).
-It is a complicated issue. Users handling fds, devices with DMAs in
-the middle of an operation, dma fences....
-
-Unfortunately I am not that familiar with the sound subsystem to make
-a proper patch for this.
-
->
->         Regards
->                 Oliver
->
->
->
-> --
-> You received this message because you are subscribed to the Google Groups "Chromeos Kdump" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to chromeos-kdump+unsubscribe@google.com.
-> To view this discussion on the web, visit https://groups.google.com/a/google.com/d/msgid/chromeos-kdump/d3730d1d-6f92-700a-06c4-0e0a35e270b0%40suse.com.
-
-
-
--- 
-Ricardo Ribalda
+  extern const struct kvm_mips_callbacks * const kvm_mips_callbacks;
