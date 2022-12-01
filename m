@@ -4,85 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA50C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 15:37:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0E3AC43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 16:21:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNKv93Ls1z3bg9
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 02:37:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNLt96ZTPz3bdm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 03:21:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G9bLF70K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=smtpout1 header.b=NSK/XALU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=2607:5300:203:b2ee::31e5; helo=smtpout.efficios.com; envelope-from=mjeanson@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G9bLF70K;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=smtpout1 header.b=NSK/XALU;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 323 seconds by postgrey-1.36 at boromir; Fri, 02 Dec 2022 03:20:25 AEDT
+Received: from smtpout.efficios.com (unknown [IPv6:2607:5300:203:b2ee::31e5])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNKt211RKz3bY1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 02:36:09 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2B1FOf0M013550;
-	Thu, 1 Dec 2022 15:35:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : reply-to : to : cc : date : in-reply-to : references : content-type
- : mime-version : content-transfer-encoding; s=pp1;
- bh=Xk/l0U+Cz7PYE5CVeOcthMKdyGJyTMeO5xaBAtu53ps=;
- b=G9bLF70KykG6TWmEzNzjyCBteyzp0RxfqDaqnZ6XSjHmqgQxXRg2DOwQjNcKtmxy2VMl
- iMjwSRJ1NVgnWCt4vLTrPOVLoITg2qWeqe3EjxD/R6vCXtYH0nrwEitQRu/gPq6kthfD
- LT3MymtQqzy+xnXtZB1fvAw1GcmImVtrRKbJ8mmfCycuuB06FkGvAsBhOQFiJQauOPZ8
- TX6OaflzchNzwQLdjlUvTavVI+wS7PgS2icIG70ws/i/Ke3Y9u2qTVKNEdnn6d81kVRj
- xHGjlSqFTIhLyyS/xtwUnCQYIBeVup+MbpRL+nuHHCwO1l9xU6/5NIZxCYICZdf+c5YL og== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3m6xvs0bgs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Dec 2022 15:35:55 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
-	by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2B1FLlJ4018218;
-	Thu, 1 Dec 2022 15:30:54 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
-	by ppma01dal.us.ibm.com with ESMTP id 3m3aeanw4x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Dec 2022 15:30:54 +0000
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2B1FTcEa18940552
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 Dec 2022 15:29:38 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4BDDB5805A;
-	Thu,  1 Dec 2022 15:29:38 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BFF7C5805D;
-	Thu,  1 Dec 2022 15:29:36 +0000 (GMT)
-Received: from rhel-laptop.ibm.com (unknown [9.160.99.100])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 Dec 2022 15:29:36 +0000 (GMT)
-Message-ID: <044c90dc7feb3959b5740154addc230ba9a57216.camel@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/3] block: sed-opal: keyring support for SED keys
-From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-To: Ben Boeckel <me@benboeckel.net>
-Date: Thu, 01 Dec 2022 09:29:36 -0600
-In-Reply-To: <Y4gjgf2xHOYTVnSc@farprobe>
-References: <20221129232506.3735672-1-gjoyce@linux.vnet.ibm.com>
-	 <20221129232506.3735672-4-gjoyce@linux.vnet.ibm.com>
-	 <c78edd60-b6ae-6ec0-9ce4-73b9a92b9b32@suse.de>
-	 <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
-	 <Y4gjgf2xHOYTVnSc@farprobe>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: RN6-zXpnA45xPOTAP4vXVTMBnrGVxftM
-X-Proofpoint-GUID: RN6-zXpnA45xPOTAP4vXVTMBnrGVxftM
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-12-01_11,2022-12-01_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
- lowpriorityscore=0 phishscore=0 mlxlogscore=999 spamscore=0 mlxscore=0
- clxscore=1011 suspectscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
- definitions=main-2212010113
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNLs55RFMz3bW6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 03:20:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=efficios.com;
+	s=smtpout1; t=1669911291;
+	bh=xWuRyqyu5ThwW4USd8HSm16KKk649E+OungraJjQRjg=;
+	h=From:To:Cc:Subject:Date:From;
+	b=NSK/XALUzDZV9HF4QJ7KjH/+zkac7+IsX61Dd/IMmcIt68w7C52sJmjViHc9kB2mO
+	 tw0WXunPfMI3AKNulaz+ux4tHJ7G4/Av1ZOQHg5smOOflCiHZRXAeHZwlh8D7U3jTM
+	 DJ4TQQzwSc5Q8u8KKWHiGMFA4fueDOK0TAu2EG9ru3t8oq92mhZVE7MuyhGfcVHh6M
+	 hQ68jBZ06sYaASgG7zRzRXtMetuyFIgiIYEHUt53PckVvCtjpG6tfKnT4Et2p9rlpi
+	 LYG7aQJfV3RRkDGVX05m27oEBSw4aBybgzeH98wu3bHrnvDkG2h4J5VoUgZM6+Dl//
+	 D2MBAq8Rt3NTg==
+Received: from laptop-mjeanson.internal.efficios.com (192-222-180-24.qc.cable.ebox.net [192.222.180.24])
+	by smtpout.efficios.com (Postfix) with ESMTPSA id 4NNLkg0Lk0zYy0;
+	Thu,  1 Dec 2022 11:14:51 -0500 (EST)
+From: Michael Jeanson <mjeanson@efficios.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] powerpc/ftrace: fix syscall tracing on PPC64_ELF_ABI_V1
+Date: Thu,  1 Dec 2022 11:14:42 -0500
+Message-Id: <20221201161442.2127231-1-mjeanson@efficios.com>
+X-Mailer: git-send-email 2.34.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,44 +55,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: gjoyce@linux.vnet.ibm.com
-Cc: axboe@kernel.dk, nayna@linux.ibm.com, linux-block@vger.kernel.org, keyrings@vger.kernel.org, Hannes Reinecke <hare@suse.de>, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Michal Suchanek <msuchanek@suse.de>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Michael Jeanson <mjeanson@efficios.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Masami Hiramatsu <mhiramat@kernel.org>, stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2022-11-30 at 22:46 -0500, Ben Boeckel wrote:
-> On Wed, Nov 30, 2022 at 09:19:25 -0600, Greg Joyce wrote:
-> > On Wed, 2022-11-30 at 08:00 +0100, Hannes Reinecke wrote:
-> > > On 11/30/22 00:25, gjoyce@linux.vnet.ibm.com wrote:
-> > > > +	case OPAL_KEYRING:
-> > > > +		/* the key is in the keyring */
-> > > > +		ret = read_sed_opal_key(OPAL_AUTH_KEY, key-
-> > > > >key,
-> > > > OPAL_KEY_MAX);
-> > > > +		if (ret > 0) {
-> > > > +			if (ret > 255) {
-> > > 
-> > > Why is a key longer than 255 an error?
-> > > If this is a requirement, why not move the check into
-> > > read_sed_opal_key() such that one only has to check for
-> > > ret < 0 on errors?
-> > 
-> > The check is done here because the SED Opal spec stipulates 255 as
-> > the
-> > maximum key length. The key length (key->key_len) in the existing
-> > data
-> > structures is __u8, so a length greater than 255 can not be
-> > conveyed.
-> > For defensive purposes, I though it best to check here.
-> 
-> Perhaps naming it `OPAL_MAX_KEY_LEN` would help clarify this?
-> 
-> --Ben
+In v5.7 the powerpc syscall entry/exit logic was rewritten in C, on
+PPC64_ELF_ABI_V1 this resulted in the symbols in the syscall table
+changing from their dot prefixed variant to the non-prefixed ones.
 
-I'm not averse to changing it because it would be clearer. My concern
-is that it's been OPAL_KEY_MAX for 5+ years (the original SED Opal
-commit). Unless there is strong consensus to change it, I'm going to
-leave it as the original name.
+Since ftrace prefixes a dot to the syscall names when matching them to
+build its syscall event list, this resulted in no syscall events being
+available.
 
--Greg
+Remove the PPC64_ELF_ABI_V1 specific version of
+arch_syscall_match_sym_name to have the same behavior across all powerpc
+variants.
+
+Fixes: 68b34588e202 ("powerpc/64/sycall: Implement syscall entry/exit logic in C")
+Cc: stable@vger.kernel.org # v5.7+
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michal Suchanek <msuchanek@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
+Reviewed-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+---
+ arch/powerpc/include/asm/ftrace.h | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
+index 3cee7115441b..e3d1f377bc5b 100644
+--- a/arch/powerpc/include/asm/ftrace.h
++++ b/arch/powerpc/include/asm/ftrace.h
+@@ -64,17 +64,6 @@ void ftrace_graph_func(unsigned long ip, unsigned long parent_ip,
+  * those.
+  */
+ #define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
+-#ifdef CONFIG_PPC64_ELF_ABI_V1
+-static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
+-{
+-	/* We need to skip past the initial dot, and the __se_sys alias */
+-	return !strcmp(sym + 1, name) ||
+-		(!strncmp(sym, ".__se_sys", 9) && !strcmp(sym + 6, name)) ||
+-		(!strncmp(sym, ".ppc_", 5) && !strcmp(sym + 5, name + 4)) ||
+-		(!strncmp(sym, ".ppc32_", 7) && !strcmp(sym + 7, name + 4)) ||
+-		(!strncmp(sym, ".ppc64_", 7) && !strcmp(sym + 7, name + 4));
+-}
+-#else
+ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
+ {
+ 	return !strcmp(sym, name) ||
+@@ -83,7 +72,6 @@ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name
+ 		(!strncmp(sym, "ppc32_", 6) && !strcmp(sym + 6, name + 4)) ||
+ 		(!strncmp(sym, "ppc64_", 6) && !strcmp(sym + 6, name + 4));
+ }
+-#endif /* CONFIG_PPC64_ELF_ABI_V1 */
+ #endif /* CONFIG_FTRACE_SYSCALLS */
+ 
+ #if defined(CONFIG_PPC64) && defined(CONFIG_FUNCTION_TRACER)
+-- 
+2.34.1
 
