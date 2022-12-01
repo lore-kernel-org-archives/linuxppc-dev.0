@@ -4,52 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41387C47088
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD542C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:53:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNkv4T0Hz3bhY
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:45:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNNwf2yG5z3fSB
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 04:53:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XMDViV6C;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Sxbi0cvS;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=ribalda@chromium.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=Sxbi0cvS;
+	dkim-atps=neutral
+Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNCLw2flwz2xCj
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 21:42:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=XMDViV6C;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NNCLc4QCXz4xFy;
-	Thu,  1 Dec 2022 21:42:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1669891334;
-	bh=4hif7EODqPU9RIQoNSM7f4kViT96m8PqRMy1FOSRqmw=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=XMDViV6CFDY+O8nTTE8IlEWWvY7H8YPqwD0Tn3KS84kUAblouGGNC2+Nia8sW2MYv
-	 qiQITUGJnoNf2rF8FqcIgIFTtKJlyIpcKBWiNrEakO5NLQ+ickTPEjtr01+GlyanLx
-	 mzZ9YX/t1jp5UON6rpZmvdKzHLeuceJXW2c99G//FjEB6EQyCPN8TlRw5ClPGntYn1
-	 1lstUDxUIwXt5rogz0qwgKe9XH3/+5CPLNT6DZ3ksaq4/yXNeIe6xOWsdnc3/9h44G
-	 yfuCxdwdv4chZHzuDDmEcJxiTEJT36pr3DPrHlRrFjnXSjff4fqmP4a9zPs8OfNA43
-	 pIMyXosyZ93DA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>, Andrew Lunn
- <andrew@lunn.ch>
-Subject: Re: [PATCH 0/5] remove label = "cpu" from DSA dt-binding
-In-Reply-To: <32638470-b074-3b14-bfb2-10b49307b9e3@arinc9.com>
-References: <20221130141040.32447-1-arinc.unal@arinc9.com>
- <Y4d9B7VSHvqJn0iS@lunn.ch>
- <32638470-b074-3b14-bfb2-10b49307b9e3@arinc9.com>
-Date: Thu, 01 Dec 2022 21:42:00 +1100
-Message-ID: <877czbs8w7.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNGd84ZjNz3bWk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 00:09:47 +1100 (AEDT)
+Received: by mail-pl1-x62a.google.com with SMTP id s7so1601555plk.5
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 05:09:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=l7Y2FkbIVTKFtl+HxieOmsxNGhmLoxEmtYJ88v/cdgw=;
+        b=Sxbi0cvSliG9a00Ry4hRL3209ix85X2kIBcjhC5k1nEv5BOdHhFeI7Ixds0JdL6dZ6
+         7K72xHH++bcFQ6L4GeTVOnVIGmY3VxFsiE1PwDgAbEFd1Qg/8JsKJA/ZZABySB5cfN5I
+         rXB/aOLFPlnEkVyBmH4j/VAB0BH/L38J6evN4=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=l7Y2FkbIVTKFtl+HxieOmsxNGhmLoxEmtYJ88v/cdgw=;
+        b=MyXGMZxVpMULsCU8G7z6ZgMzUY7edciskhHr15nE26wFc1lGwteQSx6kWFjmaGBXZX
+         8B7Vp1+4qgHvq3rVUE+nGKJirOUwH9hUlkkRrU0re0gBVM3O7NFymyUBCfPu3tIZ9Y45
+         XZK1LW37Mi+CvBShsGJ7vcJd7Vx0dfjqiywjA9fZxiOs5Vv3lLUks0bZddz9kt22kmRt
+         qYVQqvfQ2KYppyxx6A/7EQPXo4Z1k7px+p6RLXIz/0SoDzm6EBKVPqcgt3aGRQoE1MYE
+         yku+ZZpCdDP2NjZ6HEq4QBVe8LTFtaxCH/6NvMVVbrYWcdAcUuvX+p10/gJx9Uwa405R
+         HwMQ==
+X-Gm-Message-State: ANoB5pkj5yRHyFEorZ90YEnWp4JAZBTAI6n/Und31zA5D0vhv9tdOoyX
+	Ix9rYcshlzy66VOTXbEIrAgz0GX9LTYI9kky
+X-Google-Smtp-Source: AA0mqf7ncDdQu8EeVSVsLMU1DzaouhejB2ymBG/63uoT9TMu0qBJ5My4tBN5/0W2zitWE1GxNTecBw==
+X-Received: by 2002:a17:90b:3444:b0:214:e1:cabe with SMTP id lj4-20020a17090b344400b0021400e1cabemr48520529pjb.153.1669900182080;
+        Thu, 01 Dec 2022 05:09:42 -0800 (PST)
+Received: from mail-pf1-f172.google.com (mail-pf1-f172.google.com. [209.85.210.172])
+        by smtp.gmail.com with ESMTPSA id d1-20020a170903230100b0018911ae9dfasm3599024plh.232.2022.12.01.05.09.41
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 01 Dec 2022 05:09:41 -0800 (PST)
+Received: by mail-pf1-f172.google.com with SMTP id 140so1815154pfz.6
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 05:09:41 -0800 (PST)
+X-Received: by 2002:a05:6e02:66d:b0:303:1196:96c7 with SMTP id
+ l13-20020a056e02066d00b00303119696c7mr9848943ilt.133.1669899845427; Thu, 01
+ Dec 2022 05:04:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+References: <20221127-snd-freeze-v8-0-3bc02d09f2ce@chromium.org>
+ <20221127-snd-freeze-v8-3-3bc02d09f2ce@chromium.org> <716e5175-7a44-7ae8-b6bb-10d9807552e6@suse.com>
+In-Reply-To: <716e5175-7a44-7ae8-b6bb-10d9807552e6@suse.com>
+From: Ricardo Ribalda <ribalda@chromium.org>
+Date: Thu, 1 Dec 2022 14:03:54 +0100
+X-Gmail-Original-Message-ID: <CANiDSCtwSb50sjn5tM7jJ6W2UpeKzpuzng+RdJuywiC3-j2zdg@mail.gmail.com>
+Message-ID: <CANiDSCtwSb50sjn5tM7jJ6W2UpeKzpuzng+RdJuywiC3-j2zdg@mail.gmail.com>
+Subject: Re: [PATCH v8 3/3] ASoC: SOF: Fix deadlock when shutdown a frozen userspace
+To: Oliver Neukum <oneukum@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Fri, 02 Dec 2022 04:43:21 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,49 +82,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Heiko Stuebner <heiko@sntech.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Tim Harvey <tharvey@gateworks.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, Konrad Dybcio <konrad.dybcio@somainline.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Stefan Agner <stefan@agner.ch>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Oleksij Rempel <linux@rempel-privat.de>, Fabio Estevam <festevam@gmail.com>, Peng Fan <peng.fan@nxp.com>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Holland <samuel@sholland.org>, linux-rockchip@lists.infradead.org, Gregory Clement <gregory.clement@bootlin.com>, =?utf-8?Q?Rafa?= =?utf-8?Q?=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, Sergio Paracuellos <sergio.parac
- uellos@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, Ray Jui <rjui@broadcom.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Frank Wunderlich <frank-w@public-files.de>, Hauke Mehrtens <hauke@hauke-m.de>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-mips@vger.kernel.org, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Scott Branden <sbranden@broadcom.com>, netdev@vger.kernel.org, Bjorn A
- ndersson <andersson@kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Nicolas Ferre <nicolas.ferre@microchip.com>, "David S. Miller" <davem@davemloft.net>, linux-renesas-soc@vger.kernel.org, linux-sunxi@lists.linux.dev, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Pengutronix Kernel Team <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Claudiu Beznea <claudiu.beznea@microchip.com>, Michael Riesch <michael.riesch@wolfvision.net>
+Cc: Daniel Baluta <daniel.baluta@nxp.com>, alsa-devel@alsa-project.org, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-hyperv@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, linux-efi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Joel Fernandes <joel@joelfernandes.org>, "K. Y. Srinivasan" <kys@microsoft.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Ard Biesheuvel <ardb@kernel.org>, sound-open-firmware@alsa-project.org, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wei Liu <wei.liu@kernel.org>, Takashi Iwai <tiwai@suse.com>, Dexuan Cui <decui@microsoft.com>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, Chromeos Kdump <chromeos-kdump@google.com>, xen-devel@lists.xenproject.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, Steven Rostedt <rostedt@goodmis.org>, Mark Brown <broonie@ker
+ nel.org>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Juergen Gross <jgross@suse.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, kexec@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ar=C4=B1n=C3=A7 =C3=9CNAL <arinc.unal@arinc9.com> writes:
-> On 30.11.2022 18:55, Andrew Lunn wrote:
->> On Wed, Nov 30, 2022 at 05:10:35PM +0300, Ar=C4=B1n=C3=A7 =C3=9CNAL wrot=
-e:
->>> Hello folks,
->>>
->>> With this patch series, we're completely getting rid of 'label =3D "cpu=
-";'
->>> which is not used by the DSA dt-binding at all.
->>>
->>> Information for taking the patches for maintainers:
->>> Patch 1: netdev maintainers (based off netdev/net-next.git main)
->>> Patch 2-3: SoC maintainers (based off soc/soc.git soc/dt)
->>> Patch 4: MIPS maintainers (based off mips/linux.git mips-next)
->>> Patch 5: PowerPC maintainers (based off powerpc/linux.git next-test)
->>=20
->> Hi Ar=C4=B1n=C3=A7
->>=20
->> So your plan is that each architecture maintainer merges one patch?
->
-> Initially, I sent this series to soc@kernel.org to take it all but Rob=20
-> said it must be this way instead.
->
->>=20
->> That is fine, but it is good to be explicit, otherwise patches will
->> fall through the cracks because nobody picks them up. I generally use
->> To: to indicate who i expect to merge a patch, and everybody else in
->> the Cc:
->
-> Thanks for this, I'll follow suit if I don't see any activity for a few=20
-> weeks.
+Hi Oliver
 
-IMHO the best solution if the patches are truly independent is to send
-them independantly to each maintainer. That way there's no confusion
-about whether someone else will take the series.
+Thanks for your review
 
-It's also simpler for maintainers to apply a single standalone patch vs
-pick a single patch from a larger series.
+On Thu, 1 Dec 2022 at 13:29, Oliver Neukum <oneukum@suse.com> wrote:
+>
+> On 01.12.22 12:08, Ricardo Ribalda wrote:
+> > If we are shutting down due to kexec and the userspace is frozen, the
+> > system will stall forever waiting for userspace to complete.
+> >
+> > Do not wait for the clients to complete in that case.
+>
+> Hi,
+>
+> I am afraid I have to state that this approach is bad in every case,
+> not just this corner case. It basically means that user space can stall
+> the kernel for an arbitrary amount of time. And we cannot have that.
+>
+>         Regards
+>                 Oliver
 
-cheers
+This patchset does not modify this behaviour. It simply fixes the
+stall for kexec().
+
+The  patch that introduced the stall:
+83bfc7e793b5 ("ASoC: SOF: core: unregister clients and machine drivers
+in .shutdown")
+
+was sent as a generalised version of:
+https://github.com/thesofproject/linux/pull/3388
+
+AFAIK, we would need a similar patch for every single board.... which
+I am not sure it is doable in a reasonable timeframe.
+
+On the meantime this seems like a decent compromises. Yes, a
+miss-behaving userspace can still stall during suspend, but that was
+not introduced in this patch.
+
+Regards!
+>
+
+
+-- 
+Ricardo Ribalda
