@@ -4,73 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E72FC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 22:50:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B7E3C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 02:39:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNWVp5sFMz3bgD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 09:50:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lo1VVBU0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lo1VVBU0;
-	dkim-atps=neutral
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNcbS5TDMz3cGm
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 13:39:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.41; helo=mail-ot1-f41.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com [209.85.210.41])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNWTl4qp7z3bPR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 09:49:14 +1100 (AEDT)
-Received: by mail-pj1-x1029.google.com with SMTP id l22-20020a17090a3f1600b00212fbbcfb78so6599780pjc.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 14:49:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=mKF7ACqUicTgwRFQrz4oBsMFvmn+mRrenbI3VwK9VtA=;
-        b=Lo1VVBU0quIBqwSjUL/IX6jsQ3Rcbq3kNXFx1b09LmjnR9bQqqs8Qnjl452IWYkBSY
-         P1KTyvwrHEdLgoshrms0r4SI8z1ngo83OqCHRxrURyBE+yArcM+Cs5TCeq44GobVkF0m
-         IuDj+iWRP2zVVwjI1HJslgwJO64iafu01Owc+4A3/mvkEjyzFr8iFAR19fNs0LBLJTf3
-         Kg1ZIMc5fZ0ipGhmHdhLOXnD8uVTRyQX02DQttBjsyjAKjRvEJFav2gCuZ5FSQ6cpVhK
-         zD3GLCkmoDFgDHZV7t7XBqH0jElTPRdTcydGeJqtHoccQFH5HqfiAwKx6tg04wXmDFCc
-         QADQ==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNXls3gdjz30RN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 10:46:33 +1100 (AEDT)
+Received: by mail-ot1-f41.google.com with SMTP id db10-20020a0568306b0a00b0066d43e80118so2001554otb.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 15:46:33 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=in-reply-to:content-transfer-encoding:content-disposition
          :mime-version:references:message-id:subject:cc:to:from:date
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mKF7ACqUicTgwRFQrz4oBsMFvmn+mRrenbI3VwK9VtA=;
-        b=flxS9u4Vg0uyPFXK3lQPRcvhB8fMVn4IRQeP1xsUrwo/qJ0p10YXxRh2hm8HRIb8G9
-         whaTPRhKyM6L/C/8GsSeUFYJqbtTVLQ1MMmINwrHt7ZX7jdsx/hIh06ENIj239gusOfT
-         geQQ/g4cGdENP/8x66BUZOwyS0ZR+6fy/swm+7oefepkWmxBJ+hYNVR4K8CkdfEhPqdb
-         WhZ9jJzQj3SGDc/qgSf3ziiBVSOrZaSBUsFynmxa+Gy1luDUysFuaAcRYsgjJyXBVuWW
-         Mjc/A6iIbsCyJdZw0FKe5xQK7e03mvgoIsIMy5E4sElPdQ9OtFVPA774R169s4TA4wjO
-         /DCg==
-X-Gm-Message-State: ANoB5plIjc+gLaE7EmYNtQcSmeFJOVEvWpeh6v1hQyiK8Wtoze9facA2
-	FSWJxjGBP81qrsTg2EQ26xKhjg==
-X-Google-Smtp-Source: AA0mqf4Wt8uYV/bEa16p+0WrrISPwxZH3fHAX4g+Oh8a2UKzOEMh4LEyPBB3ZTgiAtA3/myS/mdVQA==
-X-Received: by 2002:a17:903:32ce:b0:189:a0eb:4a26 with SMTP id i14-20020a17090332ce00b00189a0eb4a26mr13829305plr.162.1669934951343;
-        Thu, 01 Dec 2022 14:49:11 -0800 (PST)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id c73-20020a624e4c000000b0056bc742d21esm3854175pfb.176.2022.12.01.14.49.10
+        bh=kku18D3Y88MWUX/tUqbmMS28F2KQx7nmZY37oV7FZwE=;
+        b=OSFCiFm0WvsdApXJZxvnCtJny2dOJJdFhF5gCfjKkbIM02OoPXATsBa+tZpYGRgagD
+         i197iCKWBJQUcp2KtjwVB5sEo8TnU20RDdMT2rFvcRAWPxjVOVegoQE8uFQf2Ph6AhtT
+         MDZyGONmkxQlRm4rkxLQ14oOsUzznyZTo1KLUlw5yA5LIM9+wlVK9Wa8FIrM4bngJ102
+         Fklezfrx+2YdHPtfzbWZLza5Oh4Er7Wngs8HdYTKFBFhRUFrDRKoNY+PIAQmmIdABafx
+         n07hIaLvso3KMuLMs76lyA14LW4fF6kAlt8dvd5/SCXWjy7QV/OQey2n8YmXgQiBn1qs
+         ec9A==
+X-Gm-Message-State: ANoB5pkErdqLcYSvHxu+sR3E+qwFbgVjW8Sek0ZZqCpy9subtIy09aYc
+	0u8m8nHb6+9EoWHj1krzPg==
+X-Google-Smtp-Source: AA0mqf5ZGQasomoBdeMHUbWi+cUm7mHzdtQUSRq09o1u9VxkbZV92Lxt3/8ZuyZgJD7FgCKGDpaDTA==
+X-Received: by 2002:a05:6830:1e63:b0:661:9030:6480 with SMTP id m3-20020a0568301e6300b0066190306480mr24758975otr.147.1669938390899;
+        Thu, 01 Dec 2022 15:46:30 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id y2-20020a4ae702000000b0049427725e62sm2292185oou.19.2022.12.01.15.46.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Dec 2022 14:49:10 -0800 (PST)
-Date: Thu, 1 Dec 2022 22:49:06 +0000
-From: Sean Christopherson <seanjc@google.com>
-To: Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <philmd@linaro.org>
-Subject: Re: [PATCH v2 21/50] KVM: MIPS: Hardcode callbacks to hardware
- virtualization extensions
-Message-ID: <Y4kvYlCbhj87rceF@google.com>
-References: <20221130230934.1014142-1-seanjc@google.com>
- <20221130230934.1014142-22-seanjc@google.com>
- <beb697c2-dfad-780e-4638-76b229f28731@linaro.org>
+        Thu, 01 Dec 2022 15:46:30 -0800 (PST)
+Received: (nullmailer pid 1704103 invoked by uid 1000);
+	Thu, 01 Dec 2022 23:46:28 -0000
+Date: Thu, 1 Dec 2022 17:46:28 -0600
+From: Rob Herring <robh@kernel.org>
+To: =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>
+Subject: Re: [PATCH 1/5] dt-bindings: net: qca,ar71xx: remove label = "cpu"
+ from examples
+Message-ID: <166993831623.1702506.4546645219900752750.robh@kernel.org>
+References: <20221130141040.32447-1-arinc.unal@arinc9.com>
+ <20221130141040.32447-2-arinc.unal@arinc9.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <beb697c2-dfad-780e-4638-76b229f28731@linaro.org>
+In-Reply-To: <20221130141040.32447-2-arinc.unal@arinc9.com>
+X-Mailman-Approved-At: Fri, 02 Dec 2022 13:39:03 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,52 +66,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead.org, Isaku Yamahata <isak
- u.yamahata@intel.com>, Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: ", Andrew Lunn" <andrew@lunn.ch>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sergio Paracuellos <sergio.paracuellos@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Vladimir Oltean <vladimir.oltean@nxp.com>, linux-arm-msm@vger.kernel.org, Konrad Dybcio <konrad.dybcio@somainline.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Stefan Agner <stefan@agner.ch>, linux-mips@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Michael Riesch <michael.riesch@wolfvision.net>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Peng Fan <peng.fan@nxp.com>, Oleksij Rempel <linux@rempel-privat.de>, Fabio Estevam <festevam@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, linux-kernel@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Holland <samuel@sholland.org>, Gregory Clement <gregory.clement@boot
+ lin.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, Hauke Mehrtens <hauke@hauke-m.de>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Tim Harvey <tharvey@gateworks.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, devicetree@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, Frank Wunderlich <frank-w@public-files.de>, Ray Jui <rjui@broadcom.com>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, Nicholas Piggin <npiggin@gmail.com>, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Scott Branden <sbranden@broadcom.com>, netdev@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Nicolas Ferre <nicolas.ferre@microchip.com>, linux-sunxi@lists.linux.dev, linux-renesas-soc@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 01, 2022, Philippe Mathieu-Daud� wrote:
-> On 1/12/22 00:09, Sean Christopherson wrote:
-> > Now that KVM no longer supports trap-and-emulate (see commit 45c7e8af4a5e
-> > "MIPS: Remove KVM_TE support"), hardcode the MIPS callbacks to the
-> > virtualization callbacks.
-> > 
-> > Harcoding the callbacks eliminates the technically-unnecessary check on
-> > non-NULL kvm_mips_callbacks in kvm_arch_init().  MIPS has never supported
-> > multiple in-tree modules, i.e. barring an out-of-tree module, where
-> > copying and renaming kvm.ko counts as "out-of-tree", KVM could never
-> > encounter a non-NULL set of callbacks during module init.
-> > 
-> > The callback check is also subtly broken, as it is not thread safe,
-> > i.e. if there were multiple modules, loading both concurrently would
-> > create a race between checking and setting kvm_mips_callbacks.
-> > 
-> > Given that out-of-tree shenanigans are not the kernel's responsibility,
-> > hardcode the callbacks to simplify the code.
-> > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >   arch/mips/include/asm/kvm_host.h |  2 +-
-> >   arch/mips/kvm/Makefile           |  2 +-
-> >   arch/mips/kvm/callback.c         | 14 --------------
-> >   arch/mips/kvm/mips.c             |  9 ++-------
-> >   arch/mips/kvm/vz.c               |  7 ++++---
-> >   5 files changed, 8 insertions(+), 26 deletions(-)
-> >   delete mode 100644 arch/mips/kvm/callback.c
-> > 
-> > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-> > index 28f0ba97db71..2803c9c21ef9 100644
-> > --- a/arch/mips/include/asm/kvm_host.h
-> > +++ b/arch/mips/include/asm/kvm_host.h
-> > @@ -758,7 +758,7 @@ struct kvm_mips_callbacks {
-> >   	void (*vcpu_reenter)(struct kvm_vcpu *vcpu);
-> >   };
-> >   extern struct kvm_mips_callbacks *kvm_mips_callbacks;
+
+On Wed, 30 Nov 2022 17:10:36 +0300, Arınç ÜNAL wrote:
+> This is not used by the DSA dt-binding, so remove it from the examples.
 > 
-> IIUC we could even constify this pointer.
+> Signed-off-by: Arınç ÜNAL <arinc.unal@arinc9.com>
+> ---
+>  Documentation/devicetree/bindings/net/qca,ar71xx.yaml | 1 -
+>  1 file changed, 1 deletion(-)
+> 
 
-Good point.  Protecting the pointer itself is a bit gross, but it is a nice
-stopgap until the callbacks are gone.  I'll fold this in.  Thanks!
-
-  extern const struct kvm_mips_callbacks * const kvm_mips_callbacks;
+Acked-by: Rob Herring <robh@kernel.org>
