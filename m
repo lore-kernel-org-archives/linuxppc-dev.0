@@ -4,71 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7FA4C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 06:07:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32207C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 06:23:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN5Fg0sPCz3bfm
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:07:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NN5bm3qP8z3bfw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 17:23:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mVx70s5s;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=benboeckel.net header.i=@benboeckel.net header.a=rsa-sha256 header.s=fm1 header.b=k1flX33X;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=F3i2JKvW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::530; helo=mail-pg1-x530.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=benboeckel.net (client-ip=66.111.4.25; helo=out1-smtp.messagingengine.com; envelope-from=me@benboeckel.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mVx70s5s;
+	dkim=pass (2048-bit key; unprotected) header.d=benboeckel.net header.i=@benboeckel.net header.a=rsa-sha256 header.s=fm1 header.b=k1flX33X;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=F3i2JKvW;
 	dkim-atps=neutral
-Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+X-Greylist: delayed 576 seconds by postgrey-1.36 at boromir; Thu, 01 Dec 2022 14:55:52 AEDT
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com [66.111.4.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN5Dd6Zl6z2ybK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 17:06:25 +1100 (AEDT)
-Received: by mail-pg1-x530.google.com with SMTP id v3so798517pgh.4
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Nov 2022 22:06:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lMH0ATn2kfqCA2p4BpkUcziG4fvRGUL36gS2KjfmHyU=;
-        b=mVx70s5s37n/6iFRtXW3+N2c7PKWUE14EYB1T5AXO7JmPa1xICx/BWilXM7liDl4ln
-         7vheD9ob+xb9XlTlXAA+MjkmvZJS5rDK7mrPMK2l9CCCFJfrJ+hTgsoTUUECCeMXp0jP
-         3GlEsQiK80wYmr4ZpgvWUanLpa4fkzkobZK9yaKNF0yQHP2oYl6eH9B430dCDR6weAdu
-         z503M5enZMuGRlp7oDCXT3QfJ/SrZzI87+NpGOxye+FEz8CWyJuVfTkJvs46RTlnrYI4
-         ErrGKmr24kHmI7/YwYVwBwngEkNbLWbIfFB9/Gy6kzdHX4/8iHHgkuDDqzjylbG4FPNG
-         zmxg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:references:from:subject:cc:to:message-id:date
-         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=lMH0ATn2kfqCA2p4BpkUcziG4fvRGUL36gS2KjfmHyU=;
-        b=Lq9GteXaZB/s9GS7N0U6KnixO9eAInC360ZNHG+pSsg+0IEompf3cnFt11BXZJSIFw
-         yN0QLw4BPSIhv5QysZu9MkLL+8kkMifMHwG/ByC02yBGDdcv78/z5smAwronTzXVAwop
-         q+sd31e1ZwxBMikwlCjQrVJpDB9qoVketoLLfsixU0kvEHZoy9tCCgoGxcXstJPGsy7S
-         oS02xZ+ePqN27f9VtPJWymyP3mbRRqSjnD64e6y049nZ5Pqv/L6rlwcuzMLbYdMj343F
-         FOLRrSVwLstCQYH1lJUBxQ0sk5yolH2jCwp9YSQw9RYMcoMRB/7KxnNL2VpZ+Cc9c1vj
-         jWzA==
-X-Gm-Message-State: ANoB5pl93CKv7IPy/HiX+r6boQssi5vy7vzT4GzWymDKh2xG84uwAdjd
-	VS6iWHPh/yDj5JXXF30RgSA=
-X-Google-Smtp-Source: AA0mqf4Wjj3l5HxopWPdIVe688Ysw/iFKRIsVINi313YGWq6D0wEOVAfZSFkebzE481/lNYL5VolYg==
-X-Received: by 2002:a05:6a00:2:b0:576:14a5:359 with SMTP id h2-20020a056a00000200b0057614a50359mr2374514pfk.26.1669874782542;
-        Wed, 30 Nov 2022 22:06:22 -0800 (PST)
-Received: from localhost ([61.68.162.196])
-        by smtp.gmail.com with ESMTPSA id jc18-20020a17090325d200b001891a17bd93sm2618454plb.43.2022.11.30.22.06.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 30 Nov 2022 22:06:21 -0800 (PST)
-Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 01 Dec 2022 16:06:16 +1000
-Message-Id: <COQ97E42D81J.FQM2WRVT7HIY@bobo>
-To: "Crystal Wood" <oss@buserror.net>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC PATCH] Disable Book-E KVM support?
-From: "Nicholas Piggin" <npiggin@gmail.com>
-X-Mailer: aerc 0.13.0
-References: <20221128043623.1745708-1-npiggin@gmail.com>
- <3d1a6cde6c8e108be77fa4a47666e14d06a91d74.camel@buserror.net>
-In-Reply-To: <3d1a6cde6c8e108be77fa4a47666e14d06a91d74.camel@buserror.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN2L016YMz30R8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 14:55:52 +1100 (AEDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.nyi.internal (Postfix) with ESMTP id 8C7DF5C00C1;
+	Wed, 30 Nov 2022 22:46:10 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Wed, 30 Nov 2022 22:46:10 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=benboeckel.net;
+	 h=cc:cc:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm1; t=1669866370; x=1669952770; bh=IE
+	SJHOtcUSkXCEqZm4KWkM9Tzwy8cx/dN5nGJgfkLqE=; b=k1flX33XzZRRIa3rZE
+	tsZ4vckUNst/LFgq6QK7J5TfgGd0DnaNrZ/KihsGoNY5jvS7ZMGOsVHFuex2uZex
+	6U/Zs/3pEQPGz/Rzy7MTuFSkW4QOb1Kso+XXy1R52xqcv4ZKFk+yzBHtzgP2NzYN
+	NQ3f3aCDJCYpKKTe5ogNBvcuUKg3duL7IkC1mJWcMgKebpdg/CdOO496dwjQMe24
+	ctLKE7SlSZWWTBsC5FZ8gWMWrOth45SD+cPUqyDJfE5xb7Hr+PWF4iF2UbwWYeuS
+	4hiS5H2eNj3mmtV30vx1Zjo3325IUyumSfQH3RWKBMBH740l8vvkxZtEw0gDSVCm
+	lviA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+	:feedback-id:from:from:in-reply-to:in-reply-to:message-id
+	:mime-version:references:reply-to:sender:subject:subject:to:to
+	:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm1; t=1669866370; x=1669952770; bh=IESJHOtcUSkXCEqZm4KWkM9Tzwy8
+	cx/dN5nGJgfkLqE=; b=F3i2JKvWwHf9O9SeM58LC+fDBrkr5Z1r3FReoTT05GhZ
+	KtNFZkmdgyUlCJThjYgzyDjctMHRmTDb145k9/Zt6BiuC0MuZOyJs4MFMSLTQFNv
+	0uU3JQpdO/5xZ9HHkLjkZ9KWgweSMcUKHGajlhIsq29uzv6jQpVgLa1XKQBXYqYF
+	svXG4zMkm8NbHwB+2AgsYpeo6BfsvRdHpfu5Gvh6cEIDuaUoXpuLiOD1DwaMBhrV
+	ReXnbXFIHtfDPMQLTPG8bhwXENWvBgjYQIu+GcyBmRsTCSWqbnqZLBMiWTXiNs5F
+	9hmeWLA8bYC1/CNNyQvjgixT5SK5gD1FqJSCPpJ9VA==
+X-ME-Sender: <xms:gSOIYzrtNsFK4azwOefuQEHzCsDdqZsiXfcEYmvodhbqD4L2hbYAZQ>
+    <xme:gSOIY9o58-I4dkg5qGrsKMhcqrTqAvAYkiVt-ptVlF7V-e29pOcQdHHY60jJl1FJA
+    di7DikeECYWZJyefOo>
+X-ME-Received: <xmr:gSOIYwPW4X8BdSCu1hTAxWUhWznDwgFRNqb4jpR8sh7BDi6m057tmuCR4GDcDo5nY2gVyMQ8ItgSvK1TtKsoOGCWAPDanCIg1ORs>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrtdeggdeigecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvvefukfhfgggtuggjfgesthdtredttderjeenucfhrhhomhepuegvnhcu
+    uehovggtkhgvlhcuoehmvgessggvnhgsohgvtghkvghlrdhnvghtqeenucggtffrrghtth
+    gvrhhnpeffleegffevleekffekheeigfdtleeuvddtgffhtddvfefgjeehffduueevkedv
+    vdenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehmvg
+    essggvnhgsohgvtghkvghlrdhnvght
+X-ME-Proxy: <xmx:giOIY249FoMgjmgBy8iZTsDxXHAdJ31kwUiqJGtMCZUaqFN-7i8sYg>
+    <xmx:giOIYy7AVA08T-sADk_N2-1pcrE84kvyJJQw8VP4mZpWoqpG-Zjk4w>
+    <xmx:giOIY-jDDWFaCqF27SV4S7jybNr1M2UxV1x4dNoEj4OeQfo4nNbmhw>
+    <xmx:giOIY_y5Q_Fj--2gXXFj2JnWgr1NOE4A9ltKtUVJMmIr-OYJbRj1XQ>
+Feedback-ID: iffc1478b:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 30 Nov 2022 22:46:09 -0500 (EST)
+Date: Wed, 30 Nov 2022 22:46:09 -0500
+From: Ben Boeckel <me@benboeckel.net>
+To: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/3] block: sed-opal: keyring support for SED keys
+Message-ID: <Y4gjgf2xHOYTVnSc@farprobe>
+References: <20221129232506.3735672-1-gjoyce@linux.vnet.ibm.com>
+ <20221129232506.3735672-4-gjoyce@linux.vnet.ibm.com>
+ <c78edd60-b6ae-6ec0-9ce4-73b9a92b9b32@suse.de>
+ <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
+User-Agent: Mutt/2.2.7 (2022-08-07)
+X-Mailman-Approved-At: Thu, 01 Dec 2022 17:22:05 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,67 +98,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Bernhard Beschow <shentey@gmail.com>, qemu-ppc@nongnu.org, Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: axboe@kernel.dk, nayna@linux.ibm.com, linux-block@vger.kernel.org, keyrings@vger.kernel.org, Hannes Reinecke <hare@suse.de>, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu Dec 1, 2022 at 6:45 AM AEST, Crystal Wood wrote:
-> On Mon, 2022-11-28 at 14:36 +1000, Nicholas Piggin wrote:
-> > BookE KVM is in a deep maintenance state, I'm not sure how much testing
-> > it gets. I don't have a test setup, and it does not look like QEMU has
-> > any HV architecture enabled. It hasn't been too painful but there are
-> > some cases where it causes a bit of problem not being able to test, e.g=
-.,
-> >=20
-> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2022-November/251452.ht=
-ml
-> >=20
-> > Time to begin removal process, or are there still people using it? I'm
-> > happy to to keep making occasional patches to try keep it going if
-> > there are people testing upstream. Getting HV support into QEMU would
-> > help with long term support, not sure how big of a job that would be.
->
-> Not sure what you mean about QEMU not having e500 HV support?  I don't kn=
-ow if
-> it's bitrotted, but it's there.
->
-> I don't know whether anyone is still using this, but if they are, it's
-> probably e500mc and not e500v2 (which involved a bunch of hacks to get al=
-most-
-> sorta-usable performance out of hardware not designed for virtualization)=
-.  I
-> do see that there have been a few recent patches on QEMU e500 (beyond the
-> treewide cleanup type stuff), though I don't know if they're using KVM.  =
-CCing
-> them and the QEMU list.
+On Wed, Nov 30, 2022 at 09:19:25 -0600, Greg Joyce wrote:
+> On Wed, 2022-11-30 at 08:00 +0100, Hannes Reinecke wrote:
+> > On 11/30/22 00:25, gjoyce@linux.vnet.ibm.com wrote:
+> > > +	case OPAL_KEYRING:
+> > > +		/* the key is in the keyring */
+> > > +		ret = read_sed_opal_key(OPAL_AUTH_KEY, key->key,
+> > > OPAL_KEY_MAX);
+> > > +		if (ret > 0) {
+> > > +			if (ret > 255) {
+> > 
+> > Why is a key longer than 255 an error?
+> > If this is a requirement, why not move the check into
+> > read_sed_opal_key() such that one only has to check for
+> > ret < 0 on errors?
+> 
+> The check is done here because the SED Opal spec stipulates 255 as the
+> maximum key length. The key length (key->key_len) in the existing data
+> structures is __u8, so a length greater than 255 can not be conveyed.
+> For defensive purposes, I though it best to check here.
 
-Well I could be wrong about it, but it doesn't look it implements LPIDR
-or GSPRs. The only use of MSR_GS seems to be a couple of places
-including an instruction that aborts because no HV implementation. It
-does have an MMU index selector but before d764184ddb22 that apparently
-didn't really work.
+Perhaps naming it `OPAL_MAX_KEY_LEN` would help clarify this?
 
-QEMU probably should be able to run BookE KVM in PR mode at least.
-
-> I have an e6500 I could occasionally test on, if it turns out people do s=
-till
-> care about this.  Don't count me as the use case, though. :-)
-
-Do you have a KVM setup on it? And it works with recentish upstream?
-
-> FWIW, as far as the RECONCILE_IRQ_STATE issue, that used to be done in
-> kvmppc_handle_exit(), but was moved in commit 9bd880a2c882 to be "cleaner=
- and
-> faster". :-P
-
-Yeah that was probably reasonable at the time, that was the common way
-to do it and thie patch avoids an unnecessary expensive write to MSR
-(which my patch retains).
-
-I think it must have always clobbered r4 though. It's possible it wasn't
-tested with the right build option, or the right tracer active, or maybe
-the call was simple enough that it was lucky and the compiler didn't use
-r4. Easy bug to miss when it's not obvious that macro can call into C.
-
-Thanks,
-Nick
+--Ben
