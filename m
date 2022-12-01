@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F1F7C43217
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 08:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63F5BC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 08:02:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NN7nv6j2Xz3fZ4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 19:01:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NN7pT6qMZz3fdx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 19:02:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN7hy72Wdz3bfZ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 18:57:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NN7j30lbtz3cFv
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 18:57:42 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4NN7hM5MFCz9sZb;
-	Thu,  1 Dec 2022 08:57:07 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4NN7hN1YMnz9sZm;
+	Thu,  1 Dec 2022 08:57:08 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fi5NXFaCiC1k; Thu,  1 Dec 2022 08:57:07 +0100 (CET)
+	with ESMTP id qodRSHBAPw_y; Thu,  1 Dec 2022 08:57:08 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4NN7hD4Pqzz9sZm;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4NN7hD4RGyz9sb1;
 	Thu,  1 Dec 2022 08:57:00 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 82C578B781;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 837DB8B788;
 	Thu,  1 Dec 2022 08:57:00 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 7OCGxiDEj4Hh; Thu,  1 Dec 2022 08:57:00 +0100 (CET)
+	with ESMTP id oDVJLje2fhiV; Thu,  1 Dec 2022 08:57:00 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CBCE08B783;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D81E28B78B;
 	Thu,  1 Dec 2022 08:56:59 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2B17uvHa130872
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2B17uuOg130820
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Thu, 1 Dec 2022 08:56:57 +0100
+	Thu, 1 Dec 2022 08:56:56 +0100
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2B17uvZZ130871;
-	Thu, 1 Dec 2022 08:56:57 +0100
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2B17uuEr130819;
+	Thu, 1 Dec 2022 08:56:56 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-Subject: [PATCH v1 10/10] powerpc/bpf/32: perform three operands ALU operations
-Date: Thu,  1 Dec 2022 08:56:35 +0100
-Message-Id: <f3a39308117cddfb98103ccde9acf772e9f2ed36.1669881248.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 04/10] powerpc/bpf/32: Only set a stack frame when necessary
+Date: Thu,  1 Dec 2022 08:56:29 +0100
+Message-Id: <01949e27523916850fe17e87e774c08b9ffea4fe.1669881248.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <fa025537f584599c0271fc129c5cf4f57fbe7505.1669881248.git.christophe.leroy@csgroup.eu>
 References: <fa025537f584599c0271fc129c5cf4f57fbe7505.1669881248.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1669881391; l=2064; s=20211009; h=from:subject:message-id; bh=x9e4wsb7bwKsXC6S+KcXmVuzQBBX7AhIURwS3dX/rR4=; b=XsN+vrNJB5stqWsxL7BjReZg+9Ci3BiT40M67fhpNUf77tkXWOUxpOfPm8CKFXMi9eyiYb3IVTok HDoMyJP3CSO/U9BCU4ujNUEnj3SkVPGu4o3qJAHEzf2u9z5CzwmD
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1669881390; l=2645; s=20211009; h=from:subject:message-id; bh=Th6pI9aT8WZokbYGGkcX3VXZ2tYVta6n6C2EO5biRt0=; b=FrTWCdvOwq1ZVy8tre7lNePq9iNu8Qn888IQ1HZ47f2BHpdWUijFnHo6zptT4cnDp3kRswEakAg3 qd8Ui6ZLAg8OLOT4WG6zbJrYOVSAGdcDTbCGqHWYeh3hZWcTOCfp
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,58 +72,70 @@ Cc: Hao Luo <haoluo@google.com>, Daniel Borkmann <daniel@iogearbox.net>, Song Li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When an ALU instruction is preceded by a MOV instruction
-that just moves a source register into the destination register of
-the ALU, replace that MOV+ALU instructions by an ALU operation
-taking the source of the MOV as second source instead of using its
-destination.
+Until now a stack frame was set at all time due to the need
+to keep tail call counter in the stack.
 
-Before the change, code could look like the following, with
-superfluous separate register move (mr) instructions.
+But since commit fa025537f584 ("powerpc/bpf/32: Fix Oops on tail call
+tests"), the tail call counter is passed via register r4. It is
+therefore not necessary anymore to have a stack frame for that.
 
-  70:	7f c6 f3 78 	mr      r6,r30
-  74:	7f a5 eb 78 	mr      r5,r29
-  78:	30 c6 ff f4 	addic   r6,r6,-12
-  7c:	7c a5 01 d4 	addme   r5,r5
+Just like PPC64, implement bpf_has_stack_frame() and only sets the frame
+when needed.
 
-With this commit, addition instructions take r30 and r29 directly.
-
-  70:	30 de ff f4 	addic   r6,r30,-12
-  74:	7c bd 01 d4 	addme   r5,r29
+The difference with PPC64 is that PPC32 doesn't have a redzone, so
+the stack is required as soon as non volatile registers are used or
+when tail call count is set up.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/net/bpf_jit_comp32.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/net/bpf_jit_comp32.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index c45db3d280b2..4b8d3634dc04 100644
+index 4e6caee9c98a..7f54d37bede6 100644
 --- a/arch/powerpc/net/bpf_jit_comp32.c
 +++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -290,6 +290,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+@@ -79,6 +79,20 @@ static int bpf_jit_stack_offsetof(struct codegen_context *ctx, int reg)
+ #define SEEN_NVREG_FULL_MASK	0x0003ffff /* Non volatile registers r14-r31 */
+ #define SEEN_NVREG_TEMP_MASK	0x00001e01 /* BPF_REG_5, BPF_REG_AX, TMP_REG */
  
- 	for (i = 0; i < flen; i++) {
- 		u32 code = insn[i].code;
-+		u32 prevcode = i ? insn[i - 1].code : 0;
- 		u32 dst_reg = bpf_to_ppc(insn[i].dst_reg);
- 		u32 dst_reg_h = dst_reg - 1;
- 		u32 src_reg = bpf_to_ppc(insn[i].src_reg);
-@@ -308,6 +309,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 		u32 tmp_idx;
- 		int j;
- 
-+		if (i && (BPF_CLASS(code) == BPF_ALU64 || BPF_CLASS(code) == BPF_ALU) &&
-+		    (BPF_CLASS(prevcode) == BPF_ALU64 || BPF_CLASS(prevcode) == BPF_ALU) &&
-+		    BPF_OP(prevcode) == BPF_MOV && BPF_SRC(prevcode) == BPF_X &&
-+		    insn[i - 1].dst_reg == insn[i].dst_reg && insn[i - 1].imm != 1) {
-+			src2_reg = bpf_to_ppc(insn[i - 1].src_reg);
-+			src2_reg_h = src2_reg - 1;
-+			ctx->idx = addrs[i - 1] / 4;
-+		}
++static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
++{
++	/*
++	 * We only need a stack frame if:
++	 * - we call other functions (kernel helpers), or
++	 * - we use non volatile registers, or
++	 * - we use tail call counter
++	 * - the bpf program uses its stack area
++	 * The latter condition is deduced from the usage of BPF_REG_FP
++	 */
++	return ctx->seen & (SEEN_FUNC | SEEN_TAILCALL | SEEN_NVREG_FULL_MASK) ||
++	       bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP));
++}
 +
- 		/*
- 		 * addrs[] maps a BPF bytecode address into a real offset from
- 		 * the start of the body code.
+ void bpf_jit_realloc_regs(struct codegen_context *ctx)
+ {
+ 	unsigned int nvreg_mask;
+@@ -121,7 +135,8 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+ 
+ #define BPF_TAILCALL_PROLOGUE_SIZE	4
+ 
+-	EMIT(PPC_RAW_STWU(_R1, _R1, -BPF_PPC_STACKFRAME(ctx)));
++	if (bpf_has_stack_frame(ctx))
++		EMIT(PPC_RAW_STWU(_R1, _R1, -BPF_PPC_STACKFRAME(ctx)));
+ 
+ 	if (ctx->seen & SEEN_TAILCALL)
+ 		EMIT(PPC_RAW_STW(_R4, _R1, bpf_jit_stack_offsetof(ctx, BPF_PPC_TC)));
+@@ -174,7 +189,8 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
+ 		EMIT(PPC_RAW_LWZ(_R0, _R1, BPF_PPC_STACKFRAME(ctx) + PPC_LR_STKOFF));
+ 
+ 	/* Tear down our stack frame */
+-	EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME(ctx)));
++	if (bpf_has_stack_frame(ctx))
++		EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME(ctx)));
+ 
+ 	if (ctx->seen & SEEN_FUNC)
+ 		EMIT(PPC_RAW_MTLR(_R0));
 -- 
 2.38.1
 
