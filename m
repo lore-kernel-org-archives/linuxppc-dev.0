@@ -4,51 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3072AC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 10:41:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BA50C43217
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 15:37:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNCKQ2v9sz3bdV
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Dec 2022 21:40:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNKv93Ls1z3bg9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 02:37:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mtH77xWq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G9bLF70K;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNCJP0L9Xz30QQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Dec 2022 21:40:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mtH77xWq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=G9bLF70K;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NNCJN4W7qz4xFy;
-	Thu,  1 Dec 2022 21:40:04 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1669891204;
-	bh=KTDVN/7lIjIrER/XXkOz9H8eWtf2nxvkUgRAGM5il/U=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=mtH77xWqReqw3bUURmWOaOMUgI1fnhJeqxa/jFrTE2AiPxZgRHJOdcrEogd7m6t+K
-	 hSD5E6U7i+ckFXkoXJyBCf9GV9mhqfTh6a2EhgZiI/SRGv0KENZChmJYXHVWQJ6yRk
-	 6YrETuvLSFH3GLBrIHlAqPWESejuap3arDVMjfILKy+BGr1aGCqxlVdA7HLC4kSTkB
-	 h2Fc1q1HQQmg4WuwySsEcmNguqQitD5GKa/mEHq6/vneU8YBjQFOfp9St3mhaor2x1
-	 6DM3kpUr8F1g1c/fjGREENP6GL+7W1pjUv9OMijMtZXQ/VLwrb7rHigKdo6xpjkop7
-	 l5PmypY+0tAfg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>, Pali
- =?utf-8?Q?Roh=C3=A1r?= <pali@kernel.org>
-Subject: Re: [PATCH 5/5] powerpc: dts: remove label = "cpu" from DSA dt-binding
-In-Reply-To: <20221130141040.32447-6-arinc.unal@arinc9.com>
-References: <20221130141040.32447-1-arinc.unal@arinc9.com>
- <20221130141040.32447-6-arinc.unal@arinc9.com>
-Date: Thu, 01 Dec 2022 21:40:03 +1100
-Message-ID: <87a647s8zg.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNKt211RKz3bY1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 02:36:09 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2B1FOf0M013550;
+	Thu, 1 Dec 2022 15:35:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : reply-to : to : cc : date : in-reply-to : references : content-type
+ : mime-version : content-transfer-encoding; s=pp1;
+ bh=Xk/l0U+Cz7PYE5CVeOcthMKdyGJyTMeO5xaBAtu53ps=;
+ b=G9bLF70KykG6TWmEzNzjyCBteyzp0RxfqDaqnZ6XSjHmqgQxXRg2DOwQjNcKtmxy2VMl
+ iMjwSRJ1NVgnWCt4vLTrPOVLoITg2qWeqe3EjxD/R6vCXtYH0nrwEitQRu/gPq6kthfD
+ LT3MymtQqzy+xnXtZB1fvAw1GcmImVtrRKbJ8mmfCycuuB06FkGvAsBhOQFiJQauOPZ8
+ TX6OaflzchNzwQLdjlUvTavVI+wS7PgS2icIG70ws/i/Ke3Y9u2qTVKNEdnn6d81kVRj
+ xHGjlSqFTIhLyyS/xtwUnCQYIBeVup+MbpRL+nuHHCwO1l9xU6/5NIZxCYICZdf+c5YL og== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3m6xvs0bgs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 01 Dec 2022 15:35:55 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+	by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2B1FLlJ4018218;
+	Thu, 1 Dec 2022 15:30:54 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
+	by ppma01dal.us.ibm.com with ESMTP id 3m3aeanw4x-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 01 Dec 2022 15:30:54 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2B1FTcEa18940552
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 1 Dec 2022 15:29:38 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4BDDB5805A;
+	Thu,  1 Dec 2022 15:29:38 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BFF7C5805D;
+	Thu,  1 Dec 2022 15:29:36 +0000 (GMT)
+Received: from rhel-laptop.ibm.com (unknown [9.160.99.100])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  1 Dec 2022 15:29:36 +0000 (GMT)
+Message-ID: <044c90dc7feb3959b5740154addc230ba9a57216.camel@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/3] block: sed-opal: keyring support for SED keys
+From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+To: Ben Boeckel <me@benboeckel.net>
+Date: Thu, 01 Dec 2022 09:29:36 -0600
+In-Reply-To: <Y4gjgf2xHOYTVnSc@farprobe>
+References: <20221129232506.3735672-1-gjoyce@linux.vnet.ibm.com>
+	 <20221129232506.3735672-4-gjoyce@linux.vnet.ibm.com>
+	 <c78edd60-b6ae-6ec0-9ce4-73b9a92b9b32@suse.de>
+	 <2133c00e5e7c53c458dbb709204c955bac8bee88.camel@linux.vnet.ibm.com>
+	 <Y4gjgf2xHOYTVnSc@farprobe>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: RN6-zXpnA45xPOTAP4vXVTMBnrGVxftM
+X-Proofpoint-GUID: RN6-zXpnA45xPOTAP4vXVTMBnrGVxftM
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-01_11,2022-12-01_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
+ lowpriorityscore=0 phishscore=0 mlxlogscore=999 spamscore=0 mlxscore=0
+ clxscore=1011 suspectscore=0 bulkscore=0 malwarescore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2210170000
+ definitions=main-2212010113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,55 +94,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+Reply-To: gjoyce@linux.vnet.ibm.com
+Cc: axboe@kernel.dk, nayna@linux.ibm.com, linux-block@vger.kernel.org, keyrings@vger.kernel.org, Hannes Reinecke <hare@suse.de>, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ar=C4=B1n=C3=A7 =C3=9CNAL <arinc.unal@arinc9.com> writes:
-> This is not used by the DSA dt-binding, so remove it from all devicetrees.
->
-> Signed-off-by: Ar=C4=B1n=C3=A7 =C3=9CNAL <arinc.unal@arinc9.com>
-> ---
->  arch/powerpc/boot/dts/turris1x.dts | 2 --
->  1 file changed, 2 deletions(-)
+On Wed, 2022-11-30 at 22:46 -0500, Ben Boeckel wrote:
+> On Wed, Nov 30, 2022 at 09:19:25 -0600, Greg Joyce wrote:
+> > On Wed, 2022-11-30 at 08:00 +0100, Hannes Reinecke wrote:
+> > > On 11/30/22 00:25, gjoyce@linux.vnet.ibm.com wrote:
+> > > > +	case OPAL_KEYRING:
+> > > > +		/* the key is in the keyring */
+> > > > +		ret = read_sed_opal_key(OPAL_AUTH_KEY, key-
+> > > > >key,
+> > > > OPAL_KEY_MAX);
+> > > > +		if (ret > 0) {
+> > > > +			if (ret > 255) {
+> > > 
+> > > Why is a key longer than 255 an error?
+> > > If this is a requirement, why not move the check into
+> > > read_sed_opal_key() such that one only has to check for
+> > > ret < 0 on errors?
+> > 
+> > The check is done here because the SED Opal spec stipulates 255 as
+> > the
+> > maximum key length. The key length (key->key_len) in the existing
+> > data
+> > structures is __u8, so a length greater than 255 can not be
+> > conveyed.
+> > For defensive purposes, I though it best to check here.
+> 
+> Perhaps naming it `OPAL_MAX_KEY_LEN` would help clarify this?
+> 
+> --Ben
 
-Adding Pali to Cc.
+I'm not averse to changing it because it would be clearer. My concern
+is that it's been OPAL_KEY_MAX for 5+ years (the original SED Opal
+commit). Unless there is strong consensus to change it, I'm going to
+leave it as the original name.
 
-These were only recently updated in commit:
+-Greg
 
-  8bf056f57f1d ("powerpc: dts: turris1x.dts: Fix labels in DSA cpu port nod=
-es")
-
-Which said:
-
-  DSA cpu port node has to be marked with "cpu" label.
-
-But if the binding doesn't use them then I'm confused why they needed to
-be updated.
-
-cheers
-
-
-> diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/t=
-urris1x.dts
-> index 045af668e928..3841c8d96d00 100644
-> --- a/arch/powerpc/boot/dts/turris1x.dts
-> +++ b/arch/powerpc/boot/dts/turris1x.dts
-> @@ -147,7 +147,6 @@ ports {
->=20=20
->  					port@0 {
->  						reg =3D <0>;
-> -						label =3D "cpu";
->  						ethernet =3D <&enet1>;
->  						phy-mode =3D "rgmii-id";
->=20=20
-> @@ -184,7 +183,6 @@ port@5 {
->=20=20
->  					port@6 {
->  						reg =3D <6>;
-> -						label =3D "cpu";
->  						ethernet =3D <&enet0>;
->  						phy-mode =3D "rgmii-id";
->=20=20
-> --=20
-> 2.34.1
