@@ -4,129 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99081C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 15:38:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3C42C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 17:48:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSdb92y2xz3bjr
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 02:38:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=pfMvuv5h;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe12::630; helo=eur02-db5-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=pfMvuv5h;
-	dkim-atps=neutral
-Received: from EUR02-DB5-obe.outbound.protection.outlook.com (mail-db5eur02on20630.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe12::630])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NP0mH2H3pz3cNg
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 04:48:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.171; helo=mail-qt1-f171.google.com; envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-qt1-f171.google.com (mail-qt1-f171.google.com [209.85.160.171])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSdZ35hP8z3bfQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2022 02:37:13 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Y9kphbdSsZ9b0dft95gPArwf4wtGQ3yQtg4ZSBu4GRPIZGSkv3eUZAgCK9MlqG3X07GLbeUL8rqytv1pN+xpmnfX0hlvEJCAbI6bMYb16ML5eqnOUIhIcMM6flh4N1XSxowsWfTOprJGmYa1O/OJcLLyQp2idEdIVz1IM2GIPrs0MkQfbJb/4H24U3b38jajlSDSkJBFpbfiN4BInwckfkPecB0wTsujii4I8nmv4et83pBQBz9cmypH+EiOOpMWj2IdEIR7VSGs2ko6fp8k7IRIXw99KPfwkFwsi3iB7QY8R1NolBgg9ox/6+R80EfYInqG7PnDZslvvxDRfCCl1Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=5I5xcRaF8L3+CpoQNYe4Us5Sbm9Pb+Sf5SDlAS2uY14=;
- b=hDB+iTJD/3F3lDncOB0s1Ke1BDv9Xf1fFzY2ZDrMpHQWTmH31jI2Ij/9UFnsS6aIvdJCPtPBe+uggOGs+FAOQnUEhgzqNrRKB+l5yG2K7Zsr2D4ZPsZGOA0wyxvMZ52spxJsKPYADFGRdReDBmmHAnXf+klV87lxB/XtGvRareADvS+Iy/VGwaloEExZA4Q+8d3pRXzuh0irNYWJyiwO4geS93kVXsfbcFCp4KseZ28Sqrn4R2RRc8WNLL5nNyvM3fB6xxhHGnMBcDVqJJVmmcrH9dD8WmlkBfU3XLGlDm5vstUz1BaxbilThaShYFX2goH2cpVIUaS6kONvPlQAGA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
- dkim=pass header.d=seco.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5I5xcRaF8L3+CpoQNYe4Us5Sbm9Pb+Sf5SDlAS2uY14=;
- b=pfMvuv5hx16lG4s5p8KSw/6mv9X+OxTz7TrpAUVhQLdSZHEWRc3/cJrkCeM/jvJUmH12NfkjxeXU3CHIPiBbT4grazA0uEuPE2miPI4d/8m1ZTzuQ2xppPLaenvN7zF6nGDNdQ8NhcB3iwCma+peJ/7cGAW1IFioGygBUYrO9DFjpeZLftpVrztarHFasBCHE49//yZA5teoWHJe3sRzveorG0tjgL6CyZRZd74KUQSUxSY0u31ejWwmQeI1ImLOQSToPRNXnDn90qd8PrTqtaL7JbXF/YMc+I6s3JuUNW2p7CWGZCLjrds8mEPMFFbx6b79luUbry+Mu24I9CaKNw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=seco.com;
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
- by PR3PR03MB6665.eurprd03.prod.outlook.com (2603:10a6:102:7d::6) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5880.11; Thu, 8 Dec
- 2022 15:36:53 +0000
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::2b95:1fe4:5d8f:22fb]) by DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::2b95:1fe4:5d8f:22fb%7]) with mapi id 15.20.5880.014; Thu, 8 Dec 2022
- 15:36:52 +0000
-Message-ID: <8b42763d-5fc3-3853-c421-227494c0144a@seco.com>
-Date: Thu, 8 Dec 2022 10:36:45 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
-Subject: Re: [PATCH v8 4/9] phy: fsl: Add Lynx 10G SerDes driver
-Content-Language: en-US
-To: Stephen Boyd <sboyd@kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>,
- Vinod Koul <vkoul@kernel.org>, linux-phy@lists.infradead.org
-References: <20221027191113.403712-1-sean.anderson@seco.com>
- <20221027191113.403712-5-sean.anderson@seco.com>
- <20221027230331.19C2FC433D6@smtp.kernel.org>
- <5f00ede6-10f5-c11c-ee21-54460c1f98b0@seco.com>
- <d13ff3b2-79f0-2a72-c9da-2c310c4e3bb8@seco.com>
- <20221101201020.B6180C433C1@smtp.kernel.org>
- <45463950-7a4f-758d-d6a1-b8fdf9bfd319@seco.com>
- <20221207021742.A3596C433C1@smtp.kernel.org>
-From: Sean Anderson <sean.anderson@seco.com>
-In-Reply-To: <20221207021742.A3596C433C1@smtp.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BL1PR13CA0092.namprd13.prod.outlook.com
- (2603:10b6:208:2b9::7) To DB9PR03MB8847.eurprd03.prod.outlook.com
- (2603:10a6:10:3dd::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NP0lk543fz3bNB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 04:48:01 +1100 (AEDT)
+Received: by mail-qt1-f171.google.com with SMTP id c15so6180538qtw.8
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Dec 2022 09:48:01 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=cZkrcSltncE8/ZuZoYv4b2d7hscDOxyl0JUDZPI6liw=;
+        b=0uC/XT5eJLS5/k/Eg9ICx6tV+SlfLqWiFpEH0IuytVNgl4md5LDthJudceB3SLhDHY
+         584/jRCncuJIwnDNjB3Xgkti0/Bsof9PHHx+AVTao9Uu4PrrQkdqCXe3ZMNd492s/cWt
+         dShDzZb8tkvqjyOf0yw2ZOUhXf62oQLXohy1fLigjxc//rX7w710RbRBA/1pm15BebvU
+         FwcYexzDkZXh0sqGR3SEXXnvZcx0I3rocvUH7VrCta5lgKh7/K8uWWzS/OjgBjc6tpJN
+         55TczQqgGtTZ4nEpR4cpK25sWXob13ZzQ1/sHdVDI0NjvXVesaXSSHGcqvLlKLXkklsG
+         BFAw==
+X-Gm-Message-State: ANoB5pkx+xRQ1VZsJ+k9whD3jaeypDBSLQ7/nQh3fX7FYbUzrq1B4u2a
+	WA88H7qYG22Nz+1BaI08dnCDDQrUsfMPeQ7vUtM=
+X-Google-Smtp-Source: AA0mqf51uIOWkjKSwhAqxTpfKMjsu42I0eiMVKrm0VEx7HQYTsVmieNicP3p40lc7YCyIthr+ry0hUYCl4VWsxspqf0=
+X-Received: by 2002:ac8:7dcb:0:b0:3a6:8dd0:4712 with SMTP id
+ c11-20020ac87dcb000000b003a68dd04712mr11196833qte.411.1670003278849; Fri, 02
+ Dec 2022 09:47:58 -0800 (PST)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DB9PR03MB8847:EE_|PR3PR03MB6665:EE_
-X-MS-Office365-Filtering-Correlation-Id: d3af0bde-735a-497b-448f-08dad93206b1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	bS0eFpD/eJrArJkz1QJLEL5ll4OnC5NZ+7stbRNu63YEBQC9SdeSGVqCVeVWUY0DfSj/dA53QCy58xdiNYGI415v4SIogMwPxeuZ0r9sKLv+HA8Ixkt9Yj3P4ZXV0DJoGb1/WE/vaMX7QtNiv7DSLOEGrUzZKUNhm4MjtEw54rRQeast33zZfFRr/0FJlN2d290vD/aevFEVC+k/j8zxsaMC4AqaQJKsB3CvcwHqypvBA0D9bfzBikhq5oWsr/yhlwkkRVL4dKpJWizxVfXCPvyamxZaZPnAhpFj7q5hA57x5iLLLbPLjicgJdBxWX4SobhuwcwsAEc9i8VyRedXACKXvkIz4nKZuUKLZFyPaLDYAOOnDhzWyIDr+5JVlbtVJADXxKrHaKVLuZelAhvBdwRs3GfaiNHsD3FqheV0j9Bf4wscnP6OeB2JPEOmoTaLNx6/yrYqQb2G+o7BgZVax+6J7kwZ9P6ZK/7EMgPf1Mw2pbOyWuS3qHT1DJiyat1gunV4m6vo5EjXQRW06W4cIHrY9TaAbpEJbBR9pL17P9yc7ANEoKJG+WjI4E/lUzoR25WzfCc3JVCuJ1OpaAqpSzrsL+4OCEpHVWvAVeYIIrLZJuGMzfNWf1hOr9r7WPnGp901IzUieazCM+thXb1pGUkrpN9XPa+gpM560Qv9F57fjPwLL7tzGfajuvx9OV9WpfMXMnsr+SLpkJxPwzBBmoUD61jrRUFtYDNYK5QjiEdBrwZVbd0iyw3sUrl/kabi5+WCODhSofpVMi3eRxzFfg==
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(396003)(39850400004)(346002)(366004)(376002)(136003)(451199015)(8936002)(83380400001)(31696002)(38100700002)(38350700002)(44832011)(7416002)(86362001)(5660300002)(4326008)(2906002)(8676002)(41300700001)(6512007)(53546011)(52116002)(26005)(6666004)(186003)(6506007)(316002)(110136005)(478600001)(6486002)(54906003)(66476007)(2616005)(66946007)(66556008)(31686004)(36756003)(43740500002)(45980500001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?SXYrZHhJTnltMTlnRnprbm8yNjRsMnh0dGlWa2JOK21WUWVSNldPRlB5V1VZ?=
- =?utf-8?B?c3Z6ajdzZkZBRDdpZkYvSjhaNkpLQVRiVHgyTE9KSnRyRmZxeHRyWUtxY0ox?=
- =?utf-8?B?dFdEcjI0T0JCSHRqTFo2aGtTeG5XWWZSamJ1SWJOMWJKUllWMHZpRHpCeFBI?=
- =?utf-8?B?YzEwNTVNUGNlMUQrU3U0bmZ5ZW9wa0pqS3FlNWdhR1BzSEVPTEE1MHBWSGRw?=
- =?utf-8?B?N3p2U3dHcENXMFdId1grOXZhbGp3dStBREoyYmlSVkMzdG45OWxiMmJHV2ZH?=
- =?utf-8?B?T1AySnllNDJDNGkxVitxZmE2Y2MvMlVwdGExLzZEaG1mejYyNGl2TGk3bVFL?=
- =?utf-8?B?RGRialRpNGNMcXJCNDg4SDMwQmhvWVJJMzBNazNReE12VWhxNUQraXRFZzNF?=
- =?utf-8?B?SE04MWQ3NldOQW1wbDBDVStVT2NoRFZ0RlAzU3dZNk5pd0Q0enk3bStEOG54?=
- =?utf-8?B?bjM1bGZNMFYwcjROQ1RVcGhPOXZ3N0JzUGFEbW94OWkyYUgyVEFveGQ3cHhT?=
- =?utf-8?B?dzdwdE9RbGJRSUZQU0tOdWgxblZYSzhVeUk2LzBudWthU3VuRHhPVVNNMkEy?=
- =?utf-8?B?Z2h3Q28rYjhmZHNTU3ArVnhwVHlNQmpMSTk2d2hZVjBhTVcwU0FRNmkxNU5n?=
- =?utf-8?B?bDZ0ZG1pL1pSdmNHcGU1SC9MM0tBc3IvMStGd08wWjJ4OGczYjRqajg4TkJO?=
- =?utf-8?B?RTR3WWtCUzNWMVhGbjZTZ0JhZ3hJOXJaWTkrY0ZiN0szWmRYUXh1OXFPVlhX?=
- =?utf-8?B?ZlBiaU1vVTlTdnkwd2lPUVAwNklaUkFtZzFOYTlpM0lTeFNQNVBKWDhTcEgz?=
- =?utf-8?B?QUYwN1ZLcml0ZnJNOEVLWm1jUGVUcGVpdmh0cjFpcG9aNTlHc2pPdlN0WEhG?=
- =?utf-8?B?NDVucGJrN3hmOUU2RGQzK2RzajVadCt5Rm0yTGgrQW5rVE5GZGFqWmZrZVRN?=
- =?utf-8?B?aGZjU3kvYTRaMVBENkV4NXFtZitteXRjYllBZW04ZDZmYmhmdGVwRkJDSWor?=
- =?utf-8?B?VTdKalQ3TUJGaHZsRzdIK251Q1RJRTFxV24vblJlTEY0WVY2Rk5GNCtGRG1o?=
- =?utf-8?B?Z3dpSW9maEVUdzRyVldSd0ZNYlFtbE9lZExaL2JoTWJRdnRaUi9WS0dSYTRo?=
- =?utf-8?B?cU1oRnE1OFJiQWZrSlIrMGFyNjUvU3ZENGhRQ1VKOFNaOXczY3JlcGhpUm9r?=
- =?utf-8?B?aStWYkdKOWEwM1FSMnpTMzRCNHo0NUpqYjl6WWIxK0JGWnBtS3oyREMxelBE?=
- =?utf-8?B?b1Y3ZXg5ci9PSU9yNXJ3SXlmbkJRLzlSOEVLRFgzM0xyRUNhUWx2eHByVGcy?=
- =?utf-8?B?KzZtOTZNYVpiVVJhR0pFSi9XU1RhSEc1MjE2UlNhdlJtbmY3dHNkM3hOV1l5?=
- =?utf-8?B?S1hmQ3Y0UmZmR3pWT2tzSVh3V0MrMzB2cHhFc1hFSzR1Y3krMkNvUEdYZEN0?=
- =?utf-8?B?R2FRWTc5NDVsaVR6MUtDSEpwa0lWTkxIZzFWTUtZSWJ3ZXVxZWxCZ3FvZE9E?=
- =?utf-8?B?djZXMzhKbkdHT1E4alFQZkJUbVJ6WGpXL2d6ZUppWlAwWnFoK3JLeDJvdWVn?=
- =?utf-8?B?RlJham02RUFPQmgreHMyb05tVkdUN3JvSTAxYkpHQUR0cVZ4R0tHZmNOb2Zm?=
- =?utf-8?B?aXprcnFGK3RCbVBJQXIvTHpuUi9xbFcrcjd2clYvSm5PTk5weStVbjllTFBG?=
- =?utf-8?B?a2J4Qk5BTDUwK1ArQkV5Rjk5NFpJNGREV00zREt4cmhXRkZsVm5SNTlFS2sz?=
- =?utf-8?B?OWNzQ25PVXgraThOa1pGRC8yaUZ5NjVtOFd1ZnFSdGkwVnVKN3JMcmRaMm1M?=
- =?utf-8?B?dkN3VEpaOWQxSytEM0lTTS84UWFlSkMxS0dpeW1MYjN5bzMvbXFmR1grTlFJ?=
- =?utf-8?B?cXptNDlkcE4weFN4VXhRNldZQm9zaDFpeFIzajdCM25aSDgyOFdDUUpRdUlT?=
- =?utf-8?B?MHNaZXlBcjVkMFl4c0hwc0ZSVlJ3ZlRiaDFqeTZ0UGluK3lqVkUxZjJNWVJT?=
- =?utf-8?B?ZDk1ZlkvUHNtWXVhUkp6QXFCV1RPeWc2WjZmT0NCYXdGTlV1Mm84V3BoNG5j?=
- =?utf-8?B?Zkx5bVNnMkpaTHduK0tTaFA1eURsdElKWVZuS2JsN2xBeEZvVlA5U0hQOUZ1?=
- =?utf-8?B?TkM5ZXI4R0FDOHlPU3VuMVBGUktqZThpbEhnMUt6U1A4ZDdvV0ZTYkVzNS9J?=
- =?utf-8?B?Tnc9PQ==?=
-X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d3af0bde-735a-497b-448f-08dad93206b1
-X-MS-Exchange-CrossTenant-AuthSource: DB9PR03MB8847.eurprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Dec 2022 15:36:52.6309
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Ao1fYTFHzGMMCBmau9NPohj3LEpseNLU3oFwa4CPl/UC6tDiVAHZwN9FdzqEy6xabul4INN15zQAU7C869jbxQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR03MB6665
+References: <20221127-snd-freeze-v8-0-3bc02d09f2ce@chromium.org> <20221127-snd-freeze-v8-2-3bc02d09f2ce@chromium.org>
+In-Reply-To: <20221127-snd-freeze-v8-2-3bc02d09f2ce@chromium.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 2 Dec 2022 18:47:47 +0100
+Message-ID: <CAJZ5v0jbKSTQopEoXW9FpqDmAqp6Pn=-Om5QP2-7ocuGdq8R9w@mail.gmail.com>
+Subject: Re: [PATCH v8 2/3] freezer: refactor pm_freezing into a function.
+To: Ricardo Ribalda <ribalda@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -138,33 +56,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Michael Turquette <mturquette@baylibre.com>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Daniel Baluta <daniel.baluta@nxp.com>, alsa-devel@alsa-project.org, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-hyperv@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, linux-efi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Joel Fernandes <joel@joelfernandes.org>, "K. Y. Srinivasan" <kys@microsoft.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Ard Biesheuvel <ardb@kernel.org>, sound-open-firmware@alsa-project.org, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wei Liu <wei.liu@kernel.org>, Takashi Iwai <tiwai@suse.com>, Dexuan Cui <decui@microsoft.com>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, Chromeos Kdump <chromeos-kdump@google.com>, xen-devel@lists.xenproject.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, Steven Rostedt <rostedt@goodmis.org>, Mark Brown <broonie@ker
+ nel.org>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Juergen Gross <jgross@suse.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, kexec@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/6/22 21:17, Stephen Boyd wrote:
-> Quoting Sean Anderson (2022-11-01 16:27:21)
->> On 11/1/22 16:10, Stephen Boyd wrote:
->> >> 
->> >> Oh, I remember why I did this. I need the reference clock for clk_hw_round_rate,
->> >> which is AFAICT the only correct way to implement round_rate.
->> >> 
->> > 
->> > Is the reference clk the parent of the clk implementing
->> > clk_ops::round_rate()?
->> 
->> Yes. We may be able to produce a given output with multiple reference
->> rates. However, the clock API provides no mechanism to say "Don't ask
->> for the parent clock to be rate X, you just tried it and the parent
->> clock can't support it." So instead, we loop over the possible reference
->> rates and pick the first one which the parent says it can round to.
->> 
-> 
-> Sorry, I'm lost. Why can't you loop over possible reference rates in
-> determine_rate/round_rate clk op here?
+On Thu, Dec 1, 2022 at 12:08 PM Ricardo Ribalda <ribalda@chromium.org> wrote:
+>
+> Add a way to let the drivers know if the processes are frozen.
+>
+> This is needed by drivers that are waiting for processes to end on their
+> shutdown path.
+>
+> Convert pm_freezing into a function and export it, so it can be used by
+> drivers that are either built-in or modules.
+>
+> Cc: stable@vger.kernel.org
+> Fixes: 83bfc7e793b5 ("ASoC: SOF: core: unregister clients and machine drivers in .shutdown")
+> Signed-off-by: Ricardo Ribalda <ribalda@chromium.org>
 
-This is what I do currently, but you need to have the parent clock to do
-so. With your suggested method, we never actually get a struct clk(_hw)
-which we can query for rate support.
+Why can't you export the original pm_freezing variable and why is this
+fixing anything?
 
---Sean
+> ---
+>  include/linux/freezer.h |  3 ++-
+>  kernel/freezer.c        |  3 +--
+>  kernel/power/process.c  | 24 ++++++++++++++++++++----
+>  3 files changed, 23 insertions(+), 7 deletions(-)
+>
+> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+> index b303472255be..3413c869d68b 100644
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -13,7 +13,7 @@
+>  #ifdef CONFIG_FREEZER
+>  DECLARE_STATIC_KEY_FALSE(freezer_active);
+>
+> -extern bool pm_freezing;               /* PM freezing in effect */
+> +bool pm_freezing(void);
+>  extern bool pm_nosig_freezing;         /* PM nosig freezing in effect */
+>
+>  /*
+> @@ -80,6 +80,7 @@ static inline int freeze_processes(void) { return -ENOSYS; }
+>  static inline int freeze_kernel_threads(void) { return -ENOSYS; }
+>  static inline void thaw_processes(void) {}
+>  static inline void thaw_kernel_threads(void) {}
+> +static inline bool pm_freezing(void) { return false; }
+>
+>  static inline bool try_to_freeze(void) { return false; }
+>
+> diff --git a/kernel/freezer.c b/kernel/freezer.c
+> index 4fad0e6fca64..2d3530ebdb7e 100644
+> --- a/kernel/freezer.c
+> +++ b/kernel/freezer.c
+> @@ -20,7 +20,6 @@ EXPORT_SYMBOL(freezer_active);
+>   * indicate whether PM freezing is in effect, protected by
+>   * system_transition_mutex
+>   */
+> -bool pm_freezing;
+>  bool pm_nosig_freezing;
+>
+>  /* protects freezing and frozen transitions */
+> @@ -46,7 +45,7 @@ bool freezing_slow_path(struct task_struct *p)
+>         if (pm_nosig_freezing || cgroup_freezing(p))
+>                 return true;
+>
+> -       if (pm_freezing && !(p->flags & PF_KTHREAD))
+> +       if (pm_freezing() && !(p->flags & PF_KTHREAD))
+>                 return true;
+>
+>         return false;
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index ddd9988327fe..8a4d0e2c8c20 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -108,6 +108,22 @@ static int try_to_freeze_tasks(bool user_only)
+>         return todo ? -EBUSY : 0;
+>  }
+>
+> +/*
+> + * Indicate whether PM freezing is in effect, protected by
+> + * system_transition_mutex.
+> + */
+> +static bool pm_freezing_internal;
+> +
+> +/**
+> + * pm_freezing - indicate whether PM freezing is in effect.
+> + *
+> + */
+> +bool pm_freezing(void)
+> +{
+> +       return pm_freezing_internal;
+> +}
+> +EXPORT_SYMBOL(pm_freezing);
+
+Use EXPORT_SYMBOL_GPL() instead, please.
+
+> +
+>  /**
+>   * freeze_processes - Signal user space processes to enter the refrigerator.
+>   * The current thread will not be frozen.  The same process that calls
+> @@ -126,12 +142,12 @@ int freeze_processes(void)
+>         /* Make sure this task doesn't get frozen */
+>         current->flags |= PF_SUSPEND_TASK;
+>
+> -       if (!pm_freezing)
+> +       if (!pm_freezing())
+>                 static_branch_inc(&freezer_active);
+>
+>         pm_wakeup_clear(0);
+>         pr_info("Freezing user space processes ... ");
+> -       pm_freezing = true;
+> +       pm_freezing_internal = true;
+>         error = try_to_freeze_tasks(true);
+>         if (!error) {
+>                 __usermodehelper_set_disable_depth(UMH_DISABLED);
+> @@ -187,9 +203,9 @@ void thaw_processes(void)
+>         struct task_struct *curr = current;
+>
+>         trace_suspend_resume(TPS("thaw_processes"), 0, true);
+> -       if (pm_freezing)
+> +       if (pm_freezing())
+>                 static_branch_dec(&freezer_active);
+> -       pm_freezing = false;
+> +       pm_freezing_internal = false;
+>         pm_nosig_freezing = false;
+>
+>         oom_killer_enable();
+>
+> --
