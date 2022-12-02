@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C041CC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 16:56:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C473BC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 16:57:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzcN6SRtz3c5D
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 03:56:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:110:4::f00:10; helo=riemann.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 353 seconds by postgrey-1.36 at boromir; Sat, 03 Dec 2022 03:56:03 AEDT
-Received: from riemann.telenet-ops.be (riemann.telenet-ops.be [IPv6:2a02:1800:110:4::f00:10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzd80pp9z3bh4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 03:57:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.132.48; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 367 seconds by postgrey-1.36 at boromir; Sat, 03 Dec 2022 03:56:14 AEDT
+Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzbl0s6tz3bTq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:02 +1100 (AEDT)
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by riemann.telenet-ops.be (Postfix) with ESMTPS id 4NNzSm2fN8z4xB6T
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 17:50:00 +0100 (CET)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzby3j68z3bfJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:14 +1100 (AEDT)
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4NNzSw0S21z4x915
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 17:50:08 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:2d07:19c5:4d8b:89d9])
-	by albert.telenet-ops.be with bizsmtp
-	id rUpW2800F0ys3B706UpWC8; Fri, 02 Dec 2022 17:49:59 +0100
+	by laurent.telenet-ops.be with bizsmtp
+	id rUpW2800G0ys3B701UpWDW; Fri, 02 Dec 2022 17:49:59 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E9-002K64-Ax; Fri, 02 Dec 2022 17:49:29 +0100
+	id 1p19E9-002K67-IM; Fri, 02 Dec 2022 17:49:29 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E8-006Waw-Fe; Fri, 02 Dec 2022 17:49:28 +0100
+	id 1p19E8-006WbA-HQ; Fri, 02 Dec 2022 17:49:28 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Tony Lindgren <tony@atomide.com>,
@@ -60,9 +60,9 @@ To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 09/11] arm64: dts: renesas: ulcb-kf: Fix pca9548 i2c-mux node names
-Date: Fri,  2 Dec 2022 17:49:24 +0100
-Message-Id: <3c32f500b99e598f458336dc4c05ffa60656324e.1669999298.git.geert+renesas@glider.be>
+Subject: [PATCH 11/11] powerpc: dts: fsl: Fix pca954x i2c-mux node names
+Date: Fri,  2 Dec 2022 17:49:26 +0100
+Message-Id: <6c5d86c49ac170e9d56ab121ea0602f3873849ca.1669999298.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
 References: <cover.1669999298.git.geert+renesas@glider.be>
@@ -85,47 +85,104 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 "make dtbs_check":
 
-    arch/arm64/boot/dts/renesas/r8a77951-ulcb-kf.dtb: i2c-switch@71: $nodename:0: 'i2c-switch@71' does not match '^(i2c-?)?mux'
-	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
-    arch/arm64/boot/dts/renesas/r8a77951-ulcb-kf.dtb: i2c-switch@71: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c@4', 'i2c@7' were unexpected)
-	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
+    arch/powerpc/boot/dts/fsl/t1040rdb-rev-a.dtb: pca9546@77: $nodename:0: 'pca9546@77' does not match '^(i2c-?)?mux'
+           From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
+    arch/powerpc/boot/dts/fsl/t1024qds.dtb: pca9547@77: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c@0', 'i2c@2', 'i2c@3' were unexpected)
+           From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
     ...
 
-Fix this by renaming all PCA9548 nodes to "i2c-mux", to match the I2C
-bus multiplexer/switch DT bindings and the Generic Names Recommendation
-in the Devicetree Specification.
-
-While at it, rename the labels too, for uniformity.
+Fix this by renaming pca954x nodes to "i2c-mux", to match the I2C bus
+multiplexer/switch DT bindings and the Generic Names Recommendation in
+the Devicetree Specification.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-To be queued in renesas-devel for v6.3.
----
- arch/arm64/boot/dts/renesas/ulcb-kf.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/fsl/t1024qds.dts  | 2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts  | 2 +-
+ arch/powerpc/boot/dts/fsl/t104xqds.dtsi | 2 +-
+ arch/powerpc/boot/dts/fsl/t104xrdb.dtsi | 2 +-
+ arch/powerpc/boot/dts/fsl/t208xqds.dtsi | 2 +-
+ arch/powerpc/boot/dts/fsl/t208xrdb.dtsi | 2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
-index 8e46acbe3a203759..e95be89e6e9d25b8 100644
---- a/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
-+++ b/arch/arm64/boot/dts/renesas/ulcb-kf.dtsi
-@@ -126,7 +126,7 @@ &hsusb {
- };
+diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+index d6858b7cd93fb5d5..9ea7942f914e14ee 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+@@ -151,7 +151,7 @@ slic@3 {
+ 		};
  
- &i2c2 {
--	i2cswitch2: i2c-switch@71 {
-+	i2cmux2: i2c-mux@71 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -316,7 +316,7 @@ gpio_exp_75: gpio@75 {
- };
+ 		i2c@118000 {
+-			pca9547@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9547";
+ 				reg = <0x77>;
+ 				#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+index dbcd31cc35dcd2bb..270aaf631f2ab0fa 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+@@ -165,7 +165,7 @@ rtc@68 {
+ 		};
  
- &i2c4 {
--	i2cswitch4: i2c-switch@71 {
-+	i2cmux4: i2c-mux@71 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ 		i2c@118100 {
+-			pca9546@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9546";
+ 				reg = <0x77>;
+ 				#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+index 615479732252404f..1c329f076f64f2dc 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xqds.dtsi
+@@ -268,7 +268,7 @@ flash@0 {
+ 		};
+ 
+ 		i2c@118000 {
+-			pca9547@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9547";
+ 				reg = <0x77>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
+index bfe1ed5be337492e..fc7bec5dcb90fc2d 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xrdb.dtsi
+@@ -128,7 +128,7 @@ adt7461@4c {
+ 		};
+ 
+ 		i2c@118100 {
+-			pca9546@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9546";
+ 				reg = <0x77>;
+ 				#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t208xqds.dtsi b/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
+index db4139999b28ebf4..962c99941645b965 100644
+--- a/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t208xqds.dtsi
+@@ -135,7 +135,7 @@ flash@2 {
+ 		};
+ 
+ 		i2c@118000 {
+-			pca9547@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9547";
+ 				reg = <0x77>;
+ 				#address-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi b/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
+index ff87e67c70da4a29..ecc3e8c7394cad20 100644
+--- a/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t208xrdb.dtsi
+@@ -138,7 +138,7 @@ eeprom@50 {
+ 		};
+ 
+ 		i2c@118100 {
+-			pca9546@77 {
++			i2c-mux@77 {
+ 				compatible = "nxp,pca9546";
+ 				reg = <0x77>;
+ 			};
 -- 
 2.25.1
 
