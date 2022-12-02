@@ -4,32 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0575FC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 17:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88960C47089
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 17:00:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzhS4701z3c38
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 04:00:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [IPv6:2a02:1800:120:4::f00:11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzj20SMgz3f9l
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 04:00:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.132.49; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [195.130.132.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzc42bsTz3bfd
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzc42Mjyz3c6t
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:19 +1100 (AEDT)
 Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4NNzSn4FdCz4x76d
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 17:50:01 +0100 (CET)
+	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4NNzSv4sDxz4x76L
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 17:50:07 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:2d07:19c5:4d8b:89d9])
 	by albert.telenet-ops.be with bizsmtp
-	id rUpW2800B0ys3B706UpWC5; Fri, 02 Dec 2022 17:49:59 +0100
+	id rUpV2800J0ys3B706UpVBw; Fri, 02 Dec 2022 17:49:59 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E9-002K5x-6t; Fri, 02 Dec 2022 17:49:29 +0100
+	id 1p19E8-002K5t-LE; Fri, 02 Dec 2022 17:49:28 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E8-006WaN-BY; Fri, 02 Dec 2022 17:49:28 +0100
+	id 1p19E8-006WZw-7R; Fri, 02 Dec 2022 17:49:28 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Tony Lindgren <tony@atomide.com>,
@@ -59,12 +59,10 @@ To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 04/11] ARM: dts: nuvoton: Fix pca954x i2c-mux node names
-Date: Fri,  2 Dec 2022 17:49:19 +0100
-Message-Id: <9b10ee878f8c54d9d26a92749108304d47f4dbbf.1669999298.git.geert+renesas@glider.be>
+Subject: [PATCH 00/11] Fix pca954x i2c-mux node names
+Date: Fri,  2 Dec 2022 17:49:15 +0100
+Message-Id: <cover.1669999298.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
-References: <cover.1669999298.git.geert+renesas@glider.be>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,175 +80,97 @@ Cc: devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, openbmc@lists.ozl
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"make dtbs_check":
+	Hi all,
 
-    arch/arm/boot/dts/nuvoton-npcm730-gbs.dtb: i2c-switch@71: $nodename:0: 'i2c-switch@71' does not match '^(i2c-?)?mux'
-	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
-    ...
+According to the I2C bus multiplexer/switch DT bindings, i2c-mux nodes
+should be named "i2c-mux" (or something similar).
+This patch series renames nodes for pca954x i2c-muxes that are flagged
+by
 
-Fix this by renaming PCA954x nodes to "i2c-mux", to match the I2C bus
-multiplexer/switch DT bindings and the Generic Names Recommendation in
-the Devicetree Specification.
+    make dtbs_checK DT_SCHEMA_FILES=Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/boot/dts/nuvoton-npcm730-gbs.dts        | 16 ++++++++--------
- arch/arm/boot/dts/nuvoton-npcm730-gsj.dts        |  2 +-
- arch/arm/boot/dts/nuvoton-npcm730-kudo.dts       |  8 ++++----
- .../boot/dts/nuvoton-npcm750-runbmc-olympus.dts  |  4 ++--
- 4 files changed, 15 insertions(+), 15 deletions(-)
+Please apply where appropriate.
+Thanks!
 
-diff --git a/arch/arm/boot/dts/nuvoton-npcm730-gbs.dts b/arch/arm/boot/dts/nuvoton-npcm730-gbs.dts
-index 9e9eba8bad5e424a..9f64c85e1c206494 100644
---- a/arch/arm/boot/dts/nuvoton-npcm730-gbs.dts
-+++ b/arch/arm/boot/dts/nuvoton-npcm730-gbs.dts
-@@ -525,7 +525,7 @@ &i2c0 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -666,7 +666,7 @@ mb_fru@50 {
- 		reg = <0x50>;
- 	};
- 
--	i2c-switch@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -727,7 +727,7 @@ &i2c6 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@73 {
-+	i2c-mux@73 {
- 		compatible = "nxp,pca9545";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -763,7 +763,7 @@ &i2c7 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@72 {
-+	i2c-mux@72 {
- 		compatible = "nxp,pca9545";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -812,7 +812,7 @@ &i2c9 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -866,7 +866,7 @@ &i2c10 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9545";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -902,7 +902,7 @@ &i2c11 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@76 {
-+	i2c-mux@76 {
- 		compatible = "nxp,pca9545";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -961,7 +961,7 @@ &i2c14 {
- 	clock-frequency = <100000>;
- 	status = "okay";
- 
--	i2c-switch@70 {
-+	i2c-mux@70 {
- 		compatible = "nxp,pca9545";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-diff --git a/arch/arm/boot/dts/nuvoton-npcm730-gsj.dts b/arch/arm/boot/dts/nuvoton-npcm730-gsj.dts
-index 2a394cc15284c55d..9b1cc7f4adf0909d 100644
---- a/arch/arm/boot/dts/nuvoton-npcm730-gsj.dts
-+++ b/arch/arm/boot/dts/nuvoton-npcm730-gsj.dts
-@@ -303,7 +303,7 @@ ucd90160@6b {
- &i2c15 {
- 	status = "okay";
- 
--	i2c-switch@75 {
-+	i2c-mux@75 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-diff --git a/arch/arm/boot/dts/nuvoton-npcm730-kudo.dts b/arch/arm/boot/dts/nuvoton-npcm730-kudo.dts
-index f7b38bee039bcab5..58329adbd9186fd7 100644
---- a/arch/arm/boot/dts/nuvoton-npcm730-kudo.dts
-+++ b/arch/arm/boot/dts/nuvoton-npcm730-kudo.dts
-@@ -494,7 +494,7 @@ &adc {
- 
- &i2c1 {
- 	status = "okay";
--	i2c-switch@75 {
-+	i2c-mux@75 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -573,7 +573,7 @@ lm75@5c {
- 			};
- 		};
- 	};
--	i2c-switch@77 {
-+	i2c-mux@77 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -613,7 +613,7 @@ &i2c3 {
- 
- &i2c4 {
- 	status = "okay";
--	i2c-switch@77 {
-+	i2c-mux@77 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -684,7 +684,7 @@ ssif-bmc@10 {
- 
- &i2c13 {
- 	status = "okay";
--	i2c-switch@77 {
-+	i2c-mux@77 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-diff --git a/arch/arm/boot/dts/nuvoton-npcm750-runbmc-olympus.dts b/arch/arm/boot/dts/nuvoton-npcm750-runbmc-olympus.dts
-index 87359ab05db3ebab..209fa3400317bf19 100644
---- a/arch/arm/boot/dts/nuvoton-npcm750-runbmc-olympus.dts
-+++ b/arch/arm/boot/dts/nuvoton-npcm750-runbmc-olympus.dts
-@@ -208,7 +208,7 @@ &gmac0 {
- &i2c1 {
- 	status = "okay";
- 
--	i2c-switch@70 {
-+	i2c-mux@70 {
- 		compatible = "nxp,pca9548";
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -258,7 +258,7 @@ i2c_slot5: i2c-bus@6 {
- 		};
- 	};
- 
--	i2c-switch@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9546";
- 		reg = <0x71>;
- 		#address-cells = <1>;
+Geert Uytterhoeven (11):
+  ARM: dts: ti: Fix pca954x i2c-mux node names
+  ARM: dts: aspeed: Fix pca954x i2c-mux node names
+  ARM: dts: imx: Fix pca9547 i2c-mux node name
+  ARM: dts: nuvoton: Fix pca954x i2c-mux node names
+  ARM: dts: socfpga: Fix pca9548 i2c-mux node name
+  ARM: dts: vf610: Fix pca9548 i2c-mux node names
+  arm64: dts: freescale: Fix pca954x i2c-mux node names
+  arm64: dts: marvell: Fix pca954x i2c-mux node names
+  arm64: dts: renesas: ulcb-kf: Fix pca9548 i2c-mux node names
+  MIPS: mscc: jaguar2: Fix pca9545 i2c-mux node names
+  powerpc: dts: fsl: Fix pca954x i2c-mux node names
+
+ arch/arm/boot/dts/am3874-iceboard.dts         |  4 +-
+ .../boot/dts/aspeed-bmc-bytedance-g220a.dts   | 18 ++++----
+ .../dts/aspeed-bmc-facebook-cloudripper.dts   | 10 ++--
+ arch/arm/boot/dts/aspeed-bmc-facebook-cmm.dts | 46 +++++++++----------
+ .../boot/dts/aspeed-bmc-facebook-elbert.dts   |  4 +-
+ .../arm/boot/dts/aspeed-bmc-facebook-fuji.dts | 30 ++++++------
+ .../boot/dts/aspeed-bmc-facebook-minipack.dts | 32 ++++++-------
+ .../dts/aspeed-bmc-facebook-tiogapass.dts     |  8 ++--
+ .../boot/dts/aspeed-bmc-facebook-wedge100.dts |  2 +-
+ .../boot/dts/aspeed-bmc-facebook-wedge400.dts |  6 +--
+ .../arm/boot/dts/aspeed-bmc-facebook-yamp.dts |  2 +-
+ arch/arm/boot/dts/aspeed-bmc-ibm-everest.dts  | 18 ++++----
+ arch/arm/boot/dts/aspeed-bmc-ibm-rainier.dts  |  8 ++--
+ .../boot/dts/aspeed-bmc-inspur-fp5280g2.dts   |  4 +-
+ .../boot/dts/aspeed-bmc-inspur-nf5280m6.dts   | 12 ++---
+ .../dts/aspeed-bmc-inventec-transformers.dts  |  6 +--
+ arch/arm/boot/dts/aspeed-bmc-lenovo-hr630.dts |  4 +-
+ .../boot/dts/aspeed-bmc-lenovo-hr855xg2.dts   |  4 +-
+ arch/arm/boot/dts/aspeed-bmc-opp-zaius.dts    |  4 +-
+ arch/arm/boot/dts/aspeed-bmc-quanta-q71l.dts  |  6 +--
+ arch/arm/boot/dts/aspeed-bmc-quanta-s6q.dts   | 10 ++--
+ arch/arm/boot/dts/aspeed-bmc-vegman-n110.dts  | 14 +++---
+ arch/arm/boot/dts/aspeed-bmc-vegman-rx20.dts  | 10 ++--
+ arch/arm/boot/dts/aspeed-bmc-vegman-sx20.dts  | 14 +++---
+ arch/arm/boot/dts/imx53-ppd.dts               |  2 +-
+ arch/arm/boot/dts/nuvoton-npcm730-gbs.dts     | 16 +++----
+ arch/arm/boot/dts/nuvoton-npcm730-gsj.dts     |  2 +-
+ arch/arm/boot/dts/nuvoton-npcm730-kudo.dts    |  8 ++--
+ .../dts/nuvoton-npcm750-runbmc-olympus.dts    |  4 +-
+ .../boot/dts/socfpga_cyclone5_vining_fpga.dts |  2 +-
+ arch/arm/boot/dts/vf610-zii-dev-rev-b.dts     |  2 +-
+ arch/arm/boot/dts/vf610-zii-dev-rev-c.dts     |  2 +-
+ .../boot/dts/freescale/fsl-ls1012a-qds.dts    |  2 +-
+ .../boot/dts/freescale/fsl-ls1043a-qds.dts    |  2 +-
+ .../boot/dts/freescale/fsl-ls1046a-qds.dts    |  2 +-
+ .../boot/dts/freescale/fsl-ls1088a-qds.dts    |  2 +-
+ .../boot/dts/freescale/fsl-ls1088a-rdb.dts    |  2 +-
+ .../boot/dts/freescale/fsl-ls1088a-ten64.dts  |  2 +-
+ .../boot/dts/freescale/fsl-ls208xa-qds.dtsi   |  2 +-
+ .../boot/dts/freescale/fsl-ls208xa-rdb.dtsi   |  2 +-
+ .../boot/dts/freescale/fsl-lx2160a-cex7.dtsi  |  2 +-
+ .../boot/dts/freescale/imx8mm-nitrogen-r2.dts |  2 +-
+ .../boot/dts/freescale/imx8mq-nitrogen.dts    |  4 +-
+ arch/arm64/boot/dts/freescale/imx8qxp-mek.dts |  2 +-
+ .../boot/dts/marvell/armada-8040-mcbin.dtsi   |  2 +-
+ .../dts/marvell/armada-8040-puzzle-m801.dts   |  2 +-
+ arch/arm64/boot/dts/renesas/ulcb-kf.dtsi      |  4 +-
+ arch/mips/boot/dts/mscc/jaguar2_pcb110.dts    |  4 +-
+ arch/powerpc/boot/dts/fsl/t1024qds.dts        |  2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts        |  2 +-
+ arch/powerpc/boot/dts/fsl/t104xqds.dtsi       |  2 +-
+ arch/powerpc/boot/dts/fsl/t104xrdb.dtsi       |  2 +-
+ arch/powerpc/boot/dts/fsl/t208xqds.dtsi       |  2 +-
+ arch/powerpc/boot/dts/fsl/t208xrdb.dtsi       |  2 +-
+ 54 files changed, 182 insertions(+), 182 deletions(-)
+
 -- 
 2.25.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
