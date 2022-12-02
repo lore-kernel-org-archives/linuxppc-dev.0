@@ -4,61 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 325EBC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 01:15:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9EF9C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 01:35:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNZkZ4BQXz3cBD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 12:15:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNb9d1RHQz3bbx
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 12:35:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=g9OXswjM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tofiYkTG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.126; helo=mga18.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=g9OXswjM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tofiYkTG;
 	dkim-atps=neutral
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNZgc5j5nz3bdr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 12:13:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1669943581; x=1701479581;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=/sdiNXryiTeFTbRvJvB6IK5xnYPIc/JoxWfb4ed3wJI=;
-  b=g9OXswjMf8T+u6G2HRqa3ce88COvvtbJXOWMhXa5EDcXrcCoyQfvoKmL
-   ELsEuaE1n1FRHJriapCat5bYEYQUXzsupj4ibFxXDfJQXzLYoDpuv/G8t
-   SDzH/tW5ECxo4PhaDWidaERf8QcuxKejh08Jmo0gt3LPCm3w+4k3P7Cfq
-   XxQxIlEJGfwb/0uMwhG+QwXtTIEnH453fJpt59RWvq4blSS8uJkGjBFDq
-   fK5APmyrfKwX4/2kNc4ZMjQ2OO4wyX2gq3HzAp7np1lDMrcaExv88+5H5
-   JvOy0VHIv9cHVAXK7kMYmBISwUVHgllFtUOq/qnYR23Gg6Jqo+IvgbURG
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="299211447"
-X-IronPort-AV: E=Sophos;i="5.96,210,1665471600"; 
-   d="scan'208";a="299211447"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Dec 2022 17:12:50 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="708292993"
-X-IronPort-AV: E=Sophos;i="5.96,210,1665471600"; 
-   d="scan'208";a="708292993"
-Received: from lkp-server01.sh.intel.com (HELO 64a2d449c951) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 01 Dec 2022 17:12:49 -0800
-Received: from kbuild by 64a2d449c951 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1p0ubg-000D64-36;
-	Fri, 02 Dec 2022 01:12:48 +0000
-Date: Fri, 02 Dec 2022 09:12:34 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD REGRESSION
- 3604661f206238a0295df53e38b7986a91c00cc4
-Message-ID: <63895102.kcGIRx6yG2wDv9HT%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNb8Y5jQhz2xB5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 12:34:37 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2B21DiEJ009769;
+	Fri, 2 Dec 2022 01:33:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=nNFlj7IlbzH8Y0VxNQIQygN9uEj4JjNSylmNATnWK/c=;
+ b=tofiYkTGLKHPkE2z+tV2skbXmR6fnfc5Aqj3noU6twa3Lv7UHecn2NbIe3iju0ltPWa6
+ ngYJpNi0MwJf/xBCfg+k/0IvbAMLVzsgEl4FzVLiA1q5m24avThDg8uTIMuszHC7cT0N
+ IoeIRcOCeVxszQKvIIP+Ko3okMiYTWTAdinpWC6KCOB2ztDO6eB2aExYVk8h3VKkTmCZ
+ KMjargKqc+A9SeIZjlOk2h/N2OIZODuGItJT3EVZAiYPRg3idYLVtfB+OZ3HeSKjeZzJ
+ vFh6YBsruIzI6IlpGFhV1fsHD4vgMxrv/UqpCmTbU0sy9UgwLTDqqmJdBfSmdUKZFWyk yg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m77gw8cn7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 Dec 2022 01:33:54 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2B21Urt6005339;
+	Fri, 2 Dec 2022 01:33:54 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m77gw8cmr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 Dec 2022 01:33:54 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2B21M2x0026576;
+	Fri, 2 Dec 2022 01:33:52 GMT
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+	by ppma05fra.de.ibm.com with ESMTP id 3m3ae9dyve-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 Dec 2022 01:33:52 +0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com [9.149.105.62])
+	by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2B21Xn0s49742160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 2 Dec 2022 01:33:49 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9EB10AE04D;
+	Fri,  2 Dec 2022 01:33:49 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4752DAE045;
+	Fri,  2 Dec 2022 01:33:49 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+	Fri,  2 Dec 2022 01:33:49 +0000 (GMT)
+Received: from li-0d7fa1cc-2c9d-11b2-a85c-aed20764436d.ibm.com (unknown [9.177.77.84])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 55CE66015C;
+	Fri,  2 Dec 2022 12:33:38 +1100 (AEDT)
+Message-ID: <3b13190d1f0bebd31c2e44a6a936e6d8f8e77892.camel@linux.ibm.com>
+Subject: Re: linux-next: build failure after merge of the tip tree
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+        Thomas Gleixner
+	 <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        "H. Peter Anvin"
+	 <hpa@zytor.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Michael Ellerman
+	 <mpe@ellerman.id.au>
+Date: Fri, 02 Dec 2022 12:33:34 +1100
+In-Reply-To: <20221202112646.5813c34b@canb.auug.org.au>
+References: <20221202112646.5813c34b@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.1 (3.46.1-1.fc37) 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: TGrNh6eul9A1mGnnAwFQ7tfR8i18utK0
+X-Proofpoint-GUID: KF9HGiCVS8ewIwADp7ufNt1ae7uQNiTo
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-01_14,2022-12-01_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 malwarescore=0
+ bulkscore=0 clxscore=1011 adultscore=0 suspectscore=0 spamscore=0
+ mlxscore=0 lowpriorityscore=0 impostorscore=0 priorityscore=1501
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2212020010
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,94 +109,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Christopher M. Riedl" <cmr@bluescreens.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: 3604661f206238a0295df53e38b7986a91c00cc4  Merge branch 'topic/qspinlock' into next
+On Fri, 2022-12-02 at 11:26 +1100, Stephen Rothwell wrote:
+> Though, I wonder if the powerpc tree should
+> use mm_alloc() instead of copy_init_mm() as well?=C2=A0 The tip tree
+> commit
+> says:
+>=20
+> =C2=A0=C2=A0=C2=A0 Instead of duplicating init_mm, allocate a fresh mm. T=
+he
+> advantage is
+> =C2=A0=C2=A0=C2=A0 that mm_alloc() has much simpler dependencies. Additio=
+nally it
+> makes
+> =C2=A0=C2=A0=C2=A0 more conceptual sense, init_mm has no (and must not ha=
+ve) user
+> state
+> =C2=A0=C2=A0=C2=A0 to duplicate.
+>=20
 
-Error/Warning reports:
-
-https://lore.kernel.org/oe-kbuild-all/202212020435.DR1CHxrP-lkp@intel.com
-
-Error/Warning: (recently discovered and may have been fixed)
-
-lockdep.c:(.text.lockdep_register_key+0x174): undefined reference to `queued_spin_lock_slowpath'
-rtas.c:(.text.lock_rtas+0xc0): undefined reference to `queued_spin_lock_slowpath'
-rtas.c:(.text.rtas_give_timebase+0xd0): undefined reference to `queued_spin_lock_slowpath'
-rtas.c:(.text.rtas_take_timebase+0xc4): undefined reference to `queued_spin_lock_slowpath'
-traps.c:(.text.oops_begin+0x10c): undefined reference to `queued_spin_lock_slowpath'
-
-Error/Warning ids grouped by kconfigs:
-
-gcc_recent_errors
-`-- powerpc-allmodconfig
-    |-- lockdep.c:(.text.lockdep_register_key):undefined-reference-to-queued_spin_lock_slowpath
-    |-- rtas.c:(.text.lock_rtas):undefined-reference-to-queued_spin_lock_slowpath
-    |-- rtas.c:(.text.rtas_give_timebase):undefined-reference-to-queued_spin_lock_slowpath
-    |-- rtas.c:(.text.rtas_take_timebase):undefined-reference-to-queued_spin_lock_slowpath
-    `-- traps.c:(.text.oops_begin):undefined-reference-to-queued_spin_lock_slowpath
-
-elapsed time: 726m
-
-configs tested: 50
-configs skipped: 2
-
-gcc tested configs:
-arc                                 defconfig
-powerpc                           allnoconfig
-alpha                               defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64                    rhel-8.3-kselftests
-x86_64                          rhel-8.3-func
-s390                             allmodconfig
-s390                                defconfig
-sh                               allmodconfig
-mips                             allyesconfig
-powerpc                          allmodconfig
-m68k                             allyesconfig
-s390                             allyesconfig
-m68k                             allmodconfig
-arc                              allyesconfig
-alpha                            allyesconfig
-x86_64                           rhel-8.3-syz
-x86_64                         rhel-8.3-kunit
-x86_64                           rhel-8.3-kvm
-ia64                             allmodconfig
-x86_64                               rhel-8.3
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                        randconfig-a013
-x86_64                        randconfig-a011
-x86_64                        randconfig-a015
-arc                  randconfig-r043-20221201
-riscv                randconfig-r042-20221201
-s390                 randconfig-r044-20221201
-i386                          randconfig-a003
-x86_64                            allnoconfig
-i386                          randconfig-a001
-i386                          randconfig-a005
-i386                             allyesconfig
-i386                                defconfig
-arm64                            allyesconfig
-arm                                 defconfig
-arm                              allyesconfig
-i386                          randconfig-a012
-i386                          randconfig-a014
-i386                          randconfig-a016
-
-clang tested configs:
-x86_64                        randconfig-a014
-x86_64                        randconfig-a016
-x86_64                        randconfig-a012
-hexagon              randconfig-r041-20221201
-hexagon              randconfig-r045-20221201
-i386                          randconfig-a004
-i386                          randconfig-a002
-i386                          randconfig-a006
-
--- 
-0-DAY CI Kernel Test Service
-https://01.org/lkp
+Yes, that seems fine. All we need is that the page table isn't shared
+and the kernel mappings are the same as in init_mm. It seems mm_alloc()
+does this at some point.
