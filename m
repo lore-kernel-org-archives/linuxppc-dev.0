@@ -4,32 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E32EEC47088
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 16:59:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C040C47089
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 16:59:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzgK4HP5z3fNG
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 03:59:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=195.130.132.48; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [195.130.132.48])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNzgv2kStz3fT1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 03:59:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
+X-Greylist: delayed 372 seconds by postgrey-1.36 at boromir; Sat, 03 Dec 2022 03:56:20 AEDT
+Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [IPv6:2a02:1800:120:4::f00:11])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzc42f1sz3bfw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:20 +1100 (AEDT)
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4NNzSm3LGSz4x8Cd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNzc42PFhz3c71
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 03:56:19 +1100 (AEDT)
+Received: from laurent.telenet-ops.be (laurent.telenet-ops.be [IPv6:2a02:1800:110:4::f00:19])
+	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4NNzSm6M02z4x76D
 	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 17:50:00 +0100 (CET)
 Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed20:2d07:19c5:4d8b:89d9])
-	by albert.telenet-ops.be with bizsmtp
-	id rUpW2800C0ys3B706UpWC6; Fri, 02 Dec 2022 17:49:59 +0100
+	by laurent.telenet-ops.be with bizsmtp
+	id rUpW280070ys3B701UpWDG; Fri, 02 Dec 2022 17:49:59 +0100
 Received: from rox.of.borg ([192.168.97.57])
 	by ramsan.of.borg with esmtps  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E9-002K66-7w; Fri, 02 Dec 2022 17:49:29 +0100
+	id 1p19E9-002K5z-2H; Fri, 02 Dec 2022 17:49:29 +0100
 Received: from geert by rox.of.borg with local (Exim 4.93)
 	(envelope-from <geert@linux-m68k.org>)
-	id 1p19E8-006Wb3-GZ; Fri, 02 Dec 2022 17:49:28 +0100
+	id 1p19E8-006Waa-D6; Fri, 02 Dec 2022 17:49:28 +0100
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Tony Lindgren <tony@atomide.com>,
@@ -59,9 +60,9 @@ To: =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH 10/11] MIPS: mscc: jaguar2: Fix pca9545 i2c-mux node names
-Date: Fri,  2 Dec 2022 17:49:25 +0100
-Message-Id: <5eb01c348c5dd90887b33e866555df8f1067e9df.1669999298.git.geert+renesas@glider.be>
+Subject: [PATCH 06/11] ARM: dts: vf610: Fix pca9548 i2c-mux node names
+Date: Fri,  2 Dec 2022 17:49:21 +0100
+Message-Id: <d1c5038b36d10282f01d8c722f94821b1710d2e0.1669999298.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
 References: <cover.1669999298.git.geert+renesas@glider.be>
@@ -84,43 +85,48 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 "make dtbs_check":
 
-    arch/mips/boot/dts/mscc/jaguar2_pcb110.dtb: pca9545@70: $nodename:0: 'pca9545@70' does not match '^(i2c-?)?mux'
+    arch/arm/boot/dts/vf610-zii-dev-rev-b.dtb: tca9548@70: $nodename:0: 'tca9548@70' does not match '^(i2c-?)?mux'
 	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
-    arch/mips/boot/dts/mscc/jaguar2_pcb110.dtb: pca9545@70: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c@0', 'i2c@1', 'i2c@2', 'i2c@3' were unexpected)
-	    From schema: Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
+    arch/arm/boot/dts/vf610-zii-dev-rev-b.dtb: tca9548@70: Unevaluated properties are not allowed ('#address-cells', '#size-cells', 'i2c@0', 'i2c@1', 'i2c@2', 'i2c@3', 'i2c@4' were unexpected)
+	    From schema: /scratch/geert/linux/linux-renesas/Documentation/devicetree/bindings/i2c/i2c-mux-pca954x.yaml
     ...
 
-Fix this by renaming PCA9545 nodes to "i2c-mux", to match the I2C bus
+Fix this by renaming PCA9548 nodes to "i2c-mux", to match the I2C bus
 multiplexer/switch DT bindings and the Generic Names Recommendation in
 the Devicetree Specification.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/mips/boot/dts/mscc/jaguar2_pcb110.dts | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/vf610-zii-dev-rev-b.dts | 2 +-
+ arch/arm/boot/dts/vf610-zii-dev-rev-c.dts | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/mips/boot/dts/mscc/jaguar2_pcb110.dts b/arch/mips/boot/dts/mscc/jaguar2_pcb110.dts
-index 0ea7bc5b5746842f..1813f4e32e55fadb 100644
---- a/arch/mips/boot/dts/mscc/jaguar2_pcb110.dts
-+++ b/arch/mips/boot/dts/mscc/jaguar2_pcb110.dts
-@@ -208,7 +208,7 @@ i2cmux_3: i2cmux-3-pins {
+diff --git a/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts b/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
+index 42ed4a04a12e250b..6280c5e86a124e2f 100644
+--- a/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
++++ b/arch/arm/boot/dts/vf610-zii-dev-rev-b.dts
+@@ -345,7 +345,7 @@ gpio6: io-expander@22 {
  };
  
- &i2c0 {
--	pca9545@70 {
+ &i2c2 {
+-	tca9548@70 {
 +	i2c-mux@70 {
- 		compatible = "nxp,pca9545";
- 		reg = <0x70>;
- 		#address-cells = <1>;
-@@ -236,7 +236,7 @@ i2c127: i2c@3 {
- 			reg = <3>;
- 		};
- 	};
--	pca9545@71 {
-+	i2c-mux@71 {
- 		compatible = "nxp,pca9545";
- 		reg = <0x71>;
- 		#address-cells = <1>;
+ 		compatible = "nxp,pca9548";
+ 		pinctrl-0 = <&pinctrl_i2c_mux_reset>;
+ 		pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts b/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
+index f892977da9e4e031..c00d39562a10bb94 100644
+--- a/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
++++ b/arch/arm/boot/dts/vf610-zii-dev-rev-c.dts
+@@ -340,7 +340,7 @@ eeprom@50 {
+ };
+ 
+ &i2c2 {
+-	tca9548@70 {
++	i2c-mux@70 {
+ 		compatible = "nxp,pca9548";
+ 		pinctrl-0 = <&pinctrl_i2c_mux_reset>;
+ 		pinctrl-names = "default";
 -- 
 2.25.1
 
