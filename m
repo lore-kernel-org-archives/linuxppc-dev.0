@@ -4,57 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B7E3C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 02:39:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25BB5C4321E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 15:20:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNcbS5TDMz3cGm
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 13:39:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.41; helo=mail-ot1-f41.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f41.google.com (mail-ot1-f41.google.com [209.85.210.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNxT83GHrz3bhL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Dec 2022 02:20:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eIZKp8jI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gjoyce@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eIZKp8jI;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNXls3gdjz30RN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 10:46:33 +1100 (AEDT)
-Received: by mail-ot1-f41.google.com with SMTP id db10-20020a0568306b0a00b0066d43e80118so2001554otb.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Dec 2022 15:46:33 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kku18D3Y88MWUX/tUqbmMS28F2KQx7nmZY37oV7FZwE=;
-        b=OSFCiFm0WvsdApXJZxvnCtJny2dOJJdFhF5gCfjKkbIM02OoPXATsBa+tZpYGRgagD
-         i197iCKWBJQUcp2KtjwVB5sEo8TnU20RDdMT2rFvcRAWPxjVOVegoQE8uFQf2Ph6AhtT
-         MDZyGONmkxQlRm4rkxLQ14oOsUzznyZTo1KLUlw5yA5LIM9+wlVK9Wa8FIrM4bngJ102
-         Fklezfrx+2YdHPtfzbWZLza5Oh4Er7Wngs8HdYTKFBFhRUFrDRKoNY+PIAQmmIdABafx
-         n07hIaLvso3KMuLMs76lyA14LW4fF6kAlt8dvd5/SCXWjy7QV/OQey2n8YmXgQiBn1qs
-         ec9A==
-X-Gm-Message-State: ANoB5pkErdqLcYSvHxu+sR3E+qwFbgVjW8Sek0ZZqCpy9subtIy09aYc
-	0u8m8nHb6+9EoWHj1krzPg==
-X-Google-Smtp-Source: AA0mqf5ZGQasomoBdeMHUbWi+cUm7mHzdtQUSRq09o1u9VxkbZV92Lxt3/8ZuyZgJD7FgCKGDpaDTA==
-X-Received: by 2002:a05:6830:1e63:b0:661:9030:6480 with SMTP id m3-20020a0568301e6300b0066190306480mr24758975otr.147.1669938390899;
-        Thu, 01 Dec 2022 15:46:30 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y2-20020a4ae702000000b0049427725e62sm2292185oou.19.2022.12.01.15.46.28
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 01 Dec 2022 15:46:30 -0800 (PST)
-Received: (nullmailer pid 1704103 invoked by uid 1000);
-	Thu, 01 Dec 2022 23:46:28 -0000
-Date: Thu, 1 Dec 2022 17:46:28 -0600
-From: Rob Herring <robh@kernel.org>
-To: =?utf-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>
-Subject: Re: [PATCH 1/5] dt-bindings: net: qca,ar71xx: remove label = "cpu"
- from examples
-Message-ID: <166993831623.1702506.4546645219900752750.robh@kernel.org>
-References: <20221130141040.32447-1-arinc.unal@arinc9.com>
- <20221130141040.32447-2-arinc.unal@arinc9.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20221130141040.32447-2-arinc.unal@arinc9.com>
-X-Mailman-Approved-At: Fri, 02 Dec 2022 13:39:03 +1100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNxS25mmcz3bPR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Dec 2022 02:19:14 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2B2FHN4g008585;
+	Fri, 2 Dec 2022 15:19:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : reply-to : to : cc : date : in-reply-to : references : content-type
+ : mime-version : content-transfer-encoding; s=pp1;
+ bh=kk2DKWr3NuGpJ+Svcp+qRnmUBH5ye61AWs17cEkLK3k=;
+ b=eIZKp8jIvlNGrbtxhT7sBjf8ytCaNuRSPxG1OXnEURIA/3izVTUEdmA34hMqfmrDPOuS
+ XEG7huc2qcmbFaV50MRyWiZ6qXLgwCTT869vu14pf3uy+hGWKzcqq68Bfjk29/mRYzfq
+ CdthJW71V1Bi5G7B3ndeIxsuU+2KGKVy/JQGknCCNe71yEbF6CWElVHo8Sy14at/5l8d
+ pvgQtPbfQMbuyZFtGnTDIW+O+aXVdszLu09dChIWOAhijzoHU1qMO6EcovQ7FEewIy9i
+ s6JDbu1/VDnJevH/ezPMo+tbIfiP5r0SZll29mSuKZuWK3lZN6jn75agzhCyy1UYeGAw 2A== 
+Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3m7kvd80wy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 Dec 2022 15:19:03 +0000
+Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
+	by ppma01dal.us.ibm.com (8.16.1.2/8.16.1.2) with SMTP id 2B2F5dmj013584;
+	Fri, 2 Dec 2022 15:19:02 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
+	by ppma01dal.us.ibm.com with ESMTP id 3m3aeb12x0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 Dec 2022 15:19:02 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2B2FJ05s3408442
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 2 Dec 2022 15:19:01 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D2E5B5804E;
+	Fri,  2 Dec 2022 15:19:00 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C480258052;
+	Fri,  2 Dec 2022 15:18:59 +0000 (GMT)
+Received: from rhel-laptop.ibm.com (unknown [9.160.99.100])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  2 Dec 2022 15:18:59 +0000 (GMT)
+Message-ID: <e53f14006d4a26f9b8e14d30683e4006ed2fa35f.camel@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 3/3] block: sed-opal: keyring support for SED keys
+From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+To: Hannes Reinecke <hare@suse.de>, linux-block@vger.kernel.org
+Date: Fri, 02 Dec 2022 09:18:59 -0600
+In-Reply-To: <4a3b6a0f-be1b-e0b1-941b-6701a42e9a2c@suse.de>
+References: <20221129232506.3735672-1-gjoyce@linux.vnet.ibm.com>
+	 <20221129232506.3735672-4-gjoyce@linux.vnet.ibm.com>
+	 <c78edd60-b6ae-6ec0-9ce4-73b9a92b9b32@suse.de>
+	 <ed32cbc546383085bc8c00d913a53059831b2cfc.camel@linux.vnet.ibm.com>
+	 <4a3b6a0f-be1b-e0b1-941b-6701a42e9a2c@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5 (3.28.5-18.el8) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: xZ5pZaCSkGial_cn81MpDjJboOX58ITK
+X-Proofpoint-GUID: xZ5pZaCSkGial_cn81MpDjJboOX58ITK
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-02_08,2022-12-01_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 bulkscore=0
+ spamscore=0 priorityscore=1501 mlxscore=0 suspectscore=0 adultscore=0
+ mlxlogscore=999 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2212020114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,20 +94,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ", Andrew Lunn" <andrew@lunn.ch>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sergio Paracuellos <sergio.paracuellos@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Vladimir Oltean <vladimir.oltean@nxp.com>, linux-arm-msm@vger.kernel.org, Konrad Dybcio <konrad.dybcio@somainline.org>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Stefan Agner <stefan@agner.ch>, linux-mips@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Michael Riesch <michael.riesch@wolfvision.net>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Peng Fan <peng.fan@nxp.com>, Oleksij Rempel <linux@rempel-privat.de>, Fabio Estevam <festevam@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, linux-kernel@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Linus Walleij <linus.walleij@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Samuel Holland <samuel@sholland.org>, Gregory Clement <gregory.clement@boot
- lin.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Andy Gross <agross@kernel.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, NXP Linux Team <linux-imx@nxp.com>, Hauke Mehrtens <hauke@hauke-m.de>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Tim Harvey <tharvey@gateworks.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, devicetree@vger.kernel.org, Pengutronix Kernel Team <kernel@pengutronix.de>, Frank Wunderlich <frank-w@public-files.de>, Ray Jui <rjui@broadcom.com>, Hans Ulli Kroll <ulli.kroll@googlemail.com>, Nicholas Piggin <npiggin@gmail.com>, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Scott Branden <sbranden@broadcom.com>, netdev@vger.kernel.org, Bjorn Andersson <andersson@kernel.org>, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Nicolas Ferre <nicolas.ferre@microchip.com>, linux-sunxi@lists.linux.dev, linux-renesas-soc@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Reply-To: gjoyce@linux.vnet.ibm.com
+Cc: axboe@kernel.dk, nayna@linux.ibm.com, keyrings@vger.kernel.org, jonathan.derrick@linux.dev, brking@linux.vnet.ibm.com, akpm@linux-foundation.org, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On Wed, 30 Nov 2022 17:10:36 +0300, Arınç ÜNAL wrote:
-> This is not used by the DSA dt-binding, so remove it from the examples.
+On Fri, 2022-12-02 at 07:56 +0100, Hannes Reinecke wrote:
+> On 12/1/22 19:03, Greg Joyce wrote:
+> > On Wed, 2022-11-30 at 08:00 +0100, Hannes Reinecke wrote:
+> > > On 11/30/22 00:25, gjoyce@linux.vnet.ibm.com wrote:
+> > > > From: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> > > > 
+> > > > Extend the SED block driver so it can alternatively
+> > > > obtain a key from a sed-opal kernel keyring. The SED
+> > > > ioctls will indicate the source of the key, either
+> > > > directly in the ioctl data or from the keyring.
+> > > > 
+> > > > This allows the use of SED commands in scripts such as
+> > > > udev scripts so that drives may be automatically unlocked
+> > > > as they become available.
+> > > > 
+> > > > Signed-off-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+> > > > Reviewed-by: Jonathan Derrick <jonathan.derrick@linux.dev>
+> > > > ---
+> > > >    block/Kconfig                 |   1 +
+> > > >    block/sed-opal.c              | 174
+> > > > +++++++++++++++++++++++++++++++++-
+> > > >    include/linux/sed-opal.h      |   3 +
+> > > >    include/uapi/linux/sed-opal.h |   8 +-
+> > > >    4 files changed, 183 insertions(+), 3 deletions(-)
+> > > >   
+> > > > +	ret = opal_get_key(dev, &opal_lrs->session.opal_key);
+> > > > +	if (ret)
+> > > > +		return ret;
+> > > >    	mutex_lock(&dev->dev_lock);
+> > > >    	setup_opal_dev(dev);
+> > > >    	ret = execute_steps(dev, lr_steps,
+> > > > ARRAY_SIZE(lr_steps));
+> > > > @@ -2622,6 +2759,14 @@ static int opal_set_new_pw(struct
+> > > > opal_dev
+> > > > *dev, struct opal_new_pw *opal_pw)
+> > > >    	ret = execute_steps(dev, pw_steps,
+> > > > ARRAY_SIZE(pw_steps));
+> > > >    	mutex_unlock(&dev->dev_lock);
+> > > >    
+> > > > +	if (ret)
+> > > > +		return ret;
+> > > > +
+> > > > +	/* update keyring with new password */
+> > > > +	ret = update_sed_opal_key(OPAL_AUTH_KEY,
+> > > > +				  opal_pw-
+> > > > >new_user_pw.opal_key.key,
+> > > > +				  opal_pw-
+> > > > > new_user_pw.opal_key.key_len);
+> > > > +
+> > > >    	return ret;
+> > > >    }
+> > > >    
+> > > What about key revocation?
+> > > You only allow to set a new key, but what happens with the old
+> > > ones?
+> > 
+> > My understanding was that key_create_or_update() would not allow
+> > duplicates so there shouldn't be old ones. Is that incorrect?
+> > 
+> Ah, right, you only have one key.
+> But still, you might want to revoke that one, too, no?
+> (Think of decommissioning old drives ...)
 > 
-> Signed-off-by: Arınç ÜNAL <arinc.unal@arinc9.com>
-> ---
->  Documentation/devicetree/bindings/net/qca,ar71xx.yaml | 1 -
->  1 file changed, 1 deletion(-)
-> 
+> Cheers,
+>  
+> Hannes
 
-Acked-by: Rob Herring <robh@kernel.org>
+SED Opal allows for disabling locking on a SED drive. Both sedcli and
+sedutil have commands to support this. This is the method for drive
+decommisioning (un-provisioning). There is also a mechanism to
+cryptographically erase the data on the drive if that is desired.
+
+
