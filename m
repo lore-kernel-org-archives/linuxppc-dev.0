@@ -4,49 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FB61C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 00:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97651C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 01:13:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NNYgW3QMcz3bfJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 11:27:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NNZhX6XSgz3bfT
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Dec 2022 12:13:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=eRy4KME6;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LZOAuyMm;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNYfS2DXfz30R8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 11:26:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=eRy4KME6;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LZOAuyMm;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NNYfK0zhDz4xFy;
-	Fri,  2 Dec 2022 11:26:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1669940810;
-	bh=ugbbf+g7FOT3/DhiyoQYo3Jh4xdDh8TDWCJ3xQUbmFo=;
-	h=Date:From:To:Cc:Subject:From;
-	b=eRy4KME6mkbN+Zs+XRb1ipt9GDtDBEDNBwTSYmirGi2bNEOwLevAQEz/ijxNiWWQm
-	 f7PGAV9SDO6ikoY10n71k3jDUaI1OgwbgyK7y5t/U4znV7rM9rFQToxPXD3Bm3bl5h
-	 rxFEfE8Z3nAoE4o+hKTfUyCamx0bRqgDQu6yWABrlRbGmqNGf307ofrEWtH2NhOjnN
-	 FCy5MveKPOXlD8NYQWOhLUooXRY+Y/XyPMPo07+hELwaTGVjEWPC8wnyapfgrEcjTV
-	 XAtnGgIBw+BHcsguLKXWk2l6rzjRSg4j0jKiL7R+sBdK/lGIht0cvXvf2yUAuWCJQS
-	 VIkGYIySynPnQ==
-Date: Fri, 2 Dec 2022 11:26:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: linux-next: build failure after merge of the tip tree
-Message-ID: <20221202112646.5813c34b@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NNZgW2XvRz3bSl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Dec 2022 12:12:53 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1669943575; x=1701479575;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=Gj/kYuMBgkivUO4At7+dNsmTA3wvY0kt/JavXfvKdIQ=;
+  b=LZOAuyMmD0RcFiU86mXxqUdRSATnwahlHpfLzyMY+AdOlN0aSIDCWeOt
+   xzdhXrNWIXT8uILztLARTsJMHPsgmodGGXJaJevb2GapLmwHrB7SBXNrO
+   c+BZMYzHALAzg8M3ZO5RjSedFL6HOCC7j+Luf+xZhYlQB4B8+eHYRpMqv
+   0h5nqDqbM4481EI01k19L7Glb/wnys3UBv4xO2sNXfMLmU+OrZYRJ3e7y
+   jHdU16h9u4WW8w9YyF+P7rtUoXYd/fEkP875SNmmjvYCabJjFl6jsyOCp
+   hNk35RKKdgnQ5rCgW28R3c7TA8wa/eqSJTiwix7u6uXsXlDIu2o55aVo/
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="303444636"
+X-IronPort-AV: E=Sophos;i="5.96,210,1665471600"; 
+   d="scan'208";a="303444636"
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Dec 2022 17:12:50 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10548"; a="646976417"
+X-IronPort-AV: E=Sophos;i="5.96,210,1665471600"; 
+   d="scan'208";a="646976417"
+Received: from lkp-server01.sh.intel.com (HELO 64a2d449c951) ([10.239.97.150])
+  by fmsmga007.fm.intel.com with ESMTP; 01 Dec 2022 17:12:49 -0800
+Received: from kbuild by 64a2d449c951 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1p0ubg-000D5y-2r;
+	Fri, 02 Dec 2022 01:12:48 +0000
+Date: Fri, 02 Dec 2022 09:12:42 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ c4027f8490ab77605d0522069755ccbef0ffe616
+Message-ID: <6389510a.KK+L/1IVxiFqitAC%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/Y+3=Ny4zt/XJbrXO8h=gy+i";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,63 +70,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Christopher M. Riedl" <cmr@bluescreens.de>, Benjamin Gray <bgray@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/Y+3=Ny4zt/XJbrXO8h=gy+i
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: c4027f8490ab77605d0522069755ccbef0ffe616  selftests/powerpc: Add ptrace setup_core_pattern() null-terminator
 
-Hi all,
+elapsed time: 725m
 
-After merging the tip tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+configs tested: 50
+configs skipped: 2
 
-arch/powerpc/lib/code-patching.c: In function 'text_area_cpu_up_mm':
-arch/powerpc/lib/code-patching.c:157:14: error: implicit declaration of fun=
-ction 'copy_init_mm' [-Werror=3Dimplicit-function-declaration]
-  157 |         mm =3D copy_init_mm();
-      |              ^~~~~~~~~~~~
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Caused by commit
+gcc tested configs:
+x86_64                         rhel-8.3-kunit
+powerpc                           allnoconfig
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+um                             i386_defconfig
+arc                                 defconfig
+um                           x86_64_defconfig
+alpha                               defconfig
+x86_64                    rhel-8.3-kselftests
+x86_64                          rhel-8.3-func
+s390                             allmodconfig
+s390                                defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+x86_64                              defconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+powerpc                          allmodconfig
+alpha                            allyesconfig
+ia64                             allmodconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+x86_64                               rhel-8.3
+x86_64                           allyesconfig
+arc                  randconfig-r043-20221201
+x86_64                        randconfig-a013
+x86_64                        randconfig-a011
+x86_64                        randconfig-a015
+i386                          randconfig-a001
+s390                 randconfig-r044-20221201
+i386                          randconfig-a003
+riscv                randconfig-r042-20221201
+i386                          randconfig-a005
+x86_64                            allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
 
-  107b6828a7cd ("x86/mm: Use mm_alloc() in poking_init()")
+clang tested configs:
+x86_64                        randconfig-a014
+x86_64                        randconfig-a012
+hexagon              randconfig-r041-20221201
+x86_64                        randconfig-a016
+hexagon              randconfig-r045-20221201
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
 
-interacting with commit
-
-  55a02e6ea958 ("powerpc/code-patching: Use temporary mm for Radix MMU")
-
-from the powerpc tree.
-
-I partially reverted commit 107b6828a7cd - I left the change to
-arch/x86/mm/init.c applied.  Though, I wonder if the powerpc tree should
-use mm_alloc() instead of copy_init_mm() as well?  The tip tree commit
-says:
-
-    Instead of duplicating init_mm, allocate a fresh mm. The advantage is
-    that mm_alloc() has much simpler dependencies. Additionally it makes
-    more conceptual sense, init_mm has no (and must not have) user state
-    to duplicate.
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/Y+3=Ny4zt/XJbrXO8h=gy+i
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmOJRkYACgkQAVBC80lX
-0GyRJQf9FNRiyemVrBXmHbzEklHgNrDnYcojZAaBaQ3fDlII3K5YYgNmzzE2BnAj
-mjcEPplhkgyL92H1zT+G62MVlKWzgPzythpJcExyGkd8hL7TXUm7HLHot2e2Up76
-8kiaeKXeVhqaX8LGCO3LeTVENP6GaB3du7n7dLXFo6iE9XBTXhzVnIWK5vfmJGs4
-25d1hiw24xIVLGz+KFMEHodG+qZ+0kbhsto42v11MZBWwl8RLJdm2I+GM7Fr4rdO
-BJCsSYk5/4+/hlv3Jge6Z+oJ81hRVvcM51zcxZNoPiN0CV0NDF+ldDwcSY+62+v4
-P5VuTIq3vz6nTqW8Ws7EfP1oud9D7A==
-=+Mjg
------END PGP SIGNATURE-----
-
---Sig_/Y+3=Ny4zt/XJbrXO8h=gy+i--
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
