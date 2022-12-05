@@ -4,64 +4,124 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 058B2C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 19:16:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0CDBC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 20:12:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NQtZM190fz3bjH
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 06:16:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NQvq063RLz3bhn
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 07:12:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; secure) header.d=arinc9.com header.i=arinc.unal@arinc9.com header.a=rsa-sha256 header.s=zmail header.b=dsN8wK9u;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=T5wl12uU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arinc9.com (client-ip=136.143.188.14; helo=sender4-op-o14.zoho.com; envelope-from=arinc.unal@arinc9.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=2a01:111:f403:7053::615; helo=can01-yt3-obe.outbound.protection.outlook.com; envelope-from=mjeanson@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=arinc9.com header.i=arinc.unal@arinc9.com header.a=rsa-sha256 header.s=zmail header.b=dsN8wK9u;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=T5wl12uU;
 	dkim-atps=neutral
-Received: from sender4-op-o14.zoho.com (sender4-op-o14.zoho.com [136.143.188.14])
+Received: from CAN01-YT3-obe.outbound.protection.outlook.com (mail-yt3can01on20615.outbound.protection.outlook.com [IPv6:2a01:111:f403:7053::615])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQtYG5RWYz304s
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 06:15:30 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; t=1670267721; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=NP/gnuKezwin1OHhYsmf2ATZliiOCtNCFKoXTYzLH7BFyOXHMSzChcl0T1Aq6Pk013EOTEhIPVieqJNyp/ZJg6CkUw2KbYe8Yo64vRDV1jNfsHr8MQrm2pCXhKvILdIveTXCkSv4z8oUySkngPWB9Aj+wkEduOwp5bjcBSAy3CI=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1670267721; h=Content-Type:Content-Transfer-Encoding:Cc:Date:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:To; 
-	bh=lfH3IahUHjmYwDm63oJKTTzFOCu7YAYcClnY9WZt9/M=; 
-	b=FXv3K4z7UYzBQRGqigcbQsO6xLWN3XHlu+cOWnwRJOjJu1SFe0oJKDsZYueickpcKAvjBEPiXvqafpZvFtlVADDaBNIpaqvIoAaUqMJRQ7woVTe1iw1V4ivnPHuxXQBvvTiyLYF5wCwoE1GkelmMU17vheDC+7Hb2B8/5bj3YT0=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=arinc9.com;
-	spf=pass  smtp.mailfrom=arinc.unal@arinc9.com;
-	dmarc=pass header.from=<arinc.unal@arinc9.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1670267721;
-	s=zmail; d=arinc9.com; i=arinc.unal@arinc9.com;
-	h=Message-ID:Date:Date:MIME-Version:Subject:Subject:To:To:Cc:Cc:References:From:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=lfH3IahUHjmYwDm63oJKTTzFOCu7YAYcClnY9WZt9/M=;
-	b=dsN8wK9uZkXcvK0LcXsBL/whokUfqHcwWsBtyrf7LCsT70tQrOkp9jhT1L/vza5v
-	hhbPaQrT8B7iBg2bkmYRsZ7tdVz2tSl7Eonp9P1UorLvtWlwa4jXRRLcpZ+Ik+CZbb0
-	IhoZEhANl+xsjiDyuKj7y4imOoyytUA0lMvhMrwc=
-Received: from [192.168.100.172] (86.121.172.71 [86.121.172.71]) by mx.zohomail.com
-	with SMTPS id 1670267720324784.9784413037605; Mon, 5 Dec 2022 11:15:20 -0800 (PST)
-Message-ID: <84ce6297-5aff-4d6e-8d31-da3f25dc8690@arinc9.com>
-Date: Mon, 5 Dec 2022 22:15:16 +0300
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQvnv2xtNz308w
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 07:11:29 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=Po+U40hONbcC+mg/FXi+mAiT+RvPOODWv4mV6snxuz4FYpH/LKsH5h7n3wjiaS6M2C0lRJuDee6BqtViQGLXQTLijSCnlrgAH3CrE4nij76I3DXjj56R2n8FaQoM2JJP/0HVYyFoD9dHC3vkkod4H9MMucERZeQuGESt1sGUE5NhmaZrFw/SRqbruKxjJN/B/TZFyaPt0bES2a8MW1NZCpGycOLbS9aPv6DExt1dlZS78P8Tel59yDJwbijokhIlowwPoianuG5mH/Q0IJn+PnQZwao5alSKEqzCL6/py6pdCMqpo2oF44InMXCTTPqPoofv5y2rQZGqPHNs6wgd9Q==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=O1GS8gZh13jGJCws645054if+4IOvINXyo4Ckl5u2JI=;
+ b=UkHUPC5oAGC/K7pmJlPIE0rGsLYjm9Z40lH22cn3vlOwLZ2E79F166WK0Df9nX182yUpWXzQFtm72lhtxhZF8E1vohE3joZDIvNwZFxYdHBVxTv+cK1OnfwjwnndjQWd1KggydkrMVKs7vDAAx2tFp5cCl2n5mUWlDf+g23Wuit1Gdc8L4vPGZyxHLqqokE39496nJdIdYGjevN2lTsKbL6oGbR8QvbVSwxYIxBEsoFIkfCFhp4E+Ab+Q51930MIGCsrgHQlvFgtXxK8OVjE5clUigZlu6Zp9uU4HV+57Nhdl28Sg43QhlAz9Emjkn3ei/YtqYCgVAJXp2V8sWbotg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
+ dkim=pass header.d=efficios.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=O1GS8gZh13jGJCws645054if+4IOvINXyo4Ckl5u2JI=;
+ b=T5wl12uU85qxmDjbeBn72FHk5Pbs+C+LoGOsv4b9OzOYC8cejMzlKv0rqce9ovyYm5bKPv9GGRDokQlLtcOVV5iu4S3cXEPUVwgGAJSkbZf2neJd+VQ5UEm3SZmuLUYE2ey1A3YG7KQXNPY9YDpvxv6Vo6092snGv3RG1zRACfSm1nzTsMpNUmL8UToferUFs3yrjGzitKs63Mrzaaw6xM6pwGhGxzBaFmm3MqykFS+H7xOkf4VloRPDtc4/H21Uft7nSfz31uTWxem4Zx3dMNGUrjab6UjQADS/jCtIT29TKulaudM2Pn0vp5sddjzdcsoRReMAvVMkwjAj+O1mCA==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=efficios.com;
+Received: from YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:c01:24::5)
+ by YT3PR01MB8611.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:78::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5880.14; Mon, 5 Dec
+ 2022 20:11:09 +0000
+Received: from YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2bff:5fa3:434e:517]) by YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2bff:5fa3:434e:517%9]) with mapi id 15.20.5880.014; Mon, 5 Dec 2022
+ 20:11:09 +0000
+Message-ID: <323f83c7-38fe-8a12-d77a-0a7249aad316@efficios.com>
+Date: Mon, 5 Dec 2022 15:11:07 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH 5/5] powerpc: dts: remove label = "cpu" from DSA
- dt-binding
+ Thunderbird/102.5.0
+Subject: Re: [PATCH] powerpc/ftrace: fix syscall tracing on PPC64_ELF_ABI_V1
 Content-Language: en-US
-To: Vladimir Oltean <olteanv@gmail.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?=
- <pali@kernel.org>
-References: <20221130141040.32447-1-arinc.unal@arinc9.com>
- <20221130141040.32447-6-arinc.unal@arinc9.com>
- <87a647s8zg.fsf@mpe.ellerman.id.au> <20221201173902.zrtpeq4mkk3i3vpk@pali>
- <20221201234400.GA1692656-robh@kernel.org>
- <20221202193552.vehqk6u53n36zxwl@pali>
- <20221204185924.a4q6cifhpyxaur6f@skbuf>
-From: =?UTF-8?B?QXLEsW7DpyDDnE5BTA==?= <arinc.unal@arinc9.com>
-In-Reply-To: <20221204185924.a4q6cifhpyxaur6f@skbuf>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>
+References: <20221201161442.2127231-1-mjeanson@efficios.com>
+ <87pmcys9ae.fsf@mpe.ellerman.id.au>
+ <d5dd1491-5d59-7987-9b5b-83f5fb1b29ee@efficios.com>
+ <219580de-7473-f142-5ef2-1ed40e41d13d@csgroup.eu>
+From: Michael Jeanson <mjeanson@efficios.com>
+In-Reply-To: <219580de-7473-f142-5ef2-1ed40e41d13d@csgroup.eu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-ZohoMailClient: External
+X-ClientProxiedBy: YQBPR01CA0018.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:c01::26)
+ To YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:c01:24::5)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: YQBPR0101MB5080:EE_|YT3PR01MB8611:EE_
+X-MS-Office365-Filtering-Correlation-Id: b3871620-dc50-4f62-7ce3-08dad6fcd91e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	JMIO0U5w1IB5fA543lBINZUEFUg992UXB1h0iWd0RMj+8bKxKrTNh2KyK0f8fW99cko14V2p7PM8zLzIjYpoJhIWrKwYYtE+qCbpKegFj2vrxcbn1aUdrjlc/y1jMDyfNN1E67Nr1qTYTtOCsSTdZFJboS9fQRQPI2TN1prEIMA4IPRFHP5fJGFxNeu/fliWZtezpKyXDKXgbiB/2sD40GTH4kgi0d9FhBzxKhJgs43S/Xy/JFsa0hIXqKKcngU6QYfqhOb6PUyRBBf1C4R/TW8zuAIjf+VyAqMTFwhAanOxH1fUUCjsXLbsjjkDXXN4xCelZ0C8bCilsRKV8GD6AevtOmarTHjB22f/mWocowVz9CM67PVUvWHAKEm7/OYSROv2GAFmFmYl0UqQnyfbrhyqaBWYltQ1XbqdIN0RvrASpbfULiRSyMTpmBy9OHVt6HjKEHWASNCJa7KTEVCykBbPM5oEqIZOkuYyZkXGzu147fzvZnciB0iwoI3ZlZ+p6zRtQvpk+2IJ+vreFwlRBljWC+iA9mDlCg3hj28KnwAklRu7c5CEMNDQ+WHWEj+86ZjfqUXdGzq6CPlRUbKslmw9noCrOM+4IKdKjRmhG9u9y6R2rPRlTOQXbto/pS9Lhfk+P2PCAHXyTpNMrpqqFLSaBEF+it7Tm2ZmpVJybPJlhrjVA2sSi9nPdTiNfEs+RQHOJqwOsVATepydw+9xv65G0ZOeW/yQSFGoZe0YkLA=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230022)(366004)(346002)(39830400003)(136003)(396003)(376002)(451199015)(6486002)(53546011)(966005)(31686004)(6506007)(6512007)(4326008)(26005)(316002)(110136005)(54906003)(86362001)(31696002)(66476007)(66556008)(66946007)(8676002)(2906002)(186003)(41300700001)(2616005)(38100700002)(7416002)(66574015)(8936002)(107886003)(478600001)(83380400001)(5660300002)(36756003)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?bllOb2tHTW1sTDZZQ04zY05nZWdXQVJQeWZJSEEyNXUyRWhEUnhTZ2lITlA3?=
+ =?utf-8?B?b01mMWNQMmIyci9UTWs1Q1VVUEtWMU1wVjF2T1RBL0tUT25PYWxvU3R3WUF0?=
+ =?utf-8?B?OHhTbmZBOXEzRkRzMGJVRmFrQmkrYU8wNVpkdUtFT1psUmNHcXZ2bnJwdDZk?=
+ =?utf-8?B?ZXVQaEFaRGQ5cWF5Vyt1aTd2RnJDZTdUOVZBaDJqcEhYd2JqbkJZRDNHVHJo?=
+ =?utf-8?B?empsZkxKU29Rb0thdldQN1hFWnNTcHNmZ0JDakw2aitvakQvTkVMS2lzdG12?=
+ =?utf-8?B?Z1B0UUhFclFUZS9mZUhkYVJuOTVHWmFHN3JjSWpxNTArVkdOcGpFTnlwNVlX?=
+ =?utf-8?B?eXlUaWJBcDlwbFdMcHFYNUtxUmgxSVdwazlEQmRnZlhBVFNIZThoL1ZiVjBS?=
+ =?utf-8?B?czNBSjBQNmMydExMM1BpTmJyRWFTWWI3WXAvRlN3ZVRPYmNKbXRIRVRIbjM3?=
+ =?utf-8?B?QmFJam1LK0VEcUJWVHo4dDluS2p6RmRXZ2oyNkQ3WERaS3MrUWhGc2tsdWQv?=
+ =?utf-8?B?R0hyaG5kZUcxQ29kSTVzS3J0UDljZ2QrTTZMM1RCZEFFdU9aRnp1YlVKU3A1?=
+ =?utf-8?B?YW5RREpHOTYwMGV1RU9waVcrdEFRc3ZOLzJxOTRnb05zdGRPcm9NOVRKRC9M?=
+ =?utf-8?B?RGRXRG90N0VLUUJaUE1ITitZRFlKTWo2YVB1T1lENElBZExhR2psaU4rTkgx?=
+ =?utf-8?B?UEpBcXc4MWhKREo2MEI0ekZCNjdtL0xFSk5aNjh3OFh1NHhRSncrRWZpdDhK?=
+ =?utf-8?B?MjZyNW9aZXZlT1MyM0s3S1FIWVRNcnJhR09pZ25yOTRqTFlLWmhEQWcvNVRj?=
+ =?utf-8?B?NjJIUEw2UFY0c3FkMXN3OVBvV0hCQVBBU0l1RDRhd2pGOG5jQ0VUaDBzczBr?=
+ =?utf-8?B?eERsbzJkb2Y4Y00yajJpRWNJVVFzZVdtOHA3a3RXZFRPcDNOK1FocC9obkZt?=
+ =?utf-8?B?cHJJV3pCSG5wOURSNXBjZGRBQmZuRDhxQXBZUyt6NFNFUCtISzE2aGZSVm1a?=
+ =?utf-8?B?a3FMRzY1Nm9LVzJZUmZLNGhaWERJbUZWRUR4SUtZOHhvbkszS1Y2TEJXWmdx?=
+ =?utf-8?B?ZlhMTTlKRHdzeEVSR0VacmxRZElsMXhVOEpaWG5sYkgxNmJ6aDJockMzWUww?=
+ =?utf-8?B?NWUwV3pObzlBYlpmdkdiR2RQMVVHNmdWMVVzTFR2dGl4K2dybzVQbU9FODEr?=
+ =?utf-8?B?VkhabGQ5cWl6d0NCNnFhRVNUbzdGMjBwZm9MK3J1L2FueHFTZkl3cmtjQWN6?=
+ =?utf-8?B?NnR0VWFlRkNUY2FGVVp1eldYWUtxMm1DODVRSG1JaDZTa3pwSCs4QVVWemRR?=
+ =?utf-8?B?a0c4a295UTlYWFB1ZWZqUy9MNE44OHh3M0Q5aDZtQ2FlVW1xdjJKekxZU3E2?=
+ =?utf-8?B?blZQL1BML1Y5Zm9pNkt3WExXd3VVaVNQMHFSeGxwTytMZThCT0Z5MjM5Y1c2?=
+ =?utf-8?B?YnpYRGVoQ2tJNXBONWJCeFh1OFAwaElITWh6M2pxRVZGREF6alN3OVpvVGNV?=
+ =?utf-8?B?bnJ1Sit2a3FyRzRvaW5ZT3h5dnFhWHVSeXhHRnZhR2FxM0FmeW9xeVpxM3Av?=
+ =?utf-8?B?a1BzOEpTWXlJeXVsSFA0WnVJUXZucDZqL2t0ajNEOGQ0ZExwRi9ZeHRkdzVN?=
+ =?utf-8?B?OXAxbHpWOENhay9acEZzZ0hxQlFmOGNzS3RvN1MwL25Jc01vSk03WUMxUVNH?=
+ =?utf-8?B?c2lyR2NIdXV1WEVJRlR1WUsvL1J5RTdXMHl2NUtkU2xaZlZNTnVsUDQ1aWxz?=
+ =?utf-8?B?TEFIMGF1cjNKSWYvdGFYdGdWOUlWWlZDV3dOS0NHQkJzYitUZ3BBbnZwc0hh?=
+ =?utf-8?B?d0JHekNBTWNwK2pBRSt5YWNwc2hrMDRFdC9MNktReUVjU29KYXF3cDBIc2sr?=
+ =?utf-8?B?OVRxRTlCbUh3T3hDdkYvdi8rN2NVam0vOTdtQjJTUlVhWDNna1dsWFYvNFBR?=
+ =?utf-8?B?RjA3Rnl5T2RkQmpTaVNET1RtZWYvT1N2YVlReHhaSzUvNkErR3QydFBmb1dr?=
+ =?utf-8?B?K2tWM0JZOUZDQUEwajFaUnZwcm41UFhSaTdaL3hUYXl4S1RXWWsyZGlraEJk?=
+ =?utf-8?B?ekJjWUdwa3kxQi9jT2didzdnZEE5VmF6c2JlZUlTUXJQY2czd0g0eE1ubWdu?=
+ =?utf-8?Q?pC82foX/efdpTCCXSVo6UwROb?=
+X-OriginatorOrg: efficios.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: b3871620-dc50-4f62-7ce3-08dad6fcd91e
+X-MS-Exchange-CrossTenant-AuthSource: YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2022 20:11:09.0196
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: wY6CAcxOdqd8K1Sx/kFoYsP5SJNZlegRFoe+vkhTDxSHzjFotBaF2Z18wktTugIbibD5/Z5XhapO8bb42MFoOg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT3PR01MB8611
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,51 +133,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?Q?Marek_Beh=c3=ban?= <kabel@kernel.org>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, netdev@vger.kernel.org, Jonas Gorski <jonas.gorski@gmail.com>, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Masami Hiramatsu <mhiramat@kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, Michal Suchanek <msuchanek@suse.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 4.12.2022 21:59, Vladimir Oltean wrote:
-> Hi Pali,
+On 2022-12-05 13:56, Christophe Leroy wrote:
 > 
-> On Fri, Dec 02, 2022 at 08:35:52PM +0100, Pali Rohár wrote:
->> On Thursday 01 December 2022 17:44:00 Rob Herring wrote:
->>> On Thu, Dec 01, 2022 at 06:39:02PM +0100, Pali Rohár wrote:
->>>> I was told by Marek (CCed) that DSA port connected to CPU should have
->>>> label "cpu" and not "cpu<number>". Modern way for specifying CPU port is
->>>> by defining reference to network device, which there is already (&enet1
->>>> and &enet0). So that change just "fixed" incorrect naming cpu0 and cpu1.
->>>>
->>>> So probably linux kernel does not need label = "cpu" in DTS anymore. But
->>>> this is not the reason to remove this property. Linux kernel does not
->>>> use lot of other nodes and properties too... Device tree should describe
->>>> hardware and not its usage in Linux. "label" property is valid in device
->>>> tree and it exactly describes what or where is this node connected. And
->>>> it may be used for other systems.
->>>>
->>>> So I do not see a point in removing "label" properties from turris1x.dts
->>>> file, nor from any other dts file.
->>>
->>> Well, it seems like a bit of an abuse of 'label' to me. 'label' should
->>> be aligned with a sticker or other identifier identifying something to a
->>> human. Software should never care what the value of 'label' is.
+> 
+> Le 05/12/2022 à 19:19, Michael Jeanson a écrit :
+>> [Vous ne recevez pas souvent de courriers de mjeanson@efficios.com.
+>> Découvrez pourquoi ceci est important à
+>> https://aka.ms/LearnAboutSenderIdentification ]
 >>
->> But it already does. "label" property is used for setting (initial)
->> network interface name for DSA drivers. And you can try to call e.g.
->> git grep '"cpu"' net/dsa drivers/net/dsa to see that cpu is still
->> present on some dsa places (probably relict or backward compatibility
->> before eth reference).
+>> On 2022-12-05 00:34, Michael Ellerman wrote:
+>>> Michael Jeanson <mjeanson@efficios.com> writes:
+>>>> In v5.7 the powerpc syscall entry/exit logic was rewritten in C, on
+>>>> PPC64_ELF_ABI_V1 this resulted in the symbols in the syscall table
+>>>> changing from their dot prefixed variant to the non-prefixed ones.
+>>>>
+>>>> Since ftrace prefixes a dot to the syscall names when matching them to
+>>>> build its syscall event list, this resulted in no syscall events being
+>>>> available.
+>>>>
+>>>> Remove the PPC64_ELF_ABI_V1 specific version of
+>>>> arch_syscall_match_sym_name to have the same behavior across all powerpc
+>>>> variants.
+>>>
+>>> This doesn't seem to work for me.
+>>>
+>>> Event with it applied I still don't see anything in
+>>> /sys/kernel/debug/tracing/events/syscalls
+>>>
+>>> Did we break it in some other way recently?
+>>>
+>>> cheers
+>>
+>> I've just tried this change on top of v6.1-rc8 in qemu with a base
+>> config of
+>> 'corenet32_smp_defconfig' and these options on top:
+>>
+>> CONFIG_FTRACE=y
+>> CONFIG_FTRACE_SYSCALLS=y
+>>
+>> And I can trace syscalls with ftrace.
+>>
+>> What kernel tree and config are you using?
 > 
-> Can you try to eliminate the word "probably" from the information you
-> transmit and be specific about when did the DSA binding parse or require
-> the 'label = "cpu"' property for CPU ports in any way?
+> If you are using a ppc32 config, CONFIG_PPC64_ELF_ABI_V1 won't be set,
+> so it doesn't matter whether this change is there or not.
+> 
+> You should try corenet64_smp_defconfig if you want
+> CONFIG_PPC64_ELF_ABI_V1 to be set.
+> 
+> You can also use ppc64_defconfig, that's a different platform but it
+> also has CONFIG_PPC64_ELF_ABI_V1.
 
-As Jonas (on CC) pointed out, I only see this being used in the swconfig 
-b53 driver which uses the label to identify the cpu port.
+You are absolutely right, I used the wrong environment, I blame Monday 
+morning. I tested again this time using 'corenet64_smp_defconfig' with the 
+same options and syscall tracing with ftrace also works.
 
-https://git.openwrt.org/?p=openwrt/openwrt.git;a=blob;f=target/linux/generic/files/drivers/net/phy/b53/b53_common.c;h=87d731ec3e2a868dc8389f554b1dc9ab42c30be2;hb=HEAD#l1508
+I double checked that /proc/config.gz contained CONFIG_PPC64_ELF_ABI_V1 to be 
+sure.
 
-Maybe this got into DSA dt-bindings unchecked before it was decided to 
-move forward with DSA instead of swconfig on Linux.
+> 
+> Christophe
+> 
+>>
+>> Thanks for looking into this.
+>>
 
-Arınç
