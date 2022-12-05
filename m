@@ -4,49 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A673C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 16:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AC89C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 16:49:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NQpQx6BZxz3c7B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 03:09:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=t1aBQ5Pw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=t1aBQ5Pw;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NQqJL50sCz3cJv
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 03:49:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zte.com.cn (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=ye.xingchen@zte.com.cn; receiver=<UNKNOWN>)
+X-Greylist: delayed 437 seconds by postgrey-1.36 at boromir; Mon, 05 Dec 2022 22:52:27 AEDT
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQpPf4gXXz3bgR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 03:08:38 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQhk30gjkz308w
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 22:52:25 +1100 (AEDT)
+Received: from mxde.zte.com.cn (unknown [10.35.20.121])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4NQhYb1pcQz1FhT
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 19:45:07 +0800 (CST)
+Received: from mxus.zte.com.cn (unknown [10.207.168.7])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxde.zte.com.cn (FangMail) with ESMTPS id 4NQhY872gmz9vj0S
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 19:44:44 +0800 (CST)
+Received: from mxhk.zte.com.cn (unknown [192.168.250.137])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxus.zte.com.cn (FangMail) with ESMTPS id 4NQhXP4145z9tyD7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 19:44:05 +0800 (CST)
+Received: from mxct.zte.com.cn (unknown [192.168.251.13])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4NQhXJ09gXz8RTZL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 19:44:00 +0800 (CST)
+Received: from mse-fl2.zte.com.cn (unknown [10.5.228.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id D3C01611D6;
-	Mon,  5 Dec 2022 16:08:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B7ED3C433D6;
-	Mon,  5 Dec 2022 16:08:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1670256516;
-	bh=2zTjxGImNhiKZkQVLYwU+D7sO9c/DELnBsQOLmxj5RM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=t1aBQ5PwG5R+hRKkkXrH8ZTKVgOxRxmB/P6l1a7WOnp6bg1x+OclpQCfQnhw/5RV9
-	 VWi7ElCSsHDX/U7BRQ1/TnpM9vFr8hQGRZDE9i4Y2GO9/XQcyWYoAD1bZDv9jDw4w5
-	 KgmnSDvMOM5qBG6N1xQJdeSmTODNmVm+4pNvzk5Y=
-Date: Mon, 5 Dec 2022 17:08:33 +0100
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Dawei Li <set_pte_at@outlook.com>
-Subject: Re: [PATCH 2/6] macio: Make remove callback of macio driver void
- returned
-Message-ID: <Y44XgS8nHgcJjQCL@kroah.com>
-References: <20221205153644.60909-1-set_pte_at@outlook.com>
- <TYCP286MB2323FCDC7ECD87F8D97CB74BCA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <TYCP286MB2323FCDC7ECD87F8D97CB74BCA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4NQhX55pftz4y0v9;
+	Mon,  5 Dec 2022 19:43:49 +0800 (CST)
+Received: from xaxapp01.zte.com.cn ([10.88.40.50])
+	by mse-fl2.zte.com.cn with SMTP id 2B5Bhifj079670;
+	Mon, 5 Dec 2022 19:43:45 +0800 (+08)
+	(envelope-from ye.xingchen@zte.com.cn)
+Received: from mapi (xaxapp01[null])
+	by mapi (Zmail) with MAPI id mid31;
+	Mon, 5 Dec 2022 19:43:47 +0800 (CST)
+Date: Mon, 5 Dec 2022 19:43:47 +0800 (CST)
+X-Zmail-TransId: 2af9638dd973592eef03
+X-Mailer: Zmail v1.0
+Message-ID: <202212051943476482106@zte.com.cn>
+Mime-Version: 1.0
+From: <ye.xingchen@zte.com.cn>
+To: <broonie@kernel.org>
+Subject: =?UTF-8?B?W1BBVENIXSBBU29DOiBpbXgtYXVkbXV4OiB1c2Ugc3lzZnNfZW1pdCgpIHRvIGluc3RlYWQgb2Ygc2NucHJpbnRmKCk=?=
+Content-Type: text/plain;
+	charset="UTF-8"
+X-MAIL: mse-fl2.zte.com.cn 2B5Bhifj079670
+X-Fangmail-Gw-Spam-Type: 0
+X-FangMail-Miltered: at cgslv5.04-192.168.251.14.novalocal with ID 638DD9C2.000 by FangMail milter!
+X-FangMail-Envelope: 1670240707/4NQhYb1pcQz1FhT/638DD9C2.000/10.35.20.121/[10.35.20.121]/mxde.zte.com.cn/<ye.xingchen@zte.com.cn>
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 638DD9C2.000/4NQhYb1pcQz1FhT
+X-Mailman-Approved-At: Tue, 06 Dec 2022 03:48:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,47 +76,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jgross@suse.com, wei.liu@kernel.org, sstabellini@kernel.org, linux-hyperv@vger.kernel.org, haiyangz@microsoft.com, linuxppc-dev@lists.ozlabs.org, decui@microsoft.com, alsa-devel@alsa-project.org, npiggin@gmail.com, linux-kernel@vger.kernel.org, oleksandr_tyshchenko@epam.com, srinivas.kandagatla@linaro.org, bgoswami@quicinc.com, xen-devel@lists.xenproject.org, johannes@sipsolutions.net, kys@microsoft.com, robert.jarzmik@free.fr, roger.pau@citrix.com
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, xiubo.lee@gmail.com, shengjiu.wang@gmail.com, s.hauer@pengutronix.de, tiwai@suse.com, lgirdwood@gmail.com, perex@perex.cz, nicoleotsuka@gmail.com, linux-imx@nxp.com, kernel@pengutronix.de, shawnguo@kernel.org, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 05, 2022 at 11:36:40PM +0800, Dawei Li wrote:
-> Commit fc7a6209d571 ("bus: Make remove callback return
-> void") forces bus_type::remove be void-returned, it doesn't
-> make much sense for any bus based driver implementing remove
-> callbalk to return non-void to its caller.
-> 
-> This change is for macio bus based drivers.
-> 
-> Signed-off-by: Dawei Li <set_pte_at@outlook.com>
-> ---
->  arch/powerpc/include/asm/macio.h                | 12 ++++++------
->  drivers/ata/pata_macio.c                        |  4 +---
->  drivers/macintosh/rack-meter.c                  |  4 +---
->  drivers/net/ethernet/apple/bmac.c               |  4 +---
->  drivers/net/ethernet/apple/mace.c               |  4 +---
->  drivers/net/wireless/intersil/orinoco/airport.c |  4 +---
->  drivers/scsi/mac53c94.c                         |  5 +----
->  drivers/scsi/mesh.c                             |  5 +----
->  drivers/tty/serial/pmac_zilog.c                 |  7 ++-----
->  sound/aoa/soundbus/i2sbus/core.c                |  4 +---
->  10 files changed, 16 insertions(+), 37 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/macio.h b/arch/powerpc/include/asm/macio.h
-> index ff5fd82d9ff0..f641c730c3b7 100644
-> --- a/arch/powerpc/include/asm/macio.h
-> +++ b/arch/powerpc/include/asm/macio.h
-> @@ -124,15 +124,15 @@ static inline struct pci_dev *macio_get_pci_dev(struct macio_dev *mdev)
->   */
->  struct macio_driver
->  {
-> -	int	(*probe)(struct macio_dev* dev, const struct of_device_id *match);
-> -	int	(*remove)(struct macio_dev* dev);
-> +	int	(*probe)(struct macio_dev *dev, const struct of_device_id *match);
-> +	void	(*remove)(struct macio_dev *dev);
+From: ye xingchen <ye.xingchen@zte.com.cn>
 
-Again, you are changing lines you do not need to here.
+Follow the advice of the Documentation/filesystems/sysfs.rst and show()
+should only use sysfs_emit() or sysfs_emit_at() when formatting the
+value to be returned to user space.
 
-thanks,
+Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+---
+ sound/soc/fsl/imx-audmux.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-greg k-h
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index 50b71e5d4589..582f1e2431ee 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -75,8 +75,7 @@ static ssize_t audmux_read_file(struct file *file, char __user *user_buf,
+ 	if (!buf)
+ 		return -ENOMEM;
+
+-	ret = scnprintf(buf, PAGE_SIZE, "PDCR: %08x\nPTCR: %08x\n",
+-		       pdcr, ptcr);
++	ret = sysfs_emit(buf, "PDCR: %08x\nPTCR: %08x\n", pdcr, ptcr);
+
+ 	if (ptcr & IMX_AUDMUX_V2_PTCR_TFSDIR)
+ 		ret += scnprintf(buf + ret, PAGE_SIZE - ret,
+-- 
+2.25.1
