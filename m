@@ -4,70 +4,126 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84037C636F8
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 21:05:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A739CC4321E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 21:47:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NQx084cQPz3bhW
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 08:05:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NQxwx5Cjnz3bgT
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 08:47:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=OcIx5RVe;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=ne3bFZOS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42a; helo=mail-pf1-x42a.google.com; envelope-from=isaku.yamahata@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=2a01:111:f403:7052::629; helo=can01-yqb-obe.outbound.protection.outlook.com; envelope-from=mjeanson@efficios.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=OcIx5RVe;
+	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=ne3bFZOS;
 	dkim-atps=neutral
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from CAN01-YQB-obe.outbound.protection.outlook.com (mail-yqbcan01on20629.outbound.protection.outlook.com [IPv6:2a01:111:f403:7052::629])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQwz8079Rz2xkD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 08:04:35 +1100 (AEDT)
-Received: by mail-pf1-x42a.google.com with SMTP id c7so9237755pfc.12
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Dec 2022 13:04:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=CWvVJvThv0gHUKwPAYQk+SufNWdeMUwtwKNDHUXMgJo=;
-        b=OcIx5RVeRcYhCg+P/yyeEn2/AXirrXP0zxi2pf1d/28freUOc/av5SpULT83ZYM8AR
-         myc4dnMmPvHE3jr9vcMMddRLLxkacLFeezE+c+0Zlk3o2XgIC/SMH/vIw+KdFzsH+uLv
-         WslAdKHSS5vTfioTTvoXFJtUWq6WhztGkGjsEKhAgabT7R5Ieb8WVI6xl33PlPHqcfIi
-         5B0Kux04QuiFV9IqZsVC19eU6rs/NgXg47yfzs8oRnuZ1wuvub8h8tAQVBb/ZvGALZMP
-         YvJcH+YOzWY8rXNN7G7QDkbWwWbaUwJz7IUH44ZL4cbmG8Jok0SlgS1GSdcQQ517m8Db
-         DWkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=CWvVJvThv0gHUKwPAYQk+SufNWdeMUwtwKNDHUXMgJo=;
-        b=ur+M5+fIvZeqRch3aY4RVXKMllZJihGKKOmopdiRxr6Fw+9Zp6h6fqzhsjQ/OrJe02
-         LUCn7prBB+uNP00mNbA4KcO+hKRhHEQ3SYk7+mqP65JrPnCarF6Fjhhz2jYIVedoCY5B
-         H/fomOiUf7QLN8olsZ9W5J2tvUZeYfDLO/rLNS/czEMGtgTe9h1HwvMrI9nPtl7LczCQ
-         MPiSZeOBqojMwL7beT1j/0cAjpgbYgaG259lngUX6XbWvnlT0q9kvMql9xY5E7Co1M9T
-         Oc9Ntmss4baE1XejqHcculr10FRA3FlF04I0hQwJsdpn5aEygmnVwxSYofLd25IAWXOx
-         Qx9Q==
-X-Gm-Message-State: ANoB5pn2K8O/3/4ItUGjwu2Dx3MkRE93k3uzI3FPGite0r3nJ3svifev
-	6R6mXFGahYqux2ond4VBX7M=
-X-Google-Smtp-Source: AA0mqf4ROaywPtc8c32MAZXixhdmTVHwrr18hdjaI5ELGretvCHmlK5VCycNuwcuIvkq+nizmYnPRg==
-X-Received: by 2002:a05:6a00:4286:b0:56d:3de3:c525 with SMTP id bx6-20020a056a00428600b0056d3de3c525mr63424774pfb.41.1670274271914;
-        Mon, 05 Dec 2022 13:04:31 -0800 (PST)
-Received: from localhost ([192.55.54.55])
-        by smtp.gmail.com with ESMTPSA id e4-20020a056a0000c400b0057709fce782sm1860045pfj.54.2022.12.05.13.04.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Dec 2022 13:04:31 -0800 (PST)
-Date: Mon, 5 Dec 2022 13:04:30 -0800
-From: Isaku Yamahata <isaku.yamahata@gmail.com>
-To: Sean Christopherson <seanjc@google.com>
-Subject: Re: [PATCH v2 39/50] KVM: x86: Move CPU compat checks hook to
- kvm_x86_ops (from kvm_x86_init_ops)
-Message-ID: <20221205210430.GB3630770@ls.amr.corp.intel.com>
-References: <20221130230934.1014142-1-seanjc@google.com>
- <20221130230934.1014142-40-seanjc@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQxvq1qf7z306l
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 08:46:45 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=PR3KD4LjHn5URRzxE8CN7rmCwj/fR7tMvd31h/RzHyqRtN5xtgcWFe0fZZ56knCzOqS0V2TuTTPXJ6hSGXIew9CuoXXalbkvNaKrKUy0f25g12j3SD/wb10mI4pWRTu7F/BgAsMhWCx8yaCuAKMsv9mpowPCmh/dzMvS0id/TAtqREIDMjuET4mL1X/zqPkhOhrbzSrp5qVhv0VCbOYbFQ1cBkIzR3qcpT0TU019aYrF29f58wBkDevZrz/lFA9pjStpEnZ3EpBwOVgjBsRG1yj99t0koBsVb0TyUmev9EtgbZoUoLlzrOTVDlK78qN7o/RUm6w3l5TDTb/1yHvZmA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6rE/MkSHEjAXiLj8hxFHYkDyfdTJh5iCbuauJNidYtU=;
+ b=SXHs5l7mvZJ8X5SfQ/TsWM2ezdEjfrbFYqDN21ldVTuFApjvVuStGYgD5YR2bfpzk0MjwZ/NeUnbO6ARK7+DuGIrbioX49+MtC0LxGpuDZfm/8Ivwdok80wA5ZAtzH1Wz5S8YF5JOrY9UphgAQbZgCewIGREm9Emsfr/r5LGIiDdI7dfz2TqCxgi77FMPSuqb3QT3JaC673z4qlBzOucA0TDq/snjtlD8h+O9JbQ15lA4rCMhZRGR0vflQuoQdeNTDaoNLM2XVNbLcdIB8s+DcNKuYbnMDbYRJ2AfXLFgzUeT9LJ0ysPRX4MTV8fXmSzREvqR9QAeSGpHuH0KulpaA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
+ dkim=pass header.d=efficios.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=6rE/MkSHEjAXiLj8hxFHYkDyfdTJh5iCbuauJNidYtU=;
+ b=ne3bFZOS6keVCmbtY1hZr2JuiOL4yeNap8FstDnDQj0aYlZoXCsvujZOKNqGsRUNO1XNGJve22XfKCpJjwF/ZINm6ABzDET//TasXiCxPqkl75HRr8h7UEKo3vIpB4eVugEicM3xtgM+RUFfFnEFvZ/jltLiLiB6K1OMq8McoxSRMnImWycWZqNNhdE7w4TOdNbVg11a1U4at945iapBx5GvgK08IVeoTyaW9N9c3P6j+ovRLdmeGIVG9eTdtEgjEsCoCoogIYVIPDBwIp0MciXAQWK4YwZS+MXlPRQdYEb59iaARquBPkW6yliNuVefJn5HR/HIo4Py1QDahiSj2A==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=efficios.com;
+Received: from YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:c01:24::5)
+ by YT2PR01MB5773.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:4d::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5880.14; Mon, 5 Dec
+ 2022 21:46:22 +0000
+Received: from YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2bff:5fa3:434e:517]) by YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2bff:5fa3:434e:517%9]) with mapi id 15.20.5880.014; Mon, 5 Dec 2022
+ 21:46:22 +0000
+Message-ID: <dfe0b9ba-828d-e1a5-f9a3-416c6b5b1cf3@efficios.com>
+Date: Mon, 5 Dec 2022 16:46:18 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH] powerpc/ftrace: fix syscall tracing on PPC64_ELF_ABI_V1
+Content-Language: en-US
+From: Michael Jeanson <mjeanson@efficios.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Steven Rostedt <rostedt@goodmis.org>
+References: <20221201161442.2127231-1-mjeanson@efficios.com>
+ <87pmcys9ae.fsf@mpe.ellerman.id.au>
+ <d5dd1491-5d59-7987-9b5b-83f5fb1b29ee@efficios.com>
+ <219580de-7473-f142-5ef2-1ed40e41d13d@csgroup.eu>
+ <323f83c7-38fe-8a12-d77a-0a7249aad316@efficios.com>
+In-Reply-To: <323f83c7-38fe-8a12-d77a-0a7249aad316@efficios.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: YT4P288CA0040.CANP288.PROD.OUTLOOK.COM
+ (2603:10b6:b01:d3::21) To YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:c01:24::5)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20221130230934.1014142-40-seanjc@google.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: YQBPR0101MB5080:EE_|YT2PR01MB5773:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0ceaf85e-0e89-436f-e458-08dad70a256a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	gMU3nW+OC3RtV00fc5qXcFkVBR91XRJr5gtjyZEgfKvmQ5TnvgWwuDYXWaNx+PHKsuRX2G0tJ1O+ETmAx1LNFTpBLZz0QvjUyXquyLC1ATNS9/4tyz0ViUa+wgIlLAqRDfFjV2RZAiBEt7c5i7BE2lSEJnFfGQY6OtelUxQ92BtoBvoRde06IAAGJqH3vQIqnkqw7lfKN2CTDYgXZGFhHd3Ge5l8GZBrD7zMoymBWcmuDsWK4N6Vaoa2JSqVH+FG+FuqZ9Vx1IILLKP09FA5Va2jPrpKSPEgt8mLutaHhDr5IKD//HFp14ah2cypDlSwqZ+e23dGth6pJJwR+zNmBiw48i8vkczm1bTvlS4YBoj55IbBpPuw2XqDLEsjG8AQNNYFvXfGOruhG1WnWTlWaRWfhwCihrOjKjjdojJ9gPstB0/v67whv0N6xCCp3DpHV3x5JCRBHD6OOfb2uC0JZlJyxQor9u3G7PVu5ZOomNImGKO7sv5sHrF0hAeg+gxfo8vqr46E0cgwIx+ngBGdgiF7AWbOSXOBWSSzTRvth7ZS5gLoJuMc0eA0ks1/GIyMWu5mVCnVoJkO+k1WFJBetBzA2JwCjVLjlQsATTcyDphn11vzbMqLu4e5Ub/1AQ8j4FCV9L4J5DSJLtiIBqsMfHMAV5VafBU2u7Ujr29XYsajD+TsJRMyMC0IxeH1nIEq0DqPOSC5eLBSxkYUVo7MZDtNUpzgBHb5SThPWyo13VQ=
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230022)(346002)(396003)(136003)(376002)(366004)(39830400003)(451199015)(8936002)(83380400001)(38100700002)(53546011)(5660300002)(4744005)(31686004)(7416002)(2616005)(36756003)(2906002)(41300700001)(6486002)(186003)(478600001)(6666004)(107886003)(4326008)(6506007)(31696002)(66476007)(66946007)(66556008)(8676002)(6512007)(26005)(86362001)(316002)(110136005)(54906003)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?OWhmei9WbitWaDZGcnY5M1ZWREJaRWNOTHQxeXhiQ2lYZkY5SFZMMnlwVFpo?=
+ =?utf-8?B?S1dnZWIrbVg2TTJFTGc2WVhBNnNvQ25BZWhRQlRlRGFjVFNGY0creE4vVDcx?=
+ =?utf-8?B?aE93ZkNIb1FSZkl0OEIxSHlsbGIvY3lCZE1Mc2lsdlY5N2hwVkZsd2xaTUky?=
+ =?utf-8?B?QVU5ZEFycERvMjNyZnpKWWRnU0RsNnFsQjRvZk9NeGNzalBBUnkzZ09VV1F6?=
+ =?utf-8?B?Lzkxb0d5OWRmTE5tSXRqamo2SGhIRkxKdnNDc0k5MEtxYS85S1lqcHlteStB?=
+ =?utf-8?B?Y2V4dzI0T0lZK24zRFczTjI0dGZ2UitGdzBkbUZSK1U1WDgyc2gvTEZzL2NC?=
+ =?utf-8?B?M1FUeVZHT2lzQTdqZUttcFBBV3RrODAycEtRRnZJclNmdFdmb3lDVGg2ZkhM?=
+ =?utf-8?B?ZVBKeW80NTZ6VVNEWkF3Z2dxTHlrM3dMLy9Ed0xvQmVyWXdWT0lxU21nNXhz?=
+ =?utf-8?B?dnJpNWdjV0FlSWdiYkJpT3FhNjNhQjNyVGhZamtXRUxjdzVHMHFmRHFSbnFD?=
+ =?utf-8?B?TTlpaG81N0FvaHJKZld6amNuWDMzYzgvWWQ4S1N2aHJQVTVFSThZUlVodXhV?=
+ =?utf-8?B?SUhuVVU5RG5HNmtYUGhMTVJsOGpjbjRCMHFwMGJQR1RtaFRoaXYvdTZrbzZL?=
+ =?utf-8?B?b2ZNS0ZuYU9oR0VncnNiTGFzZXZaNFh2ZFVIYjA5aVA5Tis1c096Qmwrak94?=
+ =?utf-8?B?S2Q1aE5tQ1pxeUVmUU5UT1lHVEtCaEFubVZrQ3FpN0lQa3ZPMDBEZ1B0MFlH?=
+ =?utf-8?B?Z09sVWduRFAyWFpSQy9FTUQxMkNDODlad09KKzZOa1ZNbVN0TXMvOXdFTzhl?=
+ =?utf-8?B?SVlDWkhtMzFwUHJYa2Z4ZmgzMVpQWGYzSGFWSnNhNjlDSFVxbVEzVHZvNUov?=
+ =?utf-8?B?RnpGY1JYd094WGxJcllNakdabW5ZSFBpcmxUVVl0dERFQWU0TWZUTUVpcGsy?=
+ =?utf-8?B?WDNURU1TeGhrcjN1TVF4SnBtbzRtTG5jeFdYN2xUd2RPU2hzRXVpbURCM0py?=
+ =?utf-8?B?S0pRdUg4WGNYVnZ4aXBERTNGby9WZjdKSFNpS3hkZmtRcnY0ZmVPbHJXNXZl?=
+ =?utf-8?B?dm92MnVvdENwWWp1dk85eTlyQnJDT3VOVkZYTi80bE9ROGtVcDRwN01lMXdh?=
+ =?utf-8?B?Z1l5WEp4cWZaaEJsN1hBankrOTd3UXpTZTFqRldKMU4wWXJaVUQ5TEFMV1kr?=
+ =?utf-8?B?ZEFIRTRnRnNqQ082a0NnSDUwUE9lMlFuRHVYNUFNZXZaMnRUSENsd29hUmo4?=
+ =?utf-8?B?MTEyNkkxUHQxSmpJaDk4dzBHOG1GdmxaL2cwQ3RqWUpBVGFvOTZMWjcwTzJU?=
+ =?utf-8?B?Q0t0bXYzS1BwQ3BwV3lVeXA3amxTd3ZMZzJZeitjOEVCOHBrUFRpZEhMeFlN?=
+ =?utf-8?B?aWh4T3pCZWI0WlY1cEI2WlZaSCtCU3B5dWpUSVZ1UnFyTlplbDRzcmF6NFNB?=
+ =?utf-8?B?NXQrMEh5ZllXUm5LTmhiNi9KaFZVUFZLNDNrNklnUnpFenNDUExOVlU0SnZk?=
+ =?utf-8?B?ZS84QXZzTTZ0WW9wZytlQTQ1eGFEakh5b3B6YzJTZjhYUFdXSEtlNk4xbzht?=
+ =?utf-8?B?TkJML0cvWWNxek54bkc2NW9XeDJrZTl1UEdWUWtxWk92Wm1JRDRRSjNGTnJz?=
+ =?utf-8?B?dWNuUXV4QlF0R2pKQUNvdXQ4dk81SjR6N1kxRnptQThXajRteXJOOEJaYk82?=
+ =?utf-8?B?Wkd4T016V1Z5UGVuUTNMTFpFSkNGVnJ4N3dKZTduOFBpdmZ2Qm5uTVZjczJs?=
+ =?utf-8?B?eEdRQTVTbGhDY3A3cnF6b0ZCU0RNcFF6VW1NME5WM0Q5eFZHeTJTajR0c3li?=
+ =?utf-8?B?RUMzS3dXeTZScnNPYlhWdk84Z25hekE4QkV4YWdJQ0tVTDVRdHlwK0FEN0lT?=
+ =?utf-8?B?OTRIOThtUEpBUXFQUWNoMUYyeEU3Q3ZJVEttbVpHekpITlRwMklTandQczZQ?=
+ =?utf-8?B?VUNSVXYyQnV6anB5YnN4M1d2d3ZCOHRJUkNGNC93WnFKWElsNm1DTktMVUwx?=
+ =?utf-8?B?bW1Hald0dzU0cDUwMVRQTzd0WGROM052YytxZ21McWRpTW5NNHAyU0tVWjda?=
+ =?utf-8?B?V1BURmxMd0RhN2YvWm0yK1V4dU9HM3QxS3VnaHprTDcxYXo2Wk51OUtaRXVQ?=
+ =?utf-8?Q?tiU/YD2SQdsCnYsMw63XsXfSj?=
+X-OriginatorOrg: efficios.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0ceaf85e-0e89-436f-e458-08dad70a256a
+X-MS-Exchange-CrossTenant-AuthSource: YQBPR0101MB5080.CANPRD01.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 05 Dec 2022 21:46:21.9534
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: bs/NY5apc/A9eToPrDs5nk13zgga/ooRJmnuvECFmEOxB7sbjzxitm/d2//48QkPSHFanStPCKgqAiYlVaIKXw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT2PR01MB5773
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,249 +135,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Matthew Rosato <mjrosato@linux.ibm.com>, Paul Durrant <paul@xen.org>, Yuan Yao <yuan.yao@intel.com>, Paul Walmsley <paul.walmsley@sifive.com>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Kai Huang <kai.huang@intel.com>, linux-riscv@lists.infradead.org, Claudio Imbrenda <imbrenda@linux.ibm.com>, kvmarm@lists.cs.columbia.edu, isaku.yamahata@gmail.com, linux-s390@vger.kernel.org, Janosch Frank <frankja@linux.ibm.com>, Marc Zyngier <maz@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Aleksandar Markovic <aleksandar.qemu.devel@gmail.com>, James Morse <james.morse@arm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, Chao Gao <chao.gao@intel.com>, Eric Farman <farman@linux.ibm.com>, Albert Ou <aou@eecs.berkeley.edu>, Suzuki K Poulose <suzuki.poulose@arm.com>, kvm@vger.kernel.org, Atish Patra <atishp@atishpatra.org>, kvmarm@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, Alexandru Elisei <alexandru.elisei@arm.com>, linux-arm-kernel@lists.infradead
- .org, Isaku Yamahata <isaku.yamahata@intel.com>, Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>, Fabiano Rosas <farosas@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Cornelia Huck <cohuck@redhat.com>, linux-mips@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Palmer Dabbelt <palmer@dabbelt.com>, kvm-riscv@lists.infradead.org, Anup Patel <anup@brainfault.org>, Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Masami Hiramatsu <mhiramat@kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, Michal Suchanek <msuchanek@suse.de>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Nov 30, 2022 at 11:09:23PM +0000,
-Sean Christopherson <seanjc@google.com> wrote:
+On 2022-12-05 15:11, Michael Jeanson wrote:
+>>>> Michael Jeanson <mjeanson@efficios.com> writes:
+>>>>> In v5.7 the powerpc syscall entry/exit logic was rewritten in C, on
+>>>>> PPC64_ELF_ABI_V1 this resulted in the symbols in the syscall table
+>>>>> changing from their dot prefixed variant to the non-prefixed ones.
+>>>>>
+>>>>> Since ftrace prefixes a dot to the syscall names when matching them to
+>>>>> build its syscall event list, this resulted in no syscall events being
+>>>>> available.
+>>>>>
+>>>>> Remove the PPC64_ELF_ABI_V1 specific version of
+>>>>> arch_syscall_match_sym_name to have the same behavior across all powerpc
+>>>>> variants.
+>>>>
+>>>> This doesn't seem to work for me.
+>>>>
+>>>> Event with it applied I still don't see anything in
+>>>> /sys/kernel/debug/tracing/events/syscalls
+>>>>
+>>>> Did we break it in some other way recently?
+>>>>
+>>>> cheers
 
-> Move the .check_processor_compatibility() callback from kvm_x86_init_ops
-> to kvm_x86_ops to allow a future patch to do compatibility checks during
-> CPU hotplug.
-> 
-> Do kvm_ops_update() before compat checks so that static_call() can be
-> used during compat checks.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/include/asm/kvm-x86-ops.h |  1 +
->  arch/x86/include/asm/kvm_host.h    |  3 ++-
->  arch/x86/kvm/svm/svm.c             |  5 +++--
->  arch/x86/kvm/vmx/vmx.c             | 16 +++++++--------
->  arch/x86/kvm/x86.c                 | 31 +++++++++++-------------------
->  5 files changed, 25 insertions(+), 31 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-> index abccd51dcfca..dba2909e5ae2 100644
-> --- a/arch/x86/include/asm/kvm-x86-ops.h
-> +++ b/arch/x86/include/asm/kvm-x86-ops.h
-> @@ -14,6 +14,7 @@ BUILD_BUG_ON(1)
->   * to make a definition optional, but in this case the default will
->   * be __static_call_return0.
->   */
-> +KVM_X86_OP(check_processor_compatibility)
->  KVM_X86_OP(hardware_enable)
->  KVM_X86_OP(hardware_disable)
->  KVM_X86_OP(hardware_unsetup)
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index d79aedf70908..ba74fea6850b 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -1518,6 +1518,8 @@ static inline u16 kvm_lapic_irq_dest_mode(bool dest_mode_logical)
->  struct kvm_x86_ops {
->  	const char *name;
->  
-> +	int (*check_processor_compatibility)(void);
-> +
->  	int (*hardware_enable)(void);
->  	void (*hardware_disable)(void);
->  	void (*hardware_unsetup)(void);
-> @@ -1729,7 +1731,6 @@ struct kvm_x86_nested_ops {
->  };
->  
->  struct kvm_x86_init_ops {
-> -	int (*check_processor_compatibility)(void);
->  	int (*hardware_setup)(void);
->  	unsigned int (*handle_intel_pt_intr)(void);
->  
-> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-> index 9f94efcb9aa6..c2e95c0d9fd8 100644
-> --- a/arch/x86/kvm/svm/svm.c
-> +++ b/arch/x86/kvm/svm/svm.c
-> @@ -543,7 +543,7 @@ static bool kvm_is_svm_supported(void)
->  	return true;
->  }
->  
-> -static int __init svm_check_processor_compat(void)
-> +static int svm_check_processor_compat(void)
->  {
->  	if (!kvm_is_svm_supported())
->  		return -EIO;
-> @@ -4695,6 +4695,8 @@ static int svm_vm_init(struct kvm *kvm)
->  static struct kvm_x86_ops svm_x86_ops __initdata = {
->  	.name = KBUILD_MODNAME,
->  
-> +	.check_processor_compatibility = svm_check_processor_compat,
-> +
->  	.hardware_unsetup = svm_hardware_unsetup,
->  	.hardware_enable = svm_hardware_enable,
->  	.hardware_disable = svm_hardware_disable,
-> @@ -5079,7 +5081,6 @@ static __init int svm_hardware_setup(void)
->  
->  static struct kvm_x86_init_ops svm_init_ops __initdata = {
->  	.hardware_setup = svm_hardware_setup,
-> -	.check_processor_compatibility = svm_check_processor_compat,
->  
->  	.runtime_ops = &svm_x86_ops,
->  	.pmu_ops = &amd_pmu_ops,
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index 2a8a6e481c76..6416ed5b7f89 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -2520,8 +2520,7 @@ static bool cpu_has_perf_global_ctrl_bug(void)
->  	return false;
->  }
->  
-> -static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
-> -				      u32 msr, u32 *result)
-> +static int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt, u32 msr, u32 *result)
->  {
->  	u32 vmx_msr_low, vmx_msr_high;
->  	u32 ctl = ctl_min | ctl_opt;
-> @@ -2539,7 +2538,7 @@ static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
->  	return 0;
->  }
->  
-> -static __init u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
-> +static u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
->  {
->  	u64 allowed;
->  
-> @@ -2548,8 +2547,8 @@ static __init u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
->  	return  ctl_opt & allowed;
->  }
->  
-> -static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
-> -				    struct vmx_capability *vmx_cap)
-> +static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
-> +			     struct vmx_capability *vmx_cap)
->  {
->  	u32 vmx_msr_low, vmx_msr_high;
->  	u32 _pin_based_exec_control = 0;
-> @@ -2710,7 +2709,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
->  	return 0;
->  }
->  
-> -static bool __init kvm_is_vmx_supported(void)
-> +static bool kvm_is_vmx_supported(void)
->  {
->  	if (!cpu_has_vmx()) {
->  		pr_err("CPU doesn't support VMX\n");
-> @@ -2726,7 +2725,7 @@ static bool __init kvm_is_vmx_supported(void)
->  	return true;
->  }
->  
-> -static int __init vmx_check_processor_compat(void)
-> +static int vmx_check_processor_compat(void)
->  {
->  	struct vmcs_config vmcs_conf;
->  	struct vmx_capability vmx_cap;
-> @@ -8104,6 +8103,8 @@ static void vmx_vm_destroy(struct kvm *kvm)
->  static struct kvm_x86_ops vmx_x86_ops __initdata = {
->  	.name = KBUILD_MODNAME,
->  
-> +	.check_processor_compatibility = vmx_check_processor_compat,
-> +
->  	.hardware_unsetup = vmx_hardware_unsetup,
->  
->  	.hardware_enable = vmx_hardware_enable,
-> @@ -8501,7 +8502,6 @@ static __init int hardware_setup(void)
->  }
->  
->  static struct kvm_x86_init_ops vmx_init_ops __initdata = {
-> -	.check_processor_compatibility = vmx_check_processor_compat,
->  	.hardware_setup = hardware_setup,
->  	.handle_intel_pt_intr = NULL,
->  
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 5551f3552f08..ee9af412ffd4 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -9279,12 +9279,7 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
->  	kvm_pmu_ops_update(ops->pmu_ops);
->  }
->  
-> -struct kvm_cpu_compat_check {
-> -	struct kvm_x86_init_ops *ops;
-> -	int *ret;
-> -};
-> -
-> -static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
-> +static int kvm_x86_check_processor_compatibility(void)
->  {
->  	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
->  
-> @@ -9294,19 +9289,16 @@ static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
->  	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
->  		return -EIO;
->  
-> -	return ops->check_processor_compatibility();
-> +	return static_call(kvm_x86_check_processor_compatibility)();
->  }
->  
-> -static void kvm_x86_check_cpu_compat(void *data)
-> +static void kvm_x86_check_cpu_compat(void *ret)
->  {
-> -	struct kvm_cpu_compat_check *c = data;
-> -
-> -	*c->ret = kvm_x86_check_processor_compatibility(c->ops);
-> +	*(int *)ret = kvm_x86_check_processor_compatibility();
->  }
->  
->  static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  {
-> -	struct kvm_cpu_compat_check c;
->  	u64 host_pat;
->  	int r, cpu;
->  
-> @@ -9377,12 +9369,12 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	if (r != 0)
->  		goto out_mmu_exit;
->  
-> -	c.ret = &r;
-> -	c.ops = ops;
-> +	kvm_ops_update(ops);
-> +
->  	for_each_online_cpu(cpu) {
-> -		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &c, 1);
-> +		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &r, 1);
+I did some further testing, my config also enabled KALLSYMS_ALL, when I remove 
+it there is indeed no syscall events.
 
-Ah, here pointer makes sense. So I scratch the comment on the previous patch.
-
-Thanks,
-
->  		if (r < 0)
-> -			goto out_hardware_unsetup;
-> +			goto out_unwind_ops;
->  	}
->  
->  	/*
-> @@ -9390,8 +9382,6 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	 * absolutely necessary, as most operations from this point forward
->  	 * require unwinding.
->  	 */
-> -	kvm_ops_update(ops);
-> -
->  	kvm_timer_init();
->  
->  	if (pi_inject_timer == -1)
-> @@ -9427,8 +9417,9 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	kvm_init_msr_list();
->  	return 0;
->  
-> -out_hardware_unsetup:
-> -	ops->runtime_ops->hardware_unsetup();
-> +out_unwind_ops:
-> +	kvm_x86_ops.hardware_enable = NULL;
-> +	static_call(kvm_x86_hardware_unsetup)();
->  out_mmu_exit:
->  	kvm_mmu_vendor_module_exit();
->  out_free_percpu:
-> -- 
-> 2.38.1.584.g0f3c55d4c2-goog
-> 
-
--- 
-Isaku Yamahata <isaku.yamahata@gmail.com>
