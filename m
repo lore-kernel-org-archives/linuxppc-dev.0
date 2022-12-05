@@ -4,54 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C30FC4321E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 12:50:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 202F3C47089
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 15:48:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NQk0R26dxz3bWl
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Dec 2022 23:49:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NQnyZ28Pdz3bjx
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Dec 2022 02:48:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g08hwSlB;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=p0WgwoQG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=jgross@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=g08hwSlB;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=p0WgwoQG;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQjzN2LK3z2xZp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Dec 2022 23:49:04 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NQnxW66B2z30Qx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Dec 2022 02:47:42 +1100 (AEDT)
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 7A1A861084;
-	Mon,  5 Dec 2022 12:49:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3EE1C433C1;
-	Mon,  5 Dec 2022 12:49:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1670244540;
-	bh=mFqYvD3gjKGJzFiKSWb9kYyT39RDNofZBd2/IEHHBJk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=g08hwSlB1Ay3rj2Hp7MNezdxgR06AYJAnNMmknUp1LeYKZlM/XSQnRL7HFSftc24q
-	 HBCgfVhtS8ABVm2ZPlD2HEuW62wmJClVcbVZi1v/Jg0KB7yZEd8C+ZL+LSKtmkiAG+
-	 cB4i7njMhHF9U5VXcoyx/clAoxqXoQlmbHy6K75Q+G+aaqR5mx78Q3v78jWh11O+sS
-	 +8Ys9Z2oWBj1wFGzBSPusgQeKRy1dJBmzwHcsiRyYvWxpdprINtGoGujMq1g3tn2zz
-	 nQg3aFdk812ewGX1U6Fn8nQeqvjSaWKiI01htBfEp8IKfgpb9RG9vnwmdvj3t4SgzP
-	 xRoxGWNFNbT3Q==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 8165040404; Mon,  5 Dec 2022 09:48:57 -0300 (-03)
-Date: Mon, 5 Dec 2022 09:48:57 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [V3] tools/perf: Fix printing field separator in CSV metrics
- output
-Message-ID: <Y43ouXptBn/fAdIq@kernel.org>
-References: <20221205042852.83382-1-atrajeev@linux.vnet.ibm.com>
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 942BE1F747;
+	Mon,  5 Dec 2022 15:47:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1670255257; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=rpUTCoGuWWbuZm6F5Ym2L8Ib8whEx66qUw7I1eZbSC4=;
+	b=p0WgwoQGsmVBdSnsmcU7qj3iqHPp2vcjDmy0ieFW25b78c2G2eyvRvh6DxeHDSHPZ/NSq2
+	iM339T3C1jZvvCy9Zbw4VOpRsT8ZMtOXesFizWdYNSop9ZbHmNH7qgsV5Hg064xTeS7tpT
+	YUz2RkLvxH+zUsGsT1lHHIEDwFpHPwE=
+Received: from imap1.suse-dmz.suse.de (imap1.suse-dmz.suse.de [192.168.254.73])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap1.suse-dmz.suse.de (Postfix) with ESMTPS id EEDB613326;
+	Mon,  5 Dec 2022 15:47:36 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap1.suse-dmz.suse.de with ESMTPSA
+	id b2+XOJgSjmMjPwAAGKfGzw
+	(envelope-from <jgross@suse.com>); Mon, 05 Dec 2022 15:47:36 +0000
+Message-ID: <395093cc-c0a0-0ec4-93b9-29dbf1158f84@suse.com>
+Date: Mon, 5 Dec 2022 16:47:36 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221205042852.83382-1-atrajeev@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.0
+Subject: Re: [PATCH 4/6] xen: make remove callback of xen driver void returned
+Content-Language: en-US
+To: Dawei Li <set_pte_at@outlook.com>, gregkh@linuxfoundation.org
+References: <20221205153644.60909-1-set_pte_at@outlook.com>
+ <TYCP286MB232333CB411691110A8B9D96CA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
+From: Juergen Gross <jgross@suse.com>
+In-Reply-To: <TYCP286MB232333CB411691110A8B9D96CA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------PybxEFi1PpbX5Zgh6BVCbvw4"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,118 +72,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: irogers@google.com, ak@linux.intel.com, rnsastry@linux.ibm.com, linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, james.clark@arm.com, jolsa@kernel.org, kjain@linux.ibm.com, namhyung@kernel.org, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: wei.liu@kernel.org, sstabellini@kernel.org, linux-hyperv@vger.kernel.org, haiyangz@microsoft.com, linuxppc-dev@lists.ozlabs.org, decui@microsoft.com, alsa-devel@alsa-project.org, npiggin@gmail.com, linux-kernel@vger.kernel.org, oleksandr_tyshchenko@epam.com, srinivas.kandagatla@linaro.org, bgoswami@quicinc.com, xen-devel@lists.xenproject.org, johannes@sipsolutions.net, kys@microsoft.com, robert.jarzmik@free.fr, roger.pau@citrix.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Mon, Dec 05, 2022 at 09:58:52AM +0530, Athira Rajeev escreveu:
-> In perf stat with CSV output option, number of fields
-> in metrics output is not matching with number of fields
-> in other event output lines.
-> 
-> Sample output below after applying patch to fix
-> printing os->prefix.
-> 
-> 	# ./perf stat -x, --per-socket -a -C 1 ls
-> 	S0,1,82.11,msec,cpu-clock,82111626,100.00,1.000,CPUs utilized
-> 	S0,1,2,,context-switches,82109314,100.00,24.358,/sec
-> 	------
-> ====>	S0,1,,,,,,,1.71,stalled cycles per insn
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------PybxEFi1PpbX5Zgh6BVCbvw4
+Content-Type: multipart/mixed; boundary="------------qySa0HM0bP3H6XGxVri7vr4X";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: Dawei Li <set_pte_at@outlook.com>, gregkh@linuxfoundation.org
+Cc: johannes@sipsolutions.net, robert.jarzmik@free.fr,
+ sstabellini@kernel.org, oleksandr_tyshchenko@epam.com, roger.pau@citrix.com,
+ srinivas.kandagatla@linaro.org, bgoswami@quicinc.com, mpe@ellerman.id.au,
+ npiggin@gmail.com, christophe.leroy@csgroup.eu, kys@microsoft.com,
+ haiyangz@microsoft.com, wei.liu@kernel.org, decui@microsoft.com,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ xen-devel@lists.xenproject.org, linux-hyperv@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Message-ID: <395093cc-c0a0-0ec4-93b9-29dbf1158f84@suse.com>
+Subject: Re: [PATCH 4/6] xen: make remove callback of xen driver void returned
+References: <20221205153644.60909-1-set_pte_at@outlook.com>
+ <TYCP286MB232333CB411691110A8B9D96CA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
+In-Reply-To: <TYCP286MB232333CB411691110A8B9D96CA189@TYCP286MB2323.JPNP286.PROD.OUTLOOK.COM>
 
-Thanks, tested and applied.
+--------------qySa0HM0bP3H6XGxVri7vr4X
+Content-Type: multipart/mixed; boundary="------------epwI0maSCjDSX0EpgexZDRFe"
 
-- Arnaldo
- 
-> The above command line uses field separator as ","
-> via "-x," option and per-socket option displays
-> socket value as first field. But here the last line
-> for "stalled cycles per insn" has more separators.
-> Each csv output line is expected to have 8 field
-> separators (for the 9 fields), where as last line
-> has 9 "," in the result. Patch fixes this issue.
-> 
-> The counter stats are displayed by function
-> "perf_stat__print_shadow_stats" in code
-> "util/stat-shadow.c". While printing the stats info
-> for "stalled cycles per insn", function "new_line_csv"
-> is used as new_line callback.
-> 
-> The fields printed in each line contains:
-> "Socket_id,aggr nr,Avg,unit,event_name,run,enable_percent,ratio,unit"
-> 
-> The metric output prints Socket_id, aggr nr, ratio
-> and unit. It has to skip through remaining five fields
-> ie, Avg,unit,event_name,run,enable_percent. The csv
-> line callback uses "os->nfields" to know the number of
-> fields to skip to match with other lines.
-> Currently it is set as:
-> 	os.nfields = 3 + aggr_fields[config->aggr_mode] + (counter->cgrp ? 1 : 0);
-> 
-> But in case of aggregation modes, csv_sep already
-> gets printed along with each field (Function "aggr_printout"
-> in util/stat-display.c). So aggr_fields can be
-> removed from nfields. And fixed number of fields to
-> skip has to be "4". This is to skip fields for:
-> "avg, unit, event name, run, enable_percent"
-> 
-> This needs 4 csv separators. Patch removes aggr_fields
-> and uses 4 as fixed number of os->nfields to skip.
-> 
-> After the patch:
-> 
-> 	# ./perf stat -x, --per-socket -a -C 1 ls
-> 	S0,1,79.08,msec,cpu-clock,79085956,100.00,1.000,CPUs utilized
-> 	S0,1,7,,context-switches,79084176,100.00,88.514,/sec
-> 	------
-> ====>	S0,1,,,,,,0.81,stalled cycles per insn
-> 
-> Fixes: 92a61f6412d3 ("perf stat: Implement CSV metrics output")
-> Reported-by: Disha Goel <disgoel@linux.vnet.ibm.com>
-> Reviewed-by: Kajol Jain <kjain@linux.ibm.com>
-> Tested-by: Disha Goel<disgoel@linux.vnet.ibm.com>
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> ---
-> Changelog:
-> v2 -> v3:
-> - Rebased on top of tmp.perf/core
-> 
-> v1 -> v2:
-> - Rebased on top of latest source.
-> - Added Reviewed-by and Tested-by from Kajol and
->   Disha.
-> 
->  tools/perf/util/stat-display.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/tools/perf/util/stat-display.c b/tools/perf/util/stat-display.c
-> index f1ee4b052198..4e9696f4096f 100644
-> --- a/tools/perf/util/stat-display.c
-> +++ b/tools/perf/util/stat-display.c
-> @@ -686,20 +686,9 @@ static void printout(struct perf_stat_config *config, struct outstate *os,
->  	struct evsel *counter = os->evsel;
->  
->  	if (config->csv_output) {
-> -		static const int aggr_fields[AGGR_MAX] = {
-> -			[AGGR_NONE] = 1,
-> -			[AGGR_GLOBAL] = 0,
-> -			[AGGR_SOCKET] = 2,
-> -			[AGGR_DIE] = 2,
-> -			[AGGR_CORE] = 2,
-> -			[AGGR_THREAD] = 1,
-> -			[AGGR_UNSET] = 0,
-> -			[AGGR_NODE] = 1,
-> -		};
-> -
->  		pm = config->metric_only ? print_metric_only_csv : print_metric_csv;
->  		nl = config->metric_only ? new_line_metric : new_line_csv;
-> -		os->nfields = 3 + aggr_fields[config->aggr_mode] + (counter->cgrp ? 1 : 0);
-> +		os->nfields = 4 + (counter->cgrp ? 1 : 0);
->  	} else if (config->json_output) {
->  		pm = config->metric_only ? print_metric_only_json : print_metric_json;
->  		nl = config->metric_only ? new_line_metric : new_line_json;
-> -- 
-> 2.31.1
+--------------epwI0maSCjDSX0EpgexZDRFe
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
--- 
+T24gMDUuMTIuMjIgMTY6MzYsIERhd2VpIExpIHdyb3RlOg0KPiBTaW5jZSBjb21taXQgZmM3
+YTYyMDlkNTcxICgiYnVzOiBNYWtlIHJlbW92ZSBjYWxsYmFjayByZXR1cm4NCj4gdm9pZCIp
+IGZvcmNlcyBidXNfdHlwZTo6cmVtb3ZlIGJlIHZvaWQtcmV0dXJuZWQsIGl0IGRvZXNuJ3QN
+Cj4gbWFrZSBtdWNoIHNlbnNlIGZvciBhbnkgYnVzIGJhc2VkIGRyaXZlciBpbXBsZW1lbnRp
+bmcgcmVtb3ZlDQo+IGNhbGxiYWxrIHRvIHJldHVybiBub24tdm9pZCB0byBpdHMgY2FsbGVy
+Lg0KPiANCj4gVGhpcyBjaGFuZ2UgaXMgZm9yIHhlbiBidXMgYmFzZWQgZHJpdmVycy4NCj4g
+DQo+IFNpZ25lZC1vZmYtYnk6IERhd2VpIExpIDxzZXRfcHRlX2F0QG91dGxvb2suY29tPg0K
+DQpBY2tlZC1ieTogSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1c2UuY29tPg0KDQoNCkp1ZXJn
+ZW4NCg0K
+--------------epwI0maSCjDSX0EpgexZDRFe
+Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Description: OpenPGP public key
+Content-Transfer-Encoding: quoted-printable
 
-- Arnaldo
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+jR/i1DG86lem3iBDXzXsZDn8R38=3D
+=3D2wuH
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------epwI0maSCjDSX0EpgexZDRFe--
+
+--------------qySa0HM0bP3H6XGxVri7vr4X--
+
+--------------PybxEFi1PpbX5Zgh6BVCbvw4
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmOOEpgFAwAAAAAACgkQsN6d1ii/Ey/F
+Fwf5Ac2MnBFVrTK+beDa4qm/z7lWPrYQfzeUwNi/0mEkZqR+b5AmDYuZf1nXBqHnG62xU/8PHOws
+azH+TbKjw9WaRvrHQq0fJ8IFA5n7N8wIElW04qiCprcjOaCM2YJU8LseTCa9T6qfEaKeXwminoTh
++ppNrpvutz6EneAMGCUHKcB/C6ruGXxEX8hY4mzwNm1Z/6/gMFsx4qs/K8NxLHCmnB3r1rF3XgP0
+LAzmcRx+dOhnFUwojBeMxOjhLNJImYtpZlvrkJFBeLY4R5lsyatGYl1o+pJHvpSB+JePMm8X8BZu
+c/35o0t1kOj+Z2m53g34agFwUeZFi3S3LDWfPP9uIg==
+=o/xs
+-----END PGP SIGNATURE-----
+
+--------------PybxEFi1PpbX5Zgh6BVCbvw4--
