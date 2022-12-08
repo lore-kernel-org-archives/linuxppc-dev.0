@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A42E3C63708
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:04:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 924D1C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:04:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ9j2Sw9z3glM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:04:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZBH20L7z3gpQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:04:55 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYv40GpYz3fJr
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:51:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYwW6P12z3fRw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:52:59 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYv36FR5z4xN1;
-	Thu,  8 Dec 2022 23:51:43 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYwW0f9hz4xDn;
+	Thu,  8 Dec 2022 23:52:59 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Yang Yingliang <yangyingliang@huawei.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20221029111626.429971-1-yangyingliang@huawei.com>
-References: <20221029111626.429971-1-yangyingliang@huawei.com>
-Subject: Re: [PATCH v2] powerpc/83xx/mpc832x_rdb: call platform_device_put() in error case in of_fsl_spi_probe()
-Message-Id: <167050320391.1457988.4385187375237659109.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:40:03 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <757acccb7fbfc78efa42dcf3c974b46678198905.1669278887.git.christophe.leroy@csgroup.eu>
+References: <757acccb7fbfc78efa42dcf3c974b46678198905.1669278887.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2] powerpc/bpf/32: Fix Oops on tail call tests
+Message-Id: <167050396505.1462730.10974040872245094646.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:52:45 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +42,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oss@buserror.net, galak@kernel.crashing.org, npiggin@gmail.com
+Cc: Hao Luo <haoluo@google.com>, Daniel Borkmann <daniel@iogearbox.net>, Martin KaFai Lau <martin.lau@linux.dev>, John Fastabend <john.fastabend@gmail.com>, Alexei Starovoitov <ast@kernel.org>, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, Stanislav Fomichev <sdf@google.com>, Jiri Olsa <jolsa@kernel.org>, KP Singh <kpsingh@kernel.org>, Yonghong Song <yhs@fb.com>, "Naveen N . Rao" <naveen.n.rao@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, bpf@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 29 Oct 2022 19:16:26 +0800, Yang Yingliang wrote:
-> If platform_device_add() is not called or failed, it can not call
-> platform_device_del() to clean up memory, it should call
-> platform_device_put() in error case.
+On Thu, 24 Nov 2022 09:37:27 +0100, Christophe Leroy wrote:
+> test_bpf tail call tests end up as:
 > 
+>   test_bpf: #0 Tail call leaf jited:1 85 PASS
+>   test_bpf: #1 Tail call 2 jited:1 111 PASS
+>   test_bpf: #2 Tail call 3 jited:1 145 PASS
+>   test_bpf: #3 Tail call 4 jited:1 170 PASS
+>   test_bpf: #4 Tail call load/store leaf jited:1 190 PASS
+>   test_bpf: #5 Tail call load/store jited:1
+>   BUG: Unable to handle kernel data access on write at 0xf1b4e000
+>   Faulting instruction address: 0xbe86b710
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   BE PAGE_SIZE=4K MMU=Hash PowerMac
+>   Modules linked in: test_bpf(+)
+>   CPU: 0 PID: 97 Comm: insmod Not tainted 6.1.0-rc4+ #195
+>   Hardware name: PowerMac3,1 750CL 0x87210 PowerMac
+>   NIP:  be86b710 LR: be857e88 CTR: be86b704
+>   REGS: f1b4df20 TRAP: 0300   Not tainted  (6.1.0-rc4+)
+>   MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 28008242  XER: 00000000
+>   DAR: f1b4e000 DSISR: 42000000
+>   GPR00: 00000001 f1b4dfe0 c11d2280 00000000 00000000 00000000 00000002 00000000
+>   GPR08: f1b4e000 be86b704 f1b4e000 00000000 00000000 100d816a f2440000 fe73baa8
+>   GPR16: f2458000 00000000 c1941ae4 f1fe2248 00000045 c0de0000 f2458030 00000000
+>   GPR24: 000003e8 0000000f f2458000 f1b4dc90 3e584b46 00000000 f24466a0 c1941a00
+>   NIP [be86b710] 0xbe86b710
+>   LR [be857e88] __run_one+0xec/0x264 [test_bpf]
+>   Call Trace:
+>   [f1b4dfe0] [00000002] 0x2 (unreliable)
+>   Instruction dump:
+>   XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+>   XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+>   ---[ end trace 0000000000000000 ]---
 > 
+> [...]
 
-Applied to powerpc/next.
+Applied to powerpc/fixes.
 
-[1/1] powerpc/83xx/mpc832x_rdb: call platform_device_put() in error case in of_fsl_spi_probe()
-      https://git.kernel.org/powerpc/c/4d0eea415216fe3791da2f65eb41399e70c7bedf
+[1/1] powerpc/bpf/32: Fix Oops on tail call tests
+      https://git.kernel.org/powerpc/c/89d21e259a94f7d5582ec675aa445f5a79f347e4
 
 cheers
