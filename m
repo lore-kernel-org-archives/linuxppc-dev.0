@@ -4,30 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28EA3C63703
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:52:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 397F0C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:53:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYw45Bqmz3fQK
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:52:36 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYwn5D5Yz3cGr
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:53:13 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrh660Mz2xKX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrs09zcz3bhJ;
+	Thu,  8 Dec 2022 23:49:49 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrh50JTz4xZ7;
-	Thu,  8 Dec 2022 23:49:40 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrj1Gmbz4xZg;
+	Thu,  8 Dec 2022 23:49:41 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: bgray@linux.ibm.com, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <f67d2a109404d03e8fdf1ea15388c8778337a76b.1669969781.git.christophe.leroy@csgroup.eu>
-References: <f67d2a109404d03e8fdf1ea15388c8778337a76b.1669969781.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 1/5] powerpc/code-patching: Remove #ifdef CONFIG_STRICT_KERNEL_RWX
-Message-Id: <167050321439.1457988.16908884696488370128.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:40:14 +1100
+To: Benjamin Fair <benjaminfair@google.com>, Joel Stanley <joel@jms.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Geert Uytterhoeven <geert+renesas@glider.be>, Tony Lindgren <tony@atomide.com>, Patrick Venture <venture@google.com>, Tali Perry <tali.perry1@gmail.com>, Nancy Yuen <yuenn@google.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Magnus Damm <magnus.damm@gmail.com>, Gregory Clement <gregory.clement@bootlin.com>, Avi Fishman <avifishman70@gmail.com>, Li Yang <leoyang.li@nxp.com>, Russell King <linux@armlinux.org.uk>, Andrew Jeffery <andrew@aj.id.au>, Nicholas Piggin <npiggin@gmail.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Shawn Guo <shawnguo@kernel.org>, UNGLinuxDriver@microchip.com, Benoît Cousson <bcousson@baylibre.com>, Michael Ellerman <mpe@ellerman.id.au>, Stefan Agner <stefan@agner.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Andrew Lunn 
+ <andrew@lunn.ch>, Tomer Maimon <tmaimon77@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
+References: <cover.1669999298.git.geert+renesas@glider.be>
+Subject: Re: (subset) [PATCH 00/11] Fix pca954x i2c-mux node names
+Message-Id: <167050321678.1457988.4158904572849937193.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:40:16 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,33 +43,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, linux-mips@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2 Dec 2022 09:31:39 +0100, Christophe Leroy wrote:
-> No need to have one implementation of patch_instruction() for
-> CONFIG_STRICT_KERNEL_RWX and one for !CONFIG_STRICT_KERNEL_RWX.
+On Fri, 2 Dec 2022 17:49:15 +0100, Geert Uytterhoeven wrote:
+> 	Hi all,
 > 
-> In patch_instruction(), call raw_patch_instruction() when
-> !CONFIG_STRICT_KERNEL_RWX.
-> 
-> In poking_init(), bail out immediately, it will be equivalent
-> to the weak default implementation.
+> According to the I2C bus multiplexer/switch DT bindings, i2c-mux nodes
+> should be named "i2c-mux" (or something similar).
+> This patch series renames nodes for pca954x i2c-muxes that are flagged
+> by
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/5] powerpc/code-patching: Remove #ifdef CONFIG_STRICT_KERNEL_RWX
-      https://git.kernel.org/powerpc/c/84ecfe6f38ae4ee779ebd97ee173937fff565bf9
-[2/5] powerpc/feature-fixups: Refactor entry fixups patching
-      https://git.kernel.org/powerpc/c/6076dc349b1c587c74c37027efff76f0fa4646f4
-[3/5] powerpc/feature-fixups: Refactor other fixups patching
-      https://git.kernel.org/powerpc/c/3d1dbbca33a9c6dd3aafd4d14aaea9cc310723e1
-[4/5] powerpc/feature-fixups: Do not patch init section after init
-      https://git.kernel.org/powerpc/c/b988e7797d09379057cf991ae082f9ad7a309a63
-[5/5] powerpc/code-patching: Remove protection against patching init addresses after init
-      https://git.kernel.org/powerpc/c/6f3a81b60091031c2c14eb2373d1937b027deb46
+[11/11] powerpc: dts: fsl: Fix pca954x i2c-mux node names
+        https://git.kernel.org/powerpc/c/3ae7c96dd51025550c8001c6f833337f11d00807
 
 cheers
