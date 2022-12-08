@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1D8FC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11A36C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:02:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ6h3Q4Wz3gV2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:01:48 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ7F5Lrkz3fg4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:02:17 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYs60nmXz3cP0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYs64zx8z3bh1
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:50:02 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYs51jtQz4xcm;
-	Thu,  8 Dec 2022 23:50:01 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYs63Td2z4xDn;
+	Thu,  8 Dec 2022 23:50:02 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Pali Rohár <pali@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20220930123901.10251-1-pali@kernel.org>
-References: <20220930123901.10251-1-pali@kernel.org>
-Subject: Re: [PATCH] powerpc: dts: turris1x.dts: Add channel labels for temperature sensor
-Message-Id: <167050316466.1457988.5284620690924860944.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:39:24 +1100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Pali Rohár <pali@kernel.org>
+In-Reply-To: <20220820123327.20551-1-pali@kernel.org>
+References: <20220820123327.20551-1-pali@kernel.org>
+Subject: Re: [PATCH] powerpc/fsl-pci: Choose PCI host bridge with alias pci0 as the primary
+Message-Id: <167050317771.1457988.13400779927133880901.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:39:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Marek Behún <kabel@kernel.org>, Josef Schlehofer <josef.schlehofer@nic.cz>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 30 Sep 2022 14:39:01 +0200, Pali Rohár wrote:
-> Channel 0 of SA56004ED chip refers to internal SA56004ED chip sensor (chip
-> itself is located on the board) and channel 1 of SA56004ED chip refers to
-> external sensor which is connected to temperature diode of the P2020 CPU.
+On Sat, 20 Aug 2022 14:33:27 +0200, Pali Rohár wrote:
+> If there's no PCI host bridge with ISA then check for PCI host bridge with
+> alias "pci0" (first PCI host bridge) and if it exists then choose it as the
+> primary PCI host bridge.
 > 
+> This makes choice of primary PCI host bridge more stable across boots and
+> updates as the last fallback candidate for primary PCI host bridge (if
+> there is no choice) is selected arbitrary.
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: dts: turris1x.dts: Add channel labels for temperature sensor
-      https://git.kernel.org/powerpc/c/67bbb62f61e810734da0a1577a9802ddaed24140
+[1/1] powerpc/fsl-pci: Choose PCI host bridge with alias pci0 as the primary
+      https://git.kernel.org/powerpc/c/e082e99f6f87f5204b2531d5a3db7bbd929d23b1
 
 cheers
