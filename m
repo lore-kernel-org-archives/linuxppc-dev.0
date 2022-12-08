@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30F0CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:01:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1D8FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 13:01:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ665PW9z3fK3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:01:18 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ6h3Q4Wz3gV2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 00:01:48 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYs46QCTz3c1n
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:50:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYs60nmXz3cP0
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:50:02 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYs45Fvfz4xvr;
-	Thu,  8 Dec 2022 23:50:00 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYs51jtQz4xcm;
+	Thu,  8 Dec 2022 23:50:01 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20221128041539.1742489-1-npiggin@gmail.com>
-References: <20221128041539.1742489-1-npiggin@gmail.com>
-Subject: Re: [PATCH v6 0/4] Option to build big-endian with ELFv2 ABI
-Message-Id: <167050318698.1457988.9272432895635894822.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:39:46 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Pali Rohár <pali@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20220930123901.10251-1-pali@kernel.org>
+References: <20220930123901.10251-1-pali@kernel.org>
+Subject: Re: [PATCH] powerpc: dts: turris1x.dts: Add channel labels for temperature sensor
+Message-Id: <167050316466.1457988.5284620690924860944.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:39:24 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,32 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Luis Chamberlain <mcgrof@kernel.org>, Michal Suchánek <msuchanek@suse.de>
+Cc: Marek Behún <kabel@kernel.org>, Josef Schlehofer <josef.schlehofer@nic.cz>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 28 Nov 2022 14:15:35 +1000, Nicholas Piggin wrote:
-> This is hopefully the final attempt. Luis was happy for the module
-> patch to go via the powerpc tree, so I've put the the ELFv2 for big
-> endian build patches into the series. Hopefully we can deprecate
-> the ELFv1 ABI
+On Fri, 30 Sep 2022 14:39:01 +0200, Pali Rohár wrote:
+> Channel 0 of SA56004ED chip refers to internal SA56004ED chip sensor (chip
+> itself is located on the board) and channel 1 of SA56004ED chip refers to
+> external sensor which is connected to temperature diode of the P2020 CPU.
 > 
-> Since v5, I cleaned up patch 2 as per Christophe's review. And patch
-> 4 I removed the EXPERT depends so it's easier to test. It's marked as
-> experimental, but we should soon make it default and try to deprecate
-> the v1 ABI so we can eventually remove it.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/4] module: add module_elf_check_arch for module-specific checks
-      https://git.kernel.org/powerpc/c/f9231a996e229c13d23f907352c2cea84bd1c30a
-[2/4] powerpc/64: Add module check for ELF ABI version
-      https://git.kernel.org/powerpc/c/de3d098dd1fc635535e3689c5d4aa0684242adde
-[3/4] powerpc/64: Add big-endian ELFv2 flavour to crypto VMX asm generation
-      https://git.kernel.org/powerpc/c/505ea33089dcfc3ee3201b0fcb94751165805413
-[4/4] powerpc/64: Option to build big-endian with ELFv2 ABI
-      https://git.kernel.org/powerpc/c/5017b45946722bdd20ac255c9ae7273b78d1f12e
+[1/1] powerpc: dts: turris1x.dts: Add channel labels for temperature sensor
+      https://git.kernel.org/powerpc/c/67bbb62f61e810734da0a1577a9802ddaed24140
 
 cheers
