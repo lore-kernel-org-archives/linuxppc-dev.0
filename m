@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3768CC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B9EC3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:55:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYyW5Pcvz3fdb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:54:43 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYz516wcz3fhP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:55:13 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrv5w1fz3cB4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrw2TwKz3c6d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrv36sgz4xvS;
-	Thu,  8 Dec 2022 23:49:51 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrw1KpKz4xvT;
+	Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Zhang Jiaming <jiaming@nfschina.com>, benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org
-In-Reply-To: <20220623102031.15359-1-jiaming@nfschina.com>
-References: <20220623102031.15359-1-jiaming@nfschina.com>
-Subject: Re: [PATCH] KVM: Fix spelling mistake
-Message-Id: <167050315544.1457988.12211386518984944248.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:39:15 +1100
+To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <20221130174513.87501-1-kjain@linux.ibm.com>
+References: <20221130174513.87501-1-kjain@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc/hv-gpci: Fix hv_gpci event list
+Message-Id: <167050320468.1457988.5897072817386860580.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:40:04 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,19 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: liqiong@nfschina.com, linuxppc-dev@lists.ozlabs.org, renyu@nfschina.com, linux-kernel@vger.kernel.org
+Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 23 Jun 2022 18:20:31 +0800, Zhang Jiaming wrote:
-> Change 'subsquent' to 'subsequent'.
-> Change 'accross' to 'across'.
+On Wed, 30 Nov 2022 23:15:13 +0530, Kajol Jain wrote:
+> Based on getPerfCountInfo v1.018 documentation, some of the
+> hv_gpci events were deprecated for platform firmware that
+> supports counter_info_version 0x8 or above.
 > 
+> Fix the hv_gpci event list by adding a new attribute group
+> called "hv_gpci_event_attrs_v6" and a "ENABLE_EVENTS_COUNTERINFO_V6"
+> macro to enable these events for platform firmware
+> that supports counter_info_version 0x6 or below. And assigning
+> the hv_gpci event list based on output counter info version
+> of underlying plaform.
 > 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] KVM: Fix spelling mistake
-      https://git.kernel.org/powerpc/c/392a58f1eaab0c90b80d7ba4a03dbf6eaaeabe60
+[1/1] powerpc/hv-gpci: Fix hv_gpci event list
+      https://git.kernel.org/powerpc/c/03f7c1d2a49acd30e38789cd809d3300721e9b0e
 
 cheers
