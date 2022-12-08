@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76B9EC3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:55:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8332AC3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:55:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYz516wcz3fhP
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:55:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYzg0gcdz3flq
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:55:43 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrw2TwKz3c6d
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrw5zqSz3bhP
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrw1KpKz4xvT;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrw4v7nz4xvV;
 	Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <20221130174513.87501-1-kjain@linux.ibm.com>
-References: <20221130174513.87501-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc/hv-gpci: Fix hv_gpci event list
-Message-Id: <167050320468.1457988.5897072817386860580.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:40:04 +1100
+To: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <20221114160150.13554-1-ldufour@linux.ibm.com>
+References: <20221114160150.13554-1-ldufour@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries: unregister VPA when hot unplugging a CPU
+Message-Id: <167050322056.1457988.13932134686627296499.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:40:20 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 30 Nov 2022 23:15:13 +0530, Kajol Jain wrote:
-> Based on getPerfCountInfo v1.018 documentation, some of the
-> hv_gpci events were deprecated for platform firmware that
-> supports counter_info_version 0x8 or above.
+On Mon, 14 Nov 2022 17:01:50 +0100, Laurent Dufour wrote:
+> The VPA should unregister when offlining a CPU. Otherwise there could be a
+> short window where 2 CPUs could share the same VPA.
 > 
-> Fix the hv_gpci event list by adding a new attribute group
-> called "hv_gpci_event_attrs_v6" and a "ENABLE_EVENTS_COUNTERINFO_V6"
-> macro to enable these events for platform firmware
-> that supports counter_info_version 0x6 or below. And assigning
-> the hv_gpci event list based on output counter info version
-> of underlying plaform.
+> This happens because the hypervisor is still keeping the VPA attached to
+> the vCPU even if it became offline.
+> 
+> Here is a potential situation:
+>  1. remove proc A,
+>  2. add proc B. If proc B gets proc A's place in cpu_present_map, then it
+>     registers proc A's VPAs.
+>  3. If proc B is then re-added to the LP, its threads are sharing VPAs with
+>     proc A briefly as they come online.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/hv-gpci: Fix hv_gpci event list
-      https://git.kernel.org/powerpc/c/03f7c1d2a49acd30e38789cd809d3300721e9b0e
+[1/1] powerpc/pseries: unregister VPA when hot unplugging a CPU
+      https://git.kernel.org/powerpc/c/f6aa37c51ec0d053ee34c235bfe0e666618a3baf
 
 cheers
