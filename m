@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8332AC3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D435C3A5A7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:56:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYzg0gcdz3flq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:55:43 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSZ0D68clz3fPL
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:56:12 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrw5zqSz3bhP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrx2Rcxz3c69
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:53 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrw4v7nz4xvV;
-	Thu,  8 Dec 2022 23:49:52 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrx1Jxpz4xN1;
+	Thu,  8 Dec 2022 23:49:53 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20221114160150.13554-1-ldufour@linux.ibm.com>
-References: <20221114160150.13554-1-ldufour@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: unregister VPA when hot unplugging a CPU
-Message-Id: <167050322056.1457988.13932134686627296499.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:40:20 +1100
+To: christophe.leroy@csgroup.eu, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <20221125173204.15329-1-ldufour@linux.ibm.com>
+References: <20221125173204.15329-1-ldufour@linux.ibm.com>
+Subject: Re: [PATCH] pseries/mobility: reset the RCU watchdogs after a LPM
+Message-Id: <167050321981.1457988.18096782970217396456.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:40:19 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,29 +42,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 14 Nov 2022 17:01:50 +0100, Laurent Dufour wrote:
-> The VPA should unregister when offlining a CPU. Otherwise there could be a
-> short window where 2 CPUs could share the same VPA.
+On Fri, 25 Nov 2022 18:32:04 +0100, Laurent Dufour wrote:
+> The RCU watchdog timer should be reset when restarting the CPU after a Live
+> Partition Mobility operation.
 > 
-> This happens because the hypervisor is still keeping the VPA attached to
-> the vCPU even if it became offline.
 > 
-> Here is a potential situation:
->  1. remove proc A,
->  2. add proc B. If proc B gets proc A's place in cpu_present_map, then it
->     registers proc A's VPAs.
->  3. If proc B is then re-added to the LP, its threads are sharing VPAs with
->     proc A briefly as they come online.
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/pseries: unregister VPA when hot unplugging a CPU
-      https://git.kernel.org/powerpc/c/f6aa37c51ec0d053ee34c235bfe0e666618a3baf
+[1/1] pseries/mobility: reset the RCU watchdogs after a LPM
+      https://git.kernel.org/powerpc/c/9b574cfab7d4e68c67c4ee4fcde912ef54a25b88
 
 cheers
