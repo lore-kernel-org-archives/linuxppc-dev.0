@@ -4,65 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F276C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5805C63703
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:50:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYWd4dY6z3c4B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:34:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=IaRDONFB;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=IaRDONFB;
-	dkim-atps=neutral
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYsD1jyhz3bgM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:50:08 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYT233lYz30Qy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:32:37 +1100 (AEDT)
-Received: by mail-pf1-x42b.google.com with SMTP id d82so1160664pfd.11
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Dec 2022 04:32:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=rAOE69r/JKnylIb3KpHb2LeP2WHIbkNsM9AMOjmOmhc=;
-        b=IaRDONFBHU70xUMsoK+a5ytMLXeifbAG92ZaKZGnqDpeohE+ShbZ408U1r5VmVNLjR
-         fBpHRFvcKnm6AwqXChV9sgGqIqHshNtLes+aXc3bN/AEOr9jy68o22nXTmu38GCIstcI
-         S8QlLgA94fCNgGpwoUH0A8CQ/cZB4ZJGZsJuhF0QYD1PLph12tde+3rl5kvReii1Nh1y
-         4D5kF3HYHZYpwPJQvsvOGxQprwqc5EjG5zg70rX3OF5siXD3iM34RAtFx8DQ7MsvFYA8
-         N3xoyuA7ytO7BsefsCX4JLqDZUkQAXLuh+/EOBTk7WGssvut1xF4iwywIpeelvQQXIQL
-         S3UA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rAOE69r/JKnylIb3KpHb2LeP2WHIbkNsM9AMOjmOmhc=;
-        b=IrQLz9LXyXymsmeN74J38qW76wQICUkDxYaXtNIrW0wR32Z9sgESLh6s9nBi42l2hO
-         5vLZ/Up5dVDZJWUv3BcoFEt89lGRwERlERfsncICunEszKtQVvBn2pWaoFircW319kTs
-         oAIyxGYNbBCusQcpGamgz5HPQiD2bVroNV+wrT1gdFNDfs4VLa5vmjLV2w2jt7aTYuKz
-         Ef1iDg9exj7IJPmQSNH7l2pfLXX75Nfkz0ZGRetLwCcjt/G3+uo1UJbfTZqfNQNtaBD4
-         6ZfCwzpip3yiV6w0mQmf1aY/n38aA/7Yj9CkquBBfyDtVBNFyZoIGFCfuSv3vfVGagNl
-         Lf/w==
-X-Gm-Message-State: ANoB5plWHtIDDtYwZAbEzn6eLzi45/6ig030RPQ74yHD/aScMZb5bqdE
-	CZqGsqTZfvXu3A0IUlHcpR9RnrKzzeE=
-X-Google-Smtp-Source: AA0mqf6jw4pVpuFZsMpZ/CNSi52FD5qGIA8bVUjMVMR7ymyb0vLk00XCkjfSdctNxxXMKpL8HMFDvQ==
-X-Received: by 2002:a05:6a00:4501:b0:56b:b049:6c6c with SMTP id cw1-20020a056a00450100b0056bb0496c6cmr81646304pfb.22.1670502754425;
-        Thu, 08 Dec 2022 04:32:34 -0800 (PST)
-Received: from bobo.ibm.com (27-33-250-210.static.tpgi.com.au. [27.33.250.210])
-        by smtp.gmail.com with ESMTPSA id a3-20020a170902710300b0018963b8e131sm7188612pll.290.2022.12.08.04.32.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Dec 2022 04:32:33 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/qspinlock: Fix 32-bit build
-Date: Thu,  8 Dec 2022 22:32:25 +1000
-Message-Id: <20221208123225.1566113-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.37.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrd0Sqpz2xKX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:37 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrb0kHDz4xN4;
+	Thu,  8 Dec 2022 23:49:35 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Benjamin Gray <bgray@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20221109045112.187069-1-bgray@linux.ibm.com>
+References: <20221109045112.187069-1-bgray@linux.ibm.com>
+Subject: Re: [PATCH v10 0/9] powerpc/code-patching: Use temporary mm for Radix MMU
+Message-Id: <167050318389.1457988.8738861674673434548.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:39:43 +1100
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,33 +42,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: jniethe5@gmail.com, npiggin@gmail.com, cmr@bluescreens.de, ajd@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some 32-bit configurations don't pull in the spin_begin/end/relax
-definitions. Fix is to restore a lost include.
+On Wed, 9 Nov 2022 15:51:03 +1100, Benjamin Gray wrote:
+> This is a revision of Chris and Jordan's series to introduce a per-cpu temporary
+> mm to be used for patching with strict rwx on radix mmus.
+> 
+> v10:	* Don't set poking_init_enabled on boot CPU init failure
+> 	* Remove extern from functions in files touched by this series
+> 	* Changed book3s/32/tlbflush.h stub body from warning to build bug
+> 	* Remove empty hash__ set of functions. Also removed the ones that are
+> 	  just warnings (would have preferred to make them build bugs, but they
+> 	  blocked the build even though it's all inline inside a radix_enabled()
+> 	  if-block).
+> 	  	- It's not possible to use the radix specific necessary TLB flush
+> 		  in code patching, as code-patching.c is compiled even when radix__*
+> 		  functions aren't visible. #ifdefs would be required.
+> 		  The cxl usage required radix__* be visible anyway, so there is no
+> 		  compile issue.
+> 	* Mention cache benefits of struct of patching context variables
+> 	* Don't open-code mm init and teardown. It seems tlb_gather_mmu does
+> 	  the necessary steps to detect page table pages to free, so it should
+> 	  not leak. get_locked_pte() is used over __get_locked_pte() because I
+> 	  don't know what makes the double-underscore function dangerous.
+> 
+> [...]
 
-Reported-by: kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/oe-kbuild-all/202212050224.i7uh9fOh-lkp@intel.com
-Fixes: 84990b169557 ("powerpc/qspinlock: add mcs queueing for contended waiters")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/lib/qspinlock.c | 1 +
- 1 file changed, 1 insertion(+)
+Patches 1-2 and 4-9 applied to powerpc/next.
 
-diff --git a/arch/powerpc/lib/qspinlock.c b/arch/powerpc/lib/qspinlock.c
-index 2eab84774911..c81fe8fff2b2 100644
---- a/arch/powerpc/lib/qspinlock.c
-+++ b/arch/powerpc/lib/qspinlock.c
-@@ -3,6 +3,7 @@
- #include <linux/compiler.h>
- #include <linux/export.h>
- #include <linux/percpu.h>
-+#include <linux/processor.h>
- #include <linux/smp.h>
- #include <linux/topology.h>
- #include <linux/sched/clock.h>
--- 
-2.37.2
+[1/9] powerpc: Allow clearing and restoring registers independent of saved breakpoint state
+      https://git.kernel.org/powerpc/c/3671f4ebe3eb12e7222e4d7b0f94e85cfe34253a
+[2/9] powerpc/code-patching: Use WARN_ON and fix check in poking_init
+      https://git.kernel.org/powerpc/c/071c95c1acbd96e76bab8b25b5cad0d71a011f37
+[4/9] powerpc/mm: Remove empty hash__ functions
+      https://git.kernel.org/powerpc/c/baf1ed24b27db475b38f534953885d0425e2232d
+[5/9] cxl: Use radix__flush_all_mm instead of generic flush_all_mm
+      https://git.kernel.org/powerpc/c/0f0a0a6091e678b1a75078ecd6b02176f3228dbb
+[6/9] powerpc/mm: Remove flush_all_mm, local_flush_all_mm
+      https://git.kernel.org/powerpc/c/d34471c9bd5d47ab148dd68817631a4238f755c4
+[7/9] powerpc/tlb: Add local flush for page given mm_struct and psize
+      https://git.kernel.org/powerpc/c/274d842fa1efd9449e62222c8896e0be11621f1f
+[8/9] powerpc/code-patching: Use temporary mm for Radix MMU
+      https://git.kernel.org/powerpc/c/c28c15b6d28a776538482101522cbcd9f906b15c
+[9/9] powerpc/code-patching: Consolidate and cache per-cpu patching context
+      https://git.kernel.org/powerpc/c/2f228ee1ade5d8d1f26cf94863a36c5693023c58
 
+cheers
