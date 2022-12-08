@@ -4,31 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 397F0C3A5A7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:53:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34211C63703
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 12:53:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYwn5D5Yz3cGr
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:53:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NSYxM4sZJz3fX7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Dec 2022 23:53:43 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrs09zcz3bhJ;
-	Thu,  8 Dec 2022 23:49:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NSYrt0zTPz3bgk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Dec 2022 23:49:50 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrj1Gmbz4xZg;
-	Thu,  8 Dec 2022 23:49:41 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NSYrs2G5Jz4xvL;
+	Thu,  8 Dec 2022 23:49:49 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Fair <benjaminfair@google.com>, Joel Stanley <joel@jms.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Geert Uytterhoeven <geert+renesas@glider.be>, Tony Lindgren <tony@atomide.com>, Patrick Venture <venture@google.com>, Tali Perry <tali.perry1@gmail.com>, Nancy Yuen <yuenn@google.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Magnus Damm <magnus.damm@gmail.com>, Gregory Clement <gregory.clement@bootlin.com>, Avi Fishman <avifishman70@gmail.com>, Li Yang <leoyang.li@nxp.com>, Russell King <linux@armlinux.org.uk>, Andrew Jeffery <andrew@aj.id.au>, Nicholas Piggin <npiggin@gmail.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, Shawn Guo <shawnguo@kernel.org>, UNGLinuxDriver@microchip.com, Benoît Cousson <bcousson@baylibre.com>, Michael Ellerman <mpe@ellerman.id.au>, Stefan Agner <stefan@agner.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Andrew Lunn 
- <andrew@lunn.ch>, Tomer Maimon <tmaimon77@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
-In-Reply-To: <cover.1669999298.git.geert+renesas@glider.be>
-References: <cover.1669999298.git.geert+renesas@glider.be>
-Subject: Re: (subset) [PATCH 00/11] Fix pca954x i2c-mux node names
-Message-Id: <167050321678.1457988.4158904572849937193.b4-ty@ellerman.id.au>
-Date: Thu, 08 Dec 2022 23:40:16 +1100
+To: Christoph Hellwig <hch@lst.de>, npiggin@gmail.com, geoff@infradead.org, mpe@ellerman.id.au
+In-Reply-To: <20221122072225.423432-1-hch@lst.de>
+References: <20221122072225.423432-1-hch@lst.de>
+Subject: Re: [PATCH] powerpc/ps3: mark ps3_system_bus_type static
+Message-Id: <167050315778.1457988.3481430850235317266.b4-ty@ellerman.id.au>
+Date: Thu, 08 Dec 2022 23:39:17 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -43,23 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org, linux-mips@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2 Dec 2022 17:49:15 +0100, Geert Uytterhoeven wrote:
-> 	Hi all,
+On Tue, 22 Nov 2022 08:22:25 +0100, Christoph Hellwig wrote:
+> ps3_system_bus_type is only used inside of system-bus.c, so remove
+> the external declaration and the very outdated comment next to it.
 > 
-> According to the I2C bus multiplexer/switch DT bindings, i2c-mux nodes
-> should be named "i2c-mux" (or something similar).
-> This patch series renames nodes for pca954x i2c-muxes that are flagged
-> by
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[11/11] powerpc: dts: fsl: Fix pca954x i2c-mux node names
-        https://git.kernel.org/powerpc/c/3ae7c96dd51025550c8001c6f833337f11d00807
+[1/1] powerpc/ps3: mark ps3_system_bus_type static
+      https://git.kernel.org/powerpc/c/dea681c91d3cd5326f87d0a3c93079573e22ce9a
 
 cheers
