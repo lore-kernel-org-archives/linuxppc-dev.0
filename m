@@ -4,61 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40636C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Dec 2022 20:13:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A25CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Dec 2022 16:42:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NTMfH42SLz3bg6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 10 Dec 2022 07:13:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NTtvq3jjYz3bjc
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Dec 2022 03:41:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RqtUEPxN;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=hAwEbCco;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=kai.vehmanen@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RqtUEPxN;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=hAwEbCco;
 	dkim-atps=neutral
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 321 seconds by postgrey-1.36 at boromir; Sun, 11 Dec 2022 03:41:01 AEDT
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NT8Z36qsXz3bZh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Dec 2022 22:54:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1670586844; x=1702122844;
-  h=date:from:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=i6l99AsOk7Ek/fC/JJlzKRTZl8kQmivMJCaJu9pD6WY=;
-  b=RqtUEPxNPW0mUUEpWWcgAOnRpzup4gXAobGCZpjDqJPU+IPtOnZfBl9G
-   Dre+nHifFPCjNcFC5zvmKiOFxLPCT2HC+HZ3jO1x7QQOW7Z0W7NfvKtDD
-   a/JN+hVt00FevEw+k2kY1015GBBsZ3uieIApa4RxeUDK2rVBrCvdX7y7/
-   4Lj/L9PDr1VO1eSJTvxeMLZUnSyLMXHox3EtKmGJBzM42ZzIkbidW781F
-   PXUmPeMlQPNOcPcBuyhFvkHaswEsj3I5ZQYi3UgnIZhyhfwB0SlV+x80u
-   Cp/0cwpb1p/k1LFHmTbVTETE3T86Km0PrjUWyriF7VplQEXOs8QngFLlw
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="305085948"
-X-IronPort-AV: E=Sophos;i="5.96,230,1665471600"; 
-   d="scan'208";a="305085948"
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2022 03:53:59 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10555"; a="736191278"
-X-IronPort-AV: E=Sophos;i="5.96,230,1665471600"; 
-   d="scan'208";a="736191278"
-Received: from eliteleevi.tm.intel.com ([10.237.54.20])
-  by fmsmga003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2022 03:53:50 -0800
-Date: Fri, 9 Dec 2022 13:53:31 +0200 (EET)
-From: Kai Vehmanen <kai.vehmanen@linux.intel.com>
-X-X-Sender: kvehmane@eliteleevi.tm.intel.com
-To: Ricardo Ribalda <ribalda@chromium.org>
-Subject: Re: [PATCH v8 3/3] ASoC: SOF: Fix deadlock when shutdown a frozen
- userspace
-In-Reply-To: <CANiDSCtm7dCst_atiWk=ZcK_D3=VzvD0+kWXVQr4gEn--JjGkw@mail.gmail.com>
-Message-ID: <alpine.DEB.2.22.394.2212091349310.3532114@eliteleevi.tm.intel.com>
-References: <20221127-snd-freeze-v8-0-3bc02d09f2ce@chromium.org> <20221127-snd-freeze-v8-3-3bc02d09f2ce@chromium.org> <716e5175-7a44-7ae8-b6bb-10d9807552e6@suse.com> <CANiDSCtwSb50sjn5tM7jJ6W2UpeKzpuzng+RdJuywiC3-j2zdg@mail.gmail.com>
- <d3730d1d-6f92-700a-06c4-0e0a35e270b0@suse.com> <CANiDSCtm7dCst_atiWk=ZcK_D3=VzvD0+kWXVQr4gEn--JjGkw@mail.gmail.com>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7 02160 Espoo
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NTttj47mQz3bNx
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Dec 2022 03:41:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1670690457; bh=hULunELhZdtE1GkCID2SUUW9EZF1DKJ0BvrmvOkyd/U=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=hAwEbCcoWJ/q0lH9bINboeiPxKxMCqPiGpc+WSHiJZjmwSitA2ueLTenJoW+rPeMs
+	 J8wNn1BwPjJT6sxJhBYavYBVbVZsbk5E1QoC1+IZ9lXRfb6mMl2wFNSyGvCzpZCkPx
+	 U8zkwD4E2u6fFyvnUp/qp6bU2rWqK88v03Dx7xhrbubhOhsjNo/4IGaqDvzrAo7hVe
+	 CRlT3O403uFg4l3RdSyh+bnAhqXYoYcLDujJaeSdDSQfvEVO2m/rDevQKsHWv/FtAM
+	 iYHvzchwenu4VBiC83heJC8TCDWdGY7VrEKLOZbsps4EIRLvpLMDcH+Hj3L+5mDtu1
+	 Gp0PTGll8EPaw==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([92.116.157.120]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MBDj4-1pESvq0s9e-00CjAD; Sat, 10
+ Dec 2022 17:35:08 +0100
+Message-ID: <f8c6eb94-10ee-07a8-ea48-d4fae60fc9ae@gmx.de>
+Date: Sat, 10 Dec 2022 17:35:06 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Mailman-Approved-At: Sat, 10 Dec 2022 07:12:35 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.5.1
+Subject: Re: [PATCH] fbdev: make offb driver tristate
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
+References: <20221126000401.25302-1-rdunlap@infradead.org>
+ <46e8cf0d-ab47-59b1-6c87-53d2d63a5bf6@suse.de>
+From: Helge Deller <deller@gmx.de>
+In-Reply-To: <46e8cf0d-ab47-59b1-6c87-53d2d63a5bf6@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:3Q0WJF64Q10zFZW6VO/GCqoYxns0l0hOMM9nr71J/mwrFHaUIW0
+ hHaa21eYA8KaBbR8FgN6lOCWFk6XJsBMqiz2o0hSJFz8baJzpzOmfJhel4aAbnw3E07zDZ4
+ g/3b042iW+L+MvTBCSUknRi3WUJRyWFHZzydh/p3Wg/R/adLxtJIIcWYI1tvdQinLd8MtjU
+ H+4y4GF/teZ1STuzK0M7A==
+UI-OutboundReport: notjunk:1;M01:P0:liZ5UrO/QYg=;l2PnyWectd3j8pkgT5cBE6bb/C3
+ /jtPg5GsYUd6lZUOrs86xNQl29CnIMAyzYdqCUzbl2zcn2Fh9b8Vq/khwMyPDqj8VaZHaUrSg
+ F7i/dACeFahyqq557Qo9PScrnkORc5wNQm5kq0Tjz40C7zp6K/MPQ9rdBBsd6fDJ+sZ95JjdW
+ TEpODUgneTg2c2ck0AmP4jp4lLdCHowjCGMAHJM0lVWJaKYGiSSGtR4QKevdJDbYKobemGu/4
+ LSJffiGQP3lloEk1OEIjcKMkQR7oSvfbCRCJXYDVzod6KVhra6XlX3LHDqjt5cNA/9Tn4dEMQ
+ QFev19QJJ6ZDI4u2ei3p/Pv/B6Vl7U8ItoXoLQzbfm4Z1NYuP3AZo4cm+wIivMh/Vd7P8v/Z3
+ jMha3ikpEwi/YOlwrprEVSegI6jR81b/bwQGmGSFfFem7Tx8u3LUCLdRTpTkoH6/eDa6O2YGc
+ OVjHHNjQhvWa4/XxMqOssulJTzLMrNdfJjt6tMb+FgH0H5UnevMOy3fYPTvd9EQRvWidTvLEx
+ bU1PeILUtlma336mXB1ymRG4U9fgL4cQpiurrg5UaC/S2XhlOJSrPLg7FZb+cuNAdUUMdjAYv
+ RwPJRC3jFNP17k9GIhMoJIiDORlOyTe33B/3XKg5jfa6gFJvD+9Fh/2SDAu8Jo0ZOdONalUUE
+ lYKMfzHx7BwlumMfGfQtw4wHoC51GwgXOn7BTwoTCNm3yaegL72qimgdX+Q24YUjKA0tEd+g6
+ Xf6duosBfl7tnYGOjWFX4JdwwEEVV37g4rR/D69NJ+wiGgToFek9reAaz9iZ0yBFPIxDY2mt+
+ GMJ6lquXreCEXxOTeRUA9gshCFm2IxyMdnBIHpIIYvvHc0Rvllut0NqIkqlEBTqKHJ3XHpGQq
+ GMk9nwt5zCoSFSa3257rSr9GREgq2qPcrtNmuEKhEwswYPjw5TDf76xIlMYWh4Sq0HA0Ya69J
+ JqS10Q==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,40 +81,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Baluta <daniel.baluta@nxp.com>, Alsa-devel <alsa-devel@alsa-project.org>, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, linux-pci@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, linux-hyperv@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, linux-efi@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Joel Fernandes <joel@joelfernandes.org>, "K. Y. Srinivasan" <kys@microsoft.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Ard Biesheuvel <ardb@kernel.org>, sound-open-firmware@alsa-project.org, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Wei Liu <wei.liu@kernel.org>, Takashi Iwai <tiwai@suse.com>, Dexuan Cui <decui@microsoft.com>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, Chromeos Kdump <chromeos-kdump@google.com>, xen-devel@lists.xenproject.org, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Haiyang Zhang <haiyangz@microsoft.com>, Nicholas Piggin <npiggin@gmail.com>, Mark Brown 
- <broonie@kernel.org>, Borislav Petkov <bp@alien8.de>, Steven Rostedt <rostedt@goodmis.org>, Bjorn Helgaas <bhelgaas@google.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Juergen Gross <jgross@suse.com>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, Oliver Neukum <oneukum@suse.com>, kexec@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>, stable@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Eric Biederman <ebiederm@xmission.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Masahiro Yamada <masahiroy@kernel.org>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel@ffwll.ch>, =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 11/26/22 14:40, Thomas Zimmermann wrote:
+> Am 26.11.22 um 01:04 schrieb Randy Dunlap:
+>> Make the offb (Open Firmware frame buffer) driver tristate,
+>> i.e., so that it can be built as a loadable module.
+>>
+>> However, it still depends on the setting of DRM_OFDRM
+>> so that both of these drivers cannot be builtin at the same time
+>> nor can one be builtin and the other one a loadable module.
+>>
+>> Build-tested successfully with all combination of DRM_OFDRM and FB_OF.
+>>
+>> This fixes a build issue that Michal reported when FB_OF=3Dy and
+>> DRM_OFDRM=3Dm:
+>>
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x58): und=
+efined reference to `cfb_fillrect'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x60): und=
+efined reference to `cfb_copyarea'
+>> powerpc64-linux-ld: drivers/video/fbdev/offb.o:(.data.rel.ro+0x68): und=
+efined reference to `cfb_imageblit'
+>>
+>> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+>> Suggested-by: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Masahiro Yamada <masahiroy@kernel.org>
+>> Cc: Thomas Zimmermann <tzimmermann@suse.de>
+>> Cc: Michal Such=C3=A1nek <msuchanek@suse.de>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: Daniel Vetter <daniel@ffwll.ch>
+>> Cc: Helge Deller <deller@gmx.de>
+>> Cc: linux-fbdev@vger.kernel.org
+>> Cc: dri-devel@lists.freedesktop.org
+>
+> Acked-by: Thomas Zimmermann <tzimmermann@suse.de>
 
-On Thu, 1 Dec 2022, Ricardo Ribalda wrote:
+applied.
 
-> On Thu, 1 Dec 2022 at 14:22, 'Oliver Neukum' via Chromeos Kdump <chromeos-kdump@google.com> wrote:
-> >
-> > On 01.12.22 14:03, Ricardo Ribalda wrote:
-> > > This patchset does not modify this behaviour. It simply fixes the
-> > > stall for kexec().
-> > >
-> > > The  patch that introduced the stall:
-> > > 83bfc7e793b5 ("ASoC: SOF: core: unregister clients and machine drivers
-> > > in .shutdown")
-> >
-> > That patch is problematic. I would go as far as saying that
-> > it needs to be reverted.
-> 
-> It fixes a real issue. We have not had any complaints until we tried
-> to kexec in the platform.
-> I wont recommend reverting it until we have an alternative implementation.
-> 
-> kexec is far less common than suspend/reboot.
+Thanks!
+Helge
 
-I've posted an alternative to ALSA list that reverts the problematic
-patch and fixes the problem (the patch was originally addressing)
-in a different way:
 
-https://mailman.alsa-project.org/pipermail/alsa-devel/2022-December/209776.html
 
-No changes outside sound/soc/ are needed with this approach.
+>>
+>> ---
+>> =C2=A0 drivers/video/fbdev/Kconfig |=C2=A0=C2=A0=C2=A0 4 ++--
+>> =C2=A0 1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff -- a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+>> --- a/drivers/video/fbdev/Kconfig
+>> +++ b/drivers/video/fbdev/Kconfig
+>> @@ -456,8 +456,8 @@ config FB_ATARI
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 chipset found in Ataris.
+>> =C2=A0 config FB_OF
+>> -=C2=A0=C2=A0=C2=A0 bool "Open Firmware frame buffer device support"
+>> -=C2=A0=C2=A0=C2=A0 depends on (FB =3D y) && PPC && (!PPC_PSERIES || PC=
+I)
+>> +=C2=A0=C2=A0=C2=A0 tristate "Open Firmware frame buffer device support=
+"
+>> +=C2=A0=C2=A0=C2=A0 depends on FB && PPC && (!PPC_PSERIES || PCI)
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 depends on !DRM_OFDRM
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select APERTURE_HELPERS
+>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 select FB_CFB_FILLRECT
+>
 
-Br, Kai
