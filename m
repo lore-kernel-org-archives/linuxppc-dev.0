@@ -4,57 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62B33C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Dec 2022 13:30:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42402C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 13 Dec 2022 13:46:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NWfWY46r9z3cKV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Dec 2022 00:30:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NWfsy3wqkz3cHX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Dec 2022 00:46:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ITNcM/OP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DOTv2MvL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=pmladek@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=naveen.n.rao@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ITNcM/OP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DOTv2MvL;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NWfVY3kqcz300l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2022 00:29:40 +1100 (AEDT)
-Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
-	by smtp-out2.suse.de (Postfix) with ESMTP id EDD0F1F8B4;
-	Tue, 13 Dec 2022 13:29:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1670938175; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=hyr4c+SKac14wkta1jaSfJl4YQdl4MmgZCTJffcE5qg=;
-	b=ITNcM/OPJCUsyRzFdas/Pg/f0lW4KGl5uuFBgsWNjbWdKHS0k/RIR21Se6GDKWu9DRrWEh
-	UwNhLpsGVMgrtk8DLrh/z2yIlafJRG1MESQxDTCP3PWLfUEIed0qzwv4ueMPEkVjACwiJA
-	mpdm+p2jF/AWUfeTzYoYM2RFWqB28Xk=
-Received: from suse.cz (unknown [10.100.208.146])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by relay2.suse.de (Postfix) with ESMTPS id 13C4B2C141;
-	Tue, 13 Dec 2022 13:29:34 +0000 (UTC)
-Date: Tue, 13 Dec 2022 14:29:33 +0100
-From: Petr Mladek <pmladek@suse.com>
-To: Song Liu <song@kernel.org>
-Subject: Re: powerpc-part: was: Re: [PATCH v6] livepatch: Clear relocation
- targets on a module removal
-Message-ID: <Y5h+PX6a1a9yjQPp@alley>
-References: <20220901171252.2148348-1-song@kernel.org>
- <Y3expGRt4cPoZgHL@alley>
- <CAPhsuW4qYpX7wzHn5J5Hn9cnOFSZwwQPCjTM_HPTt_zbBS03ww@mail.gmail.com>
- <Y5Me5dTGv+GznvtO@alley>
- <CAPhsuW4pt7vfHTj8KorTRCx5zJaoUiyYUOLy8uXZDbTbur4RRA@mail.gmail.com>
- <Y5dg25LV24mBRf4t@alley>
- <CAPhsuW7y1GzT8+quk4vJEqM6SagqDqc=HXA3jtdmfTfC=Gsv-Q@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NWfrs0BS3z3bM7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2022 00:45:32 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BDD2QXT010257;
+	Tue, 13 Dec 2022 13:45:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : subject :
+ to : cc : references : in-reply-to : mime-version : message-id :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=eUgPrthoCID6QwmABsTsBu6qOsnjoUKBNQdpMF81+W4=;
+ b=DOTv2MvLjSpqYEV438WPXJiOF4v3r4AoVwb1uUsd5r0e6lA18xhhWnG9bMNEkfmV9wIZ
+ fFGHaVU/S2fft1VGalvyFSyHfdNhqoEyO5sMBULsooW3/OpAF7AD7I8fohteDEjEvVrT
+ h/Rqo3pd9Ark/i08dPipDXsTYEQkPMZhl1XdO8n1EyJYcVKoF4U55qxEA5IuSaDlBB3V
+ DjW08B6oItIGOhHccxEexQCQd48n6XEceJU0wGHkyYgs73kQoXE8pnE4EVyE4av8h856
+ E568UdMl2kBazEjen3i7ycjnJPamSiSjtyc5mU8enec4Tm6xfVs6bz9D07KgPqkoD7uz 6Q== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3mejre449n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Dec 2022 13:45:06 +0000
+Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 2BDD6KLS019710;
+	Tue, 13 Dec 2022 13:45:06 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3mejre448u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Dec 2022 13:45:05 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 2BD5UCPh028384;
+	Tue, 13 Dec 2022 13:45:04 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3mchr648eq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 13 Dec 2022 13:45:03 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2BDDj1Bv46793140
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 13 Dec 2022 13:45:01 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AB79D2004B;
+	Tue, 13 Dec 2022 13:45:01 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4711C20043;
+	Tue, 13 Dec 2022 13:45:01 +0000 (GMT)
+Received: from localhost (unknown [9.43.37.38])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 13 Dec 2022 13:45:01 +0000 (GMT)
+Date: Tue, 13 Dec 2022 15:53:48 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: [PATCH v1 06/10] powerpc/bpf: Perform complete extra passes to
+ update addresses
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Michael Ellerman
+	<mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>
+References: 	<fa025537f584599c0271fc129c5cf4f57fbe7505.1669881248.git.christophe.leroy@csgroup.eu>
+	<c13ebeb4d5d169bda6d1d60ccaa6cc956308308d.1669881248.git.christophe.leroy@csgroup.eu>
+In-Reply-To: 	<c13ebeb4d5d169bda6d1d60ccaa6cc956308308d.1669881248.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPhsuW7y1GzT8+quk4vJEqM6SagqDqc=HXA3jtdmfTfC=Gsv-Q@mail.gmail.com>
+User-Agent: astroid/4d6b06ad (https://github.com/astroidmail/astroid)
+Message-Id: <1670926819.9nqhz2fj7v.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 7UTJ-JytMBoZWiQz5BZHWlwz3MrF3EJl
+X-Proofpoint-ORIG-GUID: 3yIsWCYYIwCAqrzqIKaNf220JG_gsuBE
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2022-12-13_03,2022-12-13_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
+ priorityscore=1501 mlxlogscore=999 clxscore=1011 mlxscore=0
+ lowpriorityscore=0 malwarescore=0 adultscore=0 spamscore=0 impostorscore=0
+ bulkscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2210170000 definitions=main-2212130120
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,161 +102,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: jikos@kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, joe.lawrence@redhat.com, Josh Poimboeuf <jpoimboe@redhat.com>, live-patching@vger.kernel.org, mbenes@suse.cz, linuxppc-dev@lists.ozlabs.org, jpoimboe@kernel.org
+Cc: Hao Luo <haoluo@google.com>, Daniel Borkmann <daniel@iogearbox.net>, linux-kernel@vger.kernel.org, John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>, Alexei Starovoitov <ast@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, Stanislav Fomichev <sdf@google.com>, Jiri Olsa <jolsa@kernel.org>, KP Singh <kpsingh@kernel.org>, Yonghong Song <yhs@fb.com>, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 2022-12-13 00:13:46, Song Liu wrote:
-> )() ()On Mon, Dec 12, 2022 at 9:12 AM Petr Mladek <pmladek@suse.com> wrote:
-> >
-> > On Fri 2022-12-09 11:59:35, Song Liu wrote:
-> > > On Fri, Dec 9, 2022 at 3:41 AM Petr Mladek <pmladek@suse.com> wrote:
-> > > > On Mon 2022-11-28 17:57:06, Song Liu wrote:
-> > > > > On Fri, Nov 18, 2022 at 8:24 AM Petr Mladek <pmladek@suse.com> wrote:
-> > > > > >
-> > > > > > > --- a/arch/powerpc/kernel/module_64.c
-> > > > > > > +++ b/arch/powerpc/kernel/module_64.c
-> > > > > > > +#ifdef CONFIG_LIVEPATCH
-> > > > > > > +void clear_relocate_add(Elf64_Shdr *sechdrs,
-> > > > > > > +                    const char *strtab,
-> > > > > > > +                    unsigned int symindex,
-> > > > > > > +                    unsigned int relsec,
-> > > > > > > +                    struct module *me)
-> > > > > > > +{
-> >
-> > [...]
-> >
-> > > > > > > +
-> > > > > > > +             instruction = (u32 *)location;
-> > > > > > > +             if (is_mprofile_ftrace_call(symname))
-> > > > > > > +                     continue;
-> > > >
-> > > > Why do we ignore these symbols?
-> > > >
-> > > > I can't find any counter-part in apply_relocate_add(). It looks super
-> > > > tricky. It would deserve a comment.
-> > > >
-> > > > And I have no idea how we could maintain these exceptions.
-> > > >
-> > > > > > > +             if (!instr_is_relative_link_branch(ppc_inst(*instruction)))
-> > > > > > > +                     continue;
-> > > >
-> > > > Same here. It looks super tricky and there is no explanation.
-> > >
-> > > The two checks are from restore_r2(). But I cannot really remember
-> > > why we needed them. It is probably an updated version from an earlier
-> > > version (3 year earlier..).
-> >
-> > This is a good sign that it has to be explained in a comment.
-> > Or even better, it should not by copy pasted.
-> >
-> > > > > > > +             instruction += 1;
-> > > > > > > +             patch_instruction(instruction, ppc_inst(PPC_RAW_NOP()));
-> >
-> > I believe that this is not enough. apply_relocate_add() does this:
-> >
-> > int apply_relocate_add(Elf64_Shdr *sechdrs,
-> > [...]
-> >                        struct module *me)
-> > {
-> > [...]
-> >                 case R_PPC_REL24:
-> >                         /* FIXME: Handle weak symbols here --RR */
-> >                         if (sym->st_shndx == SHN_UNDEF ||
-> >                             sym->st_shndx == SHN_LIVEPATCH) {
-> > [...]
-> >                         if (!restore_r2(strtab + sym->st_name,
-> >                                                         (u32 *)location + 1, me))
-> > [...]                                   return -ENOEXEC;
-> >
-> > --->                    if (patch_instruction((u32 *)location, ppc_inst(value)))
-> >                                 return -EFAULT;
-> >
-> > , where restore_r2() does:
-> >
-> > static int restore_r2(const char *name, u32 *instruction, struct module *me)
-> > {
-> > [...]
-> >         /* ld r2,R2_STACK_OFFSET(r1) */
-> > --->    if (patch_instruction(instruction, ppc_inst(PPC_INST_LD_TOC)))
-> >                 return 0;
-> > [...]
-> > }
-> >
-> > By other words, apply_relocate_add() modifies two instructions:
-> >
-> >    + patch_instruction() called in restore_r2() writes into "location + 1"
-> >    + patch_instruction() called in apply_relocate_add() writes into "location"
-> >
-> > IMHO, we have to clear both.
-> >
-> > IMHO, we need to implement a function that reverts the changes done
-> > in restore_r2(). Also we need to revert the changes done in
-> > apply_relocate_add().
-> 
-> I finally got time to read all the details again and recalled what
-> happened with the code.
-> 
-> The failure happens when we
-> 1) call apply_relocate_add() on klp load (or module first load,
->    if klp was loaded first);
-> 2) do nothing when the module is unloaded;
-> 3) call apply_relocate_add() on module reload, which failed.
-> 
-> The failure happens at this check in restore_r2():
-> 
->         if (*instruction != PPC_RAW_NOP()) {
->                 pr_err("%s: Expected nop after call, got %08x at %pS\n",
->                         me->name, *instruction, instruction);
->                 return 0;
->         }
-> 
-> Therefore, apply_relocate_add only fails when "location + 1"
-> is not NOP. And to make it not fail, we only need to write NOP to
-> "location + 1" in clear_relocate_add().
+Christophe Leroy wrote:
+> BPF core calls the jit compiler again for an extra pass in order
+> to properly set subprog addresses.
+>=20
+> Unlike other architectures, powerpc only updates the addresses
+> during that extra pass. It means that holes must have been left
+> in the code in order to enable the maximum possible instruction
+> size.
+>=20
+> In order avoid waste of space, and waste of CPU time on powerpc
+> processors on which the NOP instruction is not 0-cycle, perform
+> two real additional passes.
+>=20
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  arch/powerpc/net/bpf_jit_comp.c | 85 ---------------------------------
+>  1 file changed, 85 deletions(-)
+>=20
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_c=
+omp.c
+> index 43e634126514..8833bf23f5aa 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -23,74 +23,6 @@ static void bpf_jit_fill_ill_insns(void *area, unsigne=
+d int size)
+>  	memset32(area, BREAKPOINT_INSTRUCTION, size / 4);
+>  }
+> =20
+> -/* Fix updated addresses (for subprog calls, ldimm64, et al) during extr=
+a pass */
+> -static int bpf_jit_fixup_addresses(struct bpf_prog *fp, u32 *image,
+> -				   struct codegen_context *ctx, u32 *addrs)
+> -{
+> -	const struct bpf_insn *insn =3D fp->insnsi;
+> -	bool func_addr_fixed;
+> -	u64 func_addr;
+> -	u32 tmp_idx;
+> -	int i, j, ret;
+> -
+> -	for (i =3D 0; i < fp->len; i++) {
+> -		/*
+> -		 * During the extra pass, only the branch target addresses for
+> -		 * the subprog calls need to be fixed. All other instructions
+> -		 * can left untouched.
+> -		 *
+> -		 * The JITed image length does not change because we already
+> -		 * ensure that the JITed instruction sequence for these calls
+> -		 * are of fixed length by padding them with NOPs.
+> -		 */
+> -		if (insn[i].code =3D=3D (BPF_JMP | BPF_CALL) &&
+> -		    insn[i].src_reg =3D=3D BPF_PSEUDO_CALL) {
+> -			ret =3D bpf_jit_get_func_addr(fp, &insn[i], true,
+> -						    &func_addr,
+> -						    &func_addr_fixed);
 
-Yes, this should be enough to pass the existing check.
-
-> IIUC, you want clear_relocate_add() to undo everything we did
-> in apply_relocate_add(); while I was writing clear_relocate_add()
-> to make the next apply_relocate_add() not fail.
-> 
-> I agree that, based on the name, clear_relocate_add() should
-> undo everything by apply_relocate_add(). But I am not sure how
-> to handle some cases. For example, how do we undo
-> 
->                 case R_PPC64_ADDR32:
->                         /* Simply set it */
->                         *(u32 *)location = value;
->                        break;
->
-> Shall we just write zeros? I don't think this matters.
-
-I guess that it would be zeros as we do in x86_64.
+I don't see you updating calls to bpf_jit_get_func_addr() in=20
+bpf_jit_build_body() to set extra_pass to true. Afaics, that's required=20
+to get the correct address to be branched to for subprogs.
 
 
-> I think this is the question we should answer first:
-> What shall clear_relocate_add() do?
-> 1) undo everything by apply_relocate_add();
-> 2) only do things needed to make the next
->    apply_relocate_add succeed;
-> 3) something between 1) and 2).
+- Naveen
 
-Good question.
-
-Hmm, the commit a443bf6e8a7674b86221f49 ("powerpc/modules: Add REL24
-relocation support of livepatch symbols") suggests that all symbols
-in the section SHN_LIVEPATCH have the type R_PPC_REL24. AFAIK, the
-kernel livepatches are the only user of the clear_relocate_add()
-feature.
-
-If the above is correct then it might be enough to clear only
-R_PPC_REL24 type. And it might be enough to warn when clear_relocate_add()
-is called for another type so that we know when the relocations
-were not cleared properly.
-
-Good question.  We might need some input from people familiar
-with the architecture and creating the livepatches.
-
-Best Regards,
-Petr
