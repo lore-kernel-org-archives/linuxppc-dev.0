@@ -4,56 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E72DC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Dec 2022 19:46:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D80CFC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 Dec 2022 20:10:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NXQph3WRRz3cj1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Dec 2022 06:46:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ey/o2OPo;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::240; helo=mslow1.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=ey/o2OPo;
-	dkim-atps=neutral
-X-Greylist: delayed 790 seconds by postgrey-1.36 at boromir; Thu, 15 Dec 2022 01:32:23 AEDT
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [IPv6:2001:4b98:dc4:8::240])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NXHrR3QcDz3bf7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2022 01:32:23 +1100 (AEDT)
-Received: from relay5-d.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::225])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 7D211D3CB9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Dec 2022 14:19:14 +0000 (UTC)
-Received: (Authenticated sender: herve.codina@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPSA id 6FF0A1C0017;
-	Wed, 14 Dec 2022 14:18:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1671027536;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=dmQ807XpApqJy3ky8AyyrotvaoAVGYYY3USozGQUBPY=;
-	b=ey/o2OPoCIMiHTZDssVN7DDIBmfA4kbOab/vKfPdBPvMleF2g50wjKo9+EBCswUhxORexP
-	WCKreG+QPA7HRnlNVHf6S1iteh09o26ckOCfXJkK0wvf0GaPYqbkqnzGZg65pZv+Nt5ieK
-	1oHWDQFUIZ14BYD+AdWhLCd8a1KXgaJE3APXF4TfjtshYlWKGqzwecO+cjmDRIg99Ab72S
-	xKx2HjeJ/5UZjERUzizoNajx8ZuibmwxCfC3VdHodEuCF8+SPUkxR4vIO7svwfeGyi6INZ
-	F39EaeHlyuAjuAvDGnebwtdsMfpNqUQ1LSlP7BYUWpw0Z5CMaqLxgXT8kiBs7A==
-Date: Wed, 14 Dec 2022 15:18:53 +0100
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] spi: fsl_spi: Don't change speed while chipselect is
- active
-Message-ID: <20221214151853.797daf7d@bootlin.com>
-In-Reply-To: <8aab84c51aa330cf91f4b43782a1c483e150a4e3.1671025244.git.christophe.leroy@csgroup.eu>
-References: <8aab84c51aa330cf91f4b43782a1c483e150a4e3.1671025244.git.christophe.leroy@csgroup.eu>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.34; x86_64-redhat-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Mailman-Approved-At: Thu, 15 Dec 2022 06:44:34 +1100
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NXRLQ1cGGz3f5W
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 15 Dec 2022 07:10:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NXRKj3DZHz3bZk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Dec 2022 07:09:44 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 2BEK8gVw016969;
+	Wed, 14 Dec 2022 14:08:42 -0600
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 2BEK8gVq016968;
+	Wed, 14 Dec 2022 14:08:42 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Wed, 14 Dec 2022 14:08:42 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+Subject: Re: Mass-building defconfigs: many fail with assembler errors
+Message-ID: <20221214200842.GP25951@gate.crashing.org>
+References: <20221212215117.aa7255t7qd6yefk4@lug-owl.de> <20221213002613.GG25951@gate.crashing.org> <20221213100045.xebrbdcniwpopbnq@lug-owl.de> <20221214090025.f3k3juinxfhhnr6u@lug-owl.de> <20221214183632.reqfqdhtatog2vmu@lug-owl.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221214183632.reqfqdhtatog2vmu@lug-owl.de>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,89 +42,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Brown <broonie@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, linux-spi@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
+Hi!
 
-On Wed, 14 Dec 2022 14:41:33 +0100
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+On Wed, Dec 14, 2022 at 07:36:32PM +0100, Jan-Benedict Glaw wrote:
+> So we have these remaining build issues:
+> 
+> linux-powerpc-cell_defconfig           bad asm (arch/powerpc/boot/pseries-head.S)
+> linux-powerpc-mvme5100_defconfig       bad asm (arch/powerpc/kernel/epapr_hcalls.S)
+> linux-powerpc-asp8347_defconfig        bad asm (arch/powerpc/kernel/pmc.c)
+> linux-powerpc-ppc6xx_defconfig         bad asm (arch/powerpc/kernel/pmc.c)
+> linux-powerpc-ppc64e_defconfig         bad asm (arch/powerpc/kernel/vdso/gettimeofday.S)
+> linux-powerpc-corenet64_smp_defconfig  bad asm (arch/powerpc/kernel/vdso/gettimeofday.S)
+> 
+> I do *not* have CROSS32_COMPILE=... set for my builds. Maybe that
+> could cure at least the issues within the ./boot and ./kernel/vdso
+> directories?
 
-> Commit c9bfcb315104 ("spi_mpc83xx: much improved driver") made
-> modifications to the driver to not perform speed changes while
-> chipselect is active. But those changes where lost with the
-> convertion to tranfer_one.
->=20
-> Previous implementation was allowing speed changes during
-> message transfer when cs_change flag was set.
-> At the time being, core SPI does not provide any feature to change
-> speed while chipselect is off, so do not allow any speed change during
-> message transfer, and perform the transfer setup in prepare_message
-> in order to set correct speed while chipselect is still off.
->=20
-> Reported-by: Herve Codina <herve.codina@bootlin.com>
-> Fixes: 64ca1a034f00 ("spi: fsl_spi: Convert to transfer_one")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Tested-by: Herve Codina <herve.codina@bootlin.com>
-> ---
->  drivers/spi/spi-fsl-spi.c | 19 ++++++++++++++++---
->  1 file changed, 16 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/spi/spi-fsl-spi.c b/drivers/spi/spi-fsl-spi.c
-> index 731624f157fc..93152144fd2e 100644
-> --- a/drivers/spi/spi-fsl-spi.c
-> +++ b/drivers/spi/spi-fsl-spi.c
-> @@ -333,13 +333,26 @@ static int fsl_spi_prepare_message(struct spi_contr=
-oller *ctlr,
->  {
->  	struct mpc8xxx_spi *mpc8xxx_spi =3D spi_controller_get_devdata(ctlr);
->  	struct spi_transfer *t;
-> +	struct spi_transfer *first;
-> +
-> +	first =3D list_first_entry(&m->transfers, struct spi_transfer,
-> +				 transfer_list);
-> =20
->  	/*
->  	 * In CPU mode, optimize large byte transfers to use larger
->  	 * bits_per_word values to reduce number of interrupts taken.
-> +	 *
-> +	 * Some glitches can appear on the SPI clock when the mode changes.
-> +	 * Check that there is no speed change during the transfer and set it up
-> +	 * now to change the mode without having a chip-select asserted.
->  	 */
-> -	if (!(mpc8xxx_spi->flags & SPI_CPM_MODE)) {
-> -		list_for_each_entry(t, &m->transfers, transfer_list) {
-> +	list_for_each_entry(t, &m->transfers, transfer_list) {
-> +		if (t->speed_hz !=3D first->speed_hz) {
-> +			dev_err(&m->spi->dev,
-> +				"speed_hz cannot change during message.\n");
-> +			return -EINVAL;
-> +		}
-> +		if (!(mpc8xxx_spi->flags & SPI_CPM_MODE)) {
->  			if (t->len < 256 || t->bits_per_word !=3D 8)
->  				continue;
->  			if ((t->len & 3) =3D=3D 0)
-> @@ -348,7 +361,7 @@ static int fsl_spi_prepare_message(struct spi_control=
-ler *ctlr,
->  				t->bits_per_word =3D 16;
->  		}
->  	}
-> -	return 0;
-> +	return fsl_spi_setup_transfer(m->spi, first);
->  }
-> =20
->  static int fsl_spi_transfer_one(struct spi_controller *controller,
+I never set that, -m32 does the trick, every powerpc compiler is
+biarch :-)
 
-Looks good to me.
+> Let's try that...  But I guess that won't help for the
+> other two remaining files (arch/powerpc/kernel/{epapr_hcalls.S,pmc.c).
 
-Reviewed-by: Herve Codina <herve.codina@bootlin.com>
+Not likely no.  Can you show the error of those again?
 
-Regards,
-Herv=C3=A9
+> linux-powerpc-pseries_defconfig         sstep (out of array bounds)
+> linux-powerpc-powernv_defconfig         sstep
+> linux-powerpc-ppc64_defconfig           sstep
+> linux-powerpc-pseries_le_defconfig      sstep
+> linux-powerpc-ppc64le_defconfig         sstep
+> linux-powerpc-ppc64le_guest_defconfig   sstep
+> linux-powerpc-ppc64_guest_defconfig     sstep
+> linux-powerpc-powernv_be_defconfig      sstep
+> 
+> My first guess on these is that it's a wrong warning. The union's
+> `u8 b[2 * sizeof(double)]` seems to be large enough.
 
---=20
-Herv=C3=A9 Codina, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+A false positive, yes.  Which is *not* wrong.  What is wrong is using
+-Werror in any unknown environment.  I have a stack of patches I use for
+all my kernel builds, and half of those are eradicating harmful -Werror
+instances.
+
+> linux-powerpc-akebono_defconfig         ahci (BUILD_BUG_ON failed: sizeof(_s) > sizeof(long))
+> linux-powerpc-xes_mpc85xx_defconfig     ahci
+> linux-powerpc-ge_imp3a_defconfig        ahci
+> linux-powerpc-mpc85xx_defconfig         ahci
+> linux-powerpc-mpc85xx_smp_defconfig     ahci
+> linux-powerpc-corenet32_smp_defconfig   ahci
+> linux-powerpc-mpc86xx_defconfig         ahci
+> linux-powerpc-mpc86xx_smp_defconfig     ahci
+> 
+> I've seen the AHCI issue on other (non-powerpc) builds as well,
+> haven't looked into this so I won't guess about whether this is a real
+> bug or a compiler issue.
+
+It is a real bug afaics.
+
+
+Segher
