@@ -4,70 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91202C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Dec 2022 01:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72745C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Dec 2022 02:10:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NYpwq6JSQz3bf8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Dec 2022 12:56:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NYqFQ5ZSnz3bfk
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 17 Dec 2022 13:10:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ipX2sSj6;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZGCAAZ7p;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lza73GFY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ipX2sSj6;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZGCAAZ7p;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Lza73GFY;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NYpvm0kqZz2yRV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2022 12:55:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1671242125;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Xv8gbdl7CL7K4MDV2oGJuvA/KR+O1Rw3H7q7uOHvZNc=;
-	b=ipX2sSj6uZIjGIiRTaXFG2Z1aq54mVDBYR418Bf4dui0bPvkkaE981LcciqiW4nQqLffDL
-	bGSdMu6EQTyelimRDh9VqdRtWkR1HZLNRWIJhqjnsziYXFPauf4UC/4Z1NmQFJ8G8p1sU0
-	r+0GELx87WrrG7qmx1Qht97ES85KdSg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1671242126;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Xv8gbdl7CL7K4MDV2oGJuvA/KR+O1Rw3H7q7uOHvZNc=;
-	b=ZGCAAZ7pVOK/bdcnyTsPfu1oAbuwfOc4TeN/cCM42CMC3tViqEgW2Bl7ejc4WMpw8W5S5y
-	Hwe3Hxsb1fCG8efcIokIL+cUJiXufDBdv8dCRTknCe5juFF1HL9cibrPtKwUeH+e4TuyNb
-	o5jZ6CMrT+hMff5bpM3oHxBWjh8lwMM=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-674-kiSlyi0fPZqcsD2lk1KCCA-1; Fri, 16 Dec 2022 20:55:19 -0500
-X-MC-Unique: kiSlyi0fPZqcsD2lk1KCCA-1
-Received: from smtp.corp.redhat.com (int-mx10.intmail.prod.int.rdu2.redhat.com [10.11.54.10])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 8CB3518A63EC;
-	Sat, 17 Dec 2022 01:55:18 +0000 (UTC)
-Received: from MiWiFi-R3L-srv.redhat.com (ovpn-12-34.pek2.redhat.com [10.72.12.34])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 4EE9C49BB6A;
-	Sat, 17 Dec 2022 01:55:11 +0000 (UTC)
-From: Baoquan He <bhe@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 6/7] powerpc: mm: add VM_IOREMAP flag to the vmalloc area
-Date: Sat, 17 Dec 2022 09:54:34 +0800
-Message-Id: <20221217015435.73889-7-bhe@redhat.com>
-In-Reply-To: <20221217015435.73889-1-bhe@redhat.com>
-References: <20221217015435.73889-1-bhe@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NYqDL5w8mz2xVr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Dec 2022 13:09:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1671242995; x=1702778995;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=DNFZXPfoE941qlvntGC1oeTYqzBFU3zYbYc+77x18kw=;
+  b=Lza73GFY4PWGyjMFc1oOsfTVzmlKrBdQyAtXZJGrQ9Bu70VDqrM7SpUU
+   HAdHBtwP22spaP5LIGcA7FpFU1WBJbtbLyyEmwuAK8F83W9pvAridbycK
+   DQXDTQ60NiyezGU7XQZe0aCYLSzHKdDrDzO3c8pMZCjWaDvt2Hv9JXXHR
+   dpzTt1kyxuuV6O3Rr0VW82cIbGcol8+uzK04HHptk5UYRIRm3cd6Fudhn
+   sdY3lNh01QtFLnfgO9UZtYXOSJIbpEfFB0tNLYVjsiwgtNDyFtI8S60RK
+   jyYrdi8eRDrk5oh7I3bYrX04LaEV3q/wwWbXV1Eb/nFCz/gK93OOLEGAt
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="320982066"
+X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; 
+   d="scan'208";a="320982066"
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 16 Dec 2022 18:09:49 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10563"; a="682456996"
+X-IronPort-AV: E=Sophos;i="5.96,251,1665471600"; 
+   d="scan'208";a="682456996"
+Received: from lkp-server01.sh.intel.com (HELO b5d47979f3ad) ([10.239.97.150])
+  by orsmga001.jf.intel.com with ESMTP; 16 Dec 2022 18:09:48 -0800
+Received: from kbuild by b5d47979f3ad with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1p6Me3-0007Ws-1O;
+	Sat, 17 Dec 2022 02:09:47 +0000
+Date: Sat, 17 Dec 2022 10:09:29 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 980411a4d1bb925d28cd9e8d8301dc982ece788d
+Message-ID: <639d24d9.iVpQ7ZSqX0rlH6Fa%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.10
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,41 +70,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org, willy@infradead.org, stephen.s.brennan@oracle.com, hch@infradead.org, linux-mm@kvack.org, urezki@gmail.com, Nicholas Piggin <npiggin@gmail.com>, akpm@linux-foundation.org, Pali Roh??r <pali@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, for vmalloc areas with flag VM_IOREMAP set, except of the
-specific alignment clamping in __get_vm_area_node(), they will be
- 1) Shown as ioremap in /proc/vmallocinfo;
- 2) Ignored by /proc/kcore reading via vread()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 980411a4d1bb925d28cd9e8d8301dc982ece788d  powerpc/code-patching: Fix oops with DEBUG_VM enabled
 
-So for the io mapping in ioremap_phb() of ppc, we should set VM_IOREMAP
-in flag to make it handled correctly as above.
+elapsed time: 723m
 
-Signed-off-by: Baoquan He <bhe@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: "Pali Roh??r" <pali@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+configs tested: 62
+configs skipped: 2
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 0c7cfb9fab04..fd42059ae2a5 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -132,7 +132,7 @@ void __iomem *ioremap_phb(phys_addr_t paddr, unsigned long size)
- 	 * address decoding but I'd rather not deal with those outside of the
- 	 * reserved 64K legacy region.
- 	 */
--	area = __get_vm_area_caller(size, 0, PHB_IO_BASE, PHB_IO_END,
-+	area = __get_vm_area_caller(size, VM_IOREMAP, PHB_IO_BASE, PHB_IO_END,
- 				    __builtin_return_address(0));
- 	if (!area)
- 		return NULL;
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+x86_64                           rhel-8.3-syz
+x86_64                         rhel-8.3-kunit
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-bpf
+x86_64                               rhel-8.3
+x86_64                        randconfig-a013
+um                             i386_defconfig
+x86_64                        randconfig-a011
+powerpc                           allnoconfig
+um                           x86_64_defconfig
+i386                                defconfig
+x86_64                        randconfig-a015
+arm                                 defconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+arc                                 defconfig
+arm                              allyesconfig
+s390                             allmodconfig
+alpha                               defconfig
+i386                          randconfig-a016
+x86_64                        randconfig-a006
+arm64                            allyesconfig
+ia64                             allmodconfig
+sh                               allmodconfig
+s390                                defconfig
+m68k                             allyesconfig
+x86_64                          rhel-8.3-func
+s390                             allyesconfig
+x86_64                    rhel-8.3-kselftests
+i386                          randconfig-a014
+x86_64                        randconfig-a004
+mips                             allyesconfig
+i386                          randconfig-a012
+m68k                             allmodconfig
+riscv                randconfig-r042-20221216
+i386                          randconfig-a001
+powerpc                          allmodconfig
+arc                  randconfig-r043-20221216
+arc                              allyesconfig
+x86_64                        randconfig-a002
+s390                 randconfig-r044-20221216
+i386                          randconfig-a003
+i386                          randconfig-a005
+alpha                            allyesconfig
+i386                             allyesconfig
+x86_64                            allnoconfig
+
+clang tested configs:
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                          rhel-8.3-rust
+arm                  randconfig-r046-20221216
+hexagon              randconfig-r041-20221216
+hexagon              randconfig-r045-20221216
+i386                          randconfig-a013
+i386                          randconfig-a002
+x86_64                        randconfig-a005
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+i386                          randconfig-a004
+i386                          randconfig-a006
+i386                          randconfig-a011
+i386                          randconfig-a015
+
 -- 
-2.34.1
-
+0-DAY CI Kernel Test Service
+https://01.org/lkp
