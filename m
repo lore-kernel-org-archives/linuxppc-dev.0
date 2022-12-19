@@ -4,85 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E582C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Dec 2022 07:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E3F2C10F1E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Dec 2022 09:41:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nbp0p4hMNz3cLZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Dec 2022 18:21:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG6uX0CS;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LG6uX0CS;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nbs5k2yJsz3cGc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 Dec 2022 20:41:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nbnvg3Qj0z3bTw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2022 18:17:19 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 2BK7DfBY030434;
-	Tue, 20 Dec 2022 07:17:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=LbRTTD4yvBkdqG78CVnvM4sOYZMB2vFcP3bSgfdEM2s=;
- b=LG6uX0CSN+iIniv9xILs4b8vWyo7ZgfEEMJxaPKN+QP3RRdQxnsC3aw1GKb1dBxcLWe2
- 5sAHo7SH5DYmwXCcQg0vJjBCmOdTntFWg6cdorzOxkjc1cIodbOATOqA/MI1UiZmHpKO
- V+PSk9AUMcrKC43jI6c/O1KGrwaaO7e9Ze4WrF/tDnen3LhVqaj2St8SGjDozeYsabYW
- B6Oz0kOwy9ky3Lhhi2+6+AiWwcKhvKv15LYbX+i/dli+k4Tdq2ZOfaWG+vsZiQc3U9t9
- wJv8ieWgmQY7z9m0gX3cGpzcRTUWJ2NXIrjBqh59qHp4lWCE32zRIHuWk6aGP+QGA8Ut Aw== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3mk8fhg2wh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Dec 2022 07:17:14 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 2BJCE66G024026;
-	Tue, 20 Dec 2022 07:17:13 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3mh6yvak4r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 20 Dec 2022 07:17:12 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 2BK7HAbt24248770
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 20 Dec 2022 07:17:10 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A4FAA20049;
-	Tue, 20 Dec 2022 07:17:10 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 236B820040;
-	Tue, 20 Dec 2022 07:17:10 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 20 Dec 2022 07:17:10 +0000 (GMT)
-Received: from jarvis-ozlabs-ibm-com.au.ibm.com (unknown [9.192.255.228])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3DD37604A8;
-	Tue, 20 Dec 2022 18:17:07 +1100 (AEDT)
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4] powerpc/pseries: Fix alignment of PLPKS structures and buffers
-Date: Tue, 20 Dec 2022 18:16:24 +1100
-Message-Id: <20221220071626.1426786-3-ajd@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nbs551931z2yWN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Dec 2022 20:40:38 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Nbs4x545Zz9t3C;
+	Tue, 20 Dec 2022 10:40:33 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 4p6MqhzodcQa; Tue, 20 Dec 2022 10:40:33 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Nbs4n3SlGz9t3s;
+	Tue, 20 Dec 2022 10:40:25 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 670CA8B775;
+	Tue, 20 Dec 2022 10:40:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id gIfRY9ue1cED; Tue, 20 Dec 2022 10:40:25 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.232.18])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B3F58B763;
+	Tue, 20 Dec 2022 10:40:25 +0100 (CET)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 2BJIkGOQ1709624
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Mon, 19 Dec 2022 19:46:16 +0100
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 2BJIkGWu1709623;
+	Mon, 19 Dec 2022 19:46:16 +0100
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        jbglaw@lug-owl.de
+Subject: [PATCH v1 3/5] powerpc/64: Replace -mcpu=e500mc64 by -mcpu=e5500
+Date: Mon, 19 Dec 2022 19:45:58 +0100
+Message-Id: <fa71ed20d22c156225436374f0ab847daac893bc.1671475543.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221220071626.1426786-1-ajd@linux.ibm.com>
-References: <20221220071626.1426786-1-ajd@linux.ibm.com>
+In-Reply-To: <38a8d765ed9149bc6b5484a7142e3bc59ffa3b1a.1671475543.git.christophe.leroy@csgroup.eu>
+References: <38a8d765ed9149bc6b5484a7142e3bc59ffa3b1a.1671475543.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1671475558; l=926; s=20211009; h=from:subject:message-id; bh=yFcy4yQyPXy8ByNm8RJbyVUH3o5z+fowyjmAJaMaIwA=; b=YBrIlEbG/KQW5XSJsU/8dixIgfLhXxBKQtkERAFp1TwiDfsGIRnQvKMOvUKGcx2Dm43wlZTqOKLm DbL1WJDaAzMi5sfNb/uifjaLG/pQP+flAI3CqzuKK2qLMJY5wpaZ
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: G8zDKgvP2gJEJDHo8rM7qst8Beb8u2oi
-X-Proofpoint-GUID: G8zDKgvP2gJEJDHo8rM7qst8Beb8u2oi
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2022-12-20_01,2022-12-15_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 clxscore=1015
- suspectscore=0 priorityscore=1501 mlxscore=0 malwarescore=0 spamscore=0
- impostorscore=0 phishscore=0 lowpriorityscore=0 adultscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2212200058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,65 +68,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, gjoyce@linux.ibm.com, bgray@linux.ibm.com, brking@linux.ibm.com, gcwilson@linux.ibm.com, stefanb@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A number of structures and buffers passed to PKS hcalls have alignment
-requirements, which could on occasion cause problems:
+E500MC64 is a processor pre-dating E5500 that has never been
+commercialised. Use -mcpu=e5500 for E5500 core.
 
-- Authorisation structures must be 16-byte aligned and must not cross a
-  page boundary
+More details at https://gcc.gnu.org/PR108149
 
-- Label structures must not cross page coundaries
-
-- Password output buffers must not cross page boundaries
-
-Round up the allocations of these structures/buffers to the next power of
-2 to make sure this happens.
-
-Reported-by: Benjamin Gray <bgray@linux.ibm.com>
-Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/pseries/plpks.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index cb93062e8223..8ccc91143370 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -126,7 +126,8 @@ static int plpks_gen_password(void)
- 	u8 *password, consumer = PKS_OS_OWNER;
- 	int rc;
- 
--	password = kzalloc(maxpwsize, GFP_KERNEL);
-+	// The password must not cross a page boundary, so we align to the next power of 2
-+	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
- 	if (!password)
- 		return -ENOMEM;
- 
-@@ -162,7 +163,9 @@ static struct plpks_auth *construct_auth(u8 consumer)
- 	if (consumer > PKS_OS_OWNER)
- 		return ERR_PTR(-EINVAL);
- 
--	auth = kzalloc(struct_size(auth, password, maxpwsize), GFP_KERNEL);
-+	// The auth structure must not cross a page boundary and must be
-+	// 16 byte aligned. We align to the next largest power of 2
-+	auth = kzalloc(roundup_pow_of_two(struct_size(auth, password, maxpwsize)), GFP_KERNEL);
- 	if (!auth)
- 		return ERR_PTR(-ENOMEM);
- 
-@@ -196,7 +199,8 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
- 	if (component && slen > sizeof(label->attr.prefix))
- 		return ERR_PTR(-EINVAL);
- 
--	label = kzalloc(sizeof(*label), GFP_KERNEL);
-+	// The label structure must not cross a page boundary, so we align to the next power of 2
-+	label = kzalloc(roundup_pow_of_two(sizeof(*label)), GFP_KERNEL);
- 	if (!label)
- 		return ERR_PTR(-ENOMEM);
- 
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 31cea2eeb59e..29d6be033576 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -249,7 +249,7 @@ config TARGET_CPU
+ 	default "power8" if POWER8_CPU
+ 	default "power9" if POWER9_CPU
+ 	default "power10" if POWER10_CPU
+-	default "e500mc64" if E5500_CPU
++	default "e5500" if E5500_CPU
+ 	default "e6500" if E6500_CPU
+ 	default "power4" if POWERPC64_CPU && !CPU_LITTLE_ENDIAN
+ 	default "power8" if POWERPC64_CPU && CPU_LITTLE_ENDIAN
 -- 
 2.38.1
 
