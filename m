@@ -4,40 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3313AC41535
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Dec 2022 11:51:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FA4AC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Dec 2022 12:48:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nd7v127jBz3bgJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Dec 2022 22:51:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=leemhuis.info (client-ip=80.237.130.52; helo=wp530.webpack.hosteurope.de; envelope-from=regressions@leemhuis.info; receiver=<UNKNOWN>)
-X-Greylist: delayed 1573 seconds by postgrey-1.36 at boromir; Thu, 22 Dec 2022 22:50:51 AEDT
-Received: from wp530.webpack.hosteurope.de (wp530.webpack.hosteurope.de [80.237.130.52])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nd99G5zNTz3bWF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 22 Dec 2022 23:48:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HwtA9Sb0;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HwtA9Sb0;
+	dkim-atps=neutral
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nd7tM4PT7z3bW2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2022 22:50:50 +1100 (AEDT)
-Received: from [2a02:8108:963f:de38:eca4:7d19:f9a2:22c5]; authenticated
-	by wp530.webpack.hosteurope.de running ExIM with esmtpsa (TLS1.3:ECDHE_RSA_AES_128_GCM_SHA256:128)
-	id 1p8Jge-0008CZ-3K; Thu, 22 Dec 2022 12:24:32 +0100
-Message-ID: <d0119f9f-421c-069a-91f6-ff7a0187038d@leemhuis.info>
-Date: Thu, 22 Dec 2022 12:24:31 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nd98F3bPvz30RT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Dec 2022 23:47:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1671713277; x=1703249277;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=UPM8RDFaM30ZmFrIb8CKMZ1JANhWUp662jbH45qLr6M=;
+  b=HwtA9Sb0YmYexIIvfZrVLOPaC9tv8SAlwOAy1EWvD2spPC7GTqOtwKgT
+   /j671UHExTBQ3NCbZdGEA+JY2+kTPy1ZyFkK4NlM40/KF4grf2aB1PWWO
+   w84SWAssgQlPE2N+DHDNV/8fqERpJJmPAmR2MjVsc6vfLZU53CFH+3hix
+   kAsfzDlZy2r9hgI8xCImCP6hVehMXPVokTebPZcYbh8S7Sr5s0NdlgQLQ
+   Ei37k8ksnEpda11PFh0lew7i+u1GB4WLbYZGJwnIc9ApSLc1pxiQCnFz1
+   FuzsHBH/RBgJy5g0nHvBrQBfpKxhVCQ2PY6md4TiUnrrW3ikdiIjhNfMM
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10568"; a="322031551"
+X-IronPort-AV: E=Sophos;i="5.96,265,1665471600"; 
+   d="scan'208";a="322031551"
+Received: from fmsmga006.fm.intel.com ([10.253.24.20])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Dec 2022 04:47:51 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10568"; a="897213732"
+X-IronPort-AV: E=Sophos;i="5.96,265,1665471600"; 
+   d="scan'208";a="897213732"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by fmsmga006.fm.intel.com with ESMTP; 22 Dec 2022 04:47:45 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1p8Kz8-00Duf4-1e;
+	Thu, 22 Dec 2022 14:47:42 +0200
+Date: Thu, 22 Dec 2022 14:47:42 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andrzej Hajda <andrzej.hajda@intel.com>
+Subject: Re: [PATCH 18/19] linux/include: add non-atomic version of xchg
+Message-ID: <Y6RR7hPZUN22ytap@smile.fi.intel.com>
+References: <20221222114635.1251934-1-andrzej.hajda@intel.com>
+ <20221222114635.1251934-19-andrzej.hajda@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.5.1
-Subject: Re: [PASEMI] Nemo board doesn't reboot anymore after the commit "HID:
- usbhid: Add ALWAYS_POLL quirk for some mice" #forregzbot
-Content-Language: en-US, de-DE
-To: linux-input@vger.kernel.org, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,
- "regressions@lists.linux.dev" <regressions@lists.linux.dev>
-References: <747e3240-bb3f-3a0c-e998-02f3b4826704@xenosoft.de>
-From: Thorsten Leemhuis <regressions@leemhuis.info>
-In-Reply-To: <747e3240-bb3f-3a0c-e998-02f3b4826704@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-bounce-key: webpack.hosteurope.de;regressions@leemhuis.info;1671709851;0189a5f6;
-X-HE-SMSGID: 1p8Jge-0008CZ-3K
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221222114635.1251934-19-andrzej.hajda@intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,34 +72,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, Boqun Feng <boqun.feng@gmail.com>, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Rodrigo Vivi <rodrigo.vivi@intel.com>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[Note: this mail contains only information for Linux kernel regression
-tracking. Mails like these contain '#forregzbot' in the subject to make
-then easy to spot and filter out. The author also tried to remove most
-or all individuals from the list of recipients to spare them the hassle.]
+On Thu, Dec 22, 2022 at 12:46:34PM +0100, Andrzej Hajda wrote:
+> The pattern of setting variable with new value and returning old
+> one is very common in kernel. Usually atomicity of the operation
+> is not required, so xchg seems to be suboptimal and confusing in
+> such cases.
 
-On 22.12.22 11:42, Christian Zigotzky wrote:
+FWIW,
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
+> Signed-off-by: Andrzej Hajda <andrzej.hajda@intel.com>
+> ---
+>  include/linux/non-atomic/xchg.h | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>  create mode 100644 include/linux/non-atomic/xchg.h
 > 
-> The Nemo board [1] doesn't reboot anymore since the final kernel 6.1.
-> The reboot works with the RC8 of kernel 6.1.
-> Actually, a reboot works but the CFE firmware is not loaded. Maybe there
-> is still something in the memory after the reboot.
+> diff --git a/include/linux/non-atomic/xchg.h b/include/linux/non-atomic/xchg.h
+> new file mode 100644
+> index 00000000000000..f7fa5dd746f37d
+> --- /dev/null
+> +++ b/include/linux/non-atomic/xchg.h
+> @@ -0,0 +1,19 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _LINUX_NON_ATOMIC_XCHG_H
+> +#define _LINUX_NON_ATOMIC_XCHG_H
+> +
+> +/**
+> + * __xchg - set variable pointed by @ptr to @val, return old value
+> + * @ptr: pointer to affected variable
+> + * @val: value to be written
+> + *
+> + * This is non-atomic variant of xchg.
+> + */
+> +#define __xchg(ptr, val) ({		\
+> +	__auto_type __ptr = ptr;	\
+> +	__auto_type __t = *__ptr;	\
+> +	*__ptr = (val);			\
+> +	__t;				\
+> +})
+> +
+> +#endif
+> -- 
+> 2.34.1
 > 
-> I bisected today. [2]
 
-Thanks for the report. To be sure below issue doesn't fall through the
-cracks unnoticed, I'm adding it to regzbot, my Linux kernel regression
-tracking bot:
+-- 
+With Best Regards,
+Andy Shevchenko
 
-#regzbot ^introduced f6d910a89a23
-#regzbot title hid: PASEMI Nemo board doesn't reboot anymore
-#regzbot ignore-activity
 
-Ciao, Thorsten (wearing his 'the Linux kernel's regression tracker' hat)
-
-P.S.: As the Linux kernel's regression tracker I deal with a lot of
-reports and sometimes miss something important when writing mails like
-this. If that's the case here, don't hesitate to tell me in a public
-reply, it's in everyone's interest to set the public record straight.
