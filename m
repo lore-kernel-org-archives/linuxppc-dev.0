@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 711C5C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Dec 2022 21:17:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2F2AC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Dec 2022 21:18:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NfcMh0l9wz3bgv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Dec 2022 08:17:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NfcNh1YQ9z3cMR
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Dec 2022 08:18:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cR6u70y9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IHEA5/at;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cR6u70y9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IHEA5/at;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NfcLG0HLDz3c6C
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Dec 2022 08:16:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NfcLG1r8Hz3bgm
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Dec 2022 08:16:38 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0672360B27;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 368A560B4D;
 	Sat, 24 Dec 2022 21:16:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A20EC433D2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E5E7C433F0;
 	Sat, 24 Dec 2022 21:16:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1671916595;
-	bh=RoXrwfU/s5vurCwlxvo8Vd+Lw1JXCW4diLyk4VZ6JDI=;
+	bh=ySpGEUFcvdEqE4LGPb4c2lY8Vn2te6xLgnS8OF0nmEM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=cR6u70y95h2R+t1gaD2QDSB2DCABAVBiIAvdmhHnHOXLA5fddVSelnAd4kZykVEg8
-	 h7TMpEtoktLZzwbmGMs2zY1albKs0iPtHZXmVSodhety7X0wFKGs6rYvEPrdiDJhdD
-	 lKR4zeg1DGvqF4Z0lW6o03pBsmCOh3Y4BUcD5egPGfpQVUAD68yM7bdTzKdmX1L0an
-	 lIs8V7x41KBM0lxjpe3+P/Mq+OUW0+5Zx47HsQyFC7H+oHt7oI0vCft9qyAWfTXldL
-	 WklfcVxPRxfcVsHjtyppKlGSOt+khxqXLSkU6fqQJw15cSrXVGZv/ncesqqkj4od/B
-	 juRWKj41jIDRQ==
+	b=IHEA5/atfot9gZy3MSrVLjUZNV1u4eLIfyMJ4VTqUwwR6L0CCX58gPQKK01m7lMKG
+	 McfzfAATsX64wt37mCLGjeJrFzNnPC74XU+cTM1VYvLdcvbYy5huyzgo+KHYfwMyE+
+	 1w8/DYuDLYZLeGWulVkzqV/hAey/Ru0ICKka7uQ5dsqeo+eN1VNpgSWHo7LHO63x+6
+	 aT5HwidY+o6KZ/75N+q+uf2ZgVJaeOKx5lbLev9JODTwK1VKmP6W4S87ob9r4urd0a
+	 vT86eYmdykyDQIz2v/K2QC3MrZxsbFnDED0+JMLd+n4aTBfKW30P4MPgBO5hK0ZjLP
+	 WoTunWbWsXDmQ==
 Received: by pali.im (Postfix)
-	id D4C5E9D7; Sat, 24 Dec 2022 22:16:32 +0100 (CET)
+	id 26112720; Sat, 24 Dec 2022 22:16:35 +0100 (CET)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -47,9 +47,9 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 	Scott Wood <oss@buserror.net>,
 	Sinan Akman <sinan@writeme.com>,
 	Martin Kennedy <hurricos@gmail.com>
-Subject: [PATCH v2 2/8] powerpc/85xx: Mark mpc85xx_ds_pic_init() as static
-Date: Sat, 24 Dec 2022 22:14:19 +0100
-Message-Id: <20221224211425.14983-3-pali@kernel.org>
+Subject: [PATCH v2 4/8] powerpc/85xx: p2020: Move i8259 code into own function
+Date: Sat, 24 Dec 2022 22:14:21 +0100
+Message-Id: <20221224211425.14983-5-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20221224211425.14983-1-pali@kernel.org>
 References: <20221224211425.14983-1-pali@kernel.org>
@@ -71,26 +71,87 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Function mpc85xx_ds_pic_init() is not used out of the mpc85xx_ds.c file.
+Splits mpic and i8259 initialization codes into separate functions.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_ds.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/85xx/p2020.c | 37 ++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index f8d2c97f39bd..9a6d637ef54a 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -54,7 +54,7 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
- }
- #endif	/* CONFIG_PPC_I8259 */
+diff --git a/arch/powerpc/platforms/85xx/p2020.c b/arch/powerpc/platforms/85xx/p2020.c
+index d65d4c88ac47..b8584bf307b0 100644
+--- a/arch/powerpc/platforms/85xx/p2020.c
++++ b/arch/powerpc/platforms/85xx/p2020.c
+@@ -45,6 +45,7 @@
+ #ifdef CONFIG_MPC85xx_DS
  
--void __init mpc85xx_ds_pic_init(void)
-+static void __init mpc85xx_ds_pic_init(void)
- {
- 	struct mpic *mpic;
  #ifdef CONFIG_PPC_I8259
++
+ static void mpc85xx_8259_cascade(struct irq_desc *desc)
+ {
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+@@ -55,27 +56,13 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
+ 	}
+ 	chip->irq_eoi(&desc->irq_data);
+ }
+-#endif	/* CONFIG_PPC_I8259 */
+ 
+-static void __init mpc85xx_ds_pic_init(void)
++static void __init mpc85xx_8259_init(void)
+ {
+-	struct mpic *mpic;
+-#ifdef CONFIG_PPC_I8259
+ 	struct device_node *np;
+ 	struct device_node *cascade_node = NULL;
+ 	int cascade_irq;
+-#endif
+-
+-	mpic = mpic_alloc(NULL, 0,
+-		  MPIC_BIG_ENDIAN |
+-		  MPIC_SINGLE_DEST_CPU,
+-		0, 256, " OpenPIC  ");
+-
+-	BUG_ON(mpic == NULL);
+-	mpic_init(mpic);
+ 
+-#ifdef CONFIG_PPC_I8259
+-	/* Initialize the i8259 controller */
+ 	for_each_node_by_type(np, "interrupt-controller")
+ 	    if (of_device_is_compatible(np, "chrp,iic")) {
+ 		cascade_node = np;
+@@ -93,13 +80,31 @@ static void __init mpc85xx_ds_pic_init(void)
+ 		return;
+ 	}
+ 
+-	DBG("mpc85xxds: cascade mapped to irq %d\n", cascade_irq);
++	DBG("i8259: cascade mapped to irq %d\n", cascade_irq);
+ 
+ 	i8259_init(cascade_node, 0);
+ 	of_node_put(cascade_node);
+ 
+ 	irq_set_chained_handler(cascade_irq, mpc85xx_8259_cascade);
++}
++
+ #endif	/* CONFIG_PPC_I8259 */
++
++static void __init mpc85xx_ds_pic_init(void)
++{
++	struct mpic *mpic;
++
++	mpic = mpic_alloc(NULL, 0,
++		  MPIC_BIG_ENDIAN |
++		  MPIC_SINGLE_DEST_CPU,
++		0, 256, " OpenPIC  ");
++
++	BUG_ON(mpic == NULL);
++	mpic_init(mpic);
++
++#ifdef CONFIG_PPC_I8259
++	mpc85xx_8259_init();
++#endif
+ }
+ 
+ #ifdef CONFIG_PCI
 -- 
 2.20.1
 
