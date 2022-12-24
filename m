@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86C72C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Dec 2022 21:22:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6182C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 24 Dec 2022 21:23:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NfcSr1FHWz3c7Y
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Dec 2022 08:22:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NfcTr27QVz3fBv
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 25 Dec 2022 08:23:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=drl8Y8PL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BDOZE3l5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=drl8Y8PL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BDOZE3l5;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NfcMf1X40z3cCC
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Dec 2022 08:17:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NfcMg5Frrz3cBF
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Dec 2022 08:17:51 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 4B7B660B0C;
+	by ams.source.kernel.org (Postfix) with ESMTPS id D8792B80139;
 	Sat, 24 Dec 2022 21:17:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8DF47C433D2;
-	Sat, 24 Dec 2022 21:17:46 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6908BC433F0;
+	Sat, 24 Dec 2022 21:17:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1671916666;
-	bh=GmtMxhGoXO8mzjcBa/1xqcbgZxWhZejdfxvLHGTF0Vo=;
+	s=k20201202; t=1671916668;
+	bh=5jg2jqGPIyL6vN19Ng9QZ/xR8UUjQOy1EGr++zpbTmM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=drl8Y8PLpCkemip4M3K5tuRiOA8LlyJDgh1VykS/oxwNX42iAY+ljwHIunIvcrvlL
-	 gvFf+OKBa6GagtAf+21dsQUMgIiUYne73KTouQe4XrDwiK25zCzvXIFVK5+Xf12uFr
-	 Vyf6YgTBugtUWKgG2RVT1ZocrT4h3xztj4sgeouE+Pf3fWZM/gLpvqy0dQUA1iXRa4
-	 Fv32OA9mKRU+HD1kG4zg52JJrVoaLA5R3/bQVdSYmPCkZg/dcoGXhx/gMztmRioXD8
-	 q4phiHHP7pg0h43b9qBz1kj5z0C7tAzgAxgMkJDmD+XdrsLoBh6lKm3ubJvnyZ29tL
-	 l9CAECGu7XhcA==
+	b=BDOZE3l54x8eupSo5X3S7yWgViyX+eDy0DbSLU2Js6c4GbJHOh9rfHZBiciZUf13/
+	 jRQu5yuEvzN7aMWx/RDVkQiAjTmhbv97dY4e5dIgVovnxSfAgGpzDpSoZJ7FeqdvQi
+	 tKQGKRnPFBELka1oWhrfjkWFTy287o7F1+GCW3p01G/Vyg66MDcwZOfJcnD8rMSXWB
+	 ++CSDpguhNJQkdv+veJVZOXdK0/i4SR4jPYTITxAfl6tYrBkDkmm9zzCDRFU8tmFbE
+	 DuyTbuemxIGbKEZ7Kvc5Bd2JNgo0XPdy3VXTKFxOEF239+3PfzF1KvouW8dVBfczFQ
+	 02IxbqgP73mWg==
 Received: by pali.im (Postfix)
-	id F31E4720; Sat, 24 Dec 2022 22:17:43 +0100 (CET)
+	id 48F0D9E4; Sat, 24 Dec 2022 22:17:46 +0100 (CET)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -47,9 +47,9 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 	Scott Wood <oss@buserror.net>,
 	Sinan Akman <sinan@writeme.com>,
 	Martin Kennedy <hurricos@gmail.com>
-Subject: [PATCH v2 6/8] powerpc/85xx: p2020: Define just one machine description
-Date: Sat, 24 Dec 2022 22:14:23 +0100
-Message-Id: <20221224211425.14983-7-pali@kernel.org>
+Subject: [PATCH v2 8/8] powerpc: dts: turris1x.dts: Remove "fsl,P2020RDB-PC" compatible string
+Date: Sat, 24 Dec 2022 22:14:25 +0100
+Message-Id: <20221224211425.14983-9-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20221224211425.14983-1-pali@kernel.org>
 References: <20221224211425.14983-1-pali@kernel.org>
@@ -71,123 +71,36 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Combine machine descriptions and code of all P2020 boards into just one
-generic unified P2020 machine description. This allows kernel to boot on
-any P2020-based board with P2020 DTS file without need to patch kernel and
-define a new machine description in 85xx powerpc platform directory.
+"fsl,P2020RDB-PC" compatible string was present in Turris 1.x DTS file just
+because Linux kernel required it for proper detection of P2020 processor
+during boot.
+
+This was quite a hack as CZ.NIC Turris 1.x is not compatible with
+Freescale P2020-RDB-PC board.
+
+Now when kernel has generic unified support for boards with P2020
+processors, there is no need to have this "hack" in turris1x.dts file.
+
+So remove incorrect "fsl,P2020RDB-PC" compatible string from turris1x.dts.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/p2020.c | 83 +++++++----------------------
- 1 file changed, 19 insertions(+), 64 deletions(-)
+ arch/powerpc/boot/dts/turris1x.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/p2020.c b/arch/powerpc/platforms/85xx/p2020.c
-index adf3750abef9..b3fb600e1d83 100644
---- a/arch/powerpc/platforms/85xx/p2020.c
-+++ b/arch/powerpc/platforms/85xx/p2020.c
-@@ -156,83 +156,38 @@ static void __init p2020_setup_arch(void)
- #endif
- }
+diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
+index e9cda34a140e..a95857de6858 100644
+--- a/arch/powerpc/boot/dts/turris1x.dts
++++ b/arch/powerpc/boot/dts/turris1x.dts
+@@ -15,7 +15,7 @@
  
--#ifdef CONFIG_MPC85xx_DS
--machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
--#endif /* CONFIG_MPC85xx_DS */
--
--#ifdef CONFIG_MPC85xx_RDB
--machine_arch_initcall(p2020_rdb, mpc85xx_common_publish_devices);
--machine_arch_initcall(p2020_rdb_pc, mpc85xx_common_publish_devices);
--#endif /* CONFIG_MPC85xx_RDB */
-+machine_arch_initcall(p2020, mpc85xx_common_publish_devices);
+ / {
+ 	model = "Turris 1.x";
+-	compatible = "cznic,turris1x", "fsl,P2020RDB-PC"; /* fsl,P2020RDB-PC is required for booting Linux */
++	compatible = "cznic,turris1x";
  
- /*
-  * Called very early, device-tree isn't unflattened
-  */
--#ifdef CONFIG_MPC85xx_DS
--static int __init p2020_ds_probe(void)
--{
--	return !!of_machine_is_compatible("fsl,P2020DS");
--}
--#endif /* CONFIG_MPC85xx_DS */
--
--#ifdef CONFIG_MPC85xx_RDB
--static int __init p2020_rdb_probe(void)
--{
--	if (of_machine_is_compatible("fsl,P2020RDB"))
--		return 1;
--	return 0;
--}
--
--static int __init p2020_rdb_pc_probe(void)
-+static int __init p2020_probe(void)
- {
--	if (of_machine_is_compatible("fsl,P2020RDB-PC"))
--		return 1;
--	return 0;
-+	struct device_node *p2020_cpu;
-+
-+	/*
-+	 * There is no common compatible string for all P2020 boards.
-+	 * The only common thing is "PowerPC,P2020@0" cpu node.
-+	 * So check for P2020 board via this cpu node.
-+	 */
-+	p2020_cpu = of_find_node_by_path("/cpus/PowerPC,P2020@0");
-+	if (!p2020_cpu)
-+		return 0;
-+
-+	of_node_put(p2020_cpu);
-+	return 1;
- }
--#endif /* CONFIG_MPC85xx_RDB */
--
--#ifdef CONFIG_MPC85xx_DS
--define_machine(p2020_ds) {
--	.name			= "P2020 DS",
--	.probe			= p2020_ds_probe,
--	.setup_arch		= p2020_setup_arch,
--	.init_IRQ		= p2020_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--};
--#endif /* CONFIG_MPC85xx_DS */
--
--#ifdef CONFIG_MPC85xx_RDB
--define_machine(p2020_rdb) {
--	.name			= "P2020 RDB",
--	.probe			= p2020_rdb_probe,
--	.setup_arch		= p2020_setup_arch,
--	.init_IRQ		= p2020_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--};
- 
--define_machine(p2020_rdb_pc) {
--	.name			= "P2020RDB-PC",
--	.probe			= p2020_rdb_pc_probe,
-+define_machine(p2020) {
-+	.name			= "Freescale P2020",
-+	.probe			= p2020_probe,
- 	.setup_arch		= p2020_setup_arch,
- 	.init_IRQ		= p2020_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
-+	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
- #endif
- 	.get_irq		= mpic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
- };
--#endif /* CONFIG_MPC85xx_RDB */
+ 	aliases {
+ 		ethernet0 = &enet0;
 -- 
 2.20.1
 
