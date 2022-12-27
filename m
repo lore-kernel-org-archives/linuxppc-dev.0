@@ -4,39 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCECEC10F1B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Dec 2022 08:36:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2C67C10F1B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Dec 2022 09:27:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nh7KM1Dx3z3cBp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Dec 2022 19:36:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux-m68k.org (client-ip=2a02:1800:120:4::f00:11; helo=gauss.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=<UNKNOWN>)
-Received: from gauss.telenet-ops.be (gauss.telenet-ops.be [IPv6:2a02:1800:120:4::f00:11])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nh8ST5K97z3c7S
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 27 Dec 2022 20:27:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=M27ak8/3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=M27ak8/3;
+	dkim-atps=neutral
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nh7Jg1vcKz2xJR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2022 19:35:28 +1100 (AEDT)
-Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
-	by gauss.telenet-ops.be (Postfix) with ESMTPS id 4Nh7JR5sNvz4x0Hx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2022 09:35:19 +0100 (CET)
-Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed10:312a:feb:527f:f392])
-	by albert.telenet-ops.be with bizsmtp
-	id 1LbH290023T8eJe06LbH8w; Tue, 27 Dec 2022 09:35:19 +0100
-Received: from geert (helo=localhost)
-	by ramsan.of.borg with local-esmtp (Exim 4.93)
-	(envelope-from <geert@linux-m68k.org>)
-	id 1pA5Qa-001J4O-Tj; Tue, 27 Dec 2022 09:35:16 +0100
-Date: Tue, 27 Dec 2022 09:35:16 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-X-X-Sender: geert@ramsan.of.borg
-To: linux-kernel@vger.kernel.org
-Subject: Re: Build regressions/improvements in v6.2-rc1
-In-Reply-To: <20221227082932.798359-1-geert@linux-m68k.org>
-Message-ID: <alpine.DEB.2.22.394.2212270933530.311423@ramsan.of.borg>
-References: <CAHk-=wgf929uGOVpiWALPyC7pv_9KbwB2EAvQ3C4woshZZ5zqQ@mail.gmail.com> <20221227082932.798359-1-geert@linux-m68k.org>
-User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nh8RP12RKz2xdx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2022 20:26:23 +1100 (AEDT)
+Received: by mail-pl1-x631.google.com with SMTP id s7so12735881plk.5
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Dec 2022 01:26:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=ZEvZpc8V4n8LtFetKERiURbNFUbYOYjnBPcEmlFUuhk=;
+        b=M27ak8/3zGQ0scrDQnr/Vbd2em8iVhY3uFHUMEScBU+4v8aViY2QSLeedi1weDwLlv
+         pxFfA0Yx3Bcn+2drAsRhdVfadu3Egi4CmrbPsDLK+5fJchRO3UZDEeqFAudO7PBHmXfV
+         z4HY/h3NzKXgqR4L/B54E94aCc7gauwXQ+JCh78sulBVu5DiiRhWtA2ZGbL7wwYZMt6U
+         oVIOzNXWksD02gYuuf/FDUUVj1W1WlXvMaW3BMioTfvZhTSECpt+M1RjJKP2nddANAlX
+         OYjk9/yThYw9W5nl2OCRFNwGGbxLDcwn8Ih0wrJrKzUmmfpQmpxtnYo4lj04zS18R8rb
+         svHw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=ZEvZpc8V4n8LtFetKERiURbNFUbYOYjnBPcEmlFUuhk=;
+        b=BVInr0E37fkt+Vwy+JwSxqaCZ14bZ/XIJgvyKkhuNQRA2WBw1l5Lo3Wocn/of4oxEL
+         8rlAPDlJ5j2YrFxn5EwIxclkBR0JJCngVPWNRekH9uFF+BQesyAo7cs6ra/+chxOlv8g
+         +xGLCqnkt2ov12V/jeV8sq9I28ToxHSNyO+qqivOKa0Yb4zWkaEJGfxNv0MN+aBaDHKK
+         +Tp4jGO1nAKtdngsrsrNI0CQ3ozWs/G3bYy5cihEy+iVn9+7uZceG/RZOlSoAimLVob3
+         6cYGcsJfjydb/cRwdyHqOeegJwTa0NCyQzPdxgMckI/u5cKqRNFoe12vzaxN9daOzScz
+         pjZg==
+X-Gm-Message-State: AFqh2kombH4rzPnwgwzybN2Gh5Z5hBRre/1+tnFYJU/RAz/r77XOdCMf
+	eJ8QIqGBDO5JlzSxZpGD7Kn8Sw5uV0M=
+X-Google-Smtp-Source: AMrXdXtMGgwLE+C1KWu4MF93CnGwrlMzYXiccqMGfyMaviKAic240fjj6DIHlz8o1lY/RzGjZMZ1jQ==
+X-Received: by 2002:a17:902:6b4b:b0:189:8790:73b1 with SMTP id g11-20020a1709026b4b00b00189879073b1mr30737894plt.65.1672133181341;
+        Tue, 27 Dec 2022 01:26:21 -0800 (PST)
+Received: from bobo.ozlabs.ibm.com (58-6-252-227.tpgi.com.au. [58.6.252.227])
+        by smtp.gmail.com with ESMTPSA id f2-20020a170902ce8200b00189947bd9f7sm8598998plg.50.2022.12.27.01.26.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Dec 2022 01:26:20 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 1/9] crypto: powerpc - Use address generation helper for asm
+Date: Tue, 27 Dec 2022 19:26:01 +1000
+Message-Id: <20221227092609.2078908-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20221227092609.2078908-1-npiggin@gmail.com>
+References: <20221227092609.2078908-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323329-1893319093-1672130116=:311423"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,95 +78,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, linux-sh@vger.kernel.org, linux-wireless@vger.kernel.org, linux-mips@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-f2fs-devel@lists.sourceforge.net, kasan-dev@googlegroups.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/crypto/crc32-vpmsum_core.S | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
---8323329-1893319093-1672130116=:311423
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8BIT
+diff --git a/arch/powerpc/crypto/crc32-vpmsum_core.S b/arch/powerpc/crypto/crc32-vpmsum_core.S
+index a16a717c809c..b0f87f595b26 100644
+--- a/arch/powerpc/crypto/crc32-vpmsum_core.S
++++ b/arch/powerpc/crypto/crc32-vpmsum_core.S
+@@ -113,9 +113,7 @@ FUNC_START(CRC_FUNCTION_NAME)
+ #endif
+ 
+ #ifdef BYTESWAP_DATA
+-	addis	r3,r2,.byteswap_constant@toc@ha
+-	addi	r3,r3,.byteswap_constant@toc@l
+-
++	LOAD_REG_ADDR(r3, .byteswap_constant)
+ 	lvx	byteswap,0,r3
+ 	addi	r3,r3,16
+ #endif
+@@ -150,8 +148,7 @@ FUNC_START(CRC_FUNCTION_NAME)
+ 	addi	r7,r7,-1
+ 	mtctr	r7
+ 
+-	addis	r3,r2,.constants@toc@ha
+-	addi	r3,r3,.constants@toc@l
++	LOAD_REG_ADDR(r3, .constants)
+ 
+ 	/* Find the start of our constants */
+ 	add	r3,r3,r8
+@@ -506,8 +503,7 @@ FUNC_START(CRC_FUNCTION_NAME)
+ 
+ .Lbarrett_reduction:
+ 	/* Barrett constants */
+-	addis	r3,r2,.barrett_constants@toc@ha
+-	addi	r3,r3,.barrett_constants@toc@l
++	LOAD_REG_ADDR(r3, .barrett_constants)
+ 
+ 	lvx	const1,0,r3
+ 	lvx	const2,off16,r3
+@@ -610,8 +606,7 @@ FUNC_START(CRC_FUNCTION_NAME)
+ 	cmpdi	r5,0
+ 	beq	.Lzero
+ 
+-	addis	r3,r2,.short_constants@toc@ha
+-	addi	r3,r3,.short_constants@toc@l
++	LOAD_REG_ADDR(r3, .short_constants)
+ 
+ 	/* Calculate where in the constant table we need to start */
+ 	subfic	r6,r5,256
+-- 
+2.37.2
 
-On Tue, 27 Dec 2022, Geert Uytterhoeven wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v6.2-rc1[1] compared to v6.1[2].
->
-> Summarized:
->  - build errors: +11/-13
-
-amd-gfx@lists.freedesktop.org
-linux-arm-kernel@lists.infradead.org
-linux-media@vger.kernel.org
-linux-wireless@vger.kernel.org
-linux-mips@vger.kernel.org
-linux-sh@vger.kernel.org
-linux-f2fs-devel@lists.sourceforge.net
-linuxppc-dev@lists.ozlabs.org
-kasan-dev@googlegroups.com
-linux-xtensa@linux-xtensa.org
-
-   + /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/dml/dcn31/display_mode_vba_31.c: error: the frame size of 2224 bytes is larger than 2048 bytes [-Werror=frame-larger-than=]:  => 7082:1
-   + /kisskb/src/drivers/gpu/drm/amd/amdgpu/../display/dc/dml/dcn314/display_mode_vba_314.c: error: the frame size of 2208 bytes is larger than 2048 bytes [-Werror=frame-larger-than=]:  => 7127:1
-
-arm64-gcc5/arm64-allmodconfig
-
-   + /kisskb/src/drivers/media/platform/nxp/imx-jpeg/mxc-jpeg.c: error: array subscript 2 is above array bounds of 'u32[2]' {aka 'unsigned int[2]'} [-Werror=array-bounds]:  => 641:28
-   + /kisskb/src/drivers/media/platform/nxp/imx-jpeg/mxc-jpeg.c: error: array subscript 3 is above array bounds of 'u32[2]' {aka 'unsigned int[2]'} [-Werror=array-bounds]:  => 641:28
-
-m68k-gcc8/m68k-allmodconfig
-See also https://lore.kernel.org/all/CAMuHMdWpPX2mpqFEWjjbjsQvDBQOXyjjdpKnQu9qURAuVZXmMw@mail.gmail.com
-
-   + /kisskb/src/include/linux/bitfield.h: error: call to '__field_overflow' declared with attribute error: value doesn't fit into mask:  => 151:3
-
-In function 'u32_encode_bits',
-     inlined from 'ieee80211_mlo_multicast_tx' at /kisskb/src/net/mac80211/tx.c:4435:17,
-     inlined from 'ieee80211_subif_start_xmit' at /kisskb/src/net/mac80211/tx.c:4483:3:
-
-mipsel-gcc5/mips-allmodconfig
-
-   + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_262' declared with attribute error: Unsupported access size for {READ,WRITE}_ONCE().:  => 358:45
-   + /kisskb/src/include/linux/compiler_types.h: error: call to '__compiletime_assert_263' declared with attribute error: Unsupported access size for {READ,WRITE}_ONCE().:  => 358:45
-
-In function 'follow_pmd_mask',
-     inlined from 'follow_pud_mask' at /kisskb/src/mm/gup.c:735:9,
-     inlined from 'follow_p4d_mask' at /kisskb/src/mm/gup.c:752:9,
-     inlined from 'follow_page_mask' at /kisskb/src/mm/gup.c:809:9:
-
-sh4-gcc11/sh-defconfig (Günter wondered if pmd_t should use union)
-
-   + /kisskb/src/include/linux/fortify-string.h: error: '__builtin_memcpy' offset [0, 127] is out of the bounds [0, 0] [-Werror=array-bounds]:  => 57:33
-
-/kisskb/src/arch/s390/kernel/setup.c: In function 'setup_lowcore_dat_on':
-s390x-gcc11/s390-all{mod,yes}config
-
-   + /kisskb/src/include/linux/fortify-string.h: error: '__builtin_memset' pointer overflow between offset [28, 898293814] and size [-898293787, -1] [-Werror=array-bounds]:  => 59:33
-
-/kisskb/src/fs/f2fs/inline.c: In function 'f2fs_move_inline_dirents':
-
-powerpc-gcc11/ppc64_book3e_allmodconfig
-powerpc-gcc11/powerpc-all{mod,yes}config
-
-   + /kisskb/src/kernel/kcsan/kcsan_test.c: error: the frame size of 1680 bytes is larger than 1536 bytes [-Werror=frame-larger-than=]:  => 257:1
-
-xtensa-gcc11/xtensa-allmodconfig (patch available)
-
-   + {standard input}: Error: unknown pseudo-op: `.cfi_def_c':  => 1718
-
-sh4-gcc11/sh-allmodconfig (ICE = internal compiler error)
-
-> [1] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/1b929c02afd37871d5afb9d498426f83432e71c2/ (all 152 configs)
-> [2] http://kisskb.ellerman.id.au/kisskb/branch/linus/head/830b3c68c1fb1e9176028d02ef86f3cf76aa2476/ (all 152 configs)
-
-Gr{oetje,eeting}s,
-
- 						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
- 							    -- Linus Torvalds
---8323329-1893319093-1672130116=:311423--
