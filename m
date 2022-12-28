@@ -4,79 +4,81 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48EF0C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 07:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 142FDC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 07:39:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhk0h3TqHz3cDs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 18:38:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhk1k1Z3gz3cFp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 18:39:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=GQcC6LqX;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=q4FIVeqB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=J4MTx/6D;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=iC7cLEPb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=GQcC6LqX;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=q4FIVeqB;
+	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=J4MTx/6D;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=iC7cLEPb;
 	dkim-atps=neutral
-X-Greylist: delayed 325 seconds by postgrey-1.36 at boromir; Wed, 28 Dec 2022 18:35:54 AEDT
 Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NhjxQ35W6z306n
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NhjxQ3WSJz3bVs
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2022 18:35:53 +1100 (AEDT)
 Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.west.internal (Postfix) with ESMTP id CDE2C3200904;
-	Wed, 28 Dec 2022 02:30:20 -0500 (EST)
+	by mailout.west.internal (Postfix) with ESMTP id 1F4963200902;
+	Wed, 28 Dec 2022 02:30:30 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Wed, 28 Dec 2022 02:30:21 -0500
+  by compute3.internal (MEProxy); Wed, 28 Dec 2022 02:30:30 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
 	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
-	:message-id:mime-version:reply-to:sender:subject:subject:to:to;
-	 s=fm3; t=1672212620; x=1672299020; bh=kg/f9U9Ol4UD+1uc3IGmsV2dd
-	QbQ6QRH+cPwJ6R0wEk=; b=GQcC6LqX9bOe7C6/VfGcwdWWCcYYpKAcVwi5Sl1Nq
-	1eNL1f0lK5vgpC4d2a3aoXePQqOvivn1QRgzt5rEKKzol9gSVIfY0x5LFMmQWOBJ
-	SHCFBMnHeRcrWDwtWRYSkeZ31F6tZc/5G4JQjIjx9kEaFHcviMd1AOhbUKsHJ9Fo
-	5giFMOggshB8VZQdTTlNauoHokceLN8nkzMVbYn7R7ZtFKlryXepeNTSrOePwzPF
-	idDy0w9V1E4jVANL3AAzylifu/svtWMi5Z0tqsZY2QR/BrS5bmaXDxNQhsyxxaew
-	GXEsSrIJenlKS+1N6CR/xZMNCjRteYVzJOA4Ib+R/NgDA==
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm3; t=1672212629; x=1672299029; bh=av
+	aCv9mDt906Bh4sj41n++Uvq9fM0k+OtKCj4mLejVk=; b=J4MTx/6DSY86I1XPwH
+	SXekn71UCI6T3R/aU6g6Y2eZoN/84Mdcb4RaW1vPUY63leUA3w6JqdUQLMe/AFJB
+	IoOPqx+AaklEy4fSw5T8e6HP7Vl32AAauRe4zeNshFAlcj3AXc4F/jkk1ojTQ2A/
+	vSgE5I1WNK0Y9GIWLO4pvhe2Dap3FBy3rpDmfSqdR/IpljCfseNdZuYuUByME9Wx
+	ZMk5qS3i7lybZrRaFG6CV9hONZtHWe2kRVX0cRXMHRNZrAclaEc4T1OhT+1+kTby
+	JC2oI2wEhee5T5FUgPqUPmDvFhoCL6V5m+MzCDyp0vMKvFqvUbM0kRym0FVwSFk4
+	JjqA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:message-id
-	:mime-version:reply-to:sender:subject:subject:to:to:x-me-proxy
-	:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
-	1672212620; x=1672299020; bh=kg/f9U9Ol4UD+1uc3IGmsV2ddQbQ6QRH+cP
-	wJ6R0wEk=; b=q4FIVeqBvszFlxGwGJzkQvrKHGMqfSK3LjpxiTehFWF81Vzzfax
-	ur86BYxhRyHMAnQ91pc3I7kwQIThGyTEZi9pjtJnDAT0nCpXNg0BEhOU+MWaI0a8
-	LWb7F8tb6G8xOwJDTTDw8HM5A56ZnykhZQHDFAXuG+sZFfdYa/fp6TW66KgCy8dH
-	N3FIr3KMOXuC7bnjCWskiy1kN14x8XizHalwMApvWRPgPFNX11ySWfQXQA5XrWON
-	OJrEmCycM8QjxELYO8S15lY+InBl7xvWvyjp7tiNQDJp0Myaq4j7vouUGhz6xNd5
-	tJKxrSaqFZ73czFcumbBu1WTn5z/6X30Z+A==
-X-ME-Sender: <xms:i_CrY5D8PDmfB27uMNgFuYjdYIVVe1fTyUH3JzMNUxU8gDnA02zz2g>
-    <xme:i_CrY3gFlyYF6UYZi-d2MbGQ19exMQDRtaid6HWyfOLSl0MbyyMKGPiQzm5sOm19p
-    nVIZIZ-0-01au3hAw>
-X-ME-Received: <xmr:i_CrY0l8Ny_IxehNDvYbUwoZ8Arek5CXbdc0tIRNvRh003D4dd4QLqCibIUIK41bLEgw7eyUW9bDP9v-HTmbpKYs0cE8WKTJw-HlMlJb1q5USg>
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm2; t=1672212629; x=1672299029; bh=avaCv9mDt906B
+	h4sj41n++Uvq9fM0k+OtKCj4mLejVk=; b=iC7cLEPbfula0gN/zS5qUdjw70ZZp
+	hVo9Dmhkf/OUiPVPDW3Tuupka+cPw6ONJ2Ya//dr4T1+R+UUrwDe7t69ZGLLycCy
+	sA7HqJsBckVAx2HYJyJ+nYXnCgqtlvY3QYeq9ZbSl4eGFsRA9+umhYP2mnwHtvbM
+	OwUa9jjsT5zcJhuk83ZPVFrsGqwNY156JN4tt7MRBoVnTHO3nYwrQ85V0JPEnZiN
+	UL+oRsB4g8KuGUSVslzJtGd1YEp11h3QeI4T3PInDzZvPVHU5bYht894YYWxnjjE
+	ETD+8zVT9bKNlM9vx0+za+xaf7sY5kp+lIgLl+2Hb5kPEruZ1zqd29Ciw==
+X-ME-Sender: <xms:lfCrYz6ew2gKNY9ixm-qlVwKTbv-m04lLLsCKpJM6VVN0-lVT_gC7A>
+    <xme:lfCrY44wlEi-uSY8gh5_yL_f-w_tuLRZETak0S6KMovr9C5EY-J-jbbIg10HH5x85
+    uLgb3eV0KI7A-IyHQ>
+X-ME-Received: <xmr:lfCrY6eYAOnmzFsGKykCSXuofQ3PKT6OSojkVsd2MHQbwv06VWI1PCqQ2fvlS-At8ffipylxCKnl6RI31zRL6naLz5GbJH8FuZ-hVyTwpKXMyw>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedriedugdduuddtucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdludehmdenucfjughrpefhvf
-    evufffkffoggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgv
-    hicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpeejte
-    dvtdegvdeuveegudelgffgjeelteevteffieevjedvvefhueekkeelhfehleenucffohhm
-    rghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrg
-    hmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttg
-X-ME-Proxy: <xmx:i_CrYzzteBqcA9f6fTDxR5gAaxN9SuofXN5XKD5IL5piKJWimuuCAA>
-    <xmx:i_CrY-SuNOI-JX-WQnTtaHVtZxLnNJyAU_ydcN_xXtgDxlBDcB6bHw>
-    <xmx:i_CrY2brpRjwpRDxP8zn6OCKmHMJ2QvR8kcxW9-GXIZksgEkalze2Q>
-    <xmx:jPCrY7TdLGfdpjzMSSW9vVW3Eb334ixQHBMi1NKnXtNbBd9NW_LW4Q>
+    uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
+    evufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
+    rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpe
+    fhvdeugfdtvdeiieegffefffekieegvdfgiedtjeetffevfefhtdehjeffieeivdenucev
+    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurh
+    esrhhushhsvghllhdrtggt
+X-ME-Proxy: <xmx:lfCrY0J1Po9B-WtZ6zijqkrsKO9Fg__7yXw4FxofWaYujd4OZJ1aHQ>
+    <xmx:lfCrY3L9DKwDQgpJwlQE1nMMn885j5unT-wkDaw6pQ0cEKhJ3yXGCA>
+    <xmx:lfCrY9zxOu_BYzzSKcLjZy1iaUhanugRx7_Vz1wm403olUpSwxKCag>
+    <xmx:lfCrY0r6wsgooC-7PhyRz8wqYvjPIblRifNiXnzDwpyIWTQPG_AMAg>
 Feedback-ID: i4421424f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 28 Dec 2022 02:30:16 -0500 (EST)
+ 28 Dec 2022 02:30:26 -0500 (EST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/6] pseries dynamic secure boot interface using secvar
-Date: Wed, 28 Dec 2022 18:29:37 +1100
-Message-Id: <20221228072943.429266-1-ruscur@russell.cc>
+Subject: [PATCH 2/6] powerpc/secvar: WARN_ON_ONCE() if multiple secvar ops are set
+Date: Wed, 28 Dec 2022 18:29:39 +1100
+Message-Id: <20221228072943.429266-3-ruscur@russell.cc>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20221228072943.429266-1-ruscur@russell.cc>
+References: <20221228072943.429266-1-ruscur@russell.cc>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -94,56 +96,34 @@ Cc: ajd@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-ke
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series exposes an interface to userspace for reading and writing
-secure variables contained within the PowerVM LPAR Platform KeyStore
-(PLPKS) for the purpose of configuring dynamic secure boot.
+The secvar code only supports one consumer at a time.
 
-This series builds on past work by Nayna Jain[0] in exposing PLPKS
-variables to userspace.  Rather than being a generic interface for
-interacting with the keystore, however, we use the existing powerpc
-secvar infrastructure to only expose objects in the keystore used
-for dynamic secure boot.  This has the benefit of leveraging an
-existing interface and making the implementation relatively minimal.
+Multiple consumers aren't possible at this point in time, but we'd want
+it to be obvious if it ever could happen.
 
-This series needs to be applied on top of Andrew's recent bugfix
-series[1].
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+ arch/powerpc/kernel/secvar-ops.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-There are a few relevant details to note about the implementation:
-
- * New additions to the secvar API, format() and max_size()
- * New optional sysfs directory "config/" for arbitrary ASCII variables
- * Some OPAL-specific code has been relocated from secvar-sysfs.c to
-	powernv platform code.  Would appreciate any powernv testing!
- * Variable names are fixed and only those used for secure boot are
- 	exposed.  This is not a generic PLPKS interface, but also
-	doesn't preclude one being added in future.
-
-With this series, both powernv and pseries platforms support dynamic
-secure boot through the same interface.
-
-[0]: https://lore.kernel.org/linuxppc-dev/20221106210744.603240-1-nayna@linux.ibm.com/
-[1]: https://lore.kernel.org/linuxppc-dev/20221220071626.1426786-1-ajd@linux.ibm.com/
-
-Russell Currey (6):
-  powerpc/pseries: Log hcall return codes for PLPKS debug
-  powerpc/secvar: WARN_ON_ONCE() if multiple secvar ops are set
-  powerpc/secvar: Handle format string in the consumer
-  powerpc/secvar: Handle max object size in the consumer
-  powerpc/secvar: Extend sysfs to include config vars
-  powerpc/pseries: Implement secvars for dynamic secure boot
-
- Documentation/ABI/testing/sysfs-secvar        |   8 +
- arch/powerpc/include/asm/secvar.h             |   5 +
- arch/powerpc/kernel/secvar-ops.c              |   4 +-
- arch/powerpc/kernel/secvar-sysfs.c            |  76 +++---
- arch/powerpc/platforms/powernv/opal-secvar.c  |  44 +++
- arch/powerpc/platforms/pseries/Kconfig        |  13 +
- arch/powerpc/platforms/pseries/Makefile       |   4 +-
- arch/powerpc/platforms/pseries/plpks-secvar.c | 250 ++++++++++++++++++
- arch/powerpc/platforms/pseries/plpks.c        |   2 +
- 9 files changed, 365 insertions(+), 41 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/plpks-secvar.c
-
+diff --git a/arch/powerpc/kernel/secvar-ops.c b/arch/powerpc/kernel/secvar-ops.c
+index 6a29777d6a2d..aa1b2adc2710 100644
+--- a/arch/powerpc/kernel/secvar-ops.c
++++ b/arch/powerpc/kernel/secvar-ops.c
+@@ -8,10 +8,12 @@
+ 
+ #include <linux/cache.h>
+ #include <asm/secvar.h>
++#include <asm/bug.h>
+ 
+-const struct secvar_operations *secvar_ops __ro_after_init;
++const struct secvar_operations *secvar_ops __ro_after_init = NULL;
+ 
+ void set_secvar_ops(const struct secvar_operations *ops)
+ {
++	WARN_ON_ONCE(secvar_ops);
+ 	secvar_ops = ops;
+ }
 -- 
 2.38.1
 
