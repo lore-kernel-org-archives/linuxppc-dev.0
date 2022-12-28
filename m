@@ -4,78 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCBB8C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 07:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D83FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 07:41:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhk2l1cgQz3cDh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 18:40:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhk3m6JhPz3cGm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 18:41:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=L64sfh8y;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=A+lFhYv1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=mh9/6rSE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=MWaK4nmW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=L64sfh8y;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=A+lFhYv1;
+	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=mh9/6rSE;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=MWaK4nmW;
 	dkim-atps=neutral
 Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NhjxQ3fkkz3bZl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2022 18:35:53 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.west.internal (Postfix) with ESMTP id 6D5DA320090E;
-	Wed, 28 Dec 2022 02:30:25 -0500 (EST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NhjxW5CGDz3bZn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2022 18:35:59 +1100 (AEDT)
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
+	by mailout.west.internal (Postfix) with ESMTP id 797A53200922;
+	Wed, 28 Dec 2022 02:30:44 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
-  by compute3.internal (MEProxy); Wed, 28 Dec 2022 02:30:26 -0500
+  by compute2.internal (MEProxy); Wed, 28 Dec 2022 02:30:45 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
 	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
 	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm3; t=1672212624; x=1672299024; bh=yn
-	/S5ROEzSnOph0KuGPaeywtNTs872W1IHLPpJmU4iY=; b=L64sfh8yUDUAW0dE0k
-	T7RuEKTunT8wEC70MkP9XpVQHTFwOtb9gcWg6OG6kHlUWzbDtyoHPkY8rYdAdZR2
-	lSVwHfgLxGiAOpT+bS/swz7iVvpjI9vPXixdBDeHpm60mqGNX4Z7tu/R6had50bv
-	YfGgYSGxjrOnRIffOrBbhKrabA2mTEajuIYUGvhK35coq3K9NHkip5QllqJXgAdm
-	cQGjD2hdD+3TtZY0ylIZ+hzySMi5+BZ20uybU0y9OlAmnhwoMRhhkhn1y4rlPDAK
-	KKINlPpXBlYKmJL+rbTdhuadWoBGGduBNx67H8R71wyBzNgW/Oj4GbqlD4YX/Tza
-	eEBw==
+	:subject:subject:to:to; s=fm3; t=1672212644; x=1672299044; bh=G1
+	FeSOpt3gkzQCJztNRktkYJbX5ca/fOhO+UA6pN5AU=; b=mh9/6rSE2bVsR8C4sw
+	EDzrkZNmhqkIuMfUaiLxuNFhb+ggTkQgy0TvRXbw6qhuPoj5IesXT9LTJaEAPwz7
+	cFtfWnvbaw4bjN30xBQyq2I0KN7K6VoAIr9Gn9BXq6XYVisN1uVdXeAdS/LgDPSv
+	X1mO/QhXYMtS4eKQvPAYO06V1ErBIn9NFSGrQvSpn0Jb630kdbNkqylcmhgoFMcP
+	uQ70xe+NgM4Mu5HJHI2Ym/WpNcX9iU/geAiKhGSPjmKoO+QUbR6QEzN4bdET2vGi
+	PIShy06MArXLiElxMwESSjrtakrUW1dT6UqLYwFs5X5WIHCsT6mQbh22NSiGn8Sc
+	sFfQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
 	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
 	:message-id:mime-version:references:reply-to:sender:subject
 	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm2; t=1672212624; x=1672299024; bh=yn/S5ROEzSnOp
-	h0KuGPaeywtNTs872W1IHLPpJmU4iY=; b=A+lFhYv1cVQqKoGr0XyWw/bCHvMKQ
-	immRLXwo9cc9CIUG5Zn8cIQ/dMCt8UkgaWDLYlFBYabpuawh3IiTc+8Ja0NWIH7d
-	e4WIp9YrwrEn0x6uE7bOUUNfqTOurfsX36PGl5wQkbV1tVJtCISkdmcWLgRcVmyD
-	oTqBt2lqgpYm03xM6iT/0SyIbPBIcPZhagl2DXB5ogFxS3kC948ctyGAdVDGYKE3
-	M7+ADKN9WQ4/6+tgJ1OjlohnnJ6j/elBHhKwn8LJA0iyNKSA7Uvr5xkSiRVvsyAn
-	oWeppeS23e0YSnS7orF+dMP9Cfyu9rv/nkG0WjzFWLG8dyVBKYG4DLTBg==
-X-ME-Sender: <xms:kPCrY11TsgJfLjuF6bQGrtXn3RxEFL23MhyZhKFUyfRNzKpYwN83Wg>
-    <xme:kPCrY8EohSSFK4VlcQdZzl-r6sbclnBd-oz6H2kWXYcc4MlQQq-gplu7-SYDDsso9
-    d1lNlswZvICsPKLQw>
-X-ME-Received: <xmr:kPCrY14YnBbhU2XQYm16ZFBNSsTs187L9VZUor78Iak2-HAIUAyueUZ9hdirtngJOBbUYg6J_W70BaH5OsJiVr3lm9nNSrT2M6sUnfgXij-MBQ>
+	:x-sasl-enc; s=fm2; t=1672212644; x=1672299044; bh=G1FeSOpt3gkzQ
+	CJztNRktkYJbX5ca/fOhO+UA6pN5AU=; b=MWaK4nmWLmaNoMmWgKHQoR7GQULUh
+	CWwwqk/SzY8uE3iCO6KJU9K715Ajp/CQ5Mo0RCIqV1ycqmrd8cAX6RjBplM2L3yW
+	3qNqDU/fMhxuRpibHPd/ygOviiRkm2dlrpi75kQwojniRaJX3U1v5LE5yK88HOlM
+	JWyqK3oH4ADNCwRf4t4vjBpTulDTa9b1Ty1tOICXlLI/hbBxmd9r2KdThJ/NIRcl
+	wK9YIeSUSDLYVTgu08SvE0l+831aF2u5BxzC5qxmx6vC3ZvM68Q8f+we43P6Clln
+	vSws+ZOyheSNswQoOrUu/yihJect4H2yrRdIZK/OjLsd+ZGVysPA1a54g==
+X-ME-Sender: <xms:o_CrY41GyAJ3ehCH_la9P4sygO2R0uTroHL8Efl2yhyNIpJHSlDHHw>
+    <xme:o_CrYzHUmrbtFkClpEIm-hIbtorh87TCJltYcmxxOBXCPeBolF8JfOUuHlLPqIxkj
+    _sTr3-YRMJp6JR7Iw>
+X-ME-Received: <xmr:o_CrYw63HO35CNlkeDHVTKCzS92ZR0pXZqYBKjzT70atHVau-8wGDA2qdf50cVCiHxMTBJXe5AF18f2sd4A5a2cZHGUb8D_NRebQBarqipm5bA>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedriedugdduuddtucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
     evufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
     rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpe
     fhvdeugfdtvdeiieegffefffekieegvdfgiedtjeetffevfefhtdehjeffieeivdenucev
-    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurh
+    lhhushhtvghrufhiiigvpedunecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurh
     esrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:kPCrYy1A5h3LdL9iLj5j0OLj8632us4FXbdSNZr7Nk3lRfikSqSXyg>
-    <xmx:kPCrY4GFcQRwjfWS-FO9Ztjj5PnGeMJ_vvUViMTOfPSUaPPpMUOuRA>
-    <xmx:kPCrYz9aGlRUTCtN9Ed_hTQdD20J9pK5B4o8q0Be55iwhgRyHhOVqQ>
-    <xmx:kPCrYz1l_hk8o2KorjXxrTm3MmlELmuh-Fv302IzeXLe90SwanGYTg>
+X-ME-Proxy: <xmx:o_CrYx3xe-s2KU-ABGXHSFIj7oh21J7_VZ5T5lSnoqNB_LLpDc2oyA>
+    <xmx:o_CrY7F7ZUc4dVZOAI-eBCP1QCtxBkDG9GcpW2FPxOB3MMh_a9nQDA>
+    <xmx:o_CrY69MaZlR5ZMqK-F_JW3xUwDnFuoG8Ki-CJETHXbtWA31XRRswA>
+    <xmx:pPCrY63MlQsCyhIEmruwhOOhIdSEpctNPDCyGPAAvC1YmouduJtgHw>
 Feedback-ID: i4421424f:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 28 Dec 2022 02:30:22 -0500 (EST)
+ 28 Dec 2022 02:30:41 -0500 (EST)
 From: Russell Currey <ruscur@russell.cc>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/6] powerpc/pseries: Log hcall return codes for PLPKS debug
-Date: Wed, 28 Dec 2022 18:29:38 +1100
-Message-Id: <20221228072943.429266-2-ruscur@russell.cc>
+Subject: [PATCH 5/6] powerpc/secvar: Extend sysfs to include config vars
+Date: Wed, 28 Dec 2022 18:29:42 +1100
+Message-Id: <20221228072943.429266-6-ruscur@russell.cc>
 X-Mailer: git-send-email 2.38.1
 In-Reply-To: <20221228072943.429266-1-ruscur@russell.cc>
 References: <20221228072943.429266-1-ruscur@russell.cc>
@@ -96,29 +96,133 @@ Cc: ajd@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-ke
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The plpks code converts hypervisor return codes into their Linux
-equivalents so that users can understand them.  Having access to the
-original return codes is really useful for debugging, so add a
-pr_debug() so we don't lose information from the conversion.
+The forthcoming pseries consumer of the secvar API wants to expose a
+number of config variables.  Allowing secvar implementations to provide
+their own sysfs attributes makes it easy for consumers to expose what
+they need to.
+
+This is not being used by the OPAL secvar implementation at present, and
+the config directory will not be created if no attributes are set.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/platforms/pseries/plpks.c | 2 ++
- 1 file changed, 2 insertions(+)
+I played around with adding an API call to facilitate a more generic
+key/value interface for config variables and it seemed like unnecessary
+complexity.  I think this is cleaner.  If there was ever a secvar
+interface other than sysfs we'd have to rework it, though.
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 9e4401aabf4f..820218eb894f 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -131,6 +131,8 @@ static int pseries_status_to_err(int rc)
- 		err = -EINVAL;
- 	}
+ arch/powerpc/include/asm/secvar.h  |  3 +++
+ arch/powerpc/kernel/secvar-sysfs.c | 40 ++++++++++++++++++++++++++----
+ 2 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
+index 92d2c051918b..250e7066b6da 100644
+--- a/arch/powerpc/include/asm/secvar.h
++++ b/arch/powerpc/include/asm/secvar.h
+@@ -10,6 +10,7 @@
  
-+	pr_debug("Converted hypervisor code %d to Linux %d\n", rc, err);
+ #include <linux/types.h>
+ #include <linux/errno.h>
++#include <linux/sysfs.h>
+ 
+ extern const struct secvar_operations *secvar_ops;
+ 
+@@ -27,10 +28,12 @@ struct secvar_operations {
+ #ifdef CONFIG_PPC_SECURE_BOOT
+ 
+ extern void set_secvar_ops(const struct secvar_operations *ops);
++extern void set_secvar_config_attrs(const struct attribute **attrs);
+ 
+ #else
+ 
+ static inline void set_secvar_ops(const struct secvar_operations *ops) { }
++static inline void set_secvar_config_attrs(const struct attribute **attrs) { }
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+index ea408763dc78..0c3790345403 100644
+--- a/arch/powerpc/kernel/secvar-sysfs.c
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -15,9 +15,17 @@
+ 
+ #define NAME_MAX_SIZE	   1024
+ 
++const struct attribute **secvar_config_attrs __ro_after_init = NULL;
 +
- 	return err;
+ static struct kobject *secvar_kobj;
+ static struct kset *secvar_kset;
+ 
++void set_secvar_config_attrs(const struct attribute **attrs)
++{
++	WARN_ON_ONCE(secvar_config_attrs);
++	secvar_config_attrs = attrs;
++}
++
+ static ssize_t format_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 			   char *buf)
+ {
+@@ -134,6 +142,16 @@ static int update_kobj_size(void)
+ 	return 0;
  }
  
++static int secvar_sysfs_config(struct kobject *kobj)
++{
++	struct attribute_group config_group = {
++		.name = "config",
++		.attrs = (struct attribute **)secvar_config_attrs,
++	};
++
++	return sysfs_create_group(kobj, &config_group);
++}
++
+ static int secvar_sysfs_load(void)
+ {
+ 	char *name;
+@@ -196,26 +214,38 @@ static int secvar_sysfs_init(void)
+ 
+ 	rc = sysfs_create_file(secvar_kobj, &format_attr.attr);
+ 	if (rc) {
+-		kobject_put(secvar_kobj);
+-		return -ENOMEM;
++		pr_err("secvar: Failed to create format object\n");
++		rc = -ENOMEM;
++		goto err;
+ 	}
+ 
+ 	secvar_kset = kset_create_and_add("vars", NULL, secvar_kobj);
+ 	if (!secvar_kset) {
+ 		pr_err("secvar: sysfs kobject registration failed.\n");
+-		kobject_put(secvar_kobj);
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto err;
+ 	}
+ 
+ 	rc = update_kobj_size();
+ 	if (rc) {
+ 		pr_err("Cannot read the size of the attribute\n");
+-		return rc;
++		goto err;
++	}
++
++	if (secvar_config_attrs) {
++		rc = secvar_sysfs_config(secvar_kobj);
++		if (rc) {
++			pr_err("secvar: Failed to create config directory\n");
++			goto err;
++		}
+ 	}
+ 
+ 	secvar_sysfs_load();
+ 
+ 	return 0;
++err:
++	kobject_put(secvar_kobj);
++	return rc;
+ }
+ 
+ late_initcall(secvar_sysfs_init);
 -- 
 2.38.1
 
