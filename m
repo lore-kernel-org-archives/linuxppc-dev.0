@@ -4,83 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7188C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 07:42:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CE0FC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 08:13:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhk4p3JgMz3cd7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 18:42:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nhkn74n14z3bgv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 28 Dec 2022 19:13:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=A+2ZT9G3;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=l3C92B6l;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=gp3V2lGo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm3 header.b=A+2ZT9G3;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=l3C92B6l;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=gp3V2lGo;
 	dkim-atps=neutral
-Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NhjxW59tNz3bZl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2022 18:35:59 +1100 (AEDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailout.west.internal (Postfix) with ESMTP id E40933200921;
-	Wed, 28 Dec 2022 02:30:34 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute5.internal (MEProxy); Wed, 28 Dec 2022 02:30:35 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
-	:cc:content-transfer-encoding:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm3; t=1672212634; x=1672299034; bh=WN
-	XT52ksa1LSW+Evq+GXqK8F8+ErNwjr8XxtvfSaKZc=; b=A+2ZT9G3iOeqh15YyA
-	/mAkKPEKOMp/GGJ3/yFkAiTe9Hy4eLaYx81D5Fjbmq+0n+6BCRGGPUzG13jC3CPt
-	HJaDlI/JYzDEhuLyRjKOhKOkyOugqJhefiSTc6tiCTMXdq4aKP7CgipX2YpcUNfM
-	VaLM7c15XIh8oE75rYpkNJ++pYhkA3PVXACBxXTncMbYlNfB00QO/xXkXTQsNaoK
-	Kmi645QWbJDAqqVd65Bhpo2yhkmvRbxjTuMxyTilsCbNzpoLy5uTNc3W+w+3kj50
-	9RsxoPK0ornwX6PQxzDl7JMGLXuqhLt0yjrxmvNX6XR0DaGElukqQemssT1uYLFg
-	6wng==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm2; t=1672212634; x=1672299034; bh=WNXT52ksa1LSW
-	+Evq+GXqK8F8+ErNwjr8XxtvfSaKZc=; b=l3C92B6l9aaihvIIKo0MSTXo7406P
-	LBrJ+5D63UabOyg2JCbhO0oJ64YAoFNzMHi5z7Vk3P+/va0TVOp4oZxPgrEva1RO
-	66FGuSI1e0OT34jnSzwyJi2ObBNQDrZlJyk5JrDLqT4BL8aGPgObpiGt0nRjvJml
-	OCQahAki/ZrZtxrTWs3zPWIPDx9bqSoVLSXDZ9aVS8KOGJtEu/j626WxAnykfgRf
-	QSvpAxYsDdBX2VZzbX6rPK8+TDl1pgt+t1ddWG+cYQesv1cw5o4a/tOnOKNwfoVe
-	sOA/lsvPCRaN9zCB7BR/iKqpeHi2YtYCHB7ESz7ZEY9jLPBDdnicc4Uuw==
-X-ME-Sender: <xms:mvCrY4b_eCg42tsKWVe9FagO99HmcxhGTKQIrAeh0BO7iatKS9lDBg>
-    <xme:mvCrYzZMlfyYNYgtdolPI8_M1zLndJDsMlWgisJtPOILwThqOSsYv8WTyDlo8kZ3Z
-    wR39IyTQfCBAGUa6A>
-X-ME-Received: <xmr:mvCrYy9PMruykBNNfH4j5g3DMtGth2DBkQjq1WOlFYEWh5auSi8YfsBGnfnwJxpS7vFlQCMXLV1cvH_pYBlHtEmmvrvU8v3GR0H1nAS30zj-hg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedriedugddutdelucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
-    evufffkffojghfggfgsedtkeertdertddtnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
-    rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpe
-    fhvdeugfdtvdeiieegffefffekieegvdfgiedtjeetffevfefhtdehjeffieeivdenucev
-    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurh
-    esrhhushhsvghllhdrtggt
-X-ME-Proxy: <xmx:mvCrYypdx-2SNZJ2ZE_ia3RE0XXFbQWi8DTpsEuq4tuRpQskEEA-lg>
-    <xmx:mvCrYzorkubqBLF4sAr1pFpxS8gfrwoM2HgJfVabMsf_IzP4OOYSag>
-    <xmx:mvCrYwQgcSVZA0t9aP66BigpsOlo2BgZl9IrQxrUjgedjxoIGi60Dg>
-    <xmx:mvCrY_JPYgcBxR-WmOs4r3F5BQYiQWcATUTuW_YZjYmtSPJjznyPqg>
-Feedback-ID: i4421424f:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
- 28 Dec 2022 02:30:31 -0500 (EST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/6] powerpc/secvar: Handle format string in the consumer
-Date: Wed, 28 Dec 2022 18:29:40 +1100
-Message-Id: <20221228072943.429266-4-ruscur@russell.cc>
-X-Mailer: git-send-email 2.38.1
-In-Reply-To: <20221228072943.429266-1-ruscur@russell.cc>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nhkm35Nd5z2xmy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Dec 2022 19:12:50 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 53D2C612E1;
+	Wed, 28 Dec 2022 08:12:47 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B09FC433EF;
+	Wed, 28 Dec 2022 08:12:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1672215166;
+	bh=s7dzLkCAywG95n7cM0EsVwrHVQoeK5pAxCrnXODh4A4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gp3V2lGo+aJ17QdjmbDX3Bnc2qGL5a0XGCh09VEjrnCCRa8buj3JRmmauDC2swBHn
+	 JVVQgBO39DDKZZdTU+EZOK2MVl3LqSM3e1qGasxDdm2bNpTtqy7dHuvErE4t6DyMh7
+	 VDOnaurx0cTTWN9M5yHuuWSg36UGjH3zZ+8t5rbQ=
+Date: Wed, 28 Dec 2022 09:12:43 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Russell Currey <ruscur@russell.cc>
+Subject: Re: [PATCH 6/6] powerpc/pseries: Implement secvars for dynamic
+ secure boot
+Message-ID: <Y6v6ezv11U3/VI/j@kroah.com>
 References: <20221228072943.429266-1-ruscur@russell.cc>
+ <20221228072943.429266-7-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221228072943.429266-7-ruscur@russell.cc>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,105 +58,163 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, Russell Currey <ruscur@russell.cc>, gcwilson@linux.ibm.com
+Cc: ajd@linux.ibm.com, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, gcwilson@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The code that handles the format string in secvar-sysfs.c is entirely
-OPAL specific, so create a new "format" op in secvar_operations to make
-the secvar code more generic.  No functional change.
+On Wed, Dec 28, 2022 at 06:29:43PM +1100, Russell Currey wrote:
+> The pseries platform can support dynamic secure boot (i.e. secure boot
+> using user-defined keys) using variables contained with the PowerVM LPAR
+> Platform KeyStore (PLPKS).  Using the powerpc secvar API, expose the
+> relevant variables for pseries dynamic secure boot through the existing
+> secvar filesystem layout.
+> 
+> The relevant variables for dynamic secure boot are signed in the
+> keystore, and can only be modified using the H_PKS_SIGNED_UPDATE hcall.
+> Object labels in the keystore are encoded using ucs2 format.  With our
+> fixed variable names we don't have to care about encoding outside of the
+> necessary byte padding.
+> 
+> When a user writes to a variable, the first 8 bytes of data must contain
+> the signed update flags as defined by the hypervisor.
+> 
+> When a user reads a variable, the first 4 bytes of data contain the
+> policies defined for the object.
+> 
+> Limitations exist due to the underlying implementation of sysfs binary
+> attributes, as is the case for the OPAL secvar implementation -
+> partial writes are unsupported and writes cannot be larger than PAGE_SIZE.
+> 
+> Co-developed-by: Nayna Jain <nayna@linux.ibm.com>
+> Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
+> Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
+> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>  Documentation/ABI/testing/sysfs-secvar        |   8 +
+>  arch/powerpc/platforms/pseries/Kconfig        |  13 +
+>  arch/powerpc/platforms/pseries/Makefile       |   4 +-
+>  arch/powerpc/platforms/pseries/plpks-secvar.c | 250 ++++++++++++++++++
+>  4 files changed, 273 insertions(+), 2 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/pseries/plpks-secvar.c
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-secvar b/Documentation/ABI/testing/sysfs-secvar
+> index feebb8c57294..e6fef664c9c8 100644
+> --- a/Documentation/ABI/testing/sysfs-secvar
+> +++ b/Documentation/ABI/testing/sysfs-secvar
+> @@ -44,3 +44,11 @@ Contact:	Nayna Jain <nayna@linux.ibm.com>
+>  Description:	A write-only file that is used to submit the new value for the
+>  		variable. The size of the file represents the maximum size of
+>  		the variable data that can be written.
+> +
+> +What:		/sys/firmware/secvar/config
+> +Date:		December 2022
+> +Contact:	Nayna Jain <nayna@linux.ibm.com>
+> +Description:	This optional directory contains read-only config attributes as
+> +		defined by the secure variable implementation.  All data is in
+> +		ASCII format. The directory is only created if the backing
+> +		implementation provides variables to populate it.
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- arch/powerpc/include/asm/secvar.h            |  1 +
- arch/powerpc/kernel/secvar-sysfs.c           | 21 +---------------
- arch/powerpc/platforms/powernv/opal-secvar.c | 25 ++++++++++++++++++++
- 3 files changed, 27 insertions(+), 20 deletions(-)
+That is _WAY_ too vague, sorry.  You have to define the files that are
+in here and what the contents of them are.
 
-diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
-index 4cc35b58b986..3b7e5a3625bd 100644
---- a/arch/powerpc/include/asm/secvar.h
-+++ b/arch/powerpc/include/asm/secvar.h
-@@ -20,6 +20,7 @@ struct secvar_operations {
- 			uint64_t keybufsize);
- 	int (*set)(const char *key, uint64_t key_len, u8 *data,
- 		   uint64_t data_size);
-+	ssize_t (*format)(char *buf);
- };
- 
- #ifdef CONFIG_PPC_SECURE_BOOT
-diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-index 1ee4640a2641..daf28b11866f 100644
---- a/arch/powerpc/kernel/secvar-sysfs.c
-+++ b/arch/powerpc/kernel/secvar-sysfs.c
-@@ -21,26 +21,7 @@ static struct kset *secvar_kset;
- static ssize_t format_show(struct kobject *kobj, struct kobj_attribute *attr,
- 			   char *buf)
- {
--	ssize_t rc = 0;
--	struct device_node *node;
--	const char *format;
--
--	node = of_find_compatible_node(NULL, NULL, "ibm,secvar-backend");
--	if (!of_device_is_available(node)) {
--		rc = -ENODEV;
--		goto out;
--	}
--
--	rc = of_property_read_string(node, "format", &format);
--	if (rc)
--		goto out;
--
--	rc = sprintf(buf, "%s\n", format);
--
--out:
--	of_node_put(node);
--
--	return rc;
-+	return secvar_ops->format(buf);
- }
- 
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-secvar.c b/arch/powerpc/platforms/powernv/opal-secvar.c
-index 14133e120bdd..cd5b5c06c091 100644
---- a/arch/powerpc/platforms/powernv/opal-secvar.c
-+++ b/arch/powerpc/platforms/powernv/opal-secvar.c
-@@ -101,10 +101,35 @@ static int opal_set_variable(const char *key, uint64_t ksize, u8 *data,
- 	return opal_status_to_err(rc);
- }
- 
-+static ssize_t opal_secvar_format(char *buf)
-+{
-+	ssize_t rc = 0;
-+	struct device_node *node;
-+	const char *format;
-+
-+	node = of_find_compatible_node(NULL, NULL, "ibm,secvar-backend");
-+	if (!of_device_is_available(node)) {
-+		rc = -ENODEV;
-+		goto out;
-+	}
-+
-+	rc = of_property_read_string(node, "format", &format);
-+	if (rc)
-+		goto out;
-+
-+	rc = sprintf(buf, "%s\n", format);
-+
-+out:
-+	of_node_put(node);
-+
-+	return rc;
-+}
-+
- static const struct secvar_operations opal_secvar_ops = {
- 	.get = opal_get_variable,
- 	.get_next = opal_get_next_variable,
- 	.set = opal_set_variable,
-+	.format = opal_secvar_format,
- };
- 
- static int opal_secvar_probe(struct platform_device *pdev)
--- 
-2.38.1
+If you do not, you will get warnings from the tools that we have that
+you can run on a system that wants to verify all sysfs files are
+properly documented.
 
+> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+> index a3b4d99567cb..94e08c405d50 100644
+> --- a/arch/powerpc/platforms/pseries/Kconfig
+> +++ b/arch/powerpc/platforms/pseries/Kconfig
+> @@ -162,6 +162,19 @@ config PSERIES_PLPKS
+>  
+>  	  If unsure, select N.
+>  
+> +config PSERIES_PLPKS_SECVAR
+> +	depends on PSERIES_PLPKS
+> +	depends on PPC_SECURE_BOOT
+> +	bool "Support for the PLPKS secvar interface"
+> +	help
+> +	  PowerVM can support dynamic secure boot with user-defined keys
+> +	  through the PLPKS. Keystore objects used in dynamic secure boot
+> +	  can be exposed to the kernel and userspace through the powerpc
+> +	  secvar infrastructure. Select this to enable the PLPKS backend
+> +	  for secvars for use in pseries dynamic secure boot.
+> +
+> +	  If unsure, select N.
+> +
+>  config PAPR_SCM
+>  	depends on PPC_PSERIES && MEMORY_HOTPLUG && LIBNVDIMM
+>  	tristate "Support for the PAPR Storage Class Memory interface"
+> diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+> index 92310202bdd7..807756991f9d 100644
+> --- a/arch/powerpc/platforms/pseries/Makefile
+> +++ b/arch/powerpc/platforms/pseries/Makefile
+> @@ -27,8 +27,8 @@ obj-$(CONFIG_PAPR_SCM)		+= papr_scm.o
+>  obj-$(CONFIG_PPC_SPLPAR)	+= vphn.o
+>  obj-$(CONFIG_PPC_SVM)		+= svm.o
+>  obj-$(CONFIG_FA_DUMP)		+= rtas-fadump.o
+> -obj-$(CONFIG_PSERIES_PLPKS) += plpks.o
+> -
+> +obj-$(CONFIG_PSERIES_PLPKS)	+= plpks.o
+> +obj-$(CONFIG_PSERIES_PLPKS_SECVAR)	+= plpks-secvar.o
+>  obj-$(CONFIG_SUSPEND)		+= suspend.o
+>  obj-$(CONFIG_PPC_VAS)		+= vas.o vas-sysfs.o
+>  
+> diff --git a/arch/powerpc/platforms/pseries/plpks-secvar.c b/arch/powerpc/platforms/pseries/plpks-secvar.c
+> new file mode 100644
+> index 000000000000..3f9ff16c03c8
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/pseries/plpks-secvar.c
+> @@ -0,0 +1,250 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Secure variable implementation using the PowerVM LPAR Platform KeyStore (PLPKS)
+> + *
+> + * Copyright 2022, IBM Corporation
+> + * Authors: Russell Currey
+> + *          Andrew Donnellan
+> + *          Nayna Jain
+> + */
+> +
+> +#define pr_fmt(fmt) "secvar: "fmt
+> +
+> +#include <linux/printk.h>
+> +#include <linux/init.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/string.h>
+> +#include <linux/kobject.h>
+> +#include <asm/secvar.h>
+> +#include "plpks.h"
+> +
+> +// Config attributes for sysfs
+> +#define PLPKS_CONFIG_ATTR(name, fmt, func)			\
+> +	static ssize_t name##_show(struct kobject *kobj,	\
+> +				   struct kobj_attribute *attr,	\
+> +				   char *buf)			\
+> +	{							\
+> +		return sprintf(buf, fmt, func());		\
+
+sysfs_emit() please.
+
+> +	}							\
+> +	static struct kobj_attribute attr_##name = __ATTR_RO(name)
+> +
+> +PLPKS_CONFIG_ATTR(version, "%u\n", plpks_get_version);
+> +PLPKS_CONFIG_ATTR(object_overhead, "%u\n", plpks_get_objoverhead);
+> +PLPKS_CONFIG_ATTR(max_password_size, "%u\n", plpks_get_maxpwsize);
+> +PLPKS_CONFIG_ATTR(max_object_size, "%u\n", plpks_get_maxobjectsize);
+> +PLPKS_CONFIG_ATTR(max_object_label_size, "%u\n", plpks_get_maxobjectlabelsize);
+> +PLPKS_CONFIG_ATTR(total_size, "%u\n", plpks_get_totalsize);
+> +PLPKS_CONFIG_ATTR(used_space, "%u\n", plpks_get_usedspace);
+> +PLPKS_CONFIG_ATTR(supported_policies, "%08x\n", plpks_get_supportedpolicies);
+> +PLPKS_CONFIG_ATTR(max_large_object_size, "%u\n", plpks_get_maxlargeobjectsize);
+> +PLPKS_CONFIG_ATTR(signed_update_algorithms, "%016llx\n", plpks_get_signedupdatealgorithms);
+
+Looks like you know what these files and values are going to be, so
+again, please document them properly.
+
+thanks,
+
+greg k-h
