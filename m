@@ -4,69 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5462C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Dec 2022 16:25:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8081C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Dec 2022 17:29:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NjYdh6nmlz3cf4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Dec 2022 03:25:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=JyJ1Hotx;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=palmer@dabbelt.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=JyJ1Hotx;
-	dkim-atps=neutral
-Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Njb4860K3z3c6Y
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Dec 2022 04:29:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NjYZc1Z6Tz3bWT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Dec 2022 03:22:30 +1100 (AEDT)
-Received: by mail-pj1-x1029.google.com with SMTP id c8-20020a17090a4d0800b00225c3614161so16215299pjg.5
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2022 08:22:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=dabbelt-com.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Ec85AyiKc77bI9XsP5tX5lamemx/Nh18BP3PMc4R5sU=;
-        b=JyJ1HotxL5h5gP0PAUr+bSyy8u1zOFXKWz1ZfgSiQeQvzYRYtdYK5A29TTv7eUyBSq
-         O6WUTpHiy10Kl0hHmRgy/d9fal5bMY/E/lNTQ2LCgCfG8iVu/uN6+Uj5ExC6mHOnsXiu
-         0ohB97kr44YJgmKniWXNLUoVi+8oVMmtdexytQrx6+rzrxhktuoTfzAedL35hCbYbn09
-         5yB5XsMVIjKdTNReT5H6YpQsO7a4nnDDcbUBIjnPH2H4vmdpB5S32Eq6ZsH3EXQnBVqu
-         h/JxK+dWLoxFuxlgdjXCLEO7aHIvjXxyMe2Wjpx0m1kdrzxduQK6w3r0Q8wQ2fW6djA1
-         pXZA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:message-id:to:from:cc
-         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Ec85AyiKc77bI9XsP5tX5lamemx/Nh18BP3PMc4R5sU=;
-        b=hxkEutA8olSC6qoaFFb6CY39E37zwibQyBO8A/zlq6N2urSu928X1eMt0lUyBTjT4e
-         zhZqhMvUlOIlVX/LMaZejbLRL5qfbGPH8eZVfC8tKPpaudR7dJ5xznwDlZHyZ5xAPWhm
-         JKyQ8O8ZJS+qubco7FayDu5Uoh226V9aBVQDes3RwkSD0W742+tvbbaAEl9hjVWtF39C
-         J05Xfk3oiCbo6kRX57O7esp+OoX+p9+NhSAIDEQO8xSZsmY4uXRmslI3ULDtckg0NYqw
-         na19UXjFTpMKj89Kw+hvZkRGcxLJOxDPdwQK+5NBcunnOrZgg5VpCjFeA72Jw8mnwyiN
-         DrFA==
-X-Gm-Message-State: AFqh2kqiy6JU4IbgWn+xYxLGAdLu6lmEAKWZdxScjDVzVYUAH0VyriD+
-	LgK5w80vkZkDXJERQ+my29gU+A==
-X-Google-Smtp-Source: AMrXdXvdOJhcRsj0KUW218UKcAvJUd1l0xKIGxZQv8spR2kcI0qwBPtGX+cj507spyFm31HkJycFdg==
-X-Received: by 2002:a17:902:a981:b0:187:403c:7a3b with SMTP id bh1-20020a170902a98100b00187403c7a3bmr25977484plb.69.1672330943683;
-        Thu, 29 Dec 2022 08:22:23 -0800 (PST)
-Received: from localhost ([135.180.226.51])
-        by smtp.gmail.com with ESMTPSA id o4-20020a170902bcc400b0019254c19697sm13000824pls.289.2022.12.29.08.22.23
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Dec 2022 08:22:23 -0800 (PST)
-Date: Thu, 29 Dec 2022 08:22:23 -0800 (PST)
-X-Google-Original-Date: Thu, 29 Dec 2022 07:51:42 PST (-0800)
-Subject: Re: [RFC PATCH] mm: remove zap_page_range and change callers to use zap_vma_page_range
-In-Reply-To: <20221216192012.13562-1-mike.kravetz@oracle.com>
-From: Palmer Dabbelt <palmer@dabbelt.com>
-To: mike.kravetz@oracle.com
-Message-ID: <mhng-3136c2a0-6953-4794-856c-46cacdc2c30a@palmer-ri-x1c9>
-Mime-Version: 1.0 (MHng)
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Njb3T6pDyz30Mn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Dec 2022 04:29:07 +1100 (AEDT)
+Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
+	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
+	(Exim 4.92)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1pAwhx-0005QI-Re; Thu, 29 Dec 2022 18:28:45 +0100
+Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
+	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1pAwhr-002Xc3-9T; Thu, 29 Dec 2022 18:28:39 +0100
+Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
+	(envelope-from <ukl@pengutronix.de>)
+	id 1pAwhq-008no3-LN; Thu, 29 Dec 2022 18:28:38 +0100
+Date: Thu, 29 Dec 2022 18:28:35 +0100
+From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Anatolij Gustschin <agust@denx.de>
+Subject: Re: [PATCH] powerpc/mpc52xx_lpbfifo: Drop unused functions
+Message-ID: <20221229172835.ldbpjwl4aelx7p3h@pengutronix.de>
+References: <20221228145129.31700-1-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="rti4uiobizeudh3c"
+Content-Disposition: inline
+In-Reply-To: <20221228145129.31700-1-u.kleine-koenig@pengutronix.de>
+X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,65 +55,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: brauner@kernel.org, linux-s390@vger.kernel.org, nadav.amit@gmail.com, mhocko@suse.com, Will Deacon <will@kernel.org>, david@redhat.com, netdev@vger.kernel.org, riel@surriel.com, linux-kernel@vger.kernel.org, peterx@redhat.com, linux-mm@kvack.org, edumazet@google.com, dave.hansen@linux.intel.com, willy@infradead.org, linux-riscv@lists.infradead.org, borntraeger@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, vbabka@suse.cz, mike.kravetz@oracle.com
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, kernel@pengutronix.de, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 16 Dec 2022 11:20:12 PST (-0800), mike.kravetz@oracle.com wrote:
-> zap_page_range was originally designed to unmap pages within an address
-> range that could span multiple vmas.  While working on [1], it was
-> discovered that all callers of zap_page_range pass a range entirely within
-> a single vma.  In addition, the mmu notification call within zap_page
-> range does not correctly handle ranges that span multiple vmas as calls
-> should be vma specific.
->
-> Instead of fixing zap_page_range, change all callers to use the new
-> routine zap_vma_page_range.  zap_vma_page_range is just a wrapper around
-> zap_page_range_single passing in NULL zap details.  The name is also
-> more in line with other exported routines that operate within a vma.
-> We can then remove zap_page_range.
->
-> Also, change madvise_dontneed_single_vma to use this new routine.
->
-> [1] https://lore.kernel.org/linux-mm/20221114235507.294320-2-mike.kravetz@oracle.com/
-> Suggested-by: Peter Xu <peterx@redhat.com>
-> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
+
+--rti4uiobizeudh3c
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Dec 28, 2022 at 03:51:29PM +0100, Uwe Kleine-K=F6nig wrote:
+> The four exported functions mpc52xx_lpbfifo_submit(),
+> mpc52xx_lpbfifo_abort(), mpc52xx_lpbfifo_poll(), and
+> mpc52xx_lpbfifo_start_xfer() are not used. So they can be dropped and the
+> definitions needed to call them can be moved into the driver file.
+>=20
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 > ---
->  arch/arm64/kernel/vdso.c                |  4 ++--
->  arch/powerpc/kernel/vdso.c              |  2 +-
->  arch/powerpc/platforms/book3s/vas-api.c |  2 +-
->  arch/powerpc/platforms/pseries/vas.c    |  2 +-
->  arch/riscv/kernel/vdso.c                |  4 ++--
->  arch/s390/kernel/vdso.c                 |  2 +-
->  arch/s390/mm/gmap.c                     |  2 +-
->  arch/x86/entry/vdso/vma.c               |  2 +-
->  drivers/android/binder_alloc.c          |  2 +-
->  include/linux/mm.h                      |  7 ++++--
->  mm/madvise.c                            |  4 ++--
->  mm/memory.c                             | 30 -------------------------
->  mm/page-writeback.c                     |  2 +-
->  net/ipv4/tcp.c                          |  6 ++---
->  14 files changed, 22 insertions(+), 49 deletions(-)
 
-[snip]
+I forgot to note here that maybe without these four exported functions
+the driver is useless and can be removed completely.
 
-> diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
-> index e410275918ac..a405119da2c0 100644
-> --- a/arch/riscv/kernel/vdso.c
-> +++ b/arch/riscv/kernel/vdso.c
-> @@ -127,10 +127,10 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
->  		unsigned long size = vma->vm_end - vma->vm_start;
->
->  		if (vma_is_special_mapping(vma, vdso_info.dm))
-> -			zap_page_range(vma, vma->vm_start, size);
-> +			zap_vma_page_range(vma, vma->vm_start, size);
->  #ifdef CONFIG_COMPAT
->  		if (vma_is_special_mapping(vma, compat_vdso_info.dm))
-> -			zap_page_range(vma, vma->vm_start, size);
-> +			zap_vma_page_range(vma, vma->vm_start, size);
->  #endif
->  	}
+I didn't look in detail, but maybe one of the recipents might know.
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com> # RISC-V
+Best regards
+Uwe
 
-Thanks!
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+
+--rti4uiobizeudh3c
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEfnIqFpAYrP8+dKQLwfwUeK3K7AkFAmOtzj0ACgkQwfwUeK3K
+7Alzngf/Xx+HJYH/vMXNuHjNRyrafXDMgBhet+5A1v5j/4Nm97YyRa41lN30vS86
+HRKzP3fevg5wxaJ6pTwVjHJxSk2iSuxsuqZ0VGp9angN3YrY0C6/hE+gNz626CJs
+jdRRbU0B5MJOf4yd3xADCfxKOxsHCOVIJj2NnyvHpQ0kgk+KKCxvM8yYRZaRdg8x
+Zbuffu2ss9qc3mS09yOLv/pdqvMn/YD+vYAOAt1mZaRF0E6j0clpPO7+OkZ6wXWz
+TB1KDjM/ZCYAN4g56r79vXYm0Shuo2Ljtty28g4tjHI3FDvdUjQ9hdLJsV8CR7eK
+Gm528AR6uba9S5iQJHeGlQlB1CzMLA==
+=VL+9
+-----END PGP SIGNATURE-----
+
+--rti4uiobizeudh3c--
