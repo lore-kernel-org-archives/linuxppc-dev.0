@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64045C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Dec 2022 16:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5462C4332F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 Dec 2022 16:25:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NjYch4s7Pz3c7S
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Dec 2022 03:24:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NjYdh6nmlz3cf4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 Dec 2022 03:25:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=qXEmllgj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=JyJ1Hotx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::42c; helo=mail-pf1-x42c.google.com; envelope-from=palmer@dabbelt.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=dabbelt.com (client-ip=2607:f8b0:4864:20::1029; helo=mail-pj1-x1029.google.com; envelope-from=palmer@dabbelt.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=qXEmllgj;
+	dkim=pass (2048-bit key; unprotected) header.d=dabbelt-com.20210112.gappssmtp.com header.i=@dabbelt-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=JyJ1Hotx;
 	dkim-atps=neutral
-Received: from mail-pf1-x42c.google.com (mail-pf1-x42c.google.com [IPv6:2607:f8b0:4864:20::42c])
+Received: from mail-pj1-x1029.google.com (mail-pj1-x1029.google.com [IPv6:2607:f8b0:4864:20::1029])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NjYZc146Nz308w
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NjYZc1Z6Tz3bWT
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Dec 2022 03:22:30 +1100 (AEDT)
-Received: by mail-pf1-x42c.google.com with SMTP id g20so4684486pfb.3
+Received: by mail-pj1-x1029.google.com with SMTP id c8-20020a17090a4d0800b00225c3614161so16215299pjg.5
         for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Dec 2022 08:22:30 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=dabbelt-com.20210112.gappssmtp.com; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:to:from:cc
          :in-reply-to:subject:date:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=PMNgd8bQDMgdEx3QpMo3jWGl4T1DZKXjFMtqF5doPS4=;
-        b=qXEmllgjQDDILSAqKv5rHoGkicbo4R4i0RBYCEbuy5JWCS9/AA+DWTMXLQgqDAappW
-         903kwqubN40SB2KttGjjG54UgZAHr5bwFbysTxqCEokE3BNB09i/uefHEDV0SvFj1/tu
-         1Lu+CFCesVDE+jl4EXnA8KkiboPktg6mieeJ7onX1tkrVdG7KvaiHAaOG9gcqJyJPbGd
-         pCkV7szyzafl528HANkkvX+fSJQQtn4lOJvi8JPHEP8zM7yI6lOkG51EtxjdpiS6qS6y
-         bkQ9rcSKWrjbuS7i9mSjttcyHwgDwy/ruAPC9lLbcJkXlwaOVpsqeXNx1gIuMeQUkJfm
-         MIkA==
+        bh=Ec85AyiKc77bI9XsP5tX5lamemx/Nh18BP3PMc4R5sU=;
+        b=JyJ1HotxL5h5gP0PAUr+bSyy8u1zOFXKWz1ZfgSiQeQvzYRYtdYK5A29TTv7eUyBSq
+         O6WUTpHiy10Kl0hHmRgy/d9fal5bMY/E/lNTQ2LCgCfG8iVu/uN6+Uj5ExC6mHOnsXiu
+         0ohB97kr44YJgmKniWXNLUoVi+8oVMmtdexytQrx6+rzrxhktuoTfzAedL35hCbYbn09
+         5yB5XsMVIjKdTNReT5H6YpQsO7a4nnDDcbUBIjnPH2H4vmdpB5S32Eq6ZsH3EXQnBVqu
+         h/JxK+dWLoxFuxlgdjXCLEO7aHIvjXxyMe2Wjpx0m1kdrzxduQK6w3r0Q8wQ2fW6djA1
+         pXZA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=content-transfer-encoding:mime-version:message-id:to:from:cc
          :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=PMNgd8bQDMgdEx3QpMo3jWGl4T1DZKXjFMtqF5doPS4=;
-        b=oU4u5G9pgUAd48ByQpZl6nrhR2r3klBuryjm9QAxnlTectrRaGjP6iVCQCjUn9Fw9Y
-         0NVKg81wFizR/rjegE1nzIVE1kYWOC4E9r6uifQc08Yr3T6JhYlgz7j2kYaxAEmbvSFP
-         Md37euhDJReChKhKZcDsObMSrPj9yNMrt+PhaC0WrCPC+HnnYjqgGR1ZUTc02UxuRHzX
-         IQ9LBBK/alPVXgXdeV0HFezCU+tWGwT1DGmab5/EK2R7MSnbyCJA2MZjocSXrdYl0rYU
-         UI83D7qRnjg6y4bz/4LR/Jph0Ve7+c58uY9oRJOHfWiXPb9VOZ4xLK4bY+arE1I58jTI
-         xrfQ==
-X-Gm-Message-State: AFqh2krKFFb88zlAUpIMZu6l5DELkAxsPIHDOQGfTVwI5UMsw9p2SKcm
-	9gWqYLoAoBGFVNIwrGuCkVtJXw==
-X-Google-Smtp-Source: AMrXdXtoQHTvZGkC4TohzHT3/NWYHx9KB7DMUUCuZrQkc/ivfhp4AP56ANclvtUxYpd25RIK3u76xw==
-X-Received: by 2002:a05:6a00:1c92:b0:576:f322:419f with SMTP id y18-20020a056a001c9200b00576f322419fmr28959611pfw.28.1672330946621;
-        Thu, 29 Dec 2022 08:22:26 -0800 (PST)
+        bh=Ec85AyiKc77bI9XsP5tX5lamemx/Nh18BP3PMc4R5sU=;
+        b=hxkEutA8olSC6qoaFFb6CY39E37zwibQyBO8A/zlq6N2urSu928X1eMt0lUyBTjT4e
+         zhZqhMvUlOIlVX/LMaZejbLRL5qfbGPH8eZVfC8tKPpaudR7dJ5xznwDlZHyZ5xAPWhm
+         JKyQ8O8ZJS+qubco7FayDu5Uoh226V9aBVQDes3RwkSD0W742+tvbbaAEl9hjVWtF39C
+         J05Xfk3oiCbo6kRX57O7esp+OoX+p9+NhSAIDEQO8xSZsmY4uXRmslI3ULDtckg0NYqw
+         na19UXjFTpMKj89Kw+hvZkRGcxLJOxDPdwQK+5NBcunnOrZgg5VpCjFeA72Jw8mnwyiN
+         DrFA==
+X-Gm-Message-State: AFqh2kqiy6JU4IbgWn+xYxLGAdLu6lmEAKWZdxScjDVzVYUAH0VyriD+
+	LgK5w80vkZkDXJERQ+my29gU+A==
+X-Google-Smtp-Source: AMrXdXvdOJhcRsj0KUW218UKcAvJUd1l0xKIGxZQv8spR2kcI0qwBPtGX+cj507spyFm31HkJycFdg==
+X-Received: by 2002:a17:902:a981:b0:187:403c:7a3b with SMTP id bh1-20020a170902a98100b00187403c7a3bmr25977484plb.69.1672330943683;
+        Thu, 29 Dec 2022 08:22:23 -0800 (PST)
 Received: from localhost ([135.180.226.51])
-        by smtp.gmail.com with ESMTPSA id l190-20020a6225c7000000b005771d583893sm12598441pfl.96.2022.12.29.08.22.25
+        by smtp.gmail.com with ESMTPSA id o4-20020a170902bcc400b0019254c19697sm13000824pls.289.2022.12.29.08.22.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 29 Dec 2022 08:22:26 -0800 (PST)
-Date: Thu, 29 Dec 2022 08:22:26 -0800 (PST)
-X-Google-Original-Date: Thu, 29 Dec 2022 07:53:49 PST (-0800)
-Subject: Re: [PATCH 13/19] arch/riscv: rename internal name __xchg to __arch_xchg
-In-Reply-To: <20221222114635.1251934-14-andrzej.hajda@intel.com>
+        Thu, 29 Dec 2022 08:22:23 -0800 (PST)
+Date: Thu, 29 Dec 2022 08:22:23 -0800 (PST)
+X-Google-Original-Date: Thu, 29 Dec 2022 07:51:42 PST (-0800)
+Subject: Re: [RFC PATCH] mm: remove zap_page_range and change callers to use zap_vma_page_range
+In-Reply-To: <20221216192012.13562-1-mike.kravetz@oracle.com>
 From: Palmer Dabbelt <palmer@dabbelt.com>
-To: andrzej.hajda@intel.com
-Message-ID: <mhng-8937d883-402e-4523-a023-8171ed0e386b@palmer-ri-x1c9>
+To: mike.kravetz@oracle.com
+Message-ID: <mhng-3136c2a0-6953-4794-856c-46cacdc2c30a@palmer-ri-x1c9>
 Mime-Version: 1.0 (MHng)
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
@@ -78,55 +78,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, andrzej.hajda@intel.com, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, boqun.feng@gmail.com, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, rodrigo.vivi@intel.com, andriy.shevchenko@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: brauner@kernel.org, linux-s390@vger.kernel.org, nadav.amit@gmail.com, mhocko@suse.com, Will Deacon <will@kernel.org>, david@redhat.com, netdev@vger.kernel.org, riel@surriel.com, linux-kernel@vger.kernel.org, peterx@redhat.com, linux-mm@kvack.org, edumazet@google.com, dave.hansen@linux.intel.com, willy@infradead.org, linux-riscv@lists.infradead.org, borntraeger@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, vbabka@suse.cz, mike.kravetz@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 22 Dec 2022 03:46:29 PST (-0800), andrzej.hajda@intel.com wrote:
-> __xchg will be used for non-atomic xchg macro.
+On Fri, 16 Dec 2022 11:20:12 PST (-0800), mike.kravetz@oracle.com wrote:
+> zap_page_range was originally designed to unmap pages within an address
+> range that could span multiple vmas.  While working on [1], it was
+> discovered that all callers of zap_page_range pass a range entirely within
+> a single vma.  In addition, the mmu notification call within zap_page
+> range does not correctly handle ranges that span multiple vmas as calls
+> should be vma specific.
 >
-> Signed-off-by: Andrzej Hajda <andrzej.hajda@intel.com>
+> Instead of fixing zap_page_range, change all callers to use the new
+> routine zap_vma_page_range.  zap_vma_page_range is just a wrapper around
+> zap_page_range_single passing in NULL zap details.  The name is also
+> more in line with other exported routines that operate within a vma.
+> We can then remove zap_page_range.
+>
+> Also, change madvise_dontneed_single_vma to use this new routine.
+>
+> [1] https://lore.kernel.org/linux-mm/20221114235507.294320-2-mike.kravetz@oracle.com/
+> Suggested-by: Peter Xu <peterx@redhat.com>
+> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 > ---
->  arch/riscv/include/asm/atomic.h  | 2 +-
->  arch/riscv/include/asm/cmpxchg.h | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/atomic.h b/arch/riscv/include/asm/atomic.h
-> index 0dfe9d857a762b..bba472928b5393 100644
-> --- a/arch/riscv/include/asm/atomic.h
-> +++ b/arch/riscv/include/asm/atomic.h
-> @@ -261,7 +261,7 @@ c_t arch_atomic##prefix##_xchg_release(atomic##prefix##_t *v, c_t n)	\
->  static __always_inline							\
->  c_t arch_atomic##prefix##_xchg(atomic##prefix##_t *v, c_t n)		\
->  {									\
-> -	return __xchg(&(v->counter), n, size);				\
-> +	return __arch_xchg(&(v->counter), n, size);			\
->  }									\
->  static __always_inline							\
->  c_t arch_atomic##prefix##_cmpxchg_relaxed(atomic##prefix##_t *v,	\
-> diff --git a/arch/riscv/include/asm/cmpxchg.h b/arch/riscv/include/asm/cmpxchg.h
-> index 12debce235e52d..2f4726d3cfcc25 100644
-> --- a/arch/riscv/include/asm/cmpxchg.h
-> +++ b/arch/riscv/include/asm/cmpxchg.h
-> @@ -114,7 +114,7 @@
->  					    _x_, sizeof(*(ptr)));	\
->  })
->
-> -#define __xchg(ptr, new, size)						\
-> +#define __arch_xchg(ptr, new, size)					\
->  ({									\
->  	__typeof__(ptr) __ptr = (ptr);					\
->  	__typeof__(new) __new = (new);					\
-> @@ -143,7 +143,7 @@
->  #define arch_xchg(ptr, x)						\
->  ({									\
->  	__typeof__(*(ptr)) _x_ = (x);					\
-> -	(__typeof__(*(ptr))) __xchg((ptr), _x_, sizeof(*(ptr)));	\
-> +	(__typeof__(*(ptr))) __arch_xchg((ptr), _x_, sizeof(*(ptr)));	\
->  })
->
->  #define xchg32(ptr, x)							\
+>  arch/arm64/kernel/vdso.c                |  4 ++--
+>  arch/powerpc/kernel/vdso.c              |  2 +-
+>  arch/powerpc/platforms/book3s/vas-api.c |  2 +-
+>  arch/powerpc/platforms/pseries/vas.c    |  2 +-
+>  arch/riscv/kernel/vdso.c                |  4 ++--
+>  arch/s390/kernel/vdso.c                 |  2 +-
+>  arch/s390/mm/gmap.c                     |  2 +-
+>  arch/x86/entry/vdso/vma.c               |  2 +-
+>  drivers/android/binder_alloc.c          |  2 +-
+>  include/linux/mm.h                      |  7 ++++--
+>  mm/madvise.c                            |  4 ++--
+>  mm/memory.c                             | 30 -------------------------
+>  mm/page-writeback.c                     |  2 +-
+>  net/ipv4/tcp.c                          |  6 ++---
+>  14 files changed, 22 insertions(+), 49 deletions(-)
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+[snip]
+
+> diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
+> index e410275918ac..a405119da2c0 100644
+> --- a/arch/riscv/kernel/vdso.c
+> +++ b/arch/riscv/kernel/vdso.c
+> @@ -127,10 +127,10 @@ int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
+>  		unsigned long size = vma->vm_end - vma->vm_start;
+>
+>  		if (vma_is_special_mapping(vma, vdso_info.dm))
+> -			zap_page_range(vma, vma->vm_start, size);
+> +			zap_vma_page_range(vma, vma->vm_start, size);
+>  #ifdef CONFIG_COMPAT
+>  		if (vma_is_special_mapping(vma, compat_vdso_info.dm))
+> -			zap_page_range(vma, vma->vm_start, size);
+> +			zap_vma_page_range(vma, vma->vm_start, size);
+>  #endif
+>  	}
+
+Acked-by: Palmer Dabbelt <palmer@rivosinc.com> # RISC-V
 
 Thanks!
