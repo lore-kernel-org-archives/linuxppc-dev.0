@@ -4,73 +4,80 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 277FCC4167B
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  1 Jan 2023 20:24:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A2CC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 03:16:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NlVps3Bp1z3c8W
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 07:24:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nlgy10mcxz3c8f
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 14:16:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ek492CvB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GrAxshiW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::834; helo=mail-qt1-x834.google.com; envelope-from=seanga2@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ek492CvB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GrAxshiW;
 	dkim-atps=neutral
-Received: from mail-qt1-x834.google.com (mail-qt1-x834.google.com [IPv6:2607:f8b0:4864:20::834])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NlRrh2s0Mz306M
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jan 2023 05:11:14 +1100 (AEDT)
-Received: by mail-qt1-x834.google.com with SMTP id g7so21016480qts.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Jan 2023 10:11:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=in-reply-to:content-language:references:cc:to:subject:from
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=TXbJB0KMCfIlwY0ltY89Wv0goTtmbbx9NfGatobyUv4=;
-        b=Ek492CvBfqtYHe0KF4LN+FtNJXqE/l2zEABU4Qhh9tTl8bi12Qx4RysQL+g+J3w0DF
-         faFkjU5U1SSlJrxqMY/vkz1XlJZS3UdJMs/dGiREhhOHDGCFR1XwTaf+MIoUhqX3Gxfh
-         48NxbM8yAn7iLpdXAuBZoJkwtc9ZCIlvlyaIo0Z16XLdLV3NeVvLTI6UoXqe5BK8xGSC
-         hkrqBMxQLlS3HTFyAXioL0cGfJGidy488BHIfLxgn8HVZs+VANtQ9S1bOu5WZlv5iKfz
-         NGSHTVUmxE//XUEyc42wK7rQd9tpAXVSNCF9KxwOErVcPfrx29t0CxYRpnlY7n5DsHeo
-         AmNQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-language:references:cc:to:subject:from
-         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=TXbJB0KMCfIlwY0ltY89Wv0goTtmbbx9NfGatobyUv4=;
-        b=6bnd/szvV74BWa7Re9z9a8VnpLvvibwjEJ+KFMGkzINU6j+ViNMWbFBUTwu5tg/GDL
-         F5tVhlDlBg9F9UXlfztsKyrN62uFTp5THRJtK/Kn8zGkrI4kzJAvPAbRYRfuSwDMVRBu
-         UIkBp0We2qlj3iQe5qJwtKBX/1v4Wn65R3s3qblgzIKUvT91wh/mceQ1aq7EWMaxHeoH
-         Rlfcq/5tIoWI7HNAwxsoOav4Jr28uolKlqRvLNsEjaiHEea0maEqON2XCkRAnOfMI5vw
-         EOM4i9/jA2KT5o3O3C2f3FTc72ulZr6wI1GmGdXzdm/iC8nV5k8PnFaaQ4CjBUEc7Sro
-         vZ3Q==
-X-Gm-Message-State: AFqh2kogKBuBh29VUr7anyQekGV/YhrJO0deSmpDMLlzU7n1hWnZVVpX
-	e7p5aU6ba2zZIzu+R5wKfBk=
-X-Google-Smtp-Source: AMrXdXuv87Qj4m6yUOqYvpWiweQjbiQmMZxQjS0weUc044TT2Al8E68VEKmN2tiiyZI7tX7mgNByNQ==
-X-Received: by 2002:a05:622a:17c5:b0:39c:da21:6bb3 with SMTP id u5-20020a05622a17c500b0039cda216bb3mr45086958qtk.56.1672596669631;
-        Sun, 01 Jan 2023 10:11:09 -0800 (PST)
-Received: from [192.168.1.201] (pool-173-73-95-180.washdc.fios.verizon.net. [173.73.95.180])
-        by smtp.gmail.com with ESMTPSA id 133-20020a37088b000000b006bb2cd2f6d1sm18798670qki.127.2023.01.01.10.11.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 01 Jan 2023 10:11:08 -0800 (PST)
-Content-Type: multipart/mixed; boundary="------------A7HSVuJRDRvEP86jN2HygWpt"
-Message-ID: <a40020bd-c190-4283-1977-9e4d9627b888@gmail.com>
-Date: Sun, 1 Jan 2023 13:11:07 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nlgwt0LJKz3bTD;
+	Mon,  2 Jan 2023 14:15:41 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 301KpqFd020981;
+	Mon, 2 Jan 2023 03:15:35 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=USIB5SHNBptFooRrc9W/n8uafVw0YmkhWDnkt3kEMwI=;
+ b=GrAxshiWWPA1ggU8NZT4nlhBQBWQzIPfZu0ppNJkadVAG5m2IosOIzYwJyU91sjAILpl
+ FWKGAOlAZ8GmmtSttxkYnekOFok7m5ks22eqwbLWD9xVVaLAlB86v81lNoH+gsu4BvHe
+ eGHFfGhDd7gbPnjposHoDSJPrHdfxMaG5BSTK808XNSdk82waM0zuzAibyhXGI6J0diH
+ KmS66rMYwb8/dKoJAn1fOiN51Bo9hTyOPB5h0pMiIXIMlvfNV2H/4d7iKXa4O33IAili
+ Elxx27LFNuSH0B4u+WVdhpzZgvUP47g63uIOpnr1TxBfkKKRmG8EgCCAN/Ft48a+jtul DA== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3mtxhh8sp5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 02 Jan 2023 03:15:35 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3020htD7020202;
+	Mon, 2 Jan 2023 03:15:33 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3mtcq69whd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 02 Jan 2023 03:15:33 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3023FTua36045182
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 2 Jan 2023 03:15:29 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4080320043;
+	Mon,  2 Jan 2023 03:15:29 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8AC4220040;
+	Mon,  2 Jan 2023 03:15:27 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.43.47.130])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  2 Jan 2023 03:15:27 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+To: skiboot@lists.ozlabs.org, mpe@ellerman.id.au, maddy@linux.ibm.com
+Subject: [PATCH 2/3] skiboot: Update IMC code to use dt_find_by_name_len for checking dt nodes
+Date: Mon,  2 Jan 2023 08:45:23 +0530
+Message-Id: <20230102031524.73249-2-atrajeev@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.35.1
+In-Reply-To: <20230102031524.73249-1-atrajeev@linux.vnet.ibm.com>
+References: <20230102031524.73249-1-atrajeev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
- Thunderbird/91.11.0
-From: Sean Anderson <seanga2@gmail.com>
-Subject: Re: [FSL P50x0] DPAA Ethernet issue
-To: chzigotzky@xenosoft.de, Madalin Bucur <madalin.bucur@nxp.com>,
- "David S. Miller" <davem@davemloft.net>
-References: <0bfc8f3d-cb62-25f4-2590-ff424adbe48a@xenosoft.de>
-Content-Language: en-US
-In-Reply-To: <0bfc8f3d-cb62-25f4-2590-ff424adbe48a@xenosoft.de>
-X-Mailman-Approved-At: Mon, 02 Jan 2023 07:24:00 +1100
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ICZys5mFLcAccwdlDrhX54iE2ZYCL6Hz
+X-Proofpoint-GUID: ICZys5mFLcAccwdlDrhX54iE2ZYCL6Hz
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2023-01-01_11,2022-12-30_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ lowpriorityscore=0 spamscore=0 phishscore=0 priorityscore=1501
+ suspectscore=0 bulkscore=0 mlxscore=0 clxscore=1015 malwarescore=0
+ adultscore=0 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2212070000 definitions=main-2301020027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,89 +89,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: darren@stevens-zone.net, rtd2@xtra.co.nz, Sean Anderson <sean.anderson@seco.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Eric Dumazet <edumazet@google.com>, madskateman@gmail.com, Jakub Kicinski <kuba@kernel.org>, matthew@a-eon.biz, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, info@xenosoft.de
+Cc: kjain@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------A7HSVuJRDRvEP86jN2HygWpt
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+The nest IMC (In Memory Collection) Performance Monitoring
+Unit(PMU) node names are saved in nest_pmus[] array in the
+"hw/imc.c" IMC code. Not all the IMC PMUs listed in the device
+tree may be available. Nest IMC PMU names along with their
+bit values is represented in imc availability vector.
+The nest_pmus[] array is used to remove the unavailable nodes
+by checking this vector.
 
-SGkgQ2hyaXN0aWFuLA0KDQorQ0MgbmV0ZGV2IGZvbGtzDQoNCj4gSGkgQWxsLA0KPiANCj4g
-VGhlIERQQUEgRXRoZXJuZXQgZG9lc27igJl0IHdvcmsgYW55bW9yZSBvbiBvdXIgRlNMIFA1
-MDIwL1A1MDQwIGJvYXJkcyBbMV0gDQo+IHNpbmNlIHRoZSBmaXJzdCB1cGRhdGVzIGFmdGVy
-IHRoZSBmaW5hbCBrZXJuZWwgNi4xIFsyXS4NCj4gV2UgYmlzZWN0ZWQgeWVzdGVyZGF5IFsz
-XSBhbmQgZm91bmQgdGhlIHByb2JsZW1hdGljIGNvbW1pdCBbNF0uIEkgd2FzIA0KPiBhYmxl
-IHRvIHJldmVydCBpdC4gQWZ0ZXIgdGhhdCB0aGUgRFBBQSBFdGhlcm5ldCB3b3JrcyBhZ2Fp
-bi4gSSBjcmVhdGVkIGEgDQo+IHBhdGNoIGZvciByZXZlcnRpbmcgdGhlIGNvbW1pdCBbNF0u
-IEFmdGVyIHBhdGNoaW5nIGFuZCBjb21waWxpbmcsIHRoZSANCj4gRFBBQSBFdGhlcm5ldCBh
-bHNvIHdvcmtzIGFnYWluLg0KDQpUaGFuayB5b3UgZm9yIHRlc3RpbmcgdGhpcy4gVW5mb3J0
-dW5hdGVseSwgSSBoYXZlIG5vIFAtc2VyaWVzIGhhcmR3YXJlLA0Kc28gSSB3YXMgdW5hYmxl
-IHRvIHRlc3QgdGhlIDEwZ2VjL2R0c2VjIHBhcnRzIG9mIHRoaXMgY29udmVyc2lvbi4gSSBo
-YWQNCmhvcGVkIHRoYXQgdGhpcyB3b3VsZCBnZXQgdGVzdGVkIGJ5IHNvbWVvbmUgd2l0aCB0
-aGUgaGFyZHdhcmUgKGF0IE5YUCkNCmJlZm9yZSBub3csIGJ1dCBpdCBzZWVtcyB5b3UgZ2V0
-IHRvIGJlIHRoZSAibHVja3kiIGZpcnN0IHVzZXIuDQoNCkkgc2VlIHlvdSBoYXZlIGxhYmVs
-ZWQgb25lIG9mIHlvdXIga2VybmVscyBhcyBzdXBwb3J0aW5nIFFFTVUuICBEbyB5b3UNCmhh
-cHBlbiB0byBoYXZlIGluc3RydWN0aW9ucyBmb3IgcnVubmluZyBMaW51eCBvbiBRRU1VPw0K
-DQo+IEl0IHNlZW1zLCB0aGF0IHRoZSBuZXcgZHJpdmVyIGRvZXNu4oCZdCB3b3JrIHdpdGgg
-b3VyIG9uYm9hcmQgRFBBQSBuZXR3b3JrIA0KPiBpbnRlcmZhY2VzLg0KPiANCj4gQ291bGQg
-eW91IHBsZWFzZSBjaGVjayB5b3VyIGNvbW1pdD8gWzRdDQoNCkNhbiB5b3UgdHJ5IHRoZSBm
-b2xsb3dpbmcgcGF0Y2guIEkgdGhpbmsgbXkgbWFpbCBjbGllbnQgd2lsbCBtYW5nbGUgaXQs
-DQpzbyBJIGhhdmUgYWxzbyBhdHRhY2hlZCBpdCB0byB0aGlzIGVtYWlsLg0KDQogRnJvbSAz
-ODk4YzYyMTA2MDI1MjA5YjI2NTI3YWQxNTE2YjMzOWVlYmI2MmYxIE1vbiBTZXAgMTcgMDA6
-MDA6MDAgMjAwMQ0KRnJvbTogU2VhbiBBbmRlcnNvbiA8c2VhbmdhMkBnbWFpbC5jb20+DQpE
-YXRlOiBTdW4sIDEgSmFuIDIwMjMgMTM6MDA6MjEgLTA1MDANClN1YmplY3Q6IFtQQVRDSF0g
-bmV0OiBkcGFhOiBGaXggZHRzZWMgY2hlY2sgZm9yIFBDUyBhdmFpbGFiaWxpdHkNCg0KV2Ug
-d2FudCB0byBmYWlsIGlmIHRoZSBQQ1MgaXMgbm90IGF2YWlsYWJsZSwgbm90IGlmIGl0IGlz
-IGF2YWlsYWJsZS4gRml4DQp0aGlzIGNvbmRpdGlvbi4NCg0KRml4ZXM6IDVkOTNjZmNmNzM2
-MCAoIm5ldDogZHBhYTogQ29udmVydCB0byBwaHlsaW5rIikNClJlcG9ydGVkLWJ5OiBDaHJp
-c3RpYW4gWmlnb3R6a3kgPGluZm9AeGVub3NvZnQuZGU+DQpTaWduZWQtb2ZmLWJ5OiBTZWFu
-IEFuZGVyc29uIDxzZWFuZ2EyQGdtYWlsLmNvbT4NCi0tLQ0KICBkcml2ZXJzL25ldC9ldGhl
-cm5ldC9mcmVlc2NhbGUvZm1hbi9mbWFuX2R0c2VjLmMgfCAyICstDQogIDEgZmlsZSBjaGFu
-Z2VkLCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZtYW4vZm1hbl9kdHNlYy5jIGIvZHJpdmVy
-cy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZtYW4vZm1hbl9kdHNlYy5jDQppbmRleCAzYzg3
-ODIwY2EyMDIuLjM0NjJmMmI3ODY4MCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvbmV0L2V0aGVy
-bmV0L2ZyZWVzY2FsZS9mbWFuL2ZtYW5fZHRzZWMuYw0KKysrIGIvZHJpdmVycy9uZXQvZXRo
-ZXJuZXQvZnJlZXNjYWxlL2ZtYW4vZm1hbl9kdHNlYy5jDQpAQCAtMTQzMSw3ICsxNDMxLDcg
-QEAgaW50IGR0c2VjX2luaXRpYWxpemF0aW9uKHN0cnVjdCBtYWNfZGV2aWNlICptYWNfZGV2
-LA0KICAJZHRzZWMtPmR0c2VjX2Rydl9wYXJhbS0+dHhfcGFkX2NyYyA9IHRydWU7DQogIA0K
-ICAJcGh5X25vZGUgPSBvZl9wYXJzZV9waGFuZGxlKG1hY19ub2RlLCAidGJpLWhhbmRsZSIs
-IDApOw0KLQlpZiAoIXBoeV9ub2RlIHx8IG9mX2RldmljZV9pc19hdmFpbGFibGUocGh5X25v
-ZGUpKSB7DQorCWlmICghcGh5X25vZGUgfHwgIW9mX2RldmljZV9pc19hdmFpbGFibGUocGh5
-X25vZGUpKSB7DQogIAkJb2Zfbm9kZV9wdXQocGh5X25vZGUpOw0KICAJCWVyciA9IC1FSU5W
-QUw7DQogIAkJZGV2X2Vycl9wcm9iZShtYWNfZGV2LT5kZXYsIGVyciwNCi0tIA0KMi4zNy4x
-DQo=
---------------A7HSVuJRDRvEP86jN2HygWpt
-Content-Type: text/x-patch; charset=UTF-8;
- name="0001-net-dpaa-Fix-dtsec-check-for-PCS-availability.patch"
-Content-Disposition: attachment;
- filename="0001-net-dpaa-Fix-dtsec-check-for-PCS-availability.patch"
-Content-Transfer-Encoding: base64
+To check node availability, code was using "dt_find_by_name".
+But since the node names have format like: "name@offset",
+dt_find_by_name doesn't return the expected result. Fix this
+by using dt_find_by_name_len. Also, instead of using char array,
+use a new "struct nest_pmus_struct" which saves the name as well
+as length parameter for dt_find_by_name_len.
 
-RnJvbSAzODk4YzYyMTA2MDI1MjA5YjI2NTI3YWQxNTE2YjMzOWVlYmI2MmYxIE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBTZWFuIEFuZGVyc29uIDxzZWFuZ2EyQGdtYWlsLmNv
-bT4KRGF0ZTogU3VuLCAxIEphbiAyMDIzIDEzOjAwOjIxIC0wNTAwClN1YmplY3Q6IFtQQVRD
-SF0gbmV0OiBkcGFhOiBGaXggZHRzZWMgY2hlY2sgZm9yIFBDUyBhdmFpbGFiaWxpdHkKCldl
-IHdhbnQgdG8gZmFpbCBpZiB0aGUgUENTIGlzIG5vdCBhdmFpbGFibGUsIG5vdCBpZiBpdCBp
-cyBhdmFpbGFibGUuIEZpeAp0aGlzIGNvbmRpdGlvbi4KCkZpeGVzOiA1ZDkzY2ZjZjczNjAg
-KCJuZXQ6IGRwYWE6IENvbnZlcnQgdG8gcGh5bGluayIpClJlcG9ydGVkLWJ5OiBDaHJpc3Rp
-YW4gWmlnb3R6a3kgPGluZm9AeGVub3NvZnQuZGU+ClNpZ25lZC1vZmYtYnk6IFNlYW4gQW5k
-ZXJzb24gPHNlYW5nYTJAZ21haWwuY29tPgotLS0KIGRyaXZlcnMvbmV0L2V0aGVybmV0L2Zy
-ZWVzY2FsZS9mbWFuL2ZtYW5fZHRzZWMuYyB8IDIgKy0KIDEgZmlsZSBjaGFuZ2VkLCAxIGlu
-c2VydGlvbigrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L2V0
-aGVybmV0L2ZyZWVzY2FsZS9mbWFuL2ZtYW5fZHRzZWMuYyBiL2RyaXZlcnMvbmV0L2V0aGVy
-bmV0L2ZyZWVzY2FsZS9mbWFuL2ZtYW5fZHRzZWMuYwppbmRleCAzYzg3ODIwY2EyMDIuLjM0
-NjJmMmI3ODY4MCAxMDA2NDQKLS0tIGEvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxl
-L2ZtYW4vZm1hbl9kdHNlYy5jCisrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2Fs
-ZS9mbWFuL2ZtYW5fZHRzZWMuYwpAQCAtMTQzMSw3ICsxNDMxLDcgQEAgaW50IGR0c2VjX2lu
-aXRpYWxpemF0aW9uKHN0cnVjdCBtYWNfZGV2aWNlICptYWNfZGV2LAogCWR0c2VjLT5kdHNl
-Y19kcnZfcGFyYW0tPnR4X3BhZF9jcmMgPSB0cnVlOwogCiAJcGh5X25vZGUgPSBvZl9wYXJz
-ZV9waGFuZGxlKG1hY19ub2RlLCAidGJpLWhhbmRsZSIsIDApOwotCWlmICghcGh5X25vZGUg
-fHwgb2ZfZGV2aWNlX2lzX2F2YWlsYWJsZShwaHlfbm9kZSkpIHsKKwlpZiAoIXBoeV9ub2Rl
-IHx8ICFvZl9kZXZpY2VfaXNfYXZhaWxhYmxlKHBoeV9ub2RlKSkgewogCQlvZl9ub2RlX3B1
-dChwaHlfbm9kZSk7CiAJCWVyciA9IC1FSU5WQUw7CiAJCWRldl9lcnJfcHJvYmUobWFjX2Rl
-di0+ZGV2LCBlcnIsCi0tIAoyLjM3LjEKCg==
+Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+---
+ hw/imc.c | 112 +++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 59 insertions(+), 53 deletions(-)
 
---------------A7HSVuJRDRvEP86jN2HygWpt--
+diff --git a/hw/imc.c b/hw/imc.c
+index 97e0809f..779e9634 100644
+--- a/hw/imc.c
++++ b/hw/imc.c
+@@ -37,6 +37,12 @@
+ static uint64_t TRACE_IMC_ADDR;
+ static uint64_t CORE_IMC_EVENT_MASK_ADDR;
+ static uint64_t trace_scom_val;
++
++struct nest_pmus_struct {
++	const char *name;
++	int len;
++};
++
+ /*
+  * Initialise these with the pdbar and htm scom port address array
+  * at run time, based on the processor version.
+@@ -49,58 +55,58 @@ static unsigned int *htm_scom_index;
+  * imc_chip_avl_vector(in struct imc_chip_cb, look at include/imc.h).
+  * nest_pmus[] is an array containing all the possible nest IMC PMU node names.
+  */
+-static char const *nest_pmus[] = {
+-	"powerbus0",
+-	"mcs0",
+-	"mcs1",
+-	"mcs2",
+-	"mcs3",
+-	"mcs4",
+-	"mcs5",
+-	"mcs6",
+-	"mcs7",
+-	"mba0",
+-	"mba1",
+-	"mba2",
+-	"mba3",
+-	"mba4",
+-	"mba5",
+-	"mba6",
+-	"mba7",
+-	"cen0",
+-	"cen1",
+-	"cen2",
+-	"cen3",
+-	"cen4",
+-	"cen5",
+-	"cen6",
+-	"cen7",
+-	"xlink0",
+-	"xlink1",
+-	"xlink2",
+-	"mcd0",
+-	"mcd1",
+-	"phb0",
+-	"phb1",
+-	"phb2",
+-	"phb3",
+-	"phb4",
+-	"phb5",
+-	"nx",
+-	"capp0",
+-	"capp1",
+-	"vas",
+-	"int",
+-	"alink0",
+-	"alink1",
+-	"alink2",
+-	"alink3",
+-	"nvlink0",
+-	"nvlink1",
+-	"nvlink2",
+-	"nvlink3",
+-	"nvlink4",
+-	"nvlink5",
++static struct nest_pmus_struct nest_pmus[] = {
++	{ .name = "powerbus0@", .len = 10 },
++	{ .name = "mcs0@", .len = 5},
++	{ .name = "mcs1@", .len = 5},
++	{ .name = "mcs2@", .len = 5},
++	{ .name = "mcs3@", .len = 5},
++	{ .name = "mcs4@", .len = 5},
++	{ .name = "mcs5@", .len = 5},
++	{ .name = "mcs6@", .len = 5},
++	{ .name = "mcs7@", .len = 5},
++	{ .name = "mba0@", .len = 5},
++	{ .name = "mba1@", .len = 5},
++	{ .name = "mba2@", .len = 5},
++	{ .name = "mba3@", .len = 5},
++	{ .name = "mba4@", .len = 5},
++	{ .name = "mba5@", .len = 5},
++	{ .name = "mba6@", .len = 5},
++	{ .name = "mba7@", .len = 5},
++	{ .name = "centaur0@", .len = 9},
++	{ .name = "centaur1@", .len = 9},
++	{ .name = "centaur2@", .len = 9},
++	{ .name = "centaur3@", .len = 9},
++	{ .name = "centaur4@", .len = 9},
++	{ .name = "centaur5@", .len = 9},
++	{ .name = "centaur6@", .len = 9},
++	{ .name = "centaur7@", .len = 9},
++	{ .name = "xlink0@", .len = 7},
++	{ .name = "xlink1@", .len = 7},
++	{ .name = "xlink2@", .len = 7},
++	{ .name = "mcd0@", .len = 5},
++	{ .name = "mcd1@", .len = 5},
++	{ .name = "phb0@", .len = 5},
++	{ .name = "phb1@", .len = 5},
++	{ .name = "phb2@", .len = 5},
++	{ .name = "phb3@", .len = 5},
++	{ .name = "phb4@", .len = 5},
++	{ .name = "phb5@", .len = 5},
++	{ .name = "nx@", .len = 3},
++	{ .name = "capp0@", .len = 6},
++	{ .name = "capp1@", .len = 6},
++	{ .name = "vas@", .len = 4},
++	{ .name = "int@", .len = 4},
++	{ .name = "alink0@", .len = 7},
++	{ .name = "alink1@", .len = 7},
++	{ .name = "alink2@", .len = 7},
++	{ .name = "alink3@", .len = 7},
++	{ .name = "nvlink0@", .len = 8},
++	{ .name = "nvlink1@", .len = 8},
++	{ .name = "nvlink2@", .len = 8},
++	{ .name = "nvlink3@", .len = 8},
++	{ .name = "nvlink4@", .len = 8},
++	{ .name = "nvlink5@", .len = 8},
+ 	/* reserved bits : 51 - 63 */
+ };
+ 
+@@ -412,7 +418,7 @@ static void disable_unavailable_units(struct dt_node *dev)
+ 	for (i = 0; i < ARRAY_SIZE(nest_pmus); i++) {
+ 		if (!(PPC_BITMASK(i, i) & avl_vec)) {
+ 			/* Check if the device node exists */
+-			target = dt_find_by_name(dev, nest_pmus[i]);
++			target = dt_find_by_name_len(dev, nest_pmus[i].name, nest_pmus[i].len);
+ 			if (!target)
+ 				continue;
+ 			/* Remove the device node */
+-- 
+2.27.0
+
