@@ -4,77 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C0C97C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 03:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10A62C3DA7A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 03:34:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nlh0R2y3dz3c96
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 14:18:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NlhLS3Rhpz3c6w
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jan 2023 14:34:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FGIObstr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=cuyVOCGQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=85.215.255.54; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FGIObstr;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=cuyVOCGQ;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [85.215.255.54])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nlgwt1HhLz3bby;
-	Mon,  2 Jan 2023 14:15:41 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 301K50vg010839;
-	Mon, 2 Jan 2023 03:15:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=ZEZhGpd5OcmRlBRT0DIEjW5bp2R/P1usVwTeGOofwKc=;
- b=FGIObstrbGCjVAf618YDKfwRj07tvbs0ZxWQUe16coWx6H28sPQtia9MnIHaC7MWwCws
- adMlW99YQXRRDF+I7k0qLrSFKg7V1exy8ZGnYWtfc5FqYrqN9lwCLn3Qr05qMX5lsb8w
- F8cvsZ6GUetkeAcu4YNy1I+jFBUQp3LmrH3b9y0B5nie4ZUj6/kv1jqLTvplaz512HvR
- fnRCBrc9zl1f88pcXagsUdCozaPYJLh9ZRGYa9RluPN0Lnml6u9fM3bPXn+wXJWfTM+z
- H0KoaGMPhUaGdyh51S/mB+3mjt/3O5Izhvk/BTvzHPhQvP1N1J2SJLYRHvMS7nnEXQhE YQ== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3mty830d3g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Jan 2023 03:15:32 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3020AtUD001428;
-	Mon, 2 Jan 2023 03:15:31 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3mtcbf9w6v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 02 Jan 2023 03:15:31 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3023FRtf46072316
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 2 Jan 2023 03:15:27 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 37F0D20043;
-	Mon,  2 Jan 2023 03:15:27 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A857F20040;
-	Mon,  2 Jan 2023 03:15:25 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.43.47.130])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  2 Jan 2023 03:15:25 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-To: skiboot@lists.ozlabs.org, mpe@ellerman.id.au, maddy@linux.ibm.com
-Subject: [PATCH 1/3] core/device: Add function to return child node using name and length
-Date: Mon,  2 Jan 2023 08:45:22 +0530
-Message-Id: <20230102031524.73249-1-atrajeev@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NlhKM4NRrz2xKN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jan 2023 14:33:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1672630364;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=In-Reply-To:From:References:Cc:To:Subject:Date:Message-ID:Cc:Date:
+    From:Subject:Sender;
+    bh=wH6ZUO7J0AcIxk2tWtudQmGG68BDM/GwIGysI7jFImo=;
+    b=cuyVOCGQmhucqHo2nu4OSy99epbVxEov/5GuYvP8X7D6eWyz6ESBcG9FoDJQXo0SJj
+    OB8gk1QueDdrgPkOmOCe2hNwBGNrvTqevFKl1f8todOs8fiLaStLvpnf4PY+hlRDsQhT
+    E4saWVErlqi3pKDoYX9rRW3a+4hJQfq9PbKrqWLF53plBtluYeJ0emWFFNfYIdO0mX9c
+    7aXUeeM2dji9yI9lqEm4b4Y6AIh7JUXfb8FC6rr+/3doT/IHydDVbk0b2BBTGld37xN0
+    +C4ck51Gwu6ZOMPz0BBwQv4npNYW1KOinJ1tFKx37Dii2QvmqKbmVOsGah6yhGxW2DvI
+    onDQ==
+Authentication-Results: strato.com;
+    dkim=none
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5DdBfio0GngadwjX4M5RB1pvK++FgVycZqCWMJGghA=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPV6:2a02:8109:8980:4474:29da:718a:6882:44e8]
+    by smtp.strato.de (RZmta 48.2.1 AUTH)
+    with ESMTPSA id e28afdz023WgFTc
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Mon, 2 Jan 2023 04:32:42 +0100 (CET)
+Message-ID: <8be26a07-3f48-cd61-1b74-1605827bfae3@xenosoft.de>
+Date: Mon, 2 Jan 2023 04:32:42 +0100
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.6.1
+Subject: Re: [FSL P50x0] DPAA Ethernet issue
+To: Sean Anderson <seanga2@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>,
+ "David S. Miller" <davem@davemloft.net>
+References: <0bfc8f3d-cb62-25f4-2590-ff424adbe48a@xenosoft.de>
+ <a40020bd-c190-4283-1977-9e4d9627b888@gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <a40020bd-c190-4283-1977-9e4d9627b888@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 6fSssP0TDO0lnqTs1kAIsWYfjDsvqdwE
-X-Proofpoint-ORIG-GUID: 6fSssP0TDO0lnqTs1kAIsWYfjDsvqdwE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2023-01-01_11,2022-12-30_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 lowpriorityscore=0 clxscore=1011 mlxscore=0 bulkscore=0
- adultscore=0 spamscore=0 mlxlogscore=999 phishscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301020027
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,94 +68,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kjain@linux.ibm.com, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, mahesh@linux.ibm.com
+Cc: darren@stevens-zone.net, madskateman@gmail.com, sean.anderson@seco.com, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Eric Dumazet <edumazet@google.com>, rtd2@xtra.co.nz, Jakub Kicinski <kuba@kernel.org>, matthew@a-eon.biz, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, info@xenosoft.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a function dt_find_by_name_len() that returns the child node if
-it matches the first "n" characters of a given name, otherwise NULL.
-This is helpful for cases with node name like: "name@addr". In
-scenarios where nodes are added with "name@addr" format and if the
-value of "addr" is not known, that node can't be matched with node
-name or addr. Hence matching with substring as node name will return
-the expected result. Patch adds dt_find_by_name_len() function
-and testcase for the same in core/test/run-device.c
+On 01 January 2023 at 07:11 pm, Sean Anderson wrote:
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
----
- core/device.c          | 20 ++++++++++++++++++++
- core/test/run-device.c | 11 +++++++++++
- include/device.h       |  4 ++++
- 3 files changed, 35 insertions(+)
+Thank you for testing this. Unfortunately, I have no P-series hardware,
+so I was unable to test the 10gec/dtsec parts of this conversion. I had
+hoped that this would get tested by someone with the hardware (at NXP)
+before now, but it seems you get to be the "lucky" first user.
 
-diff --git a/core/device.c b/core/device.c
-index 2de37c74..72c54e85 100644
---- a/core/device.c
-+++ b/core/device.c
-@@ -395,6 +395,26 @@ struct dt_node *dt_find_by_name(struct dt_node *root, const char *name)
- }
- 
- 
-+struct dt_node *dt_find_by_name_len(struct dt_node *root,
-+					const char *name, int len)
-+{
-+	struct dt_node *child, *match;
-+
-+	if (len <= 0)
-+		return NULL;
-+
-+	list_for_each(&root->children, child, list) {
-+		if (!strncmp(child->name, name, len))
-+			return child;
-+
-+		match = dt_find_by_name_len(child, name, len);
-+		if (match)
-+			return match;
-+	}
-+
-+	return NULL;
-+}
-+
- struct dt_node *dt_new_check(struct dt_node *parent, const char *name)
- {
- 	struct dt_node *node = dt_find_by_name(parent, name);
-diff --git a/core/test/run-device.c b/core/test/run-device.c
-index 4a12382b..8c552103 100644
---- a/core/test/run-device.c
-+++ b/core/test/run-device.c
-@@ -466,6 +466,17 @@ int main(void)
- 	new_prop_ph = dt_prop_get_u32(ut2, "something");
- 	assert(!(new_prop_ph == ev1_ph));
- 	dt_free(subtree);
-+
-+	/* Test dt_find_by_name_len */
-+	root = dt_new_root("");
-+	addr1 = dt_new_addr(root, "node", 0x1);
-+	addr2 = dt_new_addr(root, "node0_1", 0x2);
-+	assert(dt_find_by_name(root, "node@1") == addr1);
-+	assert(dt_find_by_name(root, "node0_1@2") == addr2);
-+	assert(dt_find_by_name_len(root, "node@", 5) == addr1);
-+	assert(dt_find_by_name_len(root, "node0_1@", 8) == addr2);
-+	dt_free(root);
-+
- 	return 0;
- }
- 
-diff --git a/include/device.h b/include/device.h
-index 93fb90ff..f5e0fb79 100644
---- a/include/device.h
-+++ b/include/device.h
-@@ -184,6 +184,10 @@ struct dt_node *dt_find_by_path(struct dt_node *root, const char *path);
- /* Find a child node by name */
- struct dt_node *dt_find_by_name(struct dt_node *root, const char *name);
- 
-+/* Find a child node by name and len */
-+struct dt_node *dt_find_by_name_len(struct dt_node *root,
-+                                        const char *name, int len);
-+
- /* Find a node by phandle */
- struct dt_node *dt_find_by_phandle(struct dt_node *root, u32 phandle);
- 
--- 
-2.27.0
+I see you have labeled one of your kernels as supporting QEMU.  Do you
+happen to have instructions for running Linux on QEMU?
 
+Can you try the following patch. I think my mail client will mangle it,  
+so I have also attached it to this email.
+
+------------
+
+Hi Sean,
+
+Thanks a lot for your answer.
+
+I use the virtio-net device in a virtual e5500 QEMU/KVM HV machine. [1] [2]
+
+I will test your patch as soon as possible.
+
+Thanks,
+Christian
+
+[1] QEMU command: qemu-system-ppc64 -M ppce500 -cpu e5500 -m 1024 
+-kernel uImage-6.2 -drive 
+format=raw,file=void-live-powerpc-20220129.img,index=0,if=virtio -netdev 
+user,id=mynet0 -device virtio-net,netdev=mynet0 -append "rw 
+root=/dev/vda2" -device virtio-gpu -device virtio-mouse-pci -device 
+virtio-keyboard-pci -device pci-ohci,id=newusb -audiodev 
+id=sndbe,driver=pa,server=/run/user/1000/pulse/native -device 
+usb-audio,bus=newusb.0 -enable-kvm -smp 4 -fsdev 
+local,security_model=passthrough,id=fsdev0,path=/home/amigaone/Music 
+-device virtio-9p-pci,id=fs0,fsdev=fsdev0,mount_tag=hostshare
+
+[2] https://forum.hyperion-entertainment.com/viewtopic.php?p=46749
