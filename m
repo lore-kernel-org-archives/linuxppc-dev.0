@@ -4,49 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37627C46467
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 08:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA22AC46467
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 10:06:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NmQYN3J73z3c6P
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 19:16:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NmT0g125Gz3c8P
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 21:06:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Rivugukn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KQ8gHflm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=hca@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Rivugukn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=KQ8gHflm;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NmQXM2cKNz2yxB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2023 19:15:30 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 72475611F4;
-	Tue,  3 Jan 2023 08:15:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81206C433EF;
-	Tue,  3 Jan 2023 08:15:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1672733726;
-	bh=XRaeXSlPdh0yFvfiztqZ/I8H5J2GOdPGm26XZE7GTIQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=RivuguknUptJl3xIPUts3aIJ3KSzTDlOahVabUSBFjzlxblz9gR31C9lulIjdZTDP
-	 xW3fJYzb7BwaChMrvudJ6eOukCkIaCbsb5FkH8AVZztNj+77DqaofLNViVW6iu7EGA
-	 t1LW+oQp0Hj8n2TxQdMxOGJ6RlbJubZA/H8fSuDI=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Subject: [PATCH 5.10 23/63] powerpc: add support for TIF_NOTIFY_SIGNAL
-Date: Tue,  3 Jan 2023 09:13:53 +0100
-Message-Id: <20230103081309.957743460@linuxfoundation.org>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230103081308.548338576@linuxfoundation.org>
-References: <20230103081308.548338576@linuxfoundation.org>
-User-Agent: quilt/0.67
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NmSzb5DDBz3bNy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2023 21:05:47 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3037hcSP015068;
+	Tue, 3 Jan 2023 10:02:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=dMHVtFosqWThDyY5SftMoOPjqDlLusCntZAFShOz2mY=;
+ b=KQ8gHflm592WlbRAgwdQmZyTRlHDWh9M3ZAPFV+EMcsIOXJ461PiMpCp5cUVt9BL1e6j
+ zqllDR5Fb/gxAm41jRkoRbn7AyAsUGSUMf7knMuu/spo09IOUdLrV2GM4nc+OlkQbkE7
+ IJzG4uvffHGaWIteJBPi+B7FHAqQUQN3AtsThHUAZCqJQIQDHXbgZuAeeqSo9WeDmPJj
+ eEQnkInKW+xzSa/aKKaqEDcmxJK5+xsGNpjiHiXPohV0tqVjzNS2xI1QFRZv2I9KIldN
+ wQ9mkHaOJ5pKdofCP9qAqPj5s8umAAK+tXrV9dZ+20maLxpkr4T38HkHLw9ablzK3SFk /w== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3mvbt6xp9k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 03 Jan 2023 10:02:20 +0000
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3039LwDp027251;
+	Tue, 3 Jan 2023 10:02:19 GMT
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3mvbt6xp8p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 03 Jan 2023 10:02:19 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 302CL8aj017444;
+	Tue, 3 Jan 2023 10:02:16 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3mtcq6tmts-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 03 Jan 2023 10:02:16 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 303A2EKB49938694
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 3 Jan 2023 10:02:14 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3B14420071;
+	Tue,  3 Jan 2023 10:02:14 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F230A20069;
+	Tue,  3 Jan 2023 10:02:12 +0000 (GMT)
+Received: from osiris (unknown [9.171.83.23])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  3 Jan 2023 10:02:12 +0000 (GMT)
+Date: Tue, 3 Jan 2023 11:02:09 +0100
+From: Heiko Carstens <hca@linux.ibm.com>
+To: Andrzej Hajda <andrzej.hajda@intel.com>
+Subject: Re: [PATCH v3] arch: rename all internal names __xchg to __arch_xchg
+Message-ID: <Y7P9IcR7/jgYWMcq@osiris>
+References: <202212300642.6pdgegGO-lkp@intel.com>
+ <20221230141552.128508-1-andrzej.hajda@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20221230141552.128508-1-andrzej.hajda@intel.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: JUKgavQnlJumrUvi-CztUW8Qob9IZFEg
+X-Proofpoint-GUID: 0ZquoQ4B0WHjt8os5pwnxRNooiQSYFH8
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2023-01-03_01,2023-01-03_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 clxscore=1011
+ lowpriorityscore=0 mlxlogscore=712 priorityscore=1501 bulkscore=0
+ spamscore=0 adultscore=0 phishscore=0 suspectscore=0 mlxscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301030088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,63 +96,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, patches@lists.linux.dev
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, Boqun Feng <boqun.feng@gmail.com>, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, intel-gfx@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Rodrigo Vivi <rodrigo.vivi@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Jens Axboe <axboe@kernel.dk>
+On Fri, Dec 30, 2022 at 03:15:52PM +0100, Andrzej Hajda wrote:
+> __xchg will be used for non-atomic xchg macro.
+> 
+> Signed-off-by: Andrzej Hajda <andrzej.hajda@intel.com>
+> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> v2: squashed all arch patches into one
+> v3: fixed alpha/xchg_local, thx to lkp@intel.com
+> ---
+...
+>  arch/s390/include/asm/cmpxchg.h      | 4 ++--
+> diff --git a/arch/s390/include/asm/cmpxchg.h b/arch/s390/include/asm/cmpxchg.h
+> index 84c3f0d576c5b1..efc16f4aac8643 100644
+> --- a/arch/s390/include/asm/cmpxchg.h
+> +++ b/arch/s390/include/asm/cmpxchg.h
+> @@ -14,7 +14,7 @@
+>  
+>  void __xchg_called_with_bad_pointer(void);
+>  
+> -static __always_inline unsigned long __xchg(unsigned long x,
+> +static __always_inline unsigned long __arch_xchg(unsigned long x,
+>  					    unsigned long address, int size)
 
-[ Upstream commit 900f0713fdd730fab0f0bfa4a8ca4db2a8985bbe ]
+Please adjust the alignment of the second line.
 
-Wire up TIF_NOTIFY_SIGNAL handling for powerpc.
+> @@ -77,7 +77,7 @@ static __always_inline unsigned long __xchg(unsigned long x,
+>  	__typeof__(*(ptr)) __ret;					\
+>  									\
+>  	__ret = (__typeof__(*(ptr)))					\
+> -		__xchg((unsigned long)(x), (unsigned long)(ptr),	\
+> +		__arch_xchg((unsigned long)(x), (unsigned long)(ptr),	\
+>  		       sizeof(*(ptr)));					\
 
-Cc: linuxppc-dev@lists.ozlabs.org
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Jens Axboe <axboe@kernel.dk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- arch/powerpc/include/asm/thread_info.h |    5 ++++-
- arch/powerpc/kernel/signal.c           |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+Same here.
 
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -96,6 +96,7 @@ void arch_setup_new_exec(void);
- #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
- #define TIF_SIGPENDING		1	/* signal pending */
- #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
-+#define TIF_NOTIFY_SIGNAL	3	/* signal notifications exist */
- #define TIF_SYSCALL_EMU		4	/* syscall emulation active */
- #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
- #define TIF_PATCH_PENDING	6	/* pending live patching update */
-@@ -121,6 +122,7 @@ void arch_setup_new_exec(void);
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
- #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
-+#define _TIF_NOTIFY_SIGNAL	(1<<TIF_NOTIFY_SIGNAL)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_32BIT		(1<<TIF_32BIT)
- #define _TIF_RESTORE_TM		(1<<TIF_RESTORE_TM)
-@@ -142,7 +144,8 @@ void arch_setup_new_exec(void);
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
- 				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
--				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
-+				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
-+				 _TIF_NOTIFY_SIGNAL)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -318,7 +318,7 @@ void do_notify_resume(struct pt_regs *re
- 	if (thread_info_flags & _TIF_PATCH_PENDING)
- 		klp_update_patch_state(current);
- 
--	if (thread_info_flags & _TIF_SIGPENDING) {
-+	if (thread_info_flags & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL)) {
- 		BUG_ON(regs != current->thread.regs);
- 		do_signal(current);
- 	}
-
-
+The same is true for a couple of other architectures - not sure if
+they care however.
