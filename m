@@ -4,78 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EBAAAC3DA7D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 10:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B315FC46467
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 15:38:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NmTzv1stcz3c7Q
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jan 2023 21:51:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NSJleZlG;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=NSJleZlG;
-	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NmcMp0tC0z3bZ4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Jan 2023 02:38:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nefkom.net (client-ip=2001:a60:0:28:0:1:25:1; helo=mail-out.m-online.net; envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+X-Greylist: delayed 342 seconds by postgrey-1.36 at boromir; Wed, 04 Jan 2023 02:38:14 AEDT
+Received: from mail-out.m-online.net (mail-out.m-online.net [IPv6:2001:a60:0:28:0:1:25:1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NmSpY5sR7z30hl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jan 2023 20:57:57 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3036NxG8038590;
-	Tue, 3 Jan 2023 09:57:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=YnVV25GPduJNGRyUDB4bFnWdwPvGy6QVBIvQ/oA/+5A=;
- b=NSJleZlG1L3ghZL1+837YSMjrsM5v4wPXI7r3yBTZPDAmxG9BSH6+kqxaCdEY83++14+
- aBKi91OhzxTzL1//wddbPDcrSobRTX2IXTseNCsurumbItYiZTjgvPTqMg9RQYfFFIn0
- ahj8JXcbqBWmpWXPv2zIZt3QJsJypRwVb/0SGdwD1MnCDmaS3Qlh1Yz0go/J95HuN6g+
- Xql1PqewHmWHFHXRqEA6Az7s9OpWatnbLTEdXSJCWbPNpAewdD2lEAt93skEx7XIJlZK
- BD18Hfd36neBXXNjThjouSXTcQ2EisFmqd1XuBIeY2ebZfXU0j49GwkXNrf+wBhN0Ai/ UQ== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3mvf2fbk0c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Jan 2023 09:57:49 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3038kjQC001428;
-	Tue, 3 Jan 2023 09:57:47 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3mtcbfbm9b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 03 Jan 2023 09:57:47 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3039vjmt43909494
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 3 Jan 2023 09:57:45 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E820020043;
-	Tue,  3 Jan 2023 09:57:44 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C35820049;
-	Tue,  3 Jan 2023 09:57:44 +0000 (GMT)
-Received: from li-bb2b2a4c-3307-11b2-a85c-8fa5c3a69313.in.ibm.com (unknown [9.109.253.169])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  3 Jan 2023 09:57:43 +0000 (GMT)
-From: Ojaswin Mujoo <ojaswin@linux.ibm.com>
-To: "Michael Ellerman" <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Fix a wrong version calculation issue in ld_version
-Date: Tue,  3 Jan 2023 15:27:40 +0530
-Message-Id: <20230103095740.916038-1-ojaswin@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NmcMB4pMnz3bZ4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jan 2023 02:38:14 +1100 (AEDT)
+Received: from frontend03.mail.m-online.net (unknown [192.168.6.182])
+	by mail-out.m-online.net (Postfix) with ESMTP id 4NmcDP17jqz1s949;
+	Tue,  3 Jan 2023 16:32:19 +0100 (CET)
+Received: from localhost (dynscan3.mnet-online.de [192.168.6.84])
+	by mail.m-online.net (Postfix) with ESMTP id 4NmcDM1qs5z1qqlR;
+	Tue,  3 Jan 2023 16:32:19 +0100 (CET)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+	by localhost (dynscan3.mail.m-online.net [192.168.6.84]) (amavisd-new, port 10024)
+	with ESMTP id Dv2lDKDmanx1; Tue,  3 Jan 2023 16:32:18 +0100 (CET)
+X-Auth-Info: /F+EuFmgr7aU0+FD4YuS2yj3yclsQzbVJIAlzLokXeN++rSCIBqoz2a63SYZVCfT
+Received: from igel.home (aftr-62-216-205-97.dynamic.mnet-online.de [62.216.205.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.mnet-online.de (Postfix) with ESMTPSA;
+	Tue,  3 Jan 2023 16:32:18 +0100 (CET)
+Received: by igel.home (Postfix, from userid 1000)
+	id 498742C1555; Tue,  3 Jan 2023 16:32:18 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Ojaswin Mujoo <ojaswin@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix a wrong version calculation issue in
+ ld_version
+References: <20230103095740.916038-1-ojaswin__39223.4750370093$1672743051$gmane$org@linux.ibm.com>
+X-Yow: FIRST, I'm covering you with OLIVE OIL and PRUNE WHIP!!
+Date: Tue, 03 Jan 2023 16:32:18 +0100
+In-Reply-To: <20230103095740.916038-1-ojaswin__39223.4750370093$1672743051$gmane$org@linux.ibm.com>
+	(Ojaswin Mujoo's message of "Tue, 3 Jan 2023 15:27:40 +0530")
+Message-ID: <875ydneirh.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/28.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: tm3X5iefYWe7aIXWlH4s1F4S5nJ5fo_D
-X-Proofpoint-ORIG-GUID: tm3X5iefYWe7aIXWlH4s1F4S5nJ5fo_D
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2023-01-02_14,2023-01-03_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- bulkscore=0 malwarescore=0 mlxscore=0 adultscore=0 impostorscore=0
- clxscore=1011 priorityscore=1501 mlxlogscore=999 suspectscore=0
- spamscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301030084
-X-Mailman-Approved-At: Tue, 03 Jan 2023 21:50:14 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,63 +63,18 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-** The Issue **
+On Jan 03 2023, Ojaswin Mujoo wrote:
 
-The ld_version() function seems to compute the wrong version value for
-certain ld versions like the following:
+> If version is of the form x.y.z and length(z) == 8, then most probably
+> it is a date [yyyymmdd]. As an approximation, discard the dd and yyyy
+> parts and keep the mm part in the version.
 
-$ ld --version GNU ld (GNU Binutils; SUSE Linux Enterprise 15)
-2.37.20211103-150100.7.37
+I don't think any part of the date should be mixed into the computed
+version.  It just means that it's a snapshot from after the 2.37
+release, so it should be treated like 2.37 (no further releases has been
+made from this branch).
 
-For input 2.37.20211103, the value computed is 202348030000 which is way
-more the value for a higher version like 2.39.0, that is 23900000.
-
-This issue was highlighted because with the above ld version, my powerpc
-kernel build started failing with ld error: "unrecognized option
---no-warn-rwx-segments".  This was caused due to the recent patch
-579aee9fc594 added --no-warn-rwx-segments linker flag if the ld version
-was greater than 2.39.
-
-Due to the bug in ld_version(), my ld version (2.37.20111103) was
-wrongly calculated to be greater than 2.39 and the unsupported flag was
-added.
-
-** The fix **
-
-If version is of the form x.y.z and length(z) == 8, then most probably
-it is a date [yyyymmdd]. As an approximation, discard the dd and yyyy
-parts and keep the mm part in the version.
-
-Signed-off-by: Ojaswin Mujoo <ojaswin@linux.ibm.com>
----
-
-This is just an approximation since I'm not sure how common such release
-versions for ld are and I didn't wan't to uneccassarily complicate the
-logic. In case we want more accuracy we can try to use the last 4/5
-digits to represent a more accurate date.  Let me know if that would be
-the preferred way.
-
-PS: This issue also exists in ./scripts/ld-version.sh and I can look
-into fixing that after this patch.
-
- arch/powerpc/boot/wrapper | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index af04cea82b94..af2688f79224 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -210,6 +210,10 @@ ld_version()
- 	gsub(".*version ", "");
- 	gsub("-.*", "");
- 	split($1,a, ".");
-+	if( length(a[3]) == "8" )
-+		# a[3] is probably a date of format yyyymmdd. An 8 digit number will break
-+		# the function so just keep the "mm" part as an approximation
-+		a[3] = substr(a[3],5,2);
- 	print a[1]*100000000 + a[2]*1000000 + a[3]*10000;
- 	exit
-     }'
 -- 
-2.31.1
-
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
