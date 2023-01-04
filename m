@@ -4,58 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 296CBC4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Jan 2023 19:59:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65BA4C4708D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Jan 2023 20:25:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NnL634wW1z3fB9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jan 2023 06:59:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NnLhd6NXwz3c8t
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jan 2023 07:25:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GvS9EqaM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IJc3lnQl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ojaswin@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GvS9EqaM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IJc3lnQl;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NnL12385Sz3bWC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2023 06:55:02 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id AC1C8B81714;
-	Wed,  4 Jan 2023 19:54:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A948C433A1;
-	Wed,  4 Jan 2023 19:54:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1672862099;
-	bh=f/bdga3DLC0ICmYuLt5jzIvLqqsy/uQ32UMKQcitWkk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=GvS9EqaM2s+hmge+UB6B3qFcOQqV326tXO52kyiVP3AYuYQ6ikQBJmfw2q34xq4kq
-	 FVKViCKfmUp5QLoXUIdmmHbv0u5SVD+otrmk8xjgG7JDjT29wMDhPdCIGLh/ANtku8
-	 bBroSJ7wBayGI56jt64fxIxadPQuJ13hUUCjBaLmEfNz6plyBbFWqbCTixgxJt0+Y7
-	 GgX2f7qyvNgHKoRFhRYZygfGMyuiDzupTSuOm79UyQPaMfVPjH7ScaCI+4h5MN0M3/
-	 QAhrSgKBx2yF/XtiBfJcAZ+iG9ParcRuWTHErtR/u41KE/6oIQhDgXh4PKmBRho64U
-	 u27rBFjr+rffA==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Wed, 04 Jan 2023 12:54:24 -0700
-Subject: [PATCH 07/14] powerpc/vdso: Improve linker flags
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NnLgX13B2z2ywn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2023 07:24:55 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 304JGoK6004867;
+	Wed, 4 Jan 2023 20:24:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : content-transfer-encoding : mime-version; s=pp1;
+ bh=Mei9t6cHV+CiCDZO7EStwabQuZFte07tkOMF7DHyagA=;
+ b=IJc3lnQllk4yvtsQNB4L2R8Ls+CQAI1APLzu2r1uj7gCIPKypO62jx4xhmSQ+hMJ2jTf
+ Z+DfrKp4am0q5w9qdax6zqeDXo11I6t1g8cmoNY+/+XyvHPDVryAtLj59sA2nVtvNhs+
+ GSvPjvmyDSMt3A6Xbo4Tz8zXileHnORRTw/82hH8MZDEAB/1L4OPcWG7h2HYPUBzogYE
+ 9OX/ggMZqy40KPj3BMy1y4aAHszUKHGj5enEtJpsXj3z/2cBM4GmFyRFrN5ArIb6aLiP
+ mG1rWCeUXB8AOrsJiYtr2PvlIRORDvRqGY/lJBSUXnfHcUhAJN/se8Olok3Vqu4s/e4/ sg== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3mwffnh7u4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 04 Jan 2023 20:24:46 +0000
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 304D7XpL028210;
+	Wed, 4 Jan 2023 20:24:44 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3mtcq6v8c1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 04 Jan 2023 20:24:44 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 304KOfvi45023628
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 4 Jan 2023 20:24:42 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D511820049;
+	Wed,  4 Jan 2023 20:24:41 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 831FD20040;
+	Wed,  4 Jan 2023 20:24:40 +0000 (GMT)
+Received: from li-bb2b2a4c-3307-11b2-a85c-8fa5c3a69313.ibm.com (unknown [9.43.53.27])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  4 Jan 2023 20:24:40 +0000 (GMT)
+From: Ojaswin Mujoo <ojaswin@linux.ibm.com>
+To: "Michael Ellerman" <mpe@ellerman.id.au>
+Subject: [PATCH v2] powerpc: Fix a wrong version calculation issue in ld_version
+Date: Thu,  5 Jan 2023 01:54:37 +0530
+Message-Id: <20230104202437.90039-1-ojaswin@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: mjb1ZD__m2_lZvPZJCcGERpzqgJaQLPb
+X-Proofpoint-ORIG-GUID: mjb1ZD__m2_lZvPZJCcGERpzqgJaQLPb
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20221228-drop-qunused-arguments-v1-7-658cbc8fc592@kernel.org>
-References: <20221228-drop-qunused-arguments-v1-0-658cbc8fc592@kernel.org>
-In-Reply-To: <20221228-drop-qunused-arguments-v1-0-658cbc8fc592@kernel.org>
-To: masahiroy@kernel.org, ndesaulniers@google.com
-X-Mailer: b4 0.11.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3597; i=nathan@kernel.org;
- h=from:subject:message-id; bh=f/bdga3DLC0ICmYuLt5jzIvLqqsy/uQ32UMKQcitWkk=;
- b=owGbwMvMwCEmm602sfCA1DTG02pJDMlbb3apzJKXc9ueX/+8125m9oMq72PVWX5ec1P6c2McAxc+
- /jOno5SFQYyDQVZMkaX6sepxQ8M5ZxlvnJoEM4eVCWQIAxenAEzkTzzDH55oKYa1cybLrMnU4kp4cW
- ta6lSBfNvtjw7+6v1yssVKrZCR4SXLv2kt05+vfT8pRiju7GG3u/knl1s+XCIYdVr1k6okOxMA
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2023-01-04_07,2023-01-04_02,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
+ malwarescore=0 priorityscore=1501 mlxlogscore=999 clxscore=1015
+ adultscore=0 phishscore=0 spamscore=0 suspectscore=0 impostorscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301040162
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,82 +87,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, linux-kbuild@vger.kernel.org, trix@redhat.com, llvm@lists.linux.dev, npiggin@gmail.com, Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org, nicolas@fjasle.eu
+Cc: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When clang's -Qunused-arguments is dropped from KBUILD_CPPFLAGS, there
-are several warnings in the PowerPC vDSO:
+** The Issue **
 
-  clang-16: error: -Wl,-soname=linux-vdso32.so.1: 'linker' input unused [-Werror,-Wunused-command-line-argument]
-  clang-16: error: -Wl,--hash-style=both: 'linker' input unused [-Werror,-Wunused-command-line-argument]
-  clang-16: error: argument unused during compilation: '-shared' [-Werror,-Wunused-command-line-argument]
+The ld_version() function seems to compute the wrong version value for
+certain ld versions like the following:
 
-  clang-16: error: argument unused during compilation: '-nostdinc' [-Werror,-Wunused-command-line-argument]
-  clang-16: error: argument unused during compilation: '-Wa,-maltivec' [-Werror,-Wunused-command-line-argument]
+$ ld --version GNU ld (GNU Binutils; SUSE Linux Enterprise 15)
+2.37.20211103-150100.7.37
 
-The first group of warnings point out that linker flags were being added
-to all invocations of $(CC), even though they will only be used during
-the final vDSO link. Move those flags to ldflags-y.
+For input 2.37.20211103, the value computed is 202348030000 which is way
+more the value for a higher version like 2.39.0, that is 23900000.
 
-The second group of warnings are compiler or assembler flags that will
-be unused during linking. Filter them out from KBUILD_CFLAGS so that
-they are not used during linking.
+This issue was highlighted because with the above ld version, powerpc
+kernel build started failing with ld error: "unrecognized option
+--no-warn-rwx-segments".  This was caused due to the recent patch
+579aee9fc594 added --no-warn-rwx-segments linker flag if the ld version
+was greater than 2.39.
 
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+Due to the bug in ld_version(), ld version 2.37.20111103 was
+wrongly calculated to be greater than 2.39 and the unsupported flag was
+added.
+
+** The fix **
+
+If version is of the form x.y.z and length(z) == 8, then most probably
+it is a date [yyyymmdd] commonly used for release snapshots and not an
+actual new version. Hence, ignore the date part replacing it with 0.
+
+Signed-off-by: Ojaswin Mujoo <ojaswin@linux.ibm.com>
 ---
-Cc: mpe@ellerman.id.au
-Cc: npiggin@gmail.com
-Cc: christophe.leroy@csgroup.eu
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/vdso/Makefile | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-index 45c0cc5d34b6..769b62832b38 100644
---- a/arch/powerpc/kernel/vdso/Makefile
-+++ b/arch/powerpc/kernel/vdso/Makefile
-@@ -47,13 +47,17 @@ KCOV_INSTRUMENT := n
- UBSAN_SANITIZE := n
- KASAN_SANITIZE := n
- 
--ccflags-y := -shared -fno-common -fno-builtin -nostdlib -Wl,--hash-style=both
--ccflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
--
--CC32FLAGS := -Wl,-soname=linux-vdso32.so.1 -m32
-+ccflags-y := -fno-common -fno-builtin
-+ldflags-y := -Wl,--hash-style=both -nostdlib -shared
-+ldflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
-+# Filter flags that clang will warn are unused for linking
-+ldflags-y += $(filter-out $(CC_FLAGS_FTRACE) -Wa$(comma)%, $(KBUILD_CFLAGS))
-+
-+CC32FLAGS := -m32
-+LD32FLAGS := -Wl,-soname=linux-vdso32.so.1
- AS32FLAGS := -D__VDSO32__
- 
--CC64FLAGS := -Wl,-soname=linux-vdso64.so.1
-+LD64FLAGS := -Wl,-soname=linux-vdso64.so.1
- AS64FLAGS := -D__VDSO64__
- 
- targets += vdso32.lds
-@@ -92,14 +96,14 @@ include/generated/vdso64-offsets.h: $(obj)/vdso64.so.dbg FORCE
- 
- # actual build commands
- quiet_cmd_vdso32ld_and_check = VDSO32L $@
--      cmd_vdso32ld_and_check = $(VDSOCC) $(c_flags) $(CC32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
-+      cmd_vdso32ld_and_check = $(VDSOCC) $(ldflags-y) $(CC32FLAGS) $(LD32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
- quiet_cmd_vdso32as = VDSO32A $@
-       cmd_vdso32as = $(VDSOCC) $(a_flags) $(CC32FLAGS) $(AS32FLAGS) -c -o $@ $<
- quiet_cmd_vdso32cc = VDSO32C $@
-       cmd_vdso32cc = $(VDSOCC) $(c_flags) $(CC32FLAGS) -c -o $@ $<
- 
- quiet_cmd_vdso64ld_and_check = VDSO64L $@
--      cmd_vdso64ld_and_check = $(VDSOCC) $(c_flags) $(CC64FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
-+      cmd_vdso64ld_and_check = $(VDSOCC) $(ldflags-y) $(CC64FLAGS) $(LD64FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
- quiet_cmd_vdso64as = VDSO64A $@
-       cmd_vdso64as = $(VDSOCC) $(a_flags) $(CC64FLAGS) $(AS64FLAGS) -c -o $@ $<
- 
+* Changes since v1 [1] *
 
+- Instead of using the mm part of the date ignore it completely
+  replacing it with zero
+
+[1] https://lore.kernel.org/r/20230103095740.916038-1-ojaswin@linux.ibm.com 
+
+ arch/powerpc/boot/wrapper | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index af04cea82b94..352d7de24018 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -210,6 +210,10 @@ ld_version()
+ 	gsub(".*version ", "");
+ 	gsub("-.*", "");
+ 	split($1,a, ".");
++	if( length(a[3]) == "8" )
++		# a[3] is probably a date of format yyyymmdd used for release snapshots. We
++		# can assume it to be zero as it does not signify a new version as such.
++		a[3] = 0;
+ 	print a[1]*100000000 + a[2]*1000000 + a[3]*10000;
+ 	exit
+     }'
 -- 
-2.39.0
+2.31.1
+
