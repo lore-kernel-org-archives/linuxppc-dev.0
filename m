@@ -4,63 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12AF8C4332F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Jan 2023 16:11:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F76BC4332F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  4 Jan 2023 16:46:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NnF2w23DMz3c7s
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jan 2023 03:11:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NnFpv28tRz3c8P
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jan 2023 03:45:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Tm6cX/3J;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxwgsSgt;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxwgsSgt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.120; helo=mga04.intel.com; envelope-from=rajat.khandelwal@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=peterx@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Tm6cX/3J;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxwgsSgt;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WxwgsSgt;
 	dkim-atps=neutral
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nn8vM4CWDz2xkG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2023 00:04:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1672837471; x=1704373471;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to;
-  bh=Cuw2NDDqGYLxk5B9sU2O0NBSrSW8/IdnNliLxvBQMyw=;
-  b=Tm6cX/3JC1Rrl3udBzNbFfZPG4f8KCE0zzGJO7M8516a9TwyjpF5jX7T
-   RaxLUkw8nrIpQenQbVxhUKfplDyUH3UX2Y7d4GvFA0yZr2fXkdACh5Eqm
-   ioieYr9UHcYN+36d96t1FZDKsuV0UYiwOxSJaY0vQI6WheEFC7VSItTOI
-   n0Q5x3lN/Sakx4Hx3oNSQGTm7vZsUfy0BbuEdS2tj6uhNDT+zcJAj2tOF
-   L+eASuFK2e10PqWIUstedhysdQsYwhyh701NK5H2oyh0sWJ3vLf6WeHoF
-   VfFaI0Npeo59NmN1G0DJ+3gWOQQnoNtSNYer1CHPpTGtwfkq53mTNxESM
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10579"; a="320639343"
-X-IronPort-AV: E=Sophos;i="5.96,299,1665471600"; 
-   d="scan'208,217";a="320639343"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jan 2023 05:04:25 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10579"; a="797528903"
-X-IronPort-AV: E=Sophos;i="5.96,299,1665471600"; 
-   d="scan'208,217";a="797528903"
-Received: from rajatkha-mobl.gar.corp.intel.com (HELO [10.215.202.196]) ([10.215.202.196])
-  by fmsmga001-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Jan 2023 05:04:22 -0800
-Content-Type: multipart/alternative;
- boundary="------------iSDUHTti6E88vGV2l0Y8wL0E"
-Message-ID: <94202834-6151-03ad-8891-d460a60e5e15@linux.intel.com>
-Date: Wed, 4 Jan 2023 18:34:19 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NnFnm4pltz2xZB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jan 2023 03:44:58 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1672850694;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6EzsGSC3holClBSPQw8EocT+rCm9w6LTUpG8IqXLKaM=;
+	b=WxwgsSgtV/aUyKxpMinNBr0WvgK2Zmd8TgA3cR6rxwn+KkF47DkRl6eZrYoRR6BK58TVUu
+	2zEeBmdhd58UT4Oxci+Z0hZNMVglItFZJJ5tSvM4l21CAh/KJLxY3ZWEmknr0kb1Z2www/
+	CiNvzeKsjuoWnmoZQptFStcyZzh4Z2k=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1672850694;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=6EzsGSC3holClBSPQw8EocT+rCm9w6LTUpG8IqXLKaM=;
+	b=WxwgsSgtV/aUyKxpMinNBr0WvgK2Zmd8TgA3cR6rxwn+KkF47DkRl6eZrYoRR6BK58TVUu
+	2zEeBmdhd58UT4Oxci+Z0hZNMVglItFZJJ5tSvM4l21CAh/KJLxY3ZWEmknr0kb1Z2www/
+	CiNvzeKsjuoWnmoZQptFStcyZzh4Z2k=
+Received: from mail-qk1-f200.google.com (mail-qk1-f200.google.com
+ [209.85.222.200]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-228-EylGpGliMaWVDaWVIIGjbQ-1; Wed, 04 Jan 2023 11:44:52 -0500
+X-MC-Unique: EylGpGliMaWVDaWVIIGjbQ-1
+Received: by mail-qk1-f200.google.com with SMTP id br6-20020a05620a460600b007021e1a5c48so23241424qkb.6
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jan 2023 08:44:52 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=6EzsGSC3holClBSPQw8EocT+rCm9w6LTUpG8IqXLKaM=;
+        b=AesdItF1HYERYdF1rgeZ96E6eXXbA/Vs6h+uCx8E9jPlkxD/obquamvRywD5Ugnrjz
+         kg7odhQ3KW5v+E7FHoqaElsxvtBDm1GCz4hrHjyC8BCz3FlTcObq15Nq4BhPwMKEp0cY
+         VSpj10SyygLv362wEQywYXaZ9uDwtXb7CvjS9WMGMGxi9Rd8qFiUCikpNnJg5/VF5cY5
+         4hfWCBgNpgVt6DaPX6bk7YYPyt0Fz3gr+VjE/1ywXPCsYm1Y3C4OFVEJnw1xL60JPmj4
+         v3H8fzTBBW01URVoak2tYcRecAar8tDARJ8yUvYoY5ycUOiwZk+UuKoLfOlpJIAuu1xZ
+         DJtg==
+X-Gm-Message-State: AFqh2kq1jwrcsNBwNSVxJRIRA8HOD9KuoPm2QJqbundtU6j2g8bwrtk1
+	GodkW3d91JQEoYgh6b8W2rHatYs+ljhAh3oNOwgzQ1oAt2BE3UU8BqqCJ7Zbe0CE5+sE+qDpsQM
+	CueStCAAygEap3yRWKIWRWtDJmw==
+X-Received: by 2002:a05:622a:124b:b0:3ab:7bb3:4707 with SMTP id z11-20020a05622a124b00b003ab7bb34707mr50094164qtx.64.1672850692362;
+        Wed, 04 Jan 2023 08:44:52 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXtC6/5x1TZXjNxaTZni/mgmGgEGvHrxdB4Ldf1ggEJ59TT3GmI7MMZ8cyzI4+MP/hbyTOvkqA==
+X-Received: by 2002:a05:622a:124b:b0:3ab:7bb3:4707 with SMTP id z11-20020a05622a124b00b003ab7bb34707mr50094133qtx.64.1672850692030;
+        Wed, 04 Jan 2023 08:44:52 -0800 (PST)
+Received: from x1n (bras-base-aurron9127w-grc-39-70-52-228-144.dsl.bell.ca. [70.52.228.144])
+        by smtp.gmail.com with ESMTPSA id u22-20020a05620a455600b006fb112f512csm24300165qkp.74.2023.01.04.08.44.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 04 Jan 2023 08:44:51 -0800 (PST)
+Date: Wed, 4 Jan 2023 11:44:49 -0500
+From: Peter Xu <peterx@redhat.com>
+To: Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH] mm: remove zap_page_range and create zap_vma_pages
+Message-ID: <Y7WtAXpZM3Mxi95N@x1n>
+References: <20230104002732.232573-1-mike.kravetz@oracle.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH] PCI/AER: Rate limit the reporting of the correctable
- errors
-Content-Language: en-US
-To: Leon Romanovsky <leon@kernel.org>
-References: <20230103191418.GA1011392@bhelgaas>
- <e6e53119-a249-a03f-c9eb-3caafbe5d983@linux.intel.com>
- <Y7Ug3F6AIhaAiqCD@unreal>
-From: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
-In-Reply-To: <Y7Ug3F6AIhaAiqCD@unreal>
-X-Mailman-Approved-At: Thu, 05 Jan 2023 03:10:28 +1100
+In-Reply-To: <20230104002732.232573-1-mike.kravetz@oracle.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,159 +96,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, "Neftin, Sasha" <sasha.neftin@intel.com>, linux-pci@vger.kernel.org, Frederick Zhang <frederick888@tsundere.moe>, rajat.khandelwal@intel.com, linux-kernel@vger.kernel.org, oohall@gmail.com, bhelgaas@google.com, Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Christian Brauner <brauner@kernel.org>, linux-s390@vger.kernel.org, Nadav Amit <nadav.amit@gmail.com>, Michal Hocko <mhocko@suse.com>, Will Deacon <will@kernel.org>, David Hildenbrand <david@redhat.com>, netdev@vger.kernel.org, Rik van Riel <riel@surriel.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, Christoph Hellwig <hch@infradead.org>, linux-mm@kvack.org, Eric Dumazet <edumazet@google.com>, Palmer Dabbelt <palmer@dabbelt.com>, Dave Hansen <dave.hansen@linux.intel.com>, linux-riscv@lists.infradead.org, Christian Borntraeger <borntraeger@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------iSDUHTti6E88vGV2l0Y8wL0E
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Jan 03, 2023 at 04:27:32PM -0800, Mike Kravetz wrote:
+> zap_page_range was originally designed to unmap pages within an address
+> range that could span multiple vmas.  While working on [1], it was
+> discovered that all callers of zap_page_range pass a range entirely within
+> a single vma.  In addition, the mmu notification call within zap_page
+> range does not correctly handle ranges that span multiple vmas.  When
+> crossing a vma boundary, a new mmu_notifier_range_init/end call pair
+> with the new vma should be made.
+> 
+> Instead of fixing zap_page_range, do the following:
+> - Create a new routine zap_vma_pages() that will remove all pages within
+>   the passed vma.  Most users of zap_page_range pass the entire vma and
+>   can use this new routine.
+> - For callers of zap_page_range not passing the entire vma, instead call
+>   zap_page_range_single().
+> - Remove zap_page_range.
+> 
+> [1] https://lore.kernel.org/linux-mm/20221114235507.294320-2-mike.kravetz@oracle.com/
+> Suggested-by: Peter Xu <peterx@redhat.com>
+> Signed-off-by: Mike Kravetz <mike.kravetz@oracle.com>
 
-Hi Leon,
-Thanks for the ack.
+Acked-by: Peter Xu <peterx@redhat.com>
 
-On 1/4/2023 12:16 PM, Leon Romanovsky wrote:
-> On Wed, Jan 04, 2023 at 10:27:33AM +0530, Rajat Khandelwal wrote:
->> Hi Bjorn,
->>
->> Thanks for the acknowledgement.
->>
->> On 1/4/2023 12:44 AM, Bjorn Helgaas wrote:
->>> [+cc Paul, Sasha, Leon, Frederick]
->>>
->>> (Please cc folks who have commented on previous versions of your
->>> patch.)
->>>
->>> On Tue, Jan 03, 2023 at 10:25:48PM +0530, Rajat Khandelwal wrote:
->>>> There are many instances where correctable errors tend to inundate
->>>> the message buffer. We observe such instances during thunderbolt PCIe
->>>> tunneling.
-> <...>
->
->>>> [54982.838808] igc 0000:2b:00.0:   device [8086:5502] error status/mask=00001000/00002000
->>>> [54982.838817] igc 0000:2b:00.0:    [12] Timeout
->>> Please remove the timestamps; they don't contribute to understanding
->>> the problem.
->> --> Sure.
-> Please don't add "-->" or any marker to replies. It breaks mail color
-> scheme.
->
->>>> This gets repeated continuously, thus inundating the buffer.
->>> Did you verify that we actually clear the Correctable Error Status
->>> register?
->> --> This patch targets only rate limiting the correctable errors since they are
->> non-fatal, and they kind of inundate the CPU logs, particularly during thunderbolt
->> connections. It doesn't have an impact anywhere else.
->> As per your suggestion in the igc patch, I found rate limiting as a doable option
->> currently. Have eradicated any kind of masking the bits.
-> You didn't answer on the asked question. "Did you verify that we actually clear
-> the Correctable Error Status register?".
+-- 
+Peter Xu
 
-Yes, I have verified. The status is cleared successfully.
-
->
-> Thanks
---------------iSDUHTti6E88vGV2l0Y8wL0E
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <pre>Hi Leon,
-Thanks for the ack.
-</pre>
-    <div class="moz-cite-prefix">On 1/4/2023 12:16 PM, Leon Romanovsky
-      wrote:<br>
-    </div>
-    <blockquote type="cite" cite="mid:Y7Ug3F6AIhaAiqCD@unreal">
-      <pre class="moz-quote-pre" wrap="">On Wed, Jan 04, 2023 at 10:27:33AM +0530, Rajat Khandelwal wrote:
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">Hi Bjorn,
-
-Thanks for the acknowledgement.
-
-On 1/4/2023 12:44 AM, Bjorn Helgaas wrote:
-</pre>
-        <blockquote type="cite">
-          <pre class="moz-quote-pre" wrap="">[+cc Paul, Sasha, Leon, Frederick]
-
-(Please cc folks who have commented on previous versions of your
-patch.)
-
-On Tue, Jan 03, 2023 at 10:25:48PM +0530, Rajat Khandelwal wrote:
-</pre>
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">There are many instances where correctable errors tend to inundate
-the message buffer. We observe such instances during thunderbolt PCIe
-tunneling.
-</pre>
-          </blockquote>
-        </blockquote>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-&lt;...&gt;
-
-</pre>
-      <blockquote type="cite">
-        <blockquote type="cite">
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">[54982.838808] igc 0000:2b:00.0:   device [8086:5502] error status/mask=00001000/00002000
-[54982.838817] igc 0000:2b:00.0:    [12] Timeout
-</pre>
-          </blockquote>
-          <pre class="moz-quote-pre" wrap="">Please remove the timestamps; they don't contribute to understanding
-the problem.
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
---&gt; Sure.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-Please don't add "--&gt;" or any marker to replies. It breaks mail color
-scheme.
-
-</pre>
-      <blockquote type="cite">
-        <pre class="moz-quote-pre" wrap="">
-</pre>
-        <blockquote type="cite">
-          <pre class="moz-quote-pre" wrap="">
-</pre>
-          <blockquote type="cite">
-            <pre class="moz-quote-pre" wrap="">This gets repeated continuously, thus inundating the buffer.
-</pre>
-          </blockquote>
-          <pre class="moz-quote-pre" wrap="">Did you verify that we actually clear the Correctable Error Status
-register?
-</pre>
-        </blockquote>
-        <pre class="moz-quote-pre" wrap="">
---&gt; This patch targets only rate limiting the correctable errors since they are
-non-fatal, and they kind of inundate the CPU logs, particularly during thunderbolt
-connections. It doesn't have an impact anywhere else.
-As per your suggestion in the igc patch, I found rate limiting as a doable option
-currently. Have eradicated any kind of masking the bits.
-</pre>
-      </blockquote>
-      <pre class="moz-quote-pre" wrap="">
-You didn't answer on the asked question. "Did you verify that we actually clear
-the Correctable Error Status register?".</pre>
-    </blockquote>
-    <pre>Yes, I have verified. The status is cleared successfully.
-</pre>
-    <blockquote type="cite" cite="mid:Y7Ug3F6AIhaAiqCD@unreal">
-      <pre class="moz-quote-pre" wrap="">
-
-Thanks
-</pre>
-    </blockquote>
-  </body>
-</html>
-
---------------iSDUHTti6E88vGV2l0Y8wL0E--
