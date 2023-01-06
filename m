@@ -4,37 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63C9EC3DA7A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Jan 2023 13:32:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36A4FC4708D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  6 Jan 2023 13:32:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NpPQB5w6Jz3cKm
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 00:32:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NpPR954FFz3cfh
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 00:32:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=hUoSVjYU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=i0z6ch2Y;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::222; helo=relay2-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=hUoSVjYU;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=i0z6ch2Y;
 	dkim-atps=neutral
 Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::222])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NpPNC1NYpz3bZh
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NpPNC1KgYz3bWj
 	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jan 2023 00:30:17 +1100 (AEDT)
 Received: (Authenticated sender: herve.codina@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPA id A86484000B;
-	Fri,  6 Jan 2023 13:30:04 +0000 (UTC)
+	by mail.gandi.net (Postfix) with ESMTPA id 0F9E840011;
+	Fri,  6 Jan 2023 13:30:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1673011808;
+	t=1673011814;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=do8D1ieZ8Ex+QzAnOj/wZJAzfbzECTa0eMXQ+8CsY4I=;
-	b=hUoSVjYUOiV747REn8chyMICtoSn6TltjXrXaz0OpgkDKAol2Eehwpxmnf6ijlo/J5FL1h
-	vaNS706fVF8fuyBGnIDoy4YCePuZbYx3EDj4iDQOxzcumHyW0Y95Yj0v162GxsEsY24wNg
-	JO9a6lfzkPc5GqQTfpnRlm1cmAUg4BRdkiafP+KhmEI4+zJRKadzwPpF1AS2EwyLZcjP1k
-	JeFWL4JK0qGXH8RPJznej+jr9PItBgWTZoFT7lKuIALbT0idtaJlm2hLi4B/4gySa2NpN/
-	AkAWH1RLNXQEdoapftYdU6rl2PsOjVI6Xgd407XBVnlj2irSRcsx1xoGOVZzHA==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=nc6bvDcTrl1Ymn4a/GwwKE3r38ifE4VzNy4POuRlNdA=;
+	b=i0z6ch2YRTEow4Nh52qlH9tsP3VNdYmwUzkKmGYDOynJRz2A2oAHCtG2oMiihHHpJGN6u6
+	zbxqRSLAFFcDWMTe3BoLasDwsEtQ9R/eZz2xw7oPxAyc1GRjfErbmJPp8IiUTMPuqWtPEl
+	n8PYrNRKGfH8qVyb+r2imJhYaSM7vfoOitrPVZWSRjCAq97JEYhvJhL0AGYRUbgTO3fmvJ
+	uIWeP3ozA3HbPNCxiDe9JoQCJ0pVA96pF77MQiX+kWbn13CGuLHPa/DqFfSt4fVpdi10Yt
+	C96Gp1KXVZC5Oh7Muiw/z+xmnJbsayAL5YCgvjHCE0Z/JixuVEfCiYGiGxb+LQ==
 From: Herve Codina <herve.codina@bootlin.com>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Li Yang <leoyang.li@nxp.com>,
@@ -52,10 +53,12 @@ To: Herve Codina <herve.codina@bootlin.com>,
 	Xiubo Li <Xiubo.Lee@gmail.com>,
 	Fabio Estevam <festevam@gmail.com>,
 	Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: [PATCH 00/10] Add the PowerQUICC audio support using the QMC
-Date: Fri,  6 Jan 2023 14:29:41 +0100
-Message-Id: <20230106132951.392271-1-herve.codina@bootlin.com>
+Subject: [PATCH 03/10] MAINTAINERS: add the Freescale TSA controller entry
+Date: Fri,  6 Jan 2023 14:29:44 +0100
+Message-Id: <20230106132951.392271-4-herve.codina@bootlin.com>
 X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20230106132951.392271-1-herve.codina@bootlin.com>
+References: <20230106132951.392271-1-herve.codina@bootlin.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,69 +76,34 @@ Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.k
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+After contributing the driver, add myself as the maintainer
+for the Freescale TSA controller.
 
-This series adds support for audio using the QMC controller
-available in some Freescale PowerQUICC SoCs.
+Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+---
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-This series contains three parts in order to show the different
-blocks hierarchy and their usage in this support.
-
-The first one is related to TSA (Time Slot Assigner).
-The TSA handles the data present at the pin level (TDM with up
-to 64 time slots) and dispatchs them to one or more serial
-controller (SCC).
-
-The second is related to QMC (QUICC Multichannel Controller).
-The QMC handles the data at the serial controller (SCC) level
-and splits again the data to creates some virtual channels.
-
-The last one is related to the audio component (QMC audio).
-It is the glue between the QMC controller and the ASoC
-component. It handles one or more QMC virtual channels and
-creates one DAI per QMC virtual channels handled.
-
-Best regards,
-Herve Codina
-
-Herve Codina (10):
-  dt-bindings: soc: fsl: cpm_qe: Add TSA controller
-  soc: fsl: qe: Add support for TSA
-  MAINTAINERS: add the Freescale TSA controller entry
-  powerpc/8xx: Use a larger CPM1 command check mask
-  dt-bindings: soc: fsl: cpm_qe: Add QMC controller
-  soc: fsl: qe: Add support for QMC
-  MAINTAINERS: add the Freescale QMC controller entry
-  dt-bindings: sound: Add support for QMC audio
-  ASoC: fsl: Add support for QMC audio
-  MAINTAINERS: add the Freescale QMC audio entry
-
- .../bindings/soc/fsl/cpm_qe/fsl,qmc.yaml      |  167 ++
- .../bindings/soc/fsl/cpm_qe/fsl,tsa.yaml      |  262 +++
- .../bindings/sound/fsl,qmc-audio.yaml         |  110 ++
- MAINTAINERS                                   |   25 +
- arch/powerpc/platforms/8xx/cpm1.c             |    2 +-
- drivers/soc/fsl/qe/Kconfig                    |   23 +
- drivers/soc/fsl/qe/Makefile                   |    2 +
- drivers/soc/fsl/qe/qmc.c                      | 1493 +++++++++++++++++
- drivers/soc/fsl/qe/tsa.c                      |  783 +++++++++
- drivers/soc/fsl/qe/tsa.h                      |   43 +
- include/dt-bindings/soc/fsl-tsa.h             |   15 +
- include/soc/fsl/qe/qmc.h                      |   71 +
- sound/soc/fsl/Kconfig                         |    9 +
- sound/soc/fsl/Makefile                        |    2 +
- sound/soc/fsl/fsl_qmc_audio.c                 |  731 ++++++++
- 15 files changed, 3737 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qmc.yaml
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
- create mode 100644 Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml
- create mode 100644 drivers/soc/fsl/qe/qmc.c
- create mode 100644 drivers/soc/fsl/qe/tsa.c
- create mode 100644 drivers/soc/fsl/qe/tsa.h
- create mode 100644 include/dt-bindings/soc/fsl-tsa.h
- create mode 100644 include/soc/fsl/qe/qmc.h
- create mode 100644 sound/soc/fsl/fsl_qmc_audio.c
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 7f86d02cb427..2b4f5fe7ebad 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8372,6 +8372,15 @@ S:	Maintained
+ F:	drivers/soc/fsl/qe/
+ F:	include/soc/fsl/qe/
+ 
++FREESCALE QUICC ENGINE TSA DRIVER
++M:	Herve Codina <herve.codina@bootlin.com>
++L:	linuxppc-dev@lists.ozlabs.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
++F:	drivers/soc/fsl/qe/tsa.c
++F:	drivers/soc/fsl/qe/tsa.h
++F:	include/dt-bindings/soc/fsl-tsa.h
++
+ FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+ M:	Li Yang <leoyang.li@nxp.com>
+ L:	netdev@vger.kernel.org
 -- 
 2.38.1
 
