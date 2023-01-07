@@ -4,70 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84B95C46467
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 10:22:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46212C46467
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 12:15:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Npx9L5pL8z3cC1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 21:22:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Npzgf3k02z3cCc
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jan 2023 23:15:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Q/e2Knuz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=qNyf3HCS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=mingo.kernel.org@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::332; helo=mail-wm1-x332.google.com; envelope-from=matorola@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Q/e2Knuz;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=qNyf3HCS;
 	dkim-atps=neutral
 Received: from mail-wm1-x332.google.com (mail-wm1-x332.google.com [IPv6:2a00:1450:4864:20::332])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Npx8F3mZXz306n
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jan 2023 21:21:48 +1100 (AEDT)
-Received: by mail-wm1-x332.google.com with SMTP id l26so2641472wme.5
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Jan 2023 02:21:48 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Npzfd6NRxz3bV1
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jan 2023 23:14:47 +1100 (AEDT)
+Received: by mail-wm1-x332.google.com with SMTP id m8-20020a05600c3b0800b003d96f801c48so5328478wms.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Jan 2023 04:14:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=bwZ6DNVnfIB+W/mkRCm0E3L/QObg6wnuFzYCkYmf6wI=;
-        b=Q/e2KnuzjAKgdUkzAT7lO6QdIpWGQHJT8Xf7hjGBNvxWtNbdy66cKdafcqqs+seXr7
-         P52Rjc6hF503T23rooeXa43iLYeK9CtJcLxd2pfuzYuMyFtw2pP6JXT4noaTFK3rvPO1
-         GnWFjCDBLgxAz5sqVfiIknbgcozxG3Oa3vXcmSr0OvcWUgScoW1SkhE0P0HLGO3OKVGV
-         yDP/SG+EaYDUnPp4FcyQPyqTpG2OJS5cn1SegSDHMCRmuup2N2Ufmq2OHxUZ8YEPLXxj
-         oHQjy6+o/xzVA4qOJnU24VpAPGC3jO2NCAq2LQKAgQfyd7tfVj4gxH0OVr7fx9VSUuft
-         /7xA==
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=exh5jhWBBK17Ph+CgJeghRyiOswfcgQCDbeTM4nzuso=;
+        b=qNyf3HCSTkCM2x51VV2Cu+6OyAqRfd3jq35pM1Vfsm6rY9XiBPdBC19GjNMmyH+5Ac
+         KveKhsFbTtt0aLipgmXmkd1KYHATxwb5Y+Yy4n6P5LtmnqydS3mSKNTnwZa0JPVezlLK
+         cJhnUkNNunEbsezDZehWHy2KR1Fgshy/NnetM18edQqr7sruoBq+4zxdzVHJv7FOVYpx
+         I7ZwyGGcYuaL+zZx4C1mS0bAWd12tOy3It0EolG+fIFfrFZPcM7PkHOJKCUFp+H0OIuT
+         iW4T667dq+pFqkLJaeWAt+slyrQd16MQjDAzZrp9W+GA4R3MLCqrdrlh7+KSA+UqXlVJ
+         byPw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=bwZ6DNVnfIB+W/mkRCm0E3L/QObg6wnuFzYCkYmf6wI=;
-        b=kqUULCsQ9oeyAEVy+A4/7lBNLogAtG6hbJLChcttm5TDuqDKiqobjyZewirvQgKVLQ
-         dXBe3sA2xO8HYrkJ9bwbUQ6qWPO9Phe44EqiK9U6zBQ8teg4Q53+1qw7zNJTkjvTUQxI
-         52YmdKhf8Jx2Mzsju93GmCx8RD+xyhi7a4njHn7O43jkgaWlHPkzCeWO9Zr3dUyIYuVp
-         53Uty0Ux0a0eDw9Gonbu8hBt5x0w2dcwhrek1kteDJIaOS3ksEOJr5FoTiD1AsUS7wvT
-         qMcNl05xLUCwagqYIMFmynDBlEHYaxFpZpdAAJKWqmgt/q1Kw5OJ4dtXwtgXgQsIgjnq
-         e+4A==
-X-Gm-Message-State: AFqh2krHaYxEGa7qHLECY/T4uxrPgqxd5urtdjga1FbdE12saUPO3mvn
-	Qp3bBqNZOgzCC6hkslBux1Y=
-X-Google-Smtp-Source: AMrXdXvgj7WJXgL/O/krYz60H4JU969uB0AKG+nlWVdeOrcW5xNqfH+0SfSwFQ+JYOrTORDecb7Z5Q==
-X-Received: by 2002:a1c:4c12:0:b0:3c6:e63e:89a6 with SMTP id z18-20020a1c4c12000000b003c6e63e89a6mr41596718wmf.2.1673086901829;
-        Sat, 07 Jan 2023 02:21:41 -0800 (PST)
-Received: from gmail.com (1F2EF507.nat.pool.telekom.hu. [31.46.245.7])
-        by smtp.gmail.com with ESMTPSA id j1-20020a05600c1c0100b003cfaae07f68sm10255499wms.17.2023.01.07.02.21.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 07 Jan 2023 02:21:41 -0800 (PST)
-Date: Sat, 7 Jan 2023 11:21:39 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Sathvika Vasireddy <sv@linux.ibm.com>
-Subject: Re: [PATCH] objtool: continue if find_insn() fails in
- decode_instructions()
-Message-ID: <Y7lHsw4diDgVc9ip@gmail.com>
-References: <20221208072813.25799-1-sv@linux.ibm.com>
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=exh5jhWBBK17Ph+CgJeghRyiOswfcgQCDbeTM4nzuso=;
+        b=IhvKnT8cDzEHlh6ZVeZCVNrR78/ot0VDtyX1JQooxNbjQ7J7FnfUxxmrneiwEzWyzE
+         b2vvHzz4B9rVJmr+zf39/MqnhGpL07Ys3VqeqUofsDD0rui+W6Vm6LNObMqam18+xIFx
+         PIYViZ0wbYI0i9+uDHlCH4suTzJ5mpHEvso3m+TdHYljf4LRaLVNXf+UEwC1r+UFehp/
+         CaRUhWQ2nw9NfB5qiCB/sxpxx9Qq3uypqWP9eLO7lMj8qpA2qzzuBM/l47XQxik0IMjO
+         4w0yHXDy6JjCmZED9v6NB1K/vI3umlO1LeJZSVNUt0TuC66QaF927kXpVJ4oteWk2MB1
+         g+vw==
+X-Gm-Message-State: AFqh2krXhonLWlB2G9apZUfAxmL8be6a5dyAklBkFlV01dgWAoTI2mOc
+	UTFJM/uv7ykDAMdNWsAa38wQf7uBeyTosB8MybQ=
+X-Google-Smtp-Source: AMrXdXuztG0SNmH495gPDbzRStX/IndQDUj9OP9rAgDAGEkVoZow/doVDExFB34qKIecc3mpSz3O88mTcRxeBil0l94=
+X-Received: by 2002:a05:600c:4b1b:b0:3b4:a6c4:70fb with SMTP id
+ i27-20020a05600c4b1b00b003b4a6c470fbmr2999894wmp.79.1673093684612; Sat, 07
+ Jan 2023 04:14:44 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20221208072813.25799-1-sv@linux.ibm.com>
+References: <20230106220020.1820147-1-anirudh.venkataramanan@intel.com> <20230106220020.1820147-8-anirudh.venkataramanan@intel.com>
+In-Reply-To: <20230106220020.1820147-8-anirudh.venkataramanan@intel.com>
+From: Anatoly Pugachev <matorola@gmail.com>
+Date: Sat, 7 Jan 2023 15:14:33 +0300
+Message-ID: <CADxRZqwkv=FyzyMvPf_Ou3nMQWOZ1jmAwOT22=9tigVVWfB3Gg@mail.gmail.com>
+Subject: Re: [PATCH net-next 7/7] sparc: configs: Remove references to
+ CONFIG_SUNVNET and CONFIG_LDMVSW
+To: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,49 +74,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sfr@canb.auug.org.au, peterz@infradead.org, chenzhongjin@huawei.com, linux-kernel@vger.kernel.org, aik@ozlabs.ru, mingo@redhat.com, npiggin@gmail.com, jpoimboe@redhat.com, naveen.n.rao@linux.vnet.ibm.com, mbenes@suse.cz, linuxppc-dev@lists.ozlabs.org
+Cc: Leon Romanovsky <leon@kernel.org>, netdev@vger.kernel.org, linux-mips@vger.kernel.org, linux-pci@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-trace-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sat, Jan 7, 2023 at 1:00 AM Anirudh Venkataramanan
+<anirudh.venkataramanan@intel.com> wrote:
+>
+> An earlier patch removed the Sun LDOM vswitch and sunvnet drivers. Remove
+> references to CONFIG_SUNVNET and CONFIG_LDMVSW from the sparc64 defconfig.
+>
+> Cc: Leon Romanovsky <leon@kernel.org>
+> Signed-off-by: Anirudh Venkataramanan <anirudh.venkataramanan@intel.com>
+> ---
+>  arch/sparc/configs/sparc64_defconfig | 2 --
+>  1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/sparc/configs/sparc64_defconfig b/arch/sparc/configs/sparc64_defconfig
+> index 1809909..a2c76e8 100644
+> --- a/arch/sparc/configs/sparc64_defconfig
+> +++ b/arch/sparc/configs/sparc64_defconfig
+> @@ -95,8 +95,6 @@ CONFIG_MII=m
+>  CONFIG_SUNLANCE=m
+>  CONFIG_HAPPYMEAL=y
+>  CONFIG_SUNGEM=m
+> -CONFIG_SUNVNET=m
+> -CONFIG_LDMVSW=m
+>  CONFIG_NET_PCI=y
+>  CONFIG_E1000=m
+>  CONFIG_E1000E=m
 
-* Sathvika Vasireddy <sv@linux.ibm.com> wrote:
-
-> Currently, decode_instructions() is failing if it is not able to find
-> instruction, and this is happening since commit dbcdbdfdf137b4
-> ("objtool: Rework instruction -> symbol mapping") because it is
-> expecting instruction for STT_NOTYPE symbols.
-> 
-> Due to this, the following objtool warnings are seen:
->  [1] arch/powerpc/kernel/optprobes_head.o: warning: objtool: optprobe_template_end(): can't find starting instruction
->  [2] arch/powerpc/kernel/kvm_emul.o: warning: objtool: kvm_template_end(): can't find starting instruction
->  [3] arch/powerpc/kernel/head_64.o: warning: objtool: end_first_256B(): can't find starting instruction
-> 
-> The warnings are thrown because find_insn() is failing for symbols that
-> are at the end of the file, or at the end of the section. Given how
-> STT_NOTYPE symbols are currently handled in decode_instructions(),
-> continue if the instruction is not found, instead of throwing warning
-> and returning.
-> 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
-
-The SOB chain doesn't look valid: is Naveen N. Rao, the first SOB line, the 
-author of the patch? If yes then a matching From: line is needed.
-
-Or if two people developed the patch, then Co-developed-by should be used:
-
-        Co-developed-by: First Co-Author <first@coauthor.example.org>
-        Signed-off-by: First Co-Author <first@coauthor.example.org>
-        Co-developed-by: Second Co-Author <second@coauthor.example.org>
-        Signed-off-by: Second Co-Author <second@coauthor.example.org>
-
-[ In this SOB sequence "Second Co-Author" is the one who submits the patch. ]
-
-[ Please only use Co-developed-by if actual lines of code were written by 
-  the co-author that created copyrightable material - it's not a courtesy 
-  tag. Reviewed-by/Acked-by/Tested-by can be used to credit non-code 
-  contributions. ]
-
-Thanks,
-
-	Ingo
+I wonder what is the reason for removing the perfectly working sunvnet
+driver which is used in LDOMs under sun hardware hypervisor?
+Can we please not remove drivers which are actually used? Or either
+drop sparc32/sparc64 (whole arch) from linux kernel as well. Thanks.
