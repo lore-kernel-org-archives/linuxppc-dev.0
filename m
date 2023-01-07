@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78884C46467
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 01:05:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96882C54EBC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 01:06:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NqJlr0wklz2xVY
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 12:05:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NqJms1kPkz3fK5
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 12:06:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W6qTiEub;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gNCmrHkc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+sam.ravnborg.org@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W6qTiEub;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gNCmrHkc;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nq7vT1j9Nz3c7S
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 05:26:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nq7vV206xz3c4w
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 05:26:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8FE4B60BBB;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id AF90F60BFA;
 	Sat,  7 Jan 2023 18:26:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 21BAEC43329;
-	Sat,  7 Jan 2023 18:26:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C762EC433F2;
+	Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1673115982;
-	bh=Mj/ShVgaaD92/Ge3l6JJSNYGpwa5ONVGtJTi9DaheiM=;
+	s=k20201202; t=1673115981;
+	bh=QCUNFz0znSG4dFhceksvrEhuu6q18JaC/eU7eQcVMhs=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=W6qTiEub76a/pK7uR8XodmptNf4n268IEjWRX5tHRsNecbig79nemOGW1S5jR199O
-	 Q3WQsmeSNIaJJfu7vOG98wRK0Kga66L9A3OXc6bXqPicoNPdzvy9HpiAWYxV8NlFpJ
-	 u1PniEBpdTf47ZPtMK3G9cQoeX9ZwptPnR/NKLwOZNW13+iPurd73lc6cWwhNXLYIk
-	 29QzBUFZwiJQZ/3h7gkj4BbMKXV6KiNS34GTw5iOtrkK1aF39CD3Thb1co6OY3d7eC
-	 vEfh6XyWJT9ChjxCYx8Ykl4dL7dhcFJgon4aTum6ZpcxJHI0dj7Pn6CeToWPbbm607
-	 y4SN6r7mL7qjA==
+	b=gNCmrHkcPqnUS0a3xVSYftIawDJL6WdNZqVopye1CwTMJj+OhmtcQYMLORNIz1FOo
+	 S97tPD0HherWzF5Kwps1d8EAJxEhyUXvwpLBl/h5GGtdVQoVjd2DT3CgfL1IeGxijp
+	 snFUERcxs8PBMKNIMpS3HePYw3vZejQWMRJJwDJlwBV/xBj1KLy1uAxFeW5XxMSQTs
+	 rGUfWMHLMEYk4qDrkJ699dpdgnxHQmp6LgXcA3g/E9PzRQVGY8PoSwAFEQTJ5M9LVL
+	 gizeOLkHxcMldONRUSdVHL+ZgJ7gDSv/UrELN9hk8nJSzZK5th0Fx7sDpSCD4AgI6w
+	 BljwABlVUmJ3w==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10B31C63797;
-	Sat,  7 Jan 2023 18:26:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE3BBC46467;
+	Sat,  7 Jan 2023 18:26:21 +0000 (UTC)
 From:  Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org>
-Date: Sat, 07 Jan 2023 19:26:29 +0100
-Subject:  [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank property
+Date: Sat, 07 Jan 2023 19:26:24 +0100
+Subject: [PATCH 10/15] staging: fbtft: core: Introduce backlight_is_blank()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
+Message-Id:  <20230107-sam-video-backlight-drop-fb_blank-v1-10-1bd9bafb351f@ravnborg.org>
 References:  <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
 In-Reply-To:  <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
 To: Nicolas Ferre <nicolas.ferre@microchip.com>, Helge Deller <deller@gmx.de>,
@@ -61,11 +61,11 @@ To: Nicolas Ferre <nicolas.ferre@microchip.com>, Helge Deller <deller@gmx.de>,
  Lee Jones <lee@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>,
  Jingoo Han <jingoohan1@gmail.com>
 X-Mailer: b4 0.11.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1673115978; l=3041;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1673115978; l=1663;
  i=sam@ravnborg.org; s=20230107; h=from:subject:message-id;
- bh=1rlDGBQ8dUJZwm2QXjSfjVEGh6r7tPSOztASIhko1ZA=; =?utf-8?q?b=3DOWmPqlL1i8PO?=
- =?utf-8?q?CFlGwpKfdK0lpD04cBqvUemyqQ5rJT5jQQmDliYaJeqEzjRTaDdplBAFwN0P5fJy?=
- jwHOPNUKCeY0gAj2nPyPtvnKkGoHtq262p4+KBibi0oW4Iuegikn
+ bh=Wny8vn8SDkRFcw+Qd/s3t358GYJs/Zyqd9rf2tuHfYI=; =?utf-8?q?b=3DpUFPIy6NmR07?=
+ =?utf-8?q?yB69L54dJFCXBLLZDCl3QadyGkyvIJRXwpp/cDw+au/L/QLDJM/P3+uhQAXfQqQh?=
+ c5dV85FVDaufnLt7Gjhp/q9XLr2r6KxOVyTl6bK1oMF8wdtfOS7s
 X-Developer-Key: i=sam@ravnborg.org; a=ed25519;
  pk=R0+pqV7BRYOAeOIGkyOrSNke7arx5y3LkEuNi37YEyU=
 X-Endpoint-Received:  by B4 Submission Endpoint for sam@ravnborg.org/20230107 with auth_id=22
@@ -83,97 +83,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Reply-To: sam@ravnborg.org
-Cc: linux-fbdev@vger.kernel.org, Stephen Kitt <steve@sk2.org>, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Stephen Kitt <steve@sk2.org>, Sam Ravnborg <sam@ravnborg.org>, linux-staging@lists.linux.dev, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Javier Martinez Canillas <javierm@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Peter Suti <peter.suti@streamunlimited.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Sam Ravnborg <sam@ravnborg.org>
 
-With all users gone remove the deprecated fb_blank member in
-backlight_properties.
+Avoiding direct access to backlight_properties.props.
+
+Access to the deprecated props.fb_blank replaced by backlight_is_blank().
+Access to props.power is dropped - it was only used for debug.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Lee Jones <lee@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Javier Martinez Canillas <javierm@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stephen Kitt <steve@sk2.org>
+Cc: Peter Suti <peter.suti@streamunlimited.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/backlight/backlight.c |  2 --
- include/linux/backlight.h           | 22 ----------------------
- 2 files changed, 24 deletions(-)
+ drivers/staging/fbtft/fbtft-core.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index b788ff3d0f45..9b0557d094c5 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -118,14 +118,12 @@ static int fb_notifier_callback(struct notifier_block *self,
- 		bd->fb_bl_on[node] = true;
- 		if (!bd->use_count++) {
- 			bd->props.state &= ~BL_CORE_FBBLANK;
--			bd->props.fb_blank = FB_BLANK_UNBLANK;
- 			backlight_update_status(bd);
- 		}
- 	} else if (fb_blank != FB_BLANK_UNBLANK && bd->fb_bl_on[node]) {
- 		bd->fb_bl_on[node] = false;
- 		if (!(--bd->use_count)) {
- 			bd->props.state |= BL_CORE_FBBLANK;
--			bd->props.fb_blank = fb_blank;
- 			backlight_update_status(bd);
- 		}
- 	}
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 614653e07e3a..c8622d6cc8c5 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -218,25 +218,6 @@ struct backlight_properties {
- 	 */
- 	int power;
- 
--	/**
--	 * @fb_blank: The power state from the FBIOBLANK ioctl.
--	 *
--	 * When the FBIOBLANK ioctl is called @fb_blank is set to the
--	 * blank parameter and the update_status() operation is called.
--	 *
--	 * When the backlight device is enabled @fb_blank is set
--	 * to FB_BLANK_UNBLANK. When the backlight device is disabled
--	 * @fb_blank is set to FB_BLANK_POWERDOWN.
--	 *
--	 * Backlight drivers should avoid using this property. It has been
--	 * replaced by state & BL_CORE_FBLANK (although most drivers should
--	 * use backlight_is_blank() as the preferred means to get the blank
--	 * state).
--	 *
--	 * fb_blank is deprecated and will be removed.
--	 */
--	int fb_blank;
--
- 	/**
- 	 * @type: The type of backlight supported.
- 	 *
-@@ -366,7 +347,6 @@ static inline int backlight_enable(struct backlight_device *bd)
- 		return 0;
- 
- 	bd->props.power = FB_BLANK_UNBLANK;
--	bd->props.fb_blank = FB_BLANK_UNBLANK;
- 	bd->props.state &= ~BL_CORE_FBBLANK;
- 
- 	return backlight_update_status(bd);
-@@ -382,7 +362,6 @@ static inline int backlight_disable(struct backlight_device *bd)
- 		return 0;
- 
- 	bd->props.power = FB_BLANK_POWERDOWN;
--	bd->props.fb_blank = FB_BLANK_POWERDOWN;
- 	bd->props.state |= BL_CORE_FBBLANK;
- 
- 	return backlight_update_status(bd);
-@@ -403,7 +382,6 @@ static inline int backlight_disable(struct backlight_device *bd)
- static inline bool backlight_is_blank(const struct backlight_device *bd)
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index afaba94d1d1c..1746327e1939 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -132,15 +132,15 @@ static int fbtft_backlight_update_status(struct backlight_device *bd)
  {
- 	return bd->props.power != FB_BLANK_UNBLANK ||
--	       bd->props.fb_blank != FB_BLANK_UNBLANK ||
- 	       bd->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK);
- }
+ 	struct fbtft_par *par = bl_get_data(bd);
+ 	bool polarity = par->polarity;
++	bool blank = backlight_is_blank(bd);
  
+-	fbtft_par_dbg(DEBUG_BACKLIGHT, par,
+-		      "%s: polarity=%d, power=%d, fb_blank=%d\n",
+-		      __func__, polarity, bd->props.power, bd->props.fb_blank);
++	fbtft_par_dbg(DEBUG_BACKLIGHT, par, "%s: polarity=%d, blank=%d\n",
++		      __func__, polarity, blank);
+ 
+-	if (!backlight_is_blank(bd))
+-		gpiod_set_value(par->gpio.led[0], polarity);
+-	else
++	if (blank)
+ 		gpiod_set_value(par->gpio.led[0], !polarity);
++	else
++		gpiod_set_value(par->gpio.led[0], polarity);
+ 
+ 	return 0;
+ }
 
 -- 
 2.34.1
