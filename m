@@ -4,66 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAA44C54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 10:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ADF8C53210
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 12:27:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NqYk70zwhz3c7x
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 21:49:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NqbtZ34Y6z3cBC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 23:27:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=khZsRl3/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XK55JtLh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::a2c; helo=mail-vk1-xa2c.google.com; envelope-from=21cnbao@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=khZsRl3/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XK55JtLh;
 	dkim-atps=neutral
-Received: from mail-vk1-xa2c.google.com (mail-vk1-xa2c.google.com [IPv6:2607:f8b0:4864:20::a2c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NqYj609BQz3bVZ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 21:48:57 +1100 (AEDT)
-Received: by mail-vk1-xa2c.google.com with SMTP id w72so2647157vkw.7
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2023 02:48:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=o+ulyHY5t1vIQHRPkJRkZkMsVhYDzl0Wi1NRRdUXX9E=;
-        b=khZsRl3/h6xFPtV+trGF8SoZlhUH7CXOkbNSVy0ph0vcxdY2POtEBg03zxNX8NOjKd
-         tk0nBaNgQ7Qkcbndq/9sUu9/ASJ7jbK4uYDbK/bTz5OlmFXDU8glJgzuEEv6Z/s6NMfA
-         mp4rpznbR52Td9JIJd+jemR2waWnWqaR5O+5xO3DbdqK/ncWuaOvXDjz4YwzrATW6+AT
-         M8+n4X/t1ZgquFU/5c+wBFLYST09b1qKcf+ZPYUk9m3W2UOYcUJY3wtRak73CebxOF2s
-         Srav0OegoVZNvk1eaPYqXHoJyRanQU2FIyrTJWyfZ4nP8ieu3yAmmAtAsqqtCCVbv2RA
-         wVmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=o+ulyHY5t1vIQHRPkJRkZkMsVhYDzl0Wi1NRRdUXX9E=;
-        b=gTJ9GMfrzW6tMe5p0GcqIaCSVd6R+sHyHKFB1V+X2p0OFOmb9adzvyJX2y2zwkEIvu
-         r+hyoCaUiYUOb5pC7gD12CQe2L42dnIKfyeWkIk41RNy7KHmRIy9mOJxa9409CwJ1qY1
-         kQkIy2alcrsQV/xz/yTFnc7Fxyo1QWa84oX9KBsNbNkuWqaPKux/QtPHXkLvpSYyGsMn
-         Cp4aaig6ZQRasmgh9iILE2wEID16lK2C+ko9DO8wOWPQR1oeIhMfT+pJnyTZSASm27eQ
-         XHYKXoV3Zxlw65gaeWLJEv36iPctaY9Ef7rUXqFQ1k0oPXrlxDCL+vM5oRwfxqwuJibi
-         TaZw==
-X-Gm-Message-State: AFqh2ko9pONdYxbYw91nOs+MMkfBFf1908zGEzbY+8ktrPho0ojSsLtw
-	aEBZxEclxlvLBqEWcF4Jw4FkIqd3ypBneNqD1js=
-X-Google-Smtp-Source: AMrXdXsC9zjoSX3JUJXUNKpbqfCGbJ5sLgu3n0p9Rc2JNm9GFnGoyDe1ACeN5YOtUEET51RrQuI/o6A4avtvFhehWBM=
-X-Received: by 2002:a1f:2e4e:0:b0:3d5:5ea6:ccb9 with SMTP id
- u75-20020a1f2e4e000000b003d55ea6ccb9mr6218898vku.7.1673174933379; Sun, 08 Jan
- 2023 02:48:53 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NqbsT37pmz2xvL
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 23:26:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1673180781; x=1704716781;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=owjEx2HM2D3CQiSbaG9f+v4op2rLBDinU0Ekudz3LwA=;
+  b=XK55JtLhzOZm268GAtJm4I5jMBryIJUaNpRdID7WdcNic460D7fh3ZYv
+   NO0gYF4mpyOpkriIy7GigusxWDIgR8uwNH6YCRW3HCbNLiFeXoFVrTp+z
+   C0HnMv5LhZDF/E+x3UXvdHEgRd+1Ca2F6Go/weiOPmdRdw5kZ8WmjmHEQ
+   T0TgtNbeKeOUiIm5Z3Bja6CwYdDM/cuf7V+93S9jHvR8/FQroCYFGPcQe
+   NGXCFOBg80cx93tOjiipvohl6WmFNAWZ4XT0cpTN8ZTU+ihYfyULtdJzB
+   BROWQFzXEhol7n1XhkRjjBTTOkoPBJeSMXKeW020yuoySo9jBcZQ1Qv2p
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10583"; a="349928297"
+X-IronPort-AV: E=Sophos;i="5.96,310,1665471600"; 
+   d="scan'208";a="349928297"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Jan 2023 04:26:17 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10583"; a="606337939"
+X-IronPort-AV: E=Sophos;i="5.96,310,1665471600"; 
+   d="scan'208";a="606337939"
+Received: from lkp-server02.sh.intel.com (HELO f1920e93ebb5) ([10.239.97.151])
+  by orsmga003.jf.intel.com with ESMTP; 08 Jan 2023 04:26:15 -0800
+Received: from kbuild by f1920e93ebb5 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1pEUkh-0005LU-0J;
+	Sun, 08 Jan 2023 12:26:15 +0000
+Date: Sun, 08 Jan 2023 20:26:09 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ be5f95c8779e19779dd81927c8574fec5aaba36c
+Message-ID: <63bab661.A/295G1dGX6Wjgft%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-References: <20221117082648.47526-1-yangyicong@huawei.com> <20221117082648.47526-3-yangyicong@huawei.com>
- <Y7cToj5mWd1ZbMyQ@arm.com>
-In-Reply-To: <Y7cToj5mWd1ZbMyQ@arm.com>
-From: Barry Song <21cnbao@gmail.com>
-Date: Sun, 8 Jan 2023 18:48:41 +0800
-Message-ID: <CAGsJ_4yC0i6MYwvosRSrdQ1iT7n88ypmK3aOQJkuusqNKtddtg@mail.gmail.com>
-Subject: Re: [PATCH v7 2/2] arm64: support batched/deferred tlb shootdown
- during page reclamation
-To: Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,83 +70,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, prime.zeng@hisilicon.com, realmz6@gmail.com, linux-doc@vger.kernel.org, peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, punit.agrawal@bytedance.com, linux-riscv@lists.infradead.org, will@kernel.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, x86@kernel.org, Mel Gorman <mgorman@suse.de>, arnd@arndb.de, anshuman.khandual@arm.com, Barry Song <v-songbaohua@oppo.com>, openrisc@lists.librecores.org, darren@os.amperecomputing.com, yangyicong@hisilicon.com, linux-arm-kernel@lists.infradead.org, guojian@oppo.com, xhao@linux.alibaba.com, linux-mips@vger.kernel.org, huzhanyuan@oppo.com, Yicong Yang <yangyicong@huawei.com>, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 6, 2023 at 2:15 AM Catalin Marinas <catalin.marinas@arm.com> wrote:
->
-> On Thu, Nov 17, 2022 at 04:26:48PM +0800, Yicong Yang wrote:
-> > It is tested on 4,8,128 CPU platforms and shows to be beneficial on
-> > large systems but may not have improvement on small systems like on
-> > a 4 CPU platform. So make ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH depends
-> > on CONFIG_EXPERT for this stage and make this disabled on systems
-> > with less than 8 CPUs. User can modify this threshold according to
-> > their own platforms by CONFIG_NR_CPUS_FOR_BATCHED_TLB.
->
-> What's the overhead of such batching on systems with 4 or fewer CPUs? If
-> it isn't noticeable, I'd rather have it always on than some number
-> chosen on whichever SoC you tested.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: be5f95c8779e19779dd81927c8574fec5aaba36c  powerpc/vmlinux.lds: Don't discard .comment
 
-On the one hand, tlb flush is cheap on a small system. so batching tlb flush
-helps very minorly.
+elapsed time: 2157m
 
-On the other hand, since we have batched the tlb flush, new PTEs might be
-invisible to others before the final broadcast is done and Ack-ed. thus, there
-is a risk someone else might do mprotect or similar things  on those deferred
-pages which will ask for read-modify-write on those deferred PTEs. in this
-case, mm will do an explicit flush by flush_tlb_batched_pending which is
-not required if tlb flush is not deferred. the code is in:
+configs tested: 155
+configs skipped: 107
 
-static unsigned long change_pte_range(struct mmu_gather *tlb,
-struct vm_area_struct *vma, pmd_t *pmd, unsigned long addr,
-unsigned long end, pgprot_t newprot, unsigned long cp_flags)
-{
-        ...
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-      pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+gcc tested configs:
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+powerpc                 linkstation_defconfig
+i386                             allyesconfig
+i386                                defconfig
+x86_64                           rhel-8.3-kvm
+x86_64                           rhel-8.3-syz
+x86_64                           rhel-8.3-bpf
+x86_64                         rhel-8.3-kunit
+x86_64                            allnoconfig
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+sparc64                             defconfig
+powerpc                       ppc64_defconfig
+sh                            titan_defconfig
+ia64                             alldefconfig
+powerpc                     mpc83xx_defconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+powerpc                      ppc40x_defconfig
+arc                              alldefconfig
+mips                           ci20_defconfig
+arm                        cerfcube_defconfig
+m68k                        mvme147_defconfig
+arm64                            allyesconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                        clps711x_defconfig
+arm                       imx_v6_v7_defconfig
+mips                           xway_defconfig
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+mips                             allyesconfig
+sh                               allmodconfig
+arm                            lart_defconfig
+mips                         db1xxx_defconfig
+powerpc                      ppc6xx_defconfig
+mips                         cobalt_defconfig
+sh                          rsk7264_defconfig
+x86_64                           alldefconfig
+ia64                             allmodconfig
+m68k                             allyesconfig
+m68k                             allmodconfig
+arc                              allyesconfig
+alpha                            allyesconfig
+i386                          randconfig-c001
+arm64                               defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                     rainier_defconfig
+sh                           se7619_defconfig
+arm                        oxnas_v6_defconfig
+i386                          debian-10.3-kvm
+i386                        debian-10.3-kunit
+i386                         debian-10.3-func
+ia64                        generic_defconfig
+nios2                            allyesconfig
+sh                           sh2007_defconfig
+powerpc                   currituck_defconfig
+powerpc                      pasemi_defconfig
+sparc                               defconfig
+xtensa                           allyesconfig
+csky                                defconfig
+sparc                            allyesconfig
+x86_64                                  kexec
+xtensa                  cadence_csp_defconfig
+sh                           se7722_defconfig
+mips                            gpr_defconfig
+arm                        trizeps4_defconfig
+nios2                         3c120_defconfig
+s390                       zfcpdump_defconfig
+arm                           imxrt_defconfig
+arc                            hsdk_defconfig
+arm                        mini2440_defconfig
+mips                           ip32_defconfig
+riscv                            allmodconfig
+mips                       bmips_be_defconfig
+powerpc                         wii_defconfig
+arm                          pxa3xx_defconfig
+sh                        dreamcast_defconfig
+sh                            migor_defconfig
+xtensa                          iss_defconfig
+sh                              ul2_defconfig
+arm                       multi_v4t_defconfig
+mips                           gcw0_defconfig
+powerpc                  storcenter_defconfig
+alpha                               defconfig
+mips                     loongson1b_defconfig
+ia64                            zx1_defconfig
+sparc                       sparc64_defconfig
+arc                    vdk_hs38_smp_defconfig
+sh                     sh7710voipgw_defconfig
+sh                ecovec24-romimage_defconfig
+sh                                  defconfig
+nios2                               defconfig
+parisc                              defconfig
+parisc64                            defconfig
+parisc                           allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                          rv32_defconfig
+riscv                    nommu_k210_defconfig
+riscv                             allnoconfig
+i386                   debian-10.3-kselftests
+i386                              debian-10.3
+arm                             rpc_defconfig
+powerpc                     sequoia_defconfig
+sh                 kfr2r09-romimage_defconfig
+arm                  randconfig-c002-20230108
+powerpc                          allyesconfig
+riscv                               defconfig
+riscv                            allyesconfig
+mips                         bigsur_defconfig
+riscv             nommu_k210_sdcard_defconfig
+openrisc                 simple_smp_defconfig
+sh                          landisk_defconfig
+powerpc                      mgcoge_defconfig
+xtensa                    smp_lx200_defconfig
+s390                             allyesconfig
+sh                             sh03_defconfig
+ia64                         bigsur_defconfig
+sh                           se7751_defconfig
+arc                      axs103_smp_defconfig
+powerpc                      cm5200_defconfig
 
-      flush_tlb_batched_pending(vma->vm_mm);
-      arch_enter_lazy_mmu_mode();
-      do {
-                oldpte = *pte;
-                if (pte_present(oldpte)) {
-                           pte_t ptent;
-                ...
-}
+clang tested configs:
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
+x86_64                        randconfig-a005
+x86_64                        randconfig-a003
+x86_64                        randconfig-a001
+x86_64                        randconfig-k001
+hexagon              randconfig-r041-20230107
+hexagon              randconfig-r045-20230107
+arm                  randconfig-r046-20230107
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+powerpc                 xes_mpc85xx_defconfig
+powerpc                          g5_defconfig
+arm                          ixp4xx_defconfig
+arm                         palmz72_defconfig
+arm                         orion5x_defconfig
+arm                           spitz_defconfig
+arm                       aspeed_g4_defconfig
+powerpc                     mpc5200_defconfig
+x86_64                           allyesconfig
+arm                       imx_v4_v5_defconfig
+mips                     loongson1c_defconfig
+powerpc                 mpc836x_rdk_defconfig
+powerpc                     pseries_defconfig
+mips                        maltaup_defconfig
+powerpc                      ppc64e_defconfig
+mips                  cavium_octeon_defconfig
+mips                           ip28_defconfig
+arm                       cns3420vb_defconfig
+powerpc                 mpc8560_ads_defconfig
 
-since we don't have the mechanism to record which pages should be
-flushed in flush_tlb_batched_pending(), flush_tlb_batched_pending()
-is flushing the whole process,
-
-void flush_tlb_batched_pending(struct mm_struct *mm)
-{
-       int batch = atomic_read(&mm->tlb_flush_batched);
-       int pending = batch & TLB_FLUSH_BATCH_PENDING_MASK;
-       int flushed = batch >> TLB_FLUSH_BATCH_FLUSHED_SHIFT;
-
-       if (pending != flushed) {
-               flush_tlb_mm(mm);
-        /*
-         * If the new TLB flushing is pending during flushing, leave
-         * mm->tlb_flush_batched as is, to avoid losing flushing.
-        */
-      atomic_cmpxchg(&mm->tlb_flush_batched, batch,
-           pending | (pending << TLB_FLUSH_BATCH_FLUSHED_SHIFT));
-     }
-}
-
-I guess mprotect things won't be that often for a running process especially
-when the system has begun to reclaim its memory. it might be more often
-only during the initialization of a process. And x86 has enabled this feature
-for a long time, probably this concurrency doesn't matter too much.
-
-but it is still case by case. That is why we have decided to be more
-conservative
-on globally enabling this feature and why it also depends on CONFIG_EXPERT.
-
-I believe Anshuman has contributed many points on this in those previous
-discussions.
-
-Thanks
-Barry
+-- 
+0-DAY CI Kernel Test Service
+https://01.org/lkp
