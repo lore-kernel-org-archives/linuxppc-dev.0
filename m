@@ -4,48 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9FF4C53210
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 09:02:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABDC3C54EBC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 09:31:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NqWLK6rSwz3cgm
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 20:02:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org (client-ip=178.32.96.204; helo=9.mo583.mail-out.ovh.net; envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 4202 seconds by postgrey-1.36 at boromir; Sun, 08 Jan 2023 20:02:00 AEDT
-Received: from 9.mo583.mail-out.ovh.net (9.mo583.mail-out.ovh.net [178.32.96.204])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NqWzz0pR7z3cGm
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jan 2023 20:31:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa2 header.b=OMBp7D4Q;
+	dkim=fail reason="signature verification failed" header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed2 header.b=1bH+enBd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ravnborg.org (client-ip=2a02:2350:5:404::1; helo=mailrelay5-1.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa2 header.b=OMBp7D4Q;
+	dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed2 header.b=1bH+enBd;
+	dkim-atps=neutral
+Received: from mailrelay5-1.pub.mailoutpod2-cph3.one.com (mailrelay5-1.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:404::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NqWKh2G2xz3bTs
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 20:01:56 +1100 (AEDT)
-Received: from director3.ghost.mail-out.ovh.net (unknown [10.108.16.91])
-	by mo583.mail-out.ovh.net (Postfix) with ESMTP id 7935F23BE0
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 07:45:54 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-dlrtv (unknown [10.109.156.99])
-	by director3.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 9B5F31FEF4;
-	Sun,  8 Jan 2023 07:45:49 +0000 (UTC)
-Received: from sk2.org ([37.59.142.106])
-	by ghost-submission-6684bf9d7b-dlrtv with ESMTPSA
-	id XCz1Hq10umNDGgAAuoryaQ
-	(envelope-from <steve@sk2.org>); Sun, 08 Jan 2023 07:45:49 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-106R0063ead8ad9-a798-4b11-941a-dcd5f5867b68,
-                    5128B599F7D401446F64D4771BE19AB2B9CD7A8B) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 37.167.47.239
-Date: Sun, 08 Jan 2023 08:45:46 +0100
-From: Stephen Kitt <steve@sk2.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_01/15=5D_video=3A_fbdev=3A_atm?= =?US-ASCII?Q?el=5Flcdfb=3A_Rework_backlight_handling?=
-User-Agent: K-9 Mail for Android
-In-Reply-To: <Y7nb2q6SDota/rTU@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org> <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org> <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org> <Y7nb2q6SDota/rTU@ravnborg.org>
-Message-ID: <366FC0B8-21E2-4642-A5A5-CF4B6AB046B0@sk2.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NqWyt0sMmz3bNw
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jan 2023 20:30:42 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=rsa2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=Oybl0kFzJk1OHKBfarCPAX+ldUYM8qIDtwFbpLc8Wqg=;
+	b=OMBp7D4Q1taCLAC26KHZDvW1MnN8LDDXjmMIinVqeHcS40c2e/r5bEtpEA1YOrQKsE8uJwyy+dzX1
+	 4JKIKJwtxexTCDBai/T/gN1pQFF6GZA/r8/jGnp3ACvSRRpcV8FriJldv+JY/8nNw3PBeN3zBHgAQS
+	 gqwLkZC+F6kFgl05fAfdYG8tRkpCGkZwSL5dkqVYiQSgQQ/aMCdQHrSn/VegiB4aoijKO5TFJ9bump
+	 HWqdwba3Kn4ZlYTE9d0fRPV50RONoQmTzzLdRTRPjJ82VVzJsAfRc4taGrrIqPH/zeF2yTJogJvsBY
+	 Akt7pBD48e76OSMuArRnMD0vHtnM3jw==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
+	d=ravnborg.org; s=ed2;
+	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
+	 from:date:from;
+	bh=Oybl0kFzJk1OHKBfarCPAX+ldUYM8qIDtwFbpLc8Wqg=;
+	b=1bH+enBd3Rzx4lTdU2Ew/3w4RNpW2B4i5DDhzGEZCxhwTP59EcA+tuKMI2XuhVP+RWekbgj/wgKSQ
+	 SVYt0YTBw==
+X-HalOne-ID: f2a3e065-8f36-11ed-9179-7703b0afff57
+Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
+	by mailrelay5 (Halon) with ESMTPSA
+	id f2a3e065-8f36-11ed-9179-7703b0afff57;
+	Sun, 08 Jan 2023 09:29:30 +0000 (UTC)
+Date: Sun, 8 Jan 2023 10:29:29 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+	Robin van der Gracht <robin@protonic.nl>
+Subject: Re: [PATCH 12/15] auxdisplay: ht16k33: Introduce
+ backlight_get_brightness()
+Message-ID: <Y7qM+ZlG5gQiOW4K@ravnborg.org>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-12-1bd9bafb351f@ravnborg.org>
+ <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-X-Ovh-Tracer-Id: 8408783456216778374
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkeefgdduudduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevufgfjghfkfggtgfgsehtqhhmtddtreejnecuhfhrohhmpefuthgvphhhvghnucfmihhtthcuoehsthgvvhgvsehskhdvrdhorhhgqeenucggtffrrghtthgvrhhnpeevieelieekfeelhfduffdvgfduvdegkeeljeejhfdtkeeujeeileekgeeugefhhfenucffohhmrghinheplhhkmhhlrdhorhhgpdhkvghrnhgvlhdrohhrghenucfkphepuddvjedrtddrtddruddpfeejrdehledrudegvddruddtieenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduvdejrddtrddtrddupdhmrghilhhfrhhomhepoehsthgvvhgvsehskhdvrdhorhhgqedpnhgspghrtghpthhtohepuddprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdfovfetjfhoshhtpehmohehkeefpdhmohguvgepshhmthhpohhuth
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,78 +71,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-staging@lists.linux.dev, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Daniel Thompson <daniel.thompson@linaro.org>, Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>, Ludovic Desroches <ludovic.desroches@microchip.com>, Miguel Ojeda <ojeda@kernel.org>, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Robin van der Gracht <robin@protonic.nl>, Nicolas Ferre <nicolas.ferre@microchip.com>, Jingoo Han <jingoohan1@gmail.com>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-staging@lists.linux.dev, Stephen Kitt <steve@sk2.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Daniel Thompson <daniel.thompson@linaro.org>, Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Miguel Ojeda <ojeda@kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Robin van der Gracht <robin@protonic.nl>, Nicolas Ferre <nicolas.ferre@microchip.com>, Jingoo Han <jingoohan1@gmail.com>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7 January 2023 21:53:46 CET, Sam Ravnborg <sam@ravnborg=2Eorg> wrote:
->Hi Stephen=2E
->
->On Sat, Jan 07, 2023 at 09:36:47PM +0100, Stephen Kitt wrote:
->> On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoint=
- <devnull+sam=2Eravnborg=2Eorg@kernel=2Eorg> wrote:
->> >From: Sam Ravnborg <sam@ravnborg=2Eorg>
->> >
->> >The atmel_lcdfb had code to save/restore power state=2E
->> >This is not needed so drop it=2E
->> >
->> >Introduce backlight_is_brightness() to make logic simpler=2E
->> >
->> >Signed-off-by: Sam Ravnborg <sam@ravnborg=2Eorg>
->> >Cc: Nicolas Ferre <nicolas=2Eferre@microchip=2Ecom>
->> >Cc: Alexandre Belloni <alexandre=2Ebelloni@bootlin=2Ecom>
->> >Cc: Ludovic Desroches <ludovic=2Edesroches@microchip=2Ecom>
->> >Cc: linux-fbdev@vger=2Ekernel=2Eorg
->> >Cc: linux-arm-kernel@lists=2Einfradead=2Eorg
->> >---
->> > drivers/video/fbdev/atmel_lcdfb=2Ec | 24 +++---------------------
->> > 1 file changed, 3 insertions(+), 21 deletions(-)
->=2E=2E=2E
->>=20
->> Hi Sam,
->>=20
->> I=E2=80=99d submitted quite a few more of these previously (and you=E2=
-=80=99d reviewed them), see e=2Eg=2E the thread starting at https://lkml=2E=
-org/lkml/2022/6/7/4365, and yesterday, https://lkml=2Eorg/lkml/2023/1/6/520=
-, https://lkml=2Eorg/lkml/2023/1/6/656, https://lkml=2Eorg/lkml/2023/1/6/97=
-0, https://lkml=2Eorg/lkml/2023/1/6/643, and https://lkml=2Eorg/lkml/2023/1=
-/6/680=2E There are a few more, I can find them if it=E2=80=99s any use=2E
->
->The patches from yesterday was what triggered me to resurrect an old
->branch of mine where I had done something similar=2E I had lost all
->memory of reviewing similar patches from you=2E
->
->
->Helge - could you pick the reviewed patches from:
->https://lore=2Ekernel=2Eorg/all/20220607192335=2E1137249-1-steve@sk2=2Eor=
-g/
->[This is the same mail as Stephen refer to above - looked up via lore]=2E
->
->Stephen - I expect Daniel/Lee to take care of the patches from yesterday=
-=2E
->If you can look up other pending patches from you please do so, so we
->can have them applied=2E
->Preferably with links to lore - as this makes it easier to apply them=2E
->
->Review of what is unique in this set would be appreciated=2E
->
->	Sam
+Hi Robin.
 
-Hi Sam,
+On Sat, Jan 07, 2023 at 10:02:38PM +0100, Miguel Ojeda wrote:
+> On Sat, Jan 7, 2023 at 7:26 PM Sam Ravnborg via B4 Submission Endpoint
+> <devnull+sam.ravnborg.org@kernel.org> wrote:
+> >
+> > Introduce backlight_get_brightness() to simplify logic
+> > and avoid direct access to backlight properties.
+> 
+> Note: Stephen sent this one too a while ago (with some more details in
+> the commit message, which is always nice); and then he sent yesterday
+> v2 [1] (to mention the functional change with `BL_CORE_SUSPENDED`
+> [2]).
+Thanks for the pointers. I will try to move forward with Stephen's
+patches.
+> 
+> Anyway, if it goes via drm-misc, feel free to have my:
+> 
+>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
+> 
+> Though it would be nice to have Robin test the change.
 
-Here are my pending patches from last June on lore:
+Robin - can I get your ack to apply Stephen's original v2 patch to
+drm-misc?
 
-* https://lore=2Ekernel=2Eorg/lkml/20220607190925=2E1134737-1-steve@sk2=2E=
-org/
-* https://lore=2Ekernel=2Eorg/lkml/20220608205623=2E2106113-1-steve@sk2=2E=
-org/
-* https://lore=2Ekernel=2Eorg/lkml/20220607192335=2E1137249-1-steve@sk2=2E=
-org/
-* https://lore=2Ekernel=2Eorg/lkml/20220616170425=2E1346081-1-steve@sk2=2E=
-org/
+	Sam
 
-I=E2=80=99ll send reviews of your other patches later today or tomorrow=2E
-
-Regards,
-
-Stephen
+> 
+> Thanks!
+> 
+> [1] https://lore.kernel.org/lkml/20230106143002.1434266-1-steve@sk2.org/
+> [2] https://lore.kernel.org/lkml/CANiq72kRhmT37H1FAGYGny83ONYXeqJuO8ZPbym0ajQOWKY4Kw@mail.gmail.com/
+> 
+> Cheers,
+> Miguel
