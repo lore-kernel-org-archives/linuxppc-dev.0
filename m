@@ -4,92 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62745C5479D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 05:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D47E9C54EBD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 07:05:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nr2PP4fr6z3c61
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 16:22:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rtn7FQwa;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rtn7FQwa;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nr4hM1jD8z3cf8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 18:05:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.46; helo=mail-wr1-f46.google.com; envelope-from=jirislaby@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nr2NN30lmz2yfg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 16:21:08 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3091LYt9005579;
-	Mon, 9 Jan 2023 05:21:01 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=6AZ7MMyDzIH6MS2KDjBbHW4VImfdBxKDb57aWuEHLN0=;
- b=Rtn7FQwau8o1jSUmat38y7sYMQ512RoT4cB+cxCrCWzFUL+0BuGvy1i204uau2FWne/x
- 7dyYfRozSzCqgRhjhiZtZIPcyvdLyQOF+/y5KOyd3x3cy1CPuTcGh1SLkHcCbOV+M//M
- HWIQXXHl05Cyfb8bHcCItdzKgV/iJadip3wZS8FF4Sfy5Q6wIcdVBZNDf/0qhybHt2Gg
- 1cFAPf5PNxeiEVEuug2WCn7roE4I8AuKrkIEpbyOifO9DI31GAcuBbo1ixbFooihQCp4
- QWXcEsvB/SDHizXFGMNKDQagFR4jL0Hkae/FpXYbCQP9KoBl9xBgFZs75Ln1RskLbQB6 Mw== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3myjgdceyc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Jan 2023 05:21:00 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3084cmxA023308;
-	Mon, 9 Jan 2023 05:20:58 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3my0c6spsn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 09 Jan 2023 05:20:58 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3095Ktou37159386
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 9 Jan 2023 05:20:55 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B702D20043;
-	Mon,  9 Jan 2023 05:20:55 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 39E7420040;
-	Mon,  9 Jan 2023 05:20:55 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  9 Jan 2023 05:20:55 +0000 (GMT)
-Received: from [10.61.2.128] (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 0983B600D2;
-	Mon,  9 Jan 2023 16:20:52 +1100 (AEDT)
-Message-ID: <cca49d1e5da01e9ccdee50d710045fd09005459c.camel@linux.ibm.com>
-Subject: Re: [PATCH v2 7/7] powerpc/pseries: Implement secvars for dynamic
- secure boot
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Russell Currey <ruscur@russell.cc>, Michael Ellerman
- <mpe@ellerman.id.au>,
-        linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Jan 2023 16:20:51 +1100
-In-Reply-To: <b4b23fb8a56fdcfffe28c38ac3f4f89e0c488486.camel@russell.cc>
-References: <20221230042014.154483-1-ruscur@russell.cc>
-	 <20221230042014.154483-8-ruscur@russell.cc>
-	 <87zgawgcpa.fsf@mpe.ellerman.id.au>
-	 <b4b23fb8a56fdcfffe28c38ac3f4f89e0c488486.camel@russell.cc>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.2 (3.46.2-1.fc37) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nr4gj3D7Zz304m
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 18:04:31 +1100 (AEDT)
+Received: by mail-wr1-f46.google.com with SMTP id r2so7158110wrv.7
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jan 2023 23:04:31 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=wYsLuw/5810Zy5eTIZ7iJqDyeo47uMIQ6w06dFLUs+Q=;
+        b=eO4wkqkEVGn6M+FhX+4BkLbvdPePRzkdiSXjnFM6s23GBODqCGGyvTe4ELVFVCpeD9
+         0wGG5yd8952J02XddtU53ZLUeWE0YoKK5p+Wy0x8K9JnlcFzZxIpUU0IPyHd2nEbtlJQ
+         kovDWp7lu8Jfx1ep2S61/3amCSzjpJSN2f8n5qLETsIlvJDMyVqDkJc3qPXJ56tvZIpd
+         yHUXin2L22JN9J2RdYp4QaoZSRO1uTBSbcw+RD2WJFXry3xL8IPRsByFH4ipYBmFxZ8j
+         X26aiFQ+viPAaaLCI9hQuHTlMANlcp57361hnqxMhOB7xfkEj6eHt+svWFYEf8u9uwb+
+         O97g==
+X-Gm-Message-State: AFqh2kqlFgqQ+eVpnZO9HsboexlfynIh2xbL0XQbBmAYZqEQ0fKHeZEH
+	Wb4Xbk6Rv9n+drDwr67FsyY=
+X-Google-Smtp-Source: AMrXdXsEyHJGnZLB96JH3rcVegZBjOFlVPnyGgXG2g9g13hBlhCt3SpTnjtaAmK/XwGxmzdpSoCmAQ==
+X-Received: by 2002:a05:6000:38d:b0:2b5:90e:cfa5 with SMTP id u13-20020a056000038d00b002b5090ecfa5mr10255103wrf.29.1673247866783;
+        Sun, 08 Jan 2023 23:04:26 -0800 (PST)
+Received: from [192.168.1.49] (185-219-167-24-static.vivo.cz. [185.219.167.24])
+        by smtp.gmail.com with ESMTPSA id f3-20020adfdb43000000b00236883f2f5csm7846356wrj.94.2023.01.08.23.04.24
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 08 Jan 2023 23:04:26 -0800 (PST)
+Message-ID: <07786498-2209-3af0-8d68-c34427049947@kernel.org>
+Date: Mon, 9 Jan 2023 08:04:23 +0100
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: i2LBh1VeUFY3WIKwJGdKFpTyqNTtpmDJ
-X-Proofpoint-ORIG-GUID: i2LBh1VeUFY3WIKwJGdKFpTyqNTtpmDJ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2023-01-08_19,2023-01-06_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- suspectscore=0 adultscore=0 mlxlogscore=823 impostorscore=0 mlxscore=0
- priorityscore=1501 phishscore=0 clxscore=1015 bulkscore=0 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301090034
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH net-next] Remove DECnet support from kernel
+Content-Language: en-US
+To: Stephen Hemminger <stephen@networkplumber.org>, netdev@vger.kernel.org
+References: <20220818004357.375695-1-stephen@networkplumber.org>
+From: Jiri Slaby <jirislaby@kernel.org>
+In-Reply-To: <20220818004357.375695-1-stephen@networkplumber.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,42 +63,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nayna@linux.ibm.com, gregkh@linuxfoundation.org, gcwilson@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com
+Cc: "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Jeff Layton <jlayton@kernel.org>, Nikolay Aleksandrov <razor@blackwall.org>, "open list:MIPS" <linux-mips@vger.kernel.org>, Wang Qing <wangqing@vivo.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Eric Dumazet <edumazet@google.com>, Nathan Fontenot <nathan.fontenot@amd.com>, Suma Hegde <suma.hegde@amd.com>, Paolo Abeni <pabeni@redhat.com>, Neeraj Upadhyay <quic_neeraju@quicinc.com>, Menglong Dong <imagedong@tencent.com>, Florian Fainelli <f.fainelli@gmail.com>, Xin Long <lucien.xin@gmail.com>, Chen Yu <yu.c.chen@intel.com>, Daniel Borkmann <daniel@iogearbox.net>, Jonathan Corbet <corbet@lwn.net>, Damien Le Moal <damien.lemoal@opensource.wdc.com>, Jozsef Kadlecsik <kadlec@netfilter.org>, Xie Yongji <xieyongji@bytedance.com>, "open list:NETFILTER" <coreteam@netfilter.org>, Roopa Prabhu <roopa@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, Borislav Petkov <bp@suse.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Pabl
+ o Neira Ayuso <pablo@netfilter.org>, Stefano Garzarella <sgarzare@redhat.com>, Petr Machata <petrm@nvidia.com>, Kees Cook <keescook@chromium.org>, "Paul E. McKenney" <paulmck@kernel.org>, Yu Zhe <yuzhe@nfschina.com>, William Breathitt Gray <vilhelm.gray@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Kuniyuki Iwashima <kuniyu@amazon.com>, Shakeel Butt <shakeelb@google.com>, Muchun Song <songmuchun@bytedance.com>, Alexandre Ghiti <alexandre.ghiti@canonical.com>, Yuwei Wang <wangyuweihx@gmail.com>, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Akhmat Karakotov <hmukos@yandex-team.ru>, "Martin K. Petersen" <martin.petersen@oracle.com>, "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>, David Ahern <dsahern@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Florian Westphal <fw@strlen.de>, open list <linux-kernel@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>, Chuck Lev
+ er <chuck.lever@oracle.com>, Arnd Bergmann <arnd@arndb.de>, "open list:NETFILTER" <netfilter-devel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>, Antoine Tenart <atenart@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2023-01-09 at 14:34 +1100, Russell Currey wrote:
->=20
-> > > +static int plpks_secvar_init(void)
-> > > +{
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!plpks_is_available())
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0return -ENODEV;
-> > > +
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0set_secvar_ops(&plpks_secv=
-ar_ops);
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0set_secvar_config_attrs(co=
-nfig_attrs);
-> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
-> > > +}
-> > > +device_initcall(plpks_secvar_init);
-> >=20
-> > That must be a machine_device_initcall(pseries, ...), otherwise we
-> > will
-> > blow up doing a hcall on powernv in plpks_is_available().
->=20
-> OK, can do.=C2=A0 I don't understand your case of how powernv could hit
-> this, but I think I to have to move plpks_is_available() into
-> include/,
-> so it's going to be even more possible anyway.
+On 18. 08. 22, 2:43, Stephen Hemminger wrote:
+> DECnet is an obsolete network protocol that receives more attention
+> from kernel janitors than users. It belongs in computer protocol
+> history museum not in Linux kernel.
+> 
+> It has been "Orphaned" in kernel since 2010. The iproute2 support
+> for DECnet was dropped in 5.0 release. The documentation link on
+> Sourceforge says it is abandoned there as well.
+> 
+> Leave the UAPI alone to keep userspace programs compiling.
+> This means that there is still an empty neighbour table
+> for AF_DECNET.
+> 
+> The table of /proc/sys/net entries was updated to match
+> current directories and reformatted to be alphabetical.
+> 
+> Signed-off-by: Stephen Hemminger <stephen@networkplumber.org>
+> Acked-by: David Ahern <dsahern@kernel.org>
 
-Kernels can be compiled with both pseries and powernv support, in which
-case plpks_secvar_init() will be called unconditionally even when
-booting on a powernv machine.
+...
+>   include/uapi/linux/dn.h                       |  149 -
+>   include/uapi/linux/netfilter_decnet.h         |   72 -
 
-I can confirm that as it is, booting this on powernv qemu causes a
-panic.
+Hi,
 
---=20
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+this breaks userspace. Some projects include linux/dn.h:
+
+   https://codesearch.debian.net/search?q=include.*linux%2Fdn.h&literal=0
+
+
+I found Trinity fails to build:
+  net/proto-decnet.c:5:10: fatal error: linux/dn.h: No such file or 
+directory
+      5 | #include <linux/dn.h>
+
+
+
+Should we provide the above as empty files?
+
+thanks,
+-- 
+js
+suse labs
+
