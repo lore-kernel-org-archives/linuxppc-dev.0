@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43747C5479D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5945AC5479D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:03:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrRG56QnGz3fFv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:02:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrRH65S2jz3fMB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:02:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hJQlgWQO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=plHU/zWr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=36h68ywykdpsvxuhqejrrjoh.frpolqx0ssf-ghyolvwv.r2odev.ruj@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::249; helo=mail-oi1-x249.google.com; envelope-from=36368ywykdp4y0xkthmuumrk.iusrot03vvi-jk1royzy.u5rghy.uxm@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hJQlgWQO;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=plHU/zWr;
 	dkim-atps=neutral
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+Received: from mail-oi1-x249.google.com (mail-oi1-x249.google.com [IPv6:2607:f8b0:4864:20::249])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrR4q2Rcdz3cMr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 07:54:03 +1100 (AEDT)
-Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-349423f04dbso105126037b3.13
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 12:54:03 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrR4t4P7jz3cHK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 07:54:06 +1100 (AEDT)
+Received: by mail-oi1-x249.google.com with SMTP id es24-20020a056808279800b003630973475fso3014791oib.9
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 12:54:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=bU2TYXI/IQ+ahWPrvtMjvIvPP35LcWsiAJFQ60YWV8o=;
-        b=hJQlgWQOwjt9bdNS4iNCFQHGlLFypCJo9NibsA7lH+Cj66pCbZCU+CxVh9F7A2fm7T
-         vmlH3bAYg1kSOc6vTNCehxfbrsiSwMkUwfklPcXaZBTBOgsQNuQ1lURfneHqEpASj7ak
-         72wsJeHj+71ppFuT3bry8xcf97dMVhsy87IzDxduellVAKg7BiJc4vIK8HA7ompTnbjq
-         +gURuiw11LvdH0ad+L6DkctzinvpOQbzYQIPe9DQz0Et4Siymb/UJSUp4isr8x/TUfSb
-         z+/96aen7RzYU/fA94YBNLJOwTLnQ/SBQCaJx176+XVEeqKe1Aaxg+5hL1pkiSz0xMHc
-         S9Jw==
+        bh=D1pZqRdf8jzuIQZRLrMCJmLqIEvbyFYNYfXzudRZz6Y=;
+        b=plHU/zWrfFxaQ0yt/JPDRB18eEsMPdd+ZJ4E4yT8T5NRkdKBZYZu2kA11sksr3NXzt
+         jDgkb12AloyToG1qepTp/9j3c1S/nL9/sMLfiUGj3EbCeKSxNDyG2Qbnp2R8KUfjKQNu
+         1hUjiCYEdhUY2xqldYVyznhCdRudSDrsopmij1IaAdQfZY5giCy+PasuJa7G7ZNci7e/
+         L6oXIEMKihljCOjvvq+Mko/UGqlkYlK33Q2p9mFgU8soW7h5CIdjJbM9Bn0dub4CcI+s
+         5hJtucAeeWPqjUkI2FPiSFxFnJ3u2uppPiS920i95ViALBCSjuucJs6UET/oQp6p8GLF
+         Q6Rw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=bU2TYXI/IQ+ahWPrvtMjvIvPP35LcWsiAJFQ60YWV8o=;
-        b=H5PcZbgq1iTQA1BL/KmPwh1JCPiMswX29GJ6hc4wOyengnl9G/dGgdm+C0MVmcmNYe
-         I4Z76FmtHLQ8L58rVCKM51Qo/Uc0rSxiToABUxDImHm/TroyvelGCDjq5csT5jackgmQ
-         KfY1vz/d4fWXyCUlAAOPesrhBAd8Jg4WCFL6LIgGm1cPrwC7zO0OWsdJcU+LJlHnTEZo
-         iEKDSAVPhdUyF6OGwV39M+O+IHC9L5HGvCtRTeCVtLmFuNX12OAHXIo+kVVQeiWTqGdV
-         HXN8/GZisEV/SZc18SeZ11Nxwu7DdmbNQpr2cNwiy224RI4EFxFFEeK18LS3F+Gj0+8l
-         UDjw==
-X-Gm-Message-State: AFqh2konvKjqEEJV8CBwiH/2Cg2RxrPwhaVPdZ0scvnrHVoQWzd95icA
-	R9JKbqhb5IrZNutjV4bR4BFMDFnxqno=
-X-Google-Smtp-Source: AMrXdXt3ngSzeTd4BjcWtYkKZUmKlJ+coRJjsu8zn30hseAAXL6r6J79qyIJjR/uVl5OkeApgAgECG74aLI=
+        bh=D1pZqRdf8jzuIQZRLrMCJmLqIEvbyFYNYfXzudRZz6Y=;
+        b=2NLX3+LbZRR61h0MjkkyPCNmBK3aBy7zSWNbFpy99ygplo2Wz3MEid6CFwi6cGeelR
+         53es93ShX4Z9e1wcYQ6USnEnuw7Y8/jS9q/vJdtfIICrrKNL6eO45l1swhQATaKsG09Q
+         RrMTCebcowtb1xCoc0SlJ68EikapD07HKcNZ8D/dnPOWqL1VWMKm+haSMkFT8jlgVB98
+         +MYyY83tL0vnrdeUZduiM+Dobf2KEF3jVyiR8MzzJkweTfEtcR2oyQVLWe6PQny2+Cq6
+         UPrsNzevTHxFoBtnj4t7rbUIjSSZq0aFM4rlX9I63g6whsUF9gt+0uqh1Nl8Zkc4ski4
+         puxg==
+X-Gm-Message-State: AFqh2kppv66lHmxx0PZp9zVKiVp9j43Z5xRV8Zf2KRI47dIzNQjDsq7N
+	yMz8mvHa+c2YIU9MXOX5aCehVRmLFK8=
+X-Google-Smtp-Source: AMrXdXv95OTi9We7BklH2FBX3pkox2UVBRMtva8Mm7ne7fTGkQBBnTiOs3huBoDZBy+tfDGkNugi4GYzEh4=
 X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:9393:6f7a:d410:55ca])
- (user=surenb job=sendgmr) by 2002:a25:9f8b:0:b0:705:cde7:2363 with SMTP id
- u11-20020a259f8b000000b00705cde72363mr8137319ybq.81.1673297640913; Mon, 09
- Jan 2023 12:54:00 -0800 (PST)
-Date: Mon,  9 Jan 2023 12:53:03 -0800
+ (user=surenb job=sendgmr) by 2002:a05:6870:649e:b0:143:509f:17f0 with SMTP id
+ cz30-20020a056870649e00b00143509f17f0mr4940900oab.211.1673297643629; Mon, 09
+ Jan 2023 12:54:03 -0800 (PST)
+Date: Mon,  9 Jan 2023 12:53:04 -0800
 In-Reply-To: <20230109205336.3665937-1-surenb@google.com>
 Mime-Version: 1.0
 References: <20230109205336.3665937-1-surenb@google.com>
 X-Mailer: git-send-email 2.39.0.314.g84b9a713c41-goog
-Message-ID: <20230109205336.3665937-9-surenb@google.com>
-Subject: [PATCH 08/41] mm: introduce CONFIG_PER_VMA_LOCK
+Message-ID: <20230109205336.3665937-10-surenb@google.com>
+Subject: [PATCH 09/41] mm: rcu safe VMA freeing
 From: Suren Baghdasaryan <surenb@google.com>
 To: akpm@linux-foundation.org
 Content-Type: text/plain; charset="UTF-8"
@@ -79,45 +79,70 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This configuration variable will be used to build the support for VMA
-locking during page fault handling.
+From: Michel Lespinasse <michel@lespinasse.org>
 
-This is enabled by default on supported architectures with SMP and MMU
-set.
+This prepares for page faults handling under VMA lock, looking up VMAs
+under protection of an rcu read lock, instead of the usual mmap read lock.
 
-The architecture support is needed since the page fault handler is called
-from the architecture's page faulting code which needs modifications to
-handle faults under VMA lock.
-
+Signed-off-by: Michel Lespinasse <michel@lespinasse.org>
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 ---
- mm/Kconfig | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ include/linux/mm_types.h | 13 ++++++++++---
+ kernel/fork.c            | 13 +++++++++++++
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index ff7b209dec05..0aeca3794972 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -1183,6 +1183,19 @@ config LRU_GEN_STATS
- 	  This option has a per-memcg and per-node memory overhead.
- # }
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 4b6bce73fbb4..d5cdec1314fe 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -535,9 +535,16 @@ struct anon_vma_name {
+ struct vm_area_struct {
+ 	/* The first cache line has the info for VMA tree walking. */
  
-+config ARCH_SUPPORTS_PER_VMA_LOCK
-+       def_bool n
-+
-+config PER_VMA_LOCK
-+	bool "Per-vma locking support"
-+	default y
-+	depends on ARCH_SUPPORTS_PER_VMA_LOCK && MMU && SMP
-+	help
-+	  Allow per-vma locking during page fault handling.
-+
-+	  This feature allows locking each virtual memory area separately when
-+	  handling page faults instead of taking mmap_lock.
-+
- source "mm/damon/Kconfig"
+-	unsigned long vm_start;		/* Our start address within vm_mm. */
+-	unsigned long vm_end;		/* The first byte after our end address
+-					   within vm_mm. */
++	union {
++		struct {
++			/* VMA covers [vm_start; vm_end) addresses within mm */
++			unsigned long vm_start;
++			unsigned long vm_end;
++		};
++#ifdef CONFIG_PER_VMA_LOCK
++		struct rcu_head vm_rcu;	/* Used for deferred freeing. */
++#endif
++	};
  
- endmenu
+ 	struct mm_struct *vm_mm;	/* The address space we belong to. */
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 58aab6c889a4..5986817f393c 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -479,10 +479,23 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
+ 	return new;
+ }
+ 
++#ifdef CONFIG_PER_VMA_LOCK
++static void __vm_area_free(struct rcu_head *head)
++{
++	struct vm_area_struct *vma = container_of(head, struct vm_area_struct,
++						  vm_rcu);
++	kmem_cache_free(vm_area_cachep, vma);
++}
++#endif
++
+ void vm_area_free(struct vm_area_struct *vma)
+ {
+ 	free_anon_vma_name(vma);
++#ifdef CONFIG_PER_VMA_LOCK
++	call_rcu(&vma->vm_rcu, __vm_area_free);
++#else
+ 	kmem_cache_free(vm_area_cachep, vma);
++#endif
+ }
+ 
+ static void account_kernel_stack(struct task_struct *tsk, int account)
 -- 
 2.39.0
 
