@@ -4,53 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D97C5C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:32:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4AAC54EBD
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:33:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrRxN47S3z3gH3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:32:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sk2.org (client-ip=87.98.165.38; helo=6.mo560.mail-out.ovh.net; envelope-from=steve@sk2.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 4201 seconds by postgrey-1.36 at boromir; Tue, 10 Jan 2023 08:11:33 AEDT
-Received: from 6.mo560.mail-out.ovh.net (6.mo560.mail-out.ovh.net [87.98.165.38])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrRyX0Tf2z3g1c
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:33:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=BUrkQTa+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=BUrkQTa+;
+	dkim-atps=neutral
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrRT12WxDz3fRv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 08:11:29 +1100 (AEDT)
-Received: from director1.ghost.mail-out.ovh.net (unknown [10.109.146.143])
-	by mo560.mail-out.ovh.net (Postfix) with ESMTP id AEA10248D6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 19:53:55 +0000 (UTC)
-Received: from ghost-submission-6684bf9d7b-zhwml (unknown [10.110.208.112])
-	by director1.ghost.mail-out.ovh.net (Postfix) with ESMTPS id 7EEE11FEED;
-	Mon,  9 Jan 2023 19:53:51 +0000 (UTC)
-Received: from sk2.org ([37.59.142.98])
-	by ghost-submission-6684bf9d7b-zhwml with ESMTPSA
-	id SIYmDM9wvGPphQEAR6C6Tg
-	(envelope-from <steve@sk2.org>); Mon, 09 Jan 2023 19:53:51 +0000
-Authentication-Results: garm.ovh; auth=pass (GARM-98R002dcb81ab0-aa44-4050-9c7a-c7c6d9d4b65a,
-                    796317D5D98EA53ED2B7ABF3FE0FDD27B7A2AA3D) smtp.auth=steve@sk2.org
-X-OVh-ClientIp: 82.65.25.201
-Date: Mon, 9 Jan 2023 20:53:44 +0100
-From: Stephen Kitt <steve@sk2.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight
- handling
-Message-ID: <20230109205026.4c672dc8@heffalump.sk2.org>
-In-Reply-To: <Y7smdFs2xgJwwVQO@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
-	<20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
-	<553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
-	<Y7nb2q6SDota/rTU@ravnborg.org>
-	<366FC0B8-21E2-4642-A5A5-CF4B6AB046B0@sk2.org>
-	<Y7smdFs2xgJwwVQO@ravnborg.org>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrRm94s95z3g2N
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 08:24:40 +1100 (AEDT)
+Received: by mail-pf1-x42d.google.com with SMTP id g20so7212778pfb.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 13:24:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=cwNgqi/NQkqWmtT2yM6QfKma/Y9yH7Zze7tBPVBivxk=;
+        b=BUrkQTa+u/VpDQVrQM/lKNS4FTu2L3sLIIqBbnjlsemezMYlVHS8iPOKK5l8sDB8yf
+         M4eQOaPKiijvKhy/SLCWzcZDVz/vrcfFQIx6305wyt+99rkBk/j46H2bPJO4NqwWUeFh
+         SkY620a+ghXrYMMXDe+qWeyKu+3Dvw/iW6h4x+aAX3OuOb3gVlFRnttrZ6X5yzPnhfFV
+         a4hbYsL2Asa8O8K8Flc+yw3WuHu8TpXa9t3pgAGlKDIZrPieC5OiBBQVM/ABA/0OaMpG
+         9l3Kc8GBn58XMHZQT3nc6VjzrTALSMaOkN4yeTt5fG9hcT419bAO6RkFlg+/vznV8Naa
+         zz/g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=cwNgqi/NQkqWmtT2yM6QfKma/Y9yH7Zze7tBPVBivxk=;
+        b=sAeEMNkjHHL+tyK+rJzNQQe6PVlOUvVNPsNOY5/Qyodr57QRo9wqU4x9NKsnQfQT3T
+         3F/FUGSup82++Y7dvw6tk+2/5ipaP5hrU8kOgYwuJAacS3cTggtmC0WzTapBfAb/HQ6m
+         hbd30qtrP2mF/aPSz81KZ7JA20cUNFP+L3hOcegQNVYIxqo+8BEhQ0fLwaH91YLELSNd
+         b1b+Eicy7EhoI1hM73b3cy7Jf5hfYZ8HDbDOmCU1U8hwOa1WuMUbJmrvjwHBoTaXNxjl
+         qfpBeq2M7ae74UW5UvFbstZcNqn4lAGDg/sGUNR7lfoOsb94PyXPVVYjOCHMsknaPTUM
+         1ZXw==
+X-Gm-Message-State: AFqh2koFYkSsSMSbTAaq10WW0bMNYmp+a0nMw34uYyKLwRFRx0sO5WLa
+	TcS+0atg0gbRgQLY8TOLiUSfSnefASeTUbZX/wn4bw==
+X-Google-Smtp-Source: AMrXdXtIh0E/DgOM0QwEcwfy9eQgImnKUYlPyPKRHz81WoFNXLApps0jEhpEfXN0JAZZbWaOYH1ssQGCAd5Wpz9DJLc=
+X-Received: by 2002:a63:4943:0:b0:478:e6cf:c24c with SMTP id
+ y3-20020a634943000000b00478e6cfc24cmr5119252pgk.365.1673299477404; Mon, 09
+ Jan 2023 13:24:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/WkKI4pNhPlPhuyNdSzKYHjs";
- protocol="application/pgp-signature"; micalg=pgp-sha512
-X-Ovh-Tracer-Id: 8129841754002130566
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrkeeigdduvdeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfofggtgesghdtreerredtvdenucfhrhhomhepufhtvghphhgvnhcumfhithhtuceoshhtvghvvgesshhkvddrohhrgheqnecuggftrfgrthhtvghrnhepjeevgfeigfeukeeujeeghfefjeffjeffjeetffeludelgeevfeejtdekvdevvdevnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepuddvjedrtddrtddruddpfeejrdehledrudegvddrleeknecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeoshhtvghvvgesshhkvddrohhrgheqpdhnsggprhgtphhtthhopedupdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdpoffvtefjohhsthepmhhoheeitddpmhhouggvpehsmhhtphhouhht
+References: <20221228-drop-qunused-arguments-v1-0-658cbc8fc592@kernel.org> <20221228-drop-qunused-arguments-v1-5-658cbc8fc592@kernel.org>
+In-Reply-To: <20221228-drop-qunused-arguments-v1-5-658cbc8fc592@kernel.org>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Mon, 9 Jan 2023 13:24:26 -0800
+Message-ID: <CAKwvOdkB_+Nf9zpXeeayA6V14QoAEfW0b37DBsro04q5JpjBnw@mail.gmail.com>
+Subject: Re: [PATCH 05/14] powerpc: Remove linker flag from KBUILD_AFLAGS
+To: Nathan Chancellor <nathan@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,59 +73,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Lee Jones <lee@kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-omap@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@microchip.com>, Paul Mackerras <paulus@samba.org>, Robin van der Gracht <robin@protonic.nl>, Miguel Ojeda <ojeda@kernel.org>, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: kernel test robot <lkp@intel.com>, linux-kbuild@vger.kernel.org, trix@redhat.com, masahiroy@kernel.org, llvm@lists.linux.dev, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, nicolas@fjasle.eu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/WkKI4pNhPlPhuyNdSzKYHjs
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jan 4, 2023 at 11:54 AM Nathan Chancellor <nathan@kernel.org> wrote:
+>
+> When clang's -Qunused-arguments is dropped from KBUILD_CPPFLAGS, it
+> points out that KBUILD_AFLAGS contains a linker flag, which will be
+> used:
+>
+>   clang: error: -Wl,-a32: 'linker' input unused [-Werror,-Wunused-command-line-argument]
+>
+> This was likely supposed to be '-Wa,-a$(BITS)'. However, this change is
+> unnecessary, as all supported versions of clang and gcc will pass '-a64'
+> or '-a32' to GNU as based on the value of '-m'; the behavior of the
+> latest stable release of the oldest supported major version of each
+> compiler is shown below and each compiler's latest release exhibits the
+> same behavior (GCC 12.2.0 and Clang 15.0.6).
+>
+>   $ powerpc64-linux-gcc --version | head -1
+>   powerpc64-linux-gcc (GCC) 5.5.0
+>
+>   $ powerpc64-linux-gcc -m64 -### -x assembler-with-cpp -c -o /dev/null /dev/null &| grep 'as '
+>   .../as -a64 -mppc64 -many -mbig -o /dev/null /tmp/cctwuBzZ.s
+>
+>   $ powerpc64-linux-gcc -m32 -### -x assembler-with-cpp -c -o /dev/null /dev/null &| grep 'as '
+>   .../as -a32 -mppc -many -mbig -o /dev/null /tmp/ccaZP4mF.sg
+>
+>   $ clang --version | head -1
+>   Ubuntu clang version 11.1.0-++20211011094159+1fdec59bffc1-1~exp1~20211011214622.5
+>
+>   $ clang --target=powerpc64-linux-gnu -fno-integrated-as -m64 -### \
+>     -x assembler-with-cpp -c -o /dev/null /dev/null &| grep gnu-as
+>    "/usr/bin/powerpc64-linux-gnu-as" "-a64" "-mppc64" "-many" "-o" "/dev/null" "/tmp/null-80267c.s"
+>
+>   $ clang --target=powerpc64-linux-gnu -fno-integrated-as -m64 -### \
+>     -x assembler-with-cpp -c -o /dev/null /dev/null &| grep gnu-as
+>    "/usr/bin/powerpc64-linux-gnu-as" "-a32" "-mppc" "-many" "-o" "/dev/null" "/tmp/null-ab8f8d.s"
+>
+> Remove this flag altogether to avoid future issues.
+>
+> Fixes: 1421dc6d4829 ("powerpc/kbuild: Use flags variables rather than overriding LD/CC/AS")
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 
-Hi Sam,
+Thanks for the patch!
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
 
-On Sun, 8 Jan 2023 21:24:20 +0100, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > Here are my pending patches from last June on lore:
-> >  =20
->=20
-> All patches are handled I think except this:
-> > * https://lore.kernel.org/lkml/20220608205623.2106113-1-steve@sk2.org/ =
-=20
->=20
-> Can I ask you to drop the assignment that is not needed, and resend with
-> the collected acks/r-b.
->=20
-> With this, then all fbdev patches are handled.
+> ---
+> Cc: mpe@ellerman.id.au
+> Cc: npiggin@gmail.com
+> Cc: christophe.leroy@csgroup.eu
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index dc4cbf0a5ca9..4fd630efe39d 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -90,7 +90,7 @@ aflags-$(CONFIG_CPU_LITTLE_ENDIAN)    += -mlittle-endian
+>
+>  ifeq ($(HAS_BIARCH),y)
+>  KBUILD_CFLAGS  += -m$(BITS)
+> -KBUILD_AFLAGS  += -m$(BITS) -Wl,-a$(BITS)
+> +KBUILD_AFLAGS  += -m$(BITS)
+>  KBUILD_LDFLAGS += -m elf$(BITS)$(LDEMULATION)
+>  endif
+>
+>
+> --
+> 2.39.0
 
-Ah yes, it was revised as
-https://lore.kernel.org/lkml/20220609180440.3138625-1-steve@sk2.org/ which
-only got one ack (from you,
-https://lore.kernel.org/lkml/YqJCKQmQEuVsbspK@ravnborg.org/). Should I
-resend that or is that usable as-is? Or would it be better if I sent all the
-fbdev patches again (collecting all the acks and reviews)?
 
-Regards,
 
-Stephen
-
---Sig_/WkKI4pNhPlPhuyNdSzKYHjs
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEEnPVX/hPLkMoq7x0ggNMC9Yhtg5wFAmO8cMgACgkQgNMC9Yht
-g5z/hg/+M/SIiugiRlPu8/75brBREB81GIjjW2/r/pcvIdkETebFoCKAFma2bIgo
-VljGHiYUQygcfAT+SNwI5wRrMKaNDug+L7iXVOpE9ouBd3SAk65zo8e3xcH6hTJV
-GV7tVbhrQQwIwYGE/xf8ndGBVbHriXm2TZlCV48cNGIK9Gm9mn2yo3791fF/HpLC
-iLJNAG0tEukItdoNh+0HaT3AFj6SQMZCz9mHLCJS6Jpcltr920pa9eeCxpmcMupK
-/hzGcQaMKbpClKn+2h0st9aC3pBcw9kresTlcFlvo7avT7OFqQkV5+YuntPA2SlC
-oY9vS0ztE9capaPic4fsESf4i44NW58vceg96Ill1ZrJyUcXDdq/gntBi3SfM05W
-+DDJaIQQfSsnaqsPGn3AB7CTOeW4cATaih197XFdUcUtoW5nIrSRsCDlpbEmjpwr
-bPsM0KyqJJ5qJXictFaBoD0LDHNHNVVfyn4qA24N/PsgHQxtTaSVZR6ASx9/WI9w
-L83/tK68OFp7m14Z5tvdMHOI7oOUJO6L67wVtP8UrH+YW2NfBwcECQbanhU4cinF
-EWR7e1UlYF2APGsvx/BPrY21rOW4tYnp5WlUqO/SD1sMCWPVjN6LeFIELCW3bIHw
-/jCr9HY2gX6KPDEqkI6grOB+ffgNGgKvPQEOeL+BGNcywWCZTtk=
-=EEPd
------END PGP SIGNATURE-----
-
---Sig_/WkKI4pNhPlPhuyNdSzKYHjs--
+-- 
+Thanks,
+~Nick Desaulniers
