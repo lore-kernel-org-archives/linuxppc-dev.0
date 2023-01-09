@@ -4,74 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09368C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 20:36:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AAA04C5479D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 20:54:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrQhb1lm1z3cD8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 07:36:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrR5X6HGKz3cMr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 07:54:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=gmx.de header.i=@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=gxMrS/Tw;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hV1eYOET;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.15.19; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=31368ywykdooegdqznsaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=gxMrS/Tw;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hV1eYOET;
 	dkim-atps=neutral
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrQgT2TrJz2yHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 07:35:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
-	t=1673296481; bh=tDDMxQUH9PrDLgE/dT+MuHlPyJiO7mFGW8/sbQmK4fA=;
-	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
-	b=gxMrS/Twsss7fCu2lS0Wb7K3e/li2f3rr8EK0drV5Gymn8ukNv3Bwd3LMbH/SmLJz
-	 o2pWkySPI2F6couqVMUSRCavEGZqW+jT+LxjfSX8MZJes+uauHTLdbV5/NxJk291CX
-	 ttUvgacY+St5fs4ANcNfRSuJ0LQubjNe4T7ejyE7EPNyMI/EAgYH8sAY0VeTaiwytz
-	 8FAsrR1AbNmEEbpSuFs3/+7VsGugLmhoT+YZmgEAg8A5M+IslycNul2RkgORKhtpdV
-	 /weQ+nsr0P6qYV6MOEXto40tT5he1eKLUNC73UieAtSZYLBAigqW9XXZ9z4aW1VLn9
-	 II8e94VHAgC2g==
-X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
-Received: from [192.168.20.60] ([92.116.168.5]) by mail.gmx.net (mrgmx004
- [212.227.17.190]) with ESMTPSA (Nemesis) id 1MWAOW-1pHbCN0Lk2-00XalY; Mon, 09
- Jan 2023 21:34:41 +0100
-Message-ID: <f5b87764-57b8-8d13-79bd-592363ca7c32@gmx.de>
-Date: Mon, 9 Jan 2023 21:34:36 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.0
-Subject: Re: [PATCH 01/15] video: fbdev: atmel_lcdfb: Rework backlight
- handling
-Content-Language: en-US
-To: Stephen Kitt <steve@sk2.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-1-1bd9bafb351f@ravnborg.org>
- <553AE999-CAF1-4E59-9F3F-68591ED192DE@sk2.org>
- <Y7nb2q6SDota/rTU@ravnborg.org> <811a392a-d634-5557-dd58-57f1580e28f2@gmx.de>
- <20230109211857.79856bcf@heffalump.sk2.org>
-From: Helge Deller <deller@gmx.de>
-In-Reply-To: <20230109211857.79856bcf@heffalump.sk2.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:Sxat2VV9tsmpDqx48BXRIJsjtp4Uk+LtMp6TeothrAxEKeOVUMN
- Dm0J5cCxulRKy7oAmoyPnyYtBINa8biDQuhLNx3id5aME9DtEU5Bjf/sV3mvs40zfguZnbh
- KtsbJUiQXuF3dSrIqUeLm0CfC2SEBu2glCy9/ejtL6222AIa6jJQxToCY/b0mN6irXRDkxr
- YErYktx+mjchd/jxSTLBA==
-UI-OutboundReport: notjunk:1;M01:P0:Ru6D61qjM+I=;/Tif9Q07xNGL/8IpH47T4Zb2J/p
- 87op62XiN1+XP1UVPc++jmLZc3PbX8X9DyVhRrkA+1F+2SvKWtOdBxx0+7KIDfVWx9w0/9mym
- cGrz4Hz99ahqT75tlCPuD9C340MVcJwPEkubfK4IAoZn5iz7mvijEeHZl0HE3t4OI5BJ6Yyyg
- e+muYXDfYFB4b2wOzOyP5lmp8SIkqdnUQiNK6B7QgUJAgubpgxBe62neT1cxRXfo5kPDiTg97
- iUMWRThu99tk9hZ/rOPyyRVGNp46tU5eW0uFDJSXSN1KDo00pyAJHeToaAc424ld8T+Gh6+JM
- 7Alx9KJZs1jVQveQrERjLkcczY3TGv4ktXLXIXIdZ3Mvgee2ed71+lUUBpN5S3cBAaMLXawPx
- HCGmxyBNZ2DOaW2tf08AfG/zAleN9QNs7nEHhy1ETyTdwgjW8qT9fd4hyTf73icRT0MQt7amF
- 2nzXeM/b6tH3qHifK1iaxWAlFLlj38yKg/rUv31pYRG0V0m1PG5vdDFs1fBtFNGIhMhzw6ezi
- zfi3h0KmiGw5NQUkUkvIkCaHSKsrD2zXEkh0qAtXf299o/ZweoN6YFZnc9NPNl3Ge/RzVazUJ
- qB6UWJ790F+sf2/MqvlneZqxmgceqEEsHOtqsOdAHPb7viXlebkLnhq5Hqnrfv8ESCO5mwTcQ
- 5D9swqk/sxRHfuDLKXDf5I+KZWSxtoboJH4V+TuOPIoPg1G3Bdhl2FJEDqi4a2rLaYttNv60f
- T6OfkZJ12Bxtc4tmYiZRJgGbiGgwdfp5b1AFR9JnK2zGr4qX8xa/5oC7e7rQMdXU50SU9ZBkk
- mNCd+bQk1QovwKxnpregRNLjnVjbhpsEIcY4FznWPiFR0/n1YiVEK+4wpjUsxMT8+lORVepC0
- tTn339nCiIBz0Lfmm4vvvFKeTbUg6LD/gOmkmJFJq2UWfWinI8CNbixz6uQqNIxbEOqAF+xmz
- aRkqQA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrR4T6wTBz2yPY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 07:53:45 +1100 (AEDT)
+Received: by mail-yb1-xb49.google.com with SMTP id k18-20020a25e812000000b0077cc9ab9dd9so10215707ybd.8
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 12:53:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=NqXJ+ZomBW9TS34c/jGDj4kdswhUlT56T9j0TeoADNk=;
+        b=hV1eYOET6T2afidyHxuU+TDalPYH7SoLHvYl4BYwO2+JPtGGpug5jlQUoy9K4emxnp
+         wkRJchtDj68k/F+2XFNh7yn/DcVU/S6b5BfTlEf/HmlwKUP7B8xL+hIWlClC+stgjn0Q
+         yjEqU4w0bHW24Tkvl4HAvFsvboqjzGC/OqOppLTxN2NoinKdWAqCYIk7Wp05H1K9TySk
+         fMjEc/Qrcjc9huA2llMuqioo8fVnZzgiNBMYUce/o/EkMO+/Qtv30xUsop9ErVhi9UD1
+         18fRcEvtN38NaeuSdMu7DJkgG+1MjHvnJbjraNd54FiH0BDnP0iYXASfyl6JxE09JvbK
+         zNVA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=NqXJ+ZomBW9TS34c/jGDj4kdswhUlT56T9j0TeoADNk=;
+        b=SxJPr0q5LBTRPl1/3Xx9yKrSdix41EcgYXPGQqhxyPXktS4ghxgtGwaqAuPZ2SoMGd
+         3avmKftTmcmOCxkzu237hmJ3zhK+C6fUV8ytc43j5RfyDumtDNTHGXS08fEs3UgyRFhm
+         LncBATGct5sH+L5A/OszJRmiO7tIDQEPxTaI70BpyOx3kJS6O0W2r9VpwcVJ1zyR3EO9
+         v0DopSrBotrr5XnLZnGFhpCaHPlxX9LEse8IBQR7xoy2euqB3lbKUiSLe0m076EiPzPz
+         AgHtqgZhN80NOs9Roy4MKwKbbz0WIuYRwVpoYhkCJ/XPzV8Y4J9qQbOJTuul+0dq2WqF
+         xnCg==
+X-Gm-Message-State: AFqh2kpohNMzti7xAgrY2bKGSvfBDoHa5shU7PVaBrjzS2FtsBn6GWtV
+	M+8tz5IaXLLi66gGfXetVVunlipRkjc=
+X-Google-Smtp-Source: AMrXdXsc+lRNNMUj/grXDfNh64QUbjHDxIxAaFKRrkqMjOPH6SvLaEBts0d+5j6B8x6v1ECq7EPEJR82hgY=
+X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:9393:6f7a:d410:55ca])
+ (user=surenb job=sendgmr) by 2002:a25:7189:0:b0:707:18f:7226 with SMTP id
+ m131-20020a257189000000b00707018f7226mr210074ybc.505.1673297623117; Mon, 09
+ Jan 2023 12:53:43 -0800 (PST)
+Date: Mon,  9 Jan 2023 12:52:56 -0800
+In-Reply-To: <20230109205336.3665937-1-surenb@google.com>
+Mime-Version: 1.0
+References: <20230109205336.3665937-1-surenb@google.com>
+X-Mailer: git-send-email 2.39.0.314.g84b9a713c41-goog
+Message-ID: <20230109205336.3665937-2-surenb@google.com>
+Subject: [PATCH 01/41] maple_tree: Be more cautious about dead nodes
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,73 +74,195 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-staging@lists.linux.dev, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee@kernel.org>, Ludovic Desroches <ludovic.desroches@microchip.com>, Miguel Ojeda <ojeda@kernel.org>, Sam Ravnborg via B4 Submission Endpoint <devnull+sam.ravnborg.org@kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Robin van der Gracht <robin@protonic.nl>, Nicolas Ferre <nicolas.ferre@microchip.com>, Jingoo Han <jingoohan1@gmail.com>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, Liam Howlett <Liam.Howlett@oracle.com>, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin@google.com, mg
+ orman@techsingularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/9/23 21:18, Stephen Kitt wrote:
-> On Sun, 8 Jan 2023 18:26:12 +0100, Helge Deller <deller@gmx.de> wrote:
->
->> On 1/7/23 21:53, Sam Ravnborg wrote:
->>> Hi Stephen.
->>>
->>> On Sat, Jan 07, 2023 at 09:36:47PM +0100, Stephen Kitt wrote:
->>>> On 7 January 2023 19:26:15 CET, Sam Ravnborg via B4 Submission Endpoi=
-nt
->>>> <devnull+sam.ravnborg.org@kernel.org> wrote:
->>>>> From: Sam Ravnborg <sam@ravnborg.org>
->>>>>
->>>>> The atmel_lcdfb had code to save/restore power state.
->>>>> This is not needed so drop it.
->>>>>
->>>>> Introduce backlight_is_brightness() to make logic simpler.
->>>>>
->>>>> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
->>>>> Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
->>>>> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
->>>>> Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
->>>>> Cc: linux-fbdev@vger.kernel.org
->>>>> Cc: linux-arm-kernel@lists.infradead.org
->>>>> ---
->>>>> drivers/video/fbdev/atmel_lcdfb.c | 24 +++---------------------
->>>>> 1 file changed, 3 insertions(+), 21 deletions(-)
->>> ...
->>>>
->>>> Hi Sam,
->>>>
->>>> I=E2=80=99d submitted quite a few more of these previously (and you=
-=E2=80=99d reviewed
->>>> them), see e.g. the thread starting at
->>>> https://lkml.org/lkml/2022/6/7/4365, and yesterday,
->>>> https://lkml.org/lkml/2023/1/6/520, https://lkml.org/lkml/2023/1/6/65=
-6,
->>>> https://lkml.org/lkml/2023/1/6/970, https://lkml.org/lkml/2023/1/6/64=
-3,
->>>> and https://lkml.org/lkml/2023/1/6/680. There are a few more, I can f=
-ind
->>>> them if it=E2=80=99s any use.
->>>
->>> The patches from yesterday was what triggered me to resurrect an old
->>> branch of mine where I had done something similar. I had lost all
->>> memory of reviewing similar patches from you.
->>>
->>>
->>> Helge - could you pick the reviewed patches from:
->>> https://lore.kernel.org/all/20220607192335.1137249-1-steve@sk2.org/
->>> [This is the same mail as Stephen refer to above - looked up via lore]=
-.
->>
->> I just pulled those 7 patches into fbdev/for-next.
->> If you need more, please let me know,
->
-> Please pull
-> https://lore.kernel.org/lkml/20230109200239.1850611-1-steve@sk2.org/ too=
-, it
-> completes the fbdev set. (It=E2=80=99s a re-send of
-> https://lore.kernel.org/lkml/20220609180440.3138625-1-steve@sk2.org/).
+From: Liam Howlett <Liam.Howlett@oracle.com>
 
-Done.
+ma_pivots() and ma_data_end() may be called with a dead node.  Ensure to
+that the node isn't dead before using the returned values.
 
-Thanks!
-Helge
+This is necessary for RCU mode of the maple tree.
+
+Fixes: 54a611b60590 ("Maple Tree: add new data structure")
+Signed-off-by: Liam Howlett <Liam.Howlett@oracle.com>
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+---
+ lib/maple_tree.c | 53 +++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 43 insertions(+), 10 deletions(-)
+
+diff --git a/lib/maple_tree.c b/lib/maple_tree.c
+index 26e2045d3cda..ff9f04e0150d 100644
+--- a/lib/maple_tree.c
++++ b/lib/maple_tree.c
+@@ -540,6 +540,7 @@ static inline bool ma_dead_node(const struct maple_node *node)
+ 
+ 	return (parent == node);
+ }
++
+ /*
+  * mte_dead_node() - check if the @enode is dead.
+  * @enode: The encoded maple node
+@@ -621,6 +622,8 @@ static inline unsigned int mas_alloc_req(const struct ma_state *mas)
+  * @node - the maple node
+  * @type - the node type
+  *
++ * In the event of a dead node, this array may be %NULL
++ *
+  * Return: A pointer to the maple node pivots
+  */
+ static inline unsigned long *ma_pivots(struct maple_node *node,
+@@ -1091,8 +1094,11 @@ static int mas_ascend(struct ma_state *mas)
+ 		a_type = mas_parent_enum(mas, p_enode);
+ 		a_node = mte_parent(p_enode);
+ 		a_slot = mte_parent_slot(p_enode);
+-		pivots = ma_pivots(a_node, a_type);
+ 		a_enode = mt_mk_node(a_node, a_type);
++		pivots = ma_pivots(a_node, a_type);
++
++		if (unlikely(ma_dead_node(a_node)))
++			return 1;
+ 
+ 		if (!set_min && a_slot) {
+ 			set_min = true;
+@@ -1398,6 +1404,9 @@ static inline unsigned char ma_data_end(struct maple_node *node,
+ {
+ 	unsigned char offset;
+ 
++	if (!pivots)
++		return 0;
++
+ 	if (type == maple_arange_64)
+ 		return ma_meta_end(node, type);
+ 
+@@ -1433,6 +1442,9 @@ static inline unsigned char mas_data_end(struct ma_state *mas)
+ 		return ma_meta_end(node, type);
+ 
+ 	pivots = ma_pivots(node, type);
++	if (unlikely(ma_dead_node(node)))
++		return 0;
++
+ 	offset = mt_pivots[type] - 1;
+ 	if (likely(!pivots[offset]))
+ 		return ma_meta_end(node, type);
+@@ -4504,6 +4516,9 @@ static inline int mas_prev_node(struct ma_state *mas, unsigned long min)
+ 	node = mas_mn(mas);
+ 	slots = ma_slots(node, mt);
+ 	pivots = ma_pivots(node, mt);
++	if (unlikely(ma_dead_node(node)))
++		return 1;
++
+ 	mas->max = pivots[offset];
+ 	if (offset)
+ 		mas->min = pivots[offset - 1] + 1;
+@@ -4525,6 +4540,9 @@ static inline int mas_prev_node(struct ma_state *mas, unsigned long min)
+ 		slots = ma_slots(node, mt);
+ 		pivots = ma_pivots(node, mt);
+ 		offset = ma_data_end(node, mt, pivots, mas->max);
++		if (unlikely(ma_dead_node(node)))
++			return 1;
++
+ 		if (offset)
+ 			mas->min = pivots[offset - 1] + 1;
+ 
+@@ -4573,6 +4591,7 @@ static inline int mas_next_node(struct ma_state *mas, struct maple_node *node,
+ 	struct maple_enode *enode;
+ 	int level = 0;
+ 	unsigned char offset;
++	unsigned char node_end;
+ 	enum maple_type mt;
+ 	void __rcu **slots;
+ 
+@@ -4596,7 +4615,11 @@ static inline int mas_next_node(struct ma_state *mas, struct maple_node *node,
+ 		node = mas_mn(mas);
+ 		mt = mte_node_type(mas->node);
+ 		pivots = ma_pivots(node, mt);
+-	} while (unlikely(offset == ma_data_end(node, mt, pivots, mas->max)));
++		node_end = ma_data_end(node, mt, pivots, mas->max);
++		if (unlikely(ma_dead_node(node)))
++			return 1;
++
++	} while (unlikely(offset == node_end));
+ 
+ 	slots = ma_slots(node, mt);
+ 	pivot = mas_safe_pivot(mas, pivots, ++offset, mt);
+@@ -4612,6 +4635,9 @@ static inline int mas_next_node(struct ma_state *mas, struct maple_node *node,
+ 		mt = mte_node_type(mas->node);
+ 		slots = ma_slots(node, mt);
+ 		pivots = ma_pivots(node, mt);
++		if (unlikely(ma_dead_node(node)))
++			return 1;
++
+ 		offset = 0;
+ 		pivot = pivots[0];
+ 	}
+@@ -4658,16 +4684,18 @@ static inline void *mas_next_nentry(struct ma_state *mas,
+ 		return NULL;
+ 	}
+ 
+-	pivots = ma_pivots(node, type);
+ 	slots = ma_slots(node, type);
+-	mas->index = mas_safe_min(mas, pivots, mas->offset);
+-	if (ma_dead_node(node))
++	pivots = ma_pivots(node, type);
++	count = ma_data_end(node, type, pivots, mas->max);
++	if (unlikely(ma_dead_node(node)))
+ 		return NULL;
+ 
++	mas->index = mas_safe_min(mas, pivots, mas->offset);
++	if (unlikely(ma_dead_node(node)))
++		return NULL;
+ 	if (mas->index > max)
+ 		return NULL;
+ 
+-	count = ma_data_end(node, type, pivots, mas->max);
+ 	if (mas->offset > count)
+ 		return NULL;
+ 
+@@ -4815,6 +4843,11 @@ static inline void *mas_prev_nentry(struct ma_state *mas, unsigned long limit,
+ 
+ 	slots = ma_slots(mn, mt);
+ 	pivots = ma_pivots(mn, mt);
++	if (unlikely(ma_dead_node(mn))) {
++		mas_rewalk(mas, index);
++		goto retry;
++	}
++
+ 	if (offset == mt_pivots[mt])
+ 		pivot = mas->max;
+ 	else
+@@ -6613,11 +6646,11 @@ static inline void *mas_first_entry(struct ma_state *mas, struct maple_node *mn,
+ 	while (likely(!ma_is_leaf(mt))) {
+ 		MT_BUG_ON(mas->tree, mte_dead_node(mas->node));
+ 		slots = ma_slots(mn, mt);
+-		pivots = ma_pivots(mn, mt);
+-		max = pivots[0];
+ 		entry = mas_slot(mas, slots, 0);
++		pivots = ma_pivots(mn, mt);
+ 		if (unlikely(ma_dead_node(mn)))
+ 			return NULL;
++		max = pivots[0];
+ 		mas->node = entry;
+ 		mn = mas_mn(mas);
+ 		mt = mte_node_type(mas->node);
+@@ -6637,13 +6670,13 @@ static inline void *mas_first_entry(struct ma_state *mas, struct maple_node *mn,
+ 	if (likely(entry))
+ 		return entry;
+ 
+-	pivots = ma_pivots(mn, mt);
+-	mas->index = pivots[0] + 1;
+ 	mas->offset = 1;
+ 	entry = mas_slot(mas, slots, 1);
++	pivots = ma_pivots(mn, mt);
+ 	if (unlikely(ma_dead_node(mn)))
+ 		return NULL;
+ 
++	mas->index = pivots[0] + 1;
+ 	if (mas->index > limit)
+ 		goto none;
+ 
+-- 
+2.39.0
 
