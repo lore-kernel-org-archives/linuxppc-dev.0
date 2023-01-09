@@ -4,62 +4,88 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E3C0C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 18:38:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4D72C5479D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 19:03:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrN4H59HVz3cKr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 05:38:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrNdC1w3Tz3fB2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 06:03:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa2 header.b=xr+iUWmf;
-	dkim=fail reason="signature verification failed" header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed2 header.b=nxcQ2DNw;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iYLzfX/+;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iYLzfX/+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mailrelay4-1.pub.mailoutpod2-cph3.one.com (client-ip=46.30.211.179; helo=mailrelay4-1.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vschneid@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa2 header.b=xr+iUWmf;
-	dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed2 header.b=nxcQ2DNw;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iYLzfX/+;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=iYLzfX/+;
 	dkim-atps=neutral
-Received: from mailrelay4-1.pub.mailoutpod2-cph3.one.com (mailrelay4-1.pub.mailoutpod2-cph3.one.com [46.30.211.179])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrN380KYMz3c3N
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 05:37:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=rsa2;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=wZxH/nDf40/5XX4K0N7bveQXBer/ZTbSo4stXhMD1MQ=;
-	b=xr+iUWmfOB1CLBr6Qsy2YZMDRotm12WBZ/zh+3qIGnqD+WW38gq16Rl6LS9taWAIgXP2llv2ueyF0
-	 fA3iIIxYnmuPGkwiK+SGk3l7yHRvIxggcTtT7x2q0+wwF6fVIQkEzPtcW04Q4A6X4SKS9m56vo7D0o
-	 hLzfG7GraTS31Ch8FAtoGue7T76SmYvTnNeZNZkj0/5oK6YNNivj7Wo0ExtjbmvCmHRBteAPdkj/Eg
-	 NkDkGI6lGIPAVh39LbMkR8Ej5M2GsnANIVRaeRashpzz54gdLod6v1ri7V6JrPjvdhVHIVaCwftjs+
-	 2rttIhFTMoveJDSDeM23dX3GpjUJUVw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed;
-	d=ravnborg.org; s=ed2;
-	h=in-reply-to:content-transfer-encoding:content-type:mime-version:references:
-	 message-id:subject:cc:to:from:date:from;
-	bh=wZxH/nDf40/5XX4K0N7bveQXBer/ZTbSo4stXhMD1MQ=;
-	b=nxcQ2DNweooGl9o3PknXxmGKMXudrM7A8yocezPtlLEgBpQEu7WtSwjxUTWj2HhN7+D5H3vtKKz4P
-	 oB6b4GmAA==
-X-HalOne-ID: 5e23647e-904a-11ed-85ce-87783a957ad9
-Received: from ravnborg.org (2-105-2-98-cable.dk.customer.tdc.net [2.105.2.98])
-	by mailrelay4 (Halon) with ESMTPSA
-	id 5e23647e-904a-11ed-85ce-87783a957ad9;
-	Mon, 09 Jan 2023 18:21:02 +0000 (UTC)
-Date: Mon, 9 Jan 2023 19:21:00 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 02/15] video: fbdev: atyfb: Introduce
- backlight_get_brightness()
-Message-ID: <Y7xbDAwLEeCJ4L54@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-2-1bd9bafb351f@ravnborg.org>
- <04f0f8c7-43cd-f774-c952-eb1cf3494bd8@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrNbw5cZ2z2xHH
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 06:02:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1673290937;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=mHlpuxTK3Q4mXdtUEAjHx/X4tIty+fqRI+m6xngZY9c=;
+	b=iYLzfX/+x0gg809zW0TTeakmRwaUF0lw64Q6nF8en1Uul5QIM1GCu8sbmRnTHfpB3HFrp6
+	oxhdcO7uTCXXXxk7EsQgQVC/pVAGqjSG9jgNDQdmVvz9akY9LbE16OWkdEv69rUibGbcws
+	LgFQhXQxiRIFhsuNJsoft1bsRTeAWt8=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1673290937;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=mHlpuxTK3Q4mXdtUEAjHx/X4tIty+fqRI+m6xngZY9c=;
+	b=iYLzfX/+x0gg809zW0TTeakmRwaUF0lw64Q6nF8en1Uul5QIM1GCu8sbmRnTHfpB3HFrp6
+	oxhdcO7uTCXXXxk7EsQgQVC/pVAGqjSG9jgNDQdmVvz9akY9LbE16OWkdEv69rUibGbcws
+	LgFQhXQxiRIFhsuNJsoft1bsRTeAWt8=
+Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com
+ [209.85.128.199]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-292-bpZ5R8OEMZuGUoQhxWEqcA-1; Mon, 09 Jan 2023 14:02:16 -0500
+X-MC-Unique: bpZ5R8OEMZuGUoQhxWEqcA-1
+Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-4ce566db73eso32210527b3.11
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 11:02:15 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=mHlpuxTK3Q4mXdtUEAjHx/X4tIty+fqRI+m6xngZY9c=;
+        b=i6k/zxlxJKSI+ETDrUFgnRlXpCHdTBEkkG7KOOTJCeqD0By/q1JU0xennVRkMEd8TL
+         8X9Em5btwei37KQ66N2efPaQIo5FLpkEZO3MAkpVTZaDE8yPBslIYPhbq//OVNmNCMWr
+         USUlqAQSi3XSUQ2ZkjV74uIuN0bz1Af5GVkxsQ407S+Phffqp52031PLCG9DZXpx2GCs
+         bTbpeyujfWq6BLxLkZ8qKxh1BetxNuveGZmjzAbMU1vV3qdCBp0BcFh0hLFhL672Wo7q
+         EPn3tSpmu4ReqcM5JO3LoKxKX0PsHqDET4ZmjUgA+ItZ2RjCsiVy3fUccDUZq78Ds3gA
+         /PNg==
+X-Gm-Message-State: AFqh2kqEuVouasmP/f1jlIODNXmu+9QuWIb7o89Umi5O/bW1SNodop67
+	0svG4H8u9yqfTt+bWk6aTpe8mCnqSN+Rkid9cyRbrOdRj4JN3V15UJ3zxFBbDlllyvetCUBjiYm
+	/AbL1JgzExMZ9UN/prx+2rvgqcg==
+X-Received: by 2002:a05:7500:5c96:b0:f0:f14:b4f6 with SMTP id fh22-20020a0575005c9600b000f00f14b4f6mr1334320gab.55.1673290935393;
+        Mon, 09 Jan 2023 11:02:15 -0800 (PST)
+X-Google-Smtp-Source: AMrXdXvpgx9uVCbTytxfSzpNGAx1CCCprwK9dYT+w5TdWAjmS9/Yvcm6uASOc9C3qqyAspkLlpcI4w==
+X-Received: by 2002:a05:7500:5c96:b0:f0:f14:b4f6 with SMTP id fh22-20020a0575005c9600b000f00f14b4f6mr1334309gab.55.1673290934985;
+        Mon, 09 Jan 2023 11:02:14 -0800 (PST)
+Received: from vschneid.remote.csb ([154.57.232.159])
+        by smtp.gmail.com with ESMTPSA id az31-20020a05620a171f00b006fbbdc6c68fsm5795671qkb.68.2023.01.09.11.02.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Jan 2023 11:02:14 -0800 (PST)
+From: Valentin Schneider <vschneid@redhat.com>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v3 3/8] sched, smp: Trace IPIs sent via
+ send_call_function_single_ipi()
+In-Reply-To: <Y7lRz7oCaAmAhoqS@gmail.com>
+References: <20221202155817.2102944-1-vschneid@redhat.com>
+ <20221202155817.2102944-4-vschneid@redhat.com>
+ <Y7lRz7oCaAmAhoqS@gmail.com>
+Date: Mon, 09 Jan 2023 19:02:08 +0000
+Message-ID: <xhsmh4jszedlb.mognet@vschneid.remote.csb>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <04f0f8c7-43cd-f774-c952-eb1cf3494bd8@csgroup.eu>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,27 +97,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Lee Jones <lee@kernel.org>, Stephen Kitt <steve@sk2.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, Daniel Thompson <daniel.thompson@linaro.org>, Antonino Daplas <adaplas@gmail.com>, Helge Deller <deller@gmx.de>, "linux-staging@lists.linux.dev" <linux-staging@lists.linux.dev>, Daniel Vetter <daniel.vetter@ffwll.ch>, Miguel Ojeda <ojeda@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jani Nikula <jani.nikula@intel.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jason Yan <yanaijie@huawei.com>, Robin van
-  der Gracht <robin@protonic.nl>, Nicolas Ferre <nicolas.ferre@microchip.com>, Souptick Joarder <jrdr.linux@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter
+ Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, Daniel Bristot de Oliveira <bristot@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-On Mon, Jan 09, 2023 at 05:44:46PM +0000, Christophe Leroy wrote:
-> 
-> 
-> Le 07/01/2023 à 19:26, Sam Ravnborg via B4 Submission Endpoint a écrit :
-> > From: Sam Ravnborg <sam@ravnborg.org>
-> > 
-> > Introduce backlight_get_brightness() to simplify logic
-> > and avoid direct access to backlight properties.
-> 
-> When I read 'introduce' I understand that you are adding a new function.
-> 
-> In fact backlight_get_brightness() already exists, so maybe replace 
-> 'introduce' by 'use'
+On 07/01/23 12:04, Ingo Molnar wrote:
+> * Valentin Schneider <vschneid@redhat.com> wrote:
+>
+>> send_call_function_single_ipi() is the thing that sends IPIs at the bottom
+>> of smp_call_function*() via either generic_exec_single() or
+>> smp_call_function_many_cond(). Give it an IPI-related tracepoint.
+>> 
+>> Note that this ends up tracing any IPI sent via __smp_call_single_queue(),
+>> which covers __ttwu_queue_wakelist() and irq_work_queue_on() "for free".
+>> 
+>> Signed-off-by: Valentin Schneider <vschneid@redhat.com>
+>> Reviewed-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+>
+> Acked-by: Ingo Molnar <mingo@kernel.org>
+>
+> Patch series logistics:
+>
+>  - No objections from the scheduler side, this feature looks pretty useful.
+>
 
-Thanks for your feedback. A similar patch is already applied to the
-fbdev tree, so this patch can be ignored.
+Thanks!
 
-	Sam
+>  - Certain patches are incomplete, others are noted as being merged 
+>    separately, so I presume you'll send an updated/completed series 
+>    eventually?
+>
+
+The first patch from Steve is now in, so can drop it.
+
+The other patches are complete, though I need to rebase them and regenerate
+the treewide patch to catch any changes that came with 6.2. I'll do that
+this week.
+
+The "incompleteness" pointed out in the cover letter is about the types of
+IPIs that can be traced. This series covers the ones that end up invoking
+some core code (coincidentally those are the most common ones), others such
+as e.g. tick_broadcast() for arm, arm64, riscv and hexagon remain
+unaffected.
+
+I'm not that much interested in these (other than maybe the tick broadcast
+one they are all fairly unfrequent), but I'm happy to have a shot at them
+for the sake of completeness - either in that series or in a followup, up
+to you.  
+
+>  - We can merge this via the scheduler tree I suspect, as most callbacks 
+>    affected relate to tip:sched/core and tmp:smp/core - but if you have 
+>    some other preferred tree that's fine too.
+>
+
+Either sound good to me.
+
+> Thanks,
+>
+> 	Ingo
+
