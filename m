@@ -4,70 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8E9DC5479D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 10:02:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F943C5479D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 11:04:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nr8cX0D0yz3cCL
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:02:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrB054PRKz3bqt
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 22:04:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HANDvxVU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oGr26Y/f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=daniel.thompson@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HANDvxVU;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=oGr26Y/f;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nr8bP2XGFz30Jy
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 21:01:05 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 30060B80D5B
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 10:01:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id D1E34C433D2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 10:00:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1673258459;
-	bh=BA+hOmAXK0bu8FIi9qI7gTqpHOLoySsvvXsdHKRskNo=;
-	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=HANDvxVUwu/keaiX5S4Y6itwy4qbM2xrU5GmJcuiI/vk+LTNMqIDsvoZkWT6ayg4M
-	 PJR27xmdFnkncyxFdIoA8GfvdGNVIi5IxJe/fmyQjZ8hNPJTqITV2+y/jkZW8kdLdX
-	 AdyoEicE6JeNe0UZ+Segp1alG31EUxzNmVDOlyAJXhG9NwB5x0nSEwaBWNwdU6oDnk
-	 JfuHLY4nqizz059hQgy9vrHvmStjCs7v/74D3udzbtyZNpQRHrh3q60JR/NhmILkuc
-	 zbhbxbatDLfqcGK8/qSZcHc6YHKk1Q7MFisD+sIQRG9SWl6cJL7wzw1fQDyBjXcUQJ
-	 H5XkcLXz9Iosg==
-Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id BA3FEC43143; Mon,  9 Jan 2023 10:00:59 +0000 (UTC)
-From: bugzilla-daemon@kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 216095] sysfs: cannot create duplicate filename
- '/devices/platform/of-display'
-Date: Mon, 09 Jan 2023 10:00:59 +0000
-X-Bugzilla-Reason: None
-X-Bugzilla-Type: changed
-X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Product: Platform Specific/Hardware
-X-Bugzilla-Component: PPC-32
-X-Bugzilla-Version: 2.5
-X-Bugzilla-Keywords: 
-X-Bugzilla-Severity: normal
-X-Bugzilla-Who: msuchanek@suse.de
-X-Bugzilla-Status: NEW
-X-Bugzilla-Resolution: 
-X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
-X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: 
-Message-ID: <bug-216095-206035-lJKmrs8LLb@https.bugzilla.kernel.org/>
-In-Reply-To: <bug-216095-206035@https.bugzilla.kernel.org/>
-References: <bug-216095-206035@https.bugzilla.kernel.org/>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Bugzilla-URL: https://bugzilla.kernel.org/
-Auto-Submitted: auto-generated
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nr9z15nGKz3bXQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jan 2023 22:03:07 +1100 (AEDT)
+Received: by mail-wr1-x429.google.com with SMTP id z5so6685702wrt.6
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 03:03:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Zefo0+cIWrVM5FFfr0NEPPr+QlP+S4JK9M0A8dYdzso=;
+        b=oGr26Y/fiwHYFqrJohN/Z+dunayrmT0xuC0ParAo9r2mbdlha7JmZ5TehQNI7/mIWp
+         hWSaPL393d7ahA2QrXLa47EcjFnu5YT3Jb1N9fthnTAQrjCxXX5POnD6hWqlfRrvA5rI
+         D/zve+wX42+oAgMs/sBQZoe1LdpaOjZRMLxj9/pt72r0tOe0R/+AjRzibKCDbZ/OAUkz
+         Q0BxMJI//BsazsVVwnI2dgwGh987r5dh+ydGEkKrBjeM7d2rKYJ1AA6ZN5E5Avw5UebQ
+         EnTIpNqs1kyVGp6yaaqvQXZQzoIn0NGA/pp6hh/yoW71e/0duhXVOBRms7rLUxGdJdLd
+         s8Mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Zefo0+cIWrVM5FFfr0NEPPr+QlP+S4JK9M0A8dYdzso=;
+        b=Ft1/I05oKvLBEyinMc+L8afIoF+YO/KdOQPVt5YfN6uZ4hQdxHxUpto09qnSF43nyX
+         1ENy/5He8V7ZP6xJ1fex/c5WVTpeI6VG6pPNugcI7AzwNynM9Djtn5oIO2OOa/rYO/4v
+         0vhiUlwb9CuBA2I4kCU/2NL/SLZaoCFonafFO2S2kGk1Kkn6OcVhduZbW1A0OAI3HLS9
+         PEQKW7MyYNxedErfGr/UhEjIrqOz64LMskqgHGEf9C6ideHV6h0xT9wO6NeZadnSBep0
+         fTuesY2BrzFiyXeB5VP1qHP/L/J5HgkBF9ZN73KBol6D6TbT8W6aiPSA41C7j7evl+8O
+         v9pg==
+X-Gm-Message-State: AFqh2kreF5THwjtikk1n7CzJ4oXOT7JXIVufgCQmXw2M4vFZ4xDCxegK
+	qzl986Qsmx2xw8ARiyZ0btintQ==
+X-Google-Smtp-Source: AMrXdXuJ229PsMqnsutJQhmCnDx582UTxhRGjYEWDOJCs8UDfbNlBoANEOulxPZfAp5vzNYgBBmlzA==
+X-Received: by 2002:a5d:56cb:0:b0:28d:66c4:3102 with SMTP id m11-20020a5d56cb000000b0028d66c43102mr23679733wrw.12.1673262182985;
+        Mon, 09 Jan 2023 03:03:02 -0800 (PST)
+Received: from aspen.lan (cpc141216-aztw34-2-0-cust174.18-1.cable.virginm.net. [80.7.220.175])
+        by smtp.gmail.com with ESMTPSA id o14-20020a5d58ce000000b002879c013b8asm8250053wrf.42.2023.01.09.03.03.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 09 Jan 2023 03:03:02 -0800 (PST)
+Date: Mon, 9 Jan 2023 11:02:59 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+To: sam@ravnborg.org
+Subject: Re: [PATCH 13/15] backlight: omap1: Use backlight helpers
+Message-ID: <Y7v0Yw3kg9E8j5Bu@aspen.lan>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-13-1bd9bafb351f@ravnborg.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-13-1bd9bafb351f@ravnborg.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,26 +78,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-staging@lists.linux.dev, Stephen Kitt <steve@sk2.org>, Antonino Daplas <adaplas@gmail.com>, Robin van der Gracht <robin@protonic.nl>, Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Paul Mackerras <paulus@samba.org>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Miguel Ojeda <ojeda@kernel.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D216095
+On Sat, Jan 07, 2023 at 07:26:27PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
+> From: Sam Ravnborg <sam@ravnborg.org>
+>
+> Rework backlight handling to avoid access to the deprecated
+> backlight_properties.fb_blank member.
+>
+> The rework includes removal of get_brightness() operation,
+> because there was no read back from HW so no use for it.
+>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Lee Jones <lee@kernel.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
 
---- Comment #12 from Michal Such=C3=A1nek (msuchanek@suse.de) ---
-Thanks for the DT dumps.
+This rework will result in additional calls to omapbl_send_enable()
+during updates so, if anyone who cares about omap1, is filtering LKML
+then a Tested-by: would be nice.
 
-So you really do have two outputs but the problem is likely different:
+However, I doubt the additional calls will do any harm so even with
+that absent:
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-The hardware-specific driver gets initialized earlier, and then the offb/of=
-drm
-driver cannot get the resources for the framebuffer because the native driv=
-er
-is already using them.
 
-That should be fine but the message it prints is not exactly clear.
-
---=20
-You may reply to this email to add a comment.
-
-You are receiving this mail because:
-You are watching the assignee of the bug.=
+Daniel.
