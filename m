@@ -4,56 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A276C5479D
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:51:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA880C5479D
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  9 Jan 2023 21:59:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrSMK6NBTz3cCF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:51:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrSXc1tpcz3cCY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 08:59:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=protonic.nl header.i=@protonic.nl header.a=rsa-sha256 header.s=202111 header.b=I1ZQK8QX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=SXyWMObF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=protonic.nl (client-ip=2a02:9e0:8000::27; helo=smtp16.bhosted.nl; envelope-from=robin@protonic.nl; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::532; helo=mail-pg1-x532.google.com; envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=protonic.nl header.i=@protonic.nl header.a=rsa-sha256 header.s=202111 header.b=I1ZQK8QX;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=SXyWMObF;
 	dkim-atps=neutral
-X-Greylist: delayed 11717 seconds by postgrey-1.36 at boromir; Tue, 10 Jan 2023 00:28:31 AEDT
-Received: from smtp16.bhosted.nl (smtp16.bhosted.nl [IPv6:2a02:9e0:8000::27])
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrFBl3hdKz2yZv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 00:28:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrSWX12crz2yxB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 08:58:47 +1100 (AEDT)
+Received: by mail-pg1-x532.google.com with SMTP id q9so6870227pgq.5
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jan 2023 13:58:47 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=protonic.nl; s=202111;
-	h=message-id:references:in-reply-to:reply-to:subject:cc:to:from:date:
-	 content-transfer-encoding:content-type:mime-version:from;
-	bh=DpADeRqnpOK1INfFn7yqaglpmahJbhY8EX582Bmd3SY=;
-	b=I1ZQK8QX3QZlT2tEUahNaplPFpvXCyeS9V/mlZDOYwtUI7pmVX0sulujmgh+iZCm0yNHQ1CTJAwCO
-	 2UD84ZVaPxKibdiTFen6jJJA2ngMcKk/YHCQvNir+vGDtmvCc+hbDtExXjzCYs9bVKLFKyFV1eEJ5e
-	 H2GU3TJKh5rN41xWmbjpij5cdo5TqQRuuL92xrGuPFof4+3q3YAS+D54SAV1xmAjAY/OoBcZQ1gtVH
-	 KGf56rbaDfz4I/xH6cWK5TwxYW5NoBO4LWgqyeST3CQWbwwlCFWMjUa04Elb/KRVqS6BfSBrc4Vy70
-	 Ca3+4vIXUqVfvBYHz0i1DjTMhZyLfmQ==
-X-MSG-ID: 0f6a649e-9006-11ed-8e79-0050569d2c73
+        d=google.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=8mtKWc4WmtGm6NDppB1FPmywRJwZewn7Wl9vLbuK9vw=;
+        b=SXyWMObFZXeTNyQecHi104uVS3C5VVNdbITrtvMou5aDqzX/U4NRz7uvEIsM8Onyco
+         x8qqLrvh0HSwV3fczYkK93qVBE1SWVIm5mK9HzYglylMhUJMaXqn7bL6FtcjEoZEo/fo
+         OcjstuljDhRYrS830xjpdSB77YwrYtXuM+PYffd8oCYXe+qhIHx87mShQzdUWimUiypY
+         QNKHUicr800mVPn0COXPqDU4vjZAVpA83JY6L6WaC9XuTG0bw7sSTuItcNytIXboiUkK
+         JB8evh3Cgq1lCllojmImBjDJpZSraooL+3WVJsi+rOxRCXx/O5eGPvvgudRNalID0dyL
+         rXPg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8mtKWc4WmtGm6NDppB1FPmywRJwZewn7Wl9vLbuK9vw=;
+        b=TWAU7ndt+DUTWdEOQ354hhsgkXpY8DxCQhvadfWML6xMmssG4raYjj7BFQULnb/2Li
+         6Nx1Y1P6AASa3cwzb20QBMHbYH5UmBOOeMB5iYk/iP31qtLmaerIMKCpBSbXRc+n7054
+         ogSiY3gbDJdtrsSc00/ncNjPa9ebeOiUsbRHCuQ/dOIRjqlJpHi3b75P6yWUV48BAOc/
+         9g3axeXZM0+O01SfwoM6ilfULnbQZJg0p4pWI1Aqyc81f7F21u9KoHx1oM1zDLcmaOdw
+         stAL6FcNniR/iJMFajXGCFohw0dp91xDOsOviV96MevFEnla6IuVdsDOuYJ4uIsLy1Kt
+         R80Q==
+X-Gm-Message-State: AFqh2kooerVOwrVhVcq6x0XkROLneM/3YZkKZPd0PQO5kL1yXGNH4e0C
+	S7NFdaEOBPPSWxjezoKpl7qzE307PPMVA1T2ri1fuw==
+X-Google-Smtp-Source: AMrXdXsTlZoISLITCF02n+J4dXMcvFqFszZPB4liS+mZyZpp5BBYwkngdTAnTeTZgwlDRJLb/yCfd+smm6q/Dgm9C1w=
+X-Received: by 2002:a63:4943:0:b0:478:e6cf:c24c with SMTP id
+ y3-20020a634943000000b00478e6cfc24cmr5128347pgk.365.1673301523884; Mon, 09
+ Jan 2023 13:58:43 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date: Mon, 09 Jan 2023 11:12:02 +0100
-From: Robin van der Gracht <robin@protonic.nl>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 12/15] auxdisplay: ht16k33: Introduce
- backlight_get_brightness()
-Organization: Protonic Holland
-Mail-Reply-To: robin@protonic.nl
-In-Reply-To: <Y7qM+ZlG5gQiOW4K@ravnborg.org>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-12-1bd9bafb351f@ravnborg.org>
- <CANiq72mFMJuec+r=T6xYtLpuU+a1rOrAhrHiecy_1Jpj2m4J=g@mail.gmail.com>
- <Y7qM+ZlG5gQiOW4K@ravnborg.org>
-Message-ID: <2857575f6ec206f79cc21d423fde7d17@protonic.nl>
-X-Sender: robin@protonic.nl
-User-Agent: Roundcube Webmail/1.3.1 
-X-Mailman-Approved-At: Tue, 10 Jan 2023 08:50:48 +1100
+References: <20221228-drop-qunused-arguments-v1-0-658cbc8fc592@kernel.org> <20221228-drop-qunused-arguments-v1-6-658cbc8fc592@kernel.org>
+In-Reply-To: <20221228-drop-qunused-arguments-v1-6-658cbc8fc592@kernel.org>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Date: Mon, 9 Jan 2023 13:58:32 -0800
+Message-ID: <CAKwvOdknEE7DyUG0s43GNGf27QeMgW2fUTXcCzKLbjH1g318vQ@mail.gmail.com>
+Subject: Re: [PATCH 06/14] powerpc/vdso: Remove unused '-s' flag from ASFLAGS
+To: Nathan Chancellor <nathan@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,40 +73,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: robin@protonic.nl
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-staging@lists.linux.dev, Stephen Kitt <steve@sk2.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Daniel Thompson <daniel.thompson@linaro.org>, Helge Deller <deller@gmx.de>, Lee Jones <lee@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Miguel Ojeda <ojeda@kernel.org>, Antonino Daplas <adaplas@gmail.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jingoo Han <jingoohan1@gmail.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: kernel test robot <lkp@intel.com>, linux-kbuild@vger.kernel.org, trix@redhat.com, masahiroy@kernel.org, llvm@lists.linux.dev, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, nicolas@fjasle.eu
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Sam,
+On Wed, Jan 4, 2023 at 11:55 AM Nathan Chancellor <nathan@kernel.org> wrote:
+>
+> When clang's -Qunused-arguments is dropped from KBUILD_CPPFLAGS, it
+> warns that ASFLAGS contains '-s', which is a linking phase option, so it
+> is unused.
+>
+>   clang-16: error: argument unused during compilation: '-s' [-Werror,-Wunused-command-line-argument]
+>
+> Looking at the GAS sources, '-s' is only useful when targeting Solaris
+> and it is ignored for the powerpc target so just drop the flag
+> altogether, as it is not needed.
 
-On 2023-01-08 10:29, Sam Ravnborg wrote:
-> Hi Robin.
-> 
-> On Sat, Jan 07, 2023 at 10:02:38PM +0100, Miguel Ojeda wrote:
->> On Sat, Jan 7, 2023 at 7:26 PM Sam Ravnborg via B4 Submission Endpoint
->> <devnull+sam.ravnborg.org@kernel.org> wrote:
->> >
->> > Introduce backlight_get_brightness() to simplify logic
->> > and avoid direct access to backlight properties.
->> 
->> Note: Stephen sent this one too a while ago (with some more details in
->> the commit message, which is always nice); and then he sent yesterday
->> v2 [1] (to mention the functional change with `BL_CORE_SUSPENDED`
->> [2]).
-> Thanks for the pointers. I will try to move forward with Stephen's
-> patches.
->> 
->> Anyway, if it goes via drm-misc, feel free to have my:
->> 
->>     Acked-by: Miguel Ojeda <ojeda@kernel.org>
->> 
->> Though it would be nice to have Robin test the change.
-> 
-> Robin - can I get your ack to apply Stephen's original v2 patch to
-> drm-misc?
+Do you have any more info where you found this?  I don't see -s
+documented as an assembler flag.
+https://sourceware.org/binutils/docs/as/PowerPC_002dOpts.html
+https://sourceware.org/binutils/docs/as/Invoking.html
 
-done! see: 
-https://lore.kernel.org/lkml/0b16391f997e6ed005a326e4e48f2033@protonic.nl/
+The patch seems fine to me, but what was this ever supposed to be?
+FWICT it predates git history (looking at
+arch/powerpc/kernel/vdso32/Makefile at fc15351d9d63)
 
-- Robin
+Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+
+>
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+> ---
+> Cc: mpe@ellerman.id.au
+> Cc: npiggin@gmail.com
+> Cc: christophe.leroy@csgroup.eu
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/vdso/Makefile | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+> index 6a977b0d8ffc..45c0cc5d34b6 100644
+> --- a/arch/powerpc/kernel/vdso/Makefile
+> +++ b/arch/powerpc/kernel/vdso/Makefile
+> @@ -51,10 +51,10 @@ ccflags-y := -shared -fno-common -fno-builtin -nostdlib -Wl,--hash-style=both
+>  ccflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
+>
+>  CC32FLAGS := -Wl,-soname=linux-vdso32.so.1 -m32
+> -AS32FLAGS := -D__VDSO32__ -s
+> +AS32FLAGS := -D__VDSO32__
+>
+>  CC64FLAGS := -Wl,-soname=linux-vdso64.so.1
+> -AS64FLAGS := -D__VDSO64__ -s
+> +AS64FLAGS := -D__VDSO64__
+>
+>  targets += vdso32.lds
+>  CPPFLAGS_vdso32.lds += -P -C -Upowerpc
+>
+> --
+> 2.39.0
+
+
+
+-- 
+Thanks,
+~Nick Desaulniers
