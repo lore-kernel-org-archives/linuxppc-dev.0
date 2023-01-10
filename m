@@ -4,33 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70BE1C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 00:52:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D34AC5479D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 01:29:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrXNT6Ny4z3cCL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 11:52:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=<UNKNOWN>)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrXLt4m3wz3cC1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 11:51:34 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 30A0i2SS030174;
-	Mon, 9 Jan 2023 18:44:02 -0600
-Received: (from segher@localhost)
-	by gate.crashing.org (8.14.1/8.14.1/Submit) id 30A0hxZX030173;
-	Mon, 9 Jan 2023 18:43:59 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Mon, 9 Jan 2023 18:43:59 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH 06/14] powerpc/vdso: Remove unused '-s' flag from ASFLAGS
-Message-ID: <20230110004359.GO25951@gate.crashing.org>
-References: <20221228-drop-qunused-arguments-v1-0-658cbc8fc592@kernel.org> <20221228-drop-qunused-arguments-v1-6-658cbc8fc592@kernel.org> <CAKwvOdknEE7DyUG0s43GNGf27QeMgW2fUTXcCzKLbjH1g318vQ@mail.gmail.com> <20230109222337.GM25951__25255.3859770828$1673303520$gmane$org@gate.crashing.org> <87cz7n2q7l.fsf@igel.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87cz7n2q7l.fsf@igel.home>
-User-Agent: Mutt/1.4.2.3i
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrYB94dB0z3cFp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 12:29:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=AF+CTNwF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=mSL813OJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=russell.cc (client-ip=64.147.123.19; helo=wout3-smtp.messagingengine.com; envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=russell.cc header.i=@russell.cc header.a=rsa-sha256 header.s=fm1 header.b=AF+CTNwF;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=mSL813OJ;
+	dkim-atps=neutral
+Received: from wout3-smtp.messagingengine.com (wout3-smtp.messagingengine.com [64.147.123.19])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrY93094sz3bdS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 12:28:06 +1100 (AEDT)
+Received: from compute2.internal (compute2.nyi.internal [10.202.2.46])
+	by mailout.west.internal (Postfix) with ESMTP id 14E6F320025E;
+	Mon,  9 Jan 2023 20:28:02 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute2.internal (MEProxy); Mon, 09 Jan 2023 20:28:02 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=cc
+	:cc:content-transfer-encoding:content-type:date:date:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to; s=fm1; t=1673314081; x=
+	1673400481; bh=zeB8Rjm8Q9ysFSyGBjwVWVghqqA5Z8exrt+ZdLm1v4Y=; b=A
+	F+CTNwF1+397YVLctQ8UFjga/E+HypkOFOFohjDGazzBZo6IktXplX+dStCLuwkJ
+	1Kd37/WpFE7Fg1BgstK13saN1ryE8pZUNF89A3xRzrBubuRY5u3DvOx7F4FBKxMZ
+	zXXJgF8NeHkjw7JrwlYy2lbUeKPGE0SvxzkqNhdu7DeyMGnrYb+91NMZbsbZFZ9M
+	XWp0WTuILTBaVvNpY4ZUG3zkA2tBSKI+J/g79Ye8YPYNYWGzY1D5bU8pqnsanbIz
+	BagjdMbkWdcC7qkc9a7FCAyFLW1DvBh/wyPtFkMnhitPrCp7g+UrGok9Tu9pSlBD
+	TGo2is2u4Sv7Meuoo94IQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1673314081; x=
+	1673400481; bh=zeB8Rjm8Q9ysFSyGBjwVWVghqqA5Z8exrt+ZdLm1v4Y=; b=m
+	SL813OJ+ORX8ZjF+wmA02IBhtdPBLxgwU9KPPRU8IeddBFY74dk5CUxss7t/lQ6F
+	DS+SA5SpPxrZavPEMLALfnXyV5rNetdw/yEXLrp0tAw6HrTYbQSrQg74JIKKlYLE
+	fhcAQr8SIgEWMI9ee75Qlk9Vm0q6Hv42IOnPHKI8uxuAYiGCuRe+S6/NzBy22O3O
+	AZjOJ58y3NKKEbDOjMYj0odYr++SzkicksQzlJ/Fs0jwFvP/ad+2Y5jvhSKXLkl2
+	6H7XK7nvH9PVBdpWA6rP6AbOj1kjBAIsHJYEjq+B4QlAq2WIVbFqHEClK3JtrCng
+	D+WEJtw9uGxh7l3dcQ3eQ==
+X-ME-Sender: <xms:Ib-8Y1HWi2MqOspulEpkfTEKwXpqswdoD_qHkL8WkhKOiwcldfWCjw>
+    <xme:Ib-8Y6UiuR1OTrTZXV7jJThZ7Hb3gLojaIOX0ZlWvHxgS9c3hkC5PFLia6XJ4WPNV
+    stwkfwtBkydCoTnGA>
+X-ME-Received: <xmr:Ib-8Y3JWcPp3fEEf7kvoN8IIzqCuSAE07za3_HoXMw5fq9-WmlvBPMYeKaFS8kA0OE0jK3ptLYyMyqfko2xoQCiHhgs8aRYkzpHTS-V4fUM_bw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrkeejgdefhecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecufghrlhcuvffnffculdeftddmnecujfgurhepkffuhf
+    fvveffjghftgfgfgggsehtqhertddtreejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
+    rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucggtffrrghtthgvrhhnpe
+    etgfeilefhueefvedvkeehieefjefgfeegheetudekiefguddutdeukeetveelleenucev
+    lhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurh
+    esrhhushhsvghllhdrtggt
+X-ME-Proxy: <xmx:Ib-8Y7GmemFyzfbC4lEY0hQ7juWFKMY8bkgzIHK0VJhzfmJuna3SOQ>
+    <xmx:Ib-8Y7XDaxiIQi1cjWl7_Zj-C_6zp0OGwvxHtNu_i9czjQZr3U0w0g>
+    <xmx:Ib-8Y2OOeRl2vRI7R3EBKDWKWa86JhUsEoDJDx5N0-uWd_3384K_3Q>
+    <xmx:Ib-8Y9JxT4YKDsrBOkZ3Q6vUDyJh6G_Az6xIRJskvyTotX_6gVzq8g>
+Feedback-ID: i4421424f:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Mon,
+ 9 Jan 2023 20:27:58 -0500 (EST)
+Message-ID: <a2a8d8daac892e2d7eb8cffecfa1a20cdc9b0faa.camel@russell.cc>
+Subject: Re: [PATCH v2 7/7] powerpc/pseries: Implement secvars for dynamic
+ secure boot
+From: Russell Currey <ruscur@russell.cc>
+To: Andrew Donnellan <ajd@linux.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>,  linuxppc-dev@lists.ozlabs.org
+Date: Tue, 10 Jan 2023 12:27:55 +1100
+In-Reply-To: <cca49d1e5da01e9ccdee50d710045fd09005459c.camel@linux.ibm.com>
+References: <20221230042014.154483-1-ruscur@russell.cc>
+	 <20221230042014.154483-8-ruscur@russell.cc>
+	 <87zgawgcpa.fsf@mpe.ellerman.id.au>
+	 <b4b23fb8a56fdcfffe28c38ac3f4f89e0c488486.camel@russell.cc>
+	 <cca49d1e5da01e9ccdee50d710045fd09005459c.camel@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.2 (3.46.2-1.fc37) 
+MIME-Version: 1.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,41 +100,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, linux-kbuild@vger.kernel.org, trix@redhat.com, masahiroy@kernel.org, llvm@lists.linux.dev, Nick Desaulniers <ndesaulniers@google.com>, npiggin@gmail.com, Nathan Chancellor <nathan@kernel.org>, linuxppc-dev@lists.ozlabs.org, nicolas@fjasle.eu
+Cc: nayna@linux.ibm.com, gregkh@linuxfoundation.org, gcwilson@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 10, 2023 at 01:22:38AM +0100, Andreas Schwab wrote:
-> On Jan 09 2023, Segher Boessenkool wrote:
-> 
-> > It is required by POSIX (for the c99 command, anyway).  It *also* is
-> > required to be supported when producing object files (so when no linking
-> > is done).
-> >
-> > It is a GCC flag, and documented just fine:
-> > https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html#index-s
-> 
-> Most assembler flags are unrelated to the flags passed to the compiler
-> driver, and -s is no exception.  POSIX has nothing to say about the
-> sub-commands of the compiler anyway.
+On Mon, 2023-01-09 at 16:20 +1100, Andrew Donnellan wrote:
+> On Mon, 2023-01-09 at 14:34 +1100, Russell Currey wrote:
+> >=20
+> > > > +static int plpks_secvar_init(void)
+> > > > +{
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!plpks_is_available(=
+))
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0return -ENODEV;
+> > > > +
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0set_secvar_ops(&plpks_se=
+cvar_ops);
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0set_secvar_config_attrs(=
+config_attrs);
+> > > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return 0;
+> > > > +}
+> > > > +device_initcall(plpks_secvar_init);
+> > >=20
+> > > That must be a machine_device_initcall(pseries, ...), otherwise
+> > > we
+> > > will
+> > > blow up doing a hcall on powernv in plpks_is_available().
+> >=20
+> > OK, can do.=C2=A0 I don't understand your case of how powernv could hit
+> > this, but I think I to have to move plpks_is_available() into
+> > include/,
+> > so it's going to be even more possible anyway.
+>=20
+> Kernels can be compiled with both pseries and powernv support, in
+> which
+> case plpks_secvar_init() will be called unconditionally even when
+> booting on a powernv machine.
+>=20
+> I can confirm that as it is, booting this on powernv qemu causes a
+> panic.
 
-But this is not an assembler flag!
+Of course, I'm not sure why I thought an initcall in a platform that
+wasn't active would magically not run on other platforms.
 
-quiet_cmd_vdso32as = VDSO32A $@
-      cmd_vdso32as = $(VDSOCC) $(a_flags) $(CC32FLAGS) $(AS32FLAGS) -c -o $@ $<
+>=20
 
-where
-
-ifdef CROSS32_COMPILE
-    VDSOCC := $(CROSS32_COMPILE)gcc
-else
-    VDSOCC := $(CC)
-endif
-
-
-The name of the make variable AS32FLAGS is a bit misleading.  This
-variable does not hold arguments to as, it holds arguments to the
-compiler driver, "gcc".
-
-
-Segher
