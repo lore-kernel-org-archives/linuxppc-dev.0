@@ -4,50 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB87FC54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 23:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4000FC46467
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 23:21:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ns6GL32Rtz3fHf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 10:19:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.47; helo=mail-oo1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ns6J85gDNz3fMN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 10:21:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.50; helo=mail-oo1-f50.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ns6DT4hmFz3c5D;
-	Wed, 11 Jan 2023 10:18:00 +1100 (AEDT)
-Received: by mail-oo1-f47.google.com with SMTP id y194-20020a4a45cb000000b004a08494e4b6so3626280ooa.7;
-        Tue, 10 Jan 2023 15:18:00 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ns6DV19Wmz3c5D;
+	Wed, 11 Jan 2023 10:18:01 +1100 (AEDT)
+Received: by mail-oo1-f50.google.com with SMTP id y4-20020a4ab404000000b004f21c72be42so362402oon.8;
+        Tue, 10 Jan 2023 15:18:01 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=2FJcOTfsjwpdIljEO429tvKoOeEBhTBITWRzGMiqJAg=;
-        b=IU1m/Z036uqX2yrGIsT/toQObIxZ9kG07XfCYtmrcgzmtLzJlkdINGuMC18FnglWzU
-         F55xEHi97cIks93/5ZsolvQD2OTqxcPuIrzsjEbButj9Zvbl/5Fsz4yR30luRD5fLziQ
-         8bc8UzbmfzlhLwZxqcv9ObbQW6ExKAhJGp4fACSsOsOa4JUl8oGOXduxFxdsqVL3tlK8
-         FZhutRXSwF64QP8ag+ERfiiGpW2DsnACkePzY/41EABNFi7TAUfT7eeRvM6HYVlienvI
-         zX0TE4Zd6hDeFdE7f099HUWlrxRKoB50qqdd/O/0HctpDuLzozZJhAvvRfDBEiuUGGGN
-         46hA==
-X-Gm-Message-State: AFqh2krvkGyzoqeBS7mX04Z2PmEIn7plq1Bq3oQgB9KFi2A2k2osddcb
-	sDq1uJSFszSPS+kOCI4hag==
-X-Google-Smtp-Source: AMrXdXugqEltNT0Rw61nCtbCf4o/oBzHuLjFst8x3k86C7Sd4CJKl6VsO9SIi06WLEmAFjEFGqHjDw==
-X-Received: by 2002:a4a:ac88:0:b0:4a2:76a0:7677 with SMTP id b8-20020a4aac88000000b004a276a07677mr32202358oon.0.1673392677968;
-        Tue, 10 Jan 2023 15:17:57 -0800 (PST)
+        bh=BkffzaMKgEkAFzow+1H0ViuhO0ELE5aDY2zTJCKAxL8=;
+        b=YplnferknMngq7s10z6z6iZvyGi4gqok9URfJwax3ZTsOzIseM/0pJdW6zB4Dco8El
+         /HNSklN4e1dWoOZxiHPghGCHpTDgyChQ2OWppjJ0FHk6sNcHSQjVXoj8PZqoVFJGf6Ye
+         eo2hTLfzZaKNN5RtK4YZomfwXVuQy7i1CZj9TZ3LtosHmi0QHr7MxLo0AvwoVZUFrgq9
+         BhLGAybpWYYblEJ3lpy9hZBcBC6cQ6np1MssekM1P/myEsjVcR94ol81b/WYo1nUkBr9
+         FIAa1dw8yEK3wpZSc6rEVvePmrPoeJwoewQYP74ajAdRVIBPVC831qXoQI0osCz6802h
+         +4Fg==
+X-Gm-Message-State: AFqh2kpIIgJm5fpxpHdfFbdAAdj704711FyJyi31vetVddlJtgC+yCZX
+	PjxoJuJoO8sTRG/W1rutqw==
+X-Google-Smtp-Source: AMrXdXsPUnlihCfZ58pdMoiErSCAf5PyyC5YskkNloNog96Pmb6ECnLgmGoZIrhTMwzUfjZO2S7H/A==
+X-Received: by 2002:a05:6820:387:b0:4f1:e2d8:47e4 with SMTP id r7-20020a056820038700b004f1e2d847e4mr75789ooj.9.1673392679634;
+        Tue, 10 Jan 2023 15:17:59 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id n3-20020a4ad623000000b004908a9542f8sm6364787oon.31.2023.01.10.15.17.56
+        by smtp.gmail.com with ESMTPSA id q6-20020a4a9606000000b004a388af96f9sm6330128ooi.4.2023.01.10.15.17.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jan 2023 15:17:57 -0800 (PST)
-Received: (nullmailer pid 3145658 invoked by uid 1000);
+        Tue, 10 Jan 2023 15:17:58 -0800 (PST)
+Received: (nullmailer pid 3145662 invoked by uid 1000);
 	Tue, 10 Jan 2023 23:17:55 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 10 Jan 2023 17:17:44 -0600
-Subject: [PATCH 1/4] dt-bindings: usb: Remove obsolete brcm,bcm3384-usb.txt
+Date: Tue, 10 Jan 2023 17:17:46 -0600
+Subject: [PATCH 3/4] dt-bindings: usb: Convert Marvell Orion EHCI to DT
+ schema
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230110-dt-usb-v1-1-8e366e326513@kernel.org>
+Message-Id: <20230110-dt-usb-v1-3-8e366e326513@kernel.org>
 References: <20230110-dt-usb-v1-0-8e366e326513@kernel.org>
 In-Reply-To: <20230110-dt-usb-v1-0-8e366e326513@kernel.org>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>
@@ -67,32 +68,56 @@ Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, linux-usb@vger.kernel.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The "brcm,bcm3384-ohci" and "brcm,bcm3384-ehci" compatibles are already
-documented in generic-ohci.yaml and generic-ehci.yaml, respectively, so
-remove the old txt binding.
+The Marvell Orion EHCI binding is just some compatible strings, so add it
+to the generic-ehci.yaml schema.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- Documentation/devicetree/bindings/usb/brcm,bcm3384-usb.txt | 11 -----------
- 1 file changed, 11 deletions(-)
+ .../devicetree/bindings/usb/ehci-orion.txt         | 22 ----------------------
+ .../devicetree/bindings/usb/generic-ehci.yaml      |  2 ++
+ 2 files changed, 2 insertions(+), 22 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/usb/brcm,bcm3384-usb.txt b/Documentation/devicetree/bindings/usb/brcm,bcm3384-usb.txt
+diff --git a/Documentation/devicetree/bindings/usb/ehci-orion.txt b/Documentation/devicetree/bindings/usb/ehci-orion.txt
 deleted file mode 100644
-index 452c45c7bf29..000000000000
---- a/Documentation/devicetree/bindings/usb/brcm,bcm3384-usb.txt
+index 2855bae79fda..000000000000
+--- a/Documentation/devicetree/bindings/usb/ehci-orion.txt
 +++ /dev/null
-@@ -1,11 +0,0 @@
--* Broadcom USB controllers
+@@ -1,22 +0,0 @@
+-* EHCI controller, Orion Marvell variants
 -
 -Required properties:
--- compatible: "brcm,bcm3384-ohci", "brcm,bcm3384-ehci"
+-- compatible: must be one of the following
+-	"marvell,orion-ehci"
+-	"marvell,armada-3700-ehci"
+-- reg: physical base address of the controller and length of memory mapped
+-  region.
+-- interrupts: The EHCI interrupt
 -
--  These currently use the generic-ohci and generic-ehci drivers.  On some
--  systems, special handling may be needed in the following cases:
+-Optional properties:
+-- clocks: reference to the clock
+-- phys: reference to the USB PHY
+-- phy-names: name of the USB PHY, should be "usb"
 -
--  - Restoring state after systemwide power save modes
--  - Sharing PHYs with the USBD (UDC) hardware
--  - Figuring out which controllers are disabled on ASIC bondout variants
+-Example:
+-
+-	ehci@50000 {
+-		compatible = "marvell,orion-ehci";
+-		reg = <0x50000 0x1000>;
+-		interrupts = <19>;
+-	};
+diff --git a/Documentation/devicetree/bindings/usb/generic-ehci.yaml b/Documentation/devicetree/bindings/usb/generic-ehci.yaml
+index 994818cb6044..85e41609b09b 100644
+--- a/Documentation/devicetree/bindings/usb/generic-ehci.yaml
++++ b/Documentation/devicetree/bindings/usb/generic-ehci.yaml
+@@ -74,6 +74,8 @@ properties:
+           - const: usb-ehci
+       - enum:
+           - generic-ehci
++          - marvell,armada-3700-ehci
++          - marvell,orion-ehci
+           - usb-ehci
+ 
+   reg:
 
 -- 
 2.39.0
