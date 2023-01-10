@@ -4,50 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70ED9C46467
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 10:40:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF1CEC54EBC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 10:43:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrnQn5nPnz3cdH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 21:40:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=astralinux.ru (client-ip=217.74.38.119; helo=mail.astralinux.ru; envelope-from=eesina@astralinux.ru; receiver=<UNKNOWN>)
-Received: from mail.astralinux.ru (mail.astralinux.ru [217.74.38.119])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrnVQ0Dd1z3cdW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 21:43:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r7CKwSFh;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r7CKwSFh;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nrj0j3C0Pz3c79
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 18:21:23 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.astralinux.ru (Postfix) with ESMTP id 986351863A9E;
-	Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
-Received: from mail.astralinux.ru ([127.0.0.1])
-	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id NQPKK78CKEwH; Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.astralinux.ru (Postfix) with ESMTP id 204B01863E33;
-	Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
-X-Virus-Scanned: amavisd-new at astralinux.ru
-Received: from mail.astralinux.ru ([127.0.0.1])
-	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id MWA1XFwlqi4T; Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
-Received: from rbta-msk-vsrv-mail01.astralinux.ru (localhost [127.0.0.1])
-	by mail.astralinux.ru (Postfix) with ESMTP id A21311863A9E;
-	Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
-Date: Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
-From: =?utf-8?B?0JXQutCw0YLQtdGA0LjQvdCwINCV0YHQuNC90LA=?= <eesina@astralinux.ru>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Zhao Qiang <qiang.zhao@nxp.com>
-Message-ID: <1596946964.348463848.1673335276356.JavaMail.zimbra@astralinux.ru>
-In-Reply-To: <1b6326fa-69b3-0ef0-2927-60f6fbd6ce28@csgroup.eu>
-References: <20221223143225.23153-1-eesina@astralinux.ru> <1b6326fa-69b3-0ef0-2927-60f6fbd6ce28@csgroup.eu>
-Subject: Re: [PATCH] net-wan: Add check for NULL for utdm in ucc_hdlc_probe
-MIME-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="=_6c7fd5d1-372a-4043-93cb-aabb5b11055b"
-X-Originating-IP: [10.177.177.35]
-X-Mailer: Zimbra 9.0.0_GA_4258 (ZimbraXWebClient - yandexbrowser22 (Linux)/9.0.0_GA_4258)
-Thread-Topic: net-wan: Add check for NULL for utdm in ucc_hdlc_probe
-Thread-Index: AQHZFxzZzxDc+uM14kSkvyuO7aEPOq6WVamAf1NcbTo=
-X-Mailman-Approved-At: Tue, 10 Jan 2023 21:40:19 +1100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrnTN0kDbz2xB5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 21:43:03 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30AAT1WR007264;
+	Tue, 10 Jan 2023 10:42:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : content-type :
+ content-transfer-encoding : mime-version : subject : message-id : date :
+ cc : to; s=pp1; bh=+ABv3h0j8OIXwtbcwfJ0Ss5bponXeDNhMqOqcDY0Cpc=;
+ b=r7CKwSFh9M/4jprYllVuH37em+g2yQWsMozrWnDpqdcXcsK/+ZQnxhRWs45GlsPE6DWf
+ KpEyrf+aRtLX9de3j9G9FsSlzAPDT+2UAwcdqUbQ9+2JuW2chr947gNpsSrHDVE/a8YS
+ Ms54fLgiK5VSci3T7LvdG94ljZvvWY49ThmhXI7jbwzXkBm7DvwiVF63I9B1vthPp9DU
+ vW3/qkNDG0JOyNB0+PZ18rguR3SbLEjtm+Me2pc+LEXSquf6PvPGJ8ggYTWS2LvdlchY
+ 2vh/wfjuCBgPMhSjakHS0xJKKbPDc7BGzov8Kbpcq80O+f3u69vOEKqvOyzUpTuFEq/d Og== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n14qx2tdr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Jan 2023 10:42:59 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30A83dsg000570;
+	Tue, 10 Jan 2023 10:42:57 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3my0c6mp47-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 10 Jan 2023 10:42:56 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30AAgsRU50200926
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 10 Jan 2023 10:42:54 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8183120043;
+	Tue, 10 Jan 2023 10:42:54 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BF0B920040;
+	Tue, 10 Jan 2023 10:42:53 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.109.241.16])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 10 Jan 2023 10:42:53 +0000 (GMT)
+From: Sachin Sant <sachinp@linux.ibm.com>
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.300.101.1.3\))
+Subject: [powerpc] Boot failure kernel BUG at mm/usercopy.c:102
+Message-Id: <8C9D7E49-5A75-41BE-ACCB-44FDD8FBE4D0@linux.ibm.com>
+Date: Tue, 10 Jan 2023 16:12:42 +0530
+To: linux-next@vger.kernel.org, mathieu.desnoyers@efficios.com
+X-Mailer: Apple Mail (2.3731.300.101.1.3)
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: fxDUG0c3KYwm_R8k8fhqIcyimVGZ7xgr
+X-Proofpoint-GUID: fxDUG0c3KYwm_R8k8fhqIcyimVGZ7xgr
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.205,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
+ definitions=2023-01-10_03,2023-01-10_03,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
+ spamscore=0 mlxscore=0 suspectscore=0 malwarescore=0 clxscore=1011
+ priorityscore=1501 mlxlogscore=769 impostorscore=0 lowpriorityscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301100063
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,132 +88,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: lvc-project@linuxtesting.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---=_6c7fd5d1-372a-4043-93cb-aabb5b11055b
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+6.2.0-rc3-next-20230109 fails to boot on powerpc with following:
 
- =20
-=C2=A0=20
-=C2=A0 =20
-  =20
+[ 0.444834] ------------[ cut here ]------------
+[ 0.444838] kernel BUG at mm/usercopy.c:102!
+[ 0.444842] Oops: Exception in kernel mode, sig: 5 [#1]
+[ 0.444845] LE PAGE_SIZE=3D64K MMU=3DRadix SMP NR_CPUS=3D2048 NUMA =
+pSeries
+[ 0.444849] Modules linked in:
+[ 0.444853] CPU: 23 PID: 201 Comm: modprobe Not tainted =
+6.2.0-rc3-next-20230109 #1
+[ 0.444858] Hardware name: IBM,9080-HEX POWER10 (raw) 0x800200 0xf000006 =
+of:IBM,FW1030.00 (NH1030_026) hv:phyp pSeries
+[ 0.444862] NIP: c00000000055a934 LR: c00000000055a930 CTR: =
+0000000000725d90
+[ 0.444866] REGS: c000000007f937c0 TRAP: 0700 Not tainted =
+(6.2.0-rc3-next-20230109)
+[ 0.444871] MSR: 8000000000029033 <SF,EE,ME,IR,DR,RI,LE> CR: 28088822 =
+XER: 00000007
+[ 0.444879] CFAR: c0000000002012a8 IRQMASK: 0=20
+[ 0.444879] GPR00: c00000000055a930 c000000007f93a60 c0000000013b0800 =
+0000000000000066=20
+[ 0.444879] GPR04: 00000000ffff7fff c000000007f93880 c000000007f93878 =
+0000000000000000=20
+[ 0.444879] GPR08: 00000000ffff7fff 0000000000000000 c0000000025e7150 =
+c0000000029672b8=20
+[ 0.444879] GPR12: 0000000048088824 c000000e87bf6300 c00000000017f458 =
+c0000000034b8100=20
+[ 0.444879] GPR16: 000000012f18eac0 00007fffc5c095d0 00007fffc5c095d8 =
+000000012f140040=20
+[ 0.444879] GPR20: fcffffffffffffff 00000000001fffff 5455555555555555 =
+000ffffffffffff8=20
+[ 0.444879] GPR24: c00000000723a0c0 00007fffc5c09368 0000000000000000 =
+00007fffc5c09370=20
+[ 0.444879] GPR28: 0000000000000250 0000000000000001 c000000003017000 =
+c00000000723a0c0=20
+[ 0.444922] NIP [c00000000055a934] usercopy_abort+0xa4/0xb0
+[ 0.444928] LR [c00000000055a930] usercopy_abort+0xa0/0xb0
+[ 0.444932] Call Trace:
+[ 0.444933] [c000000007f93a60] [c00000000055a930] =
+usercopy_abort+0xa0/0xb0 (unreliable)
+[ 0.444939] [c000000007f93ad0] [c00000000050eeb8] =
+__check_heap_object+0x198/0x1d0
+[ 0.444945] [c000000007f93b10] [c00000000055a7e0] =
+__check_object_size+0x290/0x340
+[ 0.444949] [c000000007f93b50] [c00000000060eba4] =
+create_elf_tables.isra.20+0xc04/0xc90
+[ 0.444956] [c000000007f93c10] [c000000000610b2c] =
+load_elf_binary+0xdac/0x1320
+[ 0.444962] [c000000007f93d00] [c000000000571cf0] =
+bprm_execve+0x3d0/0x7c0
+[ 0.444966] [c000000007f93dc0] [c000000000572b9c] =
+kernel_execve+0x1ac/0x270
+[ 0.444971] [c000000007f93e10] [c00000000017f5cc] =
+call_usermodehelper_exec_async+0x17c/0x250
+[ 0.444978] [c000000007f93e50] [c00000000000e054] =
+ret_from_kernel_thread+0x5c/0x64
+[ 0.444983] --- interrupt: 0 at 0x0
+[ 0.444986] NIP: 0000000000000000 LR: 0000000000000000 CTR: =
+0000000000000000
+[ 0.444990] REGS: c000000007f93e80 TRAP: 0000 Not tainted =
+(6.2.0-rc3-next-20230109)
+[ 0.444994] MSR: 0000000000000000 <> CR: 00000000 XER: 00000000
+[ 0.444998] CFAR: 0000000000000000 IRQMASK: 0=20
+[ 0.444998] GPR00: 0000000000000000 c000000007f94000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR04: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR08: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR12: 0000000000000000 0000000000000000 c00000000017f458 =
+c0000000034b8100=20
+[ 0.444998] GPR16: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR20: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR24: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.444998] GPR28: 0000000000000000 0000000000000000 0000000000000000 =
+0000000000000000=20
+[ 0.445039] NIP [0000000000000000] 0x0
+[ 0.445042] LR [0000000000000000] 0x0
+[ 0.445044] --- interrupt: 0
+[ 0.445046] Code: 392990f8 48000014 3d02ffe9 390827f0 7d074378 7d094378 =
+7c661b78 3c62ffe7 f9610060 386319f0 4bca6935 60000000 <0fe00000> =
+00000000 00000000 7c0802a6=20
+[ 0.445061] ---[ end trace 0000000000000000 ]=E2=80=94
 
------Original Message-----
+Git bisect points to following patch:
 
-From: Christophe <christophe.leroy@csgroup.eu>
-To: Ekaterina <eesina@astralinux.ru>; Zhao <qiang.zhao@nxp.com>
-Cc: lvc-project <lvc-project@linuxtesting.org>; netdev <netdev@vger.kernel.=
-org>; linux-kernel <linux-kernel@vger.kernel.org>; Eric <edumazet@google.co=
-m>; Jakub <kuba@kernel.org>; Paolo <pabeni@redhat.com>; linuxppc-dev <linux=
-ppc-dev@lists.ozlabs.org>; David <davem@davemloft.net>
-Date: Monday, 9 January 2023 6:49 PM MSK
-Subject: Re: [PATCH] net-wan: Add check for NULL for utdm in ucc_hdlc_probe
+commit 317c8194e6aeb8b3b573ad139fc2a0635856498e
+     rseq: Introduce feature size and alignment ELF auxiliary vector =
+entries
 
+Reverting the patch helps boot the kernel.
 
-
-Le 23/12/2022 =C3=A0 15:32, Ekaterina Esina a =C3=A9crit=C2=A0:=20
-> [Vous ne recevez pas souvent de courriers de eesina@astralinux.ru. D=C3=
-=A9couvrez pourquoi ceci est important =C3=A0 https://aka.ms/LearnAboutSend=
-erIdentification ]=20
->=20
-> If uhdlc_priv_tsa !=3D 1 then utdm is not initialized.=20
-> And if ret !=3D NULL then goto undo_uhdlc_init, where utdm is dereference=
-d.=20
-> Same if dev =3D=3D NULL.=20
->=20
-> Found by Linux Verification Center (linuxtesting.org) with SVACE.=20
->=20
-> Signed-off-by: Ekaterina Esina <eesina@astralinux.ru>=20
-> ---=20
-> drivers/net/wan/fsl_ucc_hdlc.c | 4 +++-=20
-> 1 file changed, 3 insertions(+), 1 deletion(-)=20
->=20
-> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdl=
-c.c=20
-> index 22edea6ca4b8..2ddb0f71e648 100644=20
-> --- a/drivers/net/wan/fsl_ucc_hdlc.c=20
-> +++ b/drivers/net/wan/fsl_ucc_hdlc.c=20
-> @@ -1243,7 +1243,9 @@ static int ucc_hdlc_probe(struct platform_device *p=
-dev)=20
-> free_dev:=20
-> free_netdev(dev);=20
-> undo_uhdlc_init:=20
-> - iounmap(utdm->siram);=20
-> + if (utdm !=3D NULL) {=20
-> + iounmap(utdm->siram);=20
-> + }=20
-
-If utdm being NULL is a problem here, isn't it also a problem in the=20
-iounmap below ?=20
-
-
-> unmap_si_regs:=20
-> iounmap(utdm->si_regs);=20
-> free_utdm:=20
-> --=20
-> 2.30.2=20
-> Yes, below the check is also needed. I guess I should send a new patch wi=
-th both checks Best wishes, Ekaterina Esina   =20
-
---=_6c7fd5d1-372a-4043-93cb-aabb5b11055b
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><body><div style=3D"font-size: 12pt; font-family: arial, helvetica, s=
-ans-serif; color: rgb(0, 0, 0);"><div style=3D"font-size: 12pt; font-family=
-: 'arial' , 'helvetica' , sans-serif; color: #000000;">
-<div style=3D"font-size: 12pt; font-family: 'arial' , 'helvetica' , sans-se=
-rif; color: #000000;">
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div id=3D"signature-content-no-signature"></div>
-<div>
-
-<div id=3D"OLK_SRC_BODY_SECTION">
-<div id=3D"OLK_SRC_BODY_SECTION">
-<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
-ing-left: 1em;"><hr id=3D"MESSAGE_DATA_MARKER"><strong>From: </strong>Chris=
-tophe &lt;christophe.leroy@csgroup.eu&gt;<br><strong>To: </strong>Ekaterina=
- &lt;eesina@astralinux.ru&gt;; Zhao &lt;qiang.zhao@nxp.com&gt;<br><strong>C=
-c: </strong>lvc-project &lt;lvc-project@linuxtesting.org&gt;; netdev &lt;ne=
-tdev@vger.kernel.org&gt;; linux-kernel &lt;linux-kernel@vger.kernel.org&gt;=
-; Eric &lt;edumazet@google.com&gt;; Jakub &lt;kuba@kernel.org&gt;; Paolo &l=
-t;pabeni@redhat.com&gt;; linuxppc-dev &lt;linuxppc-dev@lists.ozlabs.org&gt;=
-; David &lt;davem@davemloft.net&gt;<br><strong>Date: </strong>Monday, 9 Jan=
-uary 2023 6:49 PM MSK<br><strong>Subject: </strong>Re: [PATCH] net-wan: Add=
- check for NULL for utdm in ucc_hdlc_probe<br><br><br><br>Le 23/12/2022 =C3=
-=A0 15:32, Ekaterina Esina a =C3=A9crit&nbsp;: <br>&gt; [Vous ne recevez pa=
-s souvent de courriers de eesina@astralinux.ru. D=C3=A9couvrez pourquoi cec=
-i est important =C3=A0 https://aka.ms/LearnAboutSenderIdentification ] <br>=
-&gt; <br>&gt; If uhdlc_priv_tsa !=3D 1 then utdm is not initialized. <br>&g=
-t; And if ret !=3D NULL then goto undo_uhdlc_init, where utdm is dereferenc=
-ed. <br>&gt; Same if dev =3D=3D NULL. <br>&gt; <br>&gt; Found by Linux Veri=
-fication Center (linuxtesting.org) with SVACE. <br>&gt; <br>&gt; Signed-off=
--by: Ekaterina Esina &lt;eesina@astralinux.ru&gt; <br>&gt; --- <br>&gt; dri=
-vers/net/wan/fsl_ucc_hdlc.c | 4 +++- <br>&gt; 1 file changed, 3 insertions(=
-+), 1 deletion(-) <br>&gt; <br>&gt; diff --git a/drivers/net/wan/fsl_ucc_hd=
-lc.c b/drivers/net/wan/fsl_ucc_hdlc.c <br>&gt; index 22edea6ca4b8..2ddb0f71=
-e648 100644 <br>&gt; --- a/drivers/net/wan/fsl_ucc_hdlc.c <br>&gt; +++ b/dr=
-ivers/net/wan/fsl_ucc_hdlc.c <br>&gt; @@ -1243,7 +1243,9 @@ static int ucc_=
-hdlc_probe(struct platform_device *pdev) <br>&gt; free_dev: <br>&gt; free_n=
-etdev(dev); <br>&gt; undo_uhdlc_init: <br>&gt; - iounmap(utdm-&gt;siram); <=
-br>&gt; + if (utdm !=3D NULL) { <br>&gt; + iounmap(utdm-&gt;siram); <br>&gt=
-; + } <br><br>If utdm being NULL is a problem here, isn't it also a problem=
- in the <br>iounmap below ? <br><br><br>&gt; unmap_si_regs: <br>&gt; iounma=
-p(utdm-&gt;si_regs); <br>&gt; free_utdm: <br>&gt; -- <br>&gt; 2.30.2 <br>&g=
-t;</blockquote>
-<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
-ing-left: 1em;">Yes, below the check is also needed. I guess I should send =
-a new patch with both checks</blockquote>
-<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
-ing-left: 1em;">Best wishes,</blockquote>
-<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
-ing-left: 1em;">Ekaterina Esina</blockquote>
-</div>
-</div></div>
-</div>
-</div></div></body></html>
---=_6c7fd5d1-372a-4043-93cb-aabb5b11055b--
+Thanks
+-Sachin=
