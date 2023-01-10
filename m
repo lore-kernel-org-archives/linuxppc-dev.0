@@ -4,64 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97BC4C54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 12:48:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E139C46467
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 12:48:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrrFW5SK3z3cgy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 23:47:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrrGY74Lsz3fBX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 23:48:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YmGLr+1/;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=goPppi8K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=andrzej.hajda@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YmGLr+1/;
-	dkim-atps=neutral
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrrDQ6MlVz3c73
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 23:46:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673354823; x=1704890823;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=JjCURNXFRNcYm6qc3FnZISad0UB5+7XjMdbu/B0f1Fo=;
-  b=YmGLr+1/3fR3vFGtTdd1An6wts2zqokvSXmx5W5OU40sRdjfeAx/r7Uq
-   DyyeBxupOtF9MyAIeIFAKkoSMl5tijxTr71MEypUZ5iEBdiUKE0VCnDwI
-   P8qfEH5rWVRQN7vGUo6Rb27yrOu6hIi0bY0+JEeP7/xQ+DL72IeH3dEBo
-   aE/WCUoxdbo4MrZ4tCIQW/8Ci/xi5owYmk32stDtlyprGwilQOiyUtvbl
-   6mjNh4rJZT61f2n/v8/ltmkwTJ25Mv3lVwYbuPMNgvGfet/iaXcmLVKOr
-   SeBhtNJhT9hm2WKcGLYAQ34Ckw9+i+icz/jxsJ49tlP5huDhWcHdOBXhj
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="302834346"
-X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
-   d="scan'208";a="302834346"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2023 04:46:46 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="689393555"
-X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
-   d="scan'208";a="689393555"
-Received: from ahajda-mobl.ger.corp.intel.com (HELO [10.213.8.19]) ([10.213.8.19])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2023 04:46:39 -0800
-Message-ID: <1bfae3d0-8c0b-ea83-7184-db847a4a969f@intel.com>
-Date: Tue, 10 Jan 2023 13:46:37 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrrFY28Ytz3f9x
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 23:48:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=goPppi8K;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NrrFX2kQvz4wgv;
+	Tue, 10 Jan 2023 23:48:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1673354880;
+	bh=DZIr54sk8vMPKU0NEm0kQvoaqrMfDhxKc2Zt/F9Jgq0=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=goPppi8KaX+PKGXA1bWiKr2SGRVcTaae3C2bzgReRcQZocLCuCk9EOOO6byR4AOKT
+	 saCwgnv8b4l2FhML2ps1xnWT1hv4SNPf//sxoZe1S1EkJbyCLj7iQ0V+8JC9n4UbhR
+	 Csg4S9kArhu7DYfAg2+yfSyz9+/NGbOTzNZHcHIzjpGD68LuJVynu+C0NduC3jjwBe
+	 wRU+WlBzoYd+Hrec/oGl90ttCm6DaNCHO2grKwqGkkhPS/GYMOw53jPbqLakpilfVf
+	 9LkAMnoGmhIYHgEv074Ge9IVjlySwIr/66oBRRYFFSkE25d7ZwlqdVzlZ47WYgGEMv
+	 lNRiBoJAdmkxw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2] powerpc/64s/radix: Fix RWX mapping with relocated kernel
+Date: Tue, 10 Jan 2023 23:47:53 +1100
+Message-Id: <20230110124753.1325426-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230110124753.1325426-1-mpe@ellerman.id.au>
+References: <20230110124753.1325426-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Firefox/102.0 Thunderbird/102.6.1
-Subject: Re: [Intel-gfx] [RFC DO NOT MERGE] treewide: use __xchg in most
- obvious places
-Content-Language: en-US
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-References: <Y7b6/7coJEVlTVxK@phenom.ffwll.local>
- <20230110105306.3973122-1-andrzej.hajda@intel.com>
- <Y71G1tkmUzM4BLxn@smile.fi.intel.com>
-From: Andrzej Hajda <andrzej.hajda@intel.com>
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
- Gdansk - KRS 101882 - NIP 957-07-52-316
-In-Reply-To: <Y71G1tkmUzM4BLxn@smile.fi.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,123 +58,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, intel-gfx@lists.freedesktop.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Boqun Feng <boqun.feng@gmail.com>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Rodrigo Vivi <rodrigo.vivi@intel.com>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10.01.2023 12:07, Andy Shevchenko wrote:
-> On Tue, Jan 10, 2023 at 11:53:06AM +0100, Andrzej Hajda wrote:
->> This patch tries to show usability of __xchg helper.
->> It is not intended to be merged, but I can convert
->> it to proper patchset if necessary.
->>
->> There are many more places where __xchg can be used.
->> This demo shows the most spectacular cases IMHO:
->> - previous value is returned from function,
->> - temporary variables are in use.
->>
->> As a result readability is much better and diffstat is quite
->> nice, less local vars to look at.
->> In many cases whole body of functions is replaced
->> with __xchg(ptr, val), so as further refactoring the whole
->> function can be removed and __xchg can be called directly.
-> 
-> ...
-> 
->>   arch_uretprobe_hijack_return_addr(unsigned long trampoline_vaddr,
->>   				  struct pt_regs *regs)
->>   {
->> -	unsigned long orig_ret_vaddr;
->> -
->> -	orig_ret_vaddr = regs->ARM_lr;
->> -	/* Replace the return addr with trampoline addr */
->> -	regs->ARM_lr = trampoline_vaddr;
->> -	return orig_ret_vaddr;
->> +	return __xchg(&regs->ARM_lr, trampoline_vaddr);
->>   }
-> 
-> If it's not a callback, the entire function can be killed.
-> And this is a good example of the function usage.
-> OTOH, these places might have a side effect (if it's in deep CPU
-> handlers), means we need to do this carefully.
-> 
-> ...
-> 
->>   static inline void *qed_chain_produce(struct qed_chain *p_chain)
->>   {
->> -	void *p_ret = NULL, *p_prod_idx, *p_prod_page_idx;
->> +	void *p_prod_idx, *p_prod_page_idx;
->>   
->>   	if (is_chain_u16(p_chain)) {
->>   		if ((p_chain->u.chain16.prod_idx &
->> @@ -390,11 +391,8 @@ static inline void *qed_chain_produce(struct qed_chain *p_chain)
->>   		p_chain->u.chain32.prod_idx++;
->>   	}
->>   
->> -	p_ret = p_chain->p_prod_elem;
->> -	p_chain->p_prod_elem = (void *)(((u8 *)p_chain->p_prod_elem) +
->> -					p_chain->elem_size);
->> -
->> -	return p_ret;
->> +	return __xchg(&p_chain->p_prod_elem,
->> +		      (void *)(((u8 *)p_chain->p_prod_elem) + p_chain->elem_size));
-> 
-> Wondering if you still need a (void *) casting after the change. Ditto for the
-> rest of similar cases.
+If a relocatable kernel is loaded at a non-zero address and told not to
+relocate to zero (kdump or RELOCATABLE_TEST), the mapping of the
+interrupt code at zero is left with RWX permissions.
 
-IMHO it is not needed also before the change and IIRC gcc has an 
-extension which allows to drop (u8 *) cast as well [1].
+That is a security weakness, and leads to a warning at boot if
+CONFIG_DEBUG_WX is enabled:
 
-[1]: https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html
+  powerpc/mm: Found insecure W+X mapping at address 00000000056435bc/0xc000000000000000
+  WARNING: CPU: 1 PID: 1 at arch/powerpc/mm/ptdump/ptdump.c:193 note_page+0x484/0x4c0
+  CPU: 1 PID: 1 Comm: swapper/0 Not tainted 6.2.0-rc1-00001-g8ae8e98aea82-dirty #175
+  Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1202 0xf000005 of:SLOF,git-dd0dca hv:linux,kvm pSeries
+  NIP:  c0000000004a1c34 LR: c0000000004a1c30 CTR: 0000000000000000
+  REGS: c000000003503770 TRAP: 0700   Not tainted  (6.2.0-rc1-00001-g8ae8e98aea82-dirty)
+  MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 24000220  XER: 00000000
+  CFAR: c000000000545a58 IRQMASK: 0
+  ...
+  NIP note_page+0x484/0x4c0
+  LR  note_page+0x480/0x4c0
+  Call Trace:
+    note_page+0x480/0x4c0 (unreliable)
+    ptdump_pmd_entry+0xc8/0x100
+    walk_pgd_range+0x618/0xab0
+    walk_page_range_novma+0x74/0xc0
+    ptdump_walk_pgd+0x98/0x170
+    ptdump_check_wx+0x94/0x100
+    mark_rodata_ro+0x30/0x70
+    kernel_init+0x78/0x1a0
+    ret_from_kernel_thread+0x5c/0x64
 
-> 
->>   }
-> 
-> ...
-> 
-> Btw, is it done by coccinelle? If no, why not providing the script?
-> 
+The fix has two parts. Firstly the pages from zero up to the end of
+interrupts need to be marked read-only, so that they are left with R-X
+permissions. Secondly the mapping logic needs to be taught to ensure
+there is a page boundary at the end of the interrupt region, so that the
+permission change only applies to the interrupt text, and not the region
+following it.
 
-Yes I have used cocci. My cocci skills are far from perfect, so I did 
-not want to share my dirty code, but this is nothing secret:
+Fixes: c55d7b5e6426 ("powerpc: Remove STRICT_KERNEL_RWX incompatibility with RELOCATABLE")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/book3s64/radix_pgtable.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-@r1@
-expression x, v;
-local idexpression p;
-@@
--       p = x;
--       x = v;
--       return p;
-+       return __xchg(&x, v);
-
-@depends on r1@
-expression e;
-@@
-         __xchg(
--       &*e,
-+       e,
-         ...)
-
-@depends on r1@
-expression t;
-@@
--       if (t) {
-+       if (t)
-                 return __xchg(...);
--       }
-
-@depends on r1@
-type t;
-identifier p;
-expression e;
-@@
-(
--       t p;
-|
--       t p = e;
-)
-         ... when != p
-
-Regards
-Andrzej
+diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
+index 5a2384ed1727..26245aaf12b8 100644
+--- a/arch/powerpc/mm/book3s64/radix_pgtable.c
++++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
+@@ -234,6 +234,14 @@ void radix__mark_rodata_ro(void)
+ 	end = (unsigned long)__end_rodata;
+ 
+ 	radix__change_memory_range(start, end, _PAGE_WRITE);
++
++	for (start = PAGE_OFFSET; start < (unsigned long)_stext; start += PAGE_SIZE) {
++		end = start + PAGE_SIZE;
++		if (overlaps_interrupt_vector_text(start, end))
++			radix__change_memory_range(start, end, _PAGE_WRITE);
++		else
++			break;
++	}
+ }
+ 
+ void radix__mark_initmem_nx(void)
+@@ -268,6 +276,11 @@ static unsigned long next_boundary(unsigned long addr, unsigned long end)
+ 
+ 	// Relocatable kernel running at non-zero real address
+ 	if (stext_phys != 0) {
++		// The end of interrupts code at zero is a rodata boundary
++		unsigned long end_intr = __pa_symbol(__end_interrupts) - stext_phys;
++		if (addr < end_intr)
++			return end_intr;
++
+ 		// Start of relocated kernel text is a rodata boundary
+ 		if (addr < stext_phys)
+ 			return stext_phys;
+-- 
+2.39.0
 
