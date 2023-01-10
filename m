@@ -4,55 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4355C46467
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 10:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70ED9C46467
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 10:40:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nrmlh5z3yz3cf4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 21:10:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XKJ7hEZZ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=lee@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XKJ7hEZZ;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NrnQn5nPnz3cdH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 21:40:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=astralinux.ru (client-ip=217.74.38.119; helo=mail.astralinux.ru; envelope-from=eesina@astralinux.ru; receiver=<UNKNOWN>)
+Received: from mail.astralinux.ru (mail.astralinux.ru [217.74.38.119])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nrmkf2mV4z3c73
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 21:09:30 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id C07F561588;
-	Tue, 10 Jan 2023 10:09:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB743C433D2;
-	Tue, 10 Jan 2023 10:09:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1673345366;
-	bh=wbyd3dtAWj+DS0fcJULsfdTl+t+d2B5Uw2ZuQAp6tpM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XKJ7hEZZUPaCSNrB26CzNsDjquQbBentUhlmtWHZJjjl5ajSRsc2cY1J6TlsbuK52
-	 UoeGdRXnxLZ8mTjHgbPSqEmh732Odonfjc467CustS3+5wXOJ8G7sxPOOj5OmOUNRy
-	 w0kKUTLk2m70RapGM9Y4KlCXmcVOjK/OPWsBagysaySfqoZm82qlsKdYmxswDYrer+
-	 TbB8sWFTiUPd3iYuGD/0RfH2xQw1GdiwwQtq6XoVkDXuGvwSpzZu+xjIKPR/5OQlxm
-	 16rTc6Mfdvm4x7QdvW8p5nVL1YDBiVFkf6NsLekUIa2pYUR8HMFXdeiKexpKNRNiyO
-	 ttG8j2EPjTphQ==
-Date: Tue, 10 Jan 2023 10:09:18 +0000
-From: Lee Jones <lee@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
- property
-Message-ID: <Y705TvBPWkHzeMrp@google.com>
-References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
- <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
- <Y7v1OxdowGdxgvUj@aspen.lan>
- <Y7xAgHgg0sfh32Ga@ravnborg.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nrj0j3C0Pz3c79
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 18:21:23 +1100 (AEDT)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.astralinux.ru (Postfix) with ESMTP id 986351863A9E;
+	Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
+Received: from mail.astralinux.ru ([127.0.0.1])
+	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10032)
+	with ESMTP id NQPKK78CKEwH; Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.astralinux.ru (Postfix) with ESMTP id 204B01863E33;
+	Tue, 10 Jan 2023 10:21:17 +0300 (MSK)
+X-Virus-Scanned: amavisd-new at astralinux.ru
+Received: from mail.astralinux.ru ([127.0.0.1])
+	by localhost (rbta-msk-vsrv-mail01.astralinux.ru [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id MWA1XFwlqi4T; Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
+Received: from rbta-msk-vsrv-mail01.astralinux.ru (localhost [127.0.0.1])
+	by mail.astralinux.ru (Postfix) with ESMTP id A21311863A9E;
+	Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
+Date: Tue, 10 Jan 2023 10:21:16 +0300 (MSK)
+From: =?utf-8?B?0JXQutCw0YLQtdGA0LjQvdCwINCV0YHQuNC90LA=?= <eesina@astralinux.ru>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Zhao Qiang <qiang.zhao@nxp.com>
+Message-ID: <1596946964.348463848.1673335276356.JavaMail.zimbra@astralinux.ru>
+In-Reply-To: <1b6326fa-69b3-0ef0-2927-60f6fbd6ce28@csgroup.eu>
+References: <20221223143225.23153-1-eesina@astralinux.ru> <1b6326fa-69b3-0ef0-2927-60f6fbd6ce28@csgroup.eu>
+Subject: Re: [PATCH] net-wan: Add check for NULL for utdm in ucc_hdlc_probe
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Y7xAgHgg0sfh32Ga@ravnborg.org>
+Content-Type: multipart/alternative; 
+	boundary="=_6c7fd5d1-372a-4043-93cb-aabb5b11055b"
+X-Originating-IP: [10.177.177.35]
+X-Mailer: Zimbra 9.0.0_GA_4258 (ZimbraXWebClient - yandexbrowser22 (Linux)/9.0.0_GA_4258)
+Thread-Topic: net-wan: Add check for NULL for utdm in ucc_hdlc_probe
+Thread-Index: AQHZFxzZzxDc+uM14kSkvyuO7aEPOq6WVamAf1NcbTo=
+X-Mailman-Approved-At: Tue, 10 Jan 2023 21:40:19 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,44 +59,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Stephen Kitt <steve@sk2.org>, Antonino Daplas <adaplas@gmail.com>, Robin van der Gracht <robin@protonic.nl>, Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev, Nicolas Ferre <nicolas.ferre@microchip.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Paul Mackerras <paulus@samba.org>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Miguel Ojeda <ojeda@kernel.org>, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-arm-kernel@lists.infradead.org
+Cc: lvc-project@linuxtesting.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 09 Jan 2023, Sam Ravnborg wrote:
+--=_6c7fd5d1-372a-4043-93cb-aabb5b11055b
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Daniel.
-> 
-> On Mon, Jan 09, 2023 at 11:06:35AM +0000, Daniel Thompson wrote:
-> > On Sat, Jan 07, 2023 at 07:26:29PM +0100, Sam Ravnborg via B4 Submission Endpoint wrote:
-> > > From: Sam Ravnborg <sam@ravnborg.org>
-> > >
-> > > With all users gone remove the deprecated fb_blank member in
-> > > backlight_properties.
-> > >
-> > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> > > Cc: Lee Jones <lee@kernel.org>
-> > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > > Cc: Jingoo Han <jingoohan1@gmail.com>
-> > 
-> > 
-> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> Thanks for the follow-up on all the backlight related patches.
-> 
-> > 
-> > 
-> > PS Please don't treat this like a maintainer Acked-by: and merge it
-> >    (Lee's not on holiday so work with Lee to figure out the merge
-> >    strategy ;-) ).
-> Nope, I am aware that the usual pattern here and wait for Lee to show
-> up.
+ =20
+=C2=A0=20
+=C2=A0 =20
+  =20
 
-It's on the list.  Only 50 more reviews in the backlog now!
+-----Original Message-----
 
-> For this patch there is a bug as I need to update a comment.
-> I will fix this when I resend after all the patches in flight has
-> landed. So likely after the next merge window,
+From: Christophe <christophe.leroy@csgroup.eu>
+To: Ekaterina <eesina@astralinux.ru>; Zhao <qiang.zhao@nxp.com>
+Cc: lvc-project <lvc-project@linuxtesting.org>; netdev <netdev@vger.kernel.=
+org>; linux-kernel <linux-kernel@vger.kernel.org>; Eric <edumazet@google.co=
+m>; Jakub <kuba@kernel.org>; Paolo <pabeni@redhat.com>; linuxppc-dev <linux=
+ppc-dev@lists.ozlabs.org>; David <davem@davemloft.net>
+Date: Monday, 9 January 2023 6:49 PM MSK
+Subject: Re: [PATCH] net-wan: Add check for NULL for utdm in ucc_hdlc_probe
 
--- 
-Lee Jones [李琼斯]
+
+
+Le 23/12/2022 =C3=A0 15:32, Ekaterina Esina a =C3=A9crit=C2=A0:=20
+> [Vous ne recevez pas souvent de courriers de eesina@astralinux.ru. D=C3=
+=A9couvrez pourquoi ceci est important =C3=A0 https://aka.ms/LearnAboutSend=
+erIdentification ]=20
+>=20
+> If uhdlc_priv_tsa !=3D 1 then utdm is not initialized.=20
+> And if ret !=3D NULL then goto undo_uhdlc_init, where utdm is dereference=
+d.=20
+> Same if dev =3D=3D NULL.=20
+>=20
+> Found by Linux Verification Center (linuxtesting.org) with SVACE.=20
+>=20
+> Signed-off-by: Ekaterina Esina <eesina@astralinux.ru>=20
+> ---=20
+> drivers/net/wan/fsl_ucc_hdlc.c | 4 +++-=20
+> 1 file changed, 3 insertions(+), 1 deletion(-)=20
+>=20
+> diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdl=
+c.c=20
+> index 22edea6ca4b8..2ddb0f71e648 100644=20
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c=20
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c=20
+> @@ -1243,7 +1243,9 @@ static int ucc_hdlc_probe(struct platform_device *p=
+dev)=20
+> free_dev:=20
+> free_netdev(dev);=20
+> undo_uhdlc_init:=20
+> - iounmap(utdm->siram);=20
+> + if (utdm !=3D NULL) {=20
+> + iounmap(utdm->siram);=20
+> + }=20
+
+If utdm being NULL is a problem here, isn't it also a problem in the=20
+iounmap below ?=20
+
+
+> unmap_si_regs:=20
+> iounmap(utdm->si_regs);=20
+> free_utdm:=20
+> --=20
+> 2.30.2=20
+> Yes, below the check is also needed. I guess I should send a new patch wi=
+th both checks Best wishes, Ekaterina Esina   =20
+
+--=_6c7fd5d1-372a-4043-93cb-aabb5b11055b
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html><body><div style=3D"font-size: 12pt; font-family: arial, helvetica, s=
+ans-serif; color: rgb(0, 0, 0);"><div style=3D"font-size: 12pt; font-family=
+: 'arial' , 'helvetica' , sans-serif; color: #000000;">
+<div style=3D"font-size: 12pt; font-family: 'arial' , 'helvetica' , sans-se=
+rif; color: #000000;">
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div id=3D"signature-content-no-signature"></div>
+<div>
+
+<div id=3D"OLK_SRC_BODY_SECTION">
+<div id=3D"OLK_SRC_BODY_SECTION">
+<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
+ing-left: 1em;"><hr id=3D"MESSAGE_DATA_MARKER"><strong>From: </strong>Chris=
+tophe &lt;christophe.leroy@csgroup.eu&gt;<br><strong>To: </strong>Ekaterina=
+ &lt;eesina@astralinux.ru&gt;; Zhao &lt;qiang.zhao@nxp.com&gt;<br><strong>C=
+c: </strong>lvc-project &lt;lvc-project@linuxtesting.org&gt;; netdev &lt;ne=
+tdev@vger.kernel.org&gt;; linux-kernel &lt;linux-kernel@vger.kernel.org&gt;=
+; Eric &lt;edumazet@google.com&gt;; Jakub &lt;kuba@kernel.org&gt;; Paolo &l=
+t;pabeni@redhat.com&gt;; linuxppc-dev &lt;linuxppc-dev@lists.ozlabs.org&gt;=
+; David &lt;davem@davemloft.net&gt;<br><strong>Date: </strong>Monday, 9 Jan=
+uary 2023 6:49 PM MSK<br><strong>Subject: </strong>Re: [PATCH] net-wan: Add=
+ check for NULL for utdm in ucc_hdlc_probe<br><br><br><br>Le 23/12/2022 =C3=
+=A0 15:32, Ekaterina Esina a =C3=A9crit&nbsp;: <br>&gt; [Vous ne recevez pa=
+s souvent de courriers de eesina@astralinux.ru. D=C3=A9couvrez pourquoi cec=
+i est important =C3=A0 https://aka.ms/LearnAboutSenderIdentification ] <br>=
+&gt; <br>&gt; If uhdlc_priv_tsa !=3D 1 then utdm is not initialized. <br>&g=
+t; And if ret !=3D NULL then goto undo_uhdlc_init, where utdm is dereferenc=
+ed. <br>&gt; Same if dev =3D=3D NULL. <br>&gt; <br>&gt; Found by Linux Veri=
+fication Center (linuxtesting.org) with SVACE. <br>&gt; <br>&gt; Signed-off=
+-by: Ekaterina Esina &lt;eesina@astralinux.ru&gt; <br>&gt; --- <br>&gt; dri=
+vers/net/wan/fsl_ucc_hdlc.c | 4 +++- <br>&gt; 1 file changed, 3 insertions(=
++), 1 deletion(-) <br>&gt; <br>&gt; diff --git a/drivers/net/wan/fsl_ucc_hd=
+lc.c b/drivers/net/wan/fsl_ucc_hdlc.c <br>&gt; index 22edea6ca4b8..2ddb0f71=
+e648 100644 <br>&gt; --- a/drivers/net/wan/fsl_ucc_hdlc.c <br>&gt; +++ b/dr=
+ivers/net/wan/fsl_ucc_hdlc.c <br>&gt; @@ -1243,7 +1243,9 @@ static int ucc_=
+hdlc_probe(struct platform_device *pdev) <br>&gt; free_dev: <br>&gt; free_n=
+etdev(dev); <br>&gt; undo_uhdlc_init: <br>&gt; - iounmap(utdm-&gt;siram); <=
+br>&gt; + if (utdm !=3D NULL) { <br>&gt; + iounmap(utdm-&gt;siram); <br>&gt=
+; + } <br><br>If utdm being NULL is a problem here, isn't it also a problem=
+ in the <br>iounmap below ? <br><br><br>&gt; unmap_si_regs: <br>&gt; iounma=
+p(utdm-&gt;si_regs); <br>&gt; free_utdm: <br>&gt; -- <br>&gt; 2.30.2 <br>&g=
+t;</blockquote>
+<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
+ing-left: 1em;">Yes, below the check is also needed. I guess I should send =
+a new patch with both checks</blockquote>
+<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
+ing-left: 1em;">Best wishes,</blockquote>
+<blockquote style=3D"margin: 0 0 0 0.8em; border-left: 1px #ccc solid; padd=
+ing-left: 1em;">Ekaterina Esina</blockquote>
+</div>
+</div></div>
+</div>
+</div></div></body></html>
+--=_6c7fd5d1-372a-4043-93cb-aabb5b11055b--
