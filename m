@@ -4,47 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E782C54EBE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 12:49:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FB69C54EBE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 13:53:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NrrHZ0VsJz3fCr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jan 2023 23:49:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nrsj63xqMz3bSk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 00:53:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nBH+lYDM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VdWP5I1O;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NrrFY2Fdtz3f9y
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jan 2023 23:48:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.100; helo=mga07.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nBH+lYDM;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VdWP5I1O;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mga07.intel.com (mga07.intel.com [134.134.136.100])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NrrFW6Q7nz4xwt;
-	Tue, 10 Jan 2023 23:47:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1673354880;
-	bh=seHIFiz300ZoowfxLAP629QCTs9VXMifhahbL0/DywU=;
-	h=From:To:Subject:Date:From;
-	b=nBH+lYDMBlZ8o/ic1M80GAxxb+YGCF2LNjgqgZZ1hYemoynvTu/BePCkHexQ7h7Hx
-	 ukR+f3gTFGhc+K6Tl3H0uae74CJ+qYudliWbdWXI8pmZeZ5pf4+5gC5PdHrKwoQfZh
-	 4FP3y4qrjIuEORzFTskwRmkf+qmLUBdIlPbsuah8uIgmtYEU7CNAPD2hCYXTkjzgAo
-	 vVLLjttRv6y8Xvu2SP1Jmees9EXZcx9IKhBX5v5z3Omo7S3isr/m8uWrse8yNv6HNS
-	 e4N2gIu4k+ZvB3jBXebwKfp9WOXwlVs9Lts1GGZSXrvMvSNdztcO3Rp3RfO/O3H3A0
-	 WHTGt74O/jSLA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/64s/radix: Fix crash with unaligned relocated kernel
-Date: Tue, 10 Jan 2023 23:47:52 +1100
-Message-Id: <20230110124753.1325426-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.39.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nrsh40Tghz3bT7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2023 00:52:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1673358756; x=1704894756;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=Tp8Z9Ay/HrlqQE0qDFK7p4Fost9+vU0ggkXvi/hfbkY=;
+  b=VdWP5I1OAGr428APJyQ1mzTmNoa+YCjshB98QtsxVoAHaZ/wePl12rU1
+   66ovSSUCK/PWNA1JRcbA7SQRmi0Nblk7/GCBG1LljL+MWDWYiwpR0iKmc
+   1bY2d6QTAv3R7SzLmshqbWjwtXVrNQgOjJh738jHgZHYkbRlJbdXhnDNe
+   Tk6pxqxHrDGs6/cLG/LUdc9z2e40XdkuVzSXGiMydph4Q8lpQF7DT+Xe+
+   25MZC/COAQ3SD/S3vbVYGEVP+xFXB29IqdROCiHAs/xGGsISL9Odhjrih
+   aMcVc11ffgX9eBGvWIFG8r2j43hPW8ORKJurmZiAmpPKjI1aV+1ugvDsO
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="387599285"
+X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
+   d="scan'208";a="387599285"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Jan 2023 05:52:31 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10585"; a="830995823"
+X-IronPort-AV: E=Sophos;i="5.96,315,1665471600"; 
+   d="scan'208";a="830995823"
+Received: from smile.fi.intel.com ([10.237.72.54])
+  by orsmga005.jf.intel.com with ESMTP; 10 Jan 2023 05:52:23 -0800
+Received: from andy by smile.fi.intel.com with local (Exim 4.96)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1pFF36-0073E7-37;
+	Tue, 10 Jan 2023 15:52:20 +0200
+Date: Tue, 10 Jan 2023 15:52:20 +0200
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andrzej Hajda <andrzej.hajda@intel.com>
+Subject: Re: [Intel-gfx] [RFC DO NOT MERGE] treewide: use __xchg in most
+ obvious places
+Message-ID: <Y71tlG23t0gH9K1t@smile.fi.intel.com>
+References: <Y7b6/7coJEVlTVxK@phenom.ffwll.local>
+ <20230110105306.3973122-1-andrzej.hajda@intel.com>
+ <Y71G1tkmUzM4BLxn@smile.fi.intel.com>
+ <1bfae3d0-8c0b-ea83-7184-db847a4a969f@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1bfae3d0-8c0b-ea83-7184-db847a4a969f@intel.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,106 +75,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-snps-arc@lists.infradead.org, intel-gfx@lists.freedesktop.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Boqun Feng <boqun.feng@gmail.com>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Rodrigo Vivi <rodrigo.vivi@intel.com>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org, Daniel Vetter <daniel@ffwll.ch>, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If a relocatable kernel is loaded at an address that is not 2MB aligned
-and told not to relocate to zero, the kernel can crash due to
-mark_rodata_ro() incorrectly changing some read-write data to read-only.
+On Tue, Jan 10, 2023 at 01:46:37PM +0100, Andrzej Hajda wrote:
+> On 10.01.2023 12:07, Andy Shevchenko wrote:
+> > On Tue, Jan 10, 2023 at 11:53:06AM +0100, Andrzej Hajda wrote:
 
-Scenarios where the misalignment can occur are when the kernel is
-loaded by kdump or using the RELOCATABLE_TEST config option.
+...
 
-Example crash with the kernel loaded at 5MB:
+> > > +	return __xchg(&p_chain->p_prod_elem,
+> > > +		      (void *)(((u8 *)p_chain->p_prod_elem) + p_chain->elem_size));
+> > 
+> > Wondering if you still need a (void *) casting after the change. Ditto for the
+> > rest of similar cases.
+> 
+> IMHO it is not needed also before the change and IIRC gcc has an extension
+> which allows to drop (u8 *) cast as well [1].
 
-  Run /sbin/init as init process
-  BUG: Unable to handle kernel data access on write at 0xc000000000452000
-  Faulting instruction address: 0xc0000000005b6730
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA pSeries
-  CPU: 1 PID: 1 Comm: init Not tainted 6.2.0-rc1-00011-g349188be4841 #166
-  Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1202 0xf000005 of:SLOF,git-5b4c5a hv:linux,kvm pSeries
-  NIP:  c0000000005b6730 LR: c000000000ae9ab8 CTR: 0000000000000380
-  REGS: c000000004503250 TRAP: 0300   Not tainted  (6.2.0-rc1-00011-g349188be4841)
-  MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 44288480  XER: 00000000
-  CFAR: c0000000005b66ec DAR: c000000000452000 DSISR: 0a000000 IRQMASK: 0
-  ...
-  NIP memset+0x68/0x104
-  LR  zero_user_segments.constprop.0+0xa8/0xf0
-  Call Trace:
-    ext4_mpage_readpages+0x7f8/0x830
-    ext4_readahead+0x48/0x60
-    read_pages+0xb8/0x380
-    page_cache_ra_unbounded+0x19c/0x250
-    filemap_fault+0x58c/0xae0
-    __do_fault+0x60/0x100
-    __handle_mm_fault+0x1230/0x1a40
-    handle_mm_fault+0x120/0x300
-    ___do_page_fault+0x20c/0xa80
-    do_page_fault+0x30/0xc0
-    data_access_common_virt+0x210/0x220
+I guess you can drop at least the former one.
 
-This happens because mark_rodata_ro() tries to change permissions on the
-range _stext..__end_rodata, but _stext sits in the middle of the 2MB
-page from 4MB to 6MB:
+> [1]: https://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html
 
-  radix-mmu: Mapped 0x0000000000000000-0x0000000000200000 with 2.00 MiB pages (exec)
-  radix-mmu: Mapped 0x0000000000200000-0x0000000000400000 with 2.00 MiB pages
-  radix-mmu: Mapped 0x0000000000400000-0x0000000002400000 with 2.00 MiB pages (exec)
+...
 
-The logic that changes the permissions assumes the linear mapping was
-split correctly at boot, so it marks the entire 2MB page read-only. That
-leads to the write fault above.
+> > Btw, is it done by coccinelle? If no, why not providing the script?
+> 
+> Yes I have used cocci. My cocci skills are far from perfect, so I did not
+> want to share my dirty code, but this is nothing secret:
 
-To fix it, the boot time mapping logic needs to consider that if the
-kernel is running at a non-zero address then _stext is a boundary where
-it must split the mapping.
+Thank you! It's not about secrecy, it's about automation / error proofness.
 
-That leads to the mapping being split correctly, allowing the rodata
-permission change to take happen correctly, with no spillover:
-
-  radix-mmu: Mapped 0x0000000000000000-0x0000000000200000 with 2.00 MiB pages (exec)
-  radix-mmu: Mapped 0x0000000000200000-0x0000000000400000 with 2.00 MiB pages
-  radix-mmu: Mapped 0x0000000000400000-0x0000000000500000 with 64.0 KiB pages
-  radix-mmu: Mapped 0x0000000000500000-0x0000000000600000 with 64.0 KiB pages (exec)
-  radix-mmu: Mapped 0x0000000000600000-0x0000000002400000 with 2.00 MiB pages (exec)
-
-If the kernel is loaded at a 2MB aligned address, the mapping continues
-to use 2MB pages as before:
-
-  radix-mmu: Mapped 0x0000000000000000-0x0000000000200000 with 2.00 MiB pages (exec)
-  radix-mmu: Mapped 0x0000000000200000-0x0000000000400000 with 2.00 MiB pages
-  radix-mmu: Mapped 0x0000000000400000-0x0000000002c00000 with 2.00 MiB pages (exec)
-  radix-mmu: Mapped 0x0000000002c00000-0x0000000100000000 with 2.00 MiB pages
-
-Fixes: c55d7b5e6426 ("powerpc: Remove STRICT_KERNEL_RWX incompatibility with RELOCATABLE")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/book3s64/radix_pgtable.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
-index cac727b01799..5a2384ed1727 100644
---- a/arch/powerpc/mm/book3s64/radix_pgtable.c
-+++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
-@@ -262,6 +262,17 @@ print_mapping(unsigned long start, unsigned long end, unsigned long size, bool e
- static unsigned long next_boundary(unsigned long addr, unsigned long end)
- {
- #ifdef CONFIG_STRICT_KERNEL_RWX
-+	unsigned long stext_phys;
-+
-+	stext_phys = __pa_symbol(_stext);
-+
-+	// Relocatable kernel running at non-zero real address
-+	if (stext_phys != 0) {
-+		// Start of relocated kernel text is a rodata boundary
-+		if (addr < stext_phys)
-+			return stext_phys;
-+	}
-+
- 	if (addr < __pa_symbol(__srwx_boundary))
- 		return __pa_symbol(__srwx_boundary);
- #endif
 -- 
-2.39.0
+With Best Regards,
+Andy Shevchenko
+
 
