@@ -4,78 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBB4CC46467
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 17:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43427C5479D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 18:29:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NsZd50mvVz3c88
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 04:37:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NsbnX1dzZz3cfl
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 05:29:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=m3BZA3J4;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m85A0ufJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=m3BZA3J4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m85A0ufJ;
 	dkim-atps=neutral
-Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsZc16sbzz306Y
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 04:36:32 +1100 (AEDT)
-Received: by mail-yb1-xb2a.google.com with SMTP id t15so15803462ybq.4
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2023 09:36:32 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=CQuivU7tA0j3DaNAmzqNs9rVsYSc4Mupj7zmuVm1L2o=;
-        b=m3BZA3J4ZDneq6BFTfRM2gL1L4TzJkzZOzLkrvkS58q1KA44AHRGMd50Xie04FdSP5
-         ojeEczPNFUxQ8YDewDrL6S+zSFr+J7b3WSZR6SU4R/rQUW5w74iF88c+IGSasO7abH6x
-         kifnVki9SZyc566UQCoj/h1X1S6XVKHiRSX+hJNcIcjOUfGQyg0AAlE1S431lzUcReH9
-         pnlPtplxp3n3x6AHBNd/qXxJZB1e58S2YVcFpCH5c2ODpBlgO9Js9SsygmS+jmKpjcNF
-         dpG26zkfpK05TRuZ7K9wuE+i/35iSDZLI/+icLhqN/LeSRAY13ir4w4LZ2tyGVeyUPRp
-         9Fzg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=to:subject:message-id:date:from:in-reply-to:references:mime-version
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=CQuivU7tA0j3DaNAmzqNs9rVsYSc4Mupj7zmuVm1L2o=;
-        b=MBuh1X+2iFE3E/nUExlyCwDBK29oGcnfLRul+gaFkXI82KgrxEhjtlYgWqo7hh5uAw
-         niWEbB2hO62isHQ7Xji0F8c1WkVBCa5C7rt05Id1RCfOT99OSv1ta3SW/Na4VPP9Z/7g
-         M+vyFj+MwY261PCJTOWWgtSDxSdcuMneD6tg8rfdBJe0eQXbSsjOIjuegp1c63+RdAup
-         3BUpL6c5KuiFtig2dsYq/4ggOlndylIGchidyuxvCZ+P8aFQIFLGA0O4e3Dpi5A+MkCk
-         F9OBlBTEDcFAOPBkZNOxs2VeLrPBcfq50F3x5DSqFYzSyNUgNu+ARXGKDiHjphJ32lSN
-         WV6A==
-X-Gm-Message-State: AFqh2kqF5dfqR9G8yFSIkaf89eB90KoRaoyJuKyokN0Em80Lo5Ek7Psd
-	n4DCF1khevTc4/3un0KJyox3iKCfHlbVB947jFE73Q==
-X-Google-Smtp-Source: AMrXdXvUZO0oM/+ykiDhNfUl4bBGqtkVrKxNyHSrFtssvMPCUccoMfbmVDu1oZYeiMvYzVTpl4K2ounvf7p9BcdvbV8=
-X-Received: by 2002:a25:1388:0:b0:7b8:6d00:ef23 with SMTP id
- 130-20020a251388000000b007b86d00ef23mr2139487ybt.119.1673458589236; Wed, 11
- Jan 2023 09:36:29 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsbmR2xqwz3bZn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 05:28:55 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id CCB5CB81BB0;
+	Wed, 11 Jan 2023 18:28:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 19F09C433EF;
+	Wed, 11 Jan 2023 18:28:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1673461729;
+	bh=SEVadaaZ7nAyP60UPoBxxqnNElyp72turpT4z9GLOgY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=m85A0ufJDBXb1Inco40yvIDQ6syjaqa2qJNvkraRufme1NPFfmkrc2yP1g8IIwYoj
+	 8rz2fJymIGpMd0JU0P/YxWFMV9OU8pyOREFqkvZLywcbXyqn+tHXHGyBa3eBqHTBtl
+	 Jzzr1Oa+oEE7Q+90PDiH28vBpInizMmr0UFWsZ8sxjzWxrDj3CtFXGzm5k/9qShacS
+	 9XAff7LW6mN77xfgxFRb07WIdrZgMH9I1T5vKVdFbsi2HJr3rSJmuRlB7SvzUts/pJ
+	 vmfa1RylFItRdURplCvZY+ftCtggDjwIQQxC5LAdqJWNSEojhB1kHaQfr34nmBY1xb
+	 MY5VhmTgsnCiw==
+Date: Wed, 11 Jan 2023 10:28:48 -0800
+From: Jakub Kicinski <kuba@kernel.org>
+To: Esina Ekaterina <eesina@astralinux.ru>
+Subject: Re: [PATCH v3]   net: wan: Add checks for NULL for utdm in
+ undo_uhdlc_init and unmap_si_regs
+Message-ID: <20230111102848.44863b9c@kernel.org>
+In-Reply-To: <20230111090504.66434-1-eesina@astralinux.ru>
+References: <20230110204418.79f43f45@kernel.org>
+	<20230111090504.66434-1-eesina@astralinux.ru>
 MIME-Version: 1.0
-References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-14-surenb@google.com>
- <20230111154726.stadwtzicabwh5u5@offworld>
-In-Reply-To: <20230111154726.stadwtzicabwh5u5@offworld>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 11 Jan 2023 09:36:18 -0800
-Message-ID: <CAJuCfpFmO310qoFJr2EKHRavLx87k6tVkHO3-JCE0s4q5g+TCw@mail.gmail.com>
-Subject: Re: [PATCH 13/41] mm: introduce vma->vm_flags modifier functions
-To: Suren Baghdasaryan <surenb@google.com>, akpm@linux-foundation.org, michel@lespinasse.org, 
-	jglisse@google.com, mhocko@suse.com, vbabka@suse.cz, hannes@cmpxchg.org, 
-	mgorman@techsingularity.net, willy@infradead.org, liam.howlett@oracle.com, 
-	peterz@infradead.org, ldufour@linux.ibm.com, laurent.dufour@fr.ibm.com, 
-	paulmck@kernel.org, luto@kernel.org, songliubraving@fb.com, peterx@redhat.com, 
-	david@redhat.com, dhowells@redhat.com, hughd@google.com, 
-	bigeasy@linutronix.de, kent.overstreet@linux.dev, punit.agrawal@bytedance.com, 
-	lstoakes@gmail.com, peterjung1337@gmail.com, rientjes@google.com, 
-	axelrasmussen@google.com, joelaf@google.com, minchan@google.com, 
-	jannh@google.com, shakeelb@google.com, tatashin@google.com, 
-	edumazet@google.com, gthelen@google.com, gurua@google.com, 
-	arjunroy@google.com, soheil@google.com, hughlynch@google.com, 
-	leewalsh@google.com, posk@google.com, linux-mm@kvack.org, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	x86@kernel.org, linux-kernel@vger.kernel.org, kernel-team@android.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,31 +61,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: lvc-project@linuxtesting.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Paolo Abeni <pabeni@redhat.com>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>, Zhao Qiang <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 11, 2023 at 8:13 AM Davidlohr Bueso <dave@stgolabs.net> wrote:
->
-> On Mon, 09 Jan 2023, Suren Baghdasaryan wrote:
->
-> >To keep vma locking correctness when vm_flags are modified, add modifier
-> >functions to be used whenever flags are updated.
->
-> How about moving this patch and the ones that follow out of this series,
-> into a preliminary patchset? It would reduce the amount of noise in the
-> per-vma lock changes, which would then only be adding the needed
-> vma_write_lock()ing.
+On Wed, 11 Jan 2023 12:05:03 +0300 Esina Ekaterina wrote:
+> Subject: [PATCH v3]   net: wan: Add checks for NULL for utdm in undo_uhdlc_init and unmap_si_regs
 
-How about moving those prerequisite patches to the beginning of the
-patchset (before maple_tree RCU changes)? I feel like they do belong
-in the patchset because as a standalone patchset it would be unclear
-why I'm adding all these accessor functions and introducing this
-churn. Would that be acceptable?
+net: wan: prevent null-deref on error path for non-tdm case
 
->
-> Thanks,
-> Davidlohr
->
-> --
-> To unsubscribe from this group and stop receiving emails from it, send an email to kernel-team+unsubscribe@android.com.
->
+>   If uhdlc_priv_tsa != 1 then utdm is not initialized.
+>   And if ret != NULL then goto undo_uhdlc_init, where
+>   utdm is dereferenced. Same if dev == NULL.
+> 
+>   Found by Linux Verification Center (linuxtesting.org) with SVACE.
+
+I did the indentation to make the content stand out in the email, 
+there should be no indentation in the actual msg, sorry.
+
+> --- a/drivers/net/wan/fsl_ucc_hdlc.c
+> +++ b/drivers/net/wan/fsl_ucc_hdlc.c
+> @@ -1243,9 +1243,11 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+>  free_dev:
+>  	free_netdev(dev);
+>  undo_uhdlc_init:
+> -	iounmap(utdm->siram);
+> +	if (utdm != NULL)
+
+and here just:
+
+	if (utdm)
+
+comparing to NULL or zero is less idiomatic in kernel C.
+
+> +		iounmap(utdm->siram);
+>  unmap_si_regs:
+> -	iounmap(utdm->si_regs);
+> +	if (utdm != NULL)
+> +		iounmap(utdm->si_regs);
