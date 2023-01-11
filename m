@@ -4,52 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C4B5C677F1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 15:41:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A3CDC5479D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 16:03:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NsX396ZDYz3cf1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 02:41:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NsXXN1Nfhz3c8X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 03:03:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Q+o9216w;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=T1ZN/6U7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8::224; helo=relay4-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=Q+o9216w;
-	dkim-atps=neutral
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsX292PNDz2yJv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 02:40:32 +1100 (AEDT)
-Received: (Authenticated sender: herve.codina@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPSA id B16AFE0004;
-	Wed, 11 Jan 2023 15:40:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1673451624;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=TJ80tI+n7E12DAvDikBDbLVrg9IXgTxZ252Cq+neEbQ=;
-	b=Q+o9216wXpyzH4Fmo4XE+A/19Rhli449oB8gxh74cMuVSBe7TmgTWv0NVMgETjHj7ICimI
-	2lEldE8luCvEuRzv4wncGEOGkp8+YWnj/gHNVwVIcANGc/i9KFCarw2xI7Zy7ii4mw01BP
-	3yh4Y2Qf6FLQR/pCfsBovsMC1nhClDVRgsfz9BsqGrMm8sPNTEXSy366YeN1nX8+aedw2l
-	5dU2xzoQw9jeYIRqNq8AjlA436V/DgDKdEL+uikobI8yvJhFeEtymQvw2NPhOwbDD2+MwT
-	mU28pFltJe6k53uG/R2oCKCPp6dR2f20BtbgaXKCRweyOUiSP64AKbrgZhfqEA==
-Date: Wed, 11 Jan 2023 16:40:18 +0100
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v2 06/10] soc: fsl: qe: Add support for QMC
-Message-ID: <20230111164018.676a8ca1@bootlin.com>
-In-Reply-To: <f46eb64d-ad4c-7531-60b0-68961f171ed8@csgroup.eu>
-References: <20230106163746.439717-1-herve.codina@bootlin.com>
-	<20230106163746.439717-7-herve.codina@bootlin.com>
-	<f46eb64d-ad4c-7531-60b0-68961f171ed8@csgroup.eu>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.34; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsXWD088Nz2xJR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 03:02:15 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
+	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
+	bh=yspqmV8n8uMxBrXLAo4qukTZST08VUL+ZwdMf7CyN3U=; b=T1ZN/6U7jNW9xGgPClMK03QJwy
+	uyjiqhJ8YwgiJ6Eiz0EJ5C/w4I3ofNgkkacNSzJtrwNhjDg3urx1sJyBHEZsQRigWHcWmw9WK6BQC
+	1pm0Sgn2yHvdXz9PGAZ9vpGeV5XmBi2UCOihMZxWBXNXDzl6K/PHjwrfH9i92XsT+KNBfKwWHGxvI
+	cDzRk98KLWz7TfGLdf7wVm3phZkwXvCWFa6K2IxNlHf0SPNEgByZoK2ydJxplaCJH6rqSwmWoXX+t
+	UzHq6NquaYLhmbCS9svpbsiOYe6KZ6gqWHvrfO3Je81q/g+ytGz177g9/sqlqBc4jYYPMYkIcEs3b
+	MXBXXIGg==;
+Received: from [2601:1c2:d80:3110:e65e:37ff:febd:ee53]
+	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1pFdXw-00C5iF-IT; Wed, 11 Jan 2023 16:01:48 +0000
+Message-ID: <5d8e3316-54bb-40c4-a8a4-dd1b10d1e1a6@infradead.org>
+Date: Wed, 11 Jan 2023 08:01:47 -0800
 MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: usb.c:undefined reference to `qe_immr'
+Content-Language: en-US
+To: Michael Ellerman <mpe@ellerman.id.au>, kernel test robot <lkp@intel.com>,
+ Masahiro Yamada <masahiroy@kernel.org>
+References: <202301101500.pillNv6R-lkp@intel.com>
+ <a0e325d2-a9c5-ffca-b2d6-5eea60f9ad3b@infradead.org>
+ <87lem9h64t.fsf@mpe.ellerman.id.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+In-Reply-To: <87lem9h64t.fsf@mpe.ellerman.id.au>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,68 +59,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Fabio Estevam <festevam@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>, Li Yang <leoyang.li@nxp.com>, Nicolin Chen <nicoleotsuka@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Mark Brown <broonie@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Shengjiu Wang <shengjiu.wang@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: Nicolas Schier <nicolas@fjasle.eu>, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, oe-kbuild-all@lists.linux.dev, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Qiang Zhao <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-On Wed, 11 Jan 2023 13:58:03 +0000
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
 
-> Le 06/01/2023 =C3=A0 17:37, Herve Codina a =C3=A9crit=C2=A0:
-> > The QMC (QUICC Multichannel Controller) is available on some
-> > PowerQUICC SoC such as the MPC885 or MPC866. =20
->=20
-> Same, that's QMC for CPM for the time being, should that be made clear=20
-> in the subject ?
 
-Also same answer:
-Will changing the subject be enough or do I need to move it to new
-created drivers/soc/fsl/cpm/ directory ?
+On 1/10/23 23:39, Michael Ellerman wrote:
+> Randy Dunlap <rdunlap@infradead.org> writes:
+>> [adding Cc's]
+>>
+>>
+>> On 1/9/23 23:59, kernel test robot wrote:
+>>> Hi Masahiro,
+>>>
+>>> FYI, the error/warning still remains.
+>>>
+>>> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master
+>>> head:   5a41237ad1d4b62008f93163af1d9b1da90729d8
+>>> commit: 7b4537199a4a8480b8c3ba37a2d44765ce76cd9b kbuild: link symbol CRCs at final link, removing CONFIG_MODULE_REL_CRCS
+>>> date:   8 months ago
+>>> config: powerpc-randconfig-r026-20230110
+>>> compiler: powerpc-linux-gcc (GCC) 12.1.0
+>>> reproduce (this is a W=1 build):
+>>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>>         chmod +x ~/bin/make.cross
+>>>         # https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=7b4537199a4a8480b8c3ba37a2d44765ce76cd9b
+>>>         git remote add linus https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+>>>         git fetch --no-tags linus master
+>>>         git checkout 7b4537199a4a8480b8c3ba37a2d44765ce76cd9b
+>>>         # save the config file
+>>>         mkdir build_dir && cp config build_dir/.config
+>>>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc olddefconfig
+>>>         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash
+>>>
+>>> If you fix the issue, kindly add following tag where applicable
+>>> | Reported-by: kernel test robot <lkp@intel.com>
+>>>
+>>> All errors (new ones prefixed by >>):
+>>>
+>>>    powerpc-linux-ld: powerpc-linux-ld: DWARF error: could not find abbrev number 74
+>>>    drivers/soc/fsl/qe/usb.o: in function `qe_usb_clock_set':
+>>>>> usb.c:(.text+0x1e): undefined reference to `qe_immr'
+>>>>> powerpc-linux-ld: usb.c:(.text+0x2a): undefined reference to `qe_immr'
+>>>>> powerpc-linux-ld: usb.c:(.text+0xbc): undefined reference to `qe_setbrg'
+>>>>> powerpc-linux-ld: usb.c:(.text+0xca): undefined reference to `cmxgcr_lock'
+>>>    powerpc-linux-ld: usb.c:(.text+0xce): undefined reference to `cmxgcr_lock'
+>>>
+>>
+>> .config extract:
+>>
+>> #
+>> # NXP/Freescale QorIQ SoC drivers
+>> #
+>> # CONFIG_QUICC_ENGINE is not set
+>> CONFIG_QE_USB=y
+>>
+>>
+>> This is caused by (drivers/soc/fsl/qe/Kconfig):
+>>
+>> config QE_USB
+>> 	bool
+>> 	default y if USB_FSL_QE
+>> 	help
+>> 	  QE USB Controller support
+>>
+>> which does not depend on QUICC_ENGINE, where the latter build provides
+>> the missing symbols.
+> 
+> So QE_USB should depend on QUICC_ENGINE no?
 
->=20
-> QE also has QMC and this driver might be used for QE QMC as well with=20
-> some enhancement, maybe that could be explained here ?
+Yes, that would make sense, but I don't know enough about the
+hardware. I.e., could CONFIG_PPC_EP88XC have QE_USB without having
+a full QUICC_ENGINE?
 
-Yes and we plan to have it working on QE too.
+thanks.
 
-What do you think if I add the following:
-  The QMC is also available on some Quicc Engine SoC.
-  This current version support CPM1 SoC only. Some
-  enhancement are needed to support Quicc Engine SoC.
-
->=20
-> I see you are using in_be16(), out_be16() etc ....
-> That's specific to powerpc arch, maybe it is better to use ioread16be,=20
-> iowrite16be() etc ....
-> See commit 3f39f38ea91d ("soc: fsl: qe: replace qe_io{read,write}*=20
-> wrappers by generic io{read,write}*") and commit 6ac9b61786cc ("soc:=20
-> fsl: qe: introduce qe_io{read,write}* wrappers") for information.
-
-You're right.
-I will switch to io{read,write}{16,32}be.
-
-I prefer avoid the use of qe_* wrappers as the driver is not
-(yet) compatible with QE.
-
->=20
-> >=20
-> > It emulates up to 64 channels within one serial controller
-> > using the same TDM physical interface routed from the TSA.
-> >=20
-> > Signed-off-by: Herve Codina <herve.codina@bootlin.com> =20
->=20
-> In some places, you comments use the network style, not the generic style.
-
-I will fix them.
-
->=20
-> Christophe
-
-Thanks for the review,
-Herv=C3=A9
-
---=20
-Herv=C3=A9 Codina, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+-- 
+~Randy
