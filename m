@@ -4,53 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B90BC46467
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 10:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 334E0C46467
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 11:31:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NsNZn4qVFz3fDK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 21:04:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=aculab.com (client-ip=185.58.85.151; helo=eu-smtp-delivery-151.mimecast.com; envelope-from=david.laight@aculab.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 66 seconds by postgrey-1.36 at boromir; Wed, 11 Jan 2023 21:04:16 AEDT
-Received: from eu-smtp-delivery-151.mimecast.com (eu-smtp-delivery-151.mimecast.com [185.58.85.151])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NsQVm3V82z3fCM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jan 2023 22:31:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sxSjyavq;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sxSjyavq;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsNZ85jTrz3bXv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2023 21:04:16 +1100 (AEDT)
-Received: from AcuMS.aculab.com (156.67.243.121 [156.67.243.121]) by
- relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384) id
- uk-mta-234-ZV2WA3EvMAe4cAYuGqE3Sg-1; Wed, 11 Jan 2023 10:03:01 +0000
-X-MC-Unique: ZV2WA3EvMAe4cAYuGqE3Sg-1
-Received: from AcuMS.Aculab.com (10.202.163.6) by AcuMS.aculab.com
- (10.202.163.6) with Microsoft SMTP Server (TLS) id 15.0.1497.42; Wed, 11 Jan
- 2023 10:02:57 +0000
-Received: from AcuMS.Aculab.com ([::1]) by AcuMS.aculab.com ([::1]) with mapi
- id 15.00.1497.044; Wed, 11 Jan 2023 10:02:57 +0000
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Ingo Molnar' <mingo@kernel.org>, Michal Hocko <mhocko@suse.com>
-Subject: RE: [PATCH 08/41] mm: introduce CONFIG_PER_VMA_LOCK
-Thread-Topic: [PATCH 08/41] mm: introduce CONFIG_PER_VMA_LOCK
-Thread-Index: AQHZJaLQcQ36PXeL+0+vNNlIqTvBHa6Y+0jQ
-Date: Wed, 11 Jan 2023 10:02:57 +0000
-Message-ID: <6be809f5554a4faaa22c287ba4224bd0@AcuMS.aculab.com>
-References: <20230109205336.3665937-1-surenb@google.com>
- <20230109205336.3665937-9-surenb@google.com>
- <20230111001331.cxdeh52vvta6ok2p@offworld>
- <CAJuCfpEv--awCY0=R3h5Fez8x74U1EZCzNkq4_7deCYqej5sSA@mail.gmail.com>
- <Y75x5fGPcJ63pBIp@dhcp22.suse.cz> <Y76HTfIeEt8ZOIH3@gmail.com>
-In-Reply-To: <Y76HTfIeEt8ZOIH3@gmail.com>
-Accept-Language: en-GB, en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.202.205.107]
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsQTh6Ln8z2x9T
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jan 2023 22:30:32 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 1790C61C03;
+	Wed, 11 Jan 2023 11:30:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C46B9C433F0;
+	Wed, 11 Jan 2023 11:30:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1673436628;
+	bh=NT+9kgxXbcKs00BnDvnD/WUZhhoZwpAjU6ciWTyu3pU=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=sxSjyavqoosrBfWnDYfgp0fXOcYU02X4gbmzX1NurCIj20jpUuPtnZ3z0RRPonBAq
+	 GBmn7bvwZgeKI393bFz7L3CAJ1NACxZZJZtAhSdGaKCzBQad/R+h+Joj07opqkPbhf
+	 ic00URaZmYHNBloFrUB3pkwgzqJgThKSPOs9ejd4=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 01/16] of: device: make of_device_uevent_modalias() take a const device *
+Date: Wed, 11 Jan 2023 12:30:03 +0100
+Message-Id: <20230111113018.459199-2-gregkh@linuxfoundation.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230111113018.459199-1-gregkh@linuxfoundation.org>
+References: <20230111113018.459199-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: aculab.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=openpgp-sha256; l=6990; i=gregkh@linuxfoundation.org; h=from:subject; bh=NT+9kgxXbcKs00BnDvnD/WUZhhoZwpAjU6ciWTyu3pU=; b=owGbwMvMwCRo6H6F97bub03G02pJDMn75h6f8XZ5Dz+vkPnp+e0LZPNmVd7QN4paeLrFdENO7CIz kY6IjlgWBkEmBlkxRZYv23iO7q84pOhlaHsaZg4rE8gQBi5OAZhIVSzDPF0f/icnJ1hm3l52cqfDvR Mpq9Y4/WeYp3D+0QHd+CuVUyWNX7yY/Sv+0M36UAA=
+X-Developer-Key: i=gregkh@linuxfoundation.org; a=openpgp; fpr=F4B60CC5BF78C2214A313DCB3147D40DDB2DFB29
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,77 +58,186 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "michel@lespinasse.org" <michel@lespinasse.org>, "joelaf@google.com" <joelaf@google.com>, "songliubraving@fb.com" <songliubraving@fb.com>, "leewalsh@google.com" <leewalsh@google.com>, "david@redhat.com" <david@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "bigeasy@linutronix.de" <bigeasy@linutronix.de>, "peterx@redhat.com" <peterx@redhat.com>, "dhowells@redhat.com" <dhowells@redhat.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "edumazet@google.com" <edumazet@google.com>, "jglisse@google.com" <jglisse@google.com>, "punit.agrawal@bytedance.com" <punit.agrawal@bytedance.com>, "arjunroy@google.com" <arjunroy@google.com>, "paulmck@kernel.org" <paulmck@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "hughd@google.com" <hughd@google.com>, "willy@infradead.org" <willy@infradead.org>, "gurua@google.com" <gurua@google.com>, "laurent.dufour@fr.ibm.com" <laurent.dufour@fr.ibm.com>, "vbabka@suse.cz" <vbabka@suse.cz>, "rientjes@google.com" <rientjes@google.com>, "axelrasmussen
- @google.com" <axelrasmussen@google.com>, "kernel-team@android.com" <kernel-team@android.com>, "soheil@google.com" <soheil@google.com>, "minchan@google.com" <minchan@google.com>, "jannh@google.com" <jannh@google.com>, "liam.howlett@oracle.com" <liam.howlett@oracle.com>, "shakeelb@google.com" <shakeelb@google.com>, "luto@kernel.org" <luto@kernel.org>, "gthelen@google.com" <gthelen@google.com>, "ldufour@linux.ibm.com" <ldufour@linux.ibm.com>, Suren
- Baghdasaryan <surenb@google.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "posk@google.com" <posk@google.com>, "lstoakes@gmail.com" <lstoakes@gmail.com>, "peterjung1337@gmail.com" <peterjung1337@gmail.com>, "mgorm an@techsingularity.net" <mgorman@techsingularity.net>, "kent.overstreet@linux.dev" <kent.overstreet@linux.dev>, "hughlynch@google.com" <hughlynch@google.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "tatashin@google.com" <tatashin@google.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: dri-devel@lists.freedesktop.org, David Airlie <airlied@gmail.com>, Liang He <windhl@126.com>, Zou Wei <zou_wei@huawei.com>, Samuel Holland <samuel@sholland.org>, Frank Rowand <frowand.list@gmail.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Corentin Labbe <clabbe@baylibre.com>, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, Lyude Paul <lyude@redhat.com>, Daniel Vetter <daniel@ffwll.ch>, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Douglas Anderson <dianders@chromium.org>, Thomas Zimmermann <tzimmermann@suse.de>, Dmitry Baryshkov <dmitry.baryshkov@linaro.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ingo Molnar
-> Sent: 11 January 2023 09:54
->=20
-> * Michal Hocko <mhocko@suse.com> wrote:
->=20
-> > On Tue 10-01-23 16:44:42, Suren Baghdasaryan wrote:
-> > > On Tue, Jan 10, 2023 at 4:39 PM Davidlohr Bueso <dave@stgolabs.net> w=
-rote:
-> > > >
-> > > > On Mon, 09 Jan 2023, Suren Baghdasaryan wrote:
-> > > >
-> > > > >This configuration variable will be used to build the support for =
-VMA
-> > > > >locking during page fault handling.
-> > > > >
-> > > > >This is enabled by default on supported architectures with SMP and=
- MMU
-> > > > >set.
-> > > > >
-> > > > >The architecture support is needed since the page fault handler is=
- called
-> > > > >from the architecture's page faulting code which needs modificatio=
-ns to
-> > > > >handle faults under VMA lock.
-> > > >
-> > > > I don't think that per-vma locking should be something that is user=
--configurable.
-> > > > It should just be depdendant on the arch. So maybe just remove CONF=
-IG_PER_VMA_LOCK?
-> > >
-> > > Thanks for the suggestion! I would be happy to make that change if
-> > > there are no objections. I think the only pushback might have been th=
-e
-> > > vma size increase but with the latest optimization in the last patch
-> > > maybe that's less of an issue?
-> >
-> > Has vma size ever been a real problem? Sure there might be a lot of tho=
-se
-> > but your patch increases it by rwsem (without the last patch) which is
-> > something like 40B on top of 136B vma so we are talking about 400B in
-> > total which even with wild mapcount limits shouldn't really be
-> > prohibitive. With a default map count limit we are talking about 2M
-> > increase at most (per address space).
-> >
-> > Or are you aware of any specific usecases where vma size is a real
-> > problem?
->=20
-> 40 bytes for the rwsem, plus the patch also adds a 32-bit sequence counte=
-r:
->=20
->   + int vm_lock_seq;
->   + struct rw_semaphore lock;
->=20
-> So it's +44 bytes.
+of_device_uevent_modalias() does not modify the device pointer passed to
+it, so mark it constant.  In order to properly do this, a number of
+busses need to have a modalias function added as they were attempting to
+just point to of_device_uevent_modalias instead of their bus-specific
+modalias function.  This is fine except if the prototype for a bus and
+device type modalias function diverges and then problems could happen.  To
+prevent all of that, just wrap the call to of_device_uevent_modalias()
+directly for each bus and device type individually.
 
-Depend in whether vm_lock_seq goes into a padding hole or not
-it will be 40 or 48 bytes.
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Jernej Skrabec <jernej.skrabec@gmail.com>
+Cc: Samuel Holland <samuel@sholland.org>
+Cc: David Airlie <airlied@gmail.com>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>
+Cc: Liang He <windhl@126.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc: Douglas Anderson <dianders@chromium.org>
+Cc: Lyude Paul <lyude@redhat.com>
+Cc: Corentin Labbe <clabbe@baylibre.com>
+Cc: Zou Wei <zou_wei@huawei.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-sunxi@lists.linux.dev
+Cc: dri-devel@lists.freedesktop.org
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ arch/powerpc/platforms/pseries/ibmebus.c | 7 ++++++-
+ drivers/bus/sunxi-rsb.c                  | 7 ++++++-
+ drivers/gpu/drm/display/drm_dp_aux_bus.c | 7 ++++++-
+ drivers/macintosh/macio_asic.c           | 7 ++++++-
+ drivers/of/device.c                      | 4 ++--
+ include/linux/of_device.h                | 4 ++--
+ 6 files changed, 28 insertions(+), 8 deletions(-)
 
-But if these structures are allocated individually (not an array)
-then it depends on how may items kmalloc() fits into a page (or 2,4).
-
-=09David
-
--
-Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1=
-PT, UK
-Registration No: 1397386 (Wales)
+diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
+index a870cada7acd..58b798a0e879 100644
+--- a/arch/powerpc/platforms/pseries/ibmebus.c
++++ b/arch/powerpc/platforms/pseries/ibmebus.c
+@@ -426,9 +426,14 @@ static struct attribute *ibmebus_bus_device_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(ibmebus_bus_device);
+ 
++static int ibmebus_bus_modalias(struct device *dev, struct kobj_uevent_env *env)
++{
++	return of_device_uevent_modalias(dev, env);
++}
++
+ struct bus_type ibmebus_bus_type = {
+ 	.name      = "ibmebus",
+-	.uevent    = of_device_uevent_modalias,
++	.uevent    = ibmebus_bus_modalias,
+ 	.bus_groups = ibmbus_bus_groups,
+ 	.match     = ibmebus_bus_bus_match,
+ 	.probe     = ibmebus_bus_device_probe,
+diff --git a/drivers/bus/sunxi-rsb.c b/drivers/bus/sunxi-rsb.c
+index 3aa91aed3bf7..a180af11e034 100644
+--- a/drivers/bus/sunxi-rsb.c
++++ b/drivers/bus/sunxi-rsb.c
+@@ -172,12 +172,17 @@ static void sunxi_rsb_device_remove(struct device *dev)
+ 	drv->remove(to_sunxi_rsb_device(dev));
+ }
+ 
++static int sunxi_rsb_device_modalias(struct device *dev, struct kobj_uevent_env *env)
++{
++	return of_device_uevent_modalias(dev, env);
++}
++
+ static struct bus_type sunxi_rsb_bus = {
+ 	.name		= RSB_CTRL_NAME,
+ 	.match		= sunxi_rsb_device_match,
+ 	.probe		= sunxi_rsb_device_probe,
+ 	.remove		= sunxi_rsb_device_remove,
+-	.uevent		= of_device_uevent_modalias,
++	.uevent		= sunxi_rsb_device_modalias,
+ };
+ 
+ static void sunxi_rsb_dev_release(struct device *dev)
+diff --git a/drivers/gpu/drm/display/drm_dp_aux_bus.c b/drivers/gpu/drm/display/drm_dp_aux_bus.c
+index f5741b45ca07..e31a0261c53e 100644
+--- a/drivers/gpu/drm/display/drm_dp_aux_bus.c
++++ b/drivers/gpu/drm/display/drm_dp_aux_bus.c
+@@ -161,9 +161,14 @@ static void dp_aux_ep_dev_release(struct device *dev)
+ 	kfree(aux_ep_with_data);
+ }
+ 
++static int dp_aux_ep_dev_modalias(struct device *dev, struct kobj_uevent_env *env)
++{
++	return of_device_uevent_modalias(dev, env);
++}
++
+ static struct device_type dp_aux_device_type_type = {
+ 	.groups		= dp_aux_ep_dev_groups,
+-	.uevent		= of_device_uevent_modalias,
++	.uevent		= dp_aux_ep_dev_modalias,
+ 	.release	= dp_aux_ep_dev_release,
+ };
+ 
+diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+index 3bc1f374e657..7f2b0107c733 100644
+--- a/drivers/macintosh/macio_asic.c
++++ b/drivers/macintosh/macio_asic.c
+@@ -128,12 +128,17 @@ static int macio_device_resume(struct device * dev)
+ 	return 0;
+ }
+ 
++static int macio_device_modalias(struct device *dev, struct kobj_uevent_env *env)
++{
++	return of_device_uevent_modalias(dev, env);
++}
++
+ extern const struct attribute_group *macio_dev_groups[];
+ 
+ struct bus_type macio_bus_type = {
+        .name	= "macio",
+        .match	= macio_bus_match,
+-       .uevent = of_device_uevent_modalias,
++       .uevent	= macio_device_modalias,
+        .probe	= macio_device_probe,
+        .remove	= macio_device_remove,
+        .shutdown = macio_device_shutdown,
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+index c674a13c3055..dda51b7ce597 100644
+--- a/drivers/of/device.c
++++ b/drivers/of/device.c
+@@ -248,7 +248,7 @@ const void *of_device_get_match_data(const struct device *dev)
+ }
+ EXPORT_SYMBOL(of_device_get_match_data);
+ 
+-static ssize_t of_device_get_modalias(struct device *dev, char *str, ssize_t len)
++static ssize_t of_device_get_modalias(const struct device *dev, char *str, ssize_t len)
+ {
+ 	const char *compat;
+ 	char *c;
+@@ -372,7 +372,7 @@ void of_device_uevent(const struct device *dev, struct kobj_uevent_env *env)
+ 	mutex_unlock(&of_mutex);
+ }
+ 
+-int of_device_uevent_modalias(struct device *dev, struct kobj_uevent_env *env)
++int of_device_uevent_modalias(const struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	int sl;
+ 
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index ab7d557d541d..f4b57614979d 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -36,7 +36,7 @@ extern ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len);
+ extern int of_device_request_module(struct device *dev);
+ 
+ extern void of_device_uevent(const struct device *dev, struct kobj_uevent_env *env);
+-extern int of_device_uevent_modalias(struct device *dev, struct kobj_uevent_env *env);
++extern int of_device_uevent_modalias(const struct device *dev, struct kobj_uevent_env *env);
+ 
+ static inline struct device_node *of_cpu_device_node_get(int cpu)
+ {
+@@ -83,7 +83,7 @@ static inline int of_device_request_module(struct device *dev)
+ 	return -ENODEV;
+ }
+ 
+-static inline int of_device_uevent_modalias(struct device *dev,
++static inline int of_device_uevent_modalias(const struct device *dev,
+ 				   struct kobj_uevent_env *env)
+ {
+ 	return -ENODEV;
+-- 
+2.39.0
 
