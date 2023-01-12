@@ -4,146 +4,142 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2A11C3DA78
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 21:49:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1ED0BC3DA78
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 22:18:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ntw6W421tz3fG8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 08:49:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ntwm33D5bz30NN
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 09:18:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jLLd1ZL0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VnzgSv3J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.120; helo=mga04.intel.com; envelope-from=tony.luck@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.31; helo=mga06.intel.com; envelope-from=lucas.demarchi@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jLLd1ZL0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VnzgSv3J;
 	dkim-atps=neutral
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga06.intel.com (mga06b.intel.com [134.134.136.31])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ntw5P3hw0z3bh4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2023 08:48:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtHzr3wVJz3fnC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 08:41:12 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1673646489; x=1705182489;
-  h=from:to:cc:subject:date:message-id:references:
-   in-reply-to:content-transfer-encoding:mime-version;
-  bh=anxkw38+6PUGJvmP0TB/aLL9oQD5STfiSMqj8WwM5pc=;
-  b=jLLd1ZL0lF3K9Zs2EXrFfBFzB0ooRbOaKdVqued9IWyD8KXLmRDnyOj8
-   oAA7zeYBBQIcH49Pj+sXvEpBV7p1d8yS2YfzRFmBYGAm8FVBRe0C57De1
-   PUWw9bl6i9/PEIMr2Tii1NgHplJq+QdVZG0Jy7HFqQrzEgKwXB2NuR6I8
-   oc8wAJ6S9TK9jLwDtXcMWOnUYPZcaJLevmrKYxnASlP39Tf7Y6ZfrcQK0
-   +F/jNz8gmXghoF+AX7mVxqTrN+2a6ZvAVD3qhkUpZ1KluG0N5RiYdDsJF
-   D4wDtNxvUeBuJOW6xdOTsaicjoWHNa0TOblWIQu4c434HAl2RuUwceXv2
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="322806959"
-X-IronPort-AV: E=Sophos;i="5.97,214,1669104000"; 
-   d="scan'208";a="322806959"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Jan 2023 13:47:56 -0800
+  t=1673559672; x=1705095672;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=j5t8yu+GQdrROqft3QkOtSKlI9+ocI4SIqQXnTOCo9E=;
+  b=VnzgSv3J6BzFcgMrkQYB+03XAXjdnn5fo/kYFuvjurB/NAWguX+YbpG8
+   5xgMe9qCDAZdAcrLViYipaw6t3p/17X2kI2JckkqzAC46pPozAGmFbALP
+   qDbSDOIMitaZ/noUzsxP8ZbxYrpc81GYqTfpciO8fTtYwyadY1InrHmTY
+   UEYo9sxHG1CZRh/YkZ7rKwjZVDCIQwZ8OvAh/UJ4Lhn/tfJ2IV2ESzxky
+   2FMDVjdv29KWHm4KkqdjNmO2Tgw2gJn1aTV9UpgkbaTz4ut/TW70kg14y
+   NKzBmZoQ/rLyI/7UzNIv9HVxVg3jUFVgQhqyrKUnR2Vhi5WMmp2psc/Ki
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10588"; a="386181572"
+X-IronPort-AV: E=Sophos;i="5.97,212,1669104000"; 
+   d="scan'208";a="386181572"
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Jan 2023 13:41:10 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10589"; a="658346614"
-X-IronPort-AV: E=Sophos;i="5.97,214,1669104000"; 
-   d="scan'208";a="658346614"
-Received: from orsmsx601.amr.corp.intel.com ([10.22.229.14])
-  by orsmga002.jf.intel.com with ESMTP; 13 Jan 2023 13:47:56 -0800
-Received: from orsmsx610.amr.corp.intel.com (10.22.229.23) by
- ORSMSX601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+X-IronPort-AV: E=McAfee;i="6500,9779,10588"; a="607951671"
+X-IronPort-AV: E=Sophos;i="5.97,212,1669104000"; 
+   d="scan'208";a="607951671"
+Received: from fmsmsx601.amr.corp.intel.com ([10.18.126.81])
+  by orsmga003.jf.intel.com with ESMTP; 12 Jan 2023 13:41:09 -0800
+Received: from fmsmsx611.amr.corp.intel.com (10.18.126.91) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.16; Fri, 13 Jan 2023 13:47:56 -0800
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx610.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ 15.1.2507.16; Thu, 12 Jan 2023 13:41:08 -0800
+Received: from fmsedg602.ED.cps.intel.com (10.1.192.136) by
+ fmsmsx611.amr.corp.intel.com (10.18.126.91) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.16 via Frontend Transport; Fri, 13 Jan 2023 13:47:56 -0800
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (104.47.57.177)
- by edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
+ 15.1.2507.16 via Frontend Transport; Thu, 12 Jan 2023 13:41:08 -0800
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (104.47.66.45) by
+ edgegateway.intel.com (192.55.55.71) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.2507.16; Fri, 13 Jan 2023 13:47:55 -0800
+ 15.1.2507.16; Thu, 12 Jan 2023 13:41:08 -0800
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=hPYpJCEf7Z5jCJcnf5vpLOw+nme7nV3f5O1ntdLnJqxhHWuI4lauS54hS+J4pD7Nv3D/6A/w/FfkQOl3hkFa+YD1oRQFE00pt70CCFyv57q8/zKn1seCrOkB6wNBn3vz0fH6Jg5GU+s1LHpCOoRoXQB5uXmZE6Xq5KOBhcuXlgItZEBquV26ZCqge8q8g7INhLd4IOKb6RFyU+sZX3GUM7CKRJ8BtQqG+zGkS9Vc28C9wRPy8HTyJ/T6QRl6jmDA54WsBTJdMuDH22/cLm3gjvyeejv8ePAdNxn8gxbJXlzFP3zqE5LYXOvfY/FVNVtPrgXya8bKJONNQTOSqE+Lew==
+ b=iQhjJPxfmYOB2kMRWE9r8LUmpGRuCv4EUieQYNCveDd9zp3JqxYXs6SkQ442FpzhkRWfoeaZKO1rwymqEMsQ/gkMGGRRcV3I9gytxxeHFaBOvqhJiG6o6eVre1kQeYfv18OVfJoVMmt6dnsMl4kzYPAtvl9hG5yo0JvK7L8uaZMoBE4NdRfYpCVkaxTz5/Q2AsGGqttj4GA0jPhTfjjQNrUeoGAwGUINXnrqdO7FhqREaWhhFK1yPWGBE6SgGU+Ibej5vqVAB4uUIGLMKkYnS5HKIpWNVKAbACZXGrvgGxYMWCyGBi5r+hFPpsQWR6WHhKVg3h6i+kJMTdm9W1uEww==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=QBhxvvL5NMhbRaCM7PYfG2buzz6DcghmkcdoNR3D25k=;
- b=b+Y4s0oJnfmi6xRU1ld1sdGZYb971YxZKtYWO6M6MRRLy3nfX9zxND4IW7+1IVS85mhQd77IkyoQ+iEpB5inxToiFRsxiywiwzC6AOxWSd2XRZ6iTAOP0eTZTBlQ7T5SvJTf9fhKyYjBXPImwBBqZsc1dGKmG9qrv0CpYeAEQQ8EwJbBD4f7+Hrj5S9Rb/T8bOWGPQsFwHJnvh0HBC/0vT4Rl7mK/Nb1aIDJ5A9wSTOXMFaLN26yyXJjBEaWO/ojY318JQf2dXA7kjRgLBQRY+U7FeCilQuE5JJzZbqA1L8ui2uNu4uEQoqcyk3mTVrLgUkEb7uk2gVVBehCsbX8YQ==
+ bh=MtAJ8ESXzr+LymDXZJSN4w/4i8jj0Un0Uod5J36/R6c=;
+ b=gId0tT3/O39oiN1ZgyymJLv3cl93tJSZl/OvlqmXXmCyhlxVX3Hg5i+P7KGcaY2vBDUpUAdTJHa8BSP4YbGeQEmDA6J8HY5aDbQd/JEX6LOYvYzjdkUuxzhHz8kS0JCa9U2jpD1ge5DdY/O1cNcLFi+vZ1XgRwbyXYQnvVtykU9tAJi/EJhMf5WGwhd2VLpwvP3n3TGok6hCgGY8FxnBNGTcVUeFWQr5GOPu+4FUL3pXvgyJQU9aLACdAweP7zbQx5sakVh2XqibVk5ZfQo4bYDHic0O6onxW2ulLlQrAfVnUon5yJFhlWYr05Ob5oxiStjXvwTSZwCV+MPXYTcdWQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
  dkim=pass header.d=intel.com; arc=none
-Received: from SJ1PR11MB6083.namprd11.prod.outlook.com (2603:10b6:a03:48a::9)
- by IA1PR11MB7811.namprd11.prod.outlook.com (2603:10b6:208:3f9::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.5986.18; Fri, 13 Jan
- 2023 21:47:51 +0000
-Received: from SJ1PR11MB6083.namprd11.prod.outlook.com
- ([fe80::3c14:aeca:37e2:c679]) by SJ1PR11MB6083.namprd11.prod.outlook.com
- ([fe80::3c14:aeca:37e2:c679%6]) with mapi id 15.20.5986.018; Fri, 13 Jan 2023
- 21:47:51 +0000
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Mateusz Guzik <mjguzik@gmail.com>, "Torvalds, Linus"
-	<torvalds@linux-foundation.org>
-Subject: RE: [PATCH] lockref: stop doing cpu_relax in the cmpxchg loop
-Thread-Topic: [PATCH] lockref: stop doing cpu_relax in the cmpxchg loop
-Thread-Index: AQHZJ38sKLMnUvTX/Ey0++hFbTHJia6c4Nww
-Date: Fri, 13 Jan 2023 21:47:50 +0000
-Message-ID: <SJ1PR11MB6083B48A2B2114EF833D69E2FCC29@SJ1PR11MB6083.namprd11.prod.outlook.com>
-References: <CAHk-=wjthxgrLEvgZBUwd35e_mk=dCWKMUEURC6YsX5nWom8kQ@mail.gmail.com>
- <20230113184447.1707316-1-mjguzik@gmail.com>
-In-Reply-To: <20230113184447.1707316-1-mjguzik@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: dkim=none (message not signed)
+Authentication-Results: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=intel.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: SJ1PR11MB6083:EE_|IA1PR11MB7811:EE_
-x-ms-office365-filtering-correlation-id: 302d4f46-237b-4c71-670f-08daf5afd17e
-x-ld-processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: LcI7WEGX2tTYFG7FSnfuOnTj8NaBT7PAuZHmkvU3wH0UDEkDYDirvtIx2pMM0z4/kdCMFWxQj9DOcw5raj2LUVDhwmre887NrQkltz2JHNuXE1ATc9ttga8URUL1/CFS9Jeknu8jNrFoN94QLVInRV8wFcdOuVoWFMrWCqMKy3hnTFyS/VzDt0oLUU/9yjNPngITH73VaEWn2Xm+C3rLYfzjv6ukx8T6XpC00nwEbCUnbWc8WtjbilVtn5DT/36bebiu0wESQ/NrzjH5CtlvHsljkc7lYQTBa4U31BGgMFvTPhCYA0S5aB+4ZMjxk4xAfrb/nMI4ELI1wY1IpAjttrJD2qNzKVIzWweA9+FK+xBI7ngTmUo6i1U+4wG/WfV9oQ6xJHPpnBixCNdYv+Nk6cpuxlhq2j3gDeUdIYh0oGzMsFvDRvLD1OA+vWqLrqJZODsy5HIoHQ5rWqo4Y/rNKlM4mI6822WhIX1DuWj+w+McijOOR7W1R54ti9yFy/zbssfraXV+HD2LAF+VCsu5XwGDe71F0RjhSxNgn2GxW5/mYsdBmyJ+gtNhrAvWp8Ji5fUSKiSny/ArwuFhwW8Rw0T0zq7hWzmbRfVm2hpnL8tLRuP5B7Gd0J07M6kgbyGBElJbWJ8Pckp8Cg7+xS7DPvPkdEZj/sD+vIKiA2nZ60NGKo9o65+IltFWJMSx1u9JeyPP5h/WFjJFJ5C1gFVW6rhqi9S4Io2nOs5Xi8PCsFv6nYWM9Psvx8sZGLC8zR6Z
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ1PR11MB6083.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(366004)(136003)(376002)(39860400002)(346002)(396003)(451199015)(110136005)(54906003)(41300700001)(38070700005)(6506007)(478600001)(2906002)(316002)(122000001)(38100700002)(82960400001)(33656002)(83380400001)(66476007)(4326008)(66556008)(52536014)(8676002)(64756008)(66446008)(86362001)(26005)(186003)(9686003)(55016003)(4744005)(7696005)(5660300002)(66946007)(76116006)(71200400001)(7416002)(8936002)(40753002)(133343001);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0: =?us-ascii?Q?i7fH0KoVMCEefZm1QtybSlqF1YZh5X15ZORNIRCUX9h7PKxy/mUnaqK/C7NC?=
- =?us-ascii?Q?w99W2HGp/KzoCmrYCoFb8QppXe7a05GduzgJVoT97I0FeZVGPw3ohq9IxcPq?=
- =?us-ascii?Q?CzX/sNc6QxZa5AC7l3xVLH2rVI0CmV6d5crS0jULgjTwco2xo6jsIKHLpxnW?=
- =?us-ascii?Q?XSNzggON6USB0k2QuGJTUkAl9jFFMrFvcXcmCfDLLON7OPKks0MYaqxyQFWg?=
- =?us-ascii?Q?UB1clKiJHk2bbG3/sDnd4L3yp+q4PHKM6NKC27ru5D+B3tD+IMMRVA9S0h4m?=
- =?us-ascii?Q?wJsJNExp2CLMgLcvJIyUfvdNWk0OouxZkRTDW5njfkJfeb2OREe9gtn09OxJ?=
- =?us-ascii?Q?J2zBFUQX8R1CIg9dvlHNhDm9I5CJF6ofZw3qLC64nhH2w8n6YcYX20LK5lVd?=
- =?us-ascii?Q?HFJxVe5218UZI6HvVAmbM4vYZbqJyUIZjfno7jiZ7OidiLypt/yBiCU59p2u?=
- =?us-ascii?Q?GCX8rX5AbA9xDut1rVGJqHu3W3J1EAeOw7Kk6yh5VEXO9/7uwlEfOmtD7jq1?=
- =?us-ascii?Q?9etuC8pkoFFUFXES52qW5qN6Mt7w8JexRjZIRi95uBiY7HcJ/+lbQ9vjQ9Nr?=
- =?us-ascii?Q?NQ235atxZ2NibY/hPPVHdRw+iWyS96Bp8NJuGkzjYrT2xZfI5Eni4HPu5Tc+?=
- =?us-ascii?Q?7R3TCwVDFb7erfdcGCMrQSsUMg9q/CJ8rzFwQdsYfPTfJDpBlI0AX5ch+kvN?=
- =?us-ascii?Q?ueKglUrQiizw46KFkugQyridWy+8nH47KoBtjjftcAVkG7Dng1bC39rTZ6mu?=
- =?us-ascii?Q?y8aMicVDGM62WZZ8DRCC0Ry24LnSdUFuuZh4+hyrY7k+uGImcU15dVJxffXN?=
- =?us-ascii?Q?hXhicmY+vJ8V9b+gc/d9NLEGbMFldKE2srrTsfvHABbTpcNBEwst8Yu13Ig8?=
- =?us-ascii?Q?7bQvJ3/gQO8dw94s1ydflQfkZsoWUGotuSL1Irq8UtZhTUmwXHuieMhNv5V9?=
- =?us-ascii?Q?RL4cnpM5CJB9ngqGtsYTIFQLeIkSgU4VwTgMwLhEcWMf8Qc3RI81hkfGgywg?=
- =?us-ascii?Q?RA+LRSRbqrUFoeX+VAON6z0wObZ/OZV4tPS12aY4mWQWvjUV1h4Tgb0TG29b?=
- =?us-ascii?Q?ijtuWEnsVx9pyjyQLiTfcA7EFF4ep0Yq+YeBALs+jii76E1cva38MSitWSPG?=
- =?us-ascii?Q?27l7wu9C0sHnteuthuIfhOq/W6uNWhJTxPkIVDxoMbKK0A0qyFABOmJ/YKFB?=
- =?us-ascii?Q?Oxbm5I7nWXilHGcY0kXusEkXU2AOK4xcBWWRqvymg0GGZ5sfoxR6+tLgP47P?=
- =?us-ascii?Q?DHrGiORr1JPqYbPwioHDDfda622wh+Wg2KujG/Yi6D1fXrSQpd3HHPKJ8qoV?=
- =?us-ascii?Q?BNl+vjZ7lqeUrHDX30WJfSGr18upi0CORZ1m5E0XlatARxy1B121hR/H75km?=
- =?us-ascii?Q?/RfC+uF53GiDgsr7kYHRGCwtbp/WOukUUpDJQTEm2bepLIEwvUEPjhbAZkPK?=
- =?us-ascii?Q?Jy+uFXx0upsqy/fNp6LjP5VRX9lmnSukHo8kZZzuphzLY1JLzfbMeH7vQUyj?=
- =?us-ascii?Q?7/8yxNec6BoaaxFjsg68oPrzB9OjIskLLjRpw54PHroIuRbv0bhcxcs2dLdj?=
- =?us-ascii?Q?tVE0FeXZLhzFkZWH7Cm20yVGsB+ACQEQNuypqa/t?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Received: from CY5PR11MB6139.namprd11.prod.outlook.com (2603:10b6:930:29::17)
+ by SA0PR11MB4669.namprd11.prod.outlook.com (2603:10b6:806:99::21) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.13; Thu, 12 Jan
+ 2023 21:41:06 +0000
+Received: from CY5PR11MB6139.namprd11.prod.outlook.com
+ ([fe80::593:877e:dd33:5b7a]) by CY5PR11MB6139.namprd11.prod.outlook.com
+ ([fe80::593:877e:dd33:5b7a%5]) with mapi id 15.20.5986.018; Thu, 12 Jan 2023
+ 21:41:05 +0000
+Date: Thu, 12 Jan 2023 14:40:59 -0700
+From: Lucas De Marchi <lucas.demarchi@intel.com>
+To: Gary Guo <gary@garyguo.net>
+Subject: Re: [PATCH] modpost: support arbitrary symbol length in modversion
+Message-ID: <20230112214059.o4vq474c47edjup6@ldmartin-desk2>
+References: <20230111161155.1349375-1-gary@garyguo.net>
+Content-Type: text/plain; charset="us-ascii"; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20230111161155.1349375-1-gary@garyguo.net>
+X-ClientProxiedBy: BY3PR05CA0054.namprd05.prod.outlook.com
+ (2603:10b6:a03:39b::29) To CY5PR11MB6139.namprd11.prod.outlook.com
+ (2603:10b6:930:29::17)
 MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CY5PR11MB6139:EE_|SA0PR11MB4669:EE_
+X-MS-Office365-Filtering-Correlation-Id: 65577017-c9a4-4f4b-5212-08daf4e5b557
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: rBiNWgv8dWs8m8e1HMTKcIwtK/XeWDAnOSNDm+ZqTav+ZFKUeBytL2/NkXgwpmHT8KXndIE7UnEMG6e7vEeB5HoZF+7ZfS77BYyynG/s+JKXyV7IUAphBklVopmofpmPiVQpEh127hIQ+eEFACS84io476CyoblsIgJVlZEx3delJ+9VnrHVNduM8VIWXchiBswelIvzeHG0c5STeQ1Iyllja6MPLirPbAxHFg/3YAkOADOkpXLqbFrNC3mm9pu6BYUGJyB4IVGzyyyMOYj0hzTD4Dk/NFYjVX8hR+QT4zwbjLiPvGomEcL4wuzy3TYKSmdJC6p52GWNBviPmkFyA13ifM0mArswTZ1jD2eNVerPApjn+8C/+3NR1V6511l2UOzx+0hvUKxtJTrBBwkbwlcBwc8l9Ue4GqAR7OxqP/5mXeYBTQETHtGTWFBzx3+0YRJ0Fz2jtgxJvXwWsUI0xH+Id5zq95O3PTqfI4tOrbDsxY/7h/mf7wPrNAKJCyr/e2a/imOvHCAC9juWX6pnmMF1AjhY2pXwS8E26zF0mDwit0niAxzjpOmFihaqmSgBYAU5CbW0YEtTZLb987z0BzWPFmuwupR1igYRPUCG/RS14KfrkzysATohWatDY12afVXz0XNDZPVojW2weXTaEPBybVlcRiqFvx3XrqskIj4=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY5PR11MB6139.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(7916004)(376002)(396003)(346002)(136003)(39860400002)(366004)(451199015)(33716001)(82960400001)(83380400001)(38100700002)(86362001)(66556008)(6916009)(66946007)(41300700001)(4326008)(8676002)(316002)(66476007)(54906003)(8936002)(2906002)(7416002)(186003)(6512007)(1076003)(9686003)(66899015)(6486002)(26005)(966005)(5660300002)(478600001)(6506007)(6666004);DIR:OUT;SFP:1102;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?+suf549FQDMWRiszp3fBlyHS3OxOqR/Hcxt4j2Uhz6wYbSUYKlvWTtvF0fr2?=
+ =?us-ascii?Q?sTVhLKfehnIxXYfZRgsub4Km9Fv+pt7fqxPHlKfIw9TQAHNlV/4ixUxB8Rnr?=
+ =?us-ascii?Q?Y0fjU1ZohXPzBRz/65r/l2V8z2WR+icUV+shI+y7/zBNo3N/I8n4lIVlZG+q?=
+ =?us-ascii?Q?sJ4Zj4K7IV1MqnSW+t6DGJTZ3QL6cLLZn/e1uACwF7iTQjhAPorU1jH89WMD?=
+ =?us-ascii?Q?3dBQrh9HRj/H2fKNK9ZryMHgEwGSHIJaL1bxGvckGh+Fss8zK4NgFmwMvNe5?=
+ =?us-ascii?Q?8MwCqgjcyHUd1Qae8IQZ6114c6Q7FfyyVo1QZzpV6LY6BpbqbVJ3pAjowpxq?=
+ =?us-ascii?Q?apAZ3LXBcoWWmb9r/cFMT8FDLJCOTZBGOc+eNSHzon7Wnv3wTmcyO8D18UtJ?=
+ =?us-ascii?Q?M9JkiUdIpu1TIY2MXpyWLkyQb0NtDZjODFuOC92Ptz3LQAPu8QSx+n40DzPf?=
+ =?us-ascii?Q?FymOFlA85ZrHKnK6PziPzoepQNoFnHZnZt7z956ar+mhK5BPOI2ltpR0L5L9?=
+ =?us-ascii?Q?ASDBWdz//vbByCxBhGun2K77U7HMFj1y1pSSosKflHGhQDl8LRgNQwZnSNlI?=
+ =?us-ascii?Q?lBvHcX+wN32ki/ZgjwRwCKVRZggTdsYMnFFGU8R2eIw+DcbHfAAD288pN6h4?=
+ =?us-ascii?Q?Ws7um7d42SH3N+wq3N5JDwKOzFn3lPiXSuGDW6nUlyrkoR3cXS1Z4vLSoZJd?=
+ =?us-ascii?Q?5738LOrPZNWX38OpL9MJ9qkVxiec/Nvzvn8KSeyzRk6DNvl/fX7IQ51D8eI4?=
+ =?us-ascii?Q?0I2P7HPIBqUFuKS6N09hk89YORzDXUtLei3vnJDHqYlb+JRncA+dG85stfbk?=
+ =?us-ascii?Q?xpaHBXWLvvr8Raxq2oD/L3br9af/4c7PXtwUaIBuJBPj3DWDP7zeCalZOpk9?=
+ =?us-ascii?Q?IdNA8M49oWkfX2oyS5MVf9cMk/oUDhI9RR+5h3EhjIRYllYbBocCXLyO87ko?=
+ =?us-ascii?Q?R19UmE98zbDo00yz9d+nhkQ03YStwmOwLTQkm1kZ9LDEpOCQ9HbeKj6ismrQ?=
+ =?us-ascii?Q?p7Vy+ZLaQBvMu6pJ6Ji4y8+n+K0o1lK+TlvL5/RhCxv7fjPllbQad+dA+ujA?=
+ =?us-ascii?Q?9DKdw3v6vc0pc2VHGO5fie3eF2vps3myqTwaJtmIx1aT3hg5W6p4JOO+rIwP?=
+ =?us-ascii?Q?TZUHjs+KVZiGMEafEbeXaWD2s7gaT+zTM8vrMVsP9AvTGCGF5D4cf3+7JdMd?=
+ =?us-ascii?Q?r1+GwD8zc4MDkKEECXImEpMBVUS/nYTnJCOi44E0nuD0KsZ4TYZ5PVew0FND?=
+ =?us-ascii?Q?F/pTiOnANLaC9DnUVqCl/AettOMYArnSpaGOf3EHKK8R0r6zgh5ymc8ACU6i?=
+ =?us-ascii?Q?Z2MeJ8BkZBHaVai1Xcer+mgSLFo7r1Xt7rYSAHN3R+gv+E5JsaXsQiCOq5T+?=
+ =?us-ascii?Q?9oa536+3mZbZuSLEuliK9STpQYFa+Cy4oOFEfBS50t1pt+cPvQMJsA71qcUJ?=
+ =?us-ascii?Q?cLgZYpwuqNf8LA4jA3Bqi+n1m8wvQNdON4msTmPWyo1piUtP1q9SGPvvQ0+4?=
+ =?us-ascii?Q?d5Ow5Y2cav/7cYzkVpt0Dyzcmowk1PSCgPbrvLGcyi5arbDpVfFxYe4659/L?=
+ =?us-ascii?Q?2Jx4I/D5usgzz358bmC4pwo6vEci+4T6dD++0qe9e40UASTD5uTEjT1PrNne?=
+ =?us-ascii?Q?zQ=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: 65577017-c9a4-4f4b-5212-08daf4e5b557
+X-MS-Exchange-CrossTenant-AuthSource: CY5PR11MB6139.namprd11.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SJ1PR11MB6083.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 302d4f46-237b-4c71-670f-08daf5afd17e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Jan 2023 21:47:50.8994
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Jan 2023 21:41:05.7495
  (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: hUJcJkprr49AIE/u1MUNLhqRczNhd1dVSI6xkMUhhEBUdRvlnkm86988jtZgwuVYKGNrehC6JDzDMG59qNwpRg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR11MB7811
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: kvAXQhT9cqhRVCfIb9tJV9SRUS5FjPEfpFF9y9dBNcBATd+GTtLHw02EY25DRUYr8XGIU5+Bv4jcxLQ+yC+9uDCWcp7Kk63stRD3RBizLsw=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR11MB4669
 X-OriginatorOrg: intel.com
+X-Mailman-Approved-At: Sat, 14 Jan 2023 09:17:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -155,35 +151,232 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "will@kernel.org" <will@kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "jan.glauber@gmail.com" <jan.glauber@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Kees Cook <keescook@chromium.org>, Masahiro Yamada <masahiroy@kernel.org>, linux-kbuild@vger.kernel.org, Wedson Almeida Filho <wedsonaf@google.com>, Joel Stanley <joel@jms.id.au>, Alex Gaynor <alex.gaynor@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Wedson Almeida Filho <wedsonaf@gmail.com>, Nicolas Schier <nicolas@fjasle.eu>, rust-for-linux@vger.kernel.org, Guo Zhengkui <guozhengkui@vivo.com>, Boqun Feng <boqun.feng@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, =?utf-8?B?QmrDtnJu?= Roy Baron <bjorn3_gh@protonmail.com>, Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, Luis
+ Chamberlain <mcgrof@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> diff --git a/lib/lockref.c b/lib/lockref.c
-> index 45e93ece8ba0..2afe4c5d8919 100644
-> --- a/lib/lockref.c
-> +++ b/lib/lockref.c
-> @@ -23,7 +23,6 @@
->               }                                                          =
-     \
->               if (!--retry)                                              =
-     \
->                       break;                                             =
-     \
-> -             cpu_relax();                                               =
-     \
->       }                                                                  =
-     \
->  } while (0)
+On Wed, Jan 11, 2023 at 04:11:51PM +0000, Gary Guo wrote:
+>Currently modversion uses a fixed size array of size (64 - sizeof(long))
+>to store symbol names, thus placing a hard limit on length of symbols.
+>Rust symbols (which encodes crate and module names) can be quite a bit
+>longer. The length limit in kallsyms is increased to 512 for this reason.
+>
+>It's a waste of space to simply expand the fixed array size to 512 in
+>modversion info entries. I therefore make it variably sized, with offset
+>to the next entry indicated by the initial "next" field.
+>
+>In addition to supporting longer-than-56/60 byte symbols, this patch also
+>reduce the size for short symbols by getting rid of excessive 0 paddings.
+>There are still some zero paddings to ensure "next" and "crc" fields are
+>properly aligned.
+>
+>This patch does have a tiny drawback that it makes ".mod.c" files generated
+>a bit less easy to read, as code like
+>
+>	"\x08\x00\x00\x00\x78\x56\x34\x12"
+>	"symbol\0\0"
+>
+>is generated as opposed to
+>
+>	{ 0x12345678, "symbol" },
+>
+>because the structure is now variable-length. But hopefully nobody reads
+>the generated file :)
+>
+>Link: b8a94bfb3395 ("kallsyms: increase maximum kernel symbol length to 512")
+>Link: https://github.com/Rust-for-Linux/linux/pull/379
+>
+>Signed-off-by: Gary Guo <gary@garyguo.net>
+>---
+> arch/powerpc/kernel/module_64.c |  3 ++-
+> include/linux/module.h          |  6 ++++--
+> kernel/module/version.c         | 21 +++++++++------------
+> scripts/export_report.pl        |  9 +++++----
+> scripts/mod/modpost.c           | 33 +++++++++++++++++++++++----------
+> 5 files changed, 43 insertions(+), 29 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+>index ff045644f13f..eac23c11d579 100644
+>--- a/arch/powerpc/kernel/module_64.c
+>+++ b/arch/powerpc/kernel/module_64.c
+>@@ -236,10 +236,11 @@ static void dedotify_versions(struct modversion_info *vers,
+> {
+> 	struct modversion_info *end;
+>
+>-	for (end = (void *)vers + size; vers < end; vers++)
+>+	for (end = (void *)vers + size; vers < end; vers = (void *)vers + vers->next) {
+> 		if (vers->name[0] == '.') {
+> 			memmove(vers->name, vers->name+1, strlen(vers->name));
+> 		}
+>+	}
+> }
+>
+> /*
+>diff --git a/include/linux/module.h b/include/linux/module.h
+>index 8c5909c0076c..37cb25af9099 100644
+>--- a/include/linux/module.h
+>+++ b/include/linux/module.h
+>@@ -34,8 +34,10 @@
+> #define MODULE_NAME_LEN MAX_PARAM_PREFIX_LEN
+>
+> struct modversion_info {
+>-	unsigned long crc;
+>-	char name[MODULE_NAME_LEN];
+>+	/* Offset of the next modversion entry in relation to this one. */
+>+	u32 next;
+>+	u32 crc;
+>+	char name[0];
 
-The computer necrophiliacs at Debian and Gentoo seem determined
-to keep ia64 alive.
+although not really exported as uapi, this will break userspace as this is
+used in the  elf file generated for the modules. I think
+this change must be made in a backward compatible way and kmod updated
+to deal with the variable name length:
 
-So perhaps this should s/cpu_relax/soemt_relax/ where soemt_relax
-is a no-op everywhere except ia64, which can define it as cpu_relax.
+kmod $ git grep "\[64"
+libkmod/libkmod-elf.c:  char name[64 - sizeof(uint32_t)];
+libkmod/libkmod-elf.c:  char name[64 - sizeof(uint64_t)];
 
-The ia64 case is quite painful if one thread on a core is spinning in that
-loop, while the other thread on the same core is the one that needs to
-run to update that value so that the cmpxchg can succeed.
+in kmod we have both 32 and 64 because a 64-bit kmod can read both 32
+and 64 bit module, and vice versa.
 
--Tony
+Lucas De Marchi
+
+> };
+>
+> struct module;
+>diff --git a/kernel/module/version.c b/kernel/module/version.c
+>index 53f43ac5a73e..af7478dcc158 100644
+>--- a/kernel/module/version.c
+>+++ b/kernel/module/version.c
+>@@ -17,32 +17,29 @@ int check_version(const struct load_info *info,
+> {
+> 	Elf_Shdr *sechdrs = info->sechdrs;
+> 	unsigned int versindex = info->index.vers;
+>-	unsigned int i, num_versions;
+>-	struct modversion_info *versions;
+>+	struct modversion_info *versions, *end;
+>+	u32 crcval;
+>
+> 	/* Exporting module didn't supply crcs?  OK, we're already tainted. */
+> 	if (!crc)
+> 		return 1;
+>+	crcval = *crc;
+>
+> 	/* No versions at all?  modprobe --force does this. */
+> 	if (versindex == 0)
+> 		return try_to_force_load(mod, symname) == 0;
+>
+> 	versions = (void *)sechdrs[versindex].sh_addr;
+>-	num_versions = sechdrs[versindex].sh_size
+>-		/ sizeof(struct modversion_info);
+>+	end = (void *)versions + sechdrs[versindex].sh_size;
+>
+>-	for (i = 0; i < num_versions; i++) {
+>-		u32 crcval;
+>-
+>-		if (strcmp(versions[i].name, symname) != 0)
+>+	for (; versions < end; versions = (void *)versions + versions->next) {
+>+		if (strcmp(versions->name, symname) != 0)
+> 			continue;
+>
+>-		crcval = *crc;
+>-		if (versions[i].crc == crcval)
+>+		if (versions->crc == crcval)
+> 			return 1;
+>-		pr_debug("Found checksum %X vs module %lX\n",
+>-			 crcval, versions[i].crc);
+>+		pr_debug("Found checksum %X vs module %X\n",
+>+			 crcval, versions->crc);
+> 		goto bad_version;
+> 	}
+>
+>diff --git a/scripts/export_report.pl b/scripts/export_report.pl
+>index feb3d5542a62..1117646f3141 100755
+>--- a/scripts/export_report.pl
+>+++ b/scripts/export_report.pl
+>@@ -116,18 +116,19 @@ foreach my $thismod (@allcfiles) {
+> 	while ( <$module> ) {
+> 		chomp;
+> 		if ($state == 0) {
+>-			$state = 1 if ($_ =~ /static const struct modversion_info/);
+>+			$state = 1 if ($_ =~ /static const char ____versions/);
+> 			next;
+> 		}
+> 		if ($state == 1) {
+>-			$state = 2 if ($_ =~ /__attribute__\(\(section\("__versions"\)\)\)/);
+>+			$state = 2 if ($_ =~ /__used __section\("__versions"\)/);
+> 			next;
+> 		}
+> 		if ($state == 2) {
+>-			if ( $_ !~ /0x[0-9a-f]+,/ ) {
+>+			if ( $_ !~ /\\0"/ ) {
+>+				last if ($_ =~ /;/);
+> 				next;
+> 			}
+>-			my $sym = (split /([,"])/,)[4];
+>+			my $sym = (split /(["\\])/,)[2];
+> 			my ($module, $value, $symbol, $gpl) = @{$SYMBOL{$sym}};
+> 			$SYMBOL{ $sym } =  [ $module, $value+1, $symbol, $gpl];
+> 			push(@{$MODULE{$thismod}} , $sym);
+>diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+>index efff8078e395..334d170de31f 100644
+>--- a/scripts/mod/modpost.c
+>+++ b/scripts/mod/modpost.c
+>@@ -2046,13 +2046,17 @@ static void add_exported_symbols(struct buffer *buf, struct module *mod)
+> static void add_versions(struct buffer *b, struct module *mod)
+> {
+> 	struct symbol *s;
+>+	unsigned int name_len;
+>+	unsigned int name_len_padded;
+>+	unsigned int tmp;
+>+	unsigned char *tmp_view = (unsigned char *)&tmp;
+>
+> 	if (!modversions)
+> 		return;
+>
+> 	buf_printf(b, "\n");
+>-	buf_printf(b, "static const struct modversion_info ____versions[]\n");
+>-	buf_printf(b, "__used __section(\"__versions\") = {\n");
+>+	buf_printf(b, "static const char ____versions[]\n");
+>+	buf_printf(b, "__used __section(\"__versions\") =\n");
+>
+> 	list_for_each_entry(s, &mod->unresolved_symbols, list) {
+> 		if (!s->module)
+>@@ -2062,16 +2066,25 @@ static void add_versions(struct buffer *b, struct module *mod)
+> 				s->name, mod->name);
+> 			continue;
+> 		}
+>-		if (strlen(s->name) >= MODULE_NAME_LEN) {
+>-			error("too long symbol \"%s\" [%s.ko]\n",
+>-			      s->name, mod->name);
+>-			break;
+>-		}
+>-		buf_printf(b, "\t{ %#8x, \"%s\" },\n",
+>-			   s->crc, s->name);
+>+		name_len = strlen(s->name);
+>+		name_len_padded = (name_len + 1 + 3) & ~3;
+>+
+>+		/* Offset to next entry */
+>+		tmp = TO_NATIVE(8 + name_len_padded);
+>+		buf_printf(b, "\t\"\\x%02x\\x%02x\\x%02x\\x%02x",
+>+			   tmp_view[0], tmp_view[1], tmp_view[2], tmp_view[3]);
+>+
+>+		tmp = TO_NATIVE(s->crc);
+>+		buf_printf(b, "\\x%02x\\x%02x\\x%02x\\x%02x\"\n",
+>+			   tmp_view[0], tmp_view[1], tmp_view[2], tmp_view[3]);
+>+
+>+		buf_printf(b, "\t\"%s", s->name);
+>+		for (; name_len < name_len_padded; name_len++)
+>+			buf_printf(b, "\\0");
+>+		buf_printf(b, "\"\n");
+> 	}
+>
+>-	buf_printf(b, "};\n");
+>+	buf_printf(b, ";\n");
+> }
+>
+> static void add_depends(struct buffer *b, struct module *mod)
+>-- 
+>2.34.1
+>
