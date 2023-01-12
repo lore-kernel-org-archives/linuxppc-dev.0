@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7451CC54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 03:09:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B418EC5479D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 03:10:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NsqJl6ybZz3fGl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 14:09:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NsqKm1b2tz3fHk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 14:10:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vJ/xyQNl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RXfklGda;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vJ/xyQNl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RXfklGda;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsqDk6058z3c6f
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NsqDk6HNtz3c6y
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 14:05:42 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id BD69B61F40;
-	Thu, 12 Jan 2023 03:05:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FCD0C433D2;
-	Thu, 12 Jan 2023 03:05:37 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id DC16B61F3C;
+	Thu, 12 Jan 2023 03:05:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 17974C433A4;
+	Thu, 12 Jan 2023 03:05:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1673492738;
-	bh=5SNoJfmm0fL05G4ydhdtW6XCwG+AF4FA2R03PxumsNE=;
+	s=k20201202; t=1673492740;
+	bh=ZYrEe+UlGxSb3XmlyRW+kxOUXOC4ka67ZA2eVmniGls=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=vJ/xyQNlp2bTK+/u+Wi+JeIn6bHfab9RmDOpHLN56T3crGZ8+sx8gd+UFdZZjhTOV
-	 ZTX4PAC0CO6RVpAPlLQSGWFLqSpHk4Nbkpy2TU07dhyRWtDQDakFvYA+eJyjfbEnQ0
-	 9UkVz+BX+wN4VzwHF0YLepvzuAVX+OsqBIZCB3FuIdFQx3t7Qi68jkLMOhublHsATb
-	 9AmmxRV/WKryIrk1wsG5w8V836vwcxFOLoTeJOoMHUm4XRCDYxvGBNqmt6zgDn6QOq
-	 tPa1qRIFRNg43llg8xfSp/rnEidAIXlflinvI3NJ0PUWMC20HA+wDv9+P74FHXUuHz
-	 DaK11Ihks12MQ==
+	b=RXfklGdaqsc4OBns3LZcCpfBAzzRfrmJY22decYhmK/DmMfUZPXq8HVbaEq62fqXF
+	 spZsaa+1iNIPJwRIy6DXvwN7U/sxikAXM3tfBhjY+Us+Y2kzDiJwMfKVr57OWYpBe6
+	 FR8RauQuRnHG5OnnUI5H7ZPa0ajNNIchD6jIcDJXW9dXbhSeIf9C5eOD639FQoqHnS
+	 a8A7BRk/I9O4Ztil+KHW4UKsNaOEgQtkvvPt/wlTnCY3H6bAiVt2Zh18KGbaGFHYH4
+	 DqdW2e86KkHAKk7fw23RyJF0XTpJYUtvlCETasjCL/g2ds8kvhgzEqByiln4CadxUd
+	 BGadsL6QopuzQ==
 From: Nathan Chancellor <nathan@kernel.org>
-Date: Wed, 11 Jan 2023 20:05:02 -0700
-Subject: [PATCH v2 05/14] powerpc: Remove linker flag from KBUILD_AFLAGS
+Date: Wed, 11 Jan 2023 20:05:05 -0700
+Subject: [PATCH v2 08/14] powerpc/vdso: Remove an unsupported flag from
+ vgettimeofday-32.o with clang
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20221228-drop-qunused-arguments-v2-5-9adbddd20d86@kernel.org>
+Message-Id: <20221228-drop-qunused-arguments-v2-8-9adbddd20d86@kernel.org>
 References: <20221228-drop-qunused-arguments-v2-0-9adbddd20d86@kernel.org>
 In-Reply-To: <20221228-drop-qunused-arguments-v2-0-9adbddd20d86@kernel.org>
 To: masahiroy@kernel.org
 X-Mailer: b4 0.12-dev-78c63
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2552; i=nathan@kernel.org;
- h=from:subject:message-id; bh=5SNoJfmm0fL05G4ydhdtW6XCwG+AF4FA2R03PxumsNE=;
- b=owGbwMvMwCEmm602sfCA1DTG02pJDMn7K36XWet8PsXpUG0mdW5Ozf8rD4Jc122ofPr1xH9LnmP7
- 38fFdJSyMIhxMMiKKbJUP1Y9bmg45yzjjVOTYOawMoEMYeDiFICJfAtgZOjapPNpfoLe3NVP5k/1ll
- aSqSgR4bas/fp6YbZEtoqs5TVGhl2JHbxfHT2CSyb9W+coH/jE/SrDkh0+/84+yPz09gJ3Hj8A
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2124; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=ZYrEe+UlGxSb3XmlyRW+kxOUXOC4ka67ZA2eVmniGls=;
+ b=owGbwMvMwCEmm602sfCA1DTG02pJDMn7K36fz/vbKrXpuv2eZb5z05tO+M9908m59Na+tW+XzPtW
+ NIe1uaOUhUGMg0FWTJGl+rHqcUPDOWcZb5yaBDOHlQlkCAMXpwBMxLCF4X/Q683ffF+8EF/c/znfU8
+ hUYsO5nrIl2nKtN0oeJD77ppfLyPD844cfDWfy3iYd+fqEZ+ZSg0e973q5Co6d97tx58OhCVe5AQ==
 X-Developer-Key: i=nathan@kernel.org; a=openpgp;
  fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,41 +73,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 When clang's -Qunused-arguments is dropped from KBUILD_CPPFLAGS, it
-points out that KBUILD_AFLAGS contains a linker flag, which will be
-used:
+warns:
 
-  clang: error: -Wl,-a32: 'linker' input unused [-Werror,-Wunused-command-line-argument]
+  clang-16: error: argument unused during compilation: '-fno-stack-clash-protection' [-Werror,-Wunused-command-line-argument]
 
-This was likely supposed to be '-Wa,-a$(BITS)'. However, this change is
-unnecessary, as all supported versions of clang and gcc will pass '-a64'
-or '-a32' to GNU as based on the value of '-m'; the behavior of the
-latest stable release of the oldest supported major version of each
-compiler is shown below and each compiler's latest release exhibits the
-same behavior (GCC 12.2.0 and Clang 15.0.6).
+This warning happens because vgettimeofday-32.c gets its base CFLAGS
+from the main kernel, which may contain flags that are only supported on
+a 64-bit target but not a 32-bit one, which is the case here.
+-fstack-clash-protection and its negation are only suppported by the
+64-bit powerpc target but that flag is included in an invocation for a
+32-bit powerpc target, so clang points out that while the flag is one
+that it recognizes, it is not actually used by this compiler job.
 
-  $ powerpc64-linux-gcc --version | head -1
-  powerpc64-linux-gcc (GCC) 5.5.0
+To eliminate the warning, remove -fno-stack-clash-protection from
+vgettimeofday-32.c's CFLAGS when using clang, as has been done for other
+flags previously.
 
-  $ powerpc64-linux-gcc -m64 -### -x assembler-with-cpp -c -o /dev/null /dev/null &| grep 'as '
-  .../as -a64 -mppc64 -many -mbig -o /dev/null /tmp/cctwuBzZ.s
-
-  $ powerpc64-linux-gcc -m32 -### -x assembler-with-cpp -c -o /dev/null /dev/null &| grep 'as '
-  .../as -a32 -mppc -many -mbig -o /dev/null /tmp/ccaZP4mF.sg
-
-  $ clang --version | head -1
-  Ubuntu clang version 11.1.0-++20211011094159+1fdec59bffc1-1~exp1~20211011214622.5
-
-  $ clang --target=powerpc64-linux-gnu -fno-integrated-as -m64 -### \
-    -x assembler-with-cpp -c -o /dev/null /dev/null &| grep gnu-as
-   "/usr/bin/powerpc64-linux-gnu-as" "-a64" "-mppc64" "-many" "-o" "/dev/null" "/tmp/null-80267c.s"
-
-  $ clang --target=powerpc64-linux-gnu -fno-integrated-as -m64 -### \
-    -x assembler-with-cpp -c -o /dev/null /dev/null &| grep gnu-as
-   "/usr/bin/powerpc64-linux-gnu-as" "-a32" "-mppc" "-many" "-o" "/dev/null" "/tmp/null-ab8f8d.s"
-
-Remove this flag altogether to avoid future issues.
-
-Fixes: 1421dc6d4829 ("powerpc/kbuild: Use flags variables rather than overriding LD/CC/AS")
 Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
 ---
@@ -115,22 +97,25 @@ Cc: npiggin@gmail.com
 Cc: christophe.leroy@csgroup.eu
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/vdso/Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index dc4cbf0a5ca9..4fd630efe39d 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -90,7 +90,7 @@ aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
- 
- ifeq ($(HAS_BIARCH),y)
- KBUILD_CFLAGS	+= -m$(BITS)
--KBUILD_AFLAGS	+= -m$(BITS) -Wl,-a$(BITS)
-+KBUILD_AFLAGS	+= -m$(BITS)
- KBUILD_LDFLAGS	+= -m elf$(BITS)$(LDEMULATION)
- endif
- 
+diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
+index 4337b3aa9171..e78a57e0a6c0 100644
+--- a/arch/powerpc/kernel/vdso/Makefile
++++ b/arch/powerpc/kernel/vdso/Makefile
+@@ -16,6 +16,11 @@ ifneq ($(c-gettimeofday-y),)
+   CFLAGS_vgettimeofday-32.o += -ffreestanding -fasynchronous-unwind-tables
+   CFLAGS_REMOVE_vgettimeofday-32.o = $(CC_FLAGS_FTRACE)
+   CFLAGS_REMOVE_vgettimeofday-32.o += -mcmodel=medium -mabi=elfv1 -mabi=elfv2 -mcall-aixdesc
++  # This flag is supported by clang for 64-bit but not 32-bit so it will cause
++  # an unused command line flag warning for this file.
++  ifdef CONFIG_CC_IS_CLANG
++  CFLAGS_REMOVE_vgettimeofday-32.o += -fno-stack-clash-protection
++  endif
+   CFLAGS_vgettimeofday-64.o += -include $(c-gettimeofday-y)
+   CFLAGS_vgettimeofday-64.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
+   CFLAGS_vgettimeofday-64.o += $(call cc-option, -fno-stack-protector)
 
 -- 
 2.39.0
