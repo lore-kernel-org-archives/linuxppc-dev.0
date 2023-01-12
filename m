@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2869AC63797
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8C5DC61DB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:30:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHk94k03z3gBT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:29:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHl94MB1z3gCm
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:30:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=dU184L9q;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=EGHw1O+V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjG2MLBz3bVf
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjF2TQlz3ch9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:25 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=iAxp8x4lKKvpjseCn+ZLFQYojoG8LdH6O7HFdGbhL8c=; b=dU184L9qptXqKzhAn2XAGLCMqX
-	Fo6uCwipj/TTugnZq1YrnsIUPDgzbS5YayhLveTFkeM3tjj5XI9KAaO3N7ITBzmPcBxH675aAe1po
-	QFaKrLawYMHIBd9b1kJmJZfDDInPS9pTpEAVbe5CUcTVLmAbCoDR5tq4+1E56GXTNFwai1wvBa+hI
-	wQzP/SsFCQ3qiHeZNk9lFVVPk5C4FhQJ+PAAWs8E9hBtrlUOK/rJbvZvsrZ9y6/GuEu0qKrH9wAus
-	o8FdJZPjb0D2g8xF1n/o3HiPZCHeFNS2j+czw/EcCe4Yza/qqlPpVGLypMevS/anzApVELW2+u/j0
-	XJ1RKhWA==;
+	bh=xUXFMmNjQb3UrGtSZK0a2nhjQSuKqnZvrBUrV/kGZ/M=; b=EGHw1O+VhpWPdN6gdRf/7GSjeB
+	0UpV5ZmI/qCVEO227xSy+GcxcSibZfsbDMVhfrklK7v8AyIqqIkF1gP/LgqbAi0mW/tE1qC+L2HXf
+	XvBUyGgq1DaRfzAcG0kIhWQHmV+EHqARCQ0PI+HB0HkJFGK7wif5gXf8cwDpdM+B6kfu/O1OCdau2
+	pSpg2AHgEP6HHM59oP5MZjnLVRtw+NHsWIOGgIai3wNHA4pOmXIQM+eJ6kD+gcxp4nDfUTp3XjBF5
+	ju6vS//9JRlSRzSlmnzBFsdYZAx2plCN0CogGHUzlIGKzhmNE0tcF4m5z8v0nJtN+98R7CxLONDQE
+	HdNpFULw==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1pG3hE-0045oR-08;
-	Thu, 12 Jan 2023 19:57:08 +0000
+	id 1pG3hK-0045pf-2r;
+	Thu, 12 Jan 2023 19:57:25 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3288B303412;
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id ECA69303461;
 	Thu, 12 Jan 2023 20:57:13 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id CBBB02CCF1F6D; Thu, 12 Jan 2023 20:57:07 +0100 (CET)
-Message-ID: <20230112195540.190860672@infradead.org>
+	id 49A802CD0121F; Thu, 12 Jan 2023 20:57:08 +0100 (CET)
+Message-ID: <20230112195541.721697850@infradead.org>
 User-Agent: quilt/0.66
-Date: Thu, 12 Jan 2023 20:43:28 +0100
+Date: Thu, 12 Jan 2023 20:43:53 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v3 14/51] cpuidle,cpu_pm: Remove RCU fiddling from cpu_pm_{enter,exit}()
+Subject: [PATCH v3 39/51] arm,omap2: Use WFI for omap2_pm_idle()
 References: <20230112194314.845371875@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -69,49 +69,97 @@ Cc: juri.lelli@redhat.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, raf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-All callers should still have RCU enabled.
+arch_cpu_idle() is a very simple idle interface and exposes only a
+single idle state and is expected to not require RCU and not do any
+tracing/instrumentation.
 
+As such, omap2_pm_idle() is not a valid implementation. Replace it
+with a simple (shallow) omap2_do_wfi() call.
+
+Omap2 doesn't have a cpuidle driver; but adding one would be the
+recourse to (re)gain the other idle states.
+
+Suggested-by: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Mark Rutland <mark.rutland@arm.com>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Acked-by: Frederic Weisbecker <frederic@kernel.org>
 Tested-by: Tony Lindgren <tony@atomide.com>
 Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- kernel/cpu_pm.c |    9 ---------
- 1 file changed, 9 deletions(-)
+ arch/arm/mach-omap2/pm24xx.c |   51 +------------------------------------------
+ 1 file changed, 2 insertions(+), 49 deletions(-)
 
---- a/kernel/cpu_pm.c
-+++ b/kernel/cpu_pm.c
-@@ -30,16 +30,9 @@ static int cpu_pm_notify(enum cpu_pm_eve
+--- a/arch/arm/mach-omap2/pm24xx.c
++++ b/arch/arm/mach-omap2/pm24xx.c
+@@ -116,50 +116,12 @@ static int omap2_enter_full_retention(vo
+ 
+ static int sti_console_enabled;
+ 
+-static int omap2_allow_mpu_retention(void)
+-{
+-	if (!omap2xxx_cm_mpu_retention_allowed())
+-		return 0;
+-	if (sti_console_enabled)
+-		return 0;
+-
+-	return 1;
+-}
+-
+-static void omap2_enter_mpu_retention(void)
++static void omap2_do_wfi(void)
  {
- 	int ret;
+ 	const int zero = 0;
  
--	/*
--	 * This introduces a RCU read critical section, which could be
--	 * disfunctional in cpu idle. Copy RCU_NONIDLE code to let RCU know
--	 * this.
--	 */
--	ct_irq_enter_irqson();
- 	rcu_read_lock();
- 	ret = raw_notifier_call_chain(&cpu_pm_notifier.chain, event, NULL);
- 	rcu_read_unlock();
--	ct_irq_exit_irqson();
- 
- 	return notifier_to_errno(ret);
+-	/* The peripherals seem not to be able to wake up the MPU when
+-	 * it is in retention mode. */
+-	if (omap2_allow_mpu_retention()) {
+-		/* REVISIT: These write to reserved bits? */
+-		omap_prm_clear_mod_irqs(CORE_MOD, PM_WKST1, ~0);
+-		omap_prm_clear_mod_irqs(CORE_MOD, OMAP24XX_PM_WKST2, ~0);
+-		omap_prm_clear_mod_irqs(WKUP_MOD, PM_WKST, ~0);
+-
+-		/* Try to enter MPU retention */
+-		pwrdm_set_next_pwrst(mpu_pwrdm, PWRDM_POWER_RET);
+-
+-	} else {
+-		/* Block MPU retention */
+-		pwrdm_set_next_pwrst(mpu_pwrdm, PWRDM_POWER_ON);
+-	}
+-
+ 	/* WFI */
+ 	asm("mcr p15, 0, %0, c7, c0, 4" : : "r" (zero) : "memory", "cc");
+-
+-	pwrdm_set_next_pwrst(mpu_pwrdm, PWRDM_POWER_ON);
+-}
+-
+-static int omap2_can_sleep(void)
+-{
+-	if (omap2xxx_cm_fclks_active())
+-		return 0;
+-	if (__clk_is_enabled(osc_ck))
+-		return 0;
+-
+-	return 1;
  }
-@@ -49,11 +42,9 @@ static int cpu_pm_notify_robust(enum cpu
- 	unsigned long flags;
- 	int ret;
  
--	ct_irq_enter_irqson();
- 	raw_spin_lock_irqsave(&cpu_pm_notifier.lock, flags);
- 	ret = raw_notifier_call_chain_robust(&cpu_pm_notifier.chain, event_up, event_down, NULL);
- 	raw_spin_unlock_irqrestore(&cpu_pm_notifier.lock, flags);
--	ct_irq_exit_irqson();
+ static void omap2_pm_idle(void)
+@@ -169,16 +131,7 @@ static void omap2_pm_idle(void)
+ 	if (omap_irq_pending())
+ 		return;
  
- 	return notifier_to_errno(ret);
+-	error = cpu_cluster_pm_enter();
+-	if (error || !omap2_can_sleep()) {
+-		omap2_enter_mpu_retention();
+-		goto out_cpu_cluster_pm;
+-	}
+-
+-	omap2_enter_full_retention();
+-
+-out_cpu_cluster_pm:
+-	cpu_cluster_pm_exit();
++	omap2_do_wfi();
  }
+ 
+ static void __init prcm_setup_regs(void)
 
 
