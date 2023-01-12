@@ -4,90 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A4D6C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:18:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F09D7C54EBD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:24:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7VG2H6Rz3cD9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:18:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7d71m84z3fBl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:24:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UQ/7DbjQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=u49FS3Dk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=walle.cc (client-ip=159.69.201.130; helo=mail.3ffe.de; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UQ/7DbjQ;
+	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=u49FS3Dk;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7T82gfwz3c4c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 02:17:31 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30CEfdsI020474
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 15:17:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=PfnEYUqpcKyuqKdf3FrqSj74jidRgoxqAilLCr9nPTk=;
- b=UQ/7DbjQk02L3XFnwjIyFazb7ryr+xPeQ4AhDvSaseLZ+TWOtYbdMboXJ2r+R+CDcAlq
- XhZkubtzGSrYDRniQ2OHZxzoz9cZvfp5LLTA902yybgr27lwUBSd1K7IQUKhLz4yIq6+
- HjcybNfZFTjzNi502Ph4gGuRWX4dV1NJC5m+1+vIGjbATb53m8QTdjRWL8mE0WKXSvpE
- V5kppj6C8BxxgPm3X1YzvBQDFGfkqC02XntPo4N642CRzm/yBcj9D2IUM/ZvOvjSL+pG
- zKX+K6chCS3E2IHYciixSjUVLClaoVc32UPX+g05u1X2Ks2ON6RqZLrsmpwARflvR10Z Mw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n2m6nh4qc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 15:17:27 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30CEfmUA020748
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 15:17:26 GMT
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n2m6nh4mr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Jan 2023 15:17:26 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30CBwRUq025687;
-	Thu, 12 Jan 2023 15:17:22 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3n1kuc1x3m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 12 Jan 2023 15:17:22 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30CFHILN24379720
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 12 Jan 2023 15:17:18 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CC64C2004D;
-	Thu, 12 Jan 2023 15:17:18 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6C3FB20040;
-	Thu, 12 Jan 2023 15:17:18 +0000 (GMT)
-Received: from [9.171.86.11] (unknown [9.171.86.11])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 12 Jan 2023 15:17:18 +0000 (GMT)
-Message-ID: <3c4f68a0-b1f9-d456-ab12-9ea75263d94c@linux.ibm.com>
-Date: Thu, 12 Jan 2023 16:17:17 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7c35Hxbz3c90;
+	Fri, 13 Jan 2023 02:23:31 +1100 (AEDT)
+Received: from mwalle01.sab.local (unknown [213.135.10.150])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.3ffe.de (Postfix) with ESMTPSA id 17DAF1243;
+	Thu, 12 Jan 2023 16:15:23 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2022082101;
+	t=1673536523;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Z7B4pND5e+QR5QtoQ7I5oChkxQuHHA20+0hEeYmGTgM=;
+	b=u49FS3Dk9qDfluXiGp9TkmisU6Qu5EvwZeqGdovxab6dVxup2BRDNMldkVcrzwCEAfpQAO
+	ZqMoR10rIPYiZXZgHEfpSBuByb641u4TLay6c3YIfCdpyyraN3BAKHkEcEFVIkadRUCeaH
+	NhRHm0VW+4rqcCspn5gc2CDfsZ3V9+V77PoUo5/EbEgb2mqudJB6j2SVDvbwlriGHsQVNE
+	g+ewd5Nm+se/6Xbqu+vFAXV0+H4iY4LjVWzQ14ymHNqNk0p3sf4brIiS32qqEmA3kq2MDu
+	6wV/2+U3EUaZghtv6GX3t0E72N3yCT7u78d3h0OeNauAyUvteuYApMHhmZ3Iug==
+From: Michael Walle <michael@walle.cc>
+Subject: [PATCH net-next 00/10] net: mdio: Continue separating C22 and C45
+Date: Thu, 12 Jan 2023 16:15:07 +0100
+Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.6.1
-Subject: Re: [PATCH] powerpc/rtas: upgrade internal arch spinlocks
-Content-Language: fr
-To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20230110044255.122616-1-nathanl@linux.ibm.com>
-From: Laurent Dufour <ldufour@linux.ibm.com>
-In-Reply-To: <20230110044255.122616-1-nathanl@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: uyO7Kb6lBRsFaRoHk3FGr3j39gRDRnQD
-X-Proofpoint-GUID: WIbBJrMJGZZ1YJ6QrlSmxWJ7VaCkVruK
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.545,FMLib:17.11.122.1
- definitions=2023-01-12_08,2023-01-12_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- lowpriorityscore=0 adultscore=0 mlxscore=0 mlxlogscore=999 bulkscore=0
- spamscore=0 impostorscore=0 phishscore=0 clxscore=1011 priorityscore=1501
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301120109
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+X-B4-Tracking: v=1; b=H4sIAPsjwGMC/zWNwQrCMBBEf6Xs2YVuTLX4K+Jhk25tDsawG6RQ+
+ u+mgoc5PIZ5s4GJJjG4dRuofJKld25Apw7iwvkpmKbG4Hp37okcZqkta8XoBzQpolzbBgtrRYcU
+ xjkE8v4yXqFJAptgUM5xOTQvtip6FEVlTuvv+Q5/KTz2/QtSEQk5kwAAAA==
+To: Heiner Kallweit <hkallweit1@gmail.com>,
+ Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
+ Paolo Abeni <pabeni@redhat.com>, Ray Jui <rjui@broadcom.com>,
+ Scott Branden <sbranden@broadcom.com>,
+ Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
+ Felix Fietkau <nbd@nbd.name>, John Crispin <john@phrozen.org>,
+ Sean Wang <sean.wang@mediatek.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
+ Lorenzo Bianconi <lorenzo@kernel.org>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Bryan Whitehead <bryan.whitehead@microchip.com>, UNGLinuxDriver@microchip.com,
+ Giuseppe Cavallaro <peppe.cavallaro@st.com>,
+ Alexandre Torgue <alexandre.torgue@foss.st.com>,
+ Jose Abreu <joabreu@synopsys.com>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Vladimir Oltean <vladimir.oltean@nxp.com>,
+ Claudiu Manoil <claudiu.manoil@nxp.com>,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>,
+ Florian Fainelli <f.fainelli@gmail.com>, Li Yang <leoyang.li@nxp.com>
+X-Mailer: b4 0.11.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,199 +81,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ajd@linux.ibm.com, npiggin@gmail.com
+Cc: Andrew Lunn <andrew@lunn.ch>, linux-aspeed@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Walle <michael@walle.cc>, linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/01/2023 05:42:55, Nathan Lynch wrote:
-> At the time commit f97bb36f705d ("powerpc/rtas: Turn rtas lock into a
-> raw spinlock") was written, the spinlock lockup detection code called
-> __delay(), which will not make progress if the timebase is not
-> advancing. Since the interprocessor timebase synchronization sequence
-> for chrp, cell, and some now-unsupported Power models can temporarily
-> freeze the timebase through an RTAS function (freeze-time-base), the
-> lock that serializes most RTAS calls was converted to arch_spinlock_t
-> to prevent kernel hangs in the lockup detection code.
-> 
-> However, commit bc88c10d7e69 ("locking/spinlock/debug: Remove spinlock
-> lockup detection code") removed that inconvenient property from the
-> lock debug code several years ago. So now it should be safe to
-> reintroduce generic locks into the RTAS support code, primarily to
-> increase lockdep coverage.
-> 
-> Making rtas.lock a spinlock_t would violate lock type nesting rules
-> because it can be acquired while holding raw locks, e.g. pci_lock and
-> irq_desc->lock. So convert it to raw_spinlock_t. There's no apparent
-> reason not to upgrade timebase_lock as well.
-> 
-> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/rtas-types.h |  2 +-
->  arch/powerpc/kernel/rtas.c            | 52 ++++++++-------------------
->  2 files changed, 15 insertions(+), 39 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/rtas-types.h b/arch/powerpc/include/asm/rtas-types.h
-> index 8df6235d64d1..a58f96eb2d19 100644
-> --- a/arch/powerpc/include/asm/rtas-types.h
-> +++ b/arch/powerpc/include/asm/rtas-types.h
-> @@ -18,7 +18,7 @@ struct rtas_t {
->  	unsigned long entry;		/* physical address pointer */
->  	unsigned long base;		/* physical address pointer */
->  	unsigned long size;
-> -	arch_spinlock_t lock;
-> +	raw_spinlock_t lock;
->  	struct rtas_args args;
->  	struct device_node *dev;	/* virtual address pointer */
->  };
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index deded51a7978..a834726f18e3 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -61,7 +61,7 @@ static inline void do_enter_rtas(unsigned long args)
->  }
->  
->  struct rtas_t rtas = {
-> -	.lock = __ARCH_SPIN_LOCK_UNLOCKED
-> +	.lock = __RAW_SPIN_LOCK_UNLOCKED(rtas.lock),
->  };
->  EXPORT_SYMBOL(rtas);
+I've picked this older series from Andrew up and rebased it onto
+the latest net-next.
 
-This is not the scope of this patch, but the RTAS's lock is externalized
-through the structure rtas_t, while it is only used in that file.
+This is the second patch set in the series which separates the C22
+and C45 MDIO bus transactions at the API level to the MDIO bus drivers.
 
-I think, this would be good, in case of future change about that lock, and
-in order to not break KABI, to move it out of that structure, and to define
-it statically in that file.
+Signed-off-by: Michael Walle <michael@walle.cc>
 
-Otherwise, looks good to me.
+￼
 
-Reviewed-by: Laurent Dufour <laurent.dufour@fr.ibm.com>
+To: Heiner Kallweit <hkallweit1@gmail.com>
+To: Russell King <linux@armlinux.org.uk>
+To: "David S. Miller" <davem@davemloft.net>
+To: Eric Dumazet <edumazet@google.com>
+To: Jakub Kicinski <kuba@kernel.org>
+To: Paolo Abeni <pabeni@redhat.com>
+To: Ray Jui <rjui@broadcom.com>
+To: Scott Branden <sbranden@broadcom.com>
+To: Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>
+To: Joel Stanley <joel@jms.id.au>
+To: Andrew Jeffery <andrew@aj.id.au>
+To: Felix Fietkau <nbd@nbd.name>
+To: John Crispin <john@phrozen.org>
+To: Sean Wang <sean.wang@mediatek.com>
+To: Mark Lee <Mark-MC.Lee@mediatek.com>
+To: Lorenzo Bianconi <lorenzo@kernel.org>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+To: Bryan Whitehead <bryan.whitehead@microchip.com>
+To: UNGLinuxDriver@microchip.com
+To: Giuseppe Cavallaro <peppe.cavallaro@st.com>
+To: Alexandre Torgue <alexandre.torgue@foss.st.com>
+To: Jose Abreu <joabreu@synopsys.com>
+To: Maxime Coquelin <mcoquelin.stm32@gmail.com>
+To: Vladimir Oltean <vladimir.oltean@nxp.com>
+To: Claudiu Manoil <claudiu.manoil@nxp.com>
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Florian Fainelli <f.fainelli@gmail.com>
+To: Li Yang <leoyang.li@nxp.com>
+Cc: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-aspeed@lists.ozlabs.org
+Cc: linux-mediatek@lists.infradead.org
+Cc: linux-stm32@st-md-mailman.stormreply.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Michael Walle <michael@walle.cc>
 
->  
-> @@ -80,28 +80,6 @@ unsigned long rtas_rmo_buf;
->  void (*rtas_flash_term_hook)(int);
->  EXPORT_SYMBOL(rtas_flash_term_hook);
->  
-> -/* RTAS use home made raw locking instead of spin_lock_irqsave
-> - * because those can be called from within really nasty contexts
-> - * such as having the timebase stopped which would lockup with
-> - * normal locks and spinlock debugging enabled
-> - */
-> -static unsigned long lock_rtas(void)
-> -{
-> -	unsigned long flags;
-> -
-> -	local_irq_save(flags);
-> -	preempt_disable();
-> -	arch_spin_lock(&rtas.lock);
-> -	return flags;
-> -}
-> -
-> -static void unlock_rtas(unsigned long flags)
-> -{
-> -	arch_spin_unlock(&rtas.lock);
-> -	local_irq_restore(flags);
-> -	preempt_enable();
-> -}
-> ->  /*
->   * call_rtas_display_status and call_rtas_display_status_delay
->   * are designed only for very early low-level debugging, which
-> @@ -109,14 +87,14 @@ static void unlock_rtas(unsigned long flags)
->   */
->  static void call_rtas_display_status(unsigned char c)
->  {
-> -	unsigned long s;
-> +	unsigned long flags;
->  
->  	if (!rtas.base)
->  		return;
->  
-> -	s = lock_rtas();
-> +	raw_spin_lock_irqsave(&rtas.lock, flags);
->  	rtas_call_unlocked(&rtas.args, 10, 1, 1, NULL, c);
-> -	unlock_rtas(s);
-> +	raw_spin_unlock_irqrestore(&rtas.lock, flags);
->  }
->  
->  static void call_rtas_display_status_delay(char c)
-> @@ -534,7 +512,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
->  {
->  	va_list list;
->  	int i;
-> -	unsigned long s;
-> +	unsigned long flags;
->  	struct rtas_args *rtas_args;
->  	char *buff_copy = NULL;
->  	int ret;
-> @@ -557,8 +535,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
->  		return -1;
->  	}
->  
-> -	s = lock_rtas();
-> -
-> +	raw_spin_lock_irqsave(&rtas.lock, flags);
->  	/* We use the global rtas args buffer */
->  	rtas_args = &rtas.args;
->  
-> @@ -576,7 +553,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
->  			outputs[i] = be32_to_cpu(rtas_args->rets[i+1]);
->  	ret = (nret > 0)? be32_to_cpu(rtas_args->rets[0]): 0;
->  
-> -	unlock_rtas(s);
-> +	raw_spin_unlock_irqrestore(&rtas.lock, flags);
->  
->  	if (buff_copy) {
->  		log_error(buff_copy, ERR_TYPE_RTAS_LOG, 0);
-> @@ -1268,7 +1245,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
->  
->  	buff_copy = get_errorlog_buffer();
->  
-> -	flags = lock_rtas();
-> +	raw_spin_lock_irqsave(&rtas.lock, flags);
->  
->  	rtas.args = args;
->  	do_enter_rtas(__pa(&rtas.args));
-> @@ -1279,7 +1256,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
->  	if (be32_to_cpu(args.rets[0]) == -1)
->  		errbuf = __fetch_rtas_last_error(buff_copy);
->  
-> -	unlock_rtas(flags);
-> +	raw_spin_unlock_irqrestore(&rtas.lock, flags);
->  
->  	if (buff_copy) {
->  		if (errbuf)
-> @@ -1401,19 +1378,18 @@ int __init early_init_dt_scan_rtas(unsigned long node,
->  	return 1;
->  }
->  
-> -static arch_spinlock_t timebase_lock;
-> +static DEFINE_RAW_SPINLOCK(timebase_lock);
->  static u64 timebase = 0;
->  
->  void rtas_give_timebase(void)
->  {
->  	unsigned long flags;
->  
-> -	local_irq_save(flags);
-> +	raw_spin_lock_irqsave(&timebase_lock, flags);
->  	hard_irq_disable();
-> -	arch_spin_lock(&timebase_lock);
->  	rtas_call(rtas_token("freeze-time-base"), 0, 1, NULL);
->  	timebase = get_tb();
-> -	arch_spin_unlock(&timebase_lock);
-> +	raw_spin_unlock(&timebase_lock);
->  
->  	while (timebase)
->  		barrier();
-> @@ -1425,8 +1401,8 @@ void rtas_take_timebase(void)
->  {
->  	while (!timebase)
->  		barrier();
-> -	arch_spin_lock(&timebase_lock);
-> +	raw_spin_lock(&timebase_lock);
->  	set_tb(timebase >> 32, timebase & 0xffffffff);
->  	timebase = 0;
-> -	arch_spin_unlock(&timebase_lock);
-> +	raw_spin_unlock(&timebase_lock);
->  }
+---
+Andrew Lunn (10):
+      net: mdio: cavium: Separate C22 and C45 transactions
+      net: mdio: i2c: Separate C22 and C45 transactions
+      net: mdio: mux-bcm-iproc: Separate C22 and C45 transactions
+      net: mdio: aspeed: Separate C22 and C45 transactions
+      net: mdio: ipq4019: Separate C22 and C45 transactions
+      net: ethernet: mtk_eth_soc: Separate C22 and C45 transactions
+      net: lan743x: Separate C22 and C45 transactions
+      net: stmmac: Separate C22 and C45 transactions for xgmac2
+      net: stmmac: Separate C22 and C45 transactions for xgmac
+      enetc: Separate C22 and C45 transactions
 
+ drivers/net/dsa/ocelot/felix_vsc9959.c             |   6 +-
+ drivers/net/ethernet/freescale/enetc/enetc_mdio.c  | 119 ++++++--
+ .../net/ethernet/freescale/enetc/enetc_pci_mdio.c  |   6 +-
+ drivers/net/ethernet/freescale/enetc/enetc_pf.c    |  12 +-
+ drivers/net/ethernet/mediatek/mtk_eth_soc.c        | 178 +++++++----
+ drivers/net/ethernet/microchip/lan743x_main.c      | 106 ++++---
+ drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c  | 331 ++++++++++++++-------
+ drivers/net/mdio/mdio-aspeed.c                     |  47 +--
+ drivers/net/mdio/mdio-cavium.c                     | 111 +++++--
+ drivers/net/mdio/mdio-cavium.h                     |   9 +-
+ drivers/net/mdio/mdio-i2c.c                        |  32 +-
+ drivers/net/mdio/mdio-ipq4019.c                    | 154 ++++++----
+ drivers/net/mdio/mdio-mux-bcm-iproc.c              |  54 +++-
+ drivers/net/mdio/mdio-octeon.c                     |   6 +-
+ drivers/net/mdio/mdio-thunder.c                    |   6 +-
+ include/linux/fsl/enetc_mdio.h                     |  21 +-
+ 16 files changed, 766 insertions(+), 432 deletions(-)
+---
+base-commit: 0a093b2893c711d82622a9ab27da4f1172821336
+change-id: 20230112-net-next-c45-seperation-part-2-1b8fbb144687
+
+Best regards,
+-- 
+Michael Walle <michael@walle.cc>
