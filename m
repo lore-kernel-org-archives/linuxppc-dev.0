@@ -4,50 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0C6BC54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:28:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1B21C67871
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:29:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7kB1TnDz3fJv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:28:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7lB6xyBz3fDB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:29:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=0PJqU0bp;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=dxJrkPGr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=walle.cc (client-ip=159.69.201.130; helo=mail.3ffe.de; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=0PJqU0bp;
+	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=dxJrkPGr;
 	dkim-atps=neutral
 Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7c66L4xz3c7M;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7c66SKHz3cDh;
 	Fri, 13 Jan 2023 02:23:34 +1100 (AEDT)
 Received: from mwalle01.sab.local (unknown [213.135.10.150])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.3ffe.de (Postfix) with ESMTPSA id C96DD15E8;
-	Thu, 12 Jan 2023 16:15:24 +0100 (CET)
+	by mail.3ffe.de (Postfix) with ESMTPSA id AB61D1694;
+	Thu, 12 Jan 2023 16:15:25 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2022082101;
-	t=1673536525;
+	t=1673536526;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=nh59coj550doZXKUioyBaJXnHjL7eqqxkdyADzKG0aw=;
-	b=0PJqU0bpJyUWyXm+SQSGiXNKZ9/LdYWX4cRQNkbqH1J4qqJSPWjumCvh8aqI+OzDwYyXMc
-	buhluiqJESGW4pmr0bKQzF+OPMsYKo+NOdVOg1nDPaY2JBuiq7jIv2M/qlO6uQ0KVXhRTW
-	pVYedVbZBwkSgdL2mEyP6QgF30yZYJMLkspl+lksS3LZT7JxwVl/agdJWk5tgfQY+RiQzY
-	4tCDnZkHvhEQmytDQj2YB/59IBbqjirwac+SFzVMcDFEbvy43drC2Ox3UB+o0HJ66ae1tV
-	h6VkNjDTFS0n6JS6LUz5upzcF6riFGAShqaBM05hG1rp8dtA2rTlI3Z2dDJeog==
+	bh=qDAHxHfRrvf51PIr8qmkywmz1eulPcXYJJmt0L06/Wc=;
+	b=dxJrkPGrUuPERHwOXrIz6EipOact5Skyuz4gZjFnkKNdVRA5sGIMzO2HgJvV2WvCfXExga
+	NZeMBVuR2zjkdVevQ6QDTKYgKRx5BLIGSZMKrrokbRjn2C7acN0prb44Ylj5sSAsot20t9
+	dNfeIt3I77raGBZTUUQxHdVLb4qoQnoU+8T09zcOraoSzVkYZr//XkQhenVWTOcOnZGiUD
+	zrr7VBG8+/i0oEYcU1Gn/9FGPDi5RYrXUv2osARSmAh95Dt/EK8+M8fYVPFRZj9drfIh9N
+	RKMcfuCqZo0JW69x802ebFbfKfbSC5EZtbV2kQf3LNk/bXJIyVUlvnNWf2GAzA==
 From: Michael Walle <michael@walle.cc>
-Date: Thu, 12 Jan 2023 16:15:09 +0100
-Subject: [PATCH net-next 03/10] net: mdio: mux-bcm-iproc: Separate C22 and C45
- transactions
+Date: Thu, 12 Jan 2023 16:15:11 +0100
+Subject:  [PATCH net-next 05/10] net: mdio: ipq4019: Separate C22 and C45 transactions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-3-5eeaae931526@walle.cc>
+Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-5-5eeaae931526@walle.cc>
 References:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 In-Reply-To:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 To: Heiner Kallweit <hkallweit1@gmail.com>,
@@ -88,122 +87,240 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-The MDIO mux broadcom iproc can perform both C22 and C45 transfers.
-Create separate functions for each and register the C45 versions using
-the new API calls.
+The ipq4019 driver can perform both C22 and C45 transfers.  Create
+separate functions for each and register the C45 versions using the
+new driver API calls.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
-Apparently, in the c45 case, the reg value including the MII_ADDR_C45
-bit is written to the hardware. Looks weird, that a "random" software
-bit is written to a register. Florian is that correct? Also, with this
-patch this flag isn't set anymore.
----
- drivers/net/mdio/mdio-mux-bcm-iproc.c | 54 ++++++++++++++++++++++++++++-------
- 1 file changed, 43 insertions(+), 11 deletions(-)
+ drivers/net/mdio/mdio-ipq4019.c | 154 +++++++++++++++++++++++-----------------
+ 1 file changed, 90 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/net/mdio/mdio-mux-bcm-iproc.c b/drivers/net/mdio/mdio-mux-bcm-iproc.c
-index 014c0baedbd2..956d54846b62 100644
---- a/drivers/net/mdio/mdio-mux-bcm-iproc.c
-+++ b/drivers/net/mdio/mdio-mux-bcm-iproc.c
-@@ -98,7 +98,7 @@ static int iproc_mdio_wait_for_idle(void __iomem *base, bool result)
-  * Return value: Successful Read operation returns read reg values and write
-  *      operation returns 0. Failure operation returns negative error code.
-  */
--static int start_miim_ops(void __iomem *base,
-+static int start_miim_ops(void __iomem *base, bool c45,
- 			  u16 phyid, u32 reg, u16 val, u32 op)
- {
- 	u32 param;
-@@ -112,7 +112,7 @@ static int start_miim_ops(void __iomem *base,
- 	param = readl(base + MDIO_PARAM_OFFSET);
- 	param |= phyid << MDIO_PARAM_PHY_ID;
- 	param |= val << MDIO_PARAM_PHY_DATA;
--	if (reg & MII_ADDR_C45)
-+	if (c45)
- 		param |= BIT(MDIO_PARAM_C45_SEL);
- 
- 	writel(param, base + MDIO_PARAM_OFFSET);
-@@ -131,28 +131,58 @@ static int start_miim_ops(void __iomem *base,
- 	return ret;
+diff --git a/drivers/net/mdio/mdio-ipq4019.c b/drivers/net/mdio/mdio-ipq4019.c
+index 4eba5a91075c..78b93de636f5 100644
+--- a/drivers/net/mdio/mdio-ipq4019.c
++++ b/drivers/net/mdio/mdio-ipq4019.c
+@@ -53,7 +53,8 @@ static int ipq4019_mdio_wait_busy(struct mii_bus *bus)
+ 				  IPQ4019_MDIO_SLEEP, IPQ4019_MDIO_TIMEOUT);
  }
  
--static int iproc_mdiomux_read(struct mii_bus *bus, int phyid, int reg)
-+static int iproc_mdiomux_read_c22(struct mii_bus *bus, int phyid, int reg)
+-static int ipq4019_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
++static int ipq4019_mdio_read_c45(struct mii_bus *bus, int mii_id, int mmd,
++				 int reg)
  {
- 	struct iproc_mdiomux_desc *md = bus->priv;
- 	int ret;
+ 	struct ipq4019_mdio_data *priv = bus->priv;
+ 	unsigned int data;
+@@ -62,61 +63,71 @@ static int ipq4019_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
  
--	ret = start_miim_ops(md->base, phyid, reg, 0, MDIO_CTRL_READ_OP);
-+	ret = start_miim_ops(md->base, false, phyid, reg, 0, MDIO_CTRL_READ_OP);
- 	if (ret < 0)
--		dev_err(&bus->dev, "mdiomux read operation failed!!!");
-+		dev_err(&bus->dev, "mdiomux c22 read operation failed!!!");
+-	/* Clause 45 support */
+-	if (regnum & MII_ADDR_C45) {
+-		unsigned int mmd = (regnum >> 16) & 0x1F;
+-		unsigned int reg = regnum & 0xFFFF;
++	data = readl(priv->membase + MDIO_MODE_REG);
  
- 	return ret;
- }
+-		/* Enter Clause 45 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	data |= MDIO_MODE_C45;
  
--static int iproc_mdiomux_write(struct mii_bus *bus,
--			       int phyid, int reg, u16 val)
-+static int iproc_mdiomux_read_c45(struct mii_bus *bus, int phyid, int devad,
-+				  int reg)
-+{
-+	struct iproc_mdiomux_desc *md = bus->priv;
-+	int ret;
-+
-+	ret = start_miim_ops(md->base, true, phyid, reg | devad << 16, 0,
-+			     MDIO_CTRL_READ_OP);
-+	if (ret < 0)
-+		dev_err(&bus->dev, "mdiomux read c45 operation failed!!!");
-+
-+	return ret;
+-		data |= MDIO_MODE_C45;
++	writel(data, priv->membase + MDIO_MODE_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* issue the phy address and mmd */
++	writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
+ 
+-		/* issue the phy address and mmd */
+-		writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
++	/* issue reg */
++	writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		/* issue reg */
+-		writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
+-	} else {
+-		/* Enter Clause 22 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	/* issue read command */
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		data &= ~MDIO_MODE_C45;
++	/* Wait read complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_READ;
+ 
+-		/* issue the phy address and reg */
+-		writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_READ;
+-	}
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-	/* issue read command */
+-	writel(cmd, priv->membase + MDIO_CMD_REG);
++	/* Read and return data */
++	return readl(priv->membase + MDIO_DATA_READ_REG);
 +}
 +
-+static int iproc_mdiomux_write_c22(struct mii_bus *bus,
-+				   int phyid, int reg, u16 val)
++static int ipq4019_mdio_read_c22(struct mii_bus *bus, int mii_id, int regnum)
 +{
-+	struct iproc_mdiomux_desc *md = bus->priv;
-+	int ret;
++	struct ipq4019_mdio_data *priv = bus->priv;
++	unsigned int data;
++	unsigned int cmd;
+ 
+-	/* Wait read complete */
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
+ 
+-	if (regnum & MII_ADDR_C45) {
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_READ;
++	data = readl(priv->membase + MDIO_MODE_REG);
+ 
+-		writel(cmd, priv->membase + MDIO_CMD_REG);
++	data &= ~MDIO_MODE_C45;
+ 
+-		if (ipq4019_mdio_wait_busy(bus))
+-			return -ETIMEDOUT;
+-	}
++	writel(data, priv->membase + MDIO_MODE_REG);
 +
-+	/* Write val at reg offset */
-+	ret = start_miim_ops(md->base, false, phyid, reg, val,
-+			     MDIO_CTRL_WRITE_OP);
-+	if (ret < 0)
-+		dev_err(&bus->dev, "mdiomux write c22 operation failed!!!");
++	/* issue the phy address and reg */
++	writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
 +
-+	return ret;
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_READ;
++
++	/* issue read command */
++	writel(cmd, priv->membase + MDIO_CMD_REG);
++
++	/* Wait read complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+ 	/* Read and return data */
+ 	return readl(priv->membase + MDIO_DATA_READ_REG);
+ }
+ 
+-static int ipq4019_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
+-							 u16 value)
++static int ipq4019_mdio_write_c45(struct mii_bus *bus, int mii_id, int mmd,
++				  int reg, u16 value)
+ {
+ 	struct ipq4019_mdio_data *priv = bus->priv;
+ 	unsigned int data;
+@@ -125,50 +136,63 @@ static int ipq4019_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
+ 	if (ipq4019_mdio_wait_busy(bus))
+ 		return -ETIMEDOUT;
+ 
+-	/* Clause 45 support */
+-	if (regnum & MII_ADDR_C45) {
+-		unsigned int mmd = (regnum >> 16) & 0x1F;
+-		unsigned int reg = regnum & 0xFFFF;
++	data = readl(priv->membase + MDIO_MODE_REG);
+ 
+-		/* Enter Clause 45 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	data |= MDIO_MODE_C45;
+ 
+-		data |= MDIO_MODE_C45;
++	writel(data, priv->membase + MDIO_MODE_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* issue the phy address and mmd */
++	writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
+ 
+-		/* issue the phy address and mmd */
+-		writel((mii_id << 8) | mmd, priv->membase + MDIO_ADDR_REG);
++	/* issue reg */
++	writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		/* issue reg */
+-		writel(reg, priv->membase + MDIO_DATA_WRITE_REG);
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
+ 
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_ADDR;
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		writel(cmd, priv->membase + MDIO_CMD_REG);
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		if (ipq4019_mdio_wait_busy(bus))
+-			return -ETIMEDOUT;
+-	} else {
+-		/* Enter Clause 22 mode */
+-		data = readl(priv->membase + MDIO_MODE_REG);
++	/* issue write data */
++	writel(value, priv->membase + MDIO_DATA_WRITE_REG);
+ 
+-		data &= ~MDIO_MODE_C45;
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_WRITE;
++	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+-		writel(data, priv->membase + MDIO_MODE_REG);
++	/* Wait write complete */
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
+ 
+-		/* issue the phy address and reg */
+-		writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
+-	}
++	return 0;
 +}
 +
-+static int iproc_mdiomux_write_c45(struct mii_bus *bus,
-+				   int phyid, int devad, int reg, u16 val)
- {
- 	struct iproc_mdiomux_desc *md = bus->priv;
- 	int ret;
++static int ipq4019_mdio_write_c22(struct mii_bus *bus, int mii_id, int regnum,
++				  u16 value)
++{
++	struct ipq4019_mdio_data *priv = bus->priv;
++	unsigned int data;
++	unsigned int cmd;
++
++	if (ipq4019_mdio_wait_busy(bus))
++		return -ETIMEDOUT;
++
++	/* Enter Clause 22 mode */
++	data = readl(priv->membase + MDIO_MODE_REG);
++
++	data &= ~MDIO_MODE_C45;
++
++	writel(data, priv->membase + MDIO_MODE_REG);
++
++	/* issue the phy address and reg */
++	writel((mii_id << 8) | regnum, priv->membase + MDIO_ADDR_REG);
  
- 	/* Write val at reg offset */
--	ret = start_miim_ops(md->base, phyid, reg, val, MDIO_CTRL_WRITE_OP);
-+	ret = start_miim_ops(md->base, true, phyid, reg | devad << 16, val,
-+			     MDIO_CTRL_WRITE_OP);
- 	if (ret < 0)
--		dev_err(&bus->dev, "mdiomux write operation failed!!!");
-+		dev_err(&bus->dev, "mdiomux write c45 operation failed!!!");
+ 	/* issue write data */
+ 	writel(value, priv->membase + MDIO_DATA_WRITE_REG);
  
- 	return ret;
- }
-@@ -223,8 +253,10 @@ static int mdio_mux_iproc_probe(struct platform_device *pdev)
- 	bus->name = "iProc MDIO mux bus";
- 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-%d", pdev->name, pdev->id);
+ 	/* issue write command */
+-	if (regnum & MII_ADDR_C45)
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_C45_WRITE;
+-	else
+-		cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_WRITE;
++	cmd = MDIO_CMD_ACCESS_START | MDIO_CMD_ACCESS_CODE_WRITE;
+ 
+ 	writel(cmd, priv->membase + MDIO_CMD_REG);
+ 
+@@ -235,8 +259,10 @@ static int ipq4019_mdio_probe(struct platform_device *pdev)
+ 		priv->eth_ldo_rdy = devm_ioremap_resource(&pdev->dev, res);
+ 
+ 	bus->name = "ipq4019_mdio";
+-	bus->read = ipq4019_mdio_read;
+-	bus->write = ipq4019_mdio_write;
++	bus->read = ipq4019_mdio_read_c22;
++	bus->write = ipq4019_mdio_write_c22;
++	bus->read_c45 = ipq4019_mdio_read_c45;
++	bus->write_c45 = ipq4019_mdio_write_c45;
+ 	bus->reset = ipq_mdio_reset;
  	bus->parent = &pdev->dev;
--	bus->read = iproc_mdiomux_read;
--	bus->write = iproc_mdiomux_write;
-+	bus->read = iproc_mdiomux_read_c22;
-+	bus->write = iproc_mdiomux_write_c22;
-+	bus->read_c45 = iproc_mdiomux_read_c45;
-+	bus->write_c45 = iproc_mdiomux_write_c45;
- 
- 	bus->phy_mask = ~0;
- 	bus->dev.of_node = pdev->dev.of_node;
+ 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s%d", pdev->name, pdev->id);
 
 -- 
 2.30.2
