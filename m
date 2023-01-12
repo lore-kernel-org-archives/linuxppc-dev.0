@@ -4,66 +4,117 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F4E4C61DB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 18:49:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27DF9C63797
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 19:36:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtD9N58s6z3fCZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 05:49:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtFCy34JNz3fBq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 06:36:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Mj1nuXNv;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=Bw/Y+Rkd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::133; helo=mail-lf1-x133.google.com; envelope-from=sedat.dilek@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=40.107.21.50; helo=eur05-vi1-obe.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Mj1nuXNv;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=Bw/Y+Rkd;
 	dkim-atps=neutral
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (mail-vi1eur05on2050.outbound.protection.outlook.com [40.107.21.50])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtD8J06Pgz3bVq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 05:48:13 +1100 (AEDT)
-Received: by mail-lf1-x133.google.com with SMTP id v25so29700382lfe.12
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 10:48:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:reply-to:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=2LHJhaYz4OJaY3qxSfplobYir10QkCvABhK4MHujXhE=;
-        b=Mj1nuXNvwOYlRF1dKE2t1j63P0DmN8cSVBEglgoKkJyzxPTVd7GG+IR7u+/JZkBfZm
-         IYH0ooDA4XvRSc+FAmL7evdeV6yHglIyqtgd+yafyjoy221eO1bEfN5zOp8fwzLzvxRx
-         fLMeMGGNJ3JZJGTGbidVCsP/fRjDEvsZznC1CceBBHvixBXainarIrYQkFn3JlGoJrll
-         o4+YnHlrAXtDCwrkPrx9ul6KrIzg2x91O9mOoLMGM2C3g9LwvfAUqwJB3pDeqa6wPiof
-         p6aYc8q/MwrJAonjiUC/+vgcjhQgz27WLvCEf2NJQBcZpAHTcmiGDHLqDzHZRfwiiJak
-         MVHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:reply-to:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=2LHJhaYz4OJaY3qxSfplobYir10QkCvABhK4MHujXhE=;
-        b=4Vz+fkDj0n9iz83S8SW3z0aS9heRQfIxqW+NFawcpC1TPWvPbIfzwSL6OhXYU/U4bn
-         /hdsXH+hlGKCpUTq4OW9V8RQFFu/6FBvQnSXIQWSb/uWJ5LfMTFrMKJXWrNd06WurbM+
-         ar1a2PSIuU9EbLHaIUuIDhQ5VRw3IgMHbvvc2wgkN7cJDdSy/JU74NpnFGgMRpNah+cb
-         3StuQVBhfiH1qoDV2V/OZFyCygNuKlndk/dUuCdBBo5QhWNgHXr2huuK/YlGKAH+mM30
-         cZG0EOBJ/hk5a9qbdYi8WT71nEyLuh/w9qMnyZMQDO7zfrqQZg93ICKlP4Nj/70v0TRL
-         2tbA==
-X-Gm-Message-State: AFqh2kpNSE7AXegUHYvdT5NXDdMl0tJJGb4UzqFNXhk0tLOgPQyXzwD4
-	VujqTOmsd2iHG2QmwVI7M8kLfyvuVrcSiaFnvBg=
-X-Google-Smtp-Source: AMrXdXtBulizHQGHp+HKYjCPRVs+bctKl77S50/lf3BRAxO6DdRnFw6UXz+0+x4yagp7e3UnLq5IOn2ek3UncLBdjcc=
-X-Received: by 2002:a05:6512:3e12:b0:4ca:6c11:d3e5 with SMTP id
- i18-20020a0565123e1200b004ca6c11d3e5mr3715964lfv.224.1673549289451; Thu, 12
- Jan 2023 10:48:09 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFBr5GLPz3bZn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:35:30 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=SEDCp4ZGrykTq75QYHYuCVq1OOWZsFNiVKVaxBXzu3049wtLA/OZ8gCBf3uvr5AUWOd+tKMFo1rLVokZaARAsbZKHhBPBxauuM80DrMMVmBX9N7sFRQQM39RA432JcGqS4/t9gxzBKuGUhm6+LTpb7dys2Y7gfQErlTCjmXCHIvJqJrJDaP3bf+FJ1N7zMQce12p7cs569KQUIT98bLhylg1wLQWGUh0ICASmsgI75qOvHqi3QsLJMUikTafAffIJFpLddENQsX+i284TMiroa0qByFF0Tl3hfjuX0FxIpgvBFhBXBfDml7mjv4q4/tmlFmw1bWVc0AoBRTMqb2UJw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ACfxK11EiDUn6YifuXZI+iHQNLz0XFnMCJjfgAYt7kg=;
+ b=H2IXaCdU3x9sCQcVNBstwILdqKHn5FAEY11zk/CNdcTT+ec1WZHYJy3Zsbee6Ts8sb/edmdVvl8pm4jRRKVYIE4uJkB6YpgPq60E2KXTKlIRRcyGmPCsh20aLhn2ebvEqjBc3A0MOEB0Ul/U8j3At+LbPvacMKAW0GbMiF0779SvryFEhWRnlarOgiTPXijWH4BJJVKA0p1jd3/Id3EeiAlO6uGZZNROlLR55OtqShJh1kT0w8CN7vmmt0/stxJdChO6pSLZAcizxIGfSSQ6lrsTiYzb1UM5L40Nl6bey0OVFjzEQkaOND9WblhtyQKyeobhlvPIpi9towxF1L5onA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ACfxK11EiDUn6YifuXZI+iHQNLz0XFnMCJjfgAYt7kg=;
+ b=Bw/Y+Rkd2o2goXXvaIAvbZw2rcoR/Jwzj/z50GZiuS8MKzQMNlYgExLB7Srlt+xcv0hAg6F9C3C3N+XmyplilDjOy60PTP2eX8BDuKHb8XynXbrQH6zyvDieRTyjWw1C4mrkj8adgF+IpP26PJdoppH1lQ3QaMQ5LI9lFIc7a54=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from HE1PR0401MB2331.eurprd04.prod.outlook.com (2603:10a6:3:24::22)
+ by AM8PR04MB7300.eurprd04.prod.outlook.com (2603:10a6:20b:1c7::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.12; Thu, 12 Jan
+ 2023 19:35:11 +0000
+Received: from HE1PR0401MB2331.eurprd04.prod.outlook.com
+ ([fe80::ca48:3816:f0b6:3fcd]) by HE1PR0401MB2331.eurprd04.prod.outlook.com
+ ([fe80::ca48:3816:f0b6:3fcd%6]) with mapi id 15.20.5986.018; Thu, 12 Jan 2023
+ 19:35:11 +0000
+From: Frank Li <Frank.Li@nxp.com>
+To: Minghuan Lian <minghuan.Lian@nxp.com>,
+	Mingkai Hu <mingkai.hu@nxp.com>,
+	Roy Zang <roy.zang@nxp.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	linuxppc-dev@lists.ozlabs.org (open list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-pci@vger.kernel.org (open list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-arm-kernel@lists.infradead.org (moderated list:PCI DRIVER FOR FREESCALE LAYERSCAPE),
+	linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v2 1/1] PCI: layerscape: Add EP mode support for ls1028a
+Date: Thu, 12 Jan 2023 14:34:42 -0500
+Message-Id: <20230112193442.1513372-1-Frank.Li@nxp.com>
+X-Mailer: git-send-email 2.34.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: BYAPR21CA0024.namprd21.prod.outlook.com
+ (2603:10b6:a03:114::34) To HE1PR0401MB2331.eurprd04.prod.outlook.com
+ (2603:10a6:3:24::22)
 MIME-Version: 1.0
-References: <20221228-drop-qunused-arguments-v2-0-9adbddd20d86@kernel.org>
- <20221228-drop-qunused-arguments-v2-7-9adbddd20d86@kernel.org>
- <CA+icZUUgq-dnSTRbdynPA8bEWg6SsCE9GYBMF6iViVmo9DfaFA@mail.gmail.com> <Y8BPp905fJciHNa2@dev-arch.thelio-3990X>
-In-Reply-To: <Y8BPp905fJciHNa2@dev-arch.thelio-3990X>
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Date: Thu, 12 Jan 2023 19:47:32 +0100
-Message-ID: <CA+icZUUyyJX8XTDqgacT6aacD_5-g5S=YY+aOjCjyMBk=CWxsg@mail.gmail.com>
-Subject: Re: [PATCH v2 07/14] powerpc/vdso: Improve linker flags
-To: Nathan Chancellor <nathan@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: HE1PR0401MB2331:EE_|AM8PR04MB7300:EE_
+X-MS-Office365-Filtering-Correlation-Id: bb7bfa9c-38bb-422d-ce68-08daf4d41e36
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	DhsgZsjSmBj8Tuvo8noo5q6lDjBDuv4qLbheF7vJwmrApiakeA8NaUS1+1Z3sjxa6RKBiakMDFd5W2ouWIiaqFmRinU0GonzUmeGHgQUo9fOis2d/Jd+5uzi5TyDib6YZLO+Sy/Qa6aS25tsMwfezp0tltTph2OU4iAkDUA8V32pXRW7RSw669lBgzLf3WdZGUmOr6JgRLcXEd00gkggcttCDk1uLWMqbw46Yl3S1COEQ31g9MjTGyAjvMWntBf7eiUwQVwaC6jFyr2TsbhDCHufNMq1ejtk6VaWQZNv15gyyJe65mJGgLHwmU2TMmEOEzwkGL2zpx8exLuMo47YTR3wltSBlyzyJrQYB0ZGGBGzPPQLR/+4CuvwEraPe5KLgCrrHYkj9HZC6LGUbxmdAOMQ1SqbgLUCKKPSaDdM+ctGPR/azJqKU7+ycCnkN3qFWEvjZVidUaFErxnTgW5jQEEA9K2nBccmlA6QqJ4Grnx8NKV1M8wlcBpQY372EVLUF34KaWPAfN9DgPWPqe8VGoS2Z3EzYbXclf6hVabGGGHjyHH3XR13b4UgxM3ISnBHt6Ez9n52miUpYmwACupqFMlupH9KjOkGUfciUp1vJED1t0Q3wGEEXYAwd6/CNh3/tdZ5VfYM84bElqCQbk3OLaTXSb71xnM8lfOqc9ToSZGahYlqyRalc3+nTdb1kMVA5fPwrDT5QuZypmvSUgQlSvz+jMCgA7/qryvruSewoUom8hi+B+33kzsmHO1wtq8L
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:HE1PR0401MB2331.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(4636009)(366004)(136003)(396003)(346002)(376002)(39860400002)(451199015)(38100700002)(38350700002)(8936002)(921005)(8676002)(86362001)(5660300002)(4326008)(2906002)(66476007)(66946007)(66556008)(966005)(41300700001)(6666004)(6512007)(26005)(6506007)(2616005)(186003)(1076003)(110136005)(316002)(478600001)(6486002)(52116002)(36756003);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?PE6UXabMdE1WpV+vBv40ZMh1ViGo7+f8lykpiyVSXyrXxWwzSMrR/AJMwqGx?=
+ =?us-ascii?Q?qICGy65nBs5aFDgUnpHbyrA7FZPG/+qZX72psjw0LXICr5/Yl1e44C4YibXy?=
+ =?us-ascii?Q?0BXoC/CGRv6rH/9ftun12n027UVUedWrNVXHdYJAbY7Hsur38masbSjmEEHe?=
+ =?us-ascii?Q?RgJi5qayu6f7tD3Ae956tz4ttxX/92YqtzWC/uZHhyHAOuXUqj5SturTzs9t?=
+ =?us-ascii?Q?+/C6ZxMLjJVLgFdVeDCePNVszSik4PZJv0NJC42JKYeTq178/TjRZfWd5frF?=
+ =?us-ascii?Q?QyUvJZ/IVUpETR0r2IZX61DAZXYrz1S3raXgWaLP0xlIB4J8B6OJLJbHPkMH?=
+ =?us-ascii?Q?EyRBtj0OqyPuCiOuxaqSoKUkvrSQeRmYpV3i6G+bVkABbphvGapR3RpIzkwl?=
+ =?us-ascii?Q?+QFhBTetiLavERVR2wwQQJ4yXcaUsGikD/qNQXS2qNHZHvVkWmbAKfyZ3Sh/?=
+ =?us-ascii?Q?zCUiiteYK5eIWFPfFgV8Hz1Lj6Z7z7YPLLd+bPdiwGHUUhL085tS6xtFtpZ3?=
+ =?us-ascii?Q?jMrizhJrZFzY2QXW3RATXBuHtUgHM2SLYooHLhFnZU4hpkVQFYcxJC8EOSj/?=
+ =?us-ascii?Q?5Mr6AmNeKHWi4Ot10mxd9qNKKf2yrfoaAfD0bsiGk7EV8jQrXiHgEpK3SUyF?=
+ =?us-ascii?Q?CMg7CCXFaogF86dsLsRf4nbbsssBU9/Wk53aQ60jQY+Qg/TYYB4ElETayoP1?=
+ =?us-ascii?Q?fxtd9PhdBaRFXsLabMr9V1XSyncg36jvBVRMdEczRCGBs6yorDQ8obd8BTc4?=
+ =?us-ascii?Q?PHXKR2P6TQQInnAc8//fS1guJ9KwNeR29MUJw9cJB6uG+ANHtuQChywFWwgo?=
+ =?us-ascii?Q?E1ksltZjtC7i1CqS/tzBykOPg346tjwt9IS2Ainb+s5UPyev/cgBViTrWZ7K?=
+ =?us-ascii?Q?QzxNqDizgGhXW2jEn1RT9H3/ELIuojoFSJKJCWOT0hsv0Dkt+8B8z1n/Ylwv?=
+ =?us-ascii?Q?o8xyfiEiGwdDI5cd9sly1WF7t8OJ3iq7i6dq48J3/i/66Uv/3zxUaHQ/UZ1e?=
+ =?us-ascii?Q?jjAzlPAUW1zxwVyaG9hrwxi6NEnPsEzqGcMGyJuoEwKz57EFarKVzQmaSxPy?=
+ =?us-ascii?Q?hyiWN8F85/UrxCN/3QfAPCGBIKlueWbeqgnVdgUQ6IJbZoPteZytZQFWrHvA?=
+ =?us-ascii?Q?aCCT/zpPnLk2MeaxSGA6N7GV/IHWAc8r3DHMKU1ciIhzsk5kLhQTOutdNmhj?=
+ =?us-ascii?Q?A02JEj/cl4jFJ9bKXZS8u4OU1Y2AeAnJTFxpqeQSIy2UxaZcutoQtSGN8pi+?=
+ =?us-ascii?Q?jjJQ3ynCy2PX0H3qHzVbWUhCw+OJQOq4SC8T2zY6tKkkLggxmpL+2QltV4N2?=
+ =?us-ascii?Q?fJzLT9AIfcyLOlNmj4EppBYheQX2/oAr1V7oXNpn5QhqUS7TpUgjjMFf78lD?=
+ =?us-ascii?Q?ifXS0P1AoVnuse86pPQtjcTdUrYOG9JlqVlcNDrf4Edex2ZL8Vejn0prshQp?=
+ =?us-ascii?Q?4dh8nigwUyKYRbIcC+wvhz/hJoKI4+oCa695bFlR5DQSClSLXDbxXafsJrym?=
+ =?us-ascii?Q?8YDhyWrxybHRyXo9rgWs0tfPzYwm/UY9E4o6YAYbEl6JQLEs+2qaZTF5uzEy?=
+ =?us-ascii?Q?+NZeDBVoOQuMlb3k/Cd8W8/FdhHXRBiKkdpvDrzC?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: bb7bfa9c-38bb-422d-ce68-08daf4d41e36
+X-MS-Exchange-CrossTenant-AuthSource: HE1PR0401MB2331.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Jan 2023 19:35:10.7706
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: qTPkaMnDbS+y2HH86QFTBatWDkJni4q3IoefxPeHoEeeZzTqZkxJMYmZWd+cIzpWKHRMwphlUbePsblEaZARrw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7300
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,129 +126,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: sedat.dilek@gmail.com
-Cc: nicolas@fjasle.eu, linux-kbuild@vger.kernel.org, trix@redhat.com, masahiroy@kernel.org, llvm@lists.linux.dev, ndesaulniers@google.com, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
+Cc: imx@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 12, 2023 at 7:21 PM Nathan Chancellor <nathan@kernel.org> wrote:
->
-> Hi Sedat,
->
-> On Thu, Jan 12, 2023 at 07:02:30PM +0100, Sedat Dilek wrote:
-> > On Thu, Jan 12, 2023 at 4:06 AM Nathan Chancellor <nathan@kernel.org> wrote:
-> > >
-> > > When clang's -Qunused-arguments is dropped from KBUILD_CPPFLAGS, there
-> > > are several warnings in the PowerPC vDSO:
-> > >
-> > >   clang-16: error: -Wl,-soname=linux-vdso32.so.1: 'linker' input unused [-Werror,-Wunused-command-line-argument]
-> > >   clang-16: error: -Wl,--hash-style=both: 'linker' input unused [-Werror,-Wunused-command-line-argument]
-> > >   clang-16: error: argument unused during compilation: '-shared' [-Werror,-Wunused-command-line-argument]
-> > >
-> > >   clang-16: error: argument unused during compilation: '-nostdinc' [-Werror,-Wunused-command-line-argument]
-> > >   clang-16: error: argument unused during compilation: '-Wa,-maltivec' [-Werror,-Wunused-command-line-argument]
-> > >
-> > > The first group of warnings point out that linker flags were being added
-> > > to all invocations of $(CC), even though they will only be used during
-> > > the final vDSO link. Move those flags to ldflags-y.
-> > >
-> > > The second group of warnings are compiler or assembler flags that will
-> > > be unused during linking. Filter them out from KBUILD_CFLAGS so that
-> > > they are not used during linking.
-> > >
-> > > Additionally, '-z noexecstack' was added directly to the ld_and_check
-> > > rule in commit 1d53c0192b15 ("powerpc/vdso: link with -z noexecstack")
-> > > but now that there is a common ldflags variable, it can be moved there.
-> > >
-> > > Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-> > > Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-> > > ---
-> > > Cc: mpe@ellerman.id.au
-> > > Cc: npiggin@gmail.com
-> > > Cc: christophe.leroy@csgroup.eu
-> > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > ---
-> > >  arch/powerpc/kernel/vdso/Makefile | 18 +++++++++++-------
-> > >  1 file changed, 11 insertions(+), 7 deletions(-)
-> > >
-> > > diff --git a/arch/powerpc/kernel/vdso/Makefile b/arch/powerpc/kernel/vdso/Makefile
-> > > index 45c0cc5d34b6..4337b3aa9171 100644
-> > > --- a/arch/powerpc/kernel/vdso/Makefile
-> > > +++ b/arch/powerpc/kernel/vdso/Makefile
-> > > @@ -47,13 +47,17 @@ KCOV_INSTRUMENT := n
-> > >  UBSAN_SANITIZE := n
-> > >  KASAN_SANITIZE := n
-> > >
-> > > -ccflags-y := -shared -fno-common -fno-builtin -nostdlib -Wl,--hash-style=both
-> > > -ccflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
-> > > -
-> > > -CC32FLAGS := -Wl,-soname=linux-vdso32.so.1 -m32
-> > > +ccflags-y := -fno-common -fno-builtin
-> > > +ldflags-y := -Wl,--hash-style=both -nostdlib -shared -z noexecstack
-> > > +ldflags-$(CONFIG_LD_IS_LLD) += $(call cc-option,--ld-path=$(LD),-fuse-ld=lld)
-> > > +# Filter flags that clang will warn are unused for linking
-> > > +ldflags-y += $(filter-out $(CC_FLAGS_FTRACE) -Wa$(comma)%, $(KBUILD_CFLAGS))
-> > > +
-> > > +CC32FLAGS := -m32
-> > > +LD32FLAGS := -Wl,-soname=linux-vdso32.so.1
-> > >  AS32FLAGS := -D__VDSO32__
-> > >
-> > > -CC64FLAGS := -Wl,-soname=linux-vdso64.so.1
-> >
-> > Set CC64FLAGS := -m64 ?
->
-> I do not think it is necessary. ldflags-y is filtered from
-> KBUILD_CFLAGS, which should already include '-m64' (search for
-> 'HAS_BIARCH' in arch/powerpc/Makefile). We would have seen a problem
-> with this already if a 32-bit target (powerpc-linux-gnu-) CROSS_COMPILE
-> value since $(c_flags) uses the main kernel's CROSS_COMPILE value.
->
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
 
-Happy new 2023 Nathan,
+Add PCIe EP mode support for ls1028a.
 
-that vdso Makefiles are hard to read.
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+Signed-off-by: Frank Li <Frank.Li@nxp>
+Acked-by:  Roy Zang <Roy.Zang@nxp.com>
 
-Looks like x86/vdso explicitly sets -m32 and filter-out -m64 for the
-32-bit case.
+---
 
-Best regards,
--Sedat-
+Added 
+Signed-off-by: Frank Li <Frank.Li@nxp>
+Acked-by:  Roy Zang <Roy.Zang@nxp.com>
 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/vdso/Makefile
 
-> > > +LD64FLAGS := -Wl,-soname=linux-vdso64.so.1
-> > >  AS64FLAGS := -D__VDSO64__
-> > >
-> > >  targets += vdso32.lds
-> > > @@ -92,14 +96,14 @@ include/generated/vdso64-offsets.h: $(obj)/vdso64.so.dbg FORCE
-> > >
-> > >  # actual build commands
-> > >  quiet_cmd_vdso32ld_and_check = VDSO32L $@
-> > > -      cmd_vdso32ld_and_check = $(VDSOCC) $(c_flags) $(CC32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
-> > > +      cmd_vdso32ld_and_check = $(VDSOCC) $(ldflags-y) $(CC32FLAGS) $(LD32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^); $(cmd_vdso_check)
-> > >  quiet_cmd_vdso32as = VDSO32A $@
-> > >        cmd_vdso32as = $(VDSOCC) $(a_flags) $(CC32FLAGS) $(AS32FLAGS) -c -o $@ $<
-> > >  quiet_cmd_vdso32cc = VDSO32C $@
-> > >        cmd_vdso32cc = $(VDSOCC) $(c_flags) $(CC32FLAGS) -c -o $@ $<
-> > >
-> > >  quiet_cmd_vdso64ld_and_check = VDSO64L $@
-> > > -      cmd_vdso64ld_and_check = $(VDSOCC) $(c_flags) $(CC64FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^) -z noexecstack ; $(cmd_vdso_check)
-> > > +      cmd_vdso64ld_and_check = $(VDSOCC) $(ldflags-y) $(CC64FLAGS) $(LD64FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^); $(cmd_vdso_check)
-> >
-> > If no CC64FLAGS := xxx is set, this can go?
->
-> Good catch! CC64FLAGS can be removed. Masahiro, I am happy to send a v3
-> when I am back online next week but if you are able to fix it up during
-> application, please feel free to do so (once the PowerPC folks give
-> their Acks of course).
->
-> > >  quiet_cmd_vdso64as = VDSO64A $@
-> > >        cmd_vdso64as = $(VDSOCC) $(a_flags) $(CC64FLAGS) $(AS64FLAGS) -c -o $@ $<
-> > >
-> > >
-> > > --
-> > > 2.39.0
-> > >
->
-> Thanks for the review, cheers!
-> Nathan
+All other patches were already accepte by maintainer in 
+https://lore.kernel.org/lkml/20211112223457.10599-1-leoyang.li@nxp.com/
+
+But missed this one.
+
+Re-post.
+
+ drivers/pci/controller/dwc/pci-layerscape-ep.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+index ad99707b3b99..ed5cfc9408d9 100644
+--- a/drivers/pci/controller/dwc/pci-layerscape-ep.c
++++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
+@@ -112,6 +112,7 @@ static const struct ls_pcie_ep_drvdata lx2_ep_drvdata = {
+ static const struct of_device_id ls_pcie_ep_of_match[] = {
+ 	{ .compatible = "fsl,ls1046a-pcie-ep", .data = &ls1_ep_drvdata },
+ 	{ .compatible = "fsl,ls1088a-pcie-ep", .data = &ls2_ep_drvdata },
++	{ .compatible = "fsl,ls1028a-pcie-ep", .data = &ls1_ep_drvdata },
+ 	{ .compatible = "fsl,ls2088a-pcie-ep", .data = &ls2_ep_drvdata },
+ 	{ .compatible = "fsl,lx2160ar2-pcie-ep", .data = &lx2_ep_drvdata },
+ 	{ },
+-- 
+2.34.1
+
