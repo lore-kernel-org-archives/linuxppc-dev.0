@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ADA9C54EBE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:28:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2869AC63797
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:29:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHj95ltWz3fK5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:28:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHk94k03z3gBT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:29:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=UZP1WhwW;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=dU184L9q;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjF1p9wz3cfT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjG2MLBz3bVf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=GvwbGFmvCEUlvMDtuRKKain2RkezywAYf/go7N4onKI=; b=UZP1WhwWXNKsSNjUZl7FaNdKCn
-	ddEQs2bPXQi5qPjj7qlJxw/QPW/0nxOgZLN8xBPDMZ/1zjz4Cj4cBDEZBuYnBOjn9uMSnfZ/x7+2I
-	9dTh9PKCvuDC56aeAA3cL71DKDuGL799xQcS7MxhLz5jtlqRv3ljsfno7QvEUZeBL/ZKqQpiu6eX8
-	1n/CZuVsNYoC/48UeqqLacX54nCFrLom4QSa5qKlMYqjjQVNzfHjWkBbeNM7/Bwfq6S/ww+f2nN0u
-	0BjGg5qo+ibAucyPfwz5pwvtUQ9FofzqrnD212u/gvXOr0euOanteiang6T+NsdgqQ3BiJZ1d+Ozd
-	/GvjuQPw==;
+	bh=iAxp8x4lKKvpjseCn+ZLFQYojoG8LdH6O7HFdGbhL8c=; b=dU184L9qptXqKzhAn2XAGLCMqX
+	Fo6uCwipj/TTugnZq1YrnsIUPDgzbS5YayhLveTFkeM3tjj5XI9KAaO3N7ITBzmPcBxH675aAe1po
+	QFaKrLawYMHIBd9b1kJmJZfDDInPS9pTpEAVbe5CUcTVLmAbCoDR5tq4+1E56GXTNFwai1wvBa+hI
+	wQzP/SsFCQ3qiHeZNk9lFVVPk5C4FhQJ+PAAWs8E9hBtrlUOK/rJbvZvsrZ9y6/GuEu0qKrH9wAus
+	o8FdJZPjb0D2g8xF1n/o3HiPZCHeFNS2j+czw/EcCe4Yza/qqlPpVGLypMevS/anzApVELW2+u/j0
+	XJ1RKhWA==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1pG3hW-0045tg-0P;
-	Thu, 12 Jan 2023 19:57:31 +0000
+	id 1pG3hE-0045oR-08;
+	Thu, 12 Jan 2023 19:57:08 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 20794303471;
-	Thu, 12 Jan 2023 20:57:14 +0100 (CET)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 3288B303412;
+	Thu, 12 Jan 2023 20:57:13 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 5F8C02CD066D4; Thu, 12 Jan 2023 20:57:08 +0100 (CET)
-Message-ID: <20230112195542.028523143@infradead.org>
+	id CBBB02CCF1F6D; Thu, 12 Jan 2023 20:57:07 +0100 (CET)
+Message-ID: <20230112195540.190860672@infradead.org>
 User-Agent: quilt/0.66
-Date: Thu, 12 Jan 2023 20:43:58 +0100
+Date: Thu, 12 Jan 2023 20:43:28 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v3 44/51] entry,kasan,x86: Disallow overriding mem*() functions
+Subject: [PATCH v3 14/51] cpuidle,cpu_pm: Remove RCU fiddling from cpu_pm_{enter,exit}()
 References: <20230112194314.845371875@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -69,174 +69,49 @@ Cc: juri.lelli@redhat.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, raf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-KASAN cannot just hijack the mem*() functions, it needs to emit
-__asan_mem*() variants if it wants instrumentation (other sanitizers
-already do this).
-
-vmlinux.o: warning: objtool: sync_regs+0x24: call to memcpy() leaves .noinstr.text section
-vmlinux.o: warning: objtool: vc_switch_off_ist+0xbe: call to memcpy() leaves .noinstr.text section
-vmlinux.o: warning: objtool: fixup_bad_iret+0x36: call to memset() leaves .noinstr.text section
-vmlinux.o: warning: objtool: __sev_get_ghcb+0xa0: call to memcpy() leaves .noinstr.text section
-vmlinux.o: warning: objtool: __sev_put_ghcb+0x35: call to memcpy() leaves .noinstr.text section
-
-Remove the weak aliases to ensure nobody hijacks these functions and
-add them to the noinstr section.
+All callers should still have RCU enabled.
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Acked-by: Frederic Weisbecker <frederic@kernel.org>
 Tested-by: Tony Lindgren <tony@atomide.com>
 Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/x86/lib/memcpy_64.S  |    5 ++---
- arch/x86/lib/memmove_64.S |    4 +++-
- arch/x86/lib/memset_64.S  |    4 +++-
- mm/kasan/kasan.h          |    4 ++++
- mm/kasan/shadow.c         |   38 ++++++++++++++++++++++++++++++++++++++
- tools/objtool/check.c     |    3 +++
- 6 files changed, 53 insertions(+), 5 deletions(-)
+ kernel/cpu_pm.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- a/arch/x86/lib/memcpy_64.S
-+++ b/arch/x86/lib/memcpy_64.S
-@@ -7,7 +7,7 @@
- #include <asm/alternative.h>
- #include <asm/export.h>
- 
--.pushsection .noinstr.text, "ax"
-+.section .noinstr.text, "ax"
- 
- /*
-  * We build a jump to memcpy_orig by default which gets NOPped out on
-@@ -42,7 +42,7 @@ SYM_FUNC_START(__memcpy)
- SYM_FUNC_END(__memcpy)
- EXPORT_SYMBOL(__memcpy)
- 
--SYM_FUNC_ALIAS_WEAK(memcpy, __memcpy)
-+SYM_FUNC_ALIAS(memcpy, __memcpy)
- EXPORT_SYMBOL(memcpy)
- 
- /*
-@@ -183,4 +183,3 @@ SYM_FUNC_START_LOCAL(memcpy_orig)
- 	RET
- SYM_FUNC_END(memcpy_orig)
- 
--.popsection
---- a/arch/x86/lib/memmove_64.S
-+++ b/arch/x86/lib/memmove_64.S
-@@ -13,6 +13,8 @@
- 
- #undef memmove
- 
-+.section .noinstr.text, "ax"
-+
- /*
-  * Implement memmove(). This can handle overlap between src and dst.
-  *
-@@ -213,5 +215,5 @@ SYM_FUNC_START(__memmove)
- SYM_FUNC_END(__memmove)
- EXPORT_SYMBOL(__memmove)
- 
--SYM_FUNC_ALIAS_WEAK(memmove, __memmove)
-+SYM_FUNC_ALIAS(memmove, __memmove)
- EXPORT_SYMBOL(memmove)
---- a/arch/x86/lib/memset_64.S
-+++ b/arch/x86/lib/memset_64.S
-@@ -6,6 +6,8 @@
- #include <asm/alternative.h>
- #include <asm/export.h>
- 
-+.section .noinstr.text, "ax"
-+
- /*
-  * ISO C memset - set a memory block to a byte value. This function uses fast
-  * string to get better performance than the original function. The code is
-@@ -43,7 +45,7 @@ SYM_FUNC_START(__memset)
- SYM_FUNC_END(__memset)
- EXPORT_SYMBOL(__memset)
- 
--SYM_FUNC_ALIAS_WEAK(memset, __memset)
-+SYM_FUNC_ALIAS(memset, __memset)
- EXPORT_SYMBOL(memset)
- 
- /*
---- a/mm/kasan/kasan.h
-+++ b/mm/kasan/kasan.h
-@@ -551,6 +551,10 @@ void __asan_set_shadow_f3(const void *ad
- void __asan_set_shadow_f5(const void *addr, size_t size);
- void __asan_set_shadow_f8(const void *addr, size_t size);
- 
-+void *__asan_memset(void *addr, int c, size_t len);
-+void *__asan_memmove(void *dest, const void *src, size_t len);
-+void *__asan_memcpy(void *dest, const void *src, size_t len);
-+
- void __hwasan_load1_noabort(unsigned long addr);
- void __hwasan_store1_noabort(unsigned long addr);
- void __hwasan_load2_noabort(unsigned long addr);
---- a/mm/kasan/shadow.c
-+++ b/mm/kasan/shadow.c
-@@ -38,6 +38,12 @@ bool __kasan_check_write(const volatile
- }
- EXPORT_SYMBOL(__kasan_check_write);
- 
-+#ifndef CONFIG_GENERIC_ENTRY
-+/*
-+ * CONFIG_GENERIC_ENTRY relies on compiler emitted mem*() calls to not be
-+ * instrumented. KASAN enabled toolchains should emit __asan_mem*() functions
-+ * for the sites they want to instrument.
-+ */
- #undef memset
- void *memset(void *addr, int c, size_t len)
+--- a/kernel/cpu_pm.c
++++ b/kernel/cpu_pm.c
+@@ -30,16 +30,9 @@ static int cpu_pm_notify(enum cpu_pm_eve
  {
-@@ -68,6 +74,38 @@ void *memcpy(void *dest, const void *src
+ 	int ret;
  
- 	return __memcpy(dest, src, len);
+-	/*
+-	 * This introduces a RCU read critical section, which could be
+-	 * disfunctional in cpu idle. Copy RCU_NONIDLE code to let RCU know
+-	 * this.
+-	 */
+-	ct_irq_enter_irqson();
+ 	rcu_read_lock();
+ 	ret = raw_notifier_call_chain(&cpu_pm_notifier.chain, event, NULL);
+ 	rcu_read_unlock();
+-	ct_irq_exit_irqson();
+ 
+ 	return notifier_to_errno(ret);
  }
-+#endif
-+
-+void *__asan_memset(void *addr, int c, size_t len)
-+{
-+	if (!kasan_check_range((unsigned long)addr, len, true, _RET_IP_))
-+		return NULL;
-+
-+	return __memset(addr, c, len);
-+}
-+EXPORT_SYMBOL(__asan_memset);
-+
-+#ifdef __HAVE_ARCH_MEMMOVE
-+void *__asan_memmove(void *dest, const void *src, size_t len)
-+{
-+	if (!kasan_check_range((unsigned long)src, len, false, _RET_IP_) ||
-+	    !kasan_check_range((unsigned long)dest, len, true, _RET_IP_))
-+		return NULL;
-+
-+	return __memmove(dest, src, len);
-+}
-+EXPORT_SYMBOL(__asan_memmove);
-+#endif
-+
-+void *__asan_memcpy(void *dest, const void *src, size_t len)
-+{
-+	if (!kasan_check_range((unsigned long)src, len, false, _RET_IP_) ||
-+	    !kasan_check_range((unsigned long)dest, len, true, _RET_IP_))
-+		return NULL;
-+
-+	return __memcpy(dest, src, len);
-+}
-+EXPORT_SYMBOL(__asan_memcpy);
+@@ -49,11 +42,9 @@ static int cpu_pm_notify_robust(enum cpu
+ 	unsigned long flags;
+ 	int ret;
  
- void kasan_poison(const void *addr, size_t size, u8 value, bool init)
- {
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -956,6 +956,9 @@ static const char *uaccess_safe_builtin[
- 	"__asan_store16_noabort",
- 	"__kasan_check_read",
- 	"__kasan_check_write",
-+	"__asan_memset",
-+	"__asan_memmove",
-+	"__asan_memcpy",
- 	/* KASAN in-line */
- 	"__asan_report_load_n_noabort",
- 	"__asan_report_load1_noabort",
+-	ct_irq_enter_irqson();
+ 	raw_spin_lock_irqsave(&cpu_pm_notifier.lock, flags);
+ 	ret = raw_notifier_call_chain_robust(&cpu_pm_notifier.chain, event_up, event_down, NULL);
+ 	raw_spin_unlock_irqrestore(&cpu_pm_notifier.lock, flags);
+-	ct_irq_exit_irqson();
+ 
+ 	return notifier_to_errno(ret);
+ }
 
 
