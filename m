@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7B32C54EBD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:27:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0C6BC54EBC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:28:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7j93yS2z3fCm
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:27:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7kB1TnDz3fJv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:28:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=ly1tq+6t;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=0PJqU0bp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=walle.cc (client-ip=159.69.201.130; helo=mail.3ffe.de; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=ly1tq+6t;
+	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=0PJqU0bp;
 	dkim-atps=neutral
 Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7c34wKfz3c7M;
-	Fri, 13 Jan 2023 02:23:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7c66L4xz3c7M;
+	Fri, 13 Jan 2023 02:23:34 +1100 (AEDT)
 Received: from mwalle01.sab.local (unknown [213.135.10.150])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.3ffe.de (Postfix) with ESMTPSA id 1D4191695;
-	Thu, 12 Jan 2023 16:15:26 +0100 (CET)
+	by mail.3ffe.de (Postfix) with ESMTPSA id C96DD15E8;
+	Thu, 12 Jan 2023 16:15:24 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2022082101;
-	t=1673536526;
+	t=1673536525;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=UL8X5iPeOEkFpX+tWxIlqjpBa+Q45KGX7u55pnVrDdE=;
-	b=ly1tq+6t5Kx2ZJeBlBEa+kI3AKPOQXKu7okt4KuckBRVJ7FE4rA7VV48JJxe1K/AZxKrLs
-	mrux6tALW07R9EkqKAW6KBeN5HmP1MNXTQdrXpUVwaOwBI24pQkefVZfC67JrH4Oq4OyWo
-	fE0dUN0aIgAvzFrcltvcYAb/t+J+FIKXy32u4DZ6b5tOkkWAO6eGJxD0KvuLYo3V0z3pZg
-	xS2cnn4T48RjuheFVPasaWI3D3tmhZ8Ttl+g6HwHqhMjLMb3kplmKxYPSFpXsezbRXFiJR
-	yu0VH8lbaMa/4oS/k59AGb8tUIKXH3rWAlS5YYHfvRp+6GoUfbMqyylROyQzlw==
+	bh=nh59coj550doZXKUioyBaJXnHjL7eqqxkdyADzKG0aw=;
+	b=0PJqU0bpJyUWyXm+SQSGiXNKZ9/LdYWX4cRQNkbqH1J4qqJSPWjumCvh8aqI+OzDwYyXMc
+	buhluiqJESGW4pmr0bKQzF+OPMsYKo+NOdVOg1nDPaY2JBuiq7jIv2M/qlO6uQ0KVXhRTW
+	pVYedVbZBwkSgdL2mEyP6QgF30yZYJMLkspl+lksS3LZT7JxwVl/agdJWk5tgfQY+RiQzY
+	4tCDnZkHvhEQmytDQj2YB/59IBbqjirwac+SFzVMcDFEbvy43drC2Ox3UB+o0HJ66ae1tV
+	h6VkNjDTFS0n6JS6LUz5upzcF6riFGAShqaBM05hG1rp8dtA2rTlI3Z2dDJeog==
 From: Michael Walle <michael@walle.cc>
-Date: Thu, 12 Jan 2023 16:15:12 +0100
-Subject: [PATCH net-next 06/10] net: ethernet: mtk_eth_soc: Separate C22 and
- C45 transactions
+Date: Thu, 12 Jan 2023 16:15:09 +0100
+Subject: [PATCH net-next 03/10] net: mdio: mux-bcm-iproc: Separate C22 and C45
+ transactions
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-6-5eeaae931526@walle.cc>
+Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-3-5eeaae931526@walle.cc>
 References:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 In-Reply-To:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
 To: Heiner Kallweit <hkallweit1@gmail.com>,
@@ -88,248 +88,122 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Andrew Lunn <andrew@lunn.ch>
 
-The mediatek bus driver can perform both C22 and C45 transfers.
+The MDIO mux broadcom iproc can perform both C22 and C45 transfers.
 Create separate functions for each and register the C45 versions using
 the new API calls.
 
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 Signed-off-by: Michael Walle <michael@walle.cc>
 ---
- drivers/net/ethernet/mediatek/mtk_eth_soc.c | 178 +++++++++++++++++-----------
- 1 file changed, 112 insertions(+), 66 deletions(-)
+Apparently, in the c45 case, the reg value including the MII_ADDR_C45
+bit is written to the hardware. Looks weird, that a "random" software
+bit is written to a register. Florian is that correct? Also, with this
+patch this flag isn't set anymore.
+---
+ drivers/net/mdio/mdio-mux-bcm-iproc.c | 54 ++++++++++++++++++++++++++++-------
+ 1 file changed, 43 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/mediatek/mtk_eth_soc.c b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-index e3de9a53b2d9..dc50e0b227a6 100644
---- a/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-+++ b/drivers/net/ethernet/mediatek/mtk_eth_soc.c
-@@ -215,8 +215,8 @@ static int mtk_mdio_busy_wait(struct mtk_eth *eth)
- 	return -ETIMEDOUT;
+diff --git a/drivers/net/mdio/mdio-mux-bcm-iproc.c b/drivers/net/mdio/mdio-mux-bcm-iproc.c
+index 014c0baedbd2..956d54846b62 100644
+--- a/drivers/net/mdio/mdio-mux-bcm-iproc.c
++++ b/drivers/net/mdio/mdio-mux-bcm-iproc.c
+@@ -98,7 +98,7 @@ static int iproc_mdio_wait_for_idle(void __iomem *base, bool result)
+  * Return value: Successful Read operation returns read reg values and write
+  *      operation returns 0. Failure operation returns negative error code.
+  */
+-static int start_miim_ops(void __iomem *base,
++static int start_miim_ops(void __iomem *base, bool c45,
+ 			  u16 phyid, u32 reg, u16 val, u32 op)
+ {
+ 	u32 param;
+@@ -112,7 +112,7 @@ static int start_miim_ops(void __iomem *base,
+ 	param = readl(base + MDIO_PARAM_OFFSET);
+ 	param |= phyid << MDIO_PARAM_PHY_ID;
+ 	param |= val << MDIO_PARAM_PHY_DATA;
+-	if (reg & MII_ADDR_C45)
++	if (c45)
+ 		param |= BIT(MDIO_PARAM_C45_SEL);
+ 
+ 	writel(param, base + MDIO_PARAM_OFFSET);
+@@ -131,28 +131,58 @@ static int start_miim_ops(void __iomem *base,
+ 	return ret;
  }
  
--static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
--			   u32 write_data)
-+static int _mtk_mdio_write_c22(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
-+			       u32 write_data)
+-static int iproc_mdiomux_read(struct mii_bus *bus, int phyid, int reg)
++static int iproc_mdiomux_read_c22(struct mii_bus *bus, int phyid, int reg)
  {
+ 	struct iproc_mdiomux_desc *md = bus->priv;
  	int ret;
  
-@@ -224,35 +224,13 @@ static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
+-	ret = start_miim_ops(md->base, phyid, reg, 0, MDIO_CTRL_READ_OP);
++	ret = start_miim_ops(md->base, false, phyid, reg, 0, MDIO_CTRL_READ_OP);
  	if (ret < 0)
- 		return ret;
+-		dev_err(&bus->dev, "mdiomux read operation failed!!!");
++		dev_err(&bus->dev, "mdiomux c22 read operation failed!!!");
  
--	if (phy_reg & MII_ADDR_C45) {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_ADDR |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(mdiobus_c45_regad(phy_reg)),
--			MTK_PHY_IAC);
--
--		ret = mtk_mdio_busy_wait(eth);
--		if (ret < 0)
--			return ret;
--
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_WRITE |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(write_data),
--			MTK_PHY_IAC);
--	} else {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C22 |
--			     PHY_IAC_CMD_WRITE |
--			     PHY_IAC_REG(phy_reg) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(write_data),
--			MTK_PHY_IAC);
--	}
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C22 |
-+		PHY_IAC_CMD_WRITE |
-+		PHY_IAC_REG(phy_reg) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(write_data),
-+		MTK_PHY_IAC);
- 
- 	ret = mtk_mdio_busy_wait(eth);
- 	if (ret < 0)
-@@ -261,7 +239,8 @@ static int _mtk_mdio_write(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg,
- 	return 0;
+ 	return ret;
  }
  
--static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
-+static int _mtk_mdio_write_c45(struct mtk_eth *eth, u32 phy_addr,
-+			       u32 devad, u32 phy_reg, u32 write_data)
+-static int iproc_mdiomux_write(struct mii_bus *bus,
+-			       int phyid, int reg, u16 val)
++static int iproc_mdiomux_read_c45(struct mii_bus *bus, int phyid, int devad,
++				  int reg)
++{
++	struct iproc_mdiomux_desc *md = bus->priv;
++	int ret;
++
++	ret = start_miim_ops(md->base, true, phyid, reg | devad << 16, 0,
++			     MDIO_CTRL_READ_OP);
++	if (ret < 0)
++		dev_err(&bus->dev, "mdiomux read c45 operation failed!!!");
++
++	return ret;
++}
++
++static int iproc_mdiomux_write_c22(struct mii_bus *bus,
++				   int phyid, int reg, u16 val)
++{
++	struct iproc_mdiomux_desc *md = bus->priv;
++	int ret;
++
++	/* Write val at reg offset */
++	ret = start_miim_ops(md->base, false, phyid, reg, val,
++			     MDIO_CTRL_WRITE_OP);
++	if (ret < 0)
++		dev_err(&bus->dev, "mdiomux write c22 operation failed!!!");
++
++	return ret;
++}
++
++static int iproc_mdiomux_write_c45(struct mii_bus *bus,
++				   int phyid, int devad, int reg, u16 val)
  {
+ 	struct iproc_mdiomux_desc *md = bus->priv;
  	int ret;
  
-@@ -269,33 +248,82 @@ static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
+ 	/* Write val at reg offset */
+-	ret = start_miim_ops(md->base, phyid, reg, val, MDIO_CTRL_WRITE_OP);
++	ret = start_miim_ops(md->base, true, phyid, reg | devad << 16, val,
++			     MDIO_CTRL_WRITE_OP);
  	if (ret < 0)
- 		return ret;
+-		dev_err(&bus->dev, "mdiomux write operation failed!!!");
++		dev_err(&bus->dev, "mdiomux write c45 operation failed!!!");
  
--	if (phy_reg & MII_ADDR_C45) {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_ADDR |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr) |
--			     PHY_IAC_DATA(mdiobus_c45_regad(phy_reg)),
--			MTK_PHY_IAC);
--
--		ret = mtk_mdio_busy_wait(eth);
--		if (ret < 0)
--			return ret;
--
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C45 |
--			     PHY_IAC_CMD_C45_READ |
--			     PHY_IAC_REG(mdiobus_c45_devad(phy_reg)) |
--			     PHY_IAC_ADDR(phy_addr),
--			MTK_PHY_IAC);
--	} else {
--		mtk_w32(eth, PHY_IAC_ACCESS |
--			     PHY_IAC_START_C22 |
--			     PHY_IAC_CMD_C22_READ |
--			     PHY_IAC_REG(phy_reg) |
--			     PHY_IAC_ADDR(phy_addr),
--			MTK_PHY_IAC);
--	}
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_ADDR |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(phy_reg),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_WRITE |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(write_data),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
-+static int _mtk_mdio_read_c22(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
-+{
-+	int ret;
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C22 |
-+		PHY_IAC_CMD_C22_READ |
-+		PHY_IAC_REG(phy_reg) |
-+		PHY_IAC_ADDR(phy_addr),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	return mtk_r32(eth, MTK_PHY_IAC) & PHY_IAC_DATA_MASK;
-+}
-+
-+static int _mtk_mdio_read_c45(struct mtk_eth *eth, u32 phy_addr,
-+			      u32 devad, u32 phy_reg)
-+{
-+	int ret;
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_ADDR |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr) |
-+		PHY_IAC_DATA(phy_reg),
-+		MTK_PHY_IAC);
-+
-+	ret = mtk_mdio_busy_wait(eth);
-+	if (ret < 0)
-+		return ret;
-+
-+	mtk_w32(eth, PHY_IAC_ACCESS |
-+		PHY_IAC_START_C45 |
-+		PHY_IAC_CMD_C45_READ |
-+		PHY_IAC_REG(devad) |
-+		PHY_IAC_ADDR(phy_addr),
-+		MTK_PHY_IAC);
- 
- 	ret = mtk_mdio_busy_wait(eth);
- 	if (ret < 0)
-@@ -304,19 +332,35 @@ static int _mtk_mdio_read(struct mtk_eth *eth, u32 phy_addr, u32 phy_reg)
- 	return mtk_r32(eth, MTK_PHY_IAC) & PHY_IAC_DATA_MASK;
+ 	return ret;
  }
+@@ -223,8 +253,10 @@ static int mdio_mux_iproc_probe(struct platform_device *pdev)
+ 	bus->name = "iProc MDIO mux bus";
+ 	snprintf(bus->id, MII_BUS_ID_SIZE, "%s-%d", pdev->name, pdev->id);
+ 	bus->parent = &pdev->dev;
+-	bus->read = iproc_mdiomux_read;
+-	bus->write = iproc_mdiomux_write;
++	bus->read = iproc_mdiomux_read_c22;
++	bus->write = iproc_mdiomux_write_c22;
++	bus->read_c45 = iproc_mdiomux_read_c45;
++	bus->write_c45 = iproc_mdiomux_write_c45;
  
--static int mtk_mdio_write(struct mii_bus *bus, int phy_addr,
--			  int phy_reg, u16 val)
-+static int mtk_mdio_write_c22(struct mii_bus *bus, int phy_addr,
-+			      int phy_reg, u16 val)
-+{
-+	struct mtk_eth *eth = bus->priv;
-+
-+	return _mtk_mdio_write_c22(eth, phy_addr, phy_reg, val);
-+}
-+
-+static int mtk_mdio_write_c45(struct mii_bus *bus, int phy_addr,
-+			      int devad, int phy_reg, u16 val)
-+{
-+	struct mtk_eth *eth = bus->priv;
-+
-+	return _mtk_mdio_write_c45(eth, phy_addr, devad, phy_reg, val);
-+}
-+
-+static int mtk_mdio_read_c22(struct mii_bus *bus, int phy_addr, int phy_reg)
- {
- 	struct mtk_eth *eth = bus->priv;
- 
--	return _mtk_mdio_write(eth, phy_addr, phy_reg, val);
-+	return _mtk_mdio_read_c22(eth, phy_addr, phy_reg);
- }
- 
--static int mtk_mdio_read(struct mii_bus *bus, int phy_addr, int phy_reg)
-+static int mtk_mdio_read_c45(struct mii_bus *bus, int phy_addr, int devad,
-+			     int phy_reg)
- {
- 	struct mtk_eth *eth = bus->priv;
- 
--	return _mtk_mdio_read(eth, phy_addr, phy_reg);
-+	return _mtk_mdio_read_c45(eth, phy_addr, devad, phy_reg);
- }
- 
- static int mt7621_gmac0_rgmii_adjust(struct mtk_eth *eth,
-@@ -760,8 +804,10 @@ static int mtk_mdio_init(struct mtk_eth *eth)
- 	}
- 
- 	eth->mii_bus->name = "mdio";
--	eth->mii_bus->read = mtk_mdio_read;
--	eth->mii_bus->write = mtk_mdio_write;
-+	eth->mii_bus->read = mtk_mdio_read_c22;
-+	eth->mii_bus->write = mtk_mdio_write_c22;
-+	eth->mii_bus->read_c45 = mtk_mdio_read_c45;
-+	eth->mii_bus->write_c45 = mtk_mdio_write_c45;
- 	eth->mii_bus->probe_capabilities = MDIOBUS_C22_C45;
- 	eth->mii_bus->priv = eth;
- 	eth->mii_bus->parent = eth->dev;
+ 	bus->phy_mask = ~0;
+ 	bus->dev.of_node = pdev->dev.of_node;
 
 -- 
 2.30.2
