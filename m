@@ -4,72 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D5E1C54EBC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 15:33:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85FC9C54EBE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 17:20:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nt7qD4N2Nz3fH6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 02:33:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtBCS6GKmz3fC2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 04:20:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=ZscdTe8D;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=1kvyUBZ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=walle.cc (client-ip=159.69.201.130; helo=mail.3ffe.de; envelope-from=michael@walle.cc; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=walle.cc header.i=@walle.cc header.a=rsa-sha256 header.s=mail2022082101 header.b=ZscdTe8D;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=1kvyUBZ8;
 	dkim-atps=neutral
-Received: from mail.3ffe.de (0001.3ffe.de [159.69.201.130])
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt7cB1Q50z3cfS;
-	Fri, 13 Jan 2023 02:23:38 +1100 (AEDT)
-Received: from mwalle01.sab.local (unknown [213.135.10.150])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.3ffe.de (Postfix) with ESMTPSA id 699BC15D5;
-	Thu, 12 Jan 2023 16:15:24 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=walle.cc; s=mail2022082101;
-	t=1673536524;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QGlMvwVE0XBFSe9hGJvTgj13A12QmBDoi6rAazqMrhA=;
-	b=ZscdTe8D24J1musI5j2G7C9p7+ZQ5A+f8En3gxFovHFbVirPpUojaZkfg333kVIDkDF3u1
-	JkLizYnIr5ACFDZnrUbxG7bosetMyVxoGTk4vVHb3dlVYWpyrNR3Gv8VlK90gXxJzafZ6J
-	xAmzBjKWMTol8QKlyKKhzrU2+AzcReoW6O5Lkwhj8E3BH6xgVrvjvKNoB3/nprPu4gTFIA
-	YStEnuS/eof5Rt7PsXK7P80//8ogCCMooFjZwakakV+TeFA6h3WcMwkRo12ls99PGFIO4e
-	d0VputPdm1yE5Q/e/hkRFikGmt7mi5GgxQNdqBEw9dFiWC7f9diy0rkmOmtt7A==
-From: Michael Walle <michael@walle.cc>
-Date: Thu, 12 Jan 2023 16:15:08 +0100
-Subject:  [PATCH net-next 02/10] net: mdio: i2c: Separate C22 and C45 transactions
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtBBM1SzRz3bTs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 04:19:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=LNFZdqmxri5F07CGFwUu0kpG4HLKkrGeCVzSp+ij6mQ=; b=1kvyUBZ8JMIZJMC9LK+wnH4Lxb
+	h6G9cn4H/Z/gEjQiqKr8ZU4zsW3xrJn0lAj2JkKJFVs9powR1npi/bv5YtY6pSUXZDZxHn50xHH1h
+	jvHg2VCzDhfmesT2ksNcV/QB3fC9nNfvegVrfwEA4nDPdfCiMYgSGDNmMtZ/71UreHWEDQ9qCQ/3O
+	/vcEBYVTo0drU+GhTUivRgRCaznM/RsdyRHNGbzpQ8CiHOjdn21x9rcN6ajMlWuf9EZVKiyR0U+eT
+	Q6lYGvrz5GTQFwUwVtHaoSGvQFbPr8YdhqDRrGn4f4yCb7KBmztSVsUpXR7j8ca8nwUCL8GskUUbg
+	/YCbZayQ==;
+Received: from [2601:1c2:d80:3110::9307] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1pG1Eg-00G06L-47; Thu, 12 Jan 2023 17:19:30 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] soc/fsl/qe: fix usb.c build errors
+Date: Thu, 12 Jan 2023 09:19:28 -0800
+Message-Id: <20230112171928.29653-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.39.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id:  <20230112-net-next-c45-seperation-part-2-v1-2-5eeaae931526@walle.cc>
-References:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
-In-Reply-To:  <20230112-net-next-c45-seperation-part-2-v1-0-5eeaae931526@walle.cc>
-To: Heiner Kallweit <hkallweit1@gmail.com>,
- Russell King <linux@armlinux.org.uk>, "David S. Miller" <davem@davemloft.net>,
- Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>,
- Paolo Abeni <pabeni@redhat.com>, Ray Jui <rjui@broadcom.com>,
- Scott Branden <sbranden@broadcom.com>,
- Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
- Felix Fietkau <nbd@nbd.name>, John Crispin <john@phrozen.org>,
- Sean Wang <sean.wang@mediatek.com>, Mark Lee <Mark-MC.Lee@mediatek.com>,
- Lorenzo Bianconi <lorenzo@kernel.org>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- Bryan Whitehead <bryan.whitehead@microchip.com>, UNGLinuxDriver@microchip.com,
- Giuseppe Cavallaro <peppe.cavallaro@st.com>,
- Alexandre Torgue <alexandre.torgue@foss.st.com>,
- Jose Abreu <joabreu@synopsys.com>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Vladimir Oltean <vladimir.oltean@nxp.com>,
- Claudiu Manoil <claudiu.manoil@nxp.com>,
- Alexandre Belloni <alexandre.belloni@bootlin.com>,
- Florian Fainelli <f.fainelli@gmail.com>, Li Yang <leoyang.li@nxp.com>
-X-Mailer: b4 0.11.1
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,100 +54,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-aspeed@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Walle <michael@walle.cc>, linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, kernel test robot <lkp@intel.com>, Masahiro Yamada <masahiroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Kumar Gala <galak@kernel.crashing.org>, Leo Li <leoyang.li@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-arm-kernel@lists.infradead.org, Nicolas Schier <nicolas@fjasle.eu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Andrew Lunn <andrew@lunn.ch>
+Fix build errors in soc/fsl/qe/usb.c when QUICC_ENGINE is not set.
+This happens when PPC_EP88XC is set, which selects CPM1 & CPM.
+When CPM is set, USB_FSL_QE can be set without QUICC_ENGINE
+being set. When USB_FSL_QE is set, QE_USB deafults to y, which
+causes build errors when QUICC_ENGINE is not set. Making
+QE_USB depend on QUICC_ENGINE prevents QE_USB from defaulting to y.
 
-The MDIO over I2C bus driver can perform both C22 and C45 transfers.
-Create separate functions for each and register the C45 versions using
-the new API calls.
+Fixes these build errors:
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Michael Walle <michael@walle.cc>
+drivers/soc/fsl/qe/usb.o: in function `qe_usb_clock_set':
+usb.c:(.text+0x1e): undefined reference to `qe_immr'
+powerpc-linux-ld: usb.c:(.text+0x2a): undefined reference to `qe_immr'
+powerpc-linux-ld: usb.c:(.text+0xbc): undefined reference to `qe_setbrg'
+powerpc-linux-ld: usb.c:(.text+0xca): undefined reference to `cmxgcr_lock'
+powerpc-linux-ld: usb.c:(.text+0xce): undefined reference to `cmxgcr_lock'
+
+Fixes: 5e41486c408e ("powerpc/QE: add support for QE USB clocks routing")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Link: https://lore.kernel.org/all/202301101500.pillNv6R-lkp@intel.com/
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Leo Li <leoyang.li@nxp.com>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Nicolas Schier <nicolas@fjasle.eu>
+Cc: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
 ---
- drivers/net/mdio/mdio-i2c.c | 32 +++++++++++++++++++++++---------
- 1 file changed, 23 insertions(+), 9 deletions(-)
+ drivers/soc/fsl/qe/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/mdio/mdio-i2c.c b/drivers/net/mdio/mdio-i2c.c
-index bf8bf5e20faf..9577a1842997 100644
---- a/drivers/net/mdio/mdio-i2c.c
-+++ b/drivers/net/mdio/mdio-i2c.c
-@@ -30,7 +30,8 @@ static unsigned int i2c_mii_phy_addr(int phy_id)
- 	return phy_id + 0x40;
- }
+diff -- a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+--- a/drivers/soc/fsl/qe/Kconfig
++++ b/drivers/soc/fsl/qe/Kconfig
+@@ -39,6 +39,7 @@ config QE_TDM
  
--static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
-+static int i2c_mii_read_default_c45(struct mii_bus *bus, int phy_id, int devad,
-+				    int reg)
- {
- 	struct i2c_adapter *i2c = bus->priv;
- 	struct i2c_msg msgs[2];
-@@ -41,8 +42,8 @@ static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
- 		return 0xffff;
- 
- 	p = addr;
--	if (reg & MII_ADDR_C45) {
--		*p++ = 0x20 | ((reg >> 16) & 31);
-+	if (devad >= 0) {
-+		*p++ = 0x20 | devad;
- 		*p++ = reg >> 8;
- 	}
- 	*p++ = reg;
-@@ -64,8 +65,8 @@ static int i2c_mii_read_default(struct mii_bus *bus, int phy_id, int reg)
- 	return data[0] << 8 | data[1];
- }
- 
--static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
--				 u16 val)
-+static int i2c_mii_write_default_c45(struct mii_bus *bus, int phy_id,
-+				     int devad, int reg, u16 val)
- {
- 	struct i2c_adapter *i2c = bus->priv;
- 	struct i2c_msg msg;
-@@ -76,8 +77,8 @@ static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
- 		return 0;
- 
- 	p = data;
--	if (reg & MII_ADDR_C45) {
--		*p++ = (reg >> 16) & 31;
-+	if (devad >= 0) {
-+		*p++ = devad;
- 		*p++ = reg >> 8;
- 	}
- 	*p++ = reg;
-@@ -94,6 +95,17 @@ static int i2c_mii_write_default(struct mii_bus *bus, int phy_id, int reg,
- 	return ret < 0 ? ret : 0;
- }
- 
-+static int i2c_mii_read_default_c22(struct mii_bus *bus, int phy_id, int reg)
-+{
-+	return i2c_mii_read_default_c45(bus, phy_id, -1, reg);
-+}
-+
-+static int i2c_mii_write_default_c22(struct mii_bus *bus, int phy_id, int reg,
-+				     u16 val)
-+{
-+	return i2c_mii_write_default_c45(bus, phy_id, -1, reg, val);
-+}
-+
- /* RollBall SFPs do not access internal PHY via I2C address 0x56, but
-  * instead via address 0x51, when SFP page is set to 0x03 and password to
-  * 0xffffffff.
-@@ -403,8 +415,10 @@ struct mii_bus *mdio_i2c_alloc(struct device *parent, struct i2c_adapter *i2c,
- 		mii->write = i2c_mii_write_rollball;
- 		break;
- 	default:
--		mii->read = i2c_mii_read_default;
--		mii->write = i2c_mii_write_default;
-+		mii->read = i2c_mii_read_default_c22;
-+		mii->write = i2c_mii_write_default_c22;
-+		mii->read_c45 = i2c_mii_read_default_c45;
-+		mii->write_c45 = i2c_mii_write_default_c45;
- 		break;
- 	}
- 
-
--- 
-2.30.2
+ config QE_USB
+ 	bool
++	depends on QUICC_ENGINE
+ 	default y if USB_FSL_QE
+ 	help
+ 	  QE USB Controller support
