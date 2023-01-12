@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 096F8C54EBE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFBEFC61DB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:33:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHp93Ynwz3g2X
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:32:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtHq93QJPz3fr2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:33:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=WVuIFhrj;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=BJq7Eb2V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjK2jTxz3fBM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtFjL3g5Gz3ch6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 06:58:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=desiato.20200630; h=Content-Type:MIME-Version:References:
 	Subject:Cc:To:From:Date:Message-ID:Sender:Reply-To:Content-Transfer-Encoding:
 	Content-ID:Content-Description:In-Reply-To;
-	bh=US/ew+5Vik6jGnrGGiz1QKoghqD4+Lgz+zGR8hxwH/s=; b=WVuIFhrj78QG37MwfM8cwsGLW2
-	6RIQ2dKuiBYGWybloHLp61YaKj0cdn/+fLnH2q0WBRmwtWG3yFLWrnccqDo7As6Ov+J9nISGa2R5A
-	xzyVRpltpBTMUkFNRLUgPKwxWYfzryyd1cFJPVVp4kqW5FroibddKersX+5xp1NAN0mX2n/IX8uo5
-	u3jIptEd8I2RoyVn4KMqbm+bH70AJzyzt5X9Z33H0C0Ne5yJWRvX5w2XDeRGpi6wP1+0NwsgdfANb
-	Qs0TXnigQ3IWTW5HruR9gzoAZACuq68YDeONfYzScB1OF3/BKUWdpvZ2B5iPfLpEFiGMDiOvz9iPi
-	Ew4yKZpQ==;
+	bh=57ZArFmnIQzaVihzbRCoRwr2LaVbKaf8OfuJB2z1dTg=; b=BJq7Eb2VVVYeZl+IdXRGObXCzt
+	D80no4BmF7CyJjX5styeXzmIrelzaMnHxEoVg6nXZxHWtj44jUI85gQgq+ecrcOIzJgQ7Pnity6Ge
+	Hg9iCbqoWDCsg2xzGD+/oc6XAjzFXkaSaBDnr1uJELdZd4QZJnGC4XkXw72le1CN3wM1t0oqFupf2
+	5nEImdhEGcDIQXzj6Xnal0XHRY4oap6hYsNXngBEux4jWu6rpBJapi3o+cCnU6Lm1rShWJb4ULFYh
+	OEhH0lrXyToKuZNMqLl00Qzcc2Cf+fSAgHi1NcjaUTb1XK6oJLJovfNr5QPAcpM2shsg56Kot+DZj
+	YzxLXGjQ==;
 Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
 	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1pG3hH-0045pK-38;
-	Thu, 12 Jan 2023 19:57:14 +0000
+	id 1pG3hF-0045ol-1k;
+	Thu, 12 Jan 2023 19:57:10 +0000
 Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
 	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B61D2303449;
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 614FB303425;
 	Thu, 12 Jan 2023 20:57:13 +0100 (CET)
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 0)
-	id 2953C2CCF62B7; Thu, 12 Jan 2023 20:57:08 +0100 (CET)
-Message-ID: <20230112195541.233779815@infradead.org>
+	id F0FCD2CCF1F7D; Thu, 12 Jan 2023 20:57:07 +0100 (CET)
+Message-ID: <20230112195540.556912863@infradead.org>
 User-Agent: quilt/0.66
-Date: Thu, 12 Jan 2023 20:43:45 +0100
+Date: Thu, 12 Jan 2023 20:43:34 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: peterz@infradead.org
-Subject: [PATCH v3 31/51] cpuidle,nospec: Make noinstr clean
+Subject: [PATCH v3 20/51] cpuidle,intel_idle: Fix CPUIDLE_FLAG_IBRS
 References: <20230112194314.845371875@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -69,11 +69,8 @@ Cc: juri.lelli@redhat.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, raf
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-vmlinux.o: warning: objtool: mwait_idle+0x47: call to mds_idle_clear_cpu_buffers() leaves .noinstr.text section
-vmlinux.o: warning: objtool: acpi_processor_ffh_cstate_enter+0xa2: call to mds_idle_clear_cpu_buffers() leaves .noinstr.text section
-vmlinux.o: warning: objtool: intel_idle+0x91: call to mds_idle_clear_cpu_buffers() leaves .noinstr.text section
-vmlinux.o: warning: objtool: intel_idle_s2idle+0x8c: call to mds_idle_clear_cpu_buffers() leaves .noinstr.text section
-vmlinux.o: warning: objtool: intel_idle_irq+0xaa: call to mds_idle_clear_cpu_buffers() leaves .noinstr.text section
+vmlinux.o: warning: objtool: intel_idle_ibrs+0x17: call to spec_ctrl_current() leaves .noinstr.text section
+vmlinux.o: warning: objtool: intel_idle_ibrs+0x27: call to wrmsrl.constprop.0() leaves .noinstr.text section
 
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
@@ -81,19 +78,37 @@ Acked-by: Frederic Weisbecker <frederic@kernel.org>
 Tested-by: Tony Lindgren <tony@atomide.com>
 Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/x86/include/asm/nospec-branch.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/cpu/bugs.c |    2 +-
+ drivers/idle/intel_idle.c  |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/x86/include/asm/nospec-branch.h
-+++ b/arch/x86/include/asm/nospec-branch.h
-@@ -310,7 +310,7 @@ static __always_inline void mds_user_cle
-  *
-  * Clear CPU buffers if the corresponding static key is enabled
-  */
--static inline void mds_idle_clear_cpu_buffers(void)
-+static __always_inline void mds_idle_clear_cpu_buffers(void)
+--- a/arch/x86/kernel/cpu/bugs.c
++++ b/arch/x86/kernel/cpu/bugs.c
+@@ -79,7 +79,7 @@ void write_spec_ctrl_current(u64 val, bo
+ 		wrmsrl(MSR_IA32_SPEC_CTRL, val);
+ }
+ 
+-u64 spec_ctrl_current(void)
++noinstr u64 spec_ctrl_current(void)
  {
- 	if (static_branch_likely(&mds_idle_clear))
- 		mds_clear_cpu_buffers();
+ 	return this_cpu_read(x86_spec_ctrl_current);
+ }
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -181,12 +181,12 @@ static __cpuidle int intel_idle_ibrs(str
+ 	int ret;
+ 
+ 	if (smt_active)
+-		wrmsrl(MSR_IA32_SPEC_CTRL, 0);
++		native_wrmsrl(MSR_IA32_SPEC_CTRL, 0);
+ 
+ 	ret = __intel_idle(dev, drv, index);
+ 
+ 	if (smt_active)
+-		wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
++		native_wrmsrl(MSR_IA32_SPEC_CTRL, spec_ctrl);
+ 
+ 	return ret;
+ }
 
 
