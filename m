@@ -4,54 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C30CC61DB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 20:38:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70608C63797
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jan 2023 21:00:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtGbW23C8z3chJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 07:38:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.178; helo=mail-oi1-f178.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NtH4z45gQz3fFS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 08:00:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d4giMpFz;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=lpieralisi@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d4giMpFz;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtGZw1Yyqz30DC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 07:37:59 +1100 (AEDT)
-Received: by mail-oi1-f178.google.com with SMTP id n8so16275762oih.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jan 2023 12:37:59 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=te3B7QXiN9a5dOliEetl+fEAA7YyitjOHHWZmEchd3w=;
-        b=stgnDJ7tAhHLw42zgsCtcMml+0E8GQxyzphKerrz3s9RTqoMEF6pOoN5xD36vjB0Y5
-         vAsQ9IMv4BthUT7q6gmPSu22rdwq46kdhnByf8KDRb+RWChXWmEE6Zq0bgCCi17XbTz4
-         GSHoINb9CrXvrrpNJwVpiiUr7MIkVV99dvGDGYiUZGYp1ItdNElP9pS1MS30sbdbmf6U
-         O8HNuBInJ/4jZRFTWzFroo4nbZZDWd4CBqbdYypcL0iJU/6+0bjUzCqBOEj+c35ajb+P
-         CWrxNaKuSTe/2A3ftNHHJBhKpEGdjdB65uw1q5aIP5Yoch1nVFb9jA82QZLrj9yOLH+2
-         Fkgw==
-X-Gm-Message-State: AFqh2kpFCNH+nKJYV5H5OMSNLlwjvTYeL7I6QZHPw/hhfAi7j/Ymurmk
-	PKR5vnl58cAspiY+Y2PC5A==
-X-Google-Smtp-Source: AMrXdXtC9JDQSCNr2mBpmyaH+oX/tQisTbLPdzKuWPbRgBBSAol/1Q54L3bzvRFV7wQZ4EvPIFzPhA==
-X-Received: by 2002:a05:6808:f8f:b0:364:9fd7:4fc with SMTP id o15-20020a0568080f8f00b003649fd704fcmr1212036oiw.50.1673555874866;
-        Thu, 12 Jan 2023 12:37:54 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id x8-20020a9d6288000000b00661a3f4113bsm9393754otk.64.2023.01.12.12.37.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Jan 2023 12:37:54 -0800 (PST)
-Received: (nullmailer pid 126537 invoked by uid 1000);
-	Thu, 12 Jan 2023 20:37:53 -0000
-Date: Thu, 12 Jan 2023 14:37:53 -0600
-From: Rob Herring <robh@kernel.org>
-To: Sean Anderson <sean.anderson@seco.com>
-Subject: Re: [PATCH v9 02/10] dt-bindings: phy: Add Lynx 10G phy binding
-Message-ID: <167355587246.126242.1070313368786035671.robh@kernel.org>
-References: <20221230000139.2846763-1-sean.anderson@seco.com>
- <20221230000139.2846763-3-sean.anderson@seco.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nt8CX2RCBz3bT7
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 02:50:48 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id A747062064;
+	Thu, 12 Jan 2023 15:50:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 10935C433EF;
+	Thu, 12 Jan 2023 15:50:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1673538644;
+	bh=56hHJDsmg+aMaj3QZPHGVjwdZvjGg+53Y+wWNaKhYAw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=d4giMpFzAv8KQ4w0ui8ugaeRwaolxyDPbRIHurora702Io29haIJ9ZySWNUBH5ltK
+	 wxEHrB2x1YUZQtlOvLNeL5K7BDpDPjIXMMRMMtTHxKcD14FXROAOCUNx0LjlJhU9gC
+	 jAazybdLcqwV9L4LoNlPNCRhdXWOqO5YKtFGrRTkk/qrVfj2FXgr3CGRZ2bqQJ2pO8
+	 bfxRQL0vi14RmaBNmI06t6Ptrsc9gKadgFQwC3GUlotBaRvITT8+69xaBM6s+P64fO
+	 LMX6cKvlI3TvuMG+V8yDR/lceuhTXYxQqVEIhxo6Ixowmb9/99dAZDbbcDhnW91Y/s
+	 99IUpoA/3O8rg==
+Date: Thu, 12 Jan 2023 16:50:37 +0100
+From: Lorenzo Pieralisi <lpieralisi@kernel.org>
+To: Frank Li <frank.li@nxp.com>
+Subject: Re: [PATCH 1/1] PCI: layerscape: Add EP mode support for ls1028a
+Message-ID: <Y8AsTaMwC/L/M+ve@lpieralisi>
+References: <20221216161537.1003595-1-Frank.Li@nxp.com>
+ <HE1PR0401MB2331BA1F1CDF8F8B8A4D26E488FE9@HE1PR0401MB2331.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20221230000139.2846763-3-sean.anderson@seco.com>
+In-Reply-To: <HE1PR0401MB2331BA1F1CDF8F8B8A4D26E488FE9@HE1PR0401MB2331.eurprd04.prod.outlook.com>
+X-Mailman-Approved-At: Fri, 13 Jan 2023 07:59:45 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,70 +61,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kishon Vijay Abraham I <kishon@kernel.org>, devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Stephen Boyd <sboyd@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linux-phy@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, "imx@lists.linux.dev" <imx@lists.linux.dev>, Rob Herring <robh@kernel.org>, "open list:PCI DRIVER FOR FREESCALE LAYERSCAPE" <linux-pci@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "M.H. Lian" <minghuan.lian@nxp.com>, "moderated list:PCI DRIVER FOR FREESCALE LAYERSCAPE" <linux-arm-kernel@lists.infradead.org>, Roy Zang <roy.zang@nxp.com>, Bjorn Helgaas <bhelgaas@google.com>, "open list:PCI DRIVER FOR FREESCALE LAYERSCAPE" <linuxppc-dev@lists.ozlabs.org>, Mingkai Hu <mingkai.hu@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Jan 09, 2023 at 03:41:31PM +0000, Frank Li wrote:
+> > 
+> > From: Xiaowei Bao <xiaowei.bao@nxp.com>
+> > 
+> > Add PCIe EP mode support for ls1028a.
+> > 
+> > Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+> > Signed-off-by: Hou Zhiqiang <Zhiqiang.Hou@nxp.com>
+> > ---
+> > 
+> > All other patches were already accepte by maintainer in
+> > https://lore.kernel.org/lkml/20211112223457.10599-1-leoyang.li@nxp.com/
+> > 
+> > But missed this one.
+> > 
+> > Re-post.
+> > 
+> 
+> Ping.
 
-On Thu, 29 Dec 2022 19:01:31 -0500, Sean Anderson wrote:
-> This adds a binding for the SerDes module found on QorIQ processors.
-> Each phy is a subnode of the top-level device, possibly supporting
-> multiple lanes and protocols. This "thick" #phy-cells is used due to
-> allow for better organization of parameters. Note that the particular
-> parameters necessary to select a protocol-controller/lane combination
-> vary across different SoCs, and even within different SerDes on the same
-> SoC.
-> 
-> The driver is designed to be able to completely reconfigure lanes at
-> runtime. Generally, the phy consumer can select the appropriate
-> protocol using set_mode.
-> 
-> There are two PLLs, each of which can be used as the master clock for
-> each lane. Each PLL has its own reference. For the moment they are
-> required, because it simplifies the driver implementation. Absent
-> reference clocks can be modeled by a fixed-clock with a rate of 0.
-> 
-> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-> ---
-> 
-> Changes in v9:
-> - Add fsl,unused-lanes-reserved to allow for a gradual transition
->   between firmware and Linux control of the SerDes
-> - Change phy-type back to fsl,type, as I was getting the error
->     '#phy-cells' is a dependency of 'phy-type'
-> 
-> Changes in v7:
-> - Use double quotes everywhere in yaml
-> 
-> Changes in v6:
-> - fsl,type -> phy-type
-> 
-> Changes in v4:
-> - Use subnodes to describe lane configuration, instead of describing
->   PCCRs. This is the same style used by phy-cadence-sierra et al.
-> 
-> Changes in v3:
-> - Manually expand yaml references
-> - Add mode configuration to device tree
-> 
-> Changes in v2:
-> - Rename to fsl,lynx-10g.yaml
-> - Refer to the device in the documentation, rather than the binding
-> - Move compatible first
-> - Document phy cells in the description
-> - Allow a value of 1 for phy-cells. This allows for compatibility with
->   the similar (but according to Ioana Ciornei different enough) lynx-28g
->   binding.
-> - Remove minItems
-> - Use list for clock-names
-> - Fix example binding having too many cells in regs
-> - Add #clock-cells. This will allow using assigned-clocks* to configure
->   the PLLs.
-> - Document the structure of the compatible strings
-> 
->  .../devicetree/bindings/phy/fsl,lynx-10g.yaml | 248 ++++++++++++++++++
->  1 file changed, 248 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
-> 
+You must sign it off since you obviously are in the patch delivery chain:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+https://docs.kernel.org/process/submitting-patches.html
+
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
