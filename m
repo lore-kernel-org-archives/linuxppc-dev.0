@@ -4,69 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18270C678D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 17:35:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9619C6379F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 22:20:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NtpTL51R8z3fSv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 04:35:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ntwq721mbz3fJS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 09:20:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6RTbuuL;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6RTbuuL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d/TyPrfu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=0rbx=5k=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6RTbuuL;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=D6RTbuuL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d/TyPrfu;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ntp1C5cVcz3fCJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2023 04:14:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1673630045;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Qm5QoVPm0Ej7LSZYB6DDk7xidLBDUjryz2WuGbnlcmU=;
-	b=D6RTbuuLRmUG03ojUx+jH8KzW/dnsgo5Y9ced2I6ZtUQtV3zTeZt78vXvvRPZG18EIXTWN
-	byexabqeNZioDFrSUAekbjD7P72L1kI7sGXUCJ92w3heT2UmseR4tYTa5taAjdWs+jFYXw
-	8/mpOQJwLUgcGqXP1lBEOjGFHRV9i68=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1673630045;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Qm5QoVPm0Ej7LSZYB6DDk7xidLBDUjryz2WuGbnlcmU=;
-	b=D6RTbuuLRmUG03ojUx+jH8KzW/dnsgo5Y9ced2I6ZtUQtV3zTeZt78vXvvRPZG18EIXTWN
-	byexabqeNZioDFrSUAekbjD7P72L1kI7sGXUCJ92w3heT2UmseR4tYTa5taAjdWs+jFYXw
-	8/mpOQJwLUgcGqXP1lBEOjGFHRV9i68=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-593-JhtZawOWORO1KFpHjnyH1g-1; Fri, 13 Jan 2023 12:13:54 -0500
-X-MC-Unique: JhtZawOWORO1KFpHjnyH1g-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ntq9s29Kdz3bWh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2023 05:06:41 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id A13BA857D0D;
-	Fri, 13 Jan 2023 17:13:37 +0000 (UTC)
-Received: from t480s.fritz.box (unknown [10.39.193.196])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 43C4D40C2064;
-	Fri, 13 Jan 2023 17:13:30 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH mm-unstable v1 24/26] x86/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE also on 32bit
-Date: Fri, 13 Jan 2023 18:10:24 +0100
-Message-Id: <20230113171026.582290-25-david@redhat.com>
-In-Reply-To: <20230113171026.582290-1-david@redhat.com>
-References: <20230113171026.582290-1-david@redhat.com>
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 991B16225C;
+	Fri, 13 Jan 2023 18:06:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 483FCC433EF;
+	Fri, 13 Jan 2023 18:06:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1673633197;
+	bh=9JM2l3wQvAeTEYaZAWr5I3gZoNrgDAq2iaamsrQXne0=;
+	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
+	b=d/TyPrfu3TMN3RDQxpqP5fajACgLxUzrO1o0lviquPae0CCREqyfMhbNaFpmIDnAD
+	 gc9rcn8tXi7SZ4Sa6feTIN2Ae1ZeCBFbV5dmTzybf+txFmSo/tzOIYxAQ5C/w8Dqvn
+	 lUFscWLbHB7PxSvBS0qnt6QQanZXshhTtjgmZdd4dd7UYrIROlbOAFQjGgiw28eaXg
+	 ZWAP2DT2ukYPCwIGpUnzoCfZFD2NIBDmWoE7vSQ2LoozWiuoZLz82Zhhis8k4Jr+Bj
+	 yNgUqYimkNr/a2hjrvrPsnsWtLyOCrg7bz13Vy3HC3zIgb+UrU6VBUs4Zs2yFiDWYy
+	 hI2RWs0YaghDg==
+Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
+	id D78905C06D0; Fri, 13 Jan 2023 10:06:36 -0800 (PST)
+Date: Fri, 13 Jan 2023 10:06:36 -0800
+From: "Paul E. McKenney" <paulmck@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 00/51] cpuidle,rcu: Clean up the mess
+Message-ID: <20230113180636.GA4028633@paulmck-ThinkPad-P17-Gen-1>
+References: <20230112194314.845371875@infradead.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230112194314.845371875@infradead.org>
+X-Mailman-Approved-At: Sat, 14 Jan 2023 09:17:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,151 +62,196 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Yang Shi <shy828301@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, David Hildenbrand <david@redhat.com>, Peter Xu <peterx@redhat.com>, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-csky@vger.kernel.org, Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, Vlastimil Babka <vbabka@suse.cz>, Jason Gunthorpe <jgg@nvidia.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-p
- arisc@vger.kernel.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@kernel.org
+Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.walleij@linaro.org, nsekhar@ti.com, bsegall@google.com, guoren@kernel.org, pavel@ucw.cz, agordeev@linux.ibm.com, srivatsa@csail.mit.edu, linux-arch@vger.kernel.org, linux-samsung-soc@vger.kernel.org, vincent.guittot@linaro.org, chenhuacai@kernel.org, linux-acpi@vger.kernel.org, agross@kernel.org, geert@linux-m68k.org, linux-imx@nxp.com, vgupta@kernel.org, mattst88@gmail.com, borntraeger@linux.ibm.com, mturquette@baylibre.com, sammy@sammy.net, pmladek@suse.com, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, npiggin@gmail.com, tglx@linutronix.de, linux-omap@vger.kernel.org, dietmar.eggemann@arm.com, andreyknvl@gmail.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, senozhatsky@chromium.org, svens@linux.ibm.com, jolsa@kernel.org, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.
+ org, mark.rutland@arm.com, linux-ia64@vger.kernel.org, alim.akhtar@samsung.com, dave.hansen@linux.intel.com, virtualization@lists.linux-foundation.org, James.Bottomley@HansenPartnership.com, jcmvbkbc@gmail.com, thierry.reding@gmail.com, kernel@xen0n.name, cl@linux.com, linux-s390@vger.kernel.org, vschneid@redhat.com, john.ogness@linutronix.de, ysato@users.sourceforge.jp, linux-sh@vger.kernel.org, will@kernel.org, brgl@bgdev.pl, daniel.lezcano@linaro.org, jonathanh@nvidia.com, dennis@kernel.org, frederic@kernel.org, lenb@kernel.org, linux-xtensa@linux-xtensa.org, kernel@pengutronix.de, gor@linux.ibm.com, linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, shorne@gmail.com, chris@zankel.net, sboyd@kernel.org, dinguyen@kernel.org, bristot@redhat.com, alexander.shishkin@linux.intel.com, lpieralisi@kernel.org, atishp@atishpatra.org, linux@rasmusvillemoes.dk, kasan-dev@googlegroups.com, festevam@gmail.com, boris.ostrovsky
+ @oracle.com, khilman@kernel.org, linux-csky@vger.kernel.org, pv-drivers@vmware.com, linux-snps-arc@lists.infradead.org, mgorman@suse.de, jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, ulli.kroll@googlemail.com, linux-clk@vger.kernel.org, rostedt@goodmis.org, ink@jurassic.park.msu.ru, bcain@quicinc.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, konrad.dybcio@linaro.org, ryabinin.a.a@gmail.com, sudeep.holla@arm.com, shawnguo@kernel.org, davem@davemloft.net, dalias@libc.org, tony@atomide.com, amakhalov@vmware.com, linux-mm@kvack.org, glider@google.com, hpa@zytor.com, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, vincenzo.frascino@arm.com, anton.ivanov@cambridgegreys.com, jonas@southpole.se, yury.norov@gmail.com, richard@nod.at, x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, mhiramat@kernel.org, aou@eecs.berkeley.edu, hca@linux.ibm.com, richard.henderson@linaro.org, stefan.kristiansson@saunalahti.fi, o
+ penrisc@lists.librecores.org, acme@kernel.org, paul.walmsley@sifive.com, linux-tegra@vger.kernel.org, namhyung@kernel.org, andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org, dvyukov@google.com, jgross@suse.com, monstr@monstr.eu, andersson@kernel.org, linux-mips@vger.kernel.org, krzysztof.kozlowski@linaro.org, palmer@dabbelt.com, anup@brainfault.org, bp@alien8.de, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org, deller@gmx.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Let's support __HAVE_ARCH_PTE_SWP_EXCLUSIVE just like we already do on
-x86-64. After deciphering the PTE layout it becomes clear that there are
-still unused bits for 2-level and 3-level page tables that we should be
-able to use. Reusing a bit avoids stealing one bit from the swap offset.
+On Thu, Jan 12, 2023 at 08:43:14PM +0100, Peter Zijlstra wrote:
+> Hi All!
+> 
+> The (hopefully) final respin of cpuidle vs rcu cleanup patches. Barring any
+> objections I'll be queueing these patches in tip/sched/core in the next few
+> days.
+> 
+> v2: https://lkml.kernel.org/r/20220919095939.761690562@infradead.org
+> 
+> These here patches clean up the mess that is cpuidle vs rcuidle.
+> 
+> At the end of the ride there's only on RCU_NONIDLE user left:
+> 
+>   arch/arm64/kernel/suspend.c:            RCU_NONIDLE(__cpu_suspend_exit());
+> 
+> And I know Mark has been prodding that with something sharp.
+> 
+> The last version was tested by a number of people and I'm hoping to not have
+> broken anything in the meantime ;-)
+> 
+> 
+> Changes since v2:
 
-While at it, mask the type in __swp_entry(); use some helper definitions
-to make the macros easier to grasp.
+150 rcutorture hours on each of the default scenarios passed.  This
+is qemu/KVM on x86:
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- arch/x86/include/asm/pgtable-2level.h | 26 +++++++++++++++++++++-----
- arch/x86/include/asm/pgtable-3level.h | 26 +++++++++++++++++++++++---
- arch/x86/include/asm/pgtable.h        |  2 --
- 3 files changed, 44 insertions(+), 10 deletions(-)
+Tested-by: Paul E. McKenney <paulmck@kernel.org>
 
-diff --git a/arch/x86/include/asm/pgtable-2level.h b/arch/x86/include/asm/pgtable-2level.h
-index 60d0f9015317..e9482a11ac52 100644
---- a/arch/x86/include/asm/pgtable-2level.h
-+++ b/arch/x86/include/asm/pgtable-2level.h
-@@ -80,21 +80,37 @@ static inline unsigned long pte_bitop(unsigned long value, unsigned int rightshi
- 	return ((value >> rightshift) & mask) << leftshift;
- }
- 
--/* Encode and de-code a swap entry */
-+/*
-+ * Encode/decode swap entries and swap PTEs. Swap PTEs are all PTEs that
-+ * are !pte_none() && !pte_present().
-+ *
-+ * Format of swap PTEs:
-+ *
-+ *   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
-+ *   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-+ *   <----------------- offset ------------------> 0 E <- type --> 0
-+ *
-+ *   E is the exclusive marker that is not stored in swap entries.
-+ */
- #define SWP_TYPE_BITS 5
-+#define _SWP_TYPE_MASK ((1U << SWP_TYPE_BITS) - 1)
-+#define _SWP_TYPE_SHIFT (_PAGE_BIT_PRESENT + 1)
- #define SWP_OFFSET_SHIFT (_PAGE_BIT_PROTNONE + 1)
- 
--#define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)
-+#define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > 5)
- 
--#define __swp_type(x)			(((x).val >> (_PAGE_BIT_PRESENT + 1)) \
--					 & ((1U << SWP_TYPE_BITS) - 1))
-+#define __swp_type(x)			(((x).val >> _SWP_TYPE_SHIFT) \
-+					 & _SWP_TYPE_MASK)
- #define __swp_offset(x)			((x).val >> SWP_OFFSET_SHIFT)
- #define __swp_entry(type, offset)	((swp_entry_t) { \
--					 ((type) << (_PAGE_BIT_PRESENT + 1)) \
-+					 (((type) & _SWP_TYPE_MASK) << _SWP_TYPE_SHIFT) \
- 					 | ((offset) << SWP_OFFSET_SHIFT) })
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { (pte).pte_low })
- #define __swp_entry_to_pte(x)		((pte_t) { .pte = (x).val })
- 
-+/* We borrow bit 7 to store the exclusive marker in swap PTEs. */
-+#define _PAGE_SWP_EXCLUSIVE	_PAGE_PSE
-+
- /* No inverted PFNs on 2 level page tables */
- 
- static inline u64 protnone_mask(u64 val)
-diff --git a/arch/x86/include/asm/pgtable-3level.h b/arch/x86/include/asm/pgtable-3level.h
-index 967b135fa2c0..9e7c0b719c3c 100644
---- a/arch/x86/include/asm/pgtable-3level.h
-+++ b/arch/x86/include/asm/pgtable-3level.h
-@@ -145,8 +145,24 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
- }
- #endif
- 
--/* Encode and de-code a swap entry */
-+/*
-+ * Encode/decode swap entries and swap PTEs. Swap PTEs are all PTEs that
-+ * are !pte_none() && !pte_present().
-+ *
-+ * Format of swap PTEs:
-+ *
-+ *   6 6 6 6 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 4 4 4 4 3 3 3 3 3 3 3 3
-+ *   3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2
-+ *   < type -> <---------------------- offset ----------------------
-+ *
-+ *   3 3 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 1 1 1
-+ *   1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-+ *   --------------------------------------------> 0 E 0 0 0 0 0 0 0
-+ *
-+ *   E is the exclusive marker that is not stored in swap entries.
-+ */
- #define SWP_TYPE_BITS		5
-+#define _SWP_TYPE_MASK ((1U << SWP_TYPE_BITS) - 1)
- 
- #define SWP_OFFSET_FIRST_BIT	(_PAGE_BIT_PROTNONE + 1)
- 
-@@ -154,9 +170,10 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
- #define SWP_OFFSET_SHIFT	(SWP_OFFSET_FIRST_BIT + SWP_TYPE_BITS)
- 
- #define MAX_SWAPFILES_CHECK() BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS)
--#define __swp_type(x)			(((x).val) & ((1UL << SWP_TYPE_BITS) - 1))
-+#define __swp_type(x)			(((x).val) & _SWP_TYPE_MASK)
- #define __swp_offset(x)			((x).val >> SWP_TYPE_BITS)
--#define __swp_entry(type, offset)	((swp_entry_t){(type) | (offset) << SWP_TYPE_BITS})
-+#define __swp_entry(type, offset)	((swp_entry_t){((type) & _SWP_TYPE_MASK) \
-+					| (offset) << SWP_TYPE_BITS})
- 
- /*
-  * Normally, __swp_entry() converts from arch-independent swp_entry_t to
-@@ -184,6 +201,9 @@ static inline pmd_t pmdp_establish(struct vm_area_struct *vma,
- #define __pte_to_swp_entry(pte)	(__swp_entry(__pteval_swp_type(pte), \
- 					     __pteval_swp_offset(pte)))
- 
-+/* We borrow bit 7 to store the exclusive marker in swap PTEs. */
-+#define _PAGE_SWP_EXCLUSIVE	_PAGE_PSE
-+
- #include <asm/pgtable-invert.h>
- 
- #endif /* _ASM_X86_PGTABLE_3LEVEL_H */
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 1c843395a8b3..d25195726b78 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -1299,7 +1299,6 @@ static inline void update_mmu_cache_pud(struct vm_area_struct *vma,
- 		unsigned long addr, pud_t *pud)
- {
- }
--#ifdef _PAGE_SWP_EXCLUSIVE
- #define __HAVE_ARCH_PTE_SWP_EXCLUSIVE
- static inline pte_t pte_swp_mkexclusive(pte_t pte)
- {
-@@ -1315,7 +1314,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
- {
- 	return pte_clear_flags(pte, _PAGE_SWP_EXCLUSIVE);
- }
--#endif /* _PAGE_SWP_EXCLUSIVE */
- 
- #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
- static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
--- 
-2.39.0
-
+>  - rebased to v6.2-rc3; as available at:
+>      git://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git sched/idle
+> 
+>  - folded: https://lkml.kernel.org/r/Y3UBwYNY15ETUKy9@hirez.programming.kicks-ass.net
+>    which makes the ARM cpuidle index 0 consistently not use
+>    CPUIDLE_FLAG_RCU_IDLE, as requested by Ulf.
+> 
+>  - added a few more __always_inline to empty stub functions as found by the
+>    robot.
+> 
+>  - Used _RET_IP_ instead of _THIS_IP_ in a few placed because of:
+>    https://github.com/ClangBuiltLinux/linux/issues/263
+> 
+>  - Added new patches to address various robot reports:
+> 
+>      #35:  trace,hardirq: No moar _rcuidle() tracing
+>      #47:  cpuidle: Ensure ct_cpuidle_enter() is always called from noinstr/__cpuidle
+>      #48:  cpuidle,arch: Mark all ct_cpuidle_enter() callers __cpuidle
+>      #49:  cpuidle,arch: Mark all regular cpuidle_state::enter methods __cpuidle
+>      #50:  cpuidle: Comments about noinstr/__cpuidle
+>      #51:  context_tracking: Fix noinstr vs KASAN
+> 
+> 
+> ---
+>  arch/alpha/kernel/process.c               |  1 -
+>  arch/alpha/kernel/vmlinux.lds.S           |  1 -
+>  arch/arc/kernel/process.c                 |  3 ++
+>  arch/arc/kernel/vmlinux.lds.S             |  1 -
+>  arch/arm/include/asm/vmlinux.lds.h        |  1 -
+>  arch/arm/kernel/cpuidle.c                 |  4 +-
+>  arch/arm/kernel/process.c                 |  1 -
+>  arch/arm/kernel/smp.c                     |  6 +--
+>  arch/arm/mach-davinci/cpuidle.c           |  4 +-
+>  arch/arm/mach-gemini/board-dt.c           |  3 +-
+>  arch/arm/mach-imx/cpuidle-imx5.c          |  4 +-
+>  arch/arm/mach-imx/cpuidle-imx6q.c         |  8 ++--
+>  arch/arm/mach-imx/cpuidle-imx6sl.c        |  4 +-
+>  arch/arm/mach-imx/cpuidle-imx6sx.c        |  9 ++--
+>  arch/arm/mach-imx/cpuidle-imx7ulp.c       |  4 +-
+>  arch/arm/mach-omap2/common.h              |  6 ++-
+>  arch/arm/mach-omap2/cpuidle34xx.c         | 16 ++++++-
+>  arch/arm/mach-omap2/cpuidle44xx.c         | 29 +++++++------
+>  arch/arm/mach-omap2/omap-mpuss-lowpower.c | 12 +++++-
+>  arch/arm/mach-omap2/pm.h                  |  2 +-
+>  arch/arm/mach-omap2/pm24xx.c              | 51 +---------------------
+>  arch/arm/mach-omap2/pm34xx.c              | 14 +++++--
+>  arch/arm/mach-omap2/pm44xx.c              |  2 +-
+>  arch/arm/mach-omap2/powerdomain.c         | 10 ++---
+>  arch/arm/mach-s3c/cpuidle-s3c64xx.c       |  5 +--
+>  arch/arm64/kernel/cpuidle.c               |  2 +-
+>  arch/arm64/kernel/idle.c                  |  1 -
+>  arch/arm64/kernel/smp.c                   |  4 +-
+>  arch/arm64/kernel/vmlinux.lds.S           |  1 -
+>  arch/csky/kernel/process.c                |  1 -
+>  arch/csky/kernel/smp.c                    |  2 +-
+>  arch/csky/kernel/vmlinux.lds.S            |  1 -
+>  arch/hexagon/kernel/process.c             |  1 -
+>  arch/hexagon/kernel/vmlinux.lds.S         |  1 -
+>  arch/ia64/kernel/process.c                |  1 +
+>  arch/ia64/kernel/vmlinux.lds.S            |  1 -
+>  arch/loongarch/kernel/idle.c              |  1 +
+>  arch/loongarch/kernel/vmlinux.lds.S       |  1 -
+>  arch/m68k/kernel/vmlinux-nommu.lds        |  1 -
+>  arch/m68k/kernel/vmlinux-std.lds          |  1 -
+>  arch/m68k/kernel/vmlinux-sun3.lds         |  1 -
+>  arch/microblaze/kernel/process.c          |  1 -
+>  arch/microblaze/kernel/vmlinux.lds.S      |  1 -
+>  arch/mips/kernel/idle.c                   | 14 +++----
+>  arch/mips/kernel/vmlinux.lds.S            |  1 -
+>  arch/nios2/kernel/process.c               |  1 -
+>  arch/nios2/kernel/vmlinux.lds.S           |  1 -
+>  arch/openrisc/kernel/process.c            |  1 +
+>  arch/openrisc/kernel/vmlinux.lds.S        |  1 -
+>  arch/parisc/kernel/process.c              |  2 -
+>  arch/parisc/kernel/vmlinux.lds.S          |  1 -
+>  arch/powerpc/kernel/idle.c                |  5 +--
+>  arch/powerpc/kernel/vmlinux.lds.S         |  1 -
+>  arch/riscv/kernel/process.c               |  1 -
+>  arch/riscv/kernel/vmlinux-xip.lds.S       |  1 -
+>  arch/riscv/kernel/vmlinux.lds.S           |  1 -
+>  arch/s390/kernel/idle.c                   |  1 -
+>  arch/s390/kernel/vmlinux.lds.S            |  1 -
+>  arch/sh/kernel/idle.c                     |  1 +
+>  arch/sh/kernel/vmlinux.lds.S              |  1 -
+>  arch/sparc/kernel/leon_pmc.c              |  4 ++
+>  arch/sparc/kernel/process_32.c            |  1 -
+>  arch/sparc/kernel/process_64.c            |  3 +-
+>  arch/sparc/kernel/vmlinux.lds.S           |  1 -
+>  arch/um/kernel/dyn.lds.S                  |  1 -
+>  arch/um/kernel/process.c                  |  1 -
+>  arch/um/kernel/uml.lds.S                  |  1 -
+>  arch/x86/boot/compressed/vmlinux.lds.S    |  1 +
+>  arch/x86/coco/tdx/tdcall.S                | 15 +------
+>  arch/x86/coco/tdx/tdx.c                   | 25 ++++-------
+>  arch/x86/events/amd/brs.c                 | 13 +++---
+>  arch/x86/include/asm/fpu/xcr.h            |  4 +-
+>  arch/x86/include/asm/irqflags.h           | 11 ++---
+>  arch/x86/include/asm/mwait.h              | 14 +++----
+>  arch/x86/include/asm/nospec-branch.h      |  2 +-
+>  arch/x86/include/asm/paravirt.h           |  6 ++-
+>  arch/x86/include/asm/perf_event.h         |  2 +-
+>  arch/x86/include/asm/shared/io.h          |  4 +-
+>  arch/x86/include/asm/shared/tdx.h         |  1 -
+>  arch/x86/include/asm/special_insns.h      |  8 ++--
+>  arch/x86/include/asm/xen/hypercall.h      |  2 +-
+>  arch/x86/kernel/cpu/bugs.c                |  2 +-
+>  arch/x86/kernel/fpu/core.c                |  4 +-
+>  arch/x86/kernel/paravirt.c                | 14 ++++++-
+>  arch/x86/kernel/process.c                 | 65 ++++++++++++++--------------
+>  arch/x86/kernel/vmlinux.lds.S             |  1 -
+>  arch/x86/lib/memcpy_64.S                  |  5 +--
+>  arch/x86/lib/memmove_64.S                 |  4 +-
+>  arch/x86/lib/memset_64.S                  |  4 +-
+>  arch/x86/xen/enlighten_pv.c               |  2 +-
+>  arch/x86/xen/irq.c                        |  2 +-
+>  arch/xtensa/kernel/process.c              |  1 +
+>  arch/xtensa/kernel/vmlinux.lds.S          |  1 -
+>  drivers/acpi/processor_idle.c             | 28 ++++++++-----
+>  drivers/base/power/runtime.c              | 24 +++++------
+>  drivers/clk/clk.c                         |  8 ++--
+>  drivers/cpuidle/cpuidle-arm.c             |  4 +-
+>  drivers/cpuidle/cpuidle-big_little.c      | 12 ++++--
+>  drivers/cpuidle/cpuidle-mvebu-v7.c        | 13 ++++--
+>  drivers/cpuidle/cpuidle-psci.c            | 26 +++++-------
+>  drivers/cpuidle/cpuidle-qcom-spm.c        |  4 +-
+>  drivers/cpuidle/cpuidle-riscv-sbi.c       | 19 +++++----
+>  drivers/cpuidle/cpuidle-tegra.c           | 31 +++++++++-----
+>  drivers/cpuidle/cpuidle.c                 | 70 ++++++++++++++++++++++---------
+>  drivers/cpuidle/dt_idle_states.c          |  2 +-
+>  drivers/cpuidle/poll_state.c              | 10 ++++-
+>  drivers/idle/intel_idle.c                 | 19 ++++-----
+>  drivers/perf/arm_pmu.c                    | 11 +----
+>  drivers/perf/riscv_pmu_sbi.c              |  8 +---
+>  include/asm-generic/vmlinux.lds.h         |  9 ++--
+>  include/linux/clockchips.h                |  4 +-
+>  include/linux/compiler_types.h            | 18 +++++++-
+>  include/linux/cpu.h                       |  3 --
+>  include/linux/cpuidle.h                   | 32 ++++++++++++++
+>  include/linux/cpumask.h                   |  4 +-
+>  include/linux/percpu-defs.h               |  2 +-
+>  include/linux/sched/idle.h                | 40 +++++++++++++-----
+>  include/linux/thread_info.h               | 18 +++++++-
+>  include/linux/tracepoint.h                | 15 ++++++-
+>  kernel/context_tracking.c                 | 12 +++---
+>  kernel/cpu_pm.c                           |  9 ----
+>  kernel/printk/printk.c                    |  2 +-
+>  kernel/sched/idle.c                       | 47 ++++++---------------
+>  kernel/time/tick-broadcast-hrtimer.c      | 29 ++++++-------
+>  kernel/time/tick-broadcast.c              |  6 ++-
+>  kernel/trace/trace.c                      |  3 ++
+>  kernel/trace/trace_preemptirq.c           | 50 ++++++----------------
+>  lib/ubsan.c                               |  5 ++-
+>  mm/kasan/kasan.h                          |  4 ++
+>  mm/kasan/shadow.c                         | 38 +++++++++++++++++
+>  tools/objtool/check.c                     | 17 ++++++++
+>  131 files changed, 617 insertions(+), 523 deletions(-)
+> 
