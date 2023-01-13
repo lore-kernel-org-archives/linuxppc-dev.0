@@ -4,68 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C5C90C3DA78
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 22:20:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53DD0C3DA78
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jan 2023 22:21:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ntwp71XCPz3fHX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 09:19:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ntwr86xZhz3fH5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 14 Jan 2023 09:21:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=i41PM49W;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=i41PM49W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gub/9QAk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=mjguzik@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=i41PM49W;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=i41PM49W;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gub/9QAk;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NtnxY1L4vz3bWq
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2023 04:10:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1673629850;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ckKqRBtsefZM1JDfoCvf0Xxq+48ay8EjXnX8re+vcnw=;
-	b=i41PM49W8FAAo5VtaJef0OF6bZVxUUD4vM+C5hE1XH1Bk/O8axCxRuu5bOymzyQM8NPZ5s
-	MCvYexoo75TOor3p/T0oeMG0TpfhwlMl61pKUsHOgX9ZO/sPGJbBnYVQBbcki390zEEAs7
-	YoKbGkt6QBXt0s9aGKhzkOqRQfReOrk=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1673629850;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=ckKqRBtsefZM1JDfoCvf0Xxq+48ay8EjXnX8re+vcnw=;
-	b=i41PM49W8FAAo5VtaJef0OF6bZVxUUD4vM+C5hE1XH1Bk/O8axCxRuu5bOymzyQM8NPZ5s
-	MCvYexoo75TOor3p/T0oeMG0TpfhwlMl61pKUsHOgX9ZO/sPGJbBnYVQBbcki390zEEAs7
-	YoKbGkt6QBXt0s9aGKhzkOqRQfReOrk=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-635-5aW6yfX9M-KUiM6jBqS-tg-1; Fri, 13 Jan 2023 12:10:47 -0500
-X-MC-Unique: 5aW6yfX9M-KUiM6jBqS-tg-1
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.rdu2.redhat.com [10.11.54.1])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 25354811E9C;
-	Fri, 13 Jan 2023 17:10:44 +0000 (UTC)
-Received: from t480s.fritz.box (unknown [10.39.193.196])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id 2951C40C2064;
-	Fri, 13 Jan 2023 17:10:27 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH mm-unstable v1 00/26] mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on all architectures with swap PTEs
-Date: Fri, 13 Jan 2023 18:10:00 +0100
-Message-Id: <20230113171026.582290-1-david@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ntr2G4lxhz3fBZ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jan 2023 05:45:08 +1100 (AEDT)
+Received: by mail-ed1-x52b.google.com with SMTP id j16so32334393edw.11
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jan 2023 10:45:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fVyfE7TORjs2ncDiYR6RHn/voCN67+L9RGjNyyFWon4=;
+        b=gub/9QAk7eF+UCFfx0DndHNotZYTPE//gNHNzxMJu9KVlzlge37X8QnM4vz9XgVoGW
+         NTkTX0Jrvy0X1iLCKx3dtMJEfx1P9RPnrqj7SnNoT3zAc9U0LsO7GYYH1r76YnEOuuVV
+         S0Dmt6PeQLQxQlI3Km6j9RPdxR3Fde4aD7mC5AA83q3moLDMKWIU4il2nMi73hJVfLuw
+         N6PrrdTTg6pe6P62Hz/uBnY9fNKwaBHvRi2vPXov2BNekdhY5fwYHwVsLVFpdrYgkM0N
+         uTHOmA+zJH5s9vTAh+oiVpU46/5NyuCKWF5Rvim+ioS1Vw+147q2Xkc11aL/mVGJa9uV
+         h0lg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fVyfE7TORjs2ncDiYR6RHn/voCN67+L9RGjNyyFWon4=;
+        b=UWyffUbmkpKp/N54Ve2cuhD7dc+x2zB5YbqvCXcIsf7XHSZhcbA7DRsV7Xz2Ms+CIu
+         dKnHQYtGUv058p17kwKQq0FDuwybe/eIQHHDzEgN/led01fTEnFRwHMbng+RLWJ+0bEG
+         Ijd3d4N5S5WbWDW1Z5Syhza8m2/jY+jxKn5tlPM1fLyjDErsTqYj0QF4GDrB34w0zo4A
+         Srm6xCf3cDyFRnk2tsvfKVv0qTddYWsCASC1K4s4BbfrLlAGYCdB+E1rr9XbGteGEmJe
+         sXZL+t4+qAdegcSggWhVUtEWFSTAnXgGWo2oznTLfE49+aEctkPCwJhp7m3OeyJMHoHN
+         W6SA==
+X-Gm-Message-State: AFqh2kr1AdZs4151N/oOrYztkuMs6W70XkuVOldcSVe9pxtAwfFUGuyY
+	SmISzGu18MGmPARJ+g3/tzQ=
+X-Google-Smtp-Source: AMrXdXs9Nq/D7npk4F9SpsYBT4FccC0XrYrklNLShn5a9UNkqQ5v0jyGHNqsroeXFPFHmdioCAUrzg==
+X-Received: by 2002:a05:6402:3227:b0:48e:ac4e:7bfa with SMTP id g39-20020a056402322700b0048eac4e7bfamr847292eda.2.1673635501957;
+        Fri, 13 Jan 2023 10:45:01 -0800 (PST)
+Received: from f.. (cst-prg-72-175.cust.vodafone.cz. [46.135.72.175])
+        by smtp.gmail.com with ESMTPSA id m17-20020a50ef11000000b0049c4e3d4139sm889873eds.89.2023.01.13.10.45.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Jan 2023 10:45:01 -0800 (PST)
+From: Mateusz Guzik <mjguzik@gmail.com>
+To: torvalds@linux-foundation.org
+Subject: [PATCH] lockref: stop doing cpu_relax in the cmpxchg loop
+Date: Fri, 13 Jan 2023 19:44:47 +0100
+Message-Id: <20230113184447.1707316-1-mjguzik@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <CAHk-=wjthxgrLEvgZBUwd35e_mk=dCWKMUEURC6YsX5nWom8kQ@mail.gmail.com>
+References: <CAHk-=wjthxgrLEvgZBUwd35e_mk=dCWKMUEURC6YsX5nWom8kQ@mail.gmail.com>
 MIME-Version: 1.0
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.1
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="US-ASCII"; x-default=true
 X-Mailman-Approved-At: Sat, 14 Jan 2023 09:17:16 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,152 +79,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Huacai Chen <chenhuacai@kernel.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Yang Shi <shy828301@gmail.com>, Dave Hansen <dave.hansen@linux.intel.com>, David Hildenbrand <david@redhat.com>, Peter Xu <peterx@redhat.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, linux-mm@kvack.org, Rich Felker <dalias@libc.org>, Nadav Amit <namit@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Greg Ungerer <gerg@linux-m68k.org>, Anton Ivanov <anton.ivanov@cambridgegreys.com>, Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>, x86@kernel.org, Hugh Dickins <hughd@google.com>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Mike Rapoport <rppt@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vlastimil Babka <vbabka@suse.cz>, J
- ason Gunthorpe <jgg@nvidia.com>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Chris Zankel <chris@zankel.net>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Richard Weinberger <richard@nod.at>, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, Richard Henderson <richard.henderson@linaro.org>, Johannes Berg <johannes@sipsolutions.net>, linux-arm-kernel@lists.infradead.org, WANG Xuerui <kernel@xen0n.name>, Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, Max Filippov
-  <jcmvbkbc@gmail.com>, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-alpha@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Guo Ren <guoren@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: linux-arch@vger.kernel.org, mjguzik@gmail.com, will@kernel.org, catalin.marinas@arm.com, tony.luck@intel.com, viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org, jan.glauber@gmail.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the follow-up on [1]:
-	[PATCH v2 0/8] mm: COW fixes part 3: reliable GUP R/W FOLL_GET of
-	anonymous pages
+On the x86-64 architecture even a failing cmpxchg grants exclusive
+access to the cacheline, making it preferable to retry the failed op
+immediately instead of stalling with the pause instruction.
 
-After we implemented __HAVE_ARCH_PTE_SWP_EXCLUSIVE on most prominent
-enterprise architectures, implement __HAVE_ARCH_PTE_SWP_EXCLUSIVE on all
-remaining architectures that support swap PTEs.
+To illustrate the impact, below are benchmark results obtained by
+running various will-it-scale tests on top of the 6.2-rc3 kernel
+and Cascade Lake (2 sockets * 24 cores * 2 threads) CPU.
 
-This makes sure that exclusive anonymous pages will stay exclusive, even
-after they were swapped out -- for example, making GUP R/W FOLL_GET of
-anonymous pages reliable. Details can be found in [1].
+All results in ops/s. Note there is some variance in re-runs, but
+the code is consistently faster when contention is present.
 
-This primarily fixes remaining known O_DIRECT memory corruptions that can
-happen on concurrent swapout, whereby we can lose DMA reads to a page
-(modifying the user page by writing to it).
+open3 ("Same file open/close"):
+proc	stock	no-pause
+1	805603	814942	(+%1)
+2	1054980	1054781	(-0%)
+8	1544802	1822858	(+18%)
+24	1191064	2199665	(+84%)
+48	851582	1469860	(+72%)
+96	609481	1427170	(+134%)
 
-To verify, there are two test cases (requiring swap space, obviously):
-(1) The O_DIRECT+swapout test case [2] from Andrea. This test case tries
-    triggering a race condition.
-(2) My vmsplice() test case [3] that tries to detect if the exclusive
-    marker was lost during swapout, not relying on a race condition.
+fstat2 ("Same file fstat"):
+proc	stock	no-pause
+1	3013872	3047636	(+1%)
+2	4284687	4400421	(+2%)
+8	3257721	5530156	(+69%)
+24	2239819	5466127	(+144%)
+48	1701072	5256609	(+209%)
+96	1269157	6649326	(+423%)
 
+Additionally, a kernel with a private patch to help access() scalability:
+access2 ("Same file access"):
+proc	stock	patched	patched+nopause
+24	2378041	2005501	5370335	(-15% / +125%)
 
-For example, on 32bit x86 (with and without PAE), my test case fails
-without these patches:
-	$ ./test_swp_exclusive
-	FAIL: page was replaced during COW
-But succeeds with these patches:
-	$ ./test_swp_exclusive
-	PASS: page was not replaced during COW
+That is, fixing the problems in access itself *reduces* scalability
+after the cacheline ping-pong only happens in lockref with the pause
+instruction.
 
+Note that fstat and access benchmarks are not currently integrated into
+will-it-scale, but interested parties can find them in pull requests to
+said project.
 
-Why implement __HAVE_ARCH_PTE_SWP_EXCLUSIVE for all architectures, even
-the ones where swap support might be in a questionable state? This is the
-first step towards removing "readable_exclusive" migration entries, and
-instead using pte_swp_exclusive() also with (readable) migration entries
-instead (as suggested by Peter). The only missing piece for that is
-supporting pmd_swp_exclusive() on relevant architectures with THP
-migration support.
+Code at hand has a rather tortured history. First modification showed up
+in d472d9d98b463dd7 ("lockref: Relax in cmpxchg loop"), written with
+Itanium in mind. Later it got patched up to use an arch-dependent macro
+to stop doing it on s390 where it caused a significant regression. Said
+macro had undergone revisions and was ultimately eliminated later, going
+back to cpu_relax.
 
-As all relevant architectures now implement __HAVE_ARCH_PTE_SWP_EXCLUSIVE,,
-we can drop __HAVE_ARCH_PTE_SWP_EXCLUSIVE in the last patch.
+While I intended to only remove cpu_relax for x86-64, I got the
+following comment from Linus:
+> I would actually prefer just removing it entirely and see if somebody
+> else hollers. You have the numbers to prove it hurts on real hardware,
+> and I don't think we have any numbers to the contrary.
 
-I tried cross-compiling all relevant setups and tested on x86 and sparc64
-so far.
+> So I think it's better to trust the numbers and remove it as a
+> failure, than say "let's just remove it on x86-64 and leave everybody
+>else with the potentially broken code"
 
-CCing arch maintainers only on this cover letter and on the respective
-patch(es).
+Additionally, Will Deacon (maintainer of the arm64 port, one of the
+architectures previously benchmarked):
+> So, from the arm64 side of the fence, I'm perfectly happy just removing
+> the cpu_relax() calls from lockref.
 
-[1] https://lkml.kernel.org/r/20220329164329.208407-1-david@redhat.com
-[2] https://gitlab.com/aarcange/kernel-testcases-for-v5.11/-/blob/main/page_count_do_wp_page-swap.c
-[3] https://gitlab.com/davidhildenbrand/scratchspace/-/blob/main/test_swp_exclusive.c
+As such, come back full circle in history and whack it altogether.
 
+Signed-off-by: Mateusz Guzik <mjguzik@gmail.com>
+---
+ lib/lockref.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-RFC -> v1:
-* Some smaller comment+patch description changes
-* "powerpc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 32bit book3s"
- -> Fixup swap PTE description
-
-
-David Hildenbrand (26):
-  mm/debug_vm_pgtable: more pte_swp_exclusive() sanity checks
-  alpha/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  arc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  arm/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  csky/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  hexagon/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  ia64/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  loongarch/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  m68k/mm: remove dummy __swp definitions for nommu
-  m68k/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  microblaze/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  mips/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  nios2/mm: refactor swap PTE layout
-  nios2/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  openrisc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  parisc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  powerpc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 32bit book3s
-  powerpc/nohash/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  riscv/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  sh/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  sparc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 32bit
-  sparc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 64bit
-  um/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  x86/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE also on 32bit
-  xtensa/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-  mm: remove __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-
- arch/alpha/include/asm/pgtable.h              | 40 ++++++++-
- arch/arc/include/asm/pgtable-bits-arcv2.h     | 26 +++++-
- arch/arm/include/asm/pgtable-2level.h         |  3 +
- arch/arm/include/asm/pgtable-3level.h         |  3 +
- arch/arm/include/asm/pgtable.h                | 34 +++++--
- arch/arm64/include/asm/pgtable.h              |  1 -
- arch/csky/abiv1/inc/abi/pgtable-bits.h        | 13 ++-
- arch/csky/abiv2/inc/abi/pgtable-bits.h        | 19 ++--
- arch/csky/include/asm/pgtable.h               | 17 ++++
- arch/hexagon/include/asm/pgtable.h            | 36 ++++++--
- arch/ia64/include/asm/pgtable.h               | 31 ++++++-
- arch/loongarch/include/asm/pgtable-bits.h     |  4 +
- arch/loongarch/include/asm/pgtable.h          | 38 +++++++-
- arch/m68k/include/asm/mcf_pgtable.h           | 35 +++++++-
- arch/m68k/include/asm/motorola_pgtable.h      | 37 +++++++-
- arch/m68k/include/asm/pgtable_no.h            |  6 --
- arch/m68k/include/asm/sun3_pgtable.h          | 38 +++++++-
- arch/microblaze/include/asm/pgtable.h         | 44 +++++++---
- arch/mips/include/asm/pgtable-32.h            | 88 ++++++++++++++++---
- arch/mips/include/asm/pgtable-64.h            | 23 ++++-
- arch/mips/include/asm/pgtable.h               | 35 ++++++++
- arch/nios2/include/asm/pgtable-bits.h         |  3 +
- arch/nios2/include/asm/pgtable.h              | 37 ++++++--
- arch/openrisc/include/asm/pgtable.h           | 40 +++++++--
- arch/parisc/include/asm/pgtable.h             | 40 ++++++++-
- arch/powerpc/include/asm/book3s/32/pgtable.h  | 37 ++++++--
- arch/powerpc/include/asm/book3s/64/pgtable.h  |  1 -
- arch/powerpc/include/asm/nohash/32/pgtable.h  | 22 +++--
- arch/powerpc/include/asm/nohash/32/pte-40x.h  |  6 +-
- arch/powerpc/include/asm/nohash/32/pte-44x.h  | 18 +---
- arch/powerpc/include/asm/nohash/32/pte-85xx.h |  4 +-
- arch/powerpc/include/asm/nohash/64/pgtable.h  | 24 ++++-
- arch/powerpc/include/asm/nohash/pgtable.h     | 15 ++++
- arch/powerpc/include/asm/nohash/pte-e500.h    |  1 -
- arch/riscv/include/asm/pgtable-bits.h         |  3 +
- arch/riscv/include/asm/pgtable.h              | 28 ++++--
- arch/s390/include/asm/pgtable.h               |  1 -
- arch/sh/include/asm/pgtable_32.h              | 53 ++++++++---
- arch/sparc/include/asm/pgtable_32.h           | 26 +++++-
- arch/sparc/include/asm/pgtable_64.h           | 37 +++++++-
- arch/sparc/include/asm/pgtsrmmu.h             | 14 +--
- arch/um/include/asm/pgtable.h                 | 36 +++++++-
- arch/x86/include/asm/pgtable-2level.h         | 26 ++++--
- arch/x86/include/asm/pgtable-3level.h         | 26 +++++-
- arch/x86/include/asm/pgtable.h                |  3 -
- arch/xtensa/include/asm/pgtable.h             | 31 +++++--
- include/linux/pgtable.h                       | 29 ------
- mm/debug_vm_pgtable.c                         | 25 +++++-
- mm/memory.c                                   |  4 -
- mm/rmap.c                                     | 11 ---
- 50 files changed, 944 insertions(+), 228 deletions(-)
-
+diff --git a/lib/lockref.c b/lib/lockref.c
+index 45e93ece8ba0..2afe4c5d8919 100644
+--- a/lib/lockref.c
++++ b/lib/lockref.c
+@@ -23,7 +23,6 @@
+ 		}								\
+ 		if (!--retry)							\
+ 			break;							\
+-		cpu_relax();							\
+ 	}									\
+ } while (0)
+ 
 -- 
 2.39.0
 
