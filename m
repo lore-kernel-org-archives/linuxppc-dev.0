@@ -4,33 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71644C46467
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 10:45:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78282C46467
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 10:57:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NvsJ35xjkz3fCX
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 21:45:39 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NvsZ06gkCz3cFP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 21:57:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iMxfDIVs;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NvsGw44xbz3bZV
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2023 21:44:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NvsXy6NCQz3bgv
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2023 21:56:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=iMxfDIVs;
+	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NvsGw0SK2z4xN4;
-	Sun, 15 Jan 2023 21:44:40 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Ojaswin Mujoo <ojaswin@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230104202437.90039-1-ojaswin@linux.ibm.com>
-References: <20230104202437.90039-1-ojaswin@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc: Fix a wrong version calculation issue in ld_version
-Message-Id: <167377944231.2279958.10670349663093099686.b4-ty@ellerman.id.au>
-Date: Sun, 15 Jan 2023 21:44:02 +1100
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NvsXt4WL2z4x1N;
+	Sun, 15 Jan 2023 21:56:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1673780207;
+	bh=Oumi9CSr04M3uUu7seP0t24Gs0vaIvGZvsGd9wpANDI=;
+	h=From:To:Cc:Subject:Date:From;
+	b=iMxfDIVsp+Qa7ttF2qpv2kSlt+dbAfDm5cw98RJN4BPokknie/Y6TmAngTfVHmgoO
+	 QclqaBGCaKNJ0jjkWDgIP1GzS6djg18kzSzrNWAvaJy4CerUS/eGUwCXvR2kpzSP4L
+	 AGu/Ok/AclO0ShQ2CO+gmZIb3Je/BImupgQW26b+UxbvBpkM3z0my3CU2X1kqQTBlx
+	 Kvarn7+ms7CbEXkQWGZFT2xoq8AiA8lKC9Jg8ogqP83fnfxthzN5mIiffi+v8Ryptg
+	 7c7TIQyOP7nMCiT54EJ4OX+1vkbHGzA7s0iN4fbX9wN2ajP8CqaPQMMezhFJCFgCuN
+	 +UoAy5PIXeMaw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.2-3 tag
+Date: Sun, 15 Jan 2023 21:56:46 +1100
+Message-ID: <87pmbg9ic1.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,24 +55,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
+Cc: kjain@linux.ibm.com, yangyingliang@huawei.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, ojaswin@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 5 Jan 2023 01:54:37 +0530, Ojaswin Mujoo wrote:
-> ** The Issue **
-> 
-> The ld_version() function seems to compute the wrong version value for
-> certain ld versions like the following:
-> 
-> $ ld --version GNU ld (GNU Binutils; SUSE Linux Enterprise 15)
-> 2.37.20211103-150100.7.37
-> 
-> [...]
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-Applied to powerpc/fixes.
+Hi Linus,
 
-[1/1] powerpc: Fix a wrong version calculation issue in ld_version
-      https://git.kernel.org/powerpc/c/3287ebd7fd01e853ca4da8be675322429400e2bd
+Please pull some more powerpc fixes for 6.2:
 
-cheers
+The following changes since commit be5f95c8779e19779dd81927c8574fec5aaba36c:
+
+  powerpc/vmlinux.lds: Don't discard .comment (2023-01-06 00:25:12 +1100)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.2-3
+
+for you to fetch changes up to f12cd06109f47c2fb4b23a45ab55404c47ef7fae:
+
+  powerpc/64s/hash: Make stress_hpt_timer_fn() static (2023-01-12 10:53:37 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 6.2 #3
+
+ - Fix a build failure with some versions of ld that have an odd version string.
+
+ - Fix incorrect use of mutex in the IMC PMU driver.
+
+Thanks to: Kajol Jain, Michael Petlan, Ojaswin Mujoo, Peter Zijlstra, Yang Yingliang.
+
+- ------------------------------------------------------------------
+Kajol Jain (1):
+      powerpc/imc-pmu: Fix use of mutex in IRQs disabled section
+
+Ojaswin Mujoo (1):
+      powerpc/boot: Fix incorrect version calculation issue in ld_version
+
+Yang Yingliang (1):
+      powerpc/64s/hash: Make stress_hpt_timer_fn() static
+
+
+ arch/powerpc/boot/wrapper             |   4 +
+ arch/powerpc/include/asm/imc-pmu.h    |   2 +-
+ arch/powerpc/mm/book3s64/hash_utils.c |   2 +-
+ arch/powerpc/perf/imc-pmu.c           | 136 ++++++++++----------
+ 4 files changed, 72 insertions(+), 72 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEJFGtCPCthwEv2Y/bUevqPMjhpYAFAmPD2sYACgkQUevqPMjh
+pYDoDQ/9Gl0mGDGQGjbOz4iYKHhlqEB9vWq7NH+++tTSTIUHHuKOPHRWHgZKM+FI
+6wxBpc0yU013oyqr+CcVP7NGYSry8pNG5kjC/GxyXcHBNcrmV9QEAYRs4Uo8qTU/
+g1IZjrzhaxb3wlKNp0GiwEupGh428CkyziFXKndR9i5uryyzZnupmuQjig3fc4dt
+ZyqHcK6LKzlgvKgSI+iMijBKvI2hDszlIp+/lkB2H3+9/ORSid/bVhfRuVIzJeum
+B5cwN3BFnVZuRPtJMSIpdyHrDV5Yak6rkWdWB00NiHptZb13/wgytJwUuBPwnDRU
+qQYYJwMC9vKTmFGB8h0crC3MapxSVWeXb6OfJGtgdKieLdaFrVV343n699KiqWJD
+/pjBROJg+kvoR+YKgLVGvef/Nqu0cFI6wVB2JhjRJyuFuq81kXe4Va/CB6HeFKOJ
+cgr4fBPuxoSY6JRSGJ767ISrRM5K6pKSUUBDtLX2B9Qbyfq9+klu7tlU7cnsEzYr
+OuM90BE3XrrrquhCLYH7SO5QBbDiUSFP18Dp8ZizhyYjj4GmY8lmKlk/pQAAlwgw
+udDABrN1gFl4iAGkSAN1pd4YYfHyWOwo+FATkHhvqO1Jg8VbEZQyy8jBCwgKFTYg
+wHhUVYTnF4dEVUTTADbGpoYNppMzW/6yazZCBC8e2EaGq+o8+/Y=
+=Qdd5
+-----END PGP SIGNATURE-----
