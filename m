@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C46EAC3DA78
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 10:45:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71644C46467
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 10:45:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NvsHT5WwVz3fDy
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 21:45:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NvsJ35xjkz3fCX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 15 Jan 2023 21:45:39 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NvsGv5TMwz3bZV
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2023 21:44:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NvsGw44xbz3bZV
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jan 2023 21:44:40 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NvsGv1rFQz4wgv;
-	Sun, 15 Jan 2023 21:44:39 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4NvsGw0SK2z4xN4;
+	Sun, 15 Jan 2023 21:44:40 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Kajol Jain <kjain@linux.ibm.com>
-In-Reply-To: <20230106065157.182648-1-kjain@linux.ibm.com>
-References: <20230106065157.182648-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/imc-pmu: Fix IMC PMU code of using mutex in IRQs disabled section
-Message-Id: <167377944324.2279958.1537269901212932162.b4-ty@ellerman.id.au>
-Date: Sun, 15 Jan 2023 21:44:03 +1100
+To: Ojaswin Mujoo <ojaswin@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230104202437.90039-1-ojaswin@linux.ibm.com>
+References: <20230104202437.90039-1-ojaswin@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc: Fix a wrong version calculation issue in ld_version
+Message-Id: <167377944231.2279958.10670349663093099686.b4-ty@ellerman.id.au>
+Date: Sun, 15 Jan 2023 21:44:02 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, disgoel@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, Andreas Schwab <schwab@linux-m68k.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 6 Jan 2023 12:21:57 +0530, Kajol Jain wrote:
-> Current imc-pmu code triggers a WARNING with CONFIG_DEBUG_ATOMIC_SLEEP and
-> CONFIG_PROVE_LOCKING enabled, while running a thread_imc event.
+On Thu, 5 Jan 2023 01:54:37 +0530, Ojaswin Mujoo wrote:
+> ** The Issue **
 > 
-> Command to trigger the warning:
-> [command]# perf stat -e thread_imc/CPM_CS_FROM_L4_MEM_X_DPTEG/ sleep 5
+> The ld_version() function seems to compute the wrong version value for
+> certain ld versions like the following:
 > 
->  Performance counter stats for 'sleep 5':
+> $ ld --version GNU ld (GNU Binutils; SUSE Linux Enterprise 15)
+> 2.37.20211103-150100.7.37
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/imc-pmu: Fix IMC PMU code of using mutex in IRQs disabled section
-      https://git.kernel.org/powerpc/c/76d588dddc459fefa1da96e0a081a397c5c8e216
+[1/1] powerpc: Fix a wrong version calculation issue in ld_version
+      https://git.kernel.org/powerpc/c/3287ebd7fd01e853ca4da8be675322429400e2bd
 
 cheers
