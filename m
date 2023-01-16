@@ -4,65 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00A7DC63797
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 10:39:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92DA3C54EBE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 11:40:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NwT6q4Rhvz3fCv
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 21:39:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NwVSb56S5z3cgR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 22:40:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MkrUq/l0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=IKaS1mls;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::436; helo=mail-wr1-x436.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62f; helo=mail-pl1-x62f.google.com; envelope-from=42.hyeyoo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MkrUq/l0;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=IKaS1mls;
 	dkim-atps=neutral
-Received: from mail-wr1-x436.google.com (mail-wr1-x436.google.com [IPv6:2a00:1450:4864:20::436])
+Received: from mail-pl1-x62f.google.com (mail-pl1-x62f.google.com [IPv6:2607:f8b0:4864:20::62f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwRWW7246z3bPW
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 20:27:33 +1100 (AEDT)
-Received: by mail-wr1-x436.google.com with SMTP id r2so26825853wrv.7
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 01:27:33 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwTvT55D4z3c3w
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 22:15:00 +1100 (AEDT)
+Received: by mail-pl1-x62f.google.com with SMTP id jn22so29972720plb.13
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 03:15:00 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=0fL8mB8BX2m52K+g0Xkw42Va6IJ7ZctxrJQvVmh1JjM=;
-        b=MkrUq/l0saEo60AwJwUf8AHcJO2+n7qw1aAtp0ay/z2nKCLd5VhDAeYTSFUgRv9o5B
-         uzCORI8EFl7SWYjqOigPPztXVdVlErhh5xzm9fUef5x2hIGGYoAfw8VPsoDCS3p9LYGi
-         2VshFzZX5G1QAnRO+oXmfzt7urXykg9EA2L1zHguXkIh7sVAIdAIA3vtpvssyct97Drx
-         48aX9eGRE46Za0eVHRexeHbcfyidQjhzCXwoPP8HTTYziVZE1YL+c1EGrgS7lqKIsveg
-         9W+XNwCLPTIxS3CTIH3AIWAblcSh1jSWsigsdQ2snyMV1POH6W2d1G9NvaK8Fg8Gya4/
-         S7ZQ==
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=H/j+1WOB2+poIU0zjjNXAinFoRjK1wRjx3d+XHMefVA=;
+        b=IKaS1mlsXdKP2qLzqb0Dyj556UOX3zeMPhPIirCQcTt3qQS2nyTrw1H+PTDeBL8zuV
+         HM5hqzwdA1j2S+Owv380uXh4elme5UhoOwMxL5rwB6SEfOxqFisy3kf5PXKswLa2DQwZ
+         ZbSg85c+dciT9fX+W0S917eX6PiPq8JsRiD7hiEgNGE0uDyd/QyqjwINAVDHmul8StHU
+         g7sLEfykA1+gfNGZH3mWj1DPNJa/IpRkv5amvYAt97kyPizVZeEvRvSNKrRlkvJJAMDV
+         n1yK9QwW5Xy/Z8sceRkhjoRr36n6xdiEOnqDkWDzss1yFAf2tXJokS2p8uBJx8DvUK4b
+         8mUA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=0fL8mB8BX2m52K+g0Xkw42Va6IJ7ZctxrJQvVmh1JjM=;
-        b=y/0sy5MKQX3NdrHy+ToYTqVUZvPVB9chuO98eps7c3LoDSSKe8kVOD3sQLwA2Tmmo1
-         eTQpyWL+NV2+eMUZAIJJpO2sTV67piCmH6se0tpK8Vm2ZQ5MHfxTsqrk2pJsK1BdPuiN
-         u0EMs0Se3rFbQVTqfMh2vxP2g94wnVeVvDXusiD+P64AiI5g/EQDTyyeBQTjghIDXK1O
-         6yYIrdiwze4VKTpyH7DGV0QUZTq9ALSleRX3DKGLjL+cj4vsEgCdrlreeKTZv2CpFXoW
-         WtDgI2+peq5Y9iBnhDkC87tr8M73wqvMZwUIQO22+o92+u+3omRHo1tXpRyz6ryBBOWX
-         uuiA==
-X-Gm-Message-State: AFqh2koUZF5hzTLoOJ7ZjNCgQ+MAZxwHT4rXCRNwjVdYGbn5iFAJDj7k
-	k84gG1HIvaRPT5unwDQAug3qhIn+YC4of9L+Gx0=
-X-Google-Smtp-Source: AMrXdXv1QR3rYL6snx9Uz4+SyO4G6+WLnL97LJ5sRt4kAn1kG/TmNeOUM2MQyhhSRXdr5ezBsE9bux8r91Zp37q7klA=
-X-Received: by 2002:adf:e702:0:b0:2bb:e8d1:f660 with SMTP id
- c2-20020adfe702000000b002bbe8d1f660mr1004342wrm.167.1673861250625; Mon, 16
- Jan 2023 01:27:30 -0800 (PST)
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=H/j+1WOB2+poIU0zjjNXAinFoRjK1wRjx3d+XHMefVA=;
+        b=IbJ+54OQIWf0AOH1FRxhd5nPXPvcB/SIi6BhKfoPGwzismlqhMaY4nlFWkNARu0UN5
+         7uLqdwG7C0gcyxne3Ysu4fVbZZgns9RX77uBCfxzkaXy8D/ile9y0mK6PzRxrpwN5IFP
+         7zO0DhTzRU3QONEZBtjJF1MWq2lv48ABxFew3/2QdeB/hF3A0KX832KUZTdQgLqt8my9
+         CMu66CxMgn4jKjisA8MM16C911efx6niyp7rioju05KlmH1OVL4R1AeXN6tohAxUokVX
+         AOLR0RXLWEtREd6aX04U+yuB3oKVXkaN6Otmd6dI2GsgLWxnc/Khc4VuI4tHuNSI/hJ2
+         7FvQ==
+X-Gm-Message-State: AFqh2kreToupTsNInmypKDf900Ik9xIdEmfYDhoVjgm1WGFhW9+9QOgH
+	MK0QLckWfbiWnUk7nb48yIY=
+X-Google-Smtp-Source: AMrXdXuQRd6wOjQtljWK07qYLraoNulCoayDZNQpKT3xAcTulISKZqIOzMvtWPVA3/M2jPRTkeVMbA==
+X-Received: by 2002:a05:6a20:5489:b0:b0:b870:54e1 with SMTP id i9-20020a056a20548900b000b0b87054e1mr140691094pzk.12.1673867695716;
+        Mon, 16 Jan 2023 03:14:55 -0800 (PST)
+Received: from localhost ([2400:8902::f03c:93ff:fe27:642a])
+        by smtp.gmail.com with ESMTPSA id 3-20020a621503000000b00581c741f95csm16176892pfv.46.2023.01.16.03.14.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Jan 2023 03:14:54 -0800 (PST)
+Date: Mon, 16 Jan 2023 11:14:38 +0000
+From: Hyeonggon Yoo <42.hyeyoo@gmail.com>
+To: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH 41/41] mm: replace rw_semaphore with atomic_t in vma_lock
+Message-ID: <Y8UxnqPCTLbbD+2F@localhost>
+References: <20230109205336.3665937-1-surenb@google.com>
+ <20230109205336.3665937-42-surenb@google.com>
 MIME-Version: 1.0
-References: <20230111161144.3275546-1-alexander.stein@ew.tq-group.com>
-In-Reply-To: <20230111161144.3275546-1-alexander.stein@ew.tq-group.com>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Mon, 16 Jan 2023 17:27:19 +0800
-Message-ID: <CAA+D8AMfNe9wJm9oYhKkOHEqKcCWU2gTKaSAtPNUnHgg00r0UQ@mail.gmail.com>
-Subject: Re: [PATCH 1/1] ASoC: fsl_sai: Use dev_err_probe
-To: Alexander Stein <alexander.stein@ew.tq-group.com>
-Content-Type: multipart/alternative; boundary="0000000000003f3a1a05f25e31fb"
-X-Mailman-Approved-At: Mon, 16 Jan 2023 21:37:59 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230109205336.3665937-42-surenb@google.com>
+X-Mailman-Approved-At: Mon, 16 Jan 2023 22:39:24 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,145 +79,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@t
+ echsingularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---0000000000003f3a1a05f25e31fb
-Content-Type: text/plain; charset="UTF-8"
+On Mon, Jan 09, 2023 at 12:53:36PM -0800, Suren Baghdasaryan wrote:
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index d40bf8a5e19e..294dd44b2198 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -627,12 +627,16 @@ static inline void vma_write_lock(struct vm_area_struct *vma)
+>  	 * mm->mm_lock_seq can't be concurrently modified.
+>  	 */
+>  	mm_lock_seq = READ_ONCE(vma->vm_mm->mm_lock_seq);
+> -	if (vma->vm_lock_seq == mm_lock_seq)
+> +	if (vma->vm_lock->lock_seq == mm_lock_seq)
+>  		return;
+>  
+> -	down_write(&vma->vm_lock->lock);
+> -	vma->vm_lock_seq = mm_lock_seq;
+> -	up_write(&vma->vm_lock->lock);
+> +	if (atomic_cmpxchg(&vma->vm_lock->count, 0, -1))
+> +		wait_event(vma->vm_mm->vma_writer_wait,
+> +			   atomic_cmpxchg(&vma->vm_lock->count, 0, -1) == 0);
+> +	vma->vm_lock->lock_seq = mm_lock_seq;
+> +	/* Write barrier to ensure lock_seq change is visible before count */
+> +	smp_wmb();
+> +	atomic_set(&vma->vm_lock->count, 0);
+>  }
+>  
+>  /*
+> @@ -643,20 +647,28 @@ static inline void vma_write_lock(struct vm_area_struct *vma)
+>  static inline bool vma_read_trylock(struct vm_area_struct *vma)
+>  {
+>  	/* Check before locking. A race might cause false locked result. */
+> -	if (vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
+> +	if (vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
+>  		return false;
+>  
+> -	if (unlikely(down_read_trylock(&vma->vm_lock->lock) == 0))
+> +	if (unlikely(!atomic_inc_unless_negative(&vma->vm_lock->count)))
+>  		return false;
+>  
+> +	/* If atomic_t overflows, restore and fail to lock. */
+> +	if (unlikely(atomic_read(&vma->vm_lock->count) < 0)) {
+> +		if (atomic_dec_and_test(&vma->vm_lock->count))
+> +			wake_up(&vma->vm_mm->vma_writer_wait);
+> +		return false;
+> +	}
+> +
+>  	/*
+>  	 * Overflow might produce false locked result.
+>  	 * False unlocked result is impossible because we modify and check
+>  	 * vma->vm_lock_seq under vma->vm_lock protection and mm->mm_lock_seq
+>  	 * modification invalidates all existing locks.
+>  	 */
+> -	if (unlikely(vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
+> -		up_read(&vma->vm_lock->lock);
+> +	if (unlikely(vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
+> +		if (atomic_dec_and_test(&vma->vm_lock->count))
+> +			wake_up(&vma->vm_mm->vma_writer_wait);
+>  		return false;
+>  	}
 
-On Thu, Jan 12, 2023 at 12:11 AM Alexander Stein <
-alexander.stein@ew.tq-group.com> wrote:
+With this change readers can cause writers to starve.
+What about checking waitqueue_active() before or after increasing
+vma->vm_lock->count?
 
-> This helps figuring out why the device probe is deferred, e.g. missing
-> FSL_EDMA driver.
->
-> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
->
-
-Acked-by: Shengjiu Wang <shengjiu.wang@gmail.com>
-
-Best regards
-Wang Shengjiu
-
-> ---
-> Old:
-> root@ls1021:~# cat /sys/kernel/debug/devices_deferred
-> sound   fsl-asoc-card: snd_soc_register_card failed: -517
-> 2b50000.sai
->
-> New:
-> root@ls1021:~# cat /sys/kernel/debug/devices_deferred
-> sound   fsl-asoc-card: snd_soc_register_card failed: -517
-> 2b50000.sai     fsl-sai: Registering PCM dmaengine failed
->
->  sound/soc/fsl/fsl_sai.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> index 1c9be8a5dcb13..2a38e2bdf9893 100644
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -1458,14 +1458,17 @@ static int fsl_sai_probe(struct platform_device
-> *pdev)
->         if (sai->soc_data->use_imx_pcm) {
->                 ret = imx_pcm_dma_init(pdev);
->                 if (ret) {
-> +                       dev_err_probe(dev, ret, "PCM DMA init failed\n");
->                         if (!IS_ENABLED(CONFIG_SND_SOC_IMX_PCM_DMA))
->                                 dev_err(dev, "Error: You must enable the
-> imx-pcm-dma support!\n");
->                         goto err_pm_get_sync;
->                 }
->         } else {
->                 ret = devm_snd_dmaengine_pcm_register(dev, NULL, 0);
-> -               if (ret)
-> +               if (ret) {
-> +                       dev_err_probe(dev, ret, "Registering PCM dmaengine
-> failed\n");
->                         goto err_pm_get_sync;
-> +               }
->         }
->
->         ret = devm_snd_soc_register_component(dev, &fsl_component,
-> --
-> 2.34.1
->
->
-
---0000000000003f3a1a05f25e31fb
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
-<div dir=3D"ltr" class=3D"gmail_attr">On Thu, Jan 12, 2023 at 12:11 AM Alex=
-ander Stein &lt;<a href=3D"mailto:alexander.stein@ew.tq-group.com">alexande=
-r.stein@ew.tq-group.com</a>&gt; wrote:<br></div><blockquote class=3D"gmail_=
-quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,=
-204);padding-left:1ex">This helps figuring out why the device probe is defe=
-rred, e.g. missing<br>
-FSL_EDMA driver.<br>
-<br>
-Signed-off-by: Alexander Stein &lt;<a href=3D"mailto:alexander.stein@ew.tq-=
-group.com" target=3D"_blank">alexander.stein@ew.tq-group.com</a>&gt;<br></b=
-lockquote><div><br></div><div>Acked-by: Shengjiu Wang &lt;<a href=3D"mailto=
-:shengjiu.wang@gmail.com">shengjiu.wang@gmail.com</a>&gt;</div><div><br></d=
-iv><div>Best regards</div><div>Wang Shengjiu=C2=A0</div><blockquote class=
-=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rg=
-b(204,204,204);padding-left:1ex">
----<br>
-Old:<br>
-root@ls1021:~# cat /sys/kernel/debug/devices_deferred <br>
-sound=C2=A0 =C2=A0fsl-asoc-card: snd_soc_register_card failed: -517<br>
-2b50000.sai<br>
-<br>
-New:<br>
-root@ls1021:~# cat /sys/kernel/debug/devices_deferred <br>
-sound=C2=A0 =C2=A0fsl-asoc-card: snd_soc_register_card failed: -517<br>
-2b50000.sai=C2=A0 =C2=A0 =C2=A0fsl-sai: Registering PCM dmaengine failed<br=
->
-<br>
-=C2=A0sound/soc/fsl/fsl_sai.c | 5 ++++-<br>
-=C2=A01 file changed, 4 insertions(+), 1 deletion(-)<br>
-<br>
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c<br>
-index 1c9be8a5dcb13..2a38e2bdf9893 100644<br>
---- a/sound/soc/fsl/fsl_sai.c<br>
-+++ b/sound/soc/fsl/fsl_sai.c<br>
-@@ -1458,14 +1458,17 @@ static int fsl_sai_probe(struct platform_device *pd=
-ev)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (sai-&gt;soc_data-&gt;use_imx_pcm) {<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D imx_pcm_dma=
-_init(pdev);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ret) {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0dev_err_probe(dev, ret, &quot;PCM DMA init failed\n&quot;);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 if (!IS_ENABLED(CONFIG_SND_SOC_IMX_PCM_DMA))<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 dev_err(dev, &quot;Error: You must e=
-nable the imx-pcm-dma support!\n&quot;);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 goto err_pm_get_sync;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 } else {<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_dm=
-aengine_pcm_register(dev, NULL, 0);<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (ret)<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (ret) {<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0dev_err_probe(dev, ret, &quot;Registering PCM dmaengine failed\n&=
-quot;);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 goto err_pm_get_sync;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 ret =3D devm_snd_soc_register_component(dev, &a=
-mp;fsl_component,<br>
--- <br>
-2.34.1<br>
-<br>
-</blockquote></div></div>
-
---0000000000003f3a1a05f25e31fb--
+--
+Thanks,
+Hyeonggon
