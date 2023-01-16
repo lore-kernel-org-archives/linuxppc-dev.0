@@ -4,55 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B15E4C46467
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 20:09:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 287B3C46467
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 16 Jan 2023 22:01:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nwjm70BN3z3cgm
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 07:09:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NwmFd1FyMz3cdZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 09:01:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=oUEJmkN2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=nNjvKSs3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=oUEJmkN2;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=nNjvKSs3;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nwjl23CTtz3c4c
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 07:08:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
-	In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description;
-	bh=yFVciWdIzPstN0lMoVeAI5kAz1ktvsyoitwNKrcy8UI=; b=oUEJmkN2crgBTChY6Y4acT11fR
-	84TFgO+yf2GwMCh4C2ZC/vRRPrDNgG5XsLlNVmBqQlTH37XKt468ACMHJMnYz+7kX+WX8WKo3jOWW
-	t13/mq2wp0mlK0GHoljrIPeA/j7RCr5YtvPyV4qnHR/wXejP0cQItVUEV84SDtXIUWySwS4oLGhNS
-	YxJt58MR+g0WlrDP3ZJjP/u5tCzzKbtcNvw5gRqZEYD32ucm5RL3aEjtfGQd8SsR1WXhuZT+zpo89
-	HxIYEmATYpXoO4jZnTTAHHs8lngtofk6H9wnw4ISdPGzTJEmgSYkHvWkqkNRMjcjIX0ZikOKFfBy5
-	Mc0yfW3w==;
-Received: from [76.243.124.25] (helo=[192.168.5.123])
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1pHVmM-0092GP-Gi; Mon, 16 Jan 2023 20:08:26 +0000
-Message-ID: <a449698b-93f5-0742-77fe-5699544eab5c@infradead.org>
-Date: Mon, 16 Jan 2023 12:08:09 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwmDZ6Yzhz30hl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 09:00:45 +1100 (AEDT)
+Received: by mail-wm1-x32b.google.com with SMTP id c10-20020a05600c0a4a00b003db0636ff84so257641wmq.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 14:00:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=oNMgnRdxl8cID5dDHZQku0mVCQNWegrqxUVZnzdGN40=;
+        b=nNjvKSs3qKm3edSQucxlO+wqSAIaJBfNi6p974ivDyPbkfD8OZ+5nykh/KI0CjaL99
+         ZME9P3rbqBe0w3vVscfSjuxMyr70jJgpfmAb9KdvkqTBrhUJpNL2cFmoXHQI09/3ffcM
+         xKfMXfQeDGJ4VdSW+sRGlMmleWKNJbFBK+paWE5FucznXbSlp5PlaBiPepVgcOTH922c
+         cVPaNj1quO1FKiniINuBvFIxBAGIN+Vq/X1KVn1VV0Z1/GQLknPUfX1Nwh5Jktp9HNn+
+         Ons3PhsSm8KvF2oldYDiQH7KIOCmjmqySkSMRka3oebj7c1qn15LBRSqZwsT5eI+eGss
+         nlAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=oNMgnRdxl8cID5dDHZQku0mVCQNWegrqxUVZnzdGN40=;
+        b=C2UPwcEGorHl1P74uUPVSzpyK9cl2aGRFxQt46utjMQ3OWv7XT1Wm58vyPrMzMAodi
+         gC2gfvDqH37RKC17wX1Sfm9fQEAa50ewJ0Wf0HHZdSA5IG+aCAs12jfebTrCAiWC+yup
+         mbN1jIQWOpReUbN5EcmvUYKd+Dm7kwTR5mB+MHMnLOMF215YH01LgZ8F7Wc91kTPpuvP
+         KdxvMjoFIVss9e+Tew3pe7RYmeOIVDDaqFcgsVUwDbtIZscx4/JQH5CcLmIenFtjFTSF
+         12iwzeurartR72kpLV7GHTPqOxaahQIW9OHzCdhE3+DmqoFjz6KBClwdsZmdMpwOSByR
+         LR4g==
+X-Gm-Message-State: AFqh2koT+Bf+ARtFeoxbnifUjdY13m2074UMh3gKZEWiSkwT1YBcENJt
+	qWSjTLbupV93xfCurwf64VWNLFY8qmld3DlQ/OwICg==
+X-Google-Smtp-Source: AMrXdXsHuIgBy5BIQSMKTjuF57zvRXqW6FJhSaYVpJ46vp68UspRzwYrRXRofjTIHrEnHoSLw6D3Ivsy7ftSB8M1BWQ=
+X-Received: by 2002:a05:600c:1c9a:b0:3d9:ee45:8a9e with SMTP id
+ k26-20020a05600c1c9a00b003d9ee458a9emr45362wms.174.1673906438517; Mon, 16 Jan
+ 2023 14:00:38 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH v2 1/2] powerpc/ps3: Change updateboltedpp panic to info
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <cover.1672767868.git.geoff@infradead.org>
- <2df879d982809c05b0dfade57942fe03dbe9e7de.1672767868.git.geoff@infradead.org>
- <25cc9a51-2311-d7d3-3451-08725e6384cd@csgroup.eu>
- <284aed88-dc26-d74a-cf7a-f5875ba058eb@infradead.org>
- <87mt6j9wcf.fsf@mpe.ellerman.id.au>
-Content-Language: en-US
-From: Geoff Levand <geoff@infradead.org>
-In-Reply-To: <87mt6j9wcf.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20220921170839.21927-1-atrajeev@linux.vnet.ibm.com>
+ <Yyy0W6CnPk7BkkCU@kernel.org> <444a5a64-7bc6-d5fd-2880-611c5cbca587@intel.com>
+ <3EE5CFF3-51BC-444E-8FEF-2AC219E809F6@linux.vnet.ibm.com> <41461A8A-74F7-4938-9E8D-9F275114E906@linux.vnet.ibm.com>
+ <CAP-5=fXWCYQSpp92L64+7Piu0sfEq+RsigNLUowgCjsT218jow@mail.gmail.com> <5CAD9B57-1788-4C7E-9658-7634A49D8BF0@linux.vnet.ibm.com>
+In-Reply-To: <5CAD9B57-1788-4C7E-9658-7634A49D8BF0@linux.vnet.ibm.com>
+From: Ian Rogers <irogers@google.com>
+Date: Mon, 16 Jan 2023 14:00:26 -0800
+Message-ID: <CAP-5=fXS+8Wg8+Qrob+7fb5Y6FeBQphzd=Y0a1eh6xNwc-SfYA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] tools/perf/tests: Fix string substitutions in build
+ id test
+To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,85 +79,233 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: maddy@linux.vnet.ibm.com, Nageswara Sastry <rnsastry@linux.ibm.com>, Kajol Jain <kjain@linux.ibm.com>, Adrian Hunter <adrian.hunter@intel.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Disha Goel <disgoel@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Mon, Jan 16, 2023 at 4:00 AM Athira Rajeev
+<atrajeev@linux.vnet.ibm.com> wrote:
+>
+>
+>
+> > On 16-Jan-2023, at 11:47 AM, Ian Rogers <irogers@google.com> wrote:
+> >
+> > On Sun, Jan 15, 2023 at 9:03 PM Athira Rajeev
+> > <atrajeev@linux.vnet.ibm.com> wrote:
+> >>
+> >>
+> >>
+> >>> On 28-Sep-2022, at 10:24 AM, Athira Rajeev <atrajeev@linux.vnet.ibm.c=
+om> wrote:
+> >>>
+> >>> Hi All,
+> >>>
+> >>> Looking for what direction we can take here.
+> >>> Do we want to change all tests in tools/perf/tests/shell except test_=
+intel_pt.sh to use "bash" or go with
+> >>> the approach in the patch ? Please share your comments
+> >>>
+> >>> Thanks
+> >>> Athira
+> >>>
+> >>
+> >> Hi All,
+> >>
+> >> Looking for what direction we can take here.
+> >> Do we want to change all tests in tools/perf/tests/shell except test_i=
+ntel_pt.sh to use "bash" or go with
+> >> the approach in the patch ? Please share your comments
+> >>
+> >> Thanks
+> >> Athira
+> >
+>
+> Thanks Ian for the response.
+>
+> > I think some of what the patch is doing is good, some of it the
+>
+> Ian, can I take this as an ack for the patch so that Arnaldo can pick thi=
+s in acme git ?
 
-On 1/15/23 16:06, Michael Ellerman wrote:
-> Geoff Levand <geoff@infradead.org> writes:
->> On 1/9/23 09:41, Christophe Leroy wrote:
->>>
->>>
->>> Le 03/01/2023 à 18:51, Geoff Levand a écrit :
->>>> Commit fdacae8a84024474afff234bdd1dbe19ad597a10 (powerpc: Activate
->>>> CONFIG_STRICT_KERNEL_RWX by default) causes ps3_hpte_updateboltedpp()
->>>> to be called.  Change the panic statment in ps3_hpte_updateboltedpp()
->>>> to a pr_info statement so that bootup can continue.
->>>
->>> But if I understand correctly, it means that CONFIG_STRICT_KERNEL_RWX 
->>> won't work then.
->>>
->>> So, shouldn't we keep the panic and forbid CONFIG_STRICT_KERNEL_RWX on PS3 ?
->>
->> mmu_hash_ops.updateboltedpp returns void, so I can't return an error code to
->> indicate the feature is not supported.
-> 
-> We could change that in the medium term.
-> 
->> I could do something like this in arch/powerpc/Kconfig:
->>
->> -       select ARCH_HAS_STRICT_KERNEL_RWX       if (PPC_BOOK3S || PPC_8xx || 40x) && !HIBERNATION
->> +       select ARCH_HAS_STRICT_KERNEL_RWX       if (PPC_BOOK3S || PPC_8xx || 40x) && !PPC_PS3 && !HIBERNATION
->>
->> But then the ppc64_defconfig would be built without STRICT_KERNEL_RWX.
-> 
-> Yeah that would be a pity.
-> 
-> We could do the above and disable PS3 in ppc64_defconfig, allowing
-> ppc64_defconfig to still have STRICT_KERNEL_RWX.
+Acked-by: Ian Rogers <irogers@google.com>
 
-I really want to keep PS3 included in ppc64_defconfig.  Not that I expect
-anyone to boot a ppc64_defconfig kernel on PS3, but that is one of the
-'standard' configs that is built by some automated builders, and generally by
-anyone doing changes to the powerpc arch, and I want to keep getting those
-build tests for PS3.
+Thanks,
+Ian
 
-> I assume actual PS3 users would use a ps3_defconfig anyway right?
-
-Yeah, a derivative of it.  They are most likely are using 'Jailbreak' firmware
-that allows them to run Linux in the gameos partition.
-
-> Relatedly are there any actual PS3 users left? ;)
-
-It seems there are more users now than a few years ago.  I think they buy PS5s
-to play the latest games, and use their old console to mess around with Linux.
-I generally get a private inquiry every 3 or 4 weeks.  Usually asking how to
-update their kernel, or how to install a modern distro.
-
->> What other 'clean' way is there?
-> 
-> If we want to have a multi-platform kernel image that can boot on PS3
-> and other platforms, and have strict kernel RWX, then we need some
-> runtime logic to deal with that.
-> 
-> I'd rather not do that though, because it adds complexity to deal with a
-> pretty obscure corner case, and I suspect no one really boots a
-> ppc64_defconfig on actual PS3 hardware these days.
-> 
-> So my preference is we disable PS3 in ppc64_defconfig, and make PS3
-> incompatible with STRICT_KERNEL_RWX.
-
-As mentioned, I'd really like to keep PS3 included in ppc64_defconfig.  My
-original patch that basically just ignores the call to
-mmu_hash_ops.updateboltedpp allows that, and I haven't experienced any problems
-with it yet.
-
-My preference would be to keep PS3 in ppc64_defconfig, and either apply my
-original patch, or I keep that patch in my ps3-linux repo on kernel.org. Then,
-if we end up adding runtime support for RWX I then fixup PS3 to use that.
-
--Geoff
-
-
+> > readability becomes a little harder by not being bash. I'm agnostic as
+> > to which approach to take for the fix.
+>
+> May be we can take this as separate mail thread to get everyone=E2=80=99s=
+ opinion on changing all tests in "tools/perf/tests/shell" except test_inte=
+l_pt.sh to use =E2=80=9Cbash" ?
+>
+> >
+> > An aside, I noticed that we do run some tests at build time:
+> > https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/tree/lib=
+/Makefile?h=3Dperf/core#n390
+> > So perhaps we can have a shellcheck build option, defaulted off but
+> > enabled as part of Arnaldo's regular test scripts. The shellcheck
+> > build option would run shellcheck to make sure that there weren't
+> > errors in the shell code, which it is far too easy to introduce.
+>
+> Sure, that is a good option to have. I will check on having =E2=80=9Cshel=
+lcheck" as a build option.
+>
+> Thanks
+> Athira
+>
+> >
+> > Thanks,
+> > Ian
+> >
+> >>>> On 23-Sep-2022, at 11:54 AM, Adrian Hunter <adrian.hunter@intel.com>=
+ wrote:
+> >>>>
+> >>>> On 22/09/22 22:15, Arnaldo Carvalho de Melo wrote:
+> >>>>> Em Wed, Sep 21, 2022 at 10:38:38PM +0530, Athira Rajeev escreveu:
+> >>>>>> The perf test named =E2=80=9Cbuild id cache operations=E2=80=9D sk=
+ips with below
+> >>>>>> error on some distros:
+> >>>>>
+> >>>>> I wonder if we shouldn't instead state that bash is needed?
+> >>>>>
+> >>>>> =E2=AC=A2[acme@toolbox perf-urgent]$ head -1 tools/perf/tests/shell=
+/*.sh | grep ^#
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/bash
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/bash
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/bash
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/bash
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> #!/bin/sh
+> >>>>> =E2=AC=A2[acme@toolbox perf-urgent]$
+> >>>>>
+> >>>>> Opinions?
+> >>>>>
+> >>>>
+> >>>> Please don't change tools/perf/tests/shell/test_intel_pt.sh
+> >>>>
+> >>>> I started using shellcheck on that with the "perf test:
+> >>>> test_intel_pt.sh: Add per-thread test" patch set that I sent.
+> >>>>
+> >>>> FYI, if you use shellcheck on buildid.sh, it shows up issues even
+> >>>> after changing to bash:
+> >>>>
+> >>>> *** Before ***
+> >>>>
+> >>>> $ shellcheck -S warning tools/perf/tests/shell/buildid.sh
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 69:
+> >>>>      link=3D${build_id_dir}/.build-id/${id:0:2}/${id:2}
+> >>>>                                     ^-------^ SC2039: In POSIX sh, s=
+tring indexing is undefined.
+> >>>>                                               ^-----^ SC2039: In POS=
+IX sh, string indexing is undefined.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 77:
+> >>>>      file=3D${build_id_dir}/.build-id/${id:0:2}/`readlink ${link}`/e=
+lf
+> >>>>                                     ^-------^ SC2039: In POSIX sh, s=
+tring indexing is undefined.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 123:
+> >>>>      echo "running: perf record $@"
+> >>>>                                 ^-- SC2145: Argument mixes string an=
+d array. Use * or separate argument.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 124:
+> >>>>      ${perf} record --buildid-all -o ${data} $@ &> ${log}
+> >>>>                                              ^-- SC2068: Double quot=
+e array expansions to avoid re-splitting elements.
+> >>>>                                                 ^-------^ SC2039: In=
+ POSIX sh, &> is undefined.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 126:
+> >>>>              echo "failed: record $@"
+> >>>>                                   ^-- SC2145: Argument mixes string =
+and array. Use * or separate argument.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 131:
+> >>>>      check ${@: -1}
+> >>>>            ^------^ SC2068: Double quote array expansions to avoid r=
+e-splitting elements.
+> >>>>            ^------^ SC2039: In POSIX sh, string indexing is undefine=
+d.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 158:
+> >>>> exit ${err}
+> >>>>   ^----^ SC2154: err is referenced but not assigned.
+> >>>>
+> >>>> For more information:
+> >>>> https://www.shellcheck.net/wiki/SC2068 -- Double quote array expansi=
+ons to ...
+> >>>> https://www.shellcheck.net/wiki/SC2145 -- Argument mixes string and =
+array. ...
+> >>>> https://www.shellcheck.net/wiki/SC2039 -- In POSIX sh, &> is undefin=
+ed.
+> >>>>
+> >>>> *** After ***
+> >>>>
+> >>>> $ shellcheck -S warning tools/perf/tests/shell/buildid.sh
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 123:
+> >>>>      echo "running: perf record $@"
+> >>>>                                 ^-- SC2145: Argument mixes string an=
+d array. Use * or separate argument.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 124:
+> >>>>      ${perf} record --buildid-all -o ${data} $@ &> ${log}
+> >>>>                                              ^-- SC2068: Double quot=
+e array expansions to avoid re-splitting elements.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 126:
+> >>>>              echo "failed: record $@"
+> >>>>                                   ^-- SC2145: Argument mixes string =
+and array. Use * or separate argument.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 131:
+> >>>>      check ${@: -1}
+> >>>>            ^------^ SC2068: Double quote array expansions to avoid r=
+e-splitting elements.
+> >>>>
+> >>>>
+> >>>> In tools/perf/tests/shell/buildid.sh line 158:
+> >>>> exit ${err}
+> >>>>   ^----^ SC2154: err is referenced but not assigned.
+> >>>>
+> >>>> For more information:
+> >>>> https://www.shellcheck.net/wiki/SC2068 -- Double quote array expansi=
+ons to ...
+> >>>> https://www.shellcheck.net/wiki/SC2145 -- Argument mixes string and =
+array. ...
+> >>>> https://www.shellcheck.net/wiki/SC2154 -- err is referenced but not =
+assigned.
+>
