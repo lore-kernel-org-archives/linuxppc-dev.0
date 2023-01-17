@@ -4,55 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A790EC677F1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 14:56:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C521C63797
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 15:05:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxBm81KlBz3cJB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 01:56:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.47; helo=mail-oa1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f47.google.com (mail-oa1-f47.google.com [209.85.160.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxByq4bqvz3cf8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 02:05:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=U1h4kFu/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=U1h4kFu/;
+	dkim-atps=neutral
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxBlW0Cgqz3c7l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 01:55:34 +1100 (AEDT)
-Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-15085b8a2f7so32210235fac.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 06:55:34 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=r0xOPUwMGbHKwlz1eX+ZfzIFwn/1MAHYgP6guftK2G0=;
-        b=AR7ynlryb4567Rp279zx6AVOrvEG9spHULmYRTDP+d5whbSSSB++T/5eatAEv1cH4V
-         MVB/9CB/yuHEMc8+K9esR8npOhWt97D90YBa2vkbMBGOEBd6iZ8pvEmmN9qIr/Shdh1y
-         cfaEWBf2TicrI3ls/CI6JgVh6r9TqU7StlZk8eds6q5e+e8BLIi2V+BTYBAYv4Ex29E0
-         IF3ko09kcXzr2i1qJUVYEB5Kysq4NQJbwUgnbXOzTYqz4J0RtI1t0ptq0XzbefO2In4U
-         N9k9DHh7pTDTOWkmMQON2aVFnW5cbOn+y9sLOxlfOdrOyKcy7SJgo+va5Q+NJsdFatuO
-         Xn3w==
-X-Gm-Message-State: AFqh2kqmkoJbr3z/xMOsc/FWvRZdZG/z1ez8nlo+oyhTOnrRall6f/lK
-	ICKl910/nftBtaqmQX3XRQ==
-X-Google-Smtp-Source: AMrXdXsNUJ00dTOKvt2jfPMH4Ze0uTp6cmxdG4fza3JfdEkyhCZe9BD6Z//VMQY6JmDD12zrOOWqFg==
-X-Received: by 2002:a05:6870:2f02:b0:15f:3213:dfc6 with SMTP id qj2-20020a0568702f0200b0015f3213dfc6mr1901825oab.35.1673967331153;
-        Tue, 17 Jan 2023 06:55:31 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id g4-20020a056870d20400b0013ae5246449sm16348572oac.22.2023.01.17.06.55.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 17 Jan 2023 06:55:30 -0800 (PST)
-Received: (nullmailer pid 3058299 invoked by uid 1000);
-	Tue, 17 Jan 2023 14:55:29 -0000
-Date: Tue, 17 Jan 2023 08:55:29 -0600
-From: Rob Herring <robh@kernel.org>
-To: Herve Codina <herve.codina@bootlin.com>
-Subject: Re: [PATCH v3 01/10] dt-bindings: soc: fsl: cpm_qe: Add TSA
- controller
-Message-ID: <20230117145529.GA3044055-robh@kernel.org>
-References: <20230113103759.327698-1-herve.codina@bootlin.com>
- <20230113103759.327698-2-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxBxp554Hz3c7l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 02:04:29 +1100 (AEDT)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 47AFC33D8F;
+	Tue, 17 Jan 2023 15:04:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1673967866; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Df5NQTjJQCiRBGEpyl9cGWjQX8DB0qIAlHtRMH2qV9k=;
+	b=U1h4kFu/QGMT7jVH4gL5A9ak+iHM3tKQ+qvBWljMIVg6aF0bPgBMxA7WCk5cHbEVvlFtI/
+	1shiLAhNfJI0bRNytT86McNF3WNli+p9sU19877lNFKU1yl+GIjD1Lq+WgZf4v4sfsiDdR
+	RI3hBB1GBEVLRElyJYjyjATKnjMDqa8=
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 1D6381390C;
+	Tue, 17 Jan 2023 15:04:26 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id TrakBvq4xmMhPwAAMHmgww
+	(envelope-from <mhocko@suse.com>); Tue, 17 Jan 2023 15:04:26 +0000
+Date: Tue, 17 Jan 2023 16:04:25 +0100
+From: Michal Hocko <mhocko@suse.com>
+To: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH 12/41] mm: add per-VMA lock and helper functions to
+ control it
+Message-ID: <Y8a4+bV1dYNAiUkD@dhcp22.suse.cz>
+References: <20230109205336.3665937-1-surenb@google.com>
+ <20230109205336.3665937-13-surenb@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230113103759.327698-2-herve.codina@bootlin.com>
+In-Reply-To: <20230109205336.3665937-13-surenb@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,329 +69,262 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, Fabio Estevam <festevam@gmail.com>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Li Yang <leoyang.li@nxp.com>, Nicolin Chen <nicoleotsuka@gmail.com>, linuxppc-dev@lists.ozlabs.org, Mark Brown <broonie@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Shengjiu Wang <shengjiu.wang@gmail.com>, linux-arm-kernel@lists.infradead.org, Qiang Zhao <qiang.zhao@nxp.com>
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsingularity.ne
+ t
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 13, 2023 at 11:37:50AM +0100, Herve Codina wrote:
-> Add support for the time slot assigner (TSA)
-> available in some PowerQUICC SoC such as MPC885
-> or MPC866.
+On Mon 09-01-23 12:53:07, Suren Baghdasaryan wrote:
+> Introduce a per-VMA rw_semaphore to be used during page fault handling
+> instead of mmap_lock. Because there are cases when multiple VMAs need
+> to be exclusively locked during VMA tree modifications, instead of the
+> usual lock/unlock patter we mark a VMA as locked by taking per-VMA lock
+> exclusively and setting vma->lock_seq to the current mm->lock_seq. When
+> mmap_write_lock holder is done with all modifications and drops mmap_lock,
+> it will increment mm->lock_seq, effectively unlocking all VMAs marked as
+> locked.
 
-An odd line wrap length... 
+I have to say I was struggling a bit with the above and only understood
+what you mean by reading the patch several times. I would phrase it like
+this (feel free to use if you consider this to be an improvement).
 
+Introduce a per-VMA rw_semaphore. The lock implementation relies on a
+per-vma and per-mm sequence counters to note exclusive locking:
+        - read lock - (implemented by vma_read_trylock) requires the the
+          vma (vm_lock_seq) and mm (mm_lock_seq) sequence counters to
+          differ. If they match then there must be a vma exclusive lock
+          held somewhere.
+        - read unlock - (implemented by vma_read_unlock) is a trivial
+          vma->lock unlock.
+        - write lock - (vma_write_lock) requires the mmap_lock to be
+          held exclusively and the current mm counter is noted to the vma
+          side. This will allow multiple vmas to be locked under a single
+          mmap_lock write lock (e.g. during vma merging). The vma counter
+          is modified under exclusive vma lock.
+        - write unlock - (vma_write_unlock_mm) is a batch release of all
+          vma locks held. It doesn't pair with a specific
+          vma_write_lock! It is done before exclusive mmap_lock is
+          released by incrementing mm sequence counter (mm_lock_seq).
+	- write downgrade - if the mmap_lock is downgraded to the read
+	  lock all vma write locks are released as well (effectivelly
+	  same as write unlock).
+
+> VMA lock is placed on the cache line boundary so that its 'count' field
+> falls into the first cache line while the rest of the fields fall into
+> the second cache line. This lets the 'count' field to be cached with
+> other frequently accessed fields and used quickly in uncontended case
+> while 'owner' and other fields used in the contended case will not
+> invalidate the first cache line while waiting on the lock.
 > 
-> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
 > ---
->  .../bindings/soc/fsl/cpm_qe/fsl,tsa.yaml      | 260 ++++++++++++++++++
->  include/dt-bindings/soc/fsl,tsa.h             |  13 +
->  2 files changed, 273 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
->  create mode 100644 include/dt-bindings/soc/fsl,tsa.h
+>  include/linux/mm.h        | 80 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/mm_types.h  |  8 ++++
+>  include/linux/mmap_lock.h | 13 +++++++
+>  kernel/fork.c             |  4 ++
+>  mm/init-mm.c              |  3 ++
+>  5 files changed, 108 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
-> new file mode 100644
-> index 000000000000..eb17b6119abd
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
-> @@ -0,0 +1,260 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,tsa.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index f3f196e4d66d..ec2c4c227d51 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -612,6 +612,85 @@ struct vm_operations_struct {
+>  					  unsigned long addr);
+>  };
+>  
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +static inline void vma_init_lock(struct vm_area_struct *vma)
+> +{
+> +	init_rwsem(&vma->lock);
+> +	vma->vm_lock_seq = -1;
+> +}
 > +
-> +title: PowerQUICC CPM Time-slot assigner (TSA) controller
+> +static inline void vma_write_lock(struct vm_area_struct *vma)
+> +{
+> +	int mm_lock_seq;
 > +
-> +maintainers:
-> +  - Herve Codina <herve.codina@bootlin.com>
+> +	mmap_assert_write_locked(vma->vm_mm);
 > +
-> +description: |
-
-Don't need '|' if no formatting.
-
-> +  The TSA is the time-slot assigner that can be found on some
-> +  PowerQUICC SoC.
-> +  Its purpose is to route some TDM time-slots to other internal
-> +  serial controllers.
-
-Wrap at 80.
-
+> +	/*
+> +	 * current task is holding mmap_write_lock, both vma->vm_lock_seq and
+> +	 * mm->mm_lock_seq can't be concurrently modified.
+> +	 */
+> +	mm_lock_seq = READ_ONCE(vma->vm_mm->mm_lock_seq);
+> +	if (vma->vm_lock_seq == mm_lock_seq)
+> +		return;
 > +
-> +properties:
-> +  compatible:
-> +    items:
-> +      - enum:
-> +          - fsl,mpc885-tsa
-> +          - fsl,mpc866-tsa
-> +      - const: fsl,cpm1-tsa
+> +	down_write(&vma->lock);
+> +	vma->vm_lock_seq = mm_lock_seq;
+> +	up_write(&vma->lock);
+> +}
 > +
-> +  reg:
-> +    items:
-> +      - description: SI (Serial Interface) register base
-> +      - description: SI RAM base
+> +/*
+> + * Try to read-lock a vma. The function is allowed to occasionally yield false
+> + * locked result to avoid performance overhead, in which case we fall back to
+> + * using mmap_lock. The function should never yield false unlocked result.
+> + */
+> +static inline bool vma_read_trylock(struct vm_area_struct *vma)
+> +{
+> +	/* Check before locking. A race might cause false locked result. */
+> +	if (vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
+> +		return false;
 > +
-> +  reg-names:
-> +    items:
-> +      - const: si_regs
-> +      - const: si_ram
+> +	if (unlikely(down_read_trylock(&vma->lock) == 0))
+> +		return false;
 > +
-> +  '#address-cells':
-> +    const: 1
+> +	/*
+> +	 * Overflow might produce false locked result.
+> +	 * False unlocked result is impossible because we modify and check
+> +	 * vma->vm_lock_seq under vma->lock protection and mm->mm_lock_seq
+> +	 * modification invalidates all existing locks.
+> +	 */
+> +	if (unlikely(vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
+> +		up_read(&vma->lock);
+> +		return false;
+> +	}
+> +	return true;
+> +}
 > +
-> +  '#size-cells':
-> +    const: 0
+> +static inline void vma_read_unlock(struct vm_area_struct *vma)
+> +{
+> +	up_read(&vma->lock);
+> +}
 > +
-> +patternProperties:
-> +  '^tdm@[0-1]$':
-> +    description:
-> +      The TDM managed by this controller
-> +    type: object
-
-       additionalProperties: false
-
+> +static inline void vma_assert_write_locked(struct vm_area_struct *vma)
+> +{
+> +	mmap_assert_write_locked(vma->vm_mm);
+> +	/*
+> +	 * current task is holding mmap_write_lock, both vma->vm_lock_seq and
+> +	 * mm->mm_lock_seq can't be concurrently modified.
+> +	 */
+> +	VM_BUG_ON_VMA(vma->vm_lock_seq != READ_ONCE(vma->vm_mm->mm_lock_seq), vma);
+> +}
 > +
-> +    properties:
-> +      reg:
-> +        minimum: 0
-> +        maximum: 1
-> +        description:
-> +          The TDM number for this TDM, 0 for TDMa and 1 for TDMb
+> +#else /* CONFIG_PER_VMA_LOCK */
 > +
-> +      fsl,common-rxtx-pins:
-> +        $ref: /schemas/types.yaml#/definitions/flag
-> +        description:
-> +          The hardware can use four dedicated pins for Tx clock,
-> +          Tx sync, Rx clock and Rx sync or use only two pins,
-> +          Tx/Rx clock and Rx/Rx sync.
-> +          Without the 'fsl,common-rxtx-pins' property, the four
-> +          pins are used. With the 'fsl,common-rxtx-pins' property,
-> +          two pins are used.
+> +static inline void vma_init_lock(struct vm_area_struct *vma) {}
+> +static inline void vma_write_lock(struct vm_area_struct *vma) {}
+> +static inline bool vma_read_trylock(struct vm_area_struct *vma)
+> +		{ return false; }
+> +static inline void vma_read_unlock(struct vm_area_struct *vma) {}
+> +static inline void vma_assert_write_locked(struct vm_area_struct *vma) {}
 > +
-> +      clocks:
-> +        minItems: 2
-> +        maxItems: 4
+> +#endif /* CONFIG_PER_VMA_LOCK */
 > +
-> +      clock-names:
-> +        minItems: 2
-> +        maxItems: 4
-> +
-> +      fsl,mode:
-
-'mode' is a bit vague. It's already used as well which can be a problem 
-if there are differing types. (There's not in this case)
-
-> +        $ref: /schemas/types.yaml#/definitions/string
-> +        enum: [normal, echo, internal-loopback, control-loopback]
-> +        default: normal
-> +        description: |
-> +          Operational mode:
-> +            - normal:
-> +                Normal operation
-> +            - echo:
-> +                Automatic echo. Rx data is resent on Tx
-> +            - internal-loopback:
-> +                The TDM transmitter is connected to the receiver.
-> +                Data appears on Tx pin.
-> +            - control-loopback:
-> +                The TDM transmitter is connected to the receiver.
-> +                The Tx pin is disconnected.
-> +
-> +      fsl,rx-frame-sync-delay-bits:
-> +        enum: [0, 1, 2, 3]
-> +        default: 0
-> +        description: |
-> +          Receive frame sync delay in number of bits.
-> +          Indicates the delay between the Rx sync and the first bit of the
-> +          Rx frame. 0 for no bit delay. 1, 2 or 3 for 1, 2 or 3 bits delay.
-> +
-> +      fsl,tx-frame-sync-delay-bits:
-> +        enum: [0, 1, 2, 3]
-> +        default: 0
-> +        description: |
-> +          Transmit frame sync delay in number of bits.
-> +          Indicates the delay between the Tx sync and the first bit of the
-> +          Tx frame. 0 for no bit delay. 1, 2 or 3 for 1, 2 or 3 bits delay.
-> +
-> +      fsl,clock-falling-edge:
-> +        $ref: /schemas/types.yaml#/definitions/flag
-> +        description: |
-> +          Data is sent on falling edge of the clock (and received on the
-> +          rising edge).
-> +          If 'clock-falling-edge' is not present, data is sent on the
-> +          rising edge (and received on the falling edge).
-> +
-> +      fsl,fsync-rising-edge:
-> +        $ref: /schemas/types.yaml#/definitions/flag
-> +        description:
-> +          Frame sync pulses are sampled with the rising edge of the channel
-> +          clock. If 'fsync-rising-edge' is not present, pulses are sample
-> +          with e falling edge.
-> +
-> +      fsl,double-speed-clock:
-> +        $ref: /schemas/types.yaml#/definitions/flag
-> +        description:
-> +          The channel clock is twice the data rate.
-> +
-> +      fsl,tx-ts-routes:
-> +        $ref: /schemas/types.yaml#/definitions/uint32-matrix
-> +        description: |
-> +          A list of tupple that indicates the Tx time-slots routes.
-> +            tx_ts_routes =
-> +               < 2 0 >, /* The first 2 time slots are not used */
-> +               < 3 1 >, /* The next 3 ones are route to SCC2 */
-> +               < 4 0 >, /* The next 4 ones are not used */
-> +               < 2 2 >; /* The nest 2 ones are route to SCC3 */
-> +        items:
-> +          items:
-> +            - description:
-> +                The number of time-slots
-> +              minimum: 1
-> +              maximum: 64
-> +            - description: |
-> +                The source serial interface (dt-bindings/soc/fsl,tsa.h
-> +                defines these values)
-> +                 - 0: No destination
-> +                 - 1: SCC2
-> +                 - 2: SCC3
-> +                 - 3: SCC4
-> +                 - 4: SMC1
-> +                 - 5: SMC2
-> +              enum: [0, 1, 2, 3, 4, 5]
-> +        minItems: 1
-> +        maxItems: 64
-> +
-> +      fsl,rx-ts-routes:
-> +        $ref: /schemas/types.yaml#/definitions/uint32-matrix
-> +        description: |
-> +          A list of tupple that indicates the Rx time-slots routes.
-> +            tx_ts_routes =
-> +               < 2 0 >, /* The first 2 time slots are not used */
-> +               < 3 1 >, /* The next 3 ones are route from SCC2 */
-> +               < 4 0 >, /* The next 4 ones are not used */
-> +               < 2 2 >; /* The nest 2 ones are route from SCC3 */
-> +        items:
-> +          items:
-> +            - description:
-> +                The number of time-slots
-> +              minimum: 1
-> +              maximum: 64
-> +            - description: |
-> +                The destination serial interface (dt-bindings/soc/fsl,tsa.h
-> +                defines these values)
-> +                 - 0: No destination
-> +                 - 1: SCC2
-> +                 - 2: SCC3
-> +                 - 3: SCC4
-> +                 - 4: SMC1
-> +                 - 5: SMC2
-> +              enum: [0, 1, 2, 3, 4, 5]
-> +        minItems: 1
-> +        maxItems: 64
-> +
-> +    allOf:
-> +      # If fsl,common-rxtx-pins is present, only 2 clocks are needed.
-> +      # Else, the 4 clocks must be present.
-> +      - if:
-> +          required:
-> +            - fsl,common-rxtx-pins
-> +        then:
-> +          properties:
-> +            clocks:
-> +              items:
-> +                - description: External clock connected to L1RSYNC pin
-> +                - description: External clock connected to L1RCLK pin
-> +            clock-names:
-> +              items:
-> +                - const: l1rsync
-> +                - const: l1rclk
-> +        else:
-> +          properties:
-> +            clocks:
-> +              items:
-> +                - description: External clock connected to L1RSYNC pin
-> +                - description: External clock connected to L1RCLK pin
-> +                - description: External clock connected to L1TSYNC pin
-> +                - description: External clock connected to L1TCLK pin
-> +            clock-names:
-> +              items:
-> +                - const: l1rsync
-> +                - const: l1rclk
-> +                - const: l1tsync
-> +                - const: l1tclk
-
-As the names are the same, just the length varies between 2 or 4, move 
-all this to the main definition and here just put constraints on the 
-length.
-
-> +
-> +    required:
-> +      - reg
-> +      - clocks
-> +      - clock-names
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - reg-names
-> +  - '#address-cells'
-> +  - '#size-cells'
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/soc/fsl,tsa.h>
-> +
-> +    tsa@ae0 {
-> +        compatible = "fsl,mpc885-tsa", "fsl,cpm1-tsa";
-> +        reg = <0xae0 0x10>,
-> +              <0xc00 0x200>;
-> +        reg-names = "si_regs", "si_ram";
-> +
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +
-> +        tdm@0 {
-> +            /* TDMa */
-> +            reg = <0>;
-> +
-> +            clocks = <&clk_l1rsynca>, <&clk_l1rclka>;
-> +            clock-names = "l1rsync", "l1rclk";
-> +
-> +            fsl,common-rxtx-pins;
-> +            fsl,fsync-rising-edge;
-> +
-> +            fsl,tx-ts-routes = < 2 0 >,             /* TS 0..1 */
-> +                           < 24 FSL_CPM_TSA_SCC4 >, /* TS 2..25 */
-> +                           < 1 0 >,                 /* TS 26 */
-> +                           < 5 FSL_CPM_TSA_SCC3 >;  /* TS 27..31 */
-> +
-> +            fsl,rx-ts-routes = < 2 0 >,             /* TS 0..1 */
-> +                           < 24 FSL_CPM_TSA_SCC4 >, /* 2..25 */
-> +                           < 1 0 >,                 /* TS 26 */
-> +                           < 5 FSL_CPM_TSA_SCC3 >;  /* TS 27..31 */
-> +        };
-> +    };
-> diff --git a/include/dt-bindings/soc/fsl,tsa.h b/include/dt-bindings/soc/fsl,tsa.h
-> new file mode 100644
-> index 000000000000..2cc44e867dbe
-> --- /dev/null
-> +++ b/include/dt-bindings/soc/fsl,tsa.h
-> @@ -0,0 +1,13 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause */
-> +
-> +#ifndef __DT_BINDINGS_SOC_FSL_TSA_H
-> +#define __DT_BINDINGS_SOC_FSL_TSA_H
-> +
-> +#define FSL_CPM_TSA_NU		0	/* Pseuso Cell Id for not used item */
-> +#define FSL_CPM_TSA_SCC2	1
-> +#define FSL_CPM_TSA_SCC3	2
-> +#define FSL_CPM_TSA_SCC4	3
-> +#define FSL_CPM_TSA_SMC1	4
-> +#define FSL_CPM_TSA_SMC2	5
-> +
+>  static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
+>  {
+>  	static const struct vm_operations_struct dummy_vm_ops = {};
+> @@ -620,6 +699,7 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
+>  	vma->vm_mm = mm;
+>  	vma->vm_ops = &dummy_vm_ops;
+>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+> +	vma_init_lock(vma);
+>  }
+>  
+>  static inline void vma_set_anonymous(struct vm_area_struct *vma)
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index d5cdec1314fe..5f7c5ca89931 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -555,6 +555,11 @@ struct vm_area_struct {
+>  	pgprot_t vm_page_prot;
+>  	unsigned long vm_flags;		/* Flags, see mm.h. */
+>  
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +	int vm_lock_seq;
+> +	struct rw_semaphore lock;
 > +#endif
+> +
+>  	/*
+>  	 * For areas with an address space and backing store,
+>  	 * linkage into the address_space->i_mmap interval tree.
+> @@ -680,6 +685,9 @@ struct mm_struct {
+>  					  * init_mm.mmlist, and are protected
+>  					  * by mmlist_lock
+>  					  */
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +		int mm_lock_seq;
+> +#endif
+>  
+>  
+>  		unsigned long hiwater_rss; /* High-watermark of RSS usage */
+> diff --git a/include/linux/mmap_lock.h b/include/linux/mmap_lock.h
+> index e49ba91bb1f0..40facd4c398b 100644
+> --- a/include/linux/mmap_lock.h
+> +++ b/include/linux/mmap_lock.h
+> @@ -72,6 +72,17 @@ static inline void mmap_assert_write_locked(struct mm_struct *mm)
+>  	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_lock), mm);
+>  }
+>  
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +static inline void vma_write_unlock_mm(struct mm_struct *mm)
+> +{
+> +	mmap_assert_write_locked(mm);
+> +	/* No races during update due to exclusive mmap_lock being held */
+> +	WRITE_ONCE(mm->mm_lock_seq, mm->mm_lock_seq + 1);
+> +}
+> +#else
+> +static inline void vma_write_unlock_mm(struct mm_struct *mm) {}
+> +#endif
+> +
+>  static inline void mmap_init_lock(struct mm_struct *mm)
+>  {
+>  	init_rwsem(&mm->mmap_lock);
+> @@ -114,12 +125,14 @@ static inline bool mmap_write_trylock(struct mm_struct *mm)
+>  static inline void mmap_write_unlock(struct mm_struct *mm)
+>  {
+>  	__mmap_lock_trace_released(mm, true);
+> +	vma_write_unlock_mm(mm);
+>  	up_write(&mm->mmap_lock);
+>  }
+>  
+>  static inline void mmap_write_downgrade(struct mm_struct *mm)
+>  {
+>  	__mmap_lock_trace_acquire_returned(mm, false, true);
+> +	vma_write_unlock_mm(mm);
+>  	downgrade_write(&mm->mmap_lock);
+>  }
+>  
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 5986817f393c..c026d75108b3 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -474,6 +474,7 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
+>  		 */
+>  		*new = data_race(*orig);
+>  		INIT_LIST_HEAD(&new->anon_vma_chain);
+> +		vma_init_lock(new);
+>  		dup_anon_vma_name(orig, new);
+>  	}
+>  	return new;
+> @@ -1145,6 +1146,9 @@ static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
+>  	seqcount_init(&mm->write_protect_seq);
+>  	mmap_init_lock(mm);
+>  	INIT_LIST_HEAD(&mm->mmlist);
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +	WRITE_ONCE(mm->mm_lock_seq, 0);
+> +#endif
+>  	mm_pgtables_bytes_init(mm);
+>  	mm->map_count = 0;
+>  	mm->locked_vm = 0;
+> diff --git a/mm/init-mm.c b/mm/init-mm.c
+> index c9327abb771c..33269314e060 100644
+> --- a/mm/init-mm.c
+> +++ b/mm/init-mm.c
+> @@ -37,6 +37,9 @@ struct mm_struct init_mm = {
+>  	.page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
+>  	.arg_lock	=  __SPIN_LOCK_UNLOCKED(init_mm.arg_lock),
+>  	.mmlist		= LIST_HEAD_INIT(init_mm.mmlist),
+> +#ifdef CONFIG_PER_VMA_LOCK
+> +	.mm_lock_seq	= 0,
+> +#endif
+>  	.user_ns	= &init_user_ns,
+>  	.cpu_bitmap	= CPU_BITS_NONE,
+>  #ifdef CONFIG_IOMMU_SVA
 > -- 
-> 2.38.1
-> 
+> 2.39.0
+
+-- 
+Michal Hocko
+SUSE Labs
