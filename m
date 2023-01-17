@@ -4,48 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9CEBDC63797
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 05:38:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37074C3DA78
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 10:02:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NwyNp5YGSz3fDF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 16:38:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infragraf.org (client-ip=43.154.221.58; helo=bg4.exmail.qq.com; envelope-from=tong@infragraf.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 354 seconds by postgrey-1.36 at boromir; Tue, 17 Jan 2023 16:38:01 AEDT
-Received: from bg4.exmail.qq.com (bg4.exmail.qq.com [43.154.221.58])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nx4FR3g3pz3cf7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 21:02:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ncsUyaVT;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=ncsUyaVT;
+	dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwyN96NXFz3bWh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:38:01 +1100 (AEDT)
-X-QQ-mid: bizesmtp63t1673933452t22prkyo
-Received: from smtpclient.apple ( [1.202.165.115])
-	by bizesmtp.qq.com (ESMTP) with 
-	id ; Tue, 17 Jan 2023 13:30:49 +0800 (CST)
-X-QQ-SSF: 00000000000000709000000A0000000
-X-QQ-FEAT: AC2Z5zz8gBT5NrlZsUHrGX7M6x4b6w7laLHTaGrrBF0cvQnK+h1mht/fhRhSz
-	1fICMuYxXFczf/h6V+62SQezYwdekoTVCEs41JyNQk2aRdNP/SQ+pr+TwXxBucFOaTo9KDm
-	KeG+KNgO43dfcagWaZA2fZQHokfiuaYC3+cgrPVaT1zBQxlmaEZ20ky8h8jHbtyqh06J6A8
-	SuMuNlSvWtc/bkoYYk8F1TAtRXBMn+SRMIZJq8KrMGtrSt3zAmaSQFz7mvrdGMJtsCRy4vq
-	ajkUAeM4j5IzVSIWdgCiDJQ+vm3Km2MoX8V5DPPwuD5oGSAegbggtiSk41aBSdUrOwNURBz
-	jly3lQb6uaae1MUuE8uC2LohNgljCe+zM7/FZWTxFLtBYkFFYrITSDRYxVuW1sz84gSWReP
-X-QQ-GoodBg: 0
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 15.0 \(3693.20.0.1.32\))
-Subject: Re: [bpf-next v2] bpf: drop deprecated bpf_jit_enable == 2
-From: Tonghao Zhang <tong@infragraf.org>
-In-Reply-To: <5836b464-290e-203f-00f2-fc6632c9f570@csgroup.eu>
-Date: Tue, 17 Jan 2023 13:30:49 +0800
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <147A796D-12C0-482F-B48A-16E67120622B@infragraf.org>
-References: <20230105030614.26842-1-tong@infragraf.org>
- <ea7673e1-40ec-18be-af89-5f4fd0f71742@csgroup.eu>
- <71c83f39-f85f-d990-95b7-ab6068839e6c@iogearbox.net>
- <5836b464-290e-203f-00f2-fc6632c9f570@csgroup.eu>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Daniel Borkmann <daniel@iogearbox.net>
-X-Mailer: Apple Mail (2.3693.20.0.1.32)
-X-QQ-SENDSIZE: 520
-Feedback-ID: bizesmtp:infragraf.org:qybglogicsvr:qybglogicsvr5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nx2l83nK9z2xrW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 19:54:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=82O7MPpmKDKH/y6naoktZs3WQBLC/PHyEl3Wjqd7/dM=; b=ncsUyaVTQh9fhCexlcLhcCRL9S
+	NS41uihsn8PZ17VRTMIIzlrwWNAiQRiZ+A4KgC02XPY3VKPipXvA16q7pUrG6TIkjLDcbi+W3slKi
+	h85JYKde28tJS9HLnAiNQ+McUjM7BTsRbUDLFJN9zQZYCnlMQqI+CXescHjmHAOgmblkdCG63TjI5
+	hsx9HymmLMz+M4j+0M4z1OxRHRUY9AkKLozOO195MLFu+M+9o7/ZBcr0hniqbdURCPdODH0YEGjlO
+	dFmo4sxsYm5aXL3MhIme6f3DivnrrXzkntnOlOoyjw7VtAnFKHFuSFkW50SdsVFAEpGeHYVZ8ifC/
+	LYIAtIQA==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1pHhj2-005saH-0S;
+	Tue, 17 Jan 2023 08:53:48 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 7E36D3002BF;
+	Tue, 17 Jan 2023 09:53:52 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 46751201ABB3C; Tue, 17 Jan 2023 09:53:52 +0100 (CET)
+Date: Tue, 17 Jan 2023 09:53:52 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Subject: Re: [PATCH v3 35/51] trace,hardirq: No moar _rcuidle() tracing
+Message-ID: <Y8ZiIMHyXX/yW1EI@hirez.programming.kicks-ass.net>
+References: <20230112194314.845371875@infradead.org>
+ <20230112195541.477416709@infradead.org>
+ <20230117132446.02ec12e4c10718de27790900@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230117132446.02ec12e4c10718de27790900@kernel.org>
+X-Mailman-Approved-At: Tue, 17 Jan 2023 21:01:44 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,143 +68,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexei Starovoitov <ast@kernel.org>, Song Liu <song@kernel.org>, Stanislav Fomichev <sdf@google.com>, Hou Tao <houtao1@huawei.com>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, John Fastabend <john.fastabend@gmail.com>, Andrii Nakryiko <andrii@kernel.org>, "naveen.n.rao@linux.ibm.com" <naveen.n.rao@linux.ibm.com>, Yonghong Song <yhs@fb.com>, "linux-arm-kernel@lists.infradead.or" <linux-arm-kernel@lists.infradead.or>, KP Singh <kpsingh@kernel.org>, "loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, Hao Luo <haoluo@google.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Jiri Olsa <jolsa@kernel.org>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@li
- sts.ozlabs.org>
+Cc: juri.lelli@redhat.com, rafael@kernel.org, catalin.marinas@arm.com, linus.walleij@linaro.org, nsekhar@ti.com, bsegall@google.com, guoren@kernel.org, pavel@ucw.cz, agordeev@linux.ibm.com, srivatsa@csail.mit.edu, linux-arch@vger.kernel.org, linux-samsung-soc@vger.kernel.org, vincent.guittot@linaro.org, chenhuacai@kernel.org, linux-acpi@vger.kernel.org, agross@kernel.org, geert@linux-m68k.org, linux-imx@nxp.com, vgupta@kernel.org, mattst88@gmail.com, borntraeger@linux.ibm.com, mturquette@baylibre.com, sammy@sammy.net, pmladek@suse.com, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-um@lists.infradead.org, npiggin@gmail.com, tglx@linutronix.de, linux-omap@vger.kernel.org, dietmar.eggemann@arm.com, andreyknvl@gmail.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, senozhatsky@chromium.org, svens@linux.ibm.com, jolsa@kernel.org, tj@kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-trace-kernel@vger.kernel.
+ org, mark.rutland@arm.com, linux-ia64@vger.kernel.org, alim.akhtar@samsung.com, dave.hansen@linux.intel.com, virtualization@lists.linux-foundation.org, James.Bottomley@hansenpartnership.com, jcmvbkbc@gmail.com, thierry.reding@gmail.com, kernel@xen0n.name, cl@linux.com, linux-s390@vger.kernel.org, vschneid@redhat.com, john.ogness@linutronix.de, ysato@users.sourceforge.jp, linux-sh@vger.kernel.org, will@kernel.org, brgl@bgdev.pl, daniel.lezcano@linaro.org, jonathanh@nvidia.com, dennis@kernel.org, frederic@kernel.org, lenb@kernel.org, linux-xtensa@linux-xtensa.org, kernel@pengutronix.de, gor@linux.ibm.com, linux-arm-msm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, shorne@gmail.com, chris@zankel.net, sboyd@kernel.org, dinguyen@kernel.org, bristot@redhat.com, alexander.shishkin@linux.intel.com, lpieralisi@kernel.org, atishp@atishpatra.org, linux@rasmusvillemoes.dk, kasan-dev@googlegroups.com, festevam@gmail.com, boris.ostrovsky
+ @oracle.com, khilman@kernel.org, linux-csky@vger.kernel.org, pv-drivers@vmware.com, linux-snps-arc@lists.infradead.org, mgorman@suse.de, jacob.jun.pan@linux.intel.com, Arnd Bergmann <arnd@arndb.de>, ulli.kroll@googlemail.com, linux-clk@vger.kernel.org, rostedt@goodmis.org, ink@jurassic.park.msu.ru, bcain@quicinc.com, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, konrad.dybcio@linaro.org, ryabinin.a.a@gmail.com, sudeep.holla@arm.com, shawnguo@kernel.org, davem@davemloft.net, dalias@libc.org, tony@atomide.com, amakhalov@vmware.com, linux-mm@kvack.org, glider@google.com, hpa@zytor.com, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-riscv@lists.infradead.org, vincenzo.frascino@arm.com, anton.ivanov@cambridgegreys.com, jonas@southpole.se, yury.norov@gmail.com, richard@nod.at, x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, aou@eecs.berkeley.edu, paulmck@kernel.org, hca@linux.ibm.com, richard.henderson@linaro.org, stefan.kristiansson@saunalahti.fi, op
+ enrisc@lists.librecores.org, acme@kernel.org, paul.walmsley@sifive.com, linux-tegra@vger.kernel.org, namhyung@kernel.org, andriy.shevchenko@linux.intel.com, jpoimboe@kernel.org, dvyukov@google.com, jgross@suse.com, monstr@monstr.eu, andersson@kernel.org, linux-mips@vger.kernel.org, krzysztof.kozlowski@linaro.org, palmer@dabbelt.com, anup@brainfault.org, bp@alien8.de, johannes@sipsolutions.net, linuxppc-dev@lists.ozlabs.org, deller@gmx.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Jan 17, 2023 at 01:24:46PM +0900, Masami Hiramatsu wrote:
+> Hi Peter,
+> 
+> On Thu, 12 Jan 2023 20:43:49 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > Robot reported that trace_hardirqs_{on,off}() tickle the forbidden
+> > _rcuidle() tracepoint through local_irq_{en,dis}able().
+> > 
+> > For 'sane' configs, these calls will only happen with RCU enabled and
+> > as such can use the regular tracepoint. This also means it's possible
+> > to trace them from NMI context again.
+> > 
+> > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> 
+> The code looks good to me. I just have a question about comment.
+> 
+> > ---
+> >  kernel/trace/trace_preemptirq.c |   21 +++++++++++++--------
+> >  1 file changed, 13 insertions(+), 8 deletions(-)
+> > 
+> > --- a/kernel/trace/trace_preemptirq.c
+> > +++ b/kernel/trace/trace_preemptirq.c
+> > @@ -20,6 +20,15 @@
+> >  static DEFINE_PER_CPU(int, tracing_irq_cpu);
+> >  
+> >  /*
+> > + * ...
+> 
+> Is this intended? Wouldn't you leave any comment here?
 
-
-> On Jan 9, 2023, at 4:15 PM, Christophe Leroy =
-<christophe.leroy@csgroup.eu> wrote:
->=20
->=20
->=20
-> Le 06/01/2023 =C3=A0 16:37, Daniel Borkmann a =C3=A9crit :
->> On 1/5/23 6:53 PM, Christophe Leroy wrote:
->>> Le 05/01/2023 =C3=A0 04:06, tong@infragraf.org a =C3=A9crit :
->>>> From: Tonghao Zhang <tong@infragraf.org>
->>>>=20
->>>> The x86_64 can't dump the valid insn in this way. A test BPF prog
->>>> which include subprog:
->>>>=20
->>>> $ llvm-objdump -d subprog.o
->>>> Disassembly of section .text:
->>>> 0000000000000000 <subprog>:
->>>>          0:       18 01 00 00 73 75 62 70 00 00 00 00 72 6f 67 00 =
-r1=20
->>>> =3D 29114459903653235 ll
->>>>          2:       7b 1a f8 ff 00 00 00 00 *(u64 *)(r10 - 8) =3D r1
->>>>          3:       bf a1 00 00 00 00 00 00 r1 =3D r10
->>>>          4:       07 01 00 00 f8 ff ff ff r1 +=3D -8
->>>>          5:       b7 02 00 00 08 00 00 00 r2 =3D 8
->>>>          6:       85 00 00 00 06 00 00 00 call 6
->>>>          7:       95 00 00 00 00 00 00 00 exit
->>>> Disassembly of section raw_tp/sys_enter:
->>>> 0000000000000000 <entry>:
->>>>          0:       85 10 00 00 ff ff ff ff call -1
->>>>          1:       b7 00 00 00 00 00 00 00 r0 =3D 0
->>>>          2:       95 00 00 00 00 00 00 00 exit
->>>>=20
->>>> kernel print message:
->>>> [  580.775387] flen=3D8 proglen=3D51 pass=3D3 =
-image=3Dffffffffa000c20c=20
->>>> from=3Dkprobe-load pid=3D1643
->>>> [  580.777236] JIT code: 00000000: cc cc cc cc cc cc cc cc cc cc cc=20=
-
->>>> cc cc cc cc cc
->>>> [  580.779037] JIT code: 00000010: cc cc cc cc cc cc cc cc cc cc cc=20=
-
->>>> cc cc cc cc cc
->>>> [  580.780767] JIT code: 00000020: cc cc cc cc cc cc cc cc cc cc cc=20=
-
->>>> cc cc cc cc cc
->>>> [  580.782568] JIT code: 00000030: cc cc cc
->>>>=20
->>>> $ bpf_jit_disasm
->>>> 51 bytes emitted from JIT compiler (pass:3, flen:8)
->>>> ffffffffa000c20c + <x>:
->>>>      0:   int3
->>>>      1:   int3
->>>>      2:   int3
->>>>      3:   int3
->>>>      4:   int3
->>>>      5:   int3
->>>>      ...
->>>>=20
->>>> Until bpf_jit_binary_pack_finalize is invoked, we copy rw_header to=20=
-
->>>> header
->>>> and then image/insn is valid. BTW, we can use the "bpftool prog =
-dump"=20
->>>> JITed instructions.
->>>=20
->>> NACK.
->>>=20
->>> Because the feature is buggy on x86_64, you remove it for all
->>> architectures ?
->>>=20
->>> On powerpc bpf_jit_enable =3D=3D 2 works and is very usefull.
->>>=20
->>> Last time I tried to use bpftool on powerpc/32 it didn't work. I =
-don't
->>> remember the details, I think it was an issue with endianess. Maybe =
-it
->>> is fixed now, but it needs to be verified.
->>>=20
->>> So please, before removing a working and usefull feature, make sure
->>> there is an alternative available to it for all architectures in all
->>> configurations.
->>>=20
->>> Also, I don't think bpftool is usable to dump kernel BPF selftests.
->>> That's vital when a selftest fails if you want to have a chance to
->>> understand why it fails.
->>=20
->> If this is actively used by JIT developers and considered useful, I'd =
-be
->> ok to leave it for the time being. Overall goal is to reach feature =
-parity
->> among (at least major arch) JITs and not just have most functionality =
-only
->> available on x86-64 JIT. Could you however check what is not working =
-with
->> bpftool on powerpc/32? Perhaps it's not too much effort to just fix =
-it,
->> but details would be useful otherwise 'it didn't work' is too fuzzy.
->=20
-> Sure I will try to test bpftool again in the coming days.
->=20
-> Previous discussion about that subject is here:=20
-> =
-https://patchwork.kernel.org/project/linux-riscv/patch/20210415093250.3391=
-257-1-Jianlin.Lv@arm.com/#24176847=3D
-Hi Christophe
-Any progress? We discuss to deprecate the bpf_jit_enable =3D=3D 2 in =
-2021, but bpftool can not run on powerpc.
-Now can we fix this issue?=20
->=20
->>=20
->> Also, with regards to the last statement that bpftool is not usable =
-to
->> dump kernel BPF selftests. Could you elaborate some more? I haven't =
-used
->> bpf_jit_enable =3D=3D 2 in a long time and for debugging always =
-relied on
->> bpftool to dump xlated insns or JIT. Or do you mean by BPF selftests
->> the test_bpf.ko module? Given it has a big batch with kernel-only =
-tests,
->> there I can see it's probably still useful.
->=20
-> Yes I mean test_bpf.ko
->=20
-> I used it as the test basis when I implemented eBPF for powerpc/32. =
-And=20
-> not so long ago it helped decover and fix a bug, see=20
-> =
-https://github.com/torvalds/linux/commit/89d21e259a94f7d5582ec675aa445f5a7=
-9f347e4
->=20
->>=20
->> Cheers,
->> Daniel
-
+I indeed forgot to write the comment before posting, my bad :/ Ingo fixed
+it up when he applied.
