@@ -4,68 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8764C54E76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 21:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E16BC54E76
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 21:04:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxLsj3fKqz3chQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 08:01:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxLxg6T9Hz3fCs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 08:04:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=g/lmjevr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Ugmy2ZqK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112e; helo=mail-yw1-x112e.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::d34; helo=mail-io1-xd34.google.com; envelope-from=jannh@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=g/lmjevr;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Ugmy2ZqK;
 	dkim-atps=neutral
-Received: from mail-yw1-x112e.google.com (mail-yw1-x112e.google.com [IPv6:2607:f8b0:4864:20::112e])
+Received: from mail-io1-xd34.google.com (mail-io1-xd34.google.com [IPv6:2607:f8b0:4864:20::d34])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxLrd6yMnz2xb4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 08:00:33 +1100 (AEDT)
-Received: by mail-yw1-x112e.google.com with SMTP id 00721157ae682-4d0f843c417so326875887b3.7
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 13:00:33 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxLwf2sCDz3bXv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 08:04:01 +1100 (AEDT)
+Received: by mail-io1-xd34.google.com with SMTP id 203so4851600iou.13
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 13:04:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=YHXAUt3ny3FCa4wu6g+W377gbUsNdU3WemYAKDbc46U=;
-        b=g/lmjevrSe6/UrgH/yDr3jnG/kI4TrUFxc0eorY+CpDT2ykEH+lJRFAz/cWBd/zEdj
-         MVdr/Ofoa6aR32CWHTpBkD8bDur2CQiRIheG7w7pM2NI6BvMQxXWQsrg5n0GwUhoL08J
-         LdPT7k+/1CqROg1uiCmQdkoqciMYhUqAlsZBX28L2uX9bktKWGFWNUgc85DPZdW+WP11
-         Dkf6Qke8sjXQDbRvg/nVqX5qUNT+3VmFFIOLdIi6kJ+r7CbIcHOYMmbdHH3XgDg1gWBk
-         ZM2hyaluuxbAIhpC67CkTkctrYeIFXRpdPjxKqPk4hdSGNqOxe0hx+oxT7VE5OnllhSR
-         20iQ==
+        bh=nhao4yhxvo1b0ca4/4XXHiPX2DFuPMAuoXXjxRqWTzk=;
+        b=Ugmy2ZqKnLRTOnr8n+vgJmW7jKcWi4hXccBOn2Gki6Zrag7MoLWtZ+TwC6KAa1rMXw
+         wXpyQ8nmNJOrUrseDG9EzHysaXMjM04aS5x2xNylWaAN9xvvdISifj6fE++htaLmbddR
+         j81VjCX2xsB852mW5SqUWN0nd9IvIVdfgHX33Hh2tu0XchQY05liQxtto9CUhXsnf9k7
+         f6y6oOhGyoxCPLOEL45q+HGd9pmFyOS5F/LZR7OgkHsj8ga1IKTsgBSDZYIAGdZSdz8P
+         SnaqeJ4jBFGrrKdUvkPzy7SEBae8MWN4qiEkG94kK43jVC7Q6PfwYVJUCo/XaiKekGkY
+         8s8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=YHXAUt3ny3FCa4wu6g+W377gbUsNdU3WemYAKDbc46U=;
-        b=lHym/RREPO4W7xA7bjhiL7WtxbtBgsLyW+PSj6w+1BwR0+hr0Sz1U0ggXad2xMpsgu
-         sHTvfT1LSV8vQtZYp7GwRBmtSNkqin9kai0vfBvbanFUfsFCaXOFi0rjy1XT+RDGYsqw
-         fIHZ4B3qOrjsZZEAL6YRmHwCMNaR8U6SB5qXNh0lRByn4psJ1sXTP2t63R8bNRCo1vkv
-         QAts+TRZ3DaKKe53m4jbeoSp2giONds8T/V3L7oSC208TJOvkFnb43TedDlfy+A5fIXy
-         laK2k4tbkU3KY2334NHD3mkMUG3zo9VkDryl5Agdz64419DvY4rggaIOXpZf2+MlaYY5
-         GgNw==
-X-Gm-Message-State: AFqh2kolxPYcAiW16uolKYhm436GTj3Gy5geXYgZDksCLFmrocTmUjmj
-	ag7kYeFVY3VtbXten02lNj41iqEjgEzNB+VhS+nYHQ==
-X-Google-Smtp-Source: AMrXdXtFBxrPIQwrnVbDPkv8eWbIPzbx4cIqKk4Gu4mHweZyTIBkyAUJF5bv5Cr4H2Zct//6eMLnSU/VFnEJZM2Oblg=
-X-Received: by 2002:a81:784c:0:b0:4e1:5013:6da1 with SMTP id
- t73-20020a81784c000000b004e150136da1mr666982ywc.218.1673989230419; Tue, 17
- Jan 2023 13:00:30 -0800 (PST)
+        bh=nhao4yhxvo1b0ca4/4XXHiPX2DFuPMAuoXXjxRqWTzk=;
+        b=yx0fPGRoGp0lZZQNjoZwGgHe7FYLVKysIpjWFEJS8vIhaa9QnJp3KEBNeFp4JPHFnF
+         9aFia6TAHwVzVG4rDr0EU5k5GB5LeW2VMyolxBmvPD3xaeNrcowR8fkjxu96/DUGiHJz
+         xl7XUAumrL7EjG+8cl/GOzOOgKyVThgaP+a1yIySgueYlC9yknVD8sW8bRnnwHh5HQRZ
+         nJQ/6CPMG+yYp5UYxvBdOsuFWAsoSUnSKQSLxJofBGANMaCHUo1kL6c8K5XukdUj4B8k
+         l1JfMlzUVQUdq1UIOMv8jzcUymrH6mqrVPdk/wvD6uMz7vqU1OS76mhSsC3E1glp++x2
+         rr9w==
+X-Gm-Message-State: AFqh2koQ8SIVF6hVsz5mBDTzMFaXGCHtrlw72oQNyX21pV4veL0o4Oww
+	Aumey9cWT84Ns9tXJN7U/EIUHwK9Qad9Be+fMXGhJg==
+X-Google-Smtp-Source: AMrXdXsMeP8M6U4I8iASTh2mqrZYLm+ikxBgVtUSVf76IGFGfS0Npq61yI+0jkuo5OgGYf5QPFQKrSgcpAZ1h7kJHBc=
+X-Received: by 2002:a02:cb45:0:b0:39e:6dd8:6c96 with SMTP id
+ k5-20020a02cb45000000b0039e6dd86c96mr345507jap.246.1673989436533; Tue, 17 Jan
+ 2023 13:03:56 -0800 (PST)
 MIME-Version: 1.0
-References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-42-surenb@google.com>
- <Y8UxnqPCTLbbD+2F@localhost> <Y8YgomKF189vmgLz@casper.infradead.org>
- <CAJuCfpECJhUu3fvWbBzmAkEA3+1LTkKqJOVadQB_-_mEHME=xg@mail.gmail.com>
- <Y8Y2JErbNQOhL8ee@casper.infradead.org> <CAJuCfpEx6FJpm0Js=cvcHw6mY3izPfoskxseSMyxFAxLX97X_w@mail.gmail.com>
- <Y8bnpqw134CHenz/@casper.infradead.org> <CAJuCfpGKRLshk1oWf1Nz4jhDrMGnkWs7qtWYaj=j_iQwPq0THQ@mail.gmail.com>
- <Y8cFt7GVLTOT5Cdl@dhcp22.suse.cz>
-In-Reply-To: <Y8cFt7GVLTOT5Cdl@dhcp22.suse.cz>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Tue, 17 Jan 2023 13:00:19 -0800
-Message-ID: <CAJuCfpHwmfauZihbexnSq9mEe3Yz0DxT=KwgBX7ATCr2QJp_pA@mail.gmail.com>
-Subject: Re: [PATCH 41/41] mm: replace rw_semaphore with atomic_t in vma_lock
-To: Michal Hocko <mhocko@suse.com>
+References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-29-surenb@google.com>
+In-Reply-To: <20230109205336.3665937-29-surenb@google.com>
+From: Jann Horn <jannh@google.com>
+Date: Tue, 17 Jan 2023 22:03:20 +0100
+Message-ID: <CAG48ez2cK1M=fgkYi4bPdWX7uOm15Omv6EjFgXUkS2QsqiwGSg@mail.gmail.com>
+Subject: Re: [PATCH 28/41] mm: introduce lock_vma_under_rcu to be used from
+ arch-specific code
+To: Suren Baghdasaryan <surenb@google.com>, willy@infradead.org, liam.howlett@oracle.com
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,43 +74,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, Hyeonggon Yoo <42.hyeyoo@gmail.com>, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, Matthew Wilcox <willy@infradead.org>, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundatio
- n.org, tatashin@google.com, mgorman@techsingularity.net
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsingularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 17, 2023 at 12:31 PM Michal Hocko <mhocko@suse.com> wrote:
->
-> On Tue 17-01-23 10:28:40, Suren Baghdasaryan wrote:
-> [...]
-> > > Then yes, that's a starvable lock.  Preventing starvation on the mmap
-> > > sem was the original motivation for making rwsems non-starvable, so
-> > > changing that behaviour now seems like a bad idea.  For efficiency, I'd
-> > > suggest that a waiting writer set the top bit of the counter.  That way,
-> > > all new readers will back off without needing to check a second variable
-> > > and old readers will know that they *may* need to do the wakeup when
-> > > atomic_sub_return_release() is negative.
-> > >
-> > > (rwsem.c has a more complex bitfield, but I don't think we need to go
-> > > that far; the important point is that the waiting writer indicates its
-> > > presence in the count field so that readers can modify their behaviour)
-> >
-> > Got it. Ok, I think we can figure something out to check if there are
-> > waiting write-lockers and prevent new readers from taking the lock.
->
-> Reinventing locking primitives is a ticket to weird bugs. I would stick
-> with the rwsem and deal with performance fallouts after it is clear that
-> the core idea is generally acceptable and based on actual real life
-> numbers. This whole thing is quite big enough that we do not have to go
-> through "is this new synchronization primitive correct and behaving
-> reasonably" exercise.
+On Mon, Jan 9, 2023 at 9:54 PM Suren Baghdasaryan <surenb@google.com> wrote:
+> Introduce lock_vma_under_rcu function to lookup and lock a VMA during
+> page fault handling. When VMA is not found, can't be locked or changes
+> after being locked, the function returns NULL. The lookup is performed
+> under RCU protection to prevent the found VMA from being destroyed before
+> the VMA lock is acquired. VMA lock statistics are updated according to
+> the results.
+> For now only anonymous VMAs can be searched this way. In other cases the
+> function returns NULL.
+[...]
+> +struct vm_area_struct *lock_vma_under_rcu(struct mm_struct *mm,
+> +                                         unsigned long address)
+> +{
+> +       MA_STATE(mas, &mm->mm_mt, address, address);
+> +       struct vm_area_struct *vma, *validate;
+> +
+> +       rcu_read_lock();
+> +       vma = mas_walk(&mas);
+> +retry:
+> +       if (!vma)
+> +               goto inval;
+> +
+> +       /* Only anonymous vmas are supported for now */
+> +       if (!vma_is_anonymous(vma))
+> +               goto inval;
+> +
+> +       if (!vma_read_trylock(vma))
+> +               goto inval;
+> +
+> +       /* Check since vm_start/vm_end might change before we lock the VMA */
+> +       if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
+> +               vma_read_unlock(vma);
+> +               goto inval;
+> +       }
+> +
+> +       /* Check if the VMA got isolated after we found it */
+> +       mas.index = address;
+> +       validate = mas_walk(&mas);
 
-Point taken. That's one of the reasons I kept this patch separate.
-I'll drop this last patch from the series for now. One correction
-though, this will not be a performance fallout but memory consumption
-fallout.
+Question for Maple Tree experts:
 
->
-> --
-> Michal Hocko
-> SUSE Labs
+Are you allowed to use mas_walk() like this? If the first mas_walk()
+call encountered a single-entry tree, it would store mas->node =
+MAS_ROOT, right? And then the second call would go into
+mas_state_walk(), mas_start() would return NULL, mas_is_ptr() would be
+true, and then mas_state_walk() would return the result of
+mas_start(), which is NULL? And we'd end up with mas_walk() returning
+NULL on the second run even though the tree hasn't changed?
+
+> +       if (validate != vma) {
+> +               vma_read_unlock(vma);
+> +               count_vm_vma_lock_event(VMA_LOCK_MISS);
+> +               /* The area was replaced with another one. */
+> +               vma = validate;
+> +               goto retry;
+> +       }
+> +
+> +       rcu_read_unlock();
+> +       return vma;
+> +inval:
+> +       rcu_read_unlock();
+> +       count_vm_vma_lock_event(VMA_LOCK_ABORT);
+> +       return NULL;
+> +}
