@@ -4,65 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79485C63797
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 04:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32C32C63797
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 05:47:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nwx0K6h6zz3c91
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 15:35:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NwybC3jZlz3bWq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 16:47:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hM38RCzS;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=P5cLpNHv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1135; helo=mail-yw1-x1135.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=hM38RCzS;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=P5cLpNHv;
 	dkim-atps=neutral
-Received: from mail-yw1-x1135.google.com (mail-yw1-x1135.google.com [IPv6:2607:f8b0:4864:20::1135])
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwwzK67Qgz3bYW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 15:34:52 +1100 (AEDT)
-Received: by mail-yw1-x1135.google.com with SMTP id 00721157ae682-4d59d518505so237880777b3.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jan 2023 20:34:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=yRWBrMnmbVU6x7T0LPdTvz2nVvy3IZspLp0UQMF1irY=;
-        b=hM38RCzSZziAG4zDZljPcNKfKjFLxHw4U/hoqCGnc2uhhpiLyfSuGpOTWJdWIMlxUv
-         KjjhlBQmiQD8oPmw8rC7puYkrtFzSPrLW3kUpLnqfZC4c3aQzBYS/77dZgZ3jxcmGSFw
-         GIuig9k6wQaOTlDLxqIH8XTIgBM6dLPj+spsFwsvjdG67Vdq/GY9waM9rX8RSrpCp0x3
-         8BaL/NOYp7Q0chsNamh7WaEtB2GnL40hJ1GgUHERDPj8PKO5UjxdqJIQNfLL/BykPZf1
-         B0tiiASa/wxaXtgB66A7Qm1/fEYloC8AH7VIbm0aHwYy1hzVUqvaTtSyE9Wgwz9LlOij
-         3bYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=yRWBrMnmbVU6x7T0LPdTvz2nVvy3IZspLp0UQMF1irY=;
-        b=B4FVgsObxspDDRB+4of2vv/Xgg42RqESkPqBpVm6fr9cyjFAFBWsA9sqWvOY15OvLs
-         YC7QQIWJMlOIuOKDye2rJpzK4i9cke4rOcmFei3nqMoZ4qAj7taCm5SU5QQq2ytXciaS
-         udQSliLU2vy/OwwZq4Vt2xEgXXJ97UZ3JVu3waNBpWnEdzYBoENCZHXju+4vd2XM+B+0
-         +3EoaivBnLiM+MjMYi4VDK7gGt8az3fk/4qgf88aFSgF1a9gn1zbRAwd/o11O+kL4NdD
-         B9dTDg7bpBB+daWrnzgeyfFTYJG1Q8IQXPfC4bOmBPOrhgont2VnjC8Xz3PeGc5EBGOt
-         3oeQ==
-X-Gm-Message-State: AFqh2kpUMrwuU72IvcPxMykWZcjEHMWopOgyH9njEXQSqnk0inFB4k3K
-	S2tt953EtpEW00XD+1gc68AKsvT1NHe2fkK34M2i4g==
-X-Google-Smtp-Source: AMrXdXseXKT6jNFxFMT1V3/l2fB00iDOPtEl/NQbThFwW0Hm+cjzFDqP3MAncylx3ySdnaL+hEiuL1zL4iLHm5r9qaI=
-X-Received: by 2002:a81:708c:0:b0:479:b6a1:d9a4 with SMTP id
- l134-20020a81708c000000b00479b6a1d9a4mr179033ywc.263.1673930087969; Mon, 16
- Jan 2023 20:34:47 -0800 (PST)
-MIME-Version: 1.0
-References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-42-surenb@google.com>
- <Y8UxnqPCTLbbD+2F@localhost> <Y8YgomKF189vmgLz@casper.infradead.org>
-In-Reply-To: <Y8YgomKF189vmgLz@casper.infradead.org>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Mon, 16 Jan 2023 20:34:36 -0800
-Message-ID: <CAJuCfpECJhUu3fvWbBzmAkEA3+1LTkKqJOVadQB_-_mEHME=xg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NwyZ72Rxxz3bNg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:46:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=Y+G3RMYpPUCpeVuUHshColV5JZSGDtGhPdizzIP2wms=; b=P5cLpNHv6wO/jMH62R5ivyuODF
+	9VsvXC8b/excwArNe/KRkxWV2mLKsX2xgsbEwt66Kpn346Prm3dUGTZPNLMImD+nitRxhxo3xsvrJ
+	mfWg3QFSX5Pnkn3FwXGIL0mp4sWpaCgjBACW/+8RJtWIR3s1pBjFwfBDXT+otbyR6bwQonX/+BNxd
+	m4lbN1/gZznRAQ0EpxpP7GMJZxelmPWujsE6/6vtlABgFHE/nyJ+bG6wPajtevQ+GbMdPYR+7Tt7o
+	zrVDxwqxl2pwLVtaerw4OF9cO5ys5rZNxm/Sm8Y2+JIni90YzxmlfVcFMmeuOLlaAh3xxs8PtamWR
+	Fca2JJYQ==;
+Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1pHenU-009Pje-4O; Tue, 17 Jan 2023 05:46:12 +0000
+Date: Tue, 17 Jan 2023 05:46:12 +0000
+From: Matthew Wilcox <willy@infradead.org>
+To: Suren Baghdasaryan <surenb@google.com>
 Subject: Re: [PATCH 41/41] mm: replace rw_semaphore with atomic_t in vma_lock
-To: Matthew Wilcox <willy@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <Y8Y2JErbNQOhL8ee@casper.infradead.org>
+References: <20230109205336.3665937-1-surenb@google.com>
+ <20230109205336.3665937-42-surenb@google.com>
+ <Y8UxnqPCTLbbD+2F@localhost>
+ <Y8YgomKF189vmgLz@casper.infradead.org>
+ <CAJuCfpECJhUu3fvWbBzmAkEA3+1LTkKqJOVadQB_-_mEHME=xg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJuCfpECJhUu3fvWbBzmAkEA3+1LTkKqJOVadQB_-_mEHME=xg@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,51 +64,56 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 16, 2023 at 8:14 PM Matthew Wilcox <willy@infradead.org> wrote:
->
-> On Mon, Jan 16, 2023 at 11:14:38AM +0000, Hyeonggon Yoo wrote:
-> > > @@ -643,20 +647,28 @@ static inline void vma_write_lock(struct vm_area_struct *vma)
-> > >  static inline bool vma_read_trylock(struct vm_area_struct *vma)
-> > >  {
-> > >     /* Check before locking. A race might cause false locked result. */
-> > > -   if (vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
-> > > +   if (vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
-> > >             return false;
-> > >
-> > > -   if (unlikely(down_read_trylock(&vma->vm_lock->lock) == 0))
-> > > +   if (unlikely(!atomic_inc_unless_negative(&vma->vm_lock->count)))
-> > >             return false;
-> > >
-> > > +   /* If atomic_t overflows, restore and fail to lock. */
-> > > +   if (unlikely(atomic_read(&vma->vm_lock->count) < 0)) {
-> > > +           if (atomic_dec_and_test(&vma->vm_lock->count))
-> > > +                   wake_up(&vma->vm_mm->vma_writer_wait);
-> > > +           return false;
-> > > +   }
-> > > +
-> > >     /*
-> > >      * Overflow might produce false locked result.
-> > >      * False unlocked result is impossible because we modify and check
-> > >      * vma->vm_lock_seq under vma->vm_lock protection and mm->mm_lock_seq
-> > >      * modification invalidates all existing locks.
-> > >      */
-> > > -   if (unlikely(vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
-> > > -           up_read(&vma->vm_lock->lock);
-> > > +   if (unlikely(vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
-> > > +           if (atomic_dec_and_test(&vma->vm_lock->count))
-> > > +                   wake_up(&vma->vm_mm->vma_writer_wait);
-> > >             return false;
-> > >     }
+On Mon, Jan 16, 2023 at 08:34:36PM -0800, Suren Baghdasaryan wrote:
+> On Mon, Jan 16, 2023 at 8:14 PM Matthew Wilcox <willy@infradead.org> wrote:
 > >
-> > With this change readers can cause writers to starve.
-> > What about checking waitqueue_active() before or after increasing
-> > vma->vm_lock->count?
->
-> I don't understand how readers can starve a writer.  Readers do
-> atomic_inc_unless_negative() so a writer can always force readers
-> to fail.
+> > On Mon, Jan 16, 2023 at 11:14:38AM +0000, Hyeonggon Yoo wrote:
+> > > > @@ -643,20 +647,28 @@ static inline void vma_write_lock(struct vm_area_struct *vma)
+> > > >  static inline bool vma_read_trylock(struct vm_area_struct *vma)
+> > > >  {
+> > > >     /* Check before locking. A race might cause false locked result. */
+> > > > -   if (vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
+> > > > +   if (vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))
+> > > >             return false;
+> > > >
+> > > > -   if (unlikely(down_read_trylock(&vma->vm_lock->lock) == 0))
+> > > > +   if (unlikely(!atomic_inc_unless_negative(&vma->vm_lock->count)))
+> > > >             return false;
+> > > >
+> > > > +   /* If atomic_t overflows, restore and fail to lock. */
+> > > > +   if (unlikely(atomic_read(&vma->vm_lock->count) < 0)) {
+> > > > +           if (atomic_dec_and_test(&vma->vm_lock->count))
+> > > > +                   wake_up(&vma->vm_mm->vma_writer_wait);
+> > > > +           return false;
+> > > > +   }
+> > > > +
+> > > >     /*
+> > > >      * Overflow might produce false locked result.
+> > > >      * False unlocked result is impossible because we modify and check
+> > > >      * vma->vm_lock_seq under vma->vm_lock protection and mm->mm_lock_seq
+> > > >      * modification invalidates all existing locks.
+> > > >      */
+> > > > -   if (unlikely(vma->vm_lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
+> > > > -           up_read(&vma->vm_lock->lock);
+> > > > +   if (unlikely(vma->vm_lock->lock_seq == READ_ONCE(vma->vm_mm->mm_lock_seq))) {
+> > > > +           if (atomic_dec_and_test(&vma->vm_lock->count))
+> > > > +                   wake_up(&vma->vm_mm->vma_writer_wait);
+> > > >             return false;
+> > > >     }
+> > >
+> > > With this change readers can cause writers to starve.
+> > > What about checking waitqueue_active() before or after increasing
+> > > vma->vm_lock->count?
+> >
+> > I don't understand how readers can starve a writer.  Readers do
+> > atomic_inc_unless_negative() so a writer can always force readers
+> > to fail.
+> 
+> I think the point here was that if page faults keep occuring and they
+> prevent vm_lock->count from reaching 0 then a writer will be blocked
+> and there is no reader throttling mechanism (no max time that writer
+> will be waiting).
 
-I think the point here was that if page faults keep occuring and they
-prevent vm_lock->count from reaching 0 then a writer will be blocked
-and there is no reader throttling mechanism (no max time that writer
-will be waiting).
+Perhaps I misunderstood your description; I thought that a _waiting_
+writer would make the count negative, not a successfully acquiring
+writer.
