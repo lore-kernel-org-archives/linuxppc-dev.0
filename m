@@ -4,44 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 311AEC63797
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 09:07:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77E6BC677F1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 11:29:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nx32G58ngz3fH6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 20:07:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Missing IP4: 74.116.198.153) smtp.mailfrom=zte.com.cn (client-ip=183.62.165.209; helo=mxct.zte.com.cn; envelope-from=ye.xingchen@zte.com.cn; receiver=<UNKNOWN>)
-X-Greylist: delayed 3925 seconds by postgrey-1.36 at boromir; Tue, 17 Jan 2023 20:06:46 AEDT
-Received: from mxct.zte.com.cn (mxct.zte.com.cn [183.62.165.209])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nx69n52xPz3c66
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 22:29:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=GhTYI1bo;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32e; helo=mail-wm1-x32e.google.com; envelope-from=krzysztof.kozlowski@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=GhTYI1bo;
+	dkim-atps=neutral
+Received: from mail-wm1-x32e.google.com (mail-wm1-x32e.google.com [IPv6:2a00:1450:4864:20::32e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nx31275Rrz3c9Q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 20:06:44 +1100 (AEDT)
-Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by mxct.zte.com.cn (FangMail) with ESMTPS id 4Nx30q2PFbz501St;
-	Tue, 17 Jan 2023 17:06:35 +0800 (CST)
-Received: from xaxapp02.zte.com.cn ([10.88.97.241])
-	by mse-fl1.zte.com.cn with SMTP id 30H96Rre076903;
-	Tue, 17 Jan 2023 17:06:27 +0800 (+08)
-	(envelope-from ye.xingchen@zte.com.cn)
-Received: from mapi (xaxapp01[null])
-	by mapi (Zmail) with MAPI id mid31;
-	Tue, 17 Jan 2023 17:06:30 +0800 (CST)
-Date: Tue, 17 Jan 2023 17:06:30 +0800 (CST)
-X-Zmail-TransId: 2af963c66516fffffffffd6dec0a
-X-Mailer: Zmail v1.0
-Message-ID: <202301171706300144532@zte.com.cn>
-Mime-Version: 1.0
-From: <ye.xingchen@zte.com.cn>
-To: <arnd@arndb.de>
-Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIHBvd2VycGMvY2VsbC9heG9uX21zaTogVXNlIGRtYV96YWxsb2NfY29oZXJlbnQoKQ==?=
-Content-Type: text/plain;
-	charset="UTF-8"
-X-MAIL: mse-fl1.zte.com.cn 30H96Rre076903
-X-Fangmail-Gw-Spam-Type: 0
-X-Fangmail-Anti-Spam-Filtered: true
-X-Fangmail-MID-QID: 63C6651B.003/4Nx30q2PFbz501St
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nx68j00Pvz3bgK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 22:28:34 +1100 (AEDT)
+Received: by mail-wm1-x32e.google.com with SMTP id k16so1332045wms.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 03:28:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=b7QySS8sX+rCfEVcFiwHdK87drcPLIRv7jTR3Ef+m7U=;
+        b=GhTYI1bo1NtfTix5Cyo757ae2aRDocMqQr9D60ev6QWvCm4a5eV+2io6PjGmnMDZEk
+         PWZsbPnsy8EBab75YCi86Fg8/DokN6jhraGvl9gn642eLGsOJzpD9OSTBckznQHTHVtG
+         DLG8HK+bKJX59+/4H2tkvP5oVERBJiyL7hxxEx8jl/VPHJWDDEBpMvCpg9jie7+nQ5CE
+         HXknNfPRRNtdC4UKN4ZLpqNDImcg7KJluYQqOBTbRx70xc1I3hygkT2Wr/qiaYGfN7cd
+         mx3qr37/gcsYFm91tcOCIs3MeR4/SEwlHsNAvoUHXgETjDMGrX2y8ToLIcV+i7WILo2g
+         8FbA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=b7QySS8sX+rCfEVcFiwHdK87drcPLIRv7jTR3Ef+m7U=;
+        b=e/FiNfc36IGCOPHdgE4/re0/SJSFNxpZgxGGpGYka2U5jo1jgptToGROjki0eb+jhn
+         I7PvqeXBuS1cYzBGk5UbRUKus9sA2Oov1Wniue25JzEYXGapB1vSBMh+dPBOo/0yiXWB
+         7yI75QCma996t5IgORPAnHl3CFha8ZRgVjr+psXXgen9DVL9i/UOFd1WkVNV0qNb1GFz
+         wUUBOo25Z/JNPpUXM4upVhvPZhasxHiMuua0LW0n1o4k0M8jWUL/AP1bUaz8ASjfX94p
+         i9m6Vk8ABD2fdnhbZ8BMMdVYGS8wKjy/GdFgo4y2JXGmzCS7l+Hgl2SVOS6IrfCgoLnv
+         aZ+w==
+X-Gm-Message-State: AFqh2kof7nfrWF+ygoVIc+8f+NQAmJCh/KEDK0TbUM8Fb72ipaWrdGDR
+	aVia2cwke6gGoK7P75a5iH2Jkw==
+X-Google-Smtp-Source: AMrXdXtLnHaHuaeFv5L3Vh+VPC3Xb4+iZJCGtmnWJmdoM/jdqpG02sq79R8ekQkcRR1GCybLYG6nQg==
+X-Received: by 2002:a05:600c:228d:b0:3d1:ee97:980 with SMTP id 13-20020a05600c228d00b003d1ee970980mr2748366wmf.7.1673954907271;
+        Tue, 17 Jan 2023 03:28:27 -0800 (PST)
+Received: from [192.168.1.109] ([178.197.216.144])
+        by smtp.gmail.com with ESMTPSA id c6-20020adffb06000000b002423620d356sm8398144wrr.35.2023.01.17.03.28.25
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 17 Jan 2023 03:28:26 -0800 (PST)
+Message-ID: <6e1a2182-ffbf-5684-dd2f-e3b862ad6763@linaro.org>
+Date: Tue, 17 Jan 2023 12:28:24 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH v3 01/10] dt-bindings: soc: fsl: cpm_qe: Add TSA
+ controller
+Content-Language: en-US
+To: Herve Codina <herve.codina@bootlin.com>, Li Yang <leoyang.li@nxp.com>,
+ Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.com>, Shengjiu Wang <shengjiu.wang@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>
+References: <20230113103759.327698-1-herve.codina@bootlin.com>
+ <20230113103759.327698-2-herve.codina@bootlin.com>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
+In-Reply-To: <20230113103759.327698-2-herve.codina@bootlin.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,42 +92,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: ye xingchen <ye.xingchen@zte.com.cn>
+On 13/01/2023 11:37, Herve Codina wrote:
+> Add support for the time slot assigner (TSA)
+> available in some PowerQUICC SoC such as MPC885
+> or MPC866.
+> 
+> Signed-off-by: Herve Codina <herve.codina@bootlin.com>
+> ---
+>  .../bindings/soc/fsl/cpm_qe/fsl,tsa.yaml      | 260 ++++++++++++++++++
+>  include/dt-bindings/soc/fsl,tsa.h             |  13 +
+>  2 files changed, 273 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,tsa.yaml
+>  create mode 100644 include/dt-bindings/soc/fsl,tsa.h
+> 
 
-Instead of using dma_alloc_coherent() and memset() directly use
-dma_zalloc_coherent().
 
-Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
----
- arch/powerpc/platforms/cell/axon_msi.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 0c11aad896c7..8a4c522c8e67 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -358,8 +358,8 @@ static int axon_msi_probe(struct platform_device *device)
- 		goto out_free_msic;
- 	}
+Best regards,
+Krzysztof
 
--	msic->fifo_virt = dma_alloc_coherent(&device->dev, MSIC_FIFO_SIZE_BYTES,
--					     &msic->fifo_phys, GFP_KERNEL);
-+	msic->fifo_virt = dma_zalloc_coherent(&device->dev, MSIC_FIFO_SIZE_BYTES,
-+					      &msic->fifo_phys, GFP_KERNEL);
- 	if (!msic->fifo_virt) {
- 		printk(KERN_ERR "axon_msi: couldn't allocate fifo for %pOF\n",
- 		       dn);
-@@ -372,7 +372,6 @@ static int axon_msi_probe(struct platform_device *device)
- 		       dn);
- 		goto out_free_fifo;
- 	}
--	memset(msic->fifo_virt, 0xff, MSIC_FIFO_SIZE_BYTES);
-
- 	/* We rely on being able to stash a virq in a u16, so limit irqs to < 65536 */
- 	msic->irq_domain = irq_domain_add_nomap(dn, 65536, &msic_host_ops, msic);
--- 
-2.25.1
