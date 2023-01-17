@@ -4,33 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6CDEC3DA78
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 08:08:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88357C63797
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 08:10:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nx1kJ1nW1z3cFw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 19:08:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=216.24.177.18; helo=formenos.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=<UNKNOWN>)
-X-Greylist: delayed 2504 seconds by postgrey-1.36 at boromir; Tue, 17 Jan 2023 19:08:22 AEDT
-Received: from formenos.hmeau.com (helcar.hmeau.com [216.24.177.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nx1lf4jKCz3fCQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 17 Jan 2023 19:10:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Missing IP4: 74.116.198.153) smtp.mailfrom=zte.com.cn (client-ip=58.251.27.85; helo=mxct.zte.com.cn; envelope-from=ye.xingchen@zte.com.cn; receiver=<UNKNOWN>)
+X-Greylist: delayed 426 seconds by postgrey-1.36 at boromir; Tue, 17 Jan 2023 19:09:33 AEDT
+Received: from mxct.zte.com.cn (mxct.zte.com.cn [58.251.27.85])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nx1jf0VR6z3bSw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 19:08:22 +1100 (AEDT)
-Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
-	by formenos.hmeau.com with smtp (Exim 4.94.2 #2 (Debian))
-	id 1pHgMS-000o0z-Ry; Tue, 17 Jan 2023 15:26:25 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Tue, 17 Jan 2023 15:26:24 +0800
-Date: Tue, 17 Jan 2023 15:26:24 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: crypto: p10-aes-gcm - Add asm markings necessary for kernel code
-Message-ID: <Y8ZNoBSX5P0ieJ3t@gondor.apana.org.au>
-References: <20230117144747.37115c52@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230117144747.37115c52@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nx1l169y8z307T
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 19:09:32 +1100 (AEDT)
+Received: from mxde.zte.com.cn (unknown [10.35.20.165])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4Nx1Zm32c4z1DF1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:02:24 +0800 (CST)
+Received: from mxus.zte.com.cn (unknown [10.207.168.7])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxde.zte.com.cn (FangMail) with ESMTPS id 4Nx1ZM2VWqz4xBV7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:02:03 +0800 (CST)
+Received: from mxhk.zte.com.cn (unknown [192.168.250.138])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxus.zte.com.cn (FangMail) with ESMTPS id 4Nx1Yf6y79z9tyJY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:01:26 +0800 (CST)
+Received: from mxct.zte.com.cn (unknown [192.168.251.13])
+	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mxhk.zte.com.cn (FangMail) with ESMTPS id 4Nx1YY6XLBz5PkHg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 16:01:21 +0800 (CST)
+Received: from mse-fl1.zte.com.cn (unknown [10.5.228.132])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mxct.zte.com.cn (FangMail) with ESMTPS id 4Nx1YL0N2Bz4xpyC;
+	Tue, 17 Jan 2023 16:01:10 +0800 (CST)
+Received: from xaxapp01.zte.com.cn ([10.88.99.176])
+	by mse-fl1.zte.com.cn with SMTP id 30H815we005478;
+	Tue, 17 Jan 2023 16:01:05 +0800 (+08)
+	(envelope-from ye.xingchen@zte.com.cn)
+Received: from mapi (xaxapp01[null])
+	by mapi (Zmail) with MAPI id mid31;
+	Tue, 17 Jan 2023 16:01:08 +0800 (CST)
+Date: Tue, 17 Jan 2023 16:01:08 +0800 (CST)
+X-Zmail-TransId: 2af963c655c4ffffffff87b29564
+X-Mailer: Zmail v1.0
+Message-ID: <202301171601080312252@zte.com.cn>
+Mime-Version: 1.0
+From: <ye.xingchen@zte.com.cn>
+To: <herbert@gondor.apana.org.au>
+Subject: =?UTF-8?B?W1BBVENIIGxpbnV4LW5leHRdIGNyeXB0bzogcDEwLWFlcy1nY20gLSByZW1vdmUgZHVwbGljYXRlIGluY2x1ZGVkIGhlYWRlciBmaWxlcw==?=
+Content-Type: text/plain;
+	charset="UTF-8"
+X-MAIL: mse-fl1.zte.com.cn 30H815we005478
+X-Fangmail-Gw-Spam-Type: 0
+X-FangMail-Miltered: at cgslv5.04-192.168.251.14.novalocal with ID 63C6560F.000 by FangMail milter!
+X-FangMail-Envelope: 1673942544/4Nx1Zm32c4z1DF1/63C6560F.000/10.35.20.165/[10.35.20.165]/mxde.zte.com.cn/<ye.xingchen@zte.com.cn>
+X-Fangmail-Anti-Spam-Filtered: true
+X-Fangmail-MID-QID: 63C6560F.000/4Nx1Zm32c4z1DF1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,174 +75,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Danny Tsen <dtsen@linux.ibm.com>, Linux Next Mailing List <linux-next@vger.kernel.org>, Linux Crypto List <linux-crypto@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, linux-crypto@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 17, 2023 at 02:47:47PM +1100, Stephen Rothwell wrote:
-> Hi all,
-> 
-> After merging the crypto tree, today's linux-next build (powerpc
-> pseries_le_defconfig) failed like this:
-> 
-> arch/powerpc/crypto/p10_aes_gcm.o: warning: objtool: .text+0x884: unannotated intra-function call
-> arch/powerpc/crypto/aesp8-ppc.o: warning: objtool: aes_p8_set_encrypt_key+0x44: unannotated intra-function call
-> ld: arch/powerpc/crypto/p10_aes_gcm.o: ABI version 1 is not compatible with ABI version 2 output
-> ld: failed to merge target specific data of file arch/powerpc/crypto/p10_aes_gcm.o
-> 
-> Caused by commit
-> 
->   ca68a96c37eb ("crypto: p10-aes-gcm - An accelerated AES/GCM stitched implementation")
-> 
-> I have applied the following hack for today.
+From: ye xingchen <ye.xingchen@zte.com.cn>
 
-Thanks Stephen, I'm going to update the previous fix as follows:
+crypto/algapi.h is included more than once.
 
----8<---
-_GLOBAL is needed instead of .global on Linux in assembly code.
+Signed-off-by: ye xingchen <ye.xingchen@zte.com.cn>
+---
+ arch/powerpc/crypto/p10-aes-gcm-glue.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-The explicit abiversion setting is removed as the code should
-with either ABI.
-
-Mark local functions to avoid objdump warnings.
-
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Fixes: cc40379b6e19 ("crypto: p10-aes-gcm - Glue code for AES/GCM stitched implementation")
-Fixes: 3b47eccaaff4 ("crypto: p10-aes-gcm - Supporting functions for AES")
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/arch/powerpc/crypto/aesp8-ppc.pl b/arch/powerpc/crypto/aesp8-ppc.pl
-index 50a0a18f35da..cdbcf6e13efc 100644
---- a/arch/powerpc/crypto/aesp8-ppc.pl
-+++ b/arch/powerpc/crypto/aesp8-ppc.pl
-@@ -121,6 +121,22 @@ my ($inp,$bits,$out,$ptr,$cnt,$rounds)=map("r$_",(3..8));
- my ($zero,$in0,$in1,$key,$rcon,$mask,$tmp)=map("v$_",(0..6));
- my ($stage,$outperm,$outmask,$outhead,$outtail)=map("v$_",(7..11));
- 
-+sub declare_function() {
-+	my ($name) = @_;
-+	if ($kernel) {
-+		$code .= "SYM_FUNC_START_LOCAL($name)\n";
-+	} else {
-+		$code .= "L$name:\n";
-+	}
-+}
-+
-+sub end_function() {
-+	my ($name) = @_;
-+	if ($kernel) {
-+		$code .= "SYM_FUNC_END($name)\n";
-+	}
-+}
-+
- $code.=<<___;
- .machine	"any"
- 
-@@ -132,13 +148,18 @@ rcon:
- .long	0x1b000000, 0x1b000000, 0x1b000000, 0x1b000000	?rev
- .long	0x0d0e0f0c, 0x0d0e0f0c, 0x0d0e0f0c, 0x0d0e0f0c	?rev
- .long	0,0,0,0						?asis
--Lconsts:
-+___
-+&declare_function("consts");
-+$code.=<<___;
- 	mflr	r0
- 	bcl	20,31,\$+4
- 	mflr	$ptr	 #vvvvv "distance between . and rcon
- 	addi	$ptr,$ptr,-0x48
- 	mtlr	r0
- 	blr
-+___
-+&end_function("consts");
-+$code.=<<___;
- 	.long	0
- 	.byte	0,12,0x14,0,0,0,0,0
- .asciz	"AES for PowerISA 2.07, CRYPTOGAMS by <appro\@openssl.org>"
-diff --git a/arch/powerpc/crypto/p10_aes_gcm.S b/arch/powerpc/crypto/p10_aes_gcm.S
-index 2306ad7c5e36..153388733eae 100644
---- a/arch/powerpc/crypto/p10_aes_gcm.S
-+++ b/arch/powerpc/crypto/p10_aes_gcm.S
-@@ -38,8 +38,10 @@
-  # ===================================================================================
-  #
- 
-+#include <asm/ppc_asm.h>
-+#include <linux/linkage.h>
-+
- .machine        "any"
--.abiversion     1
- .text
- 
-  # 4x loops
-@@ -569,9 +571,7 @@ ppc_aes_gcm_ghash:
-  #    rounds is at offset 240 in rk
-  #    Xi is at 0 in gcm_table (Xip).
-  #
--.global aes_p10_gcm_encrypt
--.align 5
--aes_p10_gcm_encrypt:
-+_GLOBAL(aes_p10_gcm_encrypt)
- 
- 	SAVE_REGS
- 
-@@ -989,7 +989,7 @@ Normal_block:
-  # Handle multiple partial blocks for encrypt and decrypt
-  #   operations.
-  #
--Do_partial_block:
-+SYM_FUNC_START_LOCAL(Do_partial_block)
- 	add	17, 15, 5
- 	cmpdi	17, 16
- 	bgt	Big_block
-@@ -1075,6 +1075,7 @@ Save_partial:
- 
- Partial_done:
- 	blr
-+SYM_FUNC_END(Do_partial_block)
- 
-  #
-  # Write partial block
-@@ -1082,7 +1083,7 @@ Partial_done:
-  # r12 - remaining bytes
-  # v15 - partial input data
-  #
--Write_partial_block:
-+SYM_FUNC_START_LOCAL(Write_partial_block)
- 	li		10, 192
- 	stxvb16x	15+32, 10, 1		# last block
- 
-@@ -1097,6 +1098,7 @@ Write_last_byte:
- 	stbu		14, 1(10)
-         bdnz		Write_last_byte
- 	blr
-+SYM_FUNC_END(Write_partial_block)
- 
- aes_gcm_out:
- 	# out = state
-@@ -1109,9 +1111,7 @@ aes_gcm_out:
-  #
-  # 8x Decrypt
-  #
--.global aes_p10_gcm_decrypt
--.align 5
--aes_p10_gcm_decrypt:
-+_GLOBAL(aes_p10_gcm_decrypt)
- 
- 	SAVE_REGS
- 
-diff --git a/arch/powerpc/crypto/ppc-xlate.pl b/arch/powerpc/crypto/ppc-xlate.pl
-index 23cca703ce29..d1dcb914858c 100644
---- a/arch/powerpc/crypto/ppc-xlate.pl
-+++ b/arch/powerpc/crypto/ppc-xlate.pl
-@@ -198,6 +198,7 @@ my $mtsle	= sub {
- };
- 
- print "#include <asm/ppc_asm.h>\n" if $flavour =~ /linux/;
-+print "#include <linux/linkage.h>\n" if $flavour =~ /linux/;
- 
- while($line=<>) {
- 
+diff --git a/arch/powerpc/crypto/p10-aes-gcm-glue.c b/arch/powerpc/crypto/p10-aes-gcm-glue.c
+index 777e6b5254da..a17d3e8d8f3c 100644
+--- a/arch/powerpc/crypto/p10-aes-gcm-glue.c
++++ b/arch/powerpc/crypto/p10-aes-gcm-glue.c
+@@ -8,7 +8,6 @@
+ #include <asm/unaligned.h>
+ #include <asm/simd.h>
+ #include <asm/switch_to.h>
+-#include <crypto/algapi.h>
+ #include <crypto/aes.h>
+ #include <crypto/algapi.h>
+ #include <crypto/b128ops.h>
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.25.1
