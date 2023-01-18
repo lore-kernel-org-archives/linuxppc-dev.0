@@ -4,55 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C95F3C32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 19:05:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D20CFC32793
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 19:07:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxwFK3FTHz3fcq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 06:05:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.45; helo=mail-oa1-f45.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f45.google.com (mail-oa1-f45.google.com [209.85.160.45])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxwHb3Vr9z3fCD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 06:07:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ejwY3+LK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112d; helo=mail-yw1-x112d.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ejwY3+LK;
+	dkim-atps=neutral
+Received: from mail-yw1-x112d.google.com (mail-yw1-x112d.google.com [IPv6:2607:f8b0:4864:20::112d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxw6k1hnJz3fBZ;
-	Thu, 19 Jan 2023 05:59:41 +1100 (AEDT)
-Received: by mail-oa1-f45.google.com with SMTP id 586e51a60fabf-15ebfdf69adso45299fac.0;
-        Wed, 18 Jan 2023 10:59:41 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxw8j29JCz3fJX
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2023 06:01:24 +1100 (AEDT)
+Received: by mail-yw1-x112d.google.com with SMTP id 00721157ae682-4e9adf3673aso145331347b3.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 11:01:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=Z8DSKYHJgJYKJvmPul/jqy2wXXzLUlUgLi7Tkf9YlXU=;
+        b=ejwY3+LKtxm5x3E+GJzfTUchB7m+L1YRon9Aa8Q50Ti4tQZzVZ6M7ddAXR8QuYX2/+
+         QbFt7G90bRjsGKuh+F1lDNIo0H7p5+Ztjzb+JsV1kzQB8MPN72CITN8khcfMdZzVCClr
+         0rfR86j8uR9XfP3lcG3CmwEZq8gGCNYy4GMw9BXNuo+B0XfUKFLgpaKByDGEKF5m5ob0
+         nAirCQpTYQiGnADXyL4rHN55X+6T7+KDx4Lknv/dk8Nf1obhK0VCQYfoZive5NaouN9J
+         rWZ8CpiuCsm5NmaCNzdlzyweXpQ+VQ7Pr9lxoMOtqkqySGFLw02OuYspEMabUBJR88+S
+         njvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ODJnN8bRpnIpOcq/j8GhrdGyRWH1W8cT3IRjCv4ER3A=;
-        b=4g7k1SaaTXw5+lB0jz5Ycl2zFLNwYj9bIWbEnx+1yWxGjnhJhOg8LmoLoruVQ+ngAX
-         3XOOWzrz7j/HdLptN08ZM4TgJXAlUF3qD+lLrLIYQB5nQtzGzXulT/JlLWSf5rtlb4aK
-         UUeL4M3YVHNZygFxzN+MeZpwt/ujdYEO/nURtXPPrIef/HfXKtBenFf2PMNz46fp50iJ
-         VkqO3tqkdtNXd0r/gBUkmxxR84Yb0aon6hf1SrwGVFn0/+mgqb6sHBLPYmGM28R6ysqA
-         36LlaEzb88czFRMa+kV/Z5MN9aMUV+1jR9OpRx6zq4rvj7yuJFZ3E1ywrXie7rI+BDgz
-         NnPg==
-X-Gm-Message-State: AFqh2kokpw3mLe92WfnmTxhIGWAAWbrCIFli3ITmXeQpjS9kMFEYH2mA
-	5vJx5RlH7NIMQKPNMiNFkVKzrAVW0Q==
-X-Google-Smtp-Source: AMrXdXu9zG06IMZpgmtOQ7L1h11dhjdNyBorEjEBZFjLS2nvmomm0VUxvyDl9ThG87aTiuEVVvZMlg==
-X-Received: by 2002:a05:6871:4186:b0:15e:e77b:b2fd with SMTP id lc6-20020a056871418600b0015ee77bb2fdmr4189474oab.41.1674068379430;
-        Wed, 18 Jan 2023 10:59:39 -0800 (PST)
-Received: from robh_at_kernel.org ([4.31.143.193])
-        by smtp.gmail.com with ESMTPSA id f15-20020a056870548f00b0015f1024d322sm7378767oan.37.2023.01.18.10.59.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 18 Jan 2023 10:59:38 -0800 (PST)
-Received: (nullmailer pid 629748 invoked by uid 1000);
-	Wed, 18 Jan 2023 18:59:29 -0000
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 18 Jan 2023 12:59:24 -0600
-Subject: [PATCH v2 2/5] dt-bindings: usb: Convert multiple "usb-ohci"
- bindings to DT schema
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Z8DSKYHJgJYKJvmPul/jqy2wXXzLUlUgLi7Tkf9YlXU=;
+        b=PHGrc/YBf3jZbvkDOuVDLnEq0laB9R8MN6wAKIYYFMFa2QuVWBiHOu+vOWDto5G4xP
+         0Yc2JsC6lz5OqX1E+6UHDfeDandBYxdKgoYKyCS+y9v4VfPS4wa4fxyZVKnR3PPo0XO7
+         QAf6v7pxL6rKvmtRt/qeO5qXTqVUnZxdLUCrZe8rDOgNLyZ/YTQ4SKF7oYRFOkpptZiw
+         KtsSID8AjEs7D4SRcTuqvW5B5n2XtNsyJjYAUYPl3bgib6ddaRA5F8U9YTlcPsHdXCEv
+         D6UykyLttxkMZTpVBIRCAsUrTfmZ8erya5zl3/A+E7BieW1Q20MRQQgDrCY+agXqxhIZ
+         +zzQ==
+X-Gm-Message-State: AFqh2kp6O1P6O9LV9hs4eS6I+pF414A8znAfYl4Ro0IeVZXmOKJBE2V3
+	wXA8xyRFf3/q0P2ck3MDWjqgrM2T5HGs0RG9AbxaIw==
+X-Google-Smtp-Source: AMrXdXubzcxtFjj0yWcsl/wowi8G0fcdGwos3LuYoWDDm/OjCNfgTh+Wjt7geFYZ2EGxVPVcRjYpoDeL03CkmRv1g5o=
+X-Received: by 2002:a81:6d8d:0:b0:490:89c3:21b0 with SMTP id
+ i135-20020a816d8d000000b0049089c321b0mr1053073ywc.132.1674068480621; Wed, 18
+ Jan 2023 11:01:20 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230110-dt-usb-v2-2-926bc1260e51@kernel.org>
-References: <20230110-dt-usb-v2-0-926bc1260e51@kernel.org>
-In-Reply-To: <20230110-dt-usb-v2-0-926bc1260e51@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Lee Jones <lee@kernel.org>
-X-Mailer: b4 0.12-dev
+References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-40-surenb@google.com>
+ <Y8bFdB47JT/luMld@dhcp22.suse.cz> <CAJuCfpHVYW5aBVmT0vwn+j=m=Jo2KhSTzgVtxSEusUZJdzetUA@mail.gmail.com>
+ <Y8fApgKJaTs9nrPO@dhcp22.suse.cz> <CAJuCfpERMyQc96Z5Qn9RFK0UD7fNugZE4DujFs4xqFWM8T6EqA@mail.gmail.com>
+ <20230118183447.GG2948950@paulmck-ThinkPad-P17-Gen-1>
+In-Reply-To: <20230118183447.GG2948950@paulmck-ThinkPad-P17-Gen-1>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Wed, 18 Jan 2023 11:01:08 -0800
+Message-ID: <CAJuCfpHZuKq45FL1gs+=rx5s2AOaZ9TPC1bdAWjYzfkrOABTOw@mail.gmail.com>
+Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in vm_area_free
+To: paulmck@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,194 +76,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, Michal Hocko <mhocko@suse.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, minchan@google.com, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsi
+ ngularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"usb-ohci" is another "generic" OHCI controller compatible string used by
-several platforms. Add it to the generic-ohci.yaml schema and remove all
-the old binding docs.
+On Wed, Jan 18, 2023 at 10:34 AM Paul E. McKenney <paulmck@kernel.org> wrote:
+>
+> On Wed, Jan 18, 2023 at 10:04:39AM -0800, Suren Baghdasaryan wrote:
+> > On Wed, Jan 18, 2023 at 1:49 AM Michal Hocko <mhocko@suse.com> wrote:
+> > >
+> > > On Tue 17-01-23 17:19:46, Suren Baghdasaryan wrote:
+> > > > On Tue, Jan 17, 2023 at 7:57 AM Michal Hocko <mhocko@suse.com> wrote:
+> > > > >
+> > > > > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
+> > > > > > call_rcu() can take a long time when callback offloading is enabled.
+> > > > > > Its use in the vm_area_free can cause regressions in the exit path when
+> > > > > > multiple VMAs are being freed.
+> > > > >
+> > > > > What kind of regressions.
+> > > > >
+> > > > > > To minimize that impact, place VMAs into
+> > > > > > a list and free them in groups using one call_rcu() call per group.
+> > > > >
+> > > > > Please add some data to justify this additional complexity.
+> > > >
+> > > > Sorry, should have done that in the first place. A 4.3% regression was
+> > > > noticed when running execl test from unixbench suite. spawn test also
+> > > > showed 1.6% regression. Profiling revealed that vma freeing was taking
+> > > > longer due to call_rcu() which is slow when RCU callback offloading is
+> > > > enabled.
+> > >
+> > > Could you be more specific? vma freeing is async with the RCU so how
+> > > come this has resulted in a regression? Is there any heavy
+> > > rcu_synchronize in the exec path? That would be an interesting
+> > > information.
+> >
+> > No, there is no heavy rcu_synchronize() or any other additional
+> > synchronous load in the exit path. It's the call_rcu() which can block
+> > the caller if CONFIG_RCU_NOCB_CPU is enabled and there are lots of
+> > other call_rcu()'s going on in parallel. Note that call_rcu() calls
+> > rcu_nocb_try_bypass() if CONFIG_RCU_NOCB_CPU is enabled and profiling
+> > revealed that this function was taking multiple ms (don't recall the
+> > actual number, sorry). Paul's explanation implied that this happens
+> > due to contention on the locks taken in this function. For more
+> > in-depth details I'll have to ask Paul for help :) This code is quite
+> > complex and I don't know all the details of RCU implementation.
+>
+> There are a couple of possibilities here.
+>
+> First, if I am remembering correctly, the time between the call_rcu()
+> and invocation of the corresponding callback was taking multiple seconds,
+> but that was because the kernel was built with CONFIG_LAZY_RCU=y in
+> order to save power by batching RCU work over multiple call_rcu()
+> invocations.  If this is causing a problem for a given call site, the
+> shiny new call_rcu_hurry() can be used instead.  Doing this gets back
+> to the old-school non-laziness, but can of course consume more power.
 
-Marvell pxa-usb.txt has "usb-ohci" in the example, but actual users don't,
-so drop it.
+That would not be the case because CONFIG_LAZY_RCU was not an option
+at the time I was profiling this issue.
+Laxy RCU would be a great option to replace this patch but
+unfortunately it's not the default behavior, so I would still have to
+implement this batching in case lazy RCU is not enabled.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-v2:
- - Fix transceiver property in if/then schema
- - Move OMAP to separate patch
----
- .../devicetree/bindings/powerpc/nintendo/wii.txt   | 10 -------
- .../devicetree/bindings/usb/generic-ohci.yaml      | 28 +++++++++++++++--
- Documentation/devicetree/bindings/usb/ohci-nxp.txt | 24 ---------------
- Documentation/devicetree/bindings/usb/pxa-usb.txt  |  2 +-
- .../devicetree/bindings/usb/spear-usb.txt          | 35 ----------------------
- 5 files changed, 26 insertions(+), 73 deletions(-)
+>
+> Second, there is a much shorter one-jiffy delay between the call_rcu()
+> and the invocation of the corresponding callback in kernels built with
+> either CONFIG_NO_HZ_FULL=y (but only on CPUs mentioned in the nohz_full
+> or rcu_nocbs kernel boot parameters) or CONFIG_RCU_NOCB_CPU=y (but only
+> on CPUs mentioned in the rcu_nocbs kernel boot parameters).  The purpose
+> of this delay is to avoid lock contention, and so this delay is incurred
+> only on CPUs that are queuing callbacks at a rate exceeding 16K/second.
+> This is reduced to a per-jiffy limit, so on a HZ=1000 system, a CPU
+> invoking call_rcu() at least 16 times within a given jiffy will incur
+> the added delay.  The reason for this delay is the use of a separate
+> ->nocb_bypass list.  As Suren says, this bypass list is used to reduce
+> lock contention on the main ->cblist.  This is not needed in old-school
+> kernels built without either CONFIG_NO_HZ_FULL=y or CONFIG_RCU_NOCB_CPU=y
+> (including most datacenter kernels) because in that case the callbacks
+> enqueued by call_rcu() are touched only by the corresponding CPU, so
+> that there is no need for locks.
 
-diff --git a/Documentation/devicetree/bindings/powerpc/nintendo/wii.txt b/Documentation/devicetree/bindings/powerpc/nintendo/wii.txt
-index c4d78f28d23c..3ff6ebbb4998 100644
---- a/Documentation/devicetree/bindings/powerpc/nintendo/wii.txt
-+++ b/Documentation/devicetree/bindings/powerpc/nintendo/wii.txt
-@@ -97,16 +97,6 @@ Nintendo Wii device tree
-    - reg : should contain the EXI registers location and length
-    - interrupts : should contain the EXI interrupt
- 
--1.g) The Open Host Controller Interface (OHCI) nodes
--
--  Represent the USB 1.x Open Host Controller Interfaces.
--
--  Required properties:
--
--   - compatible : should be "nintendo,hollywood-usb-ohci","usb-ohci"
--   - reg : should contain the OHCI registers location and length
--   - interrupts : should contain the OHCI interrupt
--
- 1.h) The Enhanced Host Controller Interface (EHCI) node
- 
-   Represents the USB 2.0 Enhanced Host Controller Interface.
-diff --git a/Documentation/devicetree/bindings/usb/generic-ohci.yaml b/Documentation/devicetree/bindings/usb/generic-ohci.yaml
-index 4fcbd0add49d..8492d809ba40 100644
---- a/Documentation/devicetree/bindings/usb/generic-ohci.yaml
-+++ b/Documentation/devicetree/bindings/usb/generic-ohci.yaml
-@@ -6,9 +6,6 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
- title: USB OHCI Controller
- 
--allOf:
--  - $ref: "usb-hcd.yaml"
--
- maintainers:
-   - Greg Kroah-Hartman <gregkh@linuxfoundation.org>
- 
-@@ -50,6 +47,13 @@ properties:
-               - snps,hsdk-v1.0-ohci
-           - const: generic-ohci
-       - const: generic-ohci
-+      - items:
-+          - enum:
-+              - cavium,octeon-6335-ohci
-+              - nintendo,hollywood-usb-ohci
-+              - nxp,ohci-nxp
-+              - st,spear600-ohci
-+          - const: usb-ohci
- 
-   reg:
-     maxItems: 1
-@@ -119,11 +123,29 @@ properties:
-       - host
-       - otg
- 
-+  transceiver:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description:
-+      The associated ISP1301 device. Necessary for the UDC controller for
-+      connecting to the USB physical layer.
-+
- required:
-   - compatible
-   - reg
-   - interrupts
- 
-+allOf:
-+  - $ref: usb-hcd.yaml
-+  - if:
-+      not:
-+        properties:
-+          compatible:
-+            contains:
-+              const: nxp,ohci-nxp
-+    then:
-+      properties:
-+        transceiver: false
-+
- additionalProperties: false
- 
- examples:
-diff --git a/Documentation/devicetree/bindings/usb/ohci-nxp.txt b/Documentation/devicetree/bindings/usb/ohci-nxp.txt
-deleted file mode 100644
-index 71e28c1017ed..000000000000
---- a/Documentation/devicetree/bindings/usb/ohci-nxp.txt
-+++ /dev/null
-@@ -1,24 +0,0 @@
--* OHCI controller, NXP ohci-nxp variant
--
--Required properties:
--- compatible: must be "nxp,ohci-nxp"
--- reg: physical base address of the controller and length of memory mapped
--  region.
--- interrupts: The OHCI interrupt
--- transceiver: phandle of the associated ISP1301 device - this is necessary for
--               the UDC controller for connecting to the USB physical layer
--
--Example (LPC32xx):
--
--	isp1301: usb-transceiver@2c {
--		compatible = "nxp,isp1301";
--		reg = <0x2c>;
--	};
--
--	ohci@31020000 {
--		compatible = "nxp,ohci-nxp";
--		reg = <0x31020000 0x300>;
--		interrupt-parent = <&mic>;
--		interrupts = <0x3b 0>;
--		transceiver = <&isp1301>;
--	};
-diff --git a/Documentation/devicetree/bindings/usb/pxa-usb.txt b/Documentation/devicetree/bindings/usb/pxa-usb.txt
-index 9c331799b87c..53fdae4fa6f6 100644
---- a/Documentation/devicetree/bindings/usb/pxa-usb.txt
-+++ b/Documentation/devicetree/bindings/usb/pxa-usb.txt
-@@ -22,7 +22,7 @@ Optional properties:
- Example:
- 
- 	usb0: ohci@4c000000 {
--		compatible = "marvell,pxa-ohci", "usb-ohci";
-+		compatible = "marvell,pxa-ohci";
- 		reg = <0x4c000000 0x100000>;
- 		interrupts = <18>;
- 		marvell,enable-port1;
-diff --git a/Documentation/devicetree/bindings/usb/spear-usb.txt b/Documentation/devicetree/bindings/usb/spear-usb.txt
-deleted file mode 100644
-index 1dc91cc459c0..000000000000
---- a/Documentation/devicetree/bindings/usb/spear-usb.txt
-+++ /dev/null
-@@ -1,35 +0,0 @@
--ST SPEAr SoC USB controllers:
-------------------------------
--
--EHCI:
-------
--
--Required properties:
--- compatible: "st,spear600-ehci"
--- interrupts: Should contain the EHCI interrupt
--
--Example:
--
--	ehci@e1800000 {
--		compatible = "st,spear600-ehci", "usb-ehci";
--		reg = <0xe1800000 0x1000>;
--		interrupt-parent = <&vic1>;
--		interrupts = <27>;
--	};
--
--
--OHCI:
-------
--
--Required properties:
--- compatible: "st,spear600-ohci"
--- interrupts: Should contain the OHCI interrupt
--
--Example:
--
--	ohci@e1900000 {
--		compatible = "st,spear600-ohci", "usb-ohci";
--		reg = <0xe1800000 0x1000>;
--		interrupt-parent = <&vic1>;
--		interrupts = <26>;
--	};
+I believe this is the reason in my profiled case.
 
--- 
-2.39.0
+>
+> Third, if you are instead seeing multiple milliseconds of CPU consumed by
+> call_rcu() in the common case (for example, without the aid of interrupts,
+> NMIs, or SMIs), please do let me know.  That sounds to me like a bug.
 
+I don't think I've seen such a case.
+Thanks for clarifications, Paul!
+
+>
+> Or have I lost track of some other slow case?
+>
+>                                                         Thanx, Paul
