@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24578C32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:31:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98968C004D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:31:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbVs4cPCz3fhj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:31:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbWv0w0hz3fkJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:31:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fTOYWFVn;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PYaxnPro;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fTOYWFVn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PYaxnPro;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4G1bVrz3bVf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I3mCMX028883;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4G4fRzz3c7S
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:26 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I3C7wv005658;
 	Wed, 18 Jan 2023 06:11:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=mkAI3uIQ9yV9PNhHRzDDGrjQklI07AEWIgiptDKoL6Q=;
- b=fTOYWFVnbZqHvDJFW7wiDsOUjhcWp1H1i5wHMgiciQY+sRTpuY5LycoiovIZVGc2EyBs
- kl/2kypNui87yIrlUk9QbXWXIujTEVkxLfAgYk3Td2uaocMpcVJdVh4sBkBKSvs+k5aK
- segL+vWCWmfDFk1AgKVhzAQ4zqd58/uKG7acAzg0msyHxBfARR0MxvLK+5YSSLctC17L
- njPIcHnxMcD6a3bhTYsLoWry6kjWQCVSZZvf3/C6uzm3K/7LP7moUR2wf2lbF5+07Vh8
- UwIVJ3W+yCo5KFHiGDx75rl28UVgufgYhK0J0WhMTkGGUJTDujPCluPIhlUc/xu2Yhs+ mA== 
+ bh=zTIV6PRVUVjhP5LqIHw2BlDGgUnAlkowALzDmGJNn38=;
+ b=PYaxnProKxeXPcGsCkoagkyTaeE/+CdGEp3IAmHTpmg++n5jJdL0N2XwmDAQExaZtlTc
+ Gz6uWfc2DTW7HPeVDLxtfxZkH5ZS1RzTS6mELQZI5l2kMAtem+Rh/BAdf0wR8+0gjpgv
+ y5v/jcl60AePmeJc1bwopZSgGzUJ6gDytyaTnRjI2/CNxoBA2axOMcTig60fkocAq7XA
+ 2SIvmWeZnpOhQ8aLZAlzLHFc/TLWrH5KffyODOKDjo3MUryV4ba1eJNNp2ucZ3Z0zQ7k
+ FwUzGHPWvI8+zPAAiSrGcIcf6ODRfwcKUyEtl/FIBFkW6qbz59NmfvSxaFfwDDxpZPPX /w== 
 Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n696dah4f-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n68n7u2g7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 18 Jan 2023 06:11:19 +0000
 Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HMNxWs004735;
-	Wed, 18 Jan 2023 06:11:18 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3n3m16mtnm-1
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HLRDYn004659;
+	Wed, 18 Jan 2023 06:11:17 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3n3m16mtnj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:18 +0000
+	Wed, 18 Jan 2023 06:11:17 +0000
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BFn022545024
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BEUR44630348
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Jan 2023 06:11:15 GMT
+	Wed, 18 Jan 2023 06:11:14 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A980B20040;
-	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id BB9722004D;
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B3D3A2004B;
+	by IMSVA (Postfix) with ESMTP id 4119520049;
 	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
@@ -60,29 +60,29 @@ Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7CE206096D;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A9D2E609BD;
 	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 16/24] powerpc/pseries: Implement signed update for PLPKS objects
-Date: Wed, 18 Jan 2023 17:10:41 +1100
-Message-Id: <20230118061049.1006141-17-ajd@linux.ibm.com>
+Subject: [PATCH v3 23/24] integrity/powerpc: Improve error handling & reporting when loading certs
+Date: Wed, 18 Jan 2023 17:10:48 +1100
+Message-Id: <20230118061049.1006141-24-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
 References: <20230118061049.1006141-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: PRrhUTnQhsbSoj2ky06DQqmOKSPAS4RI
-X-Proofpoint-ORIG-GUID: PRrhUTnQhsbSoj2ky06DQqmOKSPAS4RI
+X-Proofpoint-ORIG-GUID: GzLCZsfabuhnXz8eBLEXXzmTCrjoyt1e
+X-Proofpoint-GUID: GzLCZsfabuhnXz8eBLEXXzmTCrjoyt1e
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- adultscore=0 bulkscore=0 mlxscore=0 spamscore=0 malwarescore=0
- phishscore=0 suspectscore=0 priorityscore=1501 impostorscore=0
- clxscore=1015 mlxlogscore=999 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2212070000 definitions=main-2301180051
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
+ suspectscore=0 impostorscore=0 mlxscore=0 malwarescore=0 clxscore=1015
+ priorityscore=1501 mlxlogscore=999 bulkscore=0 spamscore=0
+ lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301180051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,178 +98,94 @@ Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nayna Jain <nayna@linux.ibm.com>
+From: Russell Currey <ruscur@russell.cc>
 
-The Platform Keystore provides a signed update interface which can be used
-to create, replace or append to certain variables in the PKS in a secure
-fashion, with the hypervisor requiring that the update be signed using the
-Platform Key.
+A few improvements to load_powerpc.c:
 
-Implement an interface to the H_PKS_SIGNED_UPDATE hcall in the plpks
-driver to allow signed updates to PKS objects.
+ - include integrity.h for the pr_fmt()
+ - move all error reporting out of get_cert_list()
+ - use ERR_PTR() to better preserve error detail
+ - don't use pr_err() for missing keys
 
-(The plpks driver doesn't need to do any cryptography or otherwise handle
-the actual signed variable contents - that will be handled by userspace
-tooling.)
-
-Signed-off-by: Nayna Jain <nayna@linux.ibm.com>
-[ajd: split patch, add timeout handling and misc cleanups]
-Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 
 ---
 
-v3: Merge plpks fixes and signed update series with secvar series
-
-    Fix error code handling in plpks_confirm_object_flushed() (ruscur)
-
-    Pass plpks_var struct to plpks_signed_update_var() by reference (mpe)
-
-    Consistent constant naming scheme (ruscur)
+v3: New patch
 ---
- arch/powerpc/include/asm/hvcall.h      |  3 +-
- arch/powerpc/include/asm/plpks.h       |  5 ++
- arch/powerpc/platforms/pseries/plpks.c | 71 ++++++++++++++++++++++++--
- 3 files changed, 73 insertions(+), 6 deletions(-)
+ .../integrity/platform_certs/load_powerpc.c   | 26 ++++++++++++++-----
+ 1 file changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 95fd7f9485d5..33b26c0cb69b 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -336,7 +336,8 @@
- #define H_SCM_FLUSH		0x44C
- #define H_GET_ENERGY_SCALE_INFO	0x450
- #define H_WATCHDOG		0x45C
--#define MAX_HCALL_OPCODE	H_WATCHDOG
-+#define H_PKS_SIGNED_UPDATE	0x454
-+#define MAX_HCALL_OPCODE	H_PKS_SIGNED_UPDATE
+diff --git a/security/integrity/platform_certs/load_powerpc.c b/security/integrity/platform_certs/load_powerpc.c
+index 1e4f80a4e71c..dee51606d5f4 100644
+--- a/security/integrity/platform_certs/load_powerpc.c
++++ b/security/integrity/platform_certs/load_powerpc.c
+@@ -14,9 +14,15 @@
+ #include <asm/secure_boot.h>
+ #include <asm/secvar.h>
+ #include "keyring_handler.h"
++#include "../integrity.h"
  
- /* Scope args for H_SCM_UNBIND_ALL */
- #define H_UNBIND_SCOPE_ALL (0x1)
-diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
-index 7c5f51a9af7c..e7204e6c0ca4 100644
---- a/arch/powerpc/include/asm/plpks.h
-+++ b/arch/powerpc/include/asm/plpks.h
-@@ -68,6 +68,11 @@ struct plpks_var_name_list {
- 	struct plpks_var_name varlist[];
- };
- 
-+/**
-+ * Updates the authenticated variable. It expects NULL as the component.
-+ */
-+int plpks_signed_update_var(struct plpks_var *var, u64 flags);
-+
- /**
-  * Writes the specified var and its data to PKS.
-  * Any caller of PKS driver should present a valid component type for
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 1189246b03dc..796ed5544ee5 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -81,6 +81,12 @@ static int pseries_status_to_err(int rc)
- 		err = -ENOENT;
- 		break;
- 	case H_BUSY:
-+	case H_LONG_BUSY_ORDER_1_MSEC:
-+	case H_LONG_BUSY_ORDER_10_MSEC:
-+	case H_LONG_BUSY_ORDER_100_MSEC:
-+	case H_LONG_BUSY_ORDER_1_SEC:
-+	case H_LONG_BUSY_ORDER_10_SEC:
-+	case H_LONG_BUSY_ORDER_100_SEC:
- 		err = -EBUSY;
- 		break;
- 	case H_AUTHORITY:
-@@ -184,14 +190,17 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
- 				     u16 namelen)
+ /*
+  * Get a certificate list blob from the named secure variable.
++ *
++ * Returns:
++ *  - a pointer to a kmalloc'd buffer containing the cert list on success
++ *  - NULL if the key does not exist
++ *  - an ERR_PTR on error
+  */
+ static __init void *get_cert_list(u8 *key, unsigned long keylen, u64 *size)
  {
- 	struct label *label;
--	size_t slen;
-+	size_t slen = 0;
+@@ -25,19 +31,19 @@ static __init void *get_cert_list(u8 *key, unsigned long keylen, u64 *size)
  
- 	if (!name || namelen > PLPKS_MAX_NAME_SIZE)
- 		return ERR_PTR(-EINVAL);
+ 	rc = secvar_ops->get(key, keylen, NULL, size);
+ 	if (rc) {
+-		pr_err("Couldn't get size: %d\n", rc);
+-		return NULL;
++		if (rc == -ENOENT)
++			return NULL;
++		return ERR_PTR(rc);
+ 	}
  
--	slen = strlen(component);
--	if (component && slen > sizeof(label->attr.prefix))
--		return ERR_PTR(-EINVAL);
-+	// Support NULL component for signed updates
-+	if (component) {
-+		slen = strlen(component);
-+		if (slen > sizeof(label->attr.prefix))
-+			return ERR_PTR(-EINVAL);
-+	}
+ 	db = kmalloc(*size, GFP_KERNEL);
+ 	if (!db)
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
  
- 	// The label structure must not cross a page boundary, so we align to the next power of 2
- 	label = kzalloc(roundup_pow_of_two(sizeof(*label)), GFP_KERNEL);
-@@ -397,6 +406,58 @@ static int plpks_confirm_object_flushed(struct label *label,
- 	return pseries_status_to_err(rc);
- }
+ 	rc = secvar_ops->get(key, keylen, db, size);
+ 	if (rc) {
+ 		kfree(db);
+-		pr_err("Error reading %s var: %d\n", key, rc);
+-		return NULL;
++		return ERR_PTR(rc);
+ 	}
  
-+int plpks_signed_update_var(struct plpks_var *var, u64 flags)
-+{
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
-+	int rc;
-+	struct label *label;
-+	struct plpks_auth *auth;
-+	u64 continuetoken = 0;
-+	u64 timeout = 0;
-+
-+	if (!var->data || var->datalen <= 0 || var->namelen > PLPKS_MAX_NAME_SIZE)
-+		return -EINVAL;
-+
-+	if (!(var->policy & PLPKS_SIGNEDUPDATE))
-+		return -EINVAL;
-+
-+	auth = construct_auth(PLPKS_OS_OWNER);
-+	if (IS_ERR(auth))
-+		return PTR_ERR(auth);
-+
-+	label = construct_label(var->component, var->os, var->name, var->namelen);
-+	if (IS_ERR(label)) {
-+		rc = PTR_ERR(label);
-+		goto out;
-+	}
-+
-+	do {
-+		rc = plpar_hcall9(H_PKS_SIGNED_UPDATE, retbuf,
-+				  virt_to_phys(auth), virt_to_phys(label),
-+				  label->size, var->policy, flags,
-+				  virt_to_phys(var->data), var->datalen,
-+				  continuetoken);
-+
-+		continuetoken = retbuf[0];
-+		if (pseries_status_to_err(rc) == -EBUSY) {
-+			int delay_ms = get_longbusy_msecs(rc);
-+			mdelay(delay_ms);
-+			timeout += delay_ms;
-+		}
-+		rc = pseries_status_to_err(rc);
-+	} while (rc == -EBUSY && timeout < PLPKS_MAX_TIMEOUT);
-+
-+	if (!rc)
-+		rc = plpks_confirm_object_flushed(label, auth);
-+
-+	kfree(label);
-+out:
-+	kfree(auth);
-+
-+	return rc;
-+}
-+EXPORT_SYMBOL(plpks_signed_update_var);
-+
- int plpks_write_var(struct plpks_var var)
- {
- 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
-@@ -443,7 +504,7 @@ int plpks_remove_var(char *component, u8 varos, struct plpks_var_name vname)
- 	struct label *label;
- 	int rc;
- 
--	if (!component || vname.namelen > PLPKS_MAX_NAME_SIZE)
-+	if (vname.namelen > PLPKS_MAX_NAME_SIZE)
- 		return -EINVAL;
- 
- 	auth = construct_auth(PLPKS_OS_OWNER);
+ 	return db;
+@@ -69,7 +75,11 @@ static int __init load_powerpc_certs(void)
+ 	 */
+ 	db = get_cert_list("db", 3, &dbsize);
+ 	if (!db) {
+-		pr_err("Couldn't get db list from firmware\n");
++		pr_info("Couldn't get db list from firmware\n");
++	} else if (IS_ERR(db)) {
++		rc = PTR_ERR(db);
++		pr_err("Error reading db from firmware: %d\n", rc);
++		return rc;
+ 	} else {
+ 		rc = parse_efi_signature_list("powerpc:db", db, dbsize,
+ 					      get_handler_for_db);
+@@ -81,6 +91,10 @@ static int __init load_powerpc_certs(void)
+ 	dbx = get_cert_list("dbx", 4,  &dbxsize);
+ 	if (!dbx) {
+ 		pr_info("Couldn't get dbx list from firmware\n");
++	} else if (IS_ERR(dbx)) {
++		rc = PTR_ERR(dbx);
++		pr_err("Error reading dbx from firmware: %d\n", rc);
++		return rc;
+ 	} else {
+ 		rc = parse_efi_signature_list("powerpc:dbx", dbx, dbxsize,
+ 					      get_handler_for_dbx);
 -- 
 2.39.0
 
