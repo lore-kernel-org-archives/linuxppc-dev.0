@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3415FC004D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:32:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1334DC32793
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:33:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbXw57qkz3fXP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:32:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbZF4wVxz3fXr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:33:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dt4iJOiK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9X17KQB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dt4iJOiK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9X17KQB;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4H3rMZz3cdG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:27 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I3C7wt005658;
-	Wed, 18 Jan 2023 06:11:18 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4N060Qz3fBX
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:31 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I4Hm14008429;
+	Wed, 18 Jan 2023 06:11:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=pSGBK/p1S4qtRP/VoxR01+uYjKCt8SW95Ne9npUDY6Q=;
- b=dt4iJOiK9z+XqTGMNcA1UIgHQuuIrBdQx/i/vOJoA7UKyvqYNSj9uSw9VeohIhv6sg6A
- pDhNo+PQP88j6UFvYzzfdW6k1/1lyYN7VRSNr3t3YW6gw7ZGT5R6fLmIJPSk+AKzjmmQ
- fXj2pFWFQbm6hCEp0o3Jrn8XWcNNopl49mRP5Wge3D+bhyuSGQHGBQAd3CC3aLLCzxO3
- NBvDb2kFzc7+S6PN+PXX8TrE89cmABcW5j0bQa49NaIq8GTaNUYiPs7KbjxoogZDyR59
- RUUyD1uEIKkPZx50Skkq1stUj5dj1YtTtaP0JqSn92vlRWdeL3E8BlRkQI7ojKxWEKsl uw== 
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n68n7u2fs-1
+ bh=gKmctAbEoVSJh+STbpQjqFTlXKnJs2vfjJ8NG4/pbcM=;
+ b=k9X17KQB0/vBrtXxMYGwqnJTuD35wIoRbGpxXIvN3ntk1P3oobavdKZMsxia53PbNw7I
+ POA2RZEx5iPIj3FaLWT3makewc/xybjB243jCN4SGkXewJzaFlFZZkNQUcKGFBnlhEHh
+ /NisVSZwbFpV/fRPaxklqVyMW5yB9qw+NnA+AGl/OcWbX3uk/QNlnL+8Poh5ODZfUCVr
+ VY61zy2uEnlw2PPdfIBGa/lr7X/WZGjg8/2oNi/V6RsQCWQEzoa1bICae/9l1LYQ9GDv
+ 155x5z8k+kB2dHe0rotsL+xld9aZAo1k1wRbFa1KWhoeCoLZa+nsGLX4NeG3ez0I6f2B FQ== 
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n69ma1wvw-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:18 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HNc0Pk030354;
-	Wed, 18 Jan 2023 06:11:16 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3n3m16kgr7-1
+	Wed, 18 Jan 2023 06:11:19 +0000
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HLo66C005139;
+	Wed, 18 Jan 2023 06:11:17 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3n3m16mtnk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:15 +0000
+	Wed, 18 Jan 2023 06:11:17 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BD5e40108438
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BFlm44302814
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Jan 2023 06:11:13 GMT
+	Wed, 18 Jan 2023 06:11:15 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 55EB320043;
-	Wed, 18 Jan 2023 06:11:13 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 336EA2004D;
+	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 60BF820040;
-	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 3F6F820040;
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 49204605F2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 94173609BE;
 	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 07/24] powerpc/secvar: Extend sysfs to include config vars
-Date: Wed, 18 Jan 2023 17:10:32 +1100
-Message-Id: <20230118061049.1006141-8-ajd@linux.ibm.com>
+Subject: [PATCH v3 21/24] powerpc/pseries: Pass PLPKS password on kexec
+Date: Wed, 18 Jan 2023 17:10:46 +1100
+Message-Id: <20230118061049.1006141-22-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
 References: <20230118061049.1006141-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: tewWwI44R-8DNqf36KS-pMXeCFUAQET8
-X-Proofpoint-GUID: tewWwI44R-8DNqf36KS-pMXeCFUAQET8
+X-Proofpoint-GUID: 8NB8u-wE6gBWeMo37igpwsigabP7qowd
+X-Proofpoint-ORIG-GUID: 8NB8u-wE6gBWeMo37igpwsigabP7qowd
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
- suspectscore=0 impostorscore=0 mlxscore=0 malwarescore=0 clxscore=1015
- priorityscore=1501 mlxlogscore=999 bulkscore=0 spamscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301180051
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
+ bulkscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0 mlxlogscore=867
+ malwarescore=0 priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2301180051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,114 +100,107 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Russell Currey <ruscur@russell.cc>
 
-The forthcoming pseries consumer of the secvar API wants to expose a
-number of config variables.  Allowing secvar implementations to provide
-their own sysfs attributes makes it easy for consumers to expose what
-they need to.
+Before interacting with the PLPKS, we ask the hypervisor to generate a
+password for the current boot, which is then required for most further
+PLPKS operations.
 
-This is not being used by the OPAL secvar implementation at present, and
-the config directory will not be created if no attributes are set.
+If we kexec into a new kernel, the new kernel will try and fail to
+generate a new password, as the password has already been set.
+
+Pass the password through to the new kernel via the device tree, in
+/chosen/plpks-pw. Check for the presence of this property before trying
+to generate a new password - if it exists, use the existing password and
+remove it from the device tree.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
-Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 
 ---
 
-v3: Remove unnecessary "secvar:" prefix from error messages (ajd)
-
-    Merge config attributes into secvar_operations (mpe)
+v3: New patch
 ---
- arch/powerpc/include/asm/secvar.h  |  2 ++
- arch/powerpc/kernel/secvar-sysfs.c | 33 +++++++++++++++++++++++++-----
- 2 files changed, 30 insertions(+), 5 deletions(-)
+ arch/powerpc/kexec/file_load_64.c      | 17 ++++++++++++++++-
+ arch/powerpc/platforms/pseries/plpks.c | 18 +++++++++++++++++-
+ 2 files changed, 33 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
-index b2cb9bb7c540..ebf95386d720 100644
---- a/arch/powerpc/include/asm/secvar.h
-+++ b/arch/powerpc/include/asm/secvar.h
-@@ -10,6 +10,7 @@
+diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+index af8854f9eae3..f0e25700ae77 100644
+--- a/arch/powerpc/kexec/file_load_64.c
++++ b/arch/powerpc/kexec/file_load_64.c
+@@ -27,6 +27,7 @@
+ #include <asm/kexec_ranges.h>
+ #include <asm/crashdump-ppc64.h>
+ #include <asm/prom.h>
++#include <asm/plpks.h>
  
- #include <linux/types.h>
- #include <linux/errno.h>
-+#include <linux/sysfs.h>
- 
- #define SECVAR_MAX_FORMAT_LEN	30 // max length of string returned by ->format()
- 
-@@ -21,6 +22,7 @@ struct secvar_operations {
- 	int (*set)(const char *key, u64 key_len, u8 *data, u64 data_size);
- 	ssize_t (*format)(char *buf);
- 	int (*max_size)(u64 *max_size);
-+	const struct attribute **config_attrs;
- };
- 
- #ifdef CONFIG_PPC_SECURE_BOOT
-diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-index 9f0e49bf3903..b82e95a2e415 100644
---- a/arch/powerpc/kernel/secvar-sysfs.c
-+++ b/arch/powerpc/kernel/secvar-sysfs.c
-@@ -140,6 +140,19 @@ static int update_kobj_size(void)
- 	return 0;
- }
- 
-+static int secvar_sysfs_config(struct kobject *kobj)
-+{
-+	struct attribute_group config_group = {
-+		.name = "config",
-+		.attrs = (struct attribute **)secvar_ops->config_attrs,
-+	};
-+
-+	if (secvar_ops->config_attrs)
-+		return sysfs_create_group(kobj, &config_group);
-+
-+	return 0;
-+}
-+
- static int secvar_sysfs_load(void)
+ struct umem_info {
+ 	u64 *buf;		/* data buffer for usable-memory property */
+@@ -1155,7 +1156,7 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
+ 			unsigned long initrd_len, const char *cmdline)
  {
- 	struct kobject *kobj;
-@@ -202,26 +215,36 @@ static int secvar_sysfs_init(void)
+ 	struct crash_mem *umem = NULL, *rmem = NULL;
+-	int i, nr_ranges, ret;
++	int i, nr_ranges, ret, chosen_node;
  
- 	rc = sysfs_create_file(secvar_kobj, &format_attr.attr);
- 	if (rc) {
--		kobject_put(secvar_kobj);
--		return -ENOMEM;
-+		pr_err("Failed to create format object\n");
-+		rc = -ENOMEM;
-+		goto err;
+ 	/*
+ 	 * Restrict memory usage for kdump kernel by setting up
+@@ -1230,6 +1231,20 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
+ 		}
  	}
  
- 	secvar_kset = kset_create_and_add("vars", NULL, secvar_kobj);
- 	if (!secvar_kset) {
- 		pr_err("sysfs kobject registration failed\n");
--		kobject_put(secvar_kobj);
--		return -ENOMEM;
-+		rc = -ENOMEM;
-+		goto err;
- 	}
- 
- 	rc = update_kobj_size();
- 	if (rc) {
- 		pr_err("Cannot read the size of the attribute\n");
--		return rc;
-+		goto err;
++#ifdef CONFIG_PSERIES_PLPKS
++	// If we have PLPKS active, we need to provide the password
++	if (plpks_is_available()) {
++		chosen_node = fdt_path_offset(fdt, "/chosen");
++		if (!chosen_node) {
++			pr_err("Can't find chosen node: %s\n",
++			       fdt_strerror(chosen_node));
++			goto out;
++		}
++		ret = fdt_setprop(fdt, chosen_node, "ibm,plpks-pw",
++				  plpks_get_password(), plpks_get_passwordlen());
 +	}
++#endif // CONFIG_PSERIES_PLPKS
 +
-+	rc = secvar_sysfs_config(secvar_kobj);
-+	if (rc) {
-+		pr_err("Failed to create config directory\n");
-+		goto err;
- 	}
+ out:
+ 	kfree(rmem);
+ 	kfree(umem);
+diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
+index b3c7410a4f13..0350f10e1755 100644
+--- a/arch/powerpc/platforms/pseries/plpks.c
++++ b/arch/powerpc/platforms/pseries/plpks.c
+@@ -16,6 +16,7 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
++#include <linux/of.h>
+ #include <asm/hvcall.h>
+ #include <asm/machdep.h>
+ #include <asm/plpks.h>
+@@ -126,7 +127,22 @@ static int plpks_gen_password(void)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
+ 	u8 *password, consumer = PLPKS_OS_OWNER;
+-	int rc;
++	struct property *prop;
++	int rc, len;
++
++	// Before we generate the password, we may have been booted by kexec and
++	// provided with a previous password.  Check for that first.
++	prop = of_find_property(of_chosen, "ibm,plpks-pw", &len);
++	if (prop) {
++		ospasswordlength = (u16)len;
++		ospassword = kzalloc(ospasswordlength, GFP_KERNEL);
++		if (!ospassword) {
++			of_remove_property(of_chosen, prop);
++			return -ENOMEM;
++		}
++		memcpy(ospassword, prop->value, len);
++		return of_remove_property(of_chosen, prop);
++	}
  
- 	secvar_sysfs_load();
- 
- 	return 0;
-+err:
-+	kobject_put(secvar_kobj);
-+	return rc;
- }
- 
- late_initcall(secvar_sysfs_init);
+ 	// The password must not cross a page boundary, so we align to the next power of 2
+ 	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
 -- 
 2.39.0
 
