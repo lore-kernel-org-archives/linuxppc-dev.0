@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E686C004D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:25:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DCBDC38159
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:26:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbNg22Zpz3fQl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:25:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbPh5vXsz3fbK
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:26:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=POXZRYvF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QTdU0tmZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=POXZRYvF;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QTdU0tmZ;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4D4Z4Qz3c7K
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4D5wC0z3c8F
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:24 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I6BC0j026824;
-	Wed, 18 Jan 2023 06:11:18 GMT
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I5MpfN007543;
+	Wed, 18 Jan 2023 06:11:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=KFZyqneQyMUdZl0hLjuIPI1DZk1TGtJ1pYGhl6U6TgQ=;
- b=POXZRYvFs/ay8rz7jvdvQ5QaFdMpt2C9dTDeGKG8KM4zCZLvb/+N+1K8qOIZRQT6q2sl
- hM/k9WtA5q0yiycDdGul/lydByW11FehCrg5PZSkHRC6XkJbKc0chWf8/apHt3Ab/pf9
- dqBUNJEqMowwOp/hW2nbsEI9qWkRC/AM4cfUC9EVdCOtR6yusRJ+MTXJ+5mr9R40aGY2
- WamsESX8RRA2Rlza2Y6H68Irq+QIkKwiwYcz876xnsWDw+W62vjisz0Z9a3S9owmB61f
- 7NAUu4wVu1ANJwhPslwkMa/VJJLS85whgeEOMlvzJWE0bNFzEME7TWutjRI67uw4LOyl /A== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n67swv0g5-1
+ bh=tOqrA5VidJRNAvnD59zsGYLxdqrQfaR9ST7oWeBkVOs=;
+ b=QTdU0tmZ7sX18Cksu331QGwPcFLN2Y8n7S16WOa3Rzne51Tp+WTyAQrz5MXl6uH/PNVQ
+ K5ij5Y0O7jiqMx/+90nGT8oEx7gdon+/q4gPtyKD+7hBAhB2crm7ar1XJl8jd2JNWxzB
+ 4dtCLXhKlVVynpspYKwHn6INToptbTY/LdA2xUjzXKNA4/go1eZs0uLiL8vmPZaAs9Yk
+ YNQmsz4BZkyqpwIem+VHkuIlpuwfTJKsXsQDEZ9QgzWxW4uItIxdsVbpnAmAjA4RllPG
+ ahxLZaWk3YKofB3aVv13osBOpTfH8WF17TCjhGxFVXfkBnKLgd3GfW+qWSdjtkrNasCa BQ== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n63tk9abp-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:18 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HMHJgJ006209;
-	Wed, 18 Jan 2023 06:11:16 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfmtkj-1
+	Wed, 18 Jan 2023 06:11:19 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HLWgwT023782;
+	Wed, 18 Jan 2023 06:11:17 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3n3m16mtte-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:16 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BDdf52429122
+	Wed, 18 Jan 2023 06:11:17 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BEfn48366026
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Jan 2023 06:11:13 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 59C7120043;
-	Wed, 18 Jan 2023 06:11:13 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D28DC2004D;
-	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
+	Wed, 18 Jan 2023 06:11:14 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B7C362004F;
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3CD8420043;
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 72FBB6096E;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 85806609A2;
 	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 14/24] powerpc/pseries: Fix alignment of PLPKS structures and buffers
-Date: Wed, 18 Jan 2023 17:10:39 +1100
-Message-Id: <20230118061049.1006141-15-ajd@linux.ibm.com>
+Subject: [PATCH v3 18/24] powerpc/pseries: Make caller pass buffer to plpks_read_var()
+Date: Wed, 18 Jan 2023 17:10:43 +1100
+Message-Id: <20230118061049.1006141-19-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
 References: <20230118061049.1006141-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: J--eV56EedY2BS737J_h7EWaJtBDCmEG
-X-Proofpoint-ORIG-GUID: J--eV56EedY2BS737J_h7EWaJtBDCmEG
+X-Proofpoint-ORIG-GUID: OCTt7Kb0VNL5SntzAwEFLQUM3J0JRG7N
+X-Proofpoint-GUID: OCTt7Kb0VNL5SntzAwEFLQUM3J0JRG7N
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- mlxlogscore=999 clxscore=1015 adultscore=0 priorityscore=1501 spamscore=0
- phishscore=0 mlxscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ priorityscore=1501 impostorscore=0 mlxscore=0 suspectscore=0 adultscore=0
+ clxscore=1015 spamscore=0 mlxlogscore=999 lowpriorityscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2212070000 definitions=main-2301180051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,67 +98,91 @@ Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A number of structures and buffers passed to PKS hcalls have alignment
-requirements, which could on occasion cause problems:
+Currently, plpks_read_var() allocates a buffer to pass to the
+H_PKS_READ_OBJECT hcall, then allocates another buffer, of the caller's
+preferred size if necessary, into which the data is copied, and returns
+that buffer to the caller.
 
-- Authorisation structures must be 16-byte aligned and must not cross a
-  page boundary
+This is a bit over the top - while we probably still want to allocate a
+separate buffer to pass to the hypervisor in the hcall, we can let the
+caller allocate the final buffer and specify the size.
 
-- Label structures must not cross page coundaries
+Don't allocate var->data in plpks_read_var(), instead expect the caller to
+allocate it. If the caller needs to discover the size, it can set
+var->data to NULL and var->datalen will be populated. Update header file
+to document this.
 
-- Password output buffers must not cross page boundaries
-
-Round up the allocations of these structures/buffers to the next power of
-2 to make sure this happens.
-
-Reported-by: Benjamin Gray <bgray@linux.ibm.com>
-Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
-Reviewed-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 
 ---
 
-v3: Merge plpks fixes and signed update series with secvar series
+v3: New patch (mpe)
 ---
- arch/powerpc/platforms/pseries/plpks.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/plpks.h       | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/plpks.c | 11 ++++-------
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
+index e7204e6c0ca4..0c49969b0864 100644
+--- a/arch/powerpc/include/asm/plpks.h
++++ b/arch/powerpc/include/asm/plpks.h
+@@ -88,16 +88,28 @@ int plpks_remove_var(char *component, u8 varos,
+ 
+ /**
+  * Returns the data for the specified os variable.
++ *
++ * Caller must allocate a buffer in var->data with length in var->datalen.
++ * If no buffer is provided, var->datalen will be populated with the object's
++ * size.
+  */
+ int plpks_read_os_var(struct plpks_var *var);
+ 
+ /**
+  * Returns the data for the specified firmware variable.
++ *
++ * Caller must allocate a buffer in var->data with length in var->datalen.
++ * If no buffer is provided, var->datalen will be populated with the object's
++ * size.
+  */
+ int plpks_read_fw_var(struct plpks_var *var);
+ 
+ /**
+  * Returns the data for the specified bootloader variable.
++ *
++ * Caller must allocate a buffer in var->data with length in var->datalen.
++ * If no buffer is provided, var->datalen will be populated with the object's
++ * size.
+  */
+ int plpks_read_bootloader_var(struct plpks_var *var);
+ 
 diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 6d1303e4862d..91f3f623a2c7 100644
+index 96a026a37285..5d9c6a3b2014 100644
 --- a/arch/powerpc/platforms/pseries/plpks.c
 +++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -112,7 +112,8 @@ static int plpks_gen_password(void)
- 	u8 *password, consumer = PLPKS_OS_OWNER;
- 	int rc;
+@@ -578,17 +578,14 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
+ 		goto out_free_output;
+ 	}
  
--	password = kzalloc(maxpwsize, GFP_KERNEL);
-+	// The password must not cross a page boundary, so we align to the next power of 2
-+	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
- 	if (!password)
- 		return -ENOMEM;
+-	if (var->datalen == 0 || var->datalen > retbuf[0])
++	if (!var->data || var->datalen > retbuf[0])
+ 		var->datalen = retbuf[0];
  
-@@ -148,7 +149,9 @@ static struct plpks_auth *construct_auth(u8 consumer)
- 	if (consumer > PLPKS_OS_OWNER)
- 		return ERR_PTR(-EINVAL);
+-	var->data = kzalloc(var->datalen, GFP_KERNEL);
+-	if (!var->data) {
+-		rc = -ENOMEM;
+-		goto out_free_output;
+-	}
+ 	var->policy = retbuf[1];
  
--	auth = kzalloc(struct_size(auth, password, maxpwsize), GFP_KERNEL);
-+	// The auth structure must not cross a page boundary and must be
-+	// 16 byte aligned. We align to the next largest power of 2
-+	auth = kzalloc(roundup_pow_of_two(struct_size(auth, password, maxpwsize)), GFP_KERNEL);
- 	if (!auth)
- 		return ERR_PTR(-ENOMEM);
+-	memcpy(var->data, output, var->datalen);
++	if (var->data)
++		memcpy(var->data, output, var->datalen);
++
+ 	rc = 0;
  
-@@ -182,7 +185,8 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
- 	if (component && slen > sizeof(label->attr.prefix))
- 		return ERR_PTR(-EINVAL);
- 
--	label = kzalloc(sizeof(*label), GFP_KERNEL);
-+	// The label structure must not cross a page boundary, so we align to the next power of 2
-+	label = kzalloc(roundup_pow_of_two(sizeof(*label)), GFP_KERNEL);
- 	if (!label)
- 		return ERR_PTR(-ENOMEM);
- 
+ out_free_output:
 -- 
 2.39.0
 
