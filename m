@@ -4,85 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1334DC32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:33:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE7A5C004D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 07:03:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbZF4wVxz3fXr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:33:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxcCw0LcHz3c6w
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 18:03:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9X17KQB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DSgHVawM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k9X17KQB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DSgHVawM;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4N060Qz3fBX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:31 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I4Hm14008429;
-	Wed, 18 Jan 2023 06:11:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=gKmctAbEoVSJh+STbpQjqFTlXKnJs2vfjJ8NG4/pbcM=;
- b=k9X17KQB0/vBrtXxMYGwqnJTuD35wIoRbGpxXIvN3ntk1P3oobavdKZMsxia53PbNw7I
- POA2RZEx5iPIj3FaLWT3makewc/xybjB243jCN4SGkXewJzaFlFZZkNQUcKGFBnlhEHh
- /NisVSZwbFpV/fRPaxklqVyMW5yB9qw+NnA+AGl/OcWbX3uk/QNlnL+8Poh5ODZfUCVr
- VY61zy2uEnlw2PPdfIBGa/lr7X/WZGjg8/2oNi/V6RsQCWQEzoa1bICae/9l1LYQ9GDv
- 155x5z8k+kB2dHe0rotsL+xld9aZAo1k1wRbFa1KWhoeCoLZa+nsGLX4NeG3ez0I6f2B FQ== 
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n69ma1wvw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:19 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HLo66C005139;
-	Wed, 18 Jan 2023 06:11:17 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3n3m16mtnk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:17 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BFlm44302814
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 18 Jan 2023 06:11:15 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 336EA2004D;
-	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3F6F820040;
-	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
-Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxcBr22wqz3bW0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 18:02:12 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 94173609BE;
-	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 21/24] powerpc/pseries: Pass PLPKS password on kexec
-Date: Wed, 18 Jan 2023 17:10:46 +1100
-Message-Id: <20230118061049.1006141-22-ajd@linux.ibm.com>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
-References: <20230118061049.1006141-1-ajd@linux.ibm.com>
+	by ams.source.kernel.org (Postfix) with ESMTPS id EA13CB81B79
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 07:02:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1B30FC4339C
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 07:02:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1674025327;
+	bh=hpCZZmsqf4/6Mxu3Z+UTxXvwuRL1LaW+0KrqiGLzrlw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=DSgHVawM2Lsbp1jqLhhrzzbXJt2A/+zta9eAwgCv3451lTKsCGx3Xy0LDIRX49ICc
+	 NK+gQKeOG47zXzt54pg53kZEJ0P+rQrFot+WzXi/WdNiD/QGHjAVcP6LhEYXIuneX7
+	 aV8/FNmafMuswBPQHR2WAe4H+Ii+7BaO5BA3DNheJdnY+dpib9ZU1WdrN9gxvSo6a6
+	 i7suaS0Ta2qvPrl2vJf/2GkourBl7CrW5Tb9VSF1uGS0nGGIbKyFchzA8bVZhYYyaE
+	 SqkgWJM/vhO98tSNVK2vAX4kmmPVlGuM3Cvzjjgc8pmU5wNZPIC2PJxGWK4P2z/JhW
+	 TwZ8CbFBzGKyA==
+Received: by mail-oi1-f181.google.com with SMTP id d188so16767267oia.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 23:02:07 -0800 (PST)
+X-Gm-Message-State: AFqh2ko7zQ3tcRsCB/8xj9Am722SQPX/v8g0b25Pb85DwAXyNlhVxzaY
+	X2zhSnfh4oxSdAjsa4ZPeTzBL+trYIZ31Xg6+pY=
+X-Google-Smtp-Source: AMrXdXsA6TO3KoaA5mmSLZluzpXf4b6ZeQmXmJvwyWq+RJVZeL/soOW8ymGGgGshJhB/twbLBiGcGi2bdeQkWA3W1WE=
+X-Received: by 2002:aca:acd5:0:b0:364:5d10:7202 with SMTP id
+ v204-20020acaacd5000000b003645d107202mr275302oie.194.1674025326155; Tue, 17
+ Jan 2023 23:02:06 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 8NB8u-wE6gBWeMo37igpwsigabP7qowd
-X-Proofpoint-ORIG-GUID: 8NB8u-wE6gBWeMo37igpwsigabP7qowd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
- bulkscore=0 lowpriorityscore=0 adultscore=0 suspectscore=0 mlxlogscore=867
- malwarescore=0 priorityscore=1501 impostorscore=0 phishscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2301180051
+References: <20230111161155.1349375-1-gary@garyguo.net> <20230112214059.o4vq474c47edjup6@ldmartin-desk2>
+ <20230113181841.4d378a24.gary@garyguo.net> <20230117175144.GI16547@kitsune.suse.cz>
+ <20230117192059.z5v5lfc2bzxk4ad2@ldmartin-desk2.lan>
+In-Reply-To: <20230117192059.z5v5lfc2bzxk4ad2@ldmartin-desk2.lan>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Wed, 18 Jan 2023 16:01:29 +0900
+X-Gmail-Original-Message-ID: <CAK7LNATsuszFR7JB5ZkqVS1W=hWr9=E7bTf+MvgJ+NXT3aZNwg@mail.gmail.com>
+Message-ID: <CAK7LNATsuszFR7JB5ZkqVS1W=hWr9=E7bTf+MvgJ+NXT3aZNwg@mail.gmail.com>
+Subject: Re: [PATCH] modpost: support arbitrary symbol length in modversion
+To: Lucas De Marchi <lucas.demarchi@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,113 +70,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, gjoyce@linux.ibm.com, gcwilson@linux.ibm.com
+Cc: Gary Guo <gary@garyguo.net>, Nicolas Schier <nicolas@fjasle.eu>, Guo Zhengkui <guozhengkui@vivo.com>, Wedson Almeida Filho <wedsonaf@google.com>, Joel Stanley <joel@jms.id.au>, Alex Gaynor <alex.gaynor@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>, Wedson Almeida Filho <wedsonaf@gmail.com>, Kees Cook <keescook@chromium.org>, rust-for-linux@vger.kernel.org, linux-kbuild@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, =?UTF-8?Q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, Luis Chamberlain <mcgrof@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Russell Currey <ruscur@russell.cc>
+On Wed, Jan 18, 2023 at 4:23 AM Lucas De Marchi
+<lucas.demarchi@intel.com> wrote:
+>
+> On Tue, Jan 17, 2023 at 06:51:44PM +0100, Michal Such=C3=A1nek wrote:
+> >Hello,
+> >
+> >On Fri, Jan 13, 2023 at 06:18:41PM +0000, Gary Guo wrote:
+> >> On Thu, 12 Jan 2023 14:40:59 -0700
+> >> Lucas De Marchi <lucas.demarchi@intel.com> wrote:
+> >>
+> >> > On Wed, Jan 11, 2023 at 04:11:51PM +0000, Gary Guo wrote:
+> >> > >
+> >> > > struct modversion_info {
+> >> > >- unsigned long crc;
+> >> > >- char name[MODULE_NAME_LEN];
+> >> > >+ /* Offset of the next modversion entry in relation to this one. *=
+/
+> >> > >+ u32 next;
+> >> > >+ u32 crc;
+> >> > >+ char name[0];
+> >> >
+> >> > although not really exported as uapi, this will break userspace as t=
+his is
+> >> > used in the  elf file generated for the modules. I think
+> >> > this change must be made in a backward compatible way and kmod updat=
+ed
+> >> > to deal with the variable name length:
+> >> >
+> >> > kmod $ git grep "\[64"
+> >> > libkmod/libkmod-elf.c:  char name[64 - sizeof(uint32_t)];
+> >> > libkmod/libkmod-elf.c:  char name[64 - sizeof(uint64_t)];
+> >> >
+> >> > in kmod we have both 32 and 64 because a 64-bit kmod can read both 3=
+2
+> >> > and 64 bit module, and vice versa.
+> >> >
+> >>
+> >> Hi Lucas,
+> >>
+> >> Thanks for the information.
+> >>
+> >> The change can't be "truly" backward compatible, in a sense that
+> >> regardless of the new format we choose, kmod would not be able to deco=
+de
+> >> symbols longer than "64 - sizeof(long)" bytes. So the list it retrieve=
+s
+> >> is going to be incomplete, isn't it?
+> >>
+> >> What kind of backward compatibility should be expected? It could be:
+> >> * short symbols can still be found by old versions of kmod, but not
+> >>   long symbols;
+> >
+> >That sounds good. Not everyone is using rust, and with this option
+> >people who do will need to upgrade tooling, and people who don't care
+> >don't need to do anything.
+>
+> that could be it indeed. My main worry here is:
+>
+> "After the support is added in kmod, kmod needs to be able to output the
+> correct information regardless if the module is from before/after the
+> change in the kernel and also without relying on kernel version."
+> Just changing the struct modversion_info doesn't make that possible.
+>
+> Maybe adding the long symbols in another section? Or ble
+> just increase to 512 and add the size to a
+> "__versions_hdr" section. If we then output a max size per module,
+> this would offset a little bit the additional size gained for the
+> modules using rust. And the additional 0's should compress well
+> so I'm not sure the additional size is that much relevant here.
 
-Before interacting with the PLPKS, we ask the hypervisor to generate a
-password for the current boot, which is then required for most further
-PLPKS operations.
 
-If we kexec into a new kernel, the new kernel will try and fail to
-generate a new password, as the password has already been set.
 
-Pass the password through to the new kernel via the device tree, in
-/chosen/plpks-pw. Check for the presence of this property before trying
-to generate a new password - if it exists, use the existing password and
-remove it from the device tree.
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 
----
+I also thought of new section(s) for long symbols.
 
-v3: New patch
----
- arch/powerpc/kexec/file_load_64.c      | 17 ++++++++++++++++-
- arch/powerpc/platforms/pseries/plpks.c | 18 +++++++++++++++++-
- 2 files changed, 33 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
-index af8854f9eae3..f0e25700ae77 100644
---- a/arch/powerpc/kexec/file_load_64.c
-+++ b/arch/powerpc/kexec/file_load_64.c
-@@ -27,6 +27,7 @@
- #include <asm/kexec_ranges.h>
- #include <asm/crashdump-ppc64.h>
- #include <asm/prom.h>
-+#include <asm/plpks.h>
- 
- struct umem_info {
- 	u64 *buf;		/* data buffer for usable-memory property */
-@@ -1155,7 +1156,7 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
- 			unsigned long initrd_len, const char *cmdline)
- {
- 	struct crash_mem *umem = NULL, *rmem = NULL;
--	int i, nr_ranges, ret;
-+	int i, nr_ranges, ret, chosen_node;
- 
- 	/*
- 	 * Restrict memory usage for kdump kernel by setting up
-@@ -1230,6 +1231,20 @@ int setup_new_fdt_ppc64(const struct kimage *image, void *fdt,
- 		}
- 	}
- 
-+#ifdef CONFIG_PSERIES_PLPKS
-+	// If we have PLPKS active, we need to provide the password
-+	if (plpks_is_available()) {
-+		chosen_node = fdt_path_offset(fdt, "/chosen");
-+		if (!chosen_node) {
-+			pr_err("Can't find chosen node: %s\n",
-+			       fdt_strerror(chosen_node));
-+			goto out;
-+		}
-+		ret = fdt_setprop(fdt, chosen_node, "ibm,plpks-pw",
-+				  plpks_get_password(), plpks_get_passwordlen());
-+	}
-+#endif // CONFIG_PSERIES_PLPKS
-+
- out:
- 	kfree(rmem);
- 	kfree(umem);
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index b3c7410a4f13..0350f10e1755 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -16,6 +16,7 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/types.h>
-+#include <linux/of.h>
- #include <asm/hvcall.h>
- #include <asm/machdep.h>
- #include <asm/plpks.h>
-@@ -126,7 +127,22 @@ static int plpks_gen_password(void)
- {
- 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
- 	u8 *password, consumer = PLPKS_OS_OWNER;
--	int rc;
-+	struct property *prop;
-+	int rc, len;
-+
-+	// Before we generate the password, we may have been booted by kexec and
-+	// provided with a previous password.  Check for that first.
-+	prop = of_find_property(of_chosen, "ibm,plpks-pw", &len);
-+	if (prop) {
-+		ospasswordlength = (u16)len;
-+		ospassword = kzalloc(ospasswordlength, GFP_KERNEL);
-+		if (!ospassword) {
-+			of_remove_property(of_chosen, prop);
-+			return -ENOMEM;
-+		}
-+		memcpy(ospassword, prop->value, len);
-+		return of_remove_property(of_chosen, prop);
-+	}
- 
- 	// The password must not cross a page boundary, so we align to the next power of 2
- 	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
--- 
-2.39.0
 
+One idea is to have separate sections for CRCs and symbol names.
+
+
+
+
+section __version_crc:
+   0x12345678
+   0x23456789
+   0x34567890
+
+
+section __version_sym:
+  "very_very_very_very_long_symbol"
+  "another_very_very_very_very_very_long_symbol"
+  "yet_another_very_very_very_very_very_long_symbol"
+
+
+
+
+You can iterate in each section with this:
+
+   crc +=3D sizeof(u32);
+   name +=3D strlen(name) + 1;
+
+
+Benefits:
+  - No next pointer
+  - No padding
+    - *.mod.c is kept human readable.
+
+
+
+
+
+BTW, the following is impossible
+because the pointer reference to .rodata
+is not available at this point?
+
+struct modversion_info {
+     u32 crc;
+     const char *name:
+};
+
+
+
+--=20
+Best Regards
+Masahiro Yamada
