@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02DFEC32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:18:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC0BCC004D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:19:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbDR34dgz3fGR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:18:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbFT1Nhdz3fCy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:19:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U1uIFzXO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b0qNG6me;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=U1uIFzXO;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b0qNG6me;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4C1ycfz3bbD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:22 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I5JVE0004401;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4C2txDz3bfy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:23 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I53UtB015732;
 	Wed, 18 Jan 2023 06:11:18 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=ln+dZlD7U92AgJCI5tK8AzpQIQLLs4y6SElYrlmd4Ks=;
- b=U1uIFzXOc+AHr/x+T6JMUhih5q/3Kui3Wzx4VcGWnhat0btjLQrx036kmcDfnaf3Ll9+
- O2x72Mj+k3DetIwCxqPrK3MWbC+AkCtV7W7zdv47yjSt+6mKcJ6AqgLmucCYAwgt4aSl
- OQtTRxeDbpFxQw6OHCb47Z+qFEXbMYzfQKzRjYu0tSlyj8HDc8SjKZSD0X5mAUpbfSB2
- ixku9xmINy1ywCsQxPJCBaYaG0ZX8P7z/MylU8WSsdhh7BAnb0iUHHW5NC9N4RniUw6R
- p3XHL1S0jE+VR0CJGLZWAq8XP7SLnYDya1zqxkT7oz27po5xr0RfaMZjn5KQ1ChjzWD9 2g== 
+ bh=gSeb7p+nI+cvgpG3tJb8/8BacKZihHB01aYKrRWv7OI=;
+ b=b0qNG6meX11LViiz4h5xJlfO0i6h1PeyqK6IQSWROlreU6PM30vmMg6ZXOfi5PTQu6Ef
+ 4AwQogp5B7K7tp7dU4lXjrSvFSPaWl9zp97ISY6PDQwGsXoRgIeQhpa7z7eSMO4hrHd0
+ YfWOVwHXXNOcN5LnOjMhc6Ng/NCOSB6zkNN2kJc9UNmi2HpZtOLYgCXoQUKLQKymIrq2
+ R6Om86dECN7daHmEE49f4U2zWPxl+QiVbrgnmULAC4qKbkvS6xFhk+8GcJfGxzfcGilr
+ bduIJNAlMwomke3X5wrJ0xctSQNyXh0fyMBQjlnuXwML3zcn3driOdC3VOSmorcVW1rH jA== 
 Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3n6agxrwks-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n6a9ph6w2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:18 +0000
+	Wed, 18 Jan 2023 06:11:17 +0000
 Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HMHJgI006209;
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HM36Aq007923;
 	Wed, 18 Jan 2023 06:11:15 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfmtkg-1
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfmtkh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 18 Jan 2023 06:11:15 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BDxX47907198
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BD2l48366020
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 18 Jan 2023 06:11:13 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 56EF720049;
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 540862004B;
 	Wed, 18 Jan 2023 06:11:13 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CF79420040;
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 606FF20040;
 	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Wed, 18 Jan 2023 06:11:12 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 581F760953;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4D896605F3;
 	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 11/24] powerpc/pseries: Move plpks.h to include directory
-Date: Wed, 18 Jan 2023 17:10:36 +1100
-Message-Id: <20230118061049.1006141-12-ajd@linux.ibm.com>
+Subject: [PATCH v3 08/24] powerpc/secvar: Allow backend to populate static list of variable names
+Date: Wed, 18 Jan 2023 17:10:33 +1100
+Message-Id: <20230118061049.1006141-9-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
 References: <20230118061049.1006141-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: GG9VMumpyr3RQkf8Chvc7O0GuDJT0EGg
-X-Proofpoint-ORIG-GUID: GG9VMumpyr3RQkf8Chvc7O0GuDJT0EGg
+X-Proofpoint-GUID: zVPVTZzltHGxRihbg8CIp5WqLNp44g_V
+X-Proofpoint-ORIG-GUID: zVPVTZzltHGxRihbg8CIp5WqLNp44g_V
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999
- impostorscore=0 phishscore=0 bulkscore=0 adultscore=0 priorityscore=1501
- spamscore=0 clxscore=1015 suspectscore=0 malwarescore=0 mlxscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2301180051
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 mlxscore=0 phishscore=0 malwarescore=0 adultscore=0
+ clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ mlxlogscore=999 bulkscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2212070000 definitions=main-2301180051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,65 +98,141 @@ Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Russell Currey <ruscur@russell.cc>
+Currently, the list of variables is populated by calling
+secvar_ops->get_next() repeatedly, which is explicitly modelled on the
+OPAL API (including the keylen parameter).
 
-Move plpks.h from platforms/pseries/ to include/asm/. This is necessary
-for later patches to make use of the PLPKS from code in other subsystems.
+For the upcoming PLPKS backend, we have a static list of variable names.
+It is messy to fit that into get_next(), so instead, let the backend put
+a NULL-terminated array of variable names into secvar_ops->var_names,
+which will be used if get_next() is undefined.
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 
 ---
 
-v3: New patch
+v3: New patch (ajd/mpe)
 ---
- .../powerpc/{platforms/pseries => include/asm}/plpks.h | 10 +++++++---
- arch/powerpc/platforms/pseries/plpks.c                 |  3 +--
- 2 files changed, 8 insertions(+), 5 deletions(-)
- rename arch/powerpc/{platforms/pseries => include/asm}/plpks.h (89%)
+ arch/powerpc/include/asm/secvar.h  |  4 ++
+ arch/powerpc/kernel/secvar-sysfs.c | 67 ++++++++++++++++++++----------
+ 2 files changed, 50 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.h b/arch/powerpc/include/asm/plpks.h
-similarity index 89%
-rename from arch/powerpc/platforms/pseries/plpks.h
-rename to arch/powerpc/include/asm/plpks.h
-index 275ccd86bfb5..8295502ee93b 100644
---- a/arch/powerpc/platforms/pseries/plpks.h
-+++ b/arch/powerpc/include/asm/plpks.h
-@@ -6,8 +6,10 @@
-  * Platform keystore for pseries LPAR(PLPKS).
-  */
- 
--#ifndef _PSERIES_PLPKS_H
--#define _PSERIES_PLPKS_H
-+#ifndef _ASM_POWERPC_PLPKS_H
-+#define _ASM_POWERPC_PLPKS_H
+diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
+index ebf95386d720..c8bee1834b54 100644
+--- a/arch/powerpc/include/asm/secvar.h
++++ b/arch/powerpc/include/asm/secvar.h
+@@ -23,6 +23,10 @@ struct secvar_operations {
+ 	ssize_t (*format)(char *buf);
+ 	int (*max_size)(u64 *max_size);
+ 	const struct attribute **config_attrs;
 +
-+#ifdef CONFIG_PSERIES_PLPKS
++	// NULL-terminated array of fixed variable names
++	// Only used if get_next() isn't provided
++	const char * const *var_names;
+ };
  
- #include <linux/types.h>
- #include <linux/list.h>
-@@ -68,4 +70,6 @@ int plpks_read_fw_var(struct plpks_var *var);
-  */
- int plpks_read_bootloader_var(struct plpks_var *var);
+ #ifdef CONFIG_PPC_SECURE_BOOT
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+index b82e95a2e415..d9352d4be87b 100644
+--- a/arch/powerpc/kernel/secvar-sysfs.c
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -153,9 +153,31 @@ static int secvar_sysfs_config(struct kobject *kobj)
+ 	return 0;
+ }
  
--#endif
-+#endif // CONFIG_PSERIES_PLPKS
+-static int secvar_sysfs_load(void)
++static int add_var(const char *name)
+ {
+ 	struct kobject *kobj;
++	int rc;
 +
-+#endif // _ASM_POWERPC_PLPKS_H
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 4edd1585e245..955117f81e50 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -18,8 +18,7 @@
- #include <linux/types.h>
- #include <asm/hvcall.h>
- #include <asm/machdep.h>
++	kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
++	if (!kobj)
++		return -ENOMEM;
++
++	kobject_init(kobj, &secvar_ktype);
++
++	rc = kobject_add(kobj, &secvar_kset->kobj, "%s", name);
++	if (rc) {
++		pr_warn("kobject_add error %d for attribute: %s\n", rc,
++			name);
++		kobject_put(kobj);
++		return rc;
++	}
++
++	kobject_uevent(kobj, KOBJ_ADD);
++	return 0;
++}
++
++static int secvar_sysfs_load(void)
++{
+ 	u64 namesize = 0;
+ 	char *name;
+ 	int rc;
+@@ -173,31 +195,26 @@ static int secvar_sysfs_load(void)
+ 			break;
+ 		}
+ 
+-		kobj = kzalloc(sizeof(*kobj), GFP_KERNEL);
+-		if (!kobj) {
+-			rc = -ENOMEM;
+-			break;
+-		}
 -
--#include "plpks.h"
-+#include <asm/plpks.h>
+-		kobject_init(kobj, &secvar_ktype);
+-
+-		rc = kobject_add(kobj, &secvar_kset->kobj, "%s", name);
+-		if (rc) {
+-			pr_warn("kobject_add error %d for attribute: %s\n", rc,
+-				name);
+-			kobject_put(kobj);
+-			kobj = NULL;
+-		}
+-
+-		if (kobj)
+-			kobject_uevent(kobj, KOBJ_ADD);
+-
++		rc = add_var(name);
+ 	} while (!rc);
  
- #define PKS_FW_OWNER	     0x1
- #define PKS_BOOTLOADER_OWNER 0x2
+ 	kfree(name);
+ 	return rc;
+ }
+ 
++static int secvar_sysfs_load_static(void)
++{
++	const char * const *name_ptr = secvar_ops->var_names;
++	int rc;
++	while (*name_ptr) {
++		rc = add_var(*name_ptr);
++		if (rc)
++			return rc;
++		name_ptr++;
++	}
++	return 0;
++}
++
+ static int secvar_sysfs_init(void)
+ {
+ 	int rc;
+@@ -239,7 +256,15 @@ static int secvar_sysfs_init(void)
+ 		goto err;
+ 	}
+ 
+-	secvar_sysfs_load();
++	if (secvar_ops->get_next)
++		rc = secvar_sysfs_load();
++	else
++		rc = secvar_sysfs_load_static();
++
++	if (rc) {
++		pr_err("Failed to create variable attributes\n");
++		goto err;
++	}
+ 
+ 	return 0;
+ err:
 -- 
 2.39.0
 
