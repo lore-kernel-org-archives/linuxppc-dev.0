@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B250C004D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D799EC678D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 06:29:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbRm4nYFz3fdF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:28:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxbSp3dZ6z3fff
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 17:29:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r6deEbyf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kF0uXYNP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r6deEbyf;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kF0uXYNP;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4F2wFwz3bW0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxb4F3ftQz3c8g
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 17:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I3X8PN013916;
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30I53Z1M015897;
 	Wed, 18 Jan 2023 06:11:20 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=/LIOovBYmShleYv8Bo+CZamu22fOrs0higkDrpFHkdw=;
- b=r6deEbyffEeIPqqn1RIlfNQY8lGTJI9QcfqGW3f95cZa4IVEB1dafKGEWOjmbIaigwp/
- H46+WRjnmwWjNEmUyhDXjE8zcfN3IPuFeVg7Nb6TtSkaPUzXnNE5SH9HQasPJ8JId5QK
- Sw24Kvctzr2XXItX2fcCdBMKuMq3OBkO9q4R47LGrvgXBuEOmgFCCptMUdkPW3+yqI8R
- yRgOTrbo3KRADm845Bg/oQABYzS+KkbXAwoOA6O1QqiTXQXBxTB5a/gRoKPtQv7hU/3H
- g8dw4En9dM88/y7gkfzNTVQGE+L/tqndXpET+Nd84iVMMgChHTmbqanPvP/F/yk+4Pdg 6Q== 
-Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n68ycaq67-1
+ bh=NbAGOkJyKTdzGBUpPMnKfY++xIugD/a7G/Z7957aSpQ=;
+ b=kF0uXYNPWlFkxgF6my4vekuw5ZTt+xnwFLJW3MzsQPn1hoDYaPu9+zJ+tI5c/OHGY0fV
+ AjawqG9JgBu1CQepciyLg+a4f5lsN2FdymCznyxAPpaXqGpyaf8S5a0BwpMdNGCTDh7m
+ Q8tmxV4e1MNhKoRFX84GYq7YhjO3qTY1t+7vp8Ssfee3Wj9xDks/4frpFu3+fabm2n0e
+ sxthGsE0ZWy9Ew+jA4yRjbw7suV2p0PuMfiTcuQAomGbU9ByKPcFU2yArwrbFwJEA4/V
+ ahNe9U4ZpgHjDZS0SYuljf1ERmBNOSzzelwWQ0UGN1Q0mTAGGLWyXrY1c/aDz3WPV9lH vg== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n6a9ph6x5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 18 Jan 2023 06:11:19 +0000
-Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
-	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30I1u6wi012206;
-	Wed, 18 Jan 2023 06:11:17 GMT
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30HNFFDG007008;
+	Wed, 18 Jan 2023 06:11:18 GMT
 Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3n3m16kgv3-1
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfmtkm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 18 Jan 2023 06:11:17 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BEaf41943346
+	Wed, 18 Jan 2023 06:11:18 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30I6BFUL50790782
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Wed, 18 Jan 2023 06:11:15 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BBAD72005A;
-	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4137D2004B;
-	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A43BB20040;
+	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2884820043;
+	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 18 Jan 2023 06:11:14 +0000 (GMT)
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 18 Jan 2023 06:11:15 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AFF08609C3;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8EDF56097C;
 	Wed, 18 Jan 2023 17:11:08 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v3 24/24] integrity/powerpc: Support loading keys from pseries secvar
-Date: Wed, 18 Jan 2023 17:10:49 +1100
-Message-Id: <20230118061049.1006141-25-ajd@linux.ibm.com>
+Subject: [PATCH v3 20/24] powerpc/pseries: Add helpers to get PLPKS password
+Date: Wed, 18 Jan 2023 17:10:45 +1100
+Message-Id: <20230118061049.1006141-21-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230118061049.1006141-1-ajd@linux.ibm.com>
 References: <20230118061049.1006141-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: DTpzqE4IM2rQevC0e56YT0J8QZVUR-_Q
-X-Proofpoint-ORIG-GUID: DTpzqE4IM2rQevC0e56YT0J8QZVUR-_Q
+X-Proofpoint-GUID: BOXolXkxoR4OCsa-PnXtg5y54IYkBD2d
+X-Proofpoint-ORIG-GUID: BOXolXkxoR4OCsa-PnXtg5y54IYkBD2d
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.923,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-18_01,2023-01-17_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- malwarescore=0 spamscore=0 mlxscore=0 bulkscore=0 phishscore=0
- adultscore=0 mlxlogscore=999 priorityscore=1501 clxscore=1015
- suspectscore=0 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 mlxscore=0 phishscore=0 malwarescore=0 adultscore=0
+ clxscore=1015 priorityscore=1501 impostorscore=0 spamscore=0
+ mlxlogscore=748 bulkscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.12.0-2212070000 definitions=main-2301180051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -100,14 +100,8 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Russell Currey <ruscur@russell.cc>
 
-The secvar object format is only in the device tree under powernv.
-We now have an API call to retrieve it in a generic way, so we should
-use that instead of having to handle the DT here.
-
-Add support for pseries secvar, with the "ibm,plpks-sb-v1" format.
-The object format is expected to be the same, so there shouldn't be any
-functional differences between objects retrieved from powernv and
-pseries.
+Add helper functions to get the PLPKS password. This will be used in a
+later patch to support passing the password between kernels over kexec.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
@@ -116,57 +110,53 @@ Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 
 v3: New patch
 ---
- .../integrity/platform_certs/load_powerpc.c     | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/plpks.h       | 11 +++++++++++
+ arch/powerpc/platforms/pseries/plpks.c | 10 ++++++++++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/security/integrity/platform_certs/load_powerpc.c b/security/integrity/platform_certs/load_powerpc.c
-index dee51606d5f4..8fa899616d92 100644
---- a/security/integrity/platform_certs/load_powerpc.c
-+++ b/security/integrity/platform_certs/load_powerpc.c
-@@ -10,7 +10,6 @@
- #include <linux/cred.h>
- #include <linux/err.h>
- #include <linux/slab.h>
--#include <linux/of.h>
- #include <asm/secure_boot.h>
- #include <asm/secvar.h>
- #include "keyring_handler.h"
-@@ -59,16 +58,22 @@ static int __init load_powerpc_certs(void)
- 	void *db = NULL, *dbx = NULL;
- 	u64 dbsize = 0, dbxsize = 0;
- 	int rc = 0;
--	struct device_node *node;
-+	ssize_t len;
-+	char buf[SECVAR_MAX_FORMAT_LEN];
+diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
+index 0c49969b0864..08355c89f5fd 100644
+--- a/arch/powerpc/include/asm/plpks.h
++++ b/arch/powerpc/include/asm/plpks.h
+@@ -171,6 +171,17 @@ u32 plpks_get_maxlargeobjectsize(void);
+  */
+ u64 plpks_get_signedupdatealgorithms(void);
  
- 	if (!secvar_ops)
- 		return -ENODEV;
- 
--	/* The following only applies for the edk2-compat backend. */
--	node = of_find_compatible_node(NULL, NULL, "ibm,edk2-compat-v1");
--	if (!node)
-+	len = secvar_ops->format(buf);
-+	if (len <= 0)
- 		return -ENODEV;
- 
-+	// Check for known secure boot implementations from OPAL or PLPKS
-+	if (strcmp("ibm,edk2-compat-v1", buf) && strcmp("ibm,plpks-sb-v1", buf)) {
-+		pr_err("Unsupported secvar implementation \"%s\", not loading certs\n", buf);
-+		return -ENODEV;
-+	}
++/**
++ * Returns the PLPKS password generated by the hypervisor.
++ * Should only be used to prepare a different OS to use the PLPKS, i.e. kexec.
++ */
++u8 *plpks_get_password(void);
 +
- 	/*
- 	 * Get db, and dbx. They might not exist, so it isn't an error if we
- 	 * can't get them.
-@@ -103,8 +108,6 @@ static int __init load_powerpc_certs(void)
- 		kfree(dbx);
- 	}
++/**
++ * Returns the length of the PLPKS password in bytes.
++ */
++u16 plpks_get_passwordlen(void);
++
+ #endif // CONFIG_PSERIES_PLPKS
  
--	of_node_put(node);
--
- 	return rc;
+ #endif // _ASM_POWERPC_PLPKS_H
+diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
+index 5d9c6a3b2014..b3c7410a4f13 100644
+--- a/arch/powerpc/platforms/pseries/plpks.c
++++ b/arch/powerpc/platforms/pseries/plpks.c
+@@ -359,6 +359,16 @@ u64 plpks_get_signedupdatealgorithms(void)
+ 	return signedupdatealgorithms;
  }
- late_initcall(load_powerpc_certs);
+ 
++u8 *plpks_get_password(void)
++{
++	return ospassword;
++}
++
++u16 plpks_get_passwordlen(void)
++{
++	return ospasswordlength;
++}
++
+ bool plpks_is_available(void)
+ {
+ 	int rc;
 -- 
 2.39.0
 
