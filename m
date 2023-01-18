@@ -4,63 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFFB3C38142
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 02:09:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3BDCC00A5A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 02:17:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NxThW1P0Dz3cfK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 13:08:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NxTt20VFZz3c7X
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 13:17:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=E/NELfxM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LEYLSbN+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112a; helo=mail-yw1-x112a.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=E/NELfxM;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=LEYLSbN+;
 	dkim-atps=neutral
-Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
+Received: from mail-yw1-x112a.google.com (mail-yw1-x112a.google.com [IPv6:2607:f8b0:4864:20::112a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxTgS64JNz30NN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 13:08:03 +1100 (AEDT)
-Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-4e4a6af2d99so129898537b3.4
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 18:08:03 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxTs017WXz30hh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 13:16:19 +1100 (AEDT)
+Received: by mail-yw1-x112a.google.com with SMTP id 00721157ae682-4bf16baa865so448558527b3.13
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jan 2023 18:16:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=IPntz93C+TLeiYuya3M1C/wd28MHaFTPeMLFazEhwmE=;
-        b=E/NELfxMjFTBI1CmtbcqjwsiauENdaTqInach8c86SJR2c1/56WBUHAal3gIhTRUSb
-         jv5FEJFY1G+j14AmMioNZe/bJvrtUa4pwIjIu906R7jCEXint9daeTioB7w/OdN0H1eo
-         eJQ22mc9V/eYL4wCsWdZ1vcc44AiUDEtW1uHBGuQyk23DmBqSMDkwC2DgQVpl8YosT9e
-         mRedZ/Kmq4J+N524TLxW75CBx6pTTLnnuzhjvwPqs4zhrByXdnUiCcoHjxOALgS+Toir
-         JxLqPBv9lh1Hz0PKEROEOPoPjIho1oPrj/ub9qhqrValKsHTGtbIGxv2iJwSdawi2I4l
-         OJBw==
+        bh=plQIjN2wQ9XQXBQ5PSme4vUCmLrYkEIK9If4doKFLBI=;
+        b=LEYLSbN+VJha9Y8r6nX3W37X12OGy8n862kizG4i1KEMLBQvAcrAa7awSx1mGj6i1M
+         UZO5TbjxfJVrwATY1r5dwUg8ulM2yFaaEytzlAWSqp+tigueh/wVI7At443/LMXGGcdV
+         02aU2qgTw4KyyW2cVar/Q+JPbd/GajrGO3fhydG8cNxnsGEj2DNXX1lHjQcNta+ndKLq
+         VlrCSw29Fmnei5ErjNjvLZbBUUKgepCwNTFqoqk9hXLiOqQJA6NxpzwZj5tNijHCrCY0
+         zNFBA/nJjj38TAHajL1bHQYqy86Qx8fnD261/akARVMdMAHEV4rhTf3wbpcFOTD1vzhT
+         StSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=IPntz93C+TLeiYuya3M1C/wd28MHaFTPeMLFazEhwmE=;
-        b=o/MZTnUU3rNAiBozQAdhBi7B07cDO+o4ZUd7mIMB7L4S5QEYoUJ3LlC9POj7qkqZZU
-         BQ5dgXMT/urQpu956FA29q0v7CI5vsFgi83WlcV/eO8P0ujQ9xondip9pjvmCAZ8pmkL
-         C4vEROXOK0/g8XZK5ADVaN8KyrB81nZ3w7QLD00T7IVS+iSfKlBJlV/ouJPwLyd4hJuF
-         NX0kzRr5T2fK8QDL9yj3S2Z5JnPKHJUPHT/wj0rh6qHHWPcXh5mVPvW9/TUgSS0SrZg2
-         FkJcRTVcqonfWV7ovd4SQRnarQxbgB3fyWowBKk5yTR6/90YT/k+sEHXEalFHAs1sdZG
-         RQhg==
-X-Gm-Message-State: AFqh2kqng5ypCj8GJaCqbUYC4VqtcQbYD+x/qPa3T/n7LmFq5Jr+rt0/
-	J5gI0T/Kzdg/eFmNU/iyOPQQE4+fOB4ClQK4ycI2Kw==
-X-Google-Smtp-Source: AMrXdXt6HN6HjCJ0KoPrl+Bw/cVoPlnqd1wGxDKFOs1p/ddQiqBkhapFdQZ4VL85ZMUAD+PRUyF839a3jZDZ94RZE64=
-X-Received: by 2002:a81:784c:0:b0:4e1:5013:6da1 with SMTP id
- t73-20020a81784c000000b004e150136da1mr767604ywc.218.1674007680736; Tue, 17
- Jan 2023 18:08:00 -0800 (PST)
+        bh=plQIjN2wQ9XQXBQ5PSme4vUCmLrYkEIK9If4doKFLBI=;
+        b=hoO+KYJxQCd12hbxGBMHR0JDso1FGH0jWk3NLV4fxRBQhoqlt6p95mxtRk5AVxP83E
+         bSa8r9IAF33138lZ+yraxaGtnNX5uNcfgqqXOPXXbatMXQOCIlmP3WE+0Q7LlgWxJIRZ
+         9mS5zfjFoy+4xSLW0UmwHsyVNMku+snUteLp5Da7S2f4rvus6pwv996wIHBc8I6gVKoP
+         XSsfQhbKFOCmyheMvgg4umMgSWdjOTgUivYdz2uEaq7tSpMCj5NZmkVHcozZzFypF0/o
+         R1iCBZa8Qhe8fUT+XbVnZCL1nEwtKhSmICM9a5kZNQYb8AEBpzTeGEZwMxTLMWC4RWcZ
+         NlLg==
+X-Gm-Message-State: AFqh2kpz66EIBPaNw4mW8ot4nuhXVJ6XFJk2mmBKreeaF1jeAyrn7CEm
+	u4xGxYx+E351uO1C62k3McJFZb+XNQc+a3B0JKqhVA==
+X-Google-Smtp-Source: AMrXdXu0PzeQzUrtMPh6Q6gmLxuEYbH19qaRWq6JHAbxojJ61ekKXs60PExdWQAgVi5xOUd0vb27BXUobHRewBc0eVw=
+X-Received: by 2002:a81:9105:0:b0:3dc:fd91:ef89 with SMTP id
+ i5-20020a819105000000b003dcfd91ef89mr584557ywg.347.1674008176468; Tue, 17 Jan
+ 2023 18:16:16 -0800 (PST)
 MIME-Version: 1.0
-References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-14-surenb@google.com>
- <Y8a6DhA6o3jcZaM3@dhcp22.suse.cz> <Y8a7eJQ6upFyI6pf@dhcp22.suse.cz>
-In-Reply-To: <Y8a7eJQ6upFyI6pf@dhcp22.suse.cz>
+References: <20230109205336.3665937-1-surenb@google.com> <20230109205336.3665937-10-surenb@google.com>
+ <Y8av6HjRUvaujeEO@dhcp22.suse.cz>
+In-Reply-To: <Y8av6HjRUvaujeEO@dhcp22.suse.cz>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Tue, 17 Jan 2023 18:07:49 -0800
-Message-ID: <CAJuCfpFtMjuJS6-4FYR8gWwKJjRuX5Dd2DQLHLiGLUuij_YjMQ@mail.gmail.com>
-Subject: Re: [PATCH 13/41] mm: introduce vma->vm_flags modifier functions
+Date: Tue, 17 Jan 2023 18:16:05 -0800
+Message-ID: <CAJuCfpFNp5dZvhx168k0MC+oBTRLY2ZVWgMQL_8VTZDTY3URDg@mail.gmail.com>
+Subject: Re: [PATCH 09/41] mm: rcu safe VMA freeing
 To: Michal Hocko <mhocko@suse.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,96 +79,35 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@go
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 17, 2023 at 7:15 AM 'Michal Hocko' via kernel-team
-<kernel-team@android.com> wrote:
+On Tue, Jan 17, 2023 at 6:25 AM Michal Hocko <mhocko@suse.com> wrote:
 >
-> On Tue 17-01-23 16:09:03, Michal Hocko wrote:
-> > On Mon 09-01-23 12:53:08, Suren Baghdasaryan wrote:
-> > > To keep vma locking correctness when vm_flags are modified, add modifier
-> > > functions to be used whenever flags are updated.
-> > >
-> > > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > > ---
-> > >  include/linux/mm.h       | 38 ++++++++++++++++++++++++++++++++++++++
-> > >  include/linux/mm_types.h |  8 +++++++-
-> > >  2 files changed, 45 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > > index ec2c4c227d51..35cf0a6cbcc2 100644
-> > > --- a/include/linux/mm.h
-> > > +++ b/include/linux/mm.h
-> > > @@ -702,6 +702,44 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
-> > >     vma_init_lock(vma);
-> > >  }
-> > >
-> > > +/* Use when VMA is not part of the VMA tree and needs no locking */
-> > > +static inline
-> > > +void init_vm_flags(struct vm_area_struct *vma, unsigned long flags)
-> > > +{
-> > > +   WRITE_ONCE(vma->vm_flags, flags);
-> > > +}
-> >
-> > Why do we need WRITE_ONCE here? Isn't vma invisible during its
-> > initialization?
-
-Ack. Will change to a simple assignment.
-
-> >
-> > > +
-> > > +/* Use when VMA is part of the VMA tree and needs appropriate locking */
-> > > +static inline
-> > > +void reset_vm_flags(struct vm_area_struct *vma, unsigned long flags)
-> > > +{
-> > > +   vma_write_lock(vma);
-> > > +   init_vm_flags(vma, flags);
-> > > +}
-> > > +
-> > > +static inline
-> > > +void set_vm_flags(struct vm_area_struct *vma, unsigned long flags)
-> > > +{
-> > > +   vma_write_lock(vma);
-> > > +   vma->vm_flags |= flags;
-> > > +}
-> > > +
-> > > +static inline
-> > > +void clear_vm_flags(struct vm_area_struct *vma, unsigned long flags)
-> > > +{
-> > > +   vma_write_lock(vma);
-> > > +   vma->vm_flags &= ~flags;
-> > > +}
-> > > +
-> > > +static inline
-> > > +void mod_vm_flags(struct vm_area_struct *vma,
-> > > +             unsigned long set, unsigned long clear)
-> > > +{
-> > > +   vma_write_lock(vma);
-> > > +   vma->vm_flags |= set;
-> > > +   vma->vm_flags &= ~clear;
-> > > +}
-> > > +
-> >
-> > This is rather unusual pattern. There is no note about locking involved
-> > in the naming and also why is the locking part of this interface in the
-> > first place? I can see reason for access functions to actually check for
-> > lock asserts.
+> On Mon 09-01-23 12:53:04, Suren Baghdasaryan wrote:
+> [...]
+> >  void vm_area_free(struct vm_area_struct *vma)
+> >  {
+> >       free_anon_vma_name(vma);
+> > +#ifdef CONFIG_PER_VMA_LOCK
+> > +     call_rcu(&vma->vm_rcu, __vm_area_free);
+> > +#else
+> >       kmem_cache_free(vm_area_cachep, vma);
+> > +#endif
 >
-> OK, it took me a while but it is clear to me now. The confusion comes
-> from the naming vma_write_lock is no a lock in its usual terms. It is
-> more of a vma_mark_modified with side effects to read locking which is a
-> real lock. With that it makes more sense to have this done in these
-> helpers rather than requiring all users to keep this subtletly in mind.
+> Is it safe to have vma with already freed vma_name? I suspect this is
+> safe because of mmap_lock but is there any reason to split the freeing
+> process and have this potential UAF lurking?
 
-If renaming vma-locking primitives the way Matthew suggested in
-https://lore.kernel.org/all/Y8cZMt01Z1FvVFXh@casper.infradead.org/
-makes it easier to read/understand, I'm all for it. Let's discuss the
-naming in that email thread because that's where these functions are
-introduced.
+It should be safe because VMA is either locked or has been isolated
+while locked, so no page fault handlers should have access to it. But
+you are right, moving free_anon_vma_name() into __vm_area_free() does
+seem safer. Will make the change in the next rev.
 
+>
+> >  }
+> >
+> >  static void account_kernel_stack(struct task_struct *tsk, int account)
+> > --
+> > 2.39.0
 >
 > --
 > Michal Hocko
 > SUSE Labs
->
-> --
-> To unsubscribe from this group and stop receiving emails from it, send an email to kernel-team+unsubscribe@android.com.
->
