@@ -4,58 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2F9DC32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 18:35:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F5E9C46467
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 19:00:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nxvb612RPz3fF5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 05:35:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l7I9EeWk;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=der1=5p=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l7I9EeWk;
-	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nxw7B4WqMz3fHq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 06:00:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.47; helo=mail-ot1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com [209.85.210.47])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NxvZ51SB1z3bfy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2023 05:34:53 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 02105B81E13;
-	Wed, 18 Jan 2023 18:34:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 991C3C433EF;
-	Wed, 18 Jan 2023 18:34:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1674066887;
-	bh=WQ17/uS48eZ8vtlubVHsA2/zGXMyPtsK+cdglVuC3Rk=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-	b=l7I9EeWkRjSLj1wGudDzwXdc0sESiedA3fjzJiVx+p/XRVSGBaesgKTbYGvFV/H+8
-	 KP8ri+KTfIfSH8KTYyWNP8/ZtnZyQunMJHF7SvF8GN1aAk/DWoxRCFlAcWvfxYu0RC
-	 u87DKHHyUfCqMosqAlvct/bnRBhum4/aftEN0bB6UPhSQDj1ya/NAqC3qYBtVkZEkH
-	 HxW0N5S1ZUwrHHpY+f1tNg0x59vWWpgMQI49JqhKMmZ4pYL2yadwCBF0jyu3XWinLI
-	 4B2q/swf54li/JxKiY7pxyv0AThLCSGhQi0IKcrPIzdXFPB3XcbujUUqAY25jTqCkX
-	 /heXQ/ilfGUlw==
-Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 3CC605C0920; Wed, 18 Jan 2023 10:34:47 -0800 (PST)
-Date: Wed, 18 Jan 2023 10:34:47 -0800
-From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in
- vm_area_free
-Message-ID: <20230118183447.GG2948950@paulmck-ThinkPad-P17-Gen-1>
-References: <20230109205336.3665937-1-surenb@google.com>
- <20230109205336.3665937-40-surenb@google.com>
- <Y8bFdB47JT/luMld@dhcp22.suse.cz>
- <CAJuCfpHVYW5aBVmT0vwn+j=m=Jo2KhSTzgVtxSEusUZJdzetUA@mail.gmail.com>
- <Y8fApgKJaTs9nrPO@dhcp22.suse.cz>
- <CAJuCfpERMyQc96Z5Qn9RFK0UD7fNugZE4DujFs4xqFWM8T6EqA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxw6Z01hYz3c46;
+	Thu, 19 Jan 2023 05:59:33 +1100 (AEDT)
+Received: by mail-ot1-f47.google.com with SMTP id cm26-20020a056830651a00b00684e5c0108dso6450672otb.9;
+        Wed, 18 Jan 2023 10:59:33 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=nHSFrwryn6fPv+cT/r2Gmm/cJBn2LuFhBNelG0ms7lQ=;
+        b=i/dc4EhXllvCwPraN+TSdNI5U82bneUCCHVs5gq8kLDf8b02ExZt5RuTNQPVjTYxu4
+         nCjZsj/+7eBHAh2j7o2fHBEHNCPZxkz8sCcRoi4xwLRJRkNqF8tMSni6gcIaJgJdTGZs
+         T25vRhzYeLiGIct3LurOEjLdTOdsr85kSUWvj6INe+IvTh6s7lPBMPJFAXYqxFPGj+f7
+         +vcdcGSe2Pmme+37Pjj+nwUmiSsXZ2cbRnyPkCJf4K1jigUYzQPB235jjRgb8XjiSH+z
+         suEOc99JJ9cQy6oYpaa9t9ohFA7qBk6HZ+UhsusaR9Y/ve62J17fbmdrEtlSio74gDjB
+         6H8g==
+X-Gm-Message-State: AFqh2kqclWDrEfgpEIv+Hp6gXgOQ8FEqRD5DIsLY+Fg/pjVZgSm257Wg
+	gs9+VYzA5Y+VApLtedsNqQ==
+X-Google-Smtp-Source: AMrXdXsXsibVi/mXBx5wpLNup3wGFrSwbUKQ5EbaZJM3qDLNOiUndqkGVOrWW3O789IRP6ncH5I1sA==
+X-Received: by 2002:a05:6830:26c5:b0:686:41a1:4c16 with SMTP id m5-20020a05683026c500b0068641a14c16mr5435393otu.24.1674068370410;
+        Wed, 18 Jan 2023 10:59:30 -0800 (PST)
+Received: from robh_at_kernel.org ([4.31.143.193])
+        by smtp.gmail.com with ESMTPSA id o15-20020a9d764f000000b0066b9a6bf3bcsm18688925otl.12.2023.01.18.10.59.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 18 Jan 2023 10:59:29 -0800 (PST)
+Received: (nullmailer pid 629743 invoked by uid 1000);
+	Wed, 18 Jan 2023 18:59:29 -0000
+From: Rob Herring <robh@kernel.org>
+Subject: [PATCH v2 0/5] dt-bindings: usb: Convert some more simple
+ OHCI/EHCI bindings
+Date: Wed, 18 Jan 2023 12:59:23 -0600
+Message-Id: <20230110-dt-usb-v2-0-926bc1260e51@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpERMyQc96Z5Qn9RFK0UD7fNugZE4DujFs4xqFWM8T6EqA@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAItByGMC/2WNywqDMBBFf0Vm3Sl5YJSu+h/iItGpCZVYJiotk
+ n9v6rbLc7ice0AiDpTgVh3AtIcUllhAXSoYvI0TYRgLgxJKCykFjituyaEcjG6aWtlWOyhjZxO
+ hYxsHX+Zxm+ciX0yP8D7rXV/Yh7Qu/DnPdvmzf91dosCWtDGklamlvj+JI83XhSfoc85f7/lOX
+ bIAAAA=
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Lee Jones <lee@kernel.org>
+X-Mailer: b4 0.12-dev
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,83 +66,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: paulmck@kernel.org
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, Michal Hocko <mhocko@suse.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, minchan@google.com, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsi
- ngularity.net
+Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 18, 2023 at 10:04:39AM -0800, Suren Baghdasaryan wrote:
-> On Wed, Jan 18, 2023 at 1:49 AM Michal Hocko <mhocko@suse.com> wrote:
-> >
-> > On Tue 17-01-23 17:19:46, Suren Baghdasaryan wrote:
-> > > On Tue, Jan 17, 2023 at 7:57 AM Michal Hocko <mhocko@suse.com> wrote:
-> > > >
-> > > > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
-> > > > > call_rcu() can take a long time when callback offloading is enabled.
-> > > > > Its use in the vm_area_free can cause regressions in the exit path when
-> > > > > multiple VMAs are being freed.
-> > > >
-> > > > What kind of regressions.
-> > > >
-> > > > > To minimize that impact, place VMAs into
-> > > > > a list and free them in groups using one call_rcu() call per group.
-> > > >
-> > > > Please add some data to justify this additional complexity.
-> > >
-> > > Sorry, should have done that in the first place. A 4.3% regression was
-> > > noticed when running execl test from unixbench suite. spawn test also
-> > > showed 1.6% regression. Profiling revealed that vma freeing was taking
-> > > longer due to call_rcu() which is slow when RCU callback offloading is
-> > > enabled.
-> >
-> > Could you be more specific? vma freeing is async with the RCU so how
-> > come this has resulted in a regression? Is there any heavy
-> > rcu_synchronize in the exec path? That would be an interesting
-> > information.
-> 
-> No, there is no heavy rcu_synchronize() or any other additional
-> synchronous load in the exit path. It's the call_rcu() which can block
-> the caller if CONFIG_RCU_NOCB_CPU is enabled and there are lots of
-> other call_rcu()'s going on in parallel. Note that call_rcu() calls
-> rcu_nocb_try_bypass() if CONFIG_RCU_NOCB_CPU is enabled and profiling
-> revealed that this function was taking multiple ms (don't recall the
-> actual number, sorry). Paul's explanation implied that this happens
-> due to contention on the locks taken in this function. For more
-> in-depth details I'll have to ask Paul for help :) This code is quite
-> complex and I don't know all the details of RCU implementation.
+The 'ohci-usb' compatible is another 'generic' compatible for OHCI, but 
+isn't documented with a schema. Let's add it to generic-ohci.yaml 
+schema. While looking at this, I found a few other USB host bindings 
+which are simple enough to use the 'generic' schemas.
 
-There are a couple of possibilities here.
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+Changes in v2:
+- Fix schema error for 'transceiver'
+- Split OMAP changes to separate patch and convert omap-ehci
+- Link to v1: https://lore.kernel.org/r/20230110-dt-usb-v1-0-8e366e326513@kernel.org
 
-First, if I am remembering correctly, the time between the call_rcu()
-and invocation of the corresponding callback was taking multiple seconds,
-but that was because the kernel was built with CONFIG_LAZY_RCU=y in
-order to save power by batching RCU work over multiple call_rcu()
-invocations.  If this is causing a problem for a given call site, the
-shiny new call_rcu_hurry() can be used instead.  Doing this gets back
-to the old-school non-laziness, but can of course consume more power.
+---
+Rob Herring (5):
+      dt-bindings: usb: Remove obsolete brcm,bcm3384-usb.txt
+      dt-bindings: usb: Convert multiple "usb-ohci" bindings to DT schema
+      dt-bindings: usb: Convert OMAP OHCI/EHCI bindings to schema
+      dt-bindings: usb: Convert Marvell Orion EHCI to DT schema
+      dt-bindings: usb: Convert Nuvoton EHCI to DT schema
 
-Second, there is a much shorter one-jiffy delay between the call_rcu()
-and the invocation of the corresponding callback in kernels built with
-either CONFIG_NO_HZ_FULL=y (but only on CPUs mentioned in the nohz_full
-or rcu_nocbs kernel boot parameters) or CONFIG_RCU_NOCB_CPU=y (but only
-on CPUs mentioned in the rcu_nocbs kernel boot parameters).  The purpose
-of this delay is to avoid lock contention, and so this delay is incurred
-only on CPUs that are queuing callbacks at a rate exceeding 16K/second.
-This is reduced to a per-jiffy limit, so on a HZ=1000 system, a CPU
-invoking call_rcu() at least 16 times within a given jiffy will incur
-the added delay.  The reason for this delay is the use of a separate
-->nocb_bypass list.  As Suren says, this bypass list is used to reduce
-lock contention on the main ->cblist.  This is not needed in old-school
-kernels built without either CONFIG_NO_HZ_FULL=y or CONFIG_RCU_NOCB_CPU=y
-(including most datacenter kernels) because in that case the callbacks
-enqueued by call_rcu() are touched only by the corresponding CPU, so
-that there is no need for locks.
+ .../devicetree/bindings/mfd/omap-usb-host.txt      |  8 ++---
+ .../devicetree/bindings/powerpc/nintendo/wii.txt   | 10 -------
+ .../devicetree/bindings/usb/brcm,bcm3384-usb.txt   | 11 -------
+ .../devicetree/bindings/usb/ehci-omap.txt          | 31 -------------------
+ .../devicetree/bindings/usb/ehci-orion.txt         | 22 --------------
+ .../devicetree/bindings/usb/generic-ehci.yaml      |  5 ++++
+ .../devicetree/bindings/usb/generic-ohci.yaml      | 32 +++++++++++++++++---
+ .../devicetree/bindings/usb/npcm7xx-usb.txt        | 20 -------------
+ Documentation/devicetree/bindings/usb/ohci-nxp.txt | 24 ---------------
+ .../devicetree/bindings/usb/ohci-omap3.txt         | 15 ----------
+ Documentation/devicetree/bindings/usb/pxa-usb.txt  |  2 +-
+ .../devicetree/bindings/usb/spear-usb.txt          | 35 ----------------------
+ 12 files changed, 38 insertions(+), 177 deletions(-)
+---
+base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
+change-id: 20230110-dt-usb-1c637752a83b
 
-Third, if you are instead seeing multiple milliseconds of CPU consumed by
-call_rcu() in the common case (for example, without the aid of interrupts,
-NMIs, or SMIs), please do let me know.  That sounds to me like a bug.
+Best regards,
+-- 
+Rob Herring <robh@kernel.org>
 
-Or have I lost track of some other slow case?
-
-							Thanx, Paul
