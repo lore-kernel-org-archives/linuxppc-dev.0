@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ACADC32793
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 09:44:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3ACEC004D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 09:50:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nxgns63C3z3fBS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 20:44:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nxgx11qLWz3fBp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jan 2023 20:50:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oQppwSHR;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=TIXLNoEC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oQppwSHR;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=TIXLNoEC;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxgms0s1Nz3bM7
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 20:43:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nxgw06T4Nz3bSw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jan 2023 20:49:36 +1100 (AEDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 858B02107A;
-	Wed, 18 Jan 2023 09:43:21 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 7A816340AE;
+	Wed, 18 Jan 2023 09:49:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1674035001; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1674035372; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=xwj2L+9GHMXRMvC0PXKAy4Vi7OOq14XSvOdqanVYA8Y=;
-	b=oQppwSHRZn9nA7psyaLGFQs/n7yu4DC1JHVfljgHkXtLq+DOkvXYVpC0pxpoUjYBm0HTcS
-	BkONlwtTDH8AHIFUQOLXiSJJ2S7HX+NBVrdprdVQ79j6ABRRpBWxtQ58jldQ8maq5weOoW
-	FQcHNE9i90gdNQSHN34UWvlnl2fB3Is=
+	bh=TCcPBABBzltDpyoJKRY9SuJLYXgsWgL74mEX6T6kSR8=;
+	b=TIXLNoECbYLOwtS1hjRZUvuUJ0tZMIx/cuKDHSYn9xScVxBqdlTSxLM1H1X5jzmJ/or2k/
+	gARXZRoHZR3271hDg/r9XBvpqghfooiJwmluXmQf+sJ9IhOK7PkCW4fxUfv0bek0KNhbpX
+	LMPrg5MDruGN69SQP+JMNeERZr+LaFY=
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5923C139D2;
-	Wed, 18 Jan 2023 09:43:21 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9161A139D2;
+	Wed, 18 Jan 2023 09:49:30 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id eEGoFDm/x2OYPwAAMHmgww
-	(envelope-from <mhocko@suse.com>); Wed, 18 Jan 2023 09:43:21 +0000
-Date: Wed, 18 Jan 2023 10:43:19 +0100
+	id DyT3IqrAx2OtQgAAMHmgww
+	(envelope-from <mhocko@suse.com>); Wed, 18 Jan 2023 09:49:30 +0000
+Date: Wed, 18 Jan 2023 10:49:26 +0100
 From: Michal Hocko <mhocko@suse.com>
 To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH 26/41] kernel/fork: assert no VMA readers during its
- destruction
-Message-ID: <Y8e/N1m+YGFmxy+L@dhcp22.suse.cz>
+Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in
+ vm_area_free
+Message-ID: <Y8fApgKJaTs9nrPO@dhcp22.suse.cz>
 References: <20230109205336.3665937-1-surenb@google.com>
- <20230109205336.3665937-27-surenb@google.com>
- <Y8bB3TFLQV2HJZQ+@dhcp22.suse.cz>
- <CAJuCfpH8-wNiPXQcS=0j-Ex7iMqoBkUhjSN8QiAvq6FdXudRGQ@mail.gmail.com>
+ <20230109205336.3665937-40-surenb@google.com>
+ <Y8bFdB47JT/luMld@dhcp22.suse.cz>
+ <CAJuCfpHVYW5aBVmT0vwn+j=m=Jo2KhSTzgVtxSEusUZJdzetUA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAJuCfpH8-wNiPXQcS=0j-Ex7iMqoBkUhjSN8QiAvq6FdXudRGQ@mail.gmail.com>
+In-Reply-To: <CAJuCfpHVYW5aBVmT0vwn+j=m=Jo2KhSTzgVtxSEusUZJdzetUA@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,53 +76,31 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@go
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue 17-01-23 17:53:00, Suren Baghdasaryan wrote:
-> On Tue, Jan 17, 2023 at 7:42 AM 'Michal Hocko' via kernel-team
-> <kernel-team@android.com> wrote:
+On Tue 17-01-23 17:19:46, Suren Baghdasaryan wrote:
+> On Tue, Jan 17, 2023 at 7:57 AM Michal Hocko <mhocko@suse.com> wrote:
 > >
-> > On Mon 09-01-23 12:53:21, Suren Baghdasaryan wrote:
-> > > Assert there are no holders of VMA lock for reading when it is about to be
-> > > destroyed.
-> > >
-> > > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > > ---
-> > >  include/linux/mm.h | 8 ++++++++
-> > >  kernel/fork.c      | 2 ++
-> > >  2 files changed, 10 insertions(+)
-> > >
-> > > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > > index 594e835bad9c..c464fc8a514c 100644
-> > > --- a/include/linux/mm.h
-> > > +++ b/include/linux/mm.h
-> > > @@ -680,6 +680,13 @@ static inline void vma_assert_write_locked(struct vm_area_struct *vma)
-> > >       VM_BUG_ON_VMA(vma->vm_lock_seq != READ_ONCE(vma->vm_mm->mm_lock_seq), vma);
-> > >  }
-> > >
-> > > +static inline void vma_assert_no_reader(struct vm_area_struct *vma)
-> > > +{
-> > > +     VM_BUG_ON_VMA(rwsem_is_locked(&vma->lock) &&
-> > > +                   vma->vm_lock_seq != READ_ONCE(vma->vm_mm->mm_lock_seq),
-> > > +                   vma);
+> > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
+> > > call_rcu() can take a long time when callback offloading is enabled.
+> > > Its use in the vm_area_free can cause regressions in the exit path when
+> > > multiple VMAs are being freed.
 > >
-> > Do we really need to check for vm_lock_seq? rwsem_is_locked should tell
-> > us something is wrong on its own, no? This could be somebody racing with
-> > the vma destruction and using the write lock. Unlikely but I do not see
-> > why to narrow debugging scope.
+> > What kind of regressions.
+> >
+> > > To minimize that impact, place VMAs into
+> > > a list and free them in groups using one call_rcu() call per group.
+> >
+> > Please add some data to justify this additional complexity.
 > 
-> I wanted to ensure there are no page fault handlers (read-lockers)
-> when we are destroying the VMA and rwsem_is_locked(&vma->lock) alone
-> could trigger if someone is concurrently calling vma_write_lock(). But
-> I don't think we expect someone to be write-locking the VMA while we
+> Sorry, should have done that in the first place. A 4.3% regression was
+> noticed when running execl test from unixbench suite. spawn test also
+> showed 1.6% regression. Profiling revealed that vma freeing was taking
+> longer due to call_rcu() which is slow when RCU callback offloading is
+> enabled.
 
-That would be UAF, no?
-
-> are destroying it, so you are right, I'm overcomplicating things here.
-> I think I can get rid of vma_assert_no_reader() and add
-> VM_BUG_ON_VMA(rwsem_is_locked(&vma->lock)) directly in
-> __vm_area_free(). WDYT?
-
-Yes, that adds some debugging. Not sure it is really necessary buyt it
-is VM_BUG_ON so why not.
+Could you be more specific? vma freeing is async with the RCU so how
+come this has resulted in a regression? Is there any heavy
+rcu_synchronize in the exec path? That would be an interesting
+information.
 -- 
 Michal Hocko
 SUSE Labs
