@@ -4,61 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A79BC004D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 19:18:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB296C004D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 19:20:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NyXTX5g0mz3fGy
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 06:18:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NyXXp3Kdpz3fJH
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 06:20:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FCre4bIy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GZFSCrOD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=srs0=mfk3=5q=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=srs0=mfk3=5q=paulmck-thinkpad-p17-gen-1.home=paulmck@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FCre4bIy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GZFSCrOD;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NyXSR4k3kz3fBV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 06:17:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NyXWp6SFpz308w
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 06:20:06 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 23BC461D52;
-	Thu, 19 Jan 2023 19:17:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6C3F5C433F0;
-	Thu, 19 Jan 2023 19:17:07 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 2A9CEB80763;
+	Thu, 19 Jan 2023 19:20:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C32D4C433F0;
+	Thu, 19 Jan 2023 19:20:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1674155827;
-	bh=eCVbGXT27QnDo1PpAtkdYdCPSqT1Q5ve44Q8Q75yHjw=;
+	s=k20201202; t=1674156002;
+	bh=sNtFF/n9MnZh/97jwulEfUXTbaxJQPrJ55JS7ZpWQ8A=;
 	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-	b=FCre4bIyUsGr3UbsqKMkAQvOnNpSp+ZWq+NbqqKwwWefnRM01gepbNKLipNzquSuy
-	 TS1GmlOYCg6zD4+UEVOtBJY+0ZPzqe/LmfVDG1bJ9ZhVV0p32LzzMAiWRBMPn1T1h4
-	 lAj0M0gK0MPei3TtqZWQkMcaTNS1rzDw3cKDdRJFes7uSpMhuW4+YiOaItA+N+gKAc
-	 JMMK/ovArgjTbmyUfDHcWXuHF2hwBrtaAlfxcWTYx4Ccah0CVipkCZ8Vylnq9UGQx7
-	 NSQGdLJX6rKSEaJIAZ+2hMcEPpSmmYmmGZ10dwS+6DGIGltSWvjltMSHYoKUe32kIM
-	 fDrsAF3VjIYdg==
+	b=GZFSCrODvWxbeYJIxgxvUyLH5Bhha6cEF9ov6eaWW972FVwxQeMbcwRyDHwfbqatd
+	 P+lNv8xWOCofVqyXl8boy2P+eIVwPkIxaXJx5Mnmck6tlpuHh3bCM08xuLF3UssXLw
+	 nyEJeHwbrLPEdL41bo1JPvo+KlSP+mGoRoqvqvXTnUuzNGWwFcHIUkEszYMJTrLIX8
+	 m9v6OwccgV9ALZdgTrAmRxHhoaUxoeNrZ/jjI3dMs8rcbqYmMHmxZNqetFqn81O0HS
+	 lAGAVg0qzxG943YwiktwaXoRb8EQm5WIN9BqRqpuUPxzTkfw8PedrY4/ToF2MJHls3
+	 o+f0eY20owrdQ==
 Received: by paulmck-ThinkPad-P17-Gen-1.home (Postfix, from userid 1000)
-	id 0FE685C1A49; Thu, 19 Jan 2023 11:17:07 -0800 (PST)
-Date: Thu, 19 Jan 2023 11:17:07 -0800
+	id 5E4BB5C1A49; Thu, 19 Jan 2023 11:20:02 -0800 (PST)
+Date: Thu, 19 Jan 2023 11:20:02 -0800
 From: "Paul E. McKenney" <paulmck@kernel.org>
-To: Michal Hocko <mhocko@suse.com>
+To: Suren Baghdasaryan <surenb@google.com>
 Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in
  vm_area_free
-Message-ID: <20230119191707.GW2948950@paulmck-ThinkPad-P17-Gen-1>
+Message-ID: <20230119192002.GX2948950@paulmck-ThinkPad-P17-Gen-1>
 References: <20230109205336.3665937-1-surenb@google.com>
  <20230109205336.3665937-40-surenb@google.com>
- <Y8bFdB47JT/luMld@dhcp22.suse.cz>
- <CAJuCfpHVYW5aBVmT0vwn+j=m=Jo2KhSTzgVtxSEusUZJdzetUA@mail.gmail.com>
- <Y8fApgKJaTs9nrPO@dhcp22.suse.cz>
- <CAJuCfpERMyQc96Z5Qn9RFK0UD7fNugZE4DujFs4xqFWM8T6EqA@mail.gmail.com>
- <20230118183447.GG2948950@paulmck-ThinkPad-P17-Gen-1>
- <CAJuCfpHZuKq45FL1gs+=rx5s2AOaZ9TPC1bdAWjYzfkrOABTOw@mail.gmail.com>
- <Y8k8/vPGXBvyHLJE@dhcp22.suse.cz>
+ <Y8k+syJu7elWAjRj@dhcp22.suse.cz>
+ <CAJuCfpEAL9y70KJ_a=Z_kJpJnNC-ge1aN2ofTupeQ5-FaKh84g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Y8k8/vPGXBvyHLJE@dhcp22.suse.cz>
+In-Reply-To: <CAJuCfpEAL9y70KJ_a=Z_kJpJnNC-ge1aN2ofTupeQ5-FaKh84g@mail.gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,80 +66,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Reply-To: paulmck@kernel.org
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, minchan@google.com, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, Suren Baghdasaryan <surenb@google.com>, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorma
- n@techsingularity.net
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, Michal Hocko <mhocko@suse.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, minchan@google.com, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsi
+ ngularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 19, 2023 at 01:52:14PM +0100, Michal Hocko wrote:
-> On Wed 18-01-23 11:01:08, Suren Baghdasaryan wrote:
-> > On Wed, Jan 18, 2023 at 10:34 AM Paul E. McKenney <paulmck@kernel.org> wrote:
-> [...]
-> > > There are a couple of possibilities here.
-> > >
-> > > First, if I am remembering correctly, the time between the call_rcu()
-> > > and invocation of the corresponding callback was taking multiple seconds,
-> > > but that was because the kernel was built with CONFIG_LAZY_RCU=y in
-> > > order to save power by batching RCU work over multiple call_rcu()
-> > > invocations.  If this is causing a problem for a given call site, the
-> > > shiny new call_rcu_hurry() can be used instead.  Doing this gets back
-> > > to the old-school non-laziness, but can of course consume more power.
-> > 
-> > That would not be the case because CONFIG_LAZY_RCU was not an option
-> > at the time I was profiling this issue.
-> > Laxy RCU would be a great option to replace this patch but
-> > unfortunately it's not the default behavior, so I would still have to
-> > implement this batching in case lazy RCU is not enabled.
-> > 
-> > >
-> > > Second, there is a much shorter one-jiffy delay between the call_rcu()
-> > > and the invocation of the corresponding callback in kernels built with
-> > > either CONFIG_NO_HZ_FULL=y (but only on CPUs mentioned in the nohz_full
-> > > or rcu_nocbs kernel boot parameters) or CONFIG_RCU_NOCB_CPU=y (but only
-> > > on CPUs mentioned in the rcu_nocbs kernel boot parameters).  The purpose
-> > > of this delay is to avoid lock contention, and so this delay is incurred
-> > > only on CPUs that are queuing callbacks at a rate exceeding 16K/second.
-> > > This is reduced to a per-jiffy limit, so on a HZ=1000 system, a CPU
-> > > invoking call_rcu() at least 16 times within a given jiffy will incur
-> > > the added delay.  The reason for this delay is the use of a separate
-> > > ->nocb_bypass list.  As Suren says, this bypass list is used to reduce
-> > > lock contention on the main ->cblist.  This is not needed in old-school
-> > > kernels built without either CONFIG_NO_HZ_FULL=y or CONFIG_RCU_NOCB_CPU=y
-> > > (including most datacenter kernels) because in that case the callbacks
-> > > enqueued by call_rcu() are touched only by the corresponding CPU, so
-> > > that there is no need for locks.
-> > 
-> > I believe this is the reason in my profiled case.
-> > 
-> > >
-> > > Third, if you are instead seeing multiple milliseconds of CPU consumed by
-> > > call_rcu() in the common case (for example, without the aid of interrupts,
-> > > NMIs, or SMIs), please do let me know.  That sounds to me like a bug.
-> > 
-> > I don't think I've seen such a case.
-> > Thanks for clarifications, Paul!
+On Thu, Jan 19, 2023 at 10:52:03AM -0800, Suren Baghdasaryan wrote:
+> On Thu, Jan 19, 2023 at 4:59 AM Michal Hocko <mhocko@suse.com> wrote:
+> >
+> > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
+> > > call_rcu() can take a long time when callback offloading is enabled.
+> > > Its use in the vm_area_free can cause regressions in the exit path when
+> > > multiple VMAs are being freed. To minimize that impact, place VMAs into
+> > > a list and free them in groups using one call_rcu() call per group.
+> >
+> > After some more clarification I can understand how call_rcu might not be
+> > super happy about thousands of callbacks to be invoked and I do agree
+> > that this is not really optimal.
+> >
+> > On the other hand I do not like this solution much either.
+> > VM_AREA_FREE_LIST_MAX is arbitrary and it won't really help all that
+> > much with processes with a huge number of vmas either. It would still be
+> > in housands of callbacks to be scheduled without a good reason.
+> >
+> > Instead, are there any other cases than remove_vma that need this
+> > batching? We could easily just link all the vmas into linked list and
+> > use a single call_rcu instead, no? This would both simplify the
+> > implementation, remove the scaling issue as well and we do not have to
+> > argue whether VM_AREA_FREE_LIST_MAX should be epsilon or epsilon + 1.
 > 
-> Thanks for the explanation Paul. I have to say this has caught me as a
-> surprise. There are just not enough details about the benchmark to
-> understand what is going on but I find it rather surprising that
-> call_rcu can induce a higher overhead than the actual kmem_cache_free
-> which is the callback. My naive understanding has been that call_rcu is
-> really fast way to defer the execution to the RCU safe context to do the
-> final cleanup.
+> Yes, I agree the solution is not stellar. I wanted something simple
+> but this is probably too simple. OTOH keeping all dead vm_area_structs
+> on the list without hooking up a shrinker (additional complexity) does
+> not sound too appealing either. WDYT about time domain throttling to
+> limit draining the list to say once per second like this:
+> 
+> void vm_area_free(struct vm_area_struct *vma)
+> {
+>        struct mm_struct *mm = vma->vm_mm;
+>        bool drain;
+> 
+>        free_anon_vma_name(vma);
+> 
+>        spin_lock(&mm->vma_free_list.lock);
+>        list_add(&vma->vm_free_list, &mm->vma_free_list.head);
+>        mm->vma_free_list.size++;
+> -       drain = mm->vma_free_list.size > VM_AREA_FREE_LIST_MAX;
+> +       drain = jiffies > mm->last_drain_tm + HZ;
+> 
+>        spin_unlock(&mm->vma_free_list.lock);
+> 
+> -       if (drain)
+> +       if (drain) {
+>               drain_free_vmas(mm);
+> +             mm->last_drain_tm = jiffies;
+> +       }
+> }
+> 
+> Ultimately we want to prevent very frequent call_rcu() calls, so
+> throttling in the time domain seems appropriate. That's the simplest
+> way I can think of to address your concern about a quick spike in VMA
+> freeing. It does not place any restriction on the list size and we
+> might have excessive dead vm_area_structs if after a large spike there
+> are no vm_area_free() calls but I don't know if that's a real problem,
+> so not sure we should be addressing it at this time. WDYT?
 
-If I am following along correctly (ha!), then your "induce a higher
-overhead" should be something like "induce a higher to-kfree() latency".
+Just to double-check, we really did try the very frequent call_rcu()
+invocations and we really did see a problem, correct?
 
-Of course, there already is a higher latency-to-kfree via call_rcu()
-than via a direct call to kfree(), and callback-offload CPUs that are
-being flooded with callbacks raise that latency a jiffy or so more in
-order to avoid lock contention.
-
-If this becomes a problem, the callback-offloading code can be a bit
-smarter about avoiding lock contention, but need to see a real problem
-before I make that change.  But if there is a real problem I will of
-course fix it.
-
-Or did I miss a turn in this discussion?
+Although it is not perfect, call_rcu() is designed to take a fair amount
+of abuse.  So if we didn't see a real problem, the frequent call_rcu()
+invocations might be a bit simpler.
 
 							Thanx, Paul
