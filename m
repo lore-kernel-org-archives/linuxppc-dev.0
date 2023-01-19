@@ -4,74 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13551C38142
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 08:01:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AC9DC004D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 08:24:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NyFT50Xtjz3fD3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 19:01:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4NyFzd3bNYz3fFH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jan 2023 19:24:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=eFqR5Jtr;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FiuLNX39;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YYHGrvIi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=eFqR5Jtr;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=FiuLNX39;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YYHGrvIi;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4NyFS23711z3c7h
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2023 19:00:49 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4NyFyX3bNHz3c8d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jan 2023 19:23:48 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id B1FE05CA89;
-	Thu, 19 Jan 2023 08:00:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1674115245; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=59uOrifRDTYBCECf1fwQxGbqBJuSw77rED/xSDf+KMs=;
-	b=eFqR5Jtr66gr2NYeIe0qAL2Lizr3SoI3ekiORMkd9ECEDHUDNAaVzuRl84CvskPjG6F8Ee
-	wCJXz8px0IahIYedDmN0uKdIbDdJys3+qA6LWXDDr0bGneS5wK3w0Ww9MjPvRxuq5RxYIZ
-	Ose+3rudhU07EUGtCsmJPvqpekgdN+w=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1674115245;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=59uOrifRDTYBCECf1fwQxGbqBJuSw77rED/xSDf+KMs=;
-	b=FiuLNX39Fy7v8zT7K0EcEpRXsdZrAKb14y7XtE9Q7bBdMss/xzTttLCRGl92HW+SZM60mk
-	nUOrb3DXOjdG+KCw==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 881F6139ED;
-	Thu, 19 Jan 2023 08:00:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id C19gIK34yGNnSwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 19 Jan 2023 08:00:45 +0000
-Message-ID: <f57f29a6-1db3-ab0b-a1f7-77074d1c10e8@suse.de>
-Date: Thu, 19 Jan 2023 09:00:44 +0100
+	by ams.source.kernel.org (Postfix) with ESMTPS id 1DDB5B82135;
+	Thu, 19 Jan 2023 08:23:45 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EBE05C433D2;
+	Thu, 19 Jan 2023 08:23:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1674116623;
+	bh=HzjZyRkTwXHwL2rK9JRNqbNaOgZ7IJvMj6nMH/wRd4I=;
+	h=From:To:Cc:Subject:Date:From;
+	b=YYHGrvIihfKlmvQK4nJKMlTHh8+ze3mmYwxNiccF3TQKCoe9CffJgJ9zMg0+4EXl4
+	 haBP3p4Uh2Cm127o7gcUOByTsWxlQ2vr4q00ABuXs/8se2jH3Uo+fIuUz3ZJkNmKl8
+	 AK8RM5KxLLjktImiuejI/4WuOecsmsqCEN/JkwesKBu6nb1h6BC7R/uTgzAlqK+Dab
+	 UBx93EeuXVeNeF0fBUIpu3SoHGg0qqyXk2nBRtjf+oGdGD5T3dmhSkbyQ1Lg7qd/2Q
+	 BODfsueIhrLiXEXZuMIQImPiJiNrjfIHsU6I8Ki+EX0+wsg6otYM4jLRyb3vjSAkbS
+	 6fXkR0y1vmM9A==
+From: Masahiro Yamada <masahiroy@kernel.org>
+To: linux-kbuild@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: remove checks for binutils older than 2.25
+Date: Thu, 19 Jan 2023 17:22:50 +0900
+Message-Id: <20230119082250.151485-1-masahiroy@kernel.org>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.6.1
-Subject: Re: [PATCH] of: Make of framebuffer devices unique
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- "Erhard F." <erhard_f@mailbox.org>
-References: <20230117165804.18036-1-msuchanek@suse.de>
- <20230118211305.42e50a4a@yea> <20230118214618.GM16547@kitsune.suse.cz>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-In-Reply-To: <20230118214618.GM16547@kitsune.suse.cz>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="------------vYwQZLIzQewlERFQlMVyGl2T"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,111 +61,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE" <devicetree@vger.kernel.org>, Frank Rowand <frowand.list@gmail.com>, Javier Martinez Canillas <javierm@redhat.com>, open list <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Chancellor <nathan@kernel.org>, Masahiro Yamada <masahiroy@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Nicolas Schier <nicolas@fjasle.eu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---------------vYwQZLIzQewlERFQlMVyGl2T
-Content-Type: multipart/mixed; boundary="------------SelpGfgpoFlxitarI50j1scj";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
- "Erhard F." <erhard_f@mailbox.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- Javier Martinez Canillas <javierm@redhat.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE"
- <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Message-ID: <f57f29a6-1db3-ab0b-a1f7-77074d1c10e8@suse.de>
-Subject: Re: [PATCH] of: Make of framebuffer devices unique
-References: <20230117165804.18036-1-msuchanek@suse.de>
- <20230118211305.42e50a4a@yea> <20230118214618.GM16547@kitsune.suse.cz>
-In-Reply-To: <20230118214618.GM16547@kitsune.suse.cz>
+Commit e4412739472b ("Documentation: raise minimum supported version of
+binutils to 2.25") allows us to remove the checks for old binutils.
 
---------------SelpGfgpoFlxitarI50j1scj
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: base64
+There is no more user for ld-ifversion. Remove it as well.
 
-SGkgTWljaGFsLA0KDQp0aGFua3MgZm9yIGZpeGluZyB0aGlzIGlzc3VlLiBCdXQgdGhlIHJl
-dmlldyB0aW1lIHdhcyB3YXkgdG9vIHNob3J0LiANClBsZWFzZSBzZWUgbXkgY29tbWVudHMg
-YmVsb3cuDQoNCkFtIDE4LjAxLjIzIHVtIDIyOjQ2IHNjaHJpZWIgTWljaGFsIFN1Y2jDoW5l
-azoNCj4gT24gV2VkLCBKYW4gMTgsIDIwMjMgYXQgMDk6MTM6MDVQTSArMDEwMCwgRXJoYXJk
-IEYuIHdyb3RlOg0KPj4gT24gVHVlLCAxNyBKYW4gMjAyMyAxNzo1ODowNCArMDEwMA0KPj4g
-TWljaGFsIFN1Y2hhbmVrIDxtc3VjaGFuZWtAc3VzZS5kZT4gd3JvdGU6DQo+Pg0KPj4+IFNp
-bmNlIExpbnV4IDUuMTkgdGhpcyBlcnJvciBpcyBvYnNlcnZlZDoNCj4+Pg0KPj4+IHN5c2Zz
-OiBjYW5ub3QgY3JlYXRlIGR1cGxpY2F0ZSBmaWxlbmFtZSAnL2RldmljZXMvcGxhdGZvcm0v
-b2YtZGlzcGxheScNCj4+Pg0KPj4+IFRoaXMgaXMgYmVjYXVzZSBtdWx0aXBsZSBkZXZpY2Vz
-IHdpdGggdGhlIHNhbWUgbmFtZSAnb2YtZGlzcGxheScgYXJlDQo+Pj4gY3JlYXRlZCBvbiB0
-aGUgc2FtZSBidXMuDQo+Pj4NCj4+PiBVcGRhdGUgdGhlIGNvZGUgdG8gY3JlYXRlIG51bWJl
-cmVkIGRldmljZSBuYW1lcyBmb3IgdGhlIG5vbi1ib290DQo+Pj4gZGlzYXBsYXkuDQo+Pj4N
-Cj4+PiBjYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4+PiBSZWZlcmVuY2Vz
-OiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIxNjA5NQ0K
-Pj4+IEZpeGVzOiA1MmIxYjQ2YzM5YWUgKCJvZjogQ3JlYXRlIHBsYXRmb3JtIGRldmljZXMg
-Zm9yIE9GIGZyYW1lYnVmZmVycyIpDQo+Pj4gUmVwb3J0ZWQtYnk6IEVyaGFyZCBGLiA8ZXJo
-YXJkX2ZAbWFpbGJveC5vcmc+DQo+Pj4gU3VnZ2VzdGVkLWJ5OiBUaG9tYXMgWmltbWVybWFu
-biA8dHppbW1lcm1hbm5Ac3VzZS5kZT4NCj4+PiBTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgU3Vj
-aGFuZWsgPG1zdWNoYW5la0BzdXNlLmRlPg0KPj4+IC0tLQ0KPj4+ICAgZHJpdmVycy9vZi9w
-bGF0Zm9ybS5jIHwgOCArKysrKysrLQ0KPj4+ICAgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0
-aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPj4+DQo+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-b2YvcGxhdGZvcm0uYyBiL2RyaXZlcnMvb2YvcGxhdGZvcm0uYw0KPj4+IGluZGV4IDgxYzhj
-MjI3YWI2Yi4uZjJhNWQ2NzlhMzI0IDEwMDY0NA0KPj4+IC0tLSBhL2RyaXZlcnMvb2YvcGxh
-dGZvcm0uYw0KPj4+ICsrKyBiL2RyaXZlcnMvb2YvcGxhdGZvcm0uYw0KPj4+IEBAIC01MjUs
-NiArNTI1LDcgQEAgc3RhdGljIGludCBfX2luaXQgb2ZfcGxhdGZvcm1fZGVmYXVsdF9wb3B1
-bGF0ZV9pbml0KHZvaWQpDQo+Pj4gICAJaWYgKElTX0VOQUJMRUQoQ09ORklHX1BQQykpIHsN
-Cj4+PiAgIAkJc3RydWN0IGRldmljZV9ub2RlICpib290X2Rpc3BsYXkgPSBOVUxMOw0KPj4+
-ICAgCQlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXY7DQo+Pj4gKwkJaW50IGRpc3BsYXlf
-bnVtYmVyID0gMTsNCj4+PiAgIAkJaW50IHJldDsNCj4+PiAgIA0KPj4+ICAgCQkvKiBDaGVj
-ayBpZiB3ZSBoYXZlIGEgTWFjT1MgZGlzcGxheSB3aXRob3V0IGEgbm9kZSBzcGVjICovDQo+
-Pj4gQEAgLTU2MSwxMCArNTYyLDE1IEBAIHN0YXRpYyBpbnQgX19pbml0IG9mX3BsYXRmb3Jt
-X2RlZmF1bHRfcG9wdWxhdGVfaW5pdCh2b2lkKQ0KPj4+ICAgCQkJYm9vdF9kaXNwbGF5ID0g
-bm9kZTsNCj4+PiAgIAkJCWJyZWFrOw0KPj4+ICAgCQl9DQo+Pj4gKw0KPj4+ICAgCQlmb3Jf
-ZWFjaF9ub2RlX2J5X3R5cGUobm9kZSwgImRpc3BsYXkiKSB7DQo+Pj4gKwkJCWNoYXIgKmJ1
-ZlsxNF07DQo+Pj4gICAJCQlpZiAoIW9mX2dldF9wcm9wZXJ0eShub2RlLCAibGludXgsb3Bl
-bmVkIiwgTlVMTCkgfHwgbm9kZSA9PSBib290X2Rpc3BsYXkpDQo+Pj4gICAJCQkJY29udGlu
-dWU7DQo+Pj4gLQkJCW9mX3BsYXRmb3JtX2RldmljZV9jcmVhdGUobm9kZSwgIm9mLWRpc3Bs
-YXkiLCBOVUxMKTsNCj4+PiArCQkJcmV0ID0gc25wcmludGYoYnVmLCAib2YtZGlzcGxheS0l
-ZCIsIGRpc3BsYXlfbnVtYmVyKyspOw0KDQpQbGF0Zm9ybSBkZXZpY2VzIHVzZSBhIHNpbmds
-ZSBkb3QgKC4pIGFzIHNlcGFyYXRvciBiZWZvcmUgdGhlIGluZGV4LiANCkNvdW50aW5nIHN0
-YXJ0cyBhdCB6ZXJvLiBTZWUgL3N5cy9idXMvcGxhdGZvcm0vIGZvciBleGFtcGxlcy4gQ2Fu
-IHdlIA0KcGxlYXNlIHN0aWNrIHdpdGggdGhhdCBzY2hlbWU/IEdlbmVyYXRlZCBuYW1lcyB3
-b3VsZCB0aGVuIGJlIA0Kb2YtZGlzcGxheS4wLCBvZi1kaXNwbGF5LjEsIGV0Yy4NCg0KQmVz
-dCByZWdhcmRzDQpUaG9tYXMNCg0KDQoNCj4+PiArCQkJaWYgKHJldCA+PSBzaXplb2YoYnVm
-KSkNCj4+PiArCQkJCWNvbnRpbnVlOw0KPj4+ICsJCQlvZl9wbGF0Zm9ybV9kZXZpY2VfY3Jl
-YXRlKG5vZGUsIGJ1ZiwgTlVMTCk7DQo+Pj4gICAJCX0NCj4+PiAgIA0KPj4+ICAgCX0gZWxz
-ZSB7DQo+Pj4gLS0gDQo+Pj4gMi4zNS4zDQo+Pj4NCj4+DQo+PiBUaGFuayB5b3UgZm9yIHRo
-ZSBwYXRjaCBNaWNoYWwhDQo+Pg0KPj4gSXQgYXBwbGllcyBvbiA2LjItcmM0IGJ1dCBJIGdl
-dCB0aGlzIGJ1aWxkIGVycm9yIHdpdGggbXkgY29uZmlnOg0KPiANCj4gSW5kZWVkLCBpdCdz
-IGRvdWJseSBiYWQuDQo+IA0KPiBXaGVyZSBpcyB0aGUga2VybmVsIHRlc3Qgcm9ib3Qgd2hl
-biB5b3UgbmVlZCBpdD8NCj4gDQo+IEl0IHNob3VsZCBub3QgYmUgdGhhdCBlYXN5IHRvIG1p
-c3MgdGhpcyBmaWxlIGJ1dCBjbGVhcmx5IGl0IGNhbiBoYXBwZW4uDQo+IA0KPiBJIHdpbGwg
-c2VuZCBhIGZpeHVwLg0KPiANCj4gU29ycnkgYWJvdXQgdGhlIG1lc3MuDQo+IA0KPiBUaGFu
-a3MNCj4gDQo+IE1pY2hhbA0KDQotLSANClRob21hcyBaaW1tZXJtYW5uDQpHcmFwaGljcyBE
-cml2ZXIgRGV2ZWxvcGVyDQpTVVNFIFNvZnR3YXJlIFNvbHV0aW9ucyBHZXJtYW55IEdtYkgN
-Ck1heGZlbGRzdHIuIDUsIDkwNDA5IE7DvHJuYmVyZywgR2VybWFueQ0KKEhSQiAzNjgwOSwg
-QUcgTsO8cm5iZXJnKQ0KR2VzY2jDpGZ0c2bDvGhyZXI6IEl2byBUb3Rldg0K
+Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+---
 
---------------SelpGfgpoFlxitarI50j1scj--
+ arch/powerpc/Makefile     | 22 +---------------------
+ arch/powerpc/lib/Makefile |  2 +-
+ scripts/Makefile.compiler |  4 ----
+ 3 files changed, 2 insertions(+), 26 deletions(-)
 
---------------vYwQZLIzQewlERFQlMVyGl2T
-Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="OpenPGP_signature"
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index dc4cbf0a5ca9..3d265b16c0ae 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -42,18 +42,13 @@ machine-$(CONFIG_PPC64) += 64
+ machine-$(CONFIG_CPU_LITTLE_ENDIAN) += le
+ UTS_MACHINE := $(subst $(space),,$(machine-y))
+ 
+-# XXX This needs to be before we override LD below
+-ifdef CONFIG_PPC32
+-KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+-else
+-ifeq ($(call ld-ifversion, -ge, 22500, y),y)
++ifeq ($(CONFIG_PPC64)$(CONFIG_LD_IS_BFD),yy)
+ # Have the linker provide sfpr if possible.
+ # There is a corresponding test in arch/powerpc/lib/Makefile
+ KBUILD_LDFLAGS_MODULE += --save-restore-funcs
+ else
+ KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+ endif
+-endif
+ 
+ ifdef CONFIG_CPU_LITTLE_ENDIAN
+ KBUILD_CFLAGS	+= -mlittle-endian
+@@ -389,8 +384,6 @@ vdso_prepare: prepare0
+ 		$(build)=arch/powerpc/kernel/vdso include/generated/vdso64-offsets.h)
+ endif
+ 
+-archprepare: checkbin
+-
+ archheaders:
+ 	$(Q)$(MAKE) $(build)=arch/powerpc/kernel/syscalls all
+ 
+@@ -405,16 +398,3 @@ else
+ 	$(eval KBUILD_CFLAGS += -mstack-protector-guard-offset=$(shell awk '{if ($$2 == "TASK_CANARY") print $$3;}' include/generated/asm-offsets.h))
+ endif
+ endif
+-
+-PHONY += checkbin
+-# Check toolchain versions:
+-# - gcc-4.6 is the minimum kernel-wide version so nothing required.
+-checkbin:
+-	@if test "x${CONFIG_LD_IS_LLD}" != "xy" -a \
+-		"x$(call ld-ifversion, -le, 22400, y)" = "xy" ; then \
+-		echo -n '*** binutils 2.24 miscompiles weak symbols ' ; \
+-		echo 'in some circumstances.' ; \
+-		echo    '*** binutils 2.23 do not define the TOC symbol ' ; \
+-		echo -n '*** Please use a different binutils version.' ; \
+-		false ; \
+-	fi
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 4de71cbf6e8e..c53618c34b70 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -42,7 +42,7 @@ obj-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
+ # 64-bit linker creates .sfpr on demand for final link (vmlinux),
+ # so it is only needed for modules, and only for older linkers which
+ # do not support --save-restore-funcs
+-ifeq ($(call ld-ifversion, -lt, 22500, y),y)
++ifndef CONFIG_LD_IS_BFD
+ extra-$(CONFIG_PPC64)	+= crtsavres.o
+ endif
+ 
+diff --git a/scripts/Makefile.compiler b/scripts/Makefile.compiler
+index 3d8adfd34af1..ad07a4efc253 100644
+--- a/scripts/Makefile.compiler
++++ b/scripts/Makefile.compiler
+@@ -72,7 +72,3 @@ clang-min-version = $(call test-ge, $(CONFIG_CLANG_VERSION), $1)
+ # ld-option
+ # Usage: KBUILD_LDFLAGS += $(call ld-option, -X, -Y)
+ ld-option = $(call try-run, $(LD) $(KBUILD_LDFLAGS) $(1) -v,$(1),$(2),$(3))
+-
+-# ld-ifversion
+-# Usage:  $(call ld-ifversion, -ge, 22252, y)
+-ld-ifversion = $(shell [ $(CONFIG_LD_VERSION)0 $(1) $(2)0 ] && echo $(3) || echo $(4))
+-- 
+2.34.1
 
------BEGIN PGP SIGNATURE-----
-
-wsF5BAABCAAjFiEExndm/fpuMUdwYFFolh/E3EQov+AFAmPI+KwFAwAAAAAACgkQlh/E3EQov+B1
-dQ/9HvwMsyehcNa73lV+1y+Y/Z9DriFzjFhqKQEyHWfr9+IjWNDc5MFVfm5+C4NedCMlnoQxzpZV
-+FyTZYEJiMpQZHEmTRIYsP/NI559FCcMTADWaQh0Hl+RVl7Fb4Y7HyuzQtqiCandy/55MWy9h07g
-RgMNuKW/wfnMYTOTPEbpFVhMBPsBPigdazF8w+WL3NBypnTCwfod1ye5xzGb+mbdysVH635NAy1t
-CVV5gpgGXgpL8JfsZNAKZiAyuQXr6LkusMhujKy+OiSr64g05BcAeprJ7cEcvw62OT39ZFYYFmqo
-+w+44p1IGN1Fr0TsgaRrnMt7RBSw9l5N7/p0baSWeqvnMy8OSosp2TQJDKz26Z2lFmcSN4yFOvhb
-hbzXXMZTXFA7N8zXaR03DBtckvGbFo0txMmDC9LkuR59OXhmsD5yR6lLBXeYvRR9uhYzg0bnbH3a
-CmvRsAB5iON1HSBWWLN2sHhlAy3Z6f543sgJ03wTjocpU3GLAOA16I+wv9PxQJUax4sim0/Gue+R
-vnfeRSe8zTozeTPEbEPE/XgkQBU45CDnOv7hi8TvrmPnDmEnEvXaMWuLIlGamghp2BuJi1T9orRh
-+xeIEv6va5Z1l92HtUI2iFOl/66W3i8RooszHc+tDrJq5pimDNORMqz6zOmdmjKzyvl6PqmvP165
-ZAE=
-=Ize5
------END PGP SIGNATURE-----
-
---------------vYwQZLIzQewlERFQlMVyGl2T--
