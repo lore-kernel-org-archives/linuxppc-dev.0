@@ -4,119 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EA81C25B4E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 13:31:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B43D6C25B4E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 13:36:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz0lQ6NKxz3fHK
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 00:31:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz0rR1HD1z3fJh
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 00:36:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MUoDqsxA;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=APsxifx9;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=OWUkDRRI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=MUoDqsxA;
+	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=APsxifx9;
+	dkim=pass (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=OWUkDRRI;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nyw0J1dD6z3bcT
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 20:57:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:To:From:Date:Sender:Reply-To:Cc:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=5PCjUACeYMR6O3y/YgzV4vR8g0qeDy6mmRm0X3w+etU=; b=MUoDqsxAueB3UC0X9DEpgPbNXn
-	Tj5cnDaYzy266gE7W5G9bVl+xeWuvsanoCSSZvn8aXUXYk/++klaMAsPIpQl1jeuVnTW1saJccdK+
-	DdGoQPEvQqs9mymWjC4y513VtI8Jy4W+Sh477ud61/rXfxZpDUDwY2E2lLspwsfnWFNoW0i7KQ+T+
-	KRbX9/27/fD43hdnpwgYqN4HT+lbr4i/iKyZlqSTJA7tBGTGIRK5/91srIafoGrsXofd4dgMAzNuT
-	W+pAcFw+grziVU17kyiULcfzMkW3d96+ovbjbRfqud5Nl4PuY1aCQOsAbjXg/VqEWhBkxNVtBGAX1
-	enGrU91w==;
-Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1pIo8U-001qF2-HQ; Fri, 20 Jan 2023 09:56:39 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
-	(Client did not present a certificate)
-	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 97C13300744;
-	Fri, 20 Jan 2023 10:56:35 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-	id 739372133D202; Fri, 20 Jan 2023 10:56:35 +0100 (CET)
-Date: Fri, 20 Jan 2023 10:56:35 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: richard.henderson@linaro.org, ink@jurassic.park.msu.ru,
-	mattst88@gmail.com, vgupta@kernel.org, linux@armlinux.org.uk,
-	nsekhar@ti.com, brgl@bgdev.pl, ulli.kroll@googlemail.com,
-	linus.walleij@linaro.org, shawnguo@kernel.org,
-	Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de,
-	festevam@gmail.com, linux-imx@nxp.com, tony@atomide.com,
-	khilman@kernel.org, krzysztof.kozlowski@linaro.org,
-	alim.akhtar@samsung.com, catalin.marinas@arm.com, will@kernel.org,
-	guoren@kernel.org, bcain@quicinc.com, chenhuacai@kernel.org,
-	kernel@xen0n.name, geert@linux-m68k.org, sammy@sammy.net,
-	monstr@monstr.eu, tsbogend@alpha.franken.de, dinguyen@kernel.org,
-	jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
-	shorne@gmail.com, James.Bottomley@hansenpartnership.com,
-	deller@gmx.de, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, paul.walmsley@sifive.com,
-	palmer@dabbelt.com, aou@eecs.berkeley.edu, hca@linux.ibm.com,
-	gor@linux.ibm.com, agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com, svens@linux.ibm.com,
-	ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
-	richard@nod.at, anton.ivanov@cambridgegreys.com,
-	johannes@sipsolutions.net, tglx@linutronix.de, mingo@redhat.com,
-	bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
-	hpa@zytor.com, acme@kernel.org, mark.rutland@arm.com,
-	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-	namhyung@kernel.org, jgross@suse.com, srivatsa@csail.mit.edu,
-	amakhalov@vmware.com, pv-drivers@vmware.com,
-	boris.ostrovsky@oracle.com, chris@zankel.net, jcmvbkbc@gmail.com,
-	rafael@kernel.org, lenb@kernel.org, pavel@ucw.cz,
-	gregkh@linuxfoundation.org, mturquette@baylibre.com,
-	sboyd@kernel.org, daniel.lezcano@linaro.org, lpieralisi@kernel.org,
-	sudeep.holla@arm.com, agross@kernel.org, andersson@kernel.org,
-	konrad.dybcio@linaro.org, anup@brainfault.org,
-	thierry.reding@gmail.com, jonathanh@nvidia.com,
-	jacob.jun.pan@linux.intel.com, atishp@atishpatra.org,
-	Arnd Bergmann <arnd@arndb.de>, yury.norov@gmail.com,
-	andriy.shevchenko@linux.intel.com, linux@rasmusvillemoes.dk,
-	dennis@kernel.org, tj@kernel.org, cl@linux.com, rostedt@goodmis.org,
-	mhiramat@kernel.org, frederic@kernel.org, paulmck@kernel.org,
-	pmladek@suse.com, senozhatsky@chromium.org,
-	john.ogness@linutronix.de, juri.lelli@redhat.com,
-	vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-	bsegall@google.com, mgorman@suse.de, bristot@redhat.com,
-	vschneid@redhat.com, ryabinin.a.a@gmail.com, glider@google.com,
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com,
-	Andrew Morton <akpm@linux-foundation.org>, jpoimboe@kernel.org,
-	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org, linux-omap@vger.kernel.org,
-	linux-samsung-soc@vger.kernel.org, linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
-	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org, openrisc@lists.librecores.org,
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org, linux-perf-users@vger.kernel.org,
-	virtualization@lists.linux-foundation.org,
-	linux-xtensa@linux-xtensa.org, linux-acpi@vger.kernel.org,
-	linux-pm@vger.kernel.org, linux-clk@vger.kernel.org,
-	linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-mm@kvack.org,
-	linux-trace-kernel@vger.kernel.org, kasan-dev@googlegroups.com,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 16/51] cpuidle: Annotate poll_idle()
-Message-ID: <Y8plU/f2WsmGG66H@hirez.programming.kicks-ass.net>
-References: <20230112194314.845371875@infradead.org>
- <20230112195540.312601331@infradead.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz0qL3K19z3fBV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 00:35:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1674221710; x=1705757710;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=m1YkW/D/aj3GzfQPMLoPMshLV3DxdOqxzw3Aa3dO5+I=;
+  b=APsxifx9QyUNaGT0rAzWIh567Vk5PQeH3lvQPMUEIqDff/owXK19gniM
+   q+ZwJLIgW4i0NbmvcY4an3KTl5qp2Q4g0rMqBXJWUh8RUzDwEWF2/d+A1
+   BgOY6cEPMHeXfEst2H23Brd1zKJrqaJ5tBgGhNA/eHUmHLC7wwZQqNUSD
+   wbaeKvW1wluWd/cJU0oqoh2bWdIbpLXy545BJoGOs1IjVaPhve9vJ3XQu
+   cDRNhZFQnaJClw2XwWhX8iZHmUpuJYe5t1YADmpi1yz6JrUfX2atK5Fpc
+   tngBhm5wLM/u1S9uUVoAFqk4oJ7syfbiDhdVh3he+V4fUYsaNmNBFn/wn
+   A==;
+X-IronPort-AV: E=Sophos;i="5.97,232,1669071600"; 
+   d="scan'208";a="28561570"
+Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
+  by mx1-pgp.tq-group.com with ESMTP; 20 Jan 2023 14:35:02 +0100
+Received: from mx1.tq-group.com ([192.168.6.7])
+  by tq-pgp-pr1.tq-net.de (PGP Universal service);
+  Fri, 20 Jan 2023 14:35:02 +0100
+X-PGP-Universal: processed;
+	by tq-pgp-pr1.tq-net.de on Fri, 20 Jan 2023 14:35:02 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1674221702; x=1705757702;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=m1YkW/D/aj3GzfQPMLoPMshLV3DxdOqxzw3Aa3dO5+I=;
+  b=OWUkDRRIIHMQnr9dT5WrGSvGaP3GHoUsBSLH9MJ/+pBhTHOSx7QL2gA/
+   R+eAqHY7or8ZJu+N9GiXZy8yVY8c9YX5MakwPhiKZh3RRX3vPT75LKWFC
+   upGxtQ0LJn3Z5VDYrz/82HkHVc50GzjQhlG6aZxMt0Jq8JgjGhdng6x1M
+   KoSEQqd5I80ybDJS8CrTEqmAki15OZhlB7czgUsb4QQW0vjzKO9wELFJT
+   Yz9rM5TZGrJ5J103wHVbewCRnY9iRf04niKsXDYcle5v6ueLQ2Ji74TcH
+   iM4ZmZWZxhFA/+kqvwFQGMQVPE2+El0sXwcQVstPV9A1VWOG0MX3XXLzW
+   g==;
+X-IronPort-AV: E=Sophos;i="5.97,232,1669071600"; 
+   d="scan'208";a="28561567"
+Received: from vtuxmail01.tq-net.de ([10.115.0.20])
+  by mx1.tq-group.com with ESMTP; 20 Jan 2023 14:35:02 +0100
+Received: from steina-w.tq-net.de (unknown [10.123.53.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	(No client certificate requested)
+	by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 32FD4280056;
+	Fri, 20 Jan 2023 14:35:02 +0100 (CET)
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Rob Herring <robh+dt@kernel.org>,
+	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Olof Johansson <olof@lixom.net>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Li Yang <leoyang.li@nxp.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Marek Vasut <marex@denx.de>,
+	Marcel Ziswiler <marcel.ziswiler@toradex.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	Nathan Chancellor <nathan@kernel.org>,
+	Nick Desaulniers <ndesaulniers@google.com>,
+	Nicolas Schier <nicolas@fjasle.eu>
+Subject: [PATCH v2 00/10] TQMLS1021A support
+Date: Fri, 20 Jan 2023 14:34:45 +0100
+Message-Id: <20230120133455.3962413-1-alexander.stein@ew.tq-group.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230112195540.312601331@infradead.org>
-X-Mailman-Approved-At: Sat, 21 Jan 2023 00:30:55 +1100
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -128,147 +101,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: devicetree@vger.kernel.org, linux-kbuild@vger.kernel.org, Alexander Stein <alexander.stein@ew.tq-group.com>, soc@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 12, 2023 at 08:43:30PM +0100, Peter Zijlstra wrote:
-> The __cpuidle functions will become a noinstr class, as such they need
-> explicit annotations.
-> 
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Frederic Weisbecker <frederic@kernel.org>
-> Tested-by: Tony Lindgren <tony@atomide.com>
-> Tested-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/cpuidle/poll_state.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> --- a/drivers/cpuidle/poll_state.c
-> +++ b/drivers/cpuidle/poll_state.c
-> @@ -13,7 +13,10 @@
->  static int __cpuidle poll_idle(struct cpuidle_device *dev,
->  			       struct cpuidle_driver *drv, int index)
->  {
-> -	u64 time_start = local_clock();
-> +	u64 time_start;
-> +
-> +	instrumentation_begin();
-> +	time_start = local_clock();
->  
->  	dev->poll_time_limit = false;
->  
-> @@ -39,6 +42,7 @@ static int __cpuidle poll_idle(struct cp
->  	raw_local_irq_disable();
->  
->  	current_clr_polling();
-> +	instrumentation_end();
->  
->  	return index;
->  }
+Hi,
 
-Pff, this patch is garbage. However wrote it didn't have his brain
-engaged :/
+this is the second round of this series to add support for the TQMLS1021A
+using the MBLS1021A mainboard.
+The changelog is included in the individual patches but the most notable
+one is picking up the old patch series for adding lpae config snippet
+support.
 
-Something like the below fixes it, but I still need to build me funny
-configs like ia64 and paravirt to see if I didn't wreck me something...
+Best regards,
+Alexander
 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index a78e73da4a74..70c07e11caa6 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -215,7 +215,7 @@ static void __init cyc2ns_init_secondary_cpus(void)
- /*
-  * Scheduler clock - returns current time in nanosec units.
-  */
--u64 native_sched_clock(void)
-+noinstr u64 native_sched_clock(void)
- {
- 	if (static_branch_likely(&__use_tsc)) {
- 		u64 tsc_now = rdtsc();
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 500d1720421e..0b00f21cefe3 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -426,7 +426,7 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
-  * @dev:   the cpuidle device
-  *
-  */
--u64 cpuidle_poll_time(struct cpuidle_driver *drv,
-+__cpuidle u64 cpuidle_poll_time(struct cpuidle_driver *drv,
- 		      struct cpuidle_device *dev)
- {
- 	int i;
-diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-index d25ec52846e6..bdcfeaecd228 100644
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -15,7 +15,6 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
- {
- 	u64 time_start;
- 
--	instrumentation_begin();
- 	time_start = local_clock();
- 
- 	dev->poll_time_limit = false;
-@@ -42,7 +41,6 @@ static int __cpuidle poll_idle(struct cpuidle_device *dev,
- 	raw_local_irq_disable();
- 
- 	current_clr_polling();
--	instrumentation_end();
- 
- 	return index;
- }
-diff --git a/include/linux/sched/clock.h b/include/linux/sched/clock.h
-index 867d588314e0..7960f0769884 100644
---- a/include/linux/sched/clock.h
-+++ b/include/linux/sched/clock.h
-@@ -45,7 +45,7 @@ static inline u64 cpu_clock(int cpu)
- 	return sched_clock();
- }
- 
--static inline u64 local_clock(void)
-+static __always_inline u64 local_clock(void)
- {
- 	return sched_clock();
- }
-@@ -79,7 +79,7 @@ static inline u64 cpu_clock(int cpu)
- 	return sched_clock_cpu(cpu);
- }
- 
--static inline u64 local_clock(void)
-+static __always_inline u64 local_clock(void)
- {
- 	return sched_clock_cpu(raw_smp_processor_id());
- }
-diff --git a/kernel/sched/clock.c b/kernel/sched/clock.c
-index e374c0c923da..6b3b0559e53c 100644
---- a/kernel/sched/clock.c
-+++ b/kernel/sched/clock.c
-@@ -260,7 +260,7 @@ notrace static inline u64 wrap_max(u64 x, u64 y)
-  *  - filter out backward motion
-  *  - use the GTOD tick value to create a window to filter crazy TSC values
-  */
--notrace static u64 sched_clock_local(struct sched_clock_data *scd)
-+noinstr static u64 sched_clock_local(struct sched_clock_data *scd)
- {
- 	u64 now, clock, old_clock, min_clock, max_clock, gtod;
- 	s64 delta;
-@@ -287,7 +287,7 @@ notrace static u64 sched_clock_local(struct sched_clock_data *scd)
- 	clock = wrap_max(clock, min_clock);
- 	clock = wrap_min(clock, max_clock);
- 
--	if (!try_cmpxchg64(&scd->clock, &old_clock, clock))
-+	if (!arch_try_cmpxchg64(&scd->clock, &old_clock, clock))
- 		goto again;
- 
- 	return clock;
-@@ -360,7 +360,7 @@ notrace static u64 sched_clock_remote(struct sched_clock_data *scd)
-  *
-  * See cpu_clock().
-  */
--notrace u64 sched_clock_cpu(int cpu)
-+noinstr u64 sched_clock_cpu(int cpu)
- {
- 	struct sched_clock_data *scd;
- 	u64 clock;
+Alexander Stein (7):
+  ARM: dts: ls1021a: add TQ-Systems MBLS102xA device tree
+  ARM: dts: ls1021a: add TQMLS1021A flash partition layout
+  ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA LVDS TM070JVHG33 overlay
+  ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA HDMI overlay
+  ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA LVDS CDTECH DC44 overlay
+  ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA LVDS CDTECH FC21 overlay
+  ARM: multi_v7_defconfig: Add options to support TQMLS102xA series
+
+Matthias Schiffer (1):
+  dt-bindings: arm: fsl: add TQ-Systems LS1021A board
+
+Nicolas Saenz Julienne (2):
+  kbuild: Add config fragment merge functionality
+  ARM: add multi_v7_lpae_defconfig
+
+ .../devicetree/bindings/arm/fsl.yaml          |  10 +
+ arch/arm/Makefile                             |   4 +
+ arch/arm/boot/dts/Makefile                    |  12 +
+ ...1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts |  55 +++
+ ...1021a-tqmls1021a-mbls1021a-cdtech-fc21.dts |  55 +++
+ .../ls1021a-tqmls1021a-mbls1021a-hdmi.dtso    |  36 ++
+ ...tqmls1021a-mbls1021a-lvds-tm070jvhg33.dtso |  56 +++
+ .../boot/dts/ls1021a-tqmls1021a-mbls1021a.dts | 406 ++++++++++++++++++
+ arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi     | 112 +++++
+ arch/arm/configs/lpae.config                  |   1 +
+ arch/arm/configs/multi_v7_defconfig           |  13 +
+ arch/powerpc/Makefile                         |  12 +-
+ scripts/Makefile.defconf                      |  15 +
+ 13 files changed, 776 insertions(+), 11 deletions(-)
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-fc21.dts
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-hdmi.dtso
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-lvds-tm070jvhg33.dtso
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a.dts
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+ create mode 100644 arch/arm/configs/lpae.config
+ create mode 100644 scripts/Makefile.defconf
+
+-- 
+2.34.1
+
