@@ -4,53 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07418C27C7C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 16:51:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FBA5C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 16:52:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz59m3VGtz3fJ9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 03:51:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz5Bn6QJ5z3fMQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 03:52:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=jpqicOFL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ixlujya0;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WN31tjJO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=jpqicOFL;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ixlujya0;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WN31tjJO;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+X-Greylist: delayed 514 seconds by postgrey-1.36 at boromir; Sat, 21 Jan 2023 03:50:52 AEDT
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz58j19N8z3cFL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 03:50:28 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=F1zALDE7aTxyrS74rgv02kuygXmkrK+dwh/wuZBtihs=; b=jpqicOFLnybxU1J/sYTsyjmHPn
-	IEXlj2YUuwcpXrOpxj/kOzWraZQxHDLwL/HfUlrGfp7en08E+Avdj99YfFJk4Z/yRrQePX17QhoS+
-	FA2mD3Kigz+l/dmYCChZGbrulREuzox3D1s6THtew9Ls+d3Svi+wdKOQf0y9RCMaKD+n77iffBNvp
-	LpDQp1f8VOeerGgi1fQvCHNbTXO5MvvYGluxo1BA+N2fFNzNVGFgtHSziBUaY4aCKyT0hN7n+V2Nj
-	ZzpoLyWOq2pnrBe+A3C34mNKkV5vKx/QB8xoHfHIH4J4YXe4tRXqut4+NIv0Sx5IOGnAQhLoMyFGW
-	luSl9FIg==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1pIuaE-002ElZ-3c; Fri, 20 Jan 2023 16:49:42 +0000
-Date: Fri, 20 Jan 2023 16:49:42 +0000
-From: Matthew Wilcox <willy@infradead.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in
- vm_area_free
-Message-ID: <Y8rGJq8LvX2C+Cr7@casper.infradead.org>
-References: <20230109205336.3665937-1-surenb@google.com>
- <20230109205336.3665937-40-surenb@google.com>
- <Y8k+syJu7elWAjRj@dhcp22.suse.cz>
- <CAJuCfpEAL9y70KJ_a=Z_kJpJnNC-ge1aN2ofTupeQ5-FaKh84g@mail.gmail.com>
- <Y8pWW9Am3mDP53qJ@dhcp22.suse.cz>
- <CAJuCfpHeuckG8YuNTgdDcNHNzJ3sQExD_f1hwXG_xmS7Z-925g@mail.gmail.com>
- <CAJuCfpF20nuP6Meib9h7NVrJv+wybYS==vZFQXxUW6n-ir9bvQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpF20nuP6Meib9h7NVrJv+wybYS==vZFQXxUW6n-ir9bvQ@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz5985wC4z3fGm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 03:50:52 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailout.west.internal (Postfix) with ESMTP id 52D4732009D6;
+	Fri, 20 Jan 2023 11:42:12 -0500 (EST)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Fri, 20 Jan 2023 11:42:13 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:date:date:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to; s=fm2; t=1674232931; x=
+	1674319331; bh=jw1dFTHWMbTPBEwBqLzDuqZE83d4cDbrYgrQVPokymE=; b=I
+	xlujya0wwTfcg7T0ltt1vAZXBUi6YP1ORWY270uyIrJRztQ7RbySZ4/UN6Pm3BS9
+	DCvKn/ctohEezybyGX5TtcmXKEOvZ5RUGhgysQwoiJ7W48NbaCuH8sCyRJZ5P/IH
+	0suffZHvWW6naDkULYR6+VCtYxQZh5b0GcyohIv+xu2CimghgaQo4P0+kx3HRKG0
+	5kJukeGsB1m9+T/nwq57DfxUi6wDke/qNkq19H9oUu3vE+rz0l5gGbsTwg9PbP0j
+	+LNxUqEjF1O1MKMVlZAsT7CyNw3A2c+2dC8uqW4yA+hSodr7l8V+cDEZ+rRnzyut
+	GTbq3Vymeb11ARBl0kM+A==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1674232931; x=
+	1674319331; bh=jw1dFTHWMbTPBEwBqLzDuqZE83d4cDbrYgrQVPokymE=; b=W
+	N31tjJO0T85FTAmeCSRP+eO3+w+yjH/0sNfIs+SPGPNLdE7x28aAbUH5mQh4aA3p
+	RiUK88wlwdq2ZFGriV4XvG8eILpj8BAR8VGJzRM6P7F6Bp0YIe5pNzDtX2Y8DVfv
+	Jz0mcG4NWCGg/mOK8pyGUM/wM8r7BoWnHAmcduv3H1GANIGEvNCcygSTm8jkZLX9
+	nhPPU0VYO6+W2E9iBVuX8Oxa99k2PEjZdpZH/jIr7e1ZuOdblF9PRw878NN5G4Zu
+	EphPuuWvnJ80IMwmPIiJ8jK/XowlDphm10cwZF9eNnMa1GMv6pXI/vB2kVocUVZA
+	Ny9rbV934cuEvIPww6PJQ==
+X-ME-Sender: <xms:YsTKY2mZEDhH6N3SoijCV4KsKDyPrsasvSbqKmSdXQ3ejR_QkKzO7w>
+    <xme:YsTKY93Dp4ucdrXU0SYjvrQzXAWV1xewOSstGszrT7HwHxKHP6dAAZZCJpeZyBXHW
+    V8uuxVcmvAODYVjRhw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudduvddgleegucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
+    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
+    htthgvrhhnpefgkeeuleegieeghfduudeltdekfeffjeeuleehleefudettddtgfevueef
+    feeigeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
+    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:Y8TKY0pLg12qXpNZ0_kJX3Ht6oXkCuYo7xVsWB1oSzlU43GArvILkw>
+    <xmx:Y8TKY6n2pp9EEmaQC20WdZ_lD1C_43tsaXF4X0mKvabz5-ER_MC5YA>
+    <xmx:Y8TKY02gwinU6prhvny08obDwVyISuzg7W1B1DTqSKCljaEKJwd-Nw>
+    <xmx:Y8TKY1KaI9opBZYIbl0NfxBm8UqscM6m_IRFlfofpiyr78uu5MF1IA>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id E896EB60086; Fri, 20 Jan 2023 11:42:10 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-85-gd6d859e0cf-fm-20230116.001-gd6d859e0
+Mime-Version: 1.0
+Message-Id: <db008af4-2918-4458-aa68-2392674475c8@app.fastmail.com>
+In-Reply-To: <20221226123630.6515-1-pali@kernel.org>
+References: <20221226123630.6515-1-pali@kernel.org>
+Date: Fri, 20 Jan 2023 17:41:49 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+ "Linus Walleij" <linus.walleij@linaro.org>
+Subject: Re: [PATCH RESEND 0/8] Resend LED patches
+Content-Type: text/plain;charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,60 +96,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, Michal Hocko <mhocko@suse.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsin
- gularity.net
+Cc: Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, soc@kernel.org, Pavel Machek <pavel@ucw.cz>, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 20, 2023 at 08:45:21AM -0800, Suren Baghdasaryan wrote:
-> On Fri, Jan 20, 2023 at 8:20 AM Suren Baghdasaryan <surenb@google.com> wrote:
-> >
-> > On Fri, Jan 20, 2023 at 12:52 AM Michal Hocko <mhocko@suse.com> wrote:
-> > >
-> > > On Thu 19-01-23 10:52:03, Suren Baghdasaryan wrote:
-> > > > On Thu, Jan 19, 2023 at 4:59 AM Michal Hocko <mhocko@suse.com> wrote:
-> > > > >
-> > > > > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
-> > > > > > call_rcu() can take a long time when callback offloading is enabled.
-> > > > > > Its use in the vm_area_free can cause regressions in the exit path when
-> > > > > > multiple VMAs are being freed. To minimize that impact, place VMAs into
-> > > > > > a list and free them in groups using one call_rcu() call per group.
-> > > > >
-> > > > > After some more clarification I can understand how call_rcu might not be
-> > > > > super happy about thousands of callbacks to be invoked and I do agree
-> > > > > that this is not really optimal.
-> > > > >
-> > > > > On the other hand I do not like this solution much either.
-> > > > > VM_AREA_FREE_LIST_MAX is arbitrary and it won't really help all that
-> > > > > much with processes with a huge number of vmas either. It would still be
-> > > > > in housands of callbacks to be scheduled without a good reason.
-> > > > >
-> > > > > Instead, are there any other cases than remove_vma that need this
-> > > > > batching? We could easily just link all the vmas into linked list and
-> > > > > use a single call_rcu instead, no? This would both simplify the
-> > > > > implementation, remove the scaling issue as well and we do not have to
-> > > > > argue whether VM_AREA_FREE_LIST_MAX should be epsilon or epsilon + 1.
-> > > >
-> > > > Yes, I agree the solution is not stellar. I wanted something simple
-> > > > but this is probably too simple. OTOH keeping all dead vm_area_structs
-> > > > on the list without hooking up a shrinker (additional complexity) does
-> > > > not sound too appealing either.
-> > >
-> > > I suspect you have missed my idea. I do not really want to keep the list
-> > > around or any shrinker. It is dead simple. Collect all vmas in
-> > > remove_vma and then call_rcu the whole list at once after the whole list
-> > > (be it from exit_mmap or remove_mt). See?
-> >
-> > Yes, I understood your idea but keeping dead objects until the process
-> > exits even when the system is low on memory (no shrinkers attached)
-> > seems too wasteful. If we do this I would advocate for attaching a
-> > shrinker.
-> 
-> Maybe even simpler, since we are hit with this VMA freeing flood
-> during exit_mmap (when all VMAs are destroyed), we pass a hint to
-> vm_area_free to batch the destruction and all other cases call
-> call_rcu()? I don't think there will be other cases of VMA destruction
-> floods.
+On Mon, Dec 26, 2022, at 13:36, Pali Roh=C3=A1r wrote:
+> Linus Walleij suggested me to send these patches to SoC tree [1]
+> instead. So I'm doing it.
+>
+> This patch series contains LED patches which are on the linux-leds
+> mailing list for a long time without any future movement. Could you
+> please handle them here via SoC tree? Thanks.
+>
+> [1] -=20
+> https://lore.kernel.org/linux-leds/CACRpkdad6WDo7rGfa4MW8zz0mLXmcPHo+S=
+EC-yLQnRz_kdrryA@mail.gmail.com/
 
-... or have two different call_rcu functions; one for munmap() and
-one for exit.  It'd be nice to use kmem_cache_free_bulk().
+I'm going through the backlog of patches sent to soc@kernel.org
+and came across this series. While I don't mind taking these
+patches through the soc tree in principle, it is important
+that this is only done as an exception, and with all the
+relevant parties on Cc.
+
+In particular, the original series that you got no
+feedback for did not include the arch/powerpc/ changes,
+and I would assume those should go through the powerpc
+tree anyway. We have recently decided to take
+risc-v and loongarch dts changes through the soc
+tree, and I don't mind doing it for powerpc as well
+if the powerpc maintainers prefer that, but this is
+not something we have even discussed so far.
+
+I've added everyone to Cc on this mail, but please
+resend the series once more so everyone has the patches,
+and then we can decide who will pick up what.
+
+    Arnd
+
+>
+> Marek Beh=C3=BAn (3):
+>   leds: turris-omnia: support HW controlled mode via private trigger
+>   leds: turris-omnia: initialize multi-intensity to full
+>   leds: turris-omnia: change max brightness from 255 to 1
+>
+> Pali Roh=C3=A1r (5):
+>   dt-bindings: leds: register-bit-led: Add active-low property
+>   leds: syscon: Implement support for active-low property
+>   powerpc/85xx: DTS: Add CPLD definitions for P1021RDB Combo Board CPL
+>     Design
+>   dt-bindings: leds: Add cznic,turris1x-leds.yaml binding
+>   leds: Add support for Turris 1.x LEDs
+>
+>  .../testing/sysfs-class-led-driver-turris1x   |  31 ++
+>  .../bindings/leds/cznic,turris1x-leds.yaml    | 118 +++++
+>  .../bindings/leds/register-bit-led.yaml       |   5 +
+>  arch/powerpc/boot/dts/fsl/p1020mbg-pc.dtsi    |  92 ++++
+>  arch/powerpc/boot/dts/fsl/p1020mbg-pc_32b.dts |   6 +-
+>  arch/powerpc/boot/dts/fsl/p1020mbg-pc_36b.dts |   6 +-
+>  arch/powerpc/boot/dts/fsl/p1020rdb-pd.dts     |  44 +-
+>  arch/powerpc/boot/dts/fsl/p1020utm-pc.dtsi    |  37 ++
+>  arch/powerpc/boot/dts/fsl/p1020utm-pc_32b.dts |   4 +-
+>  arch/powerpc/boot/dts/fsl/p1020utm-pc_36b.dts |   4 +-
+>  arch/powerpc/boot/dts/fsl/p1021rdb-pc.dtsi    |  37 ++
+>  arch/powerpc/boot/dts/fsl/p1021rdb-pc_32b.dts |   5 +-
+>  arch/powerpc/boot/dts/fsl/p1021rdb-pc_36b.dts |   5 +-
+>  arch/powerpc/boot/dts/fsl/p2020rdb-pc.dtsi    |  33 +-
+>  drivers/leds/Kconfig                          |  10 +
+>  drivers/leds/Makefile                         |   1 +
+>  drivers/leds/leds-syscon.c                    |  14 +-
+>  drivers/leds/leds-turris-1x.c                 | 474 ++++++++++++++++++
+>  drivers/leds/leds-turris-omnia.c              |  46 +-
+>  19 files changed, 945 insertions(+), 27 deletions(-)
+>  create mode 100644=20
+> Documentation/ABI/testing/sysfs-class-led-driver-turris1x
+>  create mode 100644=20
+> Documentation/devicetree/bindings/leds/cznic,turris1x-leds.yaml
+>  create mode 100644 drivers/leds/leds-turris-1x.c
+>
+> --=20
+> 2.20.1
