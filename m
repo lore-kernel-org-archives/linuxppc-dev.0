@@ -4,97 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5015BC38159
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 06:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D3EAC25B50
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 07:44:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4NyqBv5WSjz3fH3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 17:21:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nys2s2KkFz3fKQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 18:44:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BzesppLC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f58/WxHh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BzesppLC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f58/WxHh;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nyq9m5lrHz3fCN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 17:20:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nys1q5qNfz3fBL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 18:43:43 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30K65R0D023947;
-	Fri, 20 Jan 2023 06:20:24 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=aXKU39OQSaaTWLJC/8fawztHomaVSmHxM7RXlYvCrik=;
- b=BzesppLCkekQqNZFjnhRJX/o7JPv9ECwVqQHSGvJagj7SNdHUBowdbIe7e73xrKEOSkG
- vVgytirZv68oS915r5XadFdac089zsCzkOTyzpqq8JNnNSCqZxRXLi3luC+tkYuIFIY6
- Xejmh1KGVyJHdIiURBu6W4en2qFL8SATWTF4K9uYhfTG77Fpqtn2juwHsSa4yXGhYosB
- GNEJdTrDIaO+2PDI9YdQ4+Yf8a6O8wKWEGcmyuu65szcTzbldHTQc0t5lKURqu86ofKL
- rMRYS/FQmX50NRvxLb0WJXZndGp1M4FVSiclXFYKsYV64H/GF+P9LsUSk/D2w1l2odK+ Tw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n7ncrr9u7-1
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30K7FUgP019165;
+	Fri, 20 Jan 2023 07:43:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=lSXMUCav8MSPGkLiWLMSzecOSZJGO0arD0Dqac9w8p4=;
+ b=f58/WxHh8H2YX4DNsUhJNaunkkw8o0BSd7VqdipHelW1AYBKQoVB3ASYziCcvZhwVxBv
+ //ix6+ljO3ii5fQOcUrl+vUWvKm00rjc24ADrXIhiKovWfJ4jNg+ZukTPxqkjtXje2Qv
+ UTy08OclSYI74unocAgK+TRl0XkwW9tAp0Q/KcjN/+gZFWfe36fsJ/q64JTzlp5HoiBG
+ KZfirNbpwmnd6FZKC2ircA0tv+LRjot30c0fukPi7EOL7yn+rf6RD3LP/3tH2A6kujaC
+ dvi2HuxRA6ZtPVPPVbrSGKrj5gcQbAD2IyO0HTeLAjZCFH8p7rdyzNItGnXfn8PQXNID xA== 
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n7pdkrhud-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Jan 2023 06:20:24 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30K65ZNC024749;
-	Fri, 20 Jan 2023 06:20:23 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n7ncrr9tr-1
+	Fri, 20 Jan 2023 07:43:36 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30JJTZqO009485;
+	Fri, 20 Jan 2023 07:43:34 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfqpaf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Jan 2023 06:20:23 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30K63wGR002145;
-	Fri, 20 Jan 2023 06:20:21 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3n3m16ngq3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Jan 2023 06:20:21 +0000
+	Fri, 20 Jan 2023 07:43:34 +0000
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30K6KJJS45416740
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30K7hWRt43975050
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 20 Jan 2023 06:20:19 GMT
+	Fri, 20 Jan 2023 07:43:32 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 391862004B;
-	Fri, 20 Jan 2023 06:20:19 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 6291B20043;
+	Fri, 20 Jan 2023 07:43:32 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B048C20040;
-	Fri, 20 Jan 2023 06:20:18 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id DB1D220040;
+	Fri, 20 Jan 2023 07:43:31 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 20 Jan 2023 06:20:18 +0000 (GMT)
-Received: from [10.61.2.128] (haven.au.ibm.com [9.192.254.114])
+	Fri, 20 Jan 2023 07:43:31 +0000 (GMT)
+Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 36414602EB;
-	Fri, 20 Jan 2023 17:20:15 +1100 (AEDT)
-Message-ID: <4466f0800b912d287c1f4c8a4454bf841b819537.camel@linux.ibm.com>
-Subject: Re: [PATCH v3 08/24] powerpc/secvar: Allow backend to populate
- static list of variable names
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BAED5605B2;
+	Fri, 20 Jan 2023 18:43:29 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-integrity@vger.kernel.org
-Date: Fri, 20 Jan 2023 17:20:14 +1100
-In-Reply-To: <CPVRLZNI6WWQ.1AZVH3NCPCOYL@bobo>
-References: <20230118061049.1006141-1-ajd@linux.ibm.com>
-	 <20230118061049.1006141-9-ajd@linux.ibm.com>
-	 <CPVRLZNI6WWQ.1AZVH3NCPCOYL@bobo>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.3 (3.46.3-1.fc37) 
+To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: [PATCH v4 04/24] powerpc/secvar: Warn and error if multiple secvar ops are set
+Date: Fri, 20 Jan 2023 18:42:46 +1100
+Message-Id: <20230120074306.1326298-5-ajd@linux.ibm.com>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230120074306.1326298-1-ajd@linux.ibm.com>
+References: <20230120074306.1326298-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: aHrPUNO-Ia3zFPlc5RxsVvgdddwL6PGR
-X-Proofpoint-GUID: e8XN44HRcOR7wIHSB5opgMG6MT6l5ANr
+X-Proofpoint-GUID: xJvEDN_3WgwwuJUkTmiwj8OVPm1ZHYtW
+X-Proofpoint-ORIG-GUID: xJvEDN_3WgwwuJUkTmiwj8OVPm1ZHYtW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-01-20_03,2023-01-19_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=999
- suspectscore=0 lowpriorityscore=0 spamscore=0 malwarescore=0 clxscore=1015
- impostorscore=0 adultscore=0 bulkscore=0 mlxscore=0 priorityscore=1501
+ definitions=2023-01-20_04,2023-01-19_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
+ bulkscore=0 suspectscore=0 malwarescore=0 priorityscore=1501 spamscore=0
+ impostorscore=0 clxscore=1011 adultscore=0 phishscore=0 lowpriorityscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2301200055
+ definitions=main-2301200070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,37 +94,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: gjoyce@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, sudhakar@linux.ibm.com, bgray@linux.ibm.com, gcwilson@linux.ibm.com
+Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, gjoyce@linux.ibm.com, ruscur@russell.cc, gcwilson@linux.ibm.com, joel@jms.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2023-01-19 at 11:10 +1000, Nicholas Piggin wrote:
-> > diff --git a/arch/powerpc/include/asm/secvar.h
-> > b/arch/powerpc/include/asm/secvar.h
-> > index ebf95386d720..c8bee1834b54 100644
-> > --- a/arch/powerpc/include/asm/secvar.h
-> > +++ b/arch/powerpc/include/asm/secvar.h
-> > @@ -23,6 +23,10 @@ struct secvar_operations {
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0ssize_t (*format)(char =
-*buf);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int (*max_size)(u64 *ma=
-x_size);
-> > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const struct attribute =
-**config_attrs;
-> > +
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0// NULL-terminated array of =
-fixed variable names
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0// Only used if get_next() i=
-sn't provided
-> > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const char * const *var_name=
-s;
->=20
-> The other way you could go is provide a sysfs_init() ops call here,
-> and export the add_var as a library function that backends can use.
+From: Russell Currey <ruscur@russell.cc>
 
-True, I think I'll keep it as is for now but I'll have a think about
-whether to do that in a later patch.
+The secvar code only supports one consumer at a time.
 
---=20
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+Multiple consumers aren't possible at this point in time, but we'd want
+it to be obvious if it ever could happen.
+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+
+---
+
+v4: Return an error and don't actually try to set secvar_operations if the
+    warning is triggered (npiggin)
+---
+ arch/powerpc/include/asm/secvar.h            | 4 ++--
+ arch/powerpc/kernel/secvar-ops.c             | 8 ++++++--
+ arch/powerpc/platforms/powernv/opal-secvar.c | 4 +---
+ 3 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
+index 07ba36f868a7..4ce3f12c5613 100644
+--- a/arch/powerpc/include/asm/secvar.h
++++ b/arch/powerpc/include/asm/secvar.h
+@@ -21,11 +21,11 @@ struct secvar_operations {
+ 
+ #ifdef CONFIG_PPC_SECURE_BOOT
+ 
+-extern void set_secvar_ops(const struct secvar_operations *ops);
++extern int set_secvar_ops(const struct secvar_operations *ops);
+ 
+ #else
+ 
+-static inline void set_secvar_ops(const struct secvar_operations *ops) { }
++static inline int set_secvar_ops(const struct secvar_operations *ops) { return 0; }
+ 
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/secvar-ops.c b/arch/powerpc/kernel/secvar-ops.c
+index 6a29777d6a2d..9c8dd4e7c270 100644
+--- a/arch/powerpc/kernel/secvar-ops.c
++++ b/arch/powerpc/kernel/secvar-ops.c
+@@ -8,10 +8,14 @@
+ 
+ #include <linux/cache.h>
+ #include <asm/secvar.h>
++#include <asm/bug.h>
+ 
+-const struct secvar_operations *secvar_ops __ro_after_init;
++const struct secvar_operations *secvar_ops __ro_after_init = NULL;
+ 
+-void set_secvar_ops(const struct secvar_operations *ops)
++int set_secvar_ops(const struct secvar_operations *ops)
+ {
++	if (WARN_ON_ONCE(secvar_ops))
++		return -1;
+ 	secvar_ops = ops;
++	return 0;
+ }
+diff --git a/arch/powerpc/platforms/powernv/opal-secvar.c b/arch/powerpc/platforms/powernv/opal-secvar.c
+index ef89861569e0..4c0a3b030fe0 100644
+--- a/arch/powerpc/platforms/powernv/opal-secvar.c
++++ b/arch/powerpc/platforms/powernv/opal-secvar.c
+@@ -113,9 +113,7 @@ static int opal_secvar_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-	set_secvar_ops(&opal_secvar_ops);
+-
+-	return 0;
++	return set_secvar_ops(&opal_secvar_ops);
+ }
+ 
+ static const struct of_device_id opal_secvar_match[] = {
+-- 
+2.39.0
+
