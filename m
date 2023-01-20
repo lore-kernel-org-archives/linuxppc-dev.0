@@ -4,87 +4,198 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FBA5C05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 16:52:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F6D5C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 17:10:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz5Bn6QJ5z3fMQ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 03:52:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz5c94Sfnz3fLP
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 04:10:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ixlujya0;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WN31tjJO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=rHkFr5mW;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=NsvoNw61;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=liam.howlett@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=Ixlujya0;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=WN31tjJO;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2022-7-12 header.b=rHkFr5mW;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=NsvoNw61;
 	dkim-atps=neutral
-X-Greylist: delayed 514 seconds by postgrey-1.36 at boromir; Sat, 21 Jan 2023 03:50:52 AEDT
-Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz5985wC4z3fGm
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 03:50:52 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-	by mailout.west.internal (Postfix) with ESMTP id 52D4732009D6;
-	Fri, 20 Jan 2023 11:42:12 -0500 (EST)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Fri, 20 Jan 2023 11:42:13 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:date:date:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:sender:subject:subject:to:to; s=fm2; t=1674232931; x=
-	1674319331; bh=jw1dFTHWMbTPBEwBqLzDuqZE83d4cDbrYgrQVPokymE=; b=I
-	xlujya0wwTfcg7T0ltt1vAZXBUi6YP1ORWY270uyIrJRztQ7RbySZ4/UN6Pm3BS9
-	DCvKn/ctohEezybyGX5TtcmXKEOvZ5RUGhgysQwoiJ7W48NbaCuH8sCyRJZ5P/IH
-	0suffZHvWW6naDkULYR6+VCtYxQZh5b0GcyohIv+xu2CimghgaQo4P0+kx3HRKG0
-	5kJukeGsB1m9+T/nwq57DfxUi6wDke/qNkq19H9oUu3vE+rz0l5gGbsTwg9PbP0j
-	+LNxUqEjF1O1MKMVlZAsT7CyNw3A2c+2dC8uqW4yA+hSodr7l8V+cDEZ+rRnzyut
-	GTbq3Vymeb11ARBl0kM+A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:date:date:feedback-id:feedback-id:from:from
-	:in-reply-to:in-reply-to:message-id:mime-version:references
-	:reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1674232931; x=
-	1674319331; bh=jw1dFTHWMbTPBEwBqLzDuqZE83d4cDbrYgrQVPokymE=; b=W
-	N31tjJO0T85FTAmeCSRP+eO3+w+yjH/0sNfIs+SPGPNLdE7x28aAbUH5mQh4aA3p
-	RiUK88wlwdq2ZFGriV4XvG8eILpj8BAR8VGJzRM6P7F6Bp0YIe5pNzDtX2Y8DVfv
-	Jz0mcG4NWCGg/mOK8pyGUM/wM8r7BoWnHAmcduv3H1GANIGEvNCcygSTm8jkZLX9
-	nhPPU0VYO6+W2E9iBVuX8Oxa99k2PEjZdpZH/jIr7e1ZuOdblF9PRw878NN5G4Zu
-	EphPuuWvnJ80IMwmPIiJ8jK/XowlDphm10cwZF9eNnMa1GMv6pXI/vB2kVocUVZA
-	Ny9rbV934cuEvIPww6PJQ==
-X-ME-Sender: <xms:YsTKY2mZEDhH6N3SoijCV4KsKDyPrsasvSbqKmSdXQ3ejR_QkKzO7w>
-    <xme:YsTKY93Dp4ucdrXU0SYjvrQzXAWV1xewOSstGszrT7HwHxKHP6dAAZZCJpeZyBXHW
-    V8uuxVcmvAODYVjRhw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudduvddgleegucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtgfesthhqredtreerjeenucfhrhhomhepfdet
-    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
-    htthgvrhhnpefgkeeuleegieeghfduudeltdekfeffjeeuleehleefudettddtgfevueef
-    feeigeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
-    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:Y8TKY0pLg12qXpNZ0_kJX3Ht6oXkCuYo7xVsWB1oSzlU43GArvILkw>
-    <xmx:Y8TKY6n2pp9EEmaQC20WdZ_lD1C_43tsaXF4X0mKvabz5-ER_MC5YA>
-    <xmx:Y8TKY02gwinU6prhvny08obDwVyISuzg7W1B1DTqSKCljaEKJwd-Nw>
-    <xmx:Y8TKY1KaI9opBZYIbl0NfxBm8UqscM6m_IRFlfofpiyr78uu5MF1IA>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id E896EB60086; Fri, 20 Jan 2023 11:42:10 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-85-gd6d859e0cf-fm-20230116.001-gd6d859e0
-Mime-Version: 1.0
-Message-Id: <db008af4-2918-4458-aa68-2392674475c8@app.fastmail.com>
-In-Reply-To: <20221226123630.6515-1-pali@kernel.org>
-References: <20221226123630.6515-1-pali@kernel.org>
-Date: Fri, 20 Jan 2023 17:41:49 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
- "Linus Walleij" <linus.walleij@linaro.org>
-Subject: Re: [PATCH RESEND 0/8] Resend LED patches
-Content-Type: text/plain;charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz5b21QWfz3cFW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 04:09:47 +1100 (AEDT)
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30KGDxll015101;
+	Fri, 20 Jan 2023 17:08:44 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : references : content-type : in-reply-to :
+ mime-version; s=corp-2022-7-12;
+ bh=hIAjDCJIkyV7Xvx6jxUm7df3QS3DzaAMMvkrTMRP9E0=;
+ b=rHkFr5mWohPtiZwdWxgKLUvCds1A8XK6sQfpniP1GvrQyRbe8EfvPW8JKXCe2sPpiNJS
+ HqXsHT8vwtnOCN+awpYHEDivkgDP8FzcQsLX/G2e14iIw0wzriyKClEcztya9ewzT6I3
+ hmSt3MW4AGy7YzoShxFNW87Tx/jweaSACodrQaEfhYbfZqeLjnmCko9Xg3WXDn2si4FY
+ HUEBqnT0OxCacQffA8i4vvkDb3wt9Js3zMiScir+z5Bcd23VJ5eRUC4MxDHROg68vPsb
+ M/ilNB6KGUVL3HrDg25f1I7Ji9piAINJNJIqsYZBRW5+7a7BkR3bgUJiORbVmBwlWFhU QA== 
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 3n3mxtd5kd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 20 Jan 2023 17:08:44 +0000
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.17.1.5/8.17.1.5) with ESMTP id 30KGZ4gA027915;
+	Fri, 20 Jan 2023 17:08:38 GMT
+Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10lp2102.outbound.protection.outlook.com [104.47.58.102])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 3n6qudar7f-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 20 Jan 2023 17:08:37 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=g+qTdvTnTQeSwo1SQKBuBwiRKXH2CiKx+K7celNHud21CcngcX2oOTk9BMbPvRppmGqqXT42B5eQAMqoE70stvGYLlseYF5BvZgo5IaAb6gXF3RkaJPfWyRKPhhlgHaeS6ywoqHF9d4gFfQ7887WRkYgQ6yxfDoWMAAUwxBO88f6AqV5J+tm8N1ZVK1B9LW2crNBpYp0r+CspO4xdChPAhgBtiQSCf3RpsWPvDnGDrDqUbhiYTIjMyAzm25MF1hSv01kGvu9IOUFa8BPZm/PHeaVfSJ46SypST66l/+gGEUKM1qVpOxay3BCq5GKMgpvJUfjabAbkasDASsjcXL/OA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hIAjDCJIkyV7Xvx6jxUm7df3QS3DzaAMMvkrTMRP9E0=;
+ b=VcBFtF7dOHA/MNSZ7RIeYJHUHyf5lZgsNdFpXKNnXX3x6b4JAsGzxSzSL2ZIQxT1DNFF/7Iy8Jr7rKEpK8hlvh6j8g5JWp3fWgSM1c9tnzAK5qbth0WZTAL2Na43JLHe6WDbZZ4xw6g7N0wtBHbvupQjBvRtDlymje1yF9/vtxRTvYMnYv4Yxf0TM/YDeWGK5zpkXZuK/fEFoPaSh77xVvpPNh6q+6/Zl+MYmx73HidEukJhUfpLkG3Rgqbok/lYMlHJ5XxckPOofF2xlZS3I5IOm7RJDEVPcrtSJMUosblM6ZPNlHkm9yLd5LHpNGaASBFRFh7w13OMFgasfncoTA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hIAjDCJIkyV7Xvx6jxUm7df3QS3DzaAMMvkrTMRP9E0=;
+ b=NsvoNw61uNv9zG8cUNKUm6LZnxq33GDIeDzPg33Mlyi14VT7r39+Xgb/5HGQAgA2izFwfrDWnpU8d1M5Ao5jqIcKl/daL0ez67i2uc8RGHimOOABqYpVLBFADK7KyMBcMyq06LfOjkIxaGmzpU5CPw3n2cLkemspKA7Ek3Xc/tk=
+Received: from SN6PR10MB3022.namprd10.prod.outlook.com (2603:10b6:805:d8::25)
+ by MN0PR10MB6005.namprd10.prod.outlook.com (2603:10b6:208:3cb::20) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6002.9; Fri, 20 Jan
+ 2023 17:08:34 +0000
+Received: from SN6PR10MB3022.namprd10.prod.outlook.com
+ ([fe80::7306:828b:8091:9674]) by SN6PR10MB3022.namprd10.prod.outlook.com
+ ([fe80::7306:828b:8091:9674%5]) with mapi id 15.20.6043.005; Fri, 20 Jan 2023
+ 17:08:34 +0000
+Date: Fri, 20 Jan 2023 12:08:15 -0500
+From: "Liam R. Howlett" <Liam.Howlett@Oracle.com>
+To: Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH 39/41] kernel/fork: throttle call_rcu() calls in
+ vm_area_free
+Message-ID: <20230120170815.yuylbs27r6xcjpq5@revolver>
+Mail-Followup-To: "Liam R. Howlett" <Liam.Howlett@Oracle.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, akpm@linux-foundation.org,
+	michel@lespinasse.org, jglisse@google.com, vbabka@suse.cz,
+	hannes@cmpxchg.org, mgorman@techsingularity.net, dave@stgolabs.net,
+	peterz@infradead.org, ldufour@linux.ibm.com,
+	laurent.dufour@fr.ibm.com, paulmck@kernel.org, luto@kernel.org,
+	songliubraving@fb.com, peterx@redhat.com, david@redhat.com,
+	dhowells@redhat.com, hughd@google.com, bigeasy@linutronix.de,
+	kent.overstreet@linux.dev, punit.agrawal@bytedance.com,
+	lstoakes@gmail.com, peterjung1337@gmail.com, rientjes@google.com,
+	axelrasmussen@google.com, joelaf@google.com, minchan@google.com,
+	jannh@google.com, shakeelb@google.com, tatashin@google.com,
+	edumazet@google.com, gthelen@google.com, gurua@google.com,
+	arjunroy@google.com, soheil@google.com, hughlynch@google.com,
+	leewalsh@google.com, posk@google.com, linux-mm@kvack.org,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	kernel-team@android.com
+References: <20230109205336.3665937-1-surenb@google.com>
+ <20230109205336.3665937-40-surenb@google.com>
+ <Y8k+syJu7elWAjRj@dhcp22.suse.cz>
+ <CAJuCfpEAL9y70KJ_a=Z_kJpJnNC-ge1aN2ofTupeQ5-FaKh84g@mail.gmail.com>
+ <Y8pWW9Am3mDP53qJ@dhcp22.suse.cz>
+ <CAJuCfpHeuckG8YuNTgdDcNHNzJ3sQExD_f1hwXG_xmS7Z-925g@mail.gmail.com>
+ <CAJuCfpF20nuP6Meib9h7NVrJv+wybYS==vZFQXxUW6n-ir9bvQ@mail.gmail.com>
+ <Y8rGJq8LvX2C+Cr7@casper.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Y8rGJq8LvX2C+Cr7@casper.infradead.org>
+User-Agent: NeoMutt/20220429
+X-ClientProxiedBy: SCYP215CA0003.LAMP215.PROD.OUTLOOK.COM
+ (2603:10d6:300:31::18) To SN6PR10MB3022.namprd10.prod.outlook.com
+ (2603:10b6:805:d8::25)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SN6PR10MB3022:EE_|MN0PR10MB6005:EE_
+X-MS-Office365-Filtering-Correlation-Id: 8c5c1bdf-8826-4e51-a397-08dafb08f68d
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	Vf/5NgiBLcpRS9D2pd0KpESYJXFapWWfU0j1AAMoFdrWd2zX0E2IV+ODjPb5bVQ7/Wr/1tersvN0botO4FHzMhADDnO4gupE7JyoXf6acEgPcqALqwKNIuQ5aODpzVFZxN5a0/hD+pvrgDwlkwPPsPYLO+Y1rkkfOo4zXQZt+YMXumw23L0SETmyof2Zpr+aoQ4aidw9GwiaKrBdkqdHiYW/OKo0gC/8PlFpoi1Svym/z6YYkxh6ZDQAU8X4BqmpHsjLtKdZdL+Gocz0ld49yw/Afb/TMsxKwuwSEV0ssoqBrCh43nkIqS37M6lobCSdPL7SkD/aRoM2sL+QG3NP7yfk4QzPTEjss0IEQubUKqdr/wH8yGOMWmoWnB8TUHP4n8vkgU2Jf4odOgPo7+N5316/72WrYgGLLmW/dBISfTj+EbDTpi9siiprvZaCYGq6PzjManws142Zs7YZJ1oLtBqTFingE+LsVG2Hi2GJxk/nzfR8lCq5NsDFGHGq9tqlmt1BeT3Qvq8YSRA4+g8tptGltuX2MiGVt+Mzmyv7dFvdDU20cLL/mbBjNLOPSyFR3lVJvKl1/+OJochb7sEm1NP2cuiecxS94c5MhM2arfRKN3iCLmPjvF7XhU2MEQyAUFXK4qBDDZipu4MXagdqiw==
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR10MB3022.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230022)(7916004)(376002)(396003)(136003)(39860400002)(366004)(346002)(451199015)(6916009)(41300700001)(8936002)(83380400001)(66556008)(66946007)(66476007)(1076003)(316002)(8676002)(4326008)(54906003)(38100700002)(33716001)(86362001)(53546011)(7416002)(5660300002)(2906002)(7406005)(9686003)(26005)(186003)(6666004)(478600001)(6512007)(6486002)(6506007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?kaXRpA8ciJSLTcnT8FlPEbxU5t3FKre0MruHvV+S+v/t8xe/WDKfXrSg3YtY?=
+ =?us-ascii?Q?D1tRgsrR6oY25x8gLSlaNRYXErnkyyk0RkqoXcZpsxwrStHgw9+qsrap3QSf?=
+ =?us-ascii?Q?CJBSERjy1XStkcvnhAs3qU/DLAeFudNFWqzpG6DoICQu73XFCFijVArZOwnE?=
+ =?us-ascii?Q?eSTjnBdPG6jUOzeN8EJiJO4Dq1aVD2M+lMyr9Qc8YGfaddXoZRStUrWRZKlZ?=
+ =?us-ascii?Q?RmmVzmmqOde7hnsdMynlLfLpfugeE+UNSmxseqFFvZ9qRyts5Oq1rj1DBNA9?=
+ =?us-ascii?Q?itWMCupnH1p8c/Z6Qf6JCDgsXpN8Pl9AINI+yAhVcm+ewKOZv6iN4Kih1B/m?=
+ =?us-ascii?Q?A3TpQr2h762mmHtfc/y8yGe+IvnTus2AJ5Ovq1UPJg33qKUYh70R4YGezZc0?=
+ =?us-ascii?Q?jy7LeBInG3NV4pwnvHPaHPEYYcDK1kjkaKqfmkaOYQwJUrqAZlI7JFYL7tui?=
+ =?us-ascii?Q?E6i69QcrnvyOsaOB7+CHkcWVWlaxO9Zs5ohi1dKdf9oi1bZP+3x8HuTVWh4j?=
+ =?us-ascii?Q?AfYt2+qlzIORJFb4t/atPDG30nWiB8pZnRvPuMyKlRMb74uAkvCK6xRDtZW/?=
+ =?us-ascii?Q?D5SjWXjeNCFIKHseKdCJYfovzzqOyvMHAolTiczCrxhEIYYeOUjZtvtBKfHB?=
+ =?us-ascii?Q?MH0X+NcunhiTB0i3x/4RUWjLpewv9sI62oFfw5xxrMzNux0HLeLNJ1xPtb/6?=
+ =?us-ascii?Q?qarNUR4vjdMFssPJegz3gpht92/xAsNSom49VVkbEcAziMeE/Zn10qKnIkxW?=
+ =?us-ascii?Q?wGSCA+95zaTA/MdUtgpngwtrx6s/AJRMKX2b5zyeog9EUz1sMzBbf6Y40lmL?=
+ =?us-ascii?Q?AAsqfqso+Cf7zulD8DJgmIQYu0lo+DgEPhMdoAGZ1xG8fCYt8BujAoqIc3Mg?=
+ =?us-ascii?Q?19wmbWSm3ZkDsqADc4fP31Kup6xylCEeR9HkFIG52QvYf58l6u4Ah6SAbYlA?=
+ =?us-ascii?Q?Knnda56FKgXKxFiB9+a3qgFNWVjMUD6DAoCoa/6/3o2HkF88RI6Lu+2BRV0i?=
+ =?us-ascii?Q?u4NVkStMoXLblTSGWimyY+z32eILQMnhQXxWP6O0LAh7iNs5JhCPsjkqFbS+?=
+ =?us-ascii?Q?ulC1LHfUpMwDIX3Kf2RW+taBQ+h+lQyam2nN+gsfa3qag1T98v8+Q1IgeeHI?=
+ =?us-ascii?Q?p7XElYAou3UOAi/+2Qz0oPBsGNP3wkrpOv1p2tnwZfcoaxUVFPta6d/keB2Q?=
+ =?us-ascii?Q?OSDlfiKiMGw7EoWl839tzPfJB0xgnXtXJ1GPai2o1LKLUF3Ovpwa6dbcEnk1?=
+ =?us-ascii?Q?jeU3CKhRfH5lCsZdCTsZQlOw30TzLe9vKtqfxfSS95ckCgoMDr1I3Alu72j5?=
+ =?us-ascii?Q?4C7FBJqznEQSjkr3m8JOy02RrKIGME6iCWjib+SmdMTcX/UIIKNxYW8q2CIN?=
+ =?us-ascii?Q?aucaAJZIoisqCtJIVnPxxXW2PoeMCJPiiC25Y2GmcKX6/6zRxINuwOfSH6yK?=
+ =?us-ascii?Q?KPfJ/gsFEPB4DwZ/sA9QdPs7YOu8EQDmU2OwsJp5vEQUD0SJ2UiLcuF+SslF?=
+ =?us-ascii?Q?jEGmtP0hLMGtyrUTIB3QkAyOG/jyvoT2m8l9Fm51BlBhl09T6luO3Ph65KqE?=
+ =?us-ascii?Q?57JpWZ3xxp9Bcj5txbG/l6CAC8WgEgzeu9B0KNSqTHqP/fbSOReqdlR/ZPUW?=
+ =?us-ascii?Q?vA=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0: 	=?us-ascii?Q?ynL1LT2h30mNXy3xHndWdX/TvQkQsT2SpZzg5u7nUUggVeWeZxTkCRS1uGlR?=
+ =?us-ascii?Q?nx2r5HaFdJb4dcajrKjXSlSqeXRFqaPkkGJ2MX9L5aw+UsgquGGVyf6ctb51?=
+ =?us-ascii?Q?HrDiNp7SaomN9I2VCPmZ6dT3L0TgHdyuqwxEf7SviuxXzU4pwBSIiMc4Z9tE?=
+ =?us-ascii?Q?s8SxgcQhrHrtnrcGbhvx6eMJWW+r1dc3C+7pr8yX2x9Xin1fnPybWxms9dx8?=
+ =?us-ascii?Q?Wt18KAUxPM5Gi50alB6/qtJRt/X+znRJffoqFYIva5WiBaRs9u9sAJcoOATz?=
+ =?us-ascii?Q?IZztzrBtM8koNbYq2LqEinALJQPQIMFh3Fd84Q224SFJTQ9XnQgrIbqoJ/77?=
+ =?us-ascii?Q?7XmYk558kiM3SsUhZcjfrYR+iFxqq+EHaHyUDxxfKAnZBZG4pCXnS+k67q6E?=
+ =?us-ascii?Q?SBUohaoW/Dwhc/Myl+L58eUFHAKx/JN0YRpURnDdQlplvzwjSkhsm0G/3cnB?=
+ =?us-ascii?Q?4vw7huwZ5CQ5LjF0eSvuOb/EprH+NpuBOu1HxtjoTrbWAgx3EIyOIX+dFA0o?=
+ =?us-ascii?Q?q0NhP9uHLvZBImDUZGKT/iTIC1R5177yVtVvG0vyMDPRnPJzFnsY2NHsX1gU?=
+ =?us-ascii?Q?r6m78cRxbyp2BuF9BPWN0ubg2hzoCzEHEM97ZNXU/jDj8gJH9CBvoDz/pNLY?=
+ =?us-ascii?Q?KpX3PhdJLEEdLk1aEBnhyoZ2W9I571LzfSNf1mKpkEq0yVS/YmoIDxj/Dogs?=
+ =?us-ascii?Q?wTemqlgjgl5SYXXbw3pYyxAvQYmWK64I8wt72D59Aip29Ut3zH59j4zaZwZz?=
+ =?us-ascii?Q?0PAe3WAK2n7LSJdpELRr1TBRTDMST4mmYa0rdkrWaxfjGRfmpHyGudavfaJr?=
+ =?us-ascii?Q?1y7Nf8nnPVriy2qG6WUZSBLbIAepZ+tu4MjhS7z7wXCf4v8+F/tLDNBRyr3H?=
+ =?us-ascii?Q?BL9AtBj5zzqdOxPG4l1bA/mk+P5/e3QeuW19BbrUmNJb1bvhnUqorbDVJg5Q?=
+ =?us-ascii?Q?SuZ9p6svaotTWpR8UH8ozVbbq2T9FDnkQM4xw9sV9JbEPkkHX6kvagr+ZWdY?=
+ =?us-ascii?Q?Xa7/RTFlygNxS3D7FsF5ivaA4SHB8Q8WukV4pGxuYUdH1+4QEbCJR3AQ62Q7?=
+ =?us-ascii?Q?ZOw0egh4Mpn7EOGrWfXcmVm/BGj1ktxWVq0dmU+VjMX0I1Xqh5ltPOf2V9ZO?=
+ =?us-ascii?Q?JzAsIKqTkFw0N0q6bzMNcGj9UA+xVdZrNdlTPi4AgrqgpNT1ESB8UJUxgCTa?=
+ =?us-ascii?Q?mMY38RSb4x0Le0zLzbcCcU0juGjET0HFmA5qYEXO+6GHLINnSCpwFgtatqq4?=
+ =?us-ascii?Q?sNpLGLLOm4eclGwj6d3im8zey9QxD4/D9qPwClybjjhnmEA8DJZTqhI+YTXp?=
+ =?us-ascii?Q?AmZWBj6+3QB4onACsfSgiYzQb6IPtSkumS2/E5crCG2L1HJdS1JoHtSJnvR8?=
+ =?us-ascii?Q?a0V+srVQwi3ykhgKTTZU0HUgi1lnOlGgvTg5GyD+nf0mzumK29ILXZ9v7B3I?=
+ =?us-ascii?Q?dDuFThhKYlKjJgU3d+BC4coYOcfERM4TTxoXDpJv86sykJjiIm2W6U+gpDXn?=
+ =?us-ascii?Q?x2mMiFfswaD6iZ0+nmmfeKU0j+6xONQVmib7?=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8c5c1bdf-8826-4e51-a397-08dafb08f68d
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR10MB3022.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Jan 2023 17:08:34.3946
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: dQZXM//pXjgDcHWrgZYGRzqLZ/+UCybXd/TW/Jcwh8lehOWQCuuLX3uiIuPyI/Ib/9AjaFDq/puVeMX3W734iA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR10MB6005
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-01-20_09,2023-01-20_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 bulkscore=0 suspectscore=0
+ spamscore=0 malwarescore=0 mlxscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2301200164
+X-Proofpoint-GUID: UG1YrPNHsYVTSLOF9E4iOvTDWHilwB-8
+X-Proofpoint-ORIG-GUID: UG1YrPNHsYVTSLOF9E4iOvTDWHilwB-8
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,82 +207,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, soc@kernel.org, Pavel Machek <pavel@ucw.cz>, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, Michal Hocko <mhocko@suse.com>, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, gurua@google.com, laurent.dufour@fr.ibm.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, Suren Baghdasaryan <surenb@google.com>, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, 
+ mgorman@techsingularity.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 26, 2022, at 13:36, Pali Roh=C3=A1r wrote:
-> Linus Walleij suggested me to send these patches to SoC tree [1]
-> instead. So I'm doing it.
->
-> This patch series contains LED patches which are on the linux-leds
-> mailing list for a long time without any future movement. Could you
-> please handle them here via SoC tree? Thanks.
->
-> [1] -=20
-> https://lore.kernel.org/linux-leds/CACRpkdad6WDo7rGfa4MW8zz0mLXmcPHo+S=
-EC-yLQnRz_kdrryA@mail.gmail.com/
+* Matthew Wilcox <willy@infradead.org> [230120 11:50]:
+> On Fri, Jan 20, 2023 at 08:45:21AM -0800, Suren Baghdasaryan wrote:
+> > On Fri, Jan 20, 2023 at 8:20 AM Suren Baghdasaryan <surenb@google.com> wrote:
+> > >
+> > > On Fri, Jan 20, 2023 at 12:52 AM Michal Hocko <mhocko@suse.com> wrote:
+> > > >
+> > > > On Thu 19-01-23 10:52:03, Suren Baghdasaryan wrote:
+> > > > > On Thu, Jan 19, 2023 at 4:59 AM Michal Hocko <mhocko@suse.com> wrote:
+> > > > > >
+> > > > > > On Mon 09-01-23 12:53:34, Suren Baghdasaryan wrote:
+> > > > > > > call_rcu() can take a long time when callback offloading is enabled.
+> > > > > > > Its use in the vm_area_free can cause regressions in the exit path when
+> > > > > > > multiple VMAs are being freed. To minimize that impact, place VMAs into
+> > > > > > > a list and free them in groups using one call_rcu() call per group.
+> > > > > >
+> > > > > > After some more clarification I can understand how call_rcu might not be
+> > > > > > super happy about thousands of callbacks to be invoked and I do agree
+> > > > > > that this is not really optimal.
+> > > > > >
+> > > > > > On the other hand I do not like this solution much either.
+> > > > > > VM_AREA_FREE_LIST_MAX is arbitrary and it won't really help all that
+> > > > > > much with processes with a huge number of vmas either. It would still be
+> > > > > > in housands of callbacks to be scheduled without a good reason.
+> > > > > >
+> > > > > > Instead, are there any other cases than remove_vma that need this
+> > > > > > batching? We could easily just link all the vmas into linked list and
+> > > > > > use a single call_rcu instead, no? This would both simplify the
+> > > > > > implementation, remove the scaling issue as well and we do not have to
+> > > > > > argue whether VM_AREA_FREE_LIST_MAX should be epsilon or epsilon + 1.
+> > > > >
+> > > > > Yes, I agree the solution is not stellar. I wanted something simple
+> > > > > but this is probably too simple. OTOH keeping all dead vm_area_structs
+> > > > > on the list without hooking up a shrinker (additional complexity) does
+> > > > > not sound too appealing either.
+> > > >
+> > > > I suspect you have missed my idea. I do not really want to keep the list
+> > > > around or any shrinker. It is dead simple. Collect all vmas in
+> > > > remove_vma and then call_rcu the whole list at once after the whole list
+> > > > (be it from exit_mmap or remove_mt). See?
+> > >
+> > > Yes, I understood your idea but keeping dead objects until the process
+> > > exits even when the system is low on memory (no shrinkers attached)
+> > > seems too wasteful. If we do this I would advocate for attaching a
+> > > shrinker.
+> > 
+> > Maybe even simpler, since we are hit with this VMA freeing flood
+> > during exit_mmap (when all VMAs are destroyed), we pass a hint to
+> > vm_area_free to batch the destruction and all other cases call
+> > call_rcu()? I don't think there will be other cases of VMA destruction
+> > floods.
+> 
+> ... or have two different call_rcu functions; one for munmap() and
+> one for exit.  It'd be nice to use kmem_cache_free_bulk().
 
-I'm going through the backlog of patches sent to soc@kernel.org
-and came across this series. While I don't mind taking these
-patches through the soc tree in principle, it is important
-that this is only done as an exception, and with all the
-relevant parties on Cc.
+Do we even need a call_rcu on exit?  At the point of freeing the VMAs we
+have set the MMF_OOM_SKIP bit and unmapped the vmas under the read lock.
+Once we have obtained the write lock again, I think it's safe to say we
+can just go ahead and free the VMAs directly.
 
-In particular, the original series that you got no
-feedback for did not include the arch/powerpc/ changes,
-and I would assume those should go through the powerpc
-tree anyway. We have recently decided to take
-risc-v and loongarch dts changes through the soc
-tree, and I don't mind doing it for powerpc as well
-if the powerpc maintainers prefer that, but this is
-not something we have even discussed so far.
-
-I've added everyone to Cc on this mail, but please
-resend the series once more so everyone has the patches,
-and then we can decide who will pick up what.
-
-    Arnd
-
->
-> Marek Beh=C3=BAn (3):
->   leds: turris-omnia: support HW controlled mode via private trigger
->   leds: turris-omnia: initialize multi-intensity to full
->   leds: turris-omnia: change max brightness from 255 to 1
->
-> Pali Roh=C3=A1r (5):
->   dt-bindings: leds: register-bit-led: Add active-low property
->   leds: syscon: Implement support for active-low property
->   powerpc/85xx: DTS: Add CPLD definitions for P1021RDB Combo Board CPL
->     Design
->   dt-bindings: leds: Add cznic,turris1x-leds.yaml binding
->   leds: Add support for Turris 1.x LEDs
->
->  .../testing/sysfs-class-led-driver-turris1x   |  31 ++
->  .../bindings/leds/cznic,turris1x-leds.yaml    | 118 +++++
->  .../bindings/leds/register-bit-led.yaml       |   5 +
->  arch/powerpc/boot/dts/fsl/p1020mbg-pc.dtsi    |  92 ++++
->  arch/powerpc/boot/dts/fsl/p1020mbg-pc_32b.dts |   6 +-
->  arch/powerpc/boot/dts/fsl/p1020mbg-pc_36b.dts |   6 +-
->  arch/powerpc/boot/dts/fsl/p1020rdb-pd.dts     |  44 +-
->  arch/powerpc/boot/dts/fsl/p1020utm-pc.dtsi    |  37 ++
->  arch/powerpc/boot/dts/fsl/p1020utm-pc_32b.dts |   4 +-
->  arch/powerpc/boot/dts/fsl/p1020utm-pc_36b.dts |   4 +-
->  arch/powerpc/boot/dts/fsl/p1021rdb-pc.dtsi    |  37 ++
->  arch/powerpc/boot/dts/fsl/p1021rdb-pc_32b.dts |   5 +-
->  arch/powerpc/boot/dts/fsl/p1021rdb-pc_36b.dts |   5 +-
->  arch/powerpc/boot/dts/fsl/p2020rdb-pc.dtsi    |  33 +-
->  drivers/leds/Kconfig                          |  10 +
->  drivers/leds/Makefile                         |   1 +
->  drivers/leds/leds-syscon.c                    |  14 +-
->  drivers/leds/leds-turris-1x.c                 | 474 ++++++++++++++++++
->  drivers/leds/leds-turris-omnia.c              |  46 +-
->  19 files changed, 945 insertions(+), 27 deletions(-)
->  create mode 100644=20
-> Documentation/ABI/testing/sysfs-class-led-driver-turris1x
->  create mode 100644=20
-> Documentation/devicetree/bindings/leds/cznic,turris1x-leds.yaml
->  create mode 100644 drivers/leds/leds-turris-1x.c
->
-> --=20
-> 2.20.1
