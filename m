@@ -4,85 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D3EAC25B50
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 07:44:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4D31C25B4E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 07:45:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nys2s2KkFz3fKQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 18:44:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Nys3t1qlPz3fMb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 18:45:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f58/WxHh;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cX7bhehL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=f58/WxHh;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cX7bhehL;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nys1q5qNfz3fBL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nys1r0htfz3fCy
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 18:43:43 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30K7FUgP019165;
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30K6U1NM017522;
 	Fri, 20 Jan 2023 07:43:37 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=lSXMUCav8MSPGkLiWLMSzecOSZJGO0arD0Dqac9w8p4=;
- b=f58/WxHh8H2YX4DNsUhJNaunkkw8o0BSd7VqdipHelW1AYBKQoVB3ASYziCcvZhwVxBv
- //ix6+ljO3ii5fQOcUrl+vUWvKm00rjc24ADrXIhiKovWfJ4jNg+ZukTPxqkjtXje2Qv
- UTy08OclSYI74unocAgK+TRl0XkwW9tAp0Q/KcjN/+gZFWfe36fsJ/q64JTzlp5HoiBG
- KZfirNbpwmnd6FZKC2ircA0tv+LRjot30c0fukPi7EOL7yn+rf6RD3LP/3tH2A6kujaC
- dvi2HuxRA6ZtPVPPVbrSGKrj5gcQbAD2IyO0HTeLAjZCFH8p7rdyzNItGnXfn8PQXNID xA== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n7pdkrhud-1
+ bh=grILWy5I/lURrLpjLU3fbP0cTkagwaubXu7uz24+NCo=;
+ b=cX7bhehLLUc2EsyMGPjP65vHV0sTOQiekZ7X2JfMo3qJs2Geu6+riy3bCh7j2gqs4ojq
+ 9uk1VRqhcBMvPjeNtI6AoXl6SbdNyLTcy6v1mlR5mM9UeMJ8ZC1nDuKH3cvU+o05/pcB
+ wWs4t268MQcAhieEjzCEiuFX8QQ95ldtCG8e1rVfuMNCpIHbtH6M5nptMwZmmzsmVIvk
+ ggOnr28oa7/TsRwcT5QxSdcULSKH+WKnLoLMyt9IHiTDZsMwoeIx9wUB9C1r1MKuWzdD
+ Y8RSMK/Eciw9+jFTVqa5tZDCQj8Psx1J8U76krbiLgcMRsr1h7oNIWFgCGFtg2jP1ozQ DA== 
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3n7nr9hec6-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 20 Jan 2023 07:43:36 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30JJTZqO009485;
+	Fri, 20 Jan 2023 07:43:37 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30JN7s6u006911;
 	Fri, 20 Jan 2023 07:43:34 GMT
 Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3n3knfqpaf-1
+	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3n3m16njxb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 20 Jan 2023 07:43:34 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30K7hWRt43975050
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30K7hWUi42664202
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Fri, 20 Jan 2023 07:43:32 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6291B20043;
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 62B8B2004B;
 	Fri, 20 Jan 2023 07:43:32 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DB1D220040;
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DAB9420043;
 	Fri, 20 Jan 2023 07:43:31 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Fri, 20 Jan 2023 07:43:31 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BAED5605B2;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AF984605A6;
 	Fri, 20 Jan 2023 18:43:29 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v4 04/24] powerpc/secvar: Warn and error if multiple secvar ops are set
-Date: Fri, 20 Jan 2023 18:42:46 +1100
-Message-Id: <20230120074306.1326298-5-ajd@linux.ibm.com>
+Subject: [PATCH v4 02/24] powerpc/pseries: Fix alignment of PLPKS structures and buffers
+Date: Fri, 20 Jan 2023 18:42:44 +1100
+Message-Id: <20230120074306.1326298-3-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <20230120074306.1326298-1-ajd@linux.ibm.com>
 References: <20230120074306.1326298-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: xJvEDN_3WgwwuJUkTmiwj8OVPm1ZHYtW
-X-Proofpoint-ORIG-GUID: xJvEDN_3WgwwuJUkTmiwj8OVPm1ZHYtW
+X-Proofpoint-ORIG-GUID: RiAFX32W7Ai_p8cphOkPG0zBkvP5Fs4e
+X-Proofpoint-GUID: RiAFX32W7Ai_p8cphOkPG0zBkvP5Fs4e
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-20_04,2023-01-19_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 mlxlogscore=999
- bulkscore=0 suspectscore=0 malwarescore=0 priorityscore=1501 spamscore=0
- impostorscore=0 clxscore=1011 adultscore=0 phishscore=0 lowpriorityscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2301200070
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 spamscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 adultscore=0
+ lowpriorityscore=0 mlxlogscore=999 mlxscore=0 clxscore=1015 suspectscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301200070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,81 +98,71 @@ Cc: sudhakar@linux.ibm.com, bgray@linux.ibm.com, erichte@linux.ibm.com, gregkh@l
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Russell Currey <ruscur@russell.cc>
+A number of structures and buffers passed to PKS hcalls have alignment
+requirements, which could on occasion cause problems:
 
-The secvar code only supports one consumer at a time.
+- Authorisation structures must be 16-byte aligned and must not cross a
+  page boundary
 
-Multiple consumers aren't possible at this point in time, but we'd want
-it to be obvious if it ever could happen.
+- Label structures must not cross page boundaries
 
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
+- Password output buffers must not cross page boundaries
+
+Round up the allocations of these structures/buffers to the next power of
+2 to make sure this happens.
+
+Reported-by: Benjamin Gray <bgray@linux.ibm.com>
+Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Reviewed-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 
 ---
 
-v4: Return an error and don't actually try to set secvar_operations if the
-    warning is triggered (npiggin)
----
- arch/powerpc/include/asm/secvar.h            | 4 ++--
- arch/powerpc/kernel/secvar-ops.c             | 8 ++++++--
- arch/powerpc/platforms/powernv/opal-secvar.c | 4 +---
- 3 files changed, 9 insertions(+), 7 deletions(-)
+v3: Merge plpks fixes and signed update series with secvar series
 
-diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
-index 07ba36f868a7..4ce3f12c5613 100644
---- a/arch/powerpc/include/asm/secvar.h
-+++ b/arch/powerpc/include/asm/secvar.h
-@@ -21,11 +21,11 @@ struct secvar_operations {
+v4: Fix typo in commit message
+
+    Move up in series (npiggin)
+---
+ arch/powerpc/platforms/pseries/plpks.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
+index 9e85b6d85b0b..a01cf2ff140a 100644
+--- a/arch/powerpc/platforms/pseries/plpks.c
++++ b/arch/powerpc/platforms/pseries/plpks.c
+@@ -126,7 +126,8 @@ static int plpks_gen_password(void)
+ 	u8 *password, consumer = PKS_OS_OWNER;
+ 	int rc;
  
- #ifdef CONFIG_PPC_SECURE_BOOT
+-	password = kzalloc(maxpwsize, GFP_KERNEL);
++	// The password must not cross a page boundary, so we align to the next power of 2
++	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
+ 	if (!password)
+ 		return -ENOMEM;
  
--extern void set_secvar_ops(const struct secvar_operations *ops);
-+extern int set_secvar_ops(const struct secvar_operations *ops);
+@@ -162,7 +163,9 @@ static struct plpks_auth *construct_auth(u8 consumer)
+ 	if (consumer > PKS_OS_OWNER)
+ 		return ERR_PTR(-EINVAL);
  
- #else
+-	auth = kzalloc(struct_size(auth, password, maxpwsize), GFP_KERNEL);
++	// The auth structure must not cross a page boundary and must be
++	// 16 byte aligned. We align to the next largest power of 2
++	auth = kzalloc(roundup_pow_of_two(struct_size(auth, password, maxpwsize)), GFP_KERNEL);
+ 	if (!auth)
+ 		return ERR_PTR(-ENOMEM);
  
--static inline void set_secvar_ops(const struct secvar_operations *ops) { }
-+static inline int set_secvar_ops(const struct secvar_operations *ops) { return 0; }
+@@ -196,7 +199,8 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
+ 	if (component && slen > sizeof(label->attr.prefix))
+ 		return ERR_PTR(-EINVAL);
  
- #endif
+-	label = kzalloc(sizeof(*label), GFP_KERNEL);
++	// The label structure must not cross a page boundary, so we align to the next power of 2
++	label = kzalloc(roundup_pow_of_two(sizeof(*label)), GFP_KERNEL);
+ 	if (!label)
+ 		return ERR_PTR(-ENOMEM);
  
-diff --git a/arch/powerpc/kernel/secvar-ops.c b/arch/powerpc/kernel/secvar-ops.c
-index 6a29777d6a2d..9c8dd4e7c270 100644
---- a/arch/powerpc/kernel/secvar-ops.c
-+++ b/arch/powerpc/kernel/secvar-ops.c
-@@ -8,10 +8,14 @@
- 
- #include <linux/cache.h>
- #include <asm/secvar.h>
-+#include <asm/bug.h>
- 
--const struct secvar_operations *secvar_ops __ro_after_init;
-+const struct secvar_operations *secvar_ops __ro_after_init = NULL;
- 
--void set_secvar_ops(const struct secvar_operations *ops)
-+int set_secvar_ops(const struct secvar_operations *ops)
- {
-+	if (WARN_ON_ONCE(secvar_ops))
-+		return -1;
- 	secvar_ops = ops;
-+	return 0;
- }
-diff --git a/arch/powerpc/platforms/powernv/opal-secvar.c b/arch/powerpc/platforms/powernv/opal-secvar.c
-index ef89861569e0..4c0a3b030fe0 100644
---- a/arch/powerpc/platforms/powernv/opal-secvar.c
-+++ b/arch/powerpc/platforms/powernv/opal-secvar.c
-@@ -113,9 +113,7 @@ static int opal_secvar_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	set_secvar_ops(&opal_secvar_ops);
--
--	return 0;
-+	return set_secvar_ops(&opal_secvar_ops);
- }
- 
- static const struct of_device_id opal_secvar_match[] = {
 -- 
 2.39.0
 
