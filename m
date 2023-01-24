@@ -4,55 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D678C25B50
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 03:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4535BC05027
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 03:17:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P1Bp469cxz3fYt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 14:11:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.47; helo=mail-ot1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f47.google.com (mail-ot1-f47.google.com [209.85.210.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P1Bx06S4dz3cCk
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 14:17:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=irnAgSyk;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=irnAgSyk;
+	dkim-atps=neutral
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1Bfy5KHPz3c9T;
-	Tue, 24 Jan 2023 14:05:30 +1100 (AEDT)
-Received: by mail-ot1-f47.google.com with SMTP id a1-20020a056830008100b006864df3b1f8so8497293oto.3;
-        Mon, 23 Jan 2023 19:05:30 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1Bvw54bPz2yHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2023 14:16:43 +1100 (AEDT)
+Received: by mail-pj1-x1036.google.com with SMTP id x2-20020a17090a46c200b002295ca9855aso17217997pjg.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2023 19:16:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bGZG93eiXRk22TOPDmFZGXGIOl8nFjO4bOBcCBu5uW8=;
+        b=irnAgSykIWbmg9WdpxuRyMCuC9r6EUakDFGK2nhjUH6ns5CB7glOvHSr+w8WdAmM74
+         d4VSceT9xSlPEdFgWxtfyT4x81AG5eDXp8YSQSRMxmMvd+0gHAWp9hwb3v6K2I6O8LHx
+         +xS/v2NL+vLtzBZaF7XFRPnR598DoWxZIRk95P8lWODo91fsUYHmTkuEnx+mbpHZzRiX
+         RmFt/pZPihavSWUDUJvkUs2DVsuNAb7Ao7kog/4VqsKUo9i4zW/9NuCtEkr3W6gAJiIU
+         b226eHn4FvJCFMMMySsSGi6Enl3ZscnElE1NS9TjLXundxfkTXoNQsKAzsitrOMN6Q00
+         +e4g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=l/w7cp6YVGNbkVTPnnS6fPAfMJMQm9O9TtAZyHYNnBw=;
-        b=tkh73S6szkffFrzKhDtdtuSfSgfp7To2mRcjcx99WlwO9yNWO7CZ7p3ViB6oVyfuO/
-         ko2/wwia/mGAALji6oZUky06izeN+vc0t7N8zoJHNjZtI3mbQ+6+qDrEjhvLGYxecuaA
-         3R08ev9JCT1Uhnn4hqmFnNJv8dmh3e7J5DitQ0Ljrt+kWyDIMpny7mA4mnP410eRlzpu
-         SsCui61Gl6njva3AV7ZG+Uwc9BaYPF+7jsz/OndVd29Pt1ZrjEJsQauTGyfVQV+Ib7Hs
-         W63mV43pcYyRVBup9Q9zCEZidYghwm+Jl9Ti8f2dzUcMuCBYrzzYHqgrYbwsjKfat6Te
-         nvJw==
-X-Gm-Message-State: AFqh2kq/wu+3TST2FiJtIf6zRjlFBzTHXt96dsej3GIODmp8Br+pUG4O
-	foAszG/ehAX6aaA+Pp2FJopO/cY/sg==
-X-Google-Smtp-Source: AMrXdXvQH0sqj/L9JBEQUzQ6OMqA602/d6xDzeDJd2iqRHh2295yqrVgSM/VJdjsM0K9Fx0dwIY4/A==
-X-Received: by 2002:a05:6830:670a:b0:684:e1cb:df87 with SMTP id cr10-20020a056830670a00b00684e1cbdf87mr15320609otb.8.1674529528074;
-        Mon, 23 Jan 2023 19:05:28 -0800 (PST)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id cr11-20020a056830670b00b00661a3f4113bsm419338otb.64.2023.01.23.19.05.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Jan 2023 19:05:27 -0800 (PST)
-Received: (nullmailer pid 3266346 invoked by uid 1000);
-	Tue, 24 Jan 2023 03:05:20 -0000
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 23 Jan 2023 21:05:18 -0600
-Subject: [PATCH v3 4/5] dt-bindings: usb: Convert Marvell Orion EHCI to DT
- schema
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230110-dt-usb-v3-4-5af0541fcf8c@kernel.org>
-References: <20230110-dt-usb-v3-0-5af0541fcf8c@kernel.org>
-In-Reply-To: <20230110-dt-usb-v3-0-5af0541fcf8c@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Lee Jones <lee@kernel.org>
-X-Mailer: b4 0.12-dev
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=bGZG93eiXRk22TOPDmFZGXGIOl8nFjO4bOBcCBu5uW8=;
+        b=itomIh45w8DSd+ouTqQrSpwoyjnZrFLK33mAAqNOa6o8fnnKE2vK/JrmmpHwgujfC5
+         4rhhiO4zcFaMFTshPvMW6F1s9sUs92i75STNhwdPNHIAWLkBGdyMH1RxQWF6wvBPNSNw
+         fPiqU/7tqVjeYKDousqiRNGXOvdAe59l2Ay3FFr3cXFk3BWR4cCFa0EyoqESOC8uzYxp
+         g1webH70m/plChJw75eD6o4zaPPDkNHNCMMP0E+UDwE5lxFY/MgBD6DB+5vn/owkO3O8
+         +KYHPHkRCuI9GO76b6HGLLiEaNC9SeR9EnLcsBTYRzxF+1qWxSkNkDgksdomQXaC11sj
+         iRvg==
+X-Gm-Message-State: AFqh2kpaIp72XpoRtdj9urWUxuVfjZSwJCkgQqVwLkedkp0RBXmknDd3
+	ncfa7KLts41RZMnTjrxz9jI=
+X-Google-Smtp-Source: AMrXdXskD2W7zrNiaiZ6X+Pl5+Tp/VgiW0zZf5Jhb6BD28XXzBRcQy84AtLhiISjIw0wPIJMdQLWJA==
+X-Received: by 2002:a05:6a21:9101:b0:ad:db18:6d0d with SMTP id tn1-20020a056a21910100b000addb186d0dmr27460888pzb.59.1674530200792;
+        Mon, 23 Jan 2023 19:16:40 -0800 (PST)
+Received: from localhost (121-44-64-35.tpgi.com.au. [121.44.64.35])
+        by smtp.gmail.com with ESMTPSA id p5-20020a170903248500b00189a50d2a3esm419719plw.241.2023.01.23.19.16.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 23 Jan 2023 19:16:39 -0800 (PST)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 24 Jan 2023 13:16:34 +1000
+Message-Id: <CQ03EVK32Y3F.3QPL2RUNVGILM@bobo>
+Subject: Re: [PATCH v6 3/5] lazy tlb: shoot lazies, non-refcounting lazy tlb
+ mm reference handling scheme
+From: "Nicholas Piggin" <npiggin@gmail.com>
+To: "Nadav Amit" <nadav.amit@gmail.com>
+X-Mailer: aerc 0.13.0
+References: <20230118080011.2258375-1-npiggin@gmail.com>
+ <20230118080011.2258375-4-npiggin@gmail.com>
+ <5F3590B8-3F25-4EFB-BE3A-D32AAAC0B2F4@gmail.com>
+ <CPVVOWQ6SE2S.NQ3R9R77MFKI@bobo>
+ <e8fac6e0-487f-37c3-5be4-19518ffa845e@gmail.com>
+In-Reply-To: <e8fac6e0-487f-37c3-5be4-19518ffa845e@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,61 +84,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch <linux-arch@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-mm <linux-mm@kvack.org>, Andy Lutomirski <luto@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Marvell Orion EHCI binding is just some compatible strings, so add it
-to the generic-ehci.yaml schema.
+On Mon Jan 23, 2023 at 6:16 PM AEST, Nadav Amit wrote:
+>
+>
+> On 1/19/23 6:22 AM, Nicholas Piggin wrote:
+> > On Thu Jan 19, 2023 at 8:22 AM AEST, Nadav Amit wrote:
+> >>
+> >>
+> >>> On Jan 18, 2023, at 12:00 AM, Nicholas Piggin <npiggin@gmail.com> wro=
+te:
+> >>>
+> >>> +static void do_shoot_lazy_tlb(void *arg)
+> >>> +{
+> >>> +	struct mm_struct *mm =3D arg;
+> >>> +
+> >>> + 	if (current->active_mm =3D=3D mm) {
+> >>> + 		WARN_ON_ONCE(current->mm);
+> >>> + 		current->active_mm =3D &init_mm;
+> >>> + 		switch_mm(mm, &init_mm, current);
+> >>> + 	}
+> >>> +}
+> >>
+> >> I might be out of touch - doesn=E2=80=99t a flush already take place w=
+hen we free
+> >> the page-tables, at least on common cases on x86?
+> >>
+> >> IIUC exit_mmap() would free page-tables, and whenever page-tables are
+> >> freed, on x86, we do shootdown regardless to whether the target CPU TL=
+B state
+> >> marks is_lazy. Then, flush_tlb_func() should call switch_mm_irqs_off()=
+ and
+> >> everything should be fine, no?
+> >>
+> >> [ I understand you care about powerpc, just wondering on the effect on=
+ x86 ]
+> >=20
+> > Now I come to think of it, Rik had done this for x86 a while back.
+> >=20
+> > https://lore.kernel.org/all/20180728215357.3249-10-riel@surriel.com/
+> >=20
+> > I didn't know about it when I wrote this, so I never dug into why it
+> > didn't get merged. It might have missed the final __mmdrop races but
+> > I'm not not sure, x86 lazy tlb mode is too complicated to know at a
+> > glance. I would check with him though.
+>
+> My point was that naturally (i.e., as done today), when exit_mmap() is=20
+> done, you release the page tables (not just the pages). On x86 it means=
+=20
+> that you also send shootdown IPI to all the *lazy* CPUs to perform a=20
+> flush, so they would exit the lazy mode.
+>
+> [ this should be true for 99% of the cases, excluding cases where there
+>    were not page-tables, for instance ]
+>
+> So the patch of Rik, I think, does not help in the common cases,=20
+> although it may perhaps make implicit actions more explicit in the code.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- .../devicetree/bindings/usb/ehci-orion.txt         | 22 ----------------------
- .../devicetree/bindings/usb/generic-ehci.yaml      |  2 ++
- 2 files changed, 2 insertions(+), 22 deletions(-)
+If that's what it does, then sure. IIRC x86 didn't used to work that way
+long ago, but you would know what it does today. You might find it
+doesn't need much arch change to work. OTOH Andy has major problems with
+active_mm and some other x86 use-after-free weirdness that that I wasn't
+able to comprehend. He'll be naking x86 implementation until that's all
+cleaned up so better try to understand what's going on with that first.
 
-diff --git a/Documentation/devicetree/bindings/usb/ehci-orion.txt b/Documentation/devicetree/bindings/usb/ehci-orion.txt
-deleted file mode 100644
-index 2855bae79fda..000000000000
---- a/Documentation/devicetree/bindings/usb/ehci-orion.txt
-+++ /dev/null
-@@ -1,22 +0,0 @@
--* EHCI controller, Orion Marvell variants
--
--Required properties:
--- compatible: must be one of the following
--	"marvell,orion-ehci"
--	"marvell,armada-3700-ehci"
--- reg: physical base address of the controller and length of memory mapped
--  region.
--- interrupts: The EHCI interrupt
--
--Optional properties:
--- clocks: reference to the clock
--- phys: reference to the USB PHY
--- phy-names: name of the USB PHY, should be "usb"
--
--Example:
--
--	ehci@50000 {
--		compatible = "marvell,orion-ehci";
--		reg = <0x50000 0x1000>;
--		interrupts = <19>;
--	};
-diff --git a/Documentation/devicetree/bindings/usb/generic-ehci.yaml b/Documentation/devicetree/bindings/usb/generic-ehci.yaml
-index 2d382ae424da..ebbb01b39a92 100644
---- a/Documentation/devicetree/bindings/usb/generic-ehci.yaml
-+++ b/Documentation/devicetree/bindings/usb/generic-ehci.yaml
-@@ -74,6 +74,8 @@ properties:
-           - const: usb-ehci
-       - enum:
-           - generic-ehci
-+          - marvell,armada-3700-ehci
-+          - marvell,orion-ehci
-           - ti,ehci-omap
-           - usb-ehci
- 
-
--- 
-2.39.0
-
+Thanks,
+Nick
