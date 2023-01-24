@@ -4,70 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C78BC05027
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 02:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CE4EC05027
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 03:05:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P1B1d0XRRz3cFW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 13:36:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=DljXljeH;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.dk (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=DljXljeH;
-	dkim-atps=neutral
-Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P1BgS2WSmz3cgV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 14:05:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.180; helo=mail-oi1-f180.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f180.google.com (mail-oi1-f180.google.com [209.85.167.180])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1B0Y1MSBz2xxn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2023 13:35:38 +1100 (AEDT)
-Received: by mail-pj1-x1033.google.com with SMTP id e10-20020a17090a630a00b0022bedd66e6dso571654pjj.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jan 2023 18:35:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20210112.gappssmtp.com; s=20210112;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=yFFdm/8SdflDgDT7EHL5t8PZiOZhtttydMh8UNhprb4=;
-        b=DljXljeHIhfa+59LOJ4hAD3ygoSHfdrZaGVnay69zUOXkdfICsXb4cgMhpwqNnjhCG
-         y9vC1K1TNs5HTGrMEx1Cdz41tV19YBCyRFuHZmFTKWZIWZa8hFZgoW6IroqQfVGp34Do
-         3PAiAhFcA8bXF7E/efxSdwBUE6f/rOMUIqF6Oqe/eJ01aHJbnsIxCIQmeTSSgoaYrvUa
-         gawICKGlxeAO2geNu5dXDu9H6E4XXAveeayTuxr3dTuSlzUaB5Wd5+Jp482gguDAk5lz
-         kidzECHxOj7x93qv4z6iRRdC/EjV9aX6qjrSgw2LBrUul8iAv0kvUy1HLs64r/0VWJF1
-         J7/A==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1Bft3MPmz30hl;
+	Tue, 24 Jan 2023 14:05:24 +1100 (AEDT)
+Received: by mail-oi1-f180.google.com with SMTP id r205so12180154oib.9;
+        Mon, 23 Jan 2023 19:05:24 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:date:message-id:subject
-         :references:in-reply-to:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=yFFdm/8SdflDgDT7EHL5t8PZiOZhtttydMh8UNhprb4=;
-        b=WFh9tyqTJ2e6++w078GB3koXlj2yWWNFNzgPAWwZm1CGKQwQ59y9H+9BlVOYTRi5Pa
-         Ayy9Mrq4owi/C75edEE8zaf4VAGBR4OeklDC3V+oqYMOUHG6Af2qXXkY6wLvKgUG6ReE
-         D+2jKcnTBcI/u/hCFeygRbt3iv6+RaGsgvFU+nK9/zLSt16+6jcJVYwAGkIpyY1l93pr
-         yvObxbZB3y/WFfAEtCRC2+XhOSM333+OjrGnZagvIwHMQfx41GIiAVkTR2SNGhu4ys/e
-         G/MIOh1+VCDWSL5jr3ypp+b4Mi0lMqNAJ+7DYtg8iLumwVET2WbP4C1psOhMiQwQfzVi
-         //nA==
-X-Gm-Message-State: AFqh2kpIqL0FV+L5I1v4EaWwSKKuX9t9bvFqKwA/SYNpZfqWkuuMBvJz
-	p7TtRwfp6wQhrUgA1ocvjv0V1g==
-X-Google-Smtp-Source: AMrXdXtc20Q7yx6l6YE87GqKscKRmcgi78OC52SesuBzKXuKXRmKb26Xa1weIba0d1gATTGi5V9Jig==
-X-Received: by 2002:a17:902:7041:b0:194:5b98:4342 with SMTP id h1-20020a170902704100b001945b984342mr6614596plt.5.1674527734868;
-        Mon, 23 Jan 2023 18:35:34 -0800 (PST)
-Received: from [127.0.0.1] ([198.8.77.157])
-        by smtp.gmail.com with ESMTPSA id i15-20020a17090332cf00b0019460ac7c6asm376254plr.283.2023.01.23.18.35.34
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Xk4+Vm8v4wzLEgMP6WlX8JSzRYNU6eFU1QUEyNlFosI=;
+        b=nbctSJp5Ln7NrvG+wa99qIjfQnq5VLopYYBLHd5EeD6u9pzNf/rwDjrRcBiJP1QOWe
+         Mj4sjBpsq4f+rgS0H88+2dklPlzpByq9SnIWbJ4XiXttsE8F7QALqvxN0t164s4ry2zi
+         FmzEjmuv5tue8FtsbsqYfjTg6zG0yfCCum+CMiVA23hj3jfLziC7LY09N2VlIeYmCZYG
+         D5au6nj2BQoTDXeoFvLQkuWMvt73qV5evKo68/jg0fvTwhm/Kjv1fKhuvcTg+0+vLNFr
+         RPn+PMl95zO7tNgJOnUdnyMsO5gTpD+OQsP5z8677yu9/mT6Qp4onD5OW34F9jlrcEbd
+         8iEA==
+X-Gm-Message-State: AFqh2kqgTg9RNHtwRdP6QnT1xvrK1F7MxLNw0XoJzkgKAe3Or1KdTB4Z
+	ulbZI98URDE+0tp4Os6NTQ==
+X-Google-Smtp-Source: AMrXdXst3JoI2NBXuIrK65blr0cehJdMUewk4qoXF1Qd+FyS0toceDw915fLBXVpo2fyMR3DsMW4Hg==
+X-Received: by 2002:a05:6808:228a:b0:364:4eb7:e873 with SMTP id bo10-20020a056808228a00b003644eb7e873mr12078336oib.7.1674529521530;
+        Mon, 23 Jan 2023 19:05:21 -0800 (PST)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id bj19-20020a056808199300b0035b4b6d1bbfsm503702oib.28.2023.01.23.19.05.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 23 Jan 2023 18:35:34 -0800 (PST)
-From: Jens Axboe <axboe@kernel.dk>
-To: jim@jtan.com, geoff@infradead.org, Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20230123074718.57951-1-hch@lst.de>
-References: <20230123074718.57951-1-hch@lst.de>
-Subject: Re: [PATCH] ps3vram: remove bio splitting
-Message-Id: <167452773403.209579.6087653213240480442.b4-ty@kernel.dk>
-Date: Mon, 23 Jan 2023 19:35:34 -0700
+        Mon, 23 Jan 2023 19:05:21 -0800 (PST)
+Received: (nullmailer pid 3266337 invoked by uid 1000);
+	Tue, 24 Jan 2023 03:05:20 -0000
+From: Rob Herring <robh@kernel.org>
+Subject: [PATCH v3 0/5] dt-bindings: usb: Convert some more simple
+ OHCI/EHCI bindings
+Date: Mon, 23 Jan 2023 21:05:15 -0600
+Message-Id: <20230110-dt-usb-v3-0-5af0541fcf8c@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12.0
+X-B4-Tracking: v=1; b=H4sIAOtKz2MC/22NQQ7CIBREr9KwFsP/BFpdeQ/jAui3JTbUQEs0T
+ e8u7c7ocibz3iwsUfSU2LlaWKTskx9DCfJQMdeb0BH3bckMBUoBIHg78TlZDk7LulZoGmlZGVu
+ TiNtoguvLPMzDUMpnpLt/7fbrreTep2mM7/0sw9b+eDNwwRuSWpNErUBeHhQDDccxdmxzZPzPY
+ eFOqK0D1IIUfHHrun4Ally7aOoAAAA=
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Avi Fishman <avifishman70@gmail.com>, Tomer Maimon <tmaimon77@gmail.com>, Tali Perry <tali.perry1@gmail.com>, Patrick Venture <venture@google.com>, Nancy Yuen <yuenn@google.com>, Benjamin Fair <benjaminfair@google.com>, Lee Jones <lee@kernel.org>
+X-Mailer: b4 0.12-dev
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,27 +66,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, openbmc@lists.ozlabs.org, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The 'ohci-usb' compatible is another 'generic' compatible for OHCI, but 
+isn't documented with a schema. Let's add it to generic-ohci.yaml 
+schema. While looking at this, I found a few other USB host bindings 
+which are simple enough to use the 'generic' schemas.
 
-On Mon, 23 Jan 2023 08:47:18 +0100, Christoph Hellwig wrote:
-> ps3vram iterates over the bio one segment, that is page aligned and max
-> page sized chunk, a time.  Because of that there is no point in
-> calling bio_split_to_limits, or explicitly setting the default limits
-> that are only used by bio_split_to_limits.
-> 
-> 
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+Changes in v3:
+- Fix document references to generic-ehci.yaml and generic-ohci.yaml
+- Link to v2: https://lore.kernel.org/r/20230110-dt-usb-v2-0-926bc1260e51@kernel.org
 
-Applied, thanks!
+Changes in v2:
+- Fix schema error for 'transceiver'
+- Split OMAP changes to separate patch and convert omap-ehci
+- Link to v1: https://lore.kernel.org/r/20230110-dt-usb-v1-0-8e366e326513@kernel.org
 
-[1/1] ps3vram: remove bio splitting
-      commit: 2192a93eb4ac63eeb37ec5ec5cfa0db92ded5e3c
+---
+Rob Herring (5):
+      dt-bindings: usb: Remove obsolete brcm,bcm3384-usb.txt
+      dt-bindings: usb: Convert multiple "usb-ohci" bindings to DT schema
+      dt-bindings: usb: Convert OMAP OHCI/EHCI bindings to schema
+      dt-bindings: usb: Convert Marvell Orion EHCI to DT schema
+      dt-bindings: usb: Convert Nuvoton EHCI to DT schema
+
+ .../devicetree/bindings/mfd/omap-usb-host.txt      |  8 ++---
+ .../devicetree/bindings/powerpc/nintendo/wii.txt   | 10 -------
+ .../devicetree/bindings/usb/brcm,bcm3384-usb.txt   | 11 -------
+ .../devicetree/bindings/usb/ehci-omap.txt          | 31 -------------------
+ .../devicetree/bindings/usb/ehci-orion.txt         | 22 --------------
+ .../devicetree/bindings/usb/generic-ehci.yaml      |  5 ++++
+ .../devicetree/bindings/usb/generic-ohci.yaml      | 32 +++++++++++++++++---
+ .../devicetree/bindings/usb/npcm7xx-usb.txt        | 20 -------------
+ Documentation/devicetree/bindings/usb/ohci-nxp.txt | 24 ---------------
+ .../devicetree/bindings/usb/ohci-omap3.txt         | 15 ----------
+ Documentation/devicetree/bindings/usb/pxa-usb.txt  |  2 +-
+ .../devicetree/bindings/usb/spear-usb.txt          | 35 ----------------------
+ 12 files changed, 38 insertions(+), 177 deletions(-)
+---
+base-commit: 1b929c02afd37871d5afb9d498426f83432e71c2
+change-id: 20230110-dt-usb-1c637752a83b
 
 Best regards,
 -- 
-Jens Axboe
-
-
+Rob Herring <robh@kernel.org>
 
