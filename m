@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 022E9C25B50
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 11:07:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 95638C25B50
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 11:08:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P1PMZ4VHsz3fLG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 22:07:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P1PNc0k5dz3fKF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jan 2023 22:08:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=IGWN7qkm;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=l5c6s4ch;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=JHFn17GK;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=nfe1c8B3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=IGWN7qkm;
-	dkim=pass (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=l5c6s4ch;
+	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=JHFn17GK;
+	dkim=pass (2048-bit key) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=nfe1c8B3;
 	dkim-atps=neutral
 Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1PFL12f8z30CT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1PFL1s4Gz3c8b
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jan 2023 22:02:29 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
   t=1674558150; x=1706094150;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=UhEGKPQYZuc8JeUYJQypaDn3DGwfkkMbp6gpJXkidK4=;
-  b=IGWN7qkm9SeKQQ4CdLudD2c56iJNr+1fiXdgfB7ILLFDYl9UGlzSXHQj
-   abMZ0wgWqvIMAq+A6Cip1hW+RxIWjHhUtuZiGxmu5M7xRGHl9Bazi6z/A
-   z9anOICPNPoY5V+h+gPeQZoWTX7o8S78g5GflMmZVb9igqoEtEA8u76+T
-   l5TDTL3xnk5RazSQWUgo3F2ctcErDxVl4RfqMGzFUCq1zmyjxGZ8uuM4J
-   u14zP0+roMpcgfO4SboNuQaV59ymr7vwQzS5E8vePGCOHt0gMObCnGvFX
-   2/Hfs2F/BKplZ/YoBkDv3zMWhOsFfjN2sN/9I1AOfWjudclw+PP5PyoJm
-   w==;
+  bh=/Lfr/oH4GT9ZPy5cQIRAJOqX6mMsqobCIWK3XrP/hkY=;
+  b=JHFn17GKZnINg+eOWdRo5daP1FpVDyMn2LRuwBKW4Q/2mEqxUUeuVPPY
+   Pb6q2bKCphdC+qElwrUMHJZgQ107vRQLzplLM3xRSE29sUSBWomg0n8ak
+   G+7SwtfTw2oU86QLcRYTq4jexaC2gfLtAGSlSsRkmAJHhXi3WSPfKA94K
+   t13Mb91mWVtetJ6J0CPY+tKlXujEhZHKWo9afF3NYNa2Zsd/jqNLTr70O
+   hu+J7IgVgiIBGZqhQU86hFWndTfbwBG9lwN1q/cffJ0tvT9l7OXngF6zS
+   65QWPHpiPYD1lHllM6rdG8T1UxUWpkNVsZz1/NW5QkoBHLLp3OluBQoij
+   Q==;
 X-IronPort-AV: E=Sophos;i="5.97,242,1669071600"; 
-   d="scan'208";a="28616625"
+   d="scan'208";a="28616623"
 Received: from unknown (HELO tq-pgp-pr1.tq-net.de) ([192.168.6.15])
   by mx1-pgp.tq-group.com with ESMTP; 24 Jan 2023 12:02:18 +0100
 Received: from mx1.tq-group.com ([192.168.6.7])
@@ -50,23 +50,23 @@ DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   t=1674558138; x=1706094138;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=UhEGKPQYZuc8JeUYJQypaDn3DGwfkkMbp6gpJXkidK4=;
-  b=l5c6s4chmhCkC4xd3c7PYqgRsDrDp2L4qAu9wReiAixi96pbY2poT0+R
-   gBAKkAKo/F5psBQmqdxfrAEjlRkqPc03lp3ciezsdsDBeUEyYS0jSIDX9
-   JRUQo1V0GnU1jylrjtFUwigqw4+snRWQzJoO8og15zCoH6+UaJSVoLABm
-   m8TbLiGLRKz3yIKq6bV2lbOz3Dt+9v+pmhzz/thJoYPmAsFi8Os7koQTy
-   qyA6epufweOg7A+3ZQT+Hp6u0fvof9EgGJjIRWzrp8VIjW5K0cqEGXPrm
-   K25BSZZ+VAHihpWDFTtRFOKbHBo8eLA/cymKRp5lzYfDgnyDcSzswY30R
-   Q==;
+  bh=/Lfr/oH4GT9ZPy5cQIRAJOqX6mMsqobCIWK3XrP/hkY=;
+  b=nfe1c8B3/QzQK+Xamdfxk+14F/HuUQfVPSSrsM/2p6Q/EhndbobWNbNG
+   BujGUeOLvVnWSI9oMN3f8LK18wvtC4hwUNJn6TyvVckoHhBJ26MHB2EjL
+   ogTstDzmp5z8Xju/1ublXDETiA0Xk8pOs51O9PnBMboigWChJkZcQGZxC
+   q1QGq5Vczer1+9eJCZ3Jq2Q0V9xJhrwi05Ng+jNJqVjfNGmROLvi6THWl
+   oTlHV9jRr16AoMXOX0j5B4ZhjUZ0+zZHJUdoc7OFaSXwXyHudJskTrwFb
+   ntW8Gdzrp8HOE6DejH6zjeHGsJXe6IPbOsQzMWpy/R7jYpEnIcT1GnKuB
+   A==;
 X-IronPort-AV: E=Sophos;i="5.97,242,1669071600"; 
-   d="scan'208";a="28616624"
+   d="scan'208";a="28616621"
 Received: from vtuxmail01.tq-net.de ([10.115.0.20])
   by mx1.tq-group.com with ESMTP; 24 Jan 2023 12:02:18 +0100
 Received: from steina-w.tq-net.de (unknown [10.123.53.21])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
 	(No client certificate requested)
-	by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id 45E3F280074;
-	Tue, 24 Jan 2023 12:02:18 +0100 (CET)
+	by vtuxmail01.tq-net.de (Postfix) with ESMTPSA id D02A2280072;
+	Tue, 24 Jan 2023 12:02:17 +0100 (CET)
 From: Alexander Stein <alexander.stein@ew.tq-group.com>
 To: Rob Herring <robh+dt@kernel.org>,
 	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
@@ -84,9 +84,9 @@ To: Rob Herring <robh+dt@kernel.org>,
 	Nathan Chancellor <nathan@kernel.org>,
 	Nick Desaulniers <ndesaulniers@google.com>,
 	Nicolas Schier <nicolas@fjasle.eu>
-Subject: [PATCH v3 06/10] ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA LVDS CDTECH DC44 overlay
-Date: Tue, 24 Jan 2023 12:02:09 +0100
-Message-Id: <20230124110213.3221264-7-alexander.stein@ew.tq-group.com>
+Subject: [PATCH v3 05/10] ARM: dts: ls1021a: add TQMLS1021A/MBLS102xA HDMI overlay
+Date: Tue, 24 Jan 2023 12:02:08 +0100
+Message-Id: <20230124110213.3221264-6-alexander.stein@ew.tq-group.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20230124110213.3221264-1-alexander.stein@ew.tq-group.com>
 References: <20230124110213.3221264-1-alexander.stein@ew.tq-group.com>
@@ -107,7 +107,7 @@ Cc: devicetree@vger.kernel.org, linux-kbuild@vger.kernel.org, Alexander Stein <a
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add device tree overlay for LVDS display usage.
+Add device tree overlay for HDMI usage.
 
 Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 ---
@@ -117,33 +117,32 @@ Changes in v3:
 Changes in v2:
 * None
 
- arch/arm/boot/dts/Makefile                    |  2 +
- ...1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts | 55 +++++++++++++++++++
- 2 files changed, 57 insertions(+)
- create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts
+ arch/arm/boot/dts/Makefile                    |  2 ++
+ .../ls1021a-tqmls1021a-mbls1021a-hdmi.dtso    | 36 +++++++++++++++++++
+ 2 files changed, 38 insertions(+)
+ create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-hdmi.dtso
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index f9f75c5325808..64cc0f3f6efb0 100644
+index 626f7172c74e9..f9f75c5325808 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -806,9 +806,11 @@ dtb-$(CONFIG_SOC_LS1021A) += \
+@@ -806,8 +806,10 @@ dtb-$(CONFIG_SOC_LS1021A) += \
  	ls1021a-tsn.dtb \
  	ls1021a-twr.dtb
  
-+ls1021a-tqmls1021a-mbls1021a-cdtech-dc44-dtbs := ls1021a-tqmls1021a-mbls1021a.dtb ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dtbo
- ls1021a-tqmls1021a-mbls1021a-hdmi-dtbs := ls1021a-tqmls1021a-mbls1021a.dtb ls1021a-tqmls1021a-mbls1021a-hdmi.dtbo
++ls1021a-tqmls1021a-mbls1021a-hdmi-dtbs := ls1021a-tqmls1021a-mbls1021a.dtb ls1021a-tqmls1021a-mbls1021a-hdmi.dtbo
  ls1021a-tqmls1021a-mbls1021a-lvds-tm070jvhg33-dtbs := ls1021a-tqmls1021a-mbls1021a.dtb ls1021a-tqmls1021a-mbls1021a-lvds-tm070jvhg33.dtbo
  
-+dtb-$(CONFIG_SOC_LS1021A) += ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dtb
- dtb-$(CONFIG_SOC_LS1021A) += ls1021a-tqmls1021a-mbls1021a-hdmi.dtb
++dtb-$(CONFIG_SOC_LS1021A) += ls1021a-tqmls1021a-mbls1021a-hdmi.dtb
  dtb-$(CONFIG_SOC_LS1021A) += ls1021a-tqmls1021a-mbls1021a-lvds-tm070jvhg33.dtb
  
-diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts
+ dtb-$(CONFIG_SOC_VF610) += \
+diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-hdmi.dtso b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-hdmi.dtso
 new file mode 100644
-index 0000000000000..ddc71bc597295
+index 0000000000000..f5ca22643c08e
 --- /dev/null
-+++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-cdtech-dc44.dts
-@@ -0,0 +1,55 @@
++++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a-hdmi.dtso
+@@ -0,0 +1,36 @@
 +// SPDX-License-Identifier: (GPL-2.0-or-later OR X11)
 +/*
 + * Copyright 2018-2023 TQ-Systems GmbH <linux@ew.tq-group.com>,
@@ -155,48 +154,29 @@ index 0000000000000..ddc71bc597295
 +/dts-v1/;
 +/plugin/;
 +
-+#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/interrupt-controller/irq.h>
-+
-+&backlight_dcu {
-+	status = "okay";
-+};
-+
 +&dcu {
 +	status = "okay";
 +
 +	port {
 +		dcu_out: endpoint {
-+			remote-endpoint = <&panel_in>;
++			remote-endpoint = <&sii9022a_in>;
 +		};
 +	};
 +};
 +
-+&display {
-+	compatible = "cdtech,s070swv29hg-dc44";
++&hdmi_out {
++	status = "okay";
++};
++
++&sii9022a {
 +	status = "okay";
 +
-+	port {
-+		panel_in: endpoint {
-+			remote-endpoint = <&dcu_out>;
++	ports {
++		port@0 {
++			sii9022a_in: endpoint {
++				remote-endpoint = <&dcu_out>;
++			};
 +		};
-+	};
-+};
-+
-+&i2c0 {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+
-+	polytouch: touchscreen@38 {
-+		compatible = "edt,edt-ft5406";
-+		reg = <0x38>;
-+		interrupt-parent = <&pca9554_0>;
-+		interrupts = <6 IRQ_TYPE_EDGE_FALLING>;
-+		/* LCD_PWR_EN -> TSC_WAKE */
-+		wake-gpios = <&pca9554_1 4 GPIO_ACTIVE_HIGH>;
-+		gain = <20>;
-+		touchscreen-size-x = <800>;
-+		touchscreen-size-y = <480>;
 +	};
 +};
 -- 
