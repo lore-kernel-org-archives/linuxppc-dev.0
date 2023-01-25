@@ -4,49 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D682AC27C76
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 22:00:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC9EEC54E94
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 22:00:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2Hnd1QNjz3c2W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 09:00:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2Hpd1Qb1z3fNX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 09:00:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=uqNynxzu;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=idbJO946;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b29; helo=mail-yb1-xb29.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=uqNynxzu;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=idbJO946;
 	dkim-atps=neutral
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Received: from mail-yb1-xb29.google.com (mail-yb1-xb29.google.com [IPv6:2607:f8b0:4864:20::b29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2CKZ5bYfz3cFw;
-	Thu, 26 Jan 2023 05:38:58 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=j8xmcwaWWp8ClSuIcWbfPO9W4DI7+K1SIXYR1hupOAY=; b=uqNynxzucz1vO4Sybud/wnfqlG
-	XxsLNOwKfxMMQq2z+2mEwSQepA2Cgl288rz8ppyGnCDD245OrpnK+lLHo83C85yAJqJOOkyy9NCp4
-	qmW1PdDBkKx7H5H7CuTrTaW668Ax6XD7hJfO7woN7MoWAjzhSqQRaCuht1RFhZ03cdOhzx8vskmyo
-	utYjRqoPln+RK+MIFkiqDBv2fEqneNERI4c9/pWDfp7yn00dEjgBzAOu+9ajSFVQvgY4Ml53E7t5d
-	4KvoHjjGbdeWlMlk7Lgwsa8VGdyruWiJYIAak7bpfijYPXdYqIwuOD9Kmo+xWyNX8MhOoxpc82QLY
-	/xONblxA==;
-Received: from willy by casper.infradead.org with local (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1pKkeP-0066hH-0o; Wed, 25 Jan 2023 18:37:37 +0000
-Date: Wed, 25 Jan 2023 18:37:36 +0000
-From: Matthew Wilcox <willy@infradead.org>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v2 1/6] mm: introduce vma->vm_flags modifier functions
-Message-ID: <Y9F28J9njAtwifuL@casper.infradead.org>
-References: <20230125083851.27759-1-surenb@google.com>
- <20230125083851.27759-2-surenb@google.com>
- <Y9Dx0cPXF2yoLwww@hirez.programming.kicks-ass.net>
- <CAJuCfpEcVCZaCGzc-Wim25eaV5e6YG1YJAAdKwZ6JHViB0z8aw@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2DHS3W5rz2xBV
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 06:22:11 +1100 (AEDT)
+Received: by mail-yb1-xb29.google.com with SMTP id c124so24279451ybb.13
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2023 11:22:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=azRxZ4iz/UmvW0JqPrqtZcKNmaFt9MhDUKzgc4KSKbs=;
+        b=idbJO946IIJ5xclJl8K3ScrKphDS9TF1tg1AgsB8MPco32Ta3+qR61NnmqeUtsnx6v
+         goCUeETP5lzAzmASwAR43MDdzy2mxaLRi4K6yZE3Q+T5C1FUbuWCmQDSDtqKn5s2e6iw
+         g3L5+Ey8VBu5ZDVtB0a1Axssd66xmU+yYweeF+hE6jQwYilC1xMJq5jCj+NjIEVUsfL4
+         tw7nY9DM/DzPYd8vrkO+1JZY6FVSYBMjhRJz+WIxF8k5j1BI+Qpdb88Is7APtmnyodC7
+         tcl2VYHmnzhTEoT5QVoxpB++zHDpcXCuz10aLB8wrCQNw685txpV1MvZDG3GANSg7b1j
+         9Xwg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=azRxZ4iz/UmvW0JqPrqtZcKNmaFt9MhDUKzgc4KSKbs=;
+        b=kffgpQ4LjFL2vxmQDw9S1SpXJxqjlOYR3ESvdjJ+QvmWvqOaMSCHweNNj5jRN34Ofx
+         yMcYgqUCslNfH4rkU+Z+fIGtQj3XJbvzURIRGCPj2sjZTZxAxVnjRD0Wc7EdyTHOokgA
+         Gzq3lqrjz4fDbYEYSciHKof4UqFFvex/Ujl1HtwNIbzH4tMW1D7c8haJIpIq3FR6SGVP
+         4nqyx5sE0RFP7Y337Z2j6txKBX/nEMF2wlc61AhPSncCnBkUUBtVRQ1BMumwFIqTmA2a
+         9GdryAmEpnnJ/hIqFmyOyN6TVhsbQyf7Num+DJ2S934z1oj5JmMRorm9UwKtczdkkKBp
+         LetA==
+X-Gm-Message-State: AO0yUKXzhmWNgppwxy3uboSmclgJ3f4VjZPpSGPpoSBBFIzu32SCJwJg
+	C3o+e3POQuOPpOKBJHoqndeUuaO3x3sDw7xo8j59wQ==
+X-Google-Smtp-Source: AK7set9Keebho/efVX9+GO9rxFk2PCEOZWbQBvt6Ld/Tpsz3uuvCSMXu6oGPdxC/ITtQ87qnzhMkMAEzeywlAhveKx4=
+X-Received: by 2002:a25:c247:0:b0:80b:6201:bee7 with SMTP id
+ s68-20020a25c247000000b0080b6201bee7mr946541ybf.340.1674674527537; Wed, 25
+ Jan 2023 11:22:07 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpEcVCZaCGzc-Wim25eaV5e6YG1YJAAdKwZ6JHViB0z8aw@mail.gmail.com>
+References: <20230125083851.27759-1-surenb@google.com> <20230125083851.27759-2-surenb@google.com>
+ <Y9Dx0cPXF2yoLwww@hirez.programming.kicks-ass.net> <CAJuCfpEcVCZaCGzc-Wim25eaV5e6YG1YJAAdKwZ6JHViB0z8aw@mail.gmail.com>
+ <Y9F28J9njAtwifuL@casper.infradead.org>
+In-Reply-To: <Y9F28J9njAtwifuL@casper.infradead.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Wed, 25 Jan 2023 11:21:56 -0800
+Message-ID: <CAJuCfpHO7g-5GZep0e7r=dFTBhVHpN3R_pHMGOqetgrKyYzMFQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] mm: introduce vma->vm_flags modifier functions
+To: Matthew Wilcox <willy@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Thu, 26 Jan 2023 08:53:08 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -66,29 +83,36 @@ Cc: michel@lespinasse.org, nvdimm@lists.linux.dev, heiko@sntech.de, leewalsh@goo
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 25, 2023 at 08:49:50AM -0800, Suren Baghdasaryan wrote:
-> On Wed, Jan 25, 2023 at 1:10 AM Peter Zijlstra <peterz@infradead.org> wrote:
-> > > +     /*
-> > > +      * Flags, see mm.h.
-> > > +      * WARNING! Do not modify directly.
-> > > +      * Use {init|reset|set|clear|mod}_vm_flags() functions instead.
-> > > +      */
-> > > +     unsigned long vm_flags;
+On Wed, Jan 25, 2023 at 10:37 AM Matthew Wilcox <willy@infradead.org> wrote:
+>
+> On Wed, Jan 25, 2023 at 08:49:50AM -0800, Suren Baghdasaryan wrote:
+> > On Wed, Jan 25, 2023 at 1:10 AM Peter Zijlstra <peterz@infradead.org> wrote:
+> > > > +     /*
+> > > > +      * Flags, see mm.h.
+> > > > +      * WARNING! Do not modify directly.
+> > > > +      * Use {init|reset|set|clear|mod}_vm_flags() functions instead.
+> > > > +      */
+> > > > +     unsigned long vm_flags;
+> > >
+> > > We have __private and ACCESS_PRIVATE() to help with enforcing this.
 > >
-> > We have __private and ACCESS_PRIVATE() to help with enforcing this.
-> 
-> Thanks for pointing this out, Peter! I guess for that I'll need to
-> convert all read accesses and provide get_vm_flags() too? That will
-> cause some additional churt (a quick search shows 801 hits over 248
-> files) but maybe it's worth it? I think Michal suggested that too in
-> another patch. Should I do that while we are at it?
+> > Thanks for pointing this out, Peter! I guess for that I'll need to
+> > convert all read accesses and provide get_vm_flags() too? That will
+> > cause some additional churt (a quick search shows 801 hits over 248
+> > files) but maybe it's worth it? I think Michal suggested that too in
+> > another patch. Should I do that while we are at it?
+>
+> Here's a trick I saw somewhere in the VFS:
+>
+>         union {
+>                 const vm_flags_t vm_flags;
+>                 vm_flags_t __private __vm_flags;
+>         };
+>
+> Now it can be read by anybody but written only by those using
+> ACCESS_PRIVATE.
 
-Here's a trick I saw somewhere in the VFS:
-
-	union {
-		const vm_flags_t vm_flags;
-		vm_flags_t __private __vm_flags;
-	};
-
-Now it can be read by anybody but written only by those using
-ACCESS_PRIVATE.
+Huh, this is quite nice! I think it does not save us from the cases
+when vma->vm_flags is passed by a reference and modified indirectly,
+like in ksm_madvise()? Though maybe such usecases are so rare (I found
+only 2 cases) that we can ignore this?
