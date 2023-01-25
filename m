@@ -4,64 +4,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74904C27C76
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 21:54:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1BDCC54E94
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 21:55:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2Hgb59sBz3fCR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 08:54:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2Hhb3Nwxz3fHM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 08:55:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=S433Z2p/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ngnRJaht;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1133; helo=mail-yw1-x1133.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2d; helo=mail-yb1-xb2d.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=S433Z2p/;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ngnRJaht;
 	dkim-atps=neutral
-Received: from mail-yw1-x1133.google.com (mail-yw1-x1133.google.com [IPv6:2607:f8b0:4864:20::1133])
+Received: from mail-yb1-xb2d.google.com (mail-yb1-xb2d.google.com [IPv6:2607:f8b0:4864:20::b2d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P29280VLHz3bTk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 03:55:26 +1100 (AEDT)
-Received: by mail-yw1-x1133.google.com with SMTP id 00721157ae682-4c24993965eso272073647b3.12
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2023 08:55:26 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2958410Wz2xrW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 03:58:04 +1100 (AEDT)
+Received: by mail-yb1-xb2d.google.com with SMTP id 123so23791188ybv.6
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2023 08:58:04 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=49H+5dcfdqsESvQ4qNxkOgTxyGkRYtaMvRra0jMgwoI=;
-        b=S433Z2p/j0oEnqzhdMbCoBVS6yLsoVuhPxi7PQkxnyRK8RoE5tlGqQCWFiSx/y2EvP
-         VAUU6f5te6yd0FF3QKoXQk59fXSc40Ni99FjmOhoS8uoMeuhfG+AT8hg6vTHrAcNtls7
-         iMIrnMdjSfEnhMBuERTLvpM6IdVwE9wobd2Cb3XY0VBKEUGGTBatMri522T6kyoxGdRv
-         R/YHI2CzXA+66ssNNRD0kBHVPl8TI5ear6XOrgI2lTdtmT0YpMoSddNSDob6lG0ADoLk
-         +xTQAwFZ3i/oeH+aroOYDwlOGwYRh8N7mvnq0HFpqRIYUl+jcTUyG7X+0g74P9WaFx1x
-         4nDw==
+        bh=G/HaQvIeifLKJJp6JsBUTA/Cu0PG4HCFXOBV2LCBpGc=;
+        b=ngnRJahtqVxSN6UIjLqWU+1aTxdIhv7re4hDfLrN8LXncI6BNG1ZwqGy4tzOTLxPiH
+         4VWOIuHk0tMtzp4F11bJV5cn9qN75X4TjPW2iyn4nOIj2Y2qsTa18wfmHkOGhLKlmZoS
+         vXpRc/g/QGDtReYNnPGF6rlvG7jz8sM8MsRTR7LhXioKCpHgDgO7fKBddw0dzS48JeET
+         78piPZYcyZX9vIYyfAzpklatM6XnaaFqr/b+XLZlxI1Y0y+wCHWFOsnbVElEi6T+CQOb
+         4zMPa96gAXD4xbmjnQv7nMUvo5bgJJEK/r3Eu0NIV8f4SPGC7eT5IU6zl2RkKdozGWcK
+         sknQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:subject:message-id:date:from:in-reply-to:references
          :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=49H+5dcfdqsESvQ4qNxkOgTxyGkRYtaMvRra0jMgwoI=;
-        b=tvXMwG8r7r3XSZLVKUr+ZqifAR+CsIAtVpbP2pKrCvIKK28RSRJ3awDSEe16yLwz7N
-         jVc9DTjF1mkv8vdXz0jESPGdR+I44+AbQHKoKrmZqrsLNi6KCnc1wPDgH2ppBmRNprw8
-         br4vRbfE577i8pvhTupyBo8GDOTDoCV0gZVTwCyjJT9XTBUthjIBiy4mXmYZt81R1/fE
-         hBc6vaexV3U1Dh5MONAjDjIZW95jT1IutauxaP6PfWtWRSbyqKyPhtoSJ0TjZV/ocpvx
-         wcAavCV1tTp3RakStPbI1yUnV6/g7wtPsOeP262jgP4jmoPFS9oQkhcSA3H4R1KSQRAn
-         R/aA==
-X-Gm-Message-State: AO0yUKXyX+sAUYMaNnaBSMMLwETSeRNJxN6Ly50g8fvXRoZU3oAemjDP
-	9IrcVZIRY4NdSvo+jrtRDEj0CWJy+wZrSedN95fY4w==
-X-Google-Smtp-Source: AK7set/FwLbWx6yiqkzvjcGbe3t+VxnD8xj+/iXHUbjRIwB0jRkvrcCR+VhH4DhOMzxTzJJlzd0h1TxaYfABci/YfRk=
-X-Received: by 2002:a0d:d456:0:b0:507:26dc:ebd with SMTP id
- w83-20020a0dd456000000b0050726dc0ebdmr239978ywd.455.1674665724181; Wed, 25
- Jan 2023 08:55:24 -0800 (PST)
+        bh=G/HaQvIeifLKJJp6JsBUTA/Cu0PG4HCFXOBV2LCBpGc=;
+        b=aYvSNbr1XGHNL66swhDFm47awH8mH00WcwXg3ueUCoWDF6OZhwoSE5Uc2M9JkMcjMF
+         OyYAZoDe1qkaLEhWhKKcpp+L9SiFUdrAQS9PlDtaOip74rXG54mi3kXyZOyaQ/MGBOU7
+         PeRH0Tvwvwi71wvbrTsrPGmHNBL8LRrvxJhQeWOE0benkMB/fRuTiNGeZzl7kYyi+zDb
+         6FNX1wZvfM0cbcEYHvh1m/e6ZhkouEZ4whppzX4MBw/UL7x/G52cbjX5+RKeCZpU6jxR
+         LYgRg9hv4L5wVvmGP/GWebdlib8XHCbrv57ap3FTS2clFIG8hP84b0EL61MSPtAdb+MY
+         wmCw==
+X-Gm-Message-State: AO0yUKVPyCWrijEC4vg3S/9Ef5Fy4A/b1AvUASVLFkOQwWJDkYtreyJ4
+	0zuZMQGePKT7mcmcNOXd118enu6rjZQBxPyjaKd1qA==
+X-Google-Smtp-Source: AK7set97wrc43TM0/ovVONCfpWDKrtFzkyYmNKL3FW97qdU/yOGMPZssBTWD4MRF2UhZkPfEz4JLEj3/xF1loldnjYM=
+X-Received: by 2002:a25:ad02:0:b0:80b:6fd3:84d3 with SMTP id
+ y2-20020a25ad02000000b0080b6fd384d3mr714673ybi.316.1674665880846; Wed, 25 Jan
+ 2023 08:58:00 -0800 (PST)
 MIME-Version: 1.0
-References: <20230125083851.27759-1-surenb@google.com> <20230125083851.27759-4-surenb@google.com>
- <Y9D2zXpy+9iyZNun@dhcp22.suse.cz>
-In-Reply-To: <Y9D2zXpy+9iyZNun@dhcp22.suse.cz>
+References: <20230125083851.27759-1-surenb@google.com> <20230125083851.27759-5-surenb@google.com>
+ <Y9D4rWEsajV/WfNx@dhcp22.suse.cz>
+In-Reply-To: <Y9D4rWEsajV/WfNx@dhcp22.suse.cz>
 From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 25 Jan 2023 08:55:12 -0800
-Message-ID: <CAJuCfpG7KWnj3J_t4nN1R4gfiM5jgjsiTfL55hNa=Uvz4E835g@mail.gmail.com>
-Subject: Re: [PATCH v2 3/6] mm: replace vma->vm_flags direct modifications
- with modifier calls
+Date: Wed, 25 Jan 2023 08:57:48 -0800
+Message-ID: <CAJuCfpGd2eG0RSMte9OVgsRVWPo+Sj7+t8EOo8o_iKzZoh1MXA@mail.gmail.com>
+Subject: Re: [PATCH v2 4/6] mm: replace vma->vm_flags indirect modification in ksm_madvise
 To: Michal Hocko <mhocko@suse.com>
 Content-Type: text/plain; charset="UTF-8"
 X-Mailman-Approved-At: Thu, 26 Jan 2023 08:53:08 +1100
@@ -83,39 +82,26 @@ Cc: michel@lespinasse.org, nvdimm@lists.linux.dev, heiko@sntech.de, leewalsh@goo
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 25, 2023 at 1:30 AM 'Michal Hocko' via kernel-team
+On Wed, Jan 25, 2023 at 1:38 AM 'Michal Hocko' via kernel-team
 <kernel-team@android.com> wrote:
 >
-> On Wed 25-01-23 00:38:48, Suren Baghdasaryan wrote:
-> > Replace direct modifications to vma->vm_flags with calls to modifier
+> On Wed 25-01-23 00:38:49, Suren Baghdasaryan wrote:
+> > Replace indirect modifications to vma->vm_flags with calls to modifier
 > > functions to be able to track flag changes and to keep vma locking
-> > correctness.
+> > correctness. Add a BUG_ON check in ksm_madvise() to catch indirect
+> > vm_flags modification attempts.
 >
-> Is this a manual (git grep) based work or have you used Coccinele for
-> the patch generation?
+> Those BUG_ONs scream to much IMHO. KSM is an MM internal code so I
+> gueess we should be willing to trust it.
 
-It was a manual "search and replace" and in the process I temporarily
-renamed vm_flags to ensure I did not miss any usage.
-
->
-> My potentially incomplete check
-> $ git grep ">[[:space:]]*vm_flags[[:space:]]*[&|^]="
->
-> shows that nothing should be left after this. There is still quite a lot
-> of direct checks of the flags (more than 600). Maybe it would be good to
-> make flags accessible only via accessors which would also prevent any
-> future direct setting of those flags in uncontrolled way as well.
-
-Yes, I think Peter's suggestion in the first patch would also require
-that. Much more churn but probably worth it for the future
-maintenance. I'll add a patch which converts all readers as well.
+Yes, but I really want to prevent an indirect misuse since it was not
+easy to find these. If you feel strongly about it I will remove them
+or if you have a better suggestion I'm all for it.
 
 >
-> Anyway
+> > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+>
 > Acked-by: Michal Hocko <mhocko@suse.com>
-
-Thanks for all the reviews!
-
 > --
 > Michal Hocko
 > SUSE Labs
