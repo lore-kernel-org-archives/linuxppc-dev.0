@@ -4,58 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABD13C05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jan 2023 13:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 704F4C54E94
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 11:51:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Nz0WQ724Yz3fKX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 21 Jan 2023 00:21:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P22HC6QYvz3cFD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jan 2023 22:51:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OFDvfDrX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=FpW3Zfeo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=chenhuacai@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3ourqywykdn8tvsfochpphmf.dpnmjovyqqd-efwmjtut.pambct.psh@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OFDvfDrX;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=FpW3Zfeo;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Nz0VM6m5mz3fHK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jan 2023 00:20:27 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 9A966B82812
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 13:20:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8CB30C433A7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 13:20:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1674220818;
-	bh=7sRP5YV7+4nvTnB9myl03nHIHTkL3kZT7GRc5F0MWrA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=OFDvfDrX++behha59jrKLiGP08cVgLfyeHgYs2XzYiNvQx1ViTSTIDGhYHl0Z4BVc
-	 Scl+FUOs4YCPDp30VPCfn/ZRUGlXl2uiIJ0I++kX27sG/OvvJjDb/AYKgxA8HrU3cZ
-	 HD9LzpDkgCim/jXBnt9QPRXA5jcFt/pQBDNdsfzOuAqlp/a9WFQRCsSXiYRtUdwOea
-	 4ZmBdY+fdRDUdL9LQdMQv6lsFXyVVfbM5SBj859z28jnkRYXpDQ3h2Lf6Wu59pOWUw
-	 NGuR4Dzgg2q8492rZ5KQyfOtzMkhpBtyXGEdv+TjH7tBdkDxyHwCxmdURS7C+NzcN+
-	 OC3k4X/sxEPEg==
-Received: by mail-ej1-f51.google.com with SMTP id ss4so13823919ejb.11
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jan 2023 05:20:18 -0800 (PST)
-X-Gm-Message-State: AFqh2kp5XPcRu+bdoq9i8kwNr/fpR6UmOVTT4dlVsU8w1VhhBQBlS2jr
-	YbsmY3xgZW75Q/7lJD5ang3feYiR+uq5epadBeY=
-X-Google-Smtp-Source: AMrXdXsseKqgithP3QPuUcxmnhw1UliiTCKhMRHieF2HT9vAQYrsWmv9tMQd3G0VMIxKHDhoXw0US9AQjLhMIGdOIRE=
-X-Received: by 2002:a17:906:eb13:b0:84d:4cb1:2591 with SMTP id
- mb19-20020a170906eb1300b0084d4cb12591mr2106642ejb.202.1674220816515; Fri, 20
- Jan 2023 05:20:16 -0800 (PST)
-MIME-Version: 1.0
-References: <20230119143619.2733236-1-vschneid@redhat.com> <20230119143619.2733236-6-vschneid@redhat.com>
-In-Reply-To: <20230119143619.2733236-6-vschneid@redhat.com>
-From: Huacai Chen <chenhuacai@kernel.org>
-Date: Fri, 20 Jan 2023 21:19:59 +0800
-X-Gmail-Original-Message-ID: <CAAhV-H59VNksaXRXG-6THv+1jLeMD-mLBYYrVb7mj5eRtOpr+g@mail.gmail.com>
-Message-ID: <CAAhV-H59VNksaXRXG-6THv+1jLeMD-mLBYYrVb7mj5eRtOpr+g@mail.gmail.com>
-Subject: Re: [PATCH v4 5/7] treewide: Trace IPIs sent via smp_send_reschedule()
-To: Valentin Schneider <vschneid@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P1y1L35sbz3c9Z
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2023 19:39:00 +1100 (AEDT)
+Received: by mail-yb1-xb49.google.com with SMTP id w70-20020a25df49000000b00803e799d7b1so13393241ybg.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jan 2023 00:39:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=ralp0YsbeintaJ1+3rV0BJxcsbdnu/jVKuNhvnt0T5Y=;
+        b=FpW3ZfeoZ58NaZWfySIfB+f4+MM7GrKuq9uCXe+gfhjrC0bvKaL2kAypJ/pJdIrezU
+         Ru0cU0KNklRfuYrJ3SKXkdPgNjMfodaxcsFUMH2z2VP+LqiGmmBZi4WNjYcaaYQLe2mC
+         v6uAPWcErh2g6vXcpQB3pwh9XmkkPfWLDi2bI5mgZlrfFBGfjeQ9Wv8iIQeddGuuYJGy
+         vGYSJIu//+24XGZjzB+Q3VYOxZ5pJZ/HCGoJ5h7l6e1K0sxINKIjiYRXApyFQ3GXR7xJ
+         ZclVjCWVjm/7Pu3pZxJbkPLxrnDwpix1sMzuU+AEqB9vICm+UZCWtOUOt5GLju8+nccL
+         rTTw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=ralp0YsbeintaJ1+3rV0BJxcsbdnu/jVKuNhvnt0T5Y=;
+        b=nn44ml7M/Y5uYO6tSoiBus5HhZ97Qikcn+t/l5euPooCrzIrt799r68LSc9JMh8bis
+         K2R+a5Hghsa8y6xGWkTZBYsjW7V+AyhcKXSIAdeE2vSe91aHcJqQMf+XyOJOul0nHVzZ
+         p74OHfiSNfveoCI+NZgdEtD1AKM1bG/Tv/QkestUn2p9o1uKGyhwO0qVV4uDyGKdailC
+         yHnnQhZr88a3ijRl4CwlDxM5sHM/tPdfTVK2sYS1n/Die18w4sT++inOLHBiP1bSMz9b
+         yLaxpaT397Phx2zVhMdvHOhKbv6jC4CNNgaV/dzipB2hstOTOVWWN6Ri9+BSdY8P00sb
+         hyhA==
+X-Gm-Message-State: AO0yUKUj33tiMwJWASOZkTYsM4sYPm1d85BDAixOfvACfCOVmZdZsFJu
+	Koqk9uy/siCvRxJ/dOr8H8pkKaMSN4U=
+X-Google-Smtp-Source: AK7set8/stQqnGGz4OB/vqyDOBLoBX54VTTeagu3mMK0HzymWEEvjI0ujOzPLr/zvAsu1DJMDE0YK80W9/s=
+X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:f7b0:20e8:ce66:f98])
+ (user=surenb job=sendgmr) by 2002:a81:3e07:0:b0:506:6185:4fad with SMTP id
+ l7-20020a813e07000000b0050661854fadmr450398ywa.451.1674635938431; Wed, 25 Jan
+ 2023 00:38:58 -0800 (PST)
+Date: Wed, 25 Jan 2023 00:38:46 -0800
+In-Reply-To: <20230125083851.27759-1-surenb@google.com>
+Mime-Version: 1.0
+References: <20230125083851.27759-1-surenb@google.com>
+X-Mailer: git-send-email 2.39.1.405.gd4c25cc71f-goog
+Message-ID: <20230125083851.27759-2-surenb@google.com>
+Subject: [PATCH v2 1/6] mm: introduce vma->vm_flags modifier functions
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
 Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Wed, 25 Jan 2023 22:50:29 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,480 +75,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, Palmer Dabbelt <palmer@rivosinc.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@li
- nutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, Daniel Bristot de Oliveira <bristot@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: michel@lespinasse.org, nvdimm@lists.linux.dev, heiko@sntech.de, leewalsh@google.com, dri-devel@lists.freedesktop.org, perex@perex.cz, jglisse@google.com, arjunroy@google.com, m.szyprowski@samsung.com, linux-arch@vger.kernel.org, qianweili@huawei.com, linux-samsung-soc@vger.kernel.org, aneesh.kumar@linux.ibm.com, chenhuacai@kernel.org, kasan-dev@googlegroups.com, linux-acpi@vger.kernel.org, rientjes@google.com, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, robdclark@gmail.com, minchan@google.com, robert.jarzmik@free.fr, linux-um@lists.infradead.org, etnaviv@lists.freedesktop.org, npiggin@gmail.com, alex.williamson@redhat.com, viro@zeniv.linux.org.uk, luto@kernel.org, gthelen@google.com, tglx@linutronix.de, ldufour@linux.ibm.com, surenb@google.com, linux-sgx@vger.kernel.org, martin.petersen@oracle.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.k
+ ernel.org, freedreno@lists.freedesktop.org, joelaf@google.com, linux-aio@kvack.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, david@redhat.com, dave.hansen@linux.intel.com, virtualization@lists.linux-foundation.org, edumazet@google.com, target-devel@vger.kernel.org, punit.agrawal@bytedance.com, linux-s390@vger.kernel.org, dave@stgolabs.net, deller@gmx.de, hughd@google.com, andrii@kernel.org, patrik.r.jakobsson@gmail.com, linux-stm32@st-md-mailman.stormreply.com, linux-rockchip@lists.infradead.org, linux-graphics-maintainer@vmware.com, kernel-team@android.com, jayalk@intworks.biz, soheil@google.com, selinux@vger.kernel.org, linux-arm-msm@vger.kernel.org, mripard@kernel.org, shakeelb@google.com, haojian.zhuang@gmail.com, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, tytso@mit.edu, nico@fluxnic.net, muchun.song@linux.dev, hjc@rock-chips.com, mcoquelin.stm32@gmail.com, tatashin@google.com, mike.kravetz@oracle.com, songliubraving@fb.com, jasowang@redhat.
+ com, alsa-devel@alsa-project.org, peterx@redhat.com, linux-tegra@vger.kernel.org, kraxel@redhat.com, will@kernel.org, dmaengine@vger.kernel.org, bhe@redhat.com, miklos@szeredi.hu, linux-rdma@vger.kernel.org, linux-staging@lists.linux.dev, willy@infradead.org, gurua@google.com, dgilbert@interlog.com, xiang@kernel.org, pabeni@redhat.com, jejb@linux.ibm.com, quic_abhinavk@quicinc.com, bp@alien8.de, mchehab@kernel.org, linux-ext4@vger.kernel.org, tomba@kernel.org, hughlynch@google.com, sre@kernel.org, tfiga@chromium.org, linux-xfs@vger.kernel.org, zhangfei.gao@linaro.org, wangzhou1@hisilicon.com, netdev@vger.kernel.org, bpf@vger.kernel.org, linux-erofs@lists.ozlabs.org, davem@davemloft.net, mhocko@suse.com, kvm@vger.kernel.org, mst@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, alexandre.torgue@foss.st.com, dhowells@redhat.com, linux-mm@kvack.org, ray.huang@amd.com, adilger.kernel@dilger.ca, kuba@kernel.org, sparclinux@vger.kernel.org, airlied@gmail.com, anton.ivanov@cambridge
+ greys.com, herbert@gondor.apana.org.au, linux-scsi@vger.kernel.org, richard@nod.at, x86@kernel.org, vkoul@kernel.org, mingo@redhat.com, axelrasmussen@google.com, intel-gfx@lists.freedesktop.org, daniel@ffwll.ch, paulmck@kernel.org, jannh@google.com, chao@kernel.org, maarten.lankhorst@linux.intel.com, liam.howlett@oracle.com, hdegoede@redhat.com, linux-mediatek@lists.infradead.org, matthias.bgg@gmail.com, vbabka@suse.cz, dimitri.sivanich@hpe.com, amd-gfx@lists.freedesktop.org, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, yoshfuji@linux-ipv6.org, linuxppc-dev@lists.ozlabs.org, dsahern@kernel.org, kent.overstreet@linux.dev, kexec@lists.infradead.org, tiwai@suse.com, krzysztof.kozlowski@linaro.org, tzimmermann@suse.de, hannes@cmpxchg.org, dmitry.baryshkov@linaro.org, johannes@sipsolutions.net, mgorman@techsingularity.net, linux-accelerators@lists.ozlabs.org, l.stach@pengutronix.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For LoongArch parts,
-Acked-by: Huacai Chen <chenhuacai@loongson.cn>
+vm_flags are among VMA attributes which affect decisions like VMA merging
+and splitting. Therefore all vm_flags modifications are performed after
+taking exclusive mmap_lock to prevent vm_flags updates racing with such
+operations. Introduce modifier functions for vm_flags to be used whenever
+flags are updated. This way we can better check and control correct
+locking behavior during these updates.
 
-On Thu, Jan 19, 2023 at 10:37 PM Valentin Schneider <vschneid@redhat.com> wrote:
->
-> To be able to trace invocations of smp_send_reschedule(), rename the
-> arch-specific definitions of it to arch_smp_send_reschedule() and wrap it
-> into an smp_send_reschedule() that contains a tracepoint.
->
-> Changes to include the declaration of the tracepoint were driven by the
-> following coccinelle script:
->
->   @func_use@
->   @@
->   smp_send_reschedule(...);
->
->   @include@
->   @@
->   #include <trace/events/ipi.h>
->
->   @no_include depends on func_use && !include@
->   @@
->     #include <...>
->   +
->   + #include <trace/events/ipi.h>
->
-> Signed-off-by: Valentin Schneider <vschneid@redhat.com>
-> [csky bits]
-> Acked-by: Guo Ren <guoren@kernel.org>
-> [riscv bits]
-> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
-> ---
->  arch/alpha/kernel/smp.c                  |  2 +-
->  arch/arc/kernel/smp.c                    |  2 +-
->  arch/arm/kernel/smp.c                    |  2 +-
->  arch/arm/mach-actions/platsmp.c          |  2 ++
->  arch/arm64/kernel/smp.c                  |  2 +-
->  arch/csky/kernel/smp.c                   |  2 +-
->  arch/hexagon/kernel/smp.c                |  2 +-
->  arch/ia64/kernel/smp.c                   |  4 ++--
->  arch/loongarch/kernel/smp.c              |  4 ++--
->  arch/mips/include/asm/smp.h              |  2 +-
->  arch/mips/kernel/rtlx-cmp.c              |  2 ++
->  arch/openrisc/kernel/smp.c               |  2 +-
->  arch/parisc/kernel/smp.c                 |  4 ++--
->  arch/powerpc/kernel/smp.c                |  6 ++++--
->  arch/powerpc/kvm/book3s_hv.c             |  3 +++
->  arch/powerpc/platforms/powernv/subcore.c |  2 ++
->  arch/riscv/kernel/smp.c                  |  4 ++--
->  arch/s390/kernel/smp.c                   |  2 +-
->  arch/sh/kernel/smp.c                     |  2 +-
->  arch/sparc/kernel/smp_32.c               |  2 +-
->  arch/sparc/kernel/smp_64.c               |  2 +-
->  arch/x86/include/asm/smp.h               |  2 +-
->  arch/x86/kvm/svm/svm.c                   |  4 ++++
->  arch/x86/kvm/x86.c                       |  2 ++
->  arch/xtensa/kernel/smp.c                 |  2 +-
->  include/linux/smp.h                      | 11 +++++++++--
->  virt/kvm/kvm_main.c                      |  2 ++
->  27 files changed, 52 insertions(+), 26 deletions(-)
->
-> diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
-> index f4e20f75438f8..38637eb9eebd5 100644
-> --- a/arch/alpha/kernel/smp.c
-> +++ b/arch/alpha/kernel/smp.c
-> @@ -562,7 +562,7 @@ handle_ipi(struct pt_regs *regs)
->  }
->
->  void
-> -smp_send_reschedule(int cpu)
-> +arch_smp_send_reschedule(int cpu)
->  {
->  #ifdef DEBUG_IPI_MSG
->         if (cpu == hard_smp_processor_id())
-> diff --git a/arch/arc/kernel/smp.c b/arch/arc/kernel/smp.c
-> index ad93fe6e4b77d..409cfa4675b40 100644
-> --- a/arch/arc/kernel/smp.c
-> +++ b/arch/arc/kernel/smp.c
-> @@ -292,7 +292,7 @@ static void ipi_send_msg(const struct cpumask *callmap, enum ipi_msg_type msg)
->                 ipi_send_msg_one(cpu, msg);
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         ipi_send_msg_one(cpu, IPI_RESCHEDULE);
->  }
-> diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-> index 45b8ca2ce521f..dea24a6e0ed6f 100644
-> --- a/arch/arm/kernel/smp.c
-> +++ b/arch/arm/kernel/smp.c
-> @@ -744,7 +744,7 @@ void __init set_smp_ipi_range(int ipi_base, int n)
->         ipi_setup(smp_processor_id());
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/arch/arm/mach-actions/platsmp.c b/arch/arm/mach-actions/platsmp.c
-> index f26618b435145..7b208e96fbb67 100644
-> --- a/arch/arm/mach-actions/platsmp.c
-> +++ b/arch/arm/mach-actions/platsmp.c
-> @@ -20,6 +20,8 @@
->  #include <asm/smp_plat.h>
->  #include <asm/smp_scu.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  #define OWL_CPU1_ADDR  0x50
->  #define OWL_CPU1_FLAG  0x5c
->
-> diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
-> index 937d2623e06ba..8d108edc4a89f 100644
-> --- a/arch/arm64/kernel/smp.c
-> +++ b/arch/arm64/kernel/smp.c
-> @@ -976,7 +976,7 @@ void __init set_smp_ipi_range(int ipi_base, int n)
->         ipi_setup(smp_processor_id());
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/arch/csky/kernel/smp.c b/arch/csky/kernel/smp.c
-> index 4b605aa2e1d65..fd7f81be16dd6 100644
-> --- a/arch/csky/kernel/smp.c
-> +++ b/arch/csky/kernel/smp.c
-> @@ -140,7 +140,7 @@ void smp_send_stop(void)
->         on_each_cpu(ipi_stop, NULL, 1);
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         send_ipi_message(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/arch/hexagon/kernel/smp.c b/arch/hexagon/kernel/smp.c
-> index 4ba93e59370c4..4e8bee25b8c68 100644
-> --- a/arch/hexagon/kernel/smp.c
-> +++ b/arch/hexagon/kernel/smp.c
-> @@ -217,7 +217,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
->         }
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         send_ipi(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
-> index e2cc59db86bc2..ea4f009a232b4 100644
-> --- a/arch/ia64/kernel/smp.c
-> +++ b/arch/ia64/kernel/smp.c
-> @@ -220,11 +220,11 @@ kdump_smp_send_init(void)
->   * Called with preemption disabled.
->   */
->  void
-> -smp_send_reschedule (int cpu)
-> +arch_smp_send_reschedule (int cpu)
->  {
->         ia64_send_ipi(cpu, IA64_IPI_RESCHEDULE, IA64_IPI_DM_INT, 0);
->  }
-> -EXPORT_SYMBOL_GPL(smp_send_reschedule);
-> +EXPORT_SYMBOL_GPL(arch_smp_send_reschedule);
->
->  /*
->   * Called with preemption disabled.
-> diff --git a/arch/loongarch/kernel/smp.c b/arch/loongarch/kernel/smp.c
-> index 8c6e227cb29df..83225610a1480 100644
-> --- a/arch/loongarch/kernel/smp.c
-> +++ b/arch/loongarch/kernel/smp.c
-> @@ -155,11 +155,11 @@ void loongson_send_ipi_mask(const struct cpumask *mask, unsigned int action)
->   * it goes straight through and wastes no time serializing
->   * anything. Worst case is that we lose a reschedule ...
->   */
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         loongson_send_ipi_single(cpu, SMP_RESCHEDULE);
->  }
-> -EXPORT_SYMBOL_GPL(smp_send_reschedule);
-> +EXPORT_SYMBOL_GPL(arch_smp_send_reschedule);
->
->  irqreturn_t loongson_ipi_interrupt(int irq, void *dev)
->  {
-> diff --git a/arch/mips/include/asm/smp.h b/arch/mips/include/asm/smp.h
-> index 5d9ff61004ca7..9806e79895d99 100644
-> --- a/arch/mips/include/asm/smp.h
-> +++ b/arch/mips/include/asm/smp.h
-> @@ -66,7 +66,7 @@ extern void calculate_cpu_foreign_map(void);
->   * it goes straight through and wastes no time serializing
->   * anything. Worst case is that we lose a reschedule ...
->   */
-> -static inline void smp_send_reschedule(int cpu)
-> +static inline void arch_smp_send_reschedule(int cpu)
->  {
->         extern const struct plat_smp_ops *mp_ops;       /* private */
->
-> diff --git a/arch/mips/kernel/rtlx-cmp.c b/arch/mips/kernel/rtlx-cmp.c
-> index d26dcc4b46e74..e991cc936c1cd 100644
-> --- a/arch/mips/kernel/rtlx-cmp.c
-> +++ b/arch/mips/kernel/rtlx-cmp.c
-> @@ -17,6 +17,8 @@
->  #include <asm/vpe.h>
->  #include <asm/rtlx.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  static int major;
->
->  static void rtlx_interrupt(void)
-> diff --git a/arch/openrisc/kernel/smp.c b/arch/openrisc/kernel/smp.c
-> index e1419095a6f0a..0a7a059e2dff4 100644
-> --- a/arch/openrisc/kernel/smp.c
-> +++ b/arch/openrisc/kernel/smp.c
-> @@ -173,7 +173,7 @@ void handle_IPI(unsigned int ipi_msg)
->         }
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         smp_cross_call(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
-> index 7dbd92cafae38..b7fc859fa87db 100644
-> --- a/arch/parisc/kernel/smp.c
-> +++ b/arch/parisc/kernel/smp.c
-> @@ -246,8 +246,8 @@ void kgdb_roundup_cpus(void)
->  inline void
->  smp_send_stop(void)    { send_IPI_allbutself(IPI_CPU_STOP); }
->
-> -void
-> -smp_send_reschedule(int cpu) { send_IPI_single(cpu, IPI_RESCHEDULE); }
-> +void
-> +arch_smp_send_reschedule(int cpu) { send_IPI_single(cpu, IPI_RESCHEDULE); }
->
->  void
->  smp_send_all_nop(void)
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 6b90f10a6c819..35f101ccb540d 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -61,6 +61,8 @@
->  #include <asm/kup.h>
->  #include <asm/fadump.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  #ifdef DEBUG
->  #include <asm/udbg.h>
->  #define DBG(fmt...) udbg_printf(fmt)
-> @@ -364,12 +366,12 @@ static inline void do_message_pass(int cpu, int msg)
->  #endif
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         if (likely(smp_ops))
->                 do_message_pass(cpu, PPC_MSG_RESCHEDULE);
->  }
-> -EXPORT_SYMBOL_GPL(smp_send_reschedule);
-> +EXPORT_SYMBOL_GPL(arch_smp_send_reschedule);
->
->  void arch_send_call_function_single_ipi(int cpu)
->  {
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 6ba68dd6190bd..3b70b5f80bd56 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -43,6 +43,7 @@
->  #include <linux/compiler.h>
->  #include <linux/of.h>
->  #include <linux/irqdomain.h>
-> +#include <linux/smp.h>
->
->  #include <asm/ftrace.h>
->  #include <asm/reg.h>
-> @@ -80,6 +81,8 @@
->  #include <asm/dtl.h>
->  #include <asm/plpar_wrappers.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  #include "book3s.h"
->  #include "book3s_hv.h"
->
-> diff --git a/arch/powerpc/platforms/powernv/subcore.c b/arch/powerpc/platforms/powernv/subcore.c
-> index 7e98b00ea2e84..c53c4c7977680 100644
-> --- a/arch/powerpc/platforms/powernv/subcore.c
-> +++ b/arch/powerpc/platforms/powernv/subcore.c
-> @@ -20,6 +20,8 @@
->  #include <asm/opal.h>
->  #include <asm/smp.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  #include "subcore.h"
->  #include "powernv.h"
->
-> diff --git a/arch/riscv/kernel/smp.c b/arch/riscv/kernel/smp.c
-> index 8c3b59f1f9b80..42e9656a1db2e 100644
-> --- a/arch/riscv/kernel/smp.c
-> +++ b/arch/riscv/kernel/smp.c
-> @@ -328,8 +328,8 @@ bool smp_crash_stop_failed(void)
->  }
->  #endif
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         send_ipi_single(cpu, IPI_RESCHEDULE);
->  }
-> -EXPORT_SYMBOL_GPL(smp_send_reschedule);
-> +EXPORT_SYMBOL_GPL(arch_smp_send_reschedule);
-> diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-> index 0031325ce4bc9..6c4da1e26e568 100644
-> --- a/arch/s390/kernel/smp.c
-> +++ b/arch/s390/kernel/smp.c
-> @@ -553,7 +553,7 @@ void arch_send_call_function_single_ipi(int cpu)
->   * it goes straight through and wastes no time serializing
->   * anything. Worst case is that we lose a reschedule ...
->   */
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         pcpu_ec_call(pcpu_devices + cpu, ec_schedule);
->  }
-> diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
-> index 65924d9ec2459..5cf35a774dc70 100644
-> --- a/arch/sh/kernel/smp.c
-> +++ b/arch/sh/kernel/smp.c
-> @@ -256,7 +256,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
->                (bogosum / (5000/HZ)) % 100);
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         mp_ops->send_ipi(cpu, SMP_MSG_RESCHEDULE);
->  }
-> diff --git a/arch/sparc/kernel/smp_32.c b/arch/sparc/kernel/smp_32.c
-> index ad8094d955eba..87eaa7719fa27 100644
-> --- a/arch/sparc/kernel/smp_32.c
-> +++ b/arch/sparc/kernel/smp_32.c
-> @@ -120,7 +120,7 @@ void cpu_panic(void)
->
->  struct linux_prom_registers smp_penguin_ctable = { 0 };
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         /*
->          * CPU model dependent way of implementing IPI generation targeting
-> diff --git a/arch/sparc/kernel/smp_64.c b/arch/sparc/kernel/smp_64.c
-> index a55295d1b9244..e5964d1d8b37d 100644
-> --- a/arch/sparc/kernel/smp_64.c
-> +++ b/arch/sparc/kernel/smp_64.c
-> @@ -1430,7 +1430,7 @@ static unsigned long send_cpu_poke(int cpu)
->         return hv_err;
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         if (cpu == smp_processor_id()) {
->                 WARN_ON_ONCE(preemptible());
-> diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-> index b4dbb20dab1a1..f9757123d8fa1 100644
-> --- a/arch/x86/include/asm/smp.h
-> +++ b/arch/x86/include/asm/smp.h
-> @@ -98,7 +98,7 @@ static inline void play_dead(void)
->         smp_ops.play_dead();
->  }
->
-> -static inline void smp_send_reschedule(int cpu)
-> +static inline void arch_smp_send_reschedule(int cpu)
->  {
->         smp_ops.smp_send_reschedule(cpu);
->  }
-> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-> index 9a194aa1a75a4..7114f62f4846b 100644
-> --- a/arch/x86/kvm/svm/svm.c
-> +++ b/arch/x86/kvm/svm/svm.c
-> @@ -27,6 +27,7 @@
->  #include <linux/swap.h>
->  #include <linux/rwsem.h>
->  #include <linux/cc_platform.h>
-> +#include <linux/smp.h>
->
->  #include <asm/apic.h>
->  #include <asm/perf_event.h>
-> @@ -41,6 +42,9 @@
->  #include <asm/fpu/api.h>
->
->  #include <asm/virtext.h>
-> +
-> +#include <trace/events/ipi.h>
-> +
->  #include "trace.h"
->
->  #include "svm.h"
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index da4bbd043a7b6..730a493d4443e 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -59,7 +59,9 @@
->  #include <linux/mem_encrypt.h>
->  #include <linux/entry-kvm.h>
->  #include <linux/suspend.h>
-> +#include <linux/smp.h>
->
-> +#include <trace/events/ipi.h>
->  #include <trace/events/kvm.h>
->
->  #include <asm/debugreg.h>
-> diff --git a/arch/xtensa/kernel/smp.c b/arch/xtensa/kernel/smp.c
-> index 4dc109dd6214e..d95907b8e4d38 100644
-> --- a/arch/xtensa/kernel/smp.c
-> +++ b/arch/xtensa/kernel/smp.c
-> @@ -389,7 +389,7 @@ void arch_send_call_function_single_ipi(int cpu)
->         send_ipi_message(cpumask_of(cpu), IPI_CALL_FUNC);
->  }
->
-> -void smp_send_reschedule(int cpu)
-> +void arch_smp_send_reschedule(int cpu)
->  {
->         send_ipi_message(cpumask_of(cpu), IPI_RESCHEDULE);
->  }
-> diff --git a/include/linux/smp.h b/include/linux/smp.h
-> index a80ab58ae3f1d..c036a2228d8d0 100644
-> --- a/include/linux/smp.h
-> +++ b/include/linux/smp.h
-> @@ -125,8 +125,15 @@ extern void smp_send_stop(void);
->  /*
->   * sends a 'reschedule' event to another CPU:
->   */
-> -extern void smp_send_reschedule(int cpu);
-> -
-> +extern void arch_smp_send_reschedule(int cpu);
-> +/*
-> + * scheduler_ipi() is inline so can't be passed as callback reason, but the
-> + * callsite IP should be sufficient for root-causing IPIs sent from here.
-> + */
-> +#define smp_send_reschedule(cpu) ({                              \
-> +       trace_ipi_send_cpumask(cpumask_of(cpu), _RET_IP_, NULL);  \
-> +       arch_smp_send_reschedule(cpu);                            \
-> +})
->
->  /*
->   * Prepare machine for booting other CPUs.
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 9c60384b5ae0b..88620f27c4f94 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -67,6 +67,8 @@
->
->  #include <linux/kvm_dirty_ring.h>
->
-> +#include <trace/events/ipi.h>
-> +
->  /* Worst case buffer size needed for holding an integer. */
->  #define ITOA_MAX_LEN 12
->
-> --
-> 2.31.1
->
->
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+---
+ include/linux/mm.h       | 37 +++++++++++++++++++++++++++++++++++++
+ include/linux/mm_types.h |  8 +++++++-
+ 2 files changed, 44 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index c2f62bdce134..b71f2809caac 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -627,6 +627,43 @@ static inline void vma_init(struct vm_area_struct *vma, struct mm_struct *mm)
+ 	INIT_LIST_HEAD(&vma->anon_vma_chain);
+ }
+ 
++/* Use when VMA is not part of the VMA tree and needs no locking */
++static inline void init_vm_flags(struct vm_area_struct *vma,
++				 unsigned long flags)
++{
++	vma->vm_flags = flags;
++}
++
++/* Use when VMA is part of the VMA tree and modifications need coordination */
++static inline void reset_vm_flags(struct vm_area_struct *vma,
++				  unsigned long flags)
++{
++	mmap_assert_write_locked(vma->vm_mm);
++	init_vm_flags(vma, flags);
++}
++
++static inline void set_vm_flags(struct vm_area_struct *vma,
++				unsigned long flags)
++{
++	mmap_assert_write_locked(vma->vm_mm);
++	vma->vm_flags |= flags;
++}
++
++static inline void clear_vm_flags(struct vm_area_struct *vma,
++				  unsigned long flags)
++{
++	mmap_assert_write_locked(vma->vm_mm);
++	vma->vm_flags &= ~flags;
++}
++
++static inline void mod_vm_flags(struct vm_area_struct *vma,
++				unsigned long set, unsigned long clear)
++{
++	mmap_assert_write_locked(vma->vm_mm);
++	vma->vm_flags |= set;
++	vma->vm_flags &= ~clear;
++}
++
+ static inline void vma_set_anonymous(struct vm_area_struct *vma)
+ {
+ 	vma->vm_ops = NULL;
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 2d6d790d9bed..6c7c70bf50dd 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -491,7 +491,13 @@ struct vm_area_struct {
+ 	 * See vmf_insert_mixed_prot() for discussion.
+ 	 */
+ 	pgprot_t vm_page_prot;
+-	unsigned long vm_flags;		/* Flags, see mm.h. */
++
++	/*
++	 * Flags, see mm.h.
++	 * WARNING! Do not modify directly.
++	 * Use {init|reset|set|clear|mod}_vm_flags() functions instead.
++	 */
++	unsigned long vm_flags;
+ 
+ 	/*
+ 	 * For areas with an address space and backing store,
+-- 
+2.39.1
+
