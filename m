@@ -4,65 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4622C54EAA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 19:11:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7494BC61DA3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 19:39:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2r0M5lgyz3fGs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 06:11:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2rcL5g9Hz3fHw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 06:38:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=bqiPNBtP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=fpC9OxtB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3ltbsywykdlmlnkxguzhhzex.vhfebgnqiiv-wxoeblml.hsetul.hkz@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=bqiPNBtP;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=fpC9OxtB;
 	dkim-atps=neutral
-Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2qzH4wtCz3cgx
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 06:10:18 +1100 (AEDT)
-Received: by mail-wr1-x429.google.com with SMTP id bk16so2763058wrb.11
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 11:10:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2rbH22gzz3fDP
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 06:38:01 +1100 (AEDT)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-509ab88f98fso22187657b3.10
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 11:38:01 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=XZVlCpe2YPL2TN3TFT9AqKB26L5YrQ2SxKcA4F5aIVA=;
-        b=bqiPNBtPCGC3Dt5ZQRSVrAtgB5YTmuDiUyV/bySZ3En9FH7ZiSa+3d475afcxorzQL
-         BcBlMbWZDlAEDRT8ehVmM0H18jLP84kk0FLIv0Th5HBB0ttBFsp/BuxMDv0O7yaMozMF
-         u1EioQKIUN1hAO89sTx5webSx+SGSqK0BjKDDCKwf+LEh2Mt9LZT2Ou2rHrOOliSxMQQ
-         8BdQXRmTW/3GxO7FNLYC3jipX4GwYJxCAGpsd/nkLjiI4K5ulSdS9vB+ajB9oebDL2Um
-         7//AfPRGk5idWtx1cFt6Rx2JCbX9hZ4je6PhcI3I+7Tzg6wmnKIK8YZAHi+zpsRa8JdP
-         qOsw==
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=aLjaaxPJUorXnCMktZtzjKFOG8Xxelv9KGA9flqeCpQ=;
+        b=fpC9OxtByMrsgeuCLlTqjq7ljheyeUGFByxdovFvi/BEZbaqTBtYfqbw7mV85n35vh
+         nsJw1tLg82ZBRg3RV9Utdbg2g8s0Gs6HglMnvLMVN1RCTr4mkBoD2v2oZh4Mjh9w/Usr
+         DL7mn5GFR4iC1hBs+0CvTUhQnmsv06W09b6suBaVdlve2NmFj/hGVpWM4xqWu44vFGv+
+         cln+RN7Rzpw5J9WfB/zYjO6KEwxRe8QhOmkLvUNBVLba9roo72RSbcTHiolp9Ji6xuqA
+         dACq72jx3kgKLuzmXwAspaoItebJfeBLbx4oDjP1Exnk9IXVYclbAW1J4WBLbHjzpPE8
+         Y+sw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=XZVlCpe2YPL2TN3TFT9AqKB26L5YrQ2SxKcA4F5aIVA=;
-        b=VCXHXI1wpvO7K3c/+XxEH8k6U3UcQwyJhySv3SH23QOOTP33sGwje/xAkhgxdEYLjJ
-         1MmzCuLQc4UYVRgR9WYcDSdR79c7x0VxhsGVwgU24EbMkIQVfP7jqobZq0dws0iAb66A
-         wGhjt2MVjW+sHq1/8uZSCVFkkw9TyHjXDRMcPflp95jkU9p4Wl+mHzAxU8bS3VJlLFOo
-         zXhhq7hk3KvGgl64qiNwqKjudx+KmxRqrMCw/TmWqf+t+XbNErlM2WSPeOj8zx5sII2u
-         SswTRjt1H0Ygz6XnNJHIXWTmQEb6iMnmziNDyGYYDZdaHevxIvbyAUROQBQVRWYQyIcg
-         Z06g==
-X-Gm-Message-State: AO0yUKX9/vmstfFRRLkjSRcp26BNcZWNWA7YNlkcwiYrXbAjTRrseMJZ
-	rm74AJdxlcVL3a0NaA5EQZk7V1wnbKTZ8cJIKsntpw==
-X-Google-Smtp-Source: AK7set/mmUq2VJuJRVgzRa/6Xnzlcx41hw/h5rvmYu2jYOJyL5sIkbF+l18j3dzlNgKOqoIJLVRMJ/NxowqhDSYUYuY=
-X-Received: by 2002:a5d:5341:0:b0:2bf:b79f:73f0 with SMTP id
- t1-20020a5d5341000000b002bfb79f73f0mr345146wrv.654.1674760213868; Thu, 26 Jan
- 2023 11:10:13 -0800 (PST)
-MIME-Version: 1.0
-References: <20230126011854.198243-1-irogers@google.com> <20230126011854.198243-3-irogers@google.com>
- <e74b8293-5d30-7522-6e5e-a7c7994039c5@oracle.com>
-In-Reply-To: <e74b8293-5d30-7522-6e5e-a7c7994039c5@oracle.com>
-From: Ian Rogers <irogers@google.com>
-Date: Thu, 26 Jan 2023 11:10:01 -0800
-Message-ID: <CAP-5=fUrHqAtP-yRDYi4G4oo-PX-2YF8tyB=BBk2t0iM_U3__g@mail.gmail.com>
-Subject: Re: [PATCH v4 02/12] perf jevents metric: Add ability to rewrite
- metrics in terms of others
-To: John Garry <john.g.garry@oracle.com>
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=aLjaaxPJUorXnCMktZtzjKFOG8Xxelv9KGA9flqeCpQ=;
+        b=5uomfBWySnH6HOiec7dp8ocn0dTpjCj+E81hQDFUbYg9dfa4TCq3+UHtk63MVTLcDA
+         IOYqTErMctbiVNMVnXwvjSXJbvLAkh1FobgSg1FxegTYEg5Zl8sfCe/gGTtTokVf1YKB
+         xFdoYSxkarqBjDQqP6vlYjW2xNAVqzPeUarapsw3AhAE8Yz3GgpLWC/vhe1PPNybSHHJ
+         pie3jc6IGdYPjpzm4SPZjl8Fz79BF/nm+3fy+WtjB3W0IM/r6XBUW8eZtXjLpQIBLoT7
+         ja9jPzlJjx+mpFMvMKB4GJCYd1UP1X55S/vVCVcMzd5ayth2EWUluCM5jNNrAMtu2iiJ
+         Wv9g==
+X-Gm-Message-State: AFqh2krSrNoLFYg0YQOfnF+GaNnyoqrIf/zOswOwKQhp3yPa+03TtNyL
+	HTl8Chm4mrenTYg4WGh8BoZehBakZtg=
+X-Google-Smtp-Source: AMrXdXvThl7i+LdwZ0FvFdLYZXBmPQfzv8R5JgH5MisJqIZuH2YNlDhICDf5h1c+oIs087t+N+fAgYzZdrs=
+X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:d774:88af:bab3:648d])
+ (user=surenb job=sendgmr) by 2002:a0d:da83:0:b0:3c3:8b8e:13ee with SMTP id
+ c125-20020a0dda83000000b003c38b8e13eemr4101612ywe.77.1674761878986; Thu, 26
+ Jan 2023 11:37:58 -0800 (PST)
+Date: Thu, 26 Jan 2023 11:37:46 -0800
+In-Reply-To: <20230126193752.297968-1-surenb@google.com>
+Mime-Version: 1.0
+References: <20230126193752.297968-1-surenb@google.com>
+X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
+Message-ID: <20230126193752.297968-2-surenb@google.com>
+Subject: [PATCH v4 1/7] kernel/fork: convert vma assignment to a memcpy
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,44 +74,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sandipan Das <sandipan.das@amd.com>, Peter Zijlstra <peterz@infradead.org>, Perry Taylor <perry.taylor@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, James Clark <james.clark@arm.com>, Kim Phillips <kim.phillips@amd.com>, Will Deacon <will@kernel.org>, Kan Liang <kan.liang@linux.intel.com>, Rob Herring <robh@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Xing Zhengjun <zhengjun.xing@linux.intel.com>, Mike Leach <mike.leach@linaro.org>, Kajol Jain <kjain@linux.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Caleb Biggers <caleb.biggers@intel.com>, linux-arm-kernel@lists.infradead.org, Ravi Bangoria <ravi.bangoria@amd.com>, Florian Fischer <florian.fischer@muhq.space>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Leo Yan 
- <leo.yan@linaro.org>, linuxppc-dev@lists.ozlabs.org, Jing Zhang <renyu.zj@linux.alibaba.com>
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin@google.com, mgorman@techsingularity.net, rp
+ pt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 26, 2023 at 7:59 AM John Garry <john.g.garry@oracle.com> wrote:
->
-> On 26/01/2023 01:18, Ian Rogers wrote:
-> > Add RewriteMetricsInTermsOfOthers that iterates over pairs of names
-> > and expressions trying to replace an expression, within the current
-> > expression, with its name.
-> >
-> > Signed-off-by: Ian Rogers <irogers@google.com>
->
-> hmmm ... did you test this for many python versions?
->
-> Maybe this patch causes this error:
->
-> Traceback (most recent call last):
->   File "pmu-events/jevents.py", line 7, in <module>
->     import metric
->   File "/home/john/acme/tools/perf/pmu-events/metric.py", line 549, in
-> <module>
->     def RewriteMetricsInTermsOfOthers(metrics: list[Tuple[str, Expression]]
-> TypeError: 'type' object is not subscriptable
-> make[3]: *** [pmu-events/Build:26: pmu-events/pmu-events.c] Error 1
-> make[2]: *** [Makefile.perf:676: pmu-events/pmu-events-in.o] Error 2
-> make[2]: *** Waiting for unfinished jobs....
->
-> I have python 3.6.15
->
-> Thanks,
-> John
+Convert vma assignment in vm_area_dup() to a memcpy() to prevent compiler
+errors when we add a const modifier to vma->vm_flags.
 
-Apologies, I have to test python3.6 with docker and so if I think the
-change is small enough.. My error, will spin v5.
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Acked-by: Mel Gorman <mgorman@techsingularity.net>
+---
+ kernel/fork.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Ian
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 441dcec60aae..9260f975b8f4 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -472,7 +472,7 @@ struct vm_area_struct *vm_area_dup(struct vm_area_struct *orig)
+ 		 * orig->shared.rb may be modified concurrently, but the clone
+ 		 * will be reinitialized.
+ 		 */
+-		*new = data_race(*orig);
++		data_race(memcpy(new, orig, sizeof(*new)));
+ 		INIT_LIST_HEAD(&new->anon_vma_chain);
+ 		dup_anon_vma_name(orig, new);
+ 	}
+-- 
+2.39.1
 
->
