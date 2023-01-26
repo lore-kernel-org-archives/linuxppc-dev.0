@@ -4,36 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C244FC05027
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 14:23:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 750E5C54E94
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 14:28:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2jcS6zqVz3fJN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 01:23:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=techsingularity.net (client-ip=81.17.249.8; helo=outbound-smtp02.blacknight.com; envelope-from=mgorman@techsingularity.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 359 seconds by postgrey-1.36 at boromir; Fri, 27 Jan 2023 01:23:06 AEDT
-Received: from outbound-smtp02.blacknight.com (outbound-smtp02.blacknight.com [81.17.249.8])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2jk90nqGz3fFK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 01:28:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KWMMZa3e;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=lee@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KWMMZa3e;
+	dkim-atps=neutral
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2jbt23qGz3cH1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 01:23:06 +1100 (AEDT)
-Received: from mail.blacknight.com (pemlinmail01.blacknight.ie [81.17.254.10])
-	by outbound-smtp02.blacknight.com (Postfix) with ESMTPS id 946F5BECDC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 14:17:01 +0000 (GMT)
-Received: (qmail 24022 invoked from network); 26 Jan 2023 14:17:01 -0000
-Received: from unknown (HELO techsingularity.net) (mgorman@techsingularity.net@[84.203.198.246])
-  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 26 Jan 2023 14:17:00 -0000
-Date: Thu, 26 Jan 2023 14:16:57 +0000
-From: Mel Gorman <mgorman@techsingularity.net>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v3 3/7] mm: replace VM_LOCKED_CLEAR_MASK with
- VM_LOCKED_MASK
-Message-ID: <20230126141657.2d5uf7jx727uyvi6@techsingularity.net>
-References: <20230125233554.153109-1-surenb@google.com>
- <20230125233554.153109-4-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2jj83z6Mz3fBf
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 01:27:40 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 5166DB81DE6;
+	Thu, 26 Jan 2023 14:27:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6FE03C433EF;
+	Thu, 26 Jan 2023 14:27:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1674743255;
+	bh=kyg287jVxNn5KSlNEsVGJfYboudO4DBm+FJvwry/P14=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=KWMMZa3enFGjyBvR2geXY/y1os9YbC/Uq6fvpBx147xoAci6F2dWQUwOp5qev7dqv
+	 sDFzMt7hO6YpQHUbi6UXLJq/caD9FXOsVNgrL+IcDeaytcggK82q8G4TPARg46UQvR
+	 qp4uxp3LOCVaFqBaaCiwljX3GBc1l6jZqUd5AJMLb2hOnEyztqjAXwXmyWbJDEosk5
+	 fuPKSnnu2l0tBH3n5rSQm/zULLwOhCLeU2BQcHzouuw4T2jv6+uHjM+0xXK+iTmSzm
+	 vld+2pv3ErucYbDOohg29FfZIjY619rILYR8g/bpIZoRx6/QTcILHFraOIiC5DP3WZ
+	 c4HaAqCJIpw1A==
+Date: Thu, 26 Jan 2023 14:27:26 +0000
+From: Lee Jones <lee@kernel.org>
+To: sam@ravnborg.org
+Subject: Re: [PATCH 15/15] backlight: backlight: Drop the deprecated fb_blank
+ property
+Message-ID: <Y9KNziZJxMjCffbs@google.com>
+References: <20230107-sam-video-backlight-drop-fb_blank-v1-0-1bd9bafb351f@ravnborg.org>
+ <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230125233554.153109-4-surenb@google.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230107-sam-video-backlight-drop-fb_blank-v1-15-1bd9bafb351f@ravnborg.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -45,19 +62,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-omap@vger.kernel.org, Stephen Kitt <steve@sk2.org>, Antonino Daplas <adaplas@gmail.com>, Robin van der Gracht <robin@protonic.nl>, Helge Deller <deller@gmx.de>, linux-staging@lists.linux.dev, Nicolas Ferre <nicolas.ferre@microchip.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, Paul Mackerras <paulus@samba.org>, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Miguel Ojeda <ojeda@kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linuxppc-dev@lists.ozlabs.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 25, 2023 at 03:35:50PM -0800, Suren Baghdasaryan wrote:
-> To simplify the usage of VM_LOCKED_CLEAR_MASK in clear_vm_flags(),
-> replace it with VM_LOCKED_MASK bitmask and convert all users.
-> 
-> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> Acked-by: Michal Hocko <mhocko@suse.com>
+On Sat, 07 Jan 2023, Sam Ravnborg via B4 Submission Endpoint wrote:
 
-Acked-by: Mel Gorman <mgorman@techsingularity.net>
+> From: Sam Ravnborg <sam@ravnborg.org>
+> 
+> With all users gone remove the deprecated fb_blank member in
+> backlight_properties.
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Lee Jones <lee@kernel.org>
+> Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> Cc: Jingoo Han <jingoohan1@gmail.com>
+> ---
+>  drivers/video/backlight/backlight.c |  2 --
+>  include/linux/backlight.h           | 22 ----------------------
+>  2 files changed, 24 deletions(-)
+
+Applied, thanks
 
 -- 
-Mel Gorman
-SUSE Labs
+Lee Jones [李琼斯]
