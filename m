@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F2E8C05027
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 15:20:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC479C54E94
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 15:48:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2ksd029Qz3fJt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 02:20:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=techsingularity.net (client-ip=81.17.249.190; helo=outbound-smtp22.blacknight.com; envelope-from=mgorman@techsingularity.net; receiver=<UNKNOWN>)
-Received: from outbound-smtp22.blacknight.com (outbound-smtp22.blacknight.com [81.17.249.190])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2lVF6h2cz3fJ7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 02:48:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=techsingularity.net (client-ip=46.22.136.236; helo=outbound-smtp52.blacknight.com; envelope-from=mgorman@techsingularity.net; receiver=<UNKNOWN>)
+Received: from outbound-smtp52.blacknight.com (outbound-smtp52.blacknight.com [46.22.136.236])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2ks05G92z3fBb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 02:19:32 +1100 (AEDT)
-Received: from mail.blacknight.com (pemlinmail05.blacknight.ie [81.17.254.26])
-	by outbound-smtp22.blacknight.com (Postfix) with ESMTPS id 8F10414C004
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 15:19:27 +0000 (GMT)
-Received: (qmail 13604 invoked from network); 26 Jan 2023 15:19:26 -0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2lTf6CgLz3cgs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 02:47:50 +1100 (AEDT)
+Received: from mail.blacknight.com (pemlinmail04.blacknight.ie [81.17.254.17])
+	by outbound-smtp52.blacknight.com (Postfix) with ESMTPS id A4D51FAC7E
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 15:47:44 +0000 (GMT)
+Received: (qmail 28996 invoked from network); 26 Jan 2023 15:47:44 -0000
 Received: from unknown (HELO techsingularity.net) (mgorman@techsingularity.net@[84.203.198.246])
-  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 26 Jan 2023 15:19:26 -0000
-Date: Thu, 26 Jan 2023 15:19:23 +0000
+  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 26 Jan 2023 15:47:44 -0000
+Date: Thu, 26 Jan 2023 15:47:40 +0000
 From: Mel Gorman <mgorman@techsingularity.net>
 To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v3 5/7] mm: replace vma->vm_flags indirect modification
- in ksm_madvise
-Message-ID: <20230126151923.4fu34ytwkpbbnvha@techsingularity.net>
+Subject: Re: [PATCH v3 6/7] mm: introduce mod_vm_flags_nolock and use it in
+ untrack_pfn
+Message-ID: <20230126154740.j3a3lu4x557c56yi@techsingularity.net>
 References: <20230125233554.153109-1-surenb@google.com>
- <20230125233554.153109-6-surenb@google.com>
+ <20230125233554.153109-7-surenb@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20230125233554.153109-6-surenb@google.com>
+In-Reply-To: <20230125233554.153109-7-surenb@google.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,81 +48,31 @@ Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 25, 2023 at 03:35:52PM -0800, Suren Baghdasaryan wrote:
-> Replace indirect modifications to vma->vm_flags with calls to modifier
-> functions to be able to track flag changes and to keep vma locking
-> correctness.
+On Wed, Jan 25, 2023 at 03:35:53PM -0800, Suren Baghdasaryan wrote:
+> In cases when VMA flags are modified after VMA was isolated and mmap_lock
+> was downgraded, flags modifications would result in an assertion because
+> mmap write lock is not held.
+
+Add note that it's also used during exit when the locking of the VMAs
+becomes irrelevant (mm users is 0, should be no VMA modifications taking
+place other than zap).
+
+The typical naming pattern when a caller either knows it holds the necessary
+lock or knows it does not matter is __mod_vm_flags()
+
+> Introduce mod_vm_flags_nolock to be used in such situation, when VMA is
+> not part of VMA tree and locking it is not required.
+
+Instead of such situations, describe in as "used when the caller takes
+responsibility for the required locking".
+
+> Pass a hint to untrack_pfn to conditionally use mod_vm_flags_nolock for
+> flags modification and to avoid assertion.
 > 
 > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> Acked-by: Michal Hocko <mhocko@suse.com>
-> ---
->  arch/powerpc/kvm/book3s_hv_uvmem.c | 5 ++++-
->  arch/s390/mm/gmap.c                | 5 ++++-
->  2 files changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> index 1d67baa5557a..325a7a47d348 100644
-> --- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-> +++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-> @@ -393,6 +393,7 @@ static int kvmppc_memslot_page_merge(struct kvm *kvm,
->  {
->  	unsigned long gfn = memslot->base_gfn;
->  	unsigned long end, start = gfn_to_hva(kvm, gfn);
-> +	unsigned long vm_flags;
->  	int ret = 0;
->  	struct vm_area_struct *vma;
->  	int merge_flag = (merge) ? MADV_MERGEABLE : MADV_UNMERGEABLE;
-> @@ -409,12 +410,14 @@ static int kvmppc_memslot_page_merge(struct kvm *kvm,
->  			ret = H_STATE;
->  			break;
->  		}
-> +		vm_flags = vma->vm_flags;
->  		ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
-> -			  merge_flag, &vma->vm_flags);
-> +			  merge_flag, &vm_flags);
->  		if (ret) {
->  			ret = H_STATE;
->  			break;
->  		}
-> +		reset_vm_flags(vma, vm_flags);
->  		start = vma->vm_end;
->  	} while (end > vma->vm_end);
 
-Add a comment on why the vm_flags are copied in case someone "optimises"
-this in the future? Something like
-
-/* Copy vm_flags to avoid any partial modifications in ksm_madvise. */
-
->  
-> diff --git a/arch/s390/mm/gmap.c b/arch/s390/mm/gmap.c
-> index 3a695b8a1e3c..d5eb47dcdacb 100644
-> --- a/arch/s390/mm/gmap.c
-> +++ b/arch/s390/mm/gmap.c
-> @@ -2587,14 +2587,17 @@ int gmap_mark_unmergeable(void)
->  {
->  	struct mm_struct *mm = current->mm;
->  	struct vm_area_struct *vma;
-> +	unsigned long vm_flags;
->  	int ret;
->  	VMA_ITERATOR(vmi, mm, 0);
->  
->  	for_each_vma(vmi, vma) {
-> +		vm_flags = vma->vm_flags;
->  		ret = ksm_madvise(vma, vma->vm_start, vma->vm_end,
-> -				  MADV_UNMERGEABLE, &vma->vm_flags);
-> +				  MADV_UNMERGEABLE, &vm_flags);
->  		if (ret)
->  			return ret;
-> +		reset_vm_flags(vma, vm_flags);
-
-Same.
-
-Not necessary as such as there are few users of ksm_madvise and I doubt
-it'll introduce new surprises.
-
-With or without the comment;
-
-Acked-by: Mel Gorman <mgorman@techsingularity.net>
+Patch itself looks ok. It strays close to being "conditional locking"
+though which might attract some complaints.
 
 -- 
 Mel Gorman
