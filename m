@@ -4,114 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08767C05027
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 18:17:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4622C54EAA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 19:11:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2pnm2D1Jz3fHL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 05:17:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2r0M5lgyz3fGs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 06:11:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=ieib9aHK;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=bqiPNBtP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=stgolabs.net (client-ip=23.83.209.27; helo=butterfly.birch.relay.mailchannels.net; envelope-from=dave@stgolabs.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::429; helo=mail-wr1-x429.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=ieib9aHK;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=bqiPNBtP;
 	dkim-atps=neutral
-Received: from butterfly.birch.relay.mailchannels.net (butterfly.birch.relay.mailchannels.net [23.83.209.27])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2pmd5Ft0z3cgm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 05:15:59 +1100 (AEDT)
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-	by relay.mailchannels.net (Postfix) with ESMTP id 626A0921DB5;
-	Thu, 26 Jan 2023 18:15:54 +0000 (UTC)
-Received: from pdx1-sub0-mail-a221.dreamhost.com (unknown [127.0.0.6])
-	(Authenticated sender: dreamhost)
-	by relay.mailchannels.net (Postfix) with ESMTPA id 0D2D2921618;
-	Thu, 26 Jan 2023 18:15:53 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1674756953; a=rsa-sha256;
-	cv=none;
-	b=2VJ+UaeeDXKlINAObl5A7Y6xCmBXCEn7KSsf5cTbVV+tQs7pINo5FTZnch0Nb8Dxqn48XP
-	YMzQR1UpFYf860h3LfFFlvmmPQALkOOA4fctdEBep+yRx7qVlH6YWelPxVLYo6iM2S0QIA
-	1Vc6cfM9MXwk0JV11HLc/nSvW4u9BNJR/4U29zDqqA9wJRU13fbyH5M0Vn8J6Su+6+wbpj
-	d9Qj6x4wIUOLfQHYiT9qBzOUXMpRzjbUTddQFuz8ysFpvR8+vtZXv02zr+j5mTswugLDQS
-	28ujb4BcNLAMPt9OD/Vo85pNV3sqKJ4hh4BOwetZy3EJ+Wz+5i0byQ/v2GFBLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-	s=arc-2022; t=1674756953;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=BjAq7stYCEU0LfFp3xSDkbIfCy1Lt6xLAOHKbUfQFpc=;
-	b=e5+HyIEehag8VI8HAJweOiWLk0SQgSr1UEjig9TcAdPCTyODTVlDiKorTapsIYyUhx3fP/
-	Z2H94OxwxmuAHPsYt122Nw3sv7VV7kN0OJyACUHRMMbbiKWXXawJ+uMqiwAFCrSxPkji+g
-	i6qtfuHLHGncl9waZuPBqYXZHY3rpAxi2voUf+nZ/BeSG0qNThuE/iWfcUxaS5lNM2pSds
-	QSOvG3ttOUvv0X37+f4SlZsHqU/KGzTPJ3x3qkLdal5Nyhclr/QxDQricbmumFjgqI5+LU
-	oByEywm0yldEWJ+pUp0BspYvfscUKrOssZqcAJreK7B41BCgL8LJF1gOSyKolg==
-ARC-Authentication-Results: i=1;
-	rspamd-9476994bd-27fh8;
-	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
-X-MailChannels-Auth-Id: dreamhost
-X-Hysterical-Cure: 10ca89f21e12bec8_1674756954048_636975460
-X-MC-Loop-Signature: 1674756954048:253671399
-X-MC-Ingress-Time: 1674756954048
-Received: from pdx1-sub0-mail-a221.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-	by 100.116.179.120 (trex/6.7.1);
-	Thu, 26 Jan 2023 18:15:54 +0000
-Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: dave@stgolabs.net)
-	by pdx1-sub0-mail-a221.dreamhost.com (Postfix) with ESMTPSA id 4P2pmP2ZHHz22;
-	Thu, 26 Jan 2023 10:15:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
-	s=dreamhost; t=1674756952;
-	bh=BjAq7stYCEU0LfFp3xSDkbIfCy1Lt6xLAOHKbUfQFpc=;
-	h=Date:From:To:Cc:Subject:Content-Type;
-	b=ieib9aHKHrfLqCOC+rDVo4CAMUit/ODVDKl1jArfcQUCadb85FUQY/H0KEG0EamMM
-	 cryA9XIfSkiMOBZjpvwjkd68rMLg04rgzpJfTsEV8rlqUr3b0go58wvdQ6NyLBaHbq
-	 AIG+iCfCi/ABoRDRnpRu7+MlEeTjIy9RflpDEoxB9g8VeeddbCvvY7o5UGMaVa9+l0
-	 8ao6U0i4NdOFQWQBYe+ov9zzXqI8ZfGyhrqzgT03Zu2QUNjzz1UL3xTVPPBUcBejs/
-	 Yy2/ETZ59zv1XZgGdXNCwnGb++JAu62SpehNcb/7nMIB6o0SpuhnbF3YtUtjz+23Mw
-	 sWtnk0S8tQy9w==
-Date: Thu, 26 Jan 2023 09:48:59 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3 2/7] mm: introduce vma->vm_flags wrapper functions
-Message-ID: <20230126174859.x7rloojcuafbvjpo@offworld>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Suren Baghdasaryan <surenb@google.com>, michel@lespinasse.org,
-	jglisse@google.com, mhocko@suse.com, vbabka@suse.cz,
-	hannes@cmpxchg.org, mgorman@techsingularity.net,
-	willy@infradead.org, liam.howlett@oracle.com, peterz@infradead.org,
-	ldufour@linux.ibm.com, paulmck@kernel.org, mingo@redhat.com,
-	will@kernel.org, luto@kernel.org, songliubraving@fb.com,
-	peterx@redhat.com, david@redhat.com, dhowells@redhat.com,
-	hughd@google.com, bigeasy@linutronix.de, kent.overstreet@linux.dev,
-	punit.agrawal@bytedance.com, lstoakes@gmail.com,
-	peterjung1337@gmail.com, rientjes@google.com,
-	axelrasmussen@google.com, joelaf@google.com, minchan@google.com,
-	jannh@google.com, shakeelb@google.com, tatashin@google.com,
-	edumazet@google.com, gthelen@google.com, gurua@google.com,
-	arjunroy@google.com, soheil@google.com, hughlynch@google.com,
-	leewalsh@google.com, posk@google.com, linux-mm@kvack.org,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	kernel-team@android.com
-References: <20230125233554.153109-1-surenb@google.com>
- <20230125233554.153109-3-surenb@google.com>
- <20230125162419.13379944d6c0d4253d7bc88c@linux-foundation.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2qzH4wtCz3cgx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 06:10:18 +1100 (AEDT)
+Received: by mail-wr1-x429.google.com with SMTP id bk16so2763058wrb.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 11:10:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=XZVlCpe2YPL2TN3TFT9AqKB26L5YrQ2SxKcA4F5aIVA=;
+        b=bqiPNBtPCGC3Dt5ZQRSVrAtgB5YTmuDiUyV/bySZ3En9FH7ZiSa+3d475afcxorzQL
+         BcBlMbWZDlAEDRT8ehVmM0H18jLP84kk0FLIv0Th5HBB0ttBFsp/BuxMDv0O7yaMozMF
+         u1EioQKIUN1hAO89sTx5webSx+SGSqK0BjKDDCKwf+LEh2Mt9LZT2Ou2rHrOOliSxMQQ
+         8BdQXRmTW/3GxO7FNLYC3jipX4GwYJxCAGpsd/nkLjiI4K5ulSdS9vB+ajB9oebDL2Um
+         7//AfPRGk5idWtx1cFt6Rx2JCbX9hZ4je6PhcI3I+7Tzg6wmnKIK8YZAHi+zpsRa8JdP
+         qOsw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=XZVlCpe2YPL2TN3TFT9AqKB26L5YrQ2SxKcA4F5aIVA=;
+        b=VCXHXI1wpvO7K3c/+XxEH8k6U3UcQwyJhySv3SH23QOOTP33sGwje/xAkhgxdEYLjJ
+         1MmzCuLQc4UYVRgR9WYcDSdR79c7x0VxhsGVwgU24EbMkIQVfP7jqobZq0dws0iAb66A
+         wGhjt2MVjW+sHq1/8uZSCVFkkw9TyHjXDRMcPflp95jkU9p4Wl+mHzAxU8bS3VJlLFOo
+         zXhhq7hk3KvGgl64qiNwqKjudx+KmxRqrMCw/TmWqf+t+XbNErlM2WSPeOj8zx5sII2u
+         SswTRjt1H0Ygz6XnNJHIXWTmQEb6iMnmziNDyGYYDZdaHevxIvbyAUROQBQVRWYQyIcg
+         Z06g==
+X-Gm-Message-State: AO0yUKX9/vmstfFRRLkjSRcp26BNcZWNWA7YNlkcwiYrXbAjTRrseMJZ
+	rm74AJdxlcVL3a0NaA5EQZk7V1wnbKTZ8cJIKsntpw==
+X-Google-Smtp-Source: AK7set/mmUq2VJuJRVgzRa/6Xnzlcx41hw/h5rvmYu2jYOJyL5sIkbF+l18j3dzlNgKOqoIJLVRMJ/NxowqhDSYUYuY=
+X-Received: by 2002:a5d:5341:0:b0:2bf:b79f:73f0 with SMTP id
+ t1-20020a5d5341000000b002bfb79f73f0mr345146wrv.654.1674760213868; Thu, 26 Jan
+ 2023 11:10:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20230125162419.13379944d6c0d4253d7bc88c@linux-foundation.org>
-User-Agent: NeoMutt/20220429
+References: <20230126011854.198243-1-irogers@google.com> <20230126011854.198243-3-irogers@google.com>
+ <e74b8293-5d30-7522-6e5e-a7c7994039c5@oracle.com>
+In-Reply-To: <e74b8293-5d30-7522-6e5e-a7c7994039c5@oracle.com>
+From: Ian Rogers <irogers@google.com>
+Date: Thu, 26 Jan 2023 11:10:01 -0800
+Message-ID: <CAP-5=fUrHqAtP-yRDYi4G4oo-PX-2YF8tyB=BBk2t0iM_U3__g@mail.gmail.com>
+Subject: Re: [PATCH v4 02/12] perf jevents metric: Add ability to rewrite
+ metrics in terms of others
+To: John Garry <john.g.garry@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,37 +75,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, Suren Baghdasaryan <surenb@google.com>, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin@google.com, mgorman
- @techsingularity.net
+Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sandipan Das <sandipan.das@amd.com>, Peter Zijlstra <peterz@infradead.org>, Perry Taylor <perry.taylor@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, James Clark <james.clark@arm.com>, Kim Phillips <kim.phillips@amd.com>, Will Deacon <will@kernel.org>, Kan Liang <kan.liang@linux.intel.com>, Rob Herring <robh@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Xing Zhengjun <zhengjun.xing@linux.intel.com>, Mike Leach <mike.leach@linaro.org>, Kajol Jain <kjain@linux.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Caleb Biggers <caleb.biggers@intel.com>, linux-arm-kernel@lists.infradead.org, Ravi Bangoria <ravi.bangoria@amd.com>, Florian Fischer <florian.fischer@muhq.space>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Leo Yan 
+ <leo.yan@linaro.org>, linuxppc-dev@lists.ozlabs.org, Jing Zhang <renyu.zj@linux.alibaba.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 25 Jan 2023, Andrew Morton wrote:
-
->On Wed, 25 Jan 2023 15:35:49 -0800 Suren Baghdasaryan <surenb@google.com> wrote:
+On Thu, Jan 26, 2023 at 7:59 AM John Garry <john.g.garry@oracle.com> wrote:
 >
->> vm_flags are among VMA attributes which affect decisions like VMA merging
->> and splitting. Therefore all vm_flags modifications are performed after
->> taking exclusive mmap_lock to prevent vm_flags updates racing with such
->> operations. Introduce modifier functions for vm_flags to be used whenever
->> flags are updated. This way we can better check and control correct
->> locking behavior during these updates.
->>
->> ...
->>
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> +static inline void init_vm_flags(struct vm_area_struct *vma,
->> +static inline void reset_vm_flags(struct vm_area_struct *vma,
->> +static inline void set_vm_flags(struct vm_area_struct *vma,
->> +static inline void clear_vm_flags(struct vm_area_struct *vma,
->> +static inline void mod_vm_flags(struct vm_area_struct *vma,
+> On 26/01/2023 01:18, Ian Rogers wrote:
+> > Add RewriteMetricsInTermsOfOthers that iterates over pairs of names
+> > and expressions trying to replace an expression, within the current
+> > expression, with its name.
+> >
+> > Signed-off-by: Ian Rogers <irogers@google.com>
 >
->vm_flags_init(), vm_flags_reset(), etc?
+> hmmm ... did you test this for many python versions?
 >
->This would be more idiomatic and I do think the most-significant-first
->naming style is preferable.
+> Maybe this patch causes this error:
+>
+> Traceback (most recent call last):
+>   File "pmu-events/jevents.py", line 7, in <module>
+>     import metric
+>   File "/home/john/acme/tools/perf/pmu-events/metric.py", line 549, in
+> <module>
+>     def RewriteMetricsInTermsOfOthers(metrics: list[Tuple[str, Expression]]
+> TypeError: 'type' object is not subscriptable
+> make[3]: *** [pmu-events/Build:26: pmu-events/pmu-events.c] Error 1
+> make[2]: *** [Makefile.perf:676: pmu-events/pmu-events-in.o] Error 2
+> make[2]: *** Waiting for unfinished jobs....
+>
+> I have python 3.6.15
+>
+> Thanks,
+> John
 
-I tend to prefer this naming yes, but lgtm regardless.
+Apologies, I have to test python3.6 with docker and so if I think the
+change is small enough.. My error, will spin v5.
 
-Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+Thanks,
+Ian
+
+>
