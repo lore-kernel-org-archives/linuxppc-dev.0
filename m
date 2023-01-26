@@ -4,51 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80F77C54EAA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 23:56:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF9ADC54EAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 02:35:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2yKT174jz3fN5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 10:56:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P31sH1B9bz3fQy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 13:35:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EjNRBD0x;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=T4/5HVZH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=kuba@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.230; helo=relay10.mail.gandi.net; envelope-from=luca.ceresoli@bootlin.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EjNRBD0x;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=T4/5HVZH;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+X-Greylist: delayed 118 seconds by postgrey-1.36 at boromir; Fri, 27 Jan 2023 02:24:24 AEDT
+Received: from relay10.mail.gandi.net (relay10.mail.gandi.net [217.70.178.230])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2yJN0rXYz3000
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 10:55:32 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id B8989B80DF7;
-	Thu, 26 Jan 2023 23:55:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E5B99C433D2;
-	Thu, 26 Jan 2023 23:55:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1674777327;
-	bh=b4RDpwEILaDiIt/LpUYj6ICO+dPIjXDR8ok9CctcPps=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=EjNRBD0x7DqI5RWqrQB53Z5Y0dhJERyDmr8qkJ5N0IoJEoVb5kEuCBlXqazqg6NTt
-	 6R1V2ndj99lVu1sCQxKtDdEvjIFacZKGSz+Lhy8uRjmFYWsORmUCS1u6B8hKs7DvvJ
-	 j1FgWk9FgznH/mM6ARjb4iGeX/fRGcraMjEx28xzEE+9uopEpF5TN4NUx/rv882+aK
-	 0qPw/IDwT4whMeGcK+EVs7cfVrMEUVyhvhE8ZLvKc3iXMSWP0zWUKUlOon9CyXo0NJ
-	 FLHAStWX96PnCHsfv4ZDYqqht1TBsrX82BA4jCSphv+pENkmWr6WVrpyCmT4VPx0nr
-	 kJTXOhmZm70/Q==
-Date: Thu, 26 Jan 2023 15:55:26 -0800
-From: Jakub Kicinski <kuba@kernel.org>
-To: Luca Ceresoli <luca.ceresoli@bootlin.com>
-Subject: Re: [PATCH] scripts/spelling.txt: add "exsits" pattern and fix typo
- instances
-Message-ID: <20230126155526.3247785a@kernel.org>
-In-Reply-To: <20230126152205.959277-1-luca.ceresoli@bootlin.com>
-References: <20230126152205.959277-1-luca.ceresoli@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2kyc20tYz3cH1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 02:24:23 +1100 (AEDT)
+Received: from booty.fritz.box (unknown [77.244.183.192])
+	(Authenticated sender: luca.ceresoli@bootlin.com)
+	by mail.gandi.net (Postfix) with ESMTPA id F296E24000C;
+	Thu, 26 Jan 2023 15:24:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
+	t=1674746660;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=rxsciDeqntpVUYn5FLc+E1Uob0ovb8UfCOdsWZY5uwU=;
+	b=T4/5HVZHxuMKo5KmRiXxx+syO4WcZeO6SScPR0KZgsHpfL+MczFljwh8BDAa0pmVyshuHe
+	IJ1bxcFRQoNIYs+TwFHmKtVae8oqPmNS2noDNR95QdHobXLbdYqyJ6jZDzI8T/3a41JeNz
+	k3gW/nYR1B5QmTiEx34iIP865Qb18W47bpNTKL7l2WHCbIWp0wByjjFtg0td73d9x1KGzF
+	pTawqkzou34elhGXElMrgpLo76xcxjZ6sxvfb9lCvPRUa09EJG5eKh5ajq9oQrqj5IB/Ik
+	ZpDuUhVqRc5VOxnWJhbtOIkrYFz6p4IkOGx922R+dpD2GRVLFxwu/b/4nNAsUg==
+From: Luca Ceresoli <luca.ceresoli@bootlin.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Subject: [PATCH] ASoC: fsl-asoc-card: constify fsl_asoc_card_dai
+Date: Thu, 26 Jan 2023 16:24:12 +0100
+Message-Id: <20230126152412.959574-1-luca.ceresoli@bootlin.com>
+X-Mailer: git-send-email 2.34.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 27 Jan 2023 13:32:18 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,15 +64,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dev@openvswitch.org, alsa-devel@alsa-project.org, Leon Romanovsky <leon@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Pravin B Shelar <pshelar@ovn.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Jason Gunthorpe <jgg@ziepe.ca>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Fabio Estevam <festevam@gmail.com>, Colin Ian King <colin.i.king@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org, Luca Ceresoli <luca.ceresoli@bootlin.com>, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 26 Jan 2023 16:22:05 +0100 Luca Ceresoli wrote:
-> Fix typos and add the following to the scripts/spelling.txt:
-> 
->   exsits||exists
-> 
-> Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+This is never modified and can be made const.
 
-You need to split this up per subsystem, I reckon :(
+Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
+---
+ sound/soc/fsl/fsl-asoc-card.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 2f25358196ee..00118a75d126 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -297,7 +297,7 @@ SND_SOC_DAILINK_DEFS(hifi_be,
+ 	DAILINK_COMP_ARRAY(COMP_EMPTY()),
+ 	DAILINK_COMP_ARRAY(COMP_DUMMY()));
+ 
+-static struct snd_soc_dai_link fsl_asoc_card_dai[] = {
++static const struct snd_soc_dai_link fsl_asoc_card_dai[] = {
+ 	/* Default ASoC DAI Link*/
+ 	{
+ 		.name = "HiFi",
+-- 
+2.34.1
+
