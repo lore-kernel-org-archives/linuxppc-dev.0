@@ -4,60 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F5D0C05027
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 08:44:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94F68C54E94
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 09:45:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P2Z530DcXz3fGy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 19:44:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P2bRW6Xk4z3fD9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jan 2023 20:45:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=GqXrf22M;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hy5EFgaQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=mhocko@suse.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=GqXrf22M;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hy5EFgaQ;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2Ysz4lvNz3fH5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 19:34:47 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2bQV4twWz3cdC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 20:44:34 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 7B748219DB;
-	Thu, 26 Jan 2023 08:34:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1674722084; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=h84/CJ+BUKA4r3paYSwrGleDu2MjdfWev/qgqUjOUms=;
-	b=GqXrf22MxyQtu48sos888QtIUmzrSG5ZpQYnuhDGATftnD6qrk6G9Vb2pO+FZ04yHq1b2V
-	v/aZS7wNHFZOaDwfu4i6+Jy6IXTHGIAwSpSIMw/hjpbFG29vYiRxoCrb4wlLsmTWuEltn6
-	+FZggzXl6902SAlVkq/RVivGkx7XSCw=
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 4C92A13A09;
-	Thu, 26 Jan 2023 08:34:44 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id bgg4EiQ70mN7OgAAMHmgww
-	(envelope-from <mhocko@suse.com>); Thu, 26 Jan 2023 08:34:44 +0000
-Date: Thu, 26 Jan 2023 09:34:43 +0100
-From: Michal Hocko <mhocko@suse.com>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v3 6/7] mm: introduce mod_vm_flags_nolock and use it in
- untrack_pfn
-Message-ID: <Y9I7I8DQo5+3gGwE@dhcp22.suse.cz>
-References: <20230125233554.153109-1-surenb@google.com>
- <20230125233554.153109-7-surenb@google.com>
+	by ams.source.kernel.org (Postfix) with ESMTPS id 81D3BB81D19;
+	Thu, 26 Jan 2023 09:44:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7BE18C433EF;
+	Thu, 26 Jan 2023 09:44:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1674726270;
+	bh=FrtbMbb4OIfAtJoYv7TEP+YBKTKU1Lf54MZlFwjBe6A=;
+	h=Date:From:To:List-Id:Cc:Subject:References:In-Reply-To:From;
+	b=Hy5EFgaQhwX3N4yDoBbMnHTcYfaJfeEgtGdqkcfEHctzYAo8Qq7Myv9Tv8TzVuLuM
+	 ROAUtf239yFs19rqtlZgSZG/JxAfdmb5z9I5l5WfzVa3OIDNlEscQKjhofqiflry3G
+	 KullkN/j3Flnws0eL2CvaC+IfBWOHQ8N//Rl8mmiLPwx0Ljcq9H8rSpcFIXJDxP5jH
+	 Us13tuORrc8mkcLbAX+7mCdzAApXq+Tyi/Lst5UfUP4/UKIkwLbALK6h6T7kPPPwAZ
+	 Bee4ghiMFv4sZRARfmnPe47PBCyqsbBeKrDMdSdZADpAnr9eDOtqv0YCwga6c7Qyo1
+	 Wfe//ovSMetRw==
+Date: Thu, 26 Jan 2023 17:44:21 +0800
+From: Shawn Guo <shawnguo@kernel.org>
+To: Alexander Stein <alexander.stein@ew.tq-group.com>
+Subject: Re: [PATCH v2 02/10] ARM: dts: ls1021a: add TQ-Systems MBLS102xA
+ device tree
+Message-ID: <20230126094415.GE20713@T480>
+References: <20230120133455.3962413-1-alexander.stein@ew.tq-group.com>
+ <20230120133455.3962413-3-alexander.stein@ew.tq-group.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230125233554.153109-7-surenb@google.com>
+In-Reply-To: <20230120133455.3962413-3-alexander.stein@ew.tq-group.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,268 +62,548 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, hughlynch@google.com, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsingul
- arity.net
+Cc: Marek Vasut <marex@denx.de>, devicetree@vger.kernel.org, Nicolas Schier <nicolas@fjasle.eu>, Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, Marcel Ziswiler <marcel.ziswiler@toradex.com>, Masahiro Yamada <masahiroy@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, Russell King <linux@armlinux.org.uk>, Nicholas Piggin <npiggin@gmail.com>, Li Yang <leoyang.li@nxp.com>, Nathan Chancellor <nathan@kernel.org>, soc@kernel.org, Rob Herring <robh+dt@kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 25-01-23 15:35:53, Suren Baghdasaryan wrote:
-> In cases when VMA flags are modified after VMA was isolated and mmap_lock
-> was downgraded, flags modifications would result in an assertion because
-> mmap write lock is not held.
-> Introduce mod_vm_flags_nolock to be used in such situation, when VMA is
-> not part of VMA tree and locking it is not required.
-> Pass a hint to untrack_pfn to conditionally use mod_vm_flags_nolock for
-> flags modification and to avoid assertion.
+On Fri, Jan 20, 2023 at 02:34:47PM +0100, Alexander Stein wrote:
+> Add device tree for the MBLS102xA mainboard with TQMLS1021A SoM.
 > 
-> Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-Thanks!
-
+> Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 > ---
->  arch/x86/mm/pat/memtype.c | 10 +++++++---
->  include/linux/mm.h        | 16 +++++++++++++---
->  include/linux/pgtable.h   |  5 +++--
->  mm/memory.c               | 13 +++++++------
->  mm/memremap.c             |  4 ++--
->  mm/mmap.c                 | 16 ++++++++++------
->  6 files changed, 42 insertions(+), 22 deletions(-)
+> Changes in v2:
+> * Remove unnecessary status = "okay"
+> * Remove underscore from node names
+> * Move reg direct below compatiblefor i2c devices
+> * Remove i2c device nodes without software support
+>   Add a comment about existance for the device though
 > 
-> diff --git a/arch/x86/mm/pat/memtype.c b/arch/x86/mm/pat/memtype.c
-> index ae9645c900fa..d8adc0b42cf2 100644
-> --- a/arch/x86/mm/pat/memtype.c
-> +++ b/arch/x86/mm/pat/memtype.c
-> @@ -1046,7 +1046,7 @@ void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot, pfn_t pfn)
->   * can be for the entire vma (in which case pfn, size are zero).
->   */
->  void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
-> -		 unsigned long size)
-> +		 unsigned long size, bool mm_wr_locked)
->  {
->  	resource_size_t paddr;
->  	unsigned long prot;
-> @@ -1065,8 +1065,12 @@ void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
->  		size = vma->vm_end - vma->vm_start;
->  	}
->  	free_pfn_range(paddr, size);
-> -	if (vma)
-> -		clear_vm_flags(vma, VM_PAT);
-> +	if (vma) {
-> +		if (mm_wr_locked)
-> +			clear_vm_flags(vma, VM_PAT);
-> +		else
-> +			mod_vm_flags_nolock(vma, 0, VM_PAT);
-> +	}
->  }
->  
->  /*
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 1ab5f73360f2..86bf043136f3 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -656,12 +656,22 @@ static inline void clear_vm_flags(struct vm_area_struct *vma,
->  	ACCESS_PRIVATE(vma, __vm_flags) &= ~flags;
->  }
->  
+>  arch/arm/boot/dts/Makefile                    |   1 +
+>  .../boot/dts/ls1021a-tqmls1021a-mbls1021a.dts | 406 ++++++++++++++++++
+>  arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi     |  81 ++++
+>  3 files changed, 488 insertions(+)
+>  create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a.dts
+>  create mode 100644 arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+> 
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index d0c07867aeabe..44b5ed44b13d6 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -802,6 +802,7 @@ dtb-$(CONFIG_SOC_LS1021A) += \
+>  	ls1021a-iot.dtb \
+>  	ls1021a-moxa-uc-8410a.dtb \
+>  	ls1021a-qds.dtb \
+> +	ls1021a-tqmls1021a-mbls1021a.dtb \
+>  	ls1021a-tsn.dtb \
+>  	ls1021a-twr.dtb
+>  dtb-$(CONFIG_SOC_VF610) += \
+> diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a.dts b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a.dts
+> new file mode 100644
+> index 0000000000000..aa8b605344655
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/ls1021a-tqmls1021a-mbls1021a.dts
+> @@ -0,0 +1,406 @@
+> +// SPDX-License-Identifier: (GPL-2.0-or-later OR X11)
 > +/*
-> + * Use only if VMA has been previously isolated, is not part of the VMA tree
-> + * and therefore needs no locking.
+> + * Copyright 2013-2014 Freescale Semiconductor, Inc.
+> + * Copyright 2018-2023 TQ-Systems GmbH <linux@ew.tq-group.com>,
+> + * D-82229 Seefeld, Germany.
+> + * Author: Alexander Stein
 > + */
-> +static inline void mod_vm_flags_nolock(struct vm_area_struct *vma,
-> +				       vm_flags_t set, vm_flags_t clear)
-> +{
-> +	ACCESS_PRIVATE(vma, __vm_flags) |= set;
-> +	ACCESS_PRIVATE(vma, __vm_flags) &= ~clear;
-> +}
 > +
->  static inline void mod_vm_flags(struct vm_area_struct *vma,
->  				vm_flags_t set, vm_flags_t clear)
->  {
->  	mmap_assert_write_locked(vma->vm_mm);
-> -	ACCESS_PRIVATE(vma, __vm_flags) |= set;
-> -	ACCESS_PRIVATE(vma, __vm_flags) &= ~clear;
-> +	mod_vm_flags_nolock(vma, set, clear);
->  }
->  
->  static inline void vma_set_anonymous(struct vm_area_struct *vma)
-> @@ -2087,7 +2097,7 @@ static inline void zap_vma_pages(struct vm_area_struct *vma)
->  }
->  void unmap_vmas(struct mmu_gather *tlb, struct maple_tree *mt,
->  		struct vm_area_struct *start_vma, unsigned long start,
-> -		unsigned long end);
-> +		unsigned long end, bool mm_wr_locked);
->  
->  struct mmu_notifier_range;
->  
-> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> index 5fd45454c073..c63cd44777ec 100644
-> --- a/include/linux/pgtable.h
-> +++ b/include/linux/pgtable.h
-> @@ -1185,7 +1185,8 @@ static inline int track_pfn_copy(struct vm_area_struct *vma)
->   * can be for the entire vma (in which case pfn, size are zero).
->   */
->  static inline void untrack_pfn(struct vm_area_struct *vma,
-> -			       unsigned long pfn, unsigned long size)
-> +			       unsigned long pfn, unsigned long size,
-> +			       bool mm_wr_locked)
->  {
->  }
->  
-> @@ -1203,7 +1204,7 @@ extern void track_pfn_insert(struct vm_area_struct *vma, pgprot_t *prot,
->  			     pfn_t pfn);
->  extern int track_pfn_copy(struct vm_area_struct *vma);
->  extern void untrack_pfn(struct vm_area_struct *vma, unsigned long pfn,
-> -			unsigned long size);
-> +			unsigned long size, bool mm_wr_locked);
->  extern void untrack_pfn_moved(struct vm_area_struct *vma);
->  #endif
->  
-> diff --git a/mm/memory.c b/mm/memory.c
-> index d6902065e558..5b11b50e2c4a 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1613,7 +1613,7 @@ void unmap_page_range(struct mmu_gather *tlb,
->  static void unmap_single_vma(struct mmu_gather *tlb,
->  		struct vm_area_struct *vma, unsigned long start_addr,
->  		unsigned long end_addr,
-> -		struct zap_details *details)
-> +		struct zap_details *details, bool mm_wr_locked)
->  {
->  	unsigned long start = max(vma->vm_start, start_addr);
->  	unsigned long end;
-> @@ -1628,7 +1628,7 @@ static void unmap_single_vma(struct mmu_gather *tlb,
->  		uprobe_munmap(vma, start, end);
->  
->  	if (unlikely(vma->vm_flags & VM_PFNMAP))
-> -		untrack_pfn(vma, 0, 0);
-> +		untrack_pfn(vma, 0, 0, mm_wr_locked);
->  
->  	if (start != end) {
->  		if (unlikely(is_vm_hugetlb_page(vma))) {
-> @@ -1675,7 +1675,7 @@ static void unmap_single_vma(struct mmu_gather *tlb,
->   */
->  void unmap_vmas(struct mmu_gather *tlb, struct maple_tree *mt,
->  		struct vm_area_struct *vma, unsigned long start_addr,
-> -		unsigned long end_addr)
-> +		unsigned long end_addr, bool mm_wr_locked)
->  {
->  	struct mmu_notifier_range range;
->  	struct zap_details details = {
-> @@ -1689,7 +1689,8 @@ void unmap_vmas(struct mmu_gather *tlb, struct maple_tree *mt,
->  				start_addr, end_addr);
->  	mmu_notifier_invalidate_range_start(&range);
->  	do {
-> -		unmap_single_vma(tlb, vma, start_addr, end_addr, &details);
-> +		unmap_single_vma(tlb, vma, start_addr, end_addr, &details,
-> +				 mm_wr_locked);
->  	} while ((vma = mas_find(&mas, end_addr - 1)) != NULL);
->  	mmu_notifier_invalidate_range_end(&range);
->  }
-> @@ -1723,7 +1724,7 @@ void zap_page_range_single(struct vm_area_struct *vma, unsigned long address,
->  	 * unmap 'address-end' not 'range.start-range.end' as range
->  	 * could have been expanded for hugetlb pmd sharing.
->  	 */
-> -	unmap_single_vma(&tlb, vma, address, end, details);
-> +	unmap_single_vma(&tlb, vma, address, end, details, false);
->  	mmu_notifier_invalidate_range_end(&range);
->  	tlb_finish_mmu(&tlb);
->  }
-> @@ -2492,7 +2493,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
->  
->  	err = remap_pfn_range_notrack(vma, addr, pfn, size, prot);
->  	if (err)
-> -		untrack_pfn(vma, pfn, PAGE_ALIGN(size));
-> +		untrack_pfn(vma, pfn, PAGE_ALIGN(size), true);
->  	return err;
->  }
->  EXPORT_SYMBOL(remap_pfn_range);
-> diff --git a/mm/memremap.c b/mm/memremap.c
-> index 08cbf54fe037..2f88f43d4a01 100644
-> --- a/mm/memremap.c
-> +++ b/mm/memremap.c
-> @@ -129,7 +129,7 @@ static void pageunmap_range(struct dev_pagemap *pgmap, int range_id)
->  	}
->  	mem_hotplug_done();
->  
-> -	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range));
-> +	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range), true);
->  	pgmap_array_delete(range);
->  }
->  
-> @@ -276,7 +276,7 @@ static int pagemap_range(struct dev_pagemap *pgmap, struct mhp_params *params,
->  	if (!is_private)
->  		kasan_remove_zero_shadow(__va(range->start), range_len(range));
->  err_kasan:
-> -	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range));
-> +	untrack_pfn(NULL, PHYS_PFN(range->start), range_len(range), true);
->  err_pfn_remap:
->  	pgmap_array_delete(range);
->  	return error;
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 2c6e9072e6a8..69d440997648 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -78,7 +78,7 @@ core_param(ignore_rlimit_data, ignore_rlimit_data, bool, 0644);
->  static void unmap_region(struct mm_struct *mm, struct maple_tree *mt,
->  		struct vm_area_struct *vma, struct vm_area_struct *prev,
->  		struct vm_area_struct *next, unsigned long start,
-> -		unsigned long end);
-> +		unsigned long end, bool mm_wr_locked);
->  
->  static pgprot_t vm_pgprot_modify(pgprot_t oldprot, unsigned long vm_flags)
->  {
-> @@ -2136,14 +2136,14 @@ static inline void remove_mt(struct mm_struct *mm, struct ma_state *mas)
->  static void unmap_region(struct mm_struct *mm, struct maple_tree *mt,
->  		struct vm_area_struct *vma, struct vm_area_struct *prev,
->  		struct vm_area_struct *next,
-> -		unsigned long start, unsigned long end)
-> +		unsigned long start, unsigned long end, bool mm_wr_locked)
->  {
->  	struct mmu_gather tlb;
->  
->  	lru_add_drain();
->  	tlb_gather_mmu(&tlb, mm);
->  	update_hiwater_rss(mm);
-> -	unmap_vmas(&tlb, mt, vma, start, end);
-> +	unmap_vmas(&tlb, mt, vma, start, end, mm_wr_locked);
->  	free_pgtables(&tlb, mt, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
->  				 next ? next->vm_start : USER_PGTABLES_CEILING);
->  	tlb_finish_mmu(&tlb);
-> @@ -2391,7 +2391,11 @@ do_vmi_align_munmap(struct vma_iterator *vmi, struct vm_area_struct *vma,
->  			mmap_write_downgrade(mm);
->  	}
->  
-> -	unmap_region(mm, &mt_detach, vma, prev, next, start, end);
-> +	/*
-> +	 * We can free page tables without write-locking mmap_lock because VMAs
-> +	 * were isolated before we downgraded mmap_lock.
-> +	 */
-> +	unmap_region(mm, &mt_detach, vma, prev, next, start, end, !downgrade);
->  	/* Statistics and freeing VMAs */
->  	mas_set(&mas_detach, start);
->  	remove_mt(mm, &mas_detach);
-> @@ -2704,7 +2708,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
->  
->  		/* Undo any partial mapping done by a device driver. */
->  		unmap_region(mm, &mm->mm_mt, vma, prev, next, vma->vm_start,
-> -			     vma->vm_end);
-> +			     vma->vm_end, true);
->  	}
->  	if (file && (vm_flags & VM_SHARED))
->  		mapping_unmap_writable(file->f_mapping);
-> @@ -3031,7 +3035,7 @@ void exit_mmap(struct mm_struct *mm)
->  	tlb_gather_mmu_fullmm(&tlb, mm);
->  	/* update_hiwater_rss(mm) here? but nobody should be looking */
->  	/* Use ULONG_MAX here to ensure all VMAs in the mm are unmapped */
-> -	unmap_vmas(&tlb, &mm->mm_mt, vma, 0, ULONG_MAX);
-> +	unmap_vmas(&tlb, &mm->mm_mt, vma, 0, ULONG_MAX, false);
->  	mmap_read_unlock(mm);
->  
->  	/*
-> -- 
-> 2.39.1
+> +/dts-v1/;
+> +
+> +#include <dt-bindings/gpio/gpio.h>
+> +#include <dt-bindings/input/linux-event-codes.h>
+> +#include <dt-bindings/leds/common.h>
+> +#include <dt-bindings/leds/leds-pca9532.h>
+> +#include <dt-bindings/net/ti-dp83867.h>
+> +#include "ls1021a-tqmls1021a.dtsi"
+> +
+> +/ {
+> +	model = "TQMLS102xA SOM on MBLS102xA";
+> +	compatible = "tq,ls1021a-tqmls1021a-mbls102xa", "tq,ls1021a-tqmls1021a", "fsl,ls1021a";
+> +
+> +	audio_mclk: audio-clock {
+> +		compatible = "fixed-clock";
+> +		#clock-cells = <0>;
+> +		clock-frequency = <25000000>;
+> +	};
+> +
+> +	backlight_dcu: backlight {
+> +		compatible = "gpio-backlight";
+> +		gpios = <&pca9530 0 GPIO_ACTIVE_LOW>;
+> +		status = "disabled";
+> +	};
+> +
+> +	gpio-keys {
+> +		compatible = "gpio-keys";
+> +		autorepeat;
+> +
+> +		switch-1 {
+> +			label = "S6";
+> +			linux,code = <BTN_0>;
+> +			gpios = <&pca9554_0 0 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		btn2: switch-2 {
+> +			label = "S7";
+> +			linux,code = <BTN_1>;
+> +			gpios = <&pca9554_0 1 GPIO_ACTIVE_LOW>;
+> +		};
+> +
+> +		switch-3 {
+> +			label = "S8";
+> +			linux,code = <BTN_2>;
+> +			gpios = <&pca9554_0 2 GPIO_ACTIVE_LOW>;
+> +		};
+> +	};
+> +
+> +	gpio_leds: gpio-leds {
+> +		compatible = "gpio-leds";
+> +
+> +		led-0 {
+> +			color = <LED_COLOR_ID_GREEN>;
+> +			function = LED_FUNCTION_STATUS;
+> +			function-enumerator = <0>;
+> +			gpios = <&pca9554_2 4 GPIO_ACTIVE_LOW>;
+> +			linux,default-trigger = "default-on";
+> +		};
+> +
+> +		led-1 {
+> +			color = <LED_COLOR_ID_GREEN>;
+> +			function = LED_FUNCTION_STATUS;
+> +			function-enumerator = <1>;
+> +			gpios = <&pca9554_2 5 GPIO_ACTIVE_LOW>;
+> +			linux,default-trigger = "default-on";
+> +		};
+> +
+> +		led-2 {
+> +			color = <LED_COLOR_ID_GREEN>;
+> +			function = LED_FUNCTION_STATUS;
+> +			function-enumerator = <2>;
+> +			gpios = <&pca9554_2 6 GPIO_ACTIVE_LOW>;
+> +			linux,default-trigger = "default-on";
+> +		};
+> +
+> +		led-3 {
+> +			color = <LED_COLOR_ID_GREEN>;
+> +			function = LED_FUNCTION_HEARTBEAT;
+> +			function-enumerator = <0>;
+> +			gpios = <&pca9554_2 7 GPIO_ACTIVE_LOW>;
+> +			linux,default-trigger = "heartbeat";
+> +		};
+> +	};
+> +
+> +	lvds_encoder: lvds-encoder {
+> +		compatible = "ti,sn75lvds83", "lvds-encoder";
+> +		power-supply = <&reg_3p3v>;
+> +		status = "disabled";
+> +
+> +		ports {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			port@0 {
+> +				reg = <0>;
+> +
+> +				lvds_encoder_in: endpoint {};
+> +			};
+> +
+> +			port@1 {
+> +				reg = <1>;
+> +
+> +				lvds_encoder_out: endpoint {};
+> +			};
+> +		};
+> +	};
+> +
+> +	reg_1p2v: regulator-1p2v {
+> +		compatible = "regulator-fixed";
+> +		regulator-name = "1P2V";
+> +		regulator-min-microvolt = <1200000>;
+> +		regulator-max-microvolt = <1200000>;
+> +		regulator-always-on;
+> +		vin-supply = <&reg_3p3v>;
+> +	};
+> +
+> +	reg_3p3v: regulator-3p3v {
+> +		compatible = "regulator-fixed";
+> +		regulator-name = "3P3V";
+> +		regulator-min-microvolt = <3300000>;
+> +		regulator-max-microvolt = <3300000>;
+> +		regulator-always-on;
+> +	};
+> +
+> +	hdmi_out: hdmi {
+> +		compatible = "hdmi-connector";
+> +		type = "a";
+> +		ddc-i2c-bus = <&i2c0>;
+> +		status = "disabled";
+> +
+> +		port {
+> +			hdmi_in: endpoint {
+> +				remote-endpoint = <&sii9022a_out>;
+> +			};
+> +		};
+> +	};
+> +
+> +	display: panel {
+> +		backlight = <&backlight_dcu>;
+> +		enable-gpios = <&pca9554_1 3 GPIO_ACTIVE_HIGH>;
+> +		status = "disabled";
+> +
+> +		port {
+> +			panel_in: endpoint {};
+> +		};
+> +	};
+> +
+> +	sound {
+> +		compatible = "fsl,imx-audio-tlv320aic32x4";
+> +		model = "ls1021a-mbls1021a-tlv320aic32";
+> +		ssi-controller = <&sai1>;
+> +		audio-codec = <&tlv320aic32x4>;
+> +	};
+> +
+> +};
+> +
+> +&can0 {
+> +	status = "okay";
+> +	xceiver-supply = <&reg_3p3v>;
 
--- 
-Michal Hocko
-SUSE Labs
+We generally end property list with 'status'.
+
+> +};
+> +
+> +&can1 {
+> +	status = "okay";
+> +	xceiver-supply = <&reg_3p3v>;
+> +};
+> +
+> +&dspi0 {
+> +	bus-num = <0>;
+> +	status = "okay";
+> +};
+> +
+> +&enet0 {
+> +	phy-handle = <&rgmii_phy0c>;
+> +	phy-mode = "rgmii-id";
+> +	mac-address = [ 00 00 00 00 00 00 ];
+> +	status = "okay";
+> +};
+> +
+> +&enet1 {
+> +	tbi-handle = <&tbi1>;
+> +	phy-handle = <&sgmii_phy03>;
+> +	phy-mode = "sgmii";
+> +	mac-address = [ 00 00 00 00 00 00 ];
+> +	status = "okay";
+> +};
+> +
+> +&enet2 {
+> +	phy-handle = <&rgmii_phy04>;
+> +	phy-mode = "rgmii-id";
+> +	mac-address = [ 00 00 00 00 00 00 ];
+> +	status = "okay";
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +
+> +	tlv320aic32x4: audio-codec@18 {
+> +		compatible = "ti,tlv320aic32x4";
+> +		reg = <0x18>;
+> +		clocks = <&audio_mclk>;
+> +		clock-names = "mclk";
+> +		ldoin-supply = <&reg_3p3v>;
+> +		iov-supply = <&reg_3p3v>;
+> +	};
+> +
+> +	pca9554_0: gpio-expander@20 {
+> +		compatible = "nxp,pca9554";
+> +		reg = <0x20>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		interrupt-parent = <&gpio0>;
+> +		interrupts = <24 IRQ_TYPE_EDGE_FALLING>;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +		vcc-supply = <&reg_3p3v>;
+> +		gpio-line-names = "BUTTON0", "BUTTON1",
+> +				  "BUTTON2", "EMMC_SEL",
+> +				  "DIP2", "DIP3",
+> +				  "EXT_TOUCH_INT", "GPIO_1";
+> +	};
+> +
+> +	pca9554_1: gpio-expander@21 {
+> +		compatible = "nxp,pca9554";
+> +		reg = <0x21>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		interrupt-parent = <&gpio0>;
+> +		interrupts = <25 IRQ_TYPE_EDGE_FALLING>;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +		vcc-supply = <&reg_3p3v>;
+> +		gpio-line-names = "PCIE_PWR_EN", "MPCIE_DISABLE#",
+> +				  "MPCIE_WAKE#", "LCD_BLT_EN",
+> +				  "LCD_PWR_EN", "EC1_PHY_PWDN",
+> +				  "EC3_PHY_PWDN", "SGMII_PHY_PWDN";
+> +	};
+> +
+> +	pca9554_2: gpio-expander@22 {
+> +		compatible = "nxp,pca9554";
+> +		reg = <0x22>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		interrupt-parent = <&extirq>;
+> +		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+> +		interrupt-controller;
+> +		#interrupt-cells = <2>;
+> +		vcc-supply = <&reg_3p3v>;
+> +		gpio-line-names = "MUX_SEL0", "MUX_SEL1",
+> +				  "MUX_SEL2", "MUX_SEL3",
+> +				  "V95", "V96", "V97", "V98";
+> +	};
+> +
+> +	sii9022a: hdmi-transmitter@3b {
+> +		compatible = "sil,sii9022";
+> +		reg = <0x3b>;
+> +		iovcc-supply = <&reg_3p3v>;
+> +		cvcc12-supply = <&reg_1p2v>;
+> +		interrupts = <GIC_SPI 167 IRQ_TYPE_EDGE_RISING>;
+> +		#sound-dai-cells = <0>;
+> +		sil,i2s-data-lanes = <0>;
+> +		status = "disabled";
+> +
+> +		ports {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +
+> +			port@0 {
+> +				reg = <0>;
+> +
+> +				sii9022a_in: endpoint {};
+> +			};
+> +
+> +			port@1 {
+> +				reg = <1>;
+> +
+> +				sii9022a_out: endpoint {
+> +					remote-endpoint = <&hdmi_in>;
+> +				};
+> +			};
+> +		};
+> +	};
+> +
+> +	stmpe811: touchscreen@41 {
+> +		compatible = "st,stmpe811";
+> +		reg = <0x41>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +		interrupt-parent = <&gpio0>;
+> +		interrupts = <23 IRQ_TYPE_EDGE_FALLING>;
+> +		vcc-supply = <&reg_3p3v>;
+> +		vio-supply = <&reg_3p3v>;
+> +
+> +		gpio {
+> +			compatible = "st,stmpe-gpio";
+> +			gpio-controller;
+> +			#gpio-cells = <2>;
+> +			/* GPIO 5-7 used for touch */
+> +			st,norequest-mask = <0xf0>;
+> +			gpio-line-names = "GPIO_ADC_I2C1_1",
+> +					  "GPIO_ADC_I2C1_2",
+> +					  "GPIO_ADC_I2C1_3",
+> +					  "GPIO_ADC_I2C1_4";
+> +		};
+> +
+> +		touchscreen {
+> +			compatible = "st,stmpe-ts";
+> +			status = "disabled";
+> +		};
+> +	};
+> +
+> +	pca9530: leds@60 {
+> +		compatible = "nxp,pca9530";
+> +		reg = <0x60>;
+> +		gpio-controller;
+> +		#gpio-cells = <2>;
+> +		gpio-line-names = "PWM_0", "PWM_1";
+> +
+> +		led-0 {
+> +			type = <PCA9532_TYPE_GPIO>;
+> +		};
+> +
+> +		led-1 {
+> +			type = <PCA9532_TYPE_GPIO>;
+> +		};
+> +	};
+> +
+> +};
+> +
+> +&i2c1 {
+> +	status = "okay";
+> +};
+> +
+> +&lpuart0 {
+> +	status = "okay";
+> +	linux,rs485-enabled-at-boot-time;
+> +};
+> +
+> +&mdio0 {
+> +	sgmii_phy03: ethernet-phy@3 {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0x03>;
+> +		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+> +		ti,clk-output-sel = <DP83867_CLK_O_SEL_OFF>;
+> +		ti,dp83867-rxctrl-strap-quirk;
+> +	};
+> +
+> +	rgmii_phy04: ethernet-phy@4 {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0x04>;
+> +		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_50_NS>;
+> +		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+> +		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+> +		ti,clk-output-sel = <DP83867_CLK_O_SEL_OFF>;
+> +	};
+> +
+> +	rgmii_phy0c: ethernet-phy@c {
+> +		compatible = "ethernet-phy-ieee802.3-c22";
+> +		reg = <0x0c>;
+> +		ti,rx-internal-delay = <DP83867_RGMIIDCTL_2_50_NS>;
+> +		ti,tx-internal-delay = <DP83867_RGMIIDCTL_2_00_NS>;
+> +		ti,fifo-depth = <DP83867_PHYCR_FIFO_DEPTH_4_B_NIB>;
+> +		ti,clk-output-sel = <DP83867_CLK_O_SEL_OFF>;
+> +	};
+> +};
+> +
+> +&pwm6 {
+> +	status = "okay";
+> +};
+> +
+> +&pwm7 {
+> +	status = "okay";
+> +};
+> +
+> +&sai1 {
+> +	status = "okay";
+> +};
+> +
+> +&sata {
+> +	/delete-property/ dma-coherent;
+> +	status = "okay";
+> +};
+> +
+> +&uart0 {
+> +	status = "okay";
+> +};
+> +
+> +&uart1 {
+> +	status = "okay";
+> +};
+> +
+> +&usb3 {
+> +	/*
+> +	 * Although DR connector, VBUS is always driven, so
+> +	 * restrict to host mode.
+> +	 */
+> +	dr_mode = "host";
+> +	status = "okay";
+> +};
+> diff --git a/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+> new file mode 100644
+> index 0000000000000..24ad4a76fe597
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/ls1021a-tqmls1021a.dtsi
+> @@ -0,0 +1,81 @@
+> +// SPDX-License-Identifier: (GPL-2.0-or-later OR X11)
+> +/*
+> + * Copyright 2013-2014 Freescale Semiconductor, Inc.
+> + * Copyright 2018-2023 TQ-Systems GmbH <linux@ew.tq-group.com>,
+> + * D-82229 Seefeld, Germany.
+> + * Author: Alexander Stein
+> + */
+> +
+> +#include "ls1021a.dtsi"
+> +
+> +/ {
+> +	model = "TQMLS102xA SOM";
+> +	compatible = "tq,ls1021a-tqmls1021a", "fsl,ls1021a";
+> +
+> +	reg_3p3v_som: regulator-3p3v-som {
+> +		compatible = "regulator-fixed";
+> +		regulator-name = "3P3V_SOM";
+> +		regulator-min-microvolt = <3300000>;
+> +		regulator-max-microvolt = <3300000>;
+> +		regulator-always-on;
+> +	};
+> +};
+> +
+> +&esdhc {
+> +	compatible = "fsl,esdhc", "fsl,ls1021a-esdhc";
+
+We usually order compatibles from the specific to the generic.
+
+Shawn
+
+> +	/* e-MMC over 8 data lines */
+> +	bus-width = <8>;
+> +	status = "okay";
+> +};
+> +
+> +&i2c0 {
+> +	status = "okay";
+> +
+> +	/* MC34VR500 DC/DC regulator at 0x8 */
+> +	/* On-board PMC at 0x11 */
+> +
+> +	sa56004: temperature-sensor@4c {
+> +		compatible = "nxp,sa56004";
+> +		reg = <0x4c>;
+> +		vcc-supply = <&reg_3p3v_som>;
+> +	};
+> +
+> +	rtc0: rtc@51 {
+> +		compatible = "nxp,pcf85063a";
+> +		reg = <0x51>;
+> +		quartz-load-femtofarads = <12500>;
+> +	};
+> +
+> +	m24c64_54: eeprom@54 {
+> +		compatible = "atmel,24c64";
+> +		reg = <0x54>;
+> +		pagesize = <32>;
+> +		read-only;
+> +		vcc-supply = <&reg_3p3v_som>;
+> +	};
+> +};
+> +
+> +&mdio0 {
+> +	tbi1: tbi-phy@8 {
+> +		reg = <0x8>;
+> +		device_type = "tbi-phy";
+> +	};
+> +};
+> +
+> +&scfg {
+> +	reg = <0x0 0x1570000 0x0 0x0e00>;
+> +};
+> +
+> +&qspi {
+> +	status = "okay";
+> +
+> +	qflash0: flash@0 {
+> +		compatible = "jedec,spi-nor";
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		spi-max-frequency = <20000000>;
+> +		spi-rx-bus-width = <4>;
+> +		spi-tx-bus-width = <4>;
+> +		reg = <0>;
+> +	};
+> +};
+> -- 
+> 2.34.1
+> 
