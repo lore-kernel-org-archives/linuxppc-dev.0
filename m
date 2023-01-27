@@ -4,63 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53C6BC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 20:03:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C18B5C38142
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 20:03:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P3T5j5jkgz3g1H
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 07:03:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P3T6k2RZqz3fyl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 07:03:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=kp92vFUO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=mLwUPJ0n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::b4a; helo=mail-yb1-xb4a.google.com; envelope-from=3esnuywykdngmol8h5aiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3finuywykdn0rtqdmafnnfkd.bnlkhmtwoob-cdukhrsr.nyk9ar.nqf@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=kp92vFUO;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=mLwUPJ0n;
 	dkim-atps=neutral
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3Sdh4YR2z3fK2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 06:42:12 +1100 (AEDT)
-Received: by mail-yb1-xb4a.google.com with SMTP id a14-20020a5b0ace000000b007bf99065fcbso6361627ybr.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 11:42:11 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3Sdh4cPXz3fK6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 06:42:16 +1100 (AEDT)
+Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-4d5097a95f5so65086797b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 11:42:16 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=5PvsAEkfbXSvdKN+lTJ9M9+vqfLQVBlihpxSKUw/t/s=;
-        b=kp92vFUO2N4rCYUenom2PgB/dU7qqaylHAcH6HVVMYT5QMpL/oqQ/DdOm4bVNlYLNw
-         9rNSkse+dfgOJKwj09yKdpzV2qc7upA8mjHmEpxt3RKsaa3pDRks1QGh3Nb2hG4bp/jU
-         3eSArvNsdqtxNb6zpVi6gl2vf0iZr8y+PtaslVXMeV9Pu9xS/EmrXvCiajKJa9iCZe4S
-         LpK/JO6vbmew4JxbSzbZQyffZL4sOt9sBlPWbT9WmPY7+pp+Ff0i+9BT7l4WdUaIrrgA
-         btwhF2XkX8IUP7VpoyJ9OAYm06ddrZftAFhV0gBzofVRmYYEJ8dT0O9gMwk7XMh0b2Ct
-         qw3A==
+        bh=2v/Evza9dkU4Ne98Lm6HAWxL8/YazIwD41pmx7joRkE=;
+        b=mLwUPJ0nc0ulmmwFoyR9amwtEYn4GV75pogWN7ijAK31MqrZCBgfhijsONjhepzopP
+         2wYY2SkQatHOd+vKpDSxYxHFT1IvhzZTwDWuTcrFWygojUbcZe7xPlEiO9BQnq0w9fKe
+         z4cHjJJqSwoele+PetnaYF8lewRv+be+h1Bgt+SNNsmNqcyEHhiyYbNRieovHRIQnY7Q
+         KgzOHSrbk4QlZX3GRmHUucd8wrsetfG2ey7u2AbUsjqg+O7jZuWXERmenSwIYYomTRZT
+         0AcxNZ8Sif0L8fvqzJHXb63zST/Gg9+vMF9oOa1KQZBohhw7ZSFfQ9eLw7FWbw/nE4Qf
+         wodg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=5PvsAEkfbXSvdKN+lTJ9M9+vqfLQVBlihpxSKUw/t/s=;
-        b=GrZjN9j9YEscGFwqkK/kG94Re2JNIRiz8rlfEL84fiWv72jzv13xekcuFsES75+UPw
-         irg0LQ/D+Mqo6Eb7Hy2PzIoZOxaxNP/JVBqn6CKtCH/8YWOlinlJkrKfs6R9xq+Sbsre
-         dU0ZavOCU+B6nmJnfPgcbtuCpyiXfisFcUMa4WIWuTx2gTPuSoPImjX4we5u60VBk0qh
-         Roheu+cfqk/sXsIE15DyRTZ+l3sYuvJRxcHRkqmHbVAXFFVrK5l6SVh77C8m69vMEIfA
-         AZuBEb+IX9KP8cvEG1gOKWng+zNvpM/CJUQPBDbGgTonyytBHakzRaZpTzWyL9X23TJb
-         6UMw==
-X-Gm-Message-State: AO0yUKXM59d8u3PzcM3YM26TR7rBe9BSCCyTuB1CsYFxRw92/hPS0tlT
-	p24qEkdYRtojpqvwt/hMNqKSOg9Q214=
-X-Google-Smtp-Source: AK7set8zsvT5wkP/7moSYA7dIHSCpHQad2RzXlV5c0Wh0zEZrq5yaOQZsQ7iykW9DnqHdXZz8PLHMfkZLc8=
+        bh=2v/Evza9dkU4Ne98Lm6HAWxL8/YazIwD41pmx7joRkE=;
+        b=Hb9wFpOMjQ2SnCJbhyhh1r7PWW31HI5dIOZ4nPzfeNKJuAgJbkSKe4iPKKTUJzIOtu
+         bqW70J1gmi2GArXicwwqpIw9LzkODau+FS9bms77ksXVXpnwAa49pRXLT7FQSznA747H
+         /OVZEbxAsjA43A2nLpM8Lh8b4la5lFfueNLwTp2Y1kOLyfbtqQ5KWkHciJgILxxsI7oJ
+         icwt003DPKWvx0IGZX3eM2tIdmNt4oUTbQgqJsiaDP7D0BlsGSlsWzB4gQIy7Ho6MfCU
+         ukE3Frgr1Xcl4L0F+aHlMMKpCgKs9HU/H6KkIENvOaiMQJU8Kb4j6jpDsjd9igmvt0CA
+         V1Gg==
+X-Gm-Message-State: AO0yUKUDXluBifBIJlJO6i+FszHLqJ4quUjbT73DCgFsLXna/UknqR8O
+	TwqMDve6YQV/yHkpfw79ohRUzF6gFXQ=
+X-Google-Smtp-Source: AK7set9kKqDiJe5U7EOGuYIrwgRntRqTHzt+zr2t5qOdc5+YeQS/lL3tZ/xnNoww1dZdAcqE9B1Pln9KCVk=
 X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:4e19:be9:c5d0:8483])
- (user=surenb job=sendgmr) by 2002:a81:6d2:0:b0:50e:e91d:f47 with SMTP id
- 201-20020a8106d2000000b0050ee91d0f47mr27189ywg.61.1674848529047; Fri, 27 Jan
- 2023 11:42:09 -0800 (PST)
-Date: Fri, 27 Jan 2023 11:41:00 -0800
+ (user=surenb job=sendgmr) by 2002:a81:b2c6:0:b0:509:5b20:ff22 with SMTP id
+ q189-20020a81b2c6000000b005095b20ff22mr917640ywh.328.1674848534136; Fri, 27
+ Jan 2023 11:42:14 -0800 (PST)
+Date: Fri, 27 Jan 2023 11:41:02 -0800
 In-Reply-To: <20230127194110.533103-1-surenb@google.com>
 Mime-Version: 1.0
 References: <20230127194110.533103-1-surenb@google.com>
 X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
-Message-ID: <20230127194110.533103-24-surenb@google.com>
-Subject: [PATCH v2 23/33] mm: introduce lock_vma_under_rcu to be used from
- arch-specific code
+Message-ID: <20230127194110.533103-26-surenb@google.com>
+Subject: [PATCH v2 25/33] mm: add FAULT_FLAG_VMA_LOCK flag
 From: Suren Baghdasaryan <surenb@google.com>
 To: akpm@linux-foundation.org
 Content-Type: text/plain; charset="UTF-8"
@@ -75,102 +74,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin@google.com, mgorman@techsingularity.net, rp
- pt@kernel.org
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, Laurent Dufour <laurent.dufour@fr.ibm.com>, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin
+ @google.com, mgorman@techsingularity.net, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce lock_vma_under_rcu function to lookup and lock a VMA during
-page fault handling. When VMA is not found, can't be locked or changes
-after being locked, the function returns NULL. The lookup is performed
-under RCU protection to prevent the found VMA from being destroyed before
-the VMA lock is acquired. VMA lock statistics are updated according to
-the results.
-For now only anonymous VMAs can be searched this way. In other cases the
-function returns NULL.
+Add a new flag to distinguish page faults handled under protection of
+per-vma lock.
 
 Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Reviewed-by: Laurent Dufour <laurent.dufour@fr.ibm.com>
 ---
- include/linux/mm.h |  3 +++
- mm/memory.c        | 51 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
+ include/linux/mm.h       | 3 ++-
+ include/linux/mm_types.h | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 66dca140695e..fa2b9d6e665e 100644
+index fa2b9d6e665e..a6de58bb40c7 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -687,6 +687,9 @@ static inline void vma_assert_write_locked(struct vm_area_struct *vma)
- 	VM_BUG_ON_VMA(vma->vm_lock_seq != READ_ONCE(vma->vm_mm->mm_lock_seq), vma);
- }
+@@ -472,7 +472,8 @@ static inline bool fault_flag_allow_retry_first(enum fault_flag flags)
+ 	{ FAULT_FLAG_USER,		"USER" }, \
+ 	{ FAULT_FLAG_REMOTE,		"REMOTE" }, \
+ 	{ FAULT_FLAG_INSTRUCTION,	"INSTRUCTION" }, \
+-	{ FAULT_FLAG_INTERRUPTIBLE,	"INTERRUPTIBLE" }
++	{ FAULT_FLAG_INTERRUPTIBLE,	"INTERRUPTIBLE" }, \
++	{ FAULT_FLAG_VMA_LOCK,		"VMA_LOCK" }
  
-+struct vm_area_struct *lock_vma_under_rcu(struct mm_struct *mm,
-+					  unsigned long address);
-+
- #else /* CONFIG_PER_VMA_LOCK */
- 
- static inline void vma_init_lock(struct vm_area_struct *vma) {}
-diff --git a/mm/memory.c b/mm/memory.c
-index d48c76e9fa57..5568fcb0a46b 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -5222,6 +5222,57 @@ vm_fault_t handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
- }
- EXPORT_SYMBOL_GPL(handle_mm_fault);
- 
-+#ifdef CONFIG_PER_VMA_LOCK
-+/*
-+ * Lookup and lock a VMA under RCU protection. Returned VMA is guaranteed to be
-+ * stable and not isolated. If the VMA is not found or is being modified the
-+ * function returns NULL.
-+ */
-+struct vm_area_struct *lock_vma_under_rcu(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	MA_STATE(mas, &mm->mm_mt, address, address);
-+	struct vm_area_struct *vma, *validate;
-+
-+	rcu_read_lock();
-+	vma = mas_walk(&mas);
-+retry:
-+	if (!vma)
-+		goto inval;
-+
-+	/* Only anonymous vmas are supported for now */
-+	if (!vma_is_anonymous(vma))
-+		goto inval;
-+
-+	if (!vma_start_read(vma))
-+		goto inval;
-+
-+	/* Check since vm_start/vm_end might change before we lock the VMA */
-+	if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
-+		vma_end_read(vma);
-+		goto inval;
-+	}
-+
-+	/* Check if the VMA got isolated after we found it */
-+	mas.index = address;
-+	validate = mas_walk(&mas);
-+	if (validate != vma) {
-+		vma_end_read(vma);
-+		count_vm_vma_lock_event(VMA_LOCK_MISS);
-+		/* The area was replaced with another one. */
-+		vma = validate;
-+		goto retry;
-+	}
-+
-+	rcu_read_unlock();
-+	return vma;
-+inval:
-+	rcu_read_unlock();
-+	count_vm_vma_lock_event(VMA_LOCK_ABORT);
-+	return NULL;
-+}
-+#endif /* CONFIG_PER_VMA_LOCK */
-+
- #ifndef __PAGETABLE_P4D_FOLDED
  /*
-  * Allocate p4d page table.
+  * vm_fault is filled by the pagefault handler and passed to the vma's
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 88619c6a29a3..c4c43f10344a 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -1053,6 +1053,7 @@ enum fault_flag {
+ 	FAULT_FLAG_INTERRUPTIBLE =	1 << 9,
+ 	FAULT_FLAG_UNSHARE =		1 << 10,
+ 	FAULT_FLAG_ORIG_PTE_VALID =	1 << 11,
++	FAULT_FLAG_VMA_LOCK =		1 << 12,
+ };
+ 
+ typedef unsigned int __bitwise zap_flags_t;
 -- 
 2.39.1
 
