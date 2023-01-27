@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E63AC61DB3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 20:06:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E43EBC54EAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 20:07:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P3T9t6Xlcz3ftH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 07:06:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P3TBv3BF0z3fvX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 07:07:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=q2M2drMz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=GSbfUJd9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::114a; helo=mail-yw1-x114a.google.com; envelope-from=3ginuywykdoevxuhqejrrjoh.frpolqxassf-ghyolvwv.rcodev.ruj@flex--surenb.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=q2M2drMz;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=GSbfUJd9;
 	dkim-atps=neutral
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+Received: from mail-yw1-x114a.google.com (mail-yw1-x114a.google.com [IPv6:2607:f8b0:4864:20::114a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3JpK5ZGRz3fK5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 00:49:12 +1100 (AEDT)
-Received: by mail-wm1-x333.google.com with SMTP id m16-20020a05600c3b1000b003dc4050c94aso676277wms.4
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 05:49:12 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3Sdm5PLqz3fM5
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 06:42:20 +1100 (AEDT)
+Received: by mail-yw1-x114a.google.com with SMTP id 00721157ae682-509ab88f98fso56723997b3.10
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 11:42:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=zoz2PQgrtb+OysccxNzHVaJmvkqki0yLQikOO7BNmw4=;
-        b=q2M2drMzlcZQkq/v+8uIO/hM5Uh6/uo4ymrX1mIkT1vKRTFQ+GP28MwJrmm5DmOUa7
-         1Tzc2yhjVVuslssvEU3ggpipvvVVqiCaohkkbFDs8rQRSXNQHYdu7cR+dk72h9pDce1x
-         CAazXuU8b8GxRvktFu9VcxZZzapnSgCQsycOYMRoL0gpEd3jknxAzlpcmJePsXnVlavf
-         DkjfWm/r0MKOlK16uyVHYZdpD3NVkUI0/coR/WoOru1RWALePMG3hCE3Os721PPT7a4L
-         uW1grhG8i7XhxcJuQhF585vKL0pIgj/4EyFWMtIbTy45aICHUQL1AqOlJ8t4w1bWXT3L
-         5eIg==
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=dtbb/rgJDVPG5hb8ydKzjEL35WMZYcFrpyL4j03oF8s=;
+        b=GSbfUJd90yi2xMLpxJwkNIQoO7AYaRuo1p0W3egBrsgFnTlql/QObCOWtQyWcyCJri
+         L9IkPEewPotUja2mT2dWXCpgA9vVmlCVPbr2KFEVViPcTyej+SHFX8+fhAEaOP6xtrM/
+         x5eCKOKsLW06Glc5jxntDrg/hIgANLyaiKO4UzofC0FOHh/fDzJT0Gg9GuJf/nEgmEZV
+         hix6GjSSYXSWndo4QypjFazRowiaazjUscTvm2uHMbtPJDABgUnEX51b4PI7vURt3LgP
+         X4xLvpH0mH+5Sv/7D+0hQE/rAXv1nGKdGusu8zdXbWRFOMqJp4iPgA6p21w37iQT/eTP
+         bctw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=zoz2PQgrtb+OysccxNzHVaJmvkqki0yLQikOO7BNmw4=;
-        b=qUiEhyGpqlU4nDVE6LjW6awm4z7lG8VyTn1Ez66RLs2srDbkuXeo9QHKeoLnFEJ/mt
-         Y8SF4/P46Y1DBOBBfmi7/B8/TXr0/uX9LO9uT0HOny4QLH0Wk/VsRhwYhIzB3hJBXN92
-         35LcFQBMXEn2CDo8ef92dB5U2pM3KHcV7IRrZad7AtAj8CLBx+gBKLmlRizNubhdaALu
-         x+Ot250fRBG+QaExEL35Xf+Ps9KxyIK58FnEC1zKWj8PubEj6p82DIIk70kCmjyM035C
-         EeNL77cL1PVCtu21t66SEvGRMw2i4zME2yqOpp7ZCvugLARnL0XBrlmPi4/KHiVFgzhM
-         ahGw==
-X-Gm-Message-State: AO0yUKUN1nvfSBge9W7wwmPrAM0v4nAntY9Gk0UzK4CE2tbtYW9i18Zy
-	0mOWec0DNGti2EpZuLsz6khotd+yGn/SLD+Zw5yTJQ==
-X-Google-Smtp-Source: AK7set/OLRlDkPQvGZxQiFQx7sIAxoq6CwQEyUAL8NY5JMX+xmJwqMfc0USpko3DcCRbnjh5Y9hcUomUV7fjOXb2JIE=
-X-Received: by 2002:a05:600c:354f:b0:3dc:40b4:2d1f with SMTP id
- i15-20020a05600c354f00b003dc40b42d1fmr38363wmq.174.1674827343524; Fri, 27 Jan
- 2023 05:49:03 -0800 (PST)
-MIME-Version: 1.0
-References: <20230126233645.200509-1-irogers@google.com> <56f1ed31-886d-358d-cfcc-0ab9fe7a76d8@oracle.com>
-In-Reply-To: <56f1ed31-886d-358d-cfcc-0ab9fe7a76d8@oracle.com>
-From: Ian Rogers <irogers@google.com>
-Date: Fri, 27 Jan 2023 05:48:53 -0800
-Message-ID: <CAP-5=fWc1UcjZT-8YcqHaiSEUGJCMNd4Syx3-MVhnk5PGUDPMQ@mail.gmail.com>
-Subject: Re: [PATCH v5 00/15] jevents/pmu-events improvements
-To: John Garry <john.g.garry@oracle.com>
-Content-Type: multipart/alternative; boundary="000000000000df5ad005f33f20e9"
-X-Mailman-Approved-At: Sat, 28 Jan 2023 07:04:45 +1100
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=dtbb/rgJDVPG5hb8ydKzjEL35WMZYcFrpyL4j03oF8s=;
+        b=k6htKO0gfOEIfXvDJaz3qNYoG70TJETWpPxc3XH5aYfV3/8PVNrewscdqz+xxgirAe
+         QvNxJ9K+dwFM02Bpu0TFB7r+U4VHuaM6JE3X1wdRD+FieshNxNLcfwQIVAuW70Svz1Nw
+         tCt8pCeb2612yTTuQpNMZEfqnxBR3jGBjMif6xTX2NK7hynx2KwZKb15PNU/nASykUaY
+         pUi/zaNv8OdgOUs2W0kn3w/9Iuu408yW2z2DCl8JyTYwf5r7MjBgbTlQeXKOC8KpOF/R
+         dRP2rBgWA2sCm8alOPq8nNmMPCyglNxnq8v/E6d+4//zKjD9swHpsKUFtYhzT78muZKj
+         xOMw==
+X-Gm-Message-State: AFqh2kpGb0kjL33aubs8nUrpSFlB3IULySZz0ApbqpblA1mrA2amNVyf
+	YfzxePkJXuwoH8nNHAHwY4zb74aCoR0=
+X-Google-Smtp-Source: AMrXdXszwUWrk3+ezT3vpCagEl0mvWZa9sEHax26SYGf7QapJl4fBzpxwL0/6TcVCB7ktvgIaczCkSx6r1s=
+X-Received: from surenb-desktop.mtv.corp.google.com ([2620:15c:211:200:4e19:be9:c5d0:8483])
+ (user=surenb job=sendgmr) by 2002:a0d:fc86:0:b0:4db:3ac0:78a3 with SMTP id
+ m128-20020a0dfc86000000b004db3ac078a3mr5702708ywf.266.1674848538548; Fri, 27
+ Jan 2023 11:42:18 -0800 (PST)
+Date: Fri, 27 Jan 2023 11:41:04 -0800
+In-Reply-To: <20230127194110.533103-1-surenb@google.com>
+Mime-Version: 1.0
+References: <20230127194110.533103-1-surenb@google.com>
+X-Mailer: git-send-email 2.39.1.456.gfc5497dd1b-goog
+Message-ID: <20230127194110.533103-28-surenb@google.com>
+Subject: [PATCH v2 27/33] mm: prevent userfaults to be handled under per-vma lock
+From: Suren Baghdasaryan <surenb@google.com>
+To: akpm@linux-foundation.org
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,128 +74,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sandipan Das <sandipan.das@amd.com>, Peter Zijlstra <peterz@infradead.org>, Perry Taylor <perry.taylor@intel.com>, Stephane Eranian <eranian@google.com>, LKML <linux-kernel@vger.kernel.org>, James Clark <james.clark@arm.com>, Kim Phillips <kim.phillips@amd.com>, Will Deacon <will@kernel.org>, Kan Liang <kan.liang@linux.intel.com>, Rob Herring <robh@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Xing Zhengjun <zhengjun.xing@linux.intel.com>, Mike Leach <mike.leach@linaro.org>, Kajol Jain <kjain@linux.ibm.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, Caleb Biggers <caleb.biggers@intel.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Ravi Bangoria <ravi.bangoria@amd.com>, Florian Fischer <florian.fischer@muhq.space>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users <linux-perf-users@vger.kernel.org>, 
- Jiri Olsa <jolsa@kernel.org>, Leo Yan <leo.yan@linaro.org>, linuxppc-dev@lists.ozlabs.org, Jing Zhang <renyu.zj@linux.alibaba.com>
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, surenb@google.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, tatashin@google.com, mgorman@techsingularity.net, rp
+ pt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000df5ad005f33f20e9
-Content-Type: text/plain; charset="UTF-8"
+Due to the possibility of handle_userfault dropping mmap_lock, avoid fault
+handling under VMA lock and retry holding mmap_lock. This can be handled
+more gracefully in the future.
 
-On Fri, Jan 27, 2023, 5:20 AM John Garry <john.g.garry@oracle.com> wrote:
+Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+Suggested-by: Peter Xu <peterx@redhat.com>
+---
+ mm/memory.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-> On 26/01/2023 23:36, Ian Rogers wrote:
->
-> Hi Ian,
->
-> At a glance, none of this series has your Signed-off-by tag..
->
-> Thanks,
-> John
->
+diff --git a/mm/memory.c b/mm/memory.c
+index 33ecc850d3cb..55582c6fa2fd 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -5256,6 +5256,15 @@ struct vm_area_struct *lock_vma_under_rcu(struct mm_struct *mm,
+ 	if (!vma_start_read(vma))
+ 		goto inval;
+ 
++	/*
++	 * Due to the possibility of userfault handler dropping mmap_lock, avoid
++	 * it for now and fall back to page fault handling under mmap_lock.
++	 */
++	if (userfaultfd_armed(vma)) {
++		vma_end_read(vma);
++		goto inval;
++	}
++
+ 	/* Check since vm_start/vm_end might change before we lock the VMA */
+ 	if (unlikely(address < vma->vm_start || address >= vma->vm_end)) {
+ 		vma_end_read(vma);
+-- 
+2.39.1
 
-
-Thanks John, will fix. Is there anything else?
-
-Ian
-
-> Add an optimization to jevents using the metric code, rewrite metrics
-> > in terms of each other in order to minimize size and improve
-> > readability. For example, on Power8
-> > other_stall_cpi is rewritten from:
-> > "PM_CMPLU_STALL / PM_RUN_INST_CMPL - PM_CMPLU_STALL_BRU_CRU /
-> PM_RUN_INST_CMPL - PM_CMPLU_STALL_FXU / PM_RUN_INST_CMPL -
-> PM_CMPLU_STALL_VSU / PM_RUN_INST_CMPL - PM_CMPLU_STALL_LSU /
-> PM_RUN_INST_CMPL - PM_CMPLU_STALL_NTCG_FLUSH / PM_RUN_INST_CMPL -
-> PM_CMPLU_STALL_NO_NTF / PM_RUN_INST_CMPL"
-> > to:
-> > "stall_cpi - bru_cru_stall_cpi - fxu_stall_cpi - vsu_stall_cpi -
-> lsu_stall_cpi - ntcg_flush_cpi - no_ntf_stall_cpi"
-> > Which more closely matches the definition on Power9.
-> >
-> > A limitation of the substitutions are that they depend on strict
-> > equality and the shape of the tree. This means that for "a + b + c"
-> > then a substitution of "a + b" will succeed while "b + c" will fail
-> > (the LHS for "+ c" is "a + b" not just "b").
-> >
-> > Separate out the events and metrics in the pmu-events tables saving
-> > 14.8% in the table size while making it that metrics no longer need to
-> > iterate over all events and vice versa. These changes remove evsel's
-> > direct metric support as the pmu_event no longer has a metric to
-> > populate it. This is a minor issue as the code wasn't working
-> > properly, metrics for this are rare and can still be properly ran
-> > using '-M'.
-> >
-> > Add an ability to just build certain models into the jevents generated
-> > pmu-metrics.c code. This functionality is appropriate for operating
-> > systems like ChromeOS, that aim to minimize binary size and know all
-> > the target CPU models.
->
->
-
---000000000000df5ad005f33f20e9
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"auto"><div><div class=3D"gmail_quote"><div dir=3D"ltr" class=3D=
-"gmail_attr">On Fri, Jan 27, 2023, 5:20 AM John Garry &lt;<a href=3D"mailto=
-:john.g.garry@oracle.com">john.g.garry@oracle.com</a>&gt; wrote:<br></div><=
-blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px=
- #ccc solid;padding-left:1ex">On 26/01/2023 23:36, Ian Rogers wrote:<br>
-<br>
-Hi Ian,<br>
-<br>
-At a glance, none of this series has your Signed-off-by tag..<br>
-<br>
-Thanks,<br>
-John<br></blockquote></div></div><div dir=3D"auto"><br></div><div dir=3D"au=
-to"><br></div><div dir=3D"auto">Thanks John, will fix. Is there anything el=
-se?</div><div dir=3D"auto"><br></div><div dir=3D"auto">Ian</div><div dir=3D=
-"auto"><br></div><div dir=3D"auto"><div class=3D"gmail_quote"><blockquote c=
-lass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;=
-padding-left:1ex">
-&gt; Add an optimization to jevents using the metric code, rewrite metrics<=
-br>
-&gt; in terms of each other in order to minimize size and improve<br>
-&gt; readability. For example, on Power8<br>
-&gt; other_stall_cpi is rewritten from:<br>
-&gt; &quot;PM_CMPLU_STALL / PM_RUN_INST_CMPL - PM_CMPLU_STALL_BRU_CRU / PM_=
-RUN_INST_CMPL - PM_CMPLU_STALL_FXU / PM_RUN_INST_CMPL - PM_CMPLU_STALL_VSU =
-/ PM_RUN_INST_CMPL - PM_CMPLU_STALL_LSU / PM_RUN_INST_CMPL - PM_CMPLU_STALL=
-_NTCG_FLUSH / PM_RUN_INST_CMPL - PM_CMPLU_STALL_NO_NTF / PM_RUN_INST_CMPL&q=
-uot;<br>
-&gt; to:<br>
-&gt; &quot;stall_cpi - bru_cru_stall_cpi - fxu_stall_cpi - vsu_stall_cpi - =
-lsu_stall_cpi - ntcg_flush_cpi - no_ntf_stall_cpi&quot;<br>
-&gt; Which more closely matches the definition on Power9.<br>
-&gt; <br>
-&gt; A limitation of the substitutions are that they depend on strict<br>
-&gt; equality and the shape of the tree. This means that for &quot;a + b + =
-c&quot;<br>
-&gt; then a substitution of &quot;a + b&quot; will succeed while &quot;b + =
-c&quot; will fail<br>
-&gt; (the LHS for &quot;+ c&quot; is &quot;a + b&quot; not just &quot;b&quo=
-t;).<br>
-&gt; <br>
-&gt; Separate out the events and metrics in the pmu-events tables saving<br=
->
-&gt; 14.8% in the table size while making it that metrics no longer need to=
-<br>
-&gt; iterate over all events and vice versa. These changes remove evsel&#39=
-;s<br>
-&gt; direct metric support as the pmu_event no longer has a metric to<br>
-&gt; populate it. This is a minor issue as the code wasn&#39;t working<br>
-&gt; properly, metrics for this are rare and can still be properly ran<br>
-&gt; using &#39;-M&#39;.<br>
-&gt; <br>
-&gt; Add an ability to just build certain models into the jevents generated=
-<br>
-&gt; pmu-metrics.c code. This functionality is appropriate for operating<br=
->
-&gt; systems like ChromeOS, that aim to minimize binary size and know all<b=
-r>
-&gt; the target CPU models.<br>
-<br>
-</blockquote></div></div></div>
-
---000000000000df5ad005f33f20e9--
