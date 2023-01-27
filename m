@@ -4,114 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47C74C38142
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 18:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9D33C54EAA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 19:25:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P3QgH17ZCz3fKd
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 05:13:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P3SFn74Tcz3fKv
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 06:25:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=JIDFKbwU;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=LIT8Frfl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=stgolabs.net (client-ip=23.83.209.135; helo=olivedrab.birch.relay.mailchannels.net; envelope-from=dave@stgolabs.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=JIDFKbwU;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=LIT8Frfl;
 	dkim-atps=neutral
-Received: from olivedrab.birch.relay.mailchannels.net (olivedrab.birch.relay.mailchannels.net [23.83.209.135])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3QfB5GQ2z3fDD
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 05:12:32 +1100 (AEDT)
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-	by relay.mailchannels.net (Postfix) with ESMTP id 51AA7140B4F;
-	Fri, 27 Jan 2023 18:12:29 +0000 (UTC)
-Received: from pdx1-sub0-mail-a215.dreamhost.com (unknown [127.0.0.6])
-	(Authenticated sender: dreamhost)
-	by relay.mailchannels.net (Postfix) with ESMTPA id DAFD81418BF;
-	Fri, 27 Jan 2023 18:12:27 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1674843148; a=rsa-sha256;
-	cv=none;
-	b=8gZAzNhiY910f4xRltxYtaoXOXMwHRoC42Z3yBFi9La4R5jiiKxSZByeaz7GX6QT4UZyZ9
-	hTBmJzgoxHTam2zim9I5IckCVSleJJcwssq7PPYGjI22xI6tNj8klWI0e/JZgNmH0IMYg3
-	+qHViyzJJfnkKL2YvOOuNKp6l1BWgPN6jAPXQg/1/jaFFoprwSECxxsVEjrllSEn+Nu69h
-	aBd+3TiFCO4thbgTo7nhH++DpnjRElj21RbuglqT/KX6HkGs8deHCykbaXGD1l7MO2TiPY
-	hzDUxHP8K7wtZ7Rs04lqsQxpFEg876u2TSEGJNMQ2sVn2nD9jEefxRxQfsWSPA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-	s=arc-2022; t=1674843148;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=AFPAQrpTa6JQv90tZx2cVE3JvvG6vY0G/Jb1Gz+6tWw=;
-	b=O02PU6dv984pHWXFsjmM+jzulO8KVIeZqcPBsmbpNzbp58bz5sTH4TLgJ395b4db1K4glH
-	PNzxBM/4bDYTLaHUA+bT/m5lUHemJxoUJc+dSBdw/t9R+t33SbS3vzOC8OBlhwLEZ1IkCV
-	XaAX9hmkTRrEhivqwt203HCJs/eLqwaGIpJIXb0kVvnY+OPlNdY3KfM9JPDK9qSvH3GWov
-	iL+Ew5cQznNQx8yGqiruPl76Or9XsLWMbcXU4ArpKFSDf+S55e9oeLT69a7xmpkNIkM9WJ
-	v2JZ+oerCm9Wfbc4tn9p/crPH16WMSdM/19woLyjLplNZSNQMZGKNHLhfK+Y6w==
-ARC-Authentication-Results: i=1;
-	rspamd-544f66f495-wxdrn;
-	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
-X-MailChannels-Auth-Id: dreamhost
-X-Relation-Daffy: 020a35f967655b8b_1674843148840_886956793
-X-MC-Loop-Signature: 1674843148840:7612868
-X-MC-Ingress-Time: 1674843148840
-Received: from pdx1-sub0-mail-a215.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-	by 100.103.24.83 (trex/6.7.1);
-	Fri, 27 Jan 2023 18:12:28 +0000
-Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	(Authenticated sender: dave@stgolabs.net)
-	by pdx1-sub0-mail-a215.dreamhost.com (Postfix) with ESMTPSA id 4P3Qf00Vj7z95;
-	Fri, 27 Jan 2023 10:12:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
-	s=dreamhost; t=1674843147;
-	bh=AFPAQrpTa6JQv90tZx2cVE3JvvG6vY0G/Jb1Gz+6tWw=;
-	h=Date:From:To:Cc:Subject:Content-Type;
-	b=JIDFKbwUDw0JZ3SbrpB/Bj4GbFEpmvP6tr1C3RSKUPhp73vxhg4Grmp8npGv1MdUu
-	 fKSGECsi57IjiXo5Wkl6SDhd2OGhJgE1CXQbNjgo/YsxzFZ6KkZS6khj0tqTtaCWxX
-	 RBmLEBlN7Jm3H6SCAQb+5sh1Hd1UlaapKft3DzcVH+SuqpZGU71b6NEt/RVlzCXXIp
-	 29+9+f5sWbofBI0N/otn9+yak3RFmUhOpOTT2tLo9PdLOhZ9xqCEJn5MJuRcmM20vL
-	 KT/9Nes1IeXPlQeTSSJyvq/gCCjkUw9T7OpCcLsxOS2OVRLzesjsxKz66+aKM8NNAv
-	 /pHd0aOp7eX5w==
-Date: Fri, 27 Jan 2023 09:45:30 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v4 3/7] mm: replace VM_LOCKED_CLEAR_MASK with
- VM_LOCKED_MASK
-Message-ID: <20230127174530.sws4xg3qjsx3agh4@offworld>
-Mail-Followup-To: Suren Baghdasaryan <surenb@google.com>,
-	akpm@linux-foundation.org, michel@lespinasse.org,
-	jglisse@google.com, mhocko@suse.com, vbabka@suse.cz,
-	hannes@cmpxchg.org, mgorman@techsingularity.net,
-	willy@infradead.org, liam.howlett@oracle.com, peterz@infradead.org,
-	ldufour@linux.ibm.com, paulmck@kernel.org, mingo@redhat.com,
-	will@kernel.org, luto@kernel.org, songliubraving@fb.com,
-	peterx@redhat.com, david@redhat.com, dhowells@redhat.com,
-	hughd@google.com, bigeasy@linutronix.de, kent.overstreet@linux.dev,
-	punit.agrawal@bytedance.com, lstoakes@gmail.com,
-	peterjung1337@gmail.com, rientjes@google.com,
-	axelrasmussen@google.com, joelaf@google.com, minchan@google.com,
-	rppt@kernel.org, jannh@google.com, shakeelb@google.com,
-	tatashin@google.com, edumazet@google.com, gthelen@google.com,
-	gurua@google.com, arjunroy@google.com, soheil@google.com,
-	leewalsh@google.com, posk@google.com, linux-mm@kvack.org,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org, linux-kernel@vger.kernel.org,
-	kernel-team@android.com
-References: <20230126193752.297968-1-surenb@google.com>
- <20230126193752.297968-4-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3SDj4Smsz3fCW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 06:24:03 +1100 (AEDT)
+Received: by mail-pj1-x1033.google.com with SMTP id e8-20020a17090a9a8800b0022c387f0f93so4544488pjp.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 11:24:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=W2ttKujJthD1r1Z4ZbanCKPljAQjrJZL0v7kGBHOnxQ=;
+        b=LIT8FrflzvmNjKlokavj8t9qklGf2z+fC5ZXmVTg/V1WPzhjXoIxMLl3TGOd9P1czB
+         0P6t8CHdT3hPjs2p2eC2FRuQZZNuA72Uo5CW4xKyEWE3u69ZSA9phUlewzcVNiluTUFv
+         N1GZJ1p9tvn3GosvLI7w5vR5yA3G9r1uI5w7A=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=W2ttKujJthD1r1Z4ZbanCKPljAQjrJZL0v7kGBHOnxQ=;
+        b=VCsqYNF55jjvLRHlkJkJd1YTJa6p8iCCRhpa+gpwQqrGXIZ9WMxPT1HCCCJeh1v3WN
+         s1pjUR4zoiL50wsNOOpAIug3ML+basOXEQGtROfHen0LmAUHRBzIcTILPze+Tx/wx6yA
+         rc+E16mRopVD/vGtFHwc1wbuuoJTgQ/x9vbfuGPwnXwK8CBv+r98iQZKSIjatNxMHWNP
+         /44HXOq7lWr6DS2BkB1RsaoT9OrEuQM+DVbEwqwjEWRxW2o82dCzivWRrAOcWkeLl6Yq
+         Ksn1CS+pMo+dYlT417EZnHyN7gj4MSgUmP8+hJv44oB6tf1aRSpybr49Rur+g+K2JPXh
+         ohdw==
+X-Gm-Message-State: AO0yUKVbQwvavuWiqL/wOe5sM0q7+rWo0+RKZqCVZulat0hEP3JCnJdS
+	5e4/mhecARUnRbTR+pQC+Q0gqw==
+X-Google-Smtp-Source: AK7set9Y1R4fNYl5iiJNjPVCiIEga/WC7wAX+mM99tGpF1Yw6uDJ7Etw+186f9uQO1JeU43343EDGA==
+X-Received: by 2002:a17:90b:1c0d:b0:22c:10e2:9e3f with SMTP id oc13-20020a17090b1c0d00b0022c10e29e3fmr10343020pjb.0.1674847438428;
+        Fri, 27 Jan 2023 11:23:58 -0800 (PST)
+Received: from www.outflux.net (smtp.outflux.net. [198.145.64.163])
+        by smtp.gmail.com with ESMTPSA id g8-20020a17090a708800b00213202d77d9sm3034456pjk.43.2023.01.27.11.23.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Jan 2023 11:23:58 -0800 (PST)
+Date: Fri, 27 Jan 2023 11:23:57 -0800
+From: Kees Cook <keescook@chromium.org>
+To: Nathan Lynch <nathanl@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/rtas: Replace one-element arrays with flexible
+ arrays
+Message-ID: <202301271120.B83DA0B3@keescook>
+References: <20230127085023.271674-1-ajd@linux.ibm.com>
+ <87357wp1h7.fsf@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230126193752.297968-4-surenb@google.com>
-User-Agent: NeoMutt/20220429
+In-Reply-To: <87357wp1h7.fsf@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,17 +76,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.o
- rg
+Cc: Leonardo Bras <leobras.c@gmail.com>, linuxppc-dev@lists.ozlabs.org, Andrew Donnellan <ajd@linux.ibm.com>, linux-hardening@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 26 Jan 2023, Suren Baghdasaryan wrote:
+On Fri, Jan 27, 2023 at 07:10:28AM -0600, Nathan Lynch wrote:
+> Andrew Donnellan <ajd@linux.ibm.com> writes:
+> > Using a one-element array as a fake flexible array is deprecated.
+> >
+> > Replace the one-element flexible arrays in rtas-types.h with C99 standard
+> > flexible array members instead.
+> >
+> > This helps us move towards enabling -fstrict-flex-arrays=3 in future.
+> >
+> > Found using scripts/coccinelle/misc/flexible_array.cocci.
+> >
+> > Cc: Nathan Lynch <nathanl@linux.ibm.com>
+> > Cc: Leonardo Bras <leobras.c@gmail.com>
+> > Cc: linux-hardening@vger.kernel.org
+> > Link: https://github.com/KSPP/linux/issues/21
+> > Link: https://github.com/KSPP/linux/issues/79
+> > Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/rtas-types.h | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/rtas-types.h b/arch/powerpc/include/asm/rtas-types.h
+> > index 8df6235d64d1..40ec03a05c0b 100644
+> > --- a/arch/powerpc/include/asm/rtas-types.h
+> > +++ b/arch/powerpc/include/asm/rtas-types.h
+> > @@ -44,7 +44,7 @@ struct rtas_error_log {
+> >  	 */
+> >  	u8		byte3;			/* General event or error*/
+> >  	__be32		extended_log_length;	/* length in bytes */
+> > -	unsigned char	buffer[1];		/* Start of extended log */
+> > +	unsigned char	buffer[];		/* Start of extended log */
+> >  						/* Variable length.      */
+> >  };
+> >  
+> > @@ -85,7 +85,7 @@ struct rtas_ext_event_log_v6 {
+> >  					/* that defines the format for	*/
+> >  					/* the vendor specific log type	*/
+> >  	/* Byte 16-end of log */
+> > -	u8 vendor_log[1];		/* Start of vendor specific log	*/
+> > +	u8 vendor_log[];		/* Start of vendor specific log	*/
+> >  					/* Variable length.		*/
+> >  };
+> 
+> I see at least one place that consults the size of one of these structs,
+> in get_pseries_errorlog():
+> 
+> 	/* Check that we understand the format */
+> 	if (ext_log_length < sizeof(struct rtas_ext_event_log_v6) || ...
+> 
+> Don't all such sites need to be audited/adjusted for changes like this?
 
->To simplify the usage of VM_LOCKED_CLEAR_MASK in vm_flags_clear(),
->replace it with VM_LOCKED_MASK bitmask and convert all users.
+Yeah, I'd expect a binary comparison[1] before/after to catch things like
+this. E.g. the following C files mention those structs:
 
-Might be good to mention explicitly no change in semantics, but
-otherwise lgtm
+arch/powerpc/platforms/pseries/io_event_irq.c
+arch/powerpc/platforms/pseries/ras.c
+arch/powerpc/kernel/rtasd.c
+arch/powerpc/kernel/rtas.c
 
-Reviewed-by: Davidlohr Bueso <dave@stgolabs.net>
+-Kees
+
+[1] https://outflux.net/blog/archives/2022/06/24/finding-binary-differences/
+
+-- 
+Kees Cook
