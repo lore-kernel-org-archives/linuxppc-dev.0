@@ -4,58 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB05EC54EAA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 02:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83489C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 03:21:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P31tG18mFz3fT3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 13:36:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P32tY4k3lz3cdD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 27 Jan 2023 14:21:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=n4O/TPhP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=V5qOGEb0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.178.240; helo=mslow1.mail.gandi.net; envelope-from=luca.ceresoli@bootlin.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=n4O/TPhP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=V5qOGEb0;
 	dkim-atps=neutral
-Received: from mslow1.mail.gandi.net (mslow1.mail.gandi.net [217.70.178.240])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P2l3t2lLKz3fBb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 02:28:57 +1100 (AEDT)
-Received: from relay10.mail.gandi.net (unknown [IPv6:2001:4b98:dc4:8::230])
-	by mslow1.mail.gandi.net (Postfix) with ESMTP id 21DBBD2DFC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jan 2023 15:22:27 +0000 (UTC)
-Received: from booty.fritz.box (unknown [77.244.183.192])
-	(Authenticated sender: luca.ceresoli@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPA id CCC7724000B;
-	Thu, 26 Jan 2023 15:22:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1674746531;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=y4XXZUb/eXTVLt3Io7nRJONtjd6MFURYEBCczeziRlI=;
-	b=n4O/TPhP8ss3Yw55rWDZdfKA5BDB3pD/eXKOubNenym/Wz0Z3oFGqXygem7AXQ4QxtQUs0
-	aTFUIxv3UvBbXaXdfjKt/+DxdiIH3m9pjffuOqX3kEawUd0mIoICswgkMt7Cl2V+9f/nlP
-	wZtZJUP9mFhHT8NCsMwnF+uxqasFUWG+4xeiWbYsWAqegNctl6/A3D+q+p+1IifdAbD+ru
-	UjJ9ogApnYQW65IA/tLjadQBDynMEBwsEPvMih4MQzWaAqI8kJqr9zHQN6Oc88cQ1ZyKA8
-	qBD027A6BojfXIfwIovLnoGdIEzq5/ovTr1GPKV7MYxKP8XDojIjVN3rfVcGNQ==
-From: Luca Ceresoli <luca.ceresoli@bootlin.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>,
-	Pravin B Shelar <pshelar@ovn.org>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Luca Ceresoli <luca.ceresoli@bootlin.com>
-Subject: [PATCH] scripts/spelling.txt: add "exsits" pattern and fix typo instances
-Date: Thu, 26 Jan 2023 16:22:05 +0100
-Message-Id: <20230126152205.959277-1-luca.ceresoli@bootlin.com>
-X-Mailer: git-send-email 2.34.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P32sR1THpz3cgh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 14:20:58 +1100 (AEDT)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30R0daMf019307;
+	Fri, 27 Jan 2023 03:20:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
+ from : to : cc : date : in-reply-to : references : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=hRtKMDNOJZCWPaOA+pcd2NPeR9mTV+fIY08wzjAhk/o=;
+ b=V5qOGEb0MhzCj8lDwaK3fv2nHKRHykFr5f33kdIw2S8Lz9CzYnCyjcrTn6clBpT9Z8Ln
+ NqyEJPvOmBC6FiMzKNn3YcfaBRaAfCuNDr0SxJn0LVWNkBRS2QZYiSHiyAgKKOYw/kAZ
+ Cn3qWjT+rFzVpgRlynWKVNdpengF6ffOTz5jFnzCMRZqKcl92t7gBCOjyNTAV5Zh9PIB
+ aTfW3oejCilhxF1PP73kRGi1kRqarsM9BfYHSl6TERtyoOEhki9QTIUgCnNClENPv/Ek
+ vkPYUAbSJ6zByr031Vp3pkpwnYap6nUsqnHS4sJOmizlJEj3zqfXl0IJW7X2VpX007Ba MA== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nc372bn2p-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 27 Jan 2023 03:20:46 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30QBMXvm010330;
+	Fri, 27 Jan 2023 03:20:44 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3n87p6q17t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 27 Jan 2023 03:20:44 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30R3KfkI43385334
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 27 Jan 2023 03:20:42 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D39FB20043;
+	Fri, 27 Jan 2023 03:20:41 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5608720040;
+	Fri, 27 Jan 2023 03:20:41 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 27 Jan 2023 03:20:41 +0000 (GMT)
+Received: from [9.192.255.228] (unknown [9.192.255.228])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7437360425;
+	Fri, 27 Jan 2023 14:20:37 +1100 (AEDT)
+Message-ID: <2de207dadb936f25db123ae2d02aea91a9841656.camel@linux.ibm.com>
+Subject: Re: [PATCH v4 02/24] powerpc/pseries: Fix alignment of PLPKS
+ structures and buffers
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: David Laight <David.Laight@ACULAB.COM>,
+        "'Segher Boessenkool'"
+	 <segher@kernel.crashing.org>,
+        Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 27 Jan 2023 14:20:37 +1100
+In-Reply-To: <5118edd7f1f445afa1812d2b9b62dd4f@AcuMS.aculab.com>
+References: <20230120074306.1326298-1-ajd@linux.ibm.com>
+	 <20230120074306.1326298-3-ajd@linux.ibm.com>
+	 <87pmb2pxpa.fsf@mpe.ellerman.id.au>
+	 <20230126171925.GN25951@gate.crashing.org>
+	 <5118edd7f1f445afa1812d2b9b62dd4f@AcuMS.aculab.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.46.3 (3.46.3-1.fc37) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 27 Jan 2023 13:32:18 +1100
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: RH7n1wJMGdJfXyigP1OFY3W1fdGCKevp
+X-Proofpoint-GUID: RH7n1wJMGdJfXyigP1OFY3W1fdGCKevp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-01-26_09,2023-01-26_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 spamscore=0
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 impostorscore=0
+ mlxlogscore=871 adultscore=0 malwarescore=0 phishscore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301270026
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,73 +103,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dev@openvswitch.org, alsa-devel@alsa-project.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, Colin Ian King <colin.i.king@gmail.com>
+Cc: "sudhakar@linux.ibm.com" <sudhakar@linux.ibm.com>, "bgray@linux.ibm.com" <bgray@linux.ibm.com>, "erichte@linux.ibm.com" <erichte@linux.ibm.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "nayna@linux.ibm.com" <nayna@linux.ibm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "zohar@linux.ibm.com" <zohar@linux.ibm.com>, "gjoyce@linux.ibm.com" <gjoyce@linux.ibm.com>, "joel@jms.id.au" <joel@jms.id.au>, "ruscur@russell.cc" <ruscur@russell.cc>, "linux-integrity@vger.kernel.org" <linux-integrity@vger.kernel.org>, "gcwilson@linux.ibm.com" <gcwilson@linux.ibm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix typos and add the following to the scripts/spelling.txt:
+On Thu, 2023-01-26 at 17:31 +0000, David Laight wrote:
+> Changing the size to kzalloc() doesn't help.
+> The alignment depends on the allocator and is only required to have
+> a relatively small alignment (ARCH_MINALIGN?) regardless of the size.
+>=20
+> IIRC one of the allocators adds a small header to every item.
+> It won't return 16 byte aligned items at all.
 
-  exsits||exists
+I'm relying on the behaviour described in Documentation/core-
+api/memory-allocation.rst:
 
-Signed-off-by: Luca Ceresoli <luca.ceresoli@bootlin.com>
----
- drivers/infiniband/ulp/iser/iscsi_iser.c | 2 +-
- net/openvswitch/flow_table.c             | 2 +-
- scripts/spelling.txt                     | 1 +
- sound/soc/fsl/fsl-asoc-card.c            | 2 +-
- 4 files changed, 4 insertions(+), 3 deletions(-)
+    The address of a chunk allocated with kmalloc is aligned to at
+    least ARCH_KMALLOC_MINALIGN bytes. For sizes which are a power of
+    two, the alignment is also guaranteed to be at least the respective
+    size.
 
-diff --git a/drivers/infiniband/ulp/iser/iscsi_iser.c b/drivers/infiniband/ulp/iser/iscsi_iser.c
-index 620ae5b2d80d..6b7603765383 100644
---- a/drivers/infiniband/ulp/iser/iscsi_iser.c
-+++ b/drivers/infiniband/ulp/iser/iscsi_iser.c
-@@ -446,7 +446,7 @@ iscsi_iser_conn_create(struct iscsi_cls_session *cls_session,
-  * @is_leading:      indicate if this is the session leading connection (MCS)
-  *
-  * Return: zero on success, $error if iscsi_conn_bind fails and
-- *         -EINVAL in case end-point doesn't exsits anymore or iser connection
-+ *         -EINVAL in case end-point doesn't exists anymore or iser connection
-  *         state is not UP (teardown already started).
-  */
- static int iscsi_iser_conn_bind(struct iscsi_cls_session *cls_session,
-diff --git a/net/openvswitch/flow_table.c b/net/openvswitch/flow_table.c
-index 0a0e4c283f02..cfac54cbafdf 100644
---- a/net/openvswitch/flow_table.c
-+++ b/net/openvswitch/flow_table.c
-@@ -1012,7 +1012,7 @@ static int flow_mask_insert(struct flow_table *tbl, struct sw_flow *flow,
- 
- 	mask = flow_mask_find(tbl, new);
- 	if (!mask) {
--		/* Allocate a new mask if none exsits. */
-+		/* Allocate a new mask if none exists. */
- 		mask = mask_alloc();
- 		if (!mask)
- 			return -ENOMEM;
-diff --git a/scripts/spelling.txt b/scripts/spelling.txt
-index ded8bcfc0247..0147bd8dc6e2 100644
---- a/scripts/spelling.txt
-+++ b/scripts/spelling.txt
-@@ -625,6 +625,7 @@ exeuction||execution
- existance||existence
- existant||existent
- exixt||exist
-+exsits||exists
- exlcude||exclude
- exlcusive||exclusive
- exmaple||example
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 8d14b5593658..2f25358196ee 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -811,7 +811,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- 	priv->card.num_links = 1;
- 
- 	if (asrc_pdev) {
--		/* DPCM DAI Links only if ASRC exsits */
-+		/* DPCM DAI Links only if ASRC exists */
- 		priv->dai_link[1].cpus->of_node = asrc_np;
- 		priv->dai_link[1].platforms->of_node = asrc_np;
- 		priv->dai_link[2].codecs->dai_name = codec_dai_name;
--- 
-2.34.1
+Is this wrong?
 
+
+Andrew
+
+--=20
+Andrew Donnellan    OzLabs, ADL Canberra
+ajd@linux.ibm.com   IBM Australia Limited
