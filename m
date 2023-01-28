@@ -4,67 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6AEFBC54EAA
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 00:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58F3CC27C76
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 12:43:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P3ZNl676Rz3fL2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 11:01:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P3vHX4J5Xz3fLQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 28 Jan 2023 23:43:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ZI6mj7LM;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ts2wxble;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b32; helo=mail-yb1-xb32.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ZI6mj7LM;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ts2wxble;
 	dkim-atps=neutral
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3ZMg70mLz3fD2
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 11:00:30 +1100 (AEDT)
-Received: by mail-yb1-xb32.google.com with SMTP id b1so7865392ybn.11
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jan 2023 16:00:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=lijrLZpsXTwOwkkTPhsucO7YRqlZ4/gQhAOPSV+Ow1Y=;
-        b=ZI6mj7LMKoNI/oOcrUtd9AUED9JuO6xGc225ZP5uALsCXRzd5tFQyZH9QfEgcc0bEJ
-         9MyRsCvVZhFftsPfxOsSdKAlZ9GqA6WUrV9aTPd04wtI360xfqHl28+MEAyKXCixyLSk
-         v8GrgI9q5COmywhNxiEU2+JydvMvd/BUJNpQDFUYR03wciVHZjv2EuSHGsiQLe/irS5u
-         RDJKdxaqaPSErbAgtbt4IW1KQBMdHVynCsJnp7XSUo4WFhOq1Cn2ildO86zTjyE4mi+d
-         qY/TAAQK5YagCO/hba9UdT8QCqoflyP2AkBiQBN42R1sMEg9No3XOKucr14HB2VVZKdY
-         RBZg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=lijrLZpsXTwOwkkTPhsucO7YRqlZ4/gQhAOPSV+Ow1Y=;
-        b=6+RxxXITy6a/FjXvdu/SjO/aHlwEVTcCRRiXxzkHIbhoHIDLSuMWbecQpqINXVDw3+
-         OW2YFSJIENou3GNhptXPI9xWH/6G2k1D/wk6QAPCwmpBVc+0gU99GSRpw9I2juM+Avme
-         gfseAtnDVbV+IFflQLV17uSuKkkJVi04MhZyChpzpbG5L+tpxvoUfNNAVNRsPkvs4wFa
-         kV1dOfgesuupAwrMEH9+Uk9G1YeGeUXWCaIrvk/9yWAJArZN7PqY3p5s+yzgCUIIx5BJ
-         paClFNEbWSRAy2GM4VVqp73YkpNq1RAmXP0cZGI+bABz4DzpK/zaAuUsmOxq/8C61CdV
-         Nvbg==
-X-Gm-Message-State: AFqh2kqUkpRqSTg1TCpPXXvJTLJV3acbNW64is30+C0ASp+et/oufLBy
-	o/uL3X+gfvJvPMbB4MaK32sIi52QppFpSscHk0uUfg==
-X-Google-Smtp-Source: AMrXdXt1DVl+V4XP4vcyqRZaRp4SMPhEnSli2MXcg6xWkpJvGYiDP4ZAV3sZnOd/WucpWORfIrnrxsVJGAKOMpQ5+cE=
-X-Received: by 2002:a25:9801:0:b0:7d5:b884:3617 with SMTP id
- a1-20020a259801000000b007d5b8843617mr3722360ybo.380.1674864027905; Fri, 27
- Jan 2023 16:00:27 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P3vGV4bXbz2xJ4
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jan 2023 23:42:09 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30SCcgq6004015;
+	Sat, 28 Jan 2023 12:41:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=swWfJlEfv1Bz3st9OVR/K4w9ENvxh74CA0mdUbo2WKc=;
+ b=ts2wxbleGjl8yI7aUrAg84sL9/007DVq9J70pYy7rpIwqZCNe0rF6LlcdhA8gMYseFx9
+ bt2MSdj4iqSFL1kToDJS3y+MpFDqer7+i+V6z8IrOc83tHbm+ZKUe9TO01+wADGhWgD+
+ QAuy9+s3D6BhIoYjdeDxU5ipZgGephy5PhFziwOCWaOPaLS7Ct0lBpD596CgvV06kFaB
+ im6XavzrZHKJLs+6QBetcmK+SFtDkhNV8mrGAAM7VzTttb/pDfGXCGyVm4AV17AWcwYK
+ 1c9+ocThGm/AYo+gzCf4IcfJ6q4XJc+w5L/sMqxFs7oJHpgY8i0xzHI3s0GRddh4kV7X Dw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nd2c5h1e5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 28 Jan 2023 12:41:56 +0000
+Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30SCdhXv006691;
+	Sat, 28 Jan 2023 12:41:56 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nd2c5h1dt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 28 Jan 2023 12:41:55 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30S4ZfCG007548;
+	Sat, 28 Jan 2023 12:41:54 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3ncvt7g7an-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 28 Jan 2023 12:41:53 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30SCfpq152691342
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 28 Jan 2023 12:41:51 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8C9552004D;
+	Sat, 28 Jan 2023 12:41:51 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 48C9920040;
+	Sat, 28 Jan 2023 12:41:49 +0000 (GMT)
+Received: from li-c3569c4c-1ef8-11b2-a85c-ee139cda3133.ibm.com.com (unknown [9.43.36.224])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat, 28 Jan 2023 12:41:49 +0000 (GMT)
+From: Sathvika Vasireddy <sv@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix objtool warning for unannotated intra-function call in head_85xx.o
+Date: Sat, 28 Jan 2023 18:11:38 +0530
+Message-Id: <20230128124138.1066176-1-sv@linux.ibm.com>
+X-Mailer: git-send-email 2.31.1
 MIME-Version: 1.0
-References: <20230127194110.533103-1-surenb@google.com> <20230127145138.8cc44bf00ebf289dffec0975@linux-foundation.org>
- <Y9Rdmy5h2F1z5yR3@casper.infradead.org>
-In-Reply-To: <Y9Rdmy5h2F1z5yR3@casper.infradead.org>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Fri, 27 Jan 2023 16:00:16 -0800
-Message-ID: <CAJuCfpEq2F4EwWAeP6nLqS9m9XLpUss8n=35ZTgYgtiAJyvsxQ@mail.gmail.com>
-Subject: Re: [PATCH v2 00/33] Per-VMA locks
-To: Matthew Wilcox <willy@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: UTlP4Gj0z7JbiqGttelZBxxV4b5RKx9V
+X-Proofpoint-GUID: ZGZ7UuISHcWjed47ZsHMKtpmnPQW_I-r
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-01-28_05,2023-01-27_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
+ priorityscore=1501 lowpriorityscore=0 suspectscore=0 spamscore=0
+ bulkscore=0 mlxlogscore=657 clxscore=1011 impostorscore=0 adultscore=0
+ phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2301280122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,62 +93,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, Andrew Morton <akpm@linux-foundation.org>, tatashin@google.com, mgorman@techsingularity.net,
-  rppt@kernel.org
+Cc: lkp@intel.com, npiggin@gmail.com, sv@linux.ibm.com, naveen.n.rao@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 27, 2023 at 3:26 PM Matthew Wilcox <willy@infradead.org> wrote:
->
-> On Fri, Jan 27, 2023 at 02:51:38PM -0800, Andrew Morton wrote:
-> > On Fri, 27 Jan 2023 11:40:37 -0800 Suren Baghdasaryan <surenb@google.co=
-m> wrote:
-> >
-> > > Per-vma locks idea that was discussed during SPF [1] discussion at LS=
-F/MM
-> > > last year [2], which concluded with suggestion that =E2=80=9Ca reader=
-/writer
-> > > semaphore could be put into the VMA itself; that would have the effec=
-t of
-> > > using the VMA as a sort of range lock. There would still be contentio=
-n at
-> > > the VMA level, but it would be an improvement.=E2=80=9D This patchset=
- implements
-> > > this suggested approach.
-> >
-> > I think I'll await reviewer/tester input for a while.
+Objtool throws the following warning:
+arch/powerpc/kernel/head_85xx.o: warning: objtool: .head.text+0x1a6c:
+unannotated intra-function call
 
-Sure, I don't expect the review to be very quick considering the
-complexity, however I would appreciate any testing that can be done.
+Fix this warning by annotating KernelSPE symbol with SYM_FUNC_START_LOCAL
+and SYM_FUNC_END macros.
 
-> >
-> > > The patchset implements per-VMA locking only for anonymous pages whic=
-h
-> > > are not in swap and avoids userfaultfs as their implementation is mor=
-e
-> > > complex. Additional support for file-back page faults, swapped and us=
-er
-> > > pages can be added incrementally.
-> >
-> > This is a significant risk.  How can we be confident that these as yet
-> > unimplemented parts are implementable and that the result will be good?
->
-> They don't need to be implementable for this patchset to be evaluated
-> on its own terms.  This patchset improves scalability for anon pages
-> without making file/swap/uffd pages worse (or if it does, I haven't
-> seen the benchmarks to prove it).
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
+---
+ arch/powerpc/kernel/head_85xx.S | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Making it work for all kinds of page faults would require much more
-time. So, this incremental approach, when we tackle the mmap_lock
-scalability problem part-by-part seems more doable. Even with
-anonymous-only support, the patch shows considerable improvements.
-Therefore I would argue that the patch is viable even if it does not
-support the above-mentioned cases.
+diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
+index d438ca74e96c..fdbee1093e2b 100644
+--- a/arch/powerpc/kernel/head_85xx.S
++++ b/arch/powerpc/kernel/head_85xx.S
+@@ -864,7 +864,7 @@ _GLOBAL(load_up_spe)
+  * SPE unavailable trap from kernel - print a message, but let
+  * the task use SPE in the kernel until it returns to user mode.
+  */
+-KernelSPE:
++SYM_FUNC_START_LOCAL(KernelSPE)
+ 	lwz	r3,_MSR(r1)
+ 	oris	r3,r3,MSR_SPE@h
+ 	stw	r3,_MSR(r1)	/* enable use of SPE after return */
+@@ -881,6 +881,7 @@ KernelSPE:
+ #endif
+ 	.align	4,0
+ 
++SYM_FUNC_END(KernelSPE)
+ #endif /* CONFIG_SPE */
+ 
+ /*
+-- 
+2.31.1
 
->
-> That said, I'm confident that I have a good handle on how to make
-> file-backed page faults work under RCU.
-
-Looking forward to collaborating on that!
-Thanks,
-Suren.
