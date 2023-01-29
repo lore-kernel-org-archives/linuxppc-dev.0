@@ -4,55 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB39DC05027
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Jan 2023 10:27:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F4A8C05027
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Jan 2023 12:43:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P4SDz1YpMz3bsK
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Jan 2023 21:27:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P4WG06xMlz3cNj
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 29 Jan 2023 23:43:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LEOdKD+x;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nZUZmSKw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=patchwork-bot+netdevbpf@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LEOdKD+x;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nZUZmSKw;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P45fk1Nh0z2yJQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2023 07:30:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P4WF12JDMz3bf6
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jan 2023 23:43:01 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 11704B80BEB;
-	Sat, 28 Jan 2023 20:30:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AA46EC4339C;
-	Sat, 28 Jan 2023 20:30:16 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 5C2F760D30;
+	Sun, 29 Jan 2023 12:42:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E716EC433D2;
+	Sun, 29 Jan 2023 12:42:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1674937816;
-	bh=NyfyYmvHuYCep7B9YHaipGsiO9fFZKxd2hw/3QQJwqQ=;
-	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=LEOdKD+xVK+ChdUeMYF7EWUBmGq14I7a4s4JCxsX0Z2pbDfy98ZnOQg9LaM70RuVC
-	 9xRu4+lF+DVHmBGVHpWV6C3DKQnB6htlyuiQ1J3mBpVE0Cta4vW2RE/BXmcJavx0so
-	 NpT9ZM/k0gp3REittQZbOAE5Pu2nnNW4ZzWWewKaFAFD3E6WwCsC+zOFh5CoV4HfQe
-	 lQLG294nW9w5VbGq5Yt6s9D6T/oia27mZXgUwJMw43HV8z7gJz+N1dbAJrJr5rDjld
-	 W58/LuDYy+LQisFZsbodjJ+lGQoGjrCfyPfOcghY/B7T6gUkoFPJyIGFHljP3NeW1j
-	 sFiy6/39HdTbA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 76D09E52504;
-	Sat, 28 Jan 2023 20:30:16 +0000 (UTC)
-Content-Type: text/plain; charset="utf-8"
+	s=k20201202; t=1674996176;
+	bh=8RQZps3hA/u1mdRRQGYSzSx3iKFm4iTs/37kan3EXRs=;
+	h=From:To:Cc:Subject:Date:From;
+	b=nZUZmSKw7/syf9RrBIFurd/O3AkMNzmfegfK+1AS6FvCaH0OhJOzBAu3UXC6av8P5
+	 uY9AOa46F/d5yj77Ho8Ndgvw8xxJHw4nNHTmwjtslAXWyegt5vS1IKaYW+Stnwyuiy
+	 2a+kHtcUtcTQ5Rqh9d7F2WecpHec0CXwi5TSyt1qClHpJLOA2sydJTb6OF8VZPCNps
+	 3fd8EBQ67Wgcl+xTfrf7oQnKtinBQv8tebZZGSc5tamZZbBvwb6yYhdPyn1uALV1nu
+	 d2H6gUYCo1lWTN9F7fs+AKTM2279BJ7XhGhJhYj0+jZo3axy2AgunU1xbS8ZdbQ6oz
+	 oCSDE8gtPikyw==
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 0/4] mm, arch: add generic implementation of pfn_valid() for FLATMEM
+Date: Sun, 29 Jan 2023 14:42:31 +0200
+Message-Id: <20230129124235.209895-1-rppt@kernel.org>
+X-Mailer: git-send-email 2.35.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Subject: Re: [PATCH 00/35] Documentation: correct lots of spelling errors (series
- 1)
-From: patchwork-bot+netdevbpf@kernel.org
-Message-Id:  <167493781647.31903.18128774325127042067.git-patchwork-notify@kernel.org>
-Date: Sat, 28 Jan 2023 20:30:16 +0000
-References: <20230127064005.1558-1-rdunlap@infradead.org>
-In-Reply-To: <20230127064005.1558-1-rdunlap@infradead.org>
-To: Randy Dunlap <rdunlap@infradead.org>
-X-Mailman-Approved-At: Sun, 29 Jan 2023 21:26:55 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,38 +57,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linmiaohe@huawei.com, juri.lelli@redhat.com, rydberg@bitmath.org, rafael@kernel.org, catalin.marinas@arm.com, dri-devel@lists.freedesktop.org, perex@perex.cz, benjamin.tissoires@redhat.com, pavel@ucw.cz, srinivas.pandruvada@linux.intel.com, zbr@ioremap.net, agordeev@linux.ibm.com, vincent.guittot@linaro.org, jmorris@namei.org, linux-acpi@vger.kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org, tglx@linutronix.de, linux-sgx@vger.kernel.org, isdn@linux-pingi.de, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, mhiramat@kernel.org, olteanv@gmail.com, alsa-devel@alsa-project.org, linux-doc@vger.kernel.org, jcmvbkbc@gmail.com, keyrings@vger.kernel.org, linux-i2c@vger.kernel.org, linux-s390@vger.kernel.org, paul@paul-moore.com, linux-trace-kernel@vger.kernel.org, deller@gmx.de, lee@kernel.org, andrii@kernel.org, daniel.m.jordan@oracle.com, linux-crypto@vger.kernel.org, linux-xtensa@linux-xtensa.org, gor@linux.ibm.com
- , suzuki.poulose@arm.com, coresight@lists.linaro.org, bhelgaas@google.com, shorne@gmail.com, linux-arm-kernel@lists.infradead.org, chris@zankel.net, mathieu.poirier@linaro.org, wsa@kernel.org, jarkko@kernel.org, linux-pci@vger.kernel.org, lpieralisi@kernel.org, ast@kernel.org, will@kernel.org, daniel@iogearbox.net, corbet@lwn.net, isdn4linux@listserv.isdn4linux.de, linux-input@vger.kernel.org, serge@hallyn.com, fenghua.yu@intel.com, jikos@kernel.org, akinobu.mita@gmail.com, rostedt@goodmis.org, broonie@kernel.org, bp@alien8.de, linux-fbdev@vger.kernel.org, reinette.chatre@intel.com, martin.petersen@oracle.com, dmitry.torokhov@gmail.com, naoya.horiguchi@nec.com, target-devel@vger.kernel.org, bpf@vger.kernel.org, pmladek@suse.com, peterz@infradead.org, dhowells@redhat.com, linux-mm@kvack.org, linux-trace-devel@vger.kernel.org, live-patching@vger.kernel.org, mbenes@suse.cz, linux-leds@vger.kernel.org, steffen.klassert@secunet.com, linux-scsi@vger.kernel.org, maz@kernel.org, x86@kernel.
- org, linux@armlinux.org.uk, mingo@redhat.com, jonas@southpole.se, hca@linux.ibm.com, stefan.kristiansson@saunalahti.fi, linux-block@vger.kernel.org, jglisse@redhat.com, openrisc@lists.librecores.org, jpoimboe@kernel.org, axboe@kernel.dk, netdev@vger.kernel.org, tiwai@suse.com, linux-security-module@vger.kernel.org, bristot@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Mic
+ hal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, "Mike Rapoport \(IBM\)" <rppt@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello:
+From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 
-This series was applied to bpf/bpf-next.git (master)
-by Alexei Starovoitov <ast@kernel.org>:
+Hi,
 
-On Thu, 26 Jan 2023 22:39:30 -0800 you wrote:
-> Correct many spelling errors in Documentation/ as reported by codespell.
-> 
-> Maintainers of specific kernel subsystems are only Cc-ed on their
-> respective patches, not the entire series. [if all goes well]
-> 
-> These patches are based on linux-next-20230125.
-> 
-> [...]
+Every architecture that supports FLATMEM memory model defines its own
+version of pfn_valid() that essentially compares a pfn to max_mapnr.
 
-Here is the summary with links:
-  - [04/35] Documentation: bpf: correct spelling
-    https://git.kernel.org/bpf/bpf-next/c/1d3cab43f4c7
-  - [05/35] Documentation: core-api: correct spelling
-    (no matching commit)
-  - [13/35] Documentation: isdn: correct spelling
-    (no matching commit)
+Use mips/powerpc version implemented as static inline as a generic
+implementation of pfn_valid() and drop its per-architecture definitions
 
-You are awesome, thank you!
+v2:
+* fix build on ARM and xtensa
+* add Acked- and Reviewed-by, thanks everybody
+
+v1: https://lore.kernel.org/all/20230125190757.22555-1-rppt@kernel.org
+
+Mike Rapoport (IBM) (4):
+  arm: include asm-generic/memory_model.h from page.h rather than
+    memory.h
+  m68k: use asm-generic/memory_model.h for both MMU and !MMU
+  mips: drop definition of pfn_valid() for DISCONTIGMEM
+  mm, arch: add generic implementation of pfn_valid() for FLATMEM
+
+ arch/alpha/include/asm/page.h      |  4 ----
+ arch/arc/include/asm/page.h        |  1 -
+ arch/arm/include/asm/memory.h      |  2 --
+ arch/arm/include/asm/page.h        |  2 ++
+ arch/csky/include/asm/page.h       |  1 -
+ arch/hexagon/include/asm/page.h    |  1 -
+ arch/ia64/include/asm/page.h       |  4 ----
+ arch/loongarch/include/asm/page.h  | 13 -------------
+ arch/m68k/include/asm/page.h       |  6 +-----
+ arch/m68k/include/asm/page_mm.h    |  1 -
+ arch/m68k/include/asm/page_no.h    |  4 ----
+ arch/microblaze/include/asm/page.h |  1 -
+ arch/mips/include/asm/page.h       | 28 ----------------------------
+ arch/nios2/include/asm/page.h      |  9 ---------
+ arch/openrisc/include/asm/page.h   |  2 --
+ arch/parisc/include/asm/page.h     |  4 ----
+ arch/powerpc/include/asm/page.h    |  9 ---------
+ arch/riscv/include/asm/page.h      |  5 -----
+ arch/sh/include/asm/page.h         |  3 ---
+ arch/sparc/include/asm/page_32.h   |  1 -
+ arch/um/include/asm/page.h         |  1 -
+ arch/x86/include/asm/page_32.h     |  4 ----
+ arch/x86/include/asm/page_64.h     |  4 ----
+ arch/xtensa/include/asm/page.h     |  4 ++--
+ include/asm-generic/memory_model.h | 12 ++++++++++++
+ include/asm-generic/page.h         |  2 --
+ 26 files changed, 17 insertions(+), 111 deletions(-)
+
+
+base-commit: 2241ab53cbb5cdb08a6b2d4688feb13971058f65
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
+2.35.1
 
