@@ -4,83 +4,86 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF0F7C636CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Jan 2023 22:45:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B56CC54EAA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Jan 2023 22:46:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P5NZ2173Zz3dxq
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 09:45:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P5Nb32dvyz3cdG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 09:46:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B59+4P+I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q7/9vywg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=B59+4P+I;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q7/9vywg;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5NWx6sfRz2xjR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2023 09:43:57 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30UMgBCg024048
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:54 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5NWz0HBPz2xjR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2023 09:43:58 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30UKxT0m009672
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=7jDjqkXsZwUjy9PzzLHnUH8g+gJ3Windvisd2JlK+E0=;
- b=B59+4P+IC+5XqlPrtwwwFsVz9Vpfc6tfLqe/wuzcEEtj6+KFDO/OPo0KSm9d5lXajEzu
- 8XkhmllwtRdndwPC/h3I9O53EDwDZc+JbYLYxbSTvELAG3neKiKFQJHrtAUkB+JqNIWx
- 90I9c1p4SFfR353kQYushrw2AxM1IQ9/6JpbqvdI/a77jkIcY2XA0Bt+txz9VdfqMlYR
- yp0HhGnAZ6XGtxBgY1vj0f+dFPDm7xM0btdGR1wQ5n4gcrDw1IF+EjJrKSyHtclJn0O0
- VLWYekTvGYopG+YGSuLh59UVxGXLx+cqUTikX4gUsMxLGMuTRSyevHNSsUx77txljmgZ Tg== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=QpwMgr23nIiMkJ3ihnsLIr7pw0uxT05vUxhNww44wHs=;
+ b=Q7/9vywghNjSn0knVPIgi4hbDQbyHKqYWyVaeyWjrEHZ2gB/5DfiPZZcXGw6B4iQvRRj
+ 4QK7D3Kc04F4G5uoY3qpaL9SWdcnoGYKPynARoblvOtYrrZ/s1GBN4sHTF/TTgjw+Hhw
+ YihBtgrJbp5EoC18Lefq9uWvY5RmdsFfFfMM42xCABYpCTE5nn7eb2d3jpB60McU/m/o
+ L1O7EvLxwvf16OpgByrXbLInHAcjyg6NGJh4oKAhH+n8JnR/ianSSjaWnLYidHWBAzNS
+ uPPxZ9hiuBgVuPleGRilqlKjBabiEwj/peLVjt/bYbw6eCr0g6H9vNpb1sfeHjpAQ09j AQ== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nepwm8137-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nemrg36tb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:54 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30UMhn6G027374
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:53 GMT
-Received: from ppma03wdc.us.ibm.com (ba.79.3fa9.ip4.static.sl-reverse.com [169.63.121.186])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nepwm812e-1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:56 +0000
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30UMhtcN019214
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jan 2023 22:43:55 GMT
+Received: from ppma04wdc.us.ibm.com (1a.90.2fa9.ip4.static.sl-reverse.com [169.47.144.26])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nemrg36t3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Jan 2023 22:43:53 +0000
-Received: from pps.filterd (ppma03wdc.us.ibm.com [127.0.0.1])
-	by ppma03wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30UJUPas007776;
-	Mon, 30 Jan 2023 22:43:52 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([9.208.130.100])
-	by ppma03wdc.us.ibm.com (PPS) with ESMTPS id 3ncvten0h9-1
+	Mon, 30 Jan 2023 22:43:55 +0000
+Received: from pps.filterd (ppma04wdc.us.ibm.com [127.0.0.1])
+	by ppma04wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30UJKEgr028521;
+	Mon, 30 Jan 2023 22:43:55 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([9.208.129.119])
+	by ppma04wdc.us.ibm.com (PPS) with ESMTPS id 3ncvuyd0nj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 30 Jan 2023 22:43:52 +0000
+	Mon, 30 Jan 2023 22:43:54 +0000
 Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30UMhpmi5309060
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30UMhrlE32571968
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 30 Jan 2023 22:43:51 GMT
+	Mon, 30 Jan 2023 22:43:53 GMT
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 881E158059;
-	Mon, 30 Jan 2023 22:43:51 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C0DC05805D;
+	Mon, 30 Jan 2023 22:43:53 +0000 (GMT)
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id ECC7E58043;
-	Mon, 30 Jan 2023 22:43:50 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 321B858053;
+	Mon, 30 Jan 2023 22:43:53 +0000 (GMT)
 Received: from li-6bf4d4cc-31f5-11b2-a85c-838e9310af65.ibm.com.com (unknown [9.163.39.106])
 	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 30 Jan 2023 22:43:50 +0000 (GMT)
+	Mon, 30 Jan 2023 22:43:53 +0000 (GMT)
 From: Brian King <brking@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/7] hvcs: Various hvcs device hotplug fixes
-Date: Mon, 30 Jan 2023 16:43:14 -0600
-Message-Id: <20230130224321.164843-1-brking@linux.vnet.ibm.com>
+Subject: [PATCH 3/7] hvcs: Remove sysfs group earlier
+Date: Mon, 30 Jan 2023 16:43:17 -0600
+Message-Id: <20230130224321.164843-4-brking@linux.vnet.ibm.com>
 X-Mailer: git-send-email 2.31.1
+In-Reply-To: <20230130224321.164843-1-brking@linux.vnet.ibm.com>
+References: <20230130224321.164843-1-brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: qbIyl4eOjp_G3S96NXrIm5wQQ2I-YkFt
-X-Proofpoint-GUID: 7VFMIy84R0Y3Hm7LPclpUCSJGBw3qcJE
+X-Proofpoint-GUID: sHRACKaPND_ydnN_UIJARXPfDCPP69l0
+X-Proofpoint-ORIG-GUID: NYC9gHBUnPmZaHSu9V8-yILvD1kusN-E
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-30_17,2023-01-30_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
- phishscore=0 mlxscore=0 malwarescore=0 mlxlogscore=790 lowpriorityscore=0
- spamscore=0 impostorscore=0 priorityscore=1501 clxscore=1011
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 mlxlogscore=929 adultscore=0 impostorscore=0 suspectscore=0
+ mlxscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0 phishscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2212070000 definitions=main-2301300206
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -97,25 +100,37 @@ Cc: Brian King <brking@linux.vnet.ibm.com>, mmc@linux.vnet.ibm.com, brking@pobox
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series fixes a number of issues with hotplugging
-hvcs devices including memory leaks as well as, the inability
-to reconnect to a console device after it has been hot added
-back, since it was not getting cleaned up properly on the
-hotplug remove path.
+Cleanup the sysfs group earlier in remove. This eliminates
+errors coming from kernfs when attempting to remove a console
+device that is in use.
 
-Brian King (7):
-  hvcs: Fix hvcs port reference counting
-  hvcs: Remove sysfs file prior to vio unregister
-  hvcs: Remove sysfs group earlier
-  hvcs: Get reference to tty in remove
-  hvcs: Use vhangup in hotplug remove
-  hvcs: Synchronize hotplug remove with port free
-  powerpc: Fix device node refcounting
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ drivers/tty/hvc/hvcs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- arch/powerpc/platforms/pseries/reconfig.c |  1 +
- drivers/tty/hvc/hvcs.c                    | 61 +++++++++--------------
- 2 files changed, 25 insertions(+), 37 deletions(-)
-
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index 9131dcb2e8d8..9c5887d0c882 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -688,8 +688,6 @@ static void hvcs_destruct_port(struct tty_port *p)
+ 	spin_unlock_irqrestore(&hvcsd->lock, flags);
+ 	spin_unlock(&hvcs_structs_lock);
+ 
+-	sysfs_remove_group(&vdev->dev.kobj, &hvcs_attr_group);
+-
+ 	kfree(hvcsd);
+ }
+ 
+@@ -814,6 +812,8 @@ static void hvcs_remove(struct vio_dev *dev)
+ 	 */
+ 	tty_port_put(&hvcsd->port);
+ 
++	sysfs_remove_group(&dev->dev.kobj, &hvcs_attr_group);
++
+ 	/*
+ 	 * The hangup is a scheduled function which will auto chain call
+ 	 * hvcs_hangup.  The tty should always be valid at this time unless a
 -- 
 2.31.1
 
