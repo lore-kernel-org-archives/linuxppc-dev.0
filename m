@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1638C38142
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 06:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BC44C636CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 06:48:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P5bFq0cqYz3f91
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 17:47:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P5bGr4qNkz3fCc
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 17:48:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oU1dfIiW;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VbdhO3w0;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oU1dfIiW;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VbdhO3w0;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5b5c3dgSz2ynD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5b5c420hz2ynf
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2023 17:40:19 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30V6TmM9026278;
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30V6EWoP004518;
 	Tue, 31 Jan 2023 06:40:15 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=IrDWb+LIqMomXyWioGCHO1JQjb7qQVYa+i8eUlWM6+U=;
- b=oU1dfIiW2+TXrYR53i4wA4qhANkOBQpnAgf1r87ngTvIfWRjh8vWQIkNlOpajV0o5fjt
- uDR4sTS6wpIvBArNtnnvYTQg+7HJ73SDmjxSL9J7jJ9Mh3z3tgZu6B81Fahp+ILOnWKK
- o12bPZVo7HZhJZEWwTgD+WzCF85w8UcU0m4Cisy6WNQUh8TJrOhIsOlVjeb8lrppxoMC
- I3szjA1ZzGEfjuNPX9sP4v55g6GVrjn3QgU3N4BNU+evU78XsFjNybV/VuKFReCvEgSM
- eWimcxGfObOvQytRUfIKw17TX6QxGKcHMPXGMJubFQ6vNLdiGqlMVaP+yy0cxQwb+kBy TA== 
+ bh=4oWH3qpstXeHr4acsnSVSUeHlbaqgZ1m/OrhmxK/Oo4=;
+ b=VbdhO3w02fHG82RvcBXjkqVCbCPNRIFpZD21lw9Ls1fe6V0LGu4fN5zhkF1pz5deEErb
+ aKrv4/C6gzMBoSnbTCAkb44tNHkXRVaiC93PLkrf9mylvgpotavupCvPrLFB5eAAURu7
+ ZDAs0vHyvQQRylFlofuZJKw1VywzL6GooYxiynJ1fQRDCZvYlf366AHtSlnEXNBPa2E7
+ 33YHYwSEloFM5+j3Ybr6L6lzUkQvL2kpOYldimKvJ2FcZMJq2r0XaYjzWdQ5BLZVh/Qn
+ +jHCx4oVL3Eek5Tvj3u/ML6mG0CDJWnObbOdpRkFjvzwDeMGvOZxsvnzMj5kARJhKrWI Ew== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3news607k6-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3newhm0frj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:15 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30V6Tp4Q026425;
+Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30V6eE2d019555;
 	Tue, 31 Jan 2023 06:40:14 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3news607j0-1
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3newhm0fqj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:14 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30UKDNUk014744;
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30ULAuqm009758;
 	Tue, 31 Jan 2023 06:40:12 GMT
 Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3ncvttu3ng-1
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3ncvt7j7gm-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:12 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30V6e9K446006686
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30V6e9ci26476822
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Tue, 31 Jan 2023 06:40:09 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 61D222004F;
+	by IMSVA (Postfix) with ESMTP id 5E0F720040;
 	Tue, 31 Jan 2023 06:40:09 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D69802004E;
+	by IMSVA (Postfix) with ESMTP id 6042120043;
 	Tue, 31 Jan 2023 06:40:08 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
@@ -67,29 +67,29 @@ Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 Received: from jarvis-ozlabs-ibm-com.au.ibm.com (unknown [9.192.255.228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id C10DF6096E;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7D026606E7;
 	Tue, 31 Jan 2023 17:40:04 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v5 14/25] powerpc/pseries: Move plpks.h to include directory
-Date: Tue, 31 Jan 2023 17:39:17 +1100
-Message-Id: <20230131063928.388035-15-ajd@linux.ibm.com>
+Subject: [PATCH v5 10/25] powerpc/secvar: Extend sysfs to include config vars
+Date: Tue, 31 Jan 2023 17:39:13 +1100
+Message-Id: <20230131063928.388035-11-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230131063928.388035-1-ajd@linux.ibm.com>
 References: <20230131063928.388035-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: tGib7l7rAjlwFPLUn6r548fuqcjLNEGt
-X-Proofpoint-ORIG-GUID: VzDQkcglbmXZfueq8a7iJwpXLo6tL5by
+X-Proofpoint-ORIG-GUID: ILZRmJR5aEbgic7mJ0Vugi7o9xu_KbvC
+X-Proofpoint-GUID: AAgWl_93T7sh_q0ZeQLHAOqkrIpX23Yy
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-31_02,2023-01-30_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
- mlxscore=0 suspectscore=0 lowpriorityscore=0 impostorscore=0
- malwarescore=0 priorityscore=1501 spamscore=0 clxscore=1015
- mlxlogscore=999 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2212070000 definitions=main-2301310059
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 impostorscore=0
+ suspectscore=0 mlxlogscore=999 lowpriorityscore=0 adultscore=0 spamscore=0
+ priorityscore=1501 mlxscore=0 bulkscore=0 malwarescore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2301310059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,63 +107,114 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Russell Currey <ruscur@russell.cc>
 
-Move plpks.h from platforms/pseries/ to include/asm/. This is necessary
-for later patches to make use of the PLPKS from code in other subsystems.
+The forthcoming pseries consumer of the secvar API wants to expose a
+number of config variables.  Allowing secvar implementations to provide
+their own sysfs attributes makes it easy for consumers to expose what
+they need to.
+
+This is not being used by the OPAL secvar implementation at present, and
+the config directory will not be created if no attributes are set.
 
 Signed-off-by: Russell Currey <ruscur@russell.cc>
+Co-developed-by: Andrew Donnellan <ajd@linux.ibm.com>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 
 ---
 
-v3: New patch
----
- .../powerpc/{platforms/pseries => include/asm}/plpks.h | 10 +++++++---
- arch/powerpc/platforms/pseries/plpks.c                 |  3 +--
- 2 files changed, 8 insertions(+), 5 deletions(-)
- rename arch/powerpc/{platforms/pseries => include/asm}/plpks.h (89%)
+v3: Remove unnecessary "secvar:" prefix from error messages (ajd)
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.h b/arch/powerpc/include/asm/plpks.h
-similarity index 89%
-rename from arch/powerpc/platforms/pseries/plpks.h
-rename to arch/powerpc/include/asm/plpks.h
-index 275ccd86bfb5..8295502ee93b 100644
---- a/arch/powerpc/platforms/pseries/plpks.h
-+++ b/arch/powerpc/include/asm/plpks.h
-@@ -6,8 +6,10 @@
-  * Platform keystore for pseries LPAR(PLPKS).
-  */
- 
--#ifndef _PSERIES_PLPKS_H
--#define _PSERIES_PLPKS_H
-+#ifndef _ASM_POWERPC_PLPKS_H
-+#define _ASM_POWERPC_PLPKS_H
-+
-+#ifdef CONFIG_PSERIES_PLPKS
+    Merge config attributes into secvar_operations (mpe)
+---
+ arch/powerpc/include/asm/secvar.h  |  2 ++
+ arch/powerpc/kernel/secvar-sysfs.c | 33 +++++++++++++++++++++++++-----
+ 2 files changed, 30 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/secvar.h b/arch/powerpc/include/asm/secvar.h
+index bf396215903d..011a53a8076c 100644
+--- a/arch/powerpc/include/asm/secvar.h
++++ b/arch/powerpc/include/asm/secvar.h
+@@ -10,6 +10,7 @@
  
  #include <linux/types.h>
- #include <linux/list.h>
-@@ -68,4 +70,6 @@ int plpks_read_fw_var(struct plpks_var *var);
-  */
- int plpks_read_bootloader_var(struct plpks_var *var);
+ #include <linux/errno.h>
++#include <linux/sysfs.h>
  
--#endif
-+#endif // CONFIG_PSERIES_PLPKS
+ extern const struct secvar_operations *secvar_ops;
+ 
+@@ -19,6 +20,7 @@ struct secvar_operations {
+ 	int (*set)(const char *key, u64 key_len, u8 *data, u64 data_size);
+ 	ssize_t (*format)(char *buf, size_t bufsize);
+ 	int (*max_size)(u64 *max_size);
++	const struct attribute **config_attrs;
+ };
+ 
+ #ifdef CONFIG_PPC_SECURE_BOOT
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+index 8f3deff94009..7df32be86507 100644
+--- a/arch/powerpc/kernel/secvar-sysfs.c
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -144,6 +144,19 @@ static int update_kobj_size(void)
+ 	return 0;
+ }
+ 
++static int secvar_sysfs_config(struct kobject *kobj)
++{
++	struct attribute_group config_group = {
++		.name = "config",
++		.attrs = (struct attribute **)secvar_ops->config_attrs,
++	};
 +
-+#endif // _ASM_POWERPC_PLPKS_H
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index a01cf2ff140a..13e6daadb179 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -18,8 +18,7 @@
- #include <linux/types.h>
- #include <asm/hvcall.h>
- #include <asm/machdep.h>
--
--#include "plpks.h"
-+#include <asm/plpks.h>
++	if (secvar_ops->config_attrs)
++		return sysfs_create_group(kobj, &config_group);
++
++	return 0;
++}
++
+ static int secvar_sysfs_load(void)
+ {
+ 	struct kobject *kobj;
+@@ -208,26 +221,36 @@ static int secvar_sysfs_init(void)
  
- #define PKS_FW_OWNER	     0x1
- #define PKS_BOOTLOADER_OWNER 0x2
+ 	rc = sysfs_create_file(secvar_kobj, &format_attr.attr);
+ 	if (rc) {
+-		kobject_put(secvar_kobj);
+-		return -ENOMEM;
++		pr_err("Failed to create format object\n");
++		rc = -ENOMEM;
++		goto err;
+ 	}
+ 
+ 	secvar_kset = kset_create_and_add("vars", NULL, secvar_kobj);
+ 	if (!secvar_kset) {
+ 		pr_err("sysfs kobject registration failed\n");
+-		kobject_put(secvar_kobj);
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto err;
+ 	}
+ 
+ 	rc = update_kobj_size();
+ 	if (rc) {
+ 		pr_err("Cannot read the size of the attribute\n");
+-		return rc;
++		goto err;
++	}
++
++	rc = secvar_sysfs_config(secvar_kobj);
++	if (rc) {
++		pr_err("Failed to create config directory\n");
++		goto err;
+ 	}
+ 
+ 	secvar_sysfs_load();
+ 
+ 	return 0;
++err:
++	kobject_put(secvar_kobj);
++	return rc;
+ }
+ 
+ late_initcall(secvar_sysfs_init);
 -- 
 2.39.1
 
