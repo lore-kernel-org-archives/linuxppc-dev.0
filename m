@@ -4,91 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD227C636CD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 06:45:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF465C636CD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 06:46:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P5bCm2qbnz3f8k
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 17:45:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P5bDn4F8fz3f2w
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 31 Jan 2023 17:46:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rJeUaFCq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WhM8wYOk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rJeUaFCq;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WhM8wYOk;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5b5c1NTjz2ymk
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P5b5c2DX7z2yNs
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jan 2023 17:40:19 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30V6IWSw004085;
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 30V5Wxdl007566;
 	Tue, 31 Jan 2023 06:40:14 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=otnGpFY9MquFvFsvYoPp4smm+BqfHTn69RwFg0TJv9M=;
- b=rJeUaFCqRJZ7d/6p+4WTGzyMuw9lWoRFfIlcalmOnFR0NU63G4l/cUFxaA1stPjupk5p
- mKkFGfDjAdfaPBCIg4fX9uBElgIW66YY8lIBuJ/lxtdndE/IetjGDq7OskxAMOAGKtAG
- 7RQdFzoj0tf/NdOOLdLLPgQjHbqxsvQtQxRNhWpA+3pbfakwlVGAN/rJjUBQNSh6f4a9
- cl+dATIPJ6dM8UP95kWdBeK0fINiBY2UuXlzS+IrbdC17rvg9GOxlJiBtZnk9wyA/BGm
- 2uJktio0S8oUAFW+P2NIpR0vdwQDqdeo/BBO6uAKJRODYXKVCz5CKT4LDN3zI2ut5nj0 DA== 
+ bh=v7DDCYQBQbsPquSXn556Y6fam/jtnfHZrD2Y/zC3WEw=;
+ b=WhM8wYOkRdcEDw19hQVSISu7s1uW7q57WJYIS8emVk0BRy4ysies0zNMKw2yh5GPe911
+ egox08eMVuZ4W5yI05JyOX8vbSnFXBeNjFO7ywFW82Am7JRVBbNSbA6faq58anJD0iDJ
+ 6nO1Xyu71WK+gZ/kl0yu7YgxiH+yFPzy+yTPPrwCB/9qR7CjtdbqjIhHu+T0a/vh8kig
+ WpXR1j1gIhXNAYqp1zff6mjyOxp1ELBfletYTgoFGZNnjPGcqmQJukKxeuQGvjElZ+Ye
+ TpDdIjaCHAN5kemaQKhMpSVOnHonpVKqsse2I0ZLeVQnxpFd3EqlE9PMIaKkRe1Rrd9w Mg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3newkwgeyq-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3neusy2wys-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:14 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30V6WNWx023597;
+Received: from m0127361.ppops.net (m0127361.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 30V6bfms021088;
 	Tue, 31 Jan 2023 06:40:13 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3newkwgexf-1
+Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3neusy2wxh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:13 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30UKWZE2012859;
+Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
+	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30UK8qNV026916;
 	Tue, 31 Jan 2023 06:40:11 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3ncvtyb3h5-1
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3ncvs7k432-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Tue, 31 Jan 2023 06:40:11 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30V6e95F44695846
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 30V6e89N45875550
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Tue, 31 Jan 2023 06:40:09 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5BFD32004B;
-	Tue, 31 Jan 2023 06:40:09 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D226320043;
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DEAE220049;
+	Tue, 31 Jan 2023 06:40:08 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5F12220043;
 	Tue, 31 Jan 2023 06:40:08 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Tue, 31 Jan 2023 06:40:08 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.au.ibm.com (unknown [9.192.255.228])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B134860805;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6DE79606E9;
 	Tue, 31 Jan 2023 17:40:04 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v5 13/25] powerpc/secvar: Don't print error on ENOENT when reading variables
-Date: Tue, 31 Jan 2023 17:39:16 +1100
-Message-Id: <20230131063928.388035-14-ajd@linux.ibm.com>
+Subject: [PATCH v5 09/25] powerpc/secvar: Clean up init error messages
+Date: Tue, 31 Jan 2023 17:39:12 +1100
+Message-Id: <20230131063928.388035-10-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230131063928.388035-1-ajd@linux.ibm.com>
 References: <20230131063928.388035-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: _Uq7U4V3th2Ym66k5JrpOUsHjKelhk2u
-X-Proofpoint-ORIG-GUID: 30oN84RXlwGEBlmnl2Y7s0wEKyk879zP
+X-Proofpoint-GUID: CY9Fb3P_JkLgSpqqhkuGSm0AO2gdLOEA
+X-Proofpoint-ORIG-GUID: jvZXzxIGoFw_uH83BsJcEnRWgwxpscAF
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-01-31_02,2023-01-30_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 spamscore=0
- impostorscore=0 mlxscore=0 suspectscore=0 phishscore=0 mlxlogscore=999
- priorityscore=1501 clxscore=1015 bulkscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=891 mlxscore=0
+ bulkscore=0 adultscore=0 phishscore=0 clxscore=1015 spamscore=0
+ lowpriorityscore=0 priorityscore=1501 impostorscore=0 malwarescore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2212070000 definitions=main-2301310059
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,46 +105,49 @@ Cc: sudhakar@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, n
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If attempting to read the size or data attributes of a  non-existent
-variable (which will be possible after a later patch to expose the PLPKS
-via the secvar interface), don't spam the kernel log with error messages.
-Only print errors for return codes that aren't ENOENT.
+Remove unnecessary prefixes from error messages in secvar_sysfs_init()
+(the file defines pr_fmt, so putting "secvar:" in every message is
+unnecessary). Make capitalisation and punctuation more consistent.
 
-Reported-by: Sudhakar Kuppusamy <sudhakar@linux.ibm.com>
 Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 
 ---
 
-v3: New patch
+v3: New patch (ajd)
 ---
- arch/powerpc/kernel/secvar-sysfs.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/secvar-sysfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
-index 9b6be63b7b36..ca3df3f7156c 100644
+index 0966806f28c7..8f3deff94009 100644
 --- a/arch/powerpc/kernel/secvar-sysfs.c
 +++ b/arch/powerpc/kernel/secvar-sysfs.c
-@@ -43,8 +43,8 @@ static ssize_t size_show(struct kobject *kobj, struct kobj_attribute *attr,
+@@ -196,13 +196,13 @@ static int secvar_sysfs_init(void)
+ 	int rc;
  
- 	rc = secvar_ops->get(kobj->name, strlen(kobj->name) + 1, NULL, &dsize);
- 	if (rc) {
--		pr_err("Error retrieving %s variable size %d\n", kobj->name,
--		       rc);
-+		if (rc != -ENOENT)
-+			pr_err("Error retrieving %s variable size %d\n", kobj->name, rc);
- 		return rc;
+ 	if (!secvar_ops) {
+-		pr_warn("secvar: failed to retrieve secvar operations.\n");
++		pr_warn("Failed to retrieve secvar operations\n");
+ 		return -ENODEV;
  	}
  
-@@ -61,7 +61,8 @@ static ssize_t data_read(struct file *filep, struct kobject *kobj,
- 
- 	rc = secvar_ops->get(kobj->name, strlen(kobj->name) + 1, NULL, &dsize);
- 	if (rc) {
--		pr_err("Error getting %s variable size %d\n", kobj->name, rc);
-+		if (rc != -ENOENT)
-+			pr_err("Error getting %s variable size %d\n", kobj->name, rc);
- 		return rc;
+ 	secvar_kobj = kobject_create_and_add("secvar", firmware_kobj);
+ 	if (!secvar_kobj) {
+-		pr_err("secvar: Failed to create firmware kobj\n");
++		pr_err("Failed to create firmware kobj\n");
+ 		return -ENOMEM;
  	}
- 	pr_debug("dsize is %llu\n", dsize);
+ 
+@@ -214,7 +214,7 @@ static int secvar_sysfs_init(void)
+ 
+ 	secvar_kset = kset_create_and_add("vars", NULL, secvar_kobj);
+ 	if (!secvar_kset) {
+-		pr_err("secvar: sysfs kobject registration failed.\n");
++		pr_err("sysfs kobject registration failed\n");
+ 		kobject_put(secvar_kobj);
+ 		return -ENOMEM;
+ 	}
 -- 
 2.39.1
 
