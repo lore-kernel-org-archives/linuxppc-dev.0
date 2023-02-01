@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8467BC38142
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 00:29:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E952C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 00:30:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P62qM5gMnz3chB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 11:29:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P62rN04Ygz3f5V
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 11:30:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nVnnqVa+;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V/P2b4RW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nVnnqVa+;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=V/P2b4RW;
 	dkim-atps=neutral
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P62pL0xL8z3bhx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 11:28:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P62pK4psnz3bfp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 11:28:40 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675211322; x=1706747322;
+  t=1675211321; x=1706747321;
   h=date:from:to:cc:subject:message-id:mime-version:
    content-transfer-encoding;
-  bh=HrhAGtIJd788n5n1e2K0hj/AG50esvEDB4w6/+ljcD8=;
-  b=nVnnqVa+ZEN6bLs4eNiQmU6XE7rWpB6lVQeXOCCaMo7188dQKDKTzGAn
-   IUmCt3JhyVZVnRsYOmfzBtsQX3HOF2Hg11FyBHrHFPv4X37tg3vWX4UBU
-   y2flmV9pwiV2/DSfIPgKUBNBOKuF8rr+n4+oOENqMBvS1S3ZDY6FYI1TO
-   wJUqwSNGE1IdS2V29tClMpGu+Ly0eEFiTJRr+r3w1yisqCHfK+JDsxU3u
-   cJlzu878XXQs9Ef3XBXGTxMbT5Luma6ja7O7vqeQ9DeMrCYLguEVn8aBG
-   /VmHU78tH9V6fNpoq5FsWpXMxF/NNjdSgaK7N9p+N9IDsO0IFGGkYOWme
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="308345053"
+  bh=7ipeNsaVVwIqhwUJavk4PCDMsctidv1/7fUdH86dHPs=;
+  b=V/P2b4RWLq1Ep1FyffEToCdiwaLc6vA8zE+rNI8iCbTRVA2JUfd21J5o
+   hIkYSJNDLHwMJkxCNS544+7rP1NE96aIejRJ/hup5aBoa5k/R7rQJBuhe
+   U96VTQwKQ16IDUEMWRu5/d17+Wh7DNj8zNqHiXB7wkpotFmPOl3XbdfKb
+   dLXYxt/qbQkZ5Uvlo+JxOutamBCgWmGQ3lYc3QgaL28xcus2ElK8kHezx
+   zrqjkYzMA+cqbQpYZjxz2A1gdOa0mEpmb+3Mtr/nhN+XxauTPF6hyfrYM
+   f3i3ybuZL/lH+tHEOkt/O8mXTiyJljZWX1iggrawvT+xhxYuGcB8/lPtn
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="355330306"
 X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; 
-   d="scan'208";a="308345053"
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2023 16:28:37 -0800
+   d="scan'208";a="355330306"
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Jan 2023 16:28:35 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="910108007"
+X-IronPort-AV: E=McAfee;i="6500,9779,10607"; a="664689760"
 X-IronPort-AV: E=Sophos;i="5.97,261,1669104000"; 
-   d="scan'208";a="910108007"
+   d="scan'208";a="664689760"
 Received: from lkp-server01.sh.intel.com (HELO ffa7f14d1d0f) ([10.239.97.150])
-  by fmsmga006.fm.intel.com with ESMTP; 31 Jan 2023 16:28:33 -0800
+  by orsmga002.jf.intel.com with ESMTP; 31 Jan 2023 16:28:34 -0800
 Received: from kbuild by ffa7f14d1d0f with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1pN0zI-0004qI-1B;
-	Wed, 01 Feb 2023 00:28:32 +0000
-Date: Wed, 01 Feb 2023 08:28:19 +0800
+	id 1pN0zJ-0004qQ-10;
+	Wed, 01 Feb 2023 00:28:33 +0000
+Date: Wed, 01 Feb 2023 08:28:25 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- 37e5bf9657c8af85b91dda79c14eee5b7e0406d7
-Message-ID: <63d9b223.o6BR3YA/7nNtKtlv%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 5746ca131e2496ccd5bb4d7a0244d6c38070cbf5
+Message-ID: <63d9b229.FMAj9vZ6XD3uWKXj%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,13 +74,13 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: 37e5bf9657c8af85b91dda79c14eee5b7e0406d7  powerpc/64s: Reconnect tlb_flush() to hash__tlb_flush()
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 5746ca131e2496ccd5bb4d7a0244d6c38070cbf5  powerpc/64: Don't recurse irq replay
 
-elapsed time: 745m
+elapsed time: 720m
 
-configs tested: 69
-configs skipped: 106
+configs tested: 2
+configs skipped: 115
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -88,75 +88,6 @@ More configs may be tested in the coming days.
 gcc tested configs:
 powerpc                           allnoconfig
 powerpc                          allmodconfig
-i386                 randconfig-a003-20230130
-i386                 randconfig-a001-20230130
-i386                 randconfig-a004-20230130
-i386                 randconfig-a006-20230130
-i386                 randconfig-a002-20230130
-i386                 randconfig-a005-20230130
-x86_64                    rhel-8.3-kselftests
-arc                              allyesconfig
-i386                             allyesconfig
-i386                                defconfig
-x86_64                              defconfig
-x86_64                           allyesconfig
-x86_64                               rhel-8.3
-x86_64                            allnoconfig
-ia64                             allmodconfig
-x86_64                           rhel-8.3-kvm
-x86_64                           rhel-8.3-syz
-x86_64                           rhel-8.3-bpf
-x86_64                         rhel-8.3-kunit
-sh                               allmodconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-x86_64               randconfig-a006-20230130
-x86_64               randconfig-a004-20230130
-x86_64               randconfig-a005-20230130
-x86_64               randconfig-a002-20230130
-x86_64               randconfig-a001-20230130
-x86_64               randconfig-a003-20230130
-arm                                 defconfig
-riscv                    nommu_virt_defconfig
-riscv                          rv32_defconfig
-riscv                    nommu_k210_defconfig
-riscv                             allnoconfig
-i386                   debian-10.3-kselftests
-i386                              debian-10.3
-x86_64                          rhel-8.3-func
-s390                                defconfig
-s390                             allmodconfig
-arc                                 defconfig
-alpha                               defconfig
-s390                             allyesconfig
-i386                          debian-10.3-kvm
-i386                        debian-10.3-kunit
-i386                         debian-10.3-func
-arm                              allyesconfig
-i386                          randconfig-c001
-
-clang tested configs:
-hexagon              randconfig-r045-20230130
-s390                 randconfig-r044-20230130
-riscv                randconfig-r042-20230129
-hexagon              randconfig-r041-20230129
-hexagon              randconfig-r045-20230129
-hexagon              randconfig-r041-20230130
-riscv                randconfig-r042-20230130
-s390                 randconfig-r044-20230129
-x86_64               randconfig-a014-20230130
-x86_64               randconfig-a015-20230130
-x86_64               randconfig-a016-20230130
-x86_64               randconfig-a013-20230130
-x86_64               randconfig-a011-20230130
-x86_64               randconfig-a012-20230130
-i386                 randconfig-a014-20230130
-i386                 randconfig-a013-20230130
-i386                 randconfig-a015-20230130
-i386                 randconfig-a016-20230130
-i386                 randconfig-a012-20230130
-i386                 randconfig-a011-20230130
-x86_64                          rhel-8.3-rust
 
 -- 
 0-DAY CI Kernel Test Service
