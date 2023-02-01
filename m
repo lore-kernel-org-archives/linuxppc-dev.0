@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDA35C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 10:07:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57751C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 10:07:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P6Hdr3BZGz3fXQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 21:07:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P6HfQ6CdJz3fbZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 21:07:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P6HbY0LNNz3dvq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 21:05:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P6Hbd1d1Xz3f4x
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 21:05:17 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4P6HbL3zJBz9sgT;
-	Wed,  1 Feb 2023 11:05:02 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4P6HbM1plhz9sgV;
+	Wed,  1 Feb 2023 11:05:03 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Ymu4Rqpu4aE7; Wed,  1 Feb 2023 11:05:02 +0100 (CET)
+	with ESMTP id S_-gyKi_iQBk; Wed,  1 Feb 2023 11:05:03 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4P6HbJ5qQwz9sgZ;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4P6HbJ61V7z9sgb;
 	Wed,  1 Feb 2023 11:05:00 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id AEFC48B780;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B41198B787;
 	Wed,  1 Feb 2023 11:05:00 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id r2HI3m-KKwj8; Wed,  1 Feb 2023 11:05:00 +0100 (CET)
+	with ESMTP id RXOSX6CA2QxX; Wed,  1 Feb 2023 11:05:00 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CB708B779;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4432E8B77D;
 	Wed,  1 Feb 2023 11:05:00 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 311A4rEY3908590
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 311A4rLh3908598
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Wed, 1 Feb 2023 11:04:53 +0100
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 311A4r8M3908589;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 311A4r243908597;
 	Wed, 1 Feb 2023 11:04:53 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
         "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
-Subject: [PATCH v2 7/9] powerpc/bpf/32: Optimise some particular const operations
-Date: Wed,  1 Feb 2023 11:04:29 +0100
-Message-Id: <e53b1f4a4150ec6cabcaeeef82bf9c361b5f9204.1675245773.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 9/9] powerpc/bpf/32: perform three operands ALU operations
+Date: Wed,  1 Feb 2023 11:04:31 +0100
+Message-Id: <b6719beaf01f9dcbcdbb787ef67c4a2f8e3a4cb6.1675245773.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <4fd69ef7945518c3e27f96b95046a5c1468d35bf.1675245773.git.christophe.leroy@csgroup.eu>
 References: <4fd69ef7945518c3e27f96b95046a5c1468d35bf.1675245773.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1675245869; l=2234; s=20211009; h=from:subject:message-id; bh=YuBuk5uYdIx8LS0pf+MZXrVabv5ZialJJlRVFsoUpKc=; b=InZ/fuKy6WGVKX4fIP7Hm+vvItF2pw3VX9KTu5c6lOZbqt/MYUus8v02ivsQcbHWzLNnXNOvvEtk ddHpZo2LC0VEJRPJjJJaZR08rMJpGjM4QXrTWCAY2jQY1oP26Crd
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1675245869; l=2064; s=20211009; h=from:subject:message-id; bh=4k+9p9BOgr5AsQmTaugfewxV5KK1NxF/SGog2G5s/xY=; b=/RfY7znmvGZdByYmvM8hJYJtEV0uJWaxtyyI1ViNdALkZ7DpkxBbL0pZn96UtYJerNX6d1CZZfZ2 loxq/B/kBk/traYsL6xqhf0sLRwVY/lqgq64rIMEpxQp0xL2/rmH
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -72,64 +72,58 @@ Cc: Hao Luo <haoluo@google.com>, Daniel Borkmann <daniel@iogearbox.net>, Song Li
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Simplify multiplications and divisions with constants when the
-constant is 1 or -1.
+When an ALU instruction is preceded by a MOV instruction
+that just moves a source register into the destination register of
+the ALU, replace that MOV+ALU instructions by an ALU operation
+taking the source of the MOV as second source instead of using its
+destination.
 
-When the constant is a power of 2, replace them by bit shits.
+Before the change, code could look like the following, with
+superfluous separate register move (mr) instructions.
+
+  70:	7f c6 f3 78 	mr      r6,r30
+  74:	7f a5 eb 78 	mr      r5,r29
+  78:	30 c6 ff f4 	addic   r6,r6,-12
+  7c:	7c a5 01 d4 	addme   r5,r5
+
+With this commit, addition instructions take r30 and r29 directly.
+
+  70:	30 de ff f4 	addic   r6,r30,-12
+  74:	7c bd 01 d4 	addme   r5,r29
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/net/bpf_jit_comp32.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ arch/powerpc/net/bpf_jit_comp32.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
-index c3bc20b91cdc..b1d6ed4d8270 100644
+index 5d36ff7a0a8b..7f91ea064c08 100644
 --- a/arch/powerpc/net/bpf_jit_comp32.c
 +++ b/arch/powerpc/net/bpf_jit_comp32.c
-@@ -391,7 +391,13 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 			EMIT(PPC_RAW_MULW(dst_reg, dst_reg, src_reg));
- 			break;
- 		case BPF_ALU | BPF_MUL | BPF_K: /* (u32) dst *= (u32) imm */
--			if (imm >= -32768 && imm < 32768) {
-+			if (imm == 1)
-+				break;
-+			if (imm == -1) {
-+				EMIT(PPC_RAW_SUBFIC(dst_reg, dst_reg, 0));
-+			} else if (is_power_of_2((u32)imm)) {
-+				EMIT(PPC_RAW_SLWI(dst_reg, dst_reg, ilog2(imm)));
-+			} else if (imm >= -32768 && imm < 32768) {
- 				EMIT(PPC_RAW_MULI(dst_reg, dst_reg, imm));
- 			} else {
- 				PPC_LI32(_R0, imm);
-@@ -411,6 +417,13 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 				EMIT(PPC_RAW_SUBFZE(dst_reg_h, dst_reg_h));
- 				break;
- 			}
-+			if (imm > 0 && is_power_of_2(imm)) {
-+				imm = ilog2(imm);
-+				EMIT(PPC_RAW_RLWINM(dst_reg_h, dst_reg_h, imm, 0, 31 - imm));
-+				EMIT(PPC_RAW_RLWIMI(dst_reg_h, dst_reg, imm, 32 - imm, 31));
-+				EMIT(PPC_RAW_SLWI(dst_reg, dst_reg, imm));
-+				break;
-+			}
- 			bpf_set_seen_register(ctx, tmp_reg);
- 			PPC_LI32(tmp_reg, imm);
- 			EMIT(PPC_RAW_MULW(dst_reg_h, dst_reg_h, tmp_reg));
-@@ -438,8 +451,12 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
- 			if (imm == 1)
- 				break;
+@@ -290,6 +290,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
  
--			PPC_LI32(_R0, imm);
--			EMIT(PPC_RAW_DIVWU(dst_reg, dst_reg, _R0));
-+			if (is_power_of_2((u32)imm)) {
-+				EMIT(PPC_RAW_SRWI(dst_reg, dst_reg, ilog2(imm)));
-+			} else {
-+				PPC_LI32(_R0, imm);
-+				EMIT(PPC_RAW_DIVWU(dst_reg, dst_reg, _R0));
-+			}
- 			break;
- 		case BPF_ALU | BPF_MOD | BPF_K: /* (u32) dst %= (u32) imm */
- 			if (!imm)
+ 	for (i = 0; i < flen; i++) {
+ 		u32 code = insn[i].code;
++		u32 prevcode = i ? insn[i - 1].code : 0;
+ 		u32 dst_reg = bpf_to_ppc(insn[i].dst_reg);
+ 		u32 dst_reg_h = dst_reg - 1;
+ 		u32 src_reg = bpf_to_ppc(insn[i].src_reg);
+@@ -308,6 +309,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, struct codegen_context *
+ 		u32 tmp_idx;
+ 		int j;
+ 
++		if (i && (BPF_CLASS(code) == BPF_ALU64 || BPF_CLASS(code) == BPF_ALU) &&
++		    (BPF_CLASS(prevcode) == BPF_ALU64 || BPF_CLASS(prevcode) == BPF_ALU) &&
++		    BPF_OP(prevcode) == BPF_MOV && BPF_SRC(prevcode) == BPF_X &&
++		    insn[i - 1].dst_reg == insn[i].dst_reg && insn[i - 1].imm != 1) {
++			src2_reg = bpf_to_ppc(insn[i - 1].src_reg);
++			src2_reg_h = src2_reg - 1;
++			ctx->idx = addrs[i - 1] / 4;
++		}
++
+ 		/*
+ 		 * addrs[] maps a BPF bytecode address into a real offset from
+ 		 * the start of the body code.
 -- 
 2.39.1
 
