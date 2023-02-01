@@ -4,100 +4,100 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8B5BC38142
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 06:35:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF1FDC05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 06:39:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P6Bx724Gqz3f4v
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 17:35:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P6C2h1wkrz3cdZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Feb 2023 17:39:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XQh2nL+n;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LnnFrKZ+;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P6Btl5glkz3f3j
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 17:33:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P6C1c5PWmz2ym7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 17:39:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XQh2nL+n;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LnnFrKZ+;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	by gandalf.ozlabs.org (Postfix) with ESMTP id 4P6Btf6JqSz4xyf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 17:32:58 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4P6C1c4nzRz4xyB
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Feb 2023 17:39:00 +1100 (AEDT)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4P6Btf6H4Jz4xyd; Wed,  1 Feb 2023 17:32:58 +1100 (AEDT)
+	id 4P6C1c4kxqz4xyF; Wed,  1 Feb 2023 17:39:00 +1100 (AEDT)
 Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: gandalf.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XQh2nL+n;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LnnFrKZ+;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4P6Btf3BJGz4xyB
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2023 17:32:58 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3116VvPk029433;
-	Wed, 1 Feb 2023 06:32:46 GMT
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4P6C1c1fmkz4xyB
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2023 17:39:00 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3116VZ1r023619;
+	Wed, 1 Feb 2023 06:38:50 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=2K9u0HOV6aWe3Ve0ljcXL8szjNAZ8dM73Mk4mBaqQZ8=;
- b=XQh2nL+nUxNTweJtIOEq4t9NqQlRKwB4PzLSLQ7wXcjq82R/ghXo7bTr4SaG7UQxjtTb
- 1k5uzFgUoM4AwVgK4Bfxc7efL50IhKagKX82v6kwgAhGutIqywiOd8mxrYSzWmR0Fr5U
- 1ZwvLdhPWZfRGzr/VIRg+42xUvNWhg+44xx3f50epV16QQyF9Iq5meO9tMXdU8R4O1AP
- bQmBRMvpf/k7++rUH2qw0+L8NNUitqo9XvJwnyp0QP9t/G17+T2K4akUHriVoo022sk1
- 6OhEODDz25/RXOm1smAYta20PLMHwLmjfzGf6rJz2P6LKtuPEyxVLjPshM4JXX+417Sq Og== 
+ bh=b0A8LQESzLJL05DLpO2AaT0f8wZ+MXyk+HlskAzP5qY=;
+ b=LnnFrKZ+tff7eLziY8pIRpVcs4F70pvTUUt6jAAwFM3f2vHyvXvjUJzBDMgfLFRPAxOn
+ 9iX/7ZzsbyM9nAGMoZafPfv3FgxUjiOcrmCwgl6LRBWOgM5UG6Xf+ojuU5l5IJMSed1J
+ k/RvTEGavsbL8wFqYndTqmJ7PSeuXzKgBp/ghW/Z8RxUSQCOJGa5T7HywJZnNBjDj9uF
+ U9vxZtoKpX8p5TcAuyrjpbUtZAHa+5jdiTCkr34JVIeBuLLZmRygaeAQY/0QPsD7SYRm
+ g/G68Xm97yo1yrsOnWql0kpJFBzuSumj5DOTxAupXlEIElzSvj483XJu91c9qyW2dbX1 hA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nfjw6g0hs-1
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nfjw106wg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Feb 2023 06:32:46 +0000
-Received: from m0098420.ppops.net (m0098420.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3116WQbH030778;
-	Wed, 1 Feb 2023 06:32:45 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nfjw6g0h2-1
+	Wed, 01 Feb 2023 06:38:50 +0000
+Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 3116WH8c025811;
+	Wed, 1 Feb 2023 06:38:49 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nfjw106v7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Feb 2023 06:32:45 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3116IeKY026867;
-	Wed, 1 Feb 2023 06:32:43 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3ncvs7mdpu-1
+	Wed, 01 Feb 2023 06:38:49 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 30VCx5xb025999;
+	Wed, 1 Feb 2023 06:38:47 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3ndn6uae5v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Feb 2023 06:32:43 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3116We1F26411390
+	Wed, 01 Feb 2023 06:38:47 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3116cid452429298
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Feb 2023 06:32:40 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 527382004D;
-	Wed,  1 Feb 2023 06:32:39 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7D3BF20040;
-	Wed,  1 Feb 2023 06:32:37 +0000 (GMT)
+	Wed, 1 Feb 2023 06:38:44 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 192702004D;
+	Wed,  1 Feb 2023 06:38:44 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 26D972004E;
+	Wed,  1 Feb 2023 06:38:42 +0000 (GMT)
 Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.109.52])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Feb 2023 06:32:37 +0000 (GMT)
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  1 Feb 2023 06:38:41 +0000 (GMT)
 From: Sourabh Jain <sourabhjain@linux.ibm.com>
 To: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
 Subject: [PATCH v8 0/8] In kernel handling of CPU hotplug events for crash kernel
-Date: Wed,  1 Feb 2023 12:02:28 +0530
-Message-Id: <20230201063236.963344-1-sourabhjain@linux.ibm.com>
+Date: Wed,  1 Feb 2023 12:08:33 +0530
+Message-Id: <20230201063841.965316-1-sourabhjain@linux.ibm.com>
 X-Mailer: git-send-email 2.39.1
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: F-6EA_RnhDoFCJ_6YRQ0989fpTjtOHA2
-X-Proofpoint-ORIG-GUID: 2lOys8jiowwv40zYSya0dpSMJAEnZJaJ
+X-Proofpoint-GUID: UQZb23jGTLah3R-Goh3wE3-AoHumk5HV
+X-Proofpoint-ORIG-GUID: iC6vScFf4Zp09iHcqH_vl1412waZoCi8
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-UnRewURL: 0 URL was un-rewritten
 MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
  definitions=2023-02-01_02,2023-01-31_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- impostorscore=0 bulkscore=0 spamscore=0 phishscore=0 mlxlogscore=999
- lowpriorityscore=0 suspectscore=0 adultscore=0 malwarescore=0
- clxscore=1011 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302010051
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 malwarescore=0
+ clxscore=1015 suspectscore=0 impostorscore=0 adultscore=0 bulkscore=0
+ lowpriorityscore=0 spamscore=0 priorityscore=1501 mlxscore=0
+ mlxlogscore=999 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2302010056
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -146,7 +146,7 @@ will update the relevant kexec segment based on hotplug event type.
 Series Dependecies
 ==================
 This patch series implements the crash hotplug handler on PowerPC. The generic
-for crash hotplug update is introduced by https://lkml.org/lkml/2022/12/9/520 patch series.
+for crash hotplug update is introduced by https://lkml.org/lkml/2023/1/18/1420 patch series.
 
 Git tree for testing:
 =====================
