@@ -4,54 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3087CC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 20:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0118BC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:06:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7n421pW6z3f8n
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 07:16:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qW40Bjpz3fDL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:06:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XNrPSl5X;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1dFAKfF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XNrPSl5X;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h1dFAKfF;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7n2y03t8z3f6B
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 07:15:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qV219Qqz3c8T
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:05:46 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 4EC89B82BA4;
-	Fri,  3 Feb 2023 20:15:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB01AC433D2;
-	Fri,  3 Feb 2023 20:15:31 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 99C0D6200C;
+	Fri,  3 Feb 2023 22:05:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58184C4339E;
+	Fri,  3 Feb 2023 22:05:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675455332;
-	bh=3wRIsEkcYgnxR1oUaUKFTnjvlPLYKjDerxB/b+desAU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=XNrPSl5X5PzDmjlWqVQxEf/PMr/4ad/lJjFiZ6RNo5iwLeo+5hLoltqMLjhtHFFw6
-	 qQQlqqvcLDoIoDCaBqkP6r9mhyYAH3LHCraBq0fiARVl8x5oRUEL3YpoAOoAR04XF4
-	 hpCOTi2f+OgVUr3mHrZIl5vInJdziv28q6CYJdz/AdSq+jlUlFLQ0O0WWwUFWHYugQ
-	 erEHNa7QPVdrTZHJSa72QYsUV/SvJYa3dOE7lY45VVXMOoSvKudhFEzc8SFH0oz/0x
-	 anhhPBjyETEGVTuu/MXVpxJbSSBJs8F/BYYaEwtoUtLewLzX7phfFxmnaSYa5M9FOC
-	 JgDZ9BCDXyt+A==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 35877405BE; Fri,  3 Feb 2023 17:15:29 -0300 (-03)
-Date: Fri, 3 Feb 2023 17:15:29 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ian Rogers <irogers@google.com>
-Subject: Re: [PATCH v5 15/15] perf jevents: Run metric_test.py at compile-time
-Message-ID: <Y91rYT5eBOFUHsJK@kernel.org>
-References: <20230126233645.200509-1-irogers@google.com>
- <20230126233645.200509-16-irogers@google.com>
+	s=k20201202; t=1675461943;
+	bh=NR8zbYs8EPLnwZAokhvxtM4d11Hejg/pklQk/07I+eg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=h1dFAKfFwo43O/p+mZtZ8A+pRz8y8sKCxvJSxAxf2YpW/jd7egSDVmzws1Zas8viu
+	 I1hsX05Ku4zp8diJUR/N6dJhSG9mAon5ZNQLSZol3jGec2QJ0I0pSVe2Bv6/fcXHXw
+	 TdnQjaONqw918RHo79XkwWmjiQlnJyFT7QgmZo+nwawn1ZL4JdU0tGamzFwTIX1g3k
+	 WpeqXBuX7b/QIa6fMLMBsGo5GJbYag1To0ffo6VmtPVndG48TG3eDYQMlosEKX4ZZ2
+	 Q2OHoZnKg98XUe5DHtWW0te95HvWS2yWc5/MOqBVfViewE35c0040lS7kwSLzx4ju5
+	 cyK5w4a7yqJyQ==
+From: Josh Poimboeuf <jpoimboe@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 01/22] alpha/cpu: Expose arch_cpu_idle_dead()'s prototype declaration
+Date: Fri,  3 Feb 2023 14:05:10 -0800
+Message-Id: <ffe87359e7e98855a46867441f8ada5837b4a150.1675461757.git.jpoimboe@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
+References: <cover.1675461757.git.jpoimboe@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230126233645.200509-16-irogers@google.com>
-X-Url: http://acmel.wordpress.com
+Content-type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,54 +60,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sandipan Das <sandipan.das@amd.com>, Peter Zijlstra <peterz@infradead.org>, Perry Taylor <perry.taylor@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, James Clark <james.clark@arm.com>, Kim Phillips <kim.phillips@amd.com>, Will Deacon <will@kernel.org>, Kan Liang <kan.liang@linux.intel.com>, Rob Herring <robh@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Xing Zhengjun <zhengjun.xing@linux.intel.com>, Mike Leach <mike.leach@linaro.org>, John Garry <john.g.garry@oracle.com>, Kajol Jain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, Caleb Biggers <caleb.biggers@intel.com>, linux-arm-kernel@lists.infradead.org, Ravi Bangoria <ravi.bangoria@amd.com>, Florian Fischer <florian.fischer@muhq.space>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Leo Yan <leo.y
- an@linaro.org>, linuxppc-dev@lists.ozlabs.org, Jing Zhang <renyu.zj@linux.alibaba.com>
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-mips@vger.kernel.org, linux-alph
+ a@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Thu, Jan 26, 2023 at 03:36:45PM -0800, Ian Rogers escreveu:
-> Add a target that generates a log file for running metric_test.py and
-> make this a dependency on generating pmu-events.c. The log output is
-> displayed if the test fails like (the test was modified to make it
-> fail):
-> 
-> ```
->   TEST    /tmp/perf/pmu-events/metric_test.log
-> F......
-> ======================================================================
-> FAIL: test_Brackets (__main__.TestMetricExpressions)
-> ----------------------------------------------------------------------
-> Traceback (most recent call last):
->   File "tools/perf/pmu-events/metric_test.py", line 33, in test_Brackets
->     self.assertEqual((a * b + c).ToPerfJson(), 'a * b + d')
-> AssertionError: 'a * b + c' != 'a * b + d'
-> - a * b + c
-> ?         ^
-> + a * b + d
+Include <linux/cpu.h> to make sure arch_cpu_idle_dead() matches its
+prototype going forward.
 
-Added this:
+Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+---
+ arch/alpha/kernel/process.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/perf/.gitignore b/tools/perf/.gitignore
-index 05806ecfc33c12a1..f533e76fb48002b7 100644
---- a/tools/perf/.gitignore
-+++ b/tools/perf/.gitignore
-@@ -38,6 +38,7 @@ arch/*/include/generated/
- trace/beauty/generated/
- pmu-events/pmu-events.c
- pmu-events/jevents
-+pmu-events/metric_test.log
- feature/
- libapi/
- libbpf/
-diff --git a/tools/perf/Makefile.perf b/tools/perf/Makefile.perf
-index b7d9c42062300d04..bac9272682b759e9 100644
---- a/tools/perf/Makefile.perf
-+++ b/tools/perf/Makefile.perf
-@@ -1103,6 +1103,7 @@ clean:: $(LIBAPI)-clean $(LIBBPF)-clean $(LIBSUBCMD)-clean $(LIBSYMBOL)-clean $(
- 		$(OUTPUT)util/intel-pt-decoder/inat-tables.c \
- 		$(OUTPUT)tests/llvm-src-{base,kbuild,prologue,relocation}.c \
- 		$(OUTPUT)pmu-events/pmu-events.c \
-+		$(OUTPUT)pmu-events/metric_test.log \
- 		$(OUTPUT)$(fadvise_advice_array) \
- 		$(OUTPUT)$(fsconfig_arrays) \
- 		$(OUTPUT)$(fsmount_arrays) \
+diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
+index 0eddd22c6212..4813172547b5 100644
+--- a/arch/alpha/kernel/process.c
++++ b/arch/alpha/kernel/process.c
+@@ -9,6 +9,7 @@
+  * This file handles the architecture-dependent parts of process handling.
+  */
+ 
++#include <linux/cpu.h>
+ #include <linux/errno.h>
+ #include <linux/module.h>
+ #include <linux/sched.h>
+-- 
+2.39.0
+
