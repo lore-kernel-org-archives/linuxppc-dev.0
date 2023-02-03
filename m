@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBF5DC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:14:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AD3BC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:15:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qhJ30GXz3f95
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:14:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qjJ4dd5z3fVK
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:15:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bWyWlCGQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aDL8Fbd7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bWyWlCGQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aDL8Fbd7;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVJ0Fv0z3f96
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVM5fPtz3f7v
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:03 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 5114D62028;
-	Fri,  3 Feb 2023 22:05:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7129AC433A7;
-	Fri,  3 Feb 2023 22:05:56 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 0C5C162034;
+	Fri,  3 Feb 2023 22:06:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2CC2CC433EF;
+	Fri,  3 Feb 2023 22:06:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461958;
-	bh=xE5ZmRzKMxAFPrHiSIoJTZlCDR5ti+ono/cm0PWjfeU=;
+	s=k20201202; t=1675461961;
+	bh=2MPoJoU9iEV+5bmq/FA3r/36XSx62v4q4mPHZFDs3ww=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bWyWlCGQ8ixOuALZdKCzLss/6SMXhh1P0jHxv5K8dz+pGFJWRKFe/rDpdYt/pbEBy
-	 Cv20t60IqNd4k2OPeeakryqDZQBCSnCIFbZYn4w8Wh4hZfyxfuwPiu4jwkipYMyAjx
-	 3wjdyLJq2+oQSUZX9lPMnbCOK9kacUFdHpR/7gDTkVlFBlenq2ALG85m81cnxhAlqT
-	 DUmyvxZm4cJjdO0Y03EgNOuJPyX9ZAC+k2Whi2B9zytn0fu/YSFoO3CbU5ghN7eGNf
-	 AnlKFwVCJfplEUcEgqGsH3y9cSX006B8L7WqnSyPF5fCyXIzVXK57ufqsSU1oTeXrl
-	 yrsQBm2IXfrYQ==
+	b=aDL8Fbd7q5housqD8r1xvR5Q8U5/Aib+w8BpMXVKm3G1aZwcrHOxSP2YKKdovg1Uv
+	 4ZkJB0Y2uOz0X6yT1wZTvr2Dy/qvqYM4TlvU7jidUr13tcMvpXuDDnfIChFnR0S114
+	 XgCY83e9GokKgbEco/t+NyOFO0YdA+0HxBWOqEp5iV4oSvGtaYrTgda4ZJIFvXPgG4
+	 KNCxMpS4uI9MMwQ1cXs+JGbGCrSe2MWzovJGkzBcoFy7ViFq8mzRs0yA10vH2OGy97
+	 h7LmYagnQeYcVqvMzgJan512rASuYNR/WZMXFdmycbxKND3KFZ57oa/ITSZQBJhWyr
+	 EDE+zUhf9BZHA==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 09/22] mips/cpu: Expose play_dead()'s prototype definition
-Date: Fri,  3 Feb 2023 14:05:18 -0800
-Message-Id: <a532966831383927f5f4fbec0a1e13304588685a.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 11/22] mips/cpu: Mark play_dead() __noreturn
+Date: Fri,  3 Feb 2023 14:05:20 -0800
+Message-Id: <829d68d289ad4eeac27c5220be695cfa6ace33f4.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,26 +65,27 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include <asm/smp.h> to make sure play_dead() matches its prototype going
-forward.
+play_dead() doesn't return.  Annotate it as such.  By extension this
+also makes arch_cpu_idle_dead() noreturn.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/mips/kernel/smp-bmips.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/mips/include/asm/smp.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kernel/smp-bmips.c b/arch/mips/kernel/smp-bmips.c
-index f5d7bfa3472a..df9158e8329d 100644
---- a/arch/mips/kernel/smp-bmips.c
-+++ b/arch/mips/kernel/smp-bmips.c
-@@ -38,6 +38,7 @@
- #include <asm/traps.h>
- #include <asm/barrier.h>
- #include <asm/cpu-features.h>
-+#include <asm/smp.h>
+diff --git a/arch/mips/include/asm/smp.h b/arch/mips/include/asm/smp.h
+index 5d9ff61004ca..4eee29b7845c 100644
+--- a/arch/mips/include/asm/smp.h
++++ b/arch/mips/include/asm/smp.h
+@@ -88,7 +88,7 @@ static inline void __cpu_die(unsigned int cpu)
+ 	mp_ops->cpu_die(cpu);
+ }
  
- static int __maybe_unused max_cpus = 1;
+-extern void play_dead(void);
++extern void __noreturn play_dead(void);
+ #endif
  
+ #ifdef CONFIG_KEXEC
 -- 
 2.39.0
 
