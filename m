@@ -4,69 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE317C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 11:42:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CDD9C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 14:31:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7Yg50rpjz3fGs
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:42:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7dPd4X9tz3f7y
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 01:31:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l7xrIlOp;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KzLKtn5J;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KzLKtn5J;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=l7xrIlOp;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KzLKtn5J;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KzLKtn5J;
 	dkim-atps=neutral
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7Yb51rNJz3bjy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2023 22:39:13 +1100 (AEDT)
-Received: by mail-pl1-x630.google.com with SMTP id u9so672302plf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2023 03:39:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=SnMiVTD741omx7hmBiiezop4Htb8xxqKLHF8EW8IS4A=;
-        b=l7xrIlOpvcJyGWla9ECP9y3nvtoP0PjzkHTpL2Uhh6eCJp/mCBJi0Vny0zIkXW7XS/
-         +oRIIGSOPr3S8RP6+L6jV+LD4pZo1a9GRrNNNFyBrGhKFMkCaLiVyO9hoVOR9NN5IfRp
-         4V+BhLG1mdYsMhJKCJPRI6h40siGwOQMj93e8AOhTe8uoz2ZtQpLBUZDp2tv70RoJWjn
-         +bRQp8DSRiwz4lvp1QUJXb9dra0tUs8XWAAWO8xWnDmLhYi06xGegCzoDdeULzaGWNZH
-         CrxleP+28P3oca0SrI8EDJphy5QHhQyusQq/v0OvEYjGvgm6jyul79T59zkfopQYPD+J
-         VSQA==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7dNc0DgFz3cLh
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 01:30:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1675434619;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FGqA/t5BHooNtKKmgY/P/RvUeTIDhJpfv4X01I3UuzM=;
+	b=KzLKtn5J5FwDJ1xW53tYbqxuplKMAAGctSM8PUKQ9FfhxhD5kMUNjV5QmGhTHb9LN4k1JM
+	WyGG4nNHBPdm+kz7FuL6LCQl+M+t1yl+mEKLj/wLHK33qEkv00jPTKSn2Anz2n9FBO2sAB
+	Sdt2g8AcEwjfqUqtFHQABHkt3NWnZuk=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1675434619;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=FGqA/t5BHooNtKKmgY/P/RvUeTIDhJpfv4X01I3UuzM=;
+	b=KzLKtn5J5FwDJ1xW53tYbqxuplKMAAGctSM8PUKQ9FfhxhD5kMUNjV5QmGhTHb9LN4k1JM
+	WyGG4nNHBPdm+kz7FuL6LCQl+M+t1yl+mEKLj/wLHK33qEkv00jPTKSn2Anz2n9FBO2sAB
+	Sdt2g8AcEwjfqUqtFHQABHkt3NWnZuk=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-60-RzDZPB7wMp2Um-TygUGbgQ-1; Fri, 03 Feb 2023 09:30:17 -0500
+X-MC-Unique: RzDZPB7wMp2Um-TygUGbgQ-1
+Received: by mail-wm1-f71.google.com with SMTP id j37-20020a05600c1c2500b003deaf780ab6so2696287wms.4
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2023 06:30:17 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=SnMiVTD741omx7hmBiiezop4Htb8xxqKLHF8EW8IS4A=;
-        b=bmBTjA6NlIRdy2UZf8a4wDfvAuirlwUl1Mwd5sHDR0i1NcZi17/+tar1Dbm5WWJpQ8
-         pmWgDdxkUbCR8VunrJxDCkMeeq5zl0aU0vmD9lUAVTLkWS2BL209QzbtvHv1qHCXXumf
-         lvDwvauA/JgYlWkMdovr4ac86RnoxAnrQUDDaxzIKl+5UMkiPaW+l6naRIjEJ/KkureN
-         3EXdsc1yeycZLy/8PPWV2C0+iY4cZLuNX1FHctB4JOLvHltZui6RKTF4zZpIeZx+IwZd
-         ZfF5ECMkxfknK8Y43pJH7XjDR6K27ou3BNm6QnC0P7COdNJwK9JI8kdBsHRVnPrPXHF6
-         ij2Q==
-X-Gm-Message-State: AO0yUKWHqtLq9ooV3N+FUjmdGlxx1qXApXsrruCzmjYRn/3mGg0o6cIz
-	ZImk11RDf2Y4ecpniTRAYphkeMwCA5U=
-X-Google-Smtp-Source: AK7set9fzjKQ1av4cV4CKhH7hKqqiNGBGZPzv9qJTDq722+LplkhsCrHetoz3oioTJEhwpnVt9JChw==
-X-Received: by 2002:a17:90b:4ac5:b0:22c:9794:206c with SMTP id mh5-20020a17090b4ac500b0022c9794206cmr10553465pjb.6.1675424352542;
-        Fri, 03 Feb 2023 03:39:12 -0800 (PST)
-Received: from bobo.ozlabs.ibm.com (193-116-117-77.tpgi.com.au. [193.116.117.77])
-        by smtp.gmail.com with ESMTPSA id k92-20020a17090a4ce500b0022bf4d0f912sm4792964pjh.22.2023.02.03.03.39.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Feb 2023 03:39:12 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] powerpc/64e: Simplify address calculation in secondary hold loop
-Date: Fri,  3 Feb 2023 21:38:58 +1000
-Message-Id: <20230203113858.1152093-4-npiggin@gmail.com>
-X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20230203113858.1152093-1-npiggin@gmail.com>
-References: <20230203113858.1152093-1-npiggin@gmail.com>
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=FGqA/t5BHooNtKKmgY/P/RvUeTIDhJpfv4X01I3UuzM=;
+        b=dF8IQcZGpDdhUDAq8oKlUzeO21Yh2huRHTWno5vVUYHJILo+rWfwqe9+XpMG8DPFfC
+         bFXDZk19qa5OCJ+WY3Tz3xdCWT4A7awjfiS4bEqhD1veDhJ3xNhZGk8tnQJAkGInVvEI
+         KhtWjjy6mUcEkgaIIJ9vE0YK/lnXI9Kfsmd9q8W595Nu62Hvp0z+5LQh1u2Qa/BMFIkQ
+         doGFMht55KmS3y0xQ8+8bcN0XdzWNZ0V+7AOf/Z5k8+WxOZRqBb7ENk2R+rx/hXmHjpW
+         kbYHJ9Ju+KdZwEaJx9R4ovxBB0sutWRyq7PcUXVrfEoIe3StGhWFf7duX3ZHaOe2vOUK
+         dbig==
+X-Gm-Message-State: AO0yUKWeOrkg2zyLKn7BkxNLt9janqPlewpS9QqInse49kouXPiNwAL4
+	6glY7vlkcuXJIlGMyLUeXX90/ud8i3NCsB4zJQWI6u5HX7Y0T21kuleBNyz1Y9xx2By7hv1Gr0a
+	G17nHMkj4pjaHsRS1duAuX9RqrA==
+X-Received: by 2002:a05:600c:3588:b0:3df:e1e9:200e with SMTP id p8-20020a05600c358800b003dfe1e9200emr4472899wmq.39.1675434616187;
+        Fri, 03 Feb 2023 06:30:16 -0800 (PST)
+X-Google-Smtp-Source: AK7set+3Fxk3nALXFhpoXy/lSyMSFcdmxLuZvgb86YYfx4M4JIQvKCJs/tKTkc3VpDPsDt8toFavpA==
+X-Received: by 2002:a05:600c:3588:b0:3df:e1e9:200e with SMTP id p8-20020a05600c358800b003dfe1e9200emr4472869wmq.39.1675434615896;
+        Fri, 03 Feb 2023 06:30:15 -0800 (PST)
+Received: from [192.168.3.108] (p5b0c6376.dip0.t-ipconnect.de. [91.12.99.118])
+        by smtp.gmail.com with ESMTPSA id h27-20020a05600c2cbb00b003db12112fcfsm3203111wmc.4.2023.02.03.06.30.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Feb 2023 06:30:15 -0800 (PST)
+Message-ID: <569308c6-558b-de6e-1e98-2f50c1c56755@redhat.com>
+Date: Fri, 3 Feb 2023 15:30:12 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.0
+Subject: Re: [PATCH v2 1/4] arm: include asm-generic/memory_model.h from
+ page.h rather than memory.h
+To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+References: <20230129124235.209895-1-rppt@kernel.org>
+ <20230129124235.209895-2-rppt@kernel.org>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <20230129124235.209895-2-rppt@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,36 +105,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Greg Ungerer <gerg@linux-m68k.org>, linux-arch@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Mic
+ hal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As the earlier comment explains, __secondary_hold_spinloop does not have
-to be accessed at its virtual address, slightly simplifying code.
+On 29.01.23 13:42, Mike Rapoport wrote:
+> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
+> 
+> Makes it consistent with other architectures and allows for generic
+> definition of pfn_valid() in asm-generic/memory_model.h with clear override
+> in arch/arm/include/asm/page.h
+> 
+> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+> ---
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/head_64.S | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+Reviewed-by: David Hildenbrand <david@redhat.com>
 
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 5af2e473b195..3a7266fa8a18 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -160,12 +160,8 @@ __secondary_hold:
- 	std	r24,(ABS_ADDR(__secondary_hold_acknowledge, first_256B))(0)
- 	sync
- 
--	li	r26,0
--#ifdef CONFIG_PPC_BOOK3E_64
--	tovirt(r26,r26)
--#endif
- 	/* All secondary cpus wait here until told to start. */
--100:	ld	r12,(ABS_ADDR(__secondary_hold_spinloop, first_256B))(r26)
-+100:	ld	r12,(ABS_ADDR(__secondary_hold_spinloop, first_256B))(0)
- 	cmpdi	0,r12,0
- 	beq	100b
- 
 -- 
-2.37.2
+Thanks,
+
+David / dhildenb
 
