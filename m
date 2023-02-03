@@ -4,66 +4,66 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05537C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 09:46:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8435C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 09:47:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7W5223GDz3fGt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 20:46:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7W632yKQz3fJk
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 20:47:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YQnjUA0q;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aB+zqDK/;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NOuOoEWA;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NOuOoEWA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YQnjUA0q;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aB+zqDK/;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NOuOoEWA;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NOuOoEWA;
 	dkim-atps=neutral
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7W105JpDz3f5b
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2023 20:43:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7W151JHkz3f6L
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Feb 2023 20:43:04 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1675417377;
+	s=mimecast20190719; t=1675417382;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=s4HoMBB9b+GYCrS+oYQ3jjJ7MAxGR9J+rSDLb84UwlM=;
-	b=YQnjUA0q3qI3BfxOBboOGpFBzGgSjo2ZXsm6jO61pKSo5/AdTwvTmIcEzh4I/FgVhwApCG
-	+p9FfWAicMprksS9FSkC+xlNsgQB057yJgjvqJrHAzOsB5Ax4lX5d3Vz4XEoTXQKwdK1rY
-	G4l1Na/5OQVdQhD/ahQKqo1kF447FSY=
+	bh=tHFJYodS+GlZliPPBpSywnTgXG8QiYZdzMEcCQFBMZk=;
+	b=NOuOoEWAK3LcfoSpnCKnT2hNU/eakM/BP8y7Wo2/cWXZsCTA9/dDzQeccr3si31vIJZPI+
+	3jmehBQb0JXlwkbN0qkJtLqTaOvHuZKNRS83hZf3bcsmGKzvQDgJ42OokizYJoFx+AIIJD
+	sTd8QQGIUxhxbX1hWtUnUJP2XjiF0jU=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1675417378;
+	s=mimecast20190719; t=1675417382;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=s4HoMBB9b+GYCrS+oYQ3jjJ7MAxGR9J+rSDLb84UwlM=;
-	b=aB+zqDK/adBiiX2weummnQIdJik8UAKwiTw5yDLzJKHzfjCbd4//s45tU+DUOfRdTg3Pzq
-	MNfzt4k+AiHugee+Kgk43d3FnucHHz/mle74aXuBgLhWKIIybuCehbQ+4D2lR/yhGylB4N
-	akx1NvhBh9pog4cqSDVgAhGBtGF+9ac=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=tHFJYodS+GlZliPPBpSywnTgXG8QiYZdzMEcCQFBMZk=;
+	b=NOuOoEWAK3LcfoSpnCKnT2hNU/eakM/BP8y7Wo2/cWXZsCTA9/dDzQeccr3si31vIJZPI+
+	3jmehBQb0JXlwkbN0qkJtLqTaOvHuZKNRS83hZf3bcsmGKzvQDgJ42OokizYJoFx+AIIJD
+	sTd8QQGIUxhxbX1hWtUnUJP2XjiF0jU=
+Received: from mimecast-mx02.redhat.com (mx3-rdu2.redhat.com
+ [66.187.233.73]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-113-Ceqhc3xGNYGk_k8HJWjvcw-1; Fri, 03 Feb 2023 04:42:50 -0500
-X-MC-Unique: Ceqhc3xGNYGk_k8HJWjvcw-1
+ us-mta-477-JjRiMZkKNgqIaOgbneMQ2A-1; Fri, 03 Feb 2023 04:42:56 -0500
+X-MC-Unique: JjRiMZkKNgqIaOgbneMQ2A-1
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.rdu2.redhat.com [10.11.54.2])
 	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B5880857A93;
-	Fri,  3 Feb 2023 09:42:49 +0000 (UTC)
+	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id B3DB029AB3F7;
+	Fri,  3 Feb 2023 09:42:55 +0000 (UTC)
 Received: from thuth.com (unknown [10.39.192.204])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id BD9D9410B1AD;
-	Fri,  3 Feb 2023 09:42:46 +0000 (UTC)
+	by smtp.corp.redhat.com (Postfix) with ESMTP id E9C46408573E;
+	Fri,  3 Feb 2023 09:42:52 +0000 (UTC)
 From: Thomas Huth <thuth@redhat.com>
 To: kvm@vger.kernel.org,
 	Paolo Bonzini <pbonzini@redhat.com>,
 	Sean Christopherson <seanjc@google.com>
-Subject: [PATCH 3/7] KVM: Move KVM_GET_NR_MMU_PAGES into the deprecation section
-Date: Fri,  3 Feb 2023 10:42:26 +0100
-Message-Id: <20230203094230.266952-4-thuth@redhat.com>
+Subject: [PATCH 5/7] KVM: s390: Use "int" as return type for kvm_s390_get/set_skeys()
+Date: Fri,  3 Feb 2023 10:42:28 +0100
+Message-Id: <20230203094230.266952-6-thuth@redhat.com>
 In-Reply-To: <20230203094230.266952-1-thuth@redhat.com>
 References: <20230203094230.266952-1-thuth@redhat.com>
 MIME-Version: 1.0
@@ -84,41 +84,36 @@ Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The KVM_GET_NR_MMU_PAGES ioctl is quite questionable on 64-bit hosts
-since it fails to return the full 64 bits of the value that can be
-set with the corresponding KVM_SET_NR_MMU_PAGES call. This ioctl
-likely has also never really been used by userspace applications
-(at least not by QEMU and kvmtool which I checked), so it's better
-to move it to the deprecation section in kvm.h to make it clear for
-developers that this also should not be used in new code in the
-future anymore.
+These two functions only return normal integers, so it does not
+make sense to declare the return type as "long" here.
 
 Signed-off-by: Thomas Huth <thuth@redhat.com>
 ---
- include/uapi/linux/kvm.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/s390/kvm/kvm-s390.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 55155e262646..f55965a4cec7 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -83,6 +83,8 @@ struct kvm_debug_guest {
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index e4890e04b210..8ad1972b8a73 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -1992,7 +1992,7 @@ static int kvm_s390_vm_has_attr(struct kvm *kvm, struct kvm_device_attr *attr)
+ 	return ret;
+ }
  
- #define __KVM_DEPRECATED_VCPU_W_0x87 _IOW(KVMIO, 0x87, struct kvm_debug_guest)
+-static long kvm_s390_get_skeys(struct kvm *kvm, struct kvm_s390_skeys *args)
++static int kvm_s390_get_skeys(struct kvm *kvm, struct kvm_s390_skeys *args)
+ {
+ 	uint8_t *keys;
+ 	uint64_t hva;
+@@ -2040,7 +2040,7 @@ static long kvm_s390_get_skeys(struct kvm *kvm, struct kvm_s390_skeys *args)
+ 	return r;
+ }
  
-+#define KVM_GET_NR_MMU_PAGES _IO(KVMIO, 0x45)
-+
- /* *** End of deprecated interfaces *** */
- 
- 
-@@ -1442,7 +1444,6 @@ struct kvm_vfio_spapr_tce {
- #define KVM_CREATE_VCPU           _IO(KVMIO,   0x41)
- #define KVM_GET_DIRTY_LOG         _IOW(KVMIO,  0x42, struct kvm_dirty_log)
- #define KVM_SET_NR_MMU_PAGES      _IO(KVMIO,   0x44)
--#define KVM_GET_NR_MMU_PAGES      _IO(KVMIO,   0x45)
- #define KVM_SET_USER_MEMORY_REGION _IOW(KVMIO, 0x46, \
- 					struct kvm_userspace_memory_region)
- #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
+-static long kvm_s390_set_skeys(struct kvm *kvm, struct kvm_s390_skeys *args)
++static int kvm_s390_set_skeys(struct kvm *kvm, struct kvm_s390_skeys *args)
+ {
+ 	uint8_t *keys;
+ 	uint64_t hva;
 -- 
 2.31.1
 
