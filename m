@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B7F9C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:21:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C86D2C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:22:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qrW5KfYz3fTV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:21:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qsh2MWWz3fby
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:22:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cz/e4Tiq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k65vkzVP;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cz/e4Tiq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=k65vkzVP;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVb2d2Tz3f99
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVf597Zz3fCG
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:18 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id A2E8962036;
-	Fri,  3 Feb 2023 22:06:13 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61D75C433A8;
-	Fri,  3 Feb 2023 22:06:11 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 045EF62021;
+	Fri,  3 Feb 2023 22:06:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 265AEC433D2;
+	Fri,  3 Feb 2023 22:06:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461973;
-	bh=Gy7oghtDbUapfyH6lmA7zeDcDutJ46pdh8WMl0cgvVU=;
+	s=k20201202; t=1675461976;
+	bh=qzio4RRFUV3T4RxMjX88Z4lXma5TBrgxzmQ4rFvXUQ4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=cz/e4Tiq0/BvLDX93eISE4dEcCFBPucrGZqH4/s6/uvyLanSuD8oY7sBMKXuYt07K
-	 mhzTK34NA4E1JWXtyejdLqJNsro+yA1Yj3Uz502TOQTJjfQrpQWQsJNvWHGo5sndOU
-	 phtWnBDv3YdyzJc4hPNyl2ZLxgw8Kbshx78FoeWjgczSitx7GhnaXT9X29zcTpGQXi
-	 U01QFLtvja2ffq22rVz1PFTU+/uSTGm4lN21v5c1bGlJrZZQ1k+Db3jT20KJrVcazD
-	 dzlT0LcCZCfDKhnovvW6WCWz4JZBeYAV+6FJaLKMYf4o9dmDrEbEXRuAD7jpQl0uB+
-	 MCNtPX36W5EEw==
+	b=k65vkzVP6z141oLnhjfrwBtKaSVH4NDImaR6KsAo5tm4t33CTjXSkk1Kc002UVteN
+	 xjJFsLbbmrzV/oEDThT0uVKwXiyt81xJhbaZw5d1W0aCS8iJi8ZN1n47ZmOxdaXlne
+	 brWwWunBne264Md4i+0bg1dx7gUqkbA9IFbPGDydUxEo11sw9DVpvqZHgK2MDBJDej
+	 trULeFzTKyDLcTkcAA8D9XSzTnv4n/e1IfgE/o/RMoSp7z0wipVfyAtH77G7/nVsy4
+	 343nx2w/X70+IGMD3m7acnwGo130O5HOl5lHXueR8i/o1BQV7Ek1JE0i3Q3oOf9k9F
+	 DgZNg3mMxOn+w==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 17/22] x86/cpu: Make sure play_dead() doesn't return
-Date: Fri,  3 Feb 2023 14:05:26 -0800
-Message-Id: <7bfd319e3ebf5a3e56d668bee7a3b981b22b1863.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 19/22] xtensa/cpu: Make sure cpu_die() doesn't return
+Date: Fri,  3 Feb 2023 14:05:28 -0800
+Message-Id: <13cfde410b50047d778f535d12d928813e92c745.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,9 +65,7 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-After commit 076cbf5d2163 ("x86/xen: don't let xen_pv_play_dead()
-return"), play_dead() never returns.  Make that more explicit with a
-BUG().
+cpu_die() doesn't return.  Make that more explicit with a BUG().
 
 BUG() is preferable to unreachable() because BUG() is a more explicit
 failure mode and avoids undefined behavior like falling off the edge of
@@ -75,21 +73,22 @@ the function into whatever code happens to be next.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/x86/include/asm/smp.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/xtensa/kernel/smp.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index b4dbb20dab1a..8f628e08b25a 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -96,6 +96,7 @@ static inline void __cpu_die(unsigned int cpu)
- static inline void play_dead(void)
- {
- 	smp_ops.play_dead();
+diff --git a/arch/xtensa/kernel/smp.c b/arch/xtensa/kernel/smp.c
+index 4dc109dd6214..7bad78495536 100644
+--- a/arch/xtensa/kernel/smp.c
++++ b/arch/xtensa/kernel/smp.c
+@@ -341,6 +341,8 @@ void __ref cpu_die(void)
+ 	__asm__ __volatile__(
+ 			"	movi	a2, cpu_restart\n"
+ 			"	jx	a2\n");
++
 +	BUG();
  }
  
- static inline void smp_send_reschedule(int cpu)
+ #endif /* CONFIG_HOTPLUG_CPU */
 -- 
 2.39.0
 
