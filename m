@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C35C1C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B7F9C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:21:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qqW34h9z3fFh
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:20:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qrW5KfYz3fTV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:21:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VsXyVxEz;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cz/e4Tiq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VsXyVxEz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cz/e4Tiq;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVZ0WNqz3f8v
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVb2d2Tz3f99
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:15 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id A3B80B82C36;
-	Fri,  3 Feb 2023 22:06:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F51EC433A4;
-	Fri,  3 Feb 2023 22:06:07 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id A2E8962036;
+	Fri,  3 Feb 2023 22:06:13 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61D75C433A8;
+	Fri,  3 Feb 2023 22:06:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461969;
-	bh=aYP90nun0m184p5nqJ440uJdYMPBc75BRwnXChmaA8w=;
+	s=k20201202; t=1675461973;
+	bh=Gy7oghtDbUapfyH6lmA7zeDcDutJ46pdh8WMl0cgvVU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=VsXyVxEzpcXfilpsFzlk6M+CFr48cROlB/51bhZgU6jOeFjXZsnPEU0o5unZX/lCv
-	 2s92UV6qDiMVkuwzYYUjibPqLJ0HXjNhVnjkYmHeRyzqPPq35RZXb4I0QJBtFIGHpB
-	 c05PiWxmuAZTCIhURQlmym/9FanZLhY6P9ATEQuCGE0TqcRKoW2+BmfvDSOl4rFdLQ
-	 XSQn6q+5Ug0Ma8OfVVzvmkDeLJyoNXKVlNE8zy8/Deb7fBUoAeD5LMKeY5LeE3R65b
-	 soPuLuhsbfOdSWeFsj5Fs8fj/wW9ZQHSRSDFTboVl+QsDtK3UkzNs6tqSgpIcVZYxl
-	 mpggjtNUkp/ng==
+	b=cz/e4Tiq0/BvLDX93eISE4dEcCFBPucrGZqH4/s6/uvyLanSuD8oY7sBMKXuYt07K
+	 mhzTK34NA4E1JWXtyejdLqJNsro+yA1Yj3Uz502TOQTJjfQrpQWQsJNvWHGo5sndOU
+	 phtWnBDv3YdyzJc4hPNyl2ZLxgw8Kbshx78FoeWjgczSitx7GhnaXT9X29zcTpGQXi
+	 U01QFLtvja2ffq22rVz1PFTU+/uSTGm4lN21v5c1bGlJrZZQ1k+Db3jT20KJrVcazD
+	 dzlT0LcCZCfDKhnovvW6WCWz4JZBeYAV+6FJaLKMYf4o9dmDrEbEXRuAD7jpQl0uB+
+	 MCNtPX36W5EEw==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 15/22] sh/cpu: Expose arch_cpu_idle_dead()'s prototype definition
-Date: Fri,  3 Feb 2023 14:05:24 -0800
-Message-Id: <ab9832f83b626a3a78cc398a7c1ffc23c25a9ea1.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 17/22] x86/cpu: Make sure play_dead() doesn't return
+Date: Fri,  3 Feb 2023 14:05:26 -0800
+Message-Id: <7bfd319e3ebf5a3e56d668bee7a3b981b22b1863.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,26 +65,31 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include <linux/cpu.h> to make sure arch_cpu_idle_dead() matches its
-prototype going forward.
+After commit 076cbf5d2163 ("x86/xen: don't let xen_pv_play_dead()
+return"), play_dead() never returns.  Make that more explicit with a
+BUG().
+
+BUG() is preferable to unreachable() because BUG() is a more explicit
+failure mode and avoids undefined behavior like falling off the edge of
+the function into whatever code happens to be next.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/sh/kernel/idle.c | 1 +
+ arch/x86/include/asm/smp.h | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
-index 3418c40f0099..114f0c4abeac 100644
---- a/arch/sh/kernel/idle.c
-+++ b/arch/sh/kernel/idle.c
-@@ -4,6 +4,7 @@
-  *
-  *  Copyright (C) 2002 - 2009  Paul Mundt
-  */
-+#include <linux/cpu.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/mm.h>
+diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+index b4dbb20dab1a..8f628e08b25a 100644
+--- a/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -96,6 +96,7 @@ static inline void __cpu_die(unsigned int cpu)
+ static inline void play_dead(void)
+ {
+ 	smp_ops.play_dead();
++	BUG();
+ }
+ 
+ static inline void smp_send_reschedule(int cpu)
 -- 
 2.39.0
 
