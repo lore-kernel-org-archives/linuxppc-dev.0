@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C082C05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:19:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81028C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:20:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qnV5MQmz3fJt
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:19:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qpW16pgz3fdV
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:20:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DhDkIMUj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IbvLI9SG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DhDkIMUj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IbvLI9SG;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVV3X7tz3f8X
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVY3bMtz3f8v
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:13 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id ED654B82C33;
-	Fri,  3 Feb 2023 22:06:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E08DFC433EF;
-	Fri,  3 Feb 2023 22:06:03 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id C396062022;
+	Fri,  3 Feb 2023 22:06:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 85E24C433D2;
+	Fri,  3 Feb 2023 22:06:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461965;
-	bh=X1eIlBV7mYZUrbC//4ufL+T75dx0a2gkyRGVpnoY/QM=;
+	s=k20201202; t=1675461971;
+	bh=NrR4P0DY0KkRcvJJpvaBPY8nrqhj1/4WEFbiWkgx25U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=DhDkIMUjEJOyX2EMlHrPxdUnBWRX3se0vLGO731POCqHk9/VQrMV/gXm8Vb9/Z2m3
-	 UvzerGv0nP8kmAJhO23jS42gvkc6o8sJJTyUd/dleHrvmoqm98KN02bKtkQZO7MfFL
-	 WiEZU6kpXcLgGxhn/vJpxLEiRCyGWZl3pjakg3znFOX8OkwD/QWUnY0u+Z51AYGuT1
-	 3ZX1IoRQ7B7uGKZ1bvIOTbD3JdF+6rUUJYCcYypC+Tlbn/Ml8u53/6kdTb+Sog6/sv
-	 AsLRZWp+uNctE1zUajMgDNYRMYvTo3DPuPNnHQwSTW0D6vHT8JOdvEDURTxD2SUNqz
-	 O5cRPvgdcbiQQ==
+	b=IbvLI9SGR0mrEEcDvsTWGmRFY+xC5m55RleQxz9+JQteyCjIJS4oyATHgaLDKg8iT
+	 Mrcrj1tUqkDKFgDxhiACotXzzd+Ubb/npyitm47+khhnGTg6xyDpHKD0vy1jIB9u/5
+	 Kl5ByQZatrNlKTDjf0rI7hwfhuNbRiRVWk5imgdvp/hM5rNayYJmTUSlZKkk4SlpVs
+	 hNm1EBHVifr87GODpz8fpV5UZtd7OqZtrW9RwJeMKf5neI0Evpzkv/91pLQ3MbT6JX
+	 YQvfjazaZO7Yyom9jcaMJyey9HktA0dUciIGj3r15+QMSD68NRS+h08TN3KaJVaVuz
+	 sRz7u8p3VLZNw==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 13/22] sh/cpu: Make sure play_dead() doesn't return
-Date: Fri,  3 Feb 2023 14:05:22 -0800
-Message-Id: <a984bc4e16d6074f69c12483feec2ddb1721b325.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 16/22] sparc/cpu: Mark cpu_play_dead() __noreturn
+Date: Fri,  3 Feb 2023 14:05:25 -0800
+Message-Id: <eccdec6e86daed65bedd77f9c3e540503e1ed648.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,29 +65,27 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-play_dead() doesn't return.  Make that more explicit with a BUG().
-
-BUG() is preferable to unreachable() because BUG() is a more explicit
-failure mode and avoids undefined behavior like falling off the edge of
-the function into whatever code happens to be next.
+cpu_play_dead() doesn't return.  Annotate it as such.  By extension this
+also makes arch_cpu_idle_dead() noreturn.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/sh/include/asm/smp-ops.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/sparc/include/asm/smp_64.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/sh/include/asm/smp-ops.h b/arch/sh/include/asm/smp-ops.h
-index e27702130eb6..63866b1595a0 100644
---- a/arch/sh/include/asm/smp-ops.h
-+++ b/arch/sh/include/asm/smp-ops.h
-@@ -27,6 +27,7 @@ static inline void plat_smp_setup(void)
- static inline void play_dead(void)
- {
- 	mp_ops->play_dead();
-+	BUG();
- }
+diff --git a/arch/sparc/include/asm/smp_64.h b/arch/sparc/include/asm/smp_64.h
+index e75783b6abc4..505b6700805d 100644
+--- a/arch/sparc/include/asm/smp_64.h
++++ b/arch/sparc/include/asm/smp_64.h
+@@ -49,7 +49,7 @@ int hard_smp_processor_id(void);
  
- extern void register_smp_ops(struct plat_smp_ops *ops);
+ void smp_fill_in_cpu_possible_map(void);
+ void smp_fill_in_sib_core_maps(void);
+-void cpu_play_dead(void);
++void __noreturn cpu_play_dead(void);
+ 
+ void smp_fetch_global_regs(void);
+ void smp_fetch_global_pmu(void);
 -- 
 2.39.0
 
