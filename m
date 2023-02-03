@@ -4,58 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE0BBC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 15:44:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DB60C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 16:04:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7g2V1YsQz3f7J
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 02:44:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7gTF6Z2Cz3fQn
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 03:04:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UbbF0xAi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qPw/P3a6;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UbbF0xAi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qPw/P3a6;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7g1Q6Zz4z3cGk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 02:43:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7gQS29x0z3f8g
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 03:02:08 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 7AACE61F77;
-	Fri,  3 Feb 2023 15:43:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7D950C433D2;
-	Fri,  3 Feb 2023 15:43:51 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 50B9361F76;
+	Fri,  3 Feb 2023 16:02:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F8BDC433D2;
+	Fri,  3 Feb 2023 16:02:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675439031;
-	bh=QzHwbvdzJR6mErN/zIzcOVMcsP1F30dlSQclZPv72B4=;
+	s=k20201202; t=1675440125;
+	bh=GCFuvtqbmYjdRs4Metw9uUIQYvQiuqQ4yItdPgs0Mxo=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=UbbF0xAiNC89xQ5+9sm34iQzWVPMfZowuzZgFzPT78pXxWNr3UFbXVVm5h1k7/keE
-	 P7OTOFCzKnTTDat8F/503u13jEbmpfO+tQ6wrCAFGmPvc1rg4YULTP1EGhSyPDPzAl
-	 3DwuvvXHuNYiY89ygTOx8ZOF9A0RcDozTJd6TYPBEYk4QTrObN33bDKP4MBEy0UjSg
-	 0PSggRFRKSNjTasaEZjN9qt8dIbOR91ty9xFG911bVUyH5jmIAvhxs9pYH5FENsVgF
-	 2iIWuZ2SCvgulp0GRkV+bqS0gOBwEqvnalCjQRTyMsx2g+G8m/V2TidcSjigpGKEh4
-	 6JSDIghYRoOqQ==
+	b=qPw/P3a6cfeMvTHZaKVU39Pxh8PcEbL4Rv/LrNgmRR+6Y84hyTiD56U7rM6ux/b1r
+	 +v1ilEKytY5CHyhoK54x56MR4LdnGkRTJd8CdM/MttzjuiaBt3S1vaGJ2uemE/KzTO
+	 /fhXP/DDd0dUm+Q2N1Jf38tkDOvavuWXytnFYV9IAcQZcOsGaIUJdO+1npm/BoaAFz
+	 a4V5YGL7Z8jyJzI6VhWCZX2u/urOjWohnwnxoUch6q17XtGlJ1r9QaYWkYbWK8Vubm
+	 /6GMw2N6G5SEiX6Aigze+Z9KlGiSbuAysXNjnT04Q6VIQQDfXcHR837me/UpPdQEZZ
+	 ONN/cF3VLgebQ==
 Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 4B472405BE; Fri,  3 Feb 2023 12:43:48 -0300 (-03)
-Date: Fri, 3 Feb 2023 12:43:48 -0300
+	id D9BC1405BE; Fri,  3 Feb 2023 13:02:02 -0300 (-03)
+Date: Fri, 3 Feb 2023 13:02:02 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ian Rogers <irogers@google.com>
 Subject: Re: [PATCH v1] perf pmu: Fix aarch64 build
-Message-ID: <Y90rtA95mWW5Othk@kernel.org>
+Message-ID: <Y90v+jTe6z1dSFE0@kernel.org>
 References: <20230203014014.75720-1-irogers@google.com>
  <CAP-5=fX0ohsCUspm7NowDy2bmSr2cJfp=iaStK4EAdVy7zBHGA@mail.gmail.com>
  <Y90XgtX9uv26UAQa@kernel.org>
  <Y90bsM4DGL+WV8m0@kernel.org>
  <Y90b7shHtOCQL3ma@kernel.org>
  <Y90di+N7TODkFvMV@kernel.org>
+ <Y90rtA95mWW5Othk@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Y90di+N7TODkFvMV@kernel.org>
+In-Reply-To: <Y90rtA95mWW5Othk@kernel.org>
 X-Url: http://acmel.wordpress.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,110 +74,74 @@ Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sa
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Fri, Feb 03, 2023 at 11:43:23AM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Fri, Feb 03, 2023 at 11:36:30AM -0300, Arnaldo Carvalho de Melo escreveu:
-> > Em Fri, Feb 03, 2023 at 11:35:29AM -0300, Arnaldo Carvalho de Melo escreveu:
-> > > Em Fri, Feb 03, 2023 at 11:17:38AM -0300, Arnaldo Carvalho de Melo escreveu:
-> > > > Em Thu, Feb 02, 2023 at 05:41:22PM -0800, Ian Rogers escreveu:
-> > > > > On Thu, Feb 2, 2023 at 5:40 PM Ian Rogers <irogers@google.com> wrote:
-> > > > > >
-> > > > > > ARM64 overrides a weak function but a previous change had broken the
-> > > > > > build.
-> > > > > >
-> > > > > > Fixes: 8cefeb8bd336 ("perf pmu-events: Introduce pmu_metrics_table")
-> > > > > 
-> > > > > As 8cefeb8bd336 ("perf pmu-events: Introduce pmu_metrics_table") is
-> > > > > only on tmp.perf/core then it may be best to just squash this fix into
-> > > > > that.
-> > > > 
-> > > > Yeah, that was my intention, I'll fold it there to keep bisection,
-> > > > thanks for fixing it so fast, I'll double check on my rk3399 board and
-> > > > on again on the cross-build container.
-> > > 
-> > > Nope, that is not what I reported yesterday, trying to build it on the
-> > > rk3399 board:
-> > 
-> > Sorry, pulled the trigger too soon, this is _before_ applying your fix,
-> > I should't multitask too much :-\
-> > 
-> > I'll double check now, 
+Em Fri, Feb 03, 2023 at 12:43:48PM -0300, Arnaldo Carvalho de Melo escreveu:
+> I tried bisecting, but at this cset:
 > 
-> Ok, now it is exploding at:
+> acme@roc-rk3399-pc:~/git/perf$ git log --oneline -1
+> d22e569cd33d (HEAD) perf pmu-events: Separate the metrics from events for no jevents
+> acme@roc-rk3399-pc:~/git/perf$
 > 
-> pmu-events/pmu-events.c: In function ‘decompress’:
-> pmu-events/pmu-events.c:3598:11: error: ‘struct pmu_event’ has no member named ‘metric_name’
->  3598 |         pe->metric_name = (*p == '\0' ? NULL : p);
->       |           ^~
-> pmu-events/pmu-events.c:3600:11: error: ‘struct pmu_event’ has no member named ‘metric_group’
->  3600 |         pe->metric_group = (*p == '\0' ? NULL : p);
->       |           ^~
-> pmu-events/pmu-events.c:3614:11: error: ‘struct pmu_event’ has no member named ‘metric_constraint’
->  3614 |         pe->metric_constraint = (*p == '\0' ? NULL : p);
->       |           ^~
-> pmu-events/pmu-events.c:3616:11: error: ‘struct pmu_event’ has no member named ‘metric_expr’
->  3616 |         pe->metric_expr = (*p == '\0' ? NULL : p);
->       |           ^~
-> pmu-events/pmu-events.c: At top level:
+> I'm getting this:
+> 
+>   CC      /tmp/build/perf/pmu-events/pmu-events.o
 > pmu-events/pmu-events.c:3637:32: error: no previous prototype for ‘perf_pmu__find_table’ [-Werror=missing-prototypes]
 >  3637 | const struct pmu_events_table *perf_pmu__find_table(struct perf_pmu *pmu)
 >       |                                ^~~~~~~~~~~~~~~~~~~~
+>   CC      /tmp/build/perf/builtin-ftrace.o
+>   CC      /tmp/build/perf/builtin-help.o
+>   CC      /tmp/build/perf/builtin-buildid-list.o
 > cc1: all warnings being treated as errors
-> make[3]: *** [/home/acme/git/perf/tools/build/Makefile.build:98: /tmp/build/perf/pmu-events/pmu-events.o] Error 1
+> make[3]: *** [/home/acme/git/perf/tools/build/Makefile.build:97: /tmp/build/perf/pmu-events/pmu-events.o] Error 1
 > make[2]: *** [Makefile.perf:676: /tmp/build/perf/pmu-events/pmu-events-in.o] Error 2
 > make[2]: *** Waiting for unfinished jobs....
->   CC      /tmp/build/perf/builtin-ftrace.o
+>   CC      /tmp/build/perf/builtin-buildid-cache.o
+> 
+> <SNIP>
+> 
+>   CC      /tmp/build/perf/tests/attr.o
+> arch/arm64/util/pmu.c: In function ‘pmu_events_table__find’:
+> arch/arm64/util/pmu.c:35:24: error: implicit declaration of function ‘perf_pmu__find_table’; did you mean ‘perf_pmu__find_by_type’? [-Werror=implicit-function-declaration]
+>    35 |                 return perf_pmu__find_table(pmu);
+>       |                        ^~~~~~~~~~~~~~~~~~~~
+>       |                        perf_pmu__find_by_type
+> arch/arm64/util/pmu.c:35:24: error: returning ‘int’ from a function with return type ‘const struct pmu_events_table *’ makes pointer from integer without a cast [-Werror=int-conversion]
+>    35 |                 return perf_pmu__find_table(pmu);
+>       |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+> cc1: all warnings being treated as errors
+> make[6]: *** [/home/acme/git/perf/tools/build/Makefile.build:97: /tmp/build/perf/arch/arm64/util/pmu.o] Error 1
+> make[5]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: util] Error 2
+> make[4]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: arm64] Error 2
+> make[3]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: arch] Error 2
+> make[3]: *** Waiting for unfinished jobs....
+>   CC      /tmp/build/perf/tests/vmlinux-kallsyms.o
+> 
+> -----
+> 
+> I'm building with:
 
-I tried bisecting, but at this cset:
+So:
 
+acme@roc-rk3399-pc:~/git/perf$ find tools/perf/ -name "*.[ch]" | xargs grep -w perf_pmu__find_table
+tools/perf/arch/arm64/util/pmu.c:		return perf_pmu__find_table(pmu);
+tools/perf/pmu-events/pmu-events.c:const struct pmu_events_table *perf_pmu__find_table(struct perf_pmu *pmu)
+acme@roc-rk3399-pc:~/git/perf$
 acme@roc-rk3399-pc:~/git/perf$ git log --oneline -1
 d22e569cd33d (HEAD) perf pmu-events: Separate the metrics from events for no jevents
 acme@roc-rk3399-pc:~/git/perf$
 
-I'm getting this:
+Tring to fix...
+ 
+> 
+> acme@roc-rk3399-pc:~/git/perf$ alias m
+> alias m='make -k BUILD_BPF_SKEL=1 CORESIGHT=1 O=/tmp/build/perf -C tools/perf install-bin && git status && perf test python'
+> acme@roc-rk3399-pc:~/git/perf$ rm -rf /tmp/build/$(basename $(pwd)) ; mkdir -p /tmp/build/$(basename $(pwd)) ; m
+ 
+> 
+> To then go back to:
+> 
+> > pmu-events/pmu-events.c:3616:11: error: ‘struct pmu_event’ has no member named ‘metric_expr’
+> 
 
-  CC      /tmp/build/perf/pmu-events/pmu-events.o
-pmu-events/pmu-events.c:3637:32: error: no previous prototype for ‘perf_pmu__find_table’ [-Werror=missing-prototypes]
- 3637 | const struct pmu_events_table *perf_pmu__find_table(struct perf_pmu *pmu)
-      |                                ^~~~~~~~~~~~~~~~~~~~
-  CC      /tmp/build/perf/builtin-ftrace.o
-  CC      /tmp/build/perf/builtin-help.o
-  CC      /tmp/build/perf/builtin-buildid-list.o
-cc1: all warnings being treated as errors
-make[3]: *** [/home/acme/git/perf/tools/build/Makefile.build:97: /tmp/build/perf/pmu-events/pmu-events.o] Error 1
-make[2]: *** [Makefile.perf:676: /tmp/build/perf/pmu-events/pmu-events-in.o] Error 2
-make[2]: *** Waiting for unfinished jobs....
-  CC      /tmp/build/perf/builtin-buildid-cache.o
+-- 
 
-<SNIP>
-
-  CC      /tmp/build/perf/tests/attr.o
-arch/arm64/util/pmu.c: In function ‘pmu_events_table__find’:
-arch/arm64/util/pmu.c:35:24: error: implicit declaration of function ‘perf_pmu__find_table’; did you mean ‘perf_pmu__find_by_type’? [-Werror=implicit-function-declaration]
-   35 |                 return perf_pmu__find_table(pmu);
-      |                        ^~~~~~~~~~~~~~~~~~~~
-      |                        perf_pmu__find_by_type
-arch/arm64/util/pmu.c:35:24: error: returning ‘int’ from a function with return type ‘const struct pmu_events_table *’ makes pointer from integer without a cast [-Werror=int-conversion]
-   35 |                 return perf_pmu__find_table(pmu);
-      |                        ^~~~~~~~~~~~~~~~~~~~~~~~~
-cc1: all warnings being treated as errors
-make[6]: *** [/home/acme/git/perf/tools/build/Makefile.build:97: /tmp/build/perf/arch/arm64/util/pmu.o] Error 1
-make[5]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: util] Error 2
-make[4]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: arm64] Error 2
-make[3]: *** [/home/acme/git/perf/tools/build/Makefile.build:139: arch] Error 2
-make[3]: *** Waiting for unfinished jobs....
-  CC      /tmp/build/perf/tests/vmlinux-kallsyms.o
-
------
-
-I'm building with:
-
-
-acme@roc-rk3399-pc:~/git/perf$ alias m
-alias m='make -k BUILD_BPF_SKEL=1 CORESIGHT=1 O=/tmp/build/perf -C tools/perf install-bin && git status && perf test python'
-acme@roc-rk3399-pc:~/git/perf$ rm -rf /tmp/build/$(basename $(pwd)) ; mkdir -p /tmp/build/$(basename $(pwd)) ; m
-
-
-To then go back to:
-
-> pmu-events/pmu-events.c:3616:11: error: ‘struct pmu_event’ has no member named ‘metric_expr’
-
+- Arnaldo
