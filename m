@@ -4,87 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 684CFC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 16:03:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCF58C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 17:49:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7gS55cZ1z3fS9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 03:03:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7jpm6bgCz3f8n
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 04:49:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VB19n7ZV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=YUGCo4Zb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=brking@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::102c; helo=mail-pj1-x102c.google.com; envelope-from=seanjc@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VB19n7ZV;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=YUGCo4Zb;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x102c.google.com (mail-pj1-x102c.google.com [IPv6:2607:f8b0:4864:20::102c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7gL10Z3tz3f6B
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 02:58:16 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 313Efw5e019843;
-	Fri, 3 Feb 2023 15:58:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=XKd9IXJu6WajZTpMeR5fNtzh3X12+AZdL0P60/EEdj4=;
- b=VB19n7ZVYzUChTGQeXtHTkuRVYmq01j4LeUjRecgtQVoP0guPZR+sMlTvtLv2U5sOEzJ
- xotxPt07urgewRLWN63XlZnjZVfvirvgughrbC2rEU2nmpdnJ0mhg3md1wN+vOpAvCXc
- pT66bRW3W1uiJI6ZermwENqMpjqkKjfc4pM4IRxu6jD02y67eKtZLDbnFZmBELL/XuCK
- Y7UwzzQn+ZAR3AuiGEDQc439kHN13o1vFnO4OYN6dvUshfFlFyz/nCPjFBTTRdu9usdD
- As+eipHZQQr7/+qjZv7cdW3UdBVf6lVQegfPKob9JdwV9MJMEgBXXghoqTQnkckp0WYx 2Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nh48r1yw3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Feb 2023 15:58:13 +0000
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 313EgF7D020825;
-	Fri, 3 Feb 2023 15:58:13 GMT
-Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nh48r1yvt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Feb 2023 15:58:13 +0000
-Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
-	by ppma02dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 313EHbuH019280;
-	Fri, 3 Feb 2023 15:58:12 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
-	by ppma02dal.us.ibm.com (PPS) with ESMTPS id 3ncvur9tue-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 03 Feb 2023 15:58:12 +0000
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 313FwA8E61407694
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 3 Feb 2023 15:58:11 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8E78058061;
-	Fri,  3 Feb 2023 15:58:10 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B0C55803F;
-	Fri,  3 Feb 2023 15:58:10 +0000 (GMT)
-Received: from li-6bf4d4cc-31f5-11b2-a85c-838e9310af65.ibm.com.com (unknown [9.211.110.209])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  3 Feb 2023 15:58:10 +0000 (GMT)
-From: Brian King <brking@linux.vnet.ibm.com>
-To: gregkh@linuxfoundation.org
-Subject: [PATCH v3 5/5] hvcs: Synchronize hotplug remove with port free
-Date: Fri,  3 Feb 2023 09:58:02 -0600
-Message-Id: <20230203155802.404324-6-brking@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230203155802.404324-1-brking@linux.vnet.ibm.com>
-References: <20230203155802.404324-1-brking@linux.vnet.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7jnl0112z2ynf
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 04:48:57 +1100 (AEDT)
+Received: by mail-pj1-x102c.google.com with SMTP id f16-20020a17090a9b1000b0023058bbd7b2so5020185pjp.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2023 09:48:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=1t48P/jVd6+3dhw3pck4JM1odaqwThYt8bjKIe9FySY=;
+        b=YUGCo4ZbvxduWRBHH9xOGxUv8LoaXyN+VOL8K8Kve/u16uDaalEXH+kBO1C3PAOZdM
+         U2FdeDmTEYvv/Khm9Hp1pGOcZfLi1gl8qmki4SmGN3WfKIsCemaDy6HsGXS8a2DwuvSq
+         p7nNVpP/rnqBe+1jiPBY7eVjGaGnTjSVk5H8VHlpO4DlQHD7k1TC35BcdqTcy2ZQRaSF
+         4md/KQ7IeYFOS2FYZ+qMRDUx2NMJplrAtBdVvGxGX0DbpsM7eAfg2iIiZtKPhF8ngclz
+         nFNAH/NrZwg3lKNjgzMI4QsgFt81DdqqGb/JrZPeZ3VqGuwxbqlyijT98K4d4Jb58ATa
+         yKNw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=1t48P/jVd6+3dhw3pck4JM1odaqwThYt8bjKIe9FySY=;
+        b=VRkuiKY5Lf6QyJp8HzNxNTvQ2VafnSZuQMIqoY3wZVQ5I7wTbY0a7jVkMOrdLtVhLL
+         JAEGKkWySoQs9OrD6v5oku8EalEQpWsndY1bfv13du3+D9xGcyZ6rndK314/fgvL1fi1
+         8JMocCZFytRIg8FVZRQWl6xT9MRZN21isdy45CZc4LUUwaw5uFwQ19+vRhxijX28JpVU
+         xBR7j+JpWxBoEENAzP3pWQ5DSPaM6bUPXumOHJIIlUqUKmG4PT5DPbtbhqqjLDWwK3mz
+         wOrHoPLcmbkDSVN482pJI5MDJofNP7rDwfiBT31jZwGuG5iFuY38oiTm+zoTlcPn0hyd
+         FQ3w==
+X-Gm-Message-State: AO0yUKVfX+6A3ISH6EVRmnJ3Fmjevx0XabkChcXtVriEq023CnUxrHJf
+	6SWIEYZbCXOV+Y2ps0ISQ4C40Q==
+X-Google-Smtp-Source: AK7set8NtYpsGJ6byRewhpDzAYHCL4kVnwYOuRswQz6j6iO+lQNMoz+KA+gf7NkDr7m6tVMm7U3Fmg==
+X-Received: by 2002:a17:902:d1d5:b0:198:d5cc:44a8 with SMTP id g21-20020a170902d1d500b00198d5cc44a8mr260726plb.19.1675446534414;
+        Fri, 03 Feb 2023 09:48:54 -0800 (PST)
+Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
+        by smtp.gmail.com with ESMTPSA id b2-20020a1709027e0200b00194b3a7853esm1865998plm.181.2023.02.03.09.48.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 03 Feb 2023 09:48:53 -0800 (PST)
+Date: Fri, 3 Feb 2023 17:48:49 +0000
+From: Sean Christopherson <seanjc@google.com>
+To: Thomas Huth <thuth@redhat.com>
+Subject: Re: [PATCH 2/7] KVM: x86: Improve return type handling in
+ kvm_vm_ioctl_get_nr_mmu_pages()
+Message-ID: <Y91JAb0kKBYQjO8a@google.com>
+References: <20230203094230.266952-1-thuth@redhat.com>
+ <20230203094230.266952-3-thuth@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: gF7gUO72P36_NPqrHn7qzjPWt1NmjNBy
-X-Proofpoint-ORIG-GUID: ADZMIGab6Ex_d95DljWIHvkXDkSGUWr1
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-02-03_15,2023-02-03_01,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 spamscore=0
- priorityscore=1501 malwarescore=0 impostorscore=0 bulkscore=0
- mlxlogscore=999 lowpriorityscore=0 phishscore=0 mlxscore=0 adultscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302030142
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230203094230.266952-3-thuth@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,129 +79,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brian King <brking@linux.vnet.ibm.com>, mmc@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-serial@vger.kernel.org, brking@pobox.com
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, Suzuki K Poulose <suzuki.poulose@arm.com>, Marc Zyngier <maz@kernel.org>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Zenghui Yu <yuzenghui@huawei.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, Paolo Bonzini <pbonzini@redhat.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Synchronizes hotplug remove with the freeing of the port.
-This ensures we have freed all the memory associated with
-this port and are not leaking memory.
+On Fri, Feb 03, 2023, Thomas Huth wrote:
+> kvm_vm_ioctl_get_nr_mmu_pages() tries to return a "unsigned long" value,
+> but its caller only stores ther return value in an "int" - which is also
+> what all the other kvm_vm_ioctl_*() functions are returning. So returning
+> values that do not fit into a 32-bit integer anymore does not work here.
+> It's better to adjust the return type, add a sanity check and return an
+> error instead if the value is too big.
+> 
+> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> ---
+>  arch/x86/kvm/x86.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index da4bbd043a7b..caa2541833dd 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -6007,8 +6007,11 @@ static int kvm_vm_ioctl_set_nr_mmu_pages(struct kvm *kvm,
+>  	return 0;
+>  }
+>  
+> -static unsigned long kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+> +static int kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+>  {
+> +	if (kvm->arch.n_max_mmu_pages > INT_MAX)
+> +		return -EOVERFLOW;
+> +
+>  	return kvm->arch.n_max_mmu_pages;
+>  }
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
----
- drivers/tty/hvc/hvcs.c | 26 +++++++++++++++-----------
- 1 file changed, 15 insertions(+), 11 deletions(-)
+My vote is to skip this patch, skip deprecation, and go straight to deleting
+KVM_GET_NR_MMU_PAGES.  The ioctl() has never worked[*], and none of the VMMs I
+checked use it (QEMU, Google's internal VMM, kvmtool, CrosVM).
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index ecf24195b1e9..1de1a09bf82d 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -52,6 +52,7 @@
- 
- #include <linux/device.h>
- #include <linux/init.h>
-+#include <linux/completion.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/kref.h>
-@@ -285,6 +286,7 @@ struct hvcs_struct {
- 	char p_location_code[HVCS_CLC_LENGTH + 1]; /* CLC + Null Term */
- 	struct list_head next; /* list management */
- 	struct vio_dev *vdev;
-+	struct completion *destroyed;
- };
- 
- static LIST_HEAD(hvcs_structs);
-@@ -663,11 +665,13 @@ static void hvcs_destruct_port(struct tty_port *p)
- {
- 	struct hvcs_struct *hvcsd = container_of(p, struct hvcs_struct, port);
- 	struct vio_dev *vdev;
-+	struct completion *comp;
- 	unsigned long flags;
- 
- 	spin_lock(&hvcs_structs_lock);
- 	spin_lock_irqsave(&hvcsd->lock, flags);
- 
-+	comp = hvcsd->destroyed;
- 	/* the list_del poisons the pointers */
- 	list_del(&(hvcsd->next));
- 
-@@ -687,6 +691,7 @@ static void hvcs_destruct_port(struct tty_port *p)
- 
- 	hvcsd->p_unit_address = 0;
- 	hvcsd->p_partition_ID = 0;
-+	hvcsd->destroyed = NULL;
- 	hvcs_return_index(hvcsd->index);
- 	memset(&hvcsd->p_location_code[0], 0x00, HVCS_CLC_LENGTH + 1);
- 
-@@ -694,6 +699,8 @@ static void hvcs_destruct_port(struct tty_port *p)
- 	spin_unlock(&hvcs_structs_lock);
- 
- 	kfree(hvcsd);
-+	if (comp)
-+		complete(comp);
- }
- 
- static const struct tty_port_operations hvcs_port_ops = {
-@@ -792,6 +799,7 @@ static int hvcs_probe(
- static void hvcs_remove(struct vio_dev *dev)
- {
- 	struct hvcs_struct *hvcsd = dev_get_drvdata(&dev->dev);
-+	DECLARE_COMPLETION_ONSTACK(comp);
- 	unsigned long flags;
- 	struct tty_struct *tty;
- 
-@@ -799,16 +807,11 @@ static void hvcs_remove(struct vio_dev *dev)
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
- 
-+	hvcsd->destroyed = &comp;
- 	tty = tty_port_tty_get(&hvcsd->port);
- 
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
- 
--	/*
--	 * Let the last holder of this object cause it to be removed, which
--	 * would probably be tty_hangup below.
--	 */
--	tty_port_put(&hvcsd->port);
--
- 	/*
- 	 * The tty should always be valid at this time unless a
- 	 * simultaneous tty close already cleaned up the hvcs_struct.
-@@ -818,6 +821,8 @@ static void hvcs_remove(struct vio_dev *dev)
- 		tty_kref_put(tty);
- 	}
- 
-+	tty_port_put(&hvcsd->port);
-+	wait_for_completion(&comp);
- 	printk(KERN_INFO "HVCS: vty-server@%X removed from the"
- 			" vio bus.\n", dev->unit_address);
- };
-@@ -1171,7 +1176,10 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 	hvcsd = tty->driver_data;
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
--	if (--hvcsd->port.count == 0) {
-+	if (hvcsd->port.count == 0) {
-+		spin_unlock_irqrestore(&hvcsd->lock, flags);
-+		return;
-+	} else if (--hvcsd->port.count == 0) {
- 
- 		vio_disable_interrupts(hvcsd->vdev);
- 
-@@ -1227,11 +1235,7 @@ static void hvcs_hangup(struct tty_struct * tty)
- 	vio_disable_interrupts(hvcsd->vdev);
- 
- 	hvcsd->todo_mask = 0;
--
--	/* I don't think the tty needs the hvcs_struct pointer after a hangup */
--	tty->driver_data = NULL;
- 	hvcsd->port.tty = NULL;
--
- 	hvcsd->port.count = 0;
- 
- 	/* This will drop any buffered data on the floor which is OK in a hangup
--- 
-2.31.1
-
+[*] https://lore.kernel.org/all/YpZu6%2Fk+8EydfBKf@google.com
