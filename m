@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACEADC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:16:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E37E7C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:17:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qkT04t2z3fSh
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:16:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qlT3zK3z3f7l
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:17:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aUxqaJ3w;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEfcJwL6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.73.55; helo=sin.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aUxqaJ3w;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEfcJwL6;
 	dkim-atps=neutral
-Received: from sin.source.kernel.org (sin.source.kernel.org [145.40.73.55])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVP4DhLz3fBL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVQ0HCnz3f7h
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:06 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by sin.source.kernel.org (Postfix) with ESMTPS id 44B4BCE31BE;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 511A26202C;
+	Fri,  3 Feb 2023 22:06:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08B2BC433A0;
 	Fri,  3 Feb 2023 22:06:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5039DC433AA;
-	Fri,  3 Feb 2023 22:05:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461960;
-	bh=7d++Hui9U2QmrKVsgoxi792ojGAxFKsPKUzhCpj0Vz8=;
+	s=k20201202; t=1675461963;
+	bh=NPua2qPyoi9+ZnTVjzJtwJIKtIAcOluqw/LQWD+kyG0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=aUxqaJ3ww87KOGdisOk/HBl19AfmCI5IwgU45YTMMCbIOEAKmYokeRwWgk458aBdz
-	 KAB2IA5A6KZwBO7KL27vUbssmzJh7ENV38QqtoqOcvWzHLrWYU0SayIkMkcSRT9MFV
-	 rTXdxTX48v4hwkeYdjTBdMWiSWGW97wTHOHIHCoTCLhuLDOSQ6E13CVInzoI5HdmNi
-	 3mbcM1YB9zlDGO+z4veQYZkCQn+awXjDQLZSURiYJducHsArb8fWxtgCDFxv5s177E
-	 FUekw0iJc/v9Ta+STjHGBIEOmOzc69H99WWgT7FCYTGb4FUxkC0cXDeNCacXAzXnoD
-	 6xgtVXdRGS0sg==
+	b=bEfcJwL6SC/AjDrgqLZ4gobtYzzG+kaVTVeIraggyRhwgYWN4oAFuKJ77/RCNTRvY
+	 fup/m+ICRFhtxmQnpWwYUfJLena8YJAeJTm6ZcubnjXEQ/jgxWcSotzf3Y2mbjtquI
+	 yW5I485ZkkpQ6Jqy0xpqJWrVtVjUykBoHEcmO5kdnHPKSdwkiAEHBedDcPx5HCDW7z
+	 e56cpXGjpV9Wa9j+COiY6xVNqjbTa5hVFZNcyFwrdOvNi774RztXhcvRS8u2WNZfqm
+	 te78V+RaoPzaJRgp+oay8agBh6E4MO/A9zlyBZNVH/Oc0XYt+s1wdWgKe5Q1neeH/O
+	 i9bQ03yAKwMEA==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 10/22] mips/cpu: Make sure play_dead() doesn't return
-Date: Fri,  3 Feb 2023 14:05:19 -0800
-Message-Id: <b131d3e00967034d86692b894a66c6a656e7de3f.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 12/22] powerpc/cpu: Mark start_secondary_resume() __noreturn
+Date: Fri,  3 Feb 2023 14:05:21 -0800
+Message-Id: <b5d065218265e79daa23f82bb84efc6a7ea120fc.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,43 +65,27 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-play_dead() doesn't return.  Make that more explicit with a BUG().
-
-BUG() is preferable to unreachable() because BUG() is a more explicit
-failure mode and avoids undefined behavior like falling off the edge of
-the function into whatever code happens to be next.
+start_secondary_resume() doesn't return.  Annotate it as such.  By
+extension this also makes arch_cpu_idle_dead() noreturn.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/mips/kernel/smp-bmips.c | 2 ++
- arch/mips/loongson64/smp.c   | 1 +
- 2 files changed, 3 insertions(+)
+ arch/powerpc/include/asm/smp.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kernel/smp-bmips.c b/arch/mips/kernel/smp-bmips.c
-index df9158e8329d..be85fa075830 100644
---- a/arch/mips/kernel/smp-bmips.c
-+++ b/arch/mips/kernel/smp-bmips.c
-@@ -414,6 +414,8 @@ void __ref play_dead(void)
- 	"	wait\n"
- 	"	j	bmips_secondary_reentry\n"
- 	: : : "memory");
-+
-+	BUG();
- }
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index f63505d74932..cfd42ca8765c 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -66,7 +66,7 @@ void start_secondary(void *unused);
+ extern int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
+ extern int smp_send_safe_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
+ extern void smp_send_debugger_break(void);
+-extern void start_secondary_resume(void);
++extern void __noreturn start_secondary_resume(void);
+ extern void smp_generic_give_timebase(void);
+ extern void smp_generic_take_timebase(void);
  
- #endif /* CONFIG_HOTPLUG_CPU */
-diff --git a/arch/mips/loongson64/smp.c b/arch/mips/loongson64/smp.c
-index 660e1de4412a..c81c2bd07c62 100644
---- a/arch/mips/loongson64/smp.c
-+++ b/arch/mips/loongson64/smp.c
-@@ -822,6 +822,7 @@ void play_dead(void)
- 	state_addr = &per_cpu(cpu_state, cpu);
- 	mb();
- 	play_dead_at_ckseg1(state_addr);
-+	BUG();
- }
- 
- static int loongson3_disable_clock(unsigned int cpu)
 -- 
 2.39.0
 
