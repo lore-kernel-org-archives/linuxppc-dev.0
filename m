@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E37E7C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:17:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93944C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 22:18:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qlT3zK3z3f7l
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:17:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7qmV0qvYz3fTw
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 09:18:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEfcJwL6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sMuRLeIe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bEfcJwL6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sMuRLeIe;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVQ0HCnz3f7h
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7qVT2f07z3fBC
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 09:06:09 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 511A26202C;
-	Fri,  3 Feb 2023 22:06:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08B2BC433A0;
-	Fri,  3 Feb 2023 22:06:02 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id A3C8662042;
+	Fri,  3 Feb 2023 22:06:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF2DFC4339B;
+	Fri,  3 Feb 2023 22:06:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675461963;
-	bh=NPua2qPyoi9+ZnTVjzJtwJIKtIAcOluqw/LQWD+kyG0=;
+	s=k20201202; t=1675461967;
+	bh=NaTK1tR+V9DMn/hY0B5jpg7IE7MnPmPMawuvFBlMv1o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bEfcJwL6SC/AjDrgqLZ4gobtYzzG+kaVTVeIraggyRhwgYWN4oAFuKJ77/RCNTRvY
-	 fup/m+ICRFhtxmQnpWwYUfJLena8YJAeJTm6ZcubnjXEQ/jgxWcSotzf3Y2mbjtquI
-	 yW5I485ZkkpQ6Jqy0xpqJWrVtVjUykBoHEcmO5kdnHPKSdwkiAEHBedDcPx5HCDW7z
-	 e56cpXGjpV9Wa9j+COiY6xVNqjbTa5hVFZNcyFwrdOvNi774RztXhcvRS8u2WNZfqm
-	 te78V+RaoPzaJRgp+oay8agBh6E4MO/A9zlyBZNVH/Oc0XYt+s1wdWgKe5Q1neeH/O
-	 i9bQ03yAKwMEA==
+	b=sMuRLeIeuX4e5NoLB6UdKdvNaRzHIa+b94PsGTQMufoRN5QA/zc/CEM69PsZyUbp1
+	 MaysKmxIVcsGQzwrmnkKG0GvRbA9cxT/bDuVaZX4cKX13vFQry04JZub/7YbMzEr99
+	 cLtBs39kcPbv3AEn9JqZbGlrlVJEq7+r29QctelrKOb+I+n2J4leC7FZUu7ApYfmKA
+	 q7vw8T+tBdwQiLYoZGWf3XGbln2suP3atmYw9fVnFbsEtKD9GU9f/vEgJntOx59T3k
+	 AYHnExlZzIdcgOgQulPOWNAktDPoSoVgTe6X9UFvqEgEZQgGo8/EaJPnZcpKZQib90
+	 Jc9u1vCBV+1cA==
 From: Josh Poimboeuf <jpoimboe@kernel.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/22] powerpc/cpu: Mark start_secondary_resume() __noreturn
-Date: Fri,  3 Feb 2023 14:05:21 -0800
-Message-Id: <b5d065218265e79daa23f82bb84efc6a7ea120fc.1675461757.git.jpoimboe@kernel.org>
+Subject: [PATCH 14/22] sh/cpu: Mark play_dead() __noreturn
+Date: Fri,  3 Feb 2023 14:05:23 -0800
+Message-Id: <bba33f5055a1f5130d8d08ca019f3144c6345f1a.1675461757.git.jpoimboe@kernel.org>
 X-Mailer: git-send-email 2.39.0
 In-Reply-To: <cover.1675461757.git.jpoimboe@kernel.org>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
@@ -65,27 +65,36 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-start_secondary_resume() doesn't return.  Annotate it as such.  By
-extension this also makes arch_cpu_idle_dead() noreturn.
+play_dead() doesn't return.  Annotate it as such.  By extension this
+also makes arch_cpu_idle_dead() noreturn.
 
 Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
 ---
- arch/powerpc/include/asm/smp.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sh/include/asm/smp-ops.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index f63505d74932..cfd42ca8765c 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -66,7 +66,7 @@ void start_secondary(void *unused);
- extern int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
- extern int smp_send_safe_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
- extern void smp_send_debugger_break(void);
--extern void start_secondary_resume(void);
-+extern void __noreturn start_secondary_resume(void);
- extern void smp_generic_give_timebase(void);
- extern void smp_generic_take_timebase(void);
+diff --git a/arch/sh/include/asm/smp-ops.h b/arch/sh/include/asm/smp-ops.h
+index 63866b1595a0..97331fcb7b85 100644
+--- a/arch/sh/include/asm/smp-ops.h
++++ b/arch/sh/include/asm/smp-ops.h
+@@ -24,7 +24,7 @@ static inline void plat_smp_setup(void)
+ 	mp_ops->smp_setup();
+ }
  
+-static inline void play_dead(void)
++static inline void __noreturn play_dead(void)
+ {
+ 	mp_ops->play_dead();
+ 	BUG();
+@@ -43,7 +43,7 @@ static inline void register_smp_ops(struct plat_smp_ops *ops)
+ {
+ }
+ 
+-static inline void play_dead(void)
++static inline void __noreturn play_dead(void)
+ {
+ 	BUG();
+ }
 -- 
 2.39.0
 
