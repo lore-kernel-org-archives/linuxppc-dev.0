@@ -4,54 +4,73 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD90BC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Feb 2023 19:17:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29970C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 01:07:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P7lm11d2kz3f8l
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 06:17:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P7vWV1L8Mz3f8G
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 12:07:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UMXO1Wkg;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=cOFCW2eK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::d31; helo=mail-io1-xd31.google.com; envelope-from=skhan@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UMXO1Wkg;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=cOFCW2eK;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com [IPv6:2607:f8b0:4864:20::d31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7ll066npz3cLh
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 06:16:44 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8BF4761F51;
-	Fri,  3 Feb 2023 19:16:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A6E8EC433EF;
-	Fri,  3 Feb 2023 19:16:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675451802;
-	bh=0AFp6+/WYLkly4i1S3e6QCedjBXXIlDjZCRb4SgkOcI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=UMXO1Wkg2f3xBGalnhAsIFnYiTUjtXSLRMCNbhXIsnEjW0Ca5Nyy5Vw2Ih5YP6HVp
-	 75t2rm2TteqT5HOuQGvLa/qTbSxaYF6mGusQVvJ1TsvIoQ3noSmnYYpoVruGvqJdHf
-	 t72mE/r2L/SAGSs/X7dYREIYh3Dm9827QsyfuxBKAm/CLS4MY5jIaL+XMZHTpJuYeq
-	 3GjKRhbrDqih1HwMDXjTLcAlu32wtKqr4g4/Qmw6LvFrZJFv6niGIydWhZzC7PsSFS
-	 dYqpQG7zMDd2s/7Hgl9Mv2e7HPM8bz2xyu+n4jekxOMue8F1NpmWvXmURt0uL/0mHn
-	 xpSNMPL/QpkGA==
-Received: by pali.im (Postfix)
-	id 1E628723; Fri,  3 Feb 2023 20:16:39 +0100 (CET)
-Date: Fri, 3 Feb 2023 20:16:39 +0100
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: kernel test robot <lkp@intel.com>
-Subject: Re: [powerpc:next-test 14/40] arch/powerpc/kernel/pci_32.c:233:5:
- error: no previous prototype for 'pci_device_from_OF_node'
-Message-ID: <20230203191639.ga5xkwqf4hxgoaov@pali>
-References: <202302030001.HQPCI490-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P7vVQ0lRKz3bjy
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Feb 2023 12:06:20 +1100 (AEDT)
+Received: by mail-io1-xd31.google.com with SMTP id q6so2608435ior.12
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Feb 2023 17:06:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=EJJNrsJn7yzBqph2acvSr4Hti6BrkgyiwRkgePteRzI=;
+        b=cOFCW2eKrPz/F7vUGV3S812saggF5YeG/hVM7hcFN7yyU4S9pS1nxzMNle0FhONcm0
+         QinIgL9G1RKgP/tdAGV0W7F1TlYTQQnn5j6CVZ8G16iJYwrrpp8MBWSstnhHVVbP9jaa
+         +1GfdV7ZDn1qFvbfmQwolq9ris01IwB9DRXK0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=EJJNrsJn7yzBqph2acvSr4Hti6BrkgyiwRkgePteRzI=;
+        b=03mGedNkvXmsri+YjveftBtSvyOfLKk4oG1tTDqS4yvb8j4sVC+97j8Suw8mqZ0oVw
+         tEagzNR6Pbg5t6CdJA3NPuC0XnBIJwIsBwrbmv5Iqi7+jIpVlPyzAKfV+qRBmuNRVcIt
+         0pOIlS33NCSF+Rq55v3OTG3NySzfiEEUfgTgBVEHyWR9bnGc/LSbHFCS7P3d5j5z2/8R
+         blSkKlXGW9mkep/V4PvwWeq+MfGaA23ZGW6pt9SN46EjBZvUzcK+j5YnekIIyULET9JP
+         X3lANf/ZWu3/1/WZr/oO9Hl3RTsQDx8kxnmQpTB12A6rg6GYKmXTSdsyoLs8HmrBCG4M
+         4zJA==
+X-Gm-Message-State: AO0yUKWcQmmaLLTZ8fknio+zlBDqA5vGPGkMI2BmMp2w2viiNe1a7OaJ
+	NszB62fchLZJNxPlDRlWubOSOg==
+X-Google-Smtp-Source: AK7set9499rugZh/K8yzehbsATZ6fL7OrnwVY1iWmkEuyNyOtCYXT0lcwjPiJcBHW95uVphhlXqPsA==
+X-Received: by 2002:a6b:3b14:0:b0:715:f031:a7f5 with SMTP id i20-20020a6b3b14000000b00715f031a7f5mr6443794ioa.1.1675472776701;
+        Fri, 03 Feb 2023 17:06:16 -0800 (PST)
+Received: from [192.168.1.128] ([38.15.45.1])
+        by smtp.gmail.com with ESMTPSA id h16-20020a022b10000000b003a970f21f9asm1294500jaa.78.2023.02.03.17.06.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 03 Feb 2023 17:06:15 -0800 (PST)
+Message-ID: <975995d6-366a-88e3-2321-f0728f7e22a7@linuxfoundation.org>
+Date: Fri, 3 Feb 2023 18:06:15 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <202302030001.HQPCI490-lkp@intel.com>
-User-Agent: NeoMutt/20180716
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.2
+Subject: Re: [PATCH 00/34] selftests: Fix incorrect kernel headers search path
+Content-Language: en-US
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>
+References: <20230127135755.79929-1-mathieu.desnoyers@efficios.com>
+ <560824bd-da2d-044c-4f71-578fc34a47cd@linuxfoundation.org>
+ <799b87d9-af19-0e6a-01b7-419b4893a0df@linuxfoundation.org>
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <799b87d9-af19-0e6a-01b7-419b4893a0df@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,88 +82,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, oe-kbuild-all@lists.linux.dev
+Cc: Networking <netdev@vger.kernel.org>, bpf <bpf@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Shuah Khan <skhan@linuxfoundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Friday 03 February 2023 00:13:02 kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-> head:   9ffcf6a19dbb2a24de2c2d7b2af1e130986cd565
-> commit: 869363998da87c80c16ff1221e95b41b2d3cceb2 [14/40] powerpc/pci: Allow to disable filling deprecated pci-OF-bus-map
-> config: powerpc-buildonly-randconfig-r006-20230202 (https://download.01.org/0day-ci/archive/20230203/202302030001.HQPCI490-lkp@intel.com/config)
-> compiler: powerpc-linux-gcc (GCC) 12.1.0
-> reproduce (this is a W=1 build):
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=869363998da87c80c16ff1221e95b41b2d3cceb2
->         git remote add powerpc https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
->         git fetch --no-tags powerpc next-test
->         git checkout 869363998da87c80c16ff1221e95b41b2d3cceb2
->         # save the config file
->         mkdir build_dir && cp config build_dir/.config
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc olddefconfig
->         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash arch/powerpc/kernel/
+On 2/1/23 19:07, Shuah Khan wrote:
+> Hi Mathieu,
 > 
-> If you fix the issue, kindly add following tag where applicable
-> | Reported-by: kernel test robot <lkp@intel.com>
+> On 1/30/23 15:29, Shuah Khan wrote:
+>> On 1/27/23 06:57, Mathieu Desnoyers wrote:
+>>> Hi,
+>>>
+>>> This series fixes incorrect kernel header search path in kernel
+>>> selftests.
+>>>
+>>> Near the end of the series, a few changes are not tagged as "Fixes"
+>>> because the current behavior is to rely on the kernel sources uapi files
+>>> rather than on the installed kernel header files. Nevertheless, those
+>>> are updated for consistency.
+>>>
+>>> There are situations where "../../../../include/" was added to -I search
+>>> path, which is bogus for userspace tests and caused issues with types.h.
+>>> Those are removed.
+>>>
 > 
-> All errors (new ones prefixed by >>):
+> Thanks again for taking care of this. I did out of tree build testing on
+> x86 on linux-kselftest next with these patches below. I haven't seen
+> any problems introduced by the patch set.
 > 
-> >> arch/powerpc/kernel/pci_32.c:233:5: error: no previous prototype for 'pci_device_from_OF_node' [-Werror=missing-prototypes]
->      233 | int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
->          |     ^~~~~~~~~~~~~~~~~~~~~~~
->    cc1: all warnings being treated as errors
+>>>    selftests: dma: Fix incorrect kernel headers search path
+> This one needs a change and I will send a patch on top of yours.
+> Even with that this test depends on unexported header from the
+> repo and won't build out of tree. This is not related to your
+> change.
+> 
+>>>    selftests: mount_setattr: Fix incorrect kernel headers search path
+> This one fails to build with our without patch - an existing error.
+> 
+> I have to do cross-build tests on arm64 and other arch patches still.
+> This will happen later this week.
 
-Try this change:
+arm64, s390 patches look good.
 
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 82a8981d4c47..b59b6dfb8d4c 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -227,6 +227,7 @@ pci_create_OF_bus_map(void)
- 
- #else /* CONFIG_PPC_PCI_OF_BUS_MAP_FILL */
- 
-+#ifdef CONFIG_PPC_PMAC
- /*
-  * Returns the PCI device matching a given OF node without pci_to_OF_bus_map
-  */
-@@ -248,6 +249,7 @@ int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
- 
- 	return 0;
- }
-+#endif
- 
- #endif /* CONFIG_PPC_PCI_OF_BUS_MAP_FILL */
- 
-
-> 
-> vim +/pci_device_from_OF_node +233 arch/powerpc/kernel/pci_32.c
-> 
->    229	
->    230	/*
->    231	 * Returns the PCI device matching a given OF node without pci_to_OF_bus_map
->    232	 */
->  > 233	int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
->    234	{
->    235		const __be32 *reg;
->    236		int size;
->    237	
->    238		/* Check if it might have a chance to be a PCI device */
->    239		if (!pci_find_hose_for_OF_device(node))
->    240			return -ENODEV;
->    241	
->    242		reg = of_get_property(node, "reg", &size);
->    243		if (!reg || size < 5 * sizeof(u32))
->    244			return -ENODEV;
->    245	
->    246		*bus = (be32_to_cpup(&reg[0]) >> 16) & 0xff;
->    247		*devfn = (be32_to_cpup(&reg[0]) >> 8) & 0xff;
->    248	
->    249		return 0;
->    250	}
->    251	
-> 
-> -- 
-> 0-DAY CI Kernel Test Service
-> https://github.com/intel/lkp-tests
+thanks,
+-- Shuah
