@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6D5EC636CD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:43:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5906FC636CD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:44:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kwc2XM6z3fGm
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:43:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kxB5Hb2z2xYL
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:43:58 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvP5bh8z3bZj
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvQ2Gckz3bZj
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:26 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvP3qm5z4xZb;
-	Sun,  5 Feb 2023 20:42:25 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvQ0z1tz4xwq;
+	Sun,  5 Feb 2023 20:42:26 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20230131111407.806770-1-mpe@ellerman.id.au>
-References: <20230131111407.806770-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/64s: Reconnect tlb_flush() to hash__tlb_flush()
-Message-Id: <167559011181.1647710.16257388961009688840.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 20:41:51 +1100
+In-Reply-To: <20230130014401.540543-1-mpe@ellerman.id.au>
+References: <20230130014401.540543-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/imc-pmu: Revert nest_init_lock to being a mutex
+Message-Id: <167559010649.1647710.5838236888864506052.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 20:41:46 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,24 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.ibm.com, npiggin@gmail.com, bgray@linux.ibm.com
+Cc: kjain@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 31 Jan 2023 22:14:07 +1100, Michael Ellerman wrote:
-> Commit baf1ed24b27d ("powerpc/mm: Remove empty hash__ functions")
-> removed some empty hash MMU flushing routines, but got a bit overeager
-> and also removed the call to hash__tlb_flush() from tlb_flush().
+On Mon, 30 Jan 2023 12:44:01 +1100, Michael Ellerman wrote:
+> The recent commit 76d588dddc45 ("powerpc/imc-pmu: Fix use of mutex in
+> IRQs disabled section") fixed warnings (and possible deadlocks) in the
+> IMC PMU driver by converting the locking to use spinlocks.
 > 
-> In regular use this doesn't lead to any noticable breakage, which is a
-> little concerning. Presumably there are flushes happening via other
-> paths such as arch_leave_lazy_mmu_mode(), and/or a bit of luck.
+> It also converted the init-time nest_init_lock to a spinlock, even
+> though it's not used at runtime in IRQ disabled sections or while
+> holding other spinlocks.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/64s: Reconnect tlb_flush() to hash__tlb_flush()
-      https://git.kernel.org/powerpc/c/1665c027afb225882a5a0b014c45e84290b826c2
+[1/1] powerpc/imc-pmu: Revert nest_init_lock to being a mutex
+      https://git.kernel.org/powerpc/c/ad53db4acb415976761d7302f5b02e97f2bd097e
 
 cheers
