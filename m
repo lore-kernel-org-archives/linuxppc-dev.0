@@ -4,35 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CF7BC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E15E4C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 12:58:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8l0g53Nqz3fpc
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:46:59 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8qFc0hDgz3f7l
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 23:58:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BWqjY3fS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=BWqjY3fS;
+	dkim-atps=neutral
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvW3flbz3f4r
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:31 +1100 (AEDT)
-Received: by gandalf.ozlabs.org (Postfix)
-	id 4P8kvS5Dhdz4xyy; Sun,  5 Feb 2023 20:42:28 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvS4MVTz4xyt;
-	Sun,  5 Feb 2023 20:42:28 +1100 (AEDT)
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org
-In-Reply-To: <20230131030615.729894-1-sourabhjain@linux.ibm.com>
-References: <20230131030615.729894-1-sourabhjain@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/kexec_file: account hot-pluggable memory while estimating FDT size
-Message-Id: <167559011069.1647710.15697754175763092162.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 20:41:50 +1100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8qDW75K0z3bW2
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 23:57:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1675601852; x=1707137852;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=QwFVIeB5GIwIbYo7hDdu6i+DzOM4qRxurj8uRWgrXiw=;
+  b=BWqjY3fSmrFbbtlC77g1L5+FZb8U9OPHvB9otaUB41cLtRd9BoyGuvyT
+   jOQ0VOnWLxhFNnwyNUUtIeNPhpCkK6uJ8tMU8LFIfpRSV2Y9BVxcfuh+c
+   DMaqTv9cwmftCrD41gwU5DuDZViZN6PU0Lo49ZWsmWdAIKOeELAg6mov4
+   9FZUQYOWTAW5NokFbVQbLQLjBL0LsBFLSPqviBAODbnEd073uBF1Ds3be
+   8CV6drLBSxgkj04JfNqiyAbCiA1CVMlRyc83I8O2AFr2bwNwrI/Iw/Wwn
+   jyycICJJbQqI7N8PKR9sv2NVF7DJXmQUpKeVQu7MQ3WDy1704FksnwGdb
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10611"; a="330337373"
+X-IronPort-AV: E=Sophos;i="5.97,275,1669104000"; 
+   d="scan'208";a="330337373"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 05 Feb 2023 04:57:21 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10611"; a="840110008"
+X-IronPort-AV: E=Sophos;i="5.97,275,1669104000"; 
+   d="scan'208";a="840110008"
+Received: from lkp-server01.sh.intel.com (HELO 4455601a8d94) ([10.239.97.150])
+  by orsmga005.jf.intel.com with ESMTP; 05 Feb 2023 04:57:20 -0800
+Received: from kbuild by 4455601a8d94 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1pOea7-00020w-1e;
+	Sun, 05 Feb 2023 12:57:19 +0000
+Date: Sun, 05 Feb 2023 20:57:14 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes] BUILD SUCCESS
+ 1665c027afb225882a5a0b014c45e84290b826c2
+Message-ID: <63dfa7aa.xwCU+AO2RfrXH+PC%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,23 +70,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mahesh@linux.vnet.ibm.com, hbathini@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 31 Jan 2023 08:36:15 +0530, Sourabh Jain wrote:
-> On Systems where online memory is lesser compared to max memory, the
-> kexec_file_load system call may fail to load the kdump kernel with the
-> below errors:
-> 
->     "Failed to update fdt with linux,drconf-usable-memory property"
->     "Error setting up usable-memory property for kdump kernel"
-> 
-> [...]
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+branch HEAD: 1665c027afb225882a5a0b014c45e84290b826c2  powerpc/64s: Reconnect tlb_flush() to hash__tlb_flush()
 
-Applied to powerpc/fixes.
+elapsed time: 723m
 
-[1/1] powerpc/kexec_file: account hot-pluggable memory while estimating FDT size
-      https://git.kernel.org/powerpc/c/fc546faa559538fb312c77e055243ece18ab3288
+configs tested: 14
+configs skipped: 108
 
-cheers
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                          rhel-8.3-func
+x86_64                    rhel-8.3-kselftests
+x86_64                              defconfig
+x86_64                           allyesconfig
+x86_64                               rhel-8.3
+
+clang tested configs:
+riscv                randconfig-r042-20230205
+s390                 randconfig-r044-20230205
+hexagon              randconfig-r045-20230205
+hexagon              randconfig-r041-20230205
+i386                          randconfig-a002
+i386                          randconfig-a006
+i386                          randconfig-a004
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
