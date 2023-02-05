@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 903FCC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 00:48:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B1D8C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 00:48:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8W3H1wNJz3fKh
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 11:48:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8W3s3lG1z3fDg
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 11:48:57 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8W26636yz3bNn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 11:47:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8W273ktQz3bNn
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 11:47:27 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8W264VTwz4xxJ;
-	Sun,  5 Feb 2023 11:47:26 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8W271Jg6z4xyB;
+	Sun,  5 Feb 2023 11:47:27 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <cover.1674617130.git.jpoimboe@kernel.org>
-References: <cover.1674617130.git.jpoimboe@kernel.org>
-Subject: Re: [PATCH 0/2] powerpc: Fix livepatch module re-patching issue
-Message-Id: <167555801712.1621279.10804935395824436485.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 11:46:57 +1100
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20230124140448.45938-1-nathanl@linux.ibm.com>
+References: <20230124140448.45938-1-nathanl@linux.ibm.com>
+Subject: Re: [PATCH v2 0/4] powerpc/rtas: exports and locking
+Message-Id: <167555802336.1621279.4789580610649439554.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 11:47:03 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Song Liu <song@kernel.org>, live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ldufour@linux.ibm.com, ajd@linux.ibm.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 24 Jan 2023 19:38:03 -0800, Josh Poimboeuf wrote:
-> Fix a livepatch bug seen when reloading a patched module.
+On Tue, 24 Jan 2023 08:04:44 -0600, Nathan Lynch wrote:
+> This series began as a single patch[1] to convert the RTAS subsystem's
+> internal locks to raw spinlocks. The discussion of that patch
+> identified opportunities to update a few aspects of the RTAS API, so
+> the series begins with those and ends with a rebased version of the
+> original patch.
 > 
-> This is the powerpc counterpart to Song Liu's fix for a similar issue on
-> x86:
-> 
->   https://lkml.kernel.org/lkml/20230121004945.697003-2-song@kernel.org
+> Changes since v1:
+> - Unexport the singleton 'rtas' struct.
+> - Remove lock and args fields from 'struct rtas_t', making them
+>   private to the RTAS subsystem.
+> - Convert all symbol exports in rtas.c to EXPORT_SYMBOL_GPL.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/module_64: Improve restore_r2() return semantics
-      https://git.kernel.org/powerpc/c/bc2c6f5695ffa05c838b8b6fc5cd581a672151a1
-[2/2] powerpc/module_64: Fix "expected nop" error on module re-patching
-      https://git.kernel.org/powerpc/c/37251c7114e1b743b077ca74b93557c1ad92a97e
+[1/4] powerpc/rtas: unexport 'rtas' symbol
+      https://git.kernel.org/powerpc/c/5ff92e2f274dc42a9e534473121273cd209d3501
+[2/4] powerpc/rtas: make all exports GPL
+      https://git.kernel.org/powerpc/c/9bce6243848dfd0ff7c2be6e8d82ab9b1e6c7858
+[3/4] powerpc/rtas: remove lock and args fields from global rtas struct
+      https://git.kernel.org/powerpc/c/599af49155467148afaf0bc3c0114bd80fd4491f
+[4/4] powerpc/rtas: upgrade internal arch spinlocks
+      https://git.kernel.org/powerpc/c/12fd66651df6c807b7b6f420ee0fd420f54991f4
 
 cheers
