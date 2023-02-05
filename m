@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 515EFC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 15:59:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 81455C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 16:00:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8vGf5xBgz3cNJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 02:59:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
-X-Greylist: delayed 545 seconds by postgrey-1.36 at boromir; Mon, 06 Feb 2023 02:58:07 AEDT
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8vDv1dkGz3c3w
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8vHD1SfJz2ynf
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 03:00:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8vDv2lyNz3c6R
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2023 02:58:07 +1100 (AEDT)
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 97BD39200C0; Sun,  5 Feb 2023 16:49:12 +0100 (CET)
+	id 6D2B29200C4; Sun,  5 Feb 2023 16:49:16 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 910D59200BF;
-	Sun,  5 Feb 2023 15:49:12 +0000 (GMT)
-Date: Sun, 5 Feb 2023 15:49:12 +0000 (GMT)
+	by angie.orcam.me.uk (Postfix) with ESMTP id 6A1A89200C3;
+	Sun,  5 Feb 2023 15:49:16 +0000 (GMT)
+Date: Sun, 5 Feb 2023 15:49:16 +0000 (GMT)
 From: "Maciej W. Rozycki" <macro@orcam.me.uk>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
     Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
@@ -30,9 +29,9 @@ To: Bjorn Helgaas <bhelgaas@google.com>,
     "David S. Miller" <davem@davemloft.net>, 
     Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
     Paolo Abeni <pabeni@redhat.com>
-Subject: [PATCH v6 4/7] powerpc/eeh: Rely on `link_active_reporting'
+Subject: [PATCH v6 5/7] net/mlx5: Rely on `link_active_reporting'
 In-Reply-To: <alpine.DEB.2.21.2302022022230.45310@angie.orcam.me.uk>
-Message-ID: <alpine.DEB.2.21.2302051441470.33812@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2302051450280.33812@angie.orcam.me.uk>
 References: <alpine.DEB.2.21.2302022022230.45310@angie.orcam.me.uk>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
@@ -57,27 +56,38 @@ Active Reporting is available rather than re-retrieving the capability.
 
 Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
 ---
-NB this has been compile-tested only with a PPC64LE configuration.
+NB this has been compile-tested only with PPC64LE and x86-64 
+configurations.
 
 New change in v6.
 ---
- arch/powerpc/kernel/eeh_pe.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/fw_reset.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-linux-pcie-link-active-reporting-eeh.diff
-Index: linux-macro/arch/powerpc/kernel/eeh_pe.c
+linux-pcie-link-active-reporting-mlx5.diff
+Index: linux-macro/drivers/net/ethernet/mellanox/mlx5/core/fw_reset.c
 ===================================================================
---- linux-macro.orig/arch/powerpc/kernel/eeh_pe.c
-+++ linux-macro/arch/powerpc/kernel/eeh_pe.c
-@@ -671,9 +671,8 @@ static void eeh_bridge_check_link(struct
- 	eeh_ops->write_config(edev, cap + PCI_EXP_LNKCTL, 2, val);
+--- linux-macro.orig/drivers/net/ethernet/mellanox/mlx5/core/fw_reset.c
++++ linux-macro/drivers/net/ethernet/mellanox/mlx5/core/fw_reset.c
+@@ -294,7 +294,6 @@ static int mlx5_pci_link_toggle(struct m
+ 	unsigned long timeout;
+ 	struct pci_dev *sdev;
+ 	int cap, err;
+-	u32 reg32;
+ 
+ 	/* Check that all functions under the pci bridge are PFs of
+ 	 * this device otherwise fail this function.
+@@ -333,11 +332,8 @@ static int mlx5_pci_link_toggle(struct m
+ 		return err;
  
  	/* Check link */
--	eeh_ops->read_config(edev, cap + PCI_EXP_LNKCAP, 4, &val);
--	if (!(val & PCI_EXP_LNKCAP_DLLLARC)) {
--		eeh_edev_dbg(edev, "No link reporting capability (0x%08x) \n", val);
-+	if (!edev->pdev->link_active_reporting) {
-+		eeh_edev_dbg(edev, "No link reporting capability\n");
+-	err = pci_read_config_dword(bridge, cap + PCI_EXP_LNKCAP, &reg32);
+-	if (err)
+-		return err;
+-	if (!(reg32 & PCI_EXP_LNKCAP_DLLLARC)) {
+-		mlx5_core_warn(dev, "No PCI link reporting capability (0x%08x)\n", reg32);
++	if (!bridge->link_active_reporting) {
++		mlx5_core_warn(dev, "No PCI link reporting capability\n");
  		msleep(1000);
- 		return;
+ 		goto restore;
  	}
