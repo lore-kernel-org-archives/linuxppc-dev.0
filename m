@@ -4,49 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8601C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 00:47:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 707D0C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 00:47:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8W1r6r0mz3f8v
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 11:47:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JhhDnLKV;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8W2h6kvVz3f8Q
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 11:47:56 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8W0n0f0Pz3bTS
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 11:46:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JhhDnLKV;
-	dkim-atps=neutral
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8W262JVXz3bNn
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 11:47:26 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8W0k6xFTz4xG5;
-	Sun,  5 Feb 2023 11:46:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1675557975;
-	bh=tWd2oYs3tgpsmxYhQeNi8EKfkgW7lsYebdbamIWZmac=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=JhhDnLKVxNhgOzVNbYHPXACaRKUJ39/VvL7PF/2m2Z0VmB12QQ/mb4hVsBfbsxDZq
-	 5/YddJEuSWbLp7c9iu8N+/MTkg9VuJrFSN+L5LzhbEDO3RJkuOH329zwLga7oz42Xp
-	 kR0LwkzmD+RrbWSn4UafXrGItLrOEkZtO4wA9jy85RFotMy9WXotJ1DnRzR1rMd/7j
-	 kOMY2E3aUSaNWneTpEm1bBwM80+ETSb+Z00JUMzxMxlTLZG+NAPEfFIHuEI7VLKvOb
-	 iiHE2eDiKsneWen7lz4Am/LIUPKPFRzIrGtkyLm88TCDlzmN2TVLAvhWSVLwW8gMW/
-	 Pe4QAnuairozg==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@kernel.org>
-Subject: Re: [PATCH 0/2] powerpc: Fix livepatch module re-patching issue
-In-Reply-To: <20230204172357.mbudvbtv7tc7vhf3@treble>
-References: <cover.1674617130.git.jpoimboe@kernel.org>
- <20230204172357.mbudvbtv7tc7vhf3@treble>
-Date: Sun, 05 Feb 2023 11:46:12 +1100
-Message-ID: <87357ley7f.fsf@mpe.ellerman.id.au>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8W260jy0z4xwq;
+	Sun,  5 Feb 2023 11:47:26 +1100 (AEDT)
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <4b8d4f96140af01dec3a3330924dda8b2451c316.1674476798.git.christophe.leroy@csgroup.eu>
+References: <4b8d4f96140af01dec3a3330924dda8b2451c316.1674476798.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Check !irq instead of irq == NO_IRQ and remove NO_IRQ
+Message-Id: <167555802448.1621279.10787309982288240636.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 11:47:04 +1100
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,36 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Song Liu <song@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Josh Poimboeuf <jpoimboe@kernel.org> writes:
-> On Tue, Jan 24, 2023 at 07:38:03PM -0800, Josh Poimboeuf wrote:
->> Fix a livepatch bug seen when reloading a patched module.
->> 
->> This is the powerpc counterpart to Song Liu's fix for a similar issue on
->> x86:
->> 
->>   https://lkml.kernel.org/lkml/20230121004945.697003-2-song@kernel.org
->> 
->> Josh Poimboeuf (2):
->>   powerpc/module_64: Improve restore_r2() return semantics
->>   powerpc/module_64: Fix "expected nop" error on module re-patching
->> 
->>  arch/powerpc/kernel/module_64.c | 29 ++++++++++++++++++-----------
->>  1 file changed, 18 insertions(+), 11 deletions(-)
->
-> Hi Michael,
->
-> Ping?  Any objections to this?
->
-> The x86 counterpart to this is queued for 6.3, it would be nice if this
-> also landed.  We could take it through the livepatch tree if needed.
+On Mon, 23 Jan 2023 13:26:46 +0100, Christophe Leroy wrote:
+> NO_IRQ is a relic from the old days. It is not used anymore in core
+> functions. By the way, function irq_of_parse_and_map() returns value 0
+> on error.
+> 
+> In some drivers, NO_IRQ is erroneously used to check the return of
+> irq_of_parse_and_map().
+> 
+> [...]
 
-It's in my next since about a week. Sorry I forgot to send the
-"accepted" emails (which I still don't have automated :/ ).
+Applied to powerpc/next.
 
-337251c7114e1 ("powerpc/module_64: Fix "expected nop" error on module re-patching")
+[1/1] powerpc: Check !irq instead of irq == NO_IRQ and remove NO_IRQ
+      https://git.kernel.org/powerpc/c/bab537805a10bdbf55b31324ba4a9599e0651e5e
 
 cheers
