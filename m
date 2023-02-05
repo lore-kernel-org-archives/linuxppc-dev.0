@@ -4,30 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8818C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CF7BC636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:47:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8l051bHLz3fmP
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:46:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8l0g53Nqz3fpc
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:46:59 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvW3fL9z3f4S
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvW3flbz3f4r
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:31 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4P8kvS5Dhdz4xyy; Sun,  5 Feb 2023 20:42:28 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvV0J6bz4y03;
-	Sun,  5 Feb 2023 20:42:30 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvS4MVTz4xyt;
+	Sun,  5 Feb 2023 20:42:28 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20230128124158.1066251-1-sv@linux.ibm.com>
-References: <20230128124158.1066251-1-sv@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/kvm: Fix objtool warning for unannotated intra-function call in booke.o
-Message-Id: <167559010341.1647710.15479947054784174500.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 20:41:43 +1100
+To: mpe@ellerman.id.au, Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20230131030615.729894-1-sourabhjain@linux.ibm.com>
+References: <20230131030615.729894-1-sourabhjain@linux.ibm.com>
+Subject: Re: [PATCH v2] powerpc/kexec_file: account hot-pluggable memory while estimating FDT size
+Message-Id: <167559011069.1647710.15697754175763092162.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 20:41:50 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +44,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.vnet.ibm.com, lkp@intel.com, npiggin@gmail.com
+Cc: mahesh@linux.vnet.ibm.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 28 Jan 2023 18:11:58 +0530, Sathvika Vasireddy wrote:
-> Objtool throws the following warning:
-> arch/powerpc/kvm/booke.o: warning: objtool: kvmppc_fill_pt_regs+0x30: unannotated intra-function call
+On Tue, 31 Jan 2023 08:36:15 +0530, Sourabh Jain wrote:
+> On Systems where online memory is lesser compared to max memory, the
+> kexec_file_load system call may fail to load the kdump kernel with the
+> below errors:
 > 
-> Fix this warning by allowing the function to set the value of 'nip' field
-> using _THIS_IP_ macro, without having to use an additional assembly
-> instruction to save the instruction pointer.
+>     "Failed to update fdt with linux,drconf-usable-memory property"
+>     "Error setting up usable-memory property for kdump kernel"
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/kvm: Fix objtool warning for unannotated intra-function call in booke.o
-      https://git.kernel.org/powerpc/c/fe6de81b610e5d0b9d2231acff2de74a35482e7d
+[1/1] powerpc/kexec_file: account hot-pluggable memory while estimating FDT size
+      https://git.kernel.org/powerpc/c/fc546faa559538fb312c77e055243ece18ab3288
 
 cheers
