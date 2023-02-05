@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E551FC636CD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:45:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B99DC636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:45:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kyM2vcTz3fb8
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:44:59 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kyx01qMz3ffd
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:45:29 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvT4vRSz2yV5
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvW1yM0z3cf8
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:31 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvT1c5Qz4y02;
-	Sun,  5 Feb 2023 20:42:29 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvR2hfSz4xyf;
+	Sun,  5 Feb 2023 20:42:27 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20230128124138.1066176-1-sv@linux.ibm.com>
-References: <20230128124138.1066176-1-sv@linux.ibm.com>
-Subject: Re: [PATCH] powerpc: Fix objtool warning for unannotated intra-function call in head_85xx.o
-Message-Id: <167559010230.1647710.1516957967915526835.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 20:41:42 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20230121095352.2823517-1-npiggin@gmail.com>
+References: <20230121095352.2823517-1-npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Fix local irq disable when PMIs are disabled
+Message-Id: <167559010434.1647710.12584447645752109701.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 20:41:44 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.vnet.ibm.com, lkp@intel.com, npiggin@gmail.com
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 28 Jan 2023 18:11:38 +0530, Sathvika Vasireddy wrote:
-> Objtool throws the following warning:
-> arch/powerpc/kernel/head_85xx.o: warning: objtool: .head.text+0x1a6c:
-> unannotated intra-function call
-> 
-> Fix this warning by annotating KernelSPE symbol with SYM_FUNC_START_LOCAL
-> and SYM_FUNC_END macros.
+On Sat, 21 Jan 2023 19:53:52 +1000, Nicholas Piggin wrote:
+> When PMI interrupts are soft-masked, local_irq_save() will clear the PMI
+> mask bit, allowing PMIs in and causing a race condition. This causes a
+> deadlock in native_hpte_insert via hash_preload, which depends on PMIs
+> being disabled since commit 8b91cee5eadd ("powerpc/64s/hash: Make hash
+> faults work in NMI context"). native_hpte_insert calls local_irq_save().
+> It's possible the lpar hash code is also affected when tracing is
+> enabled because __trace_hcall_entry() calls local_irq_save().
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc: Fix objtool warning for unannotated intra-function call in head_85xx.o
-      https://git.kernel.org/powerpc/c/8afffce6aa3bddc940ac1909627ff1e772b6cbf1
+[1/1] powerpc/64s: Fix local irq disable when PMIs are disabled
+      https://git.kernel.org/powerpc/c/bc88ef663265676419555df2dc469a471c0add31
 
 cheers
