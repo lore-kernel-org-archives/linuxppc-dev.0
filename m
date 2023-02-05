@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABEC6C636CD
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:44:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E551FC636CD
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 09:45:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kxn0BvVz3fXs
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:44:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P8kyM2vcTz3fb8
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 20:44:59 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvQ6Z0Gz3bZj
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8kvT4vRSz2yV5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 20:42:29 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvQ5FT0z4xyB;
-	Sun,  5 Feb 2023 20:42:26 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P8kvT1c5Qz4y02;
+	Sun,  5 Feb 2023 20:42:29 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20230130014707.541110-1-mpe@ellerman.id.au>
-References: <20230130014707.541110-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/kexec_file: Fix division by zero in extra size estimation
-Message-Id: <167559010752.1647710.7373851723687940810.b4-ty@ellerman.id.au>
-Date: Sun, 05 Feb 2023 20:41:47 +1100
+To: Sathvika Vasireddy <sv@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20230128124138.1066176-1-sv@linux.ibm.com>
+References: <20230128124138.1066176-1-sv@linux.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix objtool warning for unannotated intra-function call in head_85xx.o
+Message-Id: <167559010230.1647710.1516957967915526835.b4-ty@ellerman.id.au>
+Date: Sun, 05 Feb 2023 20:41:42 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: hbathini@linux.ibm.com, sourabhjain@linux.ibm.com
+Cc: naveen.n.rao@linux.vnet.ibm.com, lkp@intel.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 30 Jan 2023 12:47:07 +1100, Michael Ellerman wrote:
-> In kexec_extra_fdt_size_ppc64() there's logic to estimate how much
-> extra space will be needed in the device tree for some memory related
-> properties.
+On Sat, 28 Jan 2023 18:11:38 +0530, Sathvika Vasireddy wrote:
+> Objtool throws the following warning:
+> arch/powerpc/kernel/head_85xx.o: warning: objtool: .head.text+0x1a6c:
+> unannotated intra-function call
 > 
-> That logic uses the size of RAM divided by drmem_lmb_size() to do the
-> estimation. However drmem_lmb_size() can be zero if the machine has no
-> hotpluggable memory configured, which is the case when booting with qemu
-> and no maxmem=x parameter is passed (the default).
+> Fix this warning by annotating KernelSPE symbol with SYM_FUNC_START_LOCAL
+> and SYM_FUNC_END macros.
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/kexec_file: Fix division by zero in extra size estimation
-      https://git.kernel.org/powerpc/c/7294194b47e994753a86eee8cf1c61f3f36458a3
+[1/1] powerpc: Fix objtool warning for unannotated intra-function call in head_85xx.o
+      https://git.kernel.org/powerpc/c/8afffce6aa3bddc940ac1909627ff1e772b6cbf1
 
 cheers
