@@ -4,65 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2EE9C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Feb 2023 21:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C03BAC05027
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 11:11:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P8QZX1nMVz3fC8
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  5 Feb 2023 08:26:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9Nqt5RwSz3ccg
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 22:11:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gMgnnl4u;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JSr9bUqc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::431; helo=mail-wr1-x431.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gMgnnl4u;
-	dkim-atps=neutral
-Received: from mail-wr1-x431.google.com (mail-wr1-x431.google.com [IPv6:2a00:1450:4864:20::431])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P8QYT2tmbz2yw0
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Feb 2023 08:25:49 +1100 (AEDT)
-Received: by mail-wr1-x431.google.com with SMTP id d14so7368151wrr.9
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Feb 2023 13:25:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=5QucXsCUGkAYvMM/m5+lQnUtugoTYxql3JyDPSNTCSc=;
-        b=gMgnnl4uis9wwGEAHmp91wWTN6meZgAsGLuzViwo3jWh+ke27ZTYyh0hM2AFm3dmsl
-         fpU/2t2R9T0+r+de/yRta7sMJaNAA+z/JUNyJp/3VGmj5nHedUDLMncJKnP7q/xSg7D3
-         GmiVdUZ+I1Li+cl2Ky6bItiKKioQ6Zi9bu/ULaVFhvBTTZOdD5LmKGQ+OQ+Goec93wIG
-         5npijm0lwYSo+Tf4foSxd4Y1YFt24OnkmqMk8pelStoDWhCh6h1kUecYwA1ZMPGcFm1S
-         Bb6hdQcRQhh0pG2mNwUP4CFgsl8BDCnMNBuDJsTRBZHVVZZ1y5WnUqs8OyK7p0jyU4Fz
-         8CEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=5QucXsCUGkAYvMM/m5+lQnUtugoTYxql3JyDPSNTCSc=;
-        b=7v6nWIOkG+/t23DYMSqhMiY14OpIJkKjuyFnmZeDc35cZn6RkYzGl0zVwxtrZQPX5s
-         boUlh506ZbV5vzJfJQ9j2YKx98ICP5g5vaq6kd75wHikphE7SsoZ1hcB9Fk69xgfqkbA
-         AvgS5XVAEYL8U6q+U7u91qPux9EwsS5/2ShiGaAldXQ9TykEdZ/Er5pmAV330kBtz83i
-         86uv6AyeqU+ZkoCVfO35TI1tvb3hyW/lErt15Q2vG9dcJ8d+OArTFWcrOGlAvriZHqQ2
-         mQL4rEVCQobHoyCrZ4pSGqnr3CTqYlYj4eUmWS9iUJqc9Rtcj/QTHogR3ZhD4Al4dUYe
-         mZMA==
-X-Gm-Message-State: AO0yUKW8qOh2LAkEtseYNg3YTymp7Rod28AAJOJt3cHQDkdIxftzBbLA
-	qaMuzh/N8TSkyy9yUN/8671Eg8qPuraevCFYqdgKDw==
-X-Google-Smtp-Source: AK7set9CbvgLfEJ2jn5/zRiDcIDRmDUMIjRHSnXWFoR7u6wNniF5tZuwENqZy7NCTcl7ArQhLKCbViMrWUHcVJ3zCEg=
-X-Received: by 2002:a05:6000:16c4:b0:2c3:7ee6:e3ad with SMTP id
- h4-20020a05600016c400b002c37ee6e3admr632269wrf.289.1675545944934; Sat, 04 Feb
- 2023 13:25:44 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9Npq27Lwz30RT
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2023 22:10:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=JSr9bUqc;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4P9NpV6n6sz4x1f;
+	Mon,  6 Feb 2023 22:10:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1675681839;
+	bh=kUcid2K08WtpFrwk3dq6n2jc2ZZxMaSNsif8b2qLpcI=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=JSr9bUqckLWxlQvgXrqHdLKjhZNKCyo4/W+R7iqEdoTwQny8JL4fA9p8KLiKopoBY
+	 5u53AQEtGGXSUIVhYTsKoGTQqHAWk/L2OGiEhn+0/8fSth4VXKAS3aT226D33i5p+m
+	 FdbPDX2xoyL2dmmxuKSPL38q4OEI/nwe/wpGmzrwBTQTovoqi6LZ4omZBFLcu1QcvH
+	 OCmTE96dRBgZqYLhxf1uVZpSZUhhjl9pivy58AnZ8D9ntUKLxW5BuUV2Rkfq3DMiAR
+	 1E1dDbWxoKsiTVWbw5buAHInDRJ1Jkci48lbw53vA/21E8Kh226KSjdHUbEkKMeduf
+	 u7otQ9CqmaTuA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Josh Poimboeuf <jpoimboe@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 12/22] powerpc/cpu: Mark start_secondary_resume()
+ __noreturn
+In-Reply-To: <b5d065218265e79daa23f82bb84efc6a7ea120fc.1675461757.git.jpoimboe@kernel.org>
+References: <cover.1675461757.git.jpoimboe@kernel.org>
+ <b5d065218265e79daa23f82bb84efc6a7ea120fc.1675461757.git.jpoimboe@kernel.org>
+Date: Mon, 06 Feb 2023 22:10:22 +1100
+Message-ID: <87v8kfdp7l.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-References: <20230126233645.200509-1-irogers@google.com> <20230126233645.200509-16-irogers@google.com>
- <Y91rYT5eBOFUHsJK@kernel.org>
-In-Reply-To: <Y91rYT5eBOFUHsJK@kernel.org>
-From: Ian Rogers <irogers@google.com>
-Date: Sat, 4 Feb 2023 13:25:31 -0800
-Message-ID: <CAP-5=fVSVURfMiDQYL8LSnhGEQ4VSA4EcMvmW6pdfLEtJa7ZNw@mail.gmail.com>
-Subject: Re: [PATCH v5 15/15] perf jevents: Run metric_test.py at compile-time
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,61 +59,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kang Minchul <tegongkang@gmail.com>, Sandipan Das <sandipan.das@amd.com>, Peter Zijlstra <peterz@infradead.org>, Perry Taylor <perry.taylor@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, James Clark <james.clark@arm.com>, Kim Phillips <kim.phillips@amd.com>, Will Deacon <will@kernel.org>, Kan Liang <kan.liang@linux.intel.com>, Rob Herring <robh@kernel.org>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Xing Zhengjun <zhengjun.xing@linux.intel.com>, Mike Leach <mike.leach@linaro.org>, John Garry <john.g.garry@oracle.com>, Kajol Jain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, Caleb Biggers <caleb.biggers@intel.com>, linux-arm-kernel@lists.infradead.org, Ravi Bangoria <ravi.bangoria@amd.com>, Florian Fischer <florian.fischer@muhq.space>, Adrian Hunter <adrian.hunter@intel.com>, linux-perf-users@vger.kernel.org, Jiri Olsa <jolsa@kernel.org>, Leo Yan <leo.y
- an@linaro.org>, linuxppc-dev@lists.ozlabs.org, Jing Zhang <renyu.zj@linux.alibaba.com>
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, linux-csky@vger.kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-mips@vger.kernel.org, linux-alph
+ a@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 3, 2023 at 12:15 PM Arnaldo Carvalho de Melo
-<acme@kernel.org> wrote:
->
-> Em Thu, Jan 26, 2023 at 03:36:45PM -0800, Ian Rogers escreveu:
-> > Add a target that generates a log file for running metric_test.py and
-> > make this a dependency on generating pmu-events.c. The log output is
-> > displayed if the test fails like (the test was modified to make it
-> > fail):
-> >
-> > ```
-> >   TEST    /tmp/perf/pmu-events/metric_test.log
-> > F......
-> > ======================================================================
-> > FAIL: test_Brackets (__main__.TestMetricExpressions)
-> > ----------------------------------------------------------------------
-> > Traceback (most recent call last):
-> >   File "tools/perf/pmu-events/metric_test.py", line 33, in test_Brackets
-> >     self.assertEqual((a * b + c).ToPerfJson(), 'a * b + d')
-> > AssertionError: 'a * b + c' != 'a * b + d'
-> > - a * b + c
-> > ?         ^
-> > + a * b + d
->
-> Added this:
->
-> diff --git a/tools/perf/.gitignore b/tools/perf/.gitignore
-> index 05806ecfc33c12a1..f533e76fb48002b7 100644
-> --- a/tools/perf/.gitignore
-> +++ b/tools/perf/.gitignore
-> @@ -38,6 +38,7 @@ arch/*/include/generated/
->  trace/beauty/generated/
->  pmu-events/pmu-events.c
->  pmu-events/jevents
-> +pmu-events/metric_test.log
->  feature/
->  libapi/
->  libbpf/
-> diff --git a/tools/perf/Makefile.perf b/tools/perf/Makefile.perf
-> index b7d9c42062300d04..bac9272682b759e9 100644
-> --- a/tools/perf/Makefile.perf
-> +++ b/tools/perf/Makefile.perf
-> @@ -1103,6 +1103,7 @@ clean:: $(LIBAPI)-clean $(LIBBPF)-clean $(LIBSUBCMD)-clean $(LIBSYMBOL)-clean $(
->                 $(OUTPUT)util/intel-pt-decoder/inat-tables.c \
->                 $(OUTPUT)tests/llvm-src-{base,kbuild,prologue,relocation}.c \
->                 $(OUTPUT)pmu-events/pmu-events.c \
-> +               $(OUTPUT)pmu-events/metric_test.log \
->                 $(OUTPUT)$(fadvise_advice_array) \
->                 $(OUTPUT)$(fsconfig_arrays) \
->                 $(OUTPUT)$(fsmount_arrays) \
+Josh Poimboeuf <jpoimboe@kernel.org> writes:
+> start_secondary_resume() doesn't return.  Annotate it as such.  By
+> extension this also makes arch_cpu_idle_dead() noreturn.
 
-Acked, thanks!
+Can we also mark arch_cpu_idle_dead() (the C function) __noreturn ?
 
-Ian
+Seems like it would be good documentation, even if it's not required
+once the generic prototype is __noreturn.
+
+But not a show-stopper.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
+
+> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+> index f63505d74932..cfd42ca8765c 100644
+> --- a/arch/powerpc/include/asm/smp.h
+> +++ b/arch/powerpc/include/asm/smp.h
+> @@ -66,7 +66,7 @@ void start_secondary(void *unused);
+>  extern int smp_send_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
+>  extern int smp_send_safe_nmi_ipi(int cpu, void (*fn)(struct pt_regs *), u64 delay_us);
+>  extern void smp_send_debugger_break(void);
+> -extern void start_secondary_resume(void);
+> +extern void __noreturn start_secondary_resume(void);
+>  extern void smp_generic_give_timebase(void);
+>  extern void smp_generic_take_timebase(void);
+>  
+> -- 
+> 2.39.0
