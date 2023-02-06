@@ -4,54 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE02DC636D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 22:49:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5B78C05027
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 22:50:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9hK017qzz2ymk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 09:49:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9hL21j0Yz3f6v
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 09:50:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tNKUGBl1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gEpbTfBo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=disgoel@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tNKUGBl1;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gEpbTfBo;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9hHy4bkBz3000
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 09:48:30 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 9410DB8162F;
-	Mon,  6 Feb 2023 22:48:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3526C433EF;
-	Mon,  6 Feb 2023 22:48:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675723706;
-	bh=t5SKljt2sWy6BT6dILdWfv/hZkn80YA6xFS31ly3C70=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=tNKUGBl1m1QPnRTY5kbM/VoPPGtSs7EaR2z/f2j5X7UP8WIw7AtQ/o60A/y+MJfiY
-	 1QXosHhmqRgJxkF58+mLnLz+khyMM6tpexDftD1ue27T2wo2lH70XwmG6IX9q+RMtI
-	 Hq/qOlQgiviM6bea6FsKqb7qfcUjw6ysWcMFRKFHl9zP1+f2jxwCLETb1LWrl1EK1+
-	 51lhgoRg9YdYkRNbOIA6a9dQ2klU3FlM5A3QsQsZF6Eq3cZ/E+rH5hEDGI1LNoezWU
-	 eovJ/whMs0s3C/rmBAPFu0XfTD9zZGd4csjo3j00XONwJSTD4AmPrq9GH0ZsysyBjR
-	 Po8yqPJs6FHOg==
-Received: by pali.im (Postfix)
-	id 68B73875; Mon,  6 Feb 2023 23:48:23 +0100 (CET)
-Date: Mon, 6 Feb 2023 23:48:23 +0100
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc/pci: Add option for using pci_to_OF_bus_map
-Message-ID: <20230206224823.uq3zdwa4yaalqd2m@pali>
-References: <20230206113902.1857123-1-mpe@ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9Jlg0c1Fz3Wtr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Feb 2023 19:07:42 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3167g5Wo020292;
+	Mon, 6 Feb 2023 08:07:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
+ message-id : date : mime-version : subject : to : cc : references : from :
+ in-reply-to; s=pp1; bh=GfbWXRddK/dA/8X0v5Mm0otbMwRwl3SN1QSYuNkBpro=;
+ b=gEpbTfBoZU4TZG9kTtuf+SszbzNOYNVTH4dRAT1tsXJaIUhpWe4dTdR1yuLN8NL2+E7u
+ 6LeYBOPtLS8UMtunhxjt0SEjm48Ib7lRbfv2oQxpDMaXO7tDeShxI37+S6CyuRiQY/tS
+ SxOvdABvKAOLgw2AfsWBoZcFcV3wSM9q9EjPfqEcnRuzMATvuNBwztwY87PkuYfIfGTt
+ ruiCBegMDZkH8KK3cpx5yzOxULtyvetMBjKn7/OhalcunknjUDvfwcNcOIVEMjWvFg2i
+ /3X/vIw4yjab4k6ocmP5wHw1CKe3Gp7LIVEF6wdAzpzM7KMv0BUxbwZRZtZblZMVMKqZ Ug== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3njwcu0jvd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Feb 2023 08:07:37 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 315IPRdD003647;
+	Mon, 6 Feb 2023 08:07:34 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3nhf06sgt4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Feb 2023 08:07:34 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31687UVB47513930
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Feb 2023 08:07:30 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 52D602004D;
+	Mon,  6 Feb 2023 08:07:30 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C2D3C2004B;
+	Mon,  6 Feb 2023 08:07:28 +0000 (GMT)
+Received: from [9.199.154.114] (unknown [9.199.154.114])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  6 Feb 2023 08:07:28 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------px1YW5158wekMbG3gynQ3g0D"
+Message-ID: <341ba49e-6589-ff47-d54b-dfb4fd301ba0@linux.ibm.com>
+Date: Mon, 6 Feb 2023 13:37:27 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230206113902.1857123-1-mpe@ellerman.id.au>
-User-Agent: NeoMutt/20180716
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.6.1
+Subject: Re: [PATCH] tools/perf/tests: Add system wide check for perf bench
+ workload in all metric test
+To: Kajol Jain <kjain@linux.ibm.com>, acme@kernel.org
+References: <20230202164413.56743-1-kjain@linux.ibm.com>
+Content-Language: en-US
+From: Disha Goel <disgoel@linux.ibm.com>
+In-Reply-To: <20230202164413.56743-1-kjain@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: -WYZ61sbXrbSSci8Xj2Ti5wTxc27Fx7q
+X-Proofpoint-GUID: -WYZ61sbXrbSSci8Xj2Ti5wTxc27Fx7q
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
+ definitions=2023-02-06_03,2023-02-03_01,2022-06-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 adultscore=0
+ mlxlogscore=999 spamscore=0 clxscore=1015 lowpriorityscore=0 mlxscore=0
+ priorityscore=1501 malwarescore=0 suspectscore=0 phishscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2302060069
+X-Mailman-Approved-At: Tue, 07 Feb 2023 09:48:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,172 +93,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-perf-users@vger.kernel.org, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, disgoel@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Monday 06 February 2023 22:39:02 Michael Ellerman wrote:
-> From: Pali Rohár <pali@kernel.org>
-> 
-> The "pci-OF-bus-map" property was declared deprecated in 2006 [1] and to
-> the best of everyone's knowledge is not used by anything anymore [2].
-> 
-> The creation of the property was disabled on powermac (arch/powerpc) in
-> 2005 by commit 35499c0195e4 ("powerpc: Merge in 64-bit powermac
-> support."). But it is still created by default on CHRP.
-> 
-> On powermac the actual map (pci_to_OF_bus_map) is still used by default,
-> even though the device tree property is not created.
-> 
-> Add an option to enable/disable use of the pci_to_OF_bus_map, and
-> creation of the property (on CHRP).
-> 
-> Disabling the option allows enabling CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
-> which allows "normal" bus numbering and more than 256 buses, like 64-bit
-> and other architectures.
-> 
-> Mark the new option as default n, the intention is that the option and
-> the code will be removed in a future release.
-> 
-> [1]: https://lore.kernel.org/linuxppc-dev/1148016268.13249.14.camel@localhost.localdomain/
-> [2]: https://lore.kernel.org/all/575f239205e8635add81c9f902b7d9db7beb83ea.camel@kernel.crashing.org/
-> 
-> Signed-off-by: Pali Rohár <pali@kernel.org>
-> [mpe: Reword commit & help text, shrink option name, rework to fix build errors]
+This is a multi-part message in MIME format.
+--------------px1YW5158wekMbG3gynQ3g0D
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Thank you for this!
 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On 2/2/23 10:14 PM, Kajol Jain wrote:
+> Testcase stat_all_metrics.sh fails in powerpc:
+>      
+> 92: perf all metrics test : FAILED!
+>
+> Logs with verbose:
+>
+> [command]# ./perf test 92 -vv
+>   92: perf all metrics test                                           :
+> --- start ---
+> test child forked, pid 13262
+> Testing BRU_STALL_CPI
+> Testing COMPLETION_STALL_CPI
+> ----
+> Testing TOTAL_LOCAL_NODE_PUMPS_P23
+> Metric 'TOTAL_LOCAL_NODE_PUMPS_P23' not printed in:
+> Error:
+> Invalid event (hv_24x7/PM_PB_LNS_PUMP23,chip=3/) in per-thread mode, enable system wide with '-a'.
+> Testing TOTAL_LOCAL_NODE_PUMPS_RETRIES_P01
+> Metric 'TOTAL_LOCAL_NODE_PUMPS_RETRIES_P01' not printed in:
+> Error:
+> Invalid event (hv_24x7/PM_PB_RTY_LNS_PUMP01,chip=3/) in per-thread mode, enable system wide with '-a'.
+> ----
+>
+> Based on above logs, we could see some of the hv-24x7 metric events fails,
+> and logs suggest to run the metric event with -a option.
+> This change happened after the commit a4b8cfcabb1d ("perf stat: Delay metric
+> parsing"), which delayed the metric parsing phase and now before metric parsing
+> phase perf tool identifies, whether target is system-wide or not. With this
+> change, perf_event_open will fails with workload monitoring for uncore events
+> as expected.
+>
+> The perf all metric test case fails as some of the hv-24x7 metric events
+> may need bigger workload to get the data. And the added perf bench
+> workload in 'perf all metric test case' will not run for hv-24x7 without
+> -a option.
+>
+> Fix this issue by adding system wide check for perf bench workload.
+>
+> Result with the patch changes in powerpc:
+>
+> 92: perf all metrics test : Ok
+>
+> Signed-off-by: Kajol Jain<kjain@linux.ibm.com>
+
+Tested the patch on powerpc machine, perf metrics test works fine.
+
+  91: perf all metrics test                                           : Ok
+
+Tested-by: Disha Goel<disgoel@linux.ibm.com>
+
 > ---
->  arch/powerpc/Kconfig                  | 13 ++++++++++++-
->  arch/powerpc/include/asm/pci-bridge.h |  4 +++-
->  arch/powerpc/kernel/pci_32.c          | 17 ++++++++++++-----
->  3 files changed, 27 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index fad25aa602c8..7dcb011cebf2 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -388,9 +388,20 @@ config PPC_DCR
->  	depends on PPC_DCR_NATIVE || PPC_DCR_MMIO
->  	default y
->  
-> +config PPC_PCI_OF_BUS_MAP
-> +	bool "Use pci_to_OF_bus_map (deprecated)"
-> +	depends on PPC32
-> +	depends on PPC_PMAC || PPC_CHRP
-> +	help
-> +	  This option uses pci_to_OF_bus_map to map OF nodes to PCI devices, which
-> +	  restricts the system to only having 256 PCI buses. On CHRP it also causes
-> +	  the "pci-OF-bus-map" property to be created in the device tree.
-> +
-> +	  If unsure, say "N".
-> +
->  config PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT
->  	depends on PPC32
-> -	depends on !PPC_PMAC && !PPC_CHRP
-> +	depends on !PPC_PCI_OF_BUS_MAP
->  	bool "Assign PCI bus numbers from zero individually for each PCI domain"
->  	default y
->  	help
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index e18c95f4e1d4..71c1d26f2400 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -176,8 +176,10 @@ extern int pci_device_from_OF_node(struct device_node *node,
->  #endif
->  #ifndef CONFIG_PPC64
->  
-> -#ifdef CONFIG_PPC_CHRP
-> +#ifdef CONFIG_PPC_PCI_OF_BUS_MAP
->  extern void pci_create_OF_bus_map(void);
-> +#else
-> +static inline void pci_create_OF_bus_map(void) {}
->  #endif
->  
->  #else	/* CONFIG_PPC64 */
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index 855b59892c5c..ce0c8623e563 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -62,7 +62,7 @@ fixup_cpc710_pci64(struct pci_dev* dev)
->  }
->  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64);
->  
-> -#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_CHRP)
-> +#ifdef CONFIG_PPC_PCI_OF_BUS_MAP
->  
->  static u8* pci_to_OF_bus_map;
->  static int pci_bus_count;
-> @@ -152,6 +152,7 @@ pcibios_make_OF_bus_map(void)
->  	}
->  #endif
->  }
-> +#endif // CONFIG_PPC_PCI_OF_BUS_MAP
->  
->  
->  #ifdef CONFIG_PPC_PMAC
-> @@ -160,7 +161,9 @@ pcibios_make_OF_bus_map(void)
->   */
->  int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
->  {
-> +#ifdef CONFIG_PPC_PCI_OF_BUS_MAP
->  	struct pci_dev *dev = NULL;
-> +#endif
->  	const __be32 *reg;
->  	int size;
->  
-> @@ -175,6 +178,9 @@ int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
->  	*bus = (be32_to_cpup(&reg[0]) >> 16) & 0xff;
->  	*devfn = (be32_to_cpup(&reg[0]) >> 8) & 0xff;
->  
-> +#ifndef CONFIG_PPC_PCI_OF_BUS_MAP
-> +	return 0;
-> +#else
->  	/* Ok, here we need some tweak. If we have already renumbered
->  	 * all busses, we can't rely on the OF bus number any more.
->  	 * the pci_to_OF_bus_map is not enough as several PCI busses
-> @@ -192,11 +198,12 @@ int pci_device_from_OF_node(struct device_node *node, u8 *bus, u8 *devfn)
->  		}
->  
->  	return -ENODEV;
-> +#endif // CONFIG_PPC_PCI_OF_BUS_MAP
->  }
->  EXPORT_SYMBOL(pci_device_from_OF_node);
->  #endif
->  
-> -#ifdef CONFIG_PPC_CHRP
-> +#ifdef CONFIG_PPC_PCI_OF_BUS_MAP
->  /* We create the "pci-OF-bus-map" property now so it appears in the
->   * /proc device tree
->   */
-> @@ -221,9 +228,7 @@ pci_create_OF_bus_map(void)
->  		of_node_put(dn);
->  	}
->  }
-> -#endif
-> -
-> -#endif /* defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_CHRP) */
-> +#endif // CONFIG_PPC_PCI_OF_BUS_MAP
->  
->  void pcibios_setup_phb_io_space(struct pci_controller *hose)
->  {
-> @@ -273,6 +278,7 @@ static int __init pcibios_init(void)
->  	}
->  
->  #if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_CHRP)
-> +#ifdef CONFIG_PPC_PCI_OF_BUS_MAP
->  	pci_bus_count = next_busno;
->  
->  	/* OpenFirmware based machines need a map of OF bus
-> @@ -281,6 +287,7 @@ static int __init pcibios_init(void)
->  	 */
->  	if (pci_assign_all_buses)
->  		pcibios_make_OF_bus_map();
-> +#endif
->  #endif
->  
->  	/* Call common code to handle resource allocation */
-> -- 
-> 2.39.1
-> 
+>   tools/perf/tests/shell/stat_all_metrics.sh | 7 +++++++
+>   1 file changed, 7 insertions(+)
+>
+> diff --git a/tools/perf/tests/shell/stat_all_metrics.sh b/tools/perf/tests/shell/stat_all_metrics.sh
+> index 6e79349e42be..d49832a316d9 100755
+> --- a/tools/perf/tests/shell/stat_all_metrics.sh
+> +++ b/tools/perf/tests/shell/stat_all_metrics.sh
+> @@ -23,6 +23,13 @@ for m in $(perf list --raw-dump metrics); do
+>     then
+>       continue
+>     fi
+> +  # Failed again, possibly the event is uncore pmu event which will need
+> +  # system wide monitoring with workload, so retry with -a option
+> +  result=$(perf stat -M "$m" -a perf bench internals synthesize 2>&1)
+> +  if [[ "$result" =~ "${m:0:50}" ]]
+> +  then
+> +    continue
+> +  fi
+>     echo "Metric '$m' not printed in:"
+>     echo "$result"
+>     if [[ "$err" != "1" ]]
+--------------px1YW5158wekMbG3gynQ3g0D
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><br>
+    </p>
+    <div class="moz-cite-prefix">On 2/2/23 10:14 PM, Kajol Jain wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:20230202164413.56743-1-kjain@linux.ibm.com">
+      <pre class="moz-quote-pre" wrap="">Testcase stat_all_metrics.sh fails in powerpc:
+    
+92: perf all metrics test : FAILED!
+
+Logs with verbose:
+
+[command]# ./perf test 92 -vv
+ 92: perf all metrics test                                           :
+--- start ---
+test child forked, pid 13262
+Testing BRU_STALL_CPI
+Testing COMPLETION_STALL_CPI
+----
+Testing TOTAL_LOCAL_NODE_PUMPS_P23
+Metric 'TOTAL_LOCAL_NODE_PUMPS_P23' not printed in:
+Error:
+Invalid event (hv_24x7/PM_PB_LNS_PUMP23,chip=3/) in per-thread mode, enable system wide with '-a'.
+Testing TOTAL_LOCAL_NODE_PUMPS_RETRIES_P01
+Metric 'TOTAL_LOCAL_NODE_PUMPS_RETRIES_P01' not printed in:
+Error:
+Invalid event (hv_24x7/PM_PB_RTY_LNS_PUMP01,chip=3/) in per-thread mode, enable system wide with '-a'.
+----
+
+Based on above logs, we could see some of the hv-24x7 metric events fails,
+and logs suggest to run the metric event with -a option.
+This change happened after the commit a4b8cfcabb1d ("perf stat: Delay metric
+parsing"), which delayed the metric parsing phase and now before metric parsing
+phase perf tool identifies, whether target is system-wide or not. With this
+change, perf_event_open will fails with workload monitoring for uncore events
+as expected.
+
+The perf all metric test case fails as some of the hv-24x7 metric events
+may need bigger workload to get the data. And the added perf bench
+workload in 'perf all metric test case' will not run for hv-24x7 without 
+-a option.
+
+Fix this issue by adding system wide check for perf bench workload.
+
+Result with the patch changes in powerpc:
+
+92: perf all metrics test : Ok
+
+Signed-off-by: Kajol Jain <a class="moz-txt-link-rfc2396E" href="mailto:kjain@linux.ibm.com">&lt;kjain@linux.ibm.com&gt;</a></pre>
+    </blockquote>
+    <pre>Tested the patch on powerpc machine, perf metrics test works fine.</pre>
+    <pre> 91: perf all metrics test                                           : Ok</pre>
+    <pre>Tested-by: Disha Goel <a class="moz-txt-link-rfc2396E" href="mailto:disgoel@linux.ibm.com">&lt;disgoel@linux.ibm.com&gt;</a>
+</pre>
+    <blockquote type="cite"
+      cite="mid:20230202164413.56743-1-kjain@linux.ibm.com">
+      <pre class="moz-quote-pre" wrap="">
+---
+ tools/perf/tests/shell/stat_all_metrics.sh | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/tools/perf/tests/shell/stat_all_metrics.sh b/tools/perf/tests/shell/stat_all_metrics.sh
+index 6e79349e42be..d49832a316d9 100755
+--- a/tools/perf/tests/shell/stat_all_metrics.sh
++++ b/tools/perf/tests/shell/stat_all_metrics.sh
+@@ -23,6 +23,13 @@ for m in $(perf list --raw-dump metrics); do
+   then
+     continue
+   fi
++  # Failed again, possibly the event is uncore pmu event which will need
++  # system wide monitoring with workload, so retry with -a option
++  result=$(perf stat -M "$m" -a perf bench internals synthesize 2&gt;&amp;1)
++  if [[ "$result" =~ "${m:0:50}" ]]
++  then
++    continue
++  fi
+   echo "Metric '$m' not printed in:"
+   echo "$result"
+   if [[ "$err" != "1" ]]
+</pre>
+    </blockquote>
+  </body>
+</html>
+
+--------------px1YW5158wekMbG3gynQ3g0D--
+
