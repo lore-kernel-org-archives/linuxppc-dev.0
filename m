@@ -4,55 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C69AC636D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:03:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86BF0C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:04:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bJ516p2z3fXh
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:03:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bK602Qhz3fGm
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:04:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RWQPfsel;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W/o7HifC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RWQPfsel;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=W/o7HifC;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b5y40fDz3cMn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:54:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b5z4tctz3cMR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:54:31 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 5802BB815C2;
-	Mon,  6 Feb 2023 18:54:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 0F8BFC433EF;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 5585860FF4;
+	Mon,  6 Feb 2023 18:54:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 82610C433A8;
 	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1675709665;
-	bh=wq37oRMfEAOKfFU8vXR47uunp3Y8BkUds7FY3ZDc+Dg=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=RWQPfselw8nfyRnVd/RRTrfFOpplMog+Rm5PFZcaGPhClBf4RrxRJRaycocz2kFFI
-	 vnjd3T0T93TW10GiCl7D365F/Y3M9jktsjidcrxv7Eu0EvANHaGC++g2KIN1f4Lrg2
-	 IR+k03QsdB4lVbBpsOfEbOTn9OMxz8EJgLdUGcH3STTYCx/RiSDZ5sxVzI+St9LbNT
-	 Vwy5sMYG0INQUk5LKThaholJUQ62VQyiV0Phjdggd3zRgXColKYD9PQP+rLIC1leRa
-	 nmoEloNwFQRE1GoYZ0g2bEv8iFFiJrHxvDwQuRNQsm0RzBjCDU7y22yB5NlYysEIpb
-	 nTtqLCrCHLsbQ==
+	bh=+pC+FZc9iAE0L6DVRGOjsHp8weWdfKOZBYNgltfouaw=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=W/o7HifCAEOeT+WMD7oK/vf/YcaC8B8YI72rbI2cv7Vt+SbRbMC8C368z1MBtWDNp
+	 cCZdCgrLZI5HTKf8vrFNhyXPLcIAFcGq7gFOwQGaD49cm4Snw0IjzZC3PHSSZnPltc
+	 XoHdL2Uw0RIWjIAxFCTtnojma1Ls/XC8tZ4xxj9nffKEJheX0Y02RccIF4WgFKj/xo
+	 Lt55RbhcJltVOCXdxoPNwD2t57AfKta3bqVRrWiY2fjb0eyJ8xZEhTUl6fDAUHtz+D
+	 fkcyKOhCl63ZKizh4HNbt8eQTlKGIfy0KlYKf6oKK84M3tspmzmiZTJQrMoLQDPvSj
+	 aqxoUbRzcBRMQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E5AC636D3;
-	Mon,  6 Feb 2023 18:54:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FD17C6379F;
+	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 From: Nathan Lynch via B4 Submission Endpoint
  <devnull+nathanl.linux.ibm.com@kernel.org>
-Subject: [PATCH v2 00/19] RTAS maintenance
-Date: Mon, 06 Feb 2023 12:54:16 -0600
-Message-Id: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+Date: Mon, 06 Feb 2023 12:54:25 -0600
+Subject: [PATCH v2 09/19] powerpc/tracing: tracepoints for RTAS entry and
+ exit
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIANhM4WMC/x2OQQ6DIBQFr2JY9xtBsdpV79G4APqpJBQsiLUx3
- r3ociZ5mbeRiMFgJLdiIwEXE413GdilIGoU7oVgnpkJq1hdUcZBNjD5L4ZJQZhFhE/ChKB0x1E
- 1Lde6J3krRUSQQTg15rVL1mY5BdRmPWOPIfNo4uzD72wv9LBHhlFKO8qrK6dl0/Z1XwMFJ+b8x
- t6tcWktjXyXyr/JsO/7H3cymp7CAAAA
+Message-Id: <20230125-b4-powerpc-rtas-queue-v2-9-9aa6bd058063@linux.ibm.com>
+References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -60,11 +59,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
  Andrew Donnellan <ajd@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=6172;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=6439;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=wq37oRMfEAOKfFU8vXR47uunp3Y8BkUds7FY3ZDc+Dg=;
- b=XgsHIJnHQNmGQvEYO7aEc9fqjPmye4UN5QRmIZ0ZhykRrx3RjKlmGfPu6BZ6LnCgZPqVMA0BF
- maslNQ74aegCkp/wj5kxk4GDARMdhl1EV/jT3ON6RncRMEK6orM259H
+ bh=wDn9ix2eBqz3VhUH9dpd9gT14peQ95qrGRvmcr4zpbw=;
+ b=8oX6AelRB0SLjApT/g5sVekIN5so4s+FirYUaMYDqFZfYVFK7z7YyaJyTnRWK/06bxPRtzCvR
+ ONU/SmIWU+BAIYI//X0N6ztHe4RS7HtPTQqy7nEpVdGI/1S7fgqkouC
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -85,131 +84,170 @@ Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Proposed changes for the RTAS subsystem and client code.
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Fixes that are subject to backporting are at the front of the queue.
-The rest of the queue is roughly ordered with respect to maturity:
-i.e. patches that have already garnered some review and discussion
-precede newer, more experimental changes.
+Add two sets of tracepoints to be used around RTAS entry:
 
-Major features:
+* rtas_input/rtas_output, which emit the function name, its inputs,
+  the returned status, and any other outputs. These produce an API-level
+  record of OS<->RTAS activity.
 
-* Static tracepoints around RTAS entry/exit.
-* An allocator for work area buffers.
-* A new client of the work area allocator in the form of a
-  higher-level API for PAPR system parameter retrieval.
-* Constant-time symbolic RTAS function token lookups.
+* rtas_ll_entry/rtas_ll_exit, which are lower-level and emit the
+  entire contents of the parameter block (aka rtas_args) on entry and
+  exit. Likely useful only for debugging.
 
-Tested with ppc64le in PowerVM LPARs and QEMU's pseries
-model. Obsolescent RTAS platforms (chrp, cell, maple) get build
-coverage.
+With uses of these tracepoints in do_enter_rtas() to be added in the
+following patch, examples of get-time-of-day and event-scan functions
+as rendered by trace-cmd (with some multi-line formatting manually
+imposed on the rtas_ll_* entries to avoid extremely long lines in the
+commit message):
 
+cat-36800 [059]  4978.518303: rtas_input:           get-time-of-day arguments:
+cat-36800 [059]  4978.518306: rtas_ll_entry:        token=3 nargs=0 nret=8
+                                                    params: [0]=0x00000000 [1]=0x00000000 [2]=0x00000000 [3]=0x00000000
+                                                            [4]=0x00000000 [5]=0x00000000 [6]=0x00000000 [7]=0x00000000
+							    [8]=0x00000000 [9]=0x00000000 [10]=0x00000000 [11]=0x00000000
+							    [12]=0x00000000 [13]=0x00000000 [14]=0x00000000 [15]=0x00000000
+cat-36800 [059]  4978.518366: rtas_ll_exit:         token=3 nargs=0 nret=8
+                                                    params: [0]=0x00000000 [1]=0x000007e6 [2]=0x0000000b [3]=0x00000001
+						            [4]=0x00000000 [5]=0x0000000e [6]=0x00000008 [7]=0x2e0dac40
+							    [8]=0x00000000 [9]=0x00000000 [10]=0x00000000 [11]=0x00000000
+							    [12]=0x00000000 [13]=0x00000000 [14]=0x00000000 [15]=0x00000000
+cat-36800 [059]  4978.518366: rtas_output:          get-time-of-day status: 0, other outputs: 2022 11 1 0 14 8 772648000
+
+kworker/39:1-336   [039]  4982.731623: rtas_input:           event-scan arguments: 4294967295 0 80484920 2048
+kworker/39:1-336   [039]  4982.731626: rtas_ll_entry:        token=6 nargs=4 nret=1
+                                                             params: [0]=0xffffffff [1]=0x00000000 [2]=0x04cc1a38 [3]=0x00000800
+							             [4]=0x00000000 [5]=0x0000000e [6]=0x00000008 [7]=0x2e0dac40
+								     [8]=0x00000000 [9]=0x00000000 [10]=0x00000000 [11]=0x00000000
+								     [12]=0x00000000 [13]=0x00000000 [14]=0x00000000 [15]=0x00000000
+kworker/39:1-336   [039]  4982.731676: rtas_ll_exit:         token=6 nargs=4 nret=1
+                                                             params: [0]=0xffffffff [1]=0x00000000 [2]=0x04cc1a38 [3]=0x00000800
+							             [4]=0x00000001 [5]=0x0000000e [6]=0x00000008 [7]=0x2e0dac40
+								     [8]=0x00000000 [9]=0x00000000 [10]=0x00000000 [11]=0x00000000
+								     [12]=0x00000000 [13]=0x00000000 [14]=0x00000000 [15]=0x00000000
+kworker/39:1-336   [039]  4982.731677: rtas_output:          event-scan status: 1, other outputs:
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
-Changes in v2:
+ arch/powerpc/include/asm/trace.h | 103 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 103 insertions(+)
 
-* Drop applied patches:
-  - powerpc/rtas: document rtas_call()
-  - powerpc/rtasd: use correct OF API for event scan rate
-  - powerpc/rtas: avoid device tree lookups in rtas_os_term()
-  - powerpc/rtas: avoid scheduling in rtas_os_term()
-  - powerpc/pseries/eeh: use correct API for error log size
-  - powerpc/rtas: clean up rtas_error_log_max initialization
-  - powerpc/rtas: clean up includes
-  - powerpc/rtas: define pr_fmt and convert printk call sites
-  - powerpc/rtas: mandate RTAS syscall filtering
+diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
+index 08cd60cd70b7..82cc2c6704e6 100644
+--- a/arch/powerpc/include/asm/trace.h
++++ b/arch/powerpc/include/asm/trace.h
+@@ -119,6 +119,109 @@ TRACE_EVENT_FN_COND(hcall_exit,
+ );
+ #endif
+ 
++#ifdef CONFIG_PPC_RTAS
++
++#include <asm/rtas-types.h>
++
++TRACE_EVENT(rtas_input,
++
++	TP_PROTO(struct rtas_args *rtas_args, const char *name),
++
++	TP_ARGS(rtas_args, name),
++
++	TP_STRUCT__entry(
++		__field(__u32, nargs)
++		__string(name, name)
++		__dynamic_array(__u32, inputs, be32_to_cpu(rtas_args->nargs))
++	),
++
++	TP_fast_assign(
++		__entry->nargs = be32_to_cpu(rtas_args->nargs);
++		__assign_str(name, name);
++		be32_to_cpu_array(__get_dynamic_array(inputs), rtas_args->args, __entry->nargs);
++	),
++
++	TP_printk("%s arguments: %s", __get_str(name),
++		  __print_array(__get_dynamic_array(inputs), __entry->nargs, 4)
++	)
++);
++
++TRACE_EVENT(rtas_output,
++
++	TP_PROTO(struct rtas_args *rtas_args, const char *name),
++
++	TP_ARGS(rtas_args, name),
++
++	TP_STRUCT__entry(
++		__field(__u32, nr_other)
++		__field(__s32, status)
++		__string(name, name)
++		__dynamic_array(__u32, other_outputs, be32_to_cpu(rtas_args->nret) - 1)
++	),
++
++	TP_fast_assign(
++		__entry->nr_other = be32_to_cpu(rtas_args->nret) - 1;
++		__entry->status = be32_to_cpu(rtas_args->rets[0]);
++		__assign_str(name, name);
++		be32_to_cpu_array(__get_dynamic_array(other_outputs),
++				  &rtas_args->rets[1], __entry->nr_other);
++	),
++
++	TP_printk("%s status: %d, other outputs: %s", __get_str(name), __entry->status,
++		  __print_array(__get_dynamic_array(other_outputs),
++				__entry->nr_other, 4)
++	)
++);
++
++DECLARE_EVENT_CLASS(rtas_parameter_block,
++
++	TP_PROTO(struct rtas_args *rtas_args),
++
++	TP_ARGS(rtas_args),
++
++	TP_STRUCT__entry(
++		__field(u32, token)
++		__field(u32, nargs)
++		__field(u32, nret)
++		__array(__u32, params, 16)
++	),
++
++	TP_fast_assign(
++		__entry->token = be32_to_cpu(rtas_args->token);
++		__entry->nargs = be32_to_cpu(rtas_args->nargs);
++		__entry->nret = be32_to_cpu(rtas_args->nret);
++		be32_to_cpu_array(__entry->params, rtas_args->args, ARRAY_SIZE(rtas_args->args));
++	),
++
++	TP_printk("token=%u nargs=%u nret=%u params:"
++		  " [0]=0x%08x [1]=0x%08x [2]=0x%08x [3]=0x%08x"
++		  " [4]=0x%08x [5]=0x%08x [6]=0x%08x [7]=0x%08x"
++		  " [8]=0x%08x [9]=0x%08x [10]=0x%08x [11]=0x%08x"
++		  " [12]=0x%08x [13]=0x%08x [14]=0x%08x [15]=0x%08x",
++		  __entry->token, __entry->nargs, __entry->nret,
++		  __entry->params[0], __entry->params[1], __entry->params[2], __entry->params[3],
++		  __entry->params[4], __entry->params[5], __entry->params[6], __entry->params[7],
++		  __entry->params[8], __entry->params[9], __entry->params[10], __entry->params[11],
++		  __entry->params[12], __entry->params[13], __entry->params[14], __entry->params[15]
++	)
++);
++
++DEFINE_EVENT(rtas_parameter_block, rtas_ll_entry,
++
++	TP_PROTO(struct rtas_args *rtas_args),
++
++	TP_ARGS(rtas_args)
++);
++
++DEFINE_EVENT(rtas_parameter_block, rtas_ll_exit,
++
++	TP_PROTO(struct rtas_args *rtas_args),
++
++	TP_ARGS(rtas_args)
++);
++
++#endif /* CONFIG_PPC_RTAS */
++
+ #ifdef CONFIG_PPC_POWERNV
+ extern int opal_tracepoint_regfunc(void);
+ extern void opal_tracepoint_unregfunc(void);
 
-* Additions:
-  - Safe early-boot fallback in rtas_busy_delay().
-  - Fixes for missed RTAS function call retries in various places.
-  - Remove RTAS timebase sync from pseries, previously posted
-    separately as "powerpc/pseries: drop RTAS-based timebase
-    synchronization":
-    https://lore.kernel.org/linuxppc-dev/20230110042845.121792-1-nathanl@linux.ibm.com/T/#u
-  - RTAS work area buffer allocator.
-  - Conversion of pseries DLPAR code to work area allocator.
-  - A pseries-specific PAPR system parameter API built on top of the
-    RTAS work area allocator.
-  - Conversion of ibm,get-system-parameter users to papr_sysparm API.
-  - New rtas_function_token() API and associated conversions.
-
-* Modifications to existing patches:
-  - Convert RTAS tracepoint definitions to unconditional
-    variants (TRACE_EVENT_CONDITION() -> TRACE_EVENT()), dropping a
-    cpu_online() check that duplicates work already done at the call
-    site.
-  - Skip tracepoints in unsafe contexts (real mode, CPU
-    offline). (Nicholas Piggin)
-  - Use bool bitfield for "banned on LE" function flag.
-  - Better documentation for "banned on LE" function flag. (Andrew Donnellan)
-  - Drop unnecessary cast for xa_load() key argument. (Nick Child)
-
-* Link to v1: https://lore.kernel.org/r/20221118150751.469393-1-nathanl@linux.ibm.com
-
----
-Nathan Lynch (19):
-      powerpc/rtas: handle extended delays safely in early boot
-      powerpc/perf/hv-24x7: add missing RTAS retry status handling
-      powerpc/pseries/lpar: add missing RTAS retry status handling
-      powerpc/pseries/lparcfg: add missing RTAS retry status handling
-      powerpc/pseries/setup: add missing RTAS retry status handling
-      powerpc/pseries: drop RTAS-based timebase synchronization
-      powerpc/rtas: improve function information lookups
-      powerpc/rtas: strengthen do_enter_rtas() type safety, drop inline
-      powerpc/tracing: tracepoints for RTAS entry and exit
-      powerpc/rtas: add tracepoints around RTAS entry
-      powerpc/rtas: add work area allocator
-      powerpc/pseries/dlpar: use RTAS work area API
-      powerpc/pseries: PAPR system parameter API
-      powerpc/pseries: convert CMO probe to papr_sysparm API
-      powerpc/pseries/lparcfg: convert to papr_sysparm API
-      powerpc/pseries/hv-24x7: convert to papr_sysparm API
-      powerpc/pseries/lpar: convert to papr_sysparm API
-      powerpc/rtas: introduce rtas_function_token() API
-      powerpc/rtas: arch-wide function token lookup conversions
-
- arch/powerpc/include/asm/papr-sysparm.h       |  38 ++
- arch/powerpc/include/asm/rtas-work-area.h     |  45 ++
- arch/powerpc/include/asm/rtas.h               | 185 +++++
- arch/powerpc/include/asm/trace.h              | 103 +++
- arch/powerpc/kernel/Makefile                  |   3 +-
- arch/powerpc/kernel/rtas-proc.c               |  24 +-
- arch/powerpc/kernel/rtas-rtc.c                |   6 +-
- arch/powerpc/kernel/rtas-work-area.c          | 208 ++++++
- arch/powerpc/kernel/rtas.c                    | 942 +++++++++++++++++++++-----
- arch/powerpc/kernel/rtas_flash.c              |  21 +-
- arch/powerpc/kernel/rtas_pci.c                |   8 +-
- arch/powerpc/kernel/rtasd.c                   |   2 +-
- arch/powerpc/perf/hv-24x7.c                   |  45 +-
- arch/powerpc/platforms/52xx/efika.c           |   4 +-
- arch/powerpc/platforms/cell/ras.c             |   4 +-
- arch/powerpc/platforms/cell/smp.c             |   4 +-
- arch/powerpc/platforms/chrp/nvram.c           |   4 +-
- arch/powerpc/platforms/chrp/pci.c             |   4 +-
- arch/powerpc/platforms/chrp/setup.c           |   4 +-
- arch/powerpc/platforms/maple/setup.c          |   4 +-
- arch/powerpc/platforms/pseries/Makefile       |   2 +-
- arch/powerpc/platforms/pseries/dlpar.c        |  29 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c  |  22 +-
- arch/powerpc/platforms/pseries/hotplug-cpu.c  |   4 +-
- arch/powerpc/platforms/pseries/io_event_irq.c |   2 +-
- arch/powerpc/platforms/pseries/lpar.c         |  37 +-
- arch/powerpc/platforms/pseries/lparcfg.c      | 104 +--
- arch/powerpc/platforms/pseries/mobility.c     |   4 +-
- arch/powerpc/platforms/pseries/msi.c          |   4 +-
- arch/powerpc/platforms/pseries/nvram.c        |   4 +-
- arch/powerpc/platforms/pseries/papr-sysparm.c | 151 +++++
- arch/powerpc/platforms/pseries/pci.c          |   2 +-
- arch/powerpc/platforms/pseries/ras.c          |   2 +-
- arch/powerpc/platforms/pseries/setup.c        |  27 +-
- arch/powerpc/platforms/pseries/smp.c          |  12 +-
- arch/powerpc/sysdev/xics/ics-rtas.c           |   8 +-
- arch/powerpc/xmon/xmon.c                      |  16 +-
- 37 files changed, 1660 insertions(+), 428 deletions(-)
----
-base-commit: 0bfb97203f5f300777624a2ad6f8f84aea3e8658
-change-id: 20230125-b4-powerpc-rtas-queue-cf85ec465ff9
-
-Best regards,
 -- 
-Nathan Lynch <nathanl@linux.ibm.com>
+2.39.1
 
