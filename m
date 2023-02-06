@@ -4,54 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D17B9C05027
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C69AC636D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:03:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bH42NDMz3fHk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:02:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bJ516p2z3fXh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:03:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MfpVM3Nr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RWQPfsel;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MfpVM3Nr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RWQPfsel;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b5y3sVkz3cHF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b5y40fDz3cMn
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:54:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 7209EB815D1;
+	by ams.source.kernel.org (Postfix) with ESMTPS id 5802BB815C2;
 	Mon,  6 Feb 2023 18:54:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2503BC433D2;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 0F8BFC433EF;
 	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1675709665;
-	bh=UQjctR6kXdByIcypvhbUMOS/4kr/migmys1Em3Evst8=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=MfpVM3NrjsNzPtP3F9etnSioqVapx6/xd7/Ke8rToZUyr6vh85MoFNJTppzZmLWkG
-	 f//DF85aqnFGex27fY987BBJqKNoScFg65sIM23JjsuSEjOG5NE1e95FinkbQrGyeH
-	 YcfG9zNpRIquJsOlSIeYg9C39l98O5hF0OQhCKkKl+r8aYK8E6BD+tRTD7sGKQa0WO
-	 M1lZz06PVGbumZKD117YHnjf2JwRgDc2OS5YzUFDGv0/b3bcUNsl4kO0PKwjxxk0Li
-	 bgt+LmvMVbGqUrVfA7CWWsGocDyTXp5sKA099KmpUxqZQlm7Gt/u48S15+zrCNwTcn
-	 fU2sFaX9Rabrg==
+	bh=wq37oRMfEAOKfFU8vXR47uunp3Y8BkUds7FY3ZDc+Dg=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=RWQPfselw8nfyRnVd/RRTrfFOpplMog+Rm5PFZcaGPhClBf4RrxRJRaycocz2kFFI
+	 vnjd3T0T93TW10GiCl7D365F/Y3M9jktsjidcrxv7Eu0EvANHaGC++g2KIN1f4Lrg2
+	 IR+k03QsdB4lVbBpsOfEbOTn9OMxz8EJgLdUGcH3STTYCx/RiSDZ5sxVzI+St9LbNT
+	 Vwy5sMYG0INQUk5LKThaholJUQ62VQyiV0Phjdggd3zRgXColKYD9PQP+rLIC1leRa
+	 nmoEloNwFQRE1GoYZ0g2bEv8iFFiJrHxvDwQuRNQsm0RzBjCDU7y22yB5NlYysEIpb
+	 nTtqLCrCHLsbQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07301C05027;
-	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6E5AC636D3;
+	Mon,  6 Feb 2023 18:54:24 +0000 (UTC)
 From: Nathan Lynch via B4 Submission Endpoint
  <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Feb 2023 12:54:17 -0600
-Subject: [PATCH v2 01/19] powerpc/rtas: handle extended delays safely in
- early boot
+Subject: [PATCH v2 00/19] RTAS maintenance
+Date: Mon, 06 Feb 2023 12:54:16 -0600
+Message-Id: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230125-b4-powerpc-rtas-queue-v2-1-9aa6bd058063@linux.ibm.com>
-References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
-In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+X-B4-Tracking: v=1; b=H4sIANhM4WMC/x2OQQ6DIBQFr2JY9xtBsdpV79G4APqpJBQsiLUx3
+ r3ociZ5mbeRiMFgJLdiIwEXE413GdilIGoU7oVgnpkJq1hdUcZBNjD5L4ZJQZhFhE/ChKB0x1E
+ 1Lde6J3krRUSQQTg15rVL1mY5BdRmPWOPIfNo4uzD72wv9LBHhlFKO8qrK6dl0/Z1XwMFJ+b8x
+ t6tcWktjXyXyr/JsO/7H3cymp7CAAAA
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -59,11 +60,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
  Andrew Donnellan <ajd@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=3779;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=6172;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=pLkh3/obNWVA07fMBbNuF95oFvgPYtA8yiTJ8EjahUk=;
- b=s+khifzqEVF1RwfURHFHOqye8hBqeNSzTN5qy++G9PFN1j17oMOQlNhAkHMtp6F5KrgqUJPdl
- wgOaYZOOwMLDzuvlIOMLOLBddAFzLSLzxdzSfkUF8GW7VNPCJSgtXnB
+ bh=wq37oRMfEAOKfFU8vXR47uunp3Y8BkUds7FY3ZDc+Dg=;
+ b=XgsHIJnHQNmGQvEYO7aEc9fqjPmye4UN5QRmIZ0ZhykRrx3RjKlmGfPu6BZ6LnCgZPqVMA0BF
+ maslNQ74aegCkp/wj5kxk4GDARMdhl1EV/jT3ON6RncRMEK6orM259H
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -84,119 +85,131 @@ Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nathan Lynch <nathanl@linux.ibm.com>
+Proposed changes for the RTAS subsystem and client code.
 
-Some code that runs early in boot calls RTAS functions that can return
--2 or 990x statuses, which mean the caller should retry. An example is
-pSeries_cmo_feature_init(), which invokes ibm,get-system-parameter but
-treats these benign statuses as errors instead of retrying.
+Fixes that are subject to backporting are at the front of the queue.
+The rest of the queue is roughly ordered with respect to maturity:
+i.e. patches that have already garnered some review and discussion
+precede newer, more experimental changes.
 
-pSeries_cmo_feature_init() and similar code should be made to retry
-until they succeed or receive a real error, using the usual pattern:
+Major features:
 
-	do {
-		rc = rtas_call(token, etc...);
-	} while (rtas_busy_delay(rc));
+* Static tracepoints around RTAS entry/exit.
+* An allocator for work area buffers.
+* A new client of the work area allocator in the form of a
+  higher-level API for PAPR system parameter retrieval.
+* Constant-time symbolic RTAS function token lookups.
 
-But rtas_busy_delay() will perform a timed sleep on any 990x
-status. This isn't safe so early in boot, before the CPU scheduler and
-timer subsystem have initialized.
+Tested with ppc64le in PowerVM LPARs and QEMU's pseries
+model. Obsolescent RTAS platforms (chrp, cell, maple) get build
+coverage.
 
-The -2 RTAS status is much more likely to occur during single-threaded
-boot than 990x in practice, at least on PowerVM. This is because -2
-usually means that RTAS made progress but exhausted its self-imposed
-timeslice, while 990x is associated with concurrent requests from the
-OS causing internal contention. Regardless, according to the language
-in PAPR, the OS should be prepared to handle either type of status at
-any time.
-
-Add a fallback path to rtas_busy_delay() to handle this as safely as
-possible, performing a small delay on 990x. Include a counter to
-detect retry loops that aren't making progress and bail out.
-
-This was found by inspection and I'm not aware of any real
-failures. However, the implementation of rtas_busy_delay() before
-commit 38f7b7067dae ("powerpc/rtas: rtas_busy_delay() improvements")
-was not susceptible to this problem, so let's treat this as a
-regression.
-
-Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
-Fixes: 38f7b7067dae ("powerpc/rtas: rtas_busy_delay() improvements")
 ---
- arch/powerpc/kernel/rtas.c | 48 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 47 insertions(+), 1 deletion(-)
+Changes in v2:
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 795225d7f138..ec2df09a70cf 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -606,6 +606,46 @@ unsigned int rtas_busy_delay_time(int status)
- 	return ms;
- }
- 
-+/*
-+ * Early boot fallback for rtas_busy_delay().
-+ */
-+static bool __init rtas_busy_delay_early(int status)
-+{
-+	static size_t successive_ext_delays __initdata;
-+	bool ret;
-+
-+	switch (status) {
-+	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
-+		/*
-+		 * In the unlikely case that we receive an extended
-+		 * delay status in early boot, the OS is probably not
-+		 * the cause, and there's nothing we can do to clear
-+		 * the condition. Best we can do is delay for a bit
-+		 * and hope it's transient. Lie to the caller if it
-+		 * seems like we're stuck in a retry loop.
-+		 */
-+		mdelay(1);
-+		ret = true;
-+		successive_ext_delays += 1;
-+		if (successive_ext_delays > 1000) {
-+			pr_err("too many extended delays, giving up\n");
-+			dump_stack();
-+			ret = false;
-+		}
-+		break;
-+	case RTAS_BUSY:
-+		ret = true;
-+		successive_ext_delays = 0;
-+		break;
-+	default:
-+		ret = false;
-+		successive_ext_delays = 0;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
- /**
-  * rtas_busy_delay() - helper for RTAS busy and extended delay statuses
-  *
-@@ -624,11 +664,17 @@ unsigned int rtas_busy_delay_time(int status)
-  * * false - @status is not @RTAS_BUSY nor an extended delay hint. The
-  *           caller is responsible for handling @status.
-  */
--bool rtas_busy_delay(int status)
-+bool __ref rtas_busy_delay(int status)
- {
- 	unsigned int ms;
- 	bool ret;
- 
-+	/*
-+	 * Can't do timed sleeps before timekeeping is up.
-+	 */
-+	if (system_state < SYSTEM_SCHEDULING)
-+		return rtas_busy_delay_early(status);
-+
- 	switch (status) {
- 	case RTAS_EXTENDED_DELAY_MIN...RTAS_EXTENDED_DELAY_MAX:
- 		ret = true;
+* Drop applied patches:
+  - powerpc/rtas: document rtas_call()
+  - powerpc/rtasd: use correct OF API for event scan rate
+  - powerpc/rtas: avoid device tree lookups in rtas_os_term()
+  - powerpc/rtas: avoid scheduling in rtas_os_term()
+  - powerpc/pseries/eeh: use correct API for error log size
+  - powerpc/rtas: clean up rtas_error_log_max initialization
+  - powerpc/rtas: clean up includes
+  - powerpc/rtas: define pr_fmt and convert printk call sites
+  - powerpc/rtas: mandate RTAS syscall filtering
 
+* Additions:
+  - Safe early-boot fallback in rtas_busy_delay().
+  - Fixes for missed RTAS function call retries in various places.
+  - Remove RTAS timebase sync from pseries, previously posted
+    separately as "powerpc/pseries: drop RTAS-based timebase
+    synchronization":
+    https://lore.kernel.org/linuxppc-dev/20230110042845.121792-1-nathanl@linux.ibm.com/T/#u
+  - RTAS work area buffer allocator.
+  - Conversion of pseries DLPAR code to work area allocator.
+  - A pseries-specific PAPR system parameter API built on top of the
+    RTAS work area allocator.
+  - Conversion of ibm,get-system-parameter users to papr_sysparm API.
+  - New rtas_function_token() API and associated conversions.
+
+* Modifications to existing patches:
+  - Convert RTAS tracepoint definitions to unconditional
+    variants (TRACE_EVENT_CONDITION() -> TRACE_EVENT()), dropping a
+    cpu_online() check that duplicates work already done at the call
+    site.
+  - Skip tracepoints in unsafe contexts (real mode, CPU
+    offline). (Nicholas Piggin)
+  - Use bool bitfield for "banned on LE" function flag.
+  - Better documentation for "banned on LE" function flag. (Andrew Donnellan)
+  - Drop unnecessary cast for xa_load() key argument. (Nick Child)
+
+* Link to v1: https://lore.kernel.org/r/20221118150751.469393-1-nathanl@linux.ibm.com
+
+---
+Nathan Lynch (19):
+      powerpc/rtas: handle extended delays safely in early boot
+      powerpc/perf/hv-24x7: add missing RTAS retry status handling
+      powerpc/pseries/lpar: add missing RTAS retry status handling
+      powerpc/pseries/lparcfg: add missing RTAS retry status handling
+      powerpc/pseries/setup: add missing RTAS retry status handling
+      powerpc/pseries: drop RTAS-based timebase synchronization
+      powerpc/rtas: improve function information lookups
+      powerpc/rtas: strengthen do_enter_rtas() type safety, drop inline
+      powerpc/tracing: tracepoints for RTAS entry and exit
+      powerpc/rtas: add tracepoints around RTAS entry
+      powerpc/rtas: add work area allocator
+      powerpc/pseries/dlpar: use RTAS work area API
+      powerpc/pseries: PAPR system parameter API
+      powerpc/pseries: convert CMO probe to papr_sysparm API
+      powerpc/pseries/lparcfg: convert to papr_sysparm API
+      powerpc/pseries/hv-24x7: convert to papr_sysparm API
+      powerpc/pseries/lpar: convert to papr_sysparm API
+      powerpc/rtas: introduce rtas_function_token() API
+      powerpc/rtas: arch-wide function token lookup conversions
+
+ arch/powerpc/include/asm/papr-sysparm.h       |  38 ++
+ arch/powerpc/include/asm/rtas-work-area.h     |  45 ++
+ arch/powerpc/include/asm/rtas.h               | 185 +++++
+ arch/powerpc/include/asm/trace.h              | 103 +++
+ arch/powerpc/kernel/Makefile                  |   3 +-
+ arch/powerpc/kernel/rtas-proc.c               |  24 +-
+ arch/powerpc/kernel/rtas-rtc.c                |   6 +-
+ arch/powerpc/kernel/rtas-work-area.c          | 208 ++++++
+ arch/powerpc/kernel/rtas.c                    | 942 +++++++++++++++++++++-----
+ arch/powerpc/kernel/rtas_flash.c              |  21 +-
+ arch/powerpc/kernel/rtas_pci.c                |   8 +-
+ arch/powerpc/kernel/rtasd.c                   |   2 +-
+ arch/powerpc/perf/hv-24x7.c                   |  45 +-
+ arch/powerpc/platforms/52xx/efika.c           |   4 +-
+ arch/powerpc/platforms/cell/ras.c             |   4 +-
+ arch/powerpc/platforms/cell/smp.c             |   4 +-
+ arch/powerpc/platforms/chrp/nvram.c           |   4 +-
+ arch/powerpc/platforms/chrp/pci.c             |   4 +-
+ arch/powerpc/platforms/chrp/setup.c           |   4 +-
+ arch/powerpc/platforms/maple/setup.c          |   4 +-
+ arch/powerpc/platforms/pseries/Makefile       |   2 +-
+ arch/powerpc/platforms/pseries/dlpar.c        |  29 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c  |  22 +-
+ arch/powerpc/platforms/pseries/hotplug-cpu.c  |   4 +-
+ arch/powerpc/platforms/pseries/io_event_irq.c |   2 +-
+ arch/powerpc/platforms/pseries/lpar.c         |  37 +-
+ arch/powerpc/platforms/pseries/lparcfg.c      | 104 +--
+ arch/powerpc/platforms/pseries/mobility.c     |   4 +-
+ arch/powerpc/platforms/pseries/msi.c          |   4 +-
+ arch/powerpc/platforms/pseries/nvram.c        |   4 +-
+ arch/powerpc/platforms/pseries/papr-sysparm.c | 151 +++++
+ arch/powerpc/platforms/pseries/pci.c          |   2 +-
+ arch/powerpc/platforms/pseries/ras.c          |   2 +-
+ arch/powerpc/platforms/pseries/setup.c        |  27 +-
+ arch/powerpc/platforms/pseries/smp.c          |  12 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c           |   8 +-
+ arch/powerpc/xmon/xmon.c                      |  16 +-
+ 37 files changed, 1660 insertions(+), 428 deletions(-)
+---
+base-commit: 0bfb97203f5f300777624a2ad6f8f84aea3e8658
+change-id: 20230125-b4-powerpc-rtas-queue-cf85ec465ff9
+
+Best regards,
 -- 
-2.39.1
+Nathan Lynch <nathanl@linux.ibm.com>
 
