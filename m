@@ -4,57 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29C80C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 18:11:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 307D8C05027
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 18:55:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9Z8B2B1Cz3cdT
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 05:11:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9b6x31lcz3cdZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 05:55:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xb/zrEXI;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VCozk+Bi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=acme@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xb/zrEXI;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VCozk+Bi;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9Z745f5Kz309V
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:10:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b5x2dTlz2xBF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:54:29 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 9D325B815C5;
-	Mon,  6 Feb 2023 18:10:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29CD7C433EF;
-	Mon,  6 Feb 2023 18:10:19 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 8C7AFB815D7;
+	Mon,  6 Feb 2023 18:54:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 39E9BC4339E;
+	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1675707019;
-	bh=nmqAI9J4GjOYj1FBxzBhACWHOupskqoCkl1A+nVv+K4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Xb/zrEXIOOCRaxMhtHrfdxLk/LKpVJrTpu+zEmyGIURNcFi9xwqYbWMqT0wJqgLeE
-	 kUtoNclM/D95AJVUkLV4Kwe3yKIeT6oruFtdDxKYEBQpVYLqOq9ZbaKzo4GS8Bj1Q2
-	 jTPwjDSE4qhHRnJH/TOpLNHScYrEb0kyMwsA3GIsHuxI1/AueTnJIXW98QPhySECnE
-	 6fG3bfk562mxjARvAab4Avxgf9swB+aVoH+VPErOYMpimdsyZBTmT2e4bApERDA+bJ
-	 yWXFeXmVQhe8FrCGf/ooqv1EWwk6QZR2Mp6AOBiIWjPg9nV8VrxO3wWjErZxcwM2qw
-	 1QQExjcdQ/HXw==
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
-	id 7388D405BE; Mon,  6 Feb 2023 15:10:16 -0300 (-03)
-Date: Mon, 6 Feb 2023 15:10:16 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] perf test bpf: Skip test if kernel-debuginfo is not
- present
-Message-ID: <Y+FCiNAhves7RglY@kernel.org>
-References: <20230105121742.92249-1-atrajeev@linux.vnet.ibm.com>
- <20230105121742.92249-2-atrajeev@linux.vnet.ibm.com>
- <Y7bIk77mdE4j8Jyi@kernel.org>
- <8B8A7CCE-E007-4C0C-AF1F-17B679F9A86D@linux.vnet.ibm.com>
+	s=k20201202; t=1675709665;
+	bh=2pFPNH3QjsKSRDYdqjRkrMORBq9dIGNfoLmGeH8oQzE=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=VCozk+BiyOHwPzn6fKBkI/EbXmV+Xdu4QUg4tdMKoxIs3/ZIvq7UTKELoieK5/pzO
+	 y8KcwVdUe0d1qLzDHNe90VbcQZ3NbNYonX/6ReJgaf/4i2UTbCHCT7ZBB2b0pJKlfq
+	 y7exfPFKqXavpGXqz8ESa27+C9ApM0nUK9DyY5eGU27Af7xzax0/DVovGfg9uyAzE9
+	 ElEUXpQA27SejIEDIKdIGhtFe+7LU1XlYayWONL+QY7ED8zITpjf/GtJdkAQt9Rqjt
+	 +8Y6g0QW5J6KnGMGGTZ1uWeZj5Q1IuuDawjW3hasrvURxeokSqkPnKslNSRrMMuNP8
+	 UfPQ09q5ItxQw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177BBC63797;
+	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
+From: Nathan Lynch via B4 Submission Endpoint
+ <devnull+nathanl.linux.ibm.com@kernel.org>
+Date: Mon, 06 Feb 2023 12:54:18 -0600
+Subject: [PATCH v2 02/19] powerpc/perf/hv-24x7: add missing RTAS retry
+ status handling
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8B8A7CCE-E007-4C0C-AF1F-17B679F9A86D@linux.vnet.ibm.com>
-X-Url: http://acmel.wordpress.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230125-b4-powerpc-rtas-queue-v2-2-9aa6bd058063@linux.ibm.com>
+References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Kajol Jain <kjain@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, 
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+ Andrew Donnellan <ajd@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>
+X-Mailer: b4 0.12.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=2749;
+ i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
+ bh=/LsCrvhYcOs18AHY/8B4mKFcVOBSY003WWGJyJqeLe0=;
+ b=pHbKpFCnUZ9xxJWt4MlN94+/yR2o/5AzcVkx2M/b9uKFYM0YQpUVL+3BOpCGbU0ghLdoE2Z+f
+ JLeFAYRHQofB3hj3ZJJpME43a2eEbc8ha0ZkKVpEMZbh5F+DqMoX659
+X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
+ pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
+X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
+X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,127 +79,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ian Rogers <irogers@google.com>, Andi Kleen <ak@linux.intel.com>, Nageswara Sastry <rnsastry@linux.ibm.com>, linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, James Clark <james.clark@arm.com>, Jiri Olsa <jolsa@kernel.org>, Kajol Jain <kjain@linux.ibm.com>, Namhyung Kim <namhyung@kernel.org>, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: nathanl@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Mon, Feb 06, 2023 at 07:28:49PM +0530, Athira Rajeev escreveu:
-> 
-> 
-> > On 05-Jan-2023, at 6:24 PM, Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
-> > 
-> > Em Thu, Jan 05, 2023 at 05:47:42PM +0530, Athira Rajeev escreveu:
-> >> Perf BPF filter test fails in environment where "kernel-debuginfo"
-> >> is not installed.
-> > 
-> > I'll apply this to perf/core, for the next merge window, as its more an
-> > improvement than a fix, i.e. we know why it fails, we're just improving
-> > the user reporting to make that clear at first sight.
-> > 
-> > - Arnaldo
-> > 
-> 
-> Hi Arnaldo,
-> 
-> Just wanted to check when we can have these two patches in perf/core.
-> I didn't find these in https://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git/?h=tmp.perf/core
-> Not sure if I missed.
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Thanks for the reminder, applied those now.
+The ibm,get-system-parameter RTAS function may return -2 or 990x,
+which indicate that the caller should try again. read_24x7_sys_info()
+ignores this, allowing transient failures in reporting processor
+module information.
 
-- Arnaldo
+Move the RTAS call into a coventional rtas_busy_delay()-based loop,
+along with the parsing of results on success.
+
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+Fixes: 8ba214267382 ("powerpc/hv-24x7: Add rtas call in hv-24x7 driver to get processor details")
+---
+ arch/powerpc/perf/hv-24x7.c | 42 ++++++++++++++++++------------------------
+ 1 file changed, 18 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 33c23225fd54..fcfebf5bd378 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -79,9 +79,8 @@ static u32 phys_coresperchip; /* Physical cores per chip */
+  */
+ void read_24x7_sys_info(void)
+ {
+-	int call_status, len, ntypes;
+-
+-	spin_lock(&rtas_data_buf_lock);
++	const s32 token = rtas_token("ibm,get-system-parameter");
++	int call_status;
  
-> Thanks
-> Athira
-> 
-> >> Test failure logs:
-> >> <<>>
-> >> 42: BPF filter                            :
-> >> 42.1: Basic BPF filtering                 : Ok
-> >> 42.2: BPF pinning                         : Ok
-> >> 42.3: BPF prologue generation             : FAILED!
-> >> <<>>
-> >> 
-> >> Enabling verbose option provided debug logs, which says debuginfo
-> >> needs to be installed. Snippet of verbose logs:
-> >> 
-> >> <<>>
-> >> 42.3: BPF prologue generation                                       :
-> >> --- start ---
-> >> test child forked, pid 28218
-> >> <<>>
-> >> Rebuild with CONFIG_DEBUG_INFO=y, or install an appropriate debuginfo
-> >> package.
-> >> bpf_probe: failed to convert perf probe events
-> >> Failed to add events selected by BPF
-> >> test child finished with -1
-> >> ---- end ----
-> >> BPF filter subtest 3: FAILED!
-> >> <<>>
-> >> 
-> >> Here subtest, "BPF prologue generation" failed and
-> >> logs shows debuginfo is needed. After installing
-> >> kernel-debuginfo package, testcase passes.
-> >> 
-> >> Subtest "BPF prologue generation" failed because, the "do_test"
-> >> function returns "TEST_FAIL" without checking the error type
-> >> returned by "parse_events_load_bpf_obj" function.
-> >> Function parse_events_load_bpf_obj can also return error of type
-> >> "-ENODATA" incase kernel-debuginfo package is not installed. Fix this
-> >> by adding check for -ENODATA error.
-> >> 
-> >> Test result after the patch changes:
-> >> 
-> >> Test failure logs:
-> >> <<>>
-> >> 42: BPF filter                 :
-> >> 42.1: Basic BPF filtering      : Ok
-> >> 42.2: BPF pinning              : Ok
-> >> 42.3: BPF prologue generation  : Skip (clang/debuginfo isn't
-> >> installed or environment missing BPF support)
-> >> 
-> >> Fixes: ba1fae431e74 ("perf test: Add 'perf test BPF'")
-> >> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> >> ---
-> >> Note: This is dependent on patch 1:
-> >> tools/perf: Update the exit error codes in function
-> >> try_to_find_probe_trace_event
-> >> 
-> >> tools/perf/tests/bpf.c | 6 +++++-
-> >> 1 file changed, 5 insertions(+), 1 deletion(-)
-> >> 
-> >> diff --git a/tools/perf/tests/bpf.c b/tools/perf/tests/bpf.c
-> >> index 17c023823713..6a4235a9cf57 100644
-> >> --- a/tools/perf/tests/bpf.c
-> >> +++ b/tools/perf/tests/bpf.c
-> >> @@ -126,6 +126,10 @@ static int do_test(struct bpf_object *obj, int (*func)(void),
-> >> 
-> >> 	err = parse_events_load_bpf_obj(&parse_state, &parse_state.list, obj, NULL);
-> >> 	parse_events_error__exit(&parse_error);
-> >> +	if (err == -ENODATA) {
-> >> +		pr_debug("Failed to add events selected by BPF, debuginfo package not installed\n");
-> >> +		return TEST_SKIP;
-> >> +	}
-> >> 	if (err || list_empty(&parse_state.list)) {
-> >> 		pr_debug("Failed to add events selected by BPF\n");
-> >> 		return TEST_FAIL;
-> >> @@ -368,7 +372,7 @@ static struct test_case bpf_tests[] = {
-> >> 			"clang isn't installed or environment missing BPF support"),
-> >> #ifdef HAVE_BPF_PROLOGUE
-> >> 	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test,
-> >> -			"clang isn't installed or environment missing BPF support"),
-> >> +			"clang/debuginfo isn't installed or environment missing BPF support"),
-> >> #else
-> >> 	TEST_CASE_REASON("BPF prologue generation", bpf_prologue_test, "not compiled in"),
-> >> #endif
-> >> -- 
-> >> 2.31.1
-> > 
-> > -- 
-> > 
-> > - Arnaldo
-> 
+ 	/*
+ 	 * Making system parameter: chips and sockets and cores per chip
+@@ -91,32 +90,27 @@ void read_24x7_sys_info(void)
+ 	phys_chipspersocket = 1;
+ 	phys_coresperchip = 1;
+ 
+-	call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
+-				NULL,
+-				PROCESSOR_MODULE_INFO,
+-				__pa(rtas_data_buf),
+-				RTAS_DATA_BUF_SIZE);
++	do {
++		spin_lock(&rtas_data_buf_lock);
++		call_status = rtas_call(token, 3, 1, NULL, PROCESSOR_MODULE_INFO,
++					__pa(rtas_data_buf), RTAS_DATA_BUF_SIZE);
++		if (call_status == 0) {
++			int ntypes = be16_to_cpup((__be16 *)&rtas_data_buf[2]);
++			int len = be16_to_cpup((__be16 *)&rtas_data_buf[0]);
++
++			if (len >= 8 && ntypes != 0) {
++				phys_sockets = be16_to_cpup((__be16 *)&rtas_data_buf[4]);
++				phys_chipspersocket = be16_to_cpup((__be16 *)&rtas_data_buf[6]);
++				phys_coresperchip = be16_to_cpup((__be16 *)&rtas_data_buf[8]);
++			}
++		}
++		spin_unlock(&rtas_data_buf_lock);
++	} while (rtas_busy_delay(call_status));
+ 
+ 	if (call_status != 0) {
+ 		pr_err("Error calling get-system-parameter %d\n",
+ 		       call_status);
+-	} else {
+-		len = be16_to_cpup((__be16 *)&rtas_data_buf[0]);
+-		if (len < 8)
+-			goto out;
+-
+-		ntypes = be16_to_cpup((__be16 *)&rtas_data_buf[2]);
+-
+-		if (!ntypes)
+-			goto out;
+-
+-		phys_sockets = be16_to_cpup((__be16 *)&rtas_data_buf[4]);
+-		phys_chipspersocket = be16_to_cpup((__be16 *)&rtas_data_buf[6]);
+-		phys_coresperchip = be16_to_cpup((__be16 *)&rtas_data_buf[8]);
+ 	}
+-
+-out:
+-	spin_unlock(&rtas_data_buf_lock);
+ }
+ 
+ /* Domains for which more than one result element are returned for each event. */
 
 -- 
+2.39.1
 
-- Arnaldo
