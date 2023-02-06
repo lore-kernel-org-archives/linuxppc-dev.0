@@ -4,52 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02F76C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:06:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DA72C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 19:07:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bN82qpPz3fY0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:06:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9bP917hzz3fZS
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 06:07:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aJ6QIlv2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qn3Q2SDh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aJ6QIlv2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qn3Q2SDh;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b600Qpkz3bTS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9b601Yffz3cNf
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 05:54:32 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 66A6360FF6;
+	by ams.source.kernel.org (Postfix) with ESMTPS id C88CBB815DA;
 	Mon,  6 Feb 2023 18:54:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id BAD2EC433B0;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 5AD67C433A1;
 	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1675709665;
-	bh=kluKoIczw34WtunaYaUtA36347KUQvDDKVv6qDA/vuU=;
+	bh=5cvHn8UKfrP9MTtWM7vqYeWeSfq+8/+asQ1IeAi7rdU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=aJ6QIlv2OcVz8Prt8nYZyZycm3u+6jyCUMV9+rPa3GgDpF+coQJPqf1rCvdx4A/Bq
-	 V9V3fSIBWdk/XqcN3JFuQv0cHfwYyY+Nj6yKyNlZufNmSqxr2CYqPDoUklMyD6kk/e
-	 4ULuLMOGMhp6h7i9rCElVpAR8xf2hI9KT3ZBIP3TJdanditRvhQcg1HYtv77oCapln
-	 JfPIDAluu9hfywVKCIil2GWKeR+of/GDABbsT9we5JbRPYxiIz/uUsoTnz8ZSgMTeQ
-	 w52g30AbZq9Xpb7Nhcwhbms1DXtSweZWMlUTK+26F6FURN630/dgoHk5KW9QOMUanM
-	 GwEfdD8OC1vVQ==
+	b=qn3Q2SDhVJNkr42bhIWwqRcC5llOpybqUlpXiY9RROost33jo+nKaRT2hT8xmuaMR
+	 zr8ejjB9dZ7gBDQn4ToA8jbRpOKZ3S8mBOYtp+zu9lin90SdrMH5r5HQo8EbV65NTI
+	 pbn9qAhZ6P7rvedjz3TzRbraC4J92gDYtxC+YsV07BHqlVxPS/L1B4YA+2m8XOk7zL
+	 2ru0XIcwAqM8YQ9ewAIiagXOqaPqP0hnmM+RecUlVkvnd2jGGZt9rQ0ZYcERdnTOpf
+	 TPauSUGN9CggSyv39T8gpFH628kv967Fq4r0g6mMmCWmqk7AbWLt1wMKP0lK/BHhw3
+	 d6z0cdYr27dFg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA900C636D3;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A004C05027;
 	Mon,  6 Feb 2023 18:54:25 +0000 (UTC)
 From: Nathan Lynch via B4 Submission Endpoint
  <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Feb 2023 12:54:30 -0600
-Subject: [PATCH v2 14/19] powerpc/pseries: convert CMO probe to
- papr_sysparm API
+Date: Mon, 06 Feb 2023 12:54:22 -0600
+Subject: [PATCH v2 06/19] powerpc/pseries: drop RTAS-based timebase
+ synchronization
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230125-b4-powerpc-rtas-queue-v2-14-9aa6bd058063@linux.ibm.com>
+Message-Id: <20230125-b4-powerpc-rtas-queue-v2-6-9aa6bd058063@linux.ibm.com>
 References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
 In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -59,11 +59,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
  Andrew Donnellan <ajd@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=2134;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1675709663; l=1232;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=wgP5ZTThR3IKKt3zP//ktPHmiyHjfPLomTgdKwAbQNo=;
- b=10X5+/bu59ydOVlRz84QvTlOQTdP/Af+KYekNiR+pmfiFunrH3qtGr5QafteST2n1boJwR+jy
- BOk1GdLfMQcBWQwZYAdU9qcc3trF0z4iI05lpF++ptrKdN2d8op82Xb
+ bh=tFcGWQ1AkW6nsQJJK1c3LerD+9XTZywFqC0rfZVIXdk=;
+ b=nF3sLrHRppShxQzSS75GEDBvSu0I3Fqo44gMZOkgyz3+2/m2oyVuox1SMxwVfWkjGYol/p/0b
+ Earyoeg7NRDCI4s8Mhxsi+EdcRwyuVJ4W3DMfICr9nGc6MHXrTOZOF8
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -86,72 +86,40 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Convert the direct invocation of the ibm,get-system-parameter RTAS
-function to papr_sysparm_get().
+The pseries platform has been LPAR-only for several generations, and
+the PAPR spec:
+
+* Guarantees that timebase synchronization is performed by
+  the platform ("The timebase registers are synchronized by the
+  platform before CPUs are given to the OS" - 7.3.8 SMP Support).
+
+* Completely omits the RTAS freeze-time-base and thaw-time-base RTAS
+  functions, which are CHRP artifacts.
+
+This code is effectively unused on currently supported models, so drop
+it.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/setup.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+ arch/powerpc/platforms/pseries/smp.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 74e50b6b28d4..420a2fa48292 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -57,6 +57,7 @@
- #include <asm/pmc.h>
- #include <asm/xics.h>
- #include <asm/xive.h>
-+#include <asm/papr-sysparm.h>
- #include <asm/ppc-pci.h>
- #include <asm/i8259.h>
- #include <asm/udbg.h>
-@@ -941,32 +942,21 @@ void pSeries_coalesce_init(void)
-  */
- static void __init pSeries_cmo_feature_init(void)
- {
--	const s32 token = rtas_token("ibm,get-system-parameter");
-+	static struct papr_sysparm_buf buf __initdata;
-+	static_assert(sizeof(buf.val) >= CMO_MAXLENGTH);
- 	char *ptr, *key, *value, *end;
--	int call_status;
- 	int page_order = IOMMU_PAGE_SHIFT_4K;
- 
- 	pr_debug(" -> fw_cmo_feature_init()\n");
- 
--	do {
--		spin_lock(&rtas_data_buf_lock);
--		call_status = rtas_call(token, 3, 1, NULL,
--					CMO_CHARACTERISTICS_TOKEN,
--					__pa(rtas_data_buf),
--					RTAS_DATA_BUF_SIZE);
--		if (call_status == 0)
--			break;
--		spin_unlock(&rtas_data_buf_lock);
--	} while (rtas_busy_delay(call_status));
--
--	if (call_status != 0) {
-+	if (papr_sysparm_get(PAPR_SYSPARM_COOP_MEM_OVERCOMMIT_ATTRS, &buf)) {
- 		pr_debug("CMO not available\n");
- 		pr_debug(" <- fw_cmo_feature_init()\n");
- 		return;
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index fd2174edfa1d..2bcfee86ff87 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -278,11 +278,5 @@ void __init smp_init_pseries(void)
+ 		cpumask_clear_cpu(boot_cpuid, of_spin_mask);
  	}
  
--	end = rtas_data_buf + CMO_MAXLENGTH - 2;
--	ptr = rtas_data_buf + 2;	/* step over strlen value */
-+	end = &buf.val[CMO_MAXLENGTH];
-+	ptr = &buf.val[0];
- 	key = value = ptr;
- 
- 	while (*ptr && (ptr <= end)) {
-@@ -1012,7 +1002,6 @@ static void __init pSeries_cmo_feature_init(void)
- 	} else
- 		pr_debug("CMO not enabled, PrPSP=%d, SecPSP=%d\n", CMO_PrPSP,
- 		         CMO_SecPSP);
--	spin_unlock(&rtas_data_buf_lock);
- 	pr_debug(" <- fw_cmo_feature_init()\n");
+-	/* Non-lpar has additional take/give timebase */
+-	if (rtas_token("freeze-time-base") != RTAS_UNKNOWN_SERVICE) {
+-		smp_ops->give_timebase = rtas_give_timebase;
+-		smp_ops->take_timebase = rtas_take_timebase;
+-	}
+-
+ 	pr_debug(" <- smp_init_pSeries()\n");
  }
- 
 
 -- 
 2.39.1
