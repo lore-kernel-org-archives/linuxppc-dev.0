@@ -4,97 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DBFDC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 05:26:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD091C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 09:29:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9s7W4B5lz3cM1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 16:26:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4P9yWw186kz3cf2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 20:29:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bnVp5EiJ;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S9xDg8J/;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S9xDg8J/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bnVp5EiJ;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S9xDg8J/;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S9xDg8J/;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9s6R5sJHz3bP0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 16:25:51 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 3173RcDC031589;
-	Tue, 7 Feb 2023 05:25:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=MDDY2xtAagBPSEC6o2U7J4JQZ3D1QDD9r7/0FqNQWgE=;
- b=bnVp5EiJvF8XQTF7p6NDpZ8zdthL6lGbH3IZVQTjJqQG8kXhRDOr34/7yYbOPc3X8g3/
- SVMjyiFG6TNWbCApCuzAfzZEdBW8XK0c4L/dAoCqVB8jekx+j+D9Q41AKfT9zT8WYcda
- N6xeXOCz+TQTMJeFzWHycC+D74LJrfvnh98KwO/Ec33XqqzlcHDkEjJUUOwHS7yy6fcE
- RL2Q6n17/tJ8vBXkxAHsAy/7vdPy8YVGkZvfGgLxOV2ayrJDJbQWur3kedLyZm1JGRPx
- vDpVe97+8D9ON/VTZGxqNcRf6C/5pggzOSbj0NPaFarbF5VCLlpMy2a2aSFk5O8bSUwB wA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nkda0v1s4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Feb 2023 05:25:44 +0000
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31751726028763;
-	Tue, 7 Feb 2023 05:25:44 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nkda0v1rf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Feb 2023 05:25:44 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 316HgKLO023711;
-	Tue, 7 Feb 2023 05:25:42 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3nhf06u5ja-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 07 Feb 2023 05:25:42 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 3175Pd5R25100566
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 7 Feb 2023 05:25:39 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDB0020049;
-	Tue,  7 Feb 2023 05:25:39 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 48BC620040;
-	Tue,  7 Feb 2023 05:25:39 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  7 Feb 2023 05:25:39 +0000 (GMT)
-Received: from [10.61.2.128] (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6925A6010B;
-	Tue,  7 Feb 2023 16:25:35 +1100 (AEDT)
-Message-ID: <1be52a01d4d467300b9197f384498174a6942c10.camel@linux.ibm.com>
-Subject: Re: [PATCH v5 19/25] powerpc/pseries: Make caller pass buffer to
- plpks_read_var()
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Stefan Berger <stefanb@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-integrity@vger.kernel.org
-Date: Tue, 07 Feb 2023 16:25:35 +1100
-In-Reply-To: <5c335c29-ecb6-70eb-ab8e-caadde774434@linux.ibm.com>
-References: <20230131063928.388035-1-ajd@linux.ibm.com>
-	 <20230131063928.388035-20-ajd@linux.ibm.com>
-	 <5c335c29-ecb6-70eb-ab8e-caadde774434@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.3 (3.46.3-1.fc37) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9ySY3NCmz3cBK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 20:26:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1675762009;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/F3qfr1H23q3phH6cljEmKpLs439z5etAwPY/FDcZlA=;
+	b=S9xDg8J/ybIMa0er2wIJQ35rbFTNl4c7a4vT6O3QNXRhvs/KaG7B3j8jr1XP3rJt/+BPka
+	andEgZ4bEyy0VRqMAY4OiW6p5SD9UkM/48thxWe0KGxe0Sbw9PIg9RjdcnztpdU99OEUpj
+	D577eXMyqmzei7uPZCJkFD8E7vh9zkY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1675762009;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=/F3qfr1H23q3phH6cljEmKpLs439z5etAwPY/FDcZlA=;
+	b=S9xDg8J/ybIMa0er2wIJQ35rbFTNl4c7a4vT6O3QNXRhvs/KaG7B3j8jr1XP3rJt/+BPka
+	andEgZ4bEyy0VRqMAY4OiW6p5SD9UkM/48thxWe0KGxe0Sbw9PIg9RjdcnztpdU99OEUpj
+	D577eXMyqmzei7uPZCJkFD8E7vh9zkY=
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com
+ [209.85.160.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
+ us-mta-484-xDQ__YMPOgGgfAPHRIaf6A-1; Tue, 07 Feb 2023 04:26:45 -0500
+X-MC-Unique: xDQ__YMPOgGgfAPHRIaf6A-1
+Received: by mail-qt1-f198.google.com with SMTP id cr22-20020a05622a429600b003b694a9f291so8182770qtb.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Feb 2023 01:26:44 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=/F3qfr1H23q3phH6cljEmKpLs439z5etAwPY/FDcZlA=;
+        b=viXBPQZf/Enw3n/XnUx9DkA5o6Yny4bnq2PlEuvvJTLptdDQskWql8UF6YndzdYI0G
+         nFKIuvGyL9uuShVQaJ8sc6ff+zzsRss/pXQXNOw5tEtDxnWySmtqxT7Ey57ms74Psf6Q
+         0LOWFtQ9r8SagQPpFIhs/GiC4eTKe9C4SNB1Xc6FA64HIpBguc1zSvqjOXDy/SqDXupM
+         60fpj4nYQpBl0NICncBZUwiKuvHcQeWLvyue1KJZgB8TZqb0VLII+8miMzSeD75kiNSB
+         1xizUSx/qlXGx1D0NoEc8uHgcscvALa5b+qqMlMu4f1ZraYFKFHhz7vDYPzXwlvJa5QG
+         lfzA==
+X-Gm-Message-State: AO0yUKXzsdBr2FSilnkxPqowSbzNoZm0kanecZH1C+ONvxRrnleVGStN
+	9RmRYZ7g8Vqszkrt9iOex5qhmRbIzI4+8AeNHaGb1qgRXhyT8QKb0IzeYl7613JHLfg3lKVGOfJ
+	YFwjXQIDaRDyGtpmxsq6UV8KegQ==
+X-Received: by 2002:a05:622a:188d:b0:3b9:a441:37f3 with SMTP id v13-20020a05622a188d00b003b9a44137f3mr3131478qtc.64.1675762004532;
+        Tue, 07 Feb 2023 01:26:44 -0800 (PST)
+X-Google-Smtp-Source: AK7set8bB7OmE4JZ0vH4S5PaJ9NaK/oiOhz8aqf0f6ynkAzsxoZg5CO1XDpfEPDTS/rewIBCUB+dtA==
+X-Received: by 2002:a05:622a:188d:b0:3b9:a441:37f3 with SMTP id v13-20020a05622a188d00b003b9a44137f3mr3131454qtc.64.1675762004253;
+        Tue, 07 Feb 2023 01:26:44 -0800 (PST)
+Received: from [192.168.0.2] (ip-109-43-176-120.web.vodafone.de. [109.43.176.120])
+        by smtp.gmail.com with ESMTPSA id dl12-20020a05620a1d0c00b0071323d3e37fsm9034385qkb.133.2023.02.07.01.26.40
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 07 Feb 2023 01:26:43 -0800 (PST)
+Message-ID: <579f432d-6100-0ba1-5ba4-f72349ec9173@redhat.com>
+Date: Tue, 7 Feb 2023 10:26:39 +0100
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: keLy3LWDQ3lADihVWqrZMz-wTfKF0X8V
-X-Proofpoint-ORIG-GUID: 7rgOvipZPeOTAfmpqpzrtsmAs6LUkjzc
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-02-06_07,2023-02-06_03,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 suspectscore=0
- mlxlogscore=743 phishscore=0 clxscore=1015 priorityscore=1501
- malwarescore=0 impostorscore=0 spamscore=0 adultscore=0 bulkscore=0
- lowpriorityscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302070044
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.13.0
+Subject: Re: [PATCH 2/7] KVM: x86: Improve return type handling in
+ kvm_vm_ioctl_get_nr_mmu_pages()
+To: Sean Christopherson <seanjc@google.com>
+References: <20230203094230.266952-1-thuth@redhat.com>
+ <20230203094230.266952-3-thuth@redhat.com> <Y91JAb0kKBYQjO8a@google.com>
+From: Thomas Huth <thuth@redhat.com>
+In-Reply-To: <Y91JAb0kKBYQjO8a@google.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,24 +103,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sudhakar@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, npiggin@gmail.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, gjoyce@linux.ibm.com, ruscur@russell.cc, joel@jms.id.au, bgray@linux.ibm.com, brking@linux.ibm.com, gcwilson@linux.ibm.com
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, kvm@vger.kernel.org, Suzuki K Poulose <suzuki.poulose@arm.com>, Marc Zyngier <maz@kernel.org>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Zenghui Yu <yuzenghui@huawei.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, Paolo Bonzini <pbonzini@redhat.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2023-01-31 at 11:38 -0500, Stefan Berger wrote:
->=20
->=20
-> On 1/31/23 01:39, Andrew Donnellan wrote:
-> > Currently, plpks_read_var() allocates a buffer to pass to the
-> > H_PKS_READ_OBJECT hcall, then allocates another buffer, of the
-> > caller's
->=20
->=20
-> -> buffer of the (no comma)
+On 03/02/2023 18.48, Sean Christopherson wrote:
+> On Fri, Feb 03, 2023, Thomas Huth wrote:
+>> kvm_vm_ioctl_get_nr_mmu_pages() tries to return a "unsigned long" value,
+>> but its caller only stores ther return value in an "int" - which is also
+>> what all the other kvm_vm_ioctl_*() functions are returning. So returning
+>> values that do not fit into a 32-bit integer anymore does not work here.
+>> It's better to adjust the return type, add a sanity check and return an
+>> error instead if the value is too big.
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>> ---
+>>   arch/x86/kvm/x86.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>> index da4bbd043a7b..caa2541833dd 100644
+>> --- a/arch/x86/kvm/x86.c
+>> +++ b/arch/x86/kvm/x86.c
+>> @@ -6007,8 +6007,11 @@ static int kvm_vm_ioctl_set_nr_mmu_pages(struct kvm *kvm,
+>>   	return 0;
+>>   }
+>>   
+>> -static unsigned long kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+>> +static int kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+>>   {
+>> +	if (kvm->arch.n_max_mmu_pages > INT_MAX)
+>> +		return -EOVERFLOW;
+>> +
+>>   	return kvm->arch.n_max_mmu_pages;
+>>   }
+> 
+> My vote is to skip this patch, skip deprecation, and go straight to deleting
+> KVM_GET_NR_MMU_PAGES.  The ioctl() has never worked[*], and none of the VMMs I
+> checked use it (QEMU, Google's internal VMM, kvmtool, CrosVM).
 
-I'll just remove that clause entirely, it's not really necessary
+I guess I'm living too much in the QEMU world where things need to be 
+deprecated first before removing them ;-)
+But sure, if everybody agrees that removing this directly is fine, too, I 
+can do this in v2.
+
+  Thomas
 
 
---=20
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+PS: Has there ever been a discussion about the other deprecated interfaces 
+in include/uapi/linux/kvm.h ? Most of the stuff there seems to be from 2009 
+... so maybe it's time now to remove that, too?
+
