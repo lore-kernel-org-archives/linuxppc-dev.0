@@ -4,52 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B45EC636CC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 19:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7403EC636D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 19:28:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBCfF5GdGz3fGZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 06:21:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=pengutronix.de (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de; envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBCpL6z6Kz3f3x
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 06:28:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cy3dSw/W;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.115; helo=mga14.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Cy3dSw/W;
+	dkim-atps=neutral
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBCd03Mm6z3cM1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 06:20:02 +1100 (AEDT)
-Received: from drehscheibe.grey.stw.pengutronix.de ([2a0a:edc0:0:c01:1d::a2])
-	by metis.ext.pengutronix.de with esmtps (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-	(Exim 4.92)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1pPTVE-0008RR-Dk; Tue, 07 Feb 2023 20:19:40 +0100
-Received: from [2a0a:edc0:0:900:1d::77] (helo=ptz.office.stw.pengutronix.de)
-	by drehscheibe.grey.stw.pengutronix.de with esmtp (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1pPTV8-003LvI-MN; Tue, 07 Feb 2023 20:19:35 +0100
-Received: from ukl by ptz.office.stw.pengutronix.de with local (Exim 4.94.2)
-	(envelope-from <ukl@pengutronix.de>)
-	id 1pPTV9-001ewF-5V; Tue, 07 Feb 2023 20:19:35 +0100
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Thierry Reding <thierry.reding@gmail.com>,
-	Jonathan Hunter <jonathanh@nvidia.com>,
-	Geoff Levand <geoff@infradead.org>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 3/3] ALSA: core: Make snd_card_free() return void
-Date: Tue,  7 Feb 2023 20:19:07 +0100
-Message-Id: <20230207191907.467756-4-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 2.39.0
-In-Reply-To: <20230207191907.467756-1-u.kleine-koenig@pengutronix.de>
-References: <20230207191907.467756-1-u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PB59x0P3Lz3bZx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 01:29:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1675780181; x=1707316181;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=9Dq4mU58s7wFVOS4xMQ0zOI9I/hT6Ikw0b7RarExmhA=;
+  b=Cy3dSw/W0GJ1aKPpxfGZhK/Lyufu3bi6FjL/KQpaRAUpqD0u37vZpJz9
+   5paqxNQvsVTXZOR91Ug8u2LBS18sVR3wHJKuFcLas01MvQkAIyd7fEnGN
+   wWKzQQKtQG8lOfGCk02FMna2lfXm2k48bYKuIgOMRCJoxUgzV6Jh50Ws4
+   oi3eH6+V+B1sbvSm25NZNp0wF0b4rRfX9YyoorIcWuEJW6izHSUKDDw9Y
+   4UsSm8lrV6TIVe2Uuo3jqT5KYAjbd8lopl4deKZEFWOQZrK2DPCCAN/0X
+   +4nLmnQswN8HCJ66s/QUoYycYhDod9Rof4NxiiJSoy9GStAJLrU8q246x
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="329537361"
+X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
+   d="scan'208";a="329537361"
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Feb 2023 06:29:35 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10614"; a="790811325"
+X-IronPort-AV: E=Sophos;i="5.97,278,1669104000"; 
+   d="scan'208";a="790811325"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga004.jf.intel.com with ESMTP; 07 Feb 2023 06:29:23 -0800
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 4035E252; Tue,  7 Feb 2023 16:30:02 +0200 (EET)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+	Tony Lindgren <tony@atomide.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Devarsh Thakkar <devarsht@ti.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Stefan Schmidt <stefan@datenfreihafen.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	linux-gpio@vger.kernel.org,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-doc-tw-discuss@lists.sourceforge.net,
+	linux-arm-kernel@lists.infradead.org,
+	linux-omap@vger.kernel.org,
+	linux-samsung-soc@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-input@vger.kernel.org,
+	linux-media@vger.kernel.org,
+	linux-wpan@vger.kernel.org,
+	netdev@vger.kernel.org,
+	linux-wireless@vger.kernel.org,
+	brcm80211-dev-list.pdl@broadcom.com,
+	SHA-cyfmac-dev-list@infineon.com,
+	linux-arch@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v3 02/12] gpiolib: coldfire: remove custom asm/gpio.h
+Date: Tue,  7 Feb 2023 16:29:42 +0200
+Message-Id: <20230207142952.51844-3-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.39.1
+In-Reply-To: <20230207142952.51844-1-andriy.shevchenko@linux.intel.com>
+References: <20230207142952.51844-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2972; i=u.kleine-koenig@pengutronix.de; h=from:subject; bh=O47+Z3xHlEPvA3EkAC8CD1HpeFgOayEc9QZ2VM48II4=; b=owEBbQGS/pANAwAKAcH8FHityuwJAcsmYgBj4qQmhDeyRlzDiz4Ho2IBZI1JxNOaUyuQPiafPUYI jyZ4suKJATMEAAEKAB0WIQR+cioWkBis/z50pAvB/BR4rcrsCQUCY+KkJgAKCRDB/BR4rcrsCdv8B/ 4juquHrXABzHAxXa2jsb+yYy9SbW0eK+ivumKOfnnqAQVI/K9AMWA5Ape2ZQzEyWv+04URf2NpBcyd R062QjReZ/m1EcLyv2VhC+S8x2uLbtrNb4/LOYcjrj520O/pK61dHubzX+sq44tp3gjBHL1hb3BhH8 IS4u4KWYLORwQChPYI5keHujE6MzyDB0PqJJ8zhg7VVvMY3Cl4N/4xiqLzHHPEe2D2SIkft97Dr5vO IjVxJiqZpKa2tB98LGCr5vZaOtfYnYBXHUgl648JTLNYTgObwBJBE0PwsDjPOu981aOA+9F+/e0hNm o/hgb+BmLYrspQNxV9NBkYhSVxwmtw
-X-Developer-Key: i=u.kleine-koenig@pengutronix.de; a=openpgp; fpr=0D2511F322BFAB1C1580266BE2DCDD9132669BD6
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2a0a:edc0:0:c01:1d::a2
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+X-Mailman-Approved-At: Wed, 08 Feb 2023 06:27:18 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,98 +102,197 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Nicholas Piggin <npiggin@gmail.com>, kernel@pengutronix.de, linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich Felker <dalias@libc.org>, Eric Dumazet <edumazet@google.com>, Alim Akhtar <alim.akhtar@samsung.com>, Frank Rowand <frowand.list@gmail.com>, Alex Shi <alexs@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>, Yanteng Si <siyanteng@loongson.cn>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Lee Jones <lee@kernel.org>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Russell King <linux@armlinux.org.uk>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@bootlin.com>, Kalle Valo <kvalo@kernel.org>, Hante Meuleman <hante.meuleman@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Franky Lin <franky.lin@broadcom.com>, Arend
+  van Spriel <aspriel@gmail.com>, Mun Yew Tham <mun.yew.tham@intel.com>, Hu Haowen <src.res@email.cn>, Keerthy <j-keerthy@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, Li Yang <leoyang.li@nxp.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The function returns 0 unconditionally. Make it return void instead and
-simplify all callers accordingly.
+From: Arnd Bergmann <arnd@arndb.de>
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Now that coldfire is the only user of a custom asm/gpio.h, it seems
+better to remove this as well, and have the same interface everywhere.
+
+For the gpio_get_value()/gpio_set_value()/gpio_to_irq(), gpio_cansleep()
+functions, the custom version is only a micro-optimization to inline the
+function for constant GPIO numbers. However, in the coldfire defconfigs,
+I was unable to find a single instance where this micro-optimization
+was even used, and according to Geert the only user appears to be the
+QSPI chip that is disabled everywhere.
+
+The custom gpio_request_one() function is even less useful, as it is
+guarded by an #ifdef that is never true.
+
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- include/sound/core.h      | 2 +-
- sound/core/init.c         | 6 ++----
- sound/pci/hda/hda_tegra.c | 6 ++----
- sound/ppc/snd_ps3.c       | 4 +---
- 4 files changed, 6 insertions(+), 12 deletions(-)
+ arch/m68k/Kconfig.cpu        |  1 -
+ arch/m68k/include/asm/gpio.h | 95 ------------------------------------
+ drivers/gpio/Kconfig         |  8 ---
+ include/linux/gpio.h         |  7 ---
+ 4 files changed, 111 deletions(-)
+ delete mode 100644 arch/m68k/include/asm/gpio.h
 
-diff --git a/include/sound/core.h b/include/sound/core.h
-index 21884c979c17..3edc4ab08774 100644
---- a/include/sound/core.h
-+++ b/include/sound/core.h
-@@ -288,7 +288,7 @@ int snd_devm_card_new(struct device *parent, int idx, const char *xid,
+diff --git a/arch/m68k/Kconfig.cpu b/arch/m68k/Kconfig.cpu
+index 9380f6e3bb66..96a0fb4f1af5 100644
+--- a/arch/m68k/Kconfig.cpu
++++ b/arch/m68k/Kconfig.cpu
+@@ -24,7 +24,6 @@ config M68KCLASSIC
  
- void snd_card_disconnect(struct snd_card *card);
- void snd_card_disconnect_sync(struct snd_card *card);
--int snd_card_free(struct snd_card *card);
-+void snd_card_free(struct snd_card *card);
- void snd_card_free_when_closed(struct snd_card *card);
- int snd_card_free_on_error(struct device *dev, int ret);
- void snd_card_set_id(struct snd_card *card, const char *id);
-diff --git a/sound/core/init.c b/sound/core/init.c
-index 6bb3e2b77971..df0c22480375 100644
---- a/sound/core/init.c
-+++ b/sound/core/init.c
-@@ -632,7 +632,7 @@ EXPORT_SYMBOL(snd_card_free_when_closed);
-  * Return: Zero. Frees all associated devices and frees the control
-  * interface associated to given soundcard.
-  */
--int snd_card_free(struct snd_card *card)
-+void snd_card_free(struct snd_card *card)
- {
- 	DECLARE_COMPLETION_ONSTACK(released);
- 
-@@ -643,15 +643,13 @@ int snd_card_free(struct snd_card *card)
- 	 * the check here at the beginning.
- 	 */
- 	if (card->releasing)
--		return 0;
-+		return;
- 
- 	card->release_completion = &released;
- 	snd_card_free_when_closed(card);
- 
- 	/* wait, until all devices are ready for the free operation */
- 	wait_for_completion(&released);
+ config COLDFIRE
+ 	bool "Coldfire CPU family support"
+-	select ARCH_HAVE_CUSTOM_GPIO_H
+ 	select CPU_HAS_NO_BITFIELDS
+ 	select CPU_HAS_NO_CAS
+ 	select CPU_HAS_NO_MULDIV64
+diff --git a/arch/m68k/include/asm/gpio.h b/arch/m68k/include/asm/gpio.h
+deleted file mode 100644
+index 5cfc0996ba94..000000000000
+--- a/arch/m68k/include/asm/gpio.h
++++ /dev/null
+@@ -1,95 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * Coldfire generic GPIO support
+- *
+- * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
+-*/
 -
--	return 0;
- }
- EXPORT_SYMBOL(snd_card_free);
- 
-diff --git a/sound/pci/hda/hda_tegra.c b/sound/pci/hda/hda_tegra.c
-index 976a112c7d00..c2bf86781894 100644
---- a/sound/pci/hda/hda_tegra.c
-+++ b/sound/pci/hda/hda_tegra.c
-@@ -582,12 +582,10 @@ static void hda_tegra_probe_work(struct work_struct *work)
- 
- static int hda_tegra_remove(struct platform_device *pdev)
- {
--	int ret;
+-#ifndef coldfire_gpio_h
+-#define coldfire_gpio_h
 -
--	ret = snd_card_free(dev_get_drvdata(&pdev->dev));
-+	snd_card_free(dev_get_drvdata(&pdev->dev));
- 	pm_runtime_disable(&pdev->dev);
+-#include <linux/io.h>
+-#include <asm/coldfire.h>
+-#include <asm/mcfsim.h>
+-#include <asm/mcfgpio.h>
+-/*
+- * The Generic GPIO functions
+- *
+- * If the gpio is a compile time constant and is one of the Coldfire gpios,
+- * use the inline version, otherwise dispatch thru gpiolib.
+- */
+-
+-static inline int gpio_get_value(unsigned gpio)
+-{
+-	if (__builtin_constant_p(gpio) && gpio < MCFGPIO_PIN_MAX)
+-		return mcfgpio_read(__mcfgpio_ppdr(gpio)) & mcfgpio_bit(gpio);
+-	else
+-		return __gpio_get_value(gpio);
+-}
+-
+-static inline void gpio_set_value(unsigned gpio, int value)
+-{
+-	if (__builtin_constant_p(gpio) && gpio < MCFGPIO_PIN_MAX) {
+-		if (gpio < MCFGPIO_SCR_START) {
+-			unsigned long flags;
+-			MCFGPIO_PORTTYPE data;
+-
+-			local_irq_save(flags);
+-			data = mcfgpio_read(__mcfgpio_podr(gpio));
+-			if (value)
+-				data |= mcfgpio_bit(gpio);
+-			else
+-				data &= ~mcfgpio_bit(gpio);
+-			mcfgpio_write(data, __mcfgpio_podr(gpio));
+-			local_irq_restore(flags);
+-		} else {
+-			if (value)
+-				mcfgpio_write(mcfgpio_bit(gpio),
+-						MCFGPIO_SETR_PORT(gpio));
+-			else
+-				mcfgpio_write(~mcfgpio_bit(gpio),
+-						MCFGPIO_CLRR_PORT(gpio));
+-		}
+-	} else
+-		__gpio_set_value(gpio, value);
+-}
+-
+-static inline int gpio_to_irq(unsigned gpio)
+-{
+-#if defined(MCFGPIO_IRQ_MIN)
+-	if ((gpio >= MCFGPIO_IRQ_MIN) && (gpio < MCFGPIO_IRQ_MAX))
+-#else
+-	if (gpio < MCFGPIO_IRQ_MAX)
+-#endif
+-		return gpio + MCFGPIO_IRQ_VECBASE;
+-	else
+-		return __gpio_to_irq(gpio);
+-}
+-
+-static inline int gpio_cansleep(unsigned gpio)
+-{
+-	return gpio < MCFGPIO_PIN_MAX ? 0 : __gpio_cansleep(gpio);
+-}
+-
+-#ifndef CONFIG_GPIOLIB
+-static inline int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
+-{
+-	int err;
+-
+-	err = gpio_request(gpio, label);
+-	if (err)
+-		return err;
+-
+-	if (flags & GPIOF_DIR_IN)
+-		err = gpio_direction_input(gpio);
+-	else
+-		err = gpio_direction_output(gpio,
+-			(flags & GPIOF_INIT_HIGH) ? 1 : 0);
+-
+-	if (err)
+-		gpio_free(gpio);
+-
+-	return err;
+-}
+-#endif /* !CONFIG_GPIOLIB */
+-#endif
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 218d7e4c27ff..06a268d56800 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -3,14 +3,6 @@
+ # GPIO infrastructure and drivers
+ #
  
--	return ret;
-+	return 0;
+-config ARCH_HAVE_CUSTOM_GPIO_H
+-	bool
+-	help
+-	  Selecting this config option from the architecture Kconfig allows
+-	  the architecture to provide a custom asm/gpio.h implementation
+-	  overriding the default implementations.  New uses of this are
+-	  strongly discouraged.
+-
+ menuconfig GPIOLIB
+ 	bool "GPIO Support"
+ 	help
+diff --git a/include/linux/gpio.h b/include/linux/gpio.h
+index 85beb236c925..2b75017b3aad 100644
+--- a/include/linux/gpio.h
++++ b/include/linux/gpio.h
+@@ -54,11 +54,6 @@ struct gpio {
+ };
+ 
+ #ifdef CONFIG_GPIOLIB
+-
+-#ifdef CONFIG_ARCH_HAVE_CUSTOM_GPIO_H
+-#include <asm/gpio.h>
+-#else
+-
+ #include <asm-generic/gpio.h>
+ 
+ static inline int gpio_get_value(unsigned int gpio)
+@@ -81,8 +76,6 @@ static inline int gpio_to_irq(unsigned int gpio)
+ 	return __gpio_to_irq(gpio);
  }
  
- static void hda_tegra_shutdown(struct platform_device *pdev)
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 631a61ce52f4..8d349231205e 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -1053,9 +1053,7 @@ static void snd_ps3_driver_remove(struct ps3_system_bus_device *dev)
- 	 * ctl and preallocate buffer will be freed in
- 	 * snd_card_free
- 	 */
--	ret = snd_card_free(the_card.card);
--	if (ret)
--		pr_info("%s: ctl freecard=%d\n", __func__, ret);
-+	snd_card_free(the_card.card);
+-#endif /* ! CONFIG_ARCH_HAVE_CUSTOM_GPIO_H */
+-
+ /* CONFIG_GPIOLIB: bindings for managed devices that want to request gpios */
  
- 	dma_free_coherent(&dev->core,
- 			  PAGE_SIZE,
+ struct device;
 -- 
-2.39.0
+2.39.1
 
