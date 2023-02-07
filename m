@@ -4,73 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2660BC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Feb 2023 22:39:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2136C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 17:34:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4P9h5M3Mzcz3f4j
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Feb 2023 09:39:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PB9Gj31TPz3cfS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 04:34:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gbg0RnDr;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXxwcE/g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::f2c; helo=mail-qv1-xf2c.google.com; envelope-from=f.fainelli@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gbg0RnDr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tXxwcE/g;
 	dkim-atps=neutral
-Received: from mail-qv1-xf2c.google.com (mail-qv1-xf2c.google.com [IPv6:2607:f8b0:4864:20::f2c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4P9h385z1rz3ch4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Feb 2023 09:37:24 +1100 (AEDT)
-Received: by mail-qv1-xf2c.google.com with SMTP id i12so8034092qvs.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Feb 2023 14:37:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=d2oBtxwWwjCPYyU17pu3lBwV9dmGFDQEYRoN+Ty55Io=;
-        b=gbg0RnDrkEtPW9M9RcaDfqIaD3j5DMKgNppT25xHFz30aj9NTwFnwpbnaOLwXXhlRZ
-         QOD2yBmRv+YeFmZkMj+FhGdSwVNXqCmW7skH37un5SuKUUfepwjqwXPCYumStY2RJP1U
-         khj85lSeq3MEz8a0hbKrHO77vVv+3IJVswBqBvqaNW5v7961BQ6YJt7njEEoj5xry82G
-         KoE7kVMauqpDG7hVLzqhTiqX/punkjXxIZ6ogZ0RIoBCEm7LTq4xvEybh0lsQWrxezF/
-         s/gYh+8nSzJWTOnx4yewLISyuXcq+Sy89H36bl0rI5S9xupPWOMaMVVGcS6dYvPPHLpa
-         pk7Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=d2oBtxwWwjCPYyU17pu3lBwV9dmGFDQEYRoN+Ty55Io=;
-        b=Ok1Vx8az6khCukYX3x0zZeEzoxUpJ93Scv7VWwCaA26DTqXybvf1PfCWsx2Kq/UgeZ
-         lSRKPngvHg4fA03DwW3QDwq8XwA3KpB4RimJB9WWgzXwjEljIqXlQUxZj/AAZ6CnyLBw
-         Jko38k5n5u0VEAAs8h9Z9h45um7eRH2uuwo548SL0LAaBnLbNBbC9RryA1LCp+fCXDDi
-         9eJf72AkX/G/lo8wmBVkvgL5Xa1iyHz/dsi6vKN9dNdaQ+qAwA8lsWrWt+h2S/2Ij69J
-         S6j9jiKC+IRTSpNPujZ87D0geu/TF6DMMnSec1DsFxSWQIdZUxl3EDvyUOl/u6cSNmJI
-         wl+Q==
-X-Gm-Message-State: AO0yUKUdL41hzYHURPS8ijWJ6l0pPhecyu0zLCRrkx0qWCuQvt6BWOcy
-	/9NhSMxNecUKE+5G2o+KChE=
-X-Google-Smtp-Source: AK7set/souzQpPd5P9nDBDN5p287ExonEIT5vFztObwMnaHLBbSYhQ0mLbkJiRyT+L9bqtWvcgL78g==
-X-Received: by 2002:a05:6214:400e:b0:537:7566:5098 with SMTP id kd14-20020a056214400e00b0053775665098mr1547455qvb.15.1675723041926;
-        Mon, 06 Feb 2023 14:37:21 -0800 (PST)
-Received: from [10.67.48.245] ([192.19.223.252])
-        by smtp.googlemail.com with ESMTPSA id b9-20020a05620a270900b0071df8b60681sm8243934qkp.94.2023.02.06.14.36.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 06 Feb 2023 14:37:21 -0800 (PST)
-Message-ID: <7a21e1fe-82ac-6285-ceaf-6450a7ee4325@gmail.com>
-Date: Mon, 6 Feb 2023 14:36:51 -0800
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.2
-Subject: Re: [PATCH 11/22] mips/cpu: Mark play_dead() __noreturn
-Content-Language: en-US
-To: Josh Poimboeuf <jpoimboe@kernel.org>, linux-kernel@vger.kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PB9Fj0Vxsz3cC1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 04:33:12 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id DD3E660F8F;
+	Tue,  7 Feb 2023 17:33:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 45330C433EF;
+	Tue,  7 Feb 2023 17:33:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1675791189;
+	bh=OOFodDg/RJjo5qTVphmNP/E/fr/ShyEQVDZAWMtFoM0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=tXxwcE/gOF0eNx0XF92RAoYkNum7JZnXOZnnavM7kzrO0MQevxJJtXQxPJNmPEoZR
+	 tAMLz9nlYUiMrkjH/XKT2k/4CJZ7++RadCYpn6C4IHt8JHwnxoVyjFlB66hlg6cJRQ
+	 RtVlmuj69eecz4+uNG9d2OCUVRkR6tgweGdQ7Ag3A9B3i0x3l1Z/3o2JXHp4uErqyf
+	 t3GKQ32zFVa94qvR26M0CjRf2YghqCdXlloIl2kbFkmDdMkoXcoi91RlDvfyQm8h4p
+	 fB3bxwZHldFOuKK/WwIFRqJvJxjNiXAvBoMPfmM9C2dJCIEbPzS8z2Zbf2jvHi7ZV3
+	 3Wl3kMwIvcAmA==
+Date: Tue, 7 Feb 2023 09:33:04 -0800
+From: Josh Poimboeuf <jpoimboe@kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v1.1 22/22] sched/idle: Mark arch_cpu_idle_dead() __noreturn
+Message-ID: <20230207173304.le5rvsz2emasye7s@treble>
 References: <cover.1675461757.git.jpoimboe@kernel.org>
- <829d68d289ad4eeac27c5220be695cfa6ace33f4.1675461757.git.jpoimboe@kernel.org>
-From: Florian Fainelli <f.fainelli@gmail.com>
-In-Reply-To: <829d68d289ad4eeac27c5220be695cfa6ace33f4.1675461757.git.jpoimboe@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+ <2eeb4425572785d1f05d8761dba1cf88c2105304.1675461757.git.jpoimboe@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <2eeb4425572785d1f05d8761dba1cf88c2105304.1675461757.git.jpoimboe@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,13 +65,273 @@ Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/3/23 14:05, Josh Poimboeuf wrote:
-> play_dead() doesn't return.  Annotate it as such.  By extension this
-> also makes arch_cpu_idle_dead() noreturn.
-> 
-> Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+Before commit 076cbf5d2163 ("x86/xen: don't let xen_pv_play_dead()
+return"), in Xen, when a previously offlined CPU was brought back
+online, it unexpectedly resumed execution where it left off in the
+middle of the idle loop.
 
-Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+There were some hacks to make that work, but the behavior was surprising
+as do_idle() doesn't expect an offlined CPU to return from the dead (in
+arch_cpu_idle_dead()).
+
+Now that Xen has been fixed, and the arch-specific implementations of
+arch_cpu_idle_dead() also don't return, give it a __noreturn attribute.
+
+This will cause the compiler to complain if an arch-specific
+implementation might return.  It also improves code generation for both
+caller and callee.
+
+Also fixes the following warning:
+
+  vmlinux.o: warning: objtool: do_idle+0x25f: unreachable instruction
+
+Reported-by: Paul E. McKenney <paulmck@kernel.org>
+Tested-by: Paul E. McKenney <paulmck@kernel.org>
+Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+---
+v1.1:
+- add __noreturn to the implementations (in addition to just the
+  prototype)
+
+ arch/alpha/kernel/process.c     | 2 +-
+ arch/arm/kernel/smp.c           | 2 +-
+ arch/arm64/kernel/process.c     | 2 +-
+ arch/csky/kernel/smp.c          | 2 +-
+ arch/ia64/kernel/process.c      | 2 +-
+ arch/loongarch/kernel/process.c | 2 +-
+ arch/mips/kernel/process.c      | 2 +-
+ arch/parisc/kernel/process.c    | 2 +-
+ arch/powerpc/kernel/smp.c       | 2 +-
+ arch/riscv/kernel/cpu-hotplug.c | 2 +-
+ arch/s390/kernel/idle.c         | 2 +-
+ arch/sh/kernel/idle.c           | 2 +-
+ arch/sparc/kernel/process_64.c  | 2 +-
+ arch/x86/kernel/process.c       | 2 +-
+ arch/xtensa/kernel/smp.c        | 2 +-
+ include/linux/cpu.h             | 2 +-
+ tools/objtool/check.c           | 1 +
+ 17 files changed, 17 insertions(+), 16 deletions(-)
+
+diff --git a/arch/alpha/kernel/process.c b/arch/alpha/kernel/process.c
+index 94938f856545..c9a5ed23c5a6 100644
+--- a/arch/alpha/kernel/process.c
++++ b/arch/alpha/kernel/process.c
+@@ -60,7 +60,7 @@ void arch_cpu_idle(void)
+ 	wtint(0);
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	wtint(INT_MAX);
+ 	BUG();
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index adcd417c526b..c2daa0f2f784 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -320,7 +320,7 @@ void __cpu_die(unsigned int cpu)
+  * of the other hotplug-cpu capable cores, so presumably coming
+  * out of idle fixes this.
+  */
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 
+diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
+index 71d59b5abede..089ced6d6bd6 100644
+--- a/arch/arm64/kernel/process.c
++++ b/arch/arm64/kernel/process.c
+@@ -69,7 +69,7 @@ void (*pm_power_off)(void);
+ EXPORT_SYMBOL_GPL(pm_power_off);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+        cpu_die();
+ }
+diff --git a/arch/csky/kernel/smp.c b/arch/csky/kernel/smp.c
+index 0ec20efaf5fd..9c7a20b73ac6 100644
+--- a/arch/csky/kernel/smp.c
++++ b/arch/csky/kernel/smp.c
+@@ -300,7 +300,7 @@ void __cpu_die(unsigned int cpu)
+ 	pr_notice("CPU%u: shutdown\n", cpu);
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	idle_task_exit();
+ 
+diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
+index 78f5794b2dde..9a5cd9fad3a9 100644
+--- a/arch/ia64/kernel/process.c
++++ b/arch/ia64/kernel/process.c
+@@ -225,7 +225,7 @@ static inline void __noreturn play_dead(void)
+ }
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	play_dead();
+ }
+diff --git a/arch/loongarch/kernel/process.c b/arch/loongarch/kernel/process.c
+index edfd220a3737..ba70e94eb996 100644
+--- a/arch/loongarch/kernel/process.c
++++ b/arch/loongarch/kernel/process.c
+@@ -61,7 +61,7 @@ unsigned long boot_option_idle_override = IDLE_NO_OVERRIDE;
+ EXPORT_SYMBOL(boot_option_idle_override);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	play_dead();
+ }
+diff --git a/arch/mips/kernel/process.c b/arch/mips/kernel/process.c
+index 093dbbd6b843..a3225912c862 100644
+--- a/arch/mips/kernel/process.c
++++ b/arch/mips/kernel/process.c
+@@ -40,7 +40,7 @@
+ #include <asm/stacktrace.h>
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	play_dead();
+ }
+diff --git a/arch/parisc/kernel/process.c b/arch/parisc/kernel/process.c
+index c064719b49b0..97c6f875bd0e 100644
+--- a/arch/parisc/kernel/process.c
++++ b/arch/parisc/kernel/process.c
+@@ -159,7 +159,7 @@ EXPORT_SYMBOL(running_on_qemu);
+ /*
+  * Called from the idle thread for the CPU which has been shutdown.
+  */
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	idle_task_exit();
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 6b90f10a6c81..f62e5e651bcd 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1752,7 +1752,7 @@ void __cpu_die(unsigned int cpu)
+ 		smp_ops->cpu_die(cpu);
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	/*
+ 	 * Disable on the down path. This will be re-enabled by
+diff --git a/arch/riscv/kernel/cpu-hotplug.c b/arch/riscv/kernel/cpu-hotplug.c
+index f7a832e3a1d1..59b80211c25f 100644
+--- a/arch/riscv/kernel/cpu-hotplug.c
++++ b/arch/riscv/kernel/cpu-hotplug.c
+@@ -71,7 +71,7 @@ void __cpu_die(unsigned int cpu)
+ /*
+  * Called from the idle thread for the CPU which has been shutdown.
+  */
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	idle_task_exit();
+ 
+diff --git a/arch/s390/kernel/idle.c b/arch/s390/kernel/idle.c
+index cb653c87018f..481ca32e628e 100644
+--- a/arch/s390/kernel/idle.c
++++ b/arch/s390/kernel/idle.c
+@@ -143,7 +143,7 @@ void arch_cpu_idle_exit(void)
+ {
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	cpu_die();
+ }
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 114f0c4abeac..d662503b0665 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -30,7 +30,7 @@ void default_idle(void)
+ 	clear_bl_bit();
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	play_dead();
+ }
+diff --git a/arch/sparc/kernel/process_64.c b/arch/sparc/kernel/process_64.c
+index 91c2b8124527..b51d8fb0ecdc 100644
+--- a/arch/sparc/kernel/process_64.c
++++ b/arch/sparc/kernel/process_64.c
+@@ -95,7 +95,7 @@ void arch_cpu_idle(void)
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	sched_preempt_enable_no_resched();
+ 	cpu_play_dead();
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index f1ec36caf1d8..3e30147a537e 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -727,7 +727,7 @@ void arch_cpu_idle_enter(void)
+ 	local_touch_nmi();
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	play_dead();
+ }
+diff --git a/arch/xtensa/kernel/smp.c b/arch/xtensa/kernel/smp.c
+index 7bad78495536..054bd64eab19 100644
+--- a/arch/xtensa/kernel/smp.c
++++ b/arch/xtensa/kernel/smp.c
+@@ -322,7 +322,7 @@ void __cpu_die(unsigned int cpu)
+ 	pr_err("CPU%u: unable to kill\n", cpu);
+ }
+ 
+-void arch_cpu_idle_dead(void)
++void __noreturn arch_cpu_idle_dead(void)
+ {
+ 	cpu_die();
+ }
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index f83e4519c5f0..8582a7142623 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -182,7 +182,7 @@ void arch_cpu_idle(void);
+ void arch_cpu_idle_prepare(void);
+ void arch_cpu_idle_enter(void);
+ void arch_cpu_idle_exit(void);
+-void arch_cpu_idle_dead(void);
++void __noreturn arch_cpu_idle_dead(void);
+ 
+ int cpu_report_state(int cpu);
+ int cpu_check_up_prepare(int cpu);
+diff --git a/tools/objtool/check.c b/tools/objtool/check.c
+index 0f67c6a8bc98..e3fa2279d612 100644
+--- a/tools/objtool/check.c
++++ b/tools/objtool/check.c
+@@ -167,6 +167,7 @@ static bool __dead_end_function(struct objtool_file *file, struct symbol *func,
+ 		"__reiserfs_panic",
+ 		"__stack_chk_fail",
+ 		"__ubsan_handle_builtin_unreachable",
++		"arch_cpu_idle_dead",
+ 		"cpu_bringup_and_idle",
+ 		"cpu_startup_entry",
+ 		"do_exit",
 -- 
-Florian
+2.39.0
 
