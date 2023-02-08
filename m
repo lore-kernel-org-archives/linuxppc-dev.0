@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 334DFC636D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 23:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB794C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 23:02:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwVM52ynz3ffW
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 10:01:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwWN3MvCz3fCD
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 10:02:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c9/HTrgf;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JzSDyfvz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=c9/HTrgf;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JzSDyfvz;
 	dkim-atps=neutral
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDR4vJ2z2xYL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDS4x5Nz2xYL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:16 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877655; x=1707413655;
+  t=1675877656; x=1707413656;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=NhIi3obsHF0CJ3XpiIKm/sUF6vE8x1aZjthOZQd64ls=;
-  b=c9/HTrgf4/vPYrt1rr5bgYqsNhKr/Qi2nbfbJGW1Er3VaZdwjT4DamYm
-   AlUbCy9xKenUekRQiY7p2xE5jidwCN6Eao6IcpZ2J6POMRgb0V3PLMmXY
-   Ire9RlRE/pLFvadbYq0irv7GIgaNyOkew5MNinCBtsWLPmwkhoEjeeMKO
-   c1ZFO8tlRRVR0qs9Ks64P397wFE3x5zkpi5ri/iOlULPEJymSVWP11iLP
-   haK0VhLh8ZxuqL1itn0lQVXwXwcSd4Zpv9K1vzldVlGL6UX6QfhRHfsY1
-   +wjwLgTkJq1MfPYq1rnLXJgUu3xyc0U3lv53LyK6XwKgkcl7rsdW2CVVO
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225573"
+  bh=n2JggXg7c02DPXLMJdm8s8NdvcTFU3e1l9o8DD11R0M=;
+  b=JzSDyfvzE4ybxVGrKoDzCucGkImuqQDV/OwwPBRmUw+8FnNo3Srewxff
+   kpgolXswnTS8AzMPHgNpDv4Ce8SGd6WnBA8RtU0CB0UIEmVJ5+ikFBDu2
+   ksKYeBIYZSaJmRyhnKzXmMIlD7z/qEae+Cc/Jb3Y5rh4PdEMjvflhc236
+   k8p0C8uFiUk/AFVnYRWK2BshIWc+/rYDCtCITazWECUa3AZIigU+8MgXv
+   T5M0OmE8FU84+b5SDxO8tQxVa3Es21rAG9Udds4knM7RKC1ubWr0HbJKX
+   P5l+E3BSDcraUZacZ5J56xfRhMhq7m0prNvoxHSZI2S6oqZq9ucNAMxi3
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225626"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="310225573"
+   d="scan'208";a="310225626"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:38 -0800
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:40 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="660703982"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="660703988"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="660703982"
+   d="scan'208";a="660703988"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga007.jf.intel.com with ESMTP; 08 Feb 2023 09:33:26 -0800
+  by orsmga007.jf.intel.com with ESMTP; 08 Feb 2023 09:33:28 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 1E8DC3F1; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
+	id 3C05D4BE; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,9 +88,9 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 10/18] gpiolib: split linux/gpio/driver.h out of linux/gpio.h
-Date: Wed,  8 Feb 2023 19:33:35 +0200
-Message-Id: <20230208173343.37582-11-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 12/18] gpio: aggregator: Add missing header(s)
+Date: Wed,  8 Feb 2023 19:33:37 +0200
+Message-Id: <20230208173343.37582-13-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
@@ -108,92 +108,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich Felker <dalias@libc.org>, Eric Dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Li Yang <leoyang.li@nxp.com>, Frank Rowand <frowand.list@gmail.com>, Alex Shi <alexs@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>, Yanteng Si <siyanteng@loongson.cn>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Kalle Valo <kvalo@kernel.org>, Hante Meuleman <hante.meuleman@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Frank
- y Lin <franky.lin@broadcom.com>, Arend van Spriel <aspriel@gmail.com>, Mun Yew Tham <mun.yew.tham@intel.com>, Hu Haowen <src.res@email.cn>, Keerthy <j-keerthy@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, "David S. Miller" <davem@davemloft.net>, Gregory Clement <gregory.clement@bootlin.com>
+Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich Felker <dalias@libc.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Eric Dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Li Yang <leoyang.li@nxp.com>, Frank Rowand <frowand.list@gmail.com>, Alex Shi <alexs@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>, Yanteng Si <siyanteng@loongson.cn>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Kalle Valo <kvalo@kernel.org>, Hante Meuleman <hante.meuleman@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Mika Weste
+ rberg <mika.westerberg@linux.intel.com>, Franky Lin <franky.lin@broadcom.com>, Arend van Spriel <aspriel@gmail.com>, Mun Yew Tham <mun.yew.tham@intel.com>, Hu Haowen <src.res@email.cn>, Keerthy <j-keerthy@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, "David S. Miller" <davem@davemloft.net>, Gregory Clement <gregory.clement@bootlin.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+Do not imply that some of the generic headers may be always included.
+Instead, include explicitly what we are direct user of.
 
-Almost all gpio drivers include linux/gpio/driver.h, and other
-files should not rely on includes from this header.
+While at it, drop unused linux/gpio.h and split out the GPIO group of
+headers.
 
-Remove the indirect include from here and include the correct
-headers directly from where they are used.
-
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Lee Jones <lee@kernel.org>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/arm/mach-omap1/irq.c                              | 1 +
- arch/arm/mach-orion5x/board-rd88f5182.c                | 1 +
- arch/arm/mach-sa1100/assabet.c                         | 1 +
- drivers/net/wireless/broadcom/brcm80211/brcmsmac/led.c | 1 +
- include/linux/mfd/ucb1x00.h                            | 1 +
- 5 files changed, 5 insertions(+)
+ drivers/gpio/gpio-aggregator.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/irq.c b/arch/arm/mach-omap1/irq.c
-index 9ccc784fd614..bfc7ab010ae2 100644
---- a/arch/arm/mach-omap1/irq.c
-+++ b/arch/arm/mach-omap1/irq.c
-@@ -41,6 +41,7 @@
- #include <linux/sched.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
-+#include <linux/irqdomain.h>
- 
- #include <asm/irq.h>
- #include <asm/exception.h>
-diff --git a/arch/arm/mach-orion5x/board-rd88f5182.c b/arch/arm/mach-orion5x/board-rd88f5182.c
-index 596601367989..1c14e49a90a6 100644
---- a/arch/arm/mach-orion5x/board-rd88f5182.c
-+++ b/arch/arm/mach-orion5x/board-rd88f5182.c
-@@ -9,6 +9,7 @@
- #include <linux/gpio.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/pci.h>
- #include <linux/irq.h>
-diff --git a/arch/arm/mach-sa1100/assabet.c b/arch/arm/mach-sa1100/assabet.c
-index 2eba112f2ad8..d000c678b439 100644
---- a/arch/arm/mach-sa1100/assabet.c
-+++ b/arch/arm/mach-sa1100/assabet.c
-@@ -10,6 +10,7 @@
+diff --git a/drivers/gpio/gpio-aggregator.c b/drivers/gpio/gpio-aggregator.c
+index 6d17d262ad91..20a686f12df7 100644
+--- a/drivers/gpio/gpio-aggregator.c
++++ b/drivers/gpio/gpio-aggregator.c
+@@ -10,19 +10,20 @@
+ #include <linux/bitmap.h>
+ #include <linux/bitops.h>
+ #include <linux/ctype.h>
+-#include <linux/gpio.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/gpio/driver.h>
+-#include <linux/gpio/machine.h>
+ #include <linux/idr.h>
  #include <linux/kernel.h>
  #include <linux/module.h>
- #include <linux/errno.h>
-+#include <linux/gpio/driver.h>
- #include <linux/gpio/gpio-reg.h>
- #include <linux/gpio/machine.h>
- #include <linux/gpio_keys.h>
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/led.c b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/led.c
-index 9540a05247c2..89c8829528c2 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmsmac/led.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmsmac/led.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <net/mac80211.h>
- #include <linux/bcma/bcma_driver_chipcommon.h>
-+#include <linux/gpio.h>
- #include <linux/gpio/driver.h>
- #include <linux/gpio/machine.h>
- #include <linux/gpio/consumer.h>
-diff --git a/include/linux/mfd/ucb1x00.h b/include/linux/mfd/ucb1x00.h
-index 43bcf35afe27..ede237384723 100644
---- a/include/linux/mfd/ucb1x00.h
-+++ b/include/linux/mfd/ucb1x00.h
-@@ -10,6 +10,7 @@
- #include <linux/device.h>
- #include <linux/mfd/mcp.h>
- #include <linux/gpio.h>
-+#include <linux/gpio/driver.h>
  #include <linux/mutex.h>
+ #include <linux/overflow.h>
+ #include <linux/platform_device.h>
++#include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/string.h>
  
- #define UCB_IO_DATA	0x00
++#include <linux/gpio/consumer.h>
++#include <linux/gpio/driver.h>
++#include <linux/gpio/machine.h>
++
+ #define AGGREGATOR_MAX_GPIOS 512
+ 
+ /*
 -- 
 2.39.1
 
