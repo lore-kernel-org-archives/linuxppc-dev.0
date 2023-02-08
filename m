@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC585C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:52:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A34AC636D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:52:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwH74DT3z3fDN
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:52:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwJ900xLz3fH9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:52:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nm21+t5n;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OJN5vDIQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nm21+t5n;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=OJN5vDIQ;
 	dkim-atps=neutral
 Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnD34bc7z2ymk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:33:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnD43nKlz2ymk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:33:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877635; x=1707413635;
+  t=1675877636; x=1707413636;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=9Dq4mU58s7wFVOS4xMQ0zOI9I/hT6Ikw0b7RarExmhA=;
-  b=nm21+t5n8owEXuOtkBTTEAn8+reV39uurwKVZZaqGD3LVOPAfJLr2BUl
-   0F9PYv9qZtgjTpAEBrecWIIQA/9bSxWoOJ3jFDD72ZllF57UZlVtxH4n7
-   hW6kyO8KnJjqle5Ji01Z8IVLuMFI7Or7jDH96NCS9R9HxR+HHHj4T6Ubl
-   Boor0Z1bhQsEqziH7Iz2Ktv+YCw5+Y+2p3asTCjffS43fVqrCkO4P9lWZ
-   zwA1ccQ1fRAno9gcfu8Ylwu+2bxh/dNQribhfGoF/i1+ySd3f8ooDbYrt
-   ER4is7PwvFhnzmYx5i2jw20C9oXV6JJVWszOgiONKZTvfFVCtG7MY7OEc
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="327564231"
+  bh=O8wgtjnDDH6goWjAVZmuil9qOihxRC2fM6d0IEYsaVE=;
+  b=OJN5vDIQQ484Kaa2Rfj3idSfhdzQ4CDGHA1Sm5MLhzE0gn3ry7jfadHW
+   M5AUPR+SG12TO39aKns1Tpy7NnYEAOeg1L8dJEzHj78lzBaV8oxYSk/J+
+   6FOSpdtZpFzQu9TCDdA6oiz1Es5u25rY4BeVSRcFtbA/30tRNEH26406o
+   QMaAXacsyItC6/gkq/hjKLMV6BD7rpMooOeFnj1ARHcD7ow3fqNBY45BN
+   6XuERSMMg88HWx+SVnGPxXkJKNgq5J28cjU4zqtB6QILHS7ZZhn6VX3GB
+   FPwVzo2Didqv2x8cdyJbQASLCq3AAEZaCm1U1qsCUdtThGuTrd0x5VauM
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="327564257"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="327564231"
+   d="scan'208";a="327564257"
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
   by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:38 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="644939054"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="644939057"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="644939054"
+   d="scan'208";a="644939057"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga006.jf.intel.com with ESMTP; 08 Feb 2023 09:33:21 -0800
+  by orsmga006.jf.intel.com with ESMTP; 08 Feb 2023 09:33:22 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id CF9FB299; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
+	id 0F0D3380; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,13 +88,14 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 06/18] gpiolib: coldfire: remove custom asm/gpio.h
-Date: Wed,  8 Feb 2023 19:33:31 +0200
-Message-Id: <20230208173343.37582-7-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 09/18] gpiolib: remove legacy gpio_export()
+Date: Wed,  8 Feb 2023 19:33:34 +0200
+Message-Id: <20230208173343.37582-10-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 09 Feb 2023 09:48:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -115,190 +116,342 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Now that coldfire is the only user of a custom asm/gpio.h, it seems
-better to remove this as well, and have the same interface everywhere.
+There are only a handful of users of gpio_export() and
+related functions.
 
-For the gpio_get_value()/gpio_set_value()/gpio_to_irq(), gpio_cansleep()
-functions, the custom version is only a micro-optimization to inline the
-function for constant GPIO numbers. However, in the coldfire defconfigs,
-I was unable to find a single instance where this micro-optimization
-was even used, and according to Geert the only user appears to be the
-QSPI chip that is disabled everywhere.
+As these are just wrappers around the modern gpiod_export()
+helper, remove the wrappers and open-code the gpio_to_desc
+in all callers to shrink the legacy API.
 
-The custom gpio_request_one() function is even less useful, as it is
-guarded by an #ifdef that is never true.
-
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/m68k/Kconfig.cpu        |  1 -
- arch/m68k/include/asm/gpio.h | 95 ------------------------------------
- drivers/gpio/Kconfig         |  8 ---
- include/linux/gpio.h         |  7 ---
- 4 files changed, 111 deletions(-)
- delete mode 100644 arch/m68k/include/asm/gpio.h
+ Documentation/admin-guide/gpio/sysfs.rst      |  2 +-
+ Documentation/driver-api/gpio/legacy.rst      | 21 ---------------
+ .../zh_CN/driver-api/gpio/legacy.rst          | 19 -------------
+ Documentation/translations/zh_TW/gpio.txt     | 18 -------------
+ arch/arm/mach-omap2/pdata-quirks.c            |  9 ++++---
+ arch/sh/boards/mach-ap325rxa/setup.c          |  7 ++---
+ drivers/gpio/gpiolib-sysfs.c                  |  4 +--
+ drivers/media/pci/sta2x11/sta2x11_vip.c       | 10 ++++---
+ drivers/net/ieee802154/ca8210.c               |  3 ++-
+ include/linux/gpio.h                          | 27 -------------------
+ 10 files changed, 21 insertions(+), 99 deletions(-)
 
-diff --git a/arch/m68k/Kconfig.cpu b/arch/m68k/Kconfig.cpu
-index 9380f6e3bb66..96a0fb4f1af5 100644
---- a/arch/m68k/Kconfig.cpu
-+++ b/arch/m68k/Kconfig.cpu
-@@ -24,7 +24,6 @@ config M68KCLASSIC
+diff --git a/Documentation/admin-guide/gpio/sysfs.rst b/Documentation/admin-guide/gpio/sysfs.rst
+index ec09ffd983e7..35171d15f78d 100644
+--- a/Documentation/admin-guide/gpio/sysfs.rst
++++ b/Documentation/admin-guide/gpio/sysfs.rst
+@@ -145,7 +145,7 @@ requested using gpio_request()::
+ 	/* export the GPIO to userspace */
+ 	int gpiod_export(struct gpio_desc *desc, bool direction_may_change);
  
- config COLDFIRE
- 	bool "Coldfire CPU family support"
--	select ARCH_HAVE_CUSTOM_GPIO_H
- 	select CPU_HAS_NO_BITFIELDS
- 	select CPU_HAS_NO_CAS
- 	select CPU_HAS_NO_MULDIV64
-diff --git a/arch/m68k/include/asm/gpio.h b/arch/m68k/include/asm/gpio.h
-deleted file mode 100644
-index 5cfc0996ba94..000000000000
---- a/arch/m68k/include/asm/gpio.h
-+++ /dev/null
-@@ -1,95 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Coldfire generic GPIO support
-- *
-- * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
--*/
--
--#ifndef coldfire_gpio_h
--#define coldfire_gpio_h
--
--#include <linux/io.h>
--#include <asm/coldfire.h>
--#include <asm/mcfsim.h>
--#include <asm/mcfgpio.h>
--/*
-- * The Generic GPIO functions
-- *
-- * If the gpio is a compile time constant and is one of the Coldfire gpios,
-- * use the inline version, otherwise dispatch thru gpiolib.
-- */
--
--static inline int gpio_get_value(unsigned gpio)
--{
--	if (__builtin_constant_p(gpio) && gpio < MCFGPIO_PIN_MAX)
--		return mcfgpio_read(__mcfgpio_ppdr(gpio)) & mcfgpio_bit(gpio);
--	else
--		return __gpio_get_value(gpio);
--}
--
--static inline void gpio_set_value(unsigned gpio, int value)
--{
--	if (__builtin_constant_p(gpio) && gpio < MCFGPIO_PIN_MAX) {
--		if (gpio < MCFGPIO_SCR_START) {
--			unsigned long flags;
--			MCFGPIO_PORTTYPE data;
--
--			local_irq_save(flags);
--			data = mcfgpio_read(__mcfgpio_podr(gpio));
--			if (value)
--				data |= mcfgpio_bit(gpio);
--			else
--				data &= ~mcfgpio_bit(gpio);
--			mcfgpio_write(data, __mcfgpio_podr(gpio));
--			local_irq_restore(flags);
--		} else {
--			if (value)
--				mcfgpio_write(mcfgpio_bit(gpio),
--						MCFGPIO_SETR_PORT(gpio));
--			else
--				mcfgpio_write(~mcfgpio_bit(gpio),
--						MCFGPIO_CLRR_PORT(gpio));
--		}
--	} else
--		__gpio_set_value(gpio, value);
--}
--
--static inline int gpio_to_irq(unsigned gpio)
--{
--#if defined(MCFGPIO_IRQ_MIN)
--	if ((gpio >= MCFGPIO_IRQ_MIN) && (gpio < MCFGPIO_IRQ_MAX))
--#else
--	if (gpio < MCFGPIO_IRQ_MAX)
--#endif
--		return gpio + MCFGPIO_IRQ_VECBASE;
--	else
--		return __gpio_to_irq(gpio);
--}
--
--static inline int gpio_cansleep(unsigned gpio)
--{
--	return gpio < MCFGPIO_PIN_MAX ? 0 : __gpio_cansleep(gpio);
--}
--
--#ifndef CONFIG_GPIOLIB
--static inline int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
--{
--	int err;
--
--	err = gpio_request(gpio, label);
--	if (err)
--		return err;
--
--	if (flags & GPIOF_DIR_IN)
--		err = gpio_direction_input(gpio);
--	else
--		err = gpio_direction_output(gpio,
--			(flags & GPIOF_INIT_HIGH) ? 1 : 0);
--
--	if (err)
--		gpio_free(gpio);
--
--	return err;
--}
--#endif /* !CONFIG_GPIOLIB */
--#endif
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 218d7e4c27ff..06a268d56800 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -3,14 +3,6 @@
- # GPIO infrastructure and drivers
- #
+-	/* reverse gpio_export() */
++	/* reverse gpiod_export() */
+ 	void gpiod_unexport(struct gpio_desc *desc);
  
--config ARCH_HAVE_CUSTOM_GPIO_H
--	bool
--	help
--	  Selecting this config option from the architecture Kconfig allows
--	  the architecture to provide a custom asm/gpio.h implementation
--	  overriding the default implementations.  New uses of this are
--	  strongly discouraged.
+ 	/* create a sysfs link to an exported GPIO node */
+diff --git a/Documentation/driver-api/gpio/legacy.rst b/Documentation/driver-api/gpio/legacy.rst
+index e0306e78e34b..78372853c6d4 100644
+--- a/Documentation/driver-api/gpio/legacy.rst
++++ b/Documentation/driver-api/gpio/legacy.rst
+@@ -714,27 +714,6 @@ gpiochip nodes (possibly in conjunction with schematics) to determine
+ the correct GPIO number to use for a given signal.
+ 
+ 
+-Exporting from Kernel code
+---------------------------
+-Kernel code can explicitly manage exports of GPIOs which have already been
+-requested using gpio_request()::
 -
- menuconfig GPIOLIB
- 	bool "GPIO Support"
- 	help
+-	/* export the GPIO to userspace */
+-	int gpio_export(unsigned gpio, bool direction_may_change);
+-
+-	/* reverse gpio_export() */
+-	void gpio_unexport();
+-
+-After a kernel driver requests a GPIO, it may only be made available in
+-the sysfs interface by gpio_export().  The driver can control whether the
+-signal direction may change.  This helps drivers prevent userspace code
+-from accidentally clobbering important system state.
+-
+-This explicit exporting can help with debugging (by making some kinds
+-of experiments easier), or can provide an always-there interface that's
+-suitable for documenting as part of a board support package.
+-
+-
+ API Reference
+ =============
+ 
+diff --git a/Documentation/translations/zh_CN/driver-api/gpio/legacy.rst b/Documentation/translations/zh_CN/driver-api/gpio/legacy.rst
+index dee2a0517c1c..84ce2322fdba 100644
+--- a/Documentation/translations/zh_CN/driver-api/gpio/legacy.rst
++++ b/Documentation/translations/zh_CN/driver-api/gpio/legacy.rst
+@@ -653,25 +653,6 @@ GPIO 控制器的路径类似 /sys/class/gpio/gpiochip42/ (对于从#42 GPIO
+ 确定给定信号所用的 GPIO 编号。
+ 
+ 
+-从内核代码中导出
+-----------------
+-
+-内核代码可以明确地管理那些已通过 gpio_request()申请的 GPIO 的导出::
+-
+-	/* 导出 GPIO 到用户空间 */
+-	int gpio_export(unsigned gpio, bool direction_may_change);
+-
+-	/* gpio_export()的逆操作 */
+-	void gpio_unexport();
+-
+-在一个内核驱动申请一个 GPIO 之后，它可以通过 gpio_export()使其在 sysfs
+-接口中可见。该驱动可以控制信号方向是否可修改。这有助于防止用户空间代码无意间
+-破坏重要的系统状态。
+-
+-这个明确的导出有助于(通过使某些实验更容易来)调试，也可以提供一个始终存在的接口，
+-与文档配合作为板级支持包的一部分。
+-
+-
+ API参考
+ =======
+ 
+diff --git a/Documentation/translations/zh_TW/gpio.txt b/Documentation/translations/zh_TW/gpio.txt
+index dc608358d90a..62e560ffe628 100644
+--- a/Documentation/translations/zh_TW/gpio.txt
++++ b/Documentation/translations/zh_TW/gpio.txt
+@@ -614,21 +614,3 @@ GPIO 控制器的路徑類似 /sys/class/gpio/gpiochip42/ (對於從#42 GPIO
+ 固定的,例如在擴展卡上的 GPIO會根據所使用的主板或所在堆疊架構中其他的板子而
+ 有所不同。在這種情況下,你可能需要使用 gpiochip 節點(儘可能地結合電路圖)來
+ 確定給定信號所用的 GPIO 編號。
+-
+-
+-從內核代碼中導出
+--------------
+-內核代碼可以明確地管理那些已通過 gpio_request()申請的 GPIO 的導出:
+-
+-	/* 導出 GPIO 到用戶空間 */
+-	int gpio_export(unsigned gpio, bool direction_may_change);
+-
+-	/* gpio_export()的逆操作 */
+-	void gpio_unexport();
+-
+-在一個內核驅動申請一個 GPIO 之後，它可以通過 gpio_export()使其在 sysfs
+-接口中可見。該驅動可以控制信號方向是否可修改。這有助於防止用戶空間代碼無意間
+-破壞重要的系統狀態。
+-
+-這個明確的導出有助於(通過使某些實驗更容易來)調試，也可以提供一個始終存在的接口，
+-與文檔配合作爲板級支持包的一部分。
+diff --git a/arch/arm/mach-omap2/pdata-quirks.c b/arch/arm/mach-omap2/pdata-quirks.c
+index baba73fd6f11..04208cc52784 100644
+--- a/arch/arm/mach-omap2/pdata-quirks.c
++++ b/arch/arm/mach-omap2/pdata-quirks.c
+@@ -6,6 +6,7 @@
+  */
+ #include <linux/clk.h>
+ #include <linux/davinci_emac.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -108,7 +109,7 @@ static int omap3_sbc_t3730_twl_callback(struct device *dev,
+ 	if (res)
+ 		return res;
+ 
+-	gpio_export(gpio, 0);
++	gpiod_export(gpio_to_desc(gpio), 0);
+ 
+ 	return 0;
+ }
+@@ -123,7 +124,7 @@ static void __init omap3_sbc_t3x_usb_hub_init(int gpio, char *hub_name)
+ 		return;
+ 	}
+ 
+-	gpio_export(gpio, 0);
++	gpiod_export(gpio_to_desc(gpio), 0);
+ 
+ 	udelay(10);
+ 	gpio_set_value(gpio, 1);
+@@ -200,8 +201,8 @@ static void __init omap3_sbc_t3517_wifi_init(void)
+ 		return;
+ 	}
+ 
+-	gpio_export(cm_t3517_wlan_gpios[0].gpio, 0);
+-	gpio_export(cm_t3517_wlan_gpios[1].gpio, 0);
++	gpiod_export(gpio_to_desc(cm_t3517_wlan_gpios[0].gpio), 0);
++	gpiod_export(gpio_to_desc(cm_t3517_wlan_gpios[1].gpio), 0);
+ 
+ 	msleep(100);
+ 	gpio_set_value(cm_t3517_wlan_gpios[1].gpio, 0);
+diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
+index c77b5f00a66a..151792162152 100644
+--- a/arch/sh/boards/mach-ap325rxa/setup.c
++++ b/arch/sh/boards/mach-ap325rxa/setup.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/gpio/machine.h>
+ #include <linux/i2c.h>
+ #include <linux/init.h>
+@@ -411,16 +412,16 @@ static int __init ap325rxa_devices_setup(void)
+ 	/* LD3 and LD4 LEDs */
+ 	gpio_request(GPIO_PTX5, NULL); /* RUN */
+ 	gpio_direction_output(GPIO_PTX5, 1);
+-	gpio_export(GPIO_PTX5, 0);
++	gpiod_export(gpio_to_desc(GPIO_PTX5), 0);
+ 
+ 	gpio_request(GPIO_PTX4, NULL); /* INDICATOR */
+ 	gpio_direction_output(GPIO_PTX4, 0);
+-	gpio_export(GPIO_PTX4, 0);
++	gpiod_export(gpio_to_desc(GPIO_PTX4), 0);
+ 
+ 	/* SW1 input */
+ 	gpio_request(GPIO_PTF7, NULL); /* MODE */
+ 	gpio_direction_input(GPIO_PTF7);
+-	gpio_export(GPIO_PTF7, 0);
++	gpiod_export(gpio_to_desc(GPIO_PTF7), 0);
+ 
+ 	/* LCDC */
+ 	gpio_request(GPIO_FN_LCDD15, NULL);
+diff --git a/drivers/gpio/gpiolib-sysfs.c b/drivers/gpio/gpiolib-sysfs.c
+index cd27bf173dec..6e4267944f80 100644
+--- a/drivers/gpio/gpiolib-sysfs.c
++++ b/drivers/gpio/gpiolib-sysfs.c
+@@ -491,7 +491,7 @@ static ssize_t unexport_store(struct class *class,
+ 		goto done;
+ 
+ 	desc = gpio_to_desc(gpio);
+-	/* reject bogus commands (gpio_unexport ignores them) */
++	/* reject bogus commands (gpiod_unexport() ignores them) */
+ 	if (!desc) {
+ 		pr_warn("%s: invalid GPIO %ld\n", __func__, gpio);
+ 		return -EINVAL;
+@@ -790,7 +790,7 @@ static int __init gpiolib_sysfs_init(void)
+ 	 * early (e.g. before the class_register above was called).
+ 	 *
+ 	 * We run before arch_initcall() so chip->dev nodes can have
+-	 * registered, and so arch_initcall() can always gpio_export().
++	 * registered, and so arch_initcall() can always gpiod_export().
+ 	 */
+ 	spin_lock_irqsave(&gpio_lock, flags);
+ 	list_for_each_entry(gdev, &gpio_devices, list) {
+diff --git a/drivers/media/pci/sta2x11/sta2x11_vip.c b/drivers/media/pci/sta2x11/sta2x11_vip.c
+index 8535e49a4c4f..e4cf9d63e926 100644
+--- a/drivers/media/pci/sta2x11/sta2x11_vip.c
++++ b/drivers/media/pci/sta2x11/sta2x11_vip.c
+@@ -18,6 +18,7 @@
+ #include <linux/pci.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+@@ -889,6 +890,7 @@ static int sta2x11_vip_init_controls(struct sta2x11_vip *vip)
+ static int vip_gpio_reserve(struct device *dev, int pin, int dir,
+ 			    const char *name)
+ {
++	struct gpio_desc *desc = gpio_to_desc(pin);
+ 	int ret = -ENODEV;
+ 
+ 	if (!gpio_is_valid(pin))
+@@ -900,7 +902,7 @@ static int vip_gpio_reserve(struct device *dev, int pin, int dir,
+ 		return ret;
+ 	}
+ 
+-	ret = gpio_direction_output(pin, dir);
++	ret = gpiod_direction_output(desc, dir);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to set direction for pin %d (%s)\n",
+ 			pin, name);
+@@ -908,7 +910,7 @@ static int vip_gpio_reserve(struct device *dev, int pin, int dir,
+ 		return ret;
+ 	}
+ 
+-	ret = gpio_export(pin, false);
++	ret = gpiod_export(desc, false);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to export pin %d (%s)\n", pin, name);
+ 		gpio_free(pin);
+@@ -928,8 +930,10 @@ static int vip_gpio_reserve(struct device *dev, int pin, int dir,
+ static void vip_gpio_release(struct device *dev, int pin, const char *name)
+ {
+ 	if (gpio_is_valid(pin)) {
++		struct gpio_desc *desc = gpio_to_desc(pin);
++
+ 		dev_dbg(dev, "releasing pin %d (%s)\n",	pin, name);
+-		gpio_unexport(pin);
++		gpiod_unexport(desc);
+ 		gpio_free(pin);
+ 	}
+ }
+diff --git a/drivers/net/ieee802154/ca8210.c b/drivers/net/ieee802154/ca8210.c
+index e1a569b99e4a..5c0be6a3ec5e 100644
+--- a/drivers/net/ieee802154/ca8210.c
++++ b/drivers/net/ieee802154/ca8210.c
+@@ -51,6 +51,7 @@
+ #include <linux/clk-provider.h>
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/ieee802154.h>
+ #include <linux/io.h>
+@@ -2853,7 +2854,7 @@ static int ca8210_interrupt_init(struct spi_device *spi)
+ 	);
+ 	if (ret) {
+ 		dev_crit(&spi->dev, "request_irq %d failed\n", pdata->irq_id);
+-		gpio_unexport(pdata->gpio_irq);
++		gpiod_unexport(gpio_to_desc(pdata->gpio_irq));
+ 		gpio_free(pdata->gpio_irq);
+ 	}
+ 
 diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-index 85beb236c925..2b75017b3aad 100644
+index fc56733e8514..a86953696e47 100644
 --- a/include/linux/gpio.h
 +++ b/include/linux/gpio.h
-@@ -54,11 +54,6 @@ struct gpio {
- };
+@@ -132,20 +132,6 @@ int gpio_request_one(unsigned gpio, unsigned long flags, const char *label);
+ int gpio_request_array(const struct gpio *array, size_t num);
+ void gpio_free_array(const struct gpio *array, size_t num);
  
- #ifdef CONFIG_GPIOLIB
+-/*
+- * A sysfs interface can be exported by individual drivers if they want,
+- * but more typically is configured entirely from userspace.
+- */
+-static inline int gpio_export(unsigned gpio, bool direction_may_change)
+-{
+-	return gpiod_export(gpio_to_desc(gpio), direction_may_change);
+-}
 -
--#ifdef CONFIG_ARCH_HAVE_CUSTOM_GPIO_H
--#include <asm/gpio.h>
--#else
--
- #include <asm-generic/gpio.h>
- 
- static inline int gpio_get_value(unsigned int gpio)
-@@ -81,8 +76,6 @@ static inline int gpio_to_irq(unsigned int gpio)
- 	return __gpio_to_irq(gpio);
- }
- 
--#endif /* ! CONFIG_ARCH_HAVE_CUSTOM_GPIO_H */
+-static inline void gpio_unexport(unsigned gpio)
+-{
+-	gpiod_unexport(gpio_to_desc(gpio));
+-}
 -
  /* CONFIG_GPIOLIB: bindings for managed devices that want to request gpios */
  
  struct device;
+@@ -242,19 +228,6 @@ static inline void gpio_set_value_cansleep(unsigned gpio, int value)
+ 	WARN_ON(1);
+ }
+ 
+-static inline int gpio_export(unsigned gpio, bool direction_may_change)
+-{
+-	/* GPIO can never have been requested or set as {in,out}put */
+-	WARN_ON(1);
+-	return -EINVAL;
+-}
+-
+-static inline void gpio_unexport(unsigned gpio)
+-{
+-	/* GPIO can never have been exported */
+-	WARN_ON(1);
+-}
+-
+ static inline int gpio_to_irq(unsigned gpio)
+ {
+ 	/* GPIO can never have been requested or set as input */
 -- 
 2.39.1
 
