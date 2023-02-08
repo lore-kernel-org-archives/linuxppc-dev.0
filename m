@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6D02C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:55:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75739C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:56:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwMD2LLHz3fFS
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:55:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwNF0r8Hz3fVt
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:56:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ndMqj0wL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jJjGQkMO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ndMqj0wL;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jJjGQkMO;
 	dkim-atps=neutral
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnD90L1Jz3cJC
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDB01Klz3cJC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:01 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877641; x=1707413641;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=bloKEk7wdB/KAamzH2f498CjQ4BYd7MQyp/8x7HupR0=;
-  b=ndMqj0wLWnynraZ4MaSqQjmWUqDE9EKatFTzXOej52AbdsLmzrSeNx20
-   aUbcIyl9ImbCOVXwlKr2v9maSlZ95f1685hEjERnKz90rTozgd7IZ3LA2
-   VBdx6PMyPjpmzMtZNJW4hoZRsmMt2iJg888nMlvb/M6Q2Le50JGJpTduM
-   ejGAQTgVythJgG/WxpPKsY6CDVUXa6EluO/z36jEVP5qZBhgMoIpZjisu
-   zhQQOt0Z7AnpH9csGO6juefQ0XASW7A0/OMx6p3ENt4OhxoDwmqBOeJd2
-   hmf/tQW0BlcBluExU+R79G9TnunPJrvN06XyRrkA6Fg0HHj6RRcU4dXgf
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225257"
+  t=1675877642; x=1707413642;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=sDFh6JeR2XcTkYhVvLPcaBAq4Ze0UO0qz9+CSTh3saw=;
+  b=jJjGQkMO/f/Ws46vZ5HLhM2pTLXwx2VOb/tK2s+ilnP7wz0uas+uImPs
+   eqwx+PEwhExmK3JRk8Ol7+XANU9kfvLTjsrSHHW0MzOD8QJF7DstAOZnm
+   5g0AeZ3miB8kRHVAKBOdxqngdhCeOXIH8ASyfuv5VVgC7gAYHunz0HRON
+   Qe3LAqPdoTZ4gKh48BUUjv/SmQfcQqPpWHDbRZXV+m8nZm11n87Jpe8AJ
+   GsTvEvjxFPVro97CX/oEJu70/+jEZz67q+HFp96p7Mj8WTEDZCb5sAoDr
+   ADqgzSWjpVkMFRUSq7Ow6BCjxyQ2d6hmoGJl7mxutkDPnLicqnWjx+D0e
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225284"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="310225257"
+   d="scan'208";a="310225284"
 Received: from orsmga008.jf.intel.com ([10.7.209.65])
   by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:21 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="697723000"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="697723002"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="697723000"
+   d="scan'208";a="697723002"
 Received: from black.fi.intel.com ([10.237.72.28])
   by orsmga008.jf.intel.com with ESMTP; 08 Feb 2023 09:33:08 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 8B16F1F8; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
+	id 6543F1A6; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,12 +88,10 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 02/18] ARM: s3c24xx: Use the right include
-Date: Wed,  8 Feb 2023 19:33:27 +0200
-Message-Id: <20230208173343.37582-3-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 00/18] gpiolib cleanups
+Date: Wed,  8 Feb 2023 19:33:25 +0200
+Message-Id: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
-References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Thu, 09 Feb 2023 09:48:32 +1100
@@ -113,37 +111,122 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich F
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Linus Walleij <linus.walleij@linaro.org>
+These are some older patches Arnd did last year, rebased to
+linux-next-20230208. On top there are Andy's patches regarding
+similar topic. The series starts with Linus Walleij's patches.
 
-The file s3c64xx.c is including <linux/gpio.h> despite using no
-symbols from the file, however it needs it to implicitly bring in
-of_have_populated_dt() so include <linux/of.h> explicitly instead.
+The main goal is to remove some of the legacy bits of the gpiolib
+interfaces, where the corner cases are easily avoided or replaced
+with gpio descriptor based interfaces.
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/arm/mach-s3c/s3c64xx.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The idea is to get an immutable branch and route the whole series
+via GPIO tree.
 
-diff --git a/arch/arm/mach-s3c/s3c64xx.c b/arch/arm/mach-s3c/s3c64xx.c
-index e97bd59083a8..9f9717874d67 100644
---- a/arch/arm/mach-s3c/s3c64xx.c
-+++ b/arch/arm/mach-s3c/s3c64xx.c
-@@ -21,13 +21,13 @@
- #include <linux/ioport.h>
- #include <linux/serial_core.h>
- #include <linux/serial_s3c.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/reboot.h>
- #include <linux/io.h>
- #include <linux/clk/samsung.h>
- #include <linux/dma-mapping.h>
- #include <linux/irq.h>
--#include <linux/gpio.h>
- #include <linux/irqchip/arm-vic.h>
- #include <clocksource/samsung_pwm.h>
- 
+Changes in v4:
+- incorporated Linus Walleij's patches
+- reworked touchscreen patch to have bare minimum changes (Dmitry)
+- described changes in gpio-aggregator in full (Geert)
+- addressed compilation errors (LKP)
+- added tags (Geert, Lee, Vincenzo)
+
+Changes in v3:
+- reworked touchscreen patch in accordance with Dmitry's comments
+- rebased on the latest Linux Next
+- added on top Andy's series
+
+Changes in v2:
+- dropped patch 8 after Andy's identical patch was merged
+- rebase on latest gpio tree
+- leave unused gpio_cansleep() in place for now
+- address feedback from Andy Shevchenko
+
+Andy Shevchenko (7):
+  gpio: aggregator: Add missing header(s)
+  gpio: reg: Add missing header(s)
+  gpio: regmap: Add missing header(s)
+  gpiolib: Drop unused forward declaration from driver.h
+  gpiolib: Deduplicate forward declarations in consumer.h
+  gpiolib: Group forward declarations in consumer.h
+  gpiolib: Clean up headers
+
+Arnd Bergmann (7):
+  gpiolib: remove empty asm/gpio.h files
+  gpiolib: coldfire: remove custom asm/gpio.h
+  gpiolib: remove asm-generic/gpio.h
+  gpiolib: remove gpio_set_debounce()
+  gpiolib: remove legacy gpio_export()
+  gpiolib: split linux/gpio/driver.h out of linux/gpio.h
+  gpiolib: split of_mm_gpio_chip out of linux/of_gpio.h
+
+Linus Walleij (4):
+  ARM: orion/gpio: Use the right include
+  ARM: s3c24xx: Use the right include
+  hte: tegra-194: Use proper includes
+  gpiolib: Make the legacy <linux/gpio.h> consumer-only
+
+ Documentation/admin-guide/gpio/sysfs.rst      |   2 +-
+ Documentation/driver-api/gpio/legacy.rst      |  23 ---
+ .../zh_CN/driver-api/gpio/legacy.rst          |  20 ---
+ Documentation/translations/zh_TW/gpio.txt     |  19 ---
+ MAINTAINERS                                   |   1 -
+ arch/arm/Kconfig                              |   1 -
+ arch/arm/include/asm/gpio.h                   |  21 ---
+ arch/arm/mach-omap1/irq.c                     |   1 +
+ arch/arm/mach-omap2/pdata-quirks.c            |   9 +-
+ arch/arm/mach-orion5x/board-rd88f5182.c       |   1 +
+ arch/arm/mach-s3c/s3c64xx.c                   |   2 +-
+ arch/arm/mach-sa1100/assabet.c                |   1 +
+ arch/arm/plat-orion/gpio.c                    |   5 +-
+ arch/m68k/Kconfig.cpu                         |   1 -
+ arch/m68k/include/asm/gpio.h                  |  95 -----------
+ arch/m68k/include/asm/mcfgpio.h               |   2 +-
+ arch/powerpc/platforms/44x/Kconfig            |   1 +
+ arch/powerpc/platforms/4xx/gpio.c             |   2 +-
+ arch/powerpc/platforms/8xx/Kconfig            |   1 +
+ arch/powerpc/platforms/8xx/cpm1.c             |   2 +-
+ arch/powerpc/platforms/Kconfig                |   2 +
+ arch/powerpc/sysdev/cpm_common.c              |   2 +-
+ arch/sh/Kconfig                               |   1 -
+ arch/sh/boards/board-magicpanelr2.c           |   1 +
+ arch/sh/boards/mach-ap325rxa/setup.c          |   7 +-
+ arch/sh/include/asm/gpio.h                    |  45 ------
+ drivers/gpio/Kconfig                          |  19 ++-
+ drivers/gpio/TODO                             |  15 +-
+ drivers/gpio/gpio-aggregator.c                |   9 +-
+ drivers/gpio/gpio-altera.c                    |   2 +-
+ drivers/gpio/gpio-davinci.c                   |   2 -
+ drivers/gpio/gpio-mm-lantiq.c                 |   2 +-
+ drivers/gpio/gpio-mpc5200.c                   |   2 +-
+ drivers/gpio/gpio-reg.c                       |  12 +-
+ drivers/gpio/gpio-regmap.c                    |  12 +-
+ drivers/gpio/gpiolib-acpi.c                   |  10 +-
+ drivers/gpio/gpiolib-acpi.h                   |   1 -
+ drivers/gpio/gpiolib-of.c                     |   9 +-
+ drivers/gpio/gpiolib-of.h                     |   1 -
+ drivers/gpio/gpiolib-swnode.c                 |   5 +-
+ drivers/gpio/gpiolib-sysfs.c                  |  25 ++-
+ drivers/gpio/gpiolib.c                        |   9 +-
+ drivers/hte/hte-tegra194-test.c               |  10 +-
+ drivers/input/touchscreen/ads7846.c           |   5 +-
+ drivers/media/pci/sta2x11/sta2x11_vip.c       |  10 +-
+ drivers/net/ieee802154/ca8210.c               |   3 +-
+ .../broadcom/brcm80211/brcmsmac/led.c         |   1 +
+ drivers/pinctrl/core.c                        |   1 -
+ drivers/soc/fsl/qe/gpio.c                     |   2 +-
+ include/asm-generic/gpio.h                    | 147 ------------------
+ include/linux/gpio.h                          | 104 ++++++++-----
+ include/linux/gpio/consumer.h                 |  24 +--
+ include/linux/gpio/driver.h                   |  31 +++-
+ .../legacy-of-mm-gpiochip.h}                  |  33 +---
+ include/linux/mfd/ucb1x00.h                   |   1 +
+ include/linux/of_gpio.h                       |  21 ---
+ 56 files changed, 240 insertions(+), 556 deletions(-)
+ delete mode 100644 arch/arm/include/asm/gpio.h
+ delete mode 100644 arch/m68k/include/asm/gpio.h
+ delete mode 100644 arch/sh/include/asm/gpio.h
+ delete mode 100644 include/asm-generic/gpio.h
+ copy include/linux/{of_gpio.h => gpio/legacy-of-mm-gpiochip.h} (50%)
+
 -- 
 2.39.1
 
