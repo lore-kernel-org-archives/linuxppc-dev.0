@@ -4,72 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 170D4C05027
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 11:34:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0CF9C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 11:58:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBdDv3PD8z3f36
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:34:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBdmX1czYz3cgv
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:58:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=fXWANCuB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QwKGZvoM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=thierry.reding@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=fXWANCuB;
-	dkim-atps=neutral
-Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBdCq0Gqbz2xKj
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 22:33:08 +1100 (AEDT)
-Received: by mail-ed1-x535.google.com with SMTP id r3so10268105edq.13
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Feb 2023 03:33:08 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=HIu5FMX5zzGn7W3WV4iDVGUOhSdTojc3bSXVJLsQvOI=;
-        b=fXWANCuB/MzwMxY8e/PE9hMX6kQQgSi4nwzOxcZP1sqB8ClZa9gcDxf95xcMCFGA60
-         8r4HPxPuojmsyiGZM5fo54iQbE21y+qmauAqwiUZ3JgfWGvn5hFl6n/jQnypHDEAEiIN
-         BuyuO7rl564g2V4OrWmmn0okwkjZbGE1TCtQTMGjJTfw9GCV5cQzEBQZbHy2naOM6bpE
-         uDbQrwann+eaSyPP4Qr1iDlD/kMNgp3Ia2Gz41p5KUz1dsAlq9DKH/Kv+GyzBHKHadV6
-         bLLJuLtOY0ewEYZPIZXw0dCi5dG6BoEsrdfO+bUYCY7Ew7umVt4h/WIptyhk6gza7ptd
-         eQIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=user-agent:in-reply-to:content-disposition:mime-version:references
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=HIu5FMX5zzGn7W3WV4iDVGUOhSdTojc3bSXVJLsQvOI=;
-        b=f9bTmgN0MGETXTjhHvMfBxHklsslU4Sko6o37aIi79/qhVCCJWRNPU4qb8eKOF1DRZ
-         m/N0P8FDBMZHAebhp3GParcgcbV1Xrmq3uYT7ThEVoJYVqzvA4QGnofdUNwHZnGFfRxE
-         MRWXyxpmlWa0zcrUCwH9hbiHO9hcpZrEZeQF9pJND9RUh6WFSDvkWxSw5SrEddwST0sD
-         0xaB1udGunbop0TlzPkj8yc6BL5/1uzqJ3xflRIuHnoTgJ5XkeU+l+lGf/l/zPKVTBjc
-         QkCmgQuz2W1fytnnW1qt7OBIhTH3q0gg7WnVLZ8LuZWFz7vTV2uz6uUiwXrMyLvapj1B
-         diuw==
-X-Gm-Message-State: AO0yUKW5Y/PKvrZ2gLP1SG5/C8OEfquKNUwNWQ3tuLg1sdS2arDF67b0
-	XcnDoJ9k5rnyOtjWVaOYWAU=
-X-Google-Smtp-Source: AK7set+tg8yMsoPfm6aG9wW3C95mLbOW3tHfVXRDEHWicn13te2n5qII2lTooySpSVWWHaqcTV5FYg==
-X-Received: by 2002:a50:9f25:0:b0:4aa:a517:b861 with SMTP id b34-20020a509f25000000b004aaa517b861mr7580201edf.30.1675855982063;
-        Wed, 08 Feb 2023 03:33:02 -0800 (PST)
-Received: from orome (p200300e41f201d00f22f74fffe1f3a53.dip0.t-ipconnect.de. [2003:e4:1f20:1d00:f22f:74ff:fe1f:3a53])
-        by smtp.gmail.com with ESMTPSA id y89-20020a50bb62000000b004aab193b8dbsm4424195ede.80.2023.02.08.03.33.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Feb 2023 03:33:01 -0800 (PST)
-Date: Wed, 8 Feb 2023 12:33:00 +0100
-From: Thierry Reding <thierry.reding@gmail.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 3/3] ALSA: core: Make snd_card_free() return void
-Message-ID: <Y+OIbIEn4QSQCB7M@orome>
-References: <20230207191907.467756-1-u.kleine-koenig@pengutronix.de>
- <20230207191907.467756-4-u.kleine-koenig@pengutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBdlX4ls2z303P
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 22:57:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=QwKGZvoM;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PBdlX38R6z4xP9;
+	Wed,  8 Feb 2023 22:57:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1675857432;
+	bh=xdJPhY6WPjUPWKWWfsqTPtWGggaWrMgbhzibTDjwISM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=QwKGZvoMI+cNYa8lhdwK7WrgKEGJ726GBaLIFvKTiMRA8phBG8A9io8bdrL36XRkb
+	 Di1w5lWMw9NrC5r34RmXkHOCR3NTxznkJkCgWL68KMSm9Tro+438vqPVmb0EMwGSu+
+	 nZ6HtI4Ued9GihsSnY+cQGL3FbRkQNMAaqvs5VdlGKeZMtXp9sHFsEIFurFVzaQ7SM
+	 mt3WVzWOYv2tTaoXigu2XDB+o/57/SagIhyGda1NLEFeGt8c5v2bXc85umGGzaAoX5
+	 CrcwfS/6BR4h0d4JFymtxOJjD4EwPXklsvDXW/zhqonSUweb1moVXk2bOflukorZ8T
+	 Ldh6AAyH5WZRQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Lynch via B4 Submission Endpoint
+ <devnull+nathanl.linux.ibm.com@kernel.org>, Nicholas Piggin
+ <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Kajol
+ Jain <kjain@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, Mahesh
+ J Salgaonkar <mahesh@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>,
+ Nick Child <nnac123@linux.ibm.com>
+Subject: Re: [PATCH v2 07/19] powerpc/rtas: improve function information
+ lookups
+In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-7-9aa6bd058063@linux.ibm.com>
+References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
+ <20230125-b4-powerpc-rtas-queue-v2-7-9aa6bd058063@linux.ibm.com>
+Date: Wed, 08 Feb 2023 22:57:09 +1100
+Message-ID: <87pmakwesq.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="D5qM/4zvEVCMgXpb"
-Content-Disposition: inline
-In-Reply-To: <20230207191907.467756-4-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/2.2.9 (2022-11-12)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,48 +64,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Geoff Levand <geoff@infradead.org>, Takashi Iwai <tiwai@suse.com>, Nicholas Piggin <npiggin@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, kernel@pengutronix.de, linux-tegra@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Nathan Lynch via B4 Submission Endpoint
+<devnull+nathanl.linux.ibm.com@kernel.org> writes:
+> From: Nathan Lynch <nathanl@linux.ibm.com>
+>
+> The core RTAS support code and its clients perform two types of lookup
+> for RTAS firmware function information.
+> 
+...
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 479a95cb2770..14fe79217c26 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -16,6 +16,93 @@
+>   * Copyright (C) 2001 PPC 64 Team, IBM Corp
+>   */
+>  
+> +#define rtas_fnidx(x_) RTAS_FNIDX__ ## x_
 
---D5qM/4zvEVCMgXpb
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'd prefer we just spelt it out in full, to aid grepability and
+cscope/tags etc.
 
-On Tue, Feb 07, 2023 at 08:19:07PM +0100, Uwe Kleine-K=C3=B6nig wrote:
-> The function returns 0 unconditionally. Make it return void instead and
-> simplify all callers accordingly.
->=20
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-> ---
->  include/sound/core.h      | 2 +-
->  sound/core/init.c         | 6 ++----
->  sound/pci/hda/hda_tegra.c | 6 ++----
->  sound/ppc/snd_ps3.c       | 4 +---
->  4 files changed, 6 insertions(+), 12 deletions(-)
+> +enum rtas_function_index {
+> +	rtas_fnidx(CHECK_EXCEPTION),
+> +	rtas_fnidx(DISPLAY_CHARACTER),
+> +	rtas_fnidx(EVENT_SCAN),
+> +	rtas_fnidx(FREEZE_TIME_BASE),
+> +	rtas_fnidx(GET_POWER_LEVEL),
+> +	rtas_fnidx(GET_SENSOR_STATE),
+> +	rtas_fnidx(GET_TERM_CHAR),
+> +	rtas_fnidx(GET_TIME_OF_DAY),
+> +	rtas_fnidx(IBM_ACTIVATE_FIRMWARE),
+> +	rtas_fnidx(IBM_CBE_START_PTCAL),
+> +	rtas_fnidx(IBM_CBE_STOP_PTCAL),
+> +	rtas_fnidx(IBM_CHANGE_MSI),
 
-Acked-by: Thierry Reding <treding@nvidia.com>
 
---D5qM/4zvEVCMgXpb
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAmPjiGsACgkQ3SOs138+
-s6GK+Q//ZiTKsijeECRfzHmIOgymJ77EeHGA/vhS4NBBfe9U296ifD3l2Iyv+64i
-fI7nKoz7sr+HxnB675oWnqtDQNIogLRPrej9fG7qGtqk7JWxnUuGkELw43jefGp+
-62Q7q/UXC7tSPNf3lZGD1Mcown6X1SkSwohIqvqhY5GLcSMV8/QMOIIQIHeeyjTZ
-fxtr8htfD+XArBu+CD5gbo8mQezE3zwlOOnms6OfciwEK/RU70OPK/Do38/gDaIf
-c7oJv32pu43UekdJES/C4HhfkdSi/xOUZSYRnl13V0xQ0imngncCPUU+sV+yRhGu
-tSqIpDypo9GBzu/AyGMD7L+7wTOlhZKYcPCH7+wUil7H+7QNx5kqxTZQY+w6rMR6
-Z7MHYsU5oTnhsgvJmTybU/NFp1Cb0jNlWzH+YvuJz82Wx9wD7p3l+HkOazLj63wv
-e1Ktc1Dn9AOKMJR4R6IFwb8T9FiqtQ4MWdJmCbLSuRemo62DYAPzm2els+2lO7yG
-/vzZSAi/655ELwubZcGkMQ6ng3nda0JRSqocaT/AzwpnWiTok+srqy2JuoLjE1uG
-OLMieD4toJrYTzqR1wPK1lKtJu+qXgw2GsI0nbGJ//kcAK9l5rwKZT0ye8bwG+5N
-BWkK1n+90YKZI00GffWXjiOaH/yuzSYrQZuDtzAizFJ0UX87E4k=
-=sIaY
------END PGP SIGNATURE-----
-
---D5qM/4zvEVCMgXpb--
+cheers
