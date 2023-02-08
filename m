@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B752AC05027
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:49:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23536C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:50:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwD46YFqz3c7l
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:49:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwF54QLVz3f4y
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:50:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZTqW3eNt;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Ki+biCG3;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZTqW3eNt;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Ki+biCG3;
 	dkim-atps=neutral
 Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnCz4xVZz2ymk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:33:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnD11B61z2ymk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:33:52 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877631; x=1707413631;
+  t=1675877633; x=1707413633;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=jEiPyYdsZVsJV2pdec9rr5rbdBbMyx922ioXFsE3FmA=;
-  b=ZTqW3eNtbLUlmLBxr1sO0eiVdG73oEycAfyCDCRXN86iJMO+TRQwF64K
-   q3gCxM6dwOqMyuF1kmjqyDSQUIyhe5O8I0/If3NnHROsGmdDsNYJEv8b3
-   n6wiLYxfoQJc5jgTJ7Iz1mG9eMwiTrCRQCLrjhImNUKhETeBVObjyJ5jL
-   HUra58wL+ad6+E3fbV44spDBm3IqTbByNb7I2P71S9/qUJfaMW/gM3EFZ
-   OD9HKAvkQSeJqDzyqBWH2Qg6NRwK03Na668rMr2QWlVUanH6q+4QrePoW
-   A2TtY38nxM7yD803+2UZydv5QRjYtAEvEF5VmjN+1iJmaCXk9BwSHoETk
+  bh=5X9ZOcG0DiAszti6VyRB72jA0fVrIX+W6b07WZOwIv4=;
+  b=Ki+biCG3JP8n2gvizTG+RVKpEMCotN5nJkfiyH/wRJnL6MZ6ImXvw8Oz
+   dS3tHGcLpspi4zGeX2dOJGEaMSEQkbesQ0l3kUi1ugWgIdjor5WLlgwXC
+   LBVh0Tc/WPazTqWpDnIYiGd3VbdcQTJbsztSFc2MqtSew9gkGjG052Dum
+   v+UrswTPZ7BVpOcuv6QBx1dlbYMK3SQlahoZsYjYlBjWNKI78jAk1howf
+   OB4tVy9TL9qTeMJ6Zkwpp6nfEf42g9cRHy0qTUQYboyBrRDxwYO1SklLE
+   TLdAu/A0ywI5tk2ceZSBZK+8n5NGWbwtfis2Z3tnegIXSXYrZZ+qsWrnM
    A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="331153706"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="331153785"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="331153706"
+   d="scan'208";a="331153785"
 Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:20 -0800
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:26 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="669265851"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="669265865"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="669265851"
+   d="scan'208";a="669265865"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by fmsmga007.fm.intel.com with ESMTP; 08 Feb 2023 09:33:08 -0800
+  by fmsmga007.fm.intel.com with ESMTP; 08 Feb 2023 09:33:15 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 76D751C5; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
+	id B005F252; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,9 +88,9 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 01/18] ARM: orion/gpio: Use the right include
-Date: Wed,  8 Feb 2023 19:33:26 +0200
-Message-Id: <20230208173343.37582-2-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 04/18] gpiolib: Make the legacy <linux/gpio.h> consumer-only
+Date: Wed,  8 Feb 2023 19:33:29 +0200
+Message-Id: <20230208173343.37582-5-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
@@ -115,39 +115,29 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Linus Walleij <linus.walleij@linaro.org>
 
-This is a GPIO driver so include <linux/gpio/driver.h> and not
-the legacy <linux/gpio.h> header. Switch a single call to the
-legacy API and use <linux/gpio/consumer.h> as well.
+The legacy <linux/gpio.h> header was an all-inclusive header used
+by drivers and consumers alike. After eliminating the last users
+of the driver defines, we can drop the inclusion of the
+<linux/gpio/driver.h> header.
 
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/arm/plat-orion/gpio.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ include/asm-generic/gpio.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/arm/plat-orion/gpio.c b/arch/arm/plat-orion/gpio.c
-index 3ef9ecdd6343..595e9cb33c1d 100644
---- a/arch/arm/plat-orion/gpio.c
-+++ b/arch/arm/plat-orion/gpio.c
-@@ -18,7 +18,8 @@
- #include <linux/spinlock.h>
- #include <linux/bitops.h>
- #include <linux/io.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/driver.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/leds.h>
- #include <linux/of.h>
- #include <linux/of_irq.h>
-@@ -312,7 +313,7 @@ int orion_gpio_led_blink_set(struct gpio_desc *desc, int state,
- 	case GPIO_LED_NO_BLINK_LOW:
- 	case GPIO_LED_NO_BLINK_HIGH:
- 		orion_gpio_set_blink(gpio, 0);
--		gpio_set_value(gpio, state);
-+		gpiod_set_raw_value(desc, state);
- 		break;
- 	case GPIO_LED_BLINK:
- 		orion_gpio_set_blink(gpio, 1);
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 22cb8c9efc1d..1c910d124423 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -8,7 +8,6 @@
+ #ifdef CONFIG_GPIOLIB
+ 
+ #include <linux/compiler.h>
+-#include <linux/gpio/driver.h>
+ #include <linux/gpio/consumer.h>
+ 
+ /*
 -- 
 2.39.1
 
