@@ -4,54 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC8C1C05027
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 11:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0AA6C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 12:02:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBdnY3N20z3Wtp
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:58:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=msyt9iJf;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBdmX22Ymz3f4s
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 22:58:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=msyt9iJf;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PBdmV297Jz4xP9;
-	Wed,  8 Feb 2023 22:58:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1675857482;
-	bh=SWjk1pXjdmpn4qzwm4iH2hxmwnamiVa/ar8aNIUm1qQ=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=msyt9iJfjl/yCaGZF2INYOFGhuHc++OHX6SILrYkFAfTbYXnHm9EElzYKL4zwS/Z4
-	 xax6Ma7dUm6TnzKINyTmbTyQ1gabBdILG+JuxORBCjOkeTaoB5O1C4ik2MoZskYyTY
-	 j3U6iRbn9kxnn9j7APzMhTvcbeGbp9F4PnjKUMNP5Jp+V5rWAlqmZl3AGNkHFaEx/m
-	 dKlveGpBwsgpxPeESO893IpENIhymw6gOWOWecVw8ESexPs/AfeqJkTWjb3guB+rhB
-	 +4B0la6Jp5MMFM6HsfVzJCCPXWK2xJqlcUiaMq2QDu/fuYXGx3NeDMtqMI2zOIr47r
-	 BTNS6YtHfHoIA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Lynch via B4 Submission Endpoint
- <devnull+nathanl.linux.ibm.com@kernel.org>, Nicholas Piggin
- <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Kajol
- Jain <kjain@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, Mahesh
- J Salgaonkar <mahesh@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>,
- Nick Child <nnac123@linux.ibm.com>
-Subject: Re: [PATCH v2 11/19] powerpc/rtas: add work area allocator
-In-Reply-To: <20230125-b4-powerpc-rtas-queue-v2-11-9aa6bd058063@linux.ibm.com>
-References: <20230125-b4-powerpc-rtas-queue-v2-0-9aa6bd058063@linux.ibm.com>
- <20230125-b4-powerpc-rtas-queue-v2-11-9aa6bd058063@linux.ibm.com>
-Date: Wed, 08 Feb 2023 22:58:01 +1100
-Message-ID: <87o7q4wera.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBds64lVGz3f7n
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 23:02:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 560 seconds by postgrey-1.36 at boromir; Wed, 08 Feb 2023 23:01:31 AEDT
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBdrW2BGhz2yRV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Feb 2023 23:01:30 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 935EA1042;
+	Wed,  8 Feb 2023 03:52:17 -0800 (PST)
+Received: from [10.57.12.246] (unknown [10.57.12.246])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6B1023F703;
+	Wed,  8 Feb 2023 03:51:32 -0800 (PST)
+Message-ID: <ce11001e-dbe5-8694-71a5-841f4d614456@arm.com>
+Date: Wed, 8 Feb 2023 11:51:30 +0000
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH 6/7] KVM: arm64: Change return type of
+ kvm_vm_ioctl_mte_copy_tags() to "int"
+To: Cornelia Huck <cohuck@redhat.com>, Gavin Shan <gshan@redhat.com>,
+ Thomas Huth <thuth@redhat.com>, kvm@vger.kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, Sean Christopherson <seanjc@google.com>
+References: <20230203094230.266952-1-thuth@redhat.com>
+ <20230203094230.266952-7-thuth@redhat.com>
+ <c6e605fe-f251-d8b6-64ed-bd1e17e79512@redhat.com>
+ <7b32d58b-846f-b8d7-165b-9f505e5f00f0@redhat.com>
+ <d0b3a1e7-0864-f169-cdea-60ad95951b3f@redhat.com> <87zg9oleyb.fsf@redhat.com>
+Content-Language: en-GB
+From: Steven Price <steven.price@arm.com>
+In-Reply-To: <87zg9oleyb.fsf@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,267 +51,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Marc Zyngier <maz@kernel.org>, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Oliver Upton <oliver.upton@linux.dev>, Zenghui Yu <yuzenghui@huawei.com>, James Morse <james.morse@arm.com>, kvm-riscv@lists.infradead.org, kvmarm@lists.linux.dev, Christian Borntraeger <borntraeger@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Eric Auger <eric.auger@redhat.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nathan Lynch via B4 Submission Endpoint
-<devnull+nathanl.linux.ibm.com@kernel.org> writes:
-> diff --git a/arch/powerpc/include/asm/rtas-work-area.h b/arch/powerpc/include/asm/rtas-work-area.h
-> new file mode 100644
-> index 000000000000..76ccb039cc37
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/rtas-work-area.h
-> @@ -0,0 +1,45 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef POWERPC_RTAS_WORK_AREA_H
-> +#define POWERPC_RTAS_WORK_AREA_H
+On 08/02/2023 08:49, Cornelia Huck wrote:
+> On Wed, Feb 08 2023, Gavin Shan <gshan@redhat.com> wrote:
+> 
+>> On 2/7/23 9:09 PM, Thomas Huth wrote:
+>>> Oh, drat, I thought I had checked all return statements ... this must have fallen through the cracks, sorry!
+>>>
+>>> Anyway, this is already a problem now: The function is called from kvm_arch_vm_ioctl() (which still returns a long), which in turn is called from kvm_vm_ioctl() in virt/kvm/kvm_main.c. And that functions stores the return value in an "int r" variable. So the upper bits are already lost there.
 
-The usual style would be _ASM_POWERPC_RTAS_WORK_AREA_H.
+Sorry about that, I was caught out by kvm_arch_vm_ioctl() returning long...
 
-> diff --git a/arch/powerpc/kernel/rtas-work-area.c b/arch/powerpc/kernel/rtas-work-area.c
-> new file mode 100644
-> index 000000000000..75950e13a0fe
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/rtas-work-area.c
-> @@ -0,0 +1,208 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +
-> +#define pr_fmt(fmt)	"rtas-work-area: " fmt
-> +
-> +#include <linux/genalloc.h>
-> +#include <linux/log2.h>
-> +#include <linux/kernel.h>
-> +#include <linux/memblock.h>
-> +#include <linux/mempool.h>
-> +#include <linux/minmax.h>
-> +#include <linux/mutex.h>
-> +#include <linux/numa.h>
-> +#include <linux/sizes.h>
-> +#include <linux/wait.h>
-> +
-> +#include <asm/machdep.h>
-> +#include <asm/rtas-work-area.h>
-> +
-> +enum {
-> +	/*
-> +	 * Ensure the pool is page-aligned.
-> +	 */
-> +	RTAS_WORK_AREA_ARENA_ALIGN = PAGE_SIZE,
-> +
-> +	RTAS_WORK_AREA_ARENA_SZ = SZ_256K,
-> +	/*
-> +	 * The smallest known work area size is for ibm,get-vpd's
-> +	 * location code argument, which is limited to 79 characters
-> +	 * plus 1 nul terminator.
-> +	 *
-> +	 * PAPR+ 7.3.20 ibm,get-vpd RTAS Call
-> +	 * PAPR+ 12.3.2.4 Converged Location Code Rules - Length Restrictions
-> +	 */
-> +	RTAS_WORK_AREA_MIN_ALLOC_SZ = roundup_pow_of_two(80),
-> +	/*
-> +	 * Don't let a single allocation claim the whole arena.
-> +	 */
-> +	RTAS_WORK_AREA_MAX_ALLOC_SZ = RTAS_WORK_AREA_ARENA_SZ / 2,
-> +};
-> +
-> +static struct rtas_work_area_allocator_state {
-> +	struct gen_pool *gen_pool;
-> +	char *arena;
-> +	struct mutex mutex; /* serializes allocations */
-> +	struct wait_queue_head wqh;
-> +	mempool_t descriptor_pool;
-> +	bool available;
-> +} rwa_state_ = {
-> +	.mutex = __MUTEX_INITIALIZER(rwa_state_.mutex),
-> +	.wqh = __WAIT_QUEUE_HEAD_INITIALIZER(rwa_state_.wqh),
-> +};
-> +static struct rtas_work_area_allocator_state *rwa_state = &rwa_state_;
+>>> Also, how is this supposed to work from user space? The normal "ioctl()" libc function just returns an "int" ? Is this ioctl already used in a userspace application somewhere? ... at least in QEMU, I didn't spot it yet...
+>>>
+> 
+> We will need it in QEMU to implement migration with MTE (the current
+> proposal simply adds a migration blocker when MTE is enabled, as there
+> are various other things that need to be figured out for this to work.)
+> But maybe other VMMs already use it (and have been lucky because they
+> always dealt with shorter lengths?)
+> 
+>>
+>> The ioctl command KVM_ARM_MTE_COPY_TAGS was merged recently and not used
+>> by QEMU yet. I think struct kvm_arm_copy_mte_tags::length needs to be
+>> '__u32' instead of '__u64' in order to standardize the return value.
+>> Something like below. Documentation/virt/kvm/api.rst::section-4.130
+>> needs update accordingly.
+>>
+>>     struct kvm_arm_copy_mte_tags {
+>>          __u64 guest_ipa;
+>>          __u32 pad;
+>>          __u32 length;
+>>          void __user *addr;
+>>          __u64 flags;
+>>          __u64 reserved[2];
+>>    };
+> 
+> Can we do this in a more compatible way, as we are dealing with an API?
+> Like returning -EINVAL if length is too big?
+> 
 
-I assumed the pointer was so you could swap this out at runtime or
-something, but I don't think you do.
+I agree the simplest fix for the problem is simply to reject any
+lengths>INT_MAX:
 
-Any reason not to drop the pointer and just use rwa_state.foo accessors?
-That would also allow the struct to be anonymous.
+diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+index cf4c495a4321..94aed7ce85c4 100644
+--- a/arch/arm64/kvm/guest.c
++++ b/arch/arm64/kvm/guest.c
+@@ -1032,6 +1032,13 @@ long kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+ 	if (copy_tags->flags & ~KVM_ARM_TAGS_FROM_GUEST)
+ 		return -EINVAL;
 
-Or if you have the pointer you can at least make it NULL prior to init
-and avoid the need for "available".
++	/*
++	 * ioctl returns int, so lengths above INT_MAX cannot be
++	 * represented in the return value
++	 */
++	if (length > INT_MAX)
++		return -EINVAL;
++
+ 	if (length & ~PAGE_MASK || guest_ipa & ~PAGE_MASK)
+ 		return -EINVAL;
 
-> +/*
-> + * A single work area buffer and descriptor to serve requests early in
-> + * boot before the allocator is fully initialized.
-> + */
-> +static bool early_work_area_in_use __initdata;
-> +static char early_work_area_buf[SZ_4K] __initdata;
+This could also be fixed in a useable way by including a new flag which
+returns the length in an output field of the ioctl structure. I'm
+guessing a 2GB limit would be annoying to work around.
 
-That should be page aligned I think?
+Steve
 
-
-> +static struct rtas_work_area early_work_area __initdata = {
-> +	.buf = early_work_area_buf,
-> +	.size = sizeof(early_work_area_buf),
-> +};
-> +
-> +
-> +static struct rtas_work_area * __init rtas_work_area_alloc_early(size_t size)
-> +{
-> +	WARN_ON(size > early_work_area.size);
-> +	WARN_ON(early_work_area_in_use);
-> +	early_work_area_in_use = true;
-> +	memset(early_work_area.buf, 0, early_work_area.size);
-> +	return &early_work_area;
-> +}
-> +
-> +static void __init rtas_work_area_free_early(struct rtas_work_area *work_area)
-> +{
-> +	WARN_ON(work_area != &early_work_area);
-> +	WARN_ON(!early_work_area_in_use);
-> +	early_work_area_in_use = false;
-> +}
-> +
-> +struct rtas_work_area * __ref rtas_work_area_alloc(size_t size)
-> +{
-> +	struct rtas_work_area *area;
-> +	unsigned long addr;
-> +
-> +	might_sleep();
-> +
-> +	WARN_ON(size > RTAS_WORK_AREA_MAX_ALLOC_SZ);
-> +	size = min_t(size_t, size, RTAS_WORK_AREA_MAX_ALLOC_SZ);
-
-This seems unsafe.
-
-If you return a buffer smaller than the caller asks for they're likely
-to read/write past the end of it and corrupt memory.
-
-AFAIK genalloc doesn't have guard pages or anything fancy to save us
-from that - but maybe I'm wrong, I've never used it.
-
-There's only three callers in the end, seems like we should just return
-NULL if the size is too large and have callers check the return value.
-
-> +	if (!rwa_state->available) {
-> +		area = rtas_work_area_alloc_early(size);
-> +		goto out;
-> +	}
-> +
-> +	/*
-> +	 * To ensure FCFS behavior and prevent a high rate of smaller
-> +	 * requests from starving larger ones, use the mutex to queue
-> +	 * allocations.
-> +	 */
-> +	mutex_lock(&rwa_state->mutex);
-> +	wait_event(rwa_state->wqh,
-> +		   (addr = gen_pool_alloc(rwa_state->gen_pool, size)) != 0);
-> +	mutex_unlock(&rwa_state->mutex);
-> +
-> +	area = mempool_alloc(&rwa_state->descriptor_pool, GFP_KERNEL);
-> +	*area = (typeof(*area)){
-> +		.size = size,
-> +		.buf = (char *)addr,
-> +	};
-
-That is an odd way to write that :)
-
-> +out:
-> +	pr_devel("%ps -> %s() -> buf=%p size=%zu\n",
-> +		 (void *)_RET_IP_, __func__, area->buf, area->size);
-
-Can we drop those? They need a recompile to enable, so if someone needs
-debugging they can just rewrite them - or use some sort of tracing instead.
-
-> +	return area;
-> +}
-> +
-> +void __ref rtas_work_area_free(struct rtas_work_area *area)
-> +{
-> +	pr_devel("%ps -> %s() -> buf=%p size=%zu\n",
-> +		 (void *)_RET_IP_, __func__, area->buf, area->size);
-
-Ditto.
- 
-> +	if (!rwa_state->available) {
-> +		rtas_work_area_free_early(area);
-> +		return;
-> +	}
-> +
-> +	gen_pool_free(rwa_state->gen_pool, (unsigned long)area->buf, area->size);
-> +	mempool_free(area, &rwa_state->descriptor_pool);
-> +	wake_up(&rwa_state->wqh);
-> +}
-> +
-> +/*
-> + * Initialization of the work area allocator happens in two parts. To
-> + * reliably reserve an arena that satisfies RTAS addressing
-> + * requirements, we must perform a memblock allocation early,
-> + * immmediately after RTAS instantiation. Then we have to wait until
-> + * the slab allocator is up before setting up the descriptor mempool
-> + * and adding the arena to a gen_pool.
-> + */
-> +static __init int rtas_work_area_allocator_init(void)
-> +{
-> +	const unsigned int order = ilog2(RTAS_WORK_AREA_MIN_ALLOC_SZ);
-> +	const phys_addr_t pa_start = __pa(rwa_state->arena);
-> +	const phys_addr_t pa_end = pa_start + RTAS_WORK_AREA_ARENA_SZ - 1;
-> +	struct gen_pool *pool;
-> +	const int nid = NUMA_NO_NODE;
-> +	int err;
-> +
-> +	err = -ENOMEM;
-> +	if (!rwa_state->arena)
-> +		goto err_out;
-> +
-> +	pool = gen_pool_create(order, nid);
-> +	if (!pool)
-> +		goto err_out;
-> +	/*
-> +	 * All RTAS functions that consume work areas are OK with
-> +	 * natural alignment, when they have alignment requirements at
-> +	 * all.
-> +	 */
-> +	gen_pool_set_algo(pool, gen_pool_first_fit_order_align, NULL);
-> +
-> +	err = gen_pool_add(pool, (unsigned long)rwa_state->arena,
-> +			   RTAS_WORK_AREA_ARENA_SZ, nid);
-> +	if (err)
-> +		goto err_destroy;
-> +
-> +	err = mempool_init_kmalloc_pool(&rwa_state->descriptor_pool, 1,
-> +					sizeof(struct rtas_work_area));
-> +	if (err)
-> +		goto err_destroy;
-> +
-> +	rwa_state->gen_pool = pool;
-> +	rwa_state->available = true;
-> +
-> +	pr_debug("arena [%pa-%pa] (%uK), min/max alloc sizes %u/%u\n",
-> +		 &pa_start, &pa_end,
-> +		 RTAS_WORK_AREA_ARENA_SZ / SZ_1K,
-> +		 RTAS_WORK_AREA_MIN_ALLOC_SZ,
-> +		 RTAS_WORK_AREA_MAX_ALLOC_SZ);
-> +
-> +	return 0;
-> +
-> +err_destroy:
-> +	gen_pool_destroy(pool);
-> +err_out:
-> +	return err;
-> +}
-> +machine_arch_initcall(pseries, rtas_work_area_allocator_init);
-
-Should it live in platforms/pseries then?
-
-> +/**
-> + * rtas_work_area_reserve_arena() - reserve memory suitable for RTAS work areas.
-> + */
-> +int __init rtas_work_area_reserve_arena(const phys_addr_t limit)
-> +{
-> +	const phys_addr_t align = RTAS_WORK_AREA_ARENA_ALIGN;
-> +	const phys_addr_t size = RTAS_WORK_AREA_ARENA_SZ;
-> +	const phys_addr_t min = MEMBLOCK_LOW_LIMIT;
-> +	const int nid = NUMA_NO_NODE;
-
-This should probably also be restricted to pseries?
-
-
-cheers
