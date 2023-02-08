@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6372DC05027
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0A77C636D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 22:58:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwPG0Q34z3fS7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:57:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwQH2fv9z3fSx
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 09:58:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jBK6BaV2;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JxiuVgJj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=jBK6BaV2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JxiuVgJj;
 	dkim-atps=neutral
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDC0cSTz3c7l
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDG1Tbdz3c83
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:05 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877643; x=1707413643;
+  t=1675877646; x=1707413646;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=4IQLDrOahYJ8lFlzrwNEYRM9qJTE1X0tQcaYGhsJEHc=;
-  b=jBK6BaV2Re/jN5UJx4r6htdXt33/vsEDgOggRMX+x7lGM6F6g60fvgjn
-   YuQz+bxY6/dfODLw6jMT2E73JxQV01jyE1vwBCCDySuLWW8k8ZH27uP1j
-   X+N0rJkSsHMrrxlKYZcvo2zz3APQsD1sRC8QkpOhvn/AHZOXMoYfRM5CO
-   hAqUVEgCttx0pz8oKlBcq1/H4/V6/3m6Gh5buQ2e06RLA0yCGpeeuzyX0
-   yenwSRBnZy3TESvxTTpBFPXcwdR52JJsh+qZ1RsC0qlckHmODL95eR/1N
-   jDmodWLE6PzY0+/GtHdyKAJI9eQ+fBDb4kumoMouY/qZ1iyoxVmJLdixF
-   Q==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225345"
+  bh=YtyTSKv3igoWzjKzirfnsuSbOV1zJhPUEQxw+fpoykQ=;
+  b=JxiuVgJjbbWVD0Is+4ntDjqB2tu4dnXDLkN47zqrp0xzm24ZnZT1F1s3
+   vuCOdrY/cBF7Scy6SkESmJoDgcoSiaK284hmxwm/brxjJAyvnayqZ4+AL
+   UzQqU3rwY+sjrhZ1QepEGVQ13sUlLuvevagD0pALaBWYUP8uFsQhgDnOG
+   Eu+laHA0CXeQMqNgFjFvs1IIDaSu71wd6awi66tSKo019y6w8wbGn+pLZ
+   t/Jz8pje6hzGQEclooHKFAl+7Ze0+TWOuloVEF01YVXVVWGJdyHfSDAej
+   b+8nDh8jYAvWwlLuAzhCNkkK1OyKRb1JlibZkfxrOv9j+6Yq+fyuPGm7I
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="327564397"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="310225345"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:27 -0800
+   d="scan'208";a="327564397"
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:43 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="697723031"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="644939107"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="697723031"
+   d="scan'208";a="644939107"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga008.jf.intel.com with ESMTP; 08 Feb 2023 09:33:15 -0800
+  by orsmga006.jf.intel.com with ESMTP; 08 Feb 2023 09:33:29 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 9FC47210; Wed,  8 Feb 2023 19:33:47 +0200 (EET)
+	id 78A38591; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,9 +88,9 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 03/18] hte: tegra-194: Use proper includes
-Date: Wed,  8 Feb 2023 19:33:28 +0200
-Message-Id: <20230208173343.37582-4-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 16/18] gpiolib: Deduplicate forward declarations in consumer.h
+Date: Wed,  8 Feb 2023 19:33:41 +0200
+Message-Id: <20230208173343.37582-17-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
@@ -113,47 +113,46 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich F
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Linus Walleij <linus.walleij@linaro.org>
+The struct fwnode_handle pointer is used in both branches of ifdeffery,
+no need to have a copy of the same in each of them, just make it global.
 
-The test driver uses the gpiod consumer API so include the right
-<linux/gpio/consumer.h> header. This may cause a problem with
-struct of_device_id being implcitly pulled in by the legacy
-header <linux/gpio.h> so include <linux/mod_devicetable.h>
-explicitly as well.
-
-While at it, drop explicit moduleparam.h (it's included with module.h)
-and sort the headers.
-
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/hte/hte-tegra194-test.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ include/linux/gpio/consumer.h | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/drivers/hte/hte-tegra194-test.c b/drivers/hte/hte-tegra194-test.c
-index 5d776a185bd6..358d4a10c6a1 100644
---- a/drivers/hte/hte-tegra194-test.c
-+++ b/drivers/hte/hte-tegra194-test.c
-@@ -6,14 +6,14 @@
-  */
- 
+diff --git a/include/linux/gpio/consumer.h b/include/linux/gpio/consumer.h
+index 59cb20cfac3d..a7eb8aa1e54c 100644
+--- a/include/linux/gpio/consumer.h
++++ b/include/linux/gpio/consumer.h
+@@ -8,6 +8,7 @@
  #include <linux/err.h>
--#include <linux/module.h>
--#include <linux/moduleparam.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/hte.h>
- #include <linux/interrupt.h>
--#include <linux/gpio.h>
--#include <linux/timer.h>
-+#include <linux/mod_devicetable.h>
-+#include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/timer.h>
- #include <linux/workqueue.h>
--#include <linux/hte.h>
  
- /*
-  * This sample HTE GPIO test driver demonstrates HTE API usage by enabling
+ struct device;
++struct fwnode_handle;
+ struct gpio_desc;
+ struct gpio_array;
+ 
+@@ -171,9 +172,6 @@ int gpiod_set_consumer_name(struct gpio_desc *desc, const char *name);
+ struct gpio_desc *gpio_to_desc(unsigned gpio);
+ int desc_to_gpio(const struct gpio_desc *desc);
+ 
+-/* Child properties interface */
+-struct fwnode_handle;
+-
+ struct gpio_desc *fwnode_gpiod_get_index(struct fwnode_handle *fwnode,
+ 					 const char *con_id, int index,
+ 					 enum gpiod_flags flags,
+@@ -546,9 +544,6 @@ static inline int desc_to_gpio(const struct gpio_desc *desc)
+ 	return -EINVAL;
+ }
+ 
+-/* Child properties interface */
+-struct fwnode_handle;
+-
+ static inline
+ struct gpio_desc *fwnode_gpiod_get_index(struct fwnode_handle *fwnode,
+ 					 const char *con_id, int index,
 -- 
 2.39.1
 
