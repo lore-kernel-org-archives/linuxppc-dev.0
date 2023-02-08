@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D9672C636D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 23:03:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F0B1C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Feb 2023 23:04:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwXP2mkZz3fjt
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 10:03:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PBwYQ6Lbhz3flp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 10:04:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gn03DeEY;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ATPrM2xt;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.151; helo=mga17.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=gn03DeEY;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ATPrM2xt;
 	dkim-atps=neutral
 Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDT4TM6z2xYL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PBnDV6j4Wz3cJC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 04:34:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1675877657; x=1707413657;
+  t=1675877659; x=1707413659;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=89Ua2SwK+9eoP7ii20ihjA/BcfunvekbP9EUK6guMxA=;
-  b=gn03DeEY/LT37e/gqZqERIV2VvxugEphDS+PDr3UC8B088CtqLmUDujN
-   soWW2Lb6CwO6jxaEU4dvY1eo+2sP8gSy744BqXplj25t22iOtbSd/8wf1
-   TE/FOWBz3MzfOvrEJ4kqCFfzuH1nqrzJ5zIaApbWLfGU/ynvlJLajKdmJ
-   MJxZcVnzu1jsMumw02J50onnzckBoTwpwe9aTe8BRSStugJtTKytos22i
-   m5wXVwC9ZD8zyOB5PkfU/e+S0sTwEPTrNx6L6rq0pL6FbtSHYEeTygfoO
-   uixq2EdzyHnfoyT5ReZNaA+Dv/6o2dSCGP584P9RTZiHGdgmEoF7qWL6r
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225646"
+  bh=EMgvq11k4/U6XFohBqROl1X58vyMfMqw1Azfwz74ROY=;
+  b=ATPrM2xt5XIhrnVmq3fYj2QXI0IGv1zX9xCU0A2256qJH+oZSah0vtLW
+   gtEBFYuHD18aNY58jzwdRct8bOJUBU5ogcIWxsQAk+WSV+Sbw6vfQ5FdT
+   7XyQ/tuZUzvkG85BIMtw+j5UyFP/NnCVcs4u6eSzGxYOjnhdSc49QA4VU
+   fJ7m9xEz12vf5P3ecfEAADW4ggPN3jY5kDNqCYHh85mXVo9zSxwVi+8tT
+   faTvrkmI7i5WRXUw5mn2dHlUCpKkv0uwNd4LRHAyL14v1s67mSHC4wSeW
+   o0qTKuEHabzU/0y1JuH7DGwJP33I0OzH4ra+2S9dnXdolwndUu7pU7i0p
+   A==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="310225670"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="310225646"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:40 -0800
+   d="scan'208";a="310225670"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Feb 2023 09:33:41 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="697723069"
+X-IronPort-AV: E=McAfee;i="6500,9779,10615"; a="660703990"
 X-IronPort-AV: E=Sophos;i="5.97,281,1669104000"; 
-   d="scan'208";a="697723069"
+   d="scan'208";a="660703990"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga008.jf.intel.com with ESMTP; 08 Feb 2023 09:33:28 -0800
+  by orsmga007.jf.intel.com with ESMTP; 08 Feb 2023 09:33:28 -0800
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 694D3590; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
+	id 4A69C4C9; Wed,  8 Feb 2023 19:33:48 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	Arnd Bergmann <arnd@arndb.de>,
@@ -88,9 +88,9 @@ To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
 	SHA-cyfmac-dev-list@infineon.com,
 	linux-arch@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v4 15/18] gpiolib: Drop unused forward declaration from driver.h
-Date: Wed,  8 Feb 2023 19:33:40 +0200
-Message-Id: <20230208173343.37582-16-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 13/18] gpio: reg: Add missing header(s)
+Date: Wed,  8 Feb 2023 19:33:38 +0200
+Message-Id: <20230208173343.37582-14-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
 References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
@@ -113,26 +113,42 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich F
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no struct device_node pointers anywhere in the header,
-drop unused forward declaration.
+Do not imply that some of the generic headers may be always included.
+Instead, include explicitly what we are direct user of.
+
+While at it, split out the GPIO group of headers.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- include/linux/gpio/driver.h | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/gpio/gpio-reg.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/gpio/driver.h b/include/linux/gpio/driver.h
-index ccd8a512d854..262a84ce9bcb 100644
---- a/include/linux/gpio/driver.h
-+++ b/include/linux/gpio/driver.h
-@@ -16,7 +16,6 @@
+diff --git a/drivers/gpio/gpio-reg.c b/drivers/gpio/gpio-reg.c
+index d35169bde25a..73c7260d89c0 100644
+--- a/drivers/gpio/gpio-reg.c
++++ b/drivers/gpio/gpio-reg.c
+@@ -4,11 +4,19 @@
+  *
+  * Copyright (C) 2016 Russell King
+  */
+-#include <linux/gpio/driver.h>
+-#include <linux/gpio/gpio-reg.h>
++#include <linux/bits.h>
++#include <linux/container_of.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/errno.h>
+ #include <linux/io.h>
++#include <linux/irqdomain.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
++#include <linux/types.h>
++
++#include <linux/gpio/driver.h>
++#include <linux/gpio/gpio-reg.h>
  
- struct gpio_desc;
- struct of_phandle_args;
--struct device_node;
- struct seq_file;
- struct gpio_device;
- struct module;
+ struct gpio_reg {
+ 	struct gpio_chip gc;
 -- 
 2.39.1
 
