@@ -4,59 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2819C05027
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 13:56:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6320C6379F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 13:57:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJLP6jssz3f6Z
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 00:56:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJMQ6qmPz3f8P
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 00:57:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ysXmUKmd;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=swXYWmDf;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rGoNUeHA;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=fxzGR2US;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=ysXmUKmd;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=swXYWmDf;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rGoNUeHA;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=fxzGR2US;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCJKK3wbKz3cgs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 00:55:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCJKK3sSmz3cfW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 00:55:16 +1100 (AEDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 35C8C5D031;
-	Thu,  9 Feb 2023 13:55:13 +0000 (UTC)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id 9CE3E229E0;
+	Thu,  9 Feb 2023 13:55:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1675950913; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jRGV1sHWfA7dHKuzbZtPETV56sGZm893xDJqn9cFqAI=;
-	b=ysXmUKmdYXeGDvLEm+JQVP6v7SCD19NlPd+F4LIqlZ5CPgmjMdhcaMGivagmFoyJmPkD3X
-	fllymK0hneVqsFRNk48x7r79fovNMEuuZHHCWc0IZ66Jy7r3iOvggKFmE9cG2Jani52bMh
-	DELoNCZiMwIUkc2gAo4HUoDas3QPwk4=
+	t=1675950912; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=uRXYWe304mkCxYZE0lH4+u8aTbd19nfJc9iHmaY1sNs=;
+	b=rGoNUeHAKyyaOWP1mlyHpoRNo8hh31zgKYmRP6qxRNT8QfNwA6YaXG7rHjRGE1m/ylLMGR
+	g9ejrdOFZJ3NQA7dCMmp65bqYgU2kGtttdHBB326k38YyttBqXNB+ELPB4GiJtmucnSX6G
+	/PrKOuOx9K1EKieAsj2P1/t25VALtC8=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1675950913;
+	s=susede2_ed25519; t=1675950912;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=jRGV1sHWfA7dHKuzbZtPETV56sGZm893xDJqn9cFqAI=;
-	b=swXYWmDfLiLpLXZVgBaUGMMoVUFVyi3ll6Vjpk9dJdYBEhGtsxvlSYiq5s+/pkkJWzgV1A
-	bmFCfMPDFVn9lTCg==
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=uRXYWe304mkCxYZE0lH4+u8aTbd19nfJc9iHmaY1sNs=;
+	b=fxzGR2USnOzNJy0acLQiboQ/osEf+Oy+1nm5x8+ggn+D4J+XiU1aI6WICQgpe6xViZClJ+
+	fNNF/22aiuayXkAw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id EE117138E4;
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 5B3E3138E4;
 	Thu,  9 Feb 2023 13:55:12 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id UD5MOUD75GNTfwAAMHmgww
+	id iaZWFUD75GNTfwAAMHmgww
 	(envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:12 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: daniel@ffwll.ch,
@@ -69,12 +65,10 @@ To: daniel@ffwll.ch,
 	mpe@ellerman.id.au,
 	npiggin@gmail.com,
 	christophe.leroy@csgroup.eu
-Subject: [PATCH 02/11] fbdev: Transfer video= option strings to caller; clarify ownership
-Date: Thu,  9 Feb 2023 14:55:00 +0100
-Message-Id: <20230209135509.7786-3-tzimmermann@suse.de>
+Subject: [PATCH 00/11] drm,fbdev: Move video= option to drivers/video
+Date: Thu,  9 Feb 2023 14:54:58 +0100
+Message-Id: <20230209135509.7786-1-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230209135509.7786-1-tzimmermann@suse.de>
-References: <20230209135509.7786-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -92,69 +86,64 @@ Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmerman
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In fb_get_options(), always duplicate the returned option string and
-transfer ownership of the memory to the function's caller.
+The kernel's video= option sets the initial video mode. It is shared
+by fbdev and DRM, but located within the fbdev code. Move it to
+drivers/video/ and adapt callers. Allows DRM (and others) to use the
+option without depending on fbdev.
 
-Until now, only the global option string got duplicated and transferred
-to the caller; the per-driver options were owned by fb_get_options().
-In the end, it was impossible for the function's caller to detect if
-it had to release the string's memory buffer. Hence, all calling drivers
-leak the memory buffer. The leaks have existed ever since, but drivers
-only call fb_get_option() once as part of module initialization. So the
-amount of leaked memory is not significant.
+While at it, fix the interface of the lookup functions. This requires
+a number of changes. First clarify the ownership of the option string
+in patch 2. The helper fb_get_options() returns the video= parameter's
+value. It's sometimes a copy and sometimes the original string. Hence
+callers, mostly fbdev drivers, have just leaked the returned string.
+Change this to always duplicate the option string in fb_get_options()
+and transfer ownership of the copy to the caller. We can then start to
+fix the memory leaks in the fbdev drivers.
 
-Fix the semantics of fb_get_option() by unconditionally transferring
-ownership of the memory buffer to the caller. Later patches can resolve
-the memory leaks in the fbdev drivers.
+There's a global video= setting and a number of per-output settings.
+In patches 3 to 5, support explicit lookup of the global video option
+and lookup the string in fbdev's modedb and in a PS3 driver. Then
+avoid exporting the global setting's internal state variable in patch 6.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/video/fbdev/core/fb_cmdline.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+Finally, in patches 7 to 11, move the video= option to drivers/video.
+It can be used directly in DRM and a PS3 driver. This fixes any memory
+leaks from the returned option string. For fbdev drivers, the helper
+fb_get_options() remains as an adapter aroudn the new interface.
 
-diff --git a/drivers/video/fbdev/core/fb_cmdline.c b/drivers/video/fbdev/core/fb_cmdline.c
-index 6792010d6716..702b00b71870 100644
---- a/drivers/video/fbdev/core/fb_cmdline.c
-+++ b/drivers/video/fbdev/core/fb_cmdline.c
-@@ -30,13 +30,17 @@ EXPORT_SYMBOL_GPL(fb_mode_option);
-  *          (video=<name>:<options>)
-  * @option: the option will be stored here
-  *
-+ * The caller owns the string returned in @option and is
-+ * responsible for releasing the memory.
-+ *
-  * NOTE: Needed to maintain backwards compatibility
-  */
- int fb_get_options(const char *name, char **option)
- {
--	char *opt, *options = NULL;
-+	const char *options = NULL;
- 	int retval = 0;
- 	int name_len = strlen(name), i;
-+	char *opt;
- 
- 	if (name_len && ofonly && strncmp(name, "offb", 4))
- 		retval = 1;
-@@ -55,12 +59,16 @@ int fb_get_options(const char *name, char **option)
- 	}
- 	/* No match, pass global option */
- 	if (!options && option && fb_mode_option)
--		options = kstrdup(fb_mode_option, GFP_KERNEL);
-+		options = fb_mode_option;
- 	if (options && !strncmp(options, "off", 3))
- 		retval = 1;
- 
--	if (option)
--		*option = options;
-+	if (option) {
-+		if (options)
-+			*option = kstrdup(options, GFP_KERNEL);
-+		else
-+			*option = NULL;
-+	}
- 
- 	return retval;
- }
+Tested with DRM and fbdev and built for the PS3.
+
+Thomas Zimmermann (11):
+  fbdev: Fix contact info in fb_cmdline.c
+  fbdev: Transfer video= option strings to caller; clarify ownership
+  fbdev: Support NULL for name in option-string lookup
+  drivers/ps3: Read video= option with fb_get_option()
+  fbdev: Read video= option with fb_get_option() in modedb
+  fbdev: Unexport fb_mode_option
+  fbdev: Move option-string lookup into helper
+  fbdev: Handle video= parameter in video/cmdline.c
+  driver/ps3: Include <video/cmdline.h> for mode parsing
+  drm: Include <video/cmdline.h> for mode parsing
+  drm: Fix comment on mode parsing
+
+ drivers/gpu/drm/Kconfig               |   2 +-
+ drivers/gpu/drm/drm_connector.c       |   9 +-
+ drivers/gpu/drm/drm_modes.c           |   3 +-
+ drivers/ps3/ps3av.c                   |   9 +-
+ drivers/video/Kconfig                 |   3 +
+ drivers/video/Makefile                |   1 +
+ drivers/video/cmdline.c               | 133 ++++++++++++++++++++++++++
+ drivers/video/fbdev/Kconfig           |   5 +-
+ drivers/video/fbdev/core/Makefile     |   3 +-
+ drivers/video/fbdev/core/fb_cmdline.c |  94 +++++-------------
+ drivers/video/fbdev/core/modedb.c     |   8 +-
+ include/linux/fb.h                    |   1 -
+ include/video/cmdline.h               |  20 ++++
+ 13 files changed, 202 insertions(+), 89 deletions(-)
+ create mode 100644 drivers/video/cmdline.c
+ create mode 100644 include/video/cmdline.h
+
+
+base-commit: 1a019dd7a5d25f7c1c9b77931138290e28947e6a
 -- 
 2.39.1
 
