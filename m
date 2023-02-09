@@ -4,84 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D26C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 10:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E76EC636D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 11:17:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCDP65B70z3f4r
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 21:58:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCDpz3nvyz3f61
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 22:17:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WNajBjfb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eKUoJ3yB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ganeshgr@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WNajBjfb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eKUoJ3yB;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCDN16nMGz3cfW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 21:57:21 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 319Aorxd037123;
-	Thu, 9 Feb 2023 10:57:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=exxMuZxrY4XvnAdGg73FfWI+K5W4L1JzhM+C6mxQ9q0=;
- b=WNajBjfb9DGeASAMf7GVICJCfuM8UccCM2Fu7p8mGpTQNhvZ/0ZDHFsfiXrcMuca+GTl
- kKlVcSwNAnLaOdtUmJ6+/AnKiKdWq4QfAp3Ka0DwpI9MvU9ikE/zOT/DDPkKUAfnLDqy
- SmNOoSKzw04NneEL8DKJ9aESQnixTTQ83s95EdWaCkD/OHeFsU32UnpXb9uYhfo/XpGz
- 97Sf4n49nFm7U4RXDYASUpoPiwmE8ty6g4MsB8yD6cuLKuoTDQbZvM9qTz+P+T+janv0
- l8pKbfAlbKuqy5PJOP3wz/Q61OhBJyLyu2OUxYQYQMreBCnhs7O62Hj+4Zj4Wa4BItnl Aw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nmyejr30b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 09 Feb 2023 10:57:14 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 319AqLPQ040491;
-	Thu, 9 Feb 2023 10:57:13 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nmyejr2yg-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 09 Feb 2023 10:57:13 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 318JOxwW020939;
-	Thu, 9 Feb 2023 10:57:11 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3nhemfp388-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 09 Feb 2023 10:57:10 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 319Av7qb22151910
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 9 Feb 2023 10:57:07 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 55F8620043;
-	Thu,  9 Feb 2023 10:57:07 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3180320040;
-	Thu,  9 Feb 2023 10:57:05 +0000 (GMT)
-Received: from li-79f82dcc-27d1-11b2-a85c-9579c2333295.ibm.com.domain.name (unknown [9.43.59.180])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  9 Feb 2023 10:57:04 +0000 (GMT)
-From: Ganesh Goudar <ganeshgr@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/eeh: Set channel state after notifying the drivers
-Date: Thu,  9 Feb 2023 16:26:49 +0530
-Message-Id: <20230209105649.127707-1-ganeshgr@linux.ibm.com>
-X-Mailer: git-send-email 2.39.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCDnw02fhz3cfW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 22:16:19 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id F101161A18;
+	Thu,  9 Feb 2023 11:16:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 73CFEC433D2;
+	Thu,  9 Feb 2023 11:16:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1675941375;
+	bh=hQMzHQye1dp7hTkzVYaYvChEqpgrVfmuVlzE9kYeWX8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=eKUoJ3yB5eW+z5zrttLCk8UCPppGGyl/eAaB6S234Wn9guqjH30V9GYKLJmbQxM42
+	 mr6j2bDy8UeqFeNHTWmi14epGLyh2Uhmw9PYz08KpRbOWXrppuiGAToU0JHFcivpI1
+	 NgH5Vl6zvgmSKrkXSfP+N7y7P8daldnJea8QzckdPDIelx86cC0O+XkHBg/blYyZtP
+	 Y2avLd3IaF2NU1ohTmzjYuQfTAeLz64IaloHD4L0qOC3qhecRwSWKEbejd1zJ3svs9
+	 swT0HeG5HjJ7KZGNI0tY9zBGy0vM0q/s98dy4MAcY8lqcXNN4B54Bw56ucIWjE/7HY
+	 lShXsmmSHKX2Q==
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 6.1 17/38] powerpc/85xx: Fix unannotated intra-function call warning
+Date: Thu,  9 Feb 2023 06:14:36 -0500
+Message-Id: <20230209111459.1891941-17-sashal@kernel.org>
+X-Mailer: git-send-email 2.39.0
+In-Reply-To: <20230209111459.1891941-1-sashal@kernel.org>
+References: <20230209111459.1891941-1-sashal@kernel.org>
 MIME-Version: 1.0
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: D-QKOq9Eqjvq6VPW-0BAR93tPsfELaOI
-X-Proofpoint-ORIG-GUID: GAqcGzGWNZUDFPwcmGM1p-cERDSA8ExX
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.122.1
- definitions=2023-02-09_08,2023-02-08_02,2022-06-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
- priorityscore=1501 suspectscore=0 adultscore=0 bulkscore=0 mlxlogscore=999
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0 phishscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302090095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,78 +62,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dick.kennedy@broadcom.com, Ganesh Goudar <ganeshgr@linux.ibm.com>, oohall@gmail.com, mahesh@linux.ibm.com, wenxiong@us.ibm.com
+Cc: Sasha Levin <sashal@kernel.org>, kernel test robot <lkp@intel.com>, Sathvika Vasireddy <sv@linux.ibm.com>, npiggin@gmail.com, naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a PCI error is encountered 6th time in an hour we
-set the channel state to perm_failure and notify the
-driver about the permanent failure.
+From: Sathvika Vasireddy <sv@linux.ibm.com>
 
-However, after upstream commit 38ddc011478e ("powerpc/eeh:
-Make permanently failed devices non-actionable"), EEH handler
-stops calling any routine once the device is marked as
-permanent failure. This issue can lead to fatal consequences
-like kernel hang with certain PCI devices.
+[ Upstream commit 8afffce6aa3bddc940ac1909627ff1e772b6cbf1 ]
 
-Following log is observed with lpfc driver, with and without
-this change, Without this change kernel hangs, If PCI error
-is encountered 6 times for a device in an hour.
+objtool throws the following warning:
+  arch/powerpc/kernel/head_85xx.o: warning: objtool: .head.text+0x1a6c:
+  unannotated intra-function call
 
-Without the change
+Fix the warning by annotating KernelSPE symbol with SYM_FUNC_START_LOCAL
+and SYM_FUNC_END macros.
 
- EEH: Beginning: 'error_detected(permanent failure)'
- PCI 0132:60:00.0#600000: EEH: not actionable (1,1,1)
- PCI 0132:60:00.1#600000: EEH: not actionable (1,1,1)
- EEH: Finished:'error_detected(permanent failure)'
-
-With the change
-
- EEH: Beginning: 'error_detected(permanent failure)'
- EEH: Invoking lpfc->error_detected(permanent failure)
- EEH: lpfc driver reports: 'disconnect'
- EEH: Invoking lpfc->error_detected(permanent failure)
- EEH: lpfc driver reports: 'disconnect'
- EEH: Finished:'error_detected(permanent failure)'
-
-To fix the issue, set channel state to permanent failure after
-notifying the drivers.
-
-Fixes: 38ddc011478e ("powerpc/eeh: Make permanently failed devices non-actionable")
-Suggested-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Signed-off-by: Ganesh Goudar <ganeshgr@linux.ibm.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20230128124138.1066176-1-sv@linux.ibm.com
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kernel/eeh_driver.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/head_85xx.S | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index f279295179bd..438568a472d0 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -1065,10 +1065,10 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
- 	eeh_slot_error_detail(pe, EEH_LOG_PERM);
+diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
+index 52c0ab416326a..d3939849f4550 100644
+--- a/arch/powerpc/kernel/head_85xx.S
++++ b/arch/powerpc/kernel/head_85xx.S
+@@ -862,7 +862,7 @@ _GLOBAL(load_up_spe)
+  * SPE unavailable trap from kernel - print a message, but let
+  * the task use SPE in the kernel until it returns to user mode.
+  */
+-KernelSPE:
++SYM_FUNC_START_LOCAL(KernelSPE)
+ 	lwz	r3,_MSR(r1)
+ 	oris	r3,r3,MSR_SPE@h
+ 	stw	r3,_MSR(r1)	/* enable use of SPE after return */
+@@ -879,6 +879,7 @@ KernelSPE:
+ #endif
+ 	.align	4,0
  
- 	/* Notify all devices that they're about to go down. */
--	eeh_set_channel_state(pe, pci_channel_io_perm_failure);
- 	eeh_set_irq_state(pe, false);
- 	eeh_pe_report("error_detected(permanent failure)", pe,
- 		      eeh_report_failure, NULL);
-+	eeh_set_channel_state(pe, pci_channel_io_perm_failure);
++SYM_FUNC_END(KernelSPE)
+ #endif /* CONFIG_SPE */
  
- 	/* Mark the PE to be removed permanently */
- 	eeh_pe_state_mark(pe, EEH_PE_REMOVED);
-@@ -1185,10 +1185,10 @@ void eeh_handle_special_event(void)
- 
- 			/* Notify all devices to be down */
- 			eeh_pe_state_clear(pe, EEH_PE_PRI_BUS, true);
--			eeh_set_channel_state(pe, pci_channel_io_perm_failure);
- 			eeh_pe_report(
- 				"error_detected(permanent failure)", pe,
- 				eeh_report_failure, NULL);
-+			eeh_set_channel_state(pe, pci_channel_io_perm_failure);
- 
- 			pci_lock_rescan_remove();
- 			list_for_each_entry(hose, &hose_list, list_node) {
+ /*
 -- 
-2.39.1
+2.39.0
 
