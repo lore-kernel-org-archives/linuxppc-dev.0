@@ -4,46 +4,147 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7553CC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:16:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECAF1C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:23:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJnC71Wqz3f5N
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:15:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJxJ3Msdz3f7s
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:23:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=YzYv5Lu+;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=eQ0M/s3s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:7eae::601; helo=nam11-bn8-obe.outbound.protection.outlook.com; envelope-from=dipenp@nvidia.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=YzYv5Lu+;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=eQ0M/s3s;
 	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from NAM11-BN8-obe.outbound.protection.outlook.com (mail-bn8nam11on20601.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eae::601])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PC7Rk1NHrz3f4X
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 18:15:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=hOwPtrFr9W1RAetj4yw8lS4WGxzVY9WeB5xiD+rtLZk=; b=YzYv5Lu+GhnsQWcrh/P3dNn99Y
-	kFFn/VTStVzrVt7izdrqqcFl3XXWJTiUSU7zkMNSHLZccvHB/fdFfsSF2G3d9l6tM8mZkGWrqFoL+
-	zV70haeTAUkVk/rmntIAjBbeTETDQ9gynZkiS5FkcxD5ysQrDwctOiqgUEqy0Xc8jqVEGJ0uWfK0f
-	t2HqZ/A6Oxx0EJl+SAADCmwyxjMuktOo75CIMUWNmk83r+Z+8eyEK1uwZEhembDTSx9i7ostc00tO
-	/jouGLzfxYzc3+YcINRJIpim6ul86T5PcNwp2g7wUJajkYggQ+pjUyATSgrXOBG/P/NTAUzC9nrO4
-	AJo7w9JQ==;
-Received: from [2601:1c2:980:9ec0::df2f] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
-	id 1pQ189-000LPt-4s; Thu, 09 Feb 2023 07:14:05 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/24 v2] Documentation: correct lots of spelling errors (series 1)
-Date: Wed,  8 Feb 2023 23:13:36 -0800
-Message-Id: <20230209071400.31476-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.39.1
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCF6G1tQfz2ym7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 22:30:27 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=fZR2Q2RnFbagGyX5YCVSuYN30uU2QVj2mWzqzF5iSq8uUW4IjVxQiHyAyTq7G1UzVoXSYPPxzav5rPK+A4Mh/ITs44ZbIND1iglV/Cg9CtdWk+nP/UsjDrgoohEvcUIMmfCvtrsW9ucUohJUA0pWFevFgGhwwWVOdCbCnS4peIwdf7yWFMTblKG7opUofqjD3ItN4LtFEupsbhcuUAUZ1AMVI/tFG5udQR1aveVu0sPTMcu03/+N9HJ34lha2T9ov4b9RWIDVjyfLtL/76S0EoeMztbaZ0FSEAssaqhjE9mO1JtKZe0aTEEciu4sp+FjobNEClMHCepK60e0W5WEEg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=wv/h9yMF1V7f8yQyo1ITCHbCwWDrmyWqYtd76E8ToHE=;
+ b=AIikFwk0FSPqlx9eirUO/VY0izD2abhKoCtO6eTgvLeZsmuUWXiz/oBCDhsQ8OKvxZO3q4+HWcM1jYnSUKpge1nvJY06EjhtqK2FVRH9FTe4o7VvSzNqEKGScXyRbT/5u/vcbjZMLhyQ/mNAkI7d2lVf0apkCwLfeBpoucv7z+/C+D9n26w+kFsvkBxmszX2mQaaecnF79j89QyRf4G3gd9yrVOlFThTAUCsFoXT5DNW+fOBJ/xQ7uOnm6/v6pXmzKu/FMjXGdFMGiOGXq0ZxEPZjFRWSZ3HKsHc7ITWKn6Rw+nNrP5boOPCpNb4oeQGu487Zq6v0jc/e3FMMeyPiw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=wv/h9yMF1V7f8yQyo1ITCHbCwWDrmyWqYtd76E8ToHE=;
+ b=eQ0M/s3sSwbTRQo7lwAn1wirtgYUKwYHdG9hv5MqPxAKIOM3ghMiRZFlyENi13CRosgmdxel+Y/abR18bLp8vVLJ4GTQhrVRKsq3d1pXszWtE5MJHqDS4AUPTMjslA6cATz6aqoENg178ZRXt1GWouS1eHT11vTdPK/uRwAHRQDBWEgvgPS1fRJTJ8R3+ZhILSMwY9qZaV3J8k2rVaQ3NiJlloZoeYOVPYGnaDBDICcAs9mtOXi11VJyBuAtzfl5WrC6QpUvQTgXczW/tWZE3YiKYXeYbAUV2CmymMNLkWCig9KYP/dH2O60W5NjrYY9K3w0bbq704WtoDJXbDbRvQ==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from IA1PR12MB6604.namprd12.prod.outlook.com (2603:10b6:208:3a0::7)
+ by DM4PR12MB5245.namprd12.prod.outlook.com (2603:10b6:5:398::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6086.17; Thu, 9 Feb
+ 2023 11:30:03 +0000
+Received: from IA1PR12MB6604.namprd12.prod.outlook.com
+ ([fe80::735c:fa9:2043:279a]) by IA1PR12MB6604.namprd12.prod.outlook.com
+ ([fe80::735c:fa9:2043:279a%4]) with mapi id 15.20.6086.019; Thu, 9 Feb 2023
+ 11:30:03 +0000
+Message-ID: <e9772188-2b52-d7f4-0540-9e9402155285@nvidia.com>
+Date: Thu, 9 Feb 2023 16:59:24 +0530
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.7.2
+Subject: Re: [PATCH v4 03/18] hte: tegra-194: Use proper includes
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>,
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>,
+ Tony Lindgren <tony@atomide.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Vincenzo Palazzo <vincenzopalazzodev@gmail.com>,
+ Devarsh Thakkar <devarsht@ti.com>, Michael Walle <michael@walle.cc>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Thierry Reding <treding@nvidia.com>,
+ Stefan Schmidt <stefan@datenfreihafen.org>,
+ Miquel Raynal <miquel.raynal@bootlin.com>, Lee Jones <lee@kernel.org>,
+ linux-gpio@vger.kernel.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-doc-tw-discuss@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-tegra@vger.kernel.org,
+ linux-input@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-wpan@vger.kernel.org, netdev@vger.kernel.org,
+ linux-wireless@vger.kernel.org, brcm80211-dev-list.pdl@broadcom.com,
+ SHA-cyfmac-dev-list@infineon.com, linux-arch@vger.kernel.org,
+ devicetree@vger.kernel.org
+References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
+ <20230208173343.37582-4-andriy.shevchenko@linux.intel.com>
+Content-Language: en-US
+X-Nvconfidentiality: public
+From: Dipen Patel <dipenp@nvidia.com>
+In-Reply-To: <20230208173343.37582-4-andriy.shevchenko@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MAXPR01CA0095.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:a00:5d::13) To IA1PR12MB6604.namprd12.prod.outlook.com
+ (2603:10b6:208:3a0::7)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: IA1PR12MB6604:EE_|DM4PR12MB5245:EE_
+X-MS-Office365-Filtering-Correlation-Id: d27b7497-fb1c-4a3f-af5e-08db0a90fc2c
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	kJ0ZjfD7taWEJFCo/vx/mTiyAEC2X1B5VCXMLNd1n7I7puu1EUNOPjfMWSzzQb+upc5gf4sayt5uSBAaOua0+lRtCJof0QqjE+OdLxV9ZI2LwKQwOwjKWqh0rw1+BjFmHUWwltOzUMtJ7TvcZ0TJlJfbgG1dNbaQ/FjVpDJ1UFupHN/bpzXp3aWy5iFQF+8yge3ZFseeiJbtQSfImgB61mkjCUK7haZZuKEkXwiQvWSwuWxn/GkoFt7bNUWWMZNEFBCZuDBa5qjEhlk6ndB6o7BKmVuCyzeodyWFqqODQ7DB51pCWN4LJ1Zi6lKqv5gVy2d73VuGe1JMNbk0GUPlWk58Xf3JApo+tBPGCCod9nwzDquDWDUgwIEl80JT6sfMb890EY1Fr35FIQH2pSZYQ5zrFpjEbVUmO/9UrT/y39U1tsQYneP3XpJIHWx+gIuG1u0q+5RTJoffEJ0R3DvYAbbJpFx2EF8sYcitlHUtqk+/CO3MezgmhuOSENdz2PiSj7P9brVdLqMgbD3YHflxi2cWrODBwMhUDWepfTczH3adY0SG5EZLOk6E8Exdx7cURwziwuOQ2r/RXljuyEP0Y5uM8mzQ+TrjhK/H2EWU9wBuTo+hVNXayNt4F92ZTJe+6TrPN8Zgy/0kNK+jYwOMgHTU65PPQmOxNstZ1h3RW3tjFZFUa50ct8m53fVmmnb8up4ySdK4vTmZ9admV0/REWKly8QwbGJteMS6VZYnkAIDfeZGM4oMclXRYlyeM5gU
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA1PR12MB6604.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(396003)(376002)(366004)(136003)(346002)(39860400002)(451199018)(31686004)(7366002)(36756003)(31696002)(86362001)(2906002)(921005)(7416002)(5660300002)(8936002)(41300700001)(38100700002)(83380400001)(7406005)(66476007)(6486002)(478600001)(6512007)(316002)(4326008)(53546011)(186003)(26005)(66556008)(6666004)(66946007)(54906003)(6506007)(2616005)(110136005)(8676002)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?utf-8?B?MkxVbHQ4NE9zeUc3VSs2Qmd5M1VuZXRLYlltcGtEbDc4NlVIb3l4MEhMZmR2?=
+ =?utf-8?B?Q3hRQXpCZTVXMis1RjlPRFBNUnB4emI2LzZBOHpQNE45YmxRQUJ3MThnRzRk?=
+ =?utf-8?B?UEVDa0xFdnJWdzBVSTFOY0NGN0VFM3Fic3ZoYkpaMExMVkpWU0FCaUVUT2Jp?=
+ =?utf-8?B?VlFDaVM4MkhhNjZtYnhGcDN3K1E3ZEhPdWF2b0VkWkdxYlh1VnVMVTR4RUtZ?=
+ =?utf-8?B?QWxpYmRMWXJieGpaRG5nWkFYTnkzMXJRWVVYTzk2RGxqcUdPeFlrSkJsQ3ZJ?=
+ =?utf-8?B?Y3ZqVUwwa0ViZEd4ZHRJbXVlVHJBblZ0RUJHeWk1Y2VuV1l6R0ZkMjNDQ285?=
+ =?utf-8?B?RXJ2ZDJFOGJiQVNrVGphVG14YmVOWC82YTgrT3FKWGdVZURGbjNmdDRYK3pW?=
+ =?utf-8?B?RUZ6Q3ZwLzdVRUVLcHBMU29OM0kvRXhvYjMwZDlNRUJveFZGK2VDRmZEbU50?=
+ =?utf-8?B?TVZ3b1doREt1bkNIQ0J6eHBVVlFGSisvU2lYVmpucmVzSllTSmFiUUdzeFZm?=
+ =?utf-8?B?OGZwc2U3S3lRL3ZSS0xvMFNwRVlLT2xRUjU4eFVGSXRiN1g0TU5LY1BVNEt5?=
+ =?utf-8?B?L3I1dUtkM1BNRFJnY0Qyc2lUMm1oUG1EUlprZ1BBaGYzZWtLTngwUGZUMzFT?=
+ =?utf-8?B?MW0wUFh3Uit4aFM2M3cxTnJkZER4aTRENFFXejBwdm5mdGpOU2pBVWpvTUZr?=
+ =?utf-8?B?RFFBdWMvZjdkSWo1QnZSSWlRUlBwaENqb09zQ0QxdGtZcFBDcVhhZWxwY1A3?=
+ =?utf-8?B?REdORWtmOTdJcjFNcVdQOG1EdW1zM1hiL01ybFJqSG1vRjUyYmU3UEljSkJC?=
+ =?utf-8?B?UEtreXkrUXBubnltVnpObjQ4enZNMG5nZWVNWGF2NFNOVzRTVnMxS0NvU0h6?=
+ =?utf-8?B?MlJqZkZudENxMm9CbFJwU0FCWjRXTTU5Q21iQ3lzR1ZuWHpUMTFOLzJXeVdZ?=
+ =?utf-8?B?T2RCeHBYaHU2amhVcDF6YlNkd1pQRHF5SHVkNnhVZUxPWEdUV2c2djdHMFJM?=
+ =?utf-8?B?RW1lWjRiTDRNUno4MjVzbXB1Nk1nYjhKVXZCNmhGUGpQR0NkZmFrS2NOWmJ4?=
+ =?utf-8?B?UWIzdTF1dzZqMVFkSXliN3hKNFlZOEdpMXNHa21qbGsvZ1dWU1QvZ1JTV0tz?=
+ =?utf-8?B?WHhscVY0SUZ1cE41NU5abnM2SVJMSGE2YnVYWjRUQnQ5QkJoYjNxS3dnUHVL?=
+ =?utf-8?B?MXBFSVF4aDdpRDhsbTYzcjZ0SWFlYjhZTTNaYlRldHZSSmhJVm91eXNqb0Ry?=
+ =?utf-8?B?SGMzN0s1UmMxS3RsOWpIQjJDcmtJdW5FTVBNNU1KUnQ5czBDRXBvOXZ2Qk4v?=
+ =?utf-8?B?N1NpVy95Rjd1SS8yamZnVy9paDNqU0puV3hQdHVZNlFONXdrS0s3TlhpTW50?=
+ =?utf-8?B?dm4rNnpZS2pBbGIxc2swMnNvMFZkd3RYRE1ZdDJMNDNVZUIrZ00zRkoxUU92?=
+ =?utf-8?B?bVJGWXk1ZUEyVk1wd1B1TktNeEtLUUhmWGtMT05qd0ZlUFZMcHc2aDBFbVJz?=
+ =?utf-8?B?YkVESHg0NlNCZTlpWXVzaUxOeW9LeE9JTytqN1pBck5NOE5oa3NZUHU4UUM0?=
+ =?utf-8?B?Nmg4eSsrVUVraGdlbXJEbWJIZkkwanJQYS9WRmwva2ZYMWFzUWFINmx2TzZG?=
+ =?utf-8?B?eit1YkMrWmtpblNaLzJiZDgvTU5OcXorcThFVDVkcGcrcUdKUVpMdFJvTU51?=
+ =?utf-8?B?VzRJTGk5L0V6YXhydFRjbElCM0JyTC9OaDNvUXUzN3h2bTlvaENKQWFnUEdm?=
+ =?utf-8?B?YXZSZzZlWHROZ1gzVHlHSENmOG5RSkJXSXRTdHNuRWpUUE5iVy91Q2VTUjlR?=
+ =?utf-8?B?NlhMZzY4cVZWdWpXUGE2bEROWjRaTzE1ZXhkQ0pvSVM0Yk5EU2xWWlhNanlU?=
+ =?utf-8?B?VDFMeE5ZMEtuOW5oM0UrOWdjS1JxTnp1SDJJSElyN3VIL0pvcDRMV0pNSktO?=
+ =?utf-8?B?R3ZFQ2s5TVo2RzV2WkR5cGVTVCt6bU14ZHhqb2U3bjk4aHhOaGVNMjlXTmFh?=
+ =?utf-8?B?ZS81K3F5dEc1VnlMNWZWZS9BT0xEaHhVN01WZFNiMWJzODJ1NVFDUWQ0ZDJq?=
+ =?utf-8?B?cTMyTzJZWGxKY3ltM1p2VzdBbllPWWxvbE1ZRFBIM2E2TCtCRXhRZzJXelR3?=
+ =?utf-8?Q?yx6R0t4siwkpyC+r0gwCmnBXz?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d27b7497-fb1c-4a3f-af5e-08db0a90fc2c
+X-MS-Exchange-CrossTenant-AuthSource: IA1PR12MB6604.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 09 Feb 2023 11:30:03.1060
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: RgnVePRshhtNyI7EK3hV10yfvYWwoy6r/JMJaW3kBxatpvWgvTplrf0ZPqjDP0Il5grE/15H1h9RyChK1nEEDA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB5245
 X-Mailman-Approved-At: Fri, 10 Feb 2023 01:15:07 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,180 +157,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Miaohe Lin <linmiaohe@huawei.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, linux-security-module@vger.kernel.org, linux-trace-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, keyrings@vger.kernel.org, live-patching@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>, Alexander Gordeev <agordeev@linux.ibm.com>, Miroslav Benes <mbenes@suse.cz>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Steffen Klassert <steffen.klassert@secunet.com>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Paul Moore <paul@paul-moore.com>, linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-xtensa@
- linux-xtensa.org, Marc Zyngier <maz@kernel.org>, Helge Deller <deller@gmx.de>, Henrik Rydberg <rydberg@bitmath.org>, Russell King <linux@armlinux.org.uk>, Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, coresight@lists.linaro.org, "Serge E. Hallyn" <serge@hallyn.com>, Petr Mladek <pmladek@suse.com>, Vasily Gorbik <gor@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, Reinette Chatre <reinette.chatre@intel.com>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-sgx@vger
- .kernel.org, Jens Axboe <axboe@kernel.dk>, Chris Zankel <chris@zankel.net>, Karsten Keil <isdn@linux-pingi.de>, Jonas Bonn <jonas@southpole.se>, Mathieu Poirier <mathieu.poirier@linaro.org>, linux-mm@kvack.org, netdev@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Jarkko Sakkinen <jarkko@kernel.org>, linux-trace-devel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Daniel Bristot de Oliveira <bristot@kernel.org>, linux-crypto@vger.kernel.org, Vladimir Oltean <olteanv@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, x86@kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich Felker <dalias@libc.org>, Eric Dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Li Yang <leoyang.li@nxp.com>, Frank Rowand <frowand.list@gmail.com>, Alex Shi <alexs@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>, Yanteng Si <siyanteng@loongson.cn>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, Bartosz Golaszewski <brgl@bgdev.pl>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Kalle Valo <kvalo@kernel.org>, Hante Meuleman <hante.meuleman@broadcom.com>, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Frank
+ y Lin <franky.lin@broadcom.com>, Arend van Spriel <aspriel@gmail.com>, Mun Yew Tham <mun.yew.tham@intel.com>, Hu Haowen <src.res@email.cn>, Keerthy <j-keerthy@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, "David S. Miller" <davem@davemloft.net>, Gregory Clement <gregory.clement@bootlin.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Correct many spelling errors in Documentation/ as reported by codespell.
-
-Maintainers of specific kernel subsystems are only Cc-ed on their
-respective patches, not the entire series.
-
-These patches are based on linux-next-20230209.
-
-
- [PATCH 01/24] Documentation: arm: correct spelling
- [PATCH 02/24] Documentation: block: correct spelling
- [PATCH 03/24] Documentation: core-api: correct spelling
- [PATCH 04/24] Documentation: fault-injection: correct spelling
- [PATCH 05/24] Documentation: fb: correct spelling
- [PATCH 06/24] Documentation: features: correct spelling
- [PATCH 07/24] Documentation: input: correct spelling
- [PATCH 08/24] Documentation: isdn: correct spelling
- [PATCH 09/24] Documentation: livepatch: correct spelling
- [PATCH 10/24] Documentation: locking: correct spelling
- [PATCH 11/24] Documentation: mm: correct spelling
- [PATCH 12/24] Documentation: openrisc: correct spelling
- [PATCH 13/24] Documentation: PCI: correct spelling
- [PATCH 14/24] Documentation: powerpc: correct spelling
- [PATCH 15/24] Documentation: s390: correct spelling
- [PATCH 16/24] Documentation: scheduler: correct spelling
- [PATCH 17/24] Documentation: security: correct spelling
- [PATCH 18/24] Documentation: timers: correct spelling
- [PATCH 19/24] Documentation: tools/rtla: correct spelling
- [PATCH 20/24] Documentation: trace/rv: correct spelling
- [PATCH 21/24] Documentation: trace: correct spelling
- [PATCH 22/24] Documentation: w1: correct spelling
- [PATCH 23/24] Documentation: x86: correct spelling
- [PATCH 24/24] Documentation: xtensa: correct spelling
-
-
-diffstat:
- Documentation/PCI/endpoint/pci-vntb-howto.rst                    |    2 +-
- Documentation/PCI/msi-howto.rst                                  |    2 +-
- Documentation/arm/arm.rst                                        |    2 +-
- Documentation/arm/ixp4xx.rst                                     |    4 ++--
- Documentation/arm/keystone/knav-qmss.rst                         |    2 +-
- Documentation/arm/stm32/stm32-dma-mdma-chaining.rst              |    6 +++---
- Documentation/arm/sunxi/clocks.rst                               |    2 +-
- Documentation/arm/swp_emulation.rst                              |    2 +-
- Documentation/arm/tcm.rst                                        |    2 +-
- Documentation/arm/vlocks.rst                                     |    2 +-
- Documentation/block/data-integrity.rst                           |    2 +-
- Documentation/core-api/packing.rst                               |    2 +-
- Documentation/core-api/padata.rst                                |    2 +-
- Documentation/fault-injection/fault-injection.rst                |    2 +-
- Documentation/fb/sm712fb.rst                                     |    2 +-
- Documentation/fb/sstfb.rst                                       |    2 +-
- Documentation/features/core/thread-info-in-task/arch-support.txt |    2 +-
- Documentation/input/devices/iforce-protocol.rst                  |    2 +-
- Documentation/input/multi-touch-protocol.rst                     |    2 +-
- Documentation/isdn/interface_capi.rst                            |    2 +-
- Documentation/isdn/m_isdn.rst                                    |    2 +-
- Documentation/livepatch/reliable-stacktrace.rst                  |    2 +-
- Documentation/locking/lockdep-design.rst                         |    4 ++--
- Documentation/locking/locktorture.rst                            |    2 +-
- Documentation/locking/locktypes.rst                              |    2 +-
- Documentation/locking/preempt-locking.rst                        |    2 +-
- Documentation/mm/hmm.rst                                         |    4 ++--
- Documentation/mm/hwpoison.rst                                    |    2 +-
- Documentation/openrisc/openrisc_port.rst                         |    4 ++--
- Documentation/power/suspend-and-interrupts.rst                   |    2 +-
- Documentation/powerpc/kasan.txt                                  |    2 +-
- Documentation/powerpc/papr_hcalls.rst                            |    2 +-
- Documentation/powerpc/qe_firmware.rst                            |    4 ++--
- Documentation/powerpc/vas-api.rst                                |    4 ++--
- Documentation/s390/pci.rst                                       |    4 ++--
- Documentation/s390/vfio-ccw.rst                                  |    2 +-
- Documentation/scheduler/sched-bwc.rst                            |    2 +-
- Documentation/scheduler/sched-energy.rst                         |    4 ++--
- Documentation/security/digsig.rst                                |    4 ++--
- Documentation/security/keys/core.rst                             |    2 +-
- Documentation/security/secrets/coco.rst                          |    2 +-
- Documentation/timers/hrtimers.rst                                |    2 +-
- Documentation/tools/rtla/rtla-timerlat-top.rst                   |    2 +-
- Documentation/trace/coresight/coresight-etm4x-reference.rst      |    2 +-
- Documentation/trace/events.rst                                   |    6 +++---
- Documentation/trace/fprobe.rst                                   |    2 +-
- Documentation/trace/ftrace-uses.rst                              |    2 +-
- Documentation/trace/hwlat_detector.rst                           |    2 +-
- Documentation/trace/rv/runtime-verification.rst                  |    2 +-
- Documentation/trace/uprobetracer.rst                             |    2 +-
- Documentation/w1/w1-netlink.rst                                  |    2 +-
- Documentation/x86/boot.rst                                       |    2 +-
- Documentation/x86/buslock.rst                                    |    2 +-
- Documentation/x86/mds.rst                                        |    2 +-
- Documentation/x86/resctrl.rst                                    |    2 +-
- Documentation/x86/sgx.rst                                        |    2 +-
- Documentation/xtensa/atomctl.rst                                 |    2 +-
- 57 files changed, 70 insertions(+), 70 deletions(-)
-
-
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: Vladimir Oltean <olteanv@gmail.com>
-Cc: Steffen Klassert <steffen.klassert@secunet.com>
-Cc: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Helge Deller <deller@gmx.de>
-?Cc: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Henrik Rydberg <rydberg@bitmath.org>
-Cc: Karsten Keil <isdn@linux-pingi.de>
-Cc: Jiri Kosina <jikos@kernel.org>
-Cc: Miroslav Benes <mbenes@suse.cz>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Josh Poimboeuf <jpoimboe@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Jérôme Glisse <jglisse@redhat.com>
-Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
-Cc: Miaohe Lin <linmiaohe@huawei.com>
-Cc: Jonas Bonn <jonas@southpole.se>
-Cc: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
-Cc: Stafford Horne <shorne@gmail.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>
-Cc: Marc Zyngier <maz@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Jarkko Sakkinen <jarkko@kernel.org>
-Cc: Paul Moore <paul@paul-moore.com>
-Cc: James Morris <jmorris@namei.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Daniel Bristot de Oliveira <bristot@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Reinette Chatre <reinette.chatre@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Max Filippov <jcmvbkbc@gmail.com>
-
-Cc: coresight@lists.linaro.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: keyrings@vger.kernel.org
-Cc: linux-block@vger.kernel.org
-Cc: linux-crypto@vger.kernel.org
-Cc: linux-doc@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
-Cc: linux-input@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Cc: linux-sgx@vger.kernel.org
-Cc: linux-trace-devel@vger.kernel.org
-Cc: linux-trace-kernel@vger.kernel.org
-Cc: live-patching@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org
-Cc: linux-usb@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: openrisc@lists.librecores.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: x86@kernel.org
+On 2/8/23 11:03 PM, Andy Shevchenko wrote:
+> From: Linus Walleij <linus.walleij@linaro.org>
+> 
+> The test driver uses the gpiod consumer API so include the right
+> <linux/gpio/consumer.h> header. This may cause a problem with
+> struct of_device_id being implcitly pulled in by the legacy
+> header <linux/gpio.h> so include <linux/mod_devicetable.h>
+> explicitly as well.
+> 
+> While at it, drop explicit moduleparam.h (it's included with module.h)
+> and sort the headers.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/hte/hte-tegra194-test.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/hte/hte-tegra194-test.c b/drivers/hte/hte-tegra194-test.c
+> index 5d776a185bd6..358d4a10c6a1 100644
+> --- a/drivers/hte/hte-tegra194-test.c
+> +++ b/drivers/hte/hte-tegra194-test.c
+> @@ -6,14 +6,14 @@
+>   */
+>  
+>  #include <linux/err.h>
+> -#include <linux/module.h>
+> -#include <linux/moduleparam.h>
+> +#include <linux/gpio/consumer.h>
+> +#include <linux/hte.h>
+>  #include <linux/interrupt.h>
+> -#include <linux/gpio.h>
+> -#include <linux/timer.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/module.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/timer.h>
+>  #include <linux/workqueue.h>
+> -#include <linux/hte.h>
+>  
+>  /*
+>   * This sample HTE GPIO test driver demonstrates HTE API usage by enabling
+Acked-by: Dipen Patel <dipenp@nvidia.com>
