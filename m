@@ -4,79 +4,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DE94C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:05:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7553CC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:16:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJYb16Grz3fnB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:05:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJnC71Wqz3f5N
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:15:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DtpLAvd9;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ko8a9NVa;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=YzYv5Lu+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DtpLAvd9;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Ko8a9NVa;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=YzYv5Lu+;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCJKP1BVXz3f3L
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 00:55:21 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 8BBC45D033;
-	Thu,  9 Feb 2023 13:55:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1675950915; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=LTaTXQl7Ph7tUuGylQ6ryNfXYsJmmkGD7j+C1k3qtoM=;
-	b=DtpLAvd9BKfp41MBStPAMWug8yr4+0J7aMLfMMm5Gx0JzM9FeD4hW1FZqYtxuJy+98D/Ct
-	vHW8tWp0O/LEE3S4hmuqevKRtwsnQK6peEV/L7inTePr7oImF9FJcAmFEqAJku12OH08jF
-	G5ZuveCfUT/zYWu2nBgxR4zPb/+OhEI=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1675950915;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=LTaTXQl7Ph7tUuGylQ6ryNfXYsJmmkGD7j+C1k3qtoM=;
-	b=Ko8a9NVaWGMHJqNrZNa6jjJJwkeMfyM6Yo5qJ0RWSG04fiXXKbTHJ627Eood7v2/xhEglM
-	v7Rjq2K47w3PrIAg==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 43DCD138E4;
-	Thu,  9 Feb 2023 13:55:15 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id iOqRD0P75GNTfwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:15 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: daniel@ffwll.ch,
-	airlied@gmail.com,
-	deller@gmx.de,
-	javierm@redhat.com,
-	maarten.lankhorst@linux.intel.com,
-	mripard@kernel.org,
-	geoff@infradead.org,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu
-Subject: [PATCH 10/11] drm: Include <video/cmdline.h> for mode parsing
-Date: Thu,  9 Feb 2023 14:55:08 +0100
-Message-Id: <20230209135509.7786-11-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PC7Rk1NHrz3f4X
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 18:15:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	Content-Type:MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=hOwPtrFr9W1RAetj4yw8lS4WGxzVY9WeB5xiD+rtLZk=; b=YzYv5Lu+GhnsQWcrh/P3dNn99Y
+	kFFn/VTStVzrVt7izdrqqcFl3XXWJTiUSU7zkMNSHLZccvHB/fdFfsSF2G3d9l6tM8mZkGWrqFoL+
+	zV70haeTAUkVk/rmntIAjBbeTETDQ9gynZkiS5FkcxD5ysQrDwctOiqgUEqy0Xc8jqVEGJ0uWfK0f
+	t2HqZ/A6Oxx0EJl+SAADCmwyxjMuktOo75CIMUWNmk83r+Z+8eyEK1uwZEhembDTSx9i7ostc00tO
+	/jouGLzfxYzc3+YcINRJIpim6ul86T5PcNwp2g7wUJajkYggQ+pjUyATSgrXOBG/P/NTAUzC9nrO4
+	AJo7w9JQ==;
+Received: from [2601:1c2:980:9ec0::df2f] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1pQ189-000LPt-4s; Thu, 09 Feb 2023 07:14:05 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/24 v2] Documentation: correct lots of spelling errors (series 1)
+Date: Wed,  8 Feb 2023 23:13:36 -0800
+Message-Id: <20230209071400.31476-1-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230209135509.7786-1-tzimmermann@suse.de>
-References: <20230209135509.7786-1-tzimmermann@suse.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Fri, 10 Feb 2023 01:15:07 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,53 +56,180 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+Cc: Miaohe Lin <linmiaohe@huawei.com>, Juri Lelli <juri.lelli@redhat.com>, linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, linux-doc@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>, Peter Zijlstra <peterz@infradead.org>, linux-pci@vger.kernel.org, Lorenzo Pieralisi <lpieralisi@kernel.org>, linux-security-module@vger.kernel.org, linux-trace-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>, Max Filippov <jcmvbkbc@gmail.com>, keyrings@vger.kernel.org, live-patching@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>, Alexander Gordeev <agordeev@linux.ibm.com>, Miroslav Benes <mbenes@suse.cz>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Steffen Klassert <steffen.klassert@secunet.com>, linux-s390@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Paul Moore <paul@paul-moore.com>, linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-xtensa@
+ linux-xtensa.org, Marc Zyngier <maz@kernel.org>, Helge Deller <deller@gmx.de>, Henrik Rydberg <rydberg@bitmath.org>, Russell King <linux@armlinux.org.uk>, Daniel Jordan <daniel.m.jordan@oracle.com>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, coresight@lists.linaro.org, "Serge E. Hallyn" <serge@hallyn.com>, Petr Mladek <pmladek@suse.com>, Vasily Gorbik <gor@linux.ibm.com>, Suzuki K Poulose <suzuki.poulose@arm.com>, Heiko Carstens <hca@linux.ibm.com>, Jiri Kosina <jikos@kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Bjorn Helgaas <bhelgaas@google.com>, Stafford Horne <shorne@gmail.com>, Reinette Chatre <reinette.chatre@intel.com>, Josh Poimboeuf <jpoimboe@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-sgx@vger
+ .kernel.org, Jens Axboe <axboe@kernel.dk>, Chris Zankel <chris@zankel.net>, Karsten Keil <isdn@linux-pingi.de>, Jonas Bonn <jonas@southpole.se>, Mathieu Poirier <mathieu.poirier@linaro.org>, linux-mm@kvack.org, netdev@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Naoya Horiguchi <naoya.horiguchi@nec.com>, Jarkko Sakkinen <jarkko@kernel.org>, linux-trace-devel@vger.kernel.org, Masami Hiramatsu <mhiramat@kernel.org>, Daniel Bristot de Oliveira <bristot@kernel.org>, linux-crypto@vger.kernel.org, Vladimir Oltean <olteanv@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org, x86@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Include <video/cmdline.h> in drm_connector.c to get video_get_options()
-and avoid the dependency on <linux/fb.h>. The replaced function
-fb_get_options() is just a tiny wrapper around video_get_opions(). No
-functional changes.
+Correct many spelling errors in Documentation/ as reported by codespell.
 
-Include <linux/property.h> to get fwnode_handle_put(), which had been
-provided via <linux/fb.h>.
+Maintainers of specific kernel subsystems are only Cc-ed on their
+respective patches, not the entire series.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
----
- drivers/gpu/drm/drm_connector.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+These patches are based on linux-next-20230209.
 
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index 9d0250c28e9b..ca5fb54b7aab 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -33,9 +33,11 @@
- #include <drm/drm_sysfs.h>
- #include <drm/drm_utils.h>
- 
--#include <linux/fb.h>
-+#include <linux/property.h>
- #include <linux/uaccess.h>
- 
-+#include <video/cmdline.h>
-+
- #include "drm_crtc_internal.h"
- #include "drm_internal.h"
- 
-@@ -154,9 +156,10 @@ EXPORT_SYMBOL(drm_get_connector_type_name);
- static void drm_connector_get_cmdline_mode(struct drm_connector *connector)
- {
- 	struct drm_cmdline_mode *mode = &connector->cmdline_mode;
--	char *option = NULL;
-+	const char *option;
- 
--	if (fb_get_options(connector->name, &option))
-+	option = video_get_options(connector->name);
-+	if (!option)
- 		return;
- 
- 	if (!drm_mode_parse_command_line_for_connector(option,
--- 
-2.39.1
 
+ [PATCH 01/24] Documentation: arm: correct spelling
+ [PATCH 02/24] Documentation: block: correct spelling
+ [PATCH 03/24] Documentation: core-api: correct spelling
+ [PATCH 04/24] Documentation: fault-injection: correct spelling
+ [PATCH 05/24] Documentation: fb: correct spelling
+ [PATCH 06/24] Documentation: features: correct spelling
+ [PATCH 07/24] Documentation: input: correct spelling
+ [PATCH 08/24] Documentation: isdn: correct spelling
+ [PATCH 09/24] Documentation: livepatch: correct spelling
+ [PATCH 10/24] Documentation: locking: correct spelling
+ [PATCH 11/24] Documentation: mm: correct spelling
+ [PATCH 12/24] Documentation: openrisc: correct spelling
+ [PATCH 13/24] Documentation: PCI: correct spelling
+ [PATCH 14/24] Documentation: powerpc: correct spelling
+ [PATCH 15/24] Documentation: s390: correct spelling
+ [PATCH 16/24] Documentation: scheduler: correct spelling
+ [PATCH 17/24] Documentation: security: correct spelling
+ [PATCH 18/24] Documentation: timers: correct spelling
+ [PATCH 19/24] Documentation: tools/rtla: correct spelling
+ [PATCH 20/24] Documentation: trace/rv: correct spelling
+ [PATCH 21/24] Documentation: trace: correct spelling
+ [PATCH 22/24] Documentation: w1: correct spelling
+ [PATCH 23/24] Documentation: x86: correct spelling
+ [PATCH 24/24] Documentation: xtensa: correct spelling
+
+
+diffstat:
+ Documentation/PCI/endpoint/pci-vntb-howto.rst                    |    2 +-
+ Documentation/PCI/msi-howto.rst                                  |    2 +-
+ Documentation/arm/arm.rst                                        |    2 +-
+ Documentation/arm/ixp4xx.rst                                     |    4 ++--
+ Documentation/arm/keystone/knav-qmss.rst                         |    2 +-
+ Documentation/arm/stm32/stm32-dma-mdma-chaining.rst              |    6 +++---
+ Documentation/arm/sunxi/clocks.rst                               |    2 +-
+ Documentation/arm/swp_emulation.rst                              |    2 +-
+ Documentation/arm/tcm.rst                                        |    2 +-
+ Documentation/arm/vlocks.rst                                     |    2 +-
+ Documentation/block/data-integrity.rst                           |    2 +-
+ Documentation/core-api/packing.rst                               |    2 +-
+ Documentation/core-api/padata.rst                                |    2 +-
+ Documentation/fault-injection/fault-injection.rst                |    2 +-
+ Documentation/fb/sm712fb.rst                                     |    2 +-
+ Documentation/fb/sstfb.rst                                       |    2 +-
+ Documentation/features/core/thread-info-in-task/arch-support.txt |    2 +-
+ Documentation/input/devices/iforce-protocol.rst                  |    2 +-
+ Documentation/input/multi-touch-protocol.rst                     |    2 +-
+ Documentation/isdn/interface_capi.rst                            |    2 +-
+ Documentation/isdn/m_isdn.rst                                    |    2 +-
+ Documentation/livepatch/reliable-stacktrace.rst                  |    2 +-
+ Documentation/locking/lockdep-design.rst                         |    4 ++--
+ Documentation/locking/locktorture.rst                            |    2 +-
+ Documentation/locking/locktypes.rst                              |    2 +-
+ Documentation/locking/preempt-locking.rst                        |    2 +-
+ Documentation/mm/hmm.rst                                         |    4 ++--
+ Documentation/mm/hwpoison.rst                                    |    2 +-
+ Documentation/openrisc/openrisc_port.rst                         |    4 ++--
+ Documentation/power/suspend-and-interrupts.rst                   |    2 +-
+ Documentation/powerpc/kasan.txt                                  |    2 +-
+ Documentation/powerpc/papr_hcalls.rst                            |    2 +-
+ Documentation/powerpc/qe_firmware.rst                            |    4 ++--
+ Documentation/powerpc/vas-api.rst                                |    4 ++--
+ Documentation/s390/pci.rst                                       |    4 ++--
+ Documentation/s390/vfio-ccw.rst                                  |    2 +-
+ Documentation/scheduler/sched-bwc.rst                            |    2 +-
+ Documentation/scheduler/sched-energy.rst                         |    4 ++--
+ Documentation/security/digsig.rst                                |    4 ++--
+ Documentation/security/keys/core.rst                             |    2 +-
+ Documentation/security/secrets/coco.rst                          |    2 +-
+ Documentation/timers/hrtimers.rst                                |    2 +-
+ Documentation/tools/rtla/rtla-timerlat-top.rst                   |    2 +-
+ Documentation/trace/coresight/coresight-etm4x-reference.rst      |    2 +-
+ Documentation/trace/events.rst                                   |    6 +++---
+ Documentation/trace/fprobe.rst                                   |    2 +-
+ Documentation/trace/ftrace-uses.rst                              |    2 +-
+ Documentation/trace/hwlat_detector.rst                           |    2 +-
+ Documentation/trace/rv/runtime-verification.rst                  |    2 +-
+ Documentation/trace/uprobetracer.rst                             |    2 +-
+ Documentation/w1/w1-netlink.rst                                  |    2 +-
+ Documentation/x86/boot.rst                                       |    2 +-
+ Documentation/x86/buslock.rst                                    |    2 +-
+ Documentation/x86/mds.rst                                        |    2 +-
+ Documentation/x86/resctrl.rst                                    |    2 +-
+ Documentation/x86/sgx.rst                                        |    2 +-
+ Documentation/xtensa/atomctl.rst                                 |    2 +-
+ 57 files changed, 70 insertions(+), 70 deletions(-)
+
+
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: Vladimir Oltean <olteanv@gmail.com>
+Cc: Steffen Klassert <steffen.klassert@secunet.com>
+Cc: Daniel Jordan <daniel.m.jordan@oracle.com>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Helge Deller <deller@gmx.de>
+?Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Henrik Rydberg <rydberg@bitmath.org>
+Cc: Karsten Keil <isdn@linux-pingi.de>
+Cc: Jiri Kosina <jikos@kernel.org>
+Cc: Miroslav Benes <mbenes@suse.cz>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Josh Poimboeuf <jpoimboe@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Will Deacon <will@kernel.org>
+Cc: Jérôme Glisse <jglisse@redhat.com>
+Cc: Naoya Horiguchi <naoya.horiguchi@nec.com>
+Cc: Miaohe Lin <linmiaohe@huawei.com>
+Cc: Jonas Bonn <jonas@southpole.se>
+Cc: Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>
+Cc: Stafford Horne <shorne@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Lorenzo Pieralisi <lpieralisi@kernel.org>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Jarkko Sakkinen <jarkko@kernel.org>
+Cc: Paul Moore <paul@paul-moore.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Daniel Bristot de Oliveira <bristot@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Reinette Chatre <reinette.chatre@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Chris Zankel <chris@zankel.net>
+Cc: Max Filippov <jcmvbkbc@gmail.com>
+
+Cc: coresight@lists.linaro.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: keyrings@vger.kernel.org
+Cc: linux-block@vger.kernel.org
+Cc: linux-crypto@vger.kernel.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-input@vger.kernel.org
+Cc: linux-pci@vger.kernel.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: linux-sgx@vger.kernel.org
+Cc: linux-trace-devel@vger.kernel.org
+Cc: linux-trace-kernel@vger.kernel.org
+Cc: live-patching@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: openrisc@lists.librecores.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org
