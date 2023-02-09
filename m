@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C95FC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78BBAC05027
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:05:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJWY4dVzz3fgw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:04:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJXY6yMrz3f74
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:05:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RpxPnW2Y;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8WA+mC44;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=baxzlyXE;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Q54BXKBO;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1c; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=RpxPnW2Y;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=8WA+mC44;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=baxzlyXE;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=Q54BXKBO;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2001:67c:2178:6::1c])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCJKN6JDHz3f3B
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 00:55:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCJKP19rVz3cgs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 00:55:21 +1100 (AEDT)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 057ED22A07;
-	Thu,  9 Feb 2023 13:55:14 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 036CC5D036;
+	Thu,  9 Feb 2023 13:55:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1675950914; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1675950916; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8eBCLRr3t1h8753CZ0GUzerEoeVgFt36ay0mIxK/Nlk=;
-	b=RpxPnW2YRMAvdXXvgwtBBFHfVKDfyVoxorZzYEeC2BMCok6Vlbpz/p5i44Q73/+lFUMhGd
-	gUPgsHb6lJ02TEst8GtVA7FBv6we67LZFETHBr+qTUdxIRmVLW9FxU9dC9fhKQD6jXLLa4
-	IbjMntXxvkFdg/pGDjc+StSWTzG9V6Y=
+	bh=SX5FbBseN5BfUoqvty9oMpT6ricW4ZK87/q1c2NetfU=;
+	b=baxzlyXEsviM77L2O0X/3jOZmk1g5oVH/CtJWuCwO8q2oiQ19ZYyPdpU7tpDSL7MzPmQnA
+	3KMQfVB1UCCNSJgw/TiUTu5p/8Nl7mottxW3GVPFLyJ2t/qPxaCRKU2V16Qaofby90DzCk
+	U82cuV/T1fihq8GzAfkp5d0WebSfzGc=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1675950914;
+	s=susede2_ed25519; t=1675950916;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=8eBCLRr3t1h8753CZ0GUzerEoeVgFt36ay0mIxK/Nlk=;
-	b=8WA+mC44dHmYSPNgW47lM3JP7rmzvxibc9Yk9LKoVTLJvD0QbAxlSlAIB39+Ep+/4U0kl6
-	YtqCBx7G04oJVABQ==
+	bh=SX5FbBseN5BfUoqvty9oMpT6ricW4ZK87/q1c2NetfU=;
+	b=Q54BXKBO4Vzl3YXzB7YuUWK2AZGtwiC87sBXdKBzKwJXuy+G224vhJZXIvlwJE3G7OxkLP
+	yiU7QkGvNLCe1kCQ==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id BC93113915;
-	Thu,  9 Feb 2023 13:55:13 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 9119C138E4;
+	Thu,  9 Feb 2023 13:55:15 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id YGQsLUH75GNTfwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:13 +0000
+	id oCcqIkP75GNTfwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Thu, 09 Feb 2023 13:55:15 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: daniel@ffwll.ch,
 	airlied@gmail.com,
@@ -69,9 +69,9 @@ To: daniel@ffwll.ch,
 	mpe@ellerman.id.au,
 	npiggin@gmail.com,
 	christophe.leroy@csgroup.eu
-Subject: [PATCH 05/11] fbdev: Read video= option with fb_get_option() in modedb
-Date: Thu,  9 Feb 2023 14:55:03 +0100
-Message-Id: <20230209135509.7786-6-tzimmermann@suse.de>
+Subject: [PATCH 11/11] drm: Fix comment on mode parsing
+Date: Thu,  9 Feb 2023 14:55:09 +0100
+Message-Id: <20230209135509.7786-12-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230209135509.7786-1-tzimmermann@suse.de>
 References: <20230209135509.7786-1-tzimmermann@suse.de>
@@ -92,48 +92,28 @@ Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Thomas Zimmerman
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Get the kernel's global video= parameter with fb_get_option(). Done
-to unexport the internal fbdev state fb_mode_config. No functional
-changes.
+Do not claim that there's a default mode in the video= option parser.
+if no option string has been given, the parser does nothing.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/fbdev/core/modedb.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/drm_modes.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
-index 6473e0dfe146..23cf8eba785d 100644
---- a/drivers/video/fbdev/core/modedb.c
-+++ b/drivers/video/fbdev/core/modedb.c
-@@ -620,6 +620,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		 const struct fb_videomode *default_mode,
- 		 unsigned int default_bpp)
- {
-+	char *mode_option_buf = NULL;
- 	int i;
- 
- 	/* Set up defaults */
-@@ -635,8 +636,10 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 		default_bpp = 8;
- 
- 	/* Did the user specify a video mode? */
--	if (!mode_option)
--		mode_option = fb_mode_option;
-+	if (!mode_option) {
-+		fb_get_options(NULL, &mode_option_buf);
-+		mode_option = mode_option_buf;
-+	}
- 	if (mode_option) {
- 		const char *name = mode_option;
- 		unsigned int namelen = strlen(name);
-@@ -715,6 +718,7 @@ int fb_find_mode(struct fb_var_screeninfo *var,
- 			res_specified = 1;
- 		}
- done:
-+		kfree(mode_option_buf);
- 		if (cvt) {
- 			struct fb_videomode cvt_mode;
- 			int ret;
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 40d482a01178..ac9a406250c5 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -2339,8 +2339,7 @@ static int drm_mode_parse_cmdline_named_mode(const char *name,
+  * @mode: preallocated drm_cmdline_mode structure to fill out
+  *
+  * This parses @mode_option command line modeline for modes and options to
+- * configure the connector. If @mode_option is NULL the default command line
+- * modeline in fb_mode_option will be parsed instead.
++ * configure the connector.
+  *
+  * This uses the same parameters as the fb modedb.c, except for an extra
+  * force-enable, force-enable-digital and force-disable bit at the end::
 -- 
 2.39.1
 
