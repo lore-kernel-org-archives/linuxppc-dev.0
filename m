@@ -4,65 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88369C636D6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Feb 2023 14:22:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94719C636D7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 23:57:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCJwG0WRcz3fTS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 01:22:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PD9dy5Fhgz3fCH
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 10:57:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PVhgmNxs;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AhQSmYI+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b2a; helo=mail-yb1-xb2a.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=PVhgmNxs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AhQSmYI+;
 	dkim-atps=neutral
-Received: from mail-yb1-xb2a.google.com (mail-yb1-xb2a.google.com [IPv6:2607:f8b0:4864:20::b2a])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCD6Q1lCyz3cdc
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Feb 2023 21:45:34 +1100 (AEDT)
-Received: by mail-yb1-xb2a.google.com with SMTP id n1so537548ybm.11
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Feb 2023 02:45:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=6ECisu58Ou5Xr+AMVxHOSKNEG1TgY5Zq0H9DdDE7KjY=;
-        b=PVhgmNxsQQPyBAEDdyt8QfmWO6MNCgn8yXiI9Mk1P0Ph6Z19uULy1nXT56GCFjrWPx
-         kjKAE5+lQs+meWWdvnVXJViYasQ2BIpN581gJLur43fb8v+TauC8ZGc8lXkHOKYKGPcA
-         FP9AoOGP4SFr4QMxn1WBQianBQR4oWtc3600hrLz3lvn4coxlQ/kaFuOWt2ycqbFfbXj
-         SxVqq2jNdWE80O8KHlaeEokxbPI9aumzyK9cn0FOyw0rWNFqZc4gomcB9McjjYB1Bcm8
-         Us5DeeJ+v5hZbjP8yos1A+fhfcFeiZ/hBxsKgjJrx5lCY9fTmG5/RwJWvoKjyWMph0k2
-         WXDA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6ECisu58Ou5Xr+AMVxHOSKNEG1TgY5Zq0H9DdDE7KjY=;
-        b=I1V3QTe6vAo3qTDJWRCfCrZR5JooI7w6Y8+kX3qmZJW0pr5xRbPdIfjxw4Vlk3W1mE
-         8U7Hh/dSUfljzs6ySQAxyfhx236AXyavIsd5tAwcUFtNHUXP3lUp+Ouz2XnUKw4HmGU7
-         7W0WxUOMFslbj0xywnTncXh97/Ea1pU9y7wd8UmTkuixesY2+AfTJvk32XqFj1N8k20j
-         7okQl3h+256vFi+xLvy25T0YcrQA+TP1ZnWPMJy3etTFlH6mymo0heyKNf/wGyPauhTf
-         sImVr/xJzaO9bcbWXyJs1UQQJJDFGZjKKnaCHQsn8mEM0lkQVUR/pJDtlI19Eu4lF44I
-         cBlw==
-X-Gm-Message-State: AO0yUKWhBnRp4xup9vZ/F8aeSLhM9DB4p08vj9OrXzBVefIuZRic2f8k
-	gjWLdG1fhjRazSGH192bz6J4A4UISfr+UCjOyjaC8g==
-X-Google-Smtp-Source: AK7set+c8vMXQoWt9zrvvB2u9a8HdXjW8xESL/qxrGLNm0jpSb7R5TJb/uyrRXXnVWpXHWRj2G52DUyGkXuHv+E8/cU=
-X-Received: by 2002:a5b:6c5:0:b0:88f:946:bd98 with SMTP id r5-20020a5b06c5000000b0088f0946bd98mr1339211ybq.24.1675939530421;
- Thu, 09 Feb 2023 02:45:30 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PD9cr6Z11z3f6g
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Feb 2023 10:56:44 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 7FDC3B825C8;
+	Fri, 10 Feb 2023 23:56:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 465CDC433EF;
+	Fri, 10 Feb 2023 23:56:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1676073399;
+	bh=Cggc2PSjESmjJ4YtOYiHNZnLan2KNIa9wTRkNJbBETg=;
+	h=From:Date:Subject:To:Cc:Reply-To:From;
+	b=AhQSmYI+nm+21P2GiOzOzRB8WocX7aBoGPA+riycH4yn/2Lil9l8DfmauH4nruFto
+	 ysOhpufoAJiiv8wW9m77gRGXZAss8Cl3pVB/0UsVirKjPk/wspdyt2o1WSGeKC3y36
+	 L2Q5hQ3YZWHkStLvOjfLoAxjrNE6gY3of1b1ffdKUPl8/+PFuOsAMqbdQoFtkfjUKd
+	 Bee/3326Re8L/W8S22sN/AkTrx15rivKUq7s9EBdlOvFN+9jLHh5D2SHojCH/Q/fbW
+	 mpYWnhJii7EoT88Qcn2VcXyz89Op2z/otX66Zkud9cTnmQLWYxnvLEYhhqMZXXCxGG
+	 1qh3xKVOaxVCg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27CDDC05027;
+	Fri, 10 Feb 2023 23:56:39 +0000 (UTC)
+From: Nathan Lynch via B4 Submission Endpoint
+ <devnull+nathanl.linux.ibm.com@kernel.org>
+Date: Fri, 10 Feb 2023 17:56:28 -0600
+Subject: [PATCH] powerpc/machdep: warn when machine_is() used too early
 MIME-Version: 1.0
-References: <20230208173343.37582-1-andriy.shevchenko@linux.intel.com>
- <20230208173343.37582-3-andriy.shevchenko@linux.intel.com> <30234963-33e5-e2d7-a6ef-112e89efbdd0@linaro.org>
-In-Reply-To: <30234963-33e5-e2d7-a6ef-112e89efbdd0@linaro.org>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 9 Feb 2023 11:45:18 +0100
-Message-ID: <CACRpkdYRTq35gJq3YODGh9S_JnH1jxSOT8mNnetyRQY9Z5LhWQ@mail.gmail.com>
-Subject: Re: [PATCH v4 02/18] ARM: s3c24xx: Use the right include
-To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Fri, 10 Feb 2023 01:15:07 +1100
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: =?utf-8?q?=3C20230210-warn-on-machine-is-before-probe-machine-v1?=
+ =?utf-8?q?-1-f0cba57125fb=40linux=2Eibm=2Ecom=3E?=
+X-B4-Tracking: v=1; b=H4sIAKvZ5mMC/z2OQQrCMBBFr1Jm7UCSWgSvIi5m4sRk0UmZiBVK7
+ 27qwuX7Dx5/gyZWpMF12MDkXVqp2sGfBoiZ9ClYHp0huDC64B2uZIpVcaaYi3bdkCVVE1yssvz
+ 38TL5iX06j8zQa0xNkI005qM3U3uJHWIxSeXzu3C77/sXMDRAapIAAAA=
+To: Michael Ellerman <mpe@ellerman.id.au>, 
+ Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+X-Mailer: b4 0.12.1
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1676073398; l=1645;
+ i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
+ bh=+nyHN6/MED0UH3QD0vMZ7Uax/BGz0rKLjziCR5coDn4=;
+ b=X6JG9xjRueGPp34qaW0+pNjdEnkRZnVpkuriT6oXvbLytM+DCQdowAvmDaymtSd2OpYi+/AsS
+ P99hy4AUAUoCl6xxAdf1kM4LCIZfeaCZydWJr2DcX7OadRYYx+7oowA
+X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
+ pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
+X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
+X-Original-From: Nathan Lynch <nathanl@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,31 +77,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Alexander Aring <alex.aring@gmail.com>, Rich Felker <dalias@libc.org>, Devarsh Thakkar <devarsht@ti.com>, linux-doc@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Eric Dumazet <edumazet@google.com>, Thierry Reding <thierry.reding@gmail.com>, Alim Akhtar <alim.akhtar@samsung.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Paolo Abeni <pabeni@redhat.com>, Li Yang <leoyang.li@nxp.com>, Frank Rowand <frowand.list@gmail.com>, Stefan Schmidt <stefan@datenfreihafen.org>, Qiang Zhao <qiang.zhao@nxp.com>, linux-arch@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-omap@vger.kernel.org, Alex Shi <alexs@kernel.org>, Bartosz Golaszewski <bartosz.golaszewski@linaro.org>, linux-sh@vger.kernel.org, Bartosz Golaszewski <brgl@bgdev.pl>, Lee Jones <lee@kernel.org>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Russell King <linux@armlinux.org.uk>, Jonathan Hunter <jonathanh@nvidia.com>, linux-acpi@vger.
- kernel.org, SHA-cyfmac-dev-list@infineon.com, Geert Uytterhoeven <geert@linux-m68k.org>, Vincenzo Palazzo <vincenzopalazzodev@gmail.com>, linux-input@vger.kernel.org, Jakub Kicinski <kuba@kernel.org>, Thierry Reding <treding@nvidia.com>, Kalle Valo <kvalo@kernel.org>, linux-media@vger.kernel.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Yanteng Si <siyanteng@loongson.cn>, Mauro Carvalho Chehab <mchehab@kernel.org>, Arend van Spriel <aspriel@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, Hante Meuleman <hante.meuleman@broadcom.com>, linux-gpio@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Franky Lin <franky.lin@broadcom.com>, brcm80211-dev-list.pdl@broadcom.com, Keerthy <j-keerthy@ti.com>, Yoshinori Sato <ysato@users.sou
- rceforge.jp>, Mun Yew Tham <mun.yew.tham@intel.com>, Dipen Patel <dipenp@nvidia.com>, linux-wpan@vger.kernel.org, linux-doc-tw-discuss@lists.sourceforge.net, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Michael Walle <michael@walle.cc>, Rob Herring <robh+dt@kernel.org>, netdev@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Hu Haowen <src.res@email.cn>, linuxppc-dev@lists.ozlabs.org, Gregory Clement <gregory.clement@bootlin.com>
+Reply-To: nathanl@linux.ibm.com
+Cc: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 8, 2023 at 6:39 PM Krzysztof Kozlowski
-<krzysztof.kozlowski@linaro.org> wrote:
+From: Nathan Lynch <nathanl@linux.ibm.com>
 
-> On 08/02/2023 18:33, Andy Shevchenko wrote:
-> > From: Linus Walleij <linus.walleij@linaro.org>
-> >
-> > The file s3c64xx.c is including <linux/gpio.h> despite using no
-> > symbols from the file, however it needs it to implicitly bring in
-> > of_have_populated_dt() so include <linux/of.h> explicitly instead.
-> >
-> > Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > ---
-> >  arch/arm/mach-s3c/s3c64xx.c | 2 +-
->
-> It's not s3c24xx anymore, so subject prefix:
-> ARM: s3c64xx:
+machine_is() can't provide correct results before probe_machine() has
+run. Warn when it's used too early in boot.
 
-My mistake, mea culpa.
+Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
+---
+Prompted by my attempts to do some pseries-specific setup during
+rtas_initialize() and being puzzled for a while that it wasn't
+working.
+---
+ arch/powerpc/include/asm/machdep.h | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 378b8d5836a7..8c0a799d18cd 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -220,11 +220,13 @@ extern struct machdep_calls *machine_id;
+ 	EXPORT_SYMBOL(mach_##name);				\
+ 	struct machdep_calls mach_##name __machine_desc =
+ 
+-#define machine_is(name) \
+-	({ \
+-		extern struct machdep_calls mach_##name \
+-			__attribute__((weak));		 \
+-		machine_id == &mach_##name; \
++#define machine_is(name)                                            \
++	({                                                          \
++		extern struct machdep_calls mach_##name             \
++			__attribute__((weak));                      \
++		WARN(!machine_id,                                   \
++		     "machine_is() called before probe_machine()"); \
++		machine_id == &mach_##name;                         \
+ 	})
+ 
+ static inline void log_error(char *buf, unsigned int err_type, int fatal)
+
+---
+base-commit: 0bfb97203f5f300777624a2ad6f8f84aea3e8658
+change-id: 20230210-warn-on-machine-is-before-probe-machine-37515b1f43bb
+
+Best regards,
+-- 
+Nathan Lynch <nathanl@linux.ibm.com>
+
