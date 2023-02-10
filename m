@@ -4,92 +4,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 681EBC6379F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 08:29:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3436C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 11:27:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCn3F5rn2z3fvR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 19:29:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCs0471b2z3f6r
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 22:27:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H2PlDHib;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FdvYCAjy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=H2PlDHib;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FdvYCAjy;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCmbx0B2Gz3fGZ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 19:09:32 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31A7g0Kj032359;
-	Fri, 10 Feb 2023 08:09:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=FJTu8g+cFp9v9UBAlDhc/WogF7VPq+5Iyel3+118rCY=;
- b=H2PlDHib+SbWH3fEFdzBlKGYXdQff0Gok0hbnlBcP+YGZjLjfnJ1Gs+XIBXSuou43mR0
- YC+HitVdWCewyIFT9F9ChaZbyddaZkWWssWdo9JhPEi/yYrF2k/OmUUNffbI1SDEK7AA
- pBOFqx7jbN/wbsFpPuMPqNlMHhCtrgDp0M4HcWIpCnglQ3b5lLfYM421GSG3cvQn5ogu
- K+xv3RFEU8ONXs5LOGERtKveYj/b/+0/5HQBn7FeRQ9/KtDiXqPmuGe+imc7rmnTtD6q
- mlERfUOtwaFEdKlH92oPDjYmjk3O4A4ffGf4mYv+la/mcS2nCCDAA/o1vwuiPzNC9NKd 4Q== 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCrz01Ltxz3cdW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 22:26:19 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31ABFPcq013092;
+	Fri, 10 Feb 2023 11:26:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ subject : to : cc : references : from : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=cD/X9nIeMMmFjHYm4VPov7vFFV03gYaj32qdcgmLvJE=;
+ b=FdvYCAjyH0yNGCW0O6sA94ph/wPLjudsHzWwgK/J4m7mHi5KFSbIW1t8l0C7trg6V0jb
+ Ml8+/ruk5On2x38DBugRq69wh/Tzz2NZzO++E40PqcQ06pklQZJuqWtZjsQQv+llwEdg
+ C8hUISmJdaSxtnz923gAoQpep+1PedMqp94b0Bh8Eeo855gQLXuSOlqHChxG9fZKMcO2
+ 1p2wjfzAX41N4Y+x+2DN73KhkUNV6RD9/KPhsHPp4wuFKjMzFAc+NY5PyQADiWwgBTbF
+ R66r8fusXp/BCWR0spcJNhXV/Njl8704pYk2JWODP0d257Rq/xl7lOQ3dB4bFpn+jsdl yg== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnhrurs6m-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnmw0g8jx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:09:28 +0000
-Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31A7hPfo003092;
-	Fri, 10 Feb 2023 08:09:27 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnhrurs53-1
+	Fri, 10 Feb 2023 11:26:04 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31ABPDui022485;
+	Fri, 10 Feb 2023 11:26:03 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnmw0g8jg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:09:27 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 319DYWaA001846;
-	Fri, 10 Feb 2023 08:04:24 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3nhf06q4vj-1
+	Fri, 10 Feb 2023 11:26:03 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 319NbWJs026034;
+	Fri, 10 Feb 2023 11:26:01 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3nhf06wa04-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:04:24 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31A84M5d30736796
+	Fri, 10 Feb 2023 11:26:01 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31ABPxlf25166532
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 10 Feb 2023 08:04:22 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 381822004D;
-	Fri, 10 Feb 2023 08:04:22 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AA2232004F;
-	Fri, 10 Feb 2023 08:04:21 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 10 Feb 2023 08:04:21 +0000 (GMT)
-Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id BB608609BE;
-	Fri, 10 Feb 2023 19:04:15 +1100 (AEDT)
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v6 20/26] powerpc/pseries: Turn PSERIES_PLPKS into a hidden option
-Date: Fri, 10 Feb 2023 19:03:55 +1100
-Message-Id: <20230210080401.345462-21-ajd@linux.ibm.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230210080401.345462-1-ajd@linux.ibm.com>
-References: <20230210080401.345462-1-ajd@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	Fri, 10 Feb 2023 11:25:59 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 424C920040;
+	Fri, 10 Feb 2023 11:25:59 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 039F620049;
+	Fri, 10 Feb 2023 11:25:57 +0000 (GMT)
+Received: from [9.109.198.193] (unknown [9.109.198.193])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 Feb 2023 11:25:56 +0000 (GMT)
+Message-ID: <288e133f-f740-6818-8125-8079217ab822@linux.ibm.com>
+Date: Fri, 10 Feb 2023 16:55:54 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:91.0) Gecko/20100101
+ Thunderbird/91.12.0
+Subject: Re: [PATCH AUTOSEL 6.1 17/38] powerpc/85xx: Fix unannotated
+ intra-function call warning
+Content-Language: en-US
+To: Sasha Levin <sashal@kernel.org>, linux-kernel@vger.kernel.org,
+        stable@vger.kernel.org
+References: <20230209111459.1891941-1-sashal@kernel.org>
+ <20230209111459.1891941-17-sashal@kernel.org>
+From: Sathvika Vasireddy <sv@linux.ibm.com>
+In-Reply-To: <20230209111459.1891941-17-sashal@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: ckglOMvGBKNXWo5ZR6d28Ydukc12klHn
-X-Proofpoint-GUID: tQV0Wjammj_00RiP24XqbwIV5v2hnh7e
+X-Proofpoint-GUID: kp2fJvuJzSqkN5r85yXu86qrvSGQXP-s
+X-Proofpoint-ORIG-GUID: CYuRFdlv5KJPoQaw9Kri-fW_bNc2VOrc
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-10_03,2023-02-09_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
- lowpriorityscore=0 adultscore=0 mlxlogscore=999 malwarescore=0 mlxscore=0
- spamscore=0 bulkscore=0 suspectscore=0 priorityscore=1501 clxscore=1015
+ definitions=2023-02-10_06,2023-02-09_03,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0 mlxscore=0
+ phishscore=0 adultscore=0 spamscore=0 lowpriorityscore=0 mlxlogscore=970
+ bulkscore=0 malwarescore=0 priorityscore=1501 clxscore=1031 suspectscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2302100070
+ definitions=main-2302100088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,79 +103,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sudhakar@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, nayna@linux.ibm.com, npiggin@gmail.com, linux-kernel@vger.kernel.org, zohar@linux.ibm.com, gjoyce@linux.ibm.com, ruscur@russell.cc, joel@jms.id.au, bgray@linux.ibm.com, brking@linux.ibm.com, gcwilson@linux.ibm.com, stefanb@linux.ibm.com
+Cc: kernel test robot <lkp@intel.com>, npiggin@gmail.com, Sathvika Vasireddy <sv@linux.ibm.com>, naveen.n.rao@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It seems a bit unnecessary for the PLPKS code to have a user-visible
-config option when it doesn't do anything on its own, and there's existing
-options for enabling Secure Boot-related features.
+Hi Sasha,
 
-It should be enabled by PPC_SECURE_BOOT, which will eventually be what
-uses PLPKS to populate keyrings.
+On 09/02/23 16:44, Sasha Levin wrote:
+> From: Sathvika Vasireddy <sv@linux.ibm.com>
+>
+> [ Upstream commit 8afffce6aa3bddc940ac1909627ff1e772b6cbf1 ]
+>
+> objtool throws the following warning:
+>    arch/powerpc/kernel/head_85xx.o: warning: objtool: .head.text+0x1a6c:
+>    unannotated intra-function call
+>
+> Fix the warning by annotating KernelSPE symbol with SYM_FUNC_START_LOCAL
+> and SYM_FUNC_END macros.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Link: https://lore.kernel.org/r/20230128124138.1066176-1-sv@linux.ibm.com
+> Signed-off-by: Sasha Levin <sashal@kernel.org>
+> ---
+>   arch/powerpc/kernel/head_85xx.S | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/kernel/head_85xx.S b/arch/powerpc/kernel/head_85xx.S
+> index 52c0ab416326a..d3939849f4550 100644
+> --- a/arch/powerpc/kernel/head_85xx.S
+> +++ b/arch/powerpc/kernel/head_85xx.S
+> @@ -862,7 +862,7 @@ _GLOBAL(load_up_spe)
+>    * SPE unavailable trap from kernel - print a message, but let
+>    * the task use SPE in the kernel until it returns to user mode.
+>    */
+> -KernelSPE:
+> +SYM_FUNC_START_LOCAL(KernelSPE)
+>   	lwz	r3,_MSR(r1)
+>   	oris	r3,r3,MSR_SPE@h
+>   	stw	r3,_MSR(r1)	/* enable use of SPE after return */
+> @@ -879,6 +879,7 @@ KernelSPE:
+>   #endif
+>   	.align	4,0
+>   
+> +SYM_FUNC_END(KernelSPE)
+>   #endif /* CONFIG_SPE */
+>   
+>   /*
 
-However, we can't get of the separate option completely, because it will
-also be used for SED Opal purposes.
+Please drop this patch because objtool enablement patches for powerpc 
+are not a part of kernel v6.1.
 
-Change PSERIES_PLPKS into a hidden option, which is selected by
-PPC_SECURE_BOOT.
-
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
-Signed-off-by: Russell Currey <ruscur@russell.cc>
-Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
-
----
-
-v3: New patch
-
-v5: Change the previous description into a comment (npiggin)
----
- arch/powerpc/Kconfig                   |  1 +
- arch/powerpc/platforms/pseries/Kconfig | 19 +++++++++----------
- 2 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b8c4ac56bddc..d4ed46101bec 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1029,6 +1029,7 @@ config PPC_SECURE_BOOT
- 	depends on PPC_POWERNV || PPC_PSERIES
- 	depends on IMA_ARCH_POLICY
- 	imply IMA_SECURE_AND_OR_TRUSTED_BOOT
-+	select PSERIES_PLPKS if PPC_PSERIES
- 	help
- 	  Systems with firmware secure boot enabled need to define security
- 	  policies to extend secure boot to the OS. This config allows a user
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index a3b4d99567cb..e51d65969318 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -151,16 +151,15 @@ config IBMEBUS
- 
- config PSERIES_PLPKS
- 	depends on PPC_PSERIES
--	bool "Support for the Platform Key Storage"
--	help
--	  PowerVM provides an isolated Platform Keystore(PKS) storage
--	  allocation for each LPAR with individually managed access
--	  controls to store sensitive information securely. It can be
--	  used to store asymmetric public keys or secrets as required
--	  by different usecases. Select this config to enable
--	  operating system interface to hypervisor to access this space.
--
--	  If unsure, select N.
-+	bool
-+	# PowerVM provides an isolated Platform Keystore (PKS) storage
-+	# allocation for each LPAR with individually managed access
-+	# controls to store sensitive information securely. It can be
-+	# used to store asymmetric public keys or secrets as required
-+	# by different usecases.
-+	#
-+	# This option is selected by in-kernel consumers that require
-+	# access to the PKS.
- 
- config PAPR_SCM
- 	depends on PPC_PSERIES && MEMORY_HOTPLUG && LIBNVDIMM
--- 
-2.39.1
-
+Thanks,
+Sathvika
