@@ -4,92 +4,92 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCC3AC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 08:08:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC986C636CD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 08:09:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCmZK3nxcz3fC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 19:08:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCmbM3Vqzz3fCh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 19:09:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bVexbER+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UizX3jIM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bVexbER+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UizX3jIM;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCmV71qCkz3bcw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 19:04:30 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31A83NtX008624;
-	Fri, 10 Feb 2023 08:04:23 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCmV73Hz0z3c63
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 19:04:31 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31A7g6Z2032537;
+	Fri, 10 Feb 2023 08:04:26 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=gCNzsJQMUlM3vuWRxJHuCro4Pi5S2nUUaN3zdk+N8n8=;
- b=bVexbER+Y6VW7UkwZRKNzV/lA6fNDxq+x3/TrfpLCIbSvy3x5zMn7ISm8gNn41KpLGL0
- il77jAmB9EEsphb+SSuYamaHDAMG5rIxSB4/lI0wqWJOl+JkqYJxau0stiAgqFl6D6TZ
- /SgEk4C6WRrbK4ak5gI3eePD9q0mzB38DokvCkVvZcYm9W0nw593KGYbX0SDh25rWEHo
- 50d2bc/T8VsSzkVA4btGYgK9SlnvwWz0KMELK+daoTOKIWJ5ewAg0ipH+qGr8M/S3IpB
- iJgCcC2JD+EQMs8qLvoSa6jGjdqd83vAC/JzxCKwVxyo9mP+BrHIXFhDUEp4TMBoQzpj eQ== 
+ bh=SH2UbH2B3c2icAgR9z8QB14k/xdDG7GU+NiJiqoJMLw=;
+ b=UizX3jIMjSc5TdqjtyPNzIE8YRiM9/MwJS+WccISaqUPuLcY1ocG+vefrbpkdVsph2LK
+ 1WgyZsCMIEfoHvWxm66GRBB0SiTtXZlVAwygCvPDTOsue9vxyNYRSa32U2zmS67yzs20
+ QTOSqu6ScbbTxRqSTjnu1ofjBwvQbVctg9WY/2CRQCFHQ5NhmKfnm5DRAAbQAWrDVlLS
+ sMzaiFuMxzPXzqU9242kThE2TaWszWpftWZaEySeIE/rX5425zFxe40/GcVsuXVrNvfC
+ MVVa5OJ/B0sL35kzMeETH1Ep5imnTzDJxs+jcW6yJ3BReYTVOmbM1k2TZwpHXaENI4nD lA== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj30r17t-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnhrurjhf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 Feb 2023 08:04:26 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31A7h2WB002304;
+	Fri, 10 Feb 2023 08:04:25 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnhrurjfn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 10 Feb 2023 08:04:25 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31A7MeAH021050;
+	Fri, 10 Feb 2023 08:04:23 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3nhemfq6ca-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 10 Feb 2023 08:04:23 +0000
-Received: from m0098419.ppops.net (m0098419.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31A83WEV009161;
-	Fri, 10 Feb 2023 08:04:22 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj30r16u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:04:22 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 319DbiGL005648;
-	Fri, 10 Feb 2023 08:04:20 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3nhf06n40a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:04:20 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31A84IgI44237110
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31A84KFi22610270
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 10 Feb 2023 08:04:18 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3687C2004D;
-	Fri, 10 Feb 2023 08:04:18 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A64D720040;
-	Fri, 10 Feb 2023 08:04:17 +0000 (GMT)
+	Fri, 10 Feb 2023 08:04:20 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A94E82004B;
+	Fri, 10 Feb 2023 08:04:20 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2632C20040;
+	Fri, 10 Feb 2023 08:04:20 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 10 Feb 2023 08:04:17 +0000 (GMT)
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 Feb 2023 08:04:20 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9E2B6600BA;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DEE0E60805;
 	Fri, 10 Feb 2023 19:04:14 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v6 02/26] powerpc/pseries: Fix alignment of PLPKS structures and buffers
-Date: Fri, 10 Feb 2023 19:03:37 +1100
-Message-Id: <20230210080401.345462-3-ajd@linux.ibm.com>
+Subject: [PATCH v6 06/26] powerpc/secvar: Use sysfs_emit() instead of sprintf()
+Date: Fri, 10 Feb 2023 19:03:41 +1100
+Message-Id: <20230210080401.345462-7-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230210080401.345462-1-ajd@linux.ibm.com>
 References: <20230210080401.345462-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: AFfPeGGtvuz1wXmnE7b_gatZc6V1Hhws
-X-Proofpoint-ORIG-GUID: qPc-v6g1AxZjBtaywruqqgUQ0lMYDDK1
+X-Proofpoint-ORIG-GUID: tdmQBz2FKtsx8QTdA6_EOMd18dFRwJtP
+X-Proofpoint-GUID: ST64kUr2XXAFKFESfCwjMSFrrr1U-_05
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
  definitions=2023-02-10_03,2023-02-09_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
- impostorscore=0 suspectscore=0 malwarescore=0 priorityscore=1501
- mlxlogscore=999 bulkscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302100070
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 impostorscore=0
+ lowpriorityscore=0 adultscore=0 mlxlogscore=999 malwarescore=0 mlxscore=0
+ spamscore=0 bulkscore=0 suspectscore=0 priorityscore=1501 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2302100070
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,75 +105,45 @@ Cc: sudhakar@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, n
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A number of structures and buffers passed to PKS hcalls have alignment
-requirements, which could on occasion cause problems:
+From: Russell Currey <ruscur@russell.cc>
 
-- Authorisation structures must be 16-byte aligned and must not cross a
-  page boundary
+The secvar format string and object size sysfs files are both ASCII
+text, and should use sysfs_emit().  No functional change.
 
-- Label structures must not cross page boundaries
-
-- Password output buffers must not cross page boundaries
-
-To ensure correct alignment, we adjust the allocation size of each of
-these structures/buffers to be the closest power of 2 that is at least the
-size of the structure/buffer (since kmalloc() guarantees that an
-allocation of a power of 2 size will be aligned to at least that size).
-
-Reported-by: Benjamin Gray <bgray@linux.ibm.com>
-Fixes: 2454a7af0f2a ("powerpc/pseries: define driver for Platform KeyStore")
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
-Reviewed-by: Russell Currey <ruscur@russell.cc>
+Suggested-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
 
 ---
 
-v3: Merge plpks fixes and signed update series with secvar series
-
-v4: Fix typo in commit message
-
-    Move up in series (npiggin)
-
-v5: Reword commit message to better explain alignment guarantee (mpe)
+v2: New patch (gregkh)
 ---
- arch/powerpc/platforms/pseries/plpks.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/secvar-sysfs.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 9e85b6d85b0b..a01cf2ff140a 100644
---- a/arch/powerpc/platforms/pseries/plpks.c
-+++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -126,7 +126,8 @@ static int plpks_gen_password(void)
- 	u8 *password, consumer = PKS_OS_OWNER;
- 	int rc;
+diff --git a/arch/powerpc/kernel/secvar-sysfs.c b/arch/powerpc/kernel/secvar-sysfs.c
+index 702044edf14d..b786d1005027 100644
+--- a/arch/powerpc/kernel/secvar-sysfs.c
++++ b/arch/powerpc/kernel/secvar-sysfs.c
+@@ -35,7 +35,7 @@ static ssize_t format_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 	if (rc)
+ 		goto out;
  
--	password = kzalloc(maxpwsize, GFP_KERNEL);
-+	// The password must not cross a page boundary, so we align to the next power of 2
-+	password = kzalloc(roundup_pow_of_two(maxpwsize), GFP_KERNEL);
- 	if (!password)
- 		return -ENOMEM;
+-	rc = sprintf(buf, "%s\n", format);
++	rc = sysfs_emit(buf, "%s\n", format);
  
-@@ -162,7 +163,9 @@ static struct plpks_auth *construct_auth(u8 consumer)
- 	if (consumer > PKS_OS_OWNER)
- 		return ERR_PTR(-EINVAL);
+ out:
+ 	of_node_put(node);
+@@ -57,7 +57,7 @@ static ssize_t size_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 		return rc;
+ 	}
  
--	auth = kzalloc(struct_size(auth, password, maxpwsize), GFP_KERNEL);
-+	// The auth structure must not cross a page boundary and must be
-+	// 16 byte aligned. We align to the next largest power of 2
-+	auth = kzalloc(roundup_pow_of_two(struct_size(auth, password, maxpwsize)), GFP_KERNEL);
- 	if (!auth)
- 		return ERR_PTR(-ENOMEM);
+-	return sprintf(buf, "%llu\n", dsize);
++	return sysfs_emit(buf, "%llu\n", dsize);
+ }
  
-@@ -196,7 +199,8 @@ static struct label *construct_label(char *component, u8 varos, u8 *name,
- 	if (component && slen > sizeof(label->attr.prefix))
- 		return ERR_PTR(-EINVAL);
- 
--	label = kzalloc(sizeof(*label), GFP_KERNEL);
-+	// The label structure must not cross a page boundary, so we align to the next power of 2
-+	label = kzalloc(roundup_pow_of_two(sizeof(*label)), GFP_KERNEL);
- 	if (!label)
- 		return ERR_PTR(-ENOMEM);
- 
+ static ssize_t data_read(struct file *filep, struct kobject *kobj,
 -- 
 2.39.1
 
