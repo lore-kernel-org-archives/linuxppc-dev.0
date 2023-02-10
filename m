@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22D7FC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 18:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88F06C05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 18:54:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PD2vB57WMz3fMG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 05:53:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PD2wD0NHZz3f6c
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 05:54:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V9Trf6NO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tqyTzbKL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V9Trf6NO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tqyTzbKL;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PD2dy0d3zz3f3g
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PD2dy5JWTz3f3g
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Feb 2023 05:42:14 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 6C2C461E97;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id DCA2061E9C;
 	Fri, 10 Feb 2023 18:42:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3D91FC4339B;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AD8DAC433D2;
 	Fri, 10 Feb 2023 18:42:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1676054528;
-	bh=8IXEGpEjPQ1vXHEvlx0DgyUnV+GQRPOe7QWWaTmzBTA=;
+	bh=ttgySmQ6wQHmMtOZEVWFHG2Ul2XdhFDbB56+La+RM1s=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=V9Trf6NOB4Elib20WcMaaekLGrKqmyOkCTJlkg0oVh7s2HLTuumBD7kw7AvT9J9XH
-	 TI1Lq/jW8DuBZ7IvPZu8U/eGhuKqzHRsSR2lofqWbbTemKnD8nZ0lYS6lZC7MnVUiB
-	 i8f17LqP4T8SRkpYFEZ5+ZDih8EpMudKZfR2Xpl60vdn/H+BBgOLJAGwloB9rgE37C
-	 tJhhCvtbXH8r2W7o8+nltuZOYa6LXWcLjft6liT047vVMrdcyUM2gSd90Q7IveEf2X
-	 rPcIKCzaEbKzrT99BhP46LBJhusJYGJg6KcFYEZ6GaYoakC5knejwJEsUgWn8GTBtw
-	 sj7Zud0HtyaKg==
+	b=tqyTzbKLVKWhimehcbMBYcSqv7klYEKmbwPfXxkhu2eMR71ghQ9CbNJVzkyJUO3+z
+	 Grt9ayJi2sJiONNRckIozNvd7KxUkiyiIIRjVkzroTklYiHgS/pRLxQpQ6Q7IXQ+6z
+	 fBh6TGsGJr4tzlyFuc0CKLolrZ0+mkS126pHhZCGvqWMFSylWgPqQp1hLzRInnnjUH
+	 UyLZtFmTmavtK9kvSBa32xnQeNTEplRGcGPpwpVDl0ovN+eUEsftEtWPIPj24j7ZnR
+	 XmNo4MNd+X98QgMPhIpCtu3QQfBJV8OXzvF4tQFMLlo5p5jGrUNdD9jz1BzjGjAVCQ
+	 lBJ3zGUvUGevg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB3AC64EC7;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D3A8C64EC7;
 	Fri, 10 Feb 2023 18:42:08 +0000 (UTC)
 From: Nathan Lynch via B4 Submission Endpoint
  <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Fri, 10 Feb 2023 12:41:59 -0600
-Subject: [PATCH v3 11/20] powerpc/rtas: add tracepoints around RTAS entry
+Date: Fri, 10 Feb 2023 12:42:07 -0600
+Subject: [PATCH v3 19/20] powerpc/rtas: introduce rtas_function_token() API
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230125-b4-powerpc-rtas-queue-v3-11-26929c8cce78@linux.ibm.com>
+Message-Id: <20230125-b4-powerpc-rtas-queue-v3-19-26929c8cce78@linux.ibm.com>
 References: <20230125-b4-powerpc-rtas-queue-v3-0-26929c8cce78@linux.ibm.com>
 In-Reply-To: <20230125-b4-powerpc-rtas-queue-v3-0-26929c8cce78@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
@@ -58,11 +58,11 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
  Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
  Andrew Donnellan <ajd@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1676054526; l=3071;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1676054526; l=11999;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=BvMe3Qw7hO+GLrn7CGHTzncGQuQa4AcnO/gpTip/CoQ=;
- b=tzzwroZRivAF6ggUxB1raue6PVkvjP42EVDVnuhuHr2cF44PyKCtH4Gp3bUL4b3cZr4VIDSex
- e78NMwmiwWyBjJqSGeSBKPgUhVkeZQ00aqZ23+brr+WC578TsB0dgSi
+ bh=8ic7NF5qrgOSgzcSDGNkk6csQhWpdydQPpOZ8jfpsig=;
+ b=JChRuvaXzpMIYUi13zwgwvPxeQSWIdb417YMiMCbxlsoP23CpxivGPOGH1HLTN38RzK7IzlwH
+ SpCAgAyqICmBvsx829tw1m2Qn2GmshD8fhk+jrRcqlvDCOr17RFiyz/
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Submission Endpoint for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -85,104 +85,191 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Decompose the RTAS entry C code into tracing and non-tracing variants,
-calling the just-added tracepoints in the tracing-enabled path. Skip
-tracing in contexts known to be unsafe (real mode, CPU offline).
+Users of rtas_token() supply a string argument that can't be validated
+at build time. A typo or misspelling has to be caught by inspection or
+by observing wrong behavior at runtime.
+
+Since the core RTAS code now has consolidated the names of all
+possible RTAS functions and mapped them to their tokens, token lookup
+can be implemented using symbolic constants to index a static array.
+
+So introduce rtas_function_token(), a replacement API which does that,
+along with a rtas_service_present()-equivalent helper,
+rtas_function_implemented(). Callers supply an opaque predefined
+function handle which is used internally to index the function
+table. Typos or other inappropriate arguments yield build errors, and
+the function handle is a type that can't be easily confused with RTAS
+tokens or other integer types.
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 59 +++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 53 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/rtas.h | 99 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/rtas.c      | 28 +++++++++++-
+ 2 files changed, 126 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index f03891891a2d..3abe15ac79db 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -101,6 +101,100 @@ enum rtas_function_index {
+ 	RTAS_FNIDX__WRITE_PCI_CONFIG,
+ };
+ 
++/*
++ * Opaque handle for client code to refer to RTAS functions. All valid
++ * function handles are build-time constants prefixed with RTAS_FN_.
++ */
++typedef struct {
++	const enum rtas_function_index index;
++} rtas_fn_handle_t;
++
++
++#define rtas_fn_handle(x_) ((const rtas_fn_handle_t) { .index = x_, })
++
++#define RTAS_FN_CHECK_EXCEPTION                   rtas_fn_handle(RTAS_FNIDX__CHECK_EXCEPTION)
++#define RTAS_FN_DISPLAY_CHARACTER                 rtas_fn_handle(RTAS_FNIDX__DISPLAY_CHARACTER)
++#define RTAS_FN_EVENT_SCAN                        rtas_fn_handle(RTAS_FNIDX__EVENT_SCAN)
++#define RTAS_FN_FREEZE_TIME_BASE                  rtas_fn_handle(RTAS_FNIDX__FREEZE_TIME_BASE)
++#define RTAS_FN_GET_POWER_LEVEL                   rtas_fn_handle(RTAS_FNIDX__GET_POWER_LEVEL)
++#define RTAS_FN_GET_SENSOR_STATE                  rtas_fn_handle(RTAS_FNIDX__GET_SENSOR_STATE)
++#define RTAS_FN_GET_TERM_CHAR                     rtas_fn_handle(RTAS_FNIDX__GET_TERM_CHAR)
++#define RTAS_FN_GET_TIME_OF_DAY                   rtas_fn_handle(RTAS_FNIDX__GET_TIME_OF_DAY)
++#define RTAS_FN_IBM_ACTIVATE_FIRMWARE             rtas_fn_handle(RTAS_FNIDX__IBM_ACTIVATE_FIRMWARE)
++#define RTAS_FN_IBM_CBE_START_PTCAL               rtas_fn_handle(RTAS_FNIDX__IBM_CBE_START_PTCAL)
++#define RTAS_FN_IBM_CBE_STOP_PTCAL                rtas_fn_handle(RTAS_FNIDX__IBM_CBE_STOP_PTCAL)
++#define RTAS_FN_IBM_CHANGE_MSI                    rtas_fn_handle(RTAS_FNIDX__IBM_CHANGE_MSI)
++#define RTAS_FN_IBM_CLOSE_ERRINJCT                rtas_fn_handle(RTAS_FNIDX__IBM_CLOSE_ERRINJCT)
++#define RTAS_FN_IBM_CONFIGURE_BRIDGE              rtas_fn_handle(RTAS_FNIDX__IBM_CONFIGURE_BRIDGE)
++#define RTAS_FN_IBM_CONFIGURE_CONNECTOR           rtas_fn_handle(RTAS_FNIDX__IBM_CONFIGURE_CONNECTOR)
++#define RTAS_FN_IBM_CONFIGURE_KERNEL_DUMP         rtas_fn_handle(RTAS_FNIDX__IBM_CONFIGURE_KERNEL_DUMP)
++#define RTAS_FN_IBM_CONFIGURE_PE                  rtas_fn_handle(RTAS_FNIDX__IBM_CONFIGURE_PE)
++#define RTAS_FN_IBM_CREATE_PE_DMA_WINDOW          rtas_fn_handle(RTAS_FNIDX__IBM_CREATE_PE_DMA_WINDOW)
++#define RTAS_FN_IBM_DISPLAY_MESSAGE               rtas_fn_handle(RTAS_FNIDX__IBM_DISPLAY_MESSAGE)
++#define RTAS_FN_IBM_ERRINJCT                      rtas_fn_handle(RTAS_FNIDX__IBM_ERRINJCT)
++#define RTAS_FN_IBM_EXTI2C                        rtas_fn_handle(RTAS_FNIDX__IBM_EXTI2C)
++#define RTAS_FN_IBM_GET_CONFIG_ADDR_INFO          rtas_fn_handle(RTAS_FNIDX__IBM_GET_CONFIG_ADDR_INFO)
++#define RTAS_FN_IBM_GET_CONFIG_ADDR_INFO2         rtas_fn_handle(RTAS_FNIDX__IBM_GET_CONFIG_ADDR_INFO2)
++#define RTAS_FN_IBM_GET_DYNAMIC_SENSOR_STATE      rtas_fn_handle(RTAS_FNIDX__IBM_GET_DYNAMIC_SENSOR_STATE)
++#define RTAS_FN_IBM_GET_INDICES                   rtas_fn_handle(RTAS_FNIDX__IBM_GET_INDICES)
++#define RTAS_FN_IBM_GET_RIO_TOPOLOGY              rtas_fn_handle(RTAS_FNIDX__IBM_GET_RIO_TOPOLOGY)
++#define RTAS_FN_IBM_GET_SYSTEM_PARAMETER          rtas_fn_handle(RTAS_FNIDX__IBM_GET_SYSTEM_PARAMETER)
++#define RTAS_FN_IBM_GET_VPD                       rtas_fn_handle(RTAS_FNIDX__IBM_GET_VPD)
++#define RTAS_FN_IBM_GET_XIVE                      rtas_fn_handle(RTAS_FNIDX__IBM_GET_XIVE)
++#define RTAS_FN_IBM_INT_OFF                       rtas_fn_handle(RTAS_FNIDX__IBM_INT_OFF)
++#define RTAS_FN_IBM_INT_ON                        rtas_fn_handle(RTAS_FNIDX__IBM_INT_ON)
++#define RTAS_FN_IBM_IO_QUIESCE_ACK                rtas_fn_handle(RTAS_FNIDX__IBM_IO_QUIESCE_ACK)
++#define RTAS_FN_IBM_LPAR_PERFTOOLS                rtas_fn_handle(RTAS_FNIDX__IBM_LPAR_PERFTOOLS)
++#define RTAS_FN_IBM_MANAGE_FLASH_IMAGE            rtas_fn_handle(RTAS_FNIDX__IBM_MANAGE_FLASH_IMAGE)
++#define RTAS_FN_IBM_MANAGE_STORAGE_PRESERVATION   rtas_fn_handle(RTAS_FNIDX__IBM_MANAGE_STORAGE_PRESERVATION)
++#define RTAS_FN_IBM_NMI_INTERLOCK                 rtas_fn_handle(RTAS_FNIDX__IBM_NMI_INTERLOCK)
++#define RTAS_FN_IBM_NMI_REGISTER                  rtas_fn_handle(RTAS_FNIDX__IBM_NMI_REGISTER)
++#define RTAS_FN_IBM_OPEN_ERRINJCT                 rtas_fn_handle(RTAS_FNIDX__IBM_OPEN_ERRINJCT)
++#define RTAS_FN_IBM_OPEN_SRIOV_ALLOW_UNFREEZE     rtas_fn_handle(RTAS_FNIDX__IBM_OPEN_SRIOV_ALLOW_UNFREEZE)
++#define RTAS_FN_IBM_OPEN_SRIOV_MAP_PE_NUMBER      rtas_fn_handle(RTAS_FNIDX__IBM_OPEN_SRIOV_MAP_PE_NUMBER)
++#define RTAS_FN_IBM_OS_TERM                       rtas_fn_handle(RTAS_FNIDX__IBM_OS_TERM)
++#define RTAS_FN_IBM_PARTNER_CONTROL               rtas_fn_handle(RTAS_FNIDX__IBM_PARTNER_CONTROL)
++#define RTAS_FN_IBM_PHYSICAL_ATTESTATION          rtas_fn_handle(RTAS_FNIDX__IBM_PHYSICAL_ATTESTATION)
++#define RTAS_FN_IBM_PLATFORM_DUMP                 rtas_fn_handle(RTAS_FNIDX__IBM_PLATFORM_DUMP)
++#define RTAS_FN_IBM_POWER_OFF_UPS                 rtas_fn_handle(RTAS_FNIDX__IBM_POWER_OFF_UPS)
++#define RTAS_FN_IBM_QUERY_INTERRUPT_SOURCE_NUMBER rtas_fn_handle(RTAS_FNIDX__IBM_QUERY_INTERRUPT_SOURCE_NUMBER)
++#define RTAS_FN_IBM_QUERY_PE_DMA_WINDOW           rtas_fn_handle(RTAS_FNIDX__IBM_QUERY_PE_DMA_WINDOW)
++#define RTAS_FN_IBM_READ_PCI_CONFIG               rtas_fn_handle(RTAS_FNIDX__IBM_READ_PCI_CONFIG)
++#define RTAS_FN_IBM_READ_SLOT_RESET_STATE         rtas_fn_handle(RTAS_FNIDX__IBM_READ_SLOT_RESET_STATE)
++#define RTAS_FN_IBM_READ_SLOT_RESET_STATE2        rtas_fn_handle(RTAS_FNIDX__IBM_READ_SLOT_RESET_STATE2)
++#define RTAS_FN_IBM_REMOVE_PE_DMA_WINDOW          rtas_fn_handle(RTAS_FNIDX__IBM_REMOVE_PE_DMA_WINDOW)
++#define RTAS_FN_IBM_RESET_PE_DMA_WINDOWS          rtas_fn_handle(RTAS_FNIDX__IBM_RESET_PE_DMA_WINDOWS)
++#define RTAS_FN_IBM_SCAN_LOG_DUMP                 rtas_fn_handle(RTAS_FNIDX__IBM_SCAN_LOG_DUMP)
++#define RTAS_FN_IBM_SET_DYNAMIC_INDICATOR         rtas_fn_handle(RTAS_FNIDX__IBM_SET_DYNAMIC_INDICATOR)
++#define RTAS_FN_IBM_SET_EEH_OPTION                rtas_fn_handle(RTAS_FNIDX__IBM_SET_EEH_OPTION)
++#define RTAS_FN_IBM_SET_SLOT_RESET                rtas_fn_handle(RTAS_FNIDX__IBM_SET_SLOT_RESET)
++#define RTAS_FN_IBM_SET_SYSTEM_PARAMETER          rtas_fn_handle(RTAS_FNIDX__IBM_SET_SYSTEM_PARAMETER)
++#define RTAS_FN_IBM_SET_XIVE                      rtas_fn_handle(RTAS_FNIDX__IBM_SET_XIVE)
++#define RTAS_FN_IBM_SLOT_ERROR_DETAIL             rtas_fn_handle(RTAS_FNIDX__IBM_SLOT_ERROR_DETAIL)
++#define RTAS_FN_IBM_SUSPEND_ME                    rtas_fn_handle(RTAS_FNIDX__IBM_SUSPEND_ME)
++#define RTAS_FN_IBM_TUNE_DMA_PARMS                rtas_fn_handle(RTAS_FNIDX__IBM_TUNE_DMA_PARMS)
++#define RTAS_FN_IBM_UPDATE_FLASH_64_AND_REBOOT    rtas_fn_handle(RTAS_FNIDX__IBM_UPDATE_FLASH_64_AND_REBOOT)
++#define RTAS_FN_IBM_UPDATE_NODES                  rtas_fn_handle(RTAS_FNIDX__IBM_UPDATE_NODES)
++#define RTAS_FN_IBM_UPDATE_PROPERTIES             rtas_fn_handle(RTAS_FNIDX__IBM_UPDATE_PROPERTIES)
++#define RTAS_FN_IBM_VALIDATE_FLASH_IMAGE          rtas_fn_handle(RTAS_FNIDX__IBM_VALIDATE_FLASH_IMAGE)
++#define RTAS_FN_IBM_WRITE_PCI_CONFIG              rtas_fn_handle(RTAS_FNIDX__IBM_WRITE_PCI_CONFIG)
++#define RTAS_FN_NVRAM_FETCH                       rtas_fn_handle(RTAS_FNIDX__NVRAM_FETCH)
++#define RTAS_FN_NVRAM_STORE                       rtas_fn_handle(RTAS_FNIDX__NVRAM_STORE)
++#define RTAS_FN_POWER_OFF                         rtas_fn_handle(RTAS_FNIDX__POWER_OFF)
++#define RTAS_FN_PUT_TERM_CHAR                     rtas_fn_handle(RTAS_FNIDX__PUT_TERM_CHAR)
++#define RTAS_FN_QUERY_CPU_STOPPED_STATE           rtas_fn_handle(RTAS_FNIDX__QUERY_CPU_STOPPED_STATE)
++#define RTAS_FN_READ_PCI_CONFIG                   rtas_fn_handle(RTAS_FNIDX__READ_PCI_CONFIG)
++#define RTAS_FN_RTAS_LAST_ERROR                   rtas_fn_handle(RTAS_FNIDX__RTAS_LAST_ERROR)
++#define RTAS_FN_SET_INDICATOR                     rtas_fn_handle(RTAS_FNIDX__SET_INDICATOR)
++#define RTAS_FN_SET_POWER_LEVEL                   rtas_fn_handle(RTAS_FNIDX__SET_POWER_LEVEL)
++#define RTAS_FN_SET_TIME_FOR_POWER_ON             rtas_fn_handle(RTAS_FNIDX__SET_TIME_FOR_POWER_ON)
++#define RTAS_FN_SET_TIME_OF_DAY                   rtas_fn_handle(RTAS_FNIDX__SET_TIME_OF_DAY)
++#define RTAS_FN_START_CPU                         rtas_fn_handle(RTAS_FNIDX__START_CPU)
++#define RTAS_FN_STOP_SELF                         rtas_fn_handle(RTAS_FNIDX__STOP_SELF)
++#define RTAS_FN_SYSTEM_REBOOT                     rtas_fn_handle(RTAS_FNIDX__SYSTEM_REBOOT)
++#define RTAS_FN_THAW_TIME_BASE                    rtas_fn_handle(RTAS_FNIDX__THAW_TIME_BASE)
++#define RTAS_FN_WRITE_PCI_CONFIG                  rtas_fn_handle(RTAS_FNIDX__WRITE_PCI_CONFIG)
++
+ #define RTAS_UNKNOWN_SERVICE (-1)
+ #define RTAS_INSTANTIATE_MAX (1ULL<<30) /* Don't instantiate rtas at/above this value */
+ 
+@@ -307,6 +401,11 @@ extern void (*rtas_flash_term_hook)(int);
+ 
+ extern struct rtas_t rtas;
+ 
++s32 rtas_function_token(const rtas_fn_handle_t handle);
++static inline bool rtas_function_implemented(const rtas_fn_handle_t handle)
++{
++	return rtas_function_token(handle) != RTAS_UNKNOWN_SERVICE;
++}
+ extern int rtas_token(const char *service);
+ extern int rtas_service_present(const char *service);
+ extern int rtas_call(int token, int, int, int *, ...);
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index d2622b997b68..a6d0c46b4512 100644
+index 1f80f0b8a9ad..bb6f5370c279 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -38,6 +38,7 @@
- #include <asm/page.h>
- #include <asm/rtas.h>
- #include <asm/time.h>
-+#include <asm/trace.h>
- #include <asm/udbg.h>
+@@ -453,6 +453,32 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 	},
+ };
  
- struct rtas_filter {
-@@ -523,24 +524,70 @@ static const struct rtas_function *rtas_token_to_function(s32 token)
- /* This is here deliberately so it's only used in this file */
- void enter_rtas(unsigned long);
- 
-+static void __do_enter_rtas(struct rtas_args *args)
++/**
++ * rtas_function_token() - RTAS function token lookup.
++ * @handle: Function handle, e.g. RTAS_FN_EVENT_SCAN.
++ *
++ * Context: Any context.
++ * Return: the token value for the function if implemented by this platform,
++ *         otherwise RTAS_UNKNOWN_SERVICE.
++ */
++s32 rtas_function_token(const rtas_fn_handle_t handle)
 +{
-+	enter_rtas(__pa(args));
-+	srr_regs_clobbered(); /* rtas uses SRRs, invalidate */
-+}
++	const size_t index = handle.index;
++	const bool out_of_bounds = index >= ARRAY_SIZE(rtas_function_table);
 +
-+static void __do_enter_rtas_trace(struct rtas_args *args)
-+{
-+	const char *name = NULL;
++	if (WARN_ONCE(out_of_bounds, "invalid function index %zu", index))
++		return RTAS_UNKNOWN_SERVICE;
 +	/*
-+	 * If the tracepoints that consume the function name aren't
-+	 * active, avoid the lookup.
++	 * Various drivers attempt token lookups on non-RTAS
++	 * platforms.
 +	 */
-+	if ((trace_rtas_input_enabled() || trace_rtas_output_enabled())) {
-+		const s32 token = be32_to_cpu(args->token);
-+		const struct rtas_function *func = rtas_token_to_function(token);
++	if (!rtas.dev)
++		return RTAS_UNKNOWN_SERVICE;
 +
-+		name = func->name;
-+	}
-+
-+	trace_rtas_input(args, name);
-+	trace_rtas_ll_entry(args);
-+
-+	__do_enter_rtas(args);
-+
-+	trace_rtas_ll_exit(args);
-+	trace_rtas_output(args, name);
++	return rtas_function_table[index].token;
 +}
++EXPORT_SYMBOL_GPL(rtas_function_token);
 +
- static void do_enter_rtas(struct rtas_args *args)
+ static int rtas_function_cmp(const void *a, const void *b)
  {
--	unsigned long msr;
--
-+	const unsigned long msr = mfmsr();
-+	/*
-+	 * Situations where we want to skip any active tracepoints for
-+	 * safety reasons:
-+	 *
-+	 * 1. The last code executed on an offline CPU as it stops,
-+	 *    i.e. we're about to call stop-self. The tracepoints'
-+	 *    function name lookup uses xarray, which uses RCU, which
-+	 *    isn't valid to call on an offline CPU.  Any events
-+	 *    emitted on an offline CPU will be discarded anyway.
-+	 *
-+	 * 2. In real mode, as when invoking ibm,nmi-interlock from
-+	 *    the pseries MCE handler. We cannot count on trace
-+	 *    buffers or the entries in rtas_token_to_function_xarray
-+	 *    to be contained in the RMO.
-+	 */
-+	const unsigned long mask = MSR_IR | MSR_DR;
-+	const bool can_trace = likely(cpu_online(raw_smp_processor_id()) &&
-+				      (msr & mask) == mask);
- 	/*
- 	 * Make sure MSR[RI] is currently enabled as it will be forced later
- 	 * in enter_rtas.
- 	 */
--	msr = mfmsr();
- 	BUG_ON(!(msr & MSR_RI));
- 
- 	BUG_ON(!irqs_disabled());
- 
- 	hard_irq_disable(); /* Ensure MSR[EE] is disabled on PPC64 */
- 
--	enter_rtas(__pa(args));
--
--	srr_regs_clobbered(); /* rtas uses SRRs, invalidate */
-+	if (can_trace)
-+		__do_enter_rtas_trace(args);
-+	else
-+		__do_enter_rtas(args);
- }
- 
- struct rtas_t rtas;
+ 	const struct rtas_function *f1 = a;
+@@ -1011,7 +1037,7 @@ static int ibm_errinjct_token;
+  * @....: List of @nargs input parameters.
+  *
+  * Invokes the RTAS function indicated by @token, which the caller
+- * should obtain via rtas_token().
++ * should obtain via rtas_function_token().
+  *
+  * The @nargs and @nret arguments must match the number of input and
+  * output parameters specified for the RTAS function.
 
 -- 
 2.39.1
