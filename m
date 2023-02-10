@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40EC5C05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 08:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E94EC05027
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 08:22:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PCmst5X7lz3fY7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 19:21:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PCmtw5LQ7z3ffG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 19:22:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xkk9UM6J;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJI1la8T;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xkk9UM6J;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pJI1la8T;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCmVB3bG2z3cdD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 19:04:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PCmVB3w61z3cdW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 19:04:34 +1100 (AEDT)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31A80gQJ002883;
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31A80ZJA002097;
 	Fri, 10 Feb 2023 08:04:29 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=XX7O+1nbex4u6xyQvbha9t5Lh69ekGMi0RZxMBi3dIM=;
- b=Xkk9UM6JeOVpZJ9sckXFDIMc0DMse6ty2P7+B0yHhvx/nVp1G1FzwkcLsy/xeAqr3i0d
- x8kVyu0yEsNJLB+JgwjlwNDLs6t5VTCLzrWI2HVAnga+76jFKPR4aDCSVJr4f3/PJC3x
- uzciOYrd2V/tKJxYK9SBoFSAnPJtS4sO1DkUMF9nXbmWMVZnuyEArI2Zoq8gmgc8F25f
- 74p/FdUNfjcsydZuxmUyJpghN/kTMKibQhn8LlKbWd90EUKdxFOl9dPaJ5lG4pOhpWc8
- o13ctlEoM9OMQwytDu+2JWESJl+rEAdFPnCWMzoPUz4uJ+ztENse9MZJNStRMY+vLVMF jQ== 
+ bh=w+TVcrzCzgtgNHsymCu63Bi0OTVfuzZdP7nE3gzDQP8=;
+ b=pJI1la8TLwy9o1274yA/N5K+JKtRLGLR+G6qAcjebma0GdSRCYKYYcY3xX5NLlNvM1pq
+ Leu5dXqbsWrX0xaM77LQ/nDzV/qBUZwavLfIjZt+1bhATWLt33y4Y9weAesAnIbKvKyZ
+ ViH2C+wkyrLE7J2DxfwhV5z1J15fQmMVM2wf5jfaWlg6awGCiHHzS3/swTDPp2py8yUG
+ P6p2uEXx0AIvLSkl44Yl2tuyVeiZsYA+GENEpgGrifTtHbFSSee894CL4qTd5Ebb3Qv+
+ /OzVizq98mU4BnnM6NVGMUAKYu5xK9VOf5ugxXFi00cgekSG2aCbQYAe7xffd86dqUs1 2w== 
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj1r033h-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj1r033j-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 10 Feb 2023 08:04:29 +0000
 Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31A80fLl002642;
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31A81Hbj007960;
 	Fri, 10 Feb 2023 08:04:28 GMT
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj1r032q-1
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nnj1r032n-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Fri, 10 Feb 2023 08:04:28 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31A7MeAJ021050;
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 319ECHSp016371;
 	Fri, 10 Feb 2023 08:04:26 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3nhemfq6cg-1
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3nhf06n3uv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 10 Feb 2023 08:04:26 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31A84NZ529688158
+	Fri, 10 Feb 2023 08:04:25 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31A84NeT25363008
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
 	Fri, 10 Feb 2023 08:04:23 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A9A7F20043;
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id AC06C2004F;
 	Fri, 10 Feb 2023 08:04:23 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A2B852004B;
-	Fri, 10 Feb 2023 08:04:22 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 28D282004B;
+	Fri, 10 Feb 2023 08:04:23 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 10 Feb 2023 08:04:22 +0000 (GMT)
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 10 Feb 2023 08:04:23 +0000 (GMT)
 Received: from jarvis-ozlabs-ibm-com.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AD6496097C;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DC894609BD;
 	Fri, 10 Feb 2023 19:04:15 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: [PATCH v6 19/26] powerpc/pseries: Make caller pass buffer to plpks_read_var()
-Date: Fri, 10 Feb 2023 19:03:54 +1100
-Message-Id: <20230210080401.345462-20-ajd@linux.ibm.com>
+Subject: [PATCH v6 22/26] powerpc/pseries: Add helper to get PLPKS password length
+Date: Fri, 10 Feb 2023 19:03:57 +1100
+Message-Id: <20230210080401.345462-23-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <20230210080401.345462-1-ajd@linux.ibm.com>
 References: <20230210080401.345462-1-ajd@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: cLu69oJZdV381eQpsVGXsipFvgqjakQl
-X-Proofpoint-GUID: fzGdSvGR4RZCvgD071gHJ7LqnUpJyl3P
+X-Proofpoint-ORIG-GUID: oU1E0ckx3-nGLdwyDNq6whNiiXUu_k33
+X-Proofpoint-GUID: tFkblVUtpxANZT4s6F0h26dlWwpPwuEC
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
  definitions=2023-02-10_03,2023-02-09_03,2023-02-09_01
@@ -105,93 +105,58 @@ Cc: sudhakar@linux.ibm.com, erichte@linux.ibm.com, gregkh@linuxfoundation.org, n
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, plpks_read_var() allocates a buffer to pass to the
-H_PKS_READ_OBJECT hcall, then allocates another buffer into which the data
-is copied, and returns that buffer to the caller.
+From: Russell Currey <ruscur@russell.cc>
 
-This is a bit over the top - while we probably still want to allocate a
-separate buffer to pass to the hypervisor in the hcall, we can let the
-caller allocate the final buffer and specify the size.
+Add helper function to get the PLPKS password length. This will be used
+in a later patch to support passing the password between kernels over
+kexec.
 
-Don't allocate var->data in plpks_read_var(), instead expect the caller to
-allocate it. If the caller needs to discover the size, it can set
-var->data to NULL and var->datalen will be populated. Update header file
-to document this.
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 Signed-off-by: Russell Currey <ruscur@russell.cc>
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
 
 ---
 
-v3: New patch (mpe)
+v3: New patch
 
-v6: Reword commit message (stefanb)
+v5: Drop plpks_get_password() since we no longer need to expose it.
 ---
- arch/powerpc/include/asm/plpks.h       | 12 ++++++++++++
- arch/powerpc/platforms/pseries/plpks.c | 11 ++++-------
- 2 files changed, 16 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/plpks.h       | 5 +++++
+ arch/powerpc/platforms/pseries/plpks.c | 5 +++++
+ 2 files changed, 10 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
-index e7204e6c0ca4..0c49969b0864 100644
+index 0c49969b0864..757313e00521 100644
 --- a/arch/powerpc/include/asm/plpks.h
 +++ b/arch/powerpc/include/asm/plpks.h
-@@ -88,16 +88,28 @@ int plpks_remove_var(char *component, u8 varos,
- 
- /**
-  * Returns the data for the specified os variable.
-+ *
-+ * Caller must allocate a buffer in var->data with length in var->datalen.
-+ * If no buffer is provided, var->datalen will be populated with the object's
-+ * size.
+@@ -171,6 +171,11 @@ u32 plpks_get_maxlargeobjectsize(void);
   */
- int plpks_read_os_var(struct plpks_var *var);
+ u64 plpks_get_signedupdatealgorithms(void);
  
- /**
-  * Returns the data for the specified firmware variable.
-+ *
-+ * Caller must allocate a buffer in var->data with length in var->datalen.
-+ * If no buffer is provided, var->datalen will be populated with the object's
-+ * size.
-  */
- int plpks_read_fw_var(struct plpks_var *var);
++/**
++ * Returns the length of the PLPKS password in bytes.
++ */
++u16 plpks_get_passwordlen(void);
++
+ #endif // CONFIG_PSERIES_PLPKS
  
- /**
-  * Returns the data for the specified bootloader variable.
-+ *
-+ * Caller must allocate a buffer in var->data with length in var->datalen.
-+ * If no buffer is provided, var->datalen will be populated with the object's
-+ * size.
-  */
- int plpks_read_bootloader_var(struct plpks_var *var);
- 
+ #endif // _ASM_POWERPC_PLPKS_H
 diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index e5755443d4a4..926b6a927326 100644
+index 01ae919b4497..671a10acaebf 100644
 --- a/arch/powerpc/platforms/pseries/plpks.c
 +++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -581,17 +581,14 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
- 		goto out_free_output;
- 	}
+@@ -359,6 +359,11 @@ u64 plpks_get_signedupdatealgorithms(void)
+ 	return signedupdatealgorithms;
+ }
  
--	if (var->datalen == 0 || var->datalen > retbuf[0])
-+	if (!var->data || var->datalen > retbuf[0])
- 		var->datalen = retbuf[0];
- 
--	var->data = kzalloc(var->datalen, GFP_KERNEL);
--	if (!var->data) {
--		rc = -ENOMEM;
--		goto out_free_output;
--	}
- 	var->policy = retbuf[1];
- 
--	memcpy(var->data, output, var->datalen);
-+	if (var->data)
-+		memcpy(var->data, output, var->datalen);
++u16 plpks_get_passwordlen(void)
++{
++	return ospasswordlength;
++}
 +
- 	rc = 0;
- 
- out_free_output:
+ bool plpks_is_available(void)
+ {
+ 	int rc;
 -- 
 2.39.1
 
