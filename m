@@ -4,70 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47A2FC05027
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Feb 2023 22:34:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72F43C636D4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 00:16:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PD7pQ31kYz3f7y
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 09:34:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PDB3x3ft8z3f8v
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Feb 2023 11:16:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A/tGDdNv;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=ADJ+NDsg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2607:f8b0:4864:20::d29; helo=mail-io1-xd29.google.com; envelope-from=skhan@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A/tGDdNv;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=google header.b=ADJ+NDsg;
 	dkim-atps=neutral
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-io1-xd29.google.com (mail-io1-xd29.google.com [IPv6:2607:f8b0:4864:20::d29])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PD7nL0gFnz3bVD
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Feb 2023 09:33:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1676068438; x=1707604438;
-  h=from:date:subject:mime-version:content-transfer-encoding:
-   message-id:to:cc;
-  bh=pR1CO4fGX0zX/77VlHz6LJJtRsjIRqOd/EPNDg0FKN4=;
-  b=A/tGDdNvrUF/TJunvyIqe2VKfmfctq+kUBTdcllhaQwGyC4IHIkriZ4m
-   N7tiYWEhGIVY9LnINXr+LPeqUCixvgOqILqXHt6aAw0OO31RPeJeg52/f
-   p3bck4o7JWPvZqE428q/gRay+07LC9m2Oktwj+TjeL2dxtjO6krmL4MTK
-   QtA09TN82TxrLQMwCxBwTfOzPxJ9Z7E66m/gsLzVgpZi0ZuKgJp05buFT
-   09WN6Q+1SLxxH8dKHBUY2eBAeEza9UyVZO+wlA2B5wlUzKNKFFgpC1Ccp
-   2DHQd4fySL1NwAi3DvmtZbXukjn8jY03VOfpjO8bBvh26xG9PntqaJoq7
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10617"; a="416766940"
-X-IronPort-AV: E=Sophos;i="5.97,287,1669104000"; 
-   d="scan'208";a="416766940"
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 14:33:47 -0800
-X-IronPort-AV: E=McAfee;i="6500,9779,10617"; a="700624145"
-X-IronPort-AV: E=Sophos;i="5.97,287,1669104000"; 
-   d="scan'208";a="700624145"
-Received: from iweiny-desk3.amr.corp.intel.com (HELO localhost) ([10.212.70.240])
-  by orsmga001-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Feb 2023 14:33:45 -0800
-From: Ira Weiny <ira.weiny@intel.com>
-Date: Fri, 10 Feb 2023 14:33:23 -0800
-Subject: [PATCH RFC] PCI/AER: Enable internal AER errors by default
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PDB2s6Bypz3bVK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Feb 2023 11:15:47 +1100 (AEDT)
+Received: by mail-io1-xd29.google.com with SMTP id l128so2590895iof.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Feb 2023 16:15:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=qbkcBCzqB6Bhnw08ObqB4UKeNk62tom/v69d4G2QaHo=;
+        b=ADJ+NDsgKyHyN8uoAdicRC4TZYYcp9IncDhQqJ/pK3xuapGF2kXR16aWyA3vBiCQp0
+         /sDAp9j9LtU1F707Vz870jS59vZ+QIvkPxitLoXLcGtzQhM5XeXyQjnpQRM1PF81gN39
+         qL/KvKn0G3q6tNs1860AZIEcQM0srawlAwoiA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:in-reply-to:from:references:cc:to
+         :content-language:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=qbkcBCzqB6Bhnw08ObqB4UKeNk62tom/v69d4G2QaHo=;
+        b=IqKWzFUM/gb9rKyaw1E5TkH1Y/bxLJ4obSNQekzH4zjM1p+yMhXPTEWh1JH3v2KqDt
+         B/+Q09ZaeMbWBAWGtp64ryBaMuFf+fUdZ97Eaa2RfJiSrohyCdapRu6ImA2TcYfnF2Jv
+         6Hd1l4yC2r+qrnFrZy18Sh6xJg1HNe0Mj1H+9e/+CWBSYQz2cdtBOrw2fHt7mtIovwJs
+         4jGXCAqql38DIwl/0yI00VN/VFznOa88xytAK4ZMGRLvPPTAzJ84xL5CkCnhI5pyMI+U
+         uFjvqQ/dB4H9/Su6fGLSnfz/IiziGK0BrCnxGvjrUePOvbfCA5pJTNF6qcVGBja+mm8z
+         qgUw==
+X-Gm-Message-State: AO0yUKWKcAnN0RHhCZWq64mGg8uHympppSUflXpAld5Jc4qpKKuxRXoY
+	6aV/MeMTV2RcKinHF1MxfPw/Vw==
+X-Google-Smtp-Source: AK7set/LYZ0DlptJM/8MELucz4/oGHkq3EnrHPTYhMfuT7mKai/9dPxEnYLdjBR81HUtP0VXeg3Zow==
+X-Received: by 2002:a5d:9046:0:b0:71d:63e5:7b5f with SMTP id v6-20020a5d9046000000b0071d63e57b5fmr11461339ioq.2.1676074543415;
+        Fri, 10 Feb 2023 16:15:43 -0800 (PST)
+Received: from [192.168.1.128] ([38.15.45.1])
+        by smtp.gmail.com with ESMTPSA id n10-20020a5ed90a000000b0073a312aaae5sm1725931iop.36.2023.02.10.16.15.42
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 10 Feb 2023 16:15:42 -0800 (PST)
+Message-ID: <dae27584-faf7-f132-1272-cb21248e5fa9@linuxfoundation.org>
+Date: Fri, 10 Feb 2023 17:15:41 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20230209-cxl-pci-aer-v1-1-f9a817fa4016@intel.com>
-X-B4-Tracking: v=1; b=H4sIADPG5mMC/x2NQQrCQAwAv1JyNrC7BWm9Cj7Aq3hIs9EGlrVkq
- RRK/27wOAPD7NDEVBpcuh1Mvtr0Ux3iqQOeqb4FNTtDCqkPKYzIW8GFFUkM45AznSMPqR/Bi4m
- a4GRUefamrqW4XExeuv0XD7jfrvA8jh9tCYHMdwAAAA==
-To: Alison Schofield <alison.schofield@intel.com>, 
- Vishal Verma <vishal.l.verma@intel.com>, Ben Widawsky <bwidawsk@kernel.org>, 
- Dan Williams <dan.j.williams@intel.com>, 
- Bjorn Helgaas <bhelgaas@google.com>, 
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
- Oliver O'Halloran <oohall@gmail.com>
-X-Mailer: b4 0.13-dev-ada30
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1676068425; l=3060;
- i=ira.weiny@intel.com; s=20221222; h=from:subject:message-id;
- bh=pR1CO4fGX0zX/77VlHz6LJJtRsjIRqOd/EPNDg0FKN4=;
- b=3gNeuhIE1BaE04Aim9tnTthinw/4LA+7yLTjBnO8gGUzW2sdpOgvErYPebdih+13TlsLOCjpPZUv
- zSJGeLxpB7zBCh1i+fLENggLlNM8qNAkifL9PSc8Gwe1eYSJ0PZQ
-X-Developer-Key: i=ira.weiny@intel.com; a=ed25519;
- pk=brwqReAJklzu/xZ9FpSsMPSQ/qkSalbg6scP3w809Ec=
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH 00/34] selftests: Fix incorrect kernel headers search path
+Content-Language: en-US
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Shuah Khan <shuah@kernel.org>, linux-kselftest@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, Christoph Hellwig <hch@lst.de>
+References: <20230127135755.79929-1-mathieu.desnoyers@efficios.com>
+ <560824bd-da2d-044c-4f71-578fc34a47cd@linuxfoundation.org>
+ <799b87d9-af19-0e6a-01b7-419b4893a0df@linuxfoundation.org>
+ <975995d6-366a-88e3-2321-f0728f7e22a7@linuxfoundation.org>
+From: Shuah Khan <skhan@linuxfoundation.org>
+In-Reply-To: <975995d6-366a-88e3-2321-f0728f7e22a7@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,88 +83,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>, Dave Jiang <dave.jiang@intel.com>, Ira Weiny <ira.weiny@intel.com>, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-cxl@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Jonathan Cameron <Jonathan.Cameron@Huawei.com>, Stefan Roese <sr@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: Networking <netdev@vger.kernel.org>, bpf <bpf@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The CXL driver expects internal error reporting to be enabled via
-pci_enable_pcie_error_reporting().  It is likely other drivers expect the same.
-Dave submitted a patch to enable the CXL side[1] but the PCI AER registers
-still mask errors.
+On 2/3/23 18:06, Shuah Khan wrote:
+> On 2/1/23 19:07, Shuah Khan wrote:
+>> Hi Mathieu,
+>>
+>> On 1/30/23 15:29, Shuah Khan wrote:
+>>> On 1/27/23 06:57, Mathieu Desnoyers wrote:
+>>>> Hi,
+>>>>
+>>>> This series fixes incorrect kernel header search path in kernel
+>>>> selftests.
+>>>>
+>>>> Near the end of the series, a few changes are not tagged as "Fixes"
+>>>> because the current behavior is to rely on the kernel sources uapi files
+>>>> rather than on the installed kernel header files. Nevertheless, those
+>>>> are updated for consistency.
+>>>>
+>>>> There are situations where "../../../../include/" was added to -I search
+>>>> path, which is bogus for userspace tests and caused issues with types.h.
+>>>> Those are removed.
+>>>>
+>>
+>> Thanks again for taking care of this. I did out of tree build testing on
+>> x86 on linux-kselftest next with these patches below. I haven't seen
+>> any problems introduced by the patch set.
+>>
+>>>>    selftests: dma: Fix incorrect kernel headers search path
+>> This one needs a change and I will send a patch on top of yours.
+>> Even with that this test depends on unexported header from the
+>> repo and won't build out of tree. This is not related to your
+>> change.
+>>
+>>>>    selftests: mount_setattr: Fix incorrect kernel headers search path
+>> This one fails to build with our without patch - an existing error.
+>>
+>> I have to do cross-build tests on arm64 and other arch patches still.
+>> This will happen later this week.
+> 
+> arm64, s390 patches look good.
+> 
 
-PCIe v6.0 Uncorrectable Mask Register (7.8.4.3) and Correctable Mask
-Register (7.8.4.6) default to masking internal errors.  The
-Uncorrectable Error Severity Register (7.8.4.4) defaults internal errors
-as fatal.
+I am seeing problem with selftests/dma and selfttests/user_events.
 
-Enable internal errors to be reported via the standard
-pci_enable_pcie_error_reporting() call.  Ensure uncorrectable errors are set
-non-fatal to limit any impact to other drivers.
+1. selftests: dma: Fix incorrect kernel headers search path
 
-[1] https://lore.kernel.org/all/167604864163.2392965.5102660329807283871.stgit@djiang5-mobl3.local/
+dma test no longer builds. This test depends on linux/map_benchmark.h
+which is not included in uapi
 
-Cc: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Stefan Roese <sr@denx.de>
-Cc: "Kuppuswamy Sathyanarayanan" <sathyanarayanan.kuppuswamy@linux.intel.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-Cc: Oliver O'Halloran <oohall@gmail.com>
-Cc: linux-cxl@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
----
-This is RFC to see if it is acceptable to be part of the standard
-pci_enable_pcie_error_reporting() call or perhaps a separate pci core
-call should be introduced.  It is anticipated that enabling this error
-reporting is what existing drivers are expecting.  The errors are marked
-non-fatal therefore it should not adversely affect existing devices.
----
- drivers/pci/pcie/aer.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+The order of include directorries -isystem followed by installed kernel
+headers, breaks the test build with the change to use KHDR_INCLUDES
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 625f7b2cafe4..9d3ed3a5fc23 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -229,11 +229,28 @@ int pcie_aer_is_native(struct pci_dev *dev)
- 
- int pci_enable_pcie_error_reporting(struct pci_dev *dev)
- {
-+	int pos_cap_err;
-+	u32 reg;
- 	int rc;
- 
- 	if (!pcie_aer_is_native(dev))
- 		return -EIO;
- 
-+	pos_cap_err = dev->aer_cap;
-+
-+	/* Unmask correctable and uncorrectable (non-fatal) internal errors */
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, &reg);
-+	reg &= ~PCI_ERR_COR_INTERNAL;
-+	pci_write_config_dword(dev, pos_cap_err + PCI_ERR_COR_MASK, reg);
-+
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_SEVER, &reg);
-+	reg &= ~PCI_ERR_UNC_INTN;
-+	pci_write_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_SEVER, reg);
-+
-+	pci_read_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, &reg);
-+	reg &= ~PCI_ERR_UNC_INTN;
-+	pci_write_config_dword(dev, pos_cap_err + PCI_ERR_UNCOR_MASK, reg);
-+
- 	rc = pcie_capability_set_word(dev, PCI_EXP_DEVCTL, PCI_EXP_AER_FLAGS);
- 	return pcibios_err_to_errno(rc);
- }
 
----
-base-commit: e5ab7f206ffc873160bd0f1a52cae17ab692a9d1
-change-id: 20230209-cxl-pci-aer-18dda61c8239
+I am going to revert this patch for now and figure a longer term fix.
+The problem is the dependency on a non-uapi file: linux/map_benchmark.h
 
-Best regards,
--- 
-Ira Weiny <ira.weiny@intel.com>
+Fixes: 8ddde07a3d28 ("dma-mapping: benchmark: extract a common
+header file for map_benchmark definition") change added this
+dependency on including linux/map_benchmark.h
+
+Christoph, Do you see this map_benchmark.h as part of uapi?
+
+
+2. selftests: user_events: Fix incorrect kernel headers search path
+This one depends on linux/user_events.h which has bee removed from
+uapi in this commit:
+
+commit 5cfff569cab8bf544bab62c911c5d6efd5af5e05
+Author: Steven Rostedt (Google) <rostedt@goodmis.org>
+Date:   Fri Apr 1 14:39:03 2022 -0400
+
+     tracing: Move user_events.h temporarily out of include/uapi
+
+This isn't a regression from 6.2 - this test stopped building once
+user_events.h has been removed from uapi. I will add a note that
+this test depends on a non-uapi header and can't be built at the
+moment.
+
+thanks,
+-- Shuah
+
+
+
+
 
