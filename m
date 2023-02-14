@@ -4,61 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AC4EC6379F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 11:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1449C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 12:48:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGJPN3S0Cz3cH9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 22:09:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGLbg1Ywhz3cdm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 23:48:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kFFGLdCj;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=XNPocGj7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=jcmvbkbc@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kFFGLdCj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=XNPocGj7;
 	dkim-atps=neutral
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGJNH5nSgz3c8f
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 22:08:10 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1676372898; x=1707908898;
-  h=date:from:to:cc:subject:message-id:mime-version:
-   content-transfer-encoding;
-  bh=iF6IDTkLdOBo0YyUBeIYPNu+Gc1J8IaYJr0TPSADRLg=;
-  b=kFFGLdCjhZcq9GKUJ0vt8e0ZWCi4/SvOOuxwrrRDGbp8AUzuhoyEyKHp
-   KDVthJzL9PEYuqI0n5P9+Uu5sFEZp91N/YjvcDXkvZRh/nFwn1TcpFbIp
-   cBplNLIR/oWzj6hSNAR9QQL35NrB+0/pdmmdQcyzEVySPLooUl37Xg71k
-   G6PLVwjD1epf5eeiD0uZhUw/cTpIIFVU1WxaeMVRTyk3yvcvqkwRm1fPw
-   U7YVsrycBVvJDC1smswCP3TNwDIKe2U6RloZQP9Q+DfHT7Uu621qeAZwe
-   U3CvbIEM+OK91B7TYZFYXOXCS64Mjx8qz4MbYtn3uvkr766jsCvLwIYA/
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10620"; a="358548646"
-X-IronPort-AV: E=Sophos;i="5.97,296,1669104000"; 
-   d="scan'208";a="358548646"
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Feb 2023 03:08:06 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10620"; a="811981359"
-X-IronPort-AV: E=Sophos;i="5.97,296,1669104000"; 
-   d="scan'208";a="811981359"
-Received: from lkp-server01.sh.intel.com (HELO 4455601a8d94) ([10.239.97.150])
-  by fmsmga001.fm.intel.com with ESMTP; 14 Feb 2023 03:08:05 -0800
-Received: from kbuild by 4455601a8d94 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1pRtAL-0008Qp-0c;
-	Tue, 14 Feb 2023 11:08:05 +0000
-Date: Tue, 14 Feb 2023 19:07:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:next] BUILD SUCCESS
- 08273c9f619cb32fb041935724f576e607101f3b
-Message-ID: <63eb6b7c.bCTZ8dUBeuQswH0K%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGLZf18GCz3cFt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 23:47:21 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id n20-20020a17090aab9400b00229ca6a4636so20257353pjq.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 04:47:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=//PUD5f7GplM89519c0hmn3dKQI620mHmk1UnlP9FPs=;
+        b=XNPocGj7eiVthaKGOlegbMgkhofmsHsGcNdlNwjpQdYwAny3M5QEpXJe0VmLiF6xxr
+         /rXwTQZkegRR11PvKJL3YEULFvw+FtKn3U4QtH9lGtG50xveeknTG2ZbxXqm3p4icUWo
+         Tb3ApuzTX+rBRTCJTUIlAuPNNjlLQhkwLwiExWPwX4E9QX0822kRSzwimJPPUCS+oUrK
+         hHgE7W0ChecHAsJYcyX/wAY4y+F5w8me7BbUw8tIDJqjj83BeWfp48J5HOLzoUL2RRjI
+         WkgLqIqDw7b2/ZDO9q+xBrbmrUY7gZZ90kwKcRSdbgbIUYy2olrnv8r7g1Tg0mVTRlqB
+         JBbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=//PUD5f7GplM89519c0hmn3dKQI620mHmk1UnlP9FPs=;
+        b=OcyAqXzFGVoEPEjK5D3Dfd88sge+eE25p6fqFou5lz35Aze6gzI392s3btEdOdlgE/
+         pVamAkx0j4alanhHtNl7JliCH6qlqYkN6rznYrywvncJeB1qNccYTSfNx/x6fZhr8dVr
+         77OO4V+jW2fzx+x7TZw74XtxiWmCFliqHyQEF9WMaCocUfV/kCgvgwqR5wHkZKaiUtXv
+         45lBS/qyTE5ZhKv2/Z3Vv8OoV8wc6vt8uKt8rXOSrSD+aHhX1BwwdDUTJfNLwMRy6usD
+         WOTlgO7v3WWHdSvehp1smZpV3E79CE2rpoPpGR0aVDuC1FayL+TKElLSXy9PdQh9o9wI
+         IAZw==
+X-Gm-Message-State: AO0yUKWbjyZgHVMsVMc48KPEj6AZqr2Pz43Cg7t62u0ChrXnasWF38+C
+	rWvQcSEFo10ELhPwH1RB7e2Ws/qTvGmEg7CNFG4=
+X-Google-Smtp-Source: AK7set+2pnH1CKd+RN83wqleMusbpFy3FlkYCo/TdXhpVa1RoyC5/XuwIYKjr9SCKABLrHl8FZUY+III+SgNUgOF72M=
+X-Received: by 2002:a17:90a:ac18:b0:233:c5e8:7213 with SMTP id
+ o24-20020a17090aac1800b00233c5e87213mr2422754pjq.93.1676378838445; Tue, 14
+ Feb 2023 04:47:18 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+References: <cover.1676358308.git.jpoimboe@kernel.org> <ad801544cab7c26a0f3bbf7cfefb67303f4cd866.1676358308.git.jpoimboe@kernel.org>
+In-Reply-To: <ad801544cab7c26a0f3bbf7cfefb67303f4cd866.1676358308.git.jpoimboe@kernel.org>
+From: Max Filippov <jcmvbkbc@gmail.com>
+Date: Tue, 14 Feb 2023 04:47:06 -0800
+Message-ID: <CAMo8BfJsxu0Q1a0KOq2giBCESZE-Y10nqTOT43XQje0FtM7ixQ@mail.gmail.com>
+Subject: Re: [PATCH v2 20/24] xtensa/cpu: Mark cpu_die() __noreturn
+To: Josh Poimboeuf <jpoimboe@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,65 +73,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-kernel@vger.kernel.org, 
+ linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-branch HEAD: 08273c9f619cb32fb041935724f576e607101f3b  powerpc/rtas: arch-wide function token lookup conversions
+On Mon, Feb 13, 2023 at 11:07 PM Josh Poimboeuf <jpoimboe@kernel.org> wrote:
+>
+> cpu_die() doesn't return.  Annotate it as such.  By extension this also
+> makes arch_cpu_idle_dead() noreturn.
+>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+> ---
+>  arch/xtensa/include/asm/smp.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-elapsed time: 1340m
-
-configs tested: 42
-configs skipped: 3
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-alpha                            allyesconfig
-alpha                               defconfig
-arc                              allyesconfig
-arc                                 defconfig
-arm                              allmodconfig
-arm                              allyesconfig
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-csky                                defconfig
-i386                             allyesconfig
-i386                              debian-10.3
-i386                                defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-loongarch                        allmodconfig
-loongarch                         allnoconfig
-loongarch                           defconfig
-m68k                             allmodconfig
-m68k                                defconfig
-mips                             allmodconfig
-mips                             allyesconfig
-nios2                               defconfig
-parisc                              defconfig
-parisc64                            defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-riscv                            allmodconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-s390                             allmodconfig
-s390                             allyesconfig
-s390                                defconfig
-sh                               allmodconfig
-sparc                               defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                           allyesconfig
-x86_64                              defconfig
-x86_64                                  kexec
-x86_64                               rhel-8.3
+Acked-by: Max Filippov <jcmvbkbc@gmail.com>
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+Thanks.
+-- Max
