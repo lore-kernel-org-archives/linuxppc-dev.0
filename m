@@ -4,73 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1699EC05027
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 09:10:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2666C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 09:11:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGFmZ2fgQz3fSC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 20:10:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGFnb1Dghz3fbl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 20:11:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zRquXGkM;
+	dkim=pass (1024-bit key; unprotected) header.d=xen0n.name header.i=@xen0n.name header.a=rsa-sha256 header.s=mail header.b=AhilTieb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32a; helo=mail-wm1-x32a.google.com; envelope-from=philmd@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=xen0n.name (client-ip=115.28.160.31; helo=mailbox.box.xen0n.name; envelope-from=kernel@xen0n.name; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=zRquXGkM;
+	dkim=pass (1024-bit key; unprotected) header.d=xen0n.name header.i=@xen0n.name header.a=rsa-sha256 header.s=mail header.b=AhilTieb;
 	dkim-atps=neutral
-Received: from mail-wm1-x32a.google.com (mail-wm1-x32a.google.com [IPv6:2a00:1450:4864:20::32a])
+X-Greylist: delayed 461 seconds by postgrey-1.36 at boromir; Tue, 14 Feb 2023 20:07:40 AEDT
+Received: from mailbox.box.xen0n.name (mail.xen0n.name [115.28.160.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGFj84fcyz3fS0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 20:07:39 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=xen0n.name; s=mail;
+	t=1676365191; bh=i0XIzR1Y5NYJLkaxQFngDX1j91Olf/QjeHaXDd3DD/c=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=AhilTiebsZniB4h/3TCzhrMAQ0m1fI8D/hKY2T+4ArseJ+m3Ze12b64a7BZ4L0BhC
+	 Cbii2w7OdAf8LC8paKh0dS4uxyxEGslyDxyzPafGMqQIX/0BH2c+SoMYy+3DyDz8fs
+	 BbZrEFqt55X8c4cMx2sqOxvYHoYE3tKQfpxZHtYc=
+Received: from [100.100.57.122] (unknown [58.34.185.106])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGFhd68zQz3cfZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 20:07:13 +1100 (AEDT)
-Received: by mail-wm1-x32a.google.com with SMTP id m16-20020a05600c3b1000b003dc4050c94aso10985069wms.4
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 01:07:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=dbfAOEl06OR99NGfEFoVS3aDlJXydx8Xm+1KWeTVt3w=;
-        b=zRquXGkMWQxsjnDEBjUSG+i3tQ4HS9mWc+qp3B0uER9rI+yxxkGNzBJJJiV3Uc7zDn
-         Q/SIl930elCR4FLEZaUlUTER5P0EKYuYi7wU57oROLtYDV50OfmdspRi97sBkypI70dP
-         po58UWXAjDuTr6rOOCXox5kdhQcDL9/ogCL3j9KU3d4ifIWTwe8unvDy8lerc6+lmod4
-         qwNxvQ7OmxQjhgo8tWmfXCNS63ob4Zt+EmuTDM6lqufmEYJtL7S+0oYcsFKtDBysZ/kW
-         iVaSdCu8rkK9JOa4zJmqTtkn2DyLcn71i/iBL0fmcxvBqvih825/Usphrecq1kQudKlb
-         ntrg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=dbfAOEl06OR99NGfEFoVS3aDlJXydx8Xm+1KWeTVt3w=;
-        b=Y6y1EiFMwJqjOc3fKCCix9DCy9zvduVAa62XXi3GUicLt7u8jR4pUA2lml8EnKQJnA
-         9G+UsDPVZLyMGQ1MEkvU3UfbpcQyvAbHk4ZGvYotjI43k5AaclPSSpElmo7wNe7VAP53
-         vC+FqdMFTs2PHuIZFTh8hawQmpahZafGHmdpDd3bURAYhXTzhH//u3LDwQe3mT1Tkbhn
-         lroFxprBIFGQlk8oCP+nwEOD7qCldOn7Mu849CQSY7Pi4D5VitcDtX8ITSylDhLghtwR
-         ZdgnvYikmbFG9FAB8ebNl+nhcFu7ClRo4RSnKaW3qmJro9S7mRSCSwsBsLVFZVzrbOhU
-         LIHQ==
-X-Gm-Message-State: AO0yUKVnelFDJj/R5aJOmhDSAL6avq9WSMtll5uygQolvvEXzB99HcF9
-	oGf1GuvraWusYZE/sYvXWR9aJQ==
-X-Google-Smtp-Source: AK7set8Wqv9ha6dIxkwRao9Qw+uzxpAx6YT4sYvT8HUQnEonxroJL/jacmiqSmbe1Ht/5qToQDlogw==
-X-Received: by 2002:a05:600c:13c3:b0:3dc:1ad6:55fd with SMTP id e3-20020a05600c13c300b003dc1ad655fdmr1420116wmg.32.1676365630595;
-        Tue, 14 Feb 2023 01:07:10 -0800 (PST)
-Received: from [192.168.30.216] ([81.0.6.76])
-        by smtp.gmail.com with ESMTPSA id c129-20020a1c3587000000b003dc1a525f22sm17268744wma.25.2023.02.14.01.07.07
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Feb 2023 01:07:10 -0800 (PST)
-Message-ID: <03a97cc1-1f8c-d412-272b-340e76858b7a@linaro.org>
-Date: Tue, 14 Feb 2023 10:07:06 +0100
+	by mailbox.box.xen0n.name (Postfix) with ESMTPSA id B491D600F8;
+	Tue, 14 Feb 2023 16:59:47 +0800 (CST)
+Message-ID: <f3db61bb-5c89-2724-769f-9d606f587f92@xen0n.name>
+Date: Tue, 14 Feb 2023 16:59:46 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
  Gecko/20100101 Thunderbird/102.7.2
-Subject: Re: [PATCH v3 01/24] alpha: Remove COMMAND_LINE_SIZE from uapi
-Content-Language: en-US
-To: Alexandre Ghiti <alexghiti@rivosinc.com>, Jonathan Corbet
- <corbet@lwn.net>, Richard Henderson <richard.henderson@linaro.org>,
+Subject: Re: [PATCH v3 10/24] sparc: Remove COMMAND_LINE_SIZE from uapi
+To: Sergey Shtylyov <s.shtylyov@omp.ru>,
+ Alexandre Ghiti <alexghiti@rivosinc.com>, Jonathan Corbet <corbet@lwn.net>,
+ Richard Henderson <richard.henderson@linaro.org>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
  <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
  Russell King <linux@armlinux.org.uk>,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
+ Huacai Chen <chenhuacai@kernel.org>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
  Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
  "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
@@ -99,11 +77,13 @@ To: Alexandre Ghiti <alexghiti@rivosinc.com>, Jonathan Corbet
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
 References: <20230214074925.228106-1-alexghiti@rivosinc.com>
- <20230214074925.228106-2-alexghiti@rivosinc.com>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20230214074925.228106-2-alexghiti@rivosinc.com>
+ <20230214074925.228106-11-alexghiti@rivosinc.com>
+ <017f0b40-8021-8b3b-24d2-c70661b6b292@omp.ru>
+Content-Language: en-US
+From: WANG Xuerui <kernel@xen0n.name>
+In-Reply-To: <017f0b40-8021-8b3b-24d2-c70661b6b292@omp.ru>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,17 +99,43 @@ Cc: Palmer Dabbelt <palmer@rivosinc.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 14/2/23 08:49, Alexandre Ghiti wrote:
-> From: Palmer Dabbelt <palmer@rivosinc.com>
+On 2023/2/14 16:50, Sergey Shtylyov wrote:
+> On 2/14/23 10:49 AM, Alexandre Ghiti wrote:
 > 
-> As far as I can tell this is not used by userspace and thus should not
-> be part of the user-visible API.
+>> From: Palmer Dabbelt <palmer@rivosinc.com>
+>>
+>> As far as I can tell this is not used by userspace and thus should not
+>> be part of the user-visible API.
+>>
+>> Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
+>> ---
+>>   arch/sparc/include/asm/setup.h      | 6 +++++-
+>>   arch/sparc/include/uapi/asm/setup.h | 7 -------
+>>   2 files changed, 5 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/sparc/include/asm/setup.h b/arch/sparc/include/asm/setup.h
+>> index 72205684e51e..d1384ed92547 100644
+>> --- a/arch/sparc/include/asm/setup.h
+>> +++ b/arch/sparc/include/asm/setup.h
+>> @@ -7,7 +7,11 @@
+>>   
+>>   #include <linux/interrupt.h>
+>>   
+>> -#include <uapi/asm/setup.h>
+>> +#if defined(__sparc__) && defined(__arch64__)
 > 
-> Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
-> ---
->   arch/alpha/include/asm/setup.h      | 4 ++--
->   arch/alpha/include/uapi/asm/setup.h | 2 --
->   2 files changed, 2 insertions(+), 4 deletions(-)
+>     Mhm, I don't think these two can be #define'd simulaneously...
 
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+I believe it's just a SPARC-ism [1] [2] that may look strange and be 
+easily confused for __aarch64__ (notice the extra 'a')...
+
+[1]: 
+https://github.com/gcc-mirror/gcc/blob/basepoints/gcc-12/gcc/config/sparc/sparc.h#L301
+[2]: 
+https://github.com/llvm/llvm-project/blob/llvmorg-17-init/clang/lib/Basic/Targets/Sparc.cpp#L241
+
+-- 
+WANG "xen0n" Xuerui
+
+Linux/LoongArch mailing list: https://lore.kernel.org/loongarch/
 
