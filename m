@@ -4,59 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2648AC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 18:02:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EFC80C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 19:49:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGTZX2sSGz3cgq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 05:02:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGWy623h7z3cQV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 06:49:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmWRfV2d;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Gr6T/uMm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::432; helo=mail-pf1-x432.google.com; envelope-from=jcmvbkbc@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OmWRfV2d;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Gr6T/uMm;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pf1-x432.google.com (mail-pf1-x432.google.com [IPv6:2607:f8b0:4864:20::432])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGTYT14QDz3bby
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 05:01:49 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 653E0B81EA1;
-	Tue, 14 Feb 2023 18:01:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3351C433D2;
-	Tue, 14 Feb 2023 18:01:38 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1676397703;
-	bh=awND0EjP9fvq4Q94FyZHVMCMXE5R653wqzWUUQcPrvU=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=OmWRfV2dbTxL/dWS2cmyjsmPHj85akQ8rTAJ7SkqXLf7ZYH/S23CTmCjuExwRGVTj
-	 fIbl8QKEB6hJBE75qfnwe7mND/XRVLhVn98hvlloz5+HVbJIzGoc9LG7UlsXJdqDU1
-	 0LDtlE7g6Apa8YiD6ZbEAT8PC7vnv+39ZuRBzmb6umIqwQ6MbqZ1ikjsIv/lnMg/ej
-	 dbgVRB12k9eLYev4SgJOVZW9IUrG8svEVdKoBGKvGvM50sS9gzP6nx7czG+5FaOTOs
-	 8aqe2itpUl56SAzbXhdGM6jDuvAu1ViOVk2dImmQX467vN90o4BiB/TApC4tlribmV
-	 PTKIasa2v/tow==
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, Shawn Guo <shawnguo@kernel.org>, 
- Sascha Hauer <s.hauer@pengutronix.de>, 
- Pengutronix Kernel Team <kernel@pengutronix.de>, 
- NXP Linux Team <linux-imx@nxp.com>, alsa-devel@alsa-project.org, 
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Deepak R Varma <drv@mailo.com>
-In-Reply-To: <Y+p9r5y9DPSJkPVf@ubun2204.myguest.virtualbox.org>
-References: <Y+p9r5y9DPSJkPVf@ubun2204.myguest.virtualbox.org>
-Subject: Re: [PATCH] ASoC: imx-pcm-rpmsg: Remove unused variable
-Message-Id: <167639769854.3067697.826075385352580657.b4-ty@kernel.org>
-Date: Tue, 14 Feb 2023 18:01:38 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGWx62g6wz3c8f
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 06:48:57 +1100 (AEDT)
+Received: by mail-pf1-x432.google.com with SMTP id z3so4814543pfw.7
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 11:48:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3KPvoJ4GnlMgsohhv5ZFTkjPNgvE0397TI0CYAnCxqM=;
+        b=Gr6T/uMmQW0P2TPA5kU2B0SezfYIPng0GmMu1nbsnL7n4Qhw9RF68MIXO9T2lIb4Vd
+         9XqzWMo3zWupmo7DDnQIRZvSJhGTc3cJrOSj6qnw7ZLFMuv1jhehz7SDmTyxss5IvAuF
+         ITBMuNHAK1NOe9nMNVZ11QjpI/ucBxZuVeSuDtnc42j7aN5Y3/LFY0jJey9dm6rJdUJ4
+         LHKBtyEUPuxrQMMdOfkgTlii7etUm1Jsa4u0tgyMoqTav4keZsI205xjLS15k/6dNP48
+         pxdBRqWKGSlZs5JtldCGgNcu4SmZfcR6VtsRIgsyLA6/xT3/Y75dtU4bMody4IfGBQxC
+         Gv8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3KPvoJ4GnlMgsohhv5ZFTkjPNgvE0397TI0CYAnCxqM=;
+        b=P1u2O0vNMv3D42TxULLiq88XqMBFEcxH4gYmvsRm2v9I5uaGixCnOc6reR53hLnT4P
+         nbHSGNhIqY1vJiFXuczV8c6KURmEKCuFNdEIf/npgbn3HNnYCEsBFkBx2GoYZCVyoKPO
+         gPox9fyJBrTzNFn6ktdZ+rKjog/ugRGQM0iWv858KkCu9xL3C9lSkJugt3IDeqMRttW8
+         spP81VwtRrXGsuW+Pj2j9C85U6PgljGVgulXKulj8Xa1G9OXyJvLZESY4zx+gb48tONh
+         Jy6eqzDKPF8unQfU9VJMzFFfhwmV2IEGjeysy//OD0YZNrSe1QxG+EUfe1muK8NpyyLs
+         IeWA==
+X-Gm-Message-State: AO0yUKUoQO2Ameo/iPdUr6oqbDybdhFiBzrfCv/RP4kA10uCb6ZMTnLQ
+	sLWMNlnmsuKGsFnsCiY/GewUmBkbkXWdSdgzkG4=
+X-Google-Smtp-Source: AK7set/RjysGRw6Tb1OUrwUKy/GM2o6xSEOZ9Hy3VBjfC8/RJ69CUMocJn0vWTmElSm33m/BGVWvbyqYG1s66BcSQYs=
+X-Received: by 2002:aa7:9591:0:b0:5a8:65e5:b1ba with SMTP id
+ z17-20020aa79591000000b005a865e5b1bamr740284pfj.29.1676404133096; Tue, 14 Feb
+ 2023 11:48:53 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.12.0
+References: <cover.1676358308.git.jpoimboe@kernel.org> <cca346b5c87693499e630291d78fb0bf12c24290.1676358308.git.jpoimboe@kernel.org>
+ <1b4afd82-83cb-0060-7cab-8e16d2e69ff9@linaro.org> <20230214182322.r5tyeowxzloiuh72@treble>
+In-Reply-To: <20230214182322.r5tyeowxzloiuh72@treble>
+From: Max Filippov <jcmvbkbc@gmail.com>
+Date: Tue, 14 Feb 2023 11:48:41 -0800
+Message-ID: <CAMo8BfLzV0Oe_i-QrMzE-BE028s6GNvOd827N5+tteELidjpvA@mail.gmail.com>
+Subject: Re: [PATCH v2 19/24] xtensa/cpu: Make sure cpu_die() doesn't return
+To: Josh Poimboeuf <jpoimboe@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,43 +76,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Praveen Kumar <kumarpraveen@linux.microsoft.com>, Saurabh Singh Sengar <ssengar@microsoft.com>
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, =?UTF-8?Q?Philippe_Mathieu=2DDaud=C3=A9?= <philmd@
+ linaro.org>, bristot@redhat.com, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 13 Feb 2023 23:43:03 +0530, Deepak R Varma wrote:
-> Variable ret is initialed but is never modified or used except for
-> returning the initial value 0. The value can be directly returned
-> instead and the variable definition can be dropped.
-> Issue identified using returnvar.cocci Coccinelle semantic patch.
-> 
-> 
+On Tue, Feb 14, 2023 at 10:23 AM Josh Poimboeuf <jpoimboe@kernel.org> wrote=
+:
+> On Tue, Feb 14, 2023 at 08:55:32AM +0100, Philippe Mathieu-Daud=C3=A9 wro=
+te:
+> > Can you update the documentation along? Currently we have:
+> >
+> >   /*
+> >    * Called from the idle thread for the CPU which has been shutdown.
+> >    *
+> >    * Note that we disable IRQs here, but do not re-enable them
+> >    * before returning to the caller. This is also the behaviour
+> >    * of the other hotplug-cpu capable cores, so presumably coming
+> >    * out of idle fixes this.
+> >    */
+>
+> void __ref cpu_die(void)
+> {
+>         idle_task_exit();
+>         local_irq_disable();
+>         __asm__ __volatile__(
+>                         "       movi    a2, cpu_restart\n"
+>                         "       jx      a2\n");
+>
+>         BUG();
+> }
+>
+> Hm, not only is the comment wrong, but it seems to be branching to
+> cpu_restart?  That doesn't seem right at all.
 
-Applied to
+Perhaps the name is a bit misleading. The CPU that enters 'cpu_restart'
+loops there until a call to 'boot_secondary' releases it, after which it go=
+es
+to '_startup'. So it is a restart, but not immediate.
 
-   broonie/sound.git for-next
-
-Thanks!
-
-[1/1] ASoC: imx-pcm-rpmsg: Remove unused variable
-      commit: 88541443497d47313ec4de1ecc1946288ae0ed16
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
+--=20
+Thanks.
+-- Max
