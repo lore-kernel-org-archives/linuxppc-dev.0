@@ -4,38 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF389C05027
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 19:30:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4FC2C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 22:03:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGWWm2ZK3z3cjL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 06:30:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=srs0=bian=6k=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGZw52MGCz3cjP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 09:03:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=gOWkVHN6;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=gOWkVHN6;
+	dkim-atps=neutral
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGWW569cJz3bfs
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 06:29:53 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id D8EFAB81ECB;
-	Tue, 14 Feb 2023 19:29:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0DE92C433EF;
-	Tue, 14 Feb 2023 19:29:45 +0000 (UTC)
-Date: Tue, 14 Feb 2023 14:29:44 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGZv26GZYz3bZj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 09:02:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=ZAoS9GAPCjvcD2e9rjRkdzaMQfoBwDvlSDrbpklXNtw=; b=gOWkVHN6VrFdTRZ3tkfzExyMX5
+	iJG3T+SC9IXbxn90Fbaz8qafSZ2cSWCKJIfE8M6lrpaFk6i6pbMJcmCesDgK+0V1ZlSkpV3lpLQvt
+	6t3as6FVzUgvCdry0d05aVbpoyawUPAWWKEqHsdUd51LfdMnUdvaseupK9S0TyD3aRX25kRmEaruc
+	EDzNZOFM6e6s8/SHUq+zLrY0bXzYJpc9f4y5Cy3NTRq9ku5n9kEMzAqA4jLJe3H8GReXifQoT0YuX
+	GYQEQY1P5tctvQOGyUvJ+7gLiMHs9z3IdsrOcbX7CJOmYcb6RVPKTGGR+IyKtzcy3IDf7PHmpL/Fz
+	TKUvgqew==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:59692)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1pS3Ms-00064U-Fz; Tue, 14 Feb 2023 22:01:42 +0000
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1pS3Mf-0004Fv-KA; Tue, 14 Feb 2023 22:01:29 +0000
+Date: Tue, 14 Feb 2023 22:01:29 +0000
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
 To: Josh Poimboeuf <jpoimboe@kernel.org>
-Subject: Re: [PATCH v2 19/24] xtensa/cpu: Make sure cpu_die() doesn't return
-Message-ID: <20230214142944.100214fe@rorschach.local.home>
-In-Reply-To: <20230214182322.r5tyeowxzloiuh72@treble>
+Subject: Re: [PATCH v2 03/24] arm/cpu: Make sure arch_cpu_idle_dead() doesn't
+ return
+Message-ID: <Y+wEubLjgDQDIbSO@shell.armlinux.org.uk>
 References: <cover.1676358308.git.jpoimboe@kernel.org>
-	<cca346b5c87693499e630291d78fb0bf12c24290.1676358308.git.jpoimboe@kernel.org>
-	<1b4afd82-83cb-0060-7cab-8e16d2e69ff9@linaro.org>
-	<20230214182322.r5tyeowxzloiuh72@treble>
-X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+ <ed361403b8ee965f758fe491c47336dddcfb8fd5.1676358308.git.jpoimboe@kernel.org>
+ <Y+ttS0japRCzHoFM@shell.armlinux.org.uk>
+ <20230214183926.46trlpdror3v5sk5@treble>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230214183926.46trlpdror3v5sk5@treble>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -47,34 +67,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, Philippe =?UTF-8?B?TWF0aGlldS1EYXVkw6k=?= <philmd@l
- inaro.org>, bristot@redhat.com, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-kernel@vger.kernel.org, lin
+ ux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 14 Feb 2023 10:23:22 -0800
-Josh Poimboeuf <jpoimboe@kernel.org> wrote:
-
-
-> void __ref cpu_die(void)
-> {
-> 	idle_task_exit();
-> 	local_irq_disable();
-> 	__asm__ __volatile__(
-> 			"	movi	a2, cpu_restart\n"
-> 			"	jx	a2\n");
+On Tue, Feb 14, 2023 at 10:39:26AM -0800, Josh Poimboeuf wrote:
+> On Tue, Feb 14, 2023 at 11:15:23AM +0000, Russell King (Oracle) wrote:
+> > On Mon, Feb 13, 2023 at 11:05:37PM -0800, Josh Poimboeuf wrote:
+> > > arch_cpu_idle_dead() doesn't return.  Make that more explicit with a
+> > > BUG().
+> > > 
+> > > BUG() is preferable to unreachable() because BUG() is a more explicit
+> > > failure mode and avoids undefined behavior like falling off the edge of
+> > > the function into whatever code happens to be next.
+> > 
+> > This is silly. Just mark the function __noreturn and be done with it.
+> > If the CPU ever executes code past the "b" instruction, it's already
+> > really broken that the extra instructions that BUG() gives will be
+> > meaningless.
+> > 
+> > This patch does nothing except add yet more bloat the kernel.
+> > 
+> > Sorry, but NAK.
 > 
-> 	BUG();
-> }
+> Problem is, the compiler can't read inline asm.  So you'd get a 
+> "'noreturn' function does return" warning.
 > 
-> Hm, not only is the comment wrong, but it seems to be branching to
-> cpu_restart?  That doesn't seem right at all.
+> We can do an unreachable() instead of a BUG() here if you prefer
+> undefined behavior.
 
-Agreed, that does not look right at all.
+That's fine.
 
--- Steve
-
-> 
-> Max/Chris?
-> 
-
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
