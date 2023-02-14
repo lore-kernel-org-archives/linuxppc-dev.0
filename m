@@ -4,64 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 266F7C05027
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 13:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90E0FC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 18:12:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGM6Z4bsCz3cgq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 00:11:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGTnJ6Mqsz3cfY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 05:12:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AroULSWk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n8kTCiR3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=jcmvbkbc@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=AroULSWk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n8kTCiR3;
 	dkim-atps=neutral
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGM5X2Th3z3cFt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 00:10:38 +1100 (AEDT)
-Received: by mail-pl1-x635.google.com with SMTP id b5so16996114plz.5
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 05:10:38 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=/UCnR+z6gmAvcqmKIJeLEMH14WiUbQ57wKTFDt5pcJ8=;
-        b=AroULSWko9Zr7eGEPpWTPA6D2mG8vKfAIsqG1/UHiZHP3HX3PbVp0qrMJ+FuAJsbWS
-         v05+kTojvExJxZ8W+9yB21D5w8vexFjRyphDjBsOddEZTMVdttkVBNXjxWFQ3Iqwojqw
-         +DKSZuOkQRuVKSaqQXL+bh2B50zxlDW7/k12RIgkMnOVm0uYI6LnfzeI25mloiCklp33
-         VHHtIf4Dpr/qSsDgSQMEDKRS4lg6TE80G2m56Li8ak7Mi6jrTmPyCPMKDQkClT1hFcFO
-         HozC1z+zsQ4VmKCtjiLNbcQm7z7g/V4D6C2WAOwQT8Y+WTTuWkSjrC9wQJ19rS06uj77
-         A7tg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/UCnR+z6gmAvcqmKIJeLEMH14WiUbQ57wKTFDt5pcJ8=;
-        b=lxUBFYjrBZf49g1/36NGHrUIwqkubocR+RjX3Z5kTHglbft320rlcF4YVVk46+c7by
-         TgrS4X3GLy1lihciwVbOOp/21gxW7EWWKQxFF3Vresj3hEjLFnkk9yfC9PdaFQCDYee7
-         98kNCJLjUG+S3+NE7e/orr9LdP8ilfK/KLNNT9YMVnEzsGgWmbC96b48pTsaVnJPKNHk
-         kZdWRCTpGp8vNFtOQqnI6h117j39dwDfnwQ6l7xsAG4AR89YcNJkFgi/3KAffZ57vZIB
-         Aehq+GAqzwdfCYCRIz1aKObt8hPdR3eRfCRK9SJe6IkmVlQWdX89ruVdzvkZGf7OdY0E
-         3WTQ==
-X-Gm-Message-State: AO0yUKXiP8L8DPplLfCTvw5B+vnkAf03+ofwcAHAoHLo38llq6SkZ4iS
-	Vpfr4qeCI/HxBMP1GKJxszwqAlF0mjMaiVvUK1I=
-X-Google-Smtp-Source: AK7set8wnbcla18BA65mD0tF+YGFQZaLOi1vF6MNFPYgJ+xCNbkwNuOA5gg0rl8sjl7Hw+xmx/asisuFdRpgxW5I32w=
-X-Received: by 2002:a17:90a:d486:b0:233:c720:e6d5 with SMTP id
- s6-20020a17090ad48600b00233c720e6d5mr2301551pju.94.1676380235318; Tue, 14 Feb
- 2023 05:10:35 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGTmF0Pnjz3bfs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 05:11:08 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id C3B9161805;
+	Tue, 14 Feb 2023 18:11:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F352C4339B;
+	Tue, 14 Feb 2023 18:11:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1676398265;
+	bh=TKLtb/CYAjL8ExEwN2xeP7hJFXlbI5pH9qu3eQ0qmvA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=n8kTCiR3nrn23S9SyNNUTkXUfCumSDdFWvPXylR4gSXNC6g+2D+lxgO1fwXaaokrY
+	 YVuLXGZbvvPMISaAP3wcazASy0rreHUgKB6li+yndvVqSXl0jqLsa1A9ETU4D4baHD
+	 +///MI1JyNrU0ZT9OEzao9lmsZ8IdtbTtCxXLGbZAyZGrD2bN6mrI5UH2cs9usKRiY
+	 bQMkI5fWLLowvUmtkCaAN5DN5oB/0AQwqle2Bn8qcUvo4LBvfw0VUZsTdIt2ANhZAW
+	 wrih0yuj8p3luuIs6lJTwcX1j3ukAvE1/aQWQn2g4hCMVpjAMdZ4HwZ/dNztV4bKzz
+	 l6j7aiyTxWddw==
+Date: Tue, 14 Feb 2023 10:11:01 -0800
+From: Josh Poimboeuf <jpoimboe@kernel.org>
+To: Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>
+Subject: Re: [PATCH v2 09/24] mips/cpu: Expose play_dead()'s prototype
+ definition
+Message-ID: <20230214181101.3a2tscbmwdnwbqpu@treble>
+References: <cover.1676358308.git.jpoimboe@kernel.org>
+ <39835bc75af2e812fce56400533cb2ab41bcf0e2.1676358308.git.jpoimboe@kernel.org>
+ <080a5ccb-7fa0-1a75-538f-a09dc146fc4e@linaro.org>
 MIME-Version: 1.0
-References: <20230214074925.228106-1-alexghiti@rivosinc.com> <20230214074925.228106-22-alexghiti@rivosinc.com>
-In-Reply-To: <20230214074925.228106-22-alexghiti@rivosinc.com>
-From: Max Filippov <jcmvbkbc@gmail.com>
-Date: Tue, 14 Feb 2023 05:10:24 -0800
-Message-ID: <CAMo8BfLCDbYWBWfF7ZJtG_U7E846RmJLF5OFdWpaFOv8ydo0Eg@mail.gmail.com>
-Subject: Re: [PATCH v3 21/24] xtensa: Remove empty <uapi/asm/setup.h>
-To: Alexandre Ghiti <alexghiti@rivosinc.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <080a5ccb-7fa0-1a75-538f-a09dc146fc4e@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,23 +63,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Palmer Dabbelt <palmer@rivosinc.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <bor
- ntraeger@linux.ibm.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-kern
+ el@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 14, 2023 at 12:11 AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
->
-> From: Palmer Dabbelt <palmer@rivosinc.com>
->
-> Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
-> ---
->  arch/xtensa/include/uapi/asm/setup.h | 15 ---------------
->  1 file changed, 15 deletions(-)
->  delete mode 100644 arch/xtensa/include/uapi/asm/setup.h
+On Tue, Feb 14, 2023 at 08:46:41AM +0100, Philippe Mathieu-Daudé wrote:
+> Hi Josh,
+> 
+> On 14/2/23 08:05, Josh Poimboeuf wrote:
+> > Include <asm/smp.h> to make sure play_dead() matches its prototype going
+> > forward.
+> > 
+> > Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+> > Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+> > ---
+> >   arch/mips/kernel/smp-bmips.c | 1 +
+> >   1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/arch/mips/kernel/smp-bmips.c b/arch/mips/kernel/smp-bmips.c
+> > index f5d7bfa3472a..df9158e8329d 100644
+> > --- a/arch/mips/kernel/smp-bmips.c
+> > +++ b/arch/mips/kernel/smp-bmips.c
+> > @@ -38,6 +38,7 @@
+> >   #include <asm/traps.h>
+> >   #include <asm/barrier.h>
+> >   #include <asm/cpu-features.h>
+> > +#include <asm/smp.h>
+> 
+> What about the other implementations?
+> 
+> $ git grep -L asm/smp.h $(git grep -wlF 'play_dead(void)' arch/mips)
+> arch/mips/cavium-octeon/smp.c
+> arch/mips/kernel/smp-bmips.c
+> arch/mips/kernel/smp-cps.c
+> arch/mips/loongson64/smp.c
 
-Acked-by: Max Filippov <jcmvbkbc@gmail.com>
+Indeed.  I really wish we had -Wmissing-prototypes.
 
--- 
-Thanks.
--- Max
+I'll squash this in:
+
+diff --git a/arch/mips/cavium-octeon/smp.c b/arch/mips/cavium-octeon/smp.c
+index 89954f5f87fb..4212584e6efa 100644
+--- a/arch/mips/cavium-octeon/smp.c
++++ b/arch/mips/cavium-octeon/smp.c
+@@ -20,6 +20,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/time.h>
+ #include <asm/setup.h>
++#include <asm/smp.h>
+ 
+ #include <asm/octeon/octeon.h>
+ 
+diff --git a/arch/mips/kernel/smp-cps.c b/arch/mips/kernel/smp-cps.c
+index bcd6a944b839..6d69a9ba8167 100644
+--- a/arch/mips/kernel/smp-cps.c
++++ b/arch/mips/kernel/smp-cps.c
+@@ -20,6 +20,7 @@
+ #include <asm/mipsregs.h>
+ #include <asm/pm-cps.h>
+ #include <asm/r4kcache.h>
++#include <asm/smp.h>
+ #include <asm/smp-cps.h>
+ #include <asm/time.h>
+ #include <asm/uasm.h>
+diff --git a/arch/mips/loongson64/smp.c b/arch/mips/loongson64/smp.c
+index c81c2bd07c62..df8d789ede3c 100644
+--- a/arch/mips/loongson64/smp.c
++++ b/arch/mips/loongson64/smp.c
+@@ -14,6 +14,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/kexec.h>
+ #include <asm/processor.h>
++#include <asm/smp.h>
+ #include <asm/time.h>
+ #include <asm/tlbflush.h>
+ #include <asm/cacheflush.h>
