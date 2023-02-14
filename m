@@ -4,106 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 108AEC05027
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 09:09:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7090AC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 09:09:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGFkm433Rz3fRP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 20:09:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OjxC7QQw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::333; helo=mail-wm1-x333.google.com; envelope-from=philmd@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=OjxC7QQw;
-	dkim-atps=neutral
-Received: from mail-wm1-x333.google.com (mail-wm1-x333.google.com [IPv6:2a00:1450:4864:20::333])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGFlW5s3qz3cjK
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Feb 2023 20:09:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.44; helo=mail-lf1-f44.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-lf1-f44.google.com (mail-lf1-f44.google.com [209.85.167.44])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGFh32R63z3chZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 20:06:43 +1100 (AEDT)
-Received: by mail-wm1-x333.google.com with SMTP id he5so2655209wmb.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 01:06:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=mrd61pIHrQzmg4nsVKgkd/XXpTIpHaY6sSTMHOrhSXA=;
-        b=OjxC7QQwmF9zY3g/4GkOU2LzN1229KFU+q2E5z/etnUt3sKGkRcmafL3Y8YGfN8UoH
-         /hA0Og6bQxUjDsLcLUBFud+jhM3hpqUQChsTdeXNp0tkKdVh8tevnFLlHKLxoOYq+5xL
-         Hi6CbSJ5kXMYb2q6/nwBbXnClXiYdCGxqUZS8ITbAu8oILSq9JbNtSn9tIwtBoSPdAYs
-         kOnqVm3rrx3zCADZ0mYNb2ZWJ5WCMVL/uJVdwicgJyr5x/KPBBOtEjuDsBeA9K3W7Qrz
-         TMZBc98TRM7eH3aNDw0+OEuw1gtcuxCOkgs2RDAkkGjl9mAAfAf7OaWzL1J9MXbvPMm7
-         tVkg==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGFh83r9Fz3cfX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 20:06:48 +1100 (AEDT)
+Received: by mail-lf1-f44.google.com with SMTP id x40so22497833lfu.12
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 01:06:48 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=mrd61pIHrQzmg4nsVKgkd/XXpTIpHaY6sSTMHOrhSXA=;
-        b=ZSzSG0OEQ0JzFpPuhIca2NqlmM2gsqwEbG3XqBUiN0g13F2iCoZJ0WN7gHn2ZRGhWe
-         WfUc3XTX9Sg47nFxt2OX/4PPdCEeTrtwnjOTHy+Deg/MByh1qBX3DDrI5RXBTWgv3bpR
-         bvjYn0s+clAfeutSNw1k9KfKuuxaoJ2pf4TJpbsDwmDFERq45H3W9ksw/I3JpSmDLOX9
-         FCuaOh5M5AnTI9hmYrGtVJAUpyMXytNQw5AS7BoQecOydhkIQJZUzo1gv6mwZBurnidT
-         ogtU+uOrAuZvW97B/s5bTQgvxzAj00tL1hKbmCPISR1OX5bitDpGP19wWI2BOOwdolPI
-         TfhQ==
-X-Gm-Message-State: AO0yUKUe2caEFXf/d1SNgZNq/lTjCEI6BGdXvoGoSML+npzoW3FCNDOt
-	b2eux7QUR38xdbZwSYJAsVVWSg==
-X-Google-Smtp-Source: AK7set9MiM4/caZ+oETuVXovz1fIhowKvB35m6VhOBkhclAa3qSu0wh7KMvERZsT3+tjLvnUvDpWqA==
-X-Received: by 2002:a05:600c:708:b0:3e1:577:80f4 with SMTP id i8-20020a05600c070800b003e1057780f4mr1429963wmn.18.1676365598212;
-        Tue, 14 Feb 2023 01:06:38 -0800 (PST)
-Received: from [192.168.30.216] ([81.0.6.76])
-        by smtp.gmail.com with ESMTPSA id p6-20020a05600c468600b003dc36981727sm21222346wmo.14.2023.02.14.01.06.34
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=7mNyenBvavxUdV7/ZOu+dVcpWueC+FqvBBNVPDVl8j0=;
+        b=btUdmPEPmSI7MeBpAk+SqMhnT5aKO1YPYktj79rvZXzHgQ9S4TWbe7Kt/Y7qRfH1gg
+         we5+5ZNZqjoWU/l4bqeIIoQwci+aQx+C5fB2YN6qUwhx+WfseXoX422UfeOwgqI9dcr/
+         b3IzHnO9bxVZV9cMjiKBb6PGjK93JalLuzE+UpAL6qVAgpBqkhBa27qIid4D8N2DpO38
+         7GoFiN2xmdKmAVNVczPtJe0JVGYp1gsYg2dt/IN+s80/IdmmOtaDOV4nB4K8qASOTrIq
+         S6myEd/GgESZT2QiWquPfC21pJecYeU8wuas91S6AZc/BlAhbtpGYCyeKLAz+oG4uNgK
+         NcRw==
+X-Gm-Message-State: AO0yUKV/WbE8MDeTW+KNX7e48HdBOBboBgaPuiTpLFBUOW4+tXkgt7Zf
+	9eUtvNX2m03eO4NeigsoErgKPa6IEcvUamFj
+X-Google-Smtp-Source: AK7set8OmvRxrtvAoWYWRI9EClKdaX2yh0gQqXa1yvhon+trkr0TuPLKdYdlNNd3jn2+auv+4obJ2g==
+X-Received: by 2002:ac2:46fc:0:b0:4b5:ace6:7498 with SMTP id q28-20020ac246fc000000b004b5ace67498mr587597lfo.3.1676365604465;
+        Tue, 14 Feb 2023 01:06:44 -0800 (PST)
+Received: from mail-lf1-f52.google.com (mail-lf1-f52.google.com. [209.85.167.52])
+        by smtp.gmail.com with ESMTPSA id t7-20020a19ad07000000b004db2bda9527sm839449lfc.121.2023.02.14.01.06.43
+        for <linuxppc-dev@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 14 Feb 2023 01:06:37 -0800 (PST)
-Message-ID: <30e92251-cd6a-f1d9-a952-7c2fc427cb7f@linaro.org>
-Date: Tue, 14 Feb 2023 10:06:34 +0100
+        Tue, 14 Feb 2023 01:06:44 -0800 (PST)
+Received: by mail-lf1-f52.google.com with SMTP id bi36so22526951lfb.8
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Feb 2023 01:06:43 -0800 (PST)
+X-Received: by 2002:a2e:9448:0:b0:293:5264:ad89 with SMTP id
+ o8-20020a2e9448000000b002935264ad89mr149587ljh.37.1676365235984; Tue, 14 Feb
+ 2023 01:00:35 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.7.2
-Subject: Re: [PATCH v3 07/24] mips: Remove COMMAND_LINE_SIZE from uapi
-Content-Language: en-US
-To: Alexandre Ghiti <alexghiti@rivosinc.com>, Jonathan Corbet
- <corbet@lwn.net>, Richard Henderson <richard.henderson@linaro.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
- <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H . Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org
-References: <20230214074925.228106-1-alexghiti@rivosinc.com>
- <20230214074925.228106-8-alexghiti@rivosinc.com>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20230214074925.228106-8-alexghiti@rivosinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20230214074925.228106-1-alexghiti@rivosinc.com> <20230214074925.228106-6-alexghiti@rivosinc.com>
+In-Reply-To: <20230214074925.228106-6-alexghiti@rivosinc.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 14 Feb 2023 10:00:22 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWxgRrZqn=Ex4gSSL58gciuHp-6ye+FTR0wgw=jp=4=DA@mail.gmail.com>
+Message-ID: <CAMuHMdWxgRrZqn=Ex4gSSL58gciuHp-6ye+FTR0wgw=jp=4=DA@mail.gmail.com>
+Subject: Re: [PATCH v3 05/24] m68k: Remove COMMAND_LINE_SIZE from uapi
+To: Alexandre Ghiti <alexghiti@rivosinc.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,21 +66,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Palmer Dabbelt <palmer@rivosinc.com>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, Palmer Dabbelt <palmer@rivosinc.com>, linux-mips@vger.kernel.org, "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Max Filippov <jcmvbkbc@gmail.com>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Yoshinori Sato <ysato@users.sourceforge.jp>, Jonathan Corbet <corbet@lwn.net>, linux-sh@vger.kernel.org, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@kernel.org>, Matt Turner <mattst88@gmail.com>, Christian Borntraeger <borntraeger
+ @linux.ibm.com>, linux-xtensa@linux-xtensa.org, Albert Ou <aou@eecs.berkeley.edu>, Vasily Gorbik <gor@linux.ibm.com>, Heiko Carstens <hca@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, linux-m68k@lists.linux-m68k.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, Sven Schnelle <svens@linux.ibm.com>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 14/2/23 08:49, Alexandre Ghiti wrote:
+On Tue, Feb 14, 2023 at 8:55 AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
 > From: Palmer Dabbelt <palmer@rivosinc.com>
-> 
+>
 > As far as I can tell this is not used by userspace and thus should not
 > be part of the user-visible API.
-> 
+>
 > Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
-> ---
->   arch/mips/include/asm/setup.h      | 3 ++-
->   arch/mips/include/uapi/asm/setup.h | 3 ---
->   2 files changed, 2 insertions(+), 4 deletions(-)
 
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
