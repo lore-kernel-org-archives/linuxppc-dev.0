@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83746C636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28E60C636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:51:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGybx1WDvz3fl7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:50:37 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGycV64GTz2yNX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:51:06 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRQ6XBFz3cLc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRR3Fwtz3cdy
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:15 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRQ5NBVz4x8G;
-	Wed, 15 Feb 2023 23:43:14 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRR23jHz4x8H;
+	Wed, 15 Feb 2023 23:43:15 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230121102618.2824429-1-npiggin@gmail.com>
-References: <20230121102618.2824429-1-npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64: Don't recurse irq replay
-Message-Id: <167646482170.1421441.403555993331285105.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:21 +1100
+In-Reply-To: <20230121095805.2823731-1-npiggin@gmail.com>
+References: <20230121095805.2823731-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2 0/3] powerpc/32: nohz full support
+Message-Id: <167646484638.1421441.15668047645206342967.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:46 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -45,19 +45,23 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 21 Jan 2023 20:26:18 +1000, Nicholas Piggin wrote:
-> Interrupt handlers called by soft-pending irq replay code can run
-> softirqs, softirq replay enables and disables local irqs, which allows
-> interrupts to come in including soft-masked interrupts, and it can
-> cause pending irqs to be replayed again. That makes the soft irq replay
-> state machine and possible races more complicated and fragile than it
-> needs to be.
+On Sat, 21 Jan 2023 19:58:02 +1000, Nicholas Piggin wrote:
+> I'd like to try get this series merged. If Christophe isn't comfortable
+> with patch 2/3 yet then maybe we could at least get the first one in
+> which shares more code and makes it tidier.
+> 
+> Since v1 I just split the first patch out so it's not introducing a
+> significant functional change.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/64: Don't recurse irq replay
-      https://git.kernel.org/powerpc/c/5746ca131e2496ccd5bb4d7a0244d6c38070cbf5
+[1/3] powerpc: Consolidate 32-bit and 64-bit interrupt_enter_prepare
+      https://git.kernel.org/powerpc/c/fb3b72a3f483f81a33a9693ed03dc62158a6f77e
+[2/3] powerpc/32: implement HAVE_CONTEXT_TRACKING_USER support
+      https://git.kernel.org/powerpc/c/5c4b710a8157ec271fac4806562ee1aa1b44a53d
+[3/3] powerpc/32: select HAVE_VIRT_CPU_ACCOUNTING_GEN
+      https://git.kernel.org/powerpc/c/01f135506e2ed0403512c2467bd50746bdbd576d
 
 cheers
