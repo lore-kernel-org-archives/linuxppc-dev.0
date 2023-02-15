@@ -4,58 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E77F9C636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 18:44:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB83EC636CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 18:45:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PH6Rv0t54z3f7p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 05:44:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PH6Sv1HfFz3fSK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 05:45:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KwKxexKO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rB+kfF+d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KwKxexKO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rB+kfF+d;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PH6Np2rMvz3bhS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PH6Np2JD6z3bVP
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 05:41:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 817D261D26;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 2B16461D0E;
 	Wed, 15 Feb 2023 18:41:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B9E63C4339E;
-	Wed, 15 Feb 2023 18:41:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0242FC4339C;
+	Wed, 15 Feb 2023 18:41:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1676486488;
-	bh=fc+5seqhTO5BvvY3isnCsCZbytpHZYKbkp6X0pw+tz0=;
+	s=k20201202; t=1676486487;
+	bh=S6yVv++b65cKUFiT1cYYAPG0IYVYL9tj+zjmVfJD+Zk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=KwKxexKOjWpIM62ogFQODLQ1bQsNzLet37om+7MP+97xaJyIyy2vgnIwKvqGHgSum
-	 AK1HlTcMi+AvC332r/QIwE+/49lsjRtJJSV4BIXQMrnonWfh+22HtMsqqs7j8kwYyW
-	 w1EKs81R8h99F0BIHuSoZfDAmS6VE5JSMLdZ+IFrjA4FhQ/WlqFpzGOvDUzu4ZTqOq
-	 FYLfMowZLmq29qGViyPSz7myGFzjL33q7gGLhZfuv3GDwHSYvo80FQH+P2N8ItH8t1
-	 EkSsDc48uZakeV8iEsThXGc2ro9ZjG3icqKXOi2XHl4Nf9kwmXsGAq9DohtR+CUXdi
-	 ndi0MW4G87mvA==
+	b=rB+kfF+dhz5w+QmVPHcrcLgFtFDbFuOvzN5aFHsok+4YXPR81oIL98QzjGhCaDx+z
+	 jsMJd454lmfvgl2tVn2unZm4mIe0ZKy2HYLarBHPynIQ2D5jQ3evdZLKjHTA+HcSkF
+	 XszqP60J6FJLAA+qsnrXWjk2Nsgs4bcDlnv1Q7+3YsXhYq+C/FqQGAAM9bVz7qzHj9
+	 +PCU4KMRpS4omZtleXio5oJuF6sCjrm7N+qZzPJjP0DEUnoeBiaVVj1hp21O6g9TRs
+	 SzGT/2ocPlPSkKk5QGERq+bp4yOPGfs1Ezj3BqY9yqApWfU1ejjuK9lxRAQKh9Hlko
+	 3Up+9Ry2UadyA==
 From: Nathan Chancellor <nathan@kernel.org>
-Date: Wed, 15 Feb 2023 11:41:17 -0700
-Subject: [PATCH 3/3] powerpc: Allow CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 with
- ld.lld 15+
+Date: Wed, 15 Feb 2023 11:41:16 -0700
+Subject: [PATCH 2/3] powerpc: Fix use of '-mabi=elfv2' with clang
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230118-ppc64-elfv2-llvm-v1-3-b9e2ec9da11d@kernel.org>
+Message-Id: <20230118-ppc64-elfv2-llvm-v1-2-b9e2ec9da11d@kernel.org>
 References: <20230118-ppc64-elfv2-llvm-v1-0-b9e2ec9da11d@kernel.org>
 In-Reply-To: <20230118-ppc64-elfv2-llvm-v1-0-b9e2ec9da11d@kernel.org>
 To: mpe@ellerman.id.au
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1504; i=nathan@kernel.org;
- h=from:subject:message-id; bh=fc+5seqhTO5BvvY3isnCsCZbytpHZYKbkp6X0pw+tz0=;
- b=owGbwMvMwCEmm602sfCA1DTG02pJDMlv1UPn3nmjdiU36FOT54YGk9jbwdOfzrpwQ4Lldo2jh
- aTmydrijlIWBjEOBlkxRZbqx6rHDQ3nnGW8cWoSzBxWJpAhDFycAjAR3mCG/xFvgraEdZq6CVXX
- CPptLaiNF2zQ335f/duS/6bbGRO9lRgZHkb0V30yMWtbK9nNreCq1Vi8e/3F+z8LMgqXK/R7Bzh
- zAwA=
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1880; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=S6yVv++b65cKUFiT1cYYAPG0IYVYL9tj+zjmVfJD+Zk=;
+ b=owGbwMvMwCEmm602sfCA1DTG02pJDMlv1UO17k02Z26YoWbpfXPSBdset27J7m8R3792T95zS
+ EF07em8jlIWBjEOBlkxRZbqx6rHDQ3nnGW8cWoSzBxWJpAhDFycAjCRgDmMDNNCvnlsi9+lmndg
+ rvuu3TtCdhnJKjQePpzldulZ1cV63VCGfxovmz0WvVB+zXBiVhXPesEydy/bG14tDZMOzcq2bVv
+ 7nBEA
 X-Developer-Key: i=nathan@kernel.org; a=openpgp;
  fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,41 +72,51 @@ Cc: erhard_f@mailbox.org, trix@redhat.com, llvm@lists.linux.dev, ndesaulniers@go
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 5017b4594672 ("powerpc/64: Option to build big-endian with ELFv2
-ABI") restricted the ELFv2 ABI configuration such that it can only be
-selected when linking with ld.bfd, due to lack of testing with LLVM.
+'-mabi=elfv2' is not added to clang's invocations when
+CONFIG_PPC64_ELF_ABI_V2 is enabled, resulting in the generation of elfv1
+code, as evidenced by the orphan section warnings/errors:
 
-ld.lld can link ELFv2 kernels without any issues; in fact, it is the
-only ABI that ld.lld supports, as ELFv1 is not supported in ld.lld.
+  ld.lld: error: vmlinux.a(arch/powerpc/kernel/prom_init.o):(.opd) is being placed in '.opd'
+  ld.lld: error: vmlinux.a(init/main.o):(.opd) is being placed in '.opd'
+  ld.lld: error: vmlinux.a(init/version.o):(.opd) is being placed in '.opd'
 
-As this has not seen a ton of real world testing yet, be conservative
-and only allow this option to be selected with the latest stable release
-of LLVM (15.x) and newer.
+To resolve this, add '-mabi=elfv2' to CFLAGS with clang. This uncovers
+an issue in the 32-bit vDSO:
 
-While in the area, remove 'default n', as it is unnecessary to specify
-it explicitly since all boolean/tristate configuration symbols default
-to n.
+  error: unknown target ABI 'elfv2'
+
+The ELFv2 ABI cannot be used when building code for a 32-bit target. To
+resolve this, just remove the '-mabi' flags from the assembler flags, as
+it was only needed for preprocessing (the _CALL_ELF macro) but this was
+cleaned up in commit 5b89492c03e5 ("powerpc: Finalise cleanup around ABI
+use").
 
 Tested-by: "Erhard F." <erhard_f@mailbox.org
 Signed-off-by: Nathan Chancellor <nathan@kernel.org>
 ---
- arch/powerpc/Kconfig | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/Makefile | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b8c4ac56bddc..f9f13029c98a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -603,8 +603,7 @@ config PPC64_BIG_ENDIAN_ELF_ABI_V2
- 	bool "Build big-endian kernel using ELF ABI V2 (EXPERIMENTAL)"
- 	depends on PPC64 && CPU_BIG_ENDIAN
- 	depends on CC_HAS_ELFV2
--	depends on LD_IS_BFD && LD_VERSION >= 22400
--	default n
-+	depends on LD_VERSION >= 22400 || LLD_VERSION >= 150000
- 	help
- 	  This builds the kernel image using the "Power Architecture 64-Bit ELF
- 	  V2 ABI Specification", which has a reduced stack overhead and faster
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index dc4cbf0a5ca9..3f2dd930e3cd 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -123,14 +123,12 @@ endif
+ endif
+ 
+ CFLAGS-$(CONFIG_PPC64)	:= $(call cc-option,-mtraceback=no)
+-ifndef CONFIG_CC_IS_CLANG
+ ifdef CONFIG_PPC64_ELF_ABI_V2
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2,$(call cc-option,-mcall-aixdesc))
+-AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv2)
+ else
++ifndef CONFIG_CC_IS_CLANG
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcall-aixdesc)
+-AFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mabi=elfv1)
+ endif
+ endif
+ CFLAGS-$(CONFIG_PPC64)	+= $(call cc-option,-mcmodel=medium,$(call cc-option,-mminimal-toc))
 
 -- 
 2.39.2
