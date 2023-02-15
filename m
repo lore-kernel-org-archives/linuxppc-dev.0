@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30210C64EC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:51:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E30B7C636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:52:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyd44kFqz3f3q
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:51:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGydf2jnBz3fpb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:52:06 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRS03BPz3cjQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRS3p1pz3f3L
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:16 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRR5wXHz4x8K;
-	Wed, 15 Feb 2023 23:43:15 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRS2ddWz4x8M;
+	Wed, 15 Feb 2023 23:43:16 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Pali Rohár <pali@kernel.org>
-In-Reply-To: <20230128133459.32123-1-pali@kernel.org>
-References: <20220817163927.24453-1-pali@kernel.org> <20230128133459.32123-1-pali@kernel.org>
-Subject: Re: [PATCH v2 1/2] powerpc/pci: Enable PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
-Message-Id: <167646482245.1421441.10067150275839833802.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:22 +1100
+To: linuxppc-dev@lists.ozlabs.org, Rohan McLure <rmclure@linux.ibm.com>
+In-Reply-To: <20230206021801.105268-1-rmclure@linux.ibm.com>
+References: <20230206021801.105268-1-rmclure@linux.ibm.com>
+Subject: Re: [PATCH v3 0/5] powerpc: Add KCSAN support
+Message-Id: <167646486000.1421441.10070059569986228558.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:41:00 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,20 +42,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 28 Jan 2023 14:34:58 +0100, Pali Rohár wrote:
-> It makes sense to enable CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
-> (when possible by dependencies) to take advantages of all 256 PCI buses on
-> each PCI domain, like it is already on all other kernel architectures.
+On Mon, 6 Feb 2023 13:17:56 +1100, Rohan McLure wrote:
+> Add Kernel Concurrency Sanitiser support for PPC64. Doing so involves
+> exclusion of a number of compilation units from instrumentation, as was
+> done with KASAN.
 > 
+> KCSAN uses watchpoints on memory accesses to enforce the semantics of
+> the Linux kernel memory model, notifying the user of observed data races
+> which have not been declared to be intended in source through the
+> data_race() macro, in order to remove false positives.
 > 
+> [...]
 
-Patch 1 applied to powerpc/next.
+Applied to powerpc/next.
 
-[1/2] powerpc/pci: Enable PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
-      https://git.kernel.org/powerpc/c/34557b7504778e32b166cf46c6f774086124e845
+[1/5] powerpc: kcsan: Add exclusions from instrumentation
+      https://git.kernel.org/powerpc/c/2fb857bc9f9e106439017ed323f522cc785395bb
+[2/5] powerpc: kcsan: Exclude udelay to prevent recursive instrumentation
+      https://git.kernel.org/powerpc/c/2a7ce82dc46c591c9244057d89a6591c9639b9b9
+[3/5] powerpc: kcsan: Memory barriers semantics
+      https://git.kernel.org/powerpc/c/b6e259297a6bffb882d55715284bb5219eefda42
+[4/5] powerpc: kcsan: Prevent recursive instrumentation with IRQ save/restores
+      https://git.kernel.org/powerpc/c/4f8e09106f6e457c6e9a4ce597fa9ae2bda032c3
+[5/5] powerpc: kcsan: Add KCSAN Support
+      https://git.kernel.org/powerpc/c/6f0926c00565a91f3bd7ca1aa05db307daed5e0f
 
 cheers
