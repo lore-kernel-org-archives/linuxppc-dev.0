@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEA09C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7267CC636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:43:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGxtG2JGkz3f4D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:17:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyRm6HF4z3f4M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:43:32 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGxs636Myz3bkM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:16:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRF4pRlz3cKG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:05 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGxs575mQz4x5Z;
-	Wed, 15 Feb 2023 23:16:57 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRF2QHWz4x7s;
+	Wed, 15 Feb 2023 23:43:05 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20230204172206.7662-1-rdunlap@infradead.org>
-References: <20230204172206.7662-1-rdunlap@infradead.org>
-Subject: Re: [PATCH] powerpc/kexec_file: fix implicit decl error
-Message-Id: <167646340183.1415779.1023703853117043648.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:16:41 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <e62892e32c14a7a5738c597e39e0082cb0abf21c.1675335659.git.christophe.leroy@csgroup.eu>
+References: <e62892e32c14a7a5738c597e39e0082cb0abf21c.1675335659.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc: Disable CPU unknown by CLANG when CC_IS_CLANG
+Message-Id: <167646485519.1421441.15913006369717887437.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:55 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,23 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sourabh Jain <sourabhjain@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 4 Feb 2023 09:22:06 -0800, Randy Dunlap wrote:
-> kexec (PPC64) code calls memory_hotplug_max(). Add the header declaration
-> for it from <asm/mmzone.h>. Using <linux/mmzone.h> does not work since
-> the #include for <asm/mmzone.h> depends on CONFIG_NUMA=y, which is not
-> set in this kernel config file.
+On Thu, 2 Feb 2023 12:01:04 +0100, Christophe Leroy wrote:
+> CLANG only knows the following CPUs:
 > 
-> Fixes this build error/warning:
+> generic, 440, 450, 601, 602, 603, 603e, 603ev, 604, 604e, 620, 630,
+> g3, 7400, g4, 7450, g4+, 750, 8548, 970, g5, a2, e500, e500mc, e5500,
+> power3, pwr3, power4, pwr4, power5, pwr5, power5x, pwr5x, power6,
+> pwr6, power6x, pwr6x, power7, pwr7, power8, pwr8, power9, pwr9,
+> power10, pwr10, powerpc, ppc, ppc32, powerpc64, ppc64, powerpc64le,
+> ppc64le, futur
 > 
 > [...]
 
-Applied to powerpc/fixes.
+Applied to powerpc/next.
 
-[1/1] powerpc/kexec_file: fix implicit decl error
-      https://git.kernel.org/powerpc/c/97e45d469eb180a7bd2809e4e079331552c73e42
+[1/1] powerpc: Disable CPU unknown by CLANG when CC_IS_CLANG
+      https://git.kernel.org/powerpc/c/4b10306e98456aed03cad75ce467e8b1efdccca0
 
 cheers
