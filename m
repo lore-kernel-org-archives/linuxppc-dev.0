@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87E4AC636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:47:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89FB0C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:48:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyXV1CCwz3ft5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:47:38 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyY40sJwz3chB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:48:08 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRM4vhHz3cj3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRN1YFDz3cjG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:12 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRM1cdmz4x4r;
-	Wed, 15 Feb 2023 23:43:11 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRN0Pj8z4x87;
+	Wed, 15 Feb 2023 23:43:12 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
-In-Reply-To: <20230131184804.220756-1-kjain@linux.ibm.com>
-References: <20230131184804.220756-1-kjain@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/hv-24x7: Fix pvr check when setting interface version
-Message-Id: <167646484317.1421441.5646798011051629276.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:43 +1100
+To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20230206113902.1857123-1-mpe@ellerman.id.au>
+References: <20230206113902.1857123-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH v3] powerpc/pci: Add option for using pci_to_OF_bus_map
+Message-Id: <167646482323.1421441.4084042305298979287.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:23 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,27 +42,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: disgoel@linux.vnet.ibm.com, atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, Sachin Sant <sachinp@linux.ibm.com>
+Cc: pali@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 1 Feb 2023 00:18:04 +0530, Kajol Jain wrote:
-> Commit ec3eb9d941a9 ("powerpc/perf: Use PVR rather than
-> oprofile field to determine CPU version") added usage
-> of pvr value instead of oprofile field to determine the
-> platform. In hv-24x7 pmu driver code, pvr check uses PVR_POWER8
-> when assigning the interface version for power8 platform.
-> But power8 can also have other pvr values like PVR_POWER8E and
-> PVR_POWER8NVL. Hence the interface version won't be set
-> properly incase of PVR_POWER8E and PVR_POWER8NVL.
-> Fix this issue by adding the checks for PVR_POWER8E and
-> PVR_POWER8NVL as well.
+On Mon, 6 Feb 2023 22:39:02 +1100, Michael Ellerman wrote:
+> From: Pali Rohár <pali@kernel.org>
+> 
+> The "pci-OF-bus-map" property was declared deprecated in 2006 [1] and to
+> the best of everyone's knowledge is not used by anything anymore [2].
+> 
+> The creation of the property was disabled on powermac (arch/powerpc) in
+> 2005 by commit 35499c0195e4 ("powerpc: Merge in 64-bit powermac
+> support."). But it is still created by default on CHRP.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/hv-24x7: Fix pvr check when setting interface version
-      https://git.kernel.org/powerpc/c/60bd7936f99fd8cdbeca67180f80ea13d8b97a76
+[1/1] powerpc/pci: Add option for using pci_to_OF_bus_map
+      https://git.kernel.org/powerpc/c/5d2eb73aa0fd57844938a22bddc59f7bc8183924
 
 cheers
