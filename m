@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD642C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87E4AC636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:47:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyWw2jYGz3fqW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:47:08 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyXV1CCwz3ft5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:47:38 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRL67YMz3chr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRM4vhHz3cj3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:11 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRK09mjz4x84;
-	Wed, 15 Feb 2023 23:43:09 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRM1cdmz4x4r;
+	Wed, 15 Feb 2023 23:43:11 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-In-Reply-To: <20230202141919.2298821-1-gregkh@linuxfoundation.org>
-References: <20230202141919.2298821-1-gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] ppc: iommu: fix memory leak with using debugfs_lookup()
-Message-Id: <167646482703.1421441.5756331664159282283.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:27 +1100
+To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
+In-Reply-To: <20230131184804.220756-1-kjain@linux.ibm.com>
+References: <20230131184804.220756-1-kjain@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/hv-24x7: Fix pvr check when setting interface version
+Message-Id: <167646484317.1421441.5646798011051629276.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:43 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,21 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
+Cc: disgoel@linux.vnet.ibm.com, atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, Sachin Sant <sachinp@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2 Feb 2023 15:19:19 +0100, Greg Kroah-Hartman wrote:
-> When calling debugfs_lookup() the result must have dput() called on it,
-> otherwise the memory will leak over time.  To make things simpler, just
-> call debugfs_lookup_and_remove() instead which handles all of the logic
-> at once.
+On Wed, 1 Feb 2023 00:18:04 +0530, Kajol Jain wrote:
+> Commit ec3eb9d941a9 ("powerpc/perf: Use PVR rather than
+> oprofile field to determine CPU version") added usage
+> of pvr value instead of oprofile field to determine the
+> platform. In hv-24x7 pmu driver code, pvr check uses PVR_POWER8
+> when assigning the interface version for power8 platform.
+> But power8 can also have other pvr values like PVR_POWER8E and
+> PVR_POWER8NVL. Hence the interface version won't be set
+> properly incase of PVR_POWER8E and PVR_POWER8NVL.
+> Fix this issue by adding the checks for PVR_POWER8E and
+> PVR_POWER8NVL as well.
 > 
-> 
+> [...]
 
 Applied to powerpc/next.
 
-[1/1] ppc: iommu: fix memory leak with using debugfs_lookup()
-      https://git.kernel.org/powerpc/c/b505063910c134778202dfad9332dfcecb76bab3
+[1/1] powerpc/hv-24x7: Fix pvr check when setting interface version
+      https://git.kernel.org/powerpc/c/60bd7936f99fd8cdbeca67180f80ea13d8b97a76
 
 cheers
