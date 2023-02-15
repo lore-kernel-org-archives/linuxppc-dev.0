@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28E60C636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:51:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30210C64EC7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:51:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGycV64GTz2yNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:51:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyd44kFqz3f3q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:51:36 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRR3Fwtz3cdy
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRS03BPz3cjQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:16 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRR23jHz4x8H;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRR5wXHz4x8K;
 	Wed, 15 Feb 2023 23:43:15 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230121095805.2823731-1-npiggin@gmail.com>
-References: <20230121095805.2823731-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/3] powerpc/32: nohz full support
-Message-Id: <167646484638.1421441.15668047645206342967.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:46 +1100
+To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>, Pali Rohár <pali@kernel.org>
+In-Reply-To: <20230128133459.32123-1-pali@kernel.org>
+References: <20220817163927.24453-1-pali@kernel.org> <20230128133459.32123-1-pali@kernel.org>
+Subject: Re: [PATCH v2 1/2] powerpc/pci: Enable PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
+Message-Id: <167646482245.1421441.10067150275839833802.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:22 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 21 Jan 2023 19:58:02 +1000, Nicholas Piggin wrote:
-> I'd like to try get this series merged. If Christophe isn't comfortable
-> with patch 2/3 yet then maybe we could at least get the first one in
-> which shares more code and makes it tidier.
+On Sat, 28 Jan 2023 14:34:58 +0100, Pali Rohár wrote:
+> It makes sense to enable CONFIG_PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
+> (when possible by dependencies) to take advantages of all 256 PCI buses on
+> each PCI domain, like it is already on all other kernel architectures.
 > 
-> Since v1 I just split the first patch out so it's not introducing a
-> significant functional change.
 > 
-> [...]
 
-Applied to powerpc/next.
+Patch 1 applied to powerpc/next.
 
-[1/3] powerpc: Consolidate 32-bit and 64-bit interrupt_enter_prepare
-      https://git.kernel.org/powerpc/c/fb3b72a3f483f81a33a9693ed03dc62158a6f77e
-[2/3] powerpc/32: implement HAVE_CONTEXT_TRACKING_USER support
-      https://git.kernel.org/powerpc/c/5c4b710a8157ec271fac4806562ee1aa1b44a53d
-[3/3] powerpc/32: select HAVE_VIRT_CPU_ACCOUNTING_GEN
-      https://git.kernel.org/powerpc/c/01f135506e2ed0403512c2467bd50746bdbd576d
+[1/2] powerpc/pci: Enable PPC_PCI_BUS_NUM_DOMAIN_DEPENDENT by default
+      https://git.kernel.org/powerpc/c/34557b7504778e32b166cf46c6f774086124e845
 
 cheers
