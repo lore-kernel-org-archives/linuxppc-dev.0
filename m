@@ -4,84 +4,84 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 849BCC64EC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 02:07:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2023C05027
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 02:07:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGhKJ619Bz3f56
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 13:07:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGhLL21sSz3cLZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 13:07:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g8BzUrwS;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mL64Yojl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g8BzUrwS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mL64Yojl;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGhG95WRWz3c6y
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGhG96KZjz3c7B
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 13:04:17 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31F1g82X013704;
-	Wed, 15 Feb 2023 02:04:10 GMT
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31EN2K00001836;
+	Wed, 15 Feb 2023 02:04:09 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=qmP4KPao04LG+v7mxmQoLGhWBScCO458YAMQRaei39c=;
- b=g8BzUrwSoZL0OTlFOP+OfVCtcfiNi4yS0TBkdvK60zoyKJUbtcxRCcJoaTAZIWITyIHv
- WzasRlPtN8l3YDVjpDONQOhx/zas9lJJTp8sv+aNhbGChJp4tAC9cBz+Xw2FXR6UCuq4
- /Ajkt8PN2c9OEtC3Aa/BxjA2gLeOyhVW9K0/IXpGp3MJpN5AJ3JNAQBg2JTe4D7dfjMb
- s2ZBQQZ9rajEwRWDs1P4OUUM2gAOWkW1vIZW2O1qb2+569icS42TznrkDKuWntsNZIS/
- 0ZKwflfuVJiuA/zDa7naikWe1FHHlqzDxYU0C7kQ/p0MEDUCo25xc3cKS8ED9Saop19e TA== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nrny0gka0-1
+ bh=eJTV6YYsRf7WbkyUKeZBQFReMwIlJIxw9z4/U34A11k=;
+ b=mL64YojlI0PmTeEBzIJtsxjAj7V6uY5TXFaibOhu0Au+60u/cyZaiPha5snnQ3ZRRjQi
+ YqJaeWMc8wuXVnRNTXR/P00V4zSqJaLBbn25Q0Xl0Ur3ARyn0d6KlklRaQYZ013b/7H8
+ zfyAGoF1KWKg3nJs/TJW9bBichaZc2+y+T1pfEMuNlgCPUWO819oM309livKoRM/VgLF
+ /PIn9zvpVKGe40eMhhYhlIPfdfwzC5qfOEQUmJGdPInxz+4OTcH5mRAyvmWKiqowcujJ
+ qstmri1V6IrBGcf2LzO+O9SQfYSgGXJNmXq00pHaYaPG8Fo07qUqHwj1vbcDt1rGU1Ll 2A== 
+Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nrkme3exf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
 	Wed, 15 Feb 2023 02:04:09 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31EJhP41017640;
-	Wed, 15 Feb 2023 02:04:06 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3np2n6mrsn-1
+Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
+	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31F1K4vW027597;
+	Wed, 15 Feb 2023 02:04:07 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3np2n6khaj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 15 Feb 2023 02:04:06 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31F244d046268758
+	Wed, 15 Feb 2023 02:04:07 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31F2441N23462506
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 15 Feb 2023 02:04:04 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 60B3420049;
+	Wed, 15 Feb 2023 02:04:05 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD9D720043;
 	Wed, 15 Feb 2023 02:04:04 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CDED820040;
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D17FD20040;
 	Wed, 15 Feb 2023 02:04:03 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
 	Wed, 15 Feb 2023 02:04:03 +0000 (GMT)
 Received: from civic.. (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9444C60425;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9B2006047E;
 	Wed, 15 Feb 2023 13:04:01 +1100 (AEDT)
 From: Rohan McLure <rmclure@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 2/7] powerpc/64s: mm: Introduce __pmdp_collapse_flush with mm_struct argument
-Date: Wed, 15 Feb 2023 13:01:50 +1100
-Message-Id: <20230215020155.1969194-3-rmclure@linux.ibm.com>
+Subject: [PATCH v7 4/7] powerpc: mm: Implement p{m,u,4}d_leaf on all platforms
+Date: Wed, 15 Feb 2023 13:01:52 +1100
+Message-Id: <20230215020155.1969194-5-rmclure@linux.ibm.com>
 X-Mailer: git-send-email 2.37.2
 In-Reply-To: <20230215020155.1969194-1-rmclure@linux.ibm.com>
 References: <20230215020155.1969194-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 6NobVIYPDeeuVPm8h5YJ-YYmCIjoKab4
-X-Proofpoint-GUID: 6NobVIYPDeeuVPm8h5YJ-YYmCIjoKab4
+X-Proofpoint-ORIG-GUID: zPxq1qwZsY-rYBRJhaq4alpP3Q2OZ2Gy
+X-Proofpoint-GUID: zPxq1qwZsY-rYBRJhaq4alpP3Q2OZ2Gy
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
  definitions=2023-02-14_17,2023-02-14_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
- malwarescore=0 mlxlogscore=535 suspectscore=0 lowpriorityscore=0
- adultscore=0 impostorscore=0 spamscore=0 bulkscore=0 priorityscore=1501
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ priorityscore=1501 impostorscore=0 malwarescore=0 suspectscore=0
+ adultscore=0 clxscore=1015 mlxscore=0 bulkscore=0 phishscore=0 spamscore=0
+ mlxlogscore=686 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2212070000 definitions=main-2302150017
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -98,52 +98,144 @@ Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pmdp_collapse_flush has references in generic code with just three
-parameters, due to the choice of mm context being implied by the vm_area
-context parameter.
+The check that a higher-level entry in multi-level pages contains a page
+translation entry (pte) is performed by p{m,u,4}d_leaf stubs, which may
+be specialised for each choice of mmu. In a prior commit, we replace
+uses to the catch-all stubs, p{m,u,4}d_is_leaf with p{m,u,4}d_leaf.
 
-Define __pmdp_collapse_flush to accept an additional mm_struct *
-parameter, with pmdp_collapse_flush an inline function that unpacks
-the vma and calls __pmdp_collapse_flush. The mm_struct * parameter
-is needed in a future patch providing Page Table Check support,
-which is defined in terms of mm context objects.
+Replace the catch-all stub definitions for p{m,u,4}d_is_leaf with
+definitions for p{m,u,4}d_leaf. A future patch will assume that
+p{m,u,4}d_leaf is defined on all platforms.
+
+In particular, implement pud_leaf for Book3E-64, pmd_leaf for all Book3E
+and Book3S-64 platforms, with a catch-all definition for p4d_leaf.
 
 Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
 ---
-v6: New patch
-v7: Remove explicit `return' in macro. Prefix macro args with __,
-as done with ptep_test_and_clear_young.
+v5: Split patch that replaces p{m,u,4}d_is_leaf into two patches, first
+replacing callsites and afterward providing generic definition.
+Remove ifndef-defines implementing p{m,u}d_leaf in favour of
+implementing stubs in headers belonging to the particular platforms
+needing them.
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  5 +++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 10 ++++-----
+ arch/powerpc/include/asm/nohash/64/pgtable.h |  6 ++++++
+ arch/powerpc/include/asm/nohash/pgtable.h    |  6 ++++++
+ arch/powerpc/include/asm/pgtable.h           | 22 ++------------------
+ 5 files changed, 23 insertions(+), 26 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 75823f39e042..a090cb13a4a0 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -242,6 +242,11 @@ static inline void pmd_clear(pmd_t *pmdp)
+ 	*pmdp = __pmd(0);
+ }
+ 
++#define pmd_leaf pmd_leaf
++static inline bool pmd_leaf(pmd_t pmd)
++{
++	return false;
++}
+ 
+ /*
+  * When flushing the tlb entry for a page, we also need to flush the hash
 diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index cb4c67bf45d7..7e0d546f4b3c 100644
+index 7e0d546f4b3c..589d2dbe3873 100644
 --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1244,14 +1244,19 @@ static inline pmd_t pmdp_huge_get_and_clear(struct mm_struct *mm,
- 	return hash__pmdp_huge_get_and_clear(mm, addr, pmdp);
- }
- 
--static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
--					unsigned long address, pmd_t *pmdp)
-+static inline pmd_t __pmdp_collapse_flush(struct vm_area_struct *vma, struct mm_struct *mm,
-+					  unsigned long address, pmd_t *pmdp)
+@@ -1359,16 +1359,14 @@ static inline bool is_pte_rw_upgrade(unsigned long old_val, unsigned long new_va
+ /*
+  * Like pmd_huge() and pmd_large(), but works regardless of config options
+  */
+-#define pmd_is_leaf pmd_is_leaf
+-#define pmd_leaf pmd_is_leaf
+-static inline bool pmd_is_leaf(pmd_t pmd)
++#define pmd_leaf pmd_leaf
++static inline bool pmd_leaf(pmd_t pmd)
  {
- 	if (radix_enabled())
- 		return radix__pmdp_collapse_flush(vma, address, pmdp);
- 	return hash__pmdp_collapse_flush(vma, address, pmdp);
+ 	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
  }
--#define pmdp_collapse_flush pmdp_collapse_flush
-+#define pmdp_collapse_flush(__vma, __addr, __pmdp)			\
-+({									\
-+	struct vm_area_struct *_vma = (__vma);				\
-+									\
-+	__pmdp_collapse_flush(_vma, _vma->vm_mm, (__addr), (__pmdp));	\
-+})
  
- #define __HAVE_ARCH_PMDP_HUGE_GET_AND_CLEAR_FULL
- pmd_t pmdp_huge_get_and_clear_full(struct vm_area_struct *vma,
+-#define pud_is_leaf pud_is_leaf
+-#define pud_leaf pud_is_leaf
+-static inline bool pud_is_leaf(pud_t pud)
++#define pud_leaf pud_leaf
++static inline bool pud_leaf(pud_t pud)
+ {
+ 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
+ }
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 879e9a6e5a87..d391a45e0f11 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -141,6 +141,12 @@ static inline void pud_clear(pud_t *pudp)
+ 	*pudp = __pud(0);
+ }
+ 
++#define pud_leaf pud_leaf
++static inline bool pud_leaf(pud_t pud)
++{
++	return false;
++}
++
+ #define pud_none(pud)		(!pud_val(pud))
+ #define	pud_bad(pud)		(!is_kernel_addr(pud_val(pud)) \
+ 				 || (pud_val(pud) & PUD_BAD_BITS))
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index f36dd2e2d591..43b50fd8d236 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -60,6 +60,12 @@ static inline bool pte_hw_valid(pte_t pte)
+ 	return pte_val(pte) & _PAGE_PRESENT;
+ }
+ 
++#define pmd_leaf pmd_leaf
++static inline bool pmd_leaf(pmd_t pmd)
++{
++	return false;
++}
++
+ /*
+  * Don't just check for any non zero bits in __PAGE_USER, since for book3e
+  * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 17d30359d1f4..284408829fa3 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -128,29 +128,11 @@ static inline void pte_frag_set(mm_context_t *ctx, void *p)
+ }
+ #endif
+ 
+-#ifndef pmd_is_leaf
+-#define pmd_is_leaf pmd_is_leaf
+-static inline bool pmd_is_leaf(pmd_t pmd)
++#define p4d_leaf p4d_leaf
++static inline bool p4d_leaf(p4d_t p4d)
+ {
+ 	return false;
+ }
+-#endif
+-
+-#ifndef pud_is_leaf
+-#define pud_is_leaf pud_is_leaf
+-static inline bool pud_is_leaf(pud_t pud)
+-{
+-	return false;
+-}
+-#endif
+-
+-#ifndef p4d_is_leaf
+-#define p4d_is_leaf p4d_is_leaf
+-static inline bool p4d_is_leaf(p4d_t p4d)
+-{
+-	return false;
+-}
+-#endif
+ 
+ #define pmd_pgtable pmd_pgtable
+ static inline pgtable_t pmd_pgtable(pmd_t pmd)
 -- 
 2.37.2
 
