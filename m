@@ -4,56 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69046C636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 13:27:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57990C636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 13:27:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGzQQ0j2Rz3chs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 00:27:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGzQz5NkNz3fY5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 00:27:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGzP83v6bz3cf0
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 00:26:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGzPD59zfz3cNG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 00:26:24 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4PGzNx0t9Fz9slx;
-	Wed, 15 Feb 2023 14:26:09 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4PGzP10ksxz9sly;
+	Wed, 15 Feb 2023 14:26:13 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id HOsRgCvTSLX7; Wed, 15 Feb 2023 14:26:09 +0100 (CET)
+	with ESMTP id KO5zznWU5VIK; Wed, 15 Feb 2023 14:26:13 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4PGzNQ6858z9smj;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4PGzNQ6C1xz9smm;
 	Wed, 15 Feb 2023 14:25:42 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 88EC18B7D2;
-	Wed, 15 Feb 2023 13:53:57 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 899058B7C4;
+	Wed, 15 Feb 2023 13:53:49 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 0iGE514H0KW3; Wed, 15 Feb 2023 13:53:57 +0100 (CET)
+	with ESMTP id oodJWV8ZwTyx; Wed, 15 Feb 2023 13:53:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [172.25.230.108])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D70F8B7C6;
-	Wed, 15 Feb 2023 13:53:57 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6837D8B796;
+	Wed, 15 Feb 2023 13:53:49 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 31FCrsAu217593
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 31FCrmvS217569
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Wed, 15 Feb 2023 13:53:54 +0100
+	Wed, 15 Feb 2023 13:53:48 +0100
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 31FCrsXw217592;
-	Wed, 15 Feb 2023 13:53:54 +0100
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 31FCrlBH217566;
+	Wed, 15 Feb 2023 13:53:47 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v1 5/9] powerpc/85xx: Fix function naming for p1023_rdb platform
-Date: Wed, 15 Feb 2023 13:53:34 +0100
-Message-Id: <c50909619cc0b327876ec5871bd6bf1b2b78b5d1.1676465585.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v1 1/9] powerpc/machdep: Define 'compatible' property in ppc_md and use it
+Date: Wed, 15 Feb 2023 13:53:30 +0100
+Message-Id: <04ed69b4226633ab90983d7efb5bd4791078fe71.1676465585.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.39.1
-In-Reply-To: <04ed69b4226633ab90983d7efb5bd4791078fe71.1676465585.git.christophe.leroy@csgroup.eu>
-References: <04ed69b4226633ab90983d7efb5bd4791078fe71.1676465585.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1676465615; l=1494; s=20211009; h=from:subject:message-id; bh=gJxEFqZl8q6pBdgMpC6eax3T1hJVT92UBHCAGel8LtQ=; b=CcFpAkQ2GBlDQpHvYcEGFHfjQ65lgf5n/IaM8WPiyapwI0EzvOSVkjRLozJcXcVGZdyITPGTRti3 QveidEWrDWbPBMuPKnVKC/GbDsz0iGbV9YdAg4v9UoXWWiW7OVMn
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1676465614; l=1859; s=20211009; h=from:subject:message-id; bh=MW6umzi5IamlmdhC1yWNdpvp/zOgLkgCImK0fsT3+lc=; b=OuQuKYU3UCHzIZ10Q0pWIKrjlrfcB+K/Kw80W8Mxjt2aIFe0meCdVKcQ0ROreqQI8R7shoszUA1p P5YJkD1RDKFScUaUDBlmciDtY+dSOlwOhX0uFVAPJa4GNkPtz1/B
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,49 +69,59 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-p1023_rdb platform is a copy of mpc85xx_rdb platform and some of its
-functions have kept mpc85xx_rdb names.
+Most probe functions do nothing else than checking whether
+the machine is compatible to a given string.
 
-Rename the said functions.
+Define that string in ppc_md structure and check it directly from
+probe_machine() instead of using ppc_md.probe() for that.
+
+Keep checking in ppc_md.probe() only for more complex probing.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/85xx/p1023_rdb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+v3: New
+---
+ arch/powerpc/include/asm/machdep.h |  1 +
+ arch/powerpc/kernel/setup-common.c | 13 +++++++------
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
-index 37e78f40d424..e199fc44fc2f 100644
---- a/arch/powerpc/platforms/85xx/p1023_rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
-@@ -37,7 +37,7 @@
-  * Setup the architecture
-  *
-  */
--static void __init mpc85xx_rdb_setup_arch(void)
-+static void __init p1023_rdb_setup_arch(void)
- {
- 	struct device_node *np;
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 378b8d5836a7..c5dfe5ff923c 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -20,6 +20,7 @@ struct pci_host_bridge;
  
-@@ -83,7 +83,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
- 
- machine_arch_initcall(p1023_rdb, mpc85xx_common_publish_devices);
- 
--static void __init mpc85xx_rdb_pic_init(void)
-+static void __init p1023_rdb_pic_init(void)
- {
- 	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
- 		MPIC_SINGLE_DEST_CPU,
-@@ -97,8 +97,8 @@ static void __init mpc85xx_rdb_pic_init(void)
- define_machine(p1023_rdb) {
- 	.name			= "P1023 RDB",
- 	.compatible		= "fsl,P1023RDB",
--	.setup_arch		= mpc85xx_rdb_setup_arch,
--	.init_IRQ		= mpc85xx_rdb_pic_init,
-+	.setup_arch		= p1023_rdb_setup_arch,
-+	.init_IRQ		= p1023_rdb_pic_init,
- 	.get_irq		= mpic_get_irq,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
+ struct machdep_calls {
+ 	char		*name;
++	char		*compatible;
+ #ifdef CONFIG_PPC64
+ #ifdef CONFIG_PM
+ 	void		(*iommu_restore)(void);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 9b10e57040c6..d1e205fe72ba 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -626,13 +626,14 @@ static __init void probe_machine(void)
+ 	for (machine_id = &__machine_desc_start;
+ 	     machine_id < &__machine_desc_end;
+ 	     machine_id++) {
+-		DBG("  %s ...", machine_id->name);
++		DBG("  %s ...\n", machine_id->name);
++		if (machine_id->compatible && !of_machine_is_compatible(machine_id->compatible))
++			continue;
+ 		memcpy(&ppc_md, machine_id, sizeof(struct machdep_calls));
+-		if (ppc_md.probe()) {
+-			DBG(" match !\n");
+-			break;
+-		}
+-		DBG("\n");
++		if (ppc_md.probe && !ppc_md.probe())
++			continue;
++		DBG("   %s match !\n", machine_id->name);
++		break;
+ 	}
+ 	/* What can we do if we didn't find ? */
+ 	if (machine_id >= &__machine_desc_end) {
 -- 
 2.39.1
 
