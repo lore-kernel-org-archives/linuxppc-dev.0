@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40211C636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:46:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD642C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:47:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyWB6bs0z3bhZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:46:30 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyWw2jYGz3fqW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:47:08 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRJ4mbLz3cd6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRL67YMz3chr
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:10 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRJ3Wt4z4x83;
-	Wed, 15 Feb 2023 23:43:08 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRK09mjz4x84;
+	Wed, 15 Feb 2023 23:43:09 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <cover.1672767868.git.geoff@infradead.org>
-References: <cover.1672767868.git.geoff@infradead.org>
-Subject: Re: [PATCH v2 0/2] PS3 patches
-Message-Id: <167646486205.1421441.10971268572692617486.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:41:02 +1100
+To: linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+In-Reply-To: <20230202141919.2298821-1-gregkh@linuxfoundation.org>
+References: <20230202141919.2298821-1-gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] ppc: iommu: fix memory leak with using debugfs_lookup()
+Message-Id: <167646482703.1421441.5756331664159282283.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:27 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 03 Jan 2023 17:51:03 +0000, Geoff Levand wrote:
-> This v2 series is just the two PS3 specific patches of the v1 series.
+On Thu, 2 Feb 2023 15:19:19 +0100, Greg Kroah-Hartman wrote:
+> When calling debugfs_lookup() the result must have dput() called on it,
+> otherwise the memory will leak over time.  To make things simpler, just
+> call debugfs_lookup_and_remove() instead which handles all of the logic
+> at once.
 > 
-> -Geoff
 > 
-> The following changes since commit 88603b6dc419445847923fcb7fe5080067a30f98:
-> 
->   Linux 6.2-rc2 (2023-01-01 13:53:16 -0800)
-> 
-> [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc/ps3: Change updateboltedpp panic to info
-      https://git.kernel.org/powerpc/c/5705c6d97efc4aa9478fe2887fd911f60ddf17e5
-[2/2] powerpc/ps3: Refresh ps3_defconfig
-      https://git.kernel.org/powerpc/c/544f823ec7a34332550f22735959d3e1ffcf4684
+[1/1] ppc: iommu: fix memory leak with using debugfs_lookup()
+      https://git.kernel.org/powerpc/c/b505063910c134778202dfad9332dfcecb76bab3
 
 cheers
