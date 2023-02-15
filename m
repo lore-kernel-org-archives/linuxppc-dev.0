@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7267CC636D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:43:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1527DC636D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 12:44:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PGyRm6HF4z3f4M
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:43:32 +1100 (AEDT)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PGySL3PTVz3fSv
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Feb 2023 23:44:02 +1100 (AEDT)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRF4pRlz3cKG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PGyRH2plKz3cKG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Feb 2023 23:43:07 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRF2QHWz4x7s;
-	Wed, 15 Feb 2023 23:43:05 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PGyRD5kgDz4x7W;
+	Wed, 15 Feb 2023 23:43:04 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <e62892e32c14a7a5738c597e39e0082cb0abf21c.1675335659.git.christophe.leroy@csgroup.eu>
-References: <e62892e32c14a7a5738c597e39e0082cb0abf21c.1675335659.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc: Disable CPU unknown by CLANG when CC_IS_CLANG
-Message-Id: <167646485519.1421441.15913006369717887437.b4-ty@ellerman.id.au>
-Date: Wed, 15 Feb 2023 23:40:55 +1100
+To: linuxppc-dev@lists.ozlabs.org, Benjamin Gray <bgray@linux.ibm.com>
+In-Reply-To: <20230203003947.38033-1-bgray@linux.ibm.com>
+References: <20230203003947.38033-1-bgray@linux.ibm.com>
+Subject: Re: [PATCH 0/5] Expand selftest utils
+Message-Id: <167646483229.1421441.5150435840004658838.b4-ty@ellerman.id.au>
+Date: Wed, 15 Feb 2023 23:40:32 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,25 +42,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2 Feb 2023 12:01:04 +0100, Christophe Leroy wrote:
-> CLANG only knows the following CPUs:
+On Fri, 3 Feb 2023 11:39:42 +1100, Benjamin Gray wrote:
+> Started this when writing tests for a feature I'm working on, needing a way to
+> read/write numbers to system files. After writing some utils to safely handle
+> file IO and parsing, I realised I'd made the ~6th file read/write implementation
+> and only(?) number parser that checks all the failure modes when expecting to
+> parse a single number from a file.
 > 
-> generic, 440, 450, 601, 602, 603, 603e, 603ev, 604, 604e, 620, 630,
-> g3, 7400, g4, 7450, g4+, 750, 8548, 970, g5, a2, e500, e500mc, e5500,
-> power3, pwr3, power4, pwr4, power5, pwr5, power5x, pwr5x, power6,
-> pwr6, power6x, pwr6x, power7, pwr7, power8, pwr8, power9, pwr9,
-> power10, pwr10, powerpc, ppc, ppc32, powerpc64, ppc64, powerpc64le,
-> ppc64le, futur
+> So these utils ended up becoming this series. I also modified some other test
+> utils I came across while doing so. My understanding is selftests are not expected
+> to be backported, so I wasn't concerned about only introducing new utils and leaving
+> the existing implementations be.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Disable CPU unknown by CLANG when CC_IS_CLANG
-      https://git.kernel.org/powerpc/c/4b10306e98456aed03cad75ce467e8b1efdccca0
+[1/5] selftests/powerpc: Add generic read/write file util
+      https://git.kernel.org/powerpc/c/a974f0c131891027fe8490e654a220151b4caa82
+[2/5] selftests/powerpc: Add read/write debugfs file, int
+      https://git.kernel.org/powerpc/c/121d340be9a17ed89d523c56203908c01e09a306
+[3/5] selftests/powerpc: Parse long/unsigned long value safely
+      https://git.kernel.org/powerpc/c/d1bc05b7bf02f8635fe6c445f67d78f85234cbb7
+[4/5] selftests/powerpc: Add {read,write}_{long,ulong}
+      https://git.kernel.org/powerpc/c/5c20de57888f0962e25a0eeec1a59c98056fc42e
+[5/5] selftests/powerpc: Add automatically allocating read_file
+      https://git.kernel.org/powerpc/c/8d7253dc447473dfcf3f09fb0fa2bd6f7d05b43b
 
 cheers
