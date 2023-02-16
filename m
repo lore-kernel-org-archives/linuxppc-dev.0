@@ -4,48 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88A91C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 03:41:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 241CFC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 05:11:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PHLMr70Pzz3f4p
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 14:41:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PHNN33Cqyz3f3L
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 16:11:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=TukCD6eB;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xn1QVGcy;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHLLn3F0fz3cKG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 14:40:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=rmclure@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=201702 header.b=TukCD6eB;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xn1QVGcy;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PHLLm1DY2z4x5R;
-	Thu, 16 Feb 2023 14:40:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
-	s=201702; t=1676518832;
-	bh=IhhtNy3W6goacXun/EPhiJafiIJA87yrMDChswJsA90=;
-	h=Date:From:To:Cc:Subject:From;
-	b=TukCD6eB0yr67J/ISyBFD4uzlbdNHnDHK+OwVPsOPMgHa6kjH1makxS4VeLGNjNqo
-	 sqQwZcBreZfl5gqXuVKqCNKhuVEqjXcFVkrPrN2D0AZksI/hH4f4CbMCXG8bFS4aVP
-	 tPejZIl1xmvaW15KOFUiZ++bCqu1Gnxr9Hrb9g7A3R/3gDuRJMORZUfOS9y0zADGPG
-	 GMYxnTVB5te/tmUDysECrJpQ6i2eqQl01IL8EfEcBriMhLVqlvq7mpoXDsDIXCvlZc
-	 agVIMRme8hdpN186gT//b8ysxJOHHY8//Dc/IWKASPaNi/OMPq6lfxTbHB1vQewR7V
-	 AJ/jl+nxmdtow==
-Date: Thu, 16 Feb 2023 14:40:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Josh Poimboeuf
- <jpoimboe@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: linux-next: build warning after merge of the powerpc tree
-Message-ID: <20230216144031.45b1fc12@canb.auug.org.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHNLy2PR4z3bg9
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 16:10:49 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31G3jfSP019330;
+	Thu, 16 Feb 2023 05:10:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=XJdctqUdC6g0s2DiCPTUnez4fjqJxQloolrRd+ULA8c=;
+ b=Xn1QVGcyNXGHxHshbP44esGg0AoJcYc2vSUDae38ifR+TpFqQERebSeQW7s6TcSOu8Hw
+ pBz6sY6wS5peof7h7bBd1gbj1t3YB2AUnu1XRIypx3MOyUUtxLOs3RtUgugDK1yVjkrY
+ iSDu2whOrRkA5p7HB9a6l017L8ZENiQztZCtYv5CYufCS03rkvL9QTNixP4Ty4K24Du8
+ 6P3ye1+ZZTo0sMmJxd+1aDzlDc6R8LRBG4X5QlJi02y1RydmAorBDfbmGSwQaLPBeMvx
+ AerTbSeoXU5pYzJYMLsmj//MJFG4DoCH0nqfZxLNBsIwH6RbBm68q7Vjh5U2zVtvBaSE jQ== 
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nscv7se1u-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 16 Feb 2023 05:10:42 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31FK5XTJ028153;
+	Thu, 16 Feb 2023 05:10:39 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3np2n6chx6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 16 Feb 2023 05:10:39 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31G5Ab7r51446126
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 16 Feb 2023 05:10:37 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1BF5E2004B;
+	Thu, 16 Feb 2023 05:10:37 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8DC4320043;
+	Thu, 16 Feb 2023 05:10:36 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 16 Feb 2023 05:10:36 +0000 (GMT)
+Received: from civic.. (unknown [9.177.64.61])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 99B7660217;
+	Thu, 16 Feb 2023 16:10:32 +1100 (AEDT)
+From: Rohan McLure <rmclure@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/2] powerpc/{32,book3e}: kcsan: Extend KCSAN Support
+Date: Thu, 16 Feb 2023 16:09:38 +1100
+Message-Id: <20230216050938.2188488-2-rmclure@linux.ibm.com>
+X-Mailer: git-send-email 2.37.2
+In-Reply-To: <20230216050938.2188488-1-rmclure@linux.ibm.com>
+References: <20230216050938.2188488-1-rmclure@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/dglXHvi7hVb4e17fbyF=Xyc";
- protocol="application/pgp-signature"; micalg=pgp-sha256
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: mo2V1PHmaznNpE-6RDg1ity4O8yuWFRg
+X-Proofpoint-GUID: mo2V1PHmaznNpE-6RDg1ity4O8yuWFRg
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
+ definitions=2023-02-16_03,2023-02-15_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
+ mlxlogscore=808 mlxscore=0 lowpriorityscore=0 phishscore=0 adultscore=0
+ impostorscore=0 priorityscore=1501 spamscore=0 malwarescore=0
+ clxscore=1015 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2302160037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,42 +94,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Rohan McLure <rmclure@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/dglXHvi7hVb4e17fbyF=Xyc
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Enable HAVE_ARCH_KCSAN on all powerpc platforms, permitting use of the
+kernel concurrency sanitiser through the CONFIG_KCSAN_* kconfig options.
 
-Hi all,
+Boots and passes selftests on 32-bit and 64-bit platforms. See
+documentation in Documentation/dev-tools/kcsan.rst for more information.
 
-After merging the powerpc tree, today's linux-next build (powerpc
-pseries_le_defconfig) produced this warning:
+Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+---
+New patch
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-arch/powerpc/kernel/head_64.o: warning: objtool: .text+0x6128: unannotated =
-intra-function call
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2c9cdf1d8761..45771448d47a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -197,7 +197,7 @@ config PPC
+ 	select HAVE_ARCH_KASAN			if PPC_RADIX_MMU
+ 	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64
+ 	select HAVE_ARCH_KASAN_VMALLOC		if HAVE_ARCH_KASAN
+-	select HAVE_ARCH_KCSAN            	if PPC_BOOK3S_64
++	select HAVE_ARCH_KCSAN
+ 	select HAVE_ARCH_KFENCE			if ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	select HAVE_ARCH_RANDOMIZE_KSTACK_OFFSET
+ 	select HAVE_ARCH_KGDB
+-- 
+2.37.2
 
-I have no idea what caused this.
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/dglXHvi7hVb4e17fbyF=Xyc
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmPtpa8ACgkQAVBC80lX
-0GyOCAf/XT5HWVB0yvKvhPl6Utb11p2X3m1l7VIfHcuzgHN+Z/xTBb2rrVxumHd7
-iX6kl5zHsMfENpxd4UFnvNs8zZwFOQSVs70FcXCN7R4cEAmggxuAzsAZezYC+kIu
-zmmev8elNVcUwN4dxm7gNT4dhXgJKqhJ2BRSF2c9C3Ws4WhKYj4sJh+njnErk5XZ
-oQuBOjHzJdaZ7Qy03QyKgLPpKO/ceWRUi43ZZUJx13MBGmwCBOJBRhh+1Aar55v5
-2Mt/qdGd6L0ESMSOwyjQrBlCnOX9w9PNB3K7D9Fmw1Cjkadt3v2X2au5h5pwrNuZ
-GXgASLbb2L/dEn6q9FuPEw5953tRIg==
-=S3YE
------END PGP SIGNATURE-----
-
---Sig_/dglXHvi7hVb4e17fbyF=Xyc--
