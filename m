@@ -4,65 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 977A9C636CC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 18:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57CD7C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Feb 2023 18:43:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PHjgS5hdxz3f37
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 05:11:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PHkN35mL3z3f39
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 05:42:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lud5LhA8;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VModKb3f;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::432; helo=mail-wr1-x432.google.com; envelope-from=irogers@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Lud5LhA8;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VModKb3f;
 	dkim-atps=neutral
-Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHjfR5qY7z3cdc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2023 05:10:22 +1100 (AEDT)
-Received: by mail-wr1-x432.google.com with SMTP id l2so2744147wry.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 10:10:22 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=u8BJ4MZYvude2UfZX0aEIl06W6KmazdVPxZc2eo82sw=;
-        b=Lud5LhA8U1dXNoiIn8jCNMmTT0210E774uSxoedxEsUzgDC7JM+2mtD82zyRHl6IQk
-         2Qw92Uz6TzegRzpxELyal1f179LIc07qWwreJ9vYphJLDdf9wzXbZYw+hvmjlb0tkeJN
-         FhnNYO7MygtP9WAuP5teQNIWit0XHvqHLIHjf3gjHYeAxeWIAipGtb8LmpFOZ29m4Bji
-         plzfiQb7DdtM5x2nhG0eJEOfr8TsaaGPS0RUKI71T/R7y8DsU6EkN2tD8b2iiprghZ+2
-         tdwcRj23Xk/Za0ocnO8pexKw4+qWPY8l6TblXwYRCxzdS6lJkCvQQCiZp18uJoHw58Lf
-         SBdQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=u8BJ4MZYvude2UfZX0aEIl06W6KmazdVPxZc2eo82sw=;
-        b=Mr+OuHkblr59yOx+iUbcqDiGzyIQ3FfSJ74yRzUpt0IdeC6GBOTDm4ZlgwKsa0/xoU
-         /m1j80aWfI6BRx6Dq7qy3W9iJ1/iq1cWPN4M/r1R5hGf6nnYpYaIHPB4JBQfiRS0Xv2X
-         9o7c/G+yjrD9XT40O0yXrbYb3FBrj8HAW4gM3lVkb18q4sgIdF+4sUfw9UUJd0Yn7+tk
-         Wvn90QLPbuJNMXftjYodB9ijO1bi/biSAgXbQJ6wLRFuzE8sO4ZC6AOuO1KavsVqJxbc
-         qOYz1BifkaenBoFfBlkr+rHKBrprVKlbNdtOB8ZP8BoleFuCIl/fCe/7SqXxd7nz7Ve6
-         /qrQ==
-X-Gm-Message-State: AO0yUKUjZzsnOML/oqjdYXPhnigNBgwE2b22M4CFn/psWimRBZylSNvr
-	2X+oIWO8VboWTC/bcSpGwErs0YBI6RWVcjubGS91Nw==
-X-Google-Smtp-Source: AK7set8PFbTgnLUl+6xDV2jNK1je3uSP5oF36um1IU6MeHsSb+AkUme5G/OUYIQ0ITW0qySBLXOE3eEYR/fCQOy53kc=
-X-Received: by 2002:a5d:6544:0:b0:2c5:4d9c:d206 with SMTP id
- z4-20020a5d6544000000b002c54d9cd206mr152633wrv.733.1676571017231; Thu, 16 Feb
- 2023 10:10:17 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHkM36dcrz3cfY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2023 05:42:07 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id 8E248B825E2;
+	Thu, 16 Feb 2023 18:42:02 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8645EC433D2;
+	Thu, 16 Feb 2023 18:41:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1676572921;
+	bh=+sMmN2IJBomErQJnP8GjKXcy2h70Xrt73RBGKymR0H4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=VModKb3fOKbOeGAfrMtcxWG8Hr22AYe+0gtAQb49CSGfCviRThwkBpO8fFnnwUTSV
+	 E4hgXNUKfEN+clH4h03E1aufyNQSj1mSnq9Vo29Kl5bJ5GqVEXWFIw1p5asDpvsioC
+	 JBvLRlQLFKtSrt0jAdGj0RnHQLW07q9G/u/tUU6dMjMJGte6KKw3VKLH5O2qq3YmXT
+	 1H/Hq7Um9b66v+XQUlM04J510C4wS4Nlvj1PntzoSiTqVG8CV1ErpLQg67WmsfQ9G5
+	 ZAEVlFxb2/JEE+olKEpmHAVug71xwO3+q2dEqxmcS6shyfVGKxKtuT5r0pyLprf9Xh
+	 vuADtQm3K08UA==
+Date: Thu, 16 Feb 2023 10:41:57 -0800
+From: Josh Poimboeuf <jpoimboe@kernel.org>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: [PATCH v2.1 04/24] arm64/cpu: Mark cpu_die() __noreturn
+Message-ID: <20230216184157.4hup6y6mmspr2kll@treble>
+References: <cover.1676358308.git.jpoimboe@kernel.org>
+ <e47fc487980d5330e6059ac6e16416bec88cda0e.1676358308.git.jpoimboe@kernel.org>
+ <14274f04-2991-95bd-c29b-07e86e8755c1@linaro.org>
+ <Y+zZgZIP7RPIgyQf@FVFF77S0Q05N>
+ <20230215194538.aiiris3uabnuvkkg@treble>
 MIME-Version: 1.0
-References: <20230216061240.18067-1-atrajeev@linux.vnet.ibm.com>
-In-Reply-To: <20230216061240.18067-1-atrajeev@linux.vnet.ibm.com>
-From: Ian Rogers <irogers@google.com>
-Date: Thu, 16 Feb 2023 10:10:05 -0800
-Message-ID: <CAP-5=fWBb2=g82uVTkUbENThsnZyhzU+BHWVpuM7iYWDuA_TqA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/perf: Add json metric events to present CPI stall
- cycles in powerpc
-To: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230215194538.aiiris3uabnuvkkg@treble>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,111 +63,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ak@linux.intel.com, rnsastry@linux.ibm.com, acme@kernel.org, linux-perf-users@vger.kernel.org, maddy@linux.vnet.ibm.com, james.clark@arm.com, jolsa@kernel.org, kjain@linux.ibm.com, namhyung@kernel.org, disgoel@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, jiaxun.yang@flygoat.com, linux-kernel@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, x86@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, chenhuacai@kernel.org, paulmck@kernel.org, linux-xtensa@linux-xtensa.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, Philippe =?utf-8?Q?Mathieu-D
+ aud=C3=A9?= <philmd@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, bristot@redhat.com, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 15, 2023 at 10:12 PM Athira Rajeev
-<atrajeev@linux.vnet.ibm.com> wrote:
->
-> Power10 Performance Monitoring Unit (PMU) provides events
-> to understand stall cycles of different pipeline stages.
-> These events along with completed instructions provides
-> useful metrics for application tuning.
->
-> Patch implements the json changes to collect counter statistics
-> to present the high level CPI stall breakdown metrics. New metric
-> group is named as "CPI_STALL_RATIO" and this new metric group
-> presents these stall metrics:
-> - DISPATCHED_CPI ( Dispatch stall cycles per insn )
-> - ISSUE_STALL_CPI ( Issue stall cycles per insn )
-> - EXECUTION_STALL_CPI ( Execution stall cycles per insn )
-> - COMPLETION_STALL_CPI ( Completition stall cycles per insn )
->
-> To avoid multipling of events, PM_RUN_INST_CMPL event has been
-> modified to use PMC5(performance monitoring counter5) instead
-> of PMC4. This change is needed, since completion stall event
-> is using PMC4.
->
-> Usage example:
->
->  ./perf stat --metric-no-group -M CPI_STALL_RATIO <workload>
->
->  Performance counter stats for 'workload':
->
->     63,056,817,982      PM_CMPL_STALL                    #     0.28 COMPLETION_STALL_CPI
->  1,743,988,038,896      PM_ISSUE_STALL                   #     7.73 ISSUE_STALL_CPI
->    225,597,495,030      PM_RUN_INST_CMPL                 #     6.18 DISPATCHED_CPI
->                                                   #    37.48 EXECUTION_STALL_CPI
->  1,393,916,546,654      PM_DISP_STALL_CYC
->  8,455,376,836,463      PM_EXEC_STALL
->
-> "--metric-no-group" is used for forcing PM_RUN_INST_CMPL to be scheduled
-> in all group for more accuracy.
->
-> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+cpu_die() doesn't return.  Annotate it as such.  By extension this also
+makes arch_cpu_idle_dead() noreturn.
 
-Acked-by: Ian Rogers <irogers@google.com>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+---
+ arch/arm64/include/asm/smp.h | 2 +-
+ arch/arm64/kernel/smp.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Thanks,
-Ian
+diff --git a/arch/arm64/include/asm/smp.h b/arch/arm64/include/asm/smp.h
+index fc55f5a57a06..5733a31bab08 100644
+--- a/arch/arm64/include/asm/smp.h
++++ b/arch/arm64/include/asm/smp.h
+@@ -100,7 +100,7 @@ static inline void arch_send_wakeup_ipi_mask(const struct cpumask *mask)
+ extern int __cpu_disable(void);
+ 
+ extern void __cpu_die(unsigned int cpu);
+-extern void cpu_die(void);
++extern void __noreturn cpu_die(void);
+ extern void cpu_die_early(void);
+ 
+ static inline void cpu_park_loop(void)
+diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+index 4e8327264255..d5d09a18b4f8 100644
+--- a/arch/arm64/kernel/smp.c
++++ b/arch/arm64/kernel/smp.c
+@@ -361,7 +361,7 @@ void __cpu_die(unsigned int cpu)
+  * Called from the idle thread for the CPU which has been shutdown.
+  *
+  */
+-void cpu_die(void)
++void __noreturn cpu_die(void)
+ {
+ 	unsigned int cpu = smp_processor_id();
+ 	const struct cpu_operations *ops = get_cpu_ops(cpu);
+-- 
+2.39.1
 
-> ---
->  tools/perf/pmu-events/arch/powerpc/power10/metrics.json | 8 ++++----
->  tools/perf/pmu-events/arch/powerpc/power10/others.json  | 2 +-
->  2 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/metrics.json b/tools/perf/pmu-events/arch/powerpc/power10/metrics.json
-> index b57526fa44f2..6f53583a0c62 100644
-> --- a/tools/perf/pmu-events/arch/powerpc/power10/metrics.json
-> +++ b/tools/perf/pmu-events/arch/powerpc/power10/metrics.json
-> @@ -15,7 +15,7 @@
->      {
->          "BriefDescription": "Average cycles per completed instruction when dispatch was stalled for any reason",
->          "MetricExpr": "PM_DISP_STALL_CYC / PM_RUN_INST_CMPL",
-> -        "MetricGroup": "CPI",
-> +        "MetricGroup": "CPI;CPI_STALL_RATIO",
->          "MetricName": "DISPATCHED_CPI"
->      },
->      {
-> @@ -147,13 +147,13 @@
->      {
->          "BriefDescription": "Average cycles per completed instruction when the NTC instruction has been dispatched but not issued for any reason",
->          "MetricExpr": "PM_ISSUE_STALL / PM_RUN_INST_CMPL",
-> -        "MetricGroup": "CPI",
-> +        "MetricGroup": "CPI;CPI_STALL_RATIO",
->          "MetricName": "ISSUE_STALL_CPI"
->      },
->      {
->          "BriefDescription": "Average cycles per completed instruction when the NTC instruction is waiting to be finished in one of the execution units",
->          "MetricExpr": "PM_EXEC_STALL / PM_RUN_INST_CMPL",
-> -        "MetricGroup": "CPI",
-> +        "MetricGroup": "CPI;CPI_STALL_RATIO",
->          "MetricName": "EXECUTION_STALL_CPI"
->      },
->      {
-> @@ -309,7 +309,7 @@
->      {
->          "BriefDescription": "Average cycles per completed instruction when the NTC instruction cannot complete because the thread was blocked",
->          "MetricExpr": "PM_CMPL_STALL / PM_RUN_INST_CMPL",
-> -        "MetricGroup": "CPI",
-> +        "MetricGroup": "CPI;CPI_STALL_RATIO",
->          "MetricName": "COMPLETION_STALL_CPI"
->      },
->      {
-> diff --git a/tools/perf/pmu-events/arch/powerpc/power10/others.json b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> index 7d0de1a2860b..a771e4b6bec5 100644
-> --- a/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> +++ b/tools/perf/pmu-events/arch/powerpc/power10/others.json
-> @@ -265,7 +265,7 @@
->      "BriefDescription": "Load Missed L1, counted at finish time."
->    },
->    {
-> -    "EventCode": "0x400FA",
-> +    "EventCode": "0x500FA",
->      "EventName": "PM_RUN_INST_CMPL",
->      "BriefDescription": "Completed PowerPC instructions gated by the run latch."
->    }
-> --
-> 2.31.1
->
