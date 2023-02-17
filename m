@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44E0FC636D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 04:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13351C636D4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 04:22:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PHzCt5PZfz3fRs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 15:21:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PHzDw3nsJz3fDt
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 15:22:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gziB1Brv;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XNUXq0PT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--yuzhao.bounces.google.com (client-ip=2607:f8b0:4864:20::1149; helo=mail-yw1-x1149.google.com; envelope-from=3up7uywykdjcplq81f7ff7c5.3fdc9elogg3-45mc9jkj.fqc12j.fi7@flex--yuzhao.bounces.google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--yuzhao.bounces.google.com (client-ip=2607:f8b0:4864:20::b49; helo=mail-yb1-xb49.google.com; envelope-from=3u_7uywykdjosotb4iaiiaf8.6igfchorjj6-78pfcmnm.itf45m.ila@flex--yuzhao.bounces.google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=gziB1Brv;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=XNUXq0PT;
 	dkim-atps=neutral
-Received: from mail-yw1-x1149.google.com (mail-yw1-x1149.google.com [IPv6:2607:f8b0:4864:20::1149])
+Received: from mail-yb1-xb49.google.com (mail-yb1-xb49.google.com [IPv6:2607:f8b0:4864:20::b49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHz1R1MYnz3cMx
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PHz1R6rPyz3cM7
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Feb 2023 15:12:43 +1100 (AEDT)
-Received: by mail-yw1-x1149.google.com with SMTP id 00721157ae682-50e79ffba49so44465937b3.9
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 20:12:42 -0800 (PST)
+Received: by mail-yb1-xb49.google.com with SMTP id r17-20020a258291000000b008ee1c76c25dso4285176ybk.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Feb 2023 20:12:43 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20210112;
         h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=6v2BS1UfItgh1K5tfej0Iq92+WtqqMzCx/cGSgmoiSg=;
-        b=gziB1BrvY9BHZS7WfBeSnKEbTJsWIJ/fFr2/PiFmwtTyfe68OsIjhQ61dZpnb87SkA
-         JE0OnpGDz5FxpkIlNn0nA2tfqnhJ3b3cHbwE9Flj2oR041XOL5Rmeeme4csAtb6QB8A7
-         1dwd6zfVUE8cwmDds621GWHJkAxZcDvbF53xftCwvOocB2lzYTkdoHlckg6k5SWObsu/
-         JnAmp96+xPUNaXs4fnLZH6LMMVGk9cwNJZuiX9VYpp8GDr7rFYU2r6amNuFL9lTtFwOC
-         0QGI/m4BCLP0eKmz8qQupuOfcUmAy+lDPbfLsyqst4coAeQie4wxcpaUJpvs3jf5QJc4
-         t1MA==
+        bh=XhFwXntjEszX2NR0BL+FH//vn03ADgHeMtjzY93nmt4=;
+        b=XNUXq0PTcl/8yQwac6rGM5O74+vQWyUh1AwA7ePVJdgeiAUlD4NgM/8W79T6ThAX5d
+         8L+r3mqqpTd4bu5CNG4e4L2wx/8D5VXPDgeOyArsY1MkkauDIfO/A0RFt6d2vg5l2vmu
+         hweIMbdWE0pJDts0aaAJhLSeQ2dvv4nx27ec6MfgxyUQn4go1b3A0P5I5YZe4zrvSmNQ
+         QnjYpb9gyiRRAI7GOUcY7YneWU1+n/bWWipo6U9kb/M9PTR3QYPIaLf6KsnEUGCzyhdx
+         EHGSfZ7eFdzHKHHjVuXrZx5KuVV/Ov5OwMCJJ/HnyOkrnjd7f6Knvbnn1fuBDRf5kRV+
+         zuIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
         h=cc:to:from:subject:references:mime-version:message-id:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=6v2BS1UfItgh1K5tfej0Iq92+WtqqMzCx/cGSgmoiSg=;
-        b=iAcatwIoEfuaa/sfLwPbizyWEG6+Tpd9+sVYegqRv/2kBOP6CDjzPGork//PwfvP34
-         Mv/lYXTfLpCMZOCulgasM3UWqKcC9IC8Xp4qrKRKG7EQGMP/savQTmWdRd5DpR96qoDa
-         7JGKfLdc02C0mgkevwoMNH11229H6qRdYN41Ka09gr34h3MroWZpMb16kk8Ts0aGnekI
-         3kBVlGcSPUCd0Y/gBgBIVnErHLmU9ZIlSNwCdyGHRLgaxpxed+ngIyRqCk+k3PMvzTxX
-         rK1efCTz0XBJ2x4tH7EmZJe2ZIstiCKsg4oa1unHjSYmtJCks3NPiIkaltgGtQmTYAd4
-         nHPQ==
-X-Gm-Message-State: AO0yUKVIF7oExdFTiCp6Gn7Pfi7nRotFs7bIGnNIj2EdmVaJBdSv+2YO
-	q3rAmQ6g2f65nakHJsZouwT0nG/zgeo=
-X-Google-Smtp-Source: AK7set/Pxuk29uHWJwH5Tc+hpFqe2YNk4NRZV8/+4ud1blKjBerJFMDRpndxfsiGGJtM3eObeOVv77vpkZw=
+        bh=XhFwXntjEszX2NR0BL+FH//vn03ADgHeMtjzY93nmt4=;
+        b=w8T0kqMW28rTov+yjEmiUp0D9sSoixA4/k8oSyR2qt55UWFEkBMBCBh+W39hMO4ntn
+         U9RGbjnmQW71L8yBNCHWxSTR2lLvJEJGF4PhWNo21wFn2ssVWzVGisBt3MrYl6ihwJbU
+         LFu0CqbTb62dvcHIiTrQGBSamK6H6bZH5KDUbVsLYOoNBFcVAx2NKSY1mXl4RSu+n0IA
+         JnrpeB7lJbuWcbkXePByqRErI6dCskFUbM4tmpc2fBevYvnfHror+dhfi+8NvksbrHae
+         ygT+a0VP8mddJj/3NOgrE+AF8KU/YzrVoGnLq0nzfBled35djHw+6M/G6XqIslYx9szR
+         Hq7A==
+X-Gm-Message-State: AO0yUKUMttYbUSo60WCVSKVUojjz3IN6EvYf1IhJfwnPVjqvpcGlEpAk
+	wKcHiqTriQN1CIXrHbLEUsXSqS01q94=
+X-Google-Smtp-Source: AK7set9xe5nXschn8sCJ042xv+lkLsKlliPh3pvCt+D2t2Ej6DUaOZa2DrrSs5Y7E7xe7n5GA4zAjxW8lz0=
 X-Received: from yuzhao.bld.corp.google.com ([2620:15c:183:200:6fb3:61e:d31f:1ad3])
- (user=yuzhao job=sendgmr) by 2002:a25:9c83:0:b0:93c:785a:ba76 with SMTP id
- y3-20020a259c83000000b0093c785aba76mr1106910ybo.617.1676607160685; Thu, 16
- Feb 2023 20:12:40 -0800 (PST)
-Date: Thu, 16 Feb 2023 21:12:28 -0700
+ (user=yuzhao job=sendgmr) by 2002:a05:6902:308:b0:8dd:78cc:e52e with SMTP id
+ b8-20020a056902030800b008dd78cce52emr65241ybs.13.1676607163481; Thu, 16 Feb
+ 2023 20:12:43 -0800 (PST)
+Date: Thu, 16 Feb 2023 21:12:30 -0700
 In-Reply-To: <20230217041230.2417228-1-yuzhao@google.com>
-Message-Id: <20230217041230.2417228-4-yuzhao@google.com>
+Message-Id: <20230217041230.2417228-6-yuzhao@google.com>
 Mime-Version: 1.0
 References: <20230217041230.2417228-1-yuzhao@google.com>
 X-Mailer: git-send-email 2.39.2.637.g21b0678d19-goog
-Subject: [PATCH mm-unstable v1 3/5] kvm/arm64: add kvm_arch_test_clear_young()
+Subject: [PATCH mm-unstable v1 5/5] mm: multi-gen LRU: use mmu_notifier_test_clear_young()
 From: Yu Zhao <yuzhao@google.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Paolo Bonzini <pbonzini@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -79,317 +79,368 @@ Cc: linux-mm@google.com, Yu Zhao <yuzhao@google.com>, kvm@vger.kernel.org, Jonat
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds kvm_arch_test_clear_young() for the vast majority of
-VMs that are not pKVM and run on hardware that sets the accessed bit
-in KVM page tables.
+An existing selftest can quickly demonstrate the effectiveness of this
+patch. On a generic workstation equipped with 128 CPUs and 256GB DRAM:
 
-It relies on two techniques, RCU and cmpxchg, to safely test and clear
-the accessed bit without taking the MMU lock. The former protects KVM
-page tables from being freed while the latter clears the accessed bit
-atomically against both the hardware and other software page table
-walkers.
+  $ sudo max_guest_memory_test -c 64 -m 250 -s 250
+
+  MGLRU      run2
+  ---------------
+  Before    ~600s
+  After      ~50s
+  Off       ~250s
+
+  kswapd (MGLRU before)
+    100.00%  balance_pgdat
+      100.00%  shrink_node
+        100.00%  shrink_one
+          99.97%  try_to_shrink_lruvec
+            99.06%  evict_folios
+              97.41%  shrink_folio_list
+                31.33%  folio_referenced
+                  31.06%  rmap_walk_file
+                    30.89%  folio_referenced_one
+                      20.83%  __mmu_notifier_clear_flush_young
+                        20.54%  kvm_mmu_notifier_clear_flush_young
+  =>                      19.34%  _raw_write_lock
+
+  kswapd (MGLRU after)
+    100.00%  balance_pgdat
+      100.00%  shrink_node
+        100.00%  shrink_one
+          99.97%  try_to_shrink_lruvec
+            99.51%  evict_folios
+              71.70%  shrink_folio_list
+                7.08%  folio_referenced
+                  6.78%  rmap_walk_file
+                    6.72%  folio_referenced_one
+                      5.60%  lru_gen_look_around
+  =>                    1.53%  __mmu_notifier_test_clear_young
+
+  kswapd (MGLRU off)
+    100.00%  balance_pgdat
+      100.00%  shrink_node
+        99.92%  shrink_lruvec
+          69.95%  shrink_folio_list
+            19.35%  folio_referenced
+              18.37%  rmap_walk_file
+                17.88%  folio_referenced_one
+                  13.20%  __mmu_notifier_clear_flush_young
+                    11.64%  kvm_mmu_notifier_clear_flush_young
+  =>                  9.93%  _raw_write_lock
+          26.23%  shrink_active_list
+            25.50%  folio_referenced
+              25.35%  rmap_walk_file
+                25.28%  folio_referenced_one
+                  23.87%  __mmu_notifier_clear_flush_young
+                    23.69%  kvm_mmu_notifier_clear_flush_young
+  =>                  18.98%  _raw_write_lock
 
 Signed-off-by: Yu Zhao <yuzhao@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h       |  7 +++
- arch/arm64/include/asm/kvm_pgtable.h    |  8 +++
- arch/arm64/include/asm/stage2_pgtable.h | 43 ++++++++++++++
- arch/arm64/kvm/arm.c                    |  1 +
- arch/arm64/kvm/hyp/pgtable.c            | 51 ++--------------
- arch/arm64/kvm/mmu.c                    | 77 ++++++++++++++++++++++++-
- 6 files changed, 141 insertions(+), 46 deletions(-)
+ include/linux/mmzone.h |   6 +-
+ mm/rmap.c              |   8 +--
+ mm/vmscan.c            | 127 ++++++++++++++++++++++++++++++++++++-----
+ 3 files changed, 121 insertions(+), 20 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 35a159d131b5..572bcd321586 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1031,4 +1031,11 @@ static inline void kvm_hyp_reserve(void) { }
- void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu);
- bool kvm_arm_vcpu_stopped(struct kvm_vcpu *vcpu);
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 9fb1b03b83b2..ce34b7ea8e4c 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -379,6 +379,7 @@ enum {
+ 	LRU_GEN_CORE,
+ 	LRU_GEN_MM_WALK,
+ 	LRU_GEN_NONLEAF_YOUNG,
++	LRU_GEN_SPTE_WALK,
+ 	NR_LRU_GEN_CAPS
+ };
  
-+/* see the comments on the generic kvm_arch_has_test_clear_young() */
-+#define kvm_arch_has_test_clear_young kvm_arch_has_test_clear_young
-+static inline bool kvm_arch_has_test_clear_young(void)
-+{
-+	return IS_ENABLED(CONFIG_KVM) && cpu_has_hw_af() && !is_protected_kvm_enabled();
-+}
-+
- #endif /* __ARM64_KVM_HOST_H__ */
-diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-index 63f81b27a4e3..8c9a04388c88 100644
---- a/arch/arm64/include/asm/kvm_pgtable.h
-+++ b/arch/arm64/include/asm/kvm_pgtable.h
-@@ -105,6 +105,7 @@ static inline bool kvm_level_supports_block_mapping(u32 level)
-  * @put_page:			Decrement the refcount on a page. When the
-  *				refcount reaches 0 the page is automatically
-  *				freed.
-+ * @put_page_rcu:		RCU variant of put_page().
-  * @page_count:			Return the refcount of a page.
-  * @phys_to_virt:		Convert a physical address into a virtual
-  *				address	mapped in the current context.
-@@ -122,6 +123,7 @@ struct kvm_pgtable_mm_ops {
- 	void		(*free_removed_table)(void *addr, u32 level);
- 	void		(*get_page)(void *addr);
- 	void		(*put_page)(void *addr);
-+	void		(*put_page_rcu)(void *addr);
- 	int		(*page_count)(void *addr);
- 	void*		(*phys_to_virt)(phys_addr_t phys);
- 	phys_addr_t	(*virt_to_phys)(void *addr);
-@@ -188,6 +190,12 @@ typedef bool (*kvm_pgtable_force_pte_cb_t)(u64 addr, u64 end,
-  *					children.
-  * @KVM_PGTABLE_WALK_SHARED:		Indicates the page-tables may be shared
-  *					with other software walkers.
-+ *
-+ * kvm_arch_test_clear_young() is a special case. It relies on two
-+ * techniques, RCU and cmpxchg, to safely test and clear the accessed
-+ * bit without taking the MMU lock. The former protects KVM page tables
-+ * from being freed while the latter clears the accessed bit atomically
-+ * against both the hardware and other software page table walkers.
-  */
- enum kvm_pgtable_walk_flags {
- 	KVM_PGTABLE_WALK_LEAF			= BIT(0),
-diff --git a/arch/arm64/include/asm/stage2_pgtable.h b/arch/arm64/include/asm/stage2_pgtable.h
-index c8dca8ae359c..350437661d4b 100644
---- a/arch/arm64/include/asm/stage2_pgtable.h
-+++ b/arch/arm64/include/asm/stage2_pgtable.h
-@@ -30,4 +30,47 @@
-  */
- #define kvm_mmu_cache_min_pages(kvm)	(kvm_stage2_levels(kvm) - 1)
+@@ -485,7 +486,7 @@ struct lru_gen_mm_walk {
+ };
  
-+#define KVM_PTE_TYPE			BIT(1)
-+#define KVM_PTE_TYPE_BLOCK		0
-+#define KVM_PTE_TYPE_PAGE		1
-+#define KVM_PTE_TYPE_TABLE		1
-+
-+#define KVM_PTE_LEAF_ATTR_LO		GENMASK(11, 2)
-+
-+#define KVM_PTE_LEAF_ATTR_LO_S1_ATTRIDX	GENMASK(4, 2)
-+#define KVM_PTE_LEAF_ATTR_LO_S1_AP	GENMASK(7, 6)
-+#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RO	3
-+#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RW	1
-+#define KVM_PTE_LEAF_ATTR_LO_S1_SH	GENMASK(9, 8)
-+#define KVM_PTE_LEAF_ATTR_LO_S1_SH_IS	3
-+#define KVM_PTE_LEAF_ATTR_LO_S1_AF	BIT(10)
-+
-+#define KVM_PTE_LEAF_ATTR_LO_S2_MEMATTR	GENMASK(5, 2)
-+#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R	BIT(6)
-+#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W	BIT(7)
-+#define KVM_PTE_LEAF_ATTR_LO_S2_SH	GENMASK(9, 8)
-+#define KVM_PTE_LEAF_ATTR_LO_S2_SH_IS	3
-+#define KVM_PTE_LEAF_ATTR_LO_S2_AF	BIT(10)
-+
-+#define KVM_PTE_LEAF_ATTR_HI		GENMASK(63, 51)
-+
-+#define KVM_PTE_LEAF_ATTR_HI_SW		GENMASK(58, 55)
-+
-+#define KVM_PTE_LEAF_ATTR_HI_S1_XN	BIT(54)
-+
-+#define KVM_PTE_LEAF_ATTR_HI_S2_XN	BIT(54)
-+
-+#define KVM_PTE_LEAF_ATTR_S2_PERMS	(KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R | \
-+					 KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W | \
-+					 KVM_PTE_LEAF_ATTR_HI_S2_XN)
-+
-+#define KVM_INVALID_PTE_OWNER_MASK	GENMASK(9, 2)
-+#define KVM_MAX_OWNER_ID		1
-+
-+/*
-+ * Used to indicate a pte for which a 'break-before-make' sequence is in
-+ * progress.
-+ */
-+#define KVM_INVALID_PTE_LOCKED		BIT(10)
-+
- #endif	/* __ARM64_S2_PGTABLE_H_ */
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 9c5573bc4614..6770bc47f5c9 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -191,6 +191,7 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
-  */
- void kvm_arch_destroy_vm(struct kvm *kvm)
+ void lru_gen_init_lruvec(struct lruvec *lruvec);
+-void lru_gen_look_around(struct page_vma_mapped_walk *pvmw);
++bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw);
+ 
+ #ifdef CONFIG_MEMCG
+ 
+@@ -573,8 +574,9 @@ static inline void lru_gen_init_lruvec(struct lruvec *lruvec)
  {
-+	kvm_free_stage2_pgd(&kvm->arch.mmu);
- 	bitmap_free(kvm->arch.pmu_filter);
- 	free_cpumask_var(kvm->arch.supported_cpus);
- 
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index b11cf2c618a6..8d65ee4767f1 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -12,49 +12,6 @@
- #include <asm/stage2_pgtable.h>
- 
- 
--#define KVM_PTE_TYPE			BIT(1)
--#define KVM_PTE_TYPE_BLOCK		0
--#define KVM_PTE_TYPE_PAGE		1
--#define KVM_PTE_TYPE_TABLE		1
--
--#define KVM_PTE_LEAF_ATTR_LO		GENMASK(11, 2)
--
--#define KVM_PTE_LEAF_ATTR_LO_S1_ATTRIDX	GENMASK(4, 2)
--#define KVM_PTE_LEAF_ATTR_LO_S1_AP	GENMASK(7, 6)
--#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RO	3
--#define KVM_PTE_LEAF_ATTR_LO_S1_AP_RW	1
--#define KVM_PTE_LEAF_ATTR_LO_S1_SH	GENMASK(9, 8)
--#define KVM_PTE_LEAF_ATTR_LO_S1_SH_IS	3
--#define KVM_PTE_LEAF_ATTR_LO_S1_AF	BIT(10)
--
--#define KVM_PTE_LEAF_ATTR_LO_S2_MEMATTR	GENMASK(5, 2)
--#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R	BIT(6)
--#define KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W	BIT(7)
--#define KVM_PTE_LEAF_ATTR_LO_S2_SH	GENMASK(9, 8)
--#define KVM_PTE_LEAF_ATTR_LO_S2_SH_IS	3
--#define KVM_PTE_LEAF_ATTR_LO_S2_AF	BIT(10)
--
--#define KVM_PTE_LEAF_ATTR_HI		GENMASK(63, 51)
--
--#define KVM_PTE_LEAF_ATTR_HI_SW		GENMASK(58, 55)
--
--#define KVM_PTE_LEAF_ATTR_HI_S1_XN	BIT(54)
--
--#define KVM_PTE_LEAF_ATTR_HI_S2_XN	BIT(54)
--
--#define KVM_PTE_LEAF_ATTR_S2_PERMS	(KVM_PTE_LEAF_ATTR_LO_S2_S2AP_R | \
--					 KVM_PTE_LEAF_ATTR_LO_S2_S2AP_W | \
--					 KVM_PTE_LEAF_ATTR_HI_S2_XN)
--
--#define KVM_INVALID_PTE_OWNER_MASK	GENMASK(9, 2)
--#define KVM_MAX_OWNER_ID		1
--
--/*
-- * Used to indicate a pte for which a 'break-before-make' sequence is in
-- * progress.
-- */
--#define KVM_INVALID_PTE_LOCKED		BIT(10)
--
- struct kvm_pgtable_walk_data {
- 	struct kvm_pgtable_walker	*walker;
- 
-@@ -994,8 +951,12 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
- 					       kvm_granule_size(ctx->level));
- 
--	if (childp)
--		mm_ops->put_page(childp);
-+	if (childp) {
-+		if (mm_ops->put_page_rcu)
-+			mm_ops->put_page_rcu(childp);
-+		else
-+			mm_ops->put_page(childp);
-+	}
- 
- 	return 0;
- }
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index a3ee3b605c9b..761fffc788f5 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -171,6 +171,21 @@ static int kvm_host_page_count(void *addr)
- 	return page_count(virt_to_page(addr));
  }
  
-+static void kvm_s2_rcu_put_page(struct rcu_head *head)
-+{
-+	put_page(container_of(head, struct page, rcu_head));
-+}
-+
-+static void kvm_s2_put_page_rcu(void *addr)
-+{
-+	struct page *page = virt_to_page(addr);
-+
-+	if (kvm_host_page_count(addr) == 1)
-+		kvm_account_pgtable_pages(addr, -1);
-+
-+	call_rcu(&page->rcu_head, kvm_s2_rcu_put_page);
-+}
-+
- static phys_addr_t kvm_host_pa(void *addr)
+-static inline void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
++static inline bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
  {
- 	return __pa(addr);
-@@ -684,6 +699,7 @@ static struct kvm_pgtable_mm_ops kvm_s2_mm_ops = {
- 	.free_removed_table	= stage2_free_removed_table,
- 	.get_page		= kvm_host_get_page,
- 	.put_page		= kvm_s2_put_page,
-+	.put_page_rcu		= kvm_s2_put_page_rcu,
- 	.page_count		= kvm_host_page_count,
- 	.phys_to_virt		= kvm_host_va,
- 	.virt_to_phys		= kvm_host_pa,
-@@ -1624,6 +1640,66 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	return pte_valid(pte) && pte_young(pte);
++	return false;
  }
  
-+struct test_clear_young_arg {
-+	struct kvm_gfn_range *range;
-+	gfn_t lsb_gfn;
-+	unsigned long *bitmap;
-+};
-+
-+static int stage2_test_clear_young(const struct kvm_pgtable_visit_ctx *ctx,
-+				   enum kvm_pgtable_walk_flags flags)
+ #ifdef CONFIG_MEMCG
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 15ae24585fc4..eb0089f8f112 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -823,12 +823,10 @@ static bool folio_referenced_one(struct folio *folio,
+ 			return false; /* To break the loop */
+ 		}
+ 
+-		if (pvmw.pte) {
+-			if (lru_gen_enabled() && pte_young(*pvmw.pte)) {
+-				lru_gen_look_around(&pvmw);
++		if (lru_gen_enabled() && pvmw.pte) {
++			if (lru_gen_look_around(&pvmw))
+ 				referenced++;
+-			}
+-
++		} else if (pvmw.pte) {
+ 			if (ptep_clear_flush_young_notify(vma, address,
+ 						pvmw.pte))
+ 				referenced++;
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 9c1c5e8b24b8..d6d69f0baabf 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -57,6 +57,8 @@
+ #include <linux/khugepaged.h>
+ #include <linux/rculist_nulls.h>
+ #include <linux/random.h>
++#include <linux/mmu_notifier.h>
++#include <linux/kvm_host.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -3923,6 +3925,55 @@ static struct folio *get_pfn_folio(unsigned long pfn, struct mem_cgroup *memcg,
+ 	return folio;
+ }
+ 
++static bool test_spte_young(struct mm_struct *mm, unsigned long addr, unsigned long end,
++			    unsigned long *bitmap, unsigned long *last)
 +{
-+	struct test_clear_young_arg *arg = ctx->arg;
-+	gfn_t gfn = ctx->addr / PAGE_SIZE;
-+	kvm_pte_t new = ctx->old & ~KVM_PTE_LEAF_ATTR_LO_S2_AF;
-+
-+	VM_WARN_ON_ONCE(!page_count(virt_to_page(ctx->ptep)));
-+	VM_WARN_ON_ONCE(gfn < arg->range->start || gfn >= arg->range->end);
-+
-+	if (!kvm_pte_valid(new))
-+		return 0;
-+
-+	if (new == ctx->old)
-+		return 0;
-+
-+	/* see the comments on the generic kvm_arch_has_test_clear_young() */
-+	if (__test_and_change_bit(arg->lsb_gfn - gfn, arg->bitmap))
-+		cmpxchg64(ctx->ptep, ctx->old, new);
-+
-+	return 0;
-+}
-+
-+bool kvm_arch_test_clear_young(struct kvm *kvm, struct kvm_gfn_range *range,
-+			       gfn_t lsb_gfn, unsigned long *bitmap)
-+{
-+	u64 start = range->start * PAGE_SIZE;
-+	u64 end = range->end * PAGE_SIZE;
-+	struct test_clear_young_arg arg = {
-+		.range		= range,
-+		.lsb_gfn	= lsb_gfn,
-+		.bitmap		= bitmap,
-+	};
-+	struct kvm_pgtable_walker walker = {
-+		.cb		= stage2_test_clear_young,
-+		.arg		= &arg,
-+		.flags		= KVM_PGTABLE_WALK_LEAF,
-+	};
-+
-+	BUILD_BUG_ON(is_hyp_code());
-+
-+	if (WARN_ON_ONCE(!kvm_arch_has_test_clear_young()))
++	if (!kvm_arch_has_test_clear_young() || !get_cap(LRU_GEN_SPTE_WALK))
 +		return false;
 +
-+	/* see the comments on kvm_pgtable_walk_flags */
-+	rcu_read_lock();
++	if (*last > addr)
++		goto done;
 +
-+	kvm_pgtable_walk(kvm->arch.mmu.pgt, start, end - start, &walker);
++	*last = end - addr > MIN_LRU_BATCH * PAGE_SIZE ?
++		addr + MIN_LRU_BATCH * PAGE_SIZE - 1 : end - 1;
++	bitmap_zero(bitmap, MIN_LRU_BATCH);
 +
-+	rcu_read_unlock();
-+
-+	return true;
++	mmu_notifier_test_clear_young(mm, addr, *last + 1, false, bitmap);
++done:
++	return test_bit((*last - addr) / PAGE_SIZE, bitmap);
 +}
 +
- bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
++static void clear_spte_young(struct mm_struct *mm, unsigned long addr,
++			     unsigned long *bitmap, unsigned long *last)
++{
++	int i;
++	unsigned long start, end = *last + 1;
++
++	if (addr + PAGE_SIZE != end)
++		return;
++
++	i = find_last_bit(bitmap, MIN_LRU_BATCH);
++	if (i == MIN_LRU_BATCH)
++		return;
++
++	start = end - (i + 1) * PAGE_SIZE;
++
++	i = find_first_bit(bitmap, MIN_LRU_BATCH);
++
++	end -= i * PAGE_SIZE;
++
++	mmu_notifier_test_clear_young(mm, start, end, false, bitmap);
++}
++
++static void skip_spte_young(struct mm_struct *mm, unsigned long addr,
++			    unsigned long *bitmap, unsigned long *last)
++{
++	if (*last > addr)
++		__clear_bit((*last - addr) / PAGE_SIZE, bitmap);
++
++	clear_spte_young(mm, addr, bitmap, last);
++}
++
+ static bool suitable_to_scan(int total, int young)
  {
- 	if (!kvm->arch.mmu.pgt)
-@@ -1848,7 +1924,6 @@ void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen)
+ 	int n = clamp_t(int, cache_line_size() / sizeof(pte_t), 2, 8);
+@@ -3938,6 +3989,8 @@ static bool walk_pte_range(pmd_t *pmd, unsigned long start, unsigned long end,
+ 	pte_t *pte;
+ 	spinlock_t *ptl;
+ 	unsigned long addr;
++	unsigned long bitmap[BITS_TO_LONGS(MIN_LRU_BATCH)];
++	unsigned long last = 0;
+ 	int total = 0;
+ 	int young = 0;
+ 	struct lru_gen_mm_walk *walk = args->private;
+@@ -3956,6 +4009,7 @@ static bool walk_pte_range(pmd_t *pmd, unsigned long start, unsigned long end,
+ 	pte = pte_offset_map(pmd, start & PMD_MASK);
+ restart:
+ 	for (i = pte_index(start), addr = start; addr != end; i++, addr += PAGE_SIZE) {
++		bool success;
+ 		unsigned long pfn;
+ 		struct folio *folio;
  
- void kvm_arch_flush_shadow_all(struct kvm *kvm)
+@@ -3963,20 +4017,27 @@ static bool walk_pte_range(pmd_t *pmd, unsigned long start, unsigned long end,
+ 		walk->mm_stats[MM_LEAF_TOTAL]++;
+ 
+ 		pfn = get_pte_pfn(pte[i], args->vma, addr);
+-		if (pfn == -1)
++		if (pfn == -1) {
++			skip_spte_young(args->vma->vm_mm, addr, bitmap, &last);
+ 			continue;
++		}
+ 
+-		if (!pte_young(pte[i])) {
++		success = test_spte_young(args->vma->vm_mm, addr, end, bitmap, &last);
++		if (!success && !pte_young(pte[i])) {
++			skip_spte_young(args->vma->vm_mm, addr, bitmap, &last);
+ 			walk->mm_stats[MM_LEAF_OLD]++;
+ 			continue;
+ 		}
+ 
+ 		folio = get_pfn_folio(pfn, memcg, pgdat, walk->can_swap);
+-		if (!folio)
++		if (!folio) {
++			skip_spte_young(args->vma->vm_mm, addr, bitmap, &last);
+ 			continue;
++		}
+ 
+-		if (!ptep_test_and_clear_young(args->vma, addr, pte + i))
+-			VM_WARN_ON_ONCE(true);
++		clear_spte_young(args->vma->vm_mm, addr, bitmap, &last);
++		if (pte_young(pte[i]))
++			ptep_test_and_clear_young(args->vma, addr, pte + i);
+ 
+ 		young++;
+ 		walk->mm_stats[MM_LEAF_YOUNG]++;
+@@ -4581,6 +4642,24 @@ static void lru_gen_age_node(struct pglist_data *pgdat, struct scan_control *sc)
+  *                          rmap/PT walk feedback
+  ******************************************************************************/
+ 
++static bool should_look_around(struct vm_area_struct *vma, unsigned long addr,
++			       pte_t *pte, int *young)
++{
++	unsigned long old = true;
++
++	*young = mmu_notifier_test_clear_young(vma->vm_mm, addr, addr + PAGE_SIZE, true, &old);
++	if (!old)
++		*young = true;
++
++	if (pte_young(*pte)) {
++		ptep_test_and_clear_young(vma, addr, pte);
++		*young = true;
++		return true;
++	}
++
++	return !old && get_cap(LRU_GEN_SPTE_WALK);
++}
++
+ /*
+  * This function exploits spatial locality when shrink_folio_list() walks the
+  * rmap. It scans the adjacent PTEs of a young PTE and promotes hot pages. If
+@@ -4588,12 +4667,14 @@ static void lru_gen_age_node(struct pglist_data *pgdat, struct scan_control *sc)
+  * the PTE table to the Bloom filter. This forms a feedback loop between the
+  * eviction and the aging.
+  */
+-void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
++bool lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
  {
--	kvm_free_stage2_pgd(&kvm->arch.mmu);
+ 	int i;
+ 	unsigned long start;
+ 	unsigned long end;
+ 	struct lru_gen_mm_walk *walk;
++	unsigned long bitmap[BITS_TO_LONGS(MIN_LRU_BATCH)];
++	unsigned long last = 0;
+ 	int young = 0;
+ 	pte_t *pte = pvmw->pte;
+ 	unsigned long addr = pvmw->address;
+@@ -4607,8 +4688,11 @@ void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
+ 	lockdep_assert_held(pvmw->ptl);
+ 	VM_WARN_ON_ONCE_FOLIO(folio_test_lru(folio), folio);
+ 
++	if (!should_look_around(pvmw->vma, addr, pte, &young))
++		return young;
++
+ 	if (spin_is_contended(pvmw->ptl))
+-		return;
++		return young;
+ 
+ 	/* avoid taking the LRU lock under the PTL when possible */
+ 	walk = current->reclaim_state ? current->reclaim_state->mm_walk : NULL;
+@@ -4616,6 +4700,9 @@ void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
+ 	start = max(addr & PMD_MASK, pvmw->vma->vm_start);
+ 	end = min(addr | ~PMD_MASK, pvmw->vma->vm_end - 1) + 1;
+ 
++	if (end - start == PAGE_SIZE)
++		return young;
++
+ 	if (end - start > MIN_LRU_BATCH * PAGE_SIZE) {
+ 		if (addr - start < MIN_LRU_BATCH * PAGE_SIZE / 2)
+ 			end = start + MIN_LRU_BATCH * PAGE_SIZE;
+@@ -4629,28 +4716,37 @@ void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
+ 
+ 	/* folio_update_gen() requires stable folio_memcg() */
+ 	if (!mem_cgroup_trylock_pages(memcg))
+-		return;
++		return young;
+ 
+ 	arch_enter_lazy_mmu_mode();
+ 
+ 	pte -= (addr - start) / PAGE_SIZE;
+ 
+ 	for (i = 0, addr = start; addr != end; i++, addr += PAGE_SIZE) {
++		bool success;
+ 		unsigned long pfn;
+ 
+ 		pfn = get_pte_pfn(pte[i], pvmw->vma, addr);
+-		if (pfn == -1)
++		if (pfn == -1) {
++			skip_spte_young(pvmw->vma->vm_mm, addr, bitmap, &last);
+ 			continue;
++		}
+ 
+-		if (!pte_young(pte[i]))
++		success = test_spte_young(pvmw->vma->vm_mm, addr, end, bitmap, &last);
++		if (!success && !pte_young(pte[i])) {
++			skip_spte_young(pvmw->vma->vm_mm, addr, bitmap, &last);
+ 			continue;
++		}
+ 
+ 		folio = get_pfn_folio(pfn, memcg, pgdat, !walk || walk->can_swap);
+-		if (!folio)
++		if (!folio) {
++			skip_spte_young(pvmw->vma->vm_mm, addr, bitmap, &last);
+ 			continue;
++		}
+ 
+-		if (!ptep_test_and_clear_young(pvmw->vma, addr, pte + i))
+-			VM_WARN_ON_ONCE(true);
++		clear_spte_young(pvmw->vma->vm_mm, addr, bitmap, &last);
++		if (pte_young(pte[i]))
++			ptep_test_and_clear_young(pvmw->vma, addr, pte + i);
+ 
+ 		young++;
+ 
+@@ -4680,6 +4776,8 @@ void lru_gen_look_around(struct page_vma_mapped_walk *pvmw)
+ 	/* feedback from rmap walkers to page table walkers */
+ 	if (suitable_to_scan(i, young))
+ 		update_bloom_filter(lruvec, max_seq, pvmw->pmd);
++
++	return young;
  }
  
- void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+ /******************************************************************************
+@@ -5699,6 +5797,9 @@ static ssize_t show_enabled(struct kobject *kobj, struct kobj_attribute *attr, c
+ 	if (arch_has_hw_nonleaf_pmd_young() && get_cap(LRU_GEN_NONLEAF_YOUNG))
+ 		caps |= BIT(LRU_GEN_NONLEAF_YOUNG);
+ 
++	if (kvm_arch_has_test_clear_young() && get_cap(LRU_GEN_SPTE_WALK))
++		caps |= BIT(LRU_GEN_SPTE_WALK);
++
+ 	return sysfs_emit(buf, "0x%04x\n", caps);
+ }
+ 
 -- 
 2.39.2.637.g21b0678d19-goog
 
