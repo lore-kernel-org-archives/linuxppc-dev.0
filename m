@@ -4,63 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5940DC6379F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 15:05:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3CB1C6379F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 15:05:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PJFV456F2z3fFM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 02:05:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PJFW35zbRz3fYZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 02:05:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=lKrImua2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nD/MENPc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=217.70.183.201; helo=relay8-d.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=lKrImua2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nD/MENPc;
 	dkim-atps=neutral
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [217.70.183.201])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJFKD6DV4z3fBf
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 01:57:20 +1100 (AEDT)
-Received: (Authenticated sender: herve.codina@bootlin.com)
-	by mail.gandi.net (Postfix) with ESMTPA id 195AF1BF208;
-	Fri, 17 Feb 2023 14:57:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1676645838;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Oul0jsc2DenRyA+fgPib1b2q+MbmEghK/BzvhARWAgE=;
-	b=lKrImua2SWgv23HcLQR5QYzFefeawmB1pgc3fhepEgZ2X4ZANAzneVabHZTqdjy5LxYXYQ
-	fnz4m4soBND1McBMowFPxo44afn2vHlkQ4IfpuZ+bnCvehUMioDXsOjew6u2TfiHj+UF3i
-	jhLmr/wc8HfYS/frBd/Dsd5rUrUmWDAgycSbMts4mVy7hWT+VxcY/t+lTLbXPDHKbVf9+k
-	m97xss3UMl8JzEPPFnPsqmZLeSCnJ0QaoJQCWQcqR8wLxq357eydxFn6D+7pUfysuqtIu9
-	I4syv4DSkuj3Sl4ecvFczx5IDTGQFZJWWKkLTlL1nYRtLgCLjjv1jbvcfZkQnA==
-From: Herve Codina <herve.codina@bootlin.com>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Li Yang <leoyang.li@nxp.com>,
-	Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: [PATCH v6 08/10] dt-bindings: sound: Add support for QMC audio
-Date: Fri, 17 Feb 2023 15:56:43 +0100
-Message-Id: <20230217145645.1768659-9-herve.codina@bootlin.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230217145645.1768659-1-herve.codina@bootlin.com>
-References: <20230217145645.1768659-1-herve.codina@bootlin.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJFKK1g27z3f8k
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 01:57:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1676645845; x=1708181845;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=WvJSbDFWxkRmenKNqHKXaSLyQyNMBK5dOs+74H9wdf0=;
+  b=nD/MENPcCjbHeXwhO21rg/fLBXUEpjqGDVs0/fm5XPus8Mfd6h+PpJWq
+   5W0qz1srvovkqM85fumCAhW//Qtw1PgpXQdPBY3nEO7EQ2e6YwJaCtZY4
+   7uDCx7o5JaQzo03vztwrQHEA7VyvVoRMuxN9rdwnK/ZNd4z8gZOJ6qbg0
+   rBikuSVPKMTnLAuWnOQcBzWP2EdkO1N7hQ93G7svRs5y88OQLe0gz+z95
+   PLdnWNK+eUnj6HhnLuIGTPXI5jH8JJTyL97p8hivDumKlkMmTidD+Ab/z
+   +/GGoGcicJD52XNF6jRxHQiBV/ki3rRW8x71L6uX8CWNwgbET7VpoTolG
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="359451306"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; 
+   d="scan'208";a="359451306"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Feb 2023 06:57:19 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="844599273"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; 
+   d="scan'208";a="844599273"
+Received: from lkp-server01.sh.intel.com (HELO 4455601a8d94) ([10.239.97.150])
+  by orsmga005.jf.intel.com with ESMTP; 17 Feb 2023 06:57:17 -0800
+Received: from kbuild by 4455601a8d94 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1pT2Am-000BYr-2J;
+	Fri, 17 Feb 2023 14:57:16 +0000
+Date: Fri, 17 Feb 2023 22:56:51 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ 4302abc628fc0dc08e5855f21bbfaed407a72bc3
+Message-ID: <63ef95b3.29irWv8PQ7sBRdEn%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,145 +70,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The QMC (QUICC mutichannel controller) is a controller
-present in some PowerQUICC SoC such as MPC885.
-The QMC audio is an ASoC component that uses the QMC
-controller to transfer the audio data.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: 4302abc628fc0dc08e5855f21bbfaed407a72bc3  powerpc/64s: Prevent fallthrough to hash TLB flush when using radix
 
-Signed-off-by: Herve Codina <herve.codina@bootlin.com>
-Reviewed-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
----
- .../bindings/sound/fsl,qmc-audio.yaml         | 117 ++++++++++++++++++
- 1 file changed, 117 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml
+elapsed time: 724m
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml b/Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml
-new file mode 100644
-index 000000000000..ff5cd9241941
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/fsl,qmc-audio.yaml
-@@ -0,0 +1,117 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/sound/fsl,qmc-audio.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: QMC audio
-+
-+maintainers:
-+  - Herve Codina <herve.codina@bootlin.com>
-+
-+description: |
-+  The QMC audio is an ASoC component which uses QMC (QUICC Multichannel
-+  Controller) channels to transfer the audio data.
-+  It provides as many DAI as the number of QMC channel used.
-+
-+allOf:
-+  - $ref: dai-common.yaml#
-+
-+properties:
-+  compatible:
-+    const: fsl,qmc-audio
-+
-+  '#address-cells':
-+    const: 1
-+  '#size-cells':
-+    const: 0
-+  '#sound-dai-cells':
-+    const: 1
-+
-+patternProperties:
-+  '^dai@([0-9]|[1-5][0-9]|6[0-3])$':
-+    description:
-+      A DAI managed by this controller
-+    type: object
-+
-+    properties:
-+      reg:
-+        minimum: 0
-+        maximum: 63
-+        description:
-+          The DAI number
-+
-+      fsl,qmc-chan:
-+        $ref: /schemas/types.yaml#/definitions/phandle-array
-+        items:
-+          - items:
-+              - description: phandle to QMC node
-+              - description: Channel number
-+        description:
-+          Should be a phandle/number pair. The phandle to QMC node and the QMC
-+          channel to use for this DAI.
-+
-+    required:
-+      - reg
-+      - fsl,qmc-chan
-+
-+required:
-+  - compatible
-+  - '#address-cells'
-+  - '#size-cells'
-+  - '#sound-dai-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    audio_controller: audio-controller {
-+        compatible = "fsl,qmc-audio";
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        #sound-dai-cells = <1>;
-+        dai@16 {
-+            reg = <16>;
-+            fsl,qmc-chan = <&qmc 16>;
-+        };
-+        dai@17 {
-+            reg = <17>;
-+            fsl,qmc-chan = <&qmc 17>;
-+        };
-+    };
-+
-+    sound {
-+        compatible = "simple-audio-card";
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        simple-audio-card,dai-link@0 {
-+            reg = <0>;
-+            format = "dsp_b";
-+            cpu {
-+                sound-dai = <&audio_controller 16>;
-+            };
-+            codec {
-+                sound-dai = <&codec1>;
-+                dai-tdm-slot-num = <4>;
-+                dai-tdm-slot-width = <8>;
-+                /* TS 3, 5, 7, 9 */
-+                dai-tdm-slot-tx-mask = <0 0 0 1 0 1 0 1 0 1>;
-+                dai-tdm-slot-rx-mask = <0 0 0 1 0 1 0 1 0 1>;
-+            };
-+        };
-+        simple-audio-card,dai-link@1 {
-+            reg = <1>;
-+            format = "dsp_b";
-+            cpu {
-+                sound-dai = <&audio_controller 17>;
-+            };
-+            codec {
-+                sound-dai = <&codec2>;
-+                dai-tdm-slot-num = <4>;
-+                dai-tdm-slot-width = <8>;
-+                /* TS 2, 4, 6, 8 */
-+                dai-tdm-slot-tx-mask = <0 0 1 0 1 0 1 0 1>;
-+                dai-tdm-slot-rx-mask = <0 0 1 0 1 0 1 0 1>;
-+            };
-+        };
-+    };
+configs tested: 2
+configs skipped: 126
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+
 -- 
-2.39.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
