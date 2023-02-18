@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECD78C636D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 09:21:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07CE1C636D7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 09:21:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PJjpn3RV0z3fyX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 20:21:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PJjqX53nbz3fhm
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 20:21:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJjjv2YCyz3fFx
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 20:16:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJjjz3ZN1z3fTm
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 20:16:55 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4PJjjJ2T5rz9sct;
-	Sat, 18 Feb 2023 10:16:20 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4PJjjK35ybz9sd3;
+	Sat, 18 Feb 2023 10:16:21 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id hsZqcsffrQvH; Sat, 18 Feb 2023 10:16:20 +0100 (CET)
+	with ESMTP id eaeNXr27ANcU; Sat, 18 Feb 2023 10:16:21 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4PJjjC5z0Yz9sd4;
-	Sat, 18 Feb 2023 10:16:15 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4PJjjD02CCz9sd6;
+	Sat, 18 Feb 2023 10:16:16 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B91B18B764;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E56538B768;
 	Sat, 18 Feb 2023 10:16:15 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id fUJWTow-b_pr; Sat, 18 Feb 2023 10:16:15 +0100 (CET)
+	with ESMTP id tZcDkKpZYKf6; Sat, 18 Feb 2023 10:16:15 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.180])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E28BE8B787;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EB0FF8B78B;
 	Sat, 18 Feb 2023 10:16:14 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 31I9G93N642564
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 31I9G9jU642550
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
 	Sat, 18 Feb 2023 10:16:09 +0100
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 31I9G9XL642561;
+	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 31I9G9aR642549;
 	Sat, 18 Feb 2023 10:16:09 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
         Michael Ellerman <mpe@ellerman.id.au>,
         Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 09/10] powerpc: Use ppc_md_progress()
-Date: Sat, 18 Feb 2023 10:15:52 +0100
-Message-Id: <c4416002503fa19e930bc78177bb85641367c40f.1676711562.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 07/10] powerpc: Make generic_calibrate_decr() the default
+Date: Sat, 18 Feb 2023 10:15:50 +0100
+Message-Id: <e4d27d31d34638bf7f3a08543778dcbe3f07ae29.1676711562.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.39.1
 In-Reply-To: <6cb9865d916231c38401ba34ad1a98c249fae135.1676711562.git.christophe.leroy@csgroup.eu>
 References: <6cb9865d916231c38401ba34ad1a98c249fae135.1676711562.git.christophe.leroy@csgroup.eu>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1676711719; l=32864; s=20211009; h=from:subject:message-id; bh=aq31U0JWG7MUeEb/D/ztZm49D3IbhDPoCbguSSI7Kao=; b=d2LuGnHcyjCUJh2/jQ0jSCnkTzskVoP7unX6Ut2feOsvdBZ4ntHtZQMxYT6Bz6Y0Bx7DyvjDbdS7 4ojcNz9PBPAqHvI3PP4JdRQHK5M2MmF4E6sr2Wcz/41LMnuIlvWN
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1676711719; l=46533; s=20211009; h=from:subject:message-id; bh=7/WypILj24LqVOMPN1PyRHfgr4XSAGu/YG/ut1C5E9U=; b=SBH4btwxPjCf2KiE+iFhiWAjCNYoeIcertYH0jgjJhg9NxF353ApLhkNrnEQO3BWlKHbZx0GG4QC JnDcjE7nAHfZrbJNCWKno1Ca74Ux8vXR2I/sgQoxcfHQu4u+Y5TV
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -73,881 +73,1114 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Many places have:
+ppc_md.calibrate_decr() is a mandatory item. Its nullity is never
+checked so it must be non null on all platforms.
 
-	if (ppc.md_progress)
-		ppc.md_progress();
-
-Use ppc_md_progress() instead.
-
-Note that checkpatch complains about using function names,
-but this is not a function taking format strings, so we
-leave the function names for now.
+Most platforms define generic_calibrate_decr() as their
+ppc_md.calibrate_decr(). Have time_init() call
+generic_calibrate_decr() when ppc_md.calibrate_decr() is NULL,
+and remove default assignment from all machines.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/kernel/setup_32.c                 |  3 +--
- arch/powerpc/mm/book3s32/mmu.c                 | 10 ++++------
- arch/powerpc/mm/init_32.c                      | 12 ++++--------
- arch/powerpc/platforms/52xx/efika.c            |  3 +--
- arch/powerpc/platforms/52xx/lite5200.c         |  3 +--
- arch/powerpc/platforms/52xx/media5200.c        |  3 +--
- arch/powerpc/platforms/52xx/mpc5200_simple.c   |  3 +--
- arch/powerpc/platforms/82xx/ep8248e.c          |  6 ++----
- arch/powerpc/platforms/82xx/km82xx.c           |  6 ++----
- arch/powerpc/platforms/82xx/mpc8272_ads.c      |  6 ++----
- arch/powerpc/platforms/82xx/pq2fads.c          |  6 ++----
- arch/powerpc/platforms/83xx/misc.c             |  3 +--
- arch/powerpc/platforms/85xx/bsc913x_qds.c      |  3 +--
- arch/powerpc/platforms/85xx/bsc913x_rdb.c      |  3 +--
- arch/powerpc/platforms/85xx/c293pcie.c         |  3 +--
- arch/powerpc/platforms/85xx/ge_imp3a.c         |  3 +--
- arch/powerpc/platforms/85xx/ksi8560.c          |  3 +--
- arch/powerpc/platforms/85xx/mpc8536_ds.c       |  3 +--
- arch/powerpc/platforms/85xx/mpc85xx_ads.c      |  3 +--
- arch/powerpc/platforms/85xx/mpc85xx_cds.c      |  5 ++---
- arch/powerpc/platforms/85xx/mpc85xx_ds.c       |  3 +--
- arch/powerpc/platforms/85xx/mpc85xx_mds.c      |  3 +--
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c      |  3 +--
- arch/powerpc/platforms/85xx/mvme2500.c         |  3 +--
- arch/powerpc/platforms/85xx/p1010rdb.c         |  3 +--
- arch/powerpc/platforms/85xx/p1022_ds.c         |  3 +--
- arch/powerpc/platforms/85xx/p1022_rdk.c        |  3 +--
- arch/powerpc/platforms/85xx/p1023_rdb.c        |  3 +--
- arch/powerpc/platforms/85xx/ppa8548.c          |  3 +--
- arch/powerpc/platforms/85xx/qemu_e500.c        |  2 +-
- arch/powerpc/platforms/85xx/socrates.c         |  3 +--
- arch/powerpc/platforms/85xx/stx_gp3.c          |  3 +--
- arch/powerpc/platforms/85xx/tqm85xx.c          |  3 +--
- arch/powerpc/platforms/85xx/twr_p102x.c        |  3 +--
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c     |  3 +--
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c     |  3 +--
- arch/powerpc/platforms/86xx/mvme7100.c         |  3 +--
- arch/powerpc/platforms/amigaone/setup.c        |  3 +--
- arch/powerpc/platforms/chrp/setup.c            |  5 ++---
- arch/powerpc/platforms/embedded6xx/holly.c     |  6 ++----
- .../platforms/embedded6xx/mpc7448_hpc2.c       |  7 +++----
- arch/powerpc/platforms/embedded6xx/mvme5100.c  |  3 +--
- arch/powerpc/platforms/powermac/smp.c          | 18 ++++++++----------
- arch/powerpc/platforms/pseries/setup.c         |  8 ++++----
- 44 files changed, 69 insertions(+), 121 deletions(-)
+ arch/powerpc/kernel/time.c                        |  6 +++++-
+ arch/powerpc/platforms/40x/ppc40x_simple.c        |  1 -
+ arch/powerpc/platforms/44x/canyonlands.c          |  1 -
+ arch/powerpc/platforms/44x/ebony.c                |  1 -
+ arch/powerpc/platforms/44x/fsp2.c                 |  1 -
+ arch/powerpc/platforms/44x/iss4xx.c               |  1 -
+ arch/powerpc/platforms/44x/ppc44x_simple.c        |  1 -
+ arch/powerpc/platforms/44x/ppc476.c               |  2 --
+ arch/powerpc/platforms/44x/sam440ep.c             |  1 -
+ arch/powerpc/platforms/44x/warp.c                 |  1 -
+ arch/powerpc/platforms/512x/mpc5121_ads.c         |  1 -
+ arch/powerpc/platforms/512x/mpc512x_generic.c     |  1 -
+ arch/powerpc/platforms/512x/pdm360ng.c            |  1 -
+ arch/powerpc/platforms/52xx/efika.c               |  1 -
+ arch/powerpc/platforms/52xx/lite5200.c            |  1 -
+ arch/powerpc/platforms/52xx/media5200.c           |  1 -
+ arch/powerpc/platforms/52xx/mpc5200_simple.c      |  1 -
+ arch/powerpc/platforms/82xx/ep8248e.c             |  1 -
+ arch/powerpc/platforms/82xx/km82xx.c              |  1 -
+ arch/powerpc/platforms/82xx/mpc8272_ads.c         |  1 -
+ arch/powerpc/platforms/82xx/pq2fads.c             |  1 -
+ arch/powerpc/platforms/83xx/asp834x.c             |  1 -
+ arch/powerpc/platforms/83xx/km83xx.c              |  1 -
+ arch/powerpc/platforms/83xx/mpc830x_rdb.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc831x_rdb.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc832x_mds.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc834x_itx.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc834x_mds.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc836x_mds.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc837x_mds.c         |  1 -
+ arch/powerpc/platforms/83xx/mpc837x_rdb.c         |  1 -
+ arch/powerpc/platforms/85xx/bsc913x_qds.c         |  1 -
+ arch/powerpc/platforms/85xx/bsc913x_rdb.c         |  1 -
+ arch/powerpc/platforms/85xx/c293pcie.c            |  1 -
+ arch/powerpc/platforms/85xx/corenet_generic.c     |  1 -
+ arch/powerpc/platforms/85xx/ge_imp3a.c            |  1 -
+ arch/powerpc/platforms/85xx/ksi8560.c             |  1 -
+ arch/powerpc/platforms/85xx/mpc8536_ds.c          |  1 -
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c         |  1 -
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c         |  1 -
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c          |  3 ---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c         |  3 ---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c         | 10 ----------
+ arch/powerpc/platforms/85xx/mvme2500.c            |  1 -
+ arch/powerpc/platforms/85xx/p1010rdb.c            |  1 -
+ arch/powerpc/platforms/85xx/p1022_ds.c            |  1 -
+ arch/powerpc/platforms/85xx/p1022_rdk.c           |  1 -
+ arch/powerpc/platforms/85xx/p1023_rdb.c           |  1 -
+ arch/powerpc/platforms/85xx/ppa8548.c             |  1 -
+ arch/powerpc/platforms/85xx/qemu_e500.c           |  1 -
+ arch/powerpc/platforms/85xx/socrates.c            |  1 -
+ arch/powerpc/platforms/85xx/stx_gp3.c             |  1 -
+ arch/powerpc/platforms/85xx/tqm85xx.c             |  1 -
+ arch/powerpc/platforms/85xx/twr_p102x.c           |  1 -
+ arch/powerpc/platforms/85xx/xes_mpc85xx.c         |  3 ---
+ arch/powerpc/platforms/86xx/gef_ppc9a.c           |  1 -
+ arch/powerpc/platforms/86xx/gef_sbc310.c          |  1 -
+ arch/powerpc/platforms/86xx/gef_sbc610.c          |  1 -
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c        |  1 -
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |  1 -
+ arch/powerpc/platforms/86xx/mvme7100.c            |  1 -
+ arch/powerpc/platforms/8xx/adder875.c             |  1 -
+ arch/powerpc/platforms/amigaone/setup.c           |  1 -
+ arch/powerpc/platforms/cell/setup.c               |  1 -
+ arch/powerpc/platforms/chrp/setup.c               |  1 -
+ arch/powerpc/platforms/embedded6xx/gamecube.c     |  1 -
+ arch/powerpc/platforms/embedded6xx/holly.c        |  1 -
+ arch/powerpc/platforms/embedded6xx/linkstation.c  |  1 -
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |  1 -
+ arch/powerpc/platforms/embedded6xx/mvme5100.c     |  1 -
+ arch/powerpc/platforms/embedded6xx/storcenter.c   |  1 -
+ arch/powerpc/platforms/embedded6xx/wii.c          |  1 -
+ arch/powerpc/platforms/maple/setup.c              |  1 -
+ arch/powerpc/platforms/microwatt/setup.c          |  1 -
+ arch/powerpc/platforms/pasemi/setup.c             |  1 -
+ arch/powerpc/platforms/powernv/setup.c            |  1 -
+ arch/powerpc/platforms/pseries/setup.c            |  1 -
+ 79 files changed, 5 insertions(+), 95 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index b761cc1a403c..843f64050efc 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -127,8 +127,7 @@ __setup("l3cr=", ppc_setup_l3cr);
- static int __init ppc_init(void)
- {
- 	/* clear the progress line */
--	if (ppc_md.progress)
--		ppc_md.progress("             ", 0xffff);
-+	ppc_md_progress("             ", 0xffff);
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 9d8665910350..df20cf201f74 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -887,7 +887,11 @@ void __init time_init(void)
+ 	unsigned shift;
  
- 	/* call platform init */
- 	if (ppc_md.init != NULL) {
-diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
-index 850783cfa9c7..ec6facff2779 100644
---- a/arch/powerpc/mm/book3s32/mmu.c
-+++ b/arch/powerpc/mm/book3s32/mmu.c
-@@ -347,7 +347,7 @@ void __init MMU_init_hw(void)
- 	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE))
- 		return;
+ 	/* Normal PowerPC with timebase register */
+-	ppc_md.calibrate_decr();
++	if (ppc_md.calibrate_decr)
++		ppc_md.calibrate_decr();
++	else
++		generic_calibrate_decr();
++
+ 	printk(KERN_DEBUG "time_init: decrementer frequency = %lu.%.6lu MHz\n",
+ 	       ppc_tb_freq / 1000000, ppc_tb_freq % 1000000);
+ 	printk(KERN_DEBUG "time_init: processor frequency   = %lu.%.6lu MHz\n",
+diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+index dce696c32679..e454e9d2eff1 100644
+--- a/arch/powerpc/platforms/40x/ppc40x_simple.c
++++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+@@ -74,5 +74,4 @@ define_machine(ppc40x_simple) {
+ 	.init_IRQ = uic_init_tree,
+ 	.get_irq = uic_get_irq,
+ 	.restart = ppc4xx_reset_system,
+-	.calibrate_decr = generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/canyonlands.c b/arch/powerpc/platforms/44x/canyonlands.c
+index ba561ca6c25f..8742a10d9e0c 100644
+--- a/arch/powerpc/platforms/44x/canyonlands.c
++++ b/arch/powerpc/platforms/44x/canyonlands.c
+@@ -114,5 +114,4 @@ define_machine(canyonlands) {
+ 	.init_IRQ = uic_init_tree,
+ 	.get_irq = uic_get_irq,
+ 	.restart = ppc4xx_reset_system,
+-	.calibrate_decr = generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
+index 5b9e57b4cd65..4861310c8dc0 100644
+--- a/arch/powerpc/platforms/44x/ebony.c
++++ b/arch/powerpc/platforms/44x/ebony.c
+@@ -58,5 +58,4 @@ define_machine(ebony) {
+ 	.init_IRQ		= uic_init_tree,
+ 	.get_irq		= uic_get_irq,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/fsp2.c b/arch/powerpc/platforms/44x/fsp2.c
+index 56d91dbef577..f6b8d02e08b0 100644
+--- a/arch/powerpc/platforms/44x/fsp2.c
++++ b/arch/powerpc/platforms/44x/fsp2.c
+@@ -313,5 +313,4 @@ define_machine(fsp2) {
+ 	.init_IRQ		= fsp2_irq_init,
+ 	.get_irq		= uic_get_irq,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/iss4xx.c b/arch/powerpc/platforms/44x/iss4xx.c
+index e779bd3d2291..981972e8347f 100644
+--- a/arch/powerpc/platforms/44x/iss4xx.c
++++ b/arch/powerpc/platforms/44x/iss4xx.c
+@@ -147,5 +147,4 @@ define_machine(iss4xx) {
+ 	.init_IRQ		= iss4xx_init_irq,
+ 	.setup_arch		= iss4xx_setup_arch,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
+index 2a0dcdf04b21..971786ff1a7b 100644
+--- a/arch/powerpc/platforms/44x/ppc44x_simple.c
++++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
+@@ -82,5 +82,4 @@ define_machine(ppc44x_simple) {
+ 	.init_IRQ = uic_init_tree,
+ 	.get_irq = uic_get_irq,
+ 	.restart = ppc4xx_reset_system,
+-	.calibrate_decr = generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+index 11f939ee98c4..9911666d5b9d 100644
+--- a/arch/powerpc/platforms/44x/ppc476.c
++++ b/arch/powerpc/platforms/44x/ppc476.c
+@@ -278,7 +278,6 @@ define_machine(ppc47x_akebono) {
+ 	.init_IRQ		= ppc47x_init_irq,
+ 	.setup_arch		= ppc47x_setup_arch,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
  
--	if ( ppc_md.progress ) ppc_md.progress("hash:enter", 0x105);
-+	ppc_md_progress("hash:enter", 0x105);
+ define_machine(ppc47x_currituck) {
+@@ -290,5 +289,4 @@ define_machine(ppc47x_currituck) {
+ 	.pci_irq_fixup		= ppc47x_pci_irq_fixup,
+ 	.setup_arch		= ppc47x_setup_arch,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/44x/sam440ep.c b/arch/powerpc/platforms/44x/sam440ep.c
+index 8b281e027477..5cdaa4068e41 100644
+--- a/arch/powerpc/platforms/44x/sam440ep.c
++++ b/arch/powerpc/platforms/44x/sam440ep.c
+@@ -54,7 +54,6 @@ define_machine(sam440ep) {
+ 	.init_IRQ 		= uic_init_tree,
+ 	.get_irq 		= uic_get_irq,
+ 	.restart		= ppc4xx_reset_system,
+-	.calibrate_decr 	= generic_calibrate_decr,
+ };
  
- #define LG_HPTEG_SIZE	6		/* 64 bytes per HPTEG */
- #define SDR1_LOW_BITS	((n_hpteg - 1) >> 10)
-@@ -371,7 +371,7 @@ void __init MMU_init_hw(void)
- 	/*
- 	 * Find some memory for the hash table.
- 	 */
--	if ( ppc_md.progress ) ppc_md.progress("hash:find piece", 0x322);
-+	ppc_md_progress("hash:find piece", 0x322);
- 	Hash = memblock_alloc(Hash_size, Hash_size);
- 	if (!Hash)
- 		panic("%s: Failed to allocate %lu bytes align=0x%lx\n",
-@@ -396,10 +396,8 @@ void __init MMU_init_hw_patch(void)
- 	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE))
- 		return;
+ static struct i2c_board_info sam440ep_rtc_info = {
+diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
+index acbc356e8a19..bfeb9bdc3258 100644
+--- a/arch/powerpc/platforms/44x/warp.c
++++ b/arch/powerpc/platforms/44x/warp.c
+@@ -48,7 +48,6 @@ define_machine(warp) {
+ 	.init_IRQ 	= uic_init_tree,
+ 	.get_irq 	= uic_get_irq,
+ 	.restart	= ppc4xx_reset_system,
+-	.calibrate_decr = generic_calibrate_decr,
+ };
  
--	if (ppc_md.progress)
--		ppc_md.progress("hash:patch", 0x345);
--	if (ppc_md.progress)
--		ppc_md.progress("hash:done", 0x205);
-+	ppc_md_progress("hash:patch", 0x345);
-+	ppc_md_progress("hash:done", 0x205);
  
- 	/* WARNING: Make sure nothing can trigger a KASAN check past this point */
- 
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index d4cc3749e621..97e0f58dd401 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -79,8 +79,7 @@ unsigned long __max_low_memory = MAX_LOW_MEM;
-  */
- void __init MMU_init(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("MMU:enter", 0x111);
-+	ppc_md_progress("MMU:enter", 0x111);
- 
- 	total_lowmem = total_memory = memblock_end_of_DRAM() - memstart_addr;
- 	lowmem_end_addr = memstart_addr + total_lowmem;
-@@ -102,20 +101,17 @@ void __init MMU_init(void)
- 	}
- 
- 	/* Initialize the MMU hardware */
--	if (ppc_md.progress)
--		ppc_md.progress("MMU:hw init", 0x300);
-+	ppc_md_progress("MMU:hw init", 0x300);
- 	MMU_init_hw();
- 
- 	/* Map in all of RAM starting at KERNELBASE */
--	if (ppc_md.progress)
--		ppc_md.progress("MMU:mapin", 0x301);
-+	ppc_md_progress("MMU:mapin", 0x301);
- 	mapin_ram();
- 
- 	/* Initialize early top-down ioremap allocator */
- 	ioremap_bot = IOREMAP_TOP;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("MMU:exit", 0x211);
-+	ppc_md_progress("MMU:exit", 0x211);
- 
- 	/* From now on, btext is no longer BAT mapped if it was at all */
- #ifdef CONFIG_BOOTX_TEXT
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads.c b/arch/powerpc/platforms/512x/mpc5121_ads.c
+index 0b6a2d3fd343..80b25ce076bc 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads.c
+@@ -67,6 +67,5 @@ define_machine(mpc5121_ads) {
+ 	.init			= mpc512x_init,
+ 	.init_IRQ		= mpc5121_ads_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.restart		= mpc512x_restart,
+ };
+diff --git a/arch/powerpc/platforms/512x/mpc512x_generic.c b/arch/powerpc/platforms/512x/mpc512x_generic.c
+index 364564c995bd..97dfaac8f7ff 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_generic.c
++++ b/arch/powerpc/platforms/512x/mpc512x_generic.c
+@@ -47,6 +47,5 @@ define_machine(mpc512x_generic) {
+ 	.setup_arch		= mpc512x_setup_arch,
+ 	.init_IRQ		= mpc512x_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.restart		= mpc512x_restart,
+ };
+diff --git a/arch/powerpc/platforms/512x/pdm360ng.c b/arch/powerpc/platforms/512x/pdm360ng.c
+index d3a4eeb47bb1..4bdec1c25de7 100644
+--- a/arch/powerpc/platforms/512x/pdm360ng.c
++++ b/arch/powerpc/platforms/512x/pdm360ng.c
+@@ -121,6 +121,5 @@ define_machine(pdm360ng) {
+ 	.init			= pdm360ng_init,
+ 	.init_IRQ		= mpc512x_init_IRQ,
+ 	.get_irq		= ipic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.restart		= mpc512x_restart,
+ };
 diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-index aa82e6b437f3..283d876e0771 100644
+index 61dfec74ff85..aa82e6b437f3 100644
 --- a/arch/powerpc/platforms/52xx/efika.c
 +++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -189,8 +189,7 @@ static void __init efika_setup_arch(void)
- 	mpc52xx_pm_init();
+@@ -226,7 +226,6 @@ define_machine(efika)
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.progress		= rtas_progress,
+ 	.get_boot_time		= rtas_get_boot_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ #ifdef CONFIG_PCI
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
  #endif
- 
--	if (ppc_md.progress)
--		ppc_md.progress("Linux/PPC " UTS_RELEASE " running on Efika ;-)\n", 0x0);
-+	ppc_md_progress("Linux/PPC " UTS_RELEASE " running on Efika ;-)\n", 0x0);
- }
- 
- static int __init efika_probe(void)
 diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index 0fd67b3ffc3e..38db50af4258 100644
+index 7ea9b6ce0591..0fd67b3ffc3e 100644
 --- a/arch/powerpc/platforms/52xx/lite5200.c
 +++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -146,8 +146,7 @@ static void lite5200_resume_finish(void __iomem *mbar)
- 
- static void __init lite5200_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("lite5200_setup_arch()", 0);
-+	ppc_md_progress("lite5200_setup_arch()", 0);
- 
- 	/* Map important registers from the internal memory map */
- 	mpc52xx_map_common_devices();
+@@ -189,5 +189,4 @@ define_machine(lite5200) {
+ 	.init_IRQ 	= mpc52xx_init_irq,
+ 	.get_irq 	= mpc52xx_get_irq,
+ 	.restart	= mpc52xx_restart,
+-	.calibrate_decr	= generic_calibrate_decr,
+ };
 diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
-index 19626cd42406..d5b9cb44dd58 100644
+index a9c92c6ccbcf..19626cd42406 100644
 --- a/arch/powerpc/platforms/52xx/media5200.c
 +++ b/arch/powerpc/platforms/52xx/media5200.c
-@@ -196,8 +196,7 @@ static void __init media5200_setup_arch(void)
- 	struct mpc52xx_gpio __iomem *gpio;
- 	u32 port_config;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("media5200_setup_arch()", 0);
-+	ppc_md_progress("media5200_setup_arch()", 0);
- 
- 	/* Map important registers from the internal memory map */
- 	mpc52xx_map_common_devices();
+@@ -236,5 +236,4 @@ define_machine(media5200_platform) {
+ 	.init_IRQ	= media5200_init_irq,
+ 	.get_irq	= mpc52xx_get_irq,
+ 	.restart	= mpc52xx_restart,
+-	.calibrate_decr	= generic_calibrate_decr,
+ };
 diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index f1e85e86f5e5..5980dad483c0 100644
+index cc349d579061..f1e85e86f5e5 100644
 --- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
 +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -32,8 +32,7 @@
-  */
- static void __init mpc5200_simple_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc5200_simple_setup_arch()", 0);
-+	ppc_md_progress("mpc5200_simple_setup_arch()", 0);
- 
- 	/* Map important registers from the internal memory map */
- 	mpc52xx_map_common_devices();
+@@ -76,5 +76,4 @@ define_machine(mpc5200_simple_platform) {
+ 	.init_IRQ	= mpc52xx_init_irq,
+ 	.get_irq	= mpc52xx_get_irq,
+ 	.restart	= mpc52xx_restart,
+-	.calibrate_decr	= generic_calibrate_decr,
+ };
 diff --git a/arch/powerpc/platforms/82xx/ep8248e.c b/arch/powerpc/platforms/82xx/ep8248e.c
-index 8f1856ba692e..9b85cd85ceeb 100644
+index 66defdaf816f..8f1856ba692e 100644
 --- a/arch/powerpc/platforms/82xx/ep8248e.c
 +++ b/arch/powerpc/platforms/82xx/ep8248e.c
-@@ -249,8 +249,7 @@ static void __init init_ioports(void)
- 
- static void __init ep8248e_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("ep8248e_setup_arch()", 0);
-+	ppc_md_progress("ep8248e_setup_arch()", 0);
- 
- 	cpm2_reset();
- 
-@@ -280,8 +279,7 @@ static void __init ep8248e_setup_arch(void)
- 
- 	init_ioports();
- 
--	if (ppc_md.progress)
--		ppc_md.progress("ep8248e_setup_arch(), finish", 0);
-+	ppc_md_progress("ep8248e_setup_arch(), finish", 0);
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
+@@ -308,7 +308,6 @@ define_machine(ep8248e)
+ 	.setup_arch = ep8248e_setup_arch,
+ 	.init_IRQ = ep8248e_pic_init,
+ 	.get_irq = cpm2_get_irq,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = pq2_restart,
+ 	.progress = udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/82xx/km82xx.c b/arch/powerpc/platforms/82xx/km82xx.c
-index 51c9bfd97592..8e59b10f5038 100644
+index 8ab575d70080..51c9bfd97592 100644
 --- a/arch/powerpc/platforms/82xx/km82xx.c
 +++ b/arch/powerpc/platforms/82xx/km82xx.c
-@@ -159,8 +159,7 @@ static void __init init_ioports(void)
- 
- static void __init km82xx_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("km82xx_setup_arch()", 0);
-+	ppc_md_progress("km82xx_setup_arch()", 0);
- 
- 	cpm2_reset();
- 
-@@ -171,8 +170,7 @@ static void __init km82xx_setup_arch(void)
- 
- 	init_ioports();
- 
--	if (ppc_md.progress)
--		ppc_md.progress("km82xx_setup_arch(), finish", 0);
-+	ppc_md_progress("km82xx_setup_arch(), finish", 0);
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
+@@ -195,7 +195,6 @@ define_machine(km82xx)
+ 	.setup_arch = km82xx_setup_arch,
+ 	.init_IRQ = km82xx_pic_init,
+ 	.get_irq = cpm2_get_irq,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = pq2_restart,
+ 	.progress = udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index f9b2b1617eeb..73ed4b6ce08f 100644
+index 5dd034ed2c87..f9b2b1617eeb 100644
 --- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
 +++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -134,8 +134,7 @@ static void __init mpc8272_ads_setup_arch(void)
- 	struct device_node *np;
- 	__be32 __iomem *bcsr;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc8272_ads_setup_arch()", 0);
-+	ppc_md_progress("mpc8272_ads_setup_arch()", 0);
- 
- 	cpm2_reset();
- 
-@@ -172,8 +171,7 @@ static void __init mpc8272_ads_setup_arch(void)
- 
- 	init_ioports();
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc8272_ads_setup_arch(), finish", 0);
-+	ppc_md_progress("mpc8272_ads_setup_arch(), finish", 0);
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
+@@ -199,7 +199,6 @@ define_machine(mpc8272_ads)
+ 	.discover_phbs = pq2_init_pci,
+ 	.init_IRQ = mpc8272_ads_pic_init,
+ 	.get_irq = cpm2_get_irq,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = pq2_restart,
+ 	.progress = udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
-index 4080cb4253d3..367d2b30031f 100644
+index d91dfdc634e9..4080cb4253d3 100644
 --- a/arch/powerpc/platforms/82xx/pq2fads.c
 +++ b/arch/powerpc/platforms/82xx/pq2fads.c
-@@ -117,8 +117,7 @@ static void __init pq2fads_setup_arch(void)
- 	struct device_node *np;
- 	__be32 __iomem *bcsr;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("pq2fads_setup_arch()", 0);
-+	ppc_md_progress("pq2fads_setup_arch()", 0);
- 
- 	cpm2_reset();
- 
-@@ -150,8 +149,7 @@ static void __init pq2fads_setup_arch(void)
- 	/* Enable external IRQs */
- 	clrbits32(&cpm2_immr->im_siu_conf.siu_82xx.sc_siumcr, 0x0c000000);
- 
--	if (ppc_md.progress)
--		ppc_md.progress("pq2fads_setup_arch(), finish", 0);
-+	ppc_md_progress("pq2fads_setup_arch(), finish", 0);
- }
- 
- static const struct of_device_id of_bus_ids[] __initconst = {
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-index 2fb2a85d131f..d7fd14535193 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -125,8 +125,7 @@ void __init mpc83xx_setup_arch(void)
- 	int immrsize = IS_ALIGNED(immrbase, SZ_2M) ? SZ_2M : SZ_1M;
- 	unsigned long va = fix_to_virt(FIX_IMMR_BASE);
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc83xx_setup_arch()", 0);
-+	ppc_md_progress("mpc83xx_setup_arch()", 0);
- 
- 	setbat(-1, va, immrbase, immrsize, PAGE_KERNEL_NCG);
- 	update_bats();
+@@ -177,7 +177,6 @@ define_machine(pq2fads)
+ 	.discover_phbs = pq2_init_pci,
+ 	.init_IRQ = pq2fads_pic_init,
+ 	.get_irq = cpm2_get_irq,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = pq2_restart,
+ 	.progress = udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/asp834x.c b/arch/powerpc/platforms/83xx/asp834x.c
+index 8f3d995027fe..6870d0c34f1d 100644
+--- a/arch/powerpc/platforms/83xx/asp834x.c
++++ b/arch/powerpc/platforms/83xx/asp834x.c
+@@ -41,6 +41,5 @@ define_machine(asp834x) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
+index 907acdecc94a..26ddc7136547 100644
+--- a/arch/powerpc/platforms/83xx/km83xx.c
++++ b/arch/powerpc/platforms/83xx/km83xx.c
+@@ -184,6 +184,5 @@ define_machine(mpc83xx_km) {
+ 	.get_irq	= ipic_get_irq,
+ 	.restart	= mpc83xx_restart,
+ 	.time_init	= mpc83xx_time_init,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+index 956d4389effa..534bb227480d 100644
+--- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
+@@ -53,6 +53,5 @@ define_machine(mpc830x_rdb) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+index 3b578f080e3b..7b901ab3b864 100644
+--- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
+@@ -53,6 +53,5 @@ define_machine(mpc831x_rdb) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index 01035eff7d2e..c08f043e3963 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -97,6 +97,5 @@ define_machine(mpc832x_mds) {
+ 	.get_irq 	= ipic_get_irq,
+ 	.restart 	= mpc83xx_restart,
+ 	.time_init 	= mpc83xx_time_init,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress 	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index 6b7b852e48bf..af6774f145e3 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -221,6 +221,5 @@ define_machine(mpc832x_rdb) {
+ 	.get_irq	= ipic_get_irq,
+ 	.restart	= mpc83xx_restart,
+ 	.time_init	= mpc83xx_time_init,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index 92ff7be472c3..e45b98ff02d8 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -66,6 +66,5 @@ define_machine(mpc834x_itx) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+index 8e45c034daaf..d08974a60848 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+@@ -88,6 +88,5 @@ define_machine(mpc834x_mds) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 4ae2b6e4b513..84c08fdf503c 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -197,6 +197,5 @@ define_machine(mpc836x_mds) {
+ 	.get_irq	= ipic_get_irq,
+ 	.restart	= mpc83xx_restart,
+ 	.time_init	= mpc83xx_time_init,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+index 231a5df0399b..1fc9d1235a7c 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
+@@ -37,6 +37,5 @@ define_machine(mpc836x_rdk) {
+ 	.get_irq	= ipic_get_irq,
+ 	.restart	= mpc83xx_restart,
+ 	.time_init	= mpc83xx_time_init,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+index 0c10100756d4..c2055ef35b63 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+@@ -90,6 +90,5 @@ define_machine(mpc837x_mds) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+index 5d48c6842098..39e78018dd0b 100644
+--- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
+@@ -78,6 +78,5 @@ define_machine(mpc837x_rdb) {
+ 	.get_irq		= ipic_get_irq,
+ 	.restart		= mpc83xx_restart,
+ 	.time_init		= mpc83xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-index a029aa090538..4dd1f1cf051b 100644
+index 902a867352c2..a029aa090538 100644
 --- a/arch/powerpc/platforms/85xx/bsc913x_qds.c
 +++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-@@ -36,8 +36,7 @@ void __init bsc913x_qds_pic_init(void)
-  */
- static void __init bsc913x_qds_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("bsc913x_qds_setup_arch()", 0);
-+	ppc_md_progress("bsc913x_qds_setup_arch()", 0);
- 
- #if defined(CONFIG_SMP)
- 	mpc85xx_smp_init();
+@@ -59,6 +59,5 @@ define_machine(bsc9132_qds) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/bsc913x_rdb.c b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
-index 361b4371d073..8972c78375d1 100644
+index 58a44953b936..361b4371d073 100644
 --- a/arch/powerpc/platforms/85xx/bsc913x_rdb.c
 +++ b/arch/powerpc/platforms/85xx/bsc913x_rdb.c
-@@ -32,8 +32,7 @@ void __init bsc913x_rdb_pic_init(void)
-  */
- static void __init bsc913x_rdb_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("bsc913x_rdb_setup_arch()", 0);
-+	ppc_md_progress("bsc913x_rdb_setup_arch()", 0);
- 
- 	pr_info("bsc913x board from Freescale Semiconductor\n");
- }
+@@ -46,6 +46,5 @@ define_machine(bsc9131_rdb) {
+ 	.setup_arch		= bsc913x_rdb_setup_arch,
+ 	.init_IRQ		= bsc913x_rdb_pic_init,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/c293pcie.c b/arch/powerpc/platforms/85xx/c293pcie.c
-index 34975708be79..4aacc36ea15b 100644
+index fbf1875e5835..34975708be79 100644
 --- a/arch/powerpc/platforms/85xx/c293pcie.c
 +++ b/arch/powerpc/platforms/85xx/c293pcie.c
-@@ -35,8 +35,7 @@ static void __init c293_pcie_pic_init(void)
-  */
- static void __init c293_pcie_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("c293_pcie_setup_arch()", 0);
-+	ppc_md_progress("c293_pcie_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 
+@@ -51,6 +51,5 @@ define_machine(c293_pcie) {
+ 	.setup_arch		= c293_pcie_setup_arch,
+ 	.init_IRQ		= c293_pcie_pic_init,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 2c539de2d629..bfde391c42f4 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -198,7 +198,6 @@ define_machine(corenet_generic) {
+ #else
+ 	.get_irq		= mpic_get_coreint_irq,
+ #endif
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ 	.power_save		= e500_idle,
+ };
 diff --git a/arch/powerpc/platforms/85xx/ge_imp3a.c b/arch/powerpc/platforms/85xx/ge_imp3a.c
-index 3678a1fbf5ad..871f73a86f60 100644
+index 1bfd4ea13038..3678a1fbf5ad 100644
 --- a/arch/powerpc/platforms/85xx/ge_imp3a.c
 +++ b/arch/powerpc/platforms/85xx/ge_imp3a.c
-@@ -105,8 +105,7 @@ static void __init ge_imp3a_setup_arch(void)
- {
- 	struct device_node *regs;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("ge_imp3a_setup_arch()", 0);
-+	ppc_md_progress("ge_imp3a_setup_arch()", 0);
- 
- 	mpc85xx_smp_init();
- 
+@@ -203,6 +203,5 @@ define_machine(ge_imp3a) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/ksi8560.c b/arch/powerpc/platforms/85xx/ksi8560.c
-index af38c3aec042..78b1dbcc0edc 100644
+index 548d478e5194..af38c3aec042 100644
 --- a/arch/powerpc/platforms/85xx/ksi8560.c
 +++ b/arch/powerpc/platforms/85xx/ksi8560.c
-@@ -135,8 +135,7 @@ static void __init ksi8560_setup_arch(void)
- 
- 	of_node_put(cpld);
- 
--	if (ppc_md.progress)
--		ppc_md.progress("ksi8560_setup_arch()", 0);
-+	ppc_md_progress("ksi8560_setup_arch()", 0);
- 
- #ifdef CONFIG_CPM2
- 	cpm2_reset();
+@@ -180,5 +180,4 @@ define_machine(ksi8560) {
+ 	.show_cpuinfo		= ksi8560_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.restart		= machine_restart,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 58ab3831913f..a88ab88d09a6 100644
+index 9900cf2cd392..58ab3831913f 100644
 --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-@@ -40,8 +40,7 @@ void __init mpc8536_ds_pic_init(void)
-  */
- static void __init mpc8536_ds_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc8536_ds_setup_arch()", 0);
-+	ppc_md_progress("mpc8536_ds_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 
+@@ -62,6 +62,5 @@ define_machine(mpc8536_ds) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 7c67438e76f8..b5e4cc420ac6 100644
+index dd5302ab406d..7c67438e76f8 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -122,8 +122,7 @@ static void __init init_ioports(void)
- 
- static void __init mpc85xx_ads_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_ads_setup_arch()", 0);
-+	ppc_md_progress("mpc85xx_ads_setup_arch()", 0);
- 
- #ifdef CONFIG_CPM2
- 	cpm2_reset();
+@@ -158,6 +158,5 @@ define_machine(mpc85xx_ads) {
+ 	.init_IRQ		= mpc85xx_ads_pic_init,
+ 	.show_cpuinfo		= mpc85xx_ads_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 0e6964c7fdd6..41079d02dee8 100644
+index d7568b35ec78..0e6964c7fdd6 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -319,8 +319,7 @@ static void __init mpc85xx_cds_setup_arch(void)
- 	struct device_node *np;
- 	int cds_pci_slot;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_cds_setup_arch()", 0);
-+	ppc_md_progress("mpc85xx_cds_setup_arch()", 0);
- 
- 	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8548cds-fpga");
- 	if (!np) {
-@@ -340,7 +339,7 @@ static void __init mpc85xx_cds_setup_arch(void)
- 		cds_pci_slot = ((in_8(&cadmus->cm_csr) >> 6) & 0x3) + 1;
- 		snprintf(buf, 40, "CDS Version = 0x%x in slot %d\n",
- 				in_8(&cadmus->cm_ver), cds_pci_slot);
--		ppc_md.progress(buf, 0);
-+		ppc_md_progress(buf, 0);
- 	}
- 
- #ifdef CONFIG_PCI
+@@ -383,6 +383,5 @@ define_machine(mpc85xx_cds) {
+ 	.pcibios_fixup_bus	= mpc85xx_cds_fixup_bus,
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 70167b8f00a3..f55313df9130 100644
+index b4feb251b57e..70167b8f00a3 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -147,8 +147,7 @@ static void __init mpc85xx_ds_uli_init(void)
-  */
- static void __init mpc85xx_ds_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
-+	ppc_md_progress("mpc85xx_ds_setup_arch()", 0);
+@@ -172,7 +172,6 @@ define_machine(mpc8544_ds) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
  
- 	swiotlb_detect_4g();
- 	fsl_pci_assign_primary();
+@@ -186,7 +185,6 @@ define_machine(mpc8572_ds) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -200,6 +198,5 @@ define_machine(p2020_ds) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 28a04928250f..53775cbe297a 100644
+index 721322e04c79..28a04928250f 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -272,8 +272,7 @@ static void __init mpc85xx_mds_qe_init(void) { }
- 
- static void __init mpc85xx_mds_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
-+	ppc_md_progress("mpc85xx_mds_setup_arch()", 0);
- 
- 	mpc85xx_smp_init();
- 
+@@ -345,7 +345,6 @@ define_machine(mpc8568_mds) {
+ 	.setup_arch	= mpc85xx_mds_setup_arch,
+ 	.init_IRQ	= mpc85xx_mds_pic_init,
+ 	.get_irq	= mpic_get_irq,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+@@ -359,7 +358,6 @@ define_machine(mpc8569_mds) {
+ 	.setup_arch	= mpc85xx_mds_setup_arch,
+ 	.init_IRQ	= mpc85xx_mds_pic_init,
+ 	.get_irq	= mpic_get_irq,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+@@ -373,7 +371,6 @@ define_machine(p1021_mds) {
+ 	.setup_arch	= mpc85xx_mds_setup_arch,
+ 	.init_IRQ	= mpc85xx_mds_pic_init,
+ 	.get_irq	= mpic_get_irq,
+-	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index aa24793ad25c..f841089bbbce 100644
+index 9754feaebcd4..aa24793ad25c 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -63,8 +63,7 @@ void __init mpc85xx_rdb_pic_init(void)
-  */
- static void __init mpc85xx_rdb_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
-+	ppc_md_progress("mpc85xx_rdb_setup_arch()", 0);
+@@ -129,7 +129,6 @@ define_machine(p2020_rdb) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
  
- 	mpc85xx_smp_init();
+@@ -143,7 +142,6 @@ define_machine(p1020_rdb) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
  
+@@ -157,7 +155,6 @@ define_machine(p1021_rdb_pc) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -171,7 +168,6 @@ define_machine(p2020_rdb_pc) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -185,7 +181,6 @@ define_machine(p1025_rdb) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -199,7 +194,6 @@ define_machine(p1020_mbg_pc) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -213,7 +207,6 @@ define_machine(p1020_utm_pc) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -227,7 +220,6 @@ define_machine(p1020_rdb_pc) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -241,7 +233,6 @@ define_machine(p1020_rdb_pd) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+ 
+@@ -255,6 +246,5 @@ define_machine(p1024_rdb) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/mvme2500.c b/arch/powerpc/platforms/85xx/mvme2500.c
-index 1b59e45a0c64..c7112719cd4c 100644
+index ee1383e811d9..1b59e45a0c64 100644
 --- a/arch/powerpc/platforms/85xx/mvme2500.c
 +++ b/arch/powerpc/platforms/85xx/mvme2500.c
-@@ -35,8 +35,7 @@ void __init mvme2500_pic_init(void)
-  */
- static void __init mvme2500_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mvme2500_setup_arch()", 0);
-+	ppc_md_progress("mvme2500_setup_arch()", 0);
- 	fsl_pci_assign_primary();
- 	pr_info("MVME2500 board from Artesyn\n");
- }
+@@ -53,6 +53,5 @@ define_machine(mvme2500) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
-index 14ec79a32746..74213e7d6cc5 100644
+index 8ba9306a96b6..14ec79a32746 100644
 --- a/arch/powerpc/platforms/85xx/p1010rdb.c
 +++ b/arch/powerpc/platforms/85xx/p1010rdb.c
-@@ -41,8 +41,7 @@ void __init p1010_rdb_pic_init(void)
-  */
- static void __init p1010_rdb_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("p1010_rdb_setup_arch()", 0);
-+	ppc_md_progress("p1010_rdb_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 
+@@ -73,6 +73,5 @@ define_machine(p1010_rdb) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 23d0926298b9..2edeb3324e47 100644
+index 15a684ce9201..23d0926298b9 100644
 --- a/arch/powerpc/platforms/85xx/p1022_ds.c
 +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -471,8 +471,7 @@ early_param("video", early_video_setup);
-  */
- static void __init p1022_ds_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("p1022_ds_setup_arch()", 0);
-+	ppc_md_progress("p1022_ds_setup_arch()", 0);
- 
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
- 	diu_ops.set_monitor_port	= p1022ds_set_monitor_port;
+@@ -559,6 +559,5 @@ define_machine(p1022_ds) {
+ 	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index d1159150c3b5..6534a2bf862d 100644
+index aee9ffc0eb17..d1159150c3b5 100644
 --- a/arch/powerpc/platforms/85xx/p1022_rdk.c
 +++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
-@@ -110,8 +110,7 @@ void __init p1022_rdk_pic_init(void)
-  */
- static void __init p1022_rdk_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("p1022_rdk_setup_arch()", 0);
-+	ppc_md_progress("p1022_rdk_setup_arch()", 0);
- 
- #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
- 	diu_ops.set_pixel_clock		= p1022rdk_set_pixel_clock;
+@@ -139,6 +139,5 @@ define_machine(p1022_rdk) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
-index 9df0439a9382..5ec718ae691c 100644
+index e199fc44fc2f..9df0439a9382 100644
 --- a/arch/powerpc/platforms/85xx/p1023_rdb.c
 +++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
-@@ -41,8 +41,7 @@ static void __init p1023_rdb_setup_arch(void)
- {
- 	struct device_node *np;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("p1023_rdb_setup_arch()", 0);
-+	ppc_md_progress("p1023_rdb_setup_arch()", 0);
- 
- 	/* Map BCSR area */
- 	np = of_find_node_by_name(NULL, "bcsr");
+@@ -100,7 +100,6 @@ define_machine(p1023_rdb) {
+ 	.setup_arch		= p1023_rdb_setup_arch,
+ 	.init_IRQ		= p1023_rdb_pic_init,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 diff --git a/arch/powerpc/platforms/85xx/ppa8548.c b/arch/powerpc/platforms/85xx/ppa8548.c
-index acd19c52ad43..1562997a239b 100644
+index b030d0e7b06b..acd19c52ad43 100644
 --- a/arch/powerpc/platforms/85xx/ppa8548.c
 +++ b/arch/powerpc/platforms/85xx/ppa8548.c
-@@ -37,8 +37,7 @@ static void __init ppa8548_pic_init(void)
-  */
- static void __init ppa8548_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("ppa8548_setup_arch()", 0);
-+	ppc_md_progress("ppa8548_setup_arch()", 0);
- }
- 
- static void ppa8548_show_cpuinfo(struct seq_file *m)
+@@ -79,6 +79,5 @@ define_machine(ppa8548) {
+ 	.init_IRQ	= ppa8548_pic_init,
+ 	.show_cpuinfo	= ppa8548_show_cpuinfo,
+ 	.get_irq	= mpic_get_irq,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 6e4b1ddf292b..7ade7df4275a 100644
+index 335815a2d121..6e4b1ddf292b 100644
 --- a/arch/powerpc/platforms/85xx/qemu_e500.c
 +++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -39,7 +39,7 @@ void __init qemu_e500_pic_init(void)
- 
- static void __init qemu_e500_setup_arch(void)
- {
--	ppc_md.progress("qemu_e500_setup_arch()", 0);
-+	ppc_md_progress("qemu_e500_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 	swiotlb_detect_4g();
+@@ -58,7 +58,6 @@ define_machine(qemu_e500) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_coreint_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ 	.power_save		= e500_idle,
+ };
 diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-index 9fa1338bc002..d3d363b2768f 100644
+index f603a3905801..9fa1338bc002 100644
 --- a/arch/powerpc/platforms/85xx/socrates.c
 +++ b/arch/powerpc/platforms/85xx/socrates.c
-@@ -61,8 +61,7 @@ static void __init socrates_pic_init(void)
-  */
- static void __init socrates_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("socrates_setup_arch()", 0);
-+	ppc_md_progress("socrates_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- }
+@@ -75,6 +75,5 @@ define_machine(socrates) {
+ 	.setup_arch		= socrates_setup_arch,
+ 	.init_IRQ		= socrates_pic_init,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
-index 5e2646b4c039..27e7bca3f384 100644
+index 9f37b25e7a82..5e2646b4c039 100644
 --- a/arch/powerpc/platforms/85xx/stx_gp3.c
 +++ b/arch/powerpc/platforms/85xx/stx_gp3.c
-@@ -55,8 +55,7 @@ static void __init stx_gp3_pic_init(void)
-  */
- static void __init stx_gp3_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("stx_gp3_setup_arch()", 0);
-+	ppc_md_progress("stx_gp3_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 
+@@ -90,6 +90,5 @@ define_machine(stx_gp3) {
+ 	.init_IRQ		= stx_gp3_pic_init,
+ 	.show_cpuinfo		= stx_gp3_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 80effb028bf4..1ddb5628a48a 100644
+index d187f4b8bff6..80effb028bf4 100644
 --- a/arch/powerpc/platforms/85xx/tqm85xx.c
 +++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -54,8 +54,7 @@ static void __init tqm85xx_pic_init(void)
-  */
- static void __init tqm85xx_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("tqm85xx_setup_arch()", 0);
-+	ppc_md_progress("tqm85xx_setup_arch()", 0);
- 
- #ifdef CONFIG_CPM2
- 	cpm2_reset();
+@@ -127,6 +127,5 @@ define_machine(tqm85xx) {
+ 	.init_IRQ		= tqm85xx_pic_init,
+ 	.show_cpuinfo		= tqm85xx_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index b88e23a334a4..ea1cfd909598 100644
+index 34b1e9cf9f34..b88e23a334a4 100644
 --- a/arch/powerpc/platforms/85xx/twr_p102x.c
 +++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -45,8 +45,7 @@ static void __init twr_p1025_pic_init(void)
-  */
- static void __init twr_p1025_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("twr_p1025_setup_arch()", 0);
-+	ppc_md_progress("twr_p1025_setup_arch()", 0);
+@@ -112,6 +112,5 @@ define_machine(twr_p1025) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+index 57c38a8f40e8..184013e6601e 100644
+--- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
++++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+@@ -146,7 +146,6 @@ define_machine(xes_mpc8572) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
  
- 	mpc85xx_smp_init();
+@@ -160,7 +159,6 @@ define_machine(xes_mpc8548) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
  
+@@ -174,6 +172,5 @@ define_machine(xes_mpc8540) {
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index 2b656a763537..f0512e51300c 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -185,7 +185,6 @@ define_machine(gef_ppc9a) {
+ 	.show_cpuinfo		= gef_ppc9a_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index f38ab6bdfeb5..1430b524d982 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -172,7 +172,6 @@ define_machine(gef_sbc310) {
+ 	.show_cpuinfo		= gef_sbc310_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 09d59f92eaac..c92af0d964e1 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -162,7 +162,6 @@ define_machine(gef_sbc610) {
+ 	.show_cpuinfo		= gef_sbc610_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 6a403705ae44..304d2802c341 100644
+index 22ec5d7dc09d..6a403705ae44 100644
 --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
 +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -276,8 +276,7 @@ static void __init mpc86xx_hpcd_setup_arch(void)
- 	struct resource r;
- 	unsigned char *pixis;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc86xx_hpcd_setup_arch()", 0);
-+	ppc_md_progress("mpc86xx_hpcd_setup_arch()", 0);
- 
- 	fsl_pci_assign_primary();
- 
+@@ -314,7 +314,6 @@ define_machine(mpc86xx_hpcd) {
+ 	.init_IRQ		= mpc86xx_init_irq,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 7b00ebd2d7f8..482470d59344 100644
+index 61eccb2d689d..7b00ebd2d7f8 100644
 --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
 +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -56,8 +56,7 @@ static int mpc86xx_exclude_device(struct pci_controller *hose,
- static void __init
- mpc86xx_hpcn_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
-+	ppc_md_progress("mpc86xx_hpcn_setup_arch()", 0);
- 
+@@ -107,7 +107,6 @@ define_machine(mpc86xx_hpcn) {
+ 	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
  #ifdef CONFIG_PCI
- 	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 diff --git a/arch/powerpc/platforms/86xx/mvme7100.c b/arch/powerpc/platforms/86xx/mvme7100.c
-index c0ac40514361..76ef81d4f653 100644
+index b2cc32a32d0b..c0ac40514361 100644
 --- a/arch/powerpc/platforms/86xx/mvme7100.c
 +++ b/arch/powerpc/platforms/86xx/mvme7100.c
-@@ -43,8 +43,7 @@ static void __init mvme7100_setup_arch(void)
- 	void __iomem *mvme7100_regs = NULL;
- 	u8 reg;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mvme7100_setup_arch()", 0);
-+	ppc_md_progress("mvme7100_setup_arch()", 0);
- 
- #ifdef CONFIG_SMP
- 	mpc86xx_smp_init();
+@@ -108,7 +108,6 @@ define_machine(mvme7100) {
+ 	.init_IRQ		= mpc86xx_init_irq,
+ 	.get_irq		= mpic_get_irq,
+ 	.time_init		= mpc86xx_time_init,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PCI
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
+index 68bb0da3d3ee..7e83eb6746f4 100644
+--- a/arch/powerpc/platforms/8xx/adder875.c
++++ b/arch/powerpc/platforms/8xx/adder875.c
+@@ -102,6 +102,5 @@ define_machine(adder875) {
+ 	.init_IRQ = mpc8xx_pic_init,
+ 	.get_irq = mpc8xx_get_irq,
+ 	.restart = mpc8xx_restart,
+-	.calibrate_decr = generic_calibrate_decr,
+ 	.progress = udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/amigaone/setup.c b/arch/powerpc/platforms/amigaone/setup.c
-index 6c6e714a7521..08d209b965b6 100644
+index ba3b4a5688fb..6c6e714a7521 100644
 --- a/arch/powerpc/platforms/amigaone/setup.c
 +++ b/arch/powerpc/platforms/amigaone/setup.c
-@@ -67,8 +67,7 @@ static int __init amigaone_add_bridge(struct device_node *dev)
- 
- void __init amigaone_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("Linux/PPC "UTS_RELEASE"\n", 0);
-+	ppc_md_progress("Linux/PPC " UTS_RELEASE "\n", 0);
- }
- 
- static void __init amigaone_discover_phbs(void)
+@@ -164,6 +164,5 @@ define_machine(amigaone) {
+ 	.show_cpuinfo		= amigaone_show_cpuinfo,
+ 	.init_IRQ		= amigaone_init_IRQ,
+ 	.restart		= amigaone_restart,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/cell/setup.c b/arch/powerpc/platforms/cell/setup.c
+index 47eaf75349f2..9e07d101bcee 100644
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -265,7 +265,6 @@ define_machine(cell) {
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.set_rtc_time		= rtas_set_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+ 	.pci_setup_phb		= cell_setup_phb,
 diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 36ee3a5056a1..357945ab2907 100644
+index d9049ceb1046..36ee3a5056a1 100644
 --- a/arch/powerpc/platforms/chrp/setup.c
 +++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -345,7 +345,7 @@ static void __init chrp_setup_arch(void)
- 	 * Print the banner, then scroll down so boot progress
- 	 * can be printed.  -- Cort
- 	 */
--	if (ppc_md.progress) ppc_md.progress("Linux/PPC "UTS_RELEASE"\n", 0x0);
-+	ppc_md_progress("Linux/PPC " UTS_RELEASE "\n", 0x0);
- }
- 
- static void chrp_8259_cascade(struct irq_desc *desc)
-@@ -546,8 +546,7 @@ chrp_init2(void)
- 	request_region(0x80,0x10,"dma page reg");
- 	request_region(0xc0,0x20,"dma2");
- 
--	if (ppc_md.progress)
--		ppc_md.progress("  Have fun!    ", 0x7777);
-+	ppc_md_progress("  Have fun!    ", 0x7777);
- }
- 
- static int __init chrp_probe(void)
+@@ -582,6 +582,5 @@ define_machine(chrp) {
+ 	.time_init		= chrp_time_init,
+ 	.set_rtc_time		= chrp_set_rtc_time,
+ 	.get_rtc_time		= chrp_get_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/gamecube.c b/arch/powerpc/platforms/embedded6xx/gamecube.c
+index 60cdc2852c7a..e3b2c7464732 100644
+--- a/arch/powerpc/platforms/embedded6xx/gamecube.c
++++ b/arch/powerpc/platforms/embedded6xx/gamecube.c
+@@ -70,7 +70,6 @@ define_machine(gamecube) {
+ 	.halt			= gamecube_halt,
+ 	.init_IRQ		= flipper_pic_probe,
+ 	.get_irq		= flipper_pic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ 	.machine_shutdown	= gamecube_shutdown,
+ };
 diff --git a/arch/powerpc/platforms/embedded6xx/holly.c b/arch/powerpc/platforms/embedded6xx/holly.c
-index a167ee88fbf9..748acdea94ad 100644
+index 67949c85c398..a167ee88fbf9 100644
 --- a/arch/powerpc/platforms/embedded6xx/holly.c
 +++ b/arch/powerpc/platforms/embedded6xx/holly.c
-@@ -113,8 +113,7 @@ static void __init holly_init_pci(void)
- {
- 	struct device_node *np;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("holly_setup_arch():set_bridge", 0);
-+	ppc_md_progress("holly_setup_arch():set_bridge", 0);
- 
- 	/* setup PCI host bridge */
- 	holly_remap_bridge();
-@@ -126,8 +125,7 @@ static void __init holly_init_pci(void)
- 	of_node_put(np);
- 
- 	ppc_md.pci_exclude_device = holly_exclude_device;
--	if (ppc_md.progress)
--		ppc_md.progress("tsi108: resources set", 0x100);
-+	ppc_md_progress("tsi108: resources set", 0x100);
- }
- 
- static void __init holly_setup_arch(void)
+@@ -264,7 +264,6 @@ define_machine(holly){
+ 	.show_cpuinfo           	= holly_show_cpuinfo,
+ 	.get_irq                	= mpic_get_irq,
+ 	.restart                	= holly_restart,
+-	.calibrate_decr         	= generic_calibrate_decr,
+ 	.machine_check_exception	= ppc750_machine_check_exception,
+ 	.progress               	= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index f04fd234c9ab..9c10aac40c7b 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -159,5 +159,4 @@ define_machine(linkstation){
+ 	.get_irq 		= mpic_get_irq,
+ 	.restart 		= linkstation_restart,
+ 	.halt	 		= linkstation_halt,
+-	.calibrate_decr 	= generic_calibrate_decr,
+ };
 diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index ec93d69dc0ee..3e51adb81015 100644
+index 6821fb6644ac..ec93d69dc0ee 100644
 --- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
 +++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -62,16 +62,15 @@ static void __init mpc7448_hpc2_setup_pci(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
--	if (ppc_md.progress)
--		ppc_md.progress("mpc7448_hpc2_setup_pci():set_bridge", 0);
-+
-+	ppc_md_progress("mpc7448_hpc2_setup_pci():set_bridge", 0);
- 
- 	/* setup PCI host bridge */
- 	for_each_compatible_node(np, "pci", "tsi108-pci")
- 		tsi108_setup_pci(np, MPC7448HPC2_PCI_CFG_PHYS, 0);
- 
- 	ppc_md.pci_exclude_device = mpc7448_hpc2_exclude_device;
--	if (ppc_md.progress)
--		ppc_md.progress("tsi108: resources set", 0x100);
-+	ppc_md_progress("tsi108: resources set", 0x100);
- #endif
- }
- 
+@@ -182,7 +182,6 @@ define_machine(mpc7448_hpc2){
+ 	.show_cpuinfo 		= mpc7448_hpc2_show_cpuinfo,
+ 	.get_irq 		= mpic_get_irq,
+ 	.restart 		= mpc7448_hpc2_restart,
+-	.calibrate_decr 	= generic_calibrate_decr,
+ 	.machine_check_exception= mpc7448_machine_check_exception,
+ 	.progress 		= udbg_progress,
+ };
 diff --git a/arch/powerpc/platforms/embedded6xx/mvme5100.c b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-index 00bec0f051be..8d988c65dc05 100644
+index 7e57de576ef7..00bec0f051be 100644
 --- a/arch/powerpc/platforms/embedded6xx/mvme5100.c
 +++ b/arch/powerpc/platforms/embedded6xx/mvme5100.c
-@@ -154,8 +154,7 @@ static const struct of_device_id mvme5100_of_bus_ids[] __initconst = {
-  */
- static void __init mvme5100_setup_arch(void)
- {
--	if (ppc_md.progress)
--		ppc_md.progress("mvme5100_setup_arch()", 0);
-+	ppc_md_progress("mvme5100_setup_arch()", 0);
- 
- 	restart = ioremap(BOARD_MODRST_REG, 4);
- }
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index 5b26a9012d2e..e5e6ad514d1d 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -246,7 +246,7 @@ static void __init psurge_quad_init(void)
- {
- 	int procbits;
- 
--	if (ppc_md.progress) ppc_md.progress("psurge_quad_init", 0x351);
-+	ppc_md_progress("psurge_quad_init", 0x351);
- 	procbits = ~PSURGE_QUAD_IN(PSURGE_QUAD_WHICH_CPU);
- 	if (psurge_type == PSURGE_QUAD_ICEGRASS)
- 		PSURGE_QUAD_BIS(PSURGE_QUAD_RESET_CTL, procbits);
-@@ -325,7 +325,7 @@ static void __init smp_psurge_probe(void)
- 	for (i = 1; i < ncpus ; ++i)
- 		set_cpu_present(i, true);
- 
--	if (ppc_md.progress) ppc_md.progress("smp_psurge_probe - done", 0x352);
-+	ppc_md_progress("smp_psurge_probe - done", 0x352);
- }
- 
- static int __init smp_psurge_kick_cpu(int nr)
-@@ -345,7 +345,7 @@ static int __init smp_psurge_kick_cpu(int nr)
- 		asm volatile("dcbf 0,%0" : : "r" (a) : "memory");
- 	asm volatile("sync");
- 
--	if (ppc_md.progress) ppc_md.progress("smp_psurge_kick_cpu", 0x353);
-+	ppc_md_progress("smp_psurge_kick_cpu", 0x353);
- 
- 	/* This is going to freeze the timeebase, we disable interrupts */
- 	local_irq_save(flags);
-@@ -392,7 +392,7 @@ static int __init smp_psurge_kick_cpu(int nr)
- 	if (psurge_type == PSURGE_DUAL)
- 		psurge_set_ipi(1);
- 
--	if (ppc_md.progress) ppc_md.progress("smp_psurge_kick_cpu - done", 0x354);
-+	ppc_md_progress("smp_psurge_kick_cpu - done", 0x354);
- 
- 	return 0;
- }
-@@ -763,7 +763,7 @@ static void __init smp_core99_probe(void)
- 	struct device_node *cpus;
- 	int ncpus = 0;
- 
--	if (ppc_md.progress) ppc_md.progress("smp_core99_probe", 0x345);
-+	ppc_md_progress("smp_core99_probe", 0x345);
- 
- 	/* Count CPUs in the device-tree */
- 	for_each_node_by_type(cpus, "cpu")
-@@ -800,8 +800,7 @@ static int smp_core99_kick_cpu(int nr)
- 	if (nr < 0 || nr > 3)
- 		return -ENOENT;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("smp_core99_kick_cpu", 0x346);
-+	ppc_md_progress("smp_core99_kick_cpu", 0x346);
- 
- 	local_irq_save(flags);
- 
-@@ -828,7 +827,7 @@ static int smp_core99_kick_cpu(int nr)
- 	patch_instruction(vector, ppc_inst(save_vector));
- 
- 	local_irq_restore(flags);
--	if (ppc_md.progress) ppc_md.progress("smp_core99_kick_cpu done", 0x347);
-+	ppc_md_progress("smp_core99_kick_cpu done", 0x347);
- 
- 	return 0;
- }
-@@ -896,8 +895,7 @@ static void __init smp_core99_bringup_done(void)
- 				  smp_core99_cpu_online, NULL);
- #endif
- 
--	if (ppc_md.progress)
--		ppc_md.progress("smp_core99_bringup_done", 0x349);
-+	ppc_md_progress("smp_core99_bringup_done", 0x349);
- }
- #endif /* CONFIG_PPC64 */
- 
+@@ -204,6 +204,5 @@ define_machine(mvme5100) {
+ 	.show_cpuinfo		= mvme5100_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+ 	.restart		= mvme5100_restart,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/storcenter.c b/arch/powerpc/platforms/embedded6xx/storcenter.c
+index ab85af37117f..e49880e8dab8 100644
+--- a/arch/powerpc/platforms/embedded6xx/storcenter.c
++++ b/arch/powerpc/platforms/embedded6xx/storcenter.c
+@@ -118,5 +118,4 @@ define_machine(storcenter){
+ 	.init_IRQ 		= storcenter_init_IRQ,
+ 	.get_irq 		= mpic_get_irq,
+ 	.restart 		= storcenter_restart,
+-	.calibrate_decr 	= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
+index 635c393d307a..b54382a8ccc6 100644
+--- a/arch/powerpc/platforms/embedded6xx/wii.c
++++ b/arch/powerpc/platforms/embedded6xx/wii.c
+@@ -175,7 +175,6 @@ define_machine(wii) {
+ 	.halt			= wii_halt,
+ 	.init_IRQ		= wii_pic_probe,
+ 	.get_irq		= flipper_pic_get_irq,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ 	.machine_shutdown	= wii_shutdown,
+ };
+diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
+index 98c8e3603064..40618513e3f5 100644
+--- a/arch/powerpc/platforms/maple/setup.c
++++ b/arch/powerpc/platforms/maple/setup.c
+@@ -357,7 +357,6 @@ define_machine(maple) {
+ 	.get_boot_time		= maple_get_boot_time,
+ 	.set_rtc_time		= maple_set_rtc_time,
+ 	.get_rtc_time		= maple_get_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= maple_progress,
+ 	.power_save		= power4_idle,
+ };
+diff --git a/arch/powerpc/platforms/microwatt/setup.c b/arch/powerpc/platforms/microwatt/setup.c
+index f08edcde7bee..5e1c0997170d 100644
+--- a/arch/powerpc/platforms/microwatt/setup.c
++++ b/arch/powerpc/platforms/microwatt/setup.c
+@@ -40,5 +40,4 @@ define_machine(microwatt) {
+ 	.init_IRQ		= microwatt_init_IRQ,
+ 	.setup_arch		= microwatt_setup_arch,
+ 	.progress		= udbg_progress,
+-	.calibrate_decr		= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index 2aef49e04dd4..5c5b4a034f9e 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -449,7 +449,6 @@ define_machine(pasemi) {
+ 	.get_irq		= mpic_get_irq,
+ 	.restart		= pas_restart,
+ 	.get_boot_time		= pas_get_boot_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= pas_progress,
+ 	.machine_check_exception = pas_machine_check_handler,
+ };
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index f89731670448..5e9c6b55809f 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -585,7 +585,6 @@ define_machine(powernv) {
+ 	.progress		= pnv_progress,
+ 	.machine_shutdown	= pnv_shutdown,
+ 	.power_save             = NULL,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.machine_check_early	= pnv_machine_check_early,
+ #ifdef CONFIG_KEXEC_CORE
+ 	.kexec_cpu_down		= pnv_kexec_cpu_down,
 diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 33d44ccff07c..71f6f7db010e 100644
+index 4a0cec8cf623..33d44ccff07c 100644
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -489,7 +489,7 @@ void __init pseries_little_endian_exceptions(void)
- 		mdelay(get_longbusy_msecs(rc));
- 	}
- 	if (rc) {
--		ppc_md.progress("H_SET_MODE LE exception fail", 0);
-+		ppc_md_progress("H_SET_MODE LE exception fail", 0);
- 		panic("Could not enable little endian exceptions");
- 	}
- }
-@@ -886,11 +886,11 @@ static int __init pSeries_init_panel(void)
- {
- 	/* Manually leave the kernel version on the panel. */
- #ifdef __BIG_ENDIAN__
--	ppc_md.progress("Linux ppc64\n", 0);
-+	ppc_md_progress("Linux ppc64\n", 0);
- #else
--	ppc_md.progress("Linux ppc64le\n", 0);
-+	ppc_md_progress("Linux ppc64le\n", 0);
- #endif
--	ppc_md.progress(init_utsname()->version, 0);
-+	ppc_md_progress(init_utsname()->version, 0);
- 
- 	return 0;
- }
+@@ -1135,7 +1135,6 @@ define_machine(pseries) {
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.set_rtc_time		= rtas_set_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= rtas_progress,
+ 	.system_reset_exception = pSeries_system_reset_exception,
+ 	.machine_check_early	= pseries_machine_check_realmode,
 -- 
 2.39.1
+
+
 
