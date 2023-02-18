@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97C31C636D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 09:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C6A9C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 11:27:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PJk0f19LKz3cfZ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 20:29:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PJmd42wRgz3fJK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 22:27:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XcCh4sLr;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XcCh4sLr;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJk022rd0z3c3N
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 20:29:04 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4PJjzx3JR0z9sbd;
-	Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1yBzKFv13ba2; Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4PJjzx2ZJ4z9sWY;
-	Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 451668B768;
-	Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id O_BMGtLZa0IN; Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.7.180])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0E1C48B764;
-	Sat, 18 Feb 2023 10:29:01 +0100 (CET)
-Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.16.1) with ESMTPS id 31I9Sq3d644371
-	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Sat, 18 Feb 2023 10:28:53 +0100
-Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.17.1/8.17.1/Submit) id 31I9SpLa644369;
-	Sat, 18 Feb 2023 10:28:51 +0100
-X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/e500: Add missing prototype for 'relocate_init'
-Date: Sat, 18 Feb 2023 10:28:50 +0100
-Message-Id: <ac9107acf24135e1a07e8f84d2090572d43e3fe4.1676712510.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.39.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJmc00Hjkz3c9N
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 22:26:55 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 0A09160B74;
+	Sat, 18 Feb 2023 11:26:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4966EC433D2;
+	Sat, 18 Feb 2023 11:26:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1676719611;
+	bh=UD5jorQCVmKiXH0v3VkIP3iO7pPTI+aaxJhMgfUmopA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=XcCh4sLrBNX6YqrkGegjUggS6HIQUmPJKLArq70/WAkXK9NkXZ5fibNjlX0MC9Ryf
+	 3TjrQDOcOZj7BDgifP94+50+DKM8eXnIGBVdyOeVAYmqVFt/EBtkOAqsaEERgI2ReP
+	 8Gb+aCxlvhlLecCuvxgVO5bYV9CU88UPXKMNU1wILqzkPntFzyv2Ipr0FMbbVphWaX
+	 +DIwe1Hy32yAC/cSjZawR9iZJlynJYQEJ4JAcMNadm3t8P6W7mMBfwgZk0oY/2ZCgp
+	 bXQSDSJDt69eU+yz4TvPoPeLOprQ7uN1SxBXnmLi+v1JHEM7jP1RyQBQjIJa3Y+roS
+	 YPET6OORyZ7UQ==
+Received: by pali.im (Postfix)
+	id A4DF5CB0; Sat, 18 Feb 2023 12:26:48 +0100 (CET)
+From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Scott Wood <oss@buserror.net>,
+	Sinan Akman <sinan@writeme.com>,
+	Martin Kennedy <hurricos@gmail.com>
+Subject: [PATCH v3 1/8] powerpc/85xx: Mark mpc85xx_rdb_pic_init() as static
+Date: Sat, 18 Feb 2023 12:13:58 +0100
+Message-Id: <20230218111405.27688-2-pali@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230218111405.27688-1-pali@kernel.org>
+References: <20230218111405.27688-1-pali@kernel.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1676712516; l=1217; s=20211009; h=from:subject:message-id; bh=pfVj+fGo1djC+tVecmlDArzordscRtCM4E2ms3R4K3U=; b=6OT4l93tyj8545rUYFu1CCuXDkDFOIwBCZTCy572l5zArzVPKJ6mFf5Lqe9Re/2q/QrmdRsKj5FV vPDMZSG/Af+/o+whdbcQrRI3MfiBcIWFAJsTfLU7EYX/2EJy9hn4
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -67,38 +67,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, kernel test robot <lkp@intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Kernel test robot reports:
+Function mpc85xx_rdb_pic_init() is not used out of the mpc85xx_rdb.c file.
 
- arch/powerpc/mm/nohash/e500.c:314:21: warning: no previous prototype for 'relocate_init' [-Wmissing-prototypes]
-     314 | notrace void __init relocate_init(u64 dt_ptr, phys_addr_t start)
-         |                     ^~~~~~~~~~~~~
-
-Add it in mm/mmu_decl.h, close to associated is_second_reloc
-variable declaration.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/oe-kbuild-all/202302181136.wgyCKUcs-lkp@intel.com/
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/mm/mmu_decl.h | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index bd9784f77f2e..c6dccb4f06dc 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -120,6 +120,7 @@ extern int switch_to_as1(void);
- extern void restore_to_as0(int esel, int offset, void *dt_ptr, int bootcpu);
- void create_kaslr_tlb_entry(int entry, unsigned long virt, phys_addr_t phys);
- void reloc_kernel_entry(void *fdt, int addr);
-+void relocate_init(u64 dt_ptr, phys_addr_t start);
- extern int is_second_reloc;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index d99aba158235..b6129c148fea 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -38,7 +38,7 @@
  #endif
- extern void loadcam_entry(unsigned int index);
+ 
+ 
+-void __init mpc85xx_rdb_pic_init(void)
++static void __init mpc85xx_rdb_pic_init(void)
+ {
+ 	struct mpic *mpic;
+ 
 -- 
-2.39.1
+2.20.1
 
