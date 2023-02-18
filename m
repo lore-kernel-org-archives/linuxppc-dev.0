@@ -4,42 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21C84C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 11:31:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 636D2C636CC
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 11:32:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PJmj83SM7z3fWn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 22:31:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PJmk86WQqz3fb3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 22:32:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EiLsj2he;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tanSx/9G;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EiLsj2he;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tanSx/9G;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJmc05BMZz3c6t
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJmc05lnLz3c9N
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 22:26:56 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id D5EC5B82299;
+	by ams.source.kernel.org (Postfix) with ESMTPS id B5E37B822AB;
 	Sat, 18 Feb 2023 11:26:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7F2EAC4339C;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48C78C433EF;
 	Sat, 18 Feb 2023 11:26:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1676719611;
-	bh=vLdbEYs9J1EPtjUtdMqj8bjqBT+nhEDREqgOhl9+6dA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=EiLsj2hep87sOE4NvcWDKU0XAlOcSB5+fjp1KdhxQhU1ocx5yyRBZMUVPIuCsQEOD
-	 drDoJyBYkDn/2jCQ2+kdhV1BmGWGs+4BEo1CmNFTd3tiGrXobCUPqMQz1Rr2HF3/OC
-	 REF52nPeqqFCfahETmtobad6+GItJbDawyv4MBLbuJitFnFjvz//q2aMFZNvEWUGS1
-	 0C3CaKnXSH3lzOZQjFwDqDLlflV1cXYOCNI4hDs4lsGv1Mi7lxxaCkRc8VuPUd83B8
-	 ybwsMVMBxfBza8tF10yEkX76X9NOEjBaYYDIS2C0j4TbCvpmQyIz+xLsnryMxKaZoI
-	 PM/S7jcDTqLXw==
+	bh=JVTiq+B7EgZuFlDHHXZ/E5jLhXy+PnF55RTV4RUP3v8=;
+	h=From:To:Cc:Subject:Date:From;
+	b=tanSx/9GIYeOkjwWxWqRA+w5iY++qN6UfgcwDjlM5t8wrhMv9LXNPHW265Bcq/b0f
+	 yAMtC3vh0/qPWJF6YpCXwqz/wucM9qPc8QvzQKaSR6wiQ2IefR8/2W6UbTLWftMHDo
+	 fsSNM5my3T/BSJ/nrZIGKZJko4cZmZpCtCxVsYk1lMwv+b5J4K3G/sG3CWZxkv/GyC
+	 mogB1sm1zBoyadOG548rnxtQDRmmFeGgp21gVqr6dElcVWOmefsBauG5WKT0Qf+FfA
+	 KPdswLDWakc5ZjXN1Ca8HUCKcCqQYkqV4q2yoasQ88XHRBFdj/qSRm4SyyVop4Q8Q4
+	 P1gM/H8dR2CiA==
 Received: by pali.im (Postfix)
-	id 231C010C6; Sat, 18 Feb 2023 12:26:49 +0100 (CET)
+	id 7B9E371F; Sat, 18 Feb 2023 12:26:48 +0100 (CET)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -47,12 +47,10 @@ To: Michael Ellerman <mpe@ellerman.id.au>,
 	Scott Wood <oss@buserror.net>,
 	Sinan Akman <sinan@writeme.com>,
 	Martin Kennedy <hurricos@gmail.com>
-Subject: [PATCH v3 4/8] powerpc/85xx: p2020: Move i8259 code into own function
-Date: Sat, 18 Feb 2023 12:14:01 +0100
-Message-Id: <20230218111405.27688-5-pali@kernel.org>
+Subject: [PATCH v3 0/8] powerpc/85xx: p2020: Create one unified machine description
+Date: Sat, 18 Feb 2023 12:13:57 +0100
+Message-Id: <20230218111405.27688-1-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20230218111405.27688-1-pali@kernel.org>
-References: <20230218111405.27688-1-pali@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -71,86 +69,49 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Splits mpic and i8259 initialization codes into separate functions.
-Use 'if (IS_ENABLED(CONFIG_PPC_I8259))' instead of '#ifdef CONFIG_PPC_I8259'.
+This patch series unifies all P2020 boards and machine descriptions into
+one generic unified P2020 machine description. With this generic machine
+description, kernel can boot on any P2020-based board with correct DTS
+file.
 
-Signed-off-by: Pali Rohár <pali@kernel.org>
----
- arch/powerpc/platforms/85xx/p2020.c | 36 ++++++++++++++---------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+Tested on CZ.NIC Turris 1.1 board with has Freescale P2020 processor.
+Kernel during booting correctly detects P2020 and prints:
+[    0.000000] Using Freescale P2020 machine description
 
-diff --git a/arch/powerpc/platforms/85xx/p2020.c b/arch/powerpc/platforms/85xx/p2020.c
-index d65d4c88ac47..1cc468dc4caf 100644
---- a/arch/powerpc/platforms/85xx/p2020.c
-+++ b/arch/powerpc/platforms/85xx/p2020.c
-@@ -44,7 +44,6 @@
- 
- #ifdef CONFIG_MPC85xx_DS
- 
--#ifdef CONFIG_PPC_I8259
- static void mpc85xx_8259_cascade(struct irq_desc *desc)
- {
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
-@@ -55,27 +54,13 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
- 	}
- 	chip->irq_eoi(&desc->irq_data);
- }
--#endif	/* CONFIG_PPC_I8259 */
- 
--static void __init mpc85xx_ds_pic_init(void)
-+static void __init mpc85xx_8259_init(void)
- {
--	struct mpic *mpic;
--#ifdef CONFIG_PPC_I8259
- 	struct device_node *np;
- 	struct device_node *cascade_node = NULL;
- 	int cascade_irq;
--#endif
- 
--	mpic = mpic_alloc(NULL, 0,
--		  MPIC_BIG_ENDIAN |
--		  MPIC_SINGLE_DEST_CPU,
--		0, 256, " OpenPIC  ");
--
--	BUG_ON(mpic == NULL);
--	mpic_init(mpic);
--
--#ifdef CONFIG_PPC_I8259
--	/* Initialize the i8259 controller */
- 	for_each_node_by_type(np, "interrupt-controller")
- 	    if (of_device_is_compatible(np, "chrp,iic")) {
- 		cascade_node = np;
-@@ -93,13 +78,28 @@ static void __init mpc85xx_ds_pic_init(void)
- 		return;
- 	}
- 
--	DBG("mpc85xxds: cascade mapped to irq %d\n", cascade_irq);
-+	DBG("i8259: cascade mapped to irq %d\n", cascade_irq);
- 
- 	i8259_init(cascade_node, 0);
- 	of_node_put(cascade_node);
- 
- 	irq_set_chained_handler(cascade_irq, mpc85xx_8259_cascade);
--#endif	/* CONFIG_PPC_I8259 */
-+}
-+
-+static void __init mpc85xx_ds_pic_init(void)
-+{
-+	struct mpic *mpic;
-+
-+	mpic = mpic_alloc(NULL, 0,
-+		  MPIC_BIG_ENDIAN |
-+		  MPIC_SINGLE_DEST_CPU,
-+		0, 256, " OpenPIC  ");
-+
-+	BUG_ON(mpic == NULL);
-+	mpic_init(mpic);
-+
-+	if (IS_ENABLED(CONFIG_PPC_I8259))
-+		mpc85xx_8259_init();
- }
- 
- #ifdef CONFIG_PCI
+Changes in v3:
+* Use 'if (IS_ENABLED(CONFIG_PPC_I8259))' instead of '#ifdef CONFIG_PPC_I8259'
+* Simplify p2020_probe()
+* Patches generated by -M and -C git options
+
+Link to v2: https://lore.kernel.org/linuxppc-dev/20221224211425.14983-1-pali@kernel.org/
+
+Changes in v2:
+* Added patch "p2020: Move i8259 code into own function" (separated from the next one)
+* Renamed CONFIG_P2020 to CONFIG_PPC_P2020
+* Fixed descriptions
+
+Link to v1: https://lore.kernel.org/linuxppc-dev/20220819191557.28116-1-pali@kernel.org/
+
+Pali Rohár (8):
+  powerpc/85xx: Mark mpc85xx_rdb_pic_init() as static
+  powerpc/85xx: Mark mpc85xx_ds_pic_init() as static
+  powerpc/85xx: p2020: Move all P2020 machine descriptions to p2020.c
+  powerpc/85xx: p2020: Move i8259 code into own function
+  powerpc/85xx: p2020: Unify .setup_arch and .init_IRQ callbacks
+  powerpc/85xx: p2020: Define just one machine description
+  powerpc/85xx: p2020: Enable boards by new config option
+    CONFIG_PPC_P2020
+  powerpc: dts: turris1x.dts: Remove "fsl,P2020RDB-PC" compatible string
+
+ arch/powerpc/boot/dts/turris1x.dts            |   2 +-
+ arch/powerpc/platforms/85xx/Kconfig           |  22 ++-
+ arch/powerpc/platforms/85xx/Makefile          |   1 +
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c      |  25 +---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c     |  46 +-----
+ .../platforms/85xx/{mpc85xx_ds.c => p2020.c}  | 135 ++++++------------
+ 6 files changed, 68 insertions(+), 163 deletions(-)
+ copy arch/powerpc/platforms/85xx/{mpc85xx_ds.c => p2020.c} (52%)
+
 -- 
 2.20.1
 
