@@ -4,57 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20077C636D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Feb 2023 23:01:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB697C05027
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 00:10:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PJS3s3KxYz3fRC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 10:01:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PJTbp4fZbz3fRP
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Feb 2023 11:10:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CFs2xG6b;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XhwRSqSi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CFs2xG6b;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XhwRSqSi;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJS2m4Wxcz3cJK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 10:00:32 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 6696B61F16;
-	Fri, 17 Feb 2023 23:00:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id CCDBEC433EF;
-	Fri, 17 Feb 2023 23:00:28 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1676674828;
-	bh=/+E+Xt2KjcN0vWMalUVS6q3ENhyUTJNzgzHQ54Ud7mQ=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=CFs2xG6bHCO68Clg6QWt4ERlET6veKb82qMYP00nK/PW6/arFOBpNLk78f3NgjNdO
-	 cn2Wz0XxLxg6qzpWzCo8JXyO/2wax0L2s1+nNcpB0Ilep+yAc3eXhbI7aahRSdcPBR
-	 db9mQT3jfDAXEo8WuUoWDWp2I/pZ3IRuBZiuLC8H0D4hywmpcW4KcWwxpxLDWxzDq7
-	 NXx7nn0l7kstGfSvviuwUKcYCTPN060SdoH5bnGVvnKhWUWTgKN1iU7uupMiSF+stx
-	 YpVWSAexECOQNyDDJqLXehwd042h6gjVglyo3HgRUZSUn0Wd5xQx9uziv0rk31l50V
-	 nIAsCzp8wZHFA==
-Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id BA7E9E68D2F;
-	Fri, 17 Feb 2023 23:00:28 +0000 (UTC)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-6.2-6 tag
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87h6vjzzjh.fsf@mpe.ellerman.id.au>
-References: <87h6vjzzjh.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
-X-PR-Tracked-Message-Id: <87h6vjzzjh.fsf@mpe.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.2-6
-X-PR-Tracked-Commit-Id: 4302abc628fc0dc08e5855f21bbfaed407a72bc3
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: dbeed98d89ea91ae68ff6dce6060671726292e85
-Message-Id: <167667482875.20587.7032685656825133519.pr-tracker-bot@kernel.org>
-Date: Fri, 17 Feb 2023 23:00:28 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PJTZj5PVgz3f4s
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Feb 2023 11:09:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1676678990; x=1708214990;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=zKmR55huDLcXeZYijU1+/RJfCGKa2H+ydcOc47dchFU=;
+  b=XhwRSqSiInJ1A8R+iLG8N21HkB0mDuiIVFS3xnvV6IQH5xlSlx48sK7p
+   vdsKLyIcGIDJf1G3vB41If2mDqrMQ6IYFwVMzcYGlYgNLW7zMUCkuN6u/
+   Kunc2e26OTXUdBqEZwi23j5qb1+UvU0gYKNlXa9sjv5rdSLOUY02FCy2y
+   IrWWkee/WilrJRrzty3q/W9U9P6OsnrJj8oycAuYjMMk/lNzRhAo8GXeF
+   F8UnE204VeRpInRbvsPkOXKkU9TJrDh+ZJAZndIel95XzAMAIFx2705xg
+   EvCzqGvYpmDDcgO3rILvzKQmihrOTW/GhWNsT8ckwnINVYow5m9fi4pS8
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="333480991"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; 
+   d="scan'208";a="333480991"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Feb 2023 16:09:39 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10624"; a="664049081"
+X-IronPort-AV: E=Sophos;i="5.97,306,1669104000"; 
+   d="scan'208";a="664049081"
+Received: from lkp-server01.sh.intel.com (HELO 4455601a8d94) ([10.239.97.150])
+  by orsmga007.jf.intel.com with ESMTP; 17 Feb 2023 16:09:38 -0800
+Received: from kbuild by 4455601a8d94 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1pTAnJ-000Bv1-2W;
+	Sat, 18 Feb 2023 00:09:37 +0000
+Date: Sat, 18 Feb 2023 08:08:53 +0800
+From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:next] BUILD SUCCESS
+ 38d73b671a817328334f2a70a23fed4d1f4a952c
+Message-ID: <63f01715.CzlkYP/P2jeXsib+%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,19 +70,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, bgray@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Sat, 18 Feb 2023 09:40:18 +1100:
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+branch HEAD: 38d73b671a817328334f2a70a23fed4d1f4a952c  powerpc/64: Fix unannotated intra-function call warning
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-6.2-6
+elapsed time: 753m
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/dbeed98d89ea91ae68ff6dce6060671726292e85
+configs tested: 73
+configs skipped: 3
 
-Thank you!
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+alpha                            allyesconfig
+alpha                               defconfig
+arc                              allyesconfig
+arc                                 defconfig
+arc                  randconfig-r043-20230217
+arm                              allmodconfig
+arm                              allyesconfig
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+csky                                defconfig
+i386                             allyesconfig
+i386                              debian-10.3
+i386                                defconfig
+i386                          randconfig-a001
+i386                          randconfig-a003
+i386                          randconfig-a005
+i386                          randconfig-a012
+i386                          randconfig-a014
+i386                          randconfig-a016
+ia64                             allmodconfig
+ia64                                defconfig
+loongarch                        allmodconfig
+loongarch                         allnoconfig
+loongarch                           defconfig
+m68k                             allmodconfig
+m68k                                defconfig
+mips                             allmodconfig
+mips                             allyesconfig
+nios2                               defconfig
+parisc                              defconfig
+parisc64                            defconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+riscv                            allmodconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                randconfig-r042-20230217
+riscv                          rv32_defconfig
+s390                             allmodconfig
+s390                             allyesconfig
+s390                                defconfig
+s390                 randconfig-r044-20230217
+sh                               allmodconfig
+sparc                               defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                            allnoconfig
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                                  kexec
+x86_64                        randconfig-a002
+x86_64                        randconfig-a004
+x86_64                        randconfig-a006
+x86_64                        randconfig-a011
+x86_64                        randconfig-a013
+x86_64                        randconfig-a015
+x86_64                               rhel-8.3
+
+clang tested configs:
+arm                  randconfig-r046-20230217
+hexagon              randconfig-r041-20230217
+hexagon              randconfig-r045-20230217
+i386                          randconfig-a002
+i386                          randconfig-a004
+i386                          randconfig-a006
+i386                          randconfig-a011
+i386                          randconfig-a013
+i386                          randconfig-a015
+x86_64                        randconfig-a001
+x86_64                        randconfig-a003
+x86_64                        randconfig-a005
+x86_64                        randconfig-a012
+x86_64                        randconfig-a014
+x86_64                        randconfig-a016
 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
