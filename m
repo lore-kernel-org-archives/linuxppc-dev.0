@@ -4,52 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F2C4C05027
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Feb 2023 08:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF9ACC05027
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Feb 2023 09:15:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PKwH13v8fz3c8V
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Feb 2023 19:16:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PKxb51HCrz3cBC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 20 Feb 2023 20:15:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S8SJipji;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mAcRmoA6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=bjorn@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S8SJipji;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mAcRmoA6;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PKwFy261Qz3bhD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2023 19:15:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PKxZ235xYz3bg1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Feb 2023 20:14:18 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 7969E60C85;
-	Mon, 20 Feb 2023 08:15:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B546AC433D2;
-	Mon, 20 Feb 2023 08:15:14 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id DBFB6B80A49;
+	Mon, 20 Feb 2023 09:14:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B570C433EF;
+	Mon, 20 Feb 2023 09:14:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1676880914;
-	bh=H13OuIPnoOpwY/dJtekf2XFjYKtpU4yA1/Mz9u7v62k=;
-	h=From:To:Cc:Subject:Date:From;
-	b=S8SJipjisbs6cd+OioZ63HlBqPnG+Lcg+xfHlKNX6Qnh4dGmugE8fBKYpSn67Jw/t
-	 SPmpolO/zRDy17Y30aw/0qc4QOXcSRgjiK5ogmaQVSb75uEr5V1WfXOKiJmbkA+Nmv
-	 yKpWOYY6JBBNxxoxbKW2gJpE4jafz61vqMZ1s2O+d0mh4JqbDfn0YFoBxon268Rf+2
-	 TXS8ogZTY4I2tCdqo9Hn5QS0q0VnQ9rYWiwu46oSwD22tPo5FjLvyAape9e2BCVGX6
-	 IN4YZcpVj7Otz3MqbQdNcdyxM0THJQagYAnsPpSvWsBYlPCKmbZ9kpNjf2ZQEktlQs
-	 4dXSkYic0LVRg==
-Received: by pali.im (Postfix)
-	id 4369B9D5; Mon, 20 Feb 2023 09:15:12 +0100 (CET)
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: [PATCH RESEND] powerpc: dts: turris1x.dts: Set lower priority for CPLD syscon-reboot
-Date: Mon, 20 Feb 2023 09:04:35 +0100
-Message-Id: <20230220080435.4237-1-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
+	s=k20201202; t=1676884451;
+	bh=mG/NJn6UIKMCtB1jUJxsXAFCx30P4P2liMAXbdz/2Xo=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=mAcRmoA6Qn3UZ1chqK60R1a2hOSyf3/oQFr9/z4MVnvrvZpMm1yEwoqqWTqJ0IMbh
+	 L7W844Whmf+R+CoIxa/+5A3ShRVClbZ91nvx+OLA3SadOpiq7O719RAXw69X71/BFU
+	 DtFAIuLebpfytY40BPrUr7OG2trd4+iPLaHButziGI9MBP/STpDpPG5uxN5UKtSV8L
+	 XYiDzlzvSsIrgoy5ZcCrtXTfbe3nwCMDN/Ar2nzLAxsIQ+wsFrrTsbzB//rb7Y82N7
+	 KtKQJEvcSyK7lCJv3F7dJaUIbglBk2CjsdArBrH867pR97sXB1f+v1CjyC8P9rDpg5
+	 fc8kEM4T9n7lg==
+From: =?utf-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
+To: Alexandre Ghiti <alexghiti@rivosinc.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe
+ Leroy <christophe.leroy@csgroup.eu>, Paul Walmsley
+ <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org
+Subject: Re: [PATCH v8 0/3] Introduce 64b relocatable kernel
+In-Reply-To: <20230215143626.453491-1-alexghiti@rivosinc.com>
+References: <20230215143626.453491-1-alexghiti@rivosinc.com>
+Date: Mon, 20 Feb 2023 10:14:09 +0100
+Message-ID: <87y1osog0u.fsf@all.your.base.are.belong.to.us>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,67 +64,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Alexandre Ghiti <alexghiti@rivosinc.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Due to CPLD firmware bugs, set CPLD syscon-reboot priority level to 64
-(between rstcr and watchdog) to ensure that rstcr's global-utilities reset
-method which is preferred stay as default one, and to ensure that CPLD
-syscon-reboot is more preferred than watchdog reset method.
+Alexandre Ghiti <alexghiti@rivosinc.com> writes:
 
-Fixes: 0531a4abd1c6 ("powerpc: dts: turris1x.dts: Add CPLD reboot node")
-Signed-off-by: Pali Rohár <pali@kernel.org>
+> After multiple attempts, this patchset is now based on the fact that the
+> 64b kernel mapping was moved outside the linear mapping.
+>
+> The first patch allows to build relocatable kernels but is not selected
+> by default. That patch is a requirement for KASLR.
+> The second and third patches take advantage of an already existing powerpc
+> script that checks relocations at compile-time, and uses it for riscv.
+>
+> This patchset is rebased on top of:
+>
+> RISC-V kasan rework (https://lore.kernel.org/lkml/Y6TTvku%2FyuSjm42j@spud=
+/T/)
+> riscv: Use PUD/P4D/PGD pages for the linear mapping (https://lore.kernel.=
+org/lkml/20230125114229.hrhsyw4aegrnmoau@orel/T/)
+> riscv: Allow to downgrade paging mode from the command line (https://lore=
+.kernel.org/lkml/CAHVXubjeSMvfTPnvrnYRupOGx6+vUvUGfRS3piTeo=3DTH2cHKNg@mail=
+.gmail.com/)
+> base-commit-tag: v6.2-rc7
+>
+> Changes in v8:
+>   * Fix UEFI boot by moving rela.dyn section into the data so that PE/COFF
+>     loader actually copies the relocations too
+>   * Fix check that used PGDIR instead of PUD which was not correct
+>     for sv48 and sv57
+>   * Fix PE/COFF header data size definition as it led to size of 0
+>
+> Changes in v7:
+>   * Rebase on top of v5.15
+>   * Fix LDFLAGS_vmlinux which was overriden when CONFIG_DYNAMIC_FTRACE was
+>     set
+>   * Make relocate_kernel static
+>   * Add Ack from Michael
+>
+> Changes in v6:
+>   * Remove the kernel move to vmalloc zone
+>   * Rebased on top of for-next
+>   * Remove relocatable property from 32b kernel as the kernel is mapped in
+>     the linear mapping and would then need to be copied physically too
+>   * CONFIG_RELOCATABLE depends on !XIP_KERNEL
+>   * Remove Reviewed-by from first patch as it changed a bit
+>
+> Changes in v5:
+>   * Add "static __init" to create_kernel_page_table function as reported =
+by
+>     Kbuild test robot
+>   * Add reviewed-by from Zong
+>   * Rebase onto v5.7
+>
+> Changes in v4:
+>   * Fix BPF region that overlapped with kernel's as suggested by Zong
+>   * Fix end of module region that could be larger than 2GB as suggested b=
+y Zong
+>   * Fix the size of the vm area reserved for the kernel as we could lose
+>     PMD_SIZE if the size was already aligned on PMD_SIZE
+>   * Split compile time relocations check patch into 2 patches as suggeste=
+d by Anup
+>   * Applied Reviewed-by from Zong and Anup
+>
+> Changes in v3:
+>   * Move kernel mapping to vmalloc
+>
+> Changes in v2:
+>   * Make RELOCATABLE depend on MMU as suggested by Anup
+>   * Rename kernel_load_addr into kernel_virt_addr as suggested by Anup
+>   * Use __pa_symbol instead of __pa, as suggested by Zong
+>   * Rebased on top of v5.6-rc3
+>   * Tested with sv48 patchset
+>   * Add Reviewed/Tested-by from Zong and Anup
+>
+> Alexandre Ghiti (3):
+>   riscv: Introduce CONFIG_RELOCATABLE
+>   powerpc: Move script to check relocations at compile time in scripts/
+>   riscv: Check relocations at compile time
 
----
-Original patch: https://lore.kernel.org/lkml/878rgtyx2y.fsf@mpe.ellerman.id.au/
+I'm getting issues booting via UEFI/efi-stub with this, because the PE
+header is messed up.
 
-Commit https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/commit/?h=for-next&id=e6333293f27cd395e77c6521afd52ff0bdc58107
-("power: reset: syscon-reboot: Add support for specifying priority")
-implements priority level and this patch just wiring it for turris1x.dts
----
- arch/powerpc/boot/dts/turris1x.dts | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+from arch/riscv/kernel/efi-header.S:
 
-diff --git a/arch/powerpc/boot/dts/turris1x.dts b/arch/powerpc/boot/dts/turris1x.dts
-index e9cda34a140e..c9b619f6ed5c 100644
---- a/arch/powerpc/boot/dts/turris1x.dts
-+++ b/arch/powerpc/boot/dts/turris1x.dts
-@@ -367,11 +367,34 @@
- 			};
- 
- 			reboot@d {
-+				/*
-+				 * CPLD firmware which manages system reset and
-+				 * watchdog registers has bugs. It does not
-+				 * autoclear system reset register after change
-+				 * and watchdog ignores reset line on immediate
-+				 * succeeding reset cycle triggered by watchdog.
-+				 * These bugs have to be workarounded in U-Boot
-+				 * bootloader. So use system reset via syscon as
-+				 * a last resort because older U-Boot versions
-+				 * do not have workaround for watchdog.
-+				 *
-+				 * Reset method via rstcr's global-utilities
-+				 * (the preferred one) has priority level 128,
-+				 * watchdog has priority level 0 and default
-+				 * syscon-reboot priority level is 192.
-+				 *
-+				 * So define syscon-reboot with custom priority
-+				 * level 64 (between rstcr and watchdog) because
-+				 * rstcr should stay as default preferred reset
-+				 * method and reset via watchdog is more broken
-+				 * than system reset via syscon.
-+				 */
- 				compatible = "syscon-reboot";
- 				reg = <0x0d 0x01>;
- 				offset = <0x0d>;
- 				mask = <0x01>;
- 				value = <0x01>;
-+				priority = <64>;
- 			};
- 
- 			led-controller@13 {
--- 
-2.20.1
+ | ...
+ | extra_header_fields:
+ |         .quad   0                                       // ImageBase
+ |         .long   PECOFF_SECTION_ALIGNMENT                // SectionAlignm=
+ent
+ |         .long   PECOFF_FILE_ALIGNMENT                   // FileAlignment
+ | ...
 
+PECOFF* is taken from the linker-script, and ends up in relocation
+section. When u-boot tried to load the image, alignment is zero and the
+loader breaks.
+
+
+Bj=C3=B6rn
