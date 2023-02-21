@@ -4,81 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70931C61DA3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:13:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38435C636D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:57:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PLm8S6kLKz3fSs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:13:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=EMJBt3zy;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=th8zsIYP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flygoat.com (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com; envelope-from=jiaxun.yang@flygoat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=EMJBt3zy;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=th8zsIYP;
-	dkim-atps=neutral
-Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com [64.147.123.25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PLn6n3dPzz3cMx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:57:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=<UNKNOWN>)
+X-Greylist: delayed 121 seconds by postgrey-1.36 at boromir; Wed, 22 Feb 2023 04:56:34 AEDT
+Received: from verein.lst.de (verein.lst.de [213.95.11.211])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLfRh4WBZz3byj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2023 23:56:16 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.west.internal (Postfix) with ESMTP id 45DF23200929;
-	Tue, 21 Feb 2023 07:46:21 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute3.internal (MEProxy); Tue, 21 Feb 2023 07:46:22 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
-	cc:cc:content-transfer-encoding:date:date:from:from:in-reply-to
-	:message-id:mime-version:reply-to:sender:subject:subject:to:to;
-	 s=fm2; t=1676983580; x=1677069980; bh=o1ZGzAY+2IAq6iM9F+Xf8a1cE
-	huTp9TD8y5vFZAwf2Y=; b=EMJBt3zyvDdk72wNVD6Rp0MSRXuNpRO1l4RTro2Bm
-	Q68vwd6ylAHTjrNFljCyq/JBIn3lPPXfgc4/6kk8pQgPkHmUfQCfVhmtTjfoAUiq
-	E/1Z2y3iMjQZb/AYwTUje2WUwJPnsW8dGeROQUPzZMMapCpNieebulQ6b1s5lOgS
-	LsUuGRK/I5d2SJ4y4WrcSJPckasYkpldbLC2L/xjAJasWeEQOnOy2/fv6z6QdazG
-	0CV9dHfdja/HMB+EHvRjIXBskQYkKM8Cr3uY3SLxOq0hcNokeOxDrhxM0XZPuvTO
-	HuWtbpT/vjLX4Qq5womPSW0644hrxyBElJ44X/bD6TpwA==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:message-id
-	:mime-version:reply-to:sender:subject:subject:to:to:x-me-proxy
-	:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=
-	1676983580; x=1677069980; bh=o1ZGzAY+2IAq6iM9F+Xf8a1cEhuTp9TD8y5
-	vFZAwf2Y=; b=th8zsIYP60+WQlHRLMTjitDNcmVVDGTJ4WbmTbjgZDhRpdcEwlE
-	aCund/RrXSmSkquNlWkBr2iMp0JV5Mm+P3VNM29fo27vJM/A4nzKB4CevyDHad2J
-	djFJxRQhZHNRUSRui7eG0RgbSYGhXbPbvdKUr0VjPNaZggFS+fMolbh72aV8uyI0
-	hHatvxsKUdaK10Q7JbiQHjloeYstWVihqVySVTiuHHwHxi5ZbeiX8esoglNsHTSp
-	A+K0VLkheajhYIwiap8e8HA+U850GivU0NLEI6wpmTCGdBRiQFVW87ycfljjvf9i
-	hofR4SCjfv1ATpwx0NjJq6viCycYj/SCpsA==
-X-ME-Sender: <xms:G730YyDtoU_NWr-nX8omgYp9iWEj_Cpb88tfMFG7GUF6i_qqaeMpsg>
-    <xme:G730Y8jScgS-F_7op8B22ovm68GLn8BL6vO8AryrQRCvto2J2QuiFdFn-oTd1ADFM
-    -RIkx4qSaRWuSc4ifk>
-X-ME-Received: <xmr:G730Y1nHA8Z1dGd7OMFxUBeSeLbmsED_OBnzecdttXlDAJIOTc0UGAsii8Lx>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudejjedggeefucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucenucfjughrpefhvfevufffkffoggfgsedtkeertd
-    ertddtnecuhfhrohhmpeflihgrgihunhcujggrnhhguceojhhirgiguhhnrdihrghnghes
-    fhhlhihgohgrthdrtghomheqnecuggftrfgrthhtvghrnhephfetuddtudevieeljeejte
-    ffheeujeduhefgffejudfhueelleduffefgfffveeknecuvehluhhsthgvrhfuihiivgep
-    tdenucfrrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhihgoh
-    grthdrtghomh
-X-ME-Proxy: <xmx:G730YwxDpe2tLRi9YpZeLRv_SsYUczt_Urwj0V4BSAXYzA3yHIJG_w>
-    <xmx:G730Y3QY7hzjzjJ6ucBUr7Fv_xJmTC1vaxZ7xNPsrtwTXLSaCN9l0A>
-    <xmx:G730Y7Y9L98rNX2KaPH3_pmFqXa3yTp3iFs8SR4cGFrKqw-5p3Xx1Q>
-    <xmx:HL30Y8Kvm1mRR7-cnzS-00Ff_ZzvPWOsyBWtSIbb2hjIGU1m7Ec61A>
-Feedback-ID: ifd894703:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 21 Feb 2023 07:46:17 -0500 (EST)
-From: Jiaxun Yang <jiaxun.yang@flygoat.com>
-To: linux-mips@vger.kernel.org
-Subject: [PATCH 0/7] MIPS DMA coherence fixes
-Date: Tue, 21 Feb 2023 12:46:06 +0000
-Message-Id: <20230221124613.2859-1-jiaxun.yang@flygoat.com>
-X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLn6B2TCJz30Mn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Feb 2023 04:56:34 +1100 (AEDT)
+Received: by verein.lst.de (Postfix, from userid 2407)
+	id 2263C68B05; Tue, 21 Feb 2023 18:56:29 +0100 (CET)
+Date: Tue, 21 Feb 2023 18:56:28 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Jiaxun Yang <jiaxun.yang@flygoat.com>
+Subject: Re: [PATCH 1/7] MIPS: Remove DMA_PERDEV_COHERENT
+Message-ID: <20230221175628.GB15247@lst.de>
+References: <20230221124613.2859-1-jiaxun.yang@flygoat.com> <20230221124613.2859-2-jiaxun.yang@flygoat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Wed, 22 Feb 2023 04:06:20 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230221124613.2859-2-jiaxun.yang@flygoat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,32 +40,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: tsbogend@alpha.franken.de, linux-kernel@vger.kernel.org, Jiaxun Yang <jiaxun.yang@flygoat.com>, robh+dt@kernel.org, palmer@dabbelt.com, paul.walmsley@sifive.com, robin.murphy@arm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de, m.szyprowski@samsung.com
+Cc: tsbogend@alpha.franken.de, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, palmer@dabbelt.com, paul.walmsley@sifive.com, robin.murphy@arm.com, linuxppc-dev@lists.ozlabs.org, hch@lst.de, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Feb 21, 2023 at 12:46:07PM +0000, Jiaxun Yang wrote:
+> As now we are always managing DMA coherence on per dev bias,
+> there is no need to have such option. And it's not selected
+> by any platform.
 
-Jiaxun Yang (7):
-  MIPS: Remove DMA_PERDEV_COHERENT
-  MIPS: Always select ARCH_HAS_SYNC_DMA_FOR_CPU for noncoherent
-    platforms
-  MIPS: c-r4k: Always install dma flush functions
-  dma-mapping: Always provide dma_default_coherent
-  dma-mapping: Provide CONFIG_ARCH_DMA_DEFAULT_COHERENT
-  riscv: Select ARCH_DMA_DEFAULT_COHERENT
-  of: address: Use dma_default_coherent to determine default coherency
+I think the real point here is that this is dead code, so it can
+obviously go away, but:
 
- arch/mips/Kconfig           | 16 ++--------------
- arch/mips/mm/c-r4k.c        | 12 +++---------
- arch/powerpc/Kconfig        |  1 -
- arch/riscv/Kconfig          |  2 +-
- drivers/of/Kconfig          |  4 ----
- drivers/of/address.c        |  2 +-
- include/linux/dma-map-ops.h |  1 +
- kernel/dma/Kconfig          |  3 +++
- kernel/dma/mapping.c        |  6 +++++-
- 9 files changed, 16 insertions(+), 31 deletions(-)
+>  config MIPS_GENERIC_KERNEL
+>  	bool "Generic board-agnostic MIPS kernel"
+> -	select ARCH_HAS_SETUP_DMA_OPS
+>  	select MIPS_GENERIC
+>  	select BOOT_RAW
+>  	select BUILTIN_DTB
+> @@ -1079,11 +1078,6 @@ config FW_CFE
+>  config ARCH_SUPPORTS_UPROBES
+>  	bool
 
--- 
-2.37.1 (Apple Git-137.1)
+> @@ -1097,6 +1091,7 @@ config DMA_NONCOHERENT
+>  	select ARCH_HAS_DMA_PREP_COHERENT
+>  	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+>  	select ARCH_HAS_DMA_SET_UNCACHED
+> +	select ARCH_HAS_SETUP_DMA_OPS
 
+This is an unrelated und undocument change.  If you want to do it,
+please do that as a separate patch with a commit log documenting
+the rationale.
