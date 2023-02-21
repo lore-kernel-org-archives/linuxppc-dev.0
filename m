@@ -4,78 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2152C636D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:09:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3BFB1C61DA3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:09:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PLm3K62Ttz3cKG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:09:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PLm4M3gpXz3cND
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:09:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=j8/j9yp/;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DJNjAvwy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=WYZ2r8yL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=N+2nQ+ZS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flygoat.com (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com; envelope-from=jiaxun.yang@flygoat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=j8/j9yp/;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DJNjAvwy;
+	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=WYZ2r8yL;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=N+2nQ+ZS;
 	dkim-atps=neutral
 Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com [64.147.123.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLfRc6n5Tz3bm9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLfRd06YNz3bvH
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2023 23:56:12 +1100 (AEDT)
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-	by mailout.west.internal (Postfix) with ESMTP id AD2123200392;
-	Tue, 21 Feb 2023 07:46:40 -0500 (EST)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.west.internal (Postfix) with ESMTP id D55E832008C3;
+	Tue, 21 Feb 2023 07:46:30 -0500 (EST)
 Received: from mailfrontend1 ([10.202.2.162])
-  by compute1.internal (MEProxy); Tue, 21 Feb 2023 07:46:41 -0500
+  by compute3.internal (MEProxy); Tue, 21 Feb 2023 07:46:31 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
 	cc:cc:content-transfer-encoding:date:date:from:from:in-reply-to
 	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm2; t=1676983600; x=1677070000; bh=hV
-	blcbnQNQnrUYmR42maX841iYbSBNUD5mWumav+q1s=; b=j8/j9yp/wQMNo7LXlC
-	8GDFZxMTHD0uB/Sy7andq8NyyTpgXSQoN/e2cjH0Nsk22VVREnsFDoTqbvQQXOGe
-	U4StaiPSs1d/6l6Lwh/UsiqwtmbhweOPIhTl49bGdYDne6I+VDRbHigxAxEzhm3E
-	Xh97ymVPgKnYDhLivkRDbKxug4hubPXp/XR1x1Ea5Lj2LGVHgPXhjlY8NG8xzrlj
-	Z2PXzpbJV6beOoZSmcZf5hdsEIc8210yJjRLWf53rdglL+GjRPO2V5NBp4vnpWIE
-	ZIfd7VaY5aGNbW1PssK1ZhA9yWAq5jBEMb4heitVMv/w+dwcyac50C7MWYCkK8M7
-	DMtg==
+	:subject:subject:to:to; s=fm2; t=1676983590; x=1677069990; bh=6T
+	1o68vOusF0U/JsH2f0H8DjY8CJLE2Yaxz8jLQ29x0=; b=WYZ2r8yLERG8PZz33O
+	ZATtuWd5d33QLXSPx3j/jhteDUdurqIOBz891SrqqR91iQevCcqj6U+7R4Z49bGY
+	d2jgibfy0ZH6LVFQz6HkZiJT6KoGcZ8ia/SBT8I1ykeDdnhrMyp9QytH5KQzVaAo
+	qUuT0oFahR0oagpue7LQ6eUUPKo+SC7e89Ik454307YKxaupeC03eBJ6FYtLdbaB
+	dyTMOh/zEvfmx7Y5d0IDJvAhq12jXnfqrPl/6ycEHnLCJEsF1vmliERnxjjtx7Z/
+	mgalcHl9e9IY+yZpsJTFtBHdCYHKvCycMROzwTI2ynJBPEw4yjhI+6ejrkQ3D7Bb
+	dIkA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
 	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
 	:message-id:mime-version:references:reply-to:sender:subject
 	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm1; t=1676983600; x=1677070000; bh=hVblcbnQNQnrU
-	YmR42maX841iYbSBNUD5mWumav+q1s=; b=DJNjAvwyDKZHlxBA/gAxauFhEP52V
-	DDUmJgzGwKHB/gJz2K9Znpstt0ap92MxGDV0jM3R9/sXEs5nbgVHigHu6j0EJ1nQ
-	ziLcOgHcsI9YKxbbmibzF+lOjLGsrppJ9p8ls0bRLdjOMDcmMiVJX6O5oXq/9d0+
-	r66grgdF6zwYw99glYagz5HUOAyfVNY2AS5qTtd/AtqTXiTRvh0ZM1ZHBiI9ik5f
-	0i8OsAde28fjYD7n7lKmgx2CITbfjNxmwXXuKPVxOPcRiqXSVPGnOgAAnh7pDGQs
-	l/Ko4XguNZj3CnkzH+jH4YqKSgOOf8uIcHtytI5vZO6DBmvSsJ++2cbAQ==
-X-ME-Sender: <xms:ML30Y7os6kpvz8_zFyH7sJ7n9eUw_rrB7BuhVEFBi2jJYPfvak22UQ>
-    <xme:ML30Y1pDUhmNEVGK4wVrQkHBmZiQxrU8YO1ERVfJXp3uIA9fgaiBSQbAoGvRru3gG
-    Evu32pRNSQPi9ufVQ0>
-X-ME-Received: <xmr:ML30Y4Ph4cpyc4pnGiHvqdmi7a8TlfLWRzp421bvphdxMN_hIOLN895s3y2H>
+	:x-sasl-enc; s=fm1; t=1676983590; x=1677069990; bh=6T1o68vOusF0U
+	/JsH2f0H8DjY8CJLE2Yaxz8jLQ29x0=; b=N+2nQ+ZSQuHyDtlrCA6jR15i7BiS5
+	xCN/wDc5Sw88OHVQznynC9DZVncjtiiWew6jITDLnoNU43Y/MkL/f594ojwVMhZl
+	fl1A3aY45+MogY/op9OydPi4vykMmOXyhtrZ55IW0RIBmGKFkcrK/rATWzQlEBAQ
+	0kSRhXAvJUxVPY0z3O5Ka34CX+T7TcmHJMrrS8LAyXN0u1LxBZLC/DynuaaGYfpG
+	T1E2LDg6RaUfEaJRNNp/guCkiXLmexfmJ+HEMlyUemhTjqJeajJgUEDVeCLsRWnq
+	jrDJ4JMEXLp+AsjDK76pG2jvnFg9h9dM+NUZULAWCdI0s72ETVpD+xRRA==
+X-ME-Sender: <xms:Jr30Yz5BIy_m-MwjK9yIweAUHesP39SlXB394vbruCA4g_hNkureNg>
+    <xme:Jr30Y46Xvu-AHgunSeRBNBDRrZUPpcNFHLnjkYBf7mnuc-gNkFK3saYxpeQ5gULaA
+    PlghgrNmVr7ahUeqXw>
+X-ME-Received: <xmr:Jr30Y6dzmCKS3RekzxyzsxRWmgaULoh8aebGtSXOxW-T9-kx7Y1FL115wnKv>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudejjedggeefucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucenucfjughrpefhvfevufffkffojghfggfgsedtke
     ertdertddtnecuhfhrohhmpeflihgrgihunhcujggrnhhguceojhhirgiguhhnrdihrghn
     ghesfhhlhihgohgrthdrtghomheqnecuggftrfgrthhtvghrnhepfeeludefheegvdeuvd
     dvgeekgfdvtdettdelieeihfegtedugeekhfdvhfejfedtnecuvehluhhsthgvrhfuihii
-    vgepudenucfrrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhi
+    vgeptdenucfrrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhi
     hgohgrthdrtghomh
-X-ME-Proxy: <xmx:ML30Y-4icBZ7bolZH0vXrV0jXkzGzFJ8I2xQWJWanNKFIh6T49PORg>
-    <xmx:ML30Y653zCBJC1pe7Mc1h9EaACoA8ZD22sfqZ4jfa61BqqT7hByWUA>
-    <xmx:ML30Y2jl42NjIyotQkRdi6NrzmNYZvYeac0P1nY-pPIE93TLTcCRwg>
-    <xmx:ML30Y3xRGPjMuKTTKbePBZ93G-i-aUg2CBAoAwUHNLKszhNIL9C4qw>
+X-ME-Proxy: <xmx:Jr30Y0K0qGc2pEb8iyhLswkwAsfll_ugv3Y_q8f6qLEb1la6DXFALA>
+    <xmx:Jr30Y3LQ41mZ-Ju8vR8MOqpbavkQcst90ABJPZUKb4iylQVKfpEFVw>
+    <xmx:Jr30Y9zIRHlJpuhT_5abIBBTFhzUAb8LeyZ0Io6g-V4XDGHt3nWqhw>
+    <xmx:Jr30Y0Bjh17qOIDK-kzSO26_Hrfl2JWd3Jq2g41CjrprnotjfUdjdQ>
 Feedback-ID: ifd894703:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 21 Feb 2023 07:46:38 -0500 (EST)
+ 21 Feb 2023 07:46:28 -0500 (EST)
 From: Jiaxun Yang <jiaxun.yang@flygoat.com>
 To: linux-mips@vger.kernel.org
-Subject: [PATCH 6/7] riscv: Select ARCH_DMA_DEFAULT_COHERENT
-Date: Tue, 21 Feb 2023 12:46:12 +0000
-Message-Id: <20230221124613.2859-7-jiaxun.yang@flygoat.com>
+Subject: [PATCH 3/7] MIPS: c-r4k: Always install dma flush functions
+Date: Tue, 21 Feb 2023 12:46:09 +0000
+Message-Id: <20230221124613.2859-4-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
 In-Reply-To: <20230221124613.2859-1-jiaxun.yang@flygoat.com>
 References: <20230221124613.2859-1-jiaxun.yang@flygoat.com>
@@ -97,27 +97,40 @@ Cc: tsbogend@alpha.franken.de, linux-kernel@vger.kernel.org, Jiaxun Yang <jiaxun
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For RISCV we always assume devices are DMA coherent.
-Select ARCH_DMA_DEFAULT_COHERENT to ensure dev->dma_conherent
-is always initialized to true.
+As nowadays DMA coherence is managed per device, it is possible
+to have a system that is defaulted to coherent dma but still
+have noncoherent device that needs to use those flush functions.
+
+Just install them unconditionally.
 
 Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
 ---
- arch/riscv/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/mips/mm/c-r4k.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 8b1dbd23dbd6..c1327309e0f6 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -13,6 +13,7 @@ config 32BIT
- config RISCV
- 	def_bool y
- 	select ARCH_CLOCKSOURCE_INIT
-+	select ARCH_DMA_DEFAULT_COHERENT
- 	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
- 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
- 	select ARCH_HAS_BINFMT_FLAT
+diff --git a/arch/mips/mm/c-r4k.c b/arch/mips/mm/c-r4k.c
+index a549fa98c2f4..7d447050a20b 100644
+--- a/arch/mips/mm/c-r4k.c
++++ b/arch/mips/mm/c-r4k.c
+@@ -1867,15 +1867,9 @@ void r4k_cache_init(void)
+ 	__local_flush_icache_user_range	= local_r4k_flush_icache_user_range;
+ 
+ #ifdef CONFIG_DMA_NONCOHERENT
+-	if (dma_default_coherent) {
+-		_dma_cache_wback_inv	= (void *)cache_noop;
+-		_dma_cache_wback	= (void *)cache_noop;
+-		_dma_cache_inv		= (void *)cache_noop;
+-	} else {
+-		_dma_cache_wback_inv	= r4k_dma_cache_wback_inv;
+-		_dma_cache_wback	= r4k_dma_cache_wback_inv;
+-		_dma_cache_inv		= r4k_dma_cache_inv;
+-	}
++	_dma_cache_wback_inv	= r4k_dma_cache_wback_inv;
++	_dma_cache_wback	= r4k_dma_cache_wback_inv;
++	_dma_cache_inv		= r4k_dma_cache_inv;
+ #endif /* CONFIG_DMA_NONCOHERENT */
+ 
+ 	build_clear_page();
 -- 
 2.37.1 (Apple Git-137.1)
 
