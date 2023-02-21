@@ -4,79 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CC36C636D7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:08:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2152C636D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Feb 2023 17:09:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PLm2J2bTVz3cK5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:08:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PLm3K62Ttz3cKG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Feb 2023 04:09:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=q2idsRBq;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=h4uH7u6p;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=j8/j9yp/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DJNjAvwy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flygoat.com (client-ip=64.147.123.25; helo=wout2-smtp.messagingengine.com; envelope-from=jiaxun.yang@flygoat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=q2idsRBq;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=h4uH7u6p;
+	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=j8/j9yp/;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DJNjAvwy;
 	dkim-atps=neutral
-X-Greylist: delayed 582 seconds by postgrey-1.36 at boromir; Tue, 21 Feb 2023 23:56:12 AEDT
 Received: from wout2-smtp.messagingengine.com (wout2-smtp.messagingengine.com [64.147.123.25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLfRc4d3Zz3bgs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PLfRc6n5Tz3bm9
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Feb 2023 23:56:12 +1100 (AEDT)
 Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-	by mailout.west.internal (Postfix) with ESMTP id C17A53200931;
-	Tue, 21 Feb 2023 07:46:27 -0500 (EST)
+	by mailout.west.internal (Postfix) with ESMTP id AD2123200392;
+	Tue, 21 Feb 2023 07:46:40 -0500 (EST)
 Received: from mailfrontend1 ([10.202.2.162])
-  by compute1.internal (MEProxy); Tue, 21 Feb 2023 07:46:28 -0500
+  by compute1.internal (MEProxy); Tue, 21 Feb 2023 07:46:41 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
 	cc:cc:content-transfer-encoding:date:date:from:from:in-reply-to
 	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm2; t=1676983587; x=1677069987; bh=13
-	TjcRtfoBgYUAonSXqop4Xu1irhLU8jxIGd4/dBxmQ=; b=q2idsRBqJazuFn72mE
-	20jDBSb0qMCAnmvgZQ+5TXd2mmJOmBq7/DJo9wgPMXpfZdkMzC9JY5jjjNJ/aVCC
-	kTlkIVMAdrdBlX0JNhNB3DsN/GUFtqBcoMyWUzi/dYTzzhEReZjdXTPs/SJ9yUsu
-	JdfFov/ubH3yO8fTz+m6l6xa2+HISPeXko9M+6Iwvg+KG24BnkK13hMoZ3ON5Jb5
-	MXsumUkMEsPSAWiBVtdSUPo15H25awi9wj+17CnsodYAS72xE+p1d600D8xBBiUq
-	wZLjIzbWRevh4Z6tITef2rQlaeOn1Ptlr7/AMXgOCC/BBIkRD2QutXFZnYFqz/TL
-	oT0A==
+	:subject:subject:to:to; s=fm2; t=1676983600; x=1677070000; bh=hV
+	blcbnQNQnrUYmR42maX841iYbSBNUD5mWumav+q1s=; b=j8/j9yp/wQMNo7LXlC
+	8GDFZxMTHD0uB/Sy7andq8NyyTpgXSQoN/e2cjH0Nsk22VVREnsFDoTqbvQQXOGe
+	U4StaiPSs1d/6l6Lwh/UsiqwtmbhweOPIhTl49bGdYDne6I+VDRbHigxAxEzhm3E
+	Xh97ymVPgKnYDhLivkRDbKxug4hubPXp/XR1x1Ea5Lj2LGVHgPXhjlY8NG8xzrlj
+	Z2PXzpbJV6beOoZSmcZf5hdsEIc8210yJjRLWf53rdglL+GjRPO2V5NBp4vnpWIE
+	ZIfd7VaY5aGNbW1PssK1ZhA9yWAq5jBEMb4heitVMv/w+dwcyac50C7MWYCkK8M7
+	DMtg==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding:date:date
 	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
 	:message-id:mime-version:references:reply-to:sender:subject
 	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm1; t=1676983587; x=1677069987; bh=13TjcRtfoBgYU
-	AonSXqop4Xu1irhLU8jxIGd4/dBxmQ=; b=h4uH7u6pzpVpFaAI8C3RnTR87tY7C
-	k8HOnLs5JJ1/43cc3BG9jXbWS9hiwzntd64K1QMa7yXHDub5ue2ppM/sSBW2li0a
-	oTDT7hksncFaYcmYWP3dloIOp1sNpxWn85Mz7Zehhbsl5Fc9JuXDRjaLfj/Iw7cq
-	vaCm2VhXPqs04ypGwzzfJdji1/PVJGLez3bo8RRduhpdgbEWH+whsjFOGyLfsP25
-	axgoAlmQYaRUmwoq2j4XCRuHjH1IP6g+rkfLdkdEL4SSXSU0sen3NB92zcbY8v3D
-	asWqulMzb9/1AJuLawhhX1BJT+Ab6q7OfU7C0GUA53Icea6xGP62v3ieg==
-X-ME-Sender: <xms:I730Y8eHpoe0gA0xd547i5IokcRRORoSln2ePGzSVNuAuS32S31_0w>
-    <xme:I730Y-O1TmUKE1KKNfPxMXxzbJOFkO9mBVRlK7r06Eb0IObc63Sz8XZKyrtP7S7bZ
-    Do26lgoRFr3cRYcq58>
-X-ME-Received: <xmr:I730Y9i7kVgGxqjkOlUoEhwVWIbNMlDtsg6m4wFjxcmZNvGbtfKerEWwFDeU>
+	:x-sasl-enc; s=fm1; t=1676983600; x=1677070000; bh=hVblcbnQNQnrU
+	YmR42maX841iYbSBNUD5mWumav+q1s=; b=DJNjAvwyDKZHlxBA/gAxauFhEP52V
+	DDUmJgzGwKHB/gJz2K9Znpstt0ap92MxGDV0jM3R9/sXEs5nbgVHigHu6j0EJ1nQ
+	ziLcOgHcsI9YKxbbmibzF+lOjLGsrppJ9p8ls0bRLdjOMDcmMiVJX6O5oXq/9d0+
+	r66grgdF6zwYw99glYagz5HUOAyfVNY2AS5qTtd/AtqTXiTRvh0ZM1ZHBiI9ik5f
+	0i8OsAde28fjYD7n7lKmgx2CITbfjNxmwXXuKPVxOPcRiqXSVPGnOgAAnh7pDGQs
+	l/Ko4XguNZj3CnkzH+jH4YqKSgOOf8uIcHtytI5vZO6DBmvSsJ++2cbAQ==
+X-ME-Sender: <xms:ML30Y7os6kpvz8_zFyH7sJ7n9eUw_rrB7BuhVEFBi2jJYPfvak22UQ>
+    <xme:ML30Y1pDUhmNEVGK4wVrQkHBmZiQxrU8YO1ERVfJXp3uIA9fgaiBSQbAoGvRru3gG
+    Evu32pRNSQPi9ufVQ0>
+X-ME-Received: <xmr:ML30Y4Ph4cpyc4pnGiHvqdmi7a8TlfLWRzp421bvphdxMN_hIOLN895s3y2H>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudejjedggeefucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucenucfjughrpefhvfevufffkffojghfggfgsedtke
     ertdertddtnecuhfhrohhmpeflihgrgihunhcujggrnhhguceojhhirgiguhhnrdihrghn
     ghesfhhlhihgohgrthdrtghomheqnecuggftrfgrthhtvghrnhepfeeludefheegvdeuvd
     dvgeekgfdvtdettdelieeihfegtedugeekhfdvhfejfedtnecuvehluhhsthgvrhfuihii
-    vgeptdenucfrrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhi
+    vgepudenucfrrghrrghmpehmrghilhhfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhi
     hgohgrthdrtghomh
-X-ME-Proxy: <xmx:I730Yx931GTrdlGF6WlarpSerBGSvLgUBJCE43XFSDkkRPGUy9-4Mg>
-    <xmx:I730Y4tWVMDgwZdBCU_MMEtjSA1Q-LVBVcabicYnflJ9ceVIq9_KPA>
-    <xmx:I730Y4FXtHy5BuKXty__JnmoluUx_6598FadWmwGnRuZzy2voBM8ng>
-    <xmx:I730Y5mheWXh-9jxc7IcdfnjkPj3hP_CMtiLhzlafK5KczHvykubtg>
+X-ME-Proxy: <xmx:ML30Y-4icBZ7bolZH0vXrV0jXkzGzFJ8I2xQWJWanNKFIh6T49PORg>
+    <xmx:ML30Y653zCBJC1pe7Mc1h9EaACoA8ZD22sfqZ4jfa61BqqT7hByWUA>
+    <xmx:ML30Y2jl42NjIyotQkRdi6NrzmNYZvYeac0P1nY-pPIE93TLTcCRwg>
+    <xmx:ML30Y3xRGPjMuKTTKbePBZ93G-i-aUg2CBAoAwUHNLKszhNIL9C4qw>
 Feedback-ID: ifd894703:Fastmail
 Received: by mail.messagingengine.com (Postfix) with ESMTPA; Tue,
- 21 Feb 2023 07:46:25 -0500 (EST)
+ 21 Feb 2023 07:46:38 -0500 (EST)
 From: Jiaxun Yang <jiaxun.yang@flygoat.com>
 To: linux-mips@vger.kernel.org
-Subject: [PATCH 2/7] MIPS: Always select ARCH_HAS_SYNC_DMA_FOR_CPU for noncoherent platforms
-Date: Tue, 21 Feb 2023 12:46:08 +0000
-Message-Id: <20230221124613.2859-3-jiaxun.yang@flygoat.com>
+Subject: [PATCH 6/7] riscv: Select ARCH_DMA_DEFAULT_COHERENT
+Date: Tue, 21 Feb 2023 12:46:12 +0000
+Message-Id: <20230221124613.2859-7-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.37.1 (Apple Git-137.1)
 In-Reply-To: <20230221124613.2859-1-jiaxun.yang@flygoat.com>
 References: <20230221124613.2859-1-jiaxun.yang@flygoat.com>
@@ -98,79 +97,27 @@ Cc: tsbogend@alpha.franken.de, linux-kernel@vger.kernel.org, Jiaxun Yang <jiaxun
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As now we are telling the necessity of post DMA flush per CPU type,
-there is no need to select ARCH_HAS_SYNC_DMA_FOR_CPU on per platform
-bias, just select it unconditionally and we can sort it at runtime.
+For RISCV we always assume devices are DMA coherent.
+Select ARCH_DMA_DEFAULT_COHERENT to ensure dev->dma_conherent
+is always initialized to true.
 
 Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
 ---
- arch/mips/Kconfig | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ arch/riscv/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index c6f3ad51f741..8da52863da4e 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -115,7 +115,6 @@ config MACH_INGENIC
- 	select SYS_SUPPORTS_LITTLE_ENDIAN
- 	select SYS_SUPPORTS_ZBOOT
- 	select DMA_NONCOHERENT
--	select ARCH_HAS_SYNC_DMA_FOR_CPU
- 	select IRQ_MIPS_CPU
- 	select PINCTRL
- 	select GPIOLIB
-@@ -1089,6 +1088,7 @@ config DMA_NONCOHERENT
- 	#
- 	select ARCH_HAS_DMA_WRITE_COMBINE
- 	select ARCH_HAS_DMA_PREP_COHERENT
-+	select ARCH_HAS_SYNC_DMA_FOR_CPU
- 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
- 	select ARCH_HAS_DMA_SET_UNCACHED
- 	select ARCH_HAS_SETUP_DMA_OPS
-@@ -1853,11 +1853,9 @@ config SYS_HAS_CPU_MIPS32_R3_5
- 
- config SYS_HAS_CPU_MIPS32_R5
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_MIPS32_R6
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_MIPS64_R1
- 	bool
-@@ -1867,15 +1865,12 @@ config SYS_HAS_CPU_MIPS64_R2
- 
- config SYS_HAS_CPU_MIPS64_R5
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_MIPS64_R6
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_P5600
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_R3000
- 	bool
-@@ -1900,7 +1895,6 @@ config SYS_HAS_CPU_NEVADA
- 
- config SYS_HAS_CPU_R10000
- 	bool
--	select ARCH_HAS_SYNC_DMA_FOR_CPU if DMA_NONCOHERENT
- 
- config SYS_HAS_CPU_RM7000
- 	bool
-@@ -1929,7 +1923,6 @@ config SYS_HAS_CPU_BMIPS4380
- config SYS_HAS_CPU_BMIPS5000
- 	bool
- 	select SYS_HAS_CPU_BMIPS
--	select ARCH_HAS_SYNC_DMA_FOR_CPU
- 
- #
- # CPU may reorder R->R, R->W, W->R, W->W
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 8b1dbd23dbd6..c1327309e0f6 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -13,6 +13,7 @@ config 32BIT
+ config RISCV
+ 	def_bool y
+ 	select ARCH_CLOCKSOURCE_INIT
++	select ARCH_DMA_DEFAULT_COHERENT
+ 	select ARCH_ENABLE_HUGEPAGE_MIGRATION if HUGETLB_PAGE && MIGRATION
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_HAS_BINFMT_FLAT
 -- 
 2.37.1 (Apple Git-137.1)
 
