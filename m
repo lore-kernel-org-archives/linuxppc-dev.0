@@ -4,49 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9253CC636D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Feb 2023 04:44:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3045C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Feb 2023 04:45:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PMgQm5Bqvz3ccq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Feb 2023 15:44:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PMgS41gwfz3cMf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Feb 2023 15:45:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Vjfi48je;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X39UayOs;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PMgPm1YLZz3c72
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2023 15:43:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kconsul@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Vjfi48je;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=X39UayOs;
 	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PMgPl5VPbz4x5X;
-	Thu, 23 Feb 2023 15:43:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1677127387;
-	bh=RcPf/yVfNQXTHTIDsKM1VL6c0rF/I59vwPQ6PaamSkY=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=Vjfi48jeUf845yqqakdvQVfJ4Jihbd9ETHh8hccv/5U8iwckJVJAH95Wzz98hfT+c
-	 sPsZFS71srDg+lqWxORd9F2oKRi0dUMyPelVmjNESeqHdjw+p660txlOSaznKVhF4U
-	 hbchRQ+Y5nhIHLWTfCcjQJq8jbom2MIpgjhO/GJR7ehBiOp+OdCAuejy9fI0WTgYGF
-	 1SKZnTEU4pjvjNkeL8GWbRjFjL+cMAOVX/lRDkCzctZUaNZMajeo46ZSmfHwDRrmbk
-	 K2fvOGVtRFr+l3GNruj+f/npgozVLQpyaTpkIMoqhQPWGbPoS1wNXBQPzph8bZmuae
-	 5GvpK+1RUI0hw==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Chancellor <nathan@kernel.org>
-Subject: Re: [PATCH] powerpc/vmlinux.lds: Add .text.asan/tsan sections
-In-Reply-To: <Y/ZMEqjpT6plg0nR@dev-arch.thelio-3990X>
-References: <20230222060037.2897169-1-mpe@ellerman.id.au>
- <Y/ZMEqjpT6plg0nR@dev-arch.thelio-3990X>
-Date: Thu, 23 Feb 2023 15:43:04 +1100
-Message-ID: <87cz61at5z.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PMgR26GC0z3c72
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Feb 2023 15:44:14 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31N4P9JK018050;
+	Thu, 23 Feb 2023 04:44:04 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=tOPu+8AR0Tb7GAwyJHfbA0kiiTWqUMKgPivx8Ui7wPQ=;
+ b=X39UayOsKtlSeFIO5klrBN5WSd+GfFO5516rl0t3FFf7vWSlJe6Kmp3ZXpmSi02Xw8SC
+ x4nxlCeXFsfUah7hVNdGm3REm7MOfHjd0YO2wQLHGsBz+FM4Q9LWYwOTuVpqMCPc+Vae
+ b/WiF3V5EayioZqQYq1Z6pLldHah2X3Bb7fUmtuJBtq4LzgmW4rEyXl0+g4bC2Iuv+ye
+ 2OkX+7PTXZweeGqZ5gEvVQmObi+Kb9u3G2vlu0HIhNvgwyfZPvxhGX30FptYQmyTPWkw
+ 3TXGYLRLmUNdhEGcFxhKrssjMuHihgc+fp7hjJUxZI2FIuISwifVDGuMHrc4ObW4aeNs yw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nx13nr9n7-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Feb 2023 04:44:03 +0000
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31N4QHHa023969;
+	Thu, 23 Feb 2023 04:44:03 GMT
+Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nx13nr9mu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Feb 2023 04:44:03 +0000
+Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
+	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31MACCeH020323;
+	Thu, 23 Feb 2023 04:44:01 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3ntpa64ntq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 23 Feb 2023 04:44:01 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31N4hw2f47579626
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 23 Feb 2023 04:43:58 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 832A12005A;
+	Thu, 23 Feb 2023 04:43:58 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A71D02004D;
+	Thu, 23 Feb 2023 04:43:56 +0000 (GMT)
+Received: from li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com (unknown [9.109.216.99])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu, 23 Feb 2023 04:43:56 +0000 (GMT)
+Date: Thu, 23 Feb 2023 10:13:54 +0530
+From: Kautuk Consul <kconsul@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] arch/powerpc/include/asm/barrier.h: redefine rmb and
+ wmb to  lwsync
+Message-ID: <Y/bvClrV60CXK79G@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
+References: <20230222090344.189270-1-kconsul@linux.vnet.ibm.com>
+ <20230222174719.GA1400185@paulmck-ThinkPad-P17-Gen-1>
+ <87fsaxavk2.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fsaxavk2.fsf@mpe.ellerman.id.au>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: JXL-DZjTI8sgHlLsb-RDXvtha1t3n8rW
+X-Proofpoint-ORIG-GUID: zv3HLh0Lqu0squ-vI-fDiTIrrKUWSLV9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
+ definitions=2023-02-22_12,2023-02-22_02,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
+ bulkscore=0 adultscore=0 lowpriorityscore=0 suspectscore=0 mlxlogscore=974
+ priorityscore=1501 impostorscore=0 mlxscore=0 phishscore=0 clxscore=1015
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2302230038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,35 +98,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ndesaulniers@google.com, linuxppc-dev@lists.ozlabs.org
+Cc: paulmck@kernel.org, linux-kernel@vger.kernel.org, Rohan McLure <rmclure@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nathan Chancellor <nathan@kernel.org> writes:
-> On Wed, Feb 22, 2023 at 05:00:37PM +1100, Michael Ellerman wrote:
->> When KASAN/KCSAN are enabled clang generates .text.asan/tsan sections.
->> Because they are not mentioned in the linker script warnings are
->> generated, and when orphan handling is set to error that becomes a build
->> error, eg:
->> 
->>   ld.lld: error: vmlinux.a(init/main.o):(.text.tsan.module_ctor) is
->>   being placed in '.text.tsan.module_ctor' ld.lld: error:
->>   vmlinux.a(init/version.o):(.text.tsan.module_ctor) is being placed in
->>   '.text.tsan.module_ctor'
->> 
->> Fix it by adding the sections to our linker script, similar to the
->> generic change made in 848378812e40 ("vmlinux.lds.h: Handle clang's
->> module.{c,d}tor sections").
->> 
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> Indeed, I had not thought about architectures not using the TEXT_TEXT
-> macro.
+ 
+> You are correct, the patch is wrong because it fails to account for IO
+> accesses.
 
-I think it's just us. I have a plan to fix that but it's a bit involved.
+Okay, I looked at the PowerPC ISA and found:
+"The memory barrier provides an ordering function for the storage accesses
+caused by Load, Store,and dcbz instructions that are executed by the processor
+executing the sync instruction and for which the specified storage location
+is in storage that is Memory Coherence Required and is neitherWrite Through
+Required nor Caching Inhibited.The applicable pairs are all pairs ai ,bj of
+such accesses except those in which ai is an accesscaused by a Store or dcbz
+instruction and bj is anaccess caused by a Load instruction."
 
-> Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-
-Thanks.
-
-cheers
+Thanks for your time, Michael. Sorry for the noise.
+> 
+> Kautuk, I'm not sure what motivated you to look at these barriers, was
+> it just the documentation you linked to?
+I read the basic documentation. Now that I have access to the PowerISA
+document I guess I'll go through it more thoroughly.
+> 
