@@ -4,66 +4,112 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDC0EC6FA8E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 20:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FE9AC64ED8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 21:17:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PNhvb2grFz3fDt
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Feb 2023 07:54:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PNjQd4fbPz3cjY
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Feb 2023 08:17:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=rvEKkyK2;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=CxhVLKSB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=windriver.com (client-ip=205.220.178.238; helo=mx0b-0064b401.pphosted.com; envelope-from=prvs=14196aa554=paul.gortmaker@windriver.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:7eaf::62d; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=rvEKkyK2;
+	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=CxhVLKSB;
 	dkim-atps=neutral
-Received: from mx0b-0064b401.pphosted.com (mx0b-0064b401.pphosted.com [205.220.178.238])
+Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on2062d.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eaf::62d])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PNhqT2D14z3cJK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2023 07:50:28 +1100 (AEDT)
-Received: from pps.filterd (m0250812.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31OJq4vm006931;
-	Fri, 24 Feb 2023 20:50:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=PPS06212021;
- bh=vvQLtgJ1GUw0bMDVkEphRmoXdsEB+vhfu1khl/UMQxc=;
- b=rvEKkyK2ts9wh/sbGx3yk0y/1cSfsNTf03YubpO+jMesCTW1KPSYZTCZTc16f4MGGRYZ
- 4wU/IbF0Ath5g8bwKT1hr6DxjPphRGSzYiR0lIF66vFNsq0iNh1Q2onifvkCxvzRXlNd
- 4kOpBrrdzvYayRT/VetIkcFgyjVQtwSe3g4DYETY+Hudv2MaweVatkCPZ4uNC5eB8Lac
- 0w4RbnhQRDBzYFKKq6zlkY0/F0IzHKQkaZlcu3BR4aeiV4DhisJGLJA7lpapBHXPQIYj
- 8FloGgbqqFKlyn2gQPhwiNa/occ4ixsDftw0taQ6Gki+w5G7UqHvfo4WjIHgPYrPioHY +A== 
-Received: from ala-exchng01.corp.ad.wrs.com (unknown-82-252.windriver.com [147.11.82.252])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 3ntpem66vb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
-	Fri, 24 Feb 2023 20:50:13 +0000
-Received: from ala-exchng01.corp.ad.wrs.com (147.11.82.252) by
- ala-exchng01.corp.ad.wrs.com (147.11.82.252) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.17; Fri, 24 Feb 2023 12:50:12 -0800
-Received: from sc2600cp.wrs.com (128.224.56.77) by
- ala-exchng01.corp.ad.wrs.com (147.11.82.252) with Microsoft SMTP Server id
- 15.1.2507.17 via Frontend Transport; Fri, 24 Feb 2023 12:50:11 -0800
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] powerpc: drop MPC8272_ADS platform support
-Date: Fri, 24 Feb 2023 15:49:57 -0500
-Message-ID: <20230224204959.17425-2-paul.gortmaker@windriver.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20230224204959.17425-1-paul.gortmaker@windriver.com>
-References: <20230224204959.17425-1-paul.gortmaker@windriver.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PNjPW4N5Kz3bh2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Feb 2023 08:16:29 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=DnsnnC2c1KjttEGWeJB3bzXzN3AU8JLfbzNW8VyKCOT4v62wwW4Un9FKrQtb5s6EqJJ+b1lzDed/EH+A2Qy3+Hc3KQFsr7A6gr5wdUUUkSP1NzYIrC44IEn3L4Bebbmu7iNvWleDk3LBc+cGNDr3zTTMA9yXCmnB/9XK4g3OjT0qPlSTKy8xIoqLgP281enOVHJ9AUhywzEYBFH5y+JR+wpiNdzRZAxW6v9RL1dIln3Gh/jC2h0qx76Zjf4bGMoDPxZYUbnwE1nyKKCZXPlTt7MaqrvvTg6MKdLKkiBGXT0Y/cSAvKI719HEgU8SQ42sj/u++WDTzGM67x7bUgAVVg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=J0DyuhIyKbVNhGvDVVmfWzlYWQZs7CiCwKvZaTR5kEw=;
+ b=mZCHfmspArakrIbVvuL5Shtc9RyHX3MXHWPEFlczz0heR6peb7e5k2k6GvDu+RGtzGbQpRoJWzNmc/4RreU2RYgslBddrERZotFsaGMV+CuqFx5qBzAV7xicr5PqbYnLf+3Qb3HPrRPGI3dxCMUDJf4WZWKiIHSLW3We9wNtStCO2wiYW+68WxfDXEE3Tz9BuwHbYNCt5/MFP8PzgcMFTKjWIxeuEMG5Krqfhs2BrIaqp0JNniTIwfiWHWtC0birT8d7EGUxNhY9kt4cKhacBXzKmUs1jGSsH+GL48h/DQ32zxDV0/3zpjjzORcfgwWNojEcPooGkM7HCC02v7ZIcQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=J0DyuhIyKbVNhGvDVVmfWzlYWQZs7CiCwKvZaTR5kEw=;
+ b=CxhVLKSBo7HmcrquM2EeApuTSuhpfsDnJxOVE9+LF99GT6tnFd0ZLtFLhy117IaixyHLiaW7Jp5r5//hLS1Kp7uHfvPX68ivnnoUn1yIsVU5oaPRasMMTu5eERK5Ir7xxv9U4bSP+yKzAJKH1GuuA4oMf7kui+owjDjFSh3R7Qw=
+Received: from AM0PR04MB6289.eurprd04.prod.outlook.com (2603:10a6:208:145::23)
+ by AM8PR04MB7363.eurprd04.prod.outlook.com (2603:10a6:20b:1c7::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6134.25; Fri, 24 Feb
+ 2023 21:16:06 +0000
+Received: from AM0PR04MB6289.eurprd04.prod.outlook.com
+ ([fe80::509:96a2:4382:6b51]) by AM0PR04MB6289.eurprd04.prod.outlook.com
+ ([fe80::509:96a2:4382:6b51%4]) with mapi id 15.20.6134.024; Fri, 24 Feb 2023
+ 21:16:05 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+Thread-Topic: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+Thread-Index: AQHZRSLd3/nvLydEnkiHOk+Mz5gE667em6tw
+Date: Fri, 24 Feb 2023 21:16:05 +0000
+Message-ID:  <AM0PR04MB6289FA528F76DDADB2BB0F958FA89@AM0PR04MB6289.eurprd04.prod.outlook.com>
+References: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+In-Reply-To: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: AM0PR04MB6289:EE_|AM8PR04MB7363:EE_
+x-ms-office365-filtering-correlation-id: d15b9fe1-baa7-47d8-ef9a-08db16ac572a
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  82McTiJQkhWYZSd2ndU8fa/PN2nDQjwDbpc2kEOxoa+JQTFQDE0lsfL+d7P5+IXh6Ve3lPrqHIWm5AVc9NXPWvB8u5naMhwWZgPWz8FVqXAehi16+e1Ihislfc+0KXLErJIpWVeGNUD2MgAmDaENBRj4lTxmGKXixA1vjPuRwG0vXNkHUxTZ7voGVNUvhpfWDw8QRGJYuRKhrEnO26fhXM5BKtjp4k3rJeCKr7DIIkKwgsJo0xqzvk2s4ZfgvXCfKLT92ZhPiGldRNeC/6Pvzt2GeEoc5m2zBZs/xhmLRMZdACP3m6aq9Qbj8IQ/gTSkjvZyf5J53HNgwcgb2LozQXQByfn/1YdlerFlaTef4cltisTDda24NSCeM2TJBMFw2T/fRdxcwggHs+eAa8Lppjxej3QfzuEvfsR0mlTxAK3GwseDyMaL6MHUb93YnF4hWUlg1lK+KCqiFuvaV3DT8qlfJpHP59yDzKREskyAlgcJSDh8rJcF6wGrovCjRfuQ3QZy5RR1vetMgHMHnpYY59/ZbkrFZpnLEDEfaxFzECvWkboxtmLNoldVK2hgB5GufC7L25+9SXS+sZlSIQwFYM7/LnAT+9T6Fpd0f52jMvDxLtwEPfsRKzVG/Y05WMnhaU695KekfYYLFzvWsl1oyjCv6sVmCIHpPrm21zyadBhuyhpACC/feo0Sgn1KsfBM3soIgXIKNB8VFtVMZyPonQ==
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB6289.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(346002)(136003)(39860400002)(376002)(396003)(366004)(451199018)(316002)(38070700005)(55236004)(53546011)(41300700001)(9686003)(186003)(26005)(33656002)(8936002)(52536014)(122000001)(5660300002)(966005)(54906003)(55016003)(6506007)(110136005)(66946007)(4326008)(8676002)(64756008)(76116006)(66446008)(66476007)(66556008)(71200400001)(7696005)(83380400001)(38100700002)(45080400002)(86362001)(478600001)(2906002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?us-ascii?Q?GoZwj1sc1e2Essp9/VJCl/Y4BhYG4RFSNljm960N9e+RBF/oZpApJqiFlAJy?=
+ =?us-ascii?Q?IL5vzxUoZQGKpFs4bE4wiX4A6TCtr++2OI5sD0jNdX1hVXj4IlaiN+GT02Km?=
+ =?us-ascii?Q?TsDR14nMBTLg7VwvaWz23yNK8OwACgIsnT6oA7E5u7gLzrZdUXB5iXpAQhYH?=
+ =?us-ascii?Q?pjRPk9lizlOCpAJTDEtVgQrTwDR2yOUPevEt47e8/S3T4vu6pu1PEAx9B4KA?=
+ =?us-ascii?Q?owsGi3Q5z6TbXm47cyZm/cIRJ7y6Swfpr6b3ij7o/sbkSAJOlkUkXXhShAf7?=
+ =?us-ascii?Q?j44CsQfs95lVK+xeQmfNpZFttCZB5M3dm57EIdSlfi9zr4XeXX/1E0LgIhcI?=
+ =?us-ascii?Q?TsxhnFyrY288vX8vwnauYmU4FlBqrEPMwxRlrwdUMsro8ol2X7VMcJSbOH/t?=
+ =?us-ascii?Q?UmzuEfwCTNYCjAFA2xBGv7MYwzbvJs4vQJfQZyv6ksfmuR61jogWpviC4vat?=
+ =?us-ascii?Q?KUZK5BkVe5rQswjVuiUjR99fEQUEFnP1HQrysFp0ZUT4c6l/HmIpaiWXD7cr?=
+ =?us-ascii?Q?BpM+tfYPGuaHE2AWnmULWZTKBD40mcI/62dMpzv0YMKjDGguBKH9ynwnRjyx?=
+ =?us-ascii?Q?QhLF37l+yNIUhlB4CaLizTpjGgwHKf9eFUCWKMAwwyrF8iy2oP0VSjreDLDT?=
+ =?us-ascii?Q?tByQOdfpIE9hRlDqnBu4DFj9BvzZ8KkopLwTKuec5ZfLGSvBeS4Gekm19iYK?=
+ =?us-ascii?Q?m0XVhn5I19RiEt0GTaO+NBLslKgCn7v/sUvgsI3ud44MMnsVAxYrRVbzOR8e?=
+ =?us-ascii?Q?2S36fo/zV2O+gWWBUxs+BgegZkDuzWVIvaXiPyxPW4WJ9r1cbp6JVYgUZeaZ?=
+ =?us-ascii?Q?UAAV6tP1dd7uMyiBKcbI3JLj9/GPG9MglJyAxlGUz6cxYOg7wCnQSxm1zNvt?=
+ =?us-ascii?Q?Xj4FPfqOzGdDqlMi0645e+bTJfZiAnY6FSr+xMcYiSuR5g+HzG1tUScy/B7a?=
+ =?us-ascii?Q?89uywybrhlBcEgDIBSv3z248I0bh4wOV+Sl9413e1TYBGHPvIJmZ20MbWdU1?=
+ =?us-ascii?Q?oGGKghRNRI+6sZ0/FWQq5xDwZwHNQrVzO29WbWbcjEIhk0NImYm83tUhHF8x?=
+ =?us-ascii?Q?lvMn4h8p7f5AP2WdiiI8SBak4jykpOYpgSytwIyOO02APYs8jEzOUABHQten?=
+ =?us-ascii?Q?fZhU074tyjXJLnlv0ueom/qL7kzgJXtsK7tsoFKlCbbMcH6WIBOCfINVq+7E?=
+ =?us-ascii?Q?rmKHmctRM6nV0hJshKV9bIDs058XbCkgC0ensQEw7X1lqoXIEL6iH31ZXffU?=
+ =?us-ascii?Q?aIsxOiuYhwwWMjqFySfMC6yTGjKnr/OyDj59dhcw3zi2Es10VKzySmLVULB6?=
+ =?us-ascii?Q?tLBeilOJg/uLF7dXpyprx7FiBwoiUaogPDrda3Jhrh1L3UUP1v5Px6t8m+hl?=
+ =?us-ascii?Q?W63anbGiYbGvNT7axUsPW6ChbSKVc8EdmqfuKk8x2AJ9izuBx9w+iXrKuUz7?=
+ =?us-ascii?Q?L+xK/K8JVQQegLwODp9+LuA115H46kZcRAJ9p5fNwTDptOUIWS3TZ4cyu3gn?=
+ =?us-ascii?Q?nJeAINbdr3/r3L+RZcQ/8hYughJ1JSw+D5OVpEKD43peBNHrhQ+TrVRDKFKY?=
+ =?us-ascii?Q?Ackwgu//1oZym9yvLCruVBhmFOn0NGhUKVzi1jMI?=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-ORIG-GUID: WUvuwSYcIy25nzNolbkIz4Yc-A25LuUI
-X-Proofpoint-GUID: WUvuwSYcIy25nzNolbkIz4Yc-A25LuUI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-24_15,2023-02-24_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 mlxscore=0
- lowpriorityscore=0 priorityscore=1501 suspectscore=0 mlxlogscore=999
- bulkscore=0 spamscore=0 malwarescore=0 impostorscore=0 adultscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302240165
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB6289.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: d15b9fe1-baa7-47d8-ef9a-08db16ac572a
+X-MS-Exchange-CrossTenant-originalarrivaltime: 24 Feb 2023 21:16:05.5362
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: n+RfmVgq8wCzokMcl8koj8qUtPZEPY6oHpGIpqR7FrpaAz9UfB5VVH5+GyJHOEnzqjQf8mEjiezgHvqlZgwmuQ==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7363
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,667 +121,214 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>, Paul Gortmaker <paul.gortmaker@windriver.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>
+Cc: Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The MPC8272-ADS also supported other 82xx CPU variants, had 64MB RAM,
-8MB flash, and like the 85xx ADS platforms, was on a fairly large PCB
-in order to have space for breakout connectors for all the features.
 
-These 82xx platforms are two decades old, and originally made for a
-small group of industry related people in order to assist in new OEM
-board designs.  Given that, it makes sense to remove support today.
 
-Cc: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/boot/Makefile                 |   1 -
- arch/powerpc/boot/dts/mpc8272ads.dts       | 263 ---------------------
- arch/powerpc/configs/mpc8272_ads_defconfig |  79 -------
- arch/powerpc/configs/ppc6xx_defconfig      |   1 -
- arch/powerpc/platforms/82xx/Kconfig        |  11 -
- arch/powerpc/platforms/82xx/Makefile       |   1 -
- arch/powerpc/platforms/82xx/mpc8272_ads.c  | 213 -----------------
- 7 files changed, 569 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/mpc8272ads.dts
- delete mode 100644 arch/powerpc/configs/mpc8272_ads_defconfig
- delete mode 100644 arch/powerpc/platforms/82xx/mpc8272_ads.c
+> -----Original Message-----
+> From: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Sent: Monday, February 20, 2023 5:59 AM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: Leo Li <leoyang.li@nxp.com>; Claudiu Manoil <claudiu.manoil@nxp.com>;
+> Paul Gortmaker <paul.gortmaker@windriver.com>; Scott Wood
+> <oss@buserror.net>; Michael Ellerman <mpe@ellerman.id.au>; Benjamin
+> Herrenschmidt <benh@kernel.crashing.org>; Paul Mackerras
+> <paulus@samba.org>
+> Subject: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+>=20
+> [This RFC is proposed for v6.4 and hence is based off linux-next.]
+>=20
+> This series removes support for four e300 (MPC83xx) Freescale processor
+> family evaluation boards that were added to the kernel in the 2006 era.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index e236ab395335..38ee7e58f8e7 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -327,7 +327,6 @@ image-$(CONFIG_PPC_LITE5200)		+= cuImage.lite5200b
- image-$(CONFIG_PPC_MEDIA5200)		+= cuImage.media5200
- 
- # Board ports in arch/powerpc/platform/82xx/Kconfig
--image-$(CONFIG_MPC8272_ADS)		+= cuImage.mpc8272ads
- image-$(CONFIG_PQ2FADS)			+= cuImage.pq2fads
- image-$(CONFIG_EP8248E)			+= dtbImage.ep8248e
- 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-deleted file mode 100644
-index 13ec786f6adf..000000000000
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ /dev/null
-@@ -1,263 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * MPC8272 ADS Device Tree Source
-- *
-- * Copyright 2005,2008 Freescale Semiconductor Inc.
-- */
--
--/dts-v1/;
--
--/ {
--	model = "MPC8272ADS";
--	compatible = "fsl,mpc8272ads";
--	#address-cells = <1>;
--	#size-cells = <1>;
--
--	aliases {
--		ethernet0 = &eth0;
--		ethernet1 = &eth1;
--		serial0 = &scc1;
--		serial1 = &scc4;
--	};
--
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		PowerPC,8272@0 {
--			device_type = "cpu";
--			reg = <0x0>;
--			d-cache-line-size = <32>;
--			i-cache-line-size = <32>;
--			d-cache-size = <16384>;
--			i-cache-size = <16384>;
--			timebase-frequency = <0>;
--			bus-frequency = <0>;
--			clock-frequency = <0>;
--		};
--	};
--
--	memory {
--		device_type = "memory";
--		reg = <0x0 0x0>;
--	};
--
--	localbus@f0010100 {
--		compatible = "fsl,mpc8272-localbus",
--		             "fsl,pq2-localbus";
--		#address-cells = <2>;
--		#size-cells = <1>;
--		reg = <0xf0010100 0x40>;
--
--		ranges = <0x0 0x0 0xff800000 0x00800000
--		          0x1 0x0 0xf4500000 0x8000
--		          0x3 0x0 0xf8200000 0x8000>;
--
--		flash@0,0 {
--			compatible = "jedec-flash";
--			reg = <0x0 0x0 0x00800000>;
--			bank-width = <4>;
--			device-width = <1>;
--		};
--
--		board-control@1,0 {
--			reg = <0x1 0x0 0x20>;
--			compatible = "fsl,mpc8272ads-bcsr";
--		};
--
--		PCI_PIC: interrupt-controller@3,0 {
--			compatible = "fsl,mpc8272ads-pci-pic",
--			             "fsl,pq2ads-pci-pic";
--			#interrupt-cells = <1>;
--			interrupt-controller;
--			reg = <0x3 0x0 0x8>;
--			interrupt-parent = <&PIC>;
--			interrupts = <20 8>;
--		};
--	};
--
--
--	pci@f0010800 {
--		device_type = "pci";
--		reg = <0xf0010800 0x10c 0xf00101ac 0x8 0xf00101c4 0x8>;
--		compatible = "fsl,mpc8272-pci", "fsl,pq2-pci";
--		#interrupt-cells = <1>;
--		#size-cells = <2>;
--		#address-cells = <3>;
--		clock-frequency = <66666666>;
--		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
--		interrupt-map = <
--		                 /* IDSEL 0x16 */
--		                 0xb000 0x0 0x0 0x1 &PCI_PIC 0
--		                 0xb000 0x0 0x0 0x2 &PCI_PIC 1
--		                 0xb000 0x0 0x0 0x3 &PCI_PIC 2
--		                 0xb000 0x0 0x0 0x4 &PCI_PIC 3
--
--		                 /* IDSEL 0x17 */
--		                 0xb800 0x0 0x0 0x1 &PCI_PIC 4
--		                 0xb800 0x0 0x0 0x2 &PCI_PIC 5
--		                 0xb800 0x0 0x0 0x3 &PCI_PIC 6
--		                 0xb800 0x0 0x0 0x4 &PCI_PIC 7
--
--		                 /* IDSEL 0x18 */
--		                 0xc000 0x0 0x0 0x1 &PCI_PIC 8
--		                 0xc000 0x0 0x0 0x2 &PCI_PIC 9
--		                 0xc000 0x0 0x0 0x3 &PCI_PIC 10
--		                 0xc000 0x0 0x0 0x4 &PCI_PIC 11>;
--
--		interrupt-parent = <&PIC>;
--		interrupts = <18 8>;
--		ranges = <0x42000000 0x0 0x80000000 0x80000000 0x0 0x20000000
--		          0x2000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
--		          0x1000000 0x0 0x0 0xf6000000 0x0 0x2000000>;
--	};
--
--	soc@f0000000 {
--		#address-cells = <1>;
--		#size-cells = <1>;
--		device_type = "soc";
--		compatible = "fsl,mpc8272", "fsl,pq2-soc";
--		ranges = <0x0 0xf0000000 0x53000>;
--
--		// Temporary -- will go away once kernel uses ranges for get_immrbase().
--		reg = <0xf0000000 0x53000>;
--
--		cpm@119c0 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,mpc8272-cpm", "fsl,cpm2";
--			reg = <0x119c0 0x30>;
--			ranges;
--
--			muram@0 {
--				#address-cells = <1>;
--				#size-cells = <1>;
--				ranges = <0x0 0x0 0x10000>;
--
--				data@0 {
--					compatible = "fsl,cpm-muram-data";
--					reg = <0x0 0x2000 0x9800 0x800>;
--				};
--			};
--
--			brg@119f0 {
--				compatible = "fsl,mpc8272-brg",
--				             "fsl,cpm2-brg",
--				             "fsl,cpm-brg";
--				reg = <0x119f0 0x10 0x115f0 0x10>;
--			};
--
--			scc1: serial@11a00 {
--				device_type = "serial";
--				compatible = "fsl,mpc8272-scc-uart",
--				             "fsl,cpm2-scc-uart";
--				reg = <0x11a00 0x20 0x8000 0x100>;
--				interrupts = <40 8>;
--				interrupt-parent = <&PIC>;
--				fsl,cpm-brg = <1>;
--				fsl,cpm-command = <0x800000>;
--			};
--
--			scc4: serial@11a60 {
--				device_type = "serial";
--				compatible = "fsl,mpc8272-scc-uart",
--				             "fsl,cpm2-scc-uart";
--				reg = <0x11a60 0x20 0x8300 0x100>;
--				interrupts = <43 8>;
--				interrupt-parent = <&PIC>;
--				fsl,cpm-brg = <4>;
--				fsl,cpm-command = <0xce00000>;
--			};
--
--			usb@11b60 {
--				compatible = "fsl,mpc8272-cpm-usb";
--				reg = <0x11b60 0x40 0x8b00 0x100>;
--				interrupts = <11 8>;
--				interrupt-parent = <&PIC>;
--				mode = "peripheral";
--			};
--
--			mdio@10d40 {
--				compatible = "fsl,mpc8272ads-mdio-bitbang",
--				             "fsl,mpc8272-mdio-bitbang",
--				             "fsl,cpm2-mdio-bitbang";
--				reg = <0x10d40 0x14>;
--				#address-cells = <1>;
--				#size-cells = <0>;
--				fsl,mdio-pin = <18>;
--				fsl,mdc-pin = <19>;
--
--				PHY0: ethernet-phy@0 {
--					interrupt-parent = <&PIC>;
--					interrupts = <23 8>;
--					reg = <0x0>;
--				};
--
--				PHY1: ethernet-phy@1 {
--					interrupt-parent = <&PIC>;
--					interrupts = <23 8>;
--					reg = <0x3>;
--				};
--			};
--
--			eth0: ethernet@11300 {
--				device_type = "network";
--				compatible = "fsl,mpc8272-fcc-enet",
--				             "fsl,cpm2-fcc-enet";
--				reg = <0x11300 0x20 0x8400 0x100 0x11390 0x1>;
--				local-mac-address = [ 00 00 00 00 00 00 ];
--				interrupts = <32 8>;
--				interrupt-parent = <&PIC>;
--				phy-handle = <&PHY0>;
--				linux,network-index = <0>;
--				fsl,cpm-command = <0x12000300>;
--			};
--
--			eth1: ethernet@11320 {
--				device_type = "network";
--				compatible = "fsl,mpc8272-fcc-enet",
--				             "fsl,cpm2-fcc-enet";
--				reg = <0x11320 0x20 0x8500 0x100 0x113b0 0x1>;
--				local-mac-address = [ 00 00 00 00 00 00 ];
--				interrupts = <33 8>;
--				interrupt-parent = <&PIC>;
--				phy-handle = <&PHY1>;
--				linux,network-index = <1>;
--				fsl,cpm-command = <0x16200300>;
--			};
--
--			i2c@11860 {
--				compatible = "fsl,mpc8272-i2c",
--					     "fsl,cpm2-i2c";
--				reg = <0x11860 0x20 0x8afc 0x2>;
--				interrupts = <1 8>;
--				interrupt-parent = <&PIC>;
--				fsl,cpm-command = <0x29600000>;
--				#address-cells = <1>;
--				#size-cells = <0>;
--			};
--		};
--
--		PIC: interrupt-controller@10c00 {
--			#interrupt-cells = <2>;
--			interrupt-controller;
--			reg = <0x10c00 0x80>;
--			compatible = "fsl,mpc8272-pic", "fsl,cpm2-pic";
--		};
--
--		crypto@30000 {
--			compatible = "fsl,sec1.0";
--			reg = <0x40000 0x13000>;
--			interrupts = <47 0x8>;
--			interrupt-parent = <&PIC>;
--			fsl,num-channels = <4>;
--			fsl,channel-fifo-len = <24>;
--			fsl,exec-units-mask = <0x7e>;
--			fsl,descriptor-types-mask = <0x1010415>;
--		};
--	};
--
--	chosen {
--		stdout-path = "/soc/cpm/serial@11a00";
--	};
--};
-diff --git a/arch/powerpc/configs/mpc8272_ads_defconfig b/arch/powerpc/configs/mpc8272_ads_defconfig
-deleted file mode 100644
-index 4145ef5689ca..000000000000
---- a/arch/powerpc/configs/mpc8272_ads_defconfig
-+++ /dev/null
-@@ -1,79 +0,0 @@
--CONFIG_SYSVIPC=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_PARTITION_ADVANCED=y
--# CONFIG_PPC_CHRP is not set
--# CONFIG_PPC_PMAC is not set
--CONFIG_PPC_82xx=y
--CONFIG_MPC8272_ADS=y
--CONFIG_BINFMT_MISC=y
--CONFIG_PCI=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_SYN_COOKIES=y
--CONFIG_NETFILTER=y
--# CONFIG_FW_LOADER is not set
--CONFIG_MTD=y
--CONFIG_MTD_BLOCK=y
--CONFIG_MTD_JEDECPROBE=y
--CONFIG_MTD_CFI_ADV_OPTIONS=y
--CONFIG_MTD_CFI_GEOMETRY=y
--# CONFIG_MTD_MAP_BANK_WIDTH_1 is not set
--# CONFIG_MTD_MAP_BANK_WIDTH_2 is not set
--# CONFIG_MTD_CFI_I1 is not set
--# CONFIG_MTD_CFI_I2 is not set
--CONFIG_MTD_CFI_I4=y
--CONFIG_MTD_CFI_INTELEXT=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_NETDEVICES=y
--CONFIG_TUN=y
--CONFIG_FS_ENET=y
--# CONFIG_FS_ENET_HAS_SCC is not set
--CONFIG_FS_ENET_MDIO_FCC=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_PPP=y
--CONFIG_PPP_DEFLATE=y
--CONFIG_PPP_ASYNC=y
--CONFIG_PPP_SYNC_TTY=y
--CONFIG_INPUT_EVDEV=y
--# CONFIG_VT is not set
--CONFIG_SERIAL_CPM=y
--CONFIG_SERIAL_CPM_CONSOLE=y
--# CONFIG_HWMON is not set
--# CONFIG_USB_SUPPORT is not set
--CONFIG_EXT2_FS=y
--CONFIG_EXT4_FS=y
--CONFIG_AUTOFS4_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_CRAMFS=y
--CONFIG_NFS_FS=y
--CONFIG_NFS_V3_ACL=y
--CONFIG_ROOT_NFS=y
--CONFIG_NLS=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_ASCII=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_NLS_UTF8=y
--CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT=y
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DETECT_HUNG_TASK=y
--CONFIG_BDI_SWITCH=y
--CONFIG_CRYPTO_CBC=y
--CONFIG_CRYPTO_ECB=y
--CONFIG_CRYPTO_PCBC=y
--CONFIG_CRYPTO_MD5=y
--CONFIG_CRYPTO_DES=y
--# CONFIG_CRYPTO_HW is not set
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index a1f6c5f39ccf..6dfe8f90228f 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -38,7 +38,6 @@ CONFIG_PPC_MPC52xx=y
- CONFIG_PPC_EFIKA=y
- CONFIG_PPC_MPC5200_BUGFIX=y
- CONFIG_PPC_82xx=y
--CONFIG_MPC8272_ADS=y
- CONFIG_PQ2FADS=y
- CONFIG_EP8248E=y
- CONFIG_MGCOGE=y
-diff --git a/arch/powerpc/platforms/82xx/Kconfig b/arch/powerpc/platforms/82xx/Kconfig
-index 1af81de1c4e6..6de033c82960 100644
---- a/arch/powerpc/platforms/82xx/Kconfig
-+++ b/arch/powerpc/platforms/82xx/Kconfig
-@@ -5,17 +5,6 @@ menuconfig PPC_82xx
- 
- if PPC_82xx
- 
--config MPC8272_ADS
--	bool "Freescale MPC8272 ADS"
--	select DEFAULT_UIMAGE
--	select PQ2ADS
--	select 8272
--	select 8260
--	select FSL_SOC
--	select PQ2_ADS_PCI_PIC if PCI
--	help
--	  This option enables support for the MPC8272 ADS board
--
- config PQ2FADS
- 	bool "Freescale PQ2FADS"
- 	select DEFAULT_UIMAGE
-diff --git a/arch/powerpc/platforms/82xx/Makefile b/arch/powerpc/platforms/82xx/Makefile
-index 8d713c601bf2..5426a1479006 100644
---- a/arch/powerpc/platforms/82xx/Makefile
-+++ b/arch/powerpc/platforms/82xx/Makefile
-@@ -2,7 +2,6 @@
- #
- # Makefile for the PowerPC 82xx linux kernel.
- #
--obj-$(CONFIG_MPC8272_ADS) += mpc8272_ads.o
- obj-$(CONFIG_CPM2) += pq2.o
- obj-$(CONFIG_PQ2_ADS_PCI_PIC) += pq2ads-pci-pic.o
- obj-$(CONFIG_PQ2FADS) += pq2fads.o
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-deleted file mode 100644
-index 0b5b9dec16d5..000000000000
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ /dev/null
-@@ -1,213 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * MPC8272 ADS board support
-- *
-- * Copyright 2007 Freescale Semiconductor, Inc.
-- * Author: Scott Wood <scottwood@freescale.com>
-- *
-- * Based on code by Vitaly Bordug <vbordug@ru.mvista.com>
-- * Copyright (c) 2006 MontaVista Software, Inc.
-- */
--
--#include <linux/init.h>
--#include <linux/interrupt.h>
--#include <linux/fsl_devices.h>
--#include <linux/of_address.h>
--#include <linux/of_fdt.h>
--#include <linux/of_platform.h>
--#include <linux/io.h>
--
--#include <asm/cpm2.h>
--#include <asm/udbg.h>
--#include <asm/machdep.h>
--#include <asm/time.h>
--
--#include <platforms/82xx/pq2.h>
--
--#include <sysdev/fsl_soc.h>
--#include <sysdev/cpm2_pic.h>
--
--#include "pq2.h"
--
--static void __init mpc8272_ads_pic_init(void)
--{
--	struct device_node *np = of_find_compatible_node(NULL, NULL,
--	                                                 "fsl,cpm2-pic");
--	if (!np) {
--		printk(KERN_ERR "PIC init: can not find fsl,cpm2-pic node\n");
--		return;
--	}
--
--	cpm2_pic_init(np);
--	of_node_put(np);
--
--	/* Initialize stuff for the 82xx CPLD IC and install demux  */
--	pq2ads_pci_init_irq();
--}
--
--struct cpm_pin {
--	int port, pin, flags;
--};
--
--static struct cpm_pin mpc8272_ads_pins[] = {
--	/* SCC1 */
--	{3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
--	{3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--
--	/* SCC4 */
--	{3, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{3, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--
--	/* FCC1 */
--	{0, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{0, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{0, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{0, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{0, 18, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{0, 19, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{0, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{0, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{0, 26, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
--	{0, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
--	{0, 28, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
--	{0, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
--	{0, 30, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
--	{0, 31, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
--	{2, 21, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{2, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--
--	/* FCC2 */
--	{1, 18, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 19, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 20, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 21, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 22, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{1, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{1, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{1, 25, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{1, 26, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 27, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 28, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 29, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
--	{1, 30, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--
--	/* I2C */
--	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
--	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
--
--	/* USB */
--	{2, 10, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{2, 11, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{2, 20, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{2, 24, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--	{3, 23, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{3, 24, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
--	{3, 25, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
--};
--
--static void __init init_ioports(void)
--{
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(mpc8272_ads_pins); i++) {
--		struct cpm_pin *pin = &mpc8272_ads_pins[i];
--		cpm2_set_pin(pin->port, pin->pin, pin->flags);
--	}
--
--	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_RX);
--	cpm2_clk_setup(CPM_CLK_SCC1, CPM_BRG1, CPM_CLK_TX);
--	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK8, CPM_CLK_RX);
--	cpm2_clk_setup(CPM_CLK_SCC3, CPM_CLK8, CPM_CLK_TX);
--	cpm2_clk_setup(CPM_CLK_SCC4, CPM_BRG4, CPM_CLK_RX);
--	cpm2_clk_setup(CPM_CLK_SCC4, CPM_BRG4, CPM_CLK_TX);
--	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK11, CPM_CLK_RX);
--	cpm2_clk_setup(CPM_CLK_FCC1, CPM_CLK10, CPM_CLK_TX);
--	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK15, CPM_CLK_RX);
--	cpm2_clk_setup(CPM_CLK_FCC2, CPM_CLK16, CPM_CLK_TX);
--}
--
--static void __init mpc8272_ads_setup_arch(void)
--{
--	struct device_node *np;
--	__be32 __iomem *bcsr;
--
--	if (ppc_md.progress)
--		ppc_md.progress("mpc8272_ads_setup_arch()", 0);
--
--	cpm2_reset();
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,mpc8272ads-bcsr");
--	if (!np) {
--		printk(KERN_ERR "No bcsr in device tree\n");
--		return;
--	}
--
--	bcsr = of_iomap(np, 0);
--	of_node_put(np);
--	if (!bcsr) {
--		printk(KERN_ERR "Cannot map BCSR registers\n");
--		return;
--	}
--
--#define BCSR1_FETHIEN		0x08000000
--#define BCSR1_FETH_RST		0x04000000
--#define BCSR1_RS232_EN1		0x02000000
--#define BCSR1_RS232_EN2		0x01000000
--#define BCSR3_USB_nEN		0x80000000
--#define BCSR3_FETHIEN2		0x10000000
--#define BCSR3_FETH2_RST		0x08000000
--
--	clrbits32(&bcsr[1], BCSR1_RS232_EN1 | BCSR1_RS232_EN2 | BCSR1_FETHIEN);
--	setbits32(&bcsr[1], BCSR1_FETH_RST);
--
--	clrbits32(&bcsr[3], BCSR3_FETHIEN2);
--	setbits32(&bcsr[3], BCSR3_FETH2_RST);
--
--	clrbits32(&bcsr[3], BCSR3_USB_nEN);
--
--	iounmap(bcsr);
--
--	init_ioports();
--
--	if (ppc_md.progress)
--		ppc_md.progress("mpc8272_ads_setup_arch(), finish", 0);
--}
--
--static const struct of_device_id of_bus_ids[] __initconst = {
--	{ .name = "soc", },
--	{ .name = "cpm", },
--	{ .name = "localbus", },
--	{},
--};
--
--static int __init declare_of_platform_devices(void)
--{
--	/* Publish the QE devices */
--	of_platform_bus_probe(NULL, of_bus_ids, NULL);
--	return 0;
--}
--machine_device_initcall(mpc8272_ads, declare_of_platform_devices);
--
--/*
-- * Called very early, device-tree isn't unflattened
-- */
--static int __init mpc8272_ads_probe(void)
--{
--	return of_machine_is_compatible("fsl,mpc8272ads");
--}
--
--define_machine(mpc8272_ads)
--{
--	.name = "Freescale MPC8272 ADS",
--	.probe = mpc8272_ads_probe,
--	.setup_arch = mpc8272_ads_setup_arch,
--	.discover_phbs = pq2_init_pci,
--	.init_IRQ = mpc8272_ads_pic_init,
--	.get_irq = cpm2_get_irq,
--	.calibrate_decr = generic_calibrate_decr,
--	.restart = pq2_restart,
--	.progress = udbg_progress,
--};
--- 
-2.17.1
+Hi Paul,
+
+I talked with our marketing team on this.  Although we do not recommend any=
+ new design with these SoCs, they are still being shipped in large amount t=
+o customers now.  Plus it is possible for the bigger amount of existing dev=
+ices to be updating their software that includes a new kernel.  So we shoul=
+d definitely keep all the common SoC code that might be needed to support t=
+heir own design.
+
+>=20
+> These boards were all of a very similar form factor, a largish PCI or PCI=
+-X card
+> that could also be used standalone with an external power brick, and all
+> shared the Modular Development System (MDS) designation.
+>=20
+> These platforms were made in limited quantity and were generally designed
+> to get early silicon into the hands of OEMs who would later develop their
+> own boards/platforms.  As such, availability was limited to those who wou=
+ld
+> be working on boards and/or BSP support.
+>=20
+> Many early revision MDS platforms used a mechanical clamping system to
+> hold the BGA CPU in place to facilitate CPU updates -- something not
+> normally possible for a soldered down BGA in a COTS system.
+>=20
+> The point of these details is to give context that reflects that these fo=
+ur
+> boards were made in limited quantities, were not in a form factor that is
+> really "hobbyist" friendly and hence make sense for removal 17 years late=
+r.
+
+We would agree with you that the MDS platforms are only used by a limited n=
+umber of customers for evaluation purpose, so it should be fine to be remov=
+ed.  So for this series:
+
+Acked-by: Li Yang <leoyang.li@nxp.com>
+
+>=20
+> Here, we remove the MPC8548E-MDS[1], the MPC8360E-MDS[2], the
+> MPC837xE-MDS[3], and the MPC832x-MDS[4] board support from the kernel.
+>=20
+> There will still exist several e300 Freescale Reference Design System (RD=
+S)
+> boards[5] and mini-ITX boards[6] with support in the kernel.  While these
+> were more of a COTS "ready to deploy" design more suited to hobbyists, it
+> probably makes sense to consider removing these as well, based on age.
+
+These boards are mass market boards that sold in larger amount and are much=
+ more likely to still be used.  We would suggest we keep them for now.
+
+>=20
+> But before we get to that, lets see how this goes -- and then we should l=
+ook
+> at similar early e500 evaluation platforms [MPC8540-ADS, etc] next, as th=
+e
+> oldest there date back to 2002[7] -- before considering RDB/mITX.
+>=20
+> I intentionally didn't put any links in the commits, since as we all know=
+, they
+> tend not to be stable long term, so keep them here in the merge data.
+> Credit to NXP for keeping around these old legacy docs this long!
+>=20
+> Paul.
+>=20
+> --
+>=20
+> [1]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fdesign%2Fqoriq-developer-resources%2Fmpc8349e-modular-
+> development-
+> system%3AMPC8349EMDS&data=3D05%7C01%7Cleoyang.li%40nxp.com%7Ca2
+> 820c1e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c301635%
+> 7C0%7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJWIjoi
+> MC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C300
+> 0%7C%7C%7C&sdata=3DQ4COgwpjsE4mHXvl9HdGo3otPCYML3z%2FR6IoCEYRE
+> wg%3D&reserved=3D0
+> [2]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fdocs%2Fen%2Fuser-
+> guide%2FMPC8360EMDSUM.pdf&data=3D05%7C01%7Cleoyang.li%40nxp.com
+> %7Ca2820c1e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c30
+> 1635%7C0%7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8ey
+> JWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%
+> 7C3000%7C%7C%7C&sdata=3DJyLT0MfGAHQ8a%2FNgpLdVFtyACkwPR%2FOkB
+> yN1aW0wySs%3D&reserved=3D0
+> [3]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fproducts%2Fprocessors-and-microcontrollers%2Flegacy-mpu-
+> mcus%2Fpowerquicc-processors%2Fpowerquicc-iii-mpc85xx%2Fmpc837xe-
+> modular-development-
+> system%3AMPC837XEMDS&data=3D05%7C01%7Cleoyang.li%40nxp.com%7Ca2
+> 820c1e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c301635%
+> 7C0%7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJWIjoi
+> MC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C300
+> 0%7C%7C%7C&sdata=3D052dpEEcGmbuhRLnMDCNoOkTeguF%2BPA0oJGNvV1
+> jSjI%3D&reserved=3D0
+> [4]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fproducts%2Fprocessors-and-microcontrollers%2Flegacy-mpu-
+> mcus%2Fpowerquicc-processors%2Fpowerquicc-ii-pro-mpc83xx%2Flow-
+> power-powerquicc-ii-pro-processor-with-ddr2-tdm-pci-security-usb-quicc-
+> engine-with-
+> utopia%3AMPC8323E&data=3D05%7C01%7Cleoyang.li%40nxp.com%7Ca2820c1
+> e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%
+> 7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4
+> wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7
+> C%7C%7C&sdata=3DmZQh%2FogNgNUb0wNJV972kYIDvn61gx0TWNd1u1d7PZ
+> Q%3D&reserved=3D0
+> [5]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fdocs%2Fen%2Ffact-
+> sheet%2FMPC8379ERDBFS.pdf&data=3D05%7C01%7Cleoyang.li%40nxp.com%7
+> Ca2820c1e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c3016
+> 35%7C0%7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJ
+> WIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%
+> 7C3000%7C%7C%7C&sdata=3DEJmP6Regr7zpvYvHUmX64h3LZSaBT3Mb1h%2BN
+> KQT%2FUls%3D&reserved=3D0
+> [6]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .digikey.ca%2Fen%2Fproducts%2Fdetail%2Fnxp-usa-inc%2FMPC8349E-MITX-
+> GP%2F1204733&data=3D05%7C01%7Cleoyang.li%40nxp.com%7Ca2820c1e44264
+> 0c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C1%7
+> C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAw
+> MDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%
+> 7C&sdata=3Dhw6IQDUaXH6huQFCnCkFIbNfj1xMrq%2FanDMUU%2FXZYQg%3
+> D&reserved=3D0
+> [7]
+> https://eur01.safelinks.protection.outlook.com/?url=3Dhttps%3A%2F%2Fwww
+> .nxp.com%2Fdocs%2Fen%2Freference-
+> manual%2FMPC8560ADSUG.pdf&data=3D05%7C01%7Cleoyang.li%40nxp.com%
+> 7Ca2820c1e442640c5a39108db1339fd9f%7C686ea1d3bc2b4c6fa92cd99c5c301
+> 635%7C0%7C1%7C638124912025220501%7CUnknown%7CTWFpbGZsb3d8eyJ
+> WIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%
+> 7C3000%7C%7C%7C&sdata=3DEd%2BZR07y9Sp8xx5H47SAXzk9ET73creygxk%2B
+> emmbfuA%3D&reserved=3D0
+>=20
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Li Yang <leoyang.li@nxp.com>
+> Cc: Claudiu Manoil <claudiu.manoil@nxp.com>
+>=20
+> ---
+>=20
+> Paul Gortmaker (4):
+>   powerpc: drop MPC834x_MDS platform support
+>   powerpc: drop MPC836x_MDS platform support
+>   powerpc: drop MPC837x_MDS platform support
+>   powerpc: drop MPC832x_MDS platform support
+>=20
+>  arch/powerpc/boot/Makefile                    |   1 -
+>  arch/powerpc/boot/dts/mpc832x_mds.dts         | 436 ---------------
+>  arch/powerpc/boot/dts/mpc834x_mds.dts         | 403 --------------
+>  arch/powerpc/boot/dts/mpc836x_mds.dts         | 481 -----------------
+>  arch/powerpc/boot/dts/mpc8377_mds.dts         | 505 ------------------
+>  arch/powerpc/boot/dts/mpc8378_mds.dts         | 489 -----------------
+>  arch/powerpc/boot/dts/mpc8379_mds.dts         | 455 ----------------
+>  .../configs/83xx/mpc832x_mds_defconfig        |  59 --
+>  .../configs/83xx/mpc834x_mds_defconfig        |  58 --
+>  .../configs/83xx/mpc836x_mds_defconfig        |  64 ---
+>  .../configs/83xx/mpc837x_mds_defconfig        |  58 --
+>  arch/powerpc/configs/mpc83xx_defconfig        |   4 -
+>  arch/powerpc/configs/ppc6xx_defconfig         |   4 -
+>  arch/powerpc/platforms/83xx/Kconfig           |  32 --
+>  arch/powerpc/platforms/83xx/Makefile          |   4 -
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c     | 110 ----
+>  arch/powerpc/platforms/83xx/mpc834x_mds.c     | 101 ----
+>  arch/powerpc/platforms/83xx/mpc836x_mds.c     | 210 --------
+>  arch/powerpc/platforms/83xx/mpc837x_mds.c     | 103 ----
+>  19 files changed, 3577 deletions(-)
+>  delete mode 100644 arch/powerpc/boot/dts/mpc832x_mds.dts
+>  delete mode 100644 arch/powerpc/boot/dts/mpc834x_mds.dts
+>  delete mode 100644 arch/powerpc/boot/dts/mpc836x_mds.dts
+>  delete mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+>  delete mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+>  delete mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
+>  delete mode 100644 arch/powerpc/configs/83xx/mpc832x_mds_defconfig
+>  delete mode 100644 arch/powerpc/configs/83xx/mpc834x_mds_defconfig
+>  delete mode 100644 arch/powerpc/configs/83xx/mpc836x_mds_defconfig
+>  delete mode 100644 arch/powerpc/configs/83xx/mpc837x_mds_defconfig
+>  delete mode 100644 arch/powerpc/platforms/83xx/mpc832x_mds.c
+>  delete mode 100644 arch/powerpc/platforms/83xx/mpc834x_mds.c
+>  delete mode 100644 arch/powerpc/platforms/83xx/mpc836x_mds.c
+>  delete mode 100644 arch/powerpc/platforms/83xx/mpc837x_mds.c
+>=20
+> --
+> 2.17.1
 
