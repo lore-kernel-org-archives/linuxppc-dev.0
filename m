@@ -4,91 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 085EDC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 11:16:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06B23C6FA99
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 12:22:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PNS5b4lsPz3f5M
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 22:16:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PNTXs3YjXz3fBV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Feb 2023 23:22:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QITyyJUR;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m/VfBJIp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QITyyJUR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m/VfBJIp;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PNS4W0MW9z3chW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 22:15:54 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31OABVZD013650
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 11:15:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : cc : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=6wZG6taDGbM5eL3NgH4fWlaHaJW2hP/koBpz0Tw4juQ=;
- b=QITyyJURnYHd+uIG3Wqg55H56kizDl7B37EgwQHMBT+nWcN+WZx9dyJ0u/poPFfS85AB
- CXNyhCBIEpS33GR/OuJe521U4xABkAVFEcZGWLp1cIoSuWfl/aCdqMDgUpu4dADFyhh4
- C+6sIhRlKykOOHZJ+ifUNXyx72CKk+LXV0LScdO1oYgmdfjilYabTXJj1lVBRPrpy3BH
- SprWHStA9Jq/TIRP40E+KmWtxmGv+cfT788kxYlZubDXJmqQL6HHLe7eOlhiXx/b4vPI
- mLQpYoWs/ZM2hBcxjHEhZFDhvJnX34cTSsZRW9/fAnag8vh3SBCyWR0mq2yngMuXGYgP FA== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nxu90sb37-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 11:15:51 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31O6KKAu031457
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 11:15:49 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3ntpa6dxk7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 11:15:49 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31OBFlQo15008404
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PNRJp2jcfz3cJY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Feb 2023 21:41:29 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31OAFRNJ017733;
+	Fri, 24 Feb 2023 10:41:09 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=bt25XQYrLSxNwDQkOSnKkbwhoxJd6ZKZw9dpKyyeqgM=;
+ b=m/VfBJIpgO1uCFTZfhTxhdyBxleVZwE6vVp6y9Qd9EkAzNcD3Lar5++GqerGSYzLNAB4
+ aX3UrCu8zfsZ43cxoK9QWRs+3fyC2o2qojf+5HvFI1c5FpoT3F37URluc2tZ0RdJmz15
+ m5DBu80hOqKWflNTzscsisyPm2xOKbqG0V9vJKEyW1YLY4lyo+pAX3gutoUUR2GeW6Lq
+ GzPNV6gjueE+zEIVRpyFM+c4+z502c+Q8JYzWL2doVrFtQwl0P4sKYchqdEUXR9jcaKs
+ uWnZ4pYkG9fB9BrZ07m7uDODp88mUQdMyqX5liGIpWqbSGhBDn1HeI7SZe3qrXskYtS9 JQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nxuap8h3g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 24 Feb 2023 10:41:09 +0000
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31OAI50q025813;
+	Fri, 24 Feb 2023 10:41:08 GMT
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3nxuap8h2q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 24 Feb 2023 10:41:08 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31NN1KEN016569;
+	Fri, 24 Feb 2023 10:41:06 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3ntpa6fudc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 24 Feb 2023 10:41:06 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31OAf4LS44368162
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 24 Feb 2023 11:15:47 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E943520043;
-	Fri, 24 Feb 2023 11:15:46 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 61C9E20040;
-	Fri, 24 Feb 2023 11:15:46 +0000 (GMT)
-Received: from [9.43.42.63] (unknown [9.43.42.63])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 24 Feb 2023 11:15:46 +0000 (GMT)
-Message-ID: <acb32fb3-c674-25fa-d6de-bcb6a4ce8f46@linux.ibm.com>
-Date: Fri, 24 Feb 2023 16:45:45 +0530
+	Fri, 24 Feb 2023 10:41:04 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 05CD320043;
+	Fri, 24 Feb 2023 10:41:04 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 57A8320040;
+	Fri, 24 Feb 2023 10:41:01 +0000 (GMT)
+Received: from li-80eaad4c-2afd-11b2-a85c-af8123d033e3.ibm.com.com (unknown [9.43.6.21])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 24 Feb 2023 10:41:01 +0000 (GMT)
+From: "Nysal Jan K.A" <nysal@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/atomics: Remove unused function
+Date: Fri, 24 Feb 2023 16:09:40 +0530
+Message-Id: <20230224103940.1328725-1-nysal@linux.ibm.com>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH 1/2] arch/powerpc/kvm: kvmppc_hv_entry: remove .global
- scope
-To: Kautuk Consul <kconsul@linux.vnet.ibm.com>
-References: <20230220052355.109033-1-kconsul@linux.vnet.ibm.com>
- <20230220052355.109033-2-kconsul@linux.vnet.ibm.com>
- <2fa8dd2a-1650-4adc-de2b-0f14dca683ed@linux.ibm.com>
- <Y/MhON/N6vG8wYWq@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
- <9ee1f333-9cb7-d7fe-4e3f-ded4990030de@linux.ibm.com>
- <Y/MrOjca/C+bPmn1@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
- <Y/M6kFeUsLBwcbP0@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
- <Y/b1Hpk8rhrR+H9I@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
-Content-Language: en-US
-From: Sathvika Vasireddy <sv@linux.ibm.com>
-In-Reply-To: <Y/b1Hpk8rhrR+H9I@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: doePGCcxhkuFbT1ykoXBZYqdNVcFwYM9
-X-Proofpoint-ORIG-GUID: doePGCcxhkuFbT1ykoXBZYqdNVcFwYM9
+X-Proofpoint-GUID: YQ5ZyqvNeE7DCvVnFBnX-f4PBjlAc0TV
+X-Proofpoint-ORIG-GUID: xz1fJeRRP9tfijdHZwPNFYxo7x5A5U5N
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-24_06,2023-02-24_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 phishscore=0
- mlxlogscore=999 spamscore=0 lowpriorityscore=0 adultscore=0 malwarescore=0
- impostorscore=0 mlxscore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2302240091
+ definitions=2023-02-24_04,2023-02-23_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ suspectscore=0 malwarescore=0 bulkscore=0 priorityscore=1501
+ mlxlogscore=899 lowpriorityscore=0 clxscore=1011 mlxscore=0 spamscore=0
+ adultscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2212070000 definitions=main-2302240086
+X-Mailman-Approved-At: Fri, 24 Feb 2023 23:20:19 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,28 +94,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org, Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, "Nysal Jan K.A" <nysal@linux.ibm.com>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 23/02/23 10:39, Kautuk Consul wrote:
+Remove arch_atomic_try_cmpxchg_lock function as it is no longer used
+since commit 9f61521c7a28 ("powerpc/qspinlock: powerpc qspinlock
+implementation")
 
-> Hi Sathvika,
->> Just one question though. Went through the code again and I think
->> that this place shouldn't be proper to insert a SYM_FUNC_END
->> because we haven't entered the guest at this point and the name
->> of the function is kvmppc_hv_entry which  I think implies that
->> this SYM_FUNC_END should be at some place after the HRFI_TO_GUEST.
->>
->> What do you think ?
-> Any updates on this ? Is there any other way to avoid this warning ?
-Hmm, to mark the end of the kvmppc_hv_entry function, I think 
-SYM_FUNC_END(kvmppc_hv_entry) should be placed before the next symbol, 
-which is kvmppc_got_guest() in this case.
+Signed-off-by: Nysal Jan K.A <nysal@linux.ibm.com>
+---
+ arch/powerpc/include/asm/atomic.h | 29 -----------------------------
+ 1 file changed, 29 deletions(-)
 
-However, if you think it needs to be put at a different place, then it 
-does not make sense to have any other symbols before that. You may want 
-to consider checking if other macros like SYM_INNER_LABEL() can be used.
-
-- Sathvika
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index 486ab7889121..b3a53830446b 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -130,35 +130,6 @@ ATOMIC_OPS(xor, xor, "", K)
+ #define arch_atomic_xchg_relaxed(v, new) \
+ 	arch_xchg_relaxed(&((v)->counter), (new))
+ 
+-/*
+- * Don't want to override the generic atomic_try_cmpxchg_acquire, because
+- * we add a lock hint to the lwarx, which may not be wanted for the
+- * _acquire case (and is not used by the other _acquire variants so it
+- * would be a surprise).
+- */
+-static __always_inline bool
+-arch_atomic_try_cmpxchg_lock(atomic_t *v, int *old, int new)
+-{
+-	int r, o = *old;
+-	unsigned int eh = IS_ENABLED(CONFIG_PPC64);
+-
+-	__asm__ __volatile__ (
+-"1:	lwarx	%0,0,%2,%[eh]	# atomic_try_cmpxchg_acquire		\n"
+-"	cmpw	0,%0,%3							\n"
+-"	bne-	2f							\n"
+-"	stwcx.	%4,0,%2							\n"
+-"	bne-	1b							\n"
+-"\t"	PPC_ACQUIRE_BARRIER "						\n"
+-"2:									\n"
+-	: "=&r" (r), "+m" (v->counter)
+-	: "r" (&v->counter), "r" (o), "r" (new), [eh] "n" (eh)
+-	: "cr0", "memory");
+-
+-	if (unlikely(r != o))
+-		*old = r;
+-	return likely(r == o);
+-}
+-
+ /**
+  * atomic_fetch_add_unless - add unless the number is a given value
+  * @v: pointer of type atomic_t
+-- 
+2.39.2
 
