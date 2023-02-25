@@ -4,66 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86644C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Feb 2023 20:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61F84C64EC7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Feb 2023 22:51:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PPJ2p1KGqz3fP0
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Feb 2023 07:17:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PPMSR6G78z3f3P
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Feb 2023 09:51:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=b/pp8syo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=exp0ZuoU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=HFqnYYAj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=windriver.com (client-ip=205.220.178.238; helo=mx0b-0064b401.pphosted.com; envelope-from=prvs=1420409688=paul.gortmaker@windriver.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.21; helo=wout5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=b/pp8syo;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=exp0ZuoU;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=HFqnYYAj;
 	dkim-atps=neutral
-Received: from mx0b-0064b401.pphosted.com (mx0b-0064b401.pphosted.com [205.220.178.238])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from wout5-smtp.messagingengine.com (wout5-smtp.messagingengine.com [64.147.123.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PPHyf2Tffz3c71
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2023 07:13:44 +1100 (AEDT)
-Received: from pps.filterd (m0250811.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31PKDV3u002291;
-	Sat, 25 Feb 2023 20:13:32 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=PPS06212021;
- bh=MQCvMr/SCtZB+aLQw6Hydu8/qcMWkduc6IM9G6f5kSM=;
- b=b/pp8syojGhadwwRucS1J0DCqVoR+0rfXUlxmp8k8CuYBSrQ4fLwaO+eCzOqwUmDw3D9
- vYSJpWMaGuHtTBF0NjUMrnzIpwR0IxyWci6mZJMgivA7xrppOHOBLiWVlo6eQGzS8+Ig
- tJNmDyrdhnGeqiq62/NF3O2Kl/BE9aPngcnmRx2a7YG+cKUsBcStb0qZsq5QOlBj1HFE
- LMGoswClYNnohPg2HMAf/SrhaOCXPb/l1g4moQO8GS9dZFkUP3kCEAL0pJoNs+QuTK/8
- TBCKwZIQeBe9FxiJfxgxau1VI5/sbk0Oi3di24p93iVxpBN1H7Hy0S8gLHUycaBN+E/S kQ== 
-Received: from ala-exchng02.corp.ad.wrs.com (unknown-82-254.windriver.com [147.11.82.254])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 3nybmk8gs1-3
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT);
-	Sat, 25 Feb 2023 20:13:31 +0000
-Received: from ala-exchng01.corp.ad.wrs.com (147.11.82.252) by
- ALA-EXCHNG02.corp.ad.wrs.com (147.11.82.254) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.18; Sat, 25 Feb 2023 12:13:31 -0800
-Received: from sc2600cp.wrs.com (128.224.56.77) by
- ala-exchng01.corp.ad.wrs.com (147.11.82.252) with Microsoft SMTP Server id
- 15.1.2507.17 via Frontend Transport; Sat, 25 Feb 2023 12:13:30 -0800
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3] powerpc: drop HPC-NET/MPC8641D evaluation platform support
-Date: Sat, 25 Feb 2023 15:13:17 -0500
-Message-ID: <20230225201318.3682-3-paul.gortmaker@windriver.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20230225201318.3682-1-paul.gortmaker@windriver.com>
-References: <20230225201318.3682-1-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PPMRJ28qzz3bZV
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Feb 2023 09:50:18 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailout.west.internal (Postfix) with ESMTP id CBE1C320083A;
+	Sat, 25 Feb 2023 17:50:11 -0500 (EST)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Sat, 25 Feb 2023 17:50:12 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:date:date:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to; s=fm3; t=1677365411; x=1677451811; bh=tmxpZ7oIgK
+	0TkAA9mjGcktKtrG+/a/hmjd0+HlX7fns=; b=exp0ZuoUry1Z1xOcGmReG4Gh8e
+	1diYJsYq5S0cgIj66iWD5l/dB46ape5/Ky/avIIJxjnlxeUe9RVAEFg6RdCUhv4w
+	rFPTRTRSunjs885Oli2CN3GfaBUp7vYTu7GL7j98wq++uP9qbfIzQKiZZVjHp6wz
+	rF6gaKVz78qMKqjzC8JadMpPNjvPafUXlbDcqnA//NCOGToHBw6YwI35WPfeDtXm
+	VGBcSZVJeUJvaDAjH5QC+rtaAvK65eX/+OLWwjBzdSXYB3CeOVNhJhZM9OvkwsiZ
+	lmg6lki3m4hZhTO9U65bLAdxEoY0rN1HhqFYulffgV68fH/3jKQOrTd6raoQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:date:date:feedback-id
+	:feedback-id:from:from:in-reply-to:in-reply-to:message-id
+	:mime-version:references:reply-to:sender:subject:subject:to:to
+	:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+	fm1; t=1677365411; x=1677451811; bh=tmxpZ7oIgK0TkAA9mjGcktKtrG+/
+	a/hmjd0+HlX7fns=; b=HFqnYYAj/KraZSl94+vUbTCJrXSRzteSOO0Tj4V9Uji/
+	VkCjK3lmja2GILOehTAXbSji0huN29JUmlDhhtG4KE0EqLIX7l3GVlq1pGFrWnkf
+	g4fJ8tJA2CqEKdd5a6vvDp2fjFZ0kmJgQxXqAs3SwBqXK3IaPOi2QBFb1khuF6ZT
+	NtZopYtz96QsiHZdYEonLRes5HLDWhQYLc/Xv7EQ7fvpkh0Pkpci/XzR9ABjccB+
+	ydmEdE3U//u9hXndDczn2Gidlk0XKfGphtnRrGaKqpXkCwbZPWfyx7fPr0JzA0JL
+	SZ6snyyq6zhBxOTgP4MrUxXwVy9oIs9ZeqJpixTmZQ==
+X-ME-Sender: <xms:opD6YxpAa4s24ghx2m6p8fZvwd47zqEBioltUo9o50Ezsf-YSWcgqQ>
+    <xme:opD6YzrDL6Q2IisqAHvydgv0I8rsuTfzrrcerLFu7DVC-YQ1BBJPTx4JBVyyBED91
+    8nIM7MxxJK7tGjyisA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudekjecutefuodetggdotefrodftvfcurf
+    hrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdetrhhnugcu
+    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
+    hnpeffheeugeetiefhgeethfejgfdtuefggeejleehjeeutefhfeeggefhkedtkeetffen
+    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
+    esrghrnhgusgdruggv
+X-ME-Proxy: <xmx:opD6Y-OTlA5OwhO4MTo2qP-Z5sOZEictDdVzC6nLcBrMaUHDTXtlgA>
+    <xmx:opD6Y85VSCYd9vegIC7w-neMcgGgDVJSbmYncYOCBS3EloHCP2NPZQ>
+    <xmx:opD6Yw5hD0QIKWoPGrDBZqCVQ1h_OFw_zVVYDXCZf7MuTbXK7iDHMQ>
+    <xmx:o5D6Y-kJ2JaQkAVmU-AW7Iy1QiHZ-2aAMas7TFeuNAsZfbxmWBP09g>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id AFC3FB60086; Sat, 25 Feb 2023 17:50:10 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-172-g9a2dae1853-fm-20230213.001-g9a2dae18
+Mime-Version: 1.0
+Message-Id: <381dca28-726d-4118-81e1-9a9da4e87425@app.fastmail.com>
+In-Reply-To: <Y/o8bQz5CuRhdD8B@windriver.com>
+References: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+ <AM0PR04MB6289FA528F76DDADB2BB0F958FA89@AM0PR04MB6289.eurprd04.prod.outlook.com>
+ <Y/o8bQz5CuRhdD8B@windriver.com>
+Date: Sat, 25 Feb 2023 23:49:50 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Paul Gortmaker" <paul.gortmaker@windriver.com>,
+ "Leo Li" <leoyang.li@nxp.com>
+Subject: Re: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
 Content-Type: text/plain
-X-Proofpoint-GUID: gJNhONwHgyqu00tZcWz5gi_60n-e2zsT
-X-Proofpoint-ORIG-GUID: gJNhONwHgyqu00tZcWz5gi_60n-e2zsT
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-25_12,2023-02-24_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 spamscore=0
- suspectscore=0 phishscore=0 mlxscore=0 malwarescore=0 priorityscore=1501
- lowpriorityscore=0 mlxlogscore=999 clxscore=1015 bulkscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2302250170
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,986 +94,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Yang <leoyang.li@nxp.com>, Scott Wood <oss@buserror.net>, Paul Gortmaker <paul.gortmaker@windriver.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>
+Cc: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There is no denying that this was an interesting platform in its day.
-Access to a SMP powerpc platform became a bit more obtainable for folks
-in the the BSP industry in the 2007 era, thanks to this platform.
+On Sat, Feb 25, 2023, at 17:50, Paul Gortmaker wrote:
+> [RE: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms] On 
+> 24/02/2023 (Fri 21:16) Leo Li wrote:
+>
+> Thanks for confirming with your marketing team that they "do not
+> recommend any new design with these SoCs" -- it also confirms the
+> information I read on the web pages for the platforms.
+>
+> As those of us immersed in this world all know from the 101 basics of
+> Product Life Cycle lessons, it doesn't matter if it is a phone or a
+> set-top-box/PVR or whatever else kind of non-PC consumer device --
+> kernel uprevs never happen in that product space.
+>
+> So with the best interests of the mainline kernel in mind, I think we
+> are good to proceed with this for summer 2023.  And of course as I've
+> said many times before - the kernel is in git, so really you can't
+> delete anything anyway - it remains in history forever.
 
-Add to that the move to the black Antec case vs. the generic white 2005
-era case of the MPC8548CDS or the retro 1950s 1/2 height horizontal case
-of the HPC II, and it was pretty interesting to people like myself then.
+Thanks for working on this, this is a good step towards removing
+the known unused code. One aspect I'd add from doing similar cleanups
+on arm32 is that I would prioritize removing evaluation platforms
+for SoCs that have no other supported boards, and then
+garbage-collecting the device drivers that become unused.
 
-However, like all the other evaluation platforms, the overall system
-was complex out of necessity, as it tried to showcase all possible
-features and use-cases.  That included an AMP option, where you could run
-two bootloaders and two kernels over two serial consoles.  Peripheral
-sharing got a bit more tricky when you got to the hard disk and similar.
+I'm not sure where the RDB boards fit in that, in particular if
+an unmodified kernel would work on a machine that is derived from
+the reference platform, or if it really only works on the machine
+itself. On most arm platforms, we moved to having only per-soc
+"compatible" strings, but on Freescale ppc32 it appears that
+the kernel always matches a board specific string and requires
+patches in order to support anything else.
 
-In any case we still have the same circumstance.  A relatively rare and
-expensive evaluation platform that is now 15+ years old and not out there
-in large numbers in the general public.  Removal in 2023 just makes sense.
-
-Cc: Scott Wood <oss@buserror.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts    | 394 ------------------
- .../powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts | 337 ---------------
- arch/powerpc/configs/mpc86xx_base.config      |   1 -
- arch/powerpc/configs/ppc6xx_defconfig         |   1 -
- arch/powerpc/platforms/86xx/Kconfig           |  12 +-
- arch/powerpc/platforms/86xx/Makefile          |   1 -
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c    | 127 ------
- 7 files changed, 1 insertion(+), 872 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
- delete mode 100644 arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
- delete mode 100644 arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-deleted file mode 100644
-index f7a2430d6629..000000000000
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts
-+++ /dev/null
-@@ -1,394 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * MPC8641 HPCN Device Tree Source
-- *
-- * Copyright 2006 Freescale Semiconductor Inc.
-- */
--
--/include/ "mpc8641si-pre.dtsi"
--
--/ {
--	model = "MPC8641HPCN";
--	compatible = "fsl,mpc8641hpcn";
--
--	memory {
--		device_type = "memory";
--		reg = <0x00000000 0x40000000>;	// 1G at 0x0
--	};
--
--	lbc: localbus@ffe05000 {
--		reg = <0xffe05000 0x1000>;
--
--		ranges = <0 0 0xef800000 0x00800000
--			  2 0 0xffdf8000 0x00008000
--			  3 0 0xffdf0000 0x00008000>;
--
--		flash@0,0 {
--			compatible = "cfi-flash";
--			reg = <0 0 0x00800000>;
--			bank-width = <2>;
--			device-width = <2>;
--			#address-cells = <1>;
--			#size-cells = <1>;
--			partition@0 {
--				label = "kernel";
--				reg = <0x00000000 0x00300000>;
--			};
--			partition@300000 {
--				label = "firmware b";
--				reg = <0x00300000 0x00100000>;
--				read-only;
--			};
--			partition@400000 {
--				label = "fs";
--				reg = <0x00400000 0x00300000>;
--			};
--			partition@700000 {
--				label = "firmware a";
--				reg = <0x00700000 0x00100000>;
--				read-only;
--			};
--		};
--	};
--
--	soc: soc8641@ffe00000 {
--		ranges = <0x00000000 0xffe00000 0x00100000>;
--
--		enet0: ethernet@24000 {
--			tbi-handle = <&tbi0>;
--			phy-handle = <&phy0>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@24520 {
--			phy0: ethernet-phy@0 {
--				interrupts = <10 1 0 0>;
--				reg = <0>;
--			};
--			phy1: ethernet-phy@1 {
--				interrupts = <10 1 0 0>;
--				reg = <1>;
--			};
--			phy2: ethernet-phy@2 {
--				interrupts = <10 1 0 0>;
--				reg = <2>;
--			};
--			phy3: ethernet-phy@3 {
--				interrupts = <10 1 0 0>;
--				reg = <3>;
--			};
--			tbi0: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		enet1: ethernet@25000 {
--			tbi-handle = <&tbi1>;
--			phy-handle = <&phy1>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@25520 {
--			tbi1: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--		
--		enet2: ethernet@26000 {
--			tbi-handle = <&tbi2>;
--			phy-handle = <&phy2>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@26520 {
--			tbi2: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		enet3: ethernet@27000 {
--			tbi-handle = <&tbi3>;
--			phy-handle = <&phy3>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@27520 {
--			tbi3: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		rmu: rmu@d3000 {
--			#address-cells = <1>;
--			#size-cells = <1>;
--			compatible = "fsl,srio-rmu";
--			reg = <0xd3000 0x500>;
--			ranges = <0x0 0xd3000 0x500>;
--
--			message-unit@0 {
--				compatible = "fsl,srio-msg-unit";
--				reg = <0x0 0x100>;
--				interrupts = <
--					53 2 0 0  /* msg1_tx_irq */
--					54 2 0 0>;/* msg1_rx_irq */
--			};
--			message-unit@100 {
--				compatible = "fsl,srio-msg-unit";
--				reg = <0x100 0x100>;
--				interrupts = <
--					55 2 0 0  /* msg2_tx_irq */
--					56 2 0 0>;/* msg2_rx_irq */
--			};
--			doorbell-unit@400 {
--				compatible = "fsl,srio-dbell-unit";
--				reg = <0x400 0x80>;
--				interrupts = <
--					49 2 0 0  /* bell_outb_irq */
--					50 2 0 0>;/* bell_inb_irq */
--			};
--			port-write-unit@4e0 {
--				compatible = "fsl,srio-port-write-unit";
--				reg = <0x4e0 0x20>;
--				interrupts = <48 2 0 0>;
--			};
--		};
--	};
--
--	pci0: pcie@ffe08000 {
--		reg = <0xffe08000 0x1000>;
--		ranges = <0x02000000 0x0 0x80000000 0x80000000 0x0 0x20000000
--			  0x01000000 0x0 0x00000000 0xffc00000 0x0 0x00010000>;
--		interrupt-map-mask = <0xff00 0 0 7>;
--		interrupt-map = <
--			/* IDSEL 0x11 func 0 - PCI slot 1 */
--			0x8800 0 0 1 &mpic 2 1 0 0
--			0x8800 0 0 2 &mpic 3 1 0 0
--			0x8800 0 0 3 &mpic 4 1 0 0
--			0x8800 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 1 - PCI slot 1 */
--			0x8900 0 0 1 &mpic 2 1 0 0
--			0x8900 0 0 2 &mpic 3 1 0 0
--			0x8900 0 0 3 &mpic 4 1 0 0
--			0x8900 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 2 - PCI slot 1 */
--			0x8a00 0 0 1 &mpic 2 1 0 0
--			0x8a00 0 0 2 &mpic 3 1 0 0
--			0x8a00 0 0 3 &mpic 4 1 0 0
--			0x8a00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 3 - PCI slot 1 */
--			0x8b00 0 0 1 &mpic 2 1 0 0
--			0x8b00 0 0 2 &mpic 3 1 0 0
--			0x8b00 0 0 3 &mpic 4 1 0 0
--			0x8b00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 4 - PCI slot 1 */
--			0x8c00 0 0 1 &mpic 2 1 0 0
--			0x8c00 0 0 2 &mpic 3 1 0 0
--			0x8c00 0 0 3 &mpic 4 1 0 0
--			0x8c00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 5 - PCI slot 1 */
--			0x8d00 0 0 1 &mpic 2 1 0 0
--			0x8d00 0 0 2 &mpic 3 1 0 0
--			0x8d00 0 0 3 &mpic 4 1 0 0
--			0x8d00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 6 - PCI slot 1 */
--			0x8e00 0 0 1 &mpic 2 1 0 0
--			0x8e00 0 0 2 &mpic 3 1 0 0
--			0x8e00 0 0 3 &mpic 4 1 0 0
--			0x8e00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 7 - PCI slot 1 */
--			0x8f00 0 0 1 &mpic 2 1 0 0
--			0x8f00 0 0 2 &mpic 3 1 0 0
--			0x8f00 0 0 3 &mpic 4 1 0 0
--			0x8f00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x12 func 0 - PCI slot 2 */
--			0x9000 0 0 1 &mpic 3 1 0 0
--			0x9000 0 0 2 &mpic 4 1 0 0
--			0x9000 0 0 3 &mpic 1 1 0 0
--			0x9000 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 1 - PCI slot 2 */
--			0x9100 0 0 1 &mpic 3 1 0 0
--			0x9100 0 0 2 &mpic 4 1 0 0
--			0x9100 0 0 3 &mpic 1 1 0 0
--			0x9100 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 2 - PCI slot 2 */
--			0x9200 0 0 1 &mpic 3 1 0 0
--			0x9200 0 0 2 &mpic 4 1 0 0
--			0x9200 0 0 3 &mpic 1 1 0 0
--			0x9200 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 3 - PCI slot 2 */
--			0x9300 0 0 1 &mpic 3 1 0 0
--			0x9300 0 0 2 &mpic 4 1 0 0
--			0x9300 0 0 3 &mpic 1 1 0 0
--			0x9300 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 4 - PCI slot 2 */
--			0x9400 0 0 1 &mpic 3 1 0 0
--			0x9400 0 0 2 &mpic 4 1 0 0
--			0x9400 0 0 3 &mpic 1 1 0 0
--			0x9400 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 5 - PCI slot 2 */
--			0x9500 0 0 1 &mpic 3 1 0 0
--			0x9500 0 0 2 &mpic 4 1 0 0
--			0x9500 0 0 3 &mpic 1 1 0 0
--			0x9500 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 6 - PCI slot 2 */
--			0x9600 0 0 1 &mpic 3 1 0 0
--			0x9600 0 0 2 &mpic 4 1 0 0
--			0x9600 0 0 3 &mpic 1 1 0 0
--			0x9600 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 7 - PCI slot 2 */
--			0x9700 0 0 1 &mpic 3 1 0 0
--			0x9700 0 0 2 &mpic 4 1 0 0
--			0x9700 0 0 3 &mpic 1 1 0 0
--			0x9700 0 0 4 &mpic 2 1 0 0
--
--			// IDSEL 0x1c  USB
--			0xe000 0 0 1 &i8259 12 2
--			0xe100 0 0 2 &i8259 9 2
--			0xe200 0 0 3 &i8259 10 2
--			0xe300 0 0 4 &i8259 11 2
--
--			// IDSEL 0x1d  Audio
--			0xe800 0 0 1 &i8259 6 2
--
--			// IDSEL 0x1e Legacy
--			0xf000 0 0 1 &i8259 7 2
--			0xf100 0 0 1 &i8259 7 2
--
--			// IDSEL 0x1f IDE/SATA
--			0xf800 0 0 1 &i8259 14 2
--			0xf900 0 0 1 &i8259 5 2
--			>;
--
--		pcie@0 {
--			ranges = <0x02000000 0x0 0x80000000
--				  0x02000000 0x0 0x80000000
--				  0x0 0x20000000
--
--				  0x01000000 0x0 0x00000000
--				  0x01000000 0x0 0x00000000
--				  0x0 0x00010000>;
--			uli1575@0 {
--				reg = <0 0 0 0 0>;
--				#size-cells = <2>;
--				#address-cells = <3>;
--				ranges = <0x02000000 0x0 0x80000000
--					  0x02000000 0x0 0x80000000
--					  0x0 0x20000000
--					  0x01000000 0x0 0x00000000
--					  0x01000000 0x0 0x00000000
--					  0x0 0x00010000>;
--				isa@1e {
--					device_type = "isa";
--					#size-cells = <1>;
--					#address-cells = <2>;
--					reg = <0xf000 0 0 0 0>;
--					ranges = <1 0 0x01000000 0 0
--						  0x00001000>;
--					interrupt-parent = <&i8259>;
--
--					i8259: interrupt-controller@20 {
--						reg = <1 0x20 2
--						       1 0xa0 2
--						       1 0x4d0 2>;
--						interrupt-controller;
--						device_type = "interrupt-controller";
--						#address-cells = <0>;
--						#interrupt-cells = <2>;
--						compatible = "chrp,iic";
--						interrupts = <9 2 0 0>;
--					};
--
--					i8042@60 {
--						#size-cells = <0>;
--						#address-cells = <1>;
--						reg = <1 0x60 1 1 0x64 1>;
--						interrupts = <1 3 12 3>;
--						interrupt-parent = <&i8259>;
--
--						keyboard@0 {
--							reg = <0>;
--							compatible = "pnpPNP,303";
--						};
--
--						mouse@1 {
--							reg = <1>;
--							compatible = "pnpPNP,f03";
--						};
--					};
--
--					rtc@70 {
--						compatible =
--							"pnpPNP,b00";
--						reg = <1 0x70 2>;
--					};
--
--					gpio@400 {
--						reg = <1 0x400 0x80>;
--					};
--				};
--			};
--		};
--
--	};
--
--	pci1: pcie@ffe09000 {
--		reg = <0xffe09000 0x1000>;
--		ranges = <0x02000000 0x0 0xa0000000 0xa0000000 0x0 0x20000000
--			  0x01000000 0x0 0x00000000 0xffc10000 0x0 0x00010000>;
--
--		pcie@0 {
--			ranges = <0x02000000 0x0 0xa0000000
--				  0x02000000 0x0 0xa0000000
--				  0x0 0x20000000
--
--				  0x01000000 0x0 0x00000000
--				  0x01000000 0x0 0x00000000
--				  0x0 0x00010000>;
--		};
--	};
--/*
-- * Only one of Rapid IO or PCI can be present due to HW limitations and
-- * due to the fact that the 2 now share address space in the new memory
-- * map.  The most likely case is that we have PCI, so comment out the
-- * rapidio node.  Leave it here for reference.
--
--	rapidio@ffec0000 {
--		reg = <0xffec0000 0x11000>;
--		compatible = "fsl,srio";
--		interrupts = <48 2 0 0>;
--		#address-cells = <2>;
--		#size-cells = <2>;
--		fsl,srio-rmu-handle = <&rmu>;
--		ranges;
--
--		port1 {
--			#address-cells = <2>;
--			#size-cells = <2>;
--			cell-index = <1>;
--			ranges = <0 0 0x80000000 0 0x20000000>;
--		};
--	};
--*/
--
--};
--
--/include/ "mpc8641si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts b/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-deleted file mode 100644
-index 3f5f7a99b9ea..000000000000
---- a/arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts
-+++ /dev/null
-@@ -1,337 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * MPC8641 HPCN Device Tree Source
-- *
-- * Copyright 2008-2009 Freescale Semiconductor Inc.
-- */
--
--/include/ "mpc8641si-pre.dtsi"
--
--/ {
--	model = "MPC8641HPCN";
--	compatible = "fsl,mpc8641hpcn";
--	#address-cells = <2>;
--	#size-cells = <2>;
--
--	memory {
--		device_type = "memory";
--		reg = <0x0 0x00000000 0x0 0x40000000>;	// 1G at 0x0
--	};
--
--	lbc: localbus@fffe05000 {
--		reg = <0x0f 0xffe05000 0x0 0x1000>;
--
--		ranges = <0 0 0xf 0xef800000 0x00800000
--			  2 0 0xf 0xffdf8000 0x00008000
--			  3 0 0xf 0xffdf0000 0x00008000>;
--
--		flash@0,0 {
--			compatible = "cfi-flash";
--			reg = <0 0 0x00800000>;
--			bank-width = <2>;
--			device-width = <2>;
--			#address-cells = <1>;
--			#size-cells = <1>;
--			partition@0 {
--				label = "kernel";
--				reg = <0x00000000 0x00300000>;
--			};
--			partition@300000 {
--				label = "firmware b";
--				reg = <0x00300000 0x00100000>;
--				read-only;
--			};
--			partition@400000 {
--				label = "fs";
--				reg = <0x00400000 0x00300000>;
--			};
--			partition@700000 {
--				label = "firmware a";
--				reg = <0x00700000 0x00100000>;
--				read-only;
--			};
--		};
--	};
--
--	soc: soc8641@fffe00000 {
--		ranges = <0x00000000 0x0f 0xffe00000 0x00100000>;
--
--		enet0: ethernet@24000 {
--			tbi-handle = <&tbi0>;
--			phy-handle = <&phy0>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@24520 {
--			phy0: ethernet-phy@0 {
--				interrupts = <10 1 0 0>;
--				reg = <0>;
--			};
--			phy1: ethernet-phy@1 {
--				interrupts = <10 1 0 0>;
--				reg = <1>;
--			};
--			phy2: ethernet-phy@2 {
--				interrupts = <10 1 0 0>;
--				reg = <2>;
--			};
--			phy3: ethernet-phy@3 {
--				interrupts = <10 1 0 0>;
--				reg = <3>;
--			};
--			tbi0: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		enet1: ethernet@25000 {
--			tbi-handle = <&tbi1>;
--			phy-handle = <&phy1>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@25520 {
--			tbi1: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		enet2: ethernet@26000 {
--			tbi-handle = <&tbi2>;
--			phy-handle = <&phy2>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@26520 {
--			tbi2: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--
--		enet3: ethernet@27000 {
--			tbi-handle = <&tbi3>;
--			phy-handle = <&phy3>;
--			phy-connection-type = "rgmii-id";
--		};
--
--		mdio@27520 {
--			tbi3: tbi-phy@11 {
--				reg = <0x11>;
--				device_type = "tbi-phy";
--			};
--		};
--	};
--
--	pci0: pcie@fffe08000 {
--		reg = <0x0f 0xffe08000 0x0 0x1000>;
--		ranges = <0x02000000 0x0 0xe0000000 0x0c 0x00000000 0x0 0x20000000
--			  0x01000000 0x0 0x00000000 0x0f 0xffc00000 0x0 0x00010000>;
--		interrupt-map-mask = <0xff00 0 0 7>;
--		interrupt-map = <
--			/* IDSEL 0x11 func 0 - PCI slot 1 */
--			0x8800 0 0 1 &mpic 2 1 0 0
--			0x8800 0 0 2 &mpic 3 1 0 0
--			0x8800 0 0 3 &mpic 4 1 0 0
--			0x8800 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 1 - PCI slot 1 */
--			0x8900 0 0 1 &mpic 2 1 0 0
--			0x8900 0 0 2 &mpic 3 1 0 0
--			0x8900 0 0 3 &mpic 4 1 0 0
--			0x8900 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 2 - PCI slot 1 */
--			0x8a00 0 0 1 &mpic 2 1 0 0
--			0x8a00 0 0 2 &mpic 3 1 0 0
--			0x8a00 0 0 3 &mpic 4 1 0 0
--			0x8a00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 3 - PCI slot 1 */
--			0x8b00 0 0 1 &mpic 2 1 0 0
--			0x8b00 0 0 2 &mpic 3 1 0 0
--			0x8b00 0 0 3 &mpic 4 1 0 0
--			0x8b00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 4 - PCI slot 1 */
--			0x8c00 0 0 1 &mpic 2 1 0 0
--			0x8c00 0 0 2 &mpic 3 1 0 0
--			0x8c00 0 0 3 &mpic 4 1 0 0
--			0x8c00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 5 - PCI slot 1 */
--			0x8d00 0 0 1 &mpic 2 1 0 0
--			0x8d00 0 0 2 &mpic 3 1 0 0
--			0x8d00 0 0 3 &mpic 4 1 0 0
--			0x8d00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 6 - PCI slot 1 */
--			0x8e00 0 0 1 &mpic 2 1 0 0
--			0x8e00 0 0 2 &mpic 3 1 0 0
--			0x8e00 0 0 3 &mpic 4 1 0 0
--			0x8e00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x11 func 7 - PCI slot 1 */
--			0x8f00 0 0 1 &mpic 2 1 0 0
--			0x8f00 0 0 2 &mpic 3 1 0 0
--			0x8f00 0 0 3 &mpic 4 1 0 0
--			0x8f00 0 0 4 &mpic 1 1 0 0
--
--			/* IDSEL 0x12 func 0 - PCI slot 2 */
--			0x9000 0 0 1 &mpic 3 1 0 0
--			0x9000 0 0 2 &mpic 4 1 0 0
--			0x9000 0 0 3 &mpic 1 1 0 0
--			0x9000 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 1 - PCI slot 2 */
--			0x9100 0 0 1 &mpic 3 1 0 0
--			0x9100 0 0 2 &mpic 4 1 0 0
--			0x9100 0 0 3 &mpic 1 1 0 0
--			0x9100 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 2 - PCI slot 2 */
--			0x9200 0 0 1 &mpic 3 1 0 0
--			0x9200 0 0 2 &mpic 4 1 0 0
--			0x9200 0 0 3 &mpic 1 1 0 0
--			0x9200 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 3 - PCI slot 2 */
--			0x9300 0 0 1 &mpic 3 1 0 0
--			0x9300 0 0 2 &mpic 4 1 0 0
--			0x9300 0 0 3 &mpic 1 1 0 0
--			0x9300 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 4 - PCI slot 2 */
--			0x9400 0 0 1 &mpic 3 1 0 0
--			0x9400 0 0 2 &mpic 4 1 0 0
--			0x9400 0 0 3 &mpic 1 1 0 0
--			0x9400 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 5 - PCI slot 2 */
--			0x9500 0 0 1 &mpic 3 1 0 0
--			0x9500 0 0 2 &mpic 4 1 0 0
--			0x9500 0 0 3 &mpic 1 1 0 0
--			0x9500 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 6 - PCI slot 2 */
--			0x9600 0 0 1 &mpic 3 1 0 0
--			0x9600 0 0 2 &mpic 4 1 0 0
--			0x9600 0 0 3 &mpic 1 1 0 0
--			0x9600 0 0 4 &mpic 2 1 0 0
--
--			/* IDSEL 0x12 func 7 - PCI slot 2 */
--			0x9700 0 0 1 &mpic 3 1 0 0
--			0x9700 0 0 2 &mpic 4 1 0 0
--			0x9700 0 0 3 &mpic 1 1 0 0
--			0x9700 0 0 4 &mpic 2 1 0 0
--
--			// IDSEL 0x1c  USB
--			0xe000 0 0 1 &i8259 12 2
--			0xe100 0 0 2 &i8259 9 2
--			0xe200 0 0 3 &i8259 10 2
--			0xe300 0 0 4 &i8259 11 2
--
--			// IDSEL 0x1d  Audio
--			0xe800 0 0 1 &i8259 6 2
--
--			// IDSEL 0x1e Legacy
--			0xf000 0 0 1 &i8259 7 2
--			0xf100 0 0 1 &i8259 7 2
--
--			// IDSEL 0x1f IDE/SATA
--			0xf800 0 0 1 &i8259 14 2
--			0xf900 0 0 1 &i8259 5 2
--			>;
--
--		pcie@0 {
--			ranges = <0x02000000 0x0 0xe0000000
--				  0x02000000 0x0 0xe0000000
--				  0x0 0x20000000
--
--				  0x01000000 0x0 0x00000000
--				  0x01000000 0x0 0x00000000
--				  0x0 0x00010000>;
--			uli1575@0 {
--				reg = <0 0 0 0 0>;
--				#size-cells = <2>;
--				#address-cells = <3>;
--				ranges = <0x02000000 0x0 0xe0000000
--					  0x02000000 0x0 0xe0000000
--					  0x0 0x20000000
--					  0x01000000 0x0 0x00000000
--					  0x01000000 0x0 0x00000000
--					  0x0 0x00010000>;
--				isa@1e {
--					device_type = "isa";
--					#size-cells = <1>;
--					#address-cells = <2>;
--					reg = <0xf000 0 0 0 0>;
--					ranges = <1 0 0x01000000 0 0
--						  0x00001000>;
--					interrupt-parent = <&i8259>;
--
--					i8259: interrupt-controller@20 {
--						reg = <1 0x20 2
--						       1 0xa0 2
--						       1 0x4d0 2>;
--						interrupt-controller;
--						device_type = "interrupt-controller";
--						#address-cells = <0>;
--						#interrupt-cells = <2>;
--						compatible = "chrp,iic";
--						interrupts = <9 2 0 0>;
--					};
--
--					i8042@60 {
--						#size-cells = <0>;
--						#address-cells = <1>;
--						reg = <1 0x60 1 1 0x64 1>;
--						interrupts = <1 3 12 3>;
--						interrupt-parent = <&i8259>;
--
--						keyboard@0 {
--							reg = <0>;
--							compatible = "pnpPNP,303";
--						};
--
--						mouse@1 {
--							reg = <1>;
--							compatible = "pnpPNP,f03";
--						};
--					};
--
--					rtc@70 {
--						compatible =
--							"pnpPNP,b00";
--						reg = <1 0x70 2>;
--					};
--
--					gpio@400 {
--						reg = <1 0x400 0x80>;
--					};
--				};
--			};
--		};
--
--	};
--
--	pci1: pcie@fffe09000 {
--		reg = <0x0f 0xffe09000 0x0 0x1000>;
--		ranges = <0x02000000 0x0 0xe0000000 0x0c 0x20000000 0x0 0x20000000
--			  0x01000000 0x0 0x00000000 0x0f 0xffc10000 0x0 0x00010000>;
--
--		pcie@0 {
--			ranges = <0x02000000 0x0 0xe0000000
--				  0x02000000 0x0 0xe0000000
--				  0x0 0x20000000
--
--				  0x01000000 0x0 0x00000000
--				  0x01000000 0x0 0x00000000
--				  0x0 0x00010000>;
--		};
--	};
--};
--
--/include/ "mpc8641si-post.dtsi"
-diff --git a/arch/powerpc/configs/mpc86xx_base.config b/arch/powerpc/configs/mpc86xx_base.config
-index 588870e6af3b..9f7a232c9357 100644
---- a/arch/powerpc/configs/mpc86xx_base.config
-+++ b/arch/powerpc/configs/mpc86xx_base.config
-@@ -1,5 +1,4 @@
- CONFIG_PPC_86xx=y
--CONFIG_MPC8641_HPCN=y
- CONFIG_MPC8610_HPCD=y
- CONFIG_GEF_PPC9A=y
- CONFIG_GEF_SBC310=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index f6a3b87199db..57f5e62992e0 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -48,7 +48,6 @@ CONFIG_MPC836x_RDK=y
- CONFIG_MPC837x_RDB=y
- CONFIG_ASP834x=y
- CONFIG_PPC_86xx=y
--CONFIG_MPC8641_HPCN=y
- CONFIG_MPC8610_HPCD=y
- CONFIG_GEF_SBC610=y
- CONFIG_CPU_FREQ=y
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index be867abebc83..4fe385f37f3b 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -10,16 +10,6 @@ menuconfig PPC_86xx
- 
- if PPC_86xx
- 
--config MPC8641_HPCN
--	bool "Freescale MPC8641 HPCN"
--	select PPC_I8259
--	select DEFAULT_UIMAGE
--	select FSL_ULI1575 if PCI
--	select HAVE_RAPIDIO
--	select SWIOTLB
--	help
--	  This option enables support for the MPC8641 HPCN board.
--
- config MPC8610_HPCD
- 	bool "Freescale MPC8610 HPCD"
- 	select DEFAULT_UIMAGE
-@@ -68,7 +58,7 @@ config MPC8641
- 	select FSL_PCI if PCI
- 	select PPC_UDBG_16550
- 	select MPIC
--	default y if MPC8641_HPCN || GEF_SBC610 || GEF_SBC310 || GEF_PPC9A \
-+	default y if GEF_SBC610 || GEF_SBC310 || GEF_PPC9A \
- 			|| MVME7100
- 
- config MPC8610
-diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-index 5bbe1475bf26..ab2c15114228 100644
---- a/arch/powerpc/platforms/86xx/Makefile
-+++ b/arch/powerpc/platforms/86xx/Makefile
-@@ -5,7 +5,6 @@
- 
- obj-y				:= pic.o common.o
- obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
--obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
- obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
- obj-$(CONFIG_GEF_SBC610)	+= gef_sbc610.o
- obj-$(CONFIG_GEF_SBC310)	+= gef_sbc310.o
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-deleted file mode 100644
-index 5294394c9c07..000000000000
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ /dev/null
-@@ -1,127 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * MPC86xx HPCN board specific routines
-- *
-- * Recode: ZHANG WEI <wei.zhang@freescale.com>
-- * Initial author: Xianghua Xiao <x.xiao@freescale.com>
-- *
-- * Copyright 2006 Freescale Semiconductor Inc.
-- */
--
--#include <linux/stddef.h>
--#include <linux/kernel.h>
--#include <linux/pci.h>
--#include <linux/kdev_t.h>
--#include <linux/delay.h>
--#include <linux/seq_file.h>
--#include <linux/of_platform.h>
--
--#include <asm/time.h>
--#include <asm/machdep.h>
--#include <asm/pci-bridge.h>
--#include <mm/mmu_decl.h>
--#include <asm/udbg.h>
--#include <asm/swiotlb.h>
--
--#include <asm/mpic.h>
--
--#include <sysdev/fsl_pci.h>
--#include <sysdev/fsl_soc.h>
--
--#include "mpc86xx.h"
--
--#undef DEBUG
--
--#ifdef DEBUG
--#define DBG(fmt...) do { printk(KERN_ERR fmt); } while(0)
--#else
--#define DBG(fmt...) do { } while(0)
--#endif
--
--#ifdef CONFIG_PCI
--extern int uli_exclude_device(struct pci_controller *hose,
--				u_char bus, u_char devfn);
--
--static int mpc86xx_exclude_device(struct pci_controller *hose,
--				   u_char bus, u_char devfn)
--{
--	if (hose->dn == fsl_pci_primary)
--		return uli_exclude_device(hose, bus, devfn);
--
--	return PCIBIOS_SUCCESSFUL;
--}
--#endif /* CONFIG_PCI */
--
--
--static void __init
--mpc86xx_hpcn_setup_arch(void)
--{
--	if (ppc_md.progress)
--		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
--
--#ifdef CONFIG_PCI
--	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
--#endif
--
--	printk("MPC86xx HPCN board from Freescale Semiconductor\n");
--
--#ifdef CONFIG_SMP
--	mpc86xx_smp_init();
--#endif
--
--	fsl_pci_assign_primary();
--
--	swiotlb_detect_4g();
--}
--
--
--static void
--mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
--{
--	uint svid = mfspr(SPRN_SVR);
--
--	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
--
--	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
--}
--
--
--/*
-- * Called very early, device-tree isn't unflattened
-- */
--static int __init mpc86xx_hpcn_probe(void)
--{
--	if (of_machine_is_compatible("fsl,mpc8641hpcn"))
--		return 1;	/* Looks good */
--
--	return 0;
--}
--
--static const struct of_device_id of_bus_ids[] __initconst = {
--	{ .compatible = "fsl,srio", },
--	{},
--};
--
--static int __init declare_of_platform_devices(void)
--{
--	mpc86xx_common_publish_devices();
--	of_platform_bus_probe(NULL, of_bus_ids, NULL);
--
--	return 0;
--}
--machine_arch_initcall(mpc86xx_hpcn, declare_of_platform_devices);
--
--define_machine(mpc86xx_hpcn) {
--	.name			= "MPC86xx HPCN",
--	.probe			= mpc86xx_hpcn_probe,
--	.setup_arch		= mpc86xx_hpcn_setup_arch,
--	.init_IRQ		= mpc86xx_init_irq,
--	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
--	.get_irq		= mpic_get_irq,
--	.time_init		= mpc86xx_time_init,
--	.calibrate_decr		= generic_calibrate_decr,
--	.progress		= udbg_progress,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--#endif
--};
--- 
-2.17.1
-
+       Arnd
