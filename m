@@ -4,99 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2F07C64ED8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Feb 2023 17:02:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC914C64ED6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Feb 2023 17:23:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQRcd0P54z3c38
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 04:02:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PQS5f0bxpz3c7S
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 04:23:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MrzMv/us;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MrzMv/us;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=BRbX7Yid;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1135; helo=mail-yw1-x1135.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MrzMv/us;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=MrzMv/us;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=BRbX7Yid;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mail-yw1-x1135.google.com (mail-yw1-x1135.google.com [IPv6:2607:f8b0:4864:20::1135])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQRbV5Cnwz30Kr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 04:01:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1677517266;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S+gj+IVlpRNML/WhRdwS5WpJ1kIzGGA+IXuZi3TvglQ=;
-	b=MrzMv/usUX5QJ7MfXIzP6UasX8styJCjS6RvawQpVwkFJTJOAASaI3SZ5dopTQUIU2Zlwb
-	fFv2C5AK3/shy165dPEMHzG5GwjEMDWq1z6CVJqfoEp601rjg1yQUlLqvpWHqkeV+0JXA4
-	RoBVkKJCkvGWUQ/safPk0USMCnYoBWc=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1677517266;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=S+gj+IVlpRNML/WhRdwS5WpJ1kIzGGA+IXuZi3TvglQ=;
-	b=MrzMv/usUX5QJ7MfXIzP6UasX8styJCjS6RvawQpVwkFJTJOAASaI3SZ5dopTQUIU2Zlwb
-	fFv2C5AK3/shy165dPEMHzG5GwjEMDWq1z6CVJqfoEp601rjg1yQUlLqvpWHqkeV+0JXA4
-	RoBVkKJCkvGWUQ/safPk0USMCnYoBWc=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_128_GCM_SHA256) id
- us-mta-351-hrsu_jNBNnCGbJfA94p_Xg-1; Mon, 27 Feb 2023 12:01:04 -0500
-X-MC-Unique: hrsu_jNBNnCGbJfA94p_Xg-1
-Received: by mail-wm1-f69.google.com with SMTP id l20-20020a05600c1d1400b003e10d3e1c23so5614434wms.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2023 09:01:04 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQS4f1bNDz2xB5
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 04:22:57 +1100 (AEDT)
+Received: by mail-yw1-x1135.google.com with SMTP id 00721157ae682-536cb25982eso194847837b3.13
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2023 09:22:57 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=kTYModbuR59uTG8zS+hNzwQJ/9GBqPBIvenxOax1Cso=;
+        b=BRbX7YidX86oPGQqKm8PfNLIDtGD5UMOuVUS6ca2zJd/iJo9olk+uOd3gMOLdYJ1n+
+         uv4dAYbAKZ6OvWilSgdGG9qqbk4t9v7yKyC4gq4xIKFaBF8urvkclYPhGSSQRskBb/Sm
+         srRvcLEWJDF34310EiPMnEEhsepBlNF8fGdo7RpnLSxlNxbKlwOEHxj4lD743FqmSeBS
+         U5qu9Em33YrENcu1ujFHNSqcTtD88Kh9QmD0gIZm/PVez+Y96kqLFxl9mRtV94FAzyIO
+         5DA7YEJptKOIfvIK28FNlMfn6NjxJW09FPV6Ouuznf6X3evlJxOWLuefpgmVhT8ddWIH
+         LcNA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20210112;
-        h=content-transfer-encoding:in-reply-to:organization:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=S+gj+IVlpRNML/WhRdwS5WpJ1kIzGGA+IXuZi3TvglQ=;
-        b=z1qcYbkVh0oUfFu5V6KAKL1xHOXpotQ2pdIKLYqtjyIpAtbLHT6AeAJB77wlrOCZyk
-         z1kZcohY67N+DjI8wEiMWO8NdW81JtTDw32lFQ5GjBjBRJKeQ4nrwOgvgEIy2yiHEXxZ
-         I5I1KTvBehLwK5UnQ/v0/RsUqU1xdluvxzzpWlzWjHN+zaa2EVa/Aa5mDvcQMXQl1hlB
-         HBzBuFoSz5GKvD/mCt6ljueuzODgpz+qHu5dJjX0nTuKTBDgPggjRiu/e5/X8kmZ4XQ7
-         bKBle72w8H34QTx0zq3tsIpgP4iwvNmNBTRkWe0bhu8hsBjVSoEir8fcknvMcBSnSpE5
-         O71g==
-X-Gm-Message-State: AO0yUKXkigvbZnXs78ZGsJDSBwSFqAPtA9jDbQsBKQJusBMZSiBpwzZY
-	ziQwYQopHRBEsVGKM7MXdYStT0etVbEVdtRkr76OEbbo/EjHh7NRim+of9CBerHi1uzSJJbj48E
-	ruJczlDysf9fr+e5IXEzggEyTEg==
-X-Received: by 2002:a5d:570e:0:b0:2bf:d940:29b6 with SMTP id a14-20020a5d570e000000b002bfd94029b6mr22317887wrv.54.1677517263063;
-        Mon, 27 Feb 2023 09:01:03 -0800 (PST)
-X-Google-Smtp-Source: AK7set/UUjV2lk6TzBDGO2RyIGoSkW6MncSJyiWPHsxHHIhpKbsx37PxyO7HkStEnBG5FTknvHrGmg==
-X-Received: by 2002:a5d:570e:0:b0:2bf:d940:29b6 with SMTP id a14-20020a5d570e000000b002bfd94029b6mr22317842wrv.54.1677517262720;
-        Mon, 27 Feb 2023 09:01:02 -0800 (PST)
-Received: from [192.168.3.108] (p5b0c68fb.dip0.t-ipconnect.de. [91.12.104.251])
-        by smtp.gmail.com with ESMTPSA id l4-20020a05600c1d0400b003db0ad636d1sm15217382wms.28.2023.02.27.09.01.01
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Feb 2023 09:01:02 -0800 (PST)
-Message-ID: <c145a2db-f92c-65aa-3e68-07dbb2e097a6@redhat.com>
-Date: Mon, 27 Feb 2023 18:01:00 +0100
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=kTYModbuR59uTG8zS+hNzwQJ/9GBqPBIvenxOax1Cso=;
+        b=k8GaXKwkP2J7RgRlGjzST+ZyfOpEbWTIB6avuQW/an5hyzjFyl9l/K4JS4EiMCxMkk
+         luzBQH5koJjLi7+DcoQTbt69A65ZdQTOLMVLN+sRRWO97OZOuwxYduWlUMOAEDrkFMeq
+         OPTvc2yq285mf/+UHqlj2p4L6+tsGUz6Vz59o3IZSB3dQ1bDtxz5A1N2kWAFD5qLuMfI
+         8o9N6FLk5DBN+/2zssZSNjQiFhKFcUFSDafNE8PEYRC+DxbOuZko+jtnIUgmKYAcn6vW
+         63D9HkqiTPlHQOo2QW1cPhHZUx78FI20CQPH1RZMTrA0RoqqGMeUpK3eTe77nz/4tei6
+         YB4w==
+X-Gm-Message-State: AO0yUKXwSHKyEcD5oYBqOPWKB/lyIBFQDs38aOWVc220KUIQ5meZ78+0
+	0yqBPD+3lc83IkQnKC9d4h1MneIEMhxLTX023JnPjw==
+X-Google-Smtp-Source: AK7set8fe0yfu+y/XLo8ATPIQLkQ8N9RTHMEBSne/gxsKyen3VnvkrfyF/SuP2kGzz2URTq5dmSg95f/8tSKHp0rjKQ=
+X-Received: by 2002:a81:b649:0:b0:530:bbd3:798b with SMTP id
+ h9-20020a81b649000000b00530bbd3798bmr10565486ywk.0.1677518572008; Mon, 27 Feb
+ 2023 09:22:52 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.2
-Subject: Re: [PATCH mm-unstable v1 11/26] microblaze/mm: support
- __HAVE_ARCH_PTE_SWP_EXCLUSIVE
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-References: <20230113171026.582290-1-david@redhat.com>
- <20230113171026.582290-12-david@redhat.com>
- <CAMuHMdX-FDga8w=pgg1myskEx6wp+oyZifhPPPFnWrc1zW7ZpQ@mail.gmail.com>
- <9ed766a6-cf06-535d-3337-ea6ff25c2362@redhat.com>
- <CAMuHMdWSaoKqO1Nx7QMDCcXrRmFbqqX8uwDRezXs8g+HdEFjKA@mail.gmail.com>
-From: David Hildenbrand <david@redhat.com>
-Organization: Red Hat
-In-Reply-To: <CAMuHMdWSaoKqO1Nx7QMDCcXrRmFbqqX8uwDRezXs8g+HdEFjKA@mail.gmail.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+References: <20230216051750.3125598-1-surenb@google.com> <20230224092134.30603-1-michalechner92@googlemail.com>
+ <20230227165032.taj24j4leu7dlbqc@offworld>
+In-Reply-To: <20230227165032.taj24j4leu7dlbqc@offworld>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Mon, 27 Feb 2023 09:22:40 -0800
+Message-ID: <CAJuCfpH4QuX_BmZor5Gy9M9frwz0e3WP597b4q-W3xYHOqUB8A@mail.gmail.com>
+Subject: Re: [PATCH v3 00/35] Per-VMA locks
+To: freak07 <michalechner92@googlemail.com>, surenb@google.com, 
+	akpm@linux-foundation.org, arjunroy@google.com, axelrasmussen@google.com, 
+	bigeasy@linutronix.de, chriscli@google.com, david@redhat.com, 
+	dhowells@redhat.com, edumazet@google.com, gthelen@google.com, 
+	gurua@google.com, hannes@cmpxchg.org, hughd@google.com, jannh@google.com, 
+	jglisse@google.com, joelaf@google.com, kent.overstreet@linux.dev, 
+	kernel-team@android.com, ldufour@linux.ibm.com, leewalsh@google.com, 
+	liam.howlett@oracle.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org, 
+	linuxppc-dev@lists.ozlabs.org, lstoakes@gmail.com, luto@kernel.org, 
+	mgorman@techsingularity.net, mhocko@suse.com, michel@lespinasse.org, 
+	minchan@google.com, mingo@redhat.com, paulmck@kernel.org, 
+	peterjung1337@gmail.com, peterx@redhat.com, peterz@infradead.org, 
+	posk@google.com, punit.agrawal@bytedance.com, rientjes@google.com, 
+	rppt@kernel.org, shakeelb@google.com, soheil@google.com, 
+	songliubraving@fb.com, tatashin@google.com, vbabka@suse.cz, will@kernel.org, 
+	willy@infradead.org, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,80 +92,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Yang Shi <shy828301@gmail.com>, Peter Xu <peterx@redhat.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org, Nadav Amit <namit@vmware.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Andrea Arcangeli <aarcange@redhat.com>, linux-s390@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-csky@vger.kernel.org, Mike Rapoport <rppt@linux.ibm.com>, Vlastimil Babka <vbabka@suse.cz>, Jason Gunthorpe <jgg@nvidia.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, John Hubbard <jhubbard@nvidia.com>, linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, loongarch@lists.linux.dev, linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->>>>    /*
->>>>     * Externally used page protection values.
->>>> diff --git a/arch/microblaze/include/asm/pgtable.h b/arch/microblaze/include/asm/pgtable.h
->>>> index 42f5988e998b..7e3de54bf426 100644
->>>> --- a/arch/microblaze/include/asm/pgtable.h
->>>> +++ b/arch/microblaze/include/asm/pgtable.h
->>>> @@ -131,10 +131,10 @@ extern pte_t *va_to_pte(unsigned long address);
->>>>     * of the 16 available.  Bit 24-26 of the TLB are cleared in the TLB
->>>>     * miss handler.  Bit 27 is PAGE_USER, thus selecting the correct
->>>>     * zone.
->>>> - * - PRESENT *must* be in the bottom two bits because swap cache
->>>> - * entries use the top 30 bits.  Because 4xx doesn't support SMP
->>>> - * anyway, M is irrelevant so we borrow it for PAGE_PRESENT.  Bit 30
->>>> - * is cleared in the TLB miss handler before the TLB entry is loaded.
->>>> + * - PRESENT *must* be in the bottom two bits because swap PTEs use the top
->>>> + * 30 bits.  Because 4xx doesn't support SMP anyway, M is irrelevant so we
->>>> + * borrow it for PAGE_PRESENT.  Bit 30 is cleared in the TLB miss handler
->>>> + * before the TLB entry is loaded.
->>>
->>> So the PowerPC 4xx comment is still here?
->>
->> I only dropped the comment above __swp_type(). I guess you mean that we
->> could also drop the "Because 4xx doesn't support SMP anyway, M is
->> irrelevant so we borrow it for PAGE_PRESENT." sentence, correct? Not
-> 
-> Yes, that's what I meant.
-> 
->> sure about the "Bit 30 is cleared in the TLB miss handler" comment, if
->> that can similarly be dropped.
-> 
-> No idea, didn't check. But if it was copied from PPC, chances are
-> high it's no longer true....
+On Mon, Feb 27, 2023 at 9:19 AM Davidlohr Bueso <dave@stgolabs.net> wrote:
+>
+> On Fri, 24 Feb 2023, freak07 wrote:
+>
+> >Here are some measurements from a Pixel 7 Pro that=C2=B4s running a kern=
+el either with the Per-VMA locks patchset or without.
+> >If there=C2=B4s interest I can provide results of other specific apps as=
+ well.
+> >
+> >Results are from consecutive cold app launches issued with "am start" co=
+mmand spawning the main activity of Slack Android app.
+> >
+> >https://docs.google.com/spreadsheets/d/1ktujfcyDmIJoQMWsoizGIE-0A_jMS9VM=
+w_seehUY9s0/edit?usp=3Dsharing
+> >
+> >There=C2=B4s quite a noticeable improvement, as can be seen in the graph=
+. The results were reproducible.
+>
+> Thanks for sharing. I am not surprised - after all, per-vma locks narrow =
+some of the performance gaps
+> between vanilla and speculative pfs, with less complexity (albeit this is=
+ now a 35 patch series :).
 
-I'll have a look.
-
-> 
->>>>     * - All other bits of the PTE are loaded into TLBLO without
->>>>     *  * modification, leaving us only the bits 20, 21, 24, 25, 26, 30 for
->>>>     * software PTE bits.  We actually use bits 21, 24, 25, and
->>>> @@ -155,6 +155,9 @@ extern pte_t *va_to_pte(unsigned long address);
->>>>    #define _PAGE_ACCESSED 0x400   /* software: R: page referenced */
->>>>    #define _PMD_PRESENT   PAGE_MASK
->>>>
->>>> +/* We borrow bit 24 to store the exclusive marker in swap PTEs. */
->>>> +#define _PAGE_SWP_EXCLUSIVE    _PAGE_DIRTY
->>>
->>> _PAGE_DIRTY is 0x80, so this is also bit 7, thus the new comment is
->>> wrong?
->>
->> In the example, I use MSB-0 bit numbering (which I determined to be
->> correct in microblaze context eventually, but I got confused a couple a
->> times because it's very inconsistent). That should be MSB-0 bit 24.
-> 
-> Thanks, TIL microblaze uses IBM bit numbering...
-
-I assume IBM bit numbering corresponds to MSB-0 bit numbering, correct?
-
-
-I recall that I used the comment above "/* Definitions for MicroBlaze. 
-*/" as an orientation.
-
-0  1  2  3  4  ... 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-RPN.....................  0  0 EX WR ZSEL.......  W  I  M  G
-
-
-So ... either we adjust both or we leave it as is. (again, depends on 
-what the right thing to to is -- which I don't know :) )
-
--- 
+Yes, depending on the specific app we would expect some launch time
+improvement (in this case average improvement is 7%). Thanks for
+sharing the numbers!
+I'll be posting v4 today, which is a 33 patch series now, so a bit better :=
+)
 Thanks,
+Suren.
 
-David / dhildenb
-
+>
+> Thanks,
+> Davidlohr
+>
