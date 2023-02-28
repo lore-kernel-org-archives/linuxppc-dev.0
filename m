@@ -4,77 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AEBC64ED6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 00:08:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDC0DC7EE30
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 00:09:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQd4X6hw3z3cMN
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 11:08:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PQd5Z0nmLz3cfH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 11:09:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eVU/Qm3y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mzcoxx//;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eVU/Qm3y;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mzcoxx//;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQd3R57XCz3bT7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQd3R5rBsz3c3G
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 11:07:31 +1100 (AEDT)
 Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31RMmDs3017238
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31RMVKxW017306
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:28 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=TZlbTA95GBWoWXIVrXvIcJjrCg5+U5kUF5QkDXGW5bU=;
- b=eVU/Qm3yrnepNw+dVI609db3edzmVJ3E/IhDsw5MhanUTpFLRwYKGwkgZGktsPwA5ZMz
- XbgH0DitKBfPBzu8zo04OlfAcRmGZHQXaCsZzENu1m3nv5dmozHP+IkGtGdE6KRfarGs
- 1O0hO9OtsP8QGPDgwPnhKXapjnDn3962WNCbLtv5odekrn/+xSjH8Sgm//+5usKIx4ER
- LM3zkWJqLlph2xYqXjtsuzUpQMe9rzlmCwWxO69KU3wyvWSjqJGd5fkNj73yWtnVc7IO
- oJpiM1eJDVUAZzzg5lQCazvNIAsC76pLTz9/L+hpKyKSNeiPMkwRL/L8yoLJZw6McKjd qA== 
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3p11738kqm-1
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=p9tYgfLkDSKEvSCqXF6/PZmdiYt8YRfEBs2RjWaLLJI=;
+ b=Mzcoxx//IglMBXAWtMd+dZeskifafTmDKJckkG0XZczgZjgrZBuTXNuU6z3oJzud1nWW
+ 9MhSEGT6EiMRQ6u5o7ur285vTvbgojt/7hXOA42JUyhbitT26qI5R418L/UcH7kQNEiz
+ TrnDtLUiT2kSKlYWAGOOUjNrGjjkxLTCOt/mYvj1yTJOIeMZRtCIpQQklU9Xpi4rEfIJ
+ nNUjw8uUgVWernlJxWKmR5yH9YRcR9E6VolotVivRHjH0WkR+tfp7L/JkLKpzuFDP10a
+ WlE99YaO5g1pRtBTtNsNFB4G/q0W8sFKNoj1i3gjpqxrP13t6W/G4MT7wZB0CH77jMpL 9Q== 
+Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3p11738kqk-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:27 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31RMMOtd028098
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:25 GMT
+Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
+	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31QKaWv0023871
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:26 GMT
 Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3nybcuafyf-1
+	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3nybdfssgc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:25 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31S07MlA23986526
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31S07MZu28377516
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:23 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 66CB02004B
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 63CD220043
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:22 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD70820043
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DB2BE20040
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:21 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:21 +0000 (GMT)
 Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9C04B6040A;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 96CA4602FD;
 	Tue, 28 Feb 2023 11:07:18 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/3] selftests/powerpc: Make dd output quiet
-Date: Tue, 28 Feb 2023 11:07:09 +1100
-Message-Id: <20230228000709.124727-4-bgray@linux.ibm.com>
+Subject: [PATCH 0/3] Clean up PowerPC selftest stderr output
+Date: Tue, 28 Feb 2023 11:07:06 +1100
+Message-Id: <20230228000709.124727-1-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230228000709.124727-1-bgray@linux.ibm.com>
-References: <20230228000709.124727-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 10fgF1YMubxM0J6silbmdi1AUWUriBdp
-X-Proofpoint-GUID: 10fgF1YMubxM0J6silbmdi1AUWUriBdp
+X-Proofpoint-ORIG-GUID: FjCjfD-z61MaSYvwg15Gx0JHftWgv-q7
+X-Proofpoint-GUID: FjCjfD-z61MaSYvwg15Gx0JHftWgv-q7
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
  definitions=2023-02-27_17,2023-02-27_01,2023-02-09_01
@@ -98,30 +95,43 @@ Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dd logs info to stderr by default. This info is pointless in the
-selftests and makes legitimate issues harder to spot.
+There are several messages being logged to stderr when building the PowerPC
+selftests:
 
-Pass the option to silence the info logs. Actual errors would still be
-printed.
+  $ make -j$(nproc) O=build -C tools/testing/selftests \
+    INSTALL_PATH="$PWD"/out/selftests TARGETS=powerpc install > /dev/null
 
-Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
----
- tools/testing/selftests/powerpc/mm/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  Makefile:50: warning: overriding recipe for target 'clean'
+  ../../lib.mk:124: warning: ignoring old recipe for target 'clean'
+  1+0 records in
+  1+0 records out
+  65536 bytes (66 kB, 64 KiB) copied, 7.71e-05 s, 850 MB/s
+  Makefile:50: warning: overriding recipe for target 'clean'
+  ../../lib.mk:124: warning: ignoring old recipe for target 'clean'
+  make[2]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+  ...
+  make[2]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+  Makefile:50: warning: overriding recipe for target 'clean'
+  ../../lib.mk:124: warning: ignoring old recipe for target 'clean'
+  make[2]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+  ...
+  make[2]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 
-diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-index 19dd0b2ea397..4a6608beef0e 100644
---- a/tools/testing/selftests/powerpc/mm/Makefile
-+++ b/tools/testing/selftests/powerpc/mm/Makefile
-@@ -32,7 +32,7 @@ $(OUTPUT)/stack_expansion_ldst: CFLAGS += -fno-stack-protector
- $(OUTPUT)/stack_expansion_ldst: ../utils.c
- 
- $(OUTPUT)/tempfile:
--	dd if=/dev/zero of=$@ bs=64k count=1
-+	dd if=/dev/zero of=$@ bs=64k count=1 status=none
- 
- $(OUTPUT)/tlbie_test: LDLIBS += -lpthread
- $(OUTPUT)/pkey_siginfo: LDLIBS += -lpthread
--- 
+This series fixes or silences them to make any legitimate build warnings more
+apparent.
+
+
+Benjamin Gray (3):
+  selftests/powerpc: Use CLEAN macro to fix make warning
+  selftests/powerpc: Pass make context to children
+  selftests/powerpc: Make dd output quiet
+
+ tools/testing/selftests/powerpc/Makefile     |  8 ++---
+ tools/testing/selftests/powerpc/mm/Makefile  |  2 +-
+ tools/testing/selftests/powerpc/pmu/Makefile | 31 +++++++++++---------
+ 3 files changed, 22 insertions(+), 19 deletions(-)
+
+
+base-commit: ec0a1b360aec1ba0bdfad3dd69e300b028529c0d
+--
 2.39.2
-
