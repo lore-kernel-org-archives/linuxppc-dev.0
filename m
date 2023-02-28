@@ -4,64 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09AF0C64ED6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 10:22:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDC80C64EC7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 11:22:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQtjR2WrWz3cFH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 21:22:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PQw2L2hh6z3cFx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 22:22:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MjOzX8b5;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ozDOMArD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=msl0000023508@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MjOzX8b5;
-	dkim-atps=neutral
-Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQqxm5dQDz3bjv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 19:18:18 +1100 (AEDT)
-Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-536bbef1c5eso248573417b3.9
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:18:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=LD5KPX7LVPT7ALOji1Tt20TiXcy2sKJ/9LNj91SBJig=;
-        b=MjOzX8b51IkE7h+Ejr3WIRfO2MHzdszZ2VopDPBIW/lvHvcihCjikECXp5AHTHXVxF
-         Y3ucbcBwobPWBSE31Xa1PbSt5extM2rnvpa7VUg43Ht/Wvl2A8BoJLOJ6J7x7LGX98YZ
-         xYweDqrXXorDas1cZ4brQwwE8PQrHX+JMimZREe6jc/6H/48vBX28wtTtAealmZ1guLE
-         25b+DhRV2enigRdN3uKSIJ3G0Gy9rL8guLs8MjYr0aMPxWYTgDJBIQfaEnJZidx9nTEE
-         Um463Pmf94OtbeJrL7N/a/5816g3sPeYNwvBnPMDO6zCDX76YiZiKj4aFOE9JA/L1Y1X
-         OlVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=LD5KPX7LVPT7ALOji1Tt20TiXcy2sKJ/9LNj91SBJig=;
-        b=6qdjbZ3Zlm515S9ChriJLPB8tKq0wEbCAg/zKjrYqaDdmXAsrmbkwpHtSNc6fqn3uc
-         btNObdTUQ4SPVb2lO1XwE2xGYp90u1sZ6Nf7Atwyw4joF6jR58uf9uQbTqB9Rx4/MLH0
-         nUEvwUz0QILDMH7wdCZO4q3lM5QtubAY6gtZef4Eihx3EtWCjSaAMY4Sb6b4QPiPgR2P
-         T8q0Yk2WouoYa0WFzEFfVD8S4uslij1/Xr+HotFAky+Y/uXpvYaUi9H5VpRGsSQcaw8b
-         XujdODufasJKt0U0r4OMi9ilm68s4Im6vbaiH/+P/j44KOFXnFuzaJv/Pnykf6LcnMFc
-         VE0w==
-X-Gm-Message-State: AO0yUKX8kKDfZQAVjDpxM8+JGBaRzyJ+swOE2oAZkOk+Hm52PuxBQVvn
-	WkN1coISZE6C56AYk7XiPNfoWbkGQ68E6O1F42M=
-X-Google-Smtp-Source: AK7set+y5FLVXs+Yn5Y205wNgJuzeERu7oWP4puNYaoJVrVgE6Nf2v3LuDfF5BldXJwgXqCpI2sP2kx73BuLcMfGZjI=
-X-Received: by 2002:a81:431c:0:b0:52e:b22b:f99 with SMTP id
- q28-20020a81431c000000b0052eb22b0f99mr1120913ywa.4.1677572293484; Tue, 28 Feb
- 2023 00:18:13 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQw1J3hbVz3bbS
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 22:21:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=ozDOMArD;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PQw1G094mz4wgv;
+	Tue, 28 Feb 2023 22:21:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1677583298;
+	bh=Qzkz7xSQK7QaLBmpwVbsSJkFMksdw/3aVgUvFCHphao=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=ozDOMArDd9j0aGeIoLYJS/iqqbCyf2pKW2MPxKN3Me0bGwHibbwNUCV4FAJBfPS3S
+	 2V690d/yqr0a0WEg5qsu54QCt+N8FO1tr5CcjFfxkkEh58bSS8+D4O9wlgjkt5GWln
+	 SGZd56AXrl1q4TcgKDL6AHCGVs5XpvzXlFErvn/fzMYPDhYMSHkAj1AAGWSGFJPVAB
+	 DUkvRfa6kpdqAAN/qM8+cWm2RmfRWa9BuVWd39fU0g4LClLDVkfoz3MW2dz19A0PgI
+	 KvLnwWXPconXnRgXfmqEPZMVsZlYD626dKQRgo2jG8LDZKk+t+/954iqX9rbGfoxgB
+	 DqQP4ttPSCInA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jarkko Sakkinen <jarkko@kernel.org>, Stefan Berger <stefanb@linux.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/tpm: Create linux,sml-base/size as big endian
+In-Reply-To: <Y/1wm3kmsto5tzeB@kernel.org>
+References: <20230224032508.3331281-1-mpe@ellerman.id.au>
+ <c2afd163-5f23-acab-fd39-3a5593ed6257@linux.ibm.com>
+ <Y/1wm3kmsto5tzeB@kernel.org>
+Date: Tue, 28 Feb 2023 22:21:36 +1100
+Message-ID: <87r0uaujb3.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Received: by 2002:a05:7000:a309:b0:480:bd65:1f87 with HTTP; Tue, 28 Feb 2023
- 00:18:12 -0800 (PST)
-From: =?UTF-8?B?546L5piK54S2?= <msl0000023508@gmail.com>
-Date: Tue, 28 Feb 2023 16:18:12 +0800
-Message-ID: <CAPge7ycxEpms_wQoDoCncz743N2BfzVCZPLmbHCVTs6ZKSp=nA@mail.gmail.com>
-Subject: Symbol cpu_feature_keys should be exported to all modules on powerpc
-To: stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Tue, 28 Feb 2023 21:21:59 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,16 +59,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kevin Hao <haokexin@gmail.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: eajames@linux.ibm.com, jgg@ziepe.ca, yangyingliang@huawei.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, peterhuewe@gmx.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Just like symbol 'mmu_feature_keys'[1], 'cpu_feature_keys' was referenced
-indirectly by many inline functions; any GPL-incompatible modules using such
-a function will be potentially broken due to 'cpu_feature_keys' being
-exported as GPL-only.
+Jarkko Sakkinen <jarkko@kernel.org> writes:
+> On Mon, Feb 27, 2023 at 06:08:31PM -0500, Stefan Berger wrote:
+>> On 2/23/23 22:25, Michael Ellerman wrote:
+>> > There's code in prom_instantiate_sml() to do a "SML handover" (Stored
+>> > Measurement Log) from OF to Linux, before Linux shuts down Open
+>> > Firmware.
+>> > 
+>> > This involves creating a buffer to hold the SML, and creating two device
+>> > tree properties to record its base address and size. The kernel then
+>> > later reads those properties from the device tree to find the SML.
+>> > 
+>> > When the code was initially added in commit 4a727429abec ("PPC64: Add
+>> > support for instantiating SML from Open Firmware") the powerpc kernel
+>> > was always built big endian, so the properties were created big endian
+>> > by default.
+>> > 
+>> > However since then little endian support was added to powerpc, and now
+>> > the code lacks conversions to big endian when creating the properties.
+>> > 
+>> > This means on little endian kernels the device tree properties are
+>> > little endian, which is contrary to the device tree spec, and in
+>> > contrast to all other device tree properties.
+>> > 
+>> > To cope with that a workaround was added in tpm_read_log_of() to skip
+>> > the endian conversion if the properties were created via the SML
+>> > handover.
+>> > 
+>> > A better solution is to encode the properties as big endian as they
+>> > should be, and remove the workaround.
+>> > 
+>> > Typically changing the encoding of a property like this would present
+>> > problems for kexec. However the SML is not propagated across kexec, so
+>> > changing the encoding of the properties is a non-issue.
+>> > 
+>> > Fixes: e46e22f12b19 ("tpm: enhance read_log_of() to support Physical TPM event log")
+>> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> 
+>> Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
+>
+> 2/2 does not have a fixes tag.
 
-For example it still breaks ZFS, see
-https://github.com/openzfs/zfs/issues/14545
+True. Arguably the bug goes back to the introduction of
+kexec_file_load() support, although the patch won't backport that far
+due to code refactoring. So that would be:
 
-[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220329085709.4132729-1-haokexin@gmail.com/
+Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
+
+cheers
