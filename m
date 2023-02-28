@@ -4,114 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A4B2C64ED8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Feb 2023 17:20:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE9F3C64EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 21:23:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQS1h1Jk3z3bvZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 04:20:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PR9M76cbNz3cMT
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 08:22:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=P4+zFqd1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EWCQE/HQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=stgolabs.net (client-ip=23.83.209.25; helo=bumble.birch.relay.mailchannels.net; envelope-from=dave@stgolabs.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=stgolabs.net header.i=@stgolabs.net header.a=rsa-sha256 header.s=dreamhost header.b=P4+zFqd1;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EWCQE/HQ;
 	dkim-atps=neutral
-Received: from bumble.birch.relay.mailchannels.net (bumble.birch.relay.mailchannels.net [23.83.209.25])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQS0Z6sDbz3bTq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 04:19:25 +1100 (AEDT)
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-	by relay.mailchannels.net (Postfix) with ESMTP id 94742822240;
-	Mon, 27 Feb 2023 17:19:14 +0000 (UTC)
-Received: from pdx1-sub0-mail-a283.dreamhost.com (unknown [127.0.0.6])
-	(Authenticated sender: dreamhost)
-	by relay.mailchannels.net (Postfix) with ESMTPA id 1D4368221D9;
-	Mon, 27 Feb 2023 17:19:13 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1677518353; a=rsa-sha256;
-	cv=none;
-	b=7qK8WP9xLUa7NOK0vVjVvQ1cpz8s7JzUL2wjI9WfPDrYoWw8C8SrngUcxz6l8LJUpaW8GA
-	M4U2yV4+NNYlkqhnz3qWLMqjssoQVOQmb8bQws0RdD3+wcONRqy1OJfBPOWsdFsWEE5uZZ
-	HKXRAhWPYYEOchlBrVNjdK8PF7UVGah20Mdnofjp1QwcuhzS3NuaTwHEW3OjIwhUTCt64l
-	Kcbpn5LS41LK7QVcf2Yk8FrS+khm0gmmyvtEpRypGLUF69m+QNEDvVDaz26KJrb1p92AKm
-	GsAsdFJPk7A2CHbiGJ4tQxi2NCeFwFTRa0q5VI3ZGincPVGwXitSb6vfeV+A4A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-	s=arc-2022; t=1677518353;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:dkim-signature;
-	bh=/Zq7yYZW02DEXPDh0jvm5FuZmU/4MNa5LSJgAHpINyg=;
-	b=te61hAUCQ+tZN+uobKa6zFok7w6YPA5fOak2DcWekG+bwCdp7wyJ6OjZ6yMY+/LpL+ewSK
-	Mv81ajKZJqauh5sQZ4GPzAUEnUyycAzhlihERijXQDLEqKR5P+DrXiUWwUxwVTnRCHayrM
-	ReLarN54oANeUb+DkEkv5iSMaKmRKrFFnnxtPZGuJd0snh9hrKD5EpCsLeeIwr5AxNGdvK
-	5jTg1NiuzuRHVch4c0lKYWpurVR6chOOIeqaphyVu+Q+aDCzyLo+OUgIucUM5dKNwPLA5i
-	FjzxnyE9WHli8qHOps0cySW4zgVVdgo8Svc7ls5UnViwI0vbS8XqKF1B0VyP2Q==
-ARC-Authentication-Results: i=1;
-	rspamd-69778c65cd-rcs9v;
-	auth=pass smtp.auth=dreamhost smtp.mailfrom=dave@stgolabs.net
-X-Sender-Id: dreamhost|x-authsender|dave@stgolabs.net
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|dave@stgolabs.net
-X-MailChannels-Auth-Id: dreamhost
-X-Chief-Rock: 6d068aaa56b8eeae_1677518354170_3920225541
-X-MC-Loop-Signature: 1677518354170:914489716
-X-MC-Ingress-Time: 1677518354170
-Received: from pdx1-sub0-mail-a283.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-	by 100.123.200.110 (trex/6.7.1);
-	Mon, 27 Feb 2023 17:19:14 +0000
-Received: from offworld (ip72-199-50-187.sd.sd.cox.net [72.199.50.187])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PR95h6Z4Nz2ylk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 08:11:20 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	(Authenticated sender: dave@stgolabs.net)
-	by pdx1-sub0-mail-a283.dreamhost.com (Postfix) with ESMTPSA id 4PQS0G0kM3z1d;
-	Mon, 27 Feb 2023 09:19:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=stgolabs.net;
-	s=dreamhost; t=1677518352;
-	bh=/Zq7yYZW02DEXPDh0jvm5FuZmU/4MNa5LSJgAHpINyg=;
-	h=Date:From:To:Cc:Subject:Content-Type:Content-Transfer-Encoding;
-	b=P4+zFqd18/HpmFmQiEDYB0/3JWYFiZaZ1VOp8YIuBndJB+bBcPRDFJlT9ROk85IeP
-	 2+lhgf9vSf38GIcohoWPqF8tFEU7veK/9o/e1INc67MvfVAyYfkJ1QWhlnrH2eMBsh
-	 AjZ7T0DT1SfHleDKzopq4Mt4Pzqv2B91Ueb3OIDo9TOxjr1Ljpf2pVQV+XEIDjz4Kn
-	 8KwNW9VOOqYh5c46TpLJCo8AU4vluDoWFzA7ecV2hZ5McJjMwx9daQzdx2nmiFvMdz
-	 bZx1RQMZixHhR+M6YWKyr2nYvIUmvhO44tIu249YE6n0SDXb/zSUGGYKqrnM1euMSU
-	 E4YuALYi5otNQ==
-Date: Mon, 27 Feb 2023 08:50:32 -0800
-From: Davidlohr Bueso <dave@stgolabs.net>
-To: freak07 <michalechner92@googlemail.com>
-Subject: Re: [PATCH v3 00/35] Per-VMA locks
-Message-ID: <20230227165032.taj24j4leu7dlbqc@offworld>
-Mail-Followup-To: freak07 <michalechner92@googlemail.com>,
-	surenb@google.com, akpm@linux-foundation.org, arjunroy@google.com,
-	axelrasmussen@google.com, bigeasy@linutronix.de,
-	chriscli@google.com, david@redhat.com, dhowells@redhat.com,
-	edumazet@google.com, gthelen@google.com, gurua@google.com,
-	hannes@cmpxchg.org, hughd@google.com, jannh@google.com,
-	jglisse@google.com, joelaf@google.com, kent.overstreet@linux.dev,
-	kernel-team@android.com, ldufour@linux.ibm.com, leewalsh@google.com,
-	liam.howlett@oracle.com, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, lstoakes@gmail.com, luto@kernel.org,
-	mgorman@techsingularity.net, mhocko@suse.com, michel@lespinasse.org,
-	minchan@google.com, mingo@redhat.com, paulmck@kernel.org,
-	peterjung1337@gmail.com, peterx@redhat.com, peterz@infradead.org,
-	posk@google.com, punit.agrawal@bytedance.com, rientjes@google.com,
-	rppt@kernel.org, shakeelb@google.com, soheil@google.com,
-	songliubraving@fb.com, tatashin@google.com, vbabka@suse.cz,
-	will@kernel.org, willy@infradead.org, x86@kernel.org
-References: <20230216051750.3125598-1-surenb@google.com>
- <20230224092134.30603-1-michalechner92@googlemail.com>
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 25887611D8;
+	Tue, 28 Feb 2023 21:11:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 620DBC433EF;
+	Tue, 28 Feb 2023 21:11:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1677618677;
+	bh=hQNwE+IEUbKQvI91yvljJosaVP7JCZ7+8bppV3cOFbg=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=EWCQE/HQjrWuM9JLi5n8h88COIVDC0Dwj8Ls7hxDeYr4SIALkO/qqCk/UGcAvWK5o
+	 c02+sh/QcUi/6bE0ILdbEb/C+A8GV+CJaLo8WfaGxJWgLFvkSK7vL/E7uokCa4MOxg
+	 ngdg3jXiJrkGUm98gEQXAgu/dxa50c+7WgMlmDgNw1PpnJ2oFrWoeU4ingGh4tZ7R7
+	 NCLLPqaZ1Zn4rnovGjIPX8BlJ6CPAfDs1vwTGYqI9oMCtgbAk9Bh8oF1Q3q6KxteX4
+	 j5u6Jm2tA55Z1q6NEJRkgLy4vCcaaRiYhIH8qBVhYl9/Ucn2GR4gvjnvRg/iSe5UV4
+	 UdVCGz5UeLKDg==
+Received: from aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by aws-us-west-2-korg-oddjob-1.ci.codeaurora.org (Postfix) with ESMTP id 3FB70C691DE;
+	Tue, 28 Feb 2023 21:11:17 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20230224092134.30603-1-michalechner92@googlemail.com>
-User-Agent: NeoMutt/20220429
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH mm-unstable v1 00/26] mm: support
+ __HAVE_ARCH_PTE_SWP_EXCLUSIVE on all architectures with swap PTEs
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id:  <167761867725.10135.3611718470427113262.git-patchwork-notify@kernel.org>
+Date: Tue, 28 Feb 2023 21:11:17 +0000
+References: <20230113171026.582290-1-david@redhat.com>
+In-Reply-To: <20230113171026.582290-1-david@redhat.com>
+To: David Hildenbrand <david@redhat.com>
+X-Mailman-Approved-At: Wed, 01 Mar 2023 08:22:08 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,30 +64,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: joelaf@google.com, michel@lespinasse.org, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, gurua@google.com, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, paulmck@kernel.org, x86@kernel.org, hughd@google.com, willy@infradead.org, peterz@infradead.org, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com, gthelen@google.com, kernel-team@android.com, soheil@google.com, minchan@google.com, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, axelrasmussen@google.com, ldufour@linux.ibm.com, surenb@google.com, linux-arm-kernel@lists.infradead.org, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, mgorman@techsingularity.net, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundation.org, tatashin@google.com, linu
- xppc-dev@lists.ozlabs.org, rppt@kernel.org
+Cc: chenhuacai@kernel.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, shy828301@gmail.com, dave.hansen@linux.intel.com, peterx@redhat.com, linux-mips@vger.kernel.org, James.Bottomley@HansenPartnership.com, linux-mm@kvack.org, dalias@libc.org, namit@vmware.com, hpa@zytor.com, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, gerg@linux-m68k.org, anton.ivanov@cambridgegreys.com, aarcange@redhat.com, linux-s390@vger.kernel.org, ysato@users.sourceforge.jp, linux-hexagon@vger.kernel.org, deller@gmx.de, x86@kernel.org, hughd@google.com, linux@armlinux.org.uk, linux-csky@vger.kernel.org, rppt@linux.ibm.com, mingo@redhat.com, geert@linux-m68k.org, vbabka@suse.cz, jgg@nvidia.com, vgupta@kernel.org, mattst88@gmail.com, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, aou@eecs.berkeley.edu, chris@zankel.net, ink@jurassic.park.msu.ru, jhubbard@nvidia.com, linux-um@lists.infradead.org, npiggin@gmail.com, stefan.kristiansson@saunalahti.fi, richard@nod.at, li
+ nux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, bp@alien8.de, loongarch@lists.linux.dev, paul.walmsley@sifive.com, shorne@gmail.com, richard.henderson@linaro.org, johannes@sipsolutions.net, linux-arm-kernel@lists.infradead.org, kernel@xen0n.name, bcain@quicinc.com, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, jcmvbkbc@gmail.com, linux-kernel@vger.kernel.org, dinguyen@kernel.org, palmer@dabbelt.com, linux-alpha@vger.kernel.org, tglx@linutronix.de, guoren@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Feb 2023, freak07 wrote:
+Hello:
 
->Here are some measurements from a Pixel 7 Pro that=B4s running a kernel ei=
-ther with the Per-VMA locks patchset or without.
->If there=B4s interest I can provide results of other specific apps as well.
->
->Results are from consecutive cold app launches issued with "am start" comm=
-and spawning the main activity of Slack Android app.
->
->https://docs.google.com/spreadsheets/d/1ktujfcyDmIJoQMWsoizGIE-0A_jMS9VMw_=
-seehUY9s0/edit?usp=3Dsharing
->
->There=B4s quite a noticeable improvement, as can be seen in the graph. The=
- results were reproducible.
+This series was applied to riscv/linux.git (for-next)
+by Andrew Morton <akpm@linux-foundation.org>:
 
-Thanks for sharing. I am not surprised - after all, per-vma locks narrow so=
-me of the performance gaps
-between vanilla and speculative pfs, with less complexity (albeit this is n=
-ow a 35 patch series :).
+On Fri, 13 Jan 2023 18:10:00 +0100 you wrote:
+> This is the follow-up on [1]:
+> 	[PATCH v2 0/8] mm: COW fixes part 3: reliable GUP R/W FOLL_GET of
+> 	anonymous pages
+> 
+> After we implemented __HAVE_ARCH_PTE_SWP_EXCLUSIVE on most prominent
+> enterprise architectures, implement __HAVE_ARCH_PTE_SWP_EXCLUSIVE on all
+> remaining architectures that support swap PTEs.
+> 
+> [...]
 
-Thanks,
-Davidlohr
+Here is the summary with links:
+  - [mm-unstable,v1,01/26] mm/debug_vm_pgtable: more pte_swp_exclusive() sanity checks
+    (no matching commit)
+  - [mm-unstable,v1,02/26] alpha/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,03/26] arc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,04/26] arm/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,05/26] csky/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,06/26] hexagon/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,07/26] ia64/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,08/26] loongarch/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,09/26] m68k/mm: remove dummy __swp definitions for nommu
+    (no matching commit)
+  - [mm-unstable,v1,10/26] m68k/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,11/26] microblaze/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,12/26] mips/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,13/26] nios2/mm: refactor swap PTE layout
+    (no matching commit)
+  - [mm-unstable,v1,14/26] nios2/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,15/26] openrisc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,16/26] parisc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,17/26] powerpc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 32bit book3s
+    (no matching commit)
+  - [mm-unstable,v1,18/26] powerpc/nohash/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,19/26] riscv/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    https://git.kernel.org/riscv/c/51a1007d4113
+  - [mm-unstable,v1,20/26] sh/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,21/26] sparc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 32bit
+    (no matching commit)
+  - [mm-unstable,v1,22/26] sparc/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE on 64bit
+    (no matching commit)
+  - [mm-unstable,v1,23/26] um/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,24/26] x86/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE also on 32bit
+    (no matching commit)
+  - [mm-unstable,v1,25/26] xtensa/mm: support __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+  - [mm-unstable,v1,26/26] mm: remove __HAVE_ARCH_PTE_SWP_EXCLUSIVE
+    (no matching commit)
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
