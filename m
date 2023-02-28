@@ -4,65 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 76966C64ED6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Feb 2023 23:10:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AEBC64ED6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 00:08:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQbp8700qz3c6C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 10:10:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PQd4X6hw3z3cMN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 11:08:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=dE9jVGLG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eVU/Qm3y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=elver@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=dE9jVGLG;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eVU/Qm3y;
 	dkim-atps=neutral
-Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com [IPv6:2607:f8b0:4864:20::112b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQbn86pkGz3bTc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 10:10:03 +1100 (AEDT)
-Received: by mail-yw1-x112b.google.com with SMTP id 00721157ae682-536c2a1cc07so221793667b3.5
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Feb 2023 15:10:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=QFjaeE4eSo23upfyzVu9yFw6RjIFdreut8TNcWwSiF4=;
-        b=dE9jVGLG/4tiI3x6Dm2ln1b5O0ij+v6xIJv9LjSu2Sq8avzQ5a10IA9zBy09wz78lm
-         fh1mu648v/L5g/J0LjSzxqiWhzxAlc6SyMsYfjUvDPvy15L0IQYO9zspThNSRe89Qf7m
-         YIHoFbp1lSLh6EBlYbN1DuXyTIiiJ3MFMmJREAp8uTb0y6nn6YY/dkurgx7MnVbEnoCN
-         yXQxw0l9EzOEWsOCDUsiccJo8JXhF6c05O9dZZC2PKw8OnS4ABpoLCLTz4U1XQcOhC0e
-         hCsWVNFwhpNd6lfI1BbipBoVJzqRvGWVfYt/tatONd87JuzoYtE1ygzZyNONGoFE3YBX
-         eNeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=QFjaeE4eSo23upfyzVu9yFw6RjIFdreut8TNcWwSiF4=;
-        b=uYEdtF5XHYuFN3gNiM08hbdoRBCxqz71N0yAuoKQ1oXlm7XWVhkrzhFrLmiJDcizM4
-         xkyEFcehFoW3CX2qMINWQDeY46xMsMk6ljKBj9Ls4Io1r+F4YsXGO4u2miVfpH9kPWkR
-         m+4fVZwq27d/EiAFWmlEFRNpoKu2ZHnj3XIVYpSU/H3nui/YHT6oQioDquJM7BxPwUiA
-         5b4nZi4wuM7xsxtOIPG1NU5sVN/3DDr78ETIn4Q3J5wrxnDrkwUArE7jUdVOp4yYsix+
-         BKSnjbbMijdL7n0KyxX99LxV2ridh/FB5r6BrtuSKhZnTPa7pUc2GGtOlU1CfZvX6tyz
-         5gcA==
-X-Gm-Message-State: AO0yUKUXd6m4Cp1k30f6AMVyIBgdu4mxFKEOz71DQuSrGT2lH9M7AIMo
-	5g+WbGSxoSZkvlcToS5McV0LC98aLfdf5ZNHrmPxoQ==
-X-Google-Smtp-Source: AK7set9qHVWcnczC7w/zdZpnGo7qQwK8i/JAfp2TvzaYrL306mHwychbjLxDpLl/X96ArazXBXjqTO1MX9W/D4/zI7k=
-X-Received: by 2002:a25:e210:0:b0:a99:de9d:d504 with SMTP id
- h16-20020a25e210000000b00a99de9dd504mr213188ybe.12.1677539399179; Mon, 27 Feb
- 2023 15:09:59 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQd3R57XCz3bT7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 11:07:31 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31RMmDs3017238
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:28 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=TZlbTA95GBWoWXIVrXvIcJjrCg5+U5kUF5QkDXGW5bU=;
+ b=eVU/Qm3yrnepNw+dVI609db3edzmVJ3E/IhDsw5MhanUTpFLRwYKGwkgZGktsPwA5ZMz
+ XbgH0DitKBfPBzu8zo04OlfAcRmGZHQXaCsZzENu1m3nv5dmozHP+IkGtGdE6KRfarGs
+ 1O0hO9OtsP8QGPDgwPnhKXapjnDn3962WNCbLtv5odekrn/+xSjH8Sgm//+5usKIx4ER
+ LM3zkWJqLlph2xYqXjtsuzUpQMe9rzlmCwWxO69KU3wyvWSjqJGd5fkNj73yWtnVc7IO
+ oJpiM1eJDVUAZzzg5lQCazvNIAsC76pLTz9/L+hpKyKSNeiPMkwRL/L8yoLJZw6McKjd qA== 
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3p11738kqm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:27 +0000
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31RMMOtd028098
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:25 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3nybcuafyf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:25 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31S07MlA23986526
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:23 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 66CB02004B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:22 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DD70820043
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:21 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:07:21 +0000 (GMT)
+Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 9C04B6040A;
+	Tue, 28 Feb 2023 11:07:18 +1100 (AEDT)
+From: Benjamin Gray <bgray@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/3] selftests/powerpc: Make dd output quiet
+Date: Tue, 28 Feb 2023 11:07:09 +1100
+Message-Id: <20230228000709.124727-4-bgray@linux.ibm.com>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230228000709.124727-1-bgray@linux.ibm.com>
+References: <20230228000709.124727-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
-References: <20230227094726.3833247-1-elver@google.com> <20230227141646.084c9a49fcae018852ca60f5@linux-foundation.org>
-In-Reply-To: <20230227141646.084c9a49fcae018852ca60f5@linux-foundation.org>
-From: Marco Elver <elver@google.com>
-Date: Tue, 28 Feb 2023 00:09:13 +0100
-Message-ID: <CANpmjNNtxW41H8ju6iog=ynMdEE0awa7GYabsuL6ZRihmVYQHw@mail.gmail.com>
-Subject: Re: [PATCH mm] kasan, powerpc: Don't rename memintrinsics if compiler
- adds prefixes
-To: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 10fgF1YMubxM0J6silbmdi1AUWUriBdp
+X-Proofpoint-GUID: 10fgF1YMubxM0J6silbmdi1AUWUriBdp
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
+ definitions=2023-02-27_17,2023-02-27_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
+ bulkscore=0 priorityscore=1501 suspectscore=0 adultscore=0 clxscore=1015
+ spamscore=0 malwarescore=0 impostorscore=0 mlxlogscore=999 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2302270189
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,39 +94,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, Daniel Axtens <dja@axtens.net>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org, Andrey Ryabinin <ryabinin.a.a@gmail.com>, Alexander Potapenko <glider@google.com>, Liam Howlett <liam.howlett@oracle.com>, kasan-dev@googlegroups.com, Vincenzo Frascino <vincenzo.frascino@arm.com>, linuxppc-dev@lists.ozlabs.org, Dmitry Vyukov <dvyukov@google.com>, Andrey Konovalov <andreyknvl@gmail.com>
+Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Feb 2023 at 23:16, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> On Mon, 27 Feb 2023 10:47:27 +0100 Marco Elver <elver@google.com> wrote:
->
-> > With appropriate compiler support [1], KASAN builds use __asan prefixed
-> > meminstrinsics, and KASAN no longer overrides memcpy/memset/memmove.
-> >
-> > If compiler support is detected (CC_HAS_KASAN_MEMINTRINSIC_PREFIX),
-> > define memintrinsics normally (do not prefix '__').
-> >
-> > On powerpc, KASAN is the only user of __mem functions, which are used to
-> > define instrumented memintrinsics. Alias the normal versions for KASAN
-> > to use in its implementation.
-> >
-> > Link: https://lore.kernel.org/all/20230224085942.1791837-1-elver@google.com/ [1]
-> > Link: https://lore.kernel.org/oe-kbuild-all/202302271348.U5lvmo0S-lkp@intel.com/
-> > Reported-by: kernel test robot <lkp@intel.com>
-> > Signed-off-by: Marco Elver <elver@google.com>
->
-> Seems this is a fix against "kasan: treat meminstrinsic as builtins in
-> uninstrumented files", so I'll plan to fold this patch into that patch.
+dd logs info to stderr by default. This info is pointless in the
+selftests and makes legitimate issues harder to spot.
 
-Yes, that looks right.
+Pass the option to silence the info logs. Actual errors would still be
+printed.
 
-If a powerpc maintainer could take a quick look as well would be good.
-The maze of memcpy/memmove/memset definitions and redefinitions isn't
-the simplest - I hope in a few years we can delete all the old code
-(before CC_HAS_KASAN_MEMINTRINSIC_PREFIX), and let the compilers just
-"do the right thing".
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+---
+ tools/testing/selftests/powerpc/mm/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
--- Marco
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index 19dd0b2ea397..4a6608beef0e 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -32,7 +32,7 @@ $(OUTPUT)/stack_expansion_ldst: CFLAGS += -fno-stack-protector
+ $(OUTPUT)/stack_expansion_ldst: ../utils.c
+ 
+ $(OUTPUT)/tempfile:
+-	dd if=/dev/zero of=$@ bs=64k count=1
++	dd if=/dev/zero of=$@ bs=64k count=1 status=none
+ 
+ $(OUTPUT)/tlbie_test: LDLIBS += -lpthread
+ $(OUTPUT)/pkey_siginfo: LDLIBS += -lpthread
+-- 
+2.39.2
+
