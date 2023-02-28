@@ -4,100 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97E93C64ED6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 10:07:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09AF0C64ED6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 10:22:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PQtMd1mr7z3cDp
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 21:07:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PQtjR2WrWz3cFH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Feb 2023 21:22:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXYFCRtl;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MjOzX8b5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=msl0000023508@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nXYFCRtl;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MjOzX8b5;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQtLY1cqFz30QD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 21:06:28 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 31S9UHV0002540;
-	Tue, 28 Feb 2023 10:06:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
- mime-version : subject : to : references : from : in-reply-to :
- content-type : content-transfer-encoding; s=pp1;
- bh=DC9JyX/aZ76UEG07OM6Yh20Kp+9JipCq1FCKnvIfMS8=;
- b=nXYFCRtljWpPuSTPwP4dt7aBa9tV3qvaRUjbp8EDFAKwqducPafqrGHFpRtegwtyFou3
- SXB/nHZwZ7ic4eSrbVE+bFiWyf5n9ZNZmGcxmkCOI0tHmCmTGG9AYBLTadBiwDVTiX3q
- cTsvb4MmlZIuSFxKKmvEk7108UQKNI2yeaNG/wEHzwG7BDgiuaW4t9V7cH3L9GmUq3M2
- YXWDtio/jnA2m+utf7moSn+YZliUgi/Xtuuj7TWwVQ0O55XN4MQELVGFuIeWwQOtfPSv
- E5r9AQLOBmbt5HDl1NXN6EG+tbLBpKDIHw8Oz15lr1kSRXtvTpVo5ReIVXqZXuhYYQfg mw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p1f1rru05-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Feb 2023 10:06:17 +0000
-Received: from m0098404.ppops.net (m0098404.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 31S9kiRf008101;
-	Tue, 28 Feb 2023 10:06:16 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p1f1rrty2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Feb 2023 10:06:16 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31S4cRNl027360;
-	Tue, 28 Feb 2023 10:06:13 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3nybb4jx5b-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Feb 2023 10:06:13 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 31SA6BSG63111512
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 28 Feb 2023 10:06:11 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 51C2C20078;
-	Tue, 28 Feb 2023 10:06:11 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E7BBA20087;
-	Tue, 28 Feb 2023 10:06:09 +0000 (GMT)
-Received: from [9.43.45.146] (unknown [9.43.45.146])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 28 Feb 2023 10:06:09 +0000 (GMT)
-Message-ID: <d989254a-a3c4-615e-59cb-96667d0a63b3@linux.ibm.com>
-Date: Tue, 28 Feb 2023 15:36:09 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PQqxm5dQDz3bjv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 19:18:18 +1100 (AEDT)
+Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-536bbef1c5eso248573417b3.9
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Feb 2023 00:18:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=cc:to:subject:message-id:date:from:mime-version:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=LD5KPX7LVPT7ALOji1Tt20TiXcy2sKJ/9LNj91SBJig=;
+        b=MjOzX8b51IkE7h+Ejr3WIRfO2MHzdszZ2VopDPBIW/lvHvcihCjikECXp5AHTHXVxF
+         Y3ucbcBwobPWBSE31Xa1PbSt5extM2rnvpa7VUg43Ht/Wvl2A8BoJLOJ6J7x7LGX98YZ
+         xYweDqrXXorDas1cZ4brQwwE8PQrHX+JMimZREe6jc/6H/48vBX28wtTtAealmZ1guLE
+         25b+DhRV2enigRdN3uKSIJ3G0Gy9rL8guLs8MjYr0aMPxWYTgDJBIQfaEnJZidx9nTEE
+         Um463Pmf94OtbeJrL7N/a/5816g3sPeYNwvBnPMDO6zCDX76YiZiKj4aFOE9JA/L1Y1X
+         OlVw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=cc:to:subject:message-id:date:from:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=LD5KPX7LVPT7ALOji1Tt20TiXcy2sKJ/9LNj91SBJig=;
+        b=6qdjbZ3Zlm515S9ChriJLPB8tKq0wEbCAg/zKjrYqaDdmXAsrmbkwpHtSNc6fqn3uc
+         btNObdTUQ4SPVb2lO1XwE2xGYp90u1sZ6Nf7Atwyw4joF6jR58uf9uQbTqB9Rx4/MLH0
+         nUEvwUz0QILDMH7wdCZO4q3lM5QtubAY6gtZef4Eihx3EtWCjSaAMY4Sb6b4QPiPgR2P
+         T8q0Yk2WouoYa0WFzEFfVD8S4uslij1/Xr+HotFAky+Y/uXpvYaUi9H5VpRGsSQcaw8b
+         XujdODufasJKt0U0r4OMi9ilm68s4Im6vbaiH/+P/j44KOFXnFuzaJv/Pnykf6LcnMFc
+         VE0w==
+X-Gm-Message-State: AO0yUKX8kKDfZQAVjDpxM8+JGBaRzyJ+swOE2oAZkOk+Hm52PuxBQVvn
+	WkN1coISZE6C56AYk7XiPNfoWbkGQ68E6O1F42M=
+X-Google-Smtp-Source: AK7set+y5FLVXs+Yn5Y205wNgJuzeERu7oWP4puNYaoJVrVgE6Nf2v3LuDfF5BldXJwgXqCpI2sP2kx73BuLcMfGZjI=
+X-Received: by 2002:a81:431c:0:b0:52e:b22b:f99 with SMTP id
+ q28-20020a81431c000000b0052eb22b0f99mr1120913ywa.4.1677572293484; Tue, 28 Feb
+ 2023 00:18:13 -0800 (PST)
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: Possible bug in
- linux-6.2/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c
-Content-Language: en-US
-To: Michael Ellerman <mpe@ellerman.id.au>,
-        David Binderman <dcb314@hotmail.com>,
-        "npiggin@gmail.com"
- <npiggin@gmail.com>,
-        "christophe.leroy@csgroup.eu" <christophe.leroy@csgroup.eu>,
-        "shuah@kernel.org" <shuah@kernel.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "linux-kselftest@vger.kernel.org" <linux-kselftest@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <DB6P189MB0568CF002762C6C43AF6DF169CA89@DB6P189MB0568.EURP189.PROD.OUTLOOK.COM>
- <87ttz7vfva.fsf@mpe.ellerman.id.au>
-From: kajoljain <kjain@linux.ibm.com>
-In-Reply-To: <87ttz7vfva.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: EMjlDNBoysmWaiMjZQp-kx9JEn3zS6dK
-X-Proofpoint-GUID: 6GEeOT3WAZFnXJYgNfezphSvxdiUCQKO
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.930,Hydra:6.0.562,FMLib:17.11.170.22
- definitions=2023-02-28_06,2023-02-28_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
- mlxlogscore=999 lowpriorityscore=0 suspectscore=0 clxscore=1011 mlxscore=0
- malwarescore=0 priorityscore=1501 spamscore=0 adultscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
- definitions=main-2302280080
+Received: by 2002:a05:7000:a309:b0:480:bd65:1f87 with HTTP; Tue, 28 Feb 2023
+ 00:18:12 -0800 (PST)
+From: =?UTF-8?B?546L5piK54S2?= <msl0000023508@gmail.com>
+Date: Tue, 28 Feb 2023 16:18:12 +0800
+Message-ID: <CAPge7ycxEpms_wQoDoCncz743N2BfzVCZPLmbHCVTs6ZKSp=nA@mail.gmail.com>
+Subject: Symbol cpu_feature_keys should be exported to all modules on powerpc
+To: stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+X-Mailman-Approved-At: Tue, 28 Feb 2023 21:21:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,78 +73,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Kevin Hao <haokexin@gmail.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Just like symbol 'mmu_feature_keys'[1], 'cpu_feature_keys' was referenced
+indirectly by many inline functions; any GPL-incompatible modules using such
+a function will be potentially broken due to 'cpu_feature_keys' being
+exported as GPL-only.
 
+For example it still breaks ZFS, see
+https://github.com/openzfs/zfs/issues/14545
 
-On 2/27/23 10:56, Michael Ellerman wrote:
-> David Binderman <dcb314@hotmail.com> writes:
->> Hello there,
->>
->> I ran the static analyser cppcheck over the linux-6.2 source code and got this:
->>
->> linux-6.2/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c:68:10: style: Same expression '0x3' found multiple times in chain of '&' operators. [duplicateExpression]
-
-Hi,
-  Thanks David for reporting it.
-
-> 
-> Thanks.
-> 
->> Source code is
->>
->>     FAIL_IF(EV_CODE_EXTRACT(event.attr.config, sample & 0x3) !=
->>             get_mmcra_sample_mode(get_reg_value(intr_regs, "MMCRA"), 4));
->>
->> but
->>
->> #define EV_CODE_EXTRACT(x, y)   \
->>     ((x >> ev_shift_##y) & ev_mask_##y)
->>
->>
->> Given the token pasting, I very much doubt an expression like "sample & 0x3"
->> will work correctly. Same thing on the line above 
->>
->>     FAIL_IF(EV_CODE_EXTRACT(event.attr.config, sample >> 2) !=
->>             get_mmcra_rand_samp_elig(get_reg_value(intr_regs, "MMCRA"), 4));
->>
->> "sample >> 2" doesn't look like a valid token to me.
-> 
-> It expands to:
-> 
->  if ((((event.attr.config >> ev_shift_sample >> 2) & ev_mask_sample >> 2) != get_mmcra_rand_samp_elig(get_reg_value(intr_regs, "MMCRA"), 4))) 
-> 
-> Which AFAICS is valid, and does compile.
-> 
-> Whether it's what the author actually intended is less clear.
-> 
-> And the other example with & 0x3 seems obviously wrong, it expands to:
-> 
->   if ((((event.attr.config >> ev_shift_sample & 0x3) & ev_mask_sample & 0x3) != get_mmcra_sample_mode(get_reg_value(intr_regs, "MMCRA"), 4)))
-> 
-> The shift is 24, so bitwise anding it with 0x3 gets 0 which doesn't seem
-> likely to be what was intended.
-> 
-
-Hi Michael,
-   Thanks for checking it. The intention is to check 3 bits of
-rand_samp_elig field and 2 bits of rand_samp_mode field from the
-sampling bits. Basically we first want to extract that sample field
-using EV_CODE_EXTRACT macro and then fetch required value of
-rand_samp_elig and rand_samp_mode, to compare it with MMCRA bits.
-
-Right approach to do that would be:
-
- FAIL_IF((EV_CODE_EXTRACT(event.attr.config, sample) >> 2) !=
-get_mmcra_rand_samp_elig(get_reg_value(intr_regs, "MMCRA"), 4));
-
- FAIL_IF((EV_CODE_EXTRACT(event.attr.config, sample) & 0x3) !=
-get_mmcra_rand_samp_elig(get_reg_value(intr_regs, "MMCRA"), 4));
-
-I will send a fix patch for same.
-
-Thanks,
-Kajol Jain
-
-> cheers
+[1]: https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220329085709.4132729-1-haokexin@gmail.com/
