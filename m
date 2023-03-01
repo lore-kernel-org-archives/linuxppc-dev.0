@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62635C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:43:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D760C678D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:44:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrQd08T5z3f5Y
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:43:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrRf03byz3cMw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:44:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=oBftd8+E;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YH+mxs1h;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=oBftd8+E;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YH+mxs1h;
 	dkim-atps=neutral
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJX6Rqgz3c41
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJY40rPz3cBF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:05 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1677713885; x=1709249885;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=elKTscyLR7FY5NmvjkmQhnEbe/r3S/2u7x+nfhQMrvU=;
-  b=oBftd8+EqHsO+4HzbaaW455zLifpLQb4QTdOTmOm+ysoEI5zGb9TwMkJ
-   5ICkcNfCynJQKPecPZC7yb1QUmqGLUFz+bkb3x2n/WZslCmz0c1Gg6Jhh
-   L+BKt+e6y6YVAX7zQu9iFB1F4Z8JiwoMO/RToprHNA1JPDnfIlHRcQAVN
-   5jjHBPl6nPBfZDzvyrhli6FZhIQpBQZvgTR3p7uNErTlBru2VoRwOnxui
-   gri3230/EYxcvd2muagPOeOzxqYKh7rmzhhbNJLTtHCx1sq7IrrzHfNCr
-   Xwl0O9Y6EazM9kGNnZx1t/7wRj+q/KCC+jWtrGpABjmGU2prUoqdypiUs
-   A==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818691"
+  bh=X+fPhGM+miLCMioUQX1fq5QvQADp974IGsVIuBa8IIM=;
+  b=YH+mxs1hSE90yWfCtw+w4Y4nk02pJMthVz7WPDVVe3TTL1il7ufwMdcR
+   1bVy4qWiFSRIp6dhwUPRIuVLVKgMqK+ewzXZK/TKO0L0Ap1erDNdzTrw1
+   4PHcobpj/UEsRBj8lS/Jg07WGF3l/wf1kUmPd5rjcBSetmj8fImq68X+b
+   W4bj3Oijr7U+YN4JJPkICy5ZJYZqM2eK8f6JlI09Gjwxr+AjHrIr88p9Y
+   ohF/egz1eeepWZ/vrtS/ktA8kwgXPDDQ82tGjshSqSmfXBrnW3u5G3idb
+   RH3s7RnoROcOMRyclQ5I4XPmA8yyI2/9QVb914bierBYnIKs6sw9N3Wpw
+   g==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818703"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="420818691"
+   d="scan'208";a="420818703"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
   by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:37:56 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826798"
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826807"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="738826798"
+   d="scan'208";a="738826807"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
   by fmsmga008.fm.intel.com with ESMTP; 01 Mar 2023 15:37:56 -0800
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
@@ -52,9 +52,9 @@ To: Tony Luck <tony.luck@intel.com>,
 	Reinette Chatre <reinette.chatre@intel.com>,
 	Dan Williams <dan.j.williams@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH v7 04/24] x86/apic/vector: Implement a local APIC NMI controller
-Date: Wed,  1 Mar 2023 15:47:33 -0800
-Message-Id: <20230301234753.28582-5-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v7 06/24] iommu/vt-d: Clear the redirection hint when the destination mode is physical
+Date: Wed,  1 Mar 2023 15:47:35 -0800
+Message-Id: <20230301234753.28582-7-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
@@ -69,27 +69,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com>, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, Ricardo Neri <ricardo.neri@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com>, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, Ricardo Neri <ricardo.neri@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org, David Woodhouse <dwmw2@infradead.org>, Lu Baolu <baolu.lu@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add a separate local APIC NMI controller to handle NMIs apart from the
-regular APIC management.
+When the destination mode of an interrupt is physical APICID, the interrupt
+is delivered only to the single CPU of which the physical APICID is
+specified in the destination ID field. The redirection hint is meaningless.
 
-This controller will be used to handle the NMI vector of the HPET NMI
-watchdog.
+Furthermore, on certain processors, the IOMMU does not deliver the
+interrupt when the delivery mode is NMI, the redirection hint is set, and
+the destination mode is physical. Clearing the redirection hint ensures
+that the NMI is delivered.
 
 Cc: Andi Kleen <ak@linux.intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+Cc: Lu Baolu <baolu.lu@linux.intel.com>
 Cc: Stephane Eranian <eranian@google.com>
 Cc: iommu@lists.linux-foundation.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Suggested-by: Ashok Raj <ashok.raj@intel.com>
+Reviewed-by: Lu Baolu <baolu.lu@linux.intel.com>
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v6:
- * Reworked patch "x86/apic/vector: Implement support for NMI delivery
-   mode" into a separate local APIC NMI controller. (Thomas)
+ * None
 
 Changes since v5:
  * Introduced this patch.
@@ -106,138 +111,32 @@ Changes since v2:
 Changes since v1:
  * N/A
 ---
- arch/x86/kernel/apic/vector.c | 57 +++++++++++++++++++++++++++++++++++
- include/linux/irq.h           |  5 +++
- 2 files changed, 62 insertions(+)
+ drivers/iommu/intel/irq_remapping.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/apic/vector.c b/arch/x86/kernel/apic/vector.c
-index 633b442c8f84..a4cf041427cb 100644
---- a/arch/x86/kernel/apic/vector.c
-+++ b/arch/x86/kernel/apic/vector.c
-@@ -42,6 +42,7 @@ EXPORT_SYMBOL_GPL(x86_vector_domain);
- static DEFINE_RAW_SPINLOCK(vector_lock);
- static cpumask_var_t vector_searchmask;
- static struct irq_chip lapic_controller;
-+static struct irq_chip lapic_nmi_controller;
- static struct irq_matrix *vector_matrix;
- #ifdef CONFIG_SMP
- static DEFINE_PER_CPU(struct hlist_head, cleanup_list);
-@@ -451,6 +452,10 @@ static int x86_vector_activate(struct irq_domain *dom, struct irq_data *irqd,
- 	trace_vector_activate(irqd->irq, apicd->is_managed,
- 			      apicd->can_reserve, reserve);
- 
-+	/* NMI has a fixed vector. No vector management required */
-+	if (apicd->hw_irq_cfg.delivery_mode == APIC_DELIVERY_MODE_NMI)
-+		return 0;
+diff --git a/drivers/iommu/intel/irq_remapping.c b/drivers/iommu/intel/irq_remapping.c
+index 6d01fa078c36..2d68f94ae0ee 100644
+--- a/drivers/iommu/intel/irq_remapping.c
++++ b/drivers/iommu/intel/irq_remapping.c
+@@ -1123,7 +1123,17 @@ static void prepare_irte(struct irte *irte, int vector, unsigned int dest)
+ 	irte->dlvry_mode = apic->delivery_mode;
+ 	irte->vector = vector;
+ 	irte->dest_id = IRTE_DEST(dest);
+-	irte->redir_hint = 1;
 +
- 	raw_spin_lock_irqsave(&vector_lock, flags);
- 	if (!apicd->can_reserve && !apicd->is_managed)
- 		assign_irq_vector_any_locked(irqd);
-@@ -472,6 +477,10 @@ static void vector_free_reserved_and_managed(struct irq_data *irqd)
- 	trace_vector_teardown(irqd->irq, apicd->is_managed,
- 			      apicd->has_reserved);
- 
-+	/* NMI has a fixed vector. No vector management required */
-+	if (apicd->hw_irq_cfg.delivery_mode == APIC_DELIVERY_MODE_NMI)
-+		return;
-+
- 	if (apicd->has_reserved)
- 		irq_matrix_remove_reserved(vector_matrix);
- 	if (apicd->is_managed)
-@@ -539,6 +548,10 @@ static int x86_vector_alloc_irqs(struct irq_domain *domain, unsigned int virq,
- 	if (disable_apic)
- 		return -ENXIO;
- 
-+	/* Only one IRQ per NMI */
-+	if ((info->flags & X86_IRQ_ALLOC_AS_NMI) && nr_irqs != 1)
-+		return -EINVAL;
-+
- 	/*
- 	 * Catch any attempt to touch the cascade interrupt on a PIC
- 	 * equipped system.
-@@ -573,6 +586,25 @@ static int x86_vector_alloc_irqs(struct irq_domain *domain, unsigned int virq,
- 		/* Don't invoke affinity setter on deactivated interrupts */
- 		irqd_set_affinity_on_activate(irqd);
- 
-+		if (info->flags & X86_IRQ_ALLOC_AS_NMI) {
-+			/*
-+			 * NMIs have a fixed vector and need their own
-+			 * interrupt chip so nothing can end up in the
-+			 * regular local APIC management code except the
-+			 * MSI message composing callback.
-+			 */
-+			apicd->hw_irq_cfg.delivery_mode = APIC_DELIVERY_MODE_NMI;
-+			irqd->chip = &lapic_nmi_controller;
-+			/*
-+			 * Exclude NMIs from balancing. This cannot work with
-+			 * the regular affinity mechanisms. The local APIC NMI
-+			 * controller provides a set_affinity() callback for the
-+			 * intended HPET NMI watchdog use case.
-+			 */
-+			irqd_set_no_balance(irqd);
-+			return 0;
-+		}
-+
- 		/*
- 		 * A delivery mode may be specified in the interrupt allocation
- 		 * info. If not, use the delivery mode of the APIC.
-@@ -872,8 +904,27 @@ static int apic_set_affinity(struct irq_data *irqd,
- 	return err ? err : IRQ_SET_MASK_OK;
++	/*
++	 * When using the destination mode of physical APICID, only the
++	 * processor specified in @dest receives the interrupt. The redirection
++	 * hint is meaningless.
++	 *
++	 * Furthermore, on some processors, NMIs with physical delivery mode
++	 * and the redirection hint set are delivered as regular interrupts
++	 * or not delivered at all.
++	 */
++	irte->redir_hint = apic->dest_mode_logical;
  }
  
-+static int apic_nmi_set_affinity(struct irq_data *irqd,
-+				 const struct cpumask *dest, bool force)
-+{
-+	struct apic_chip_data *apicd = apic_chip_data(irqd);
-+	static struct cpumask tmp_mask;
-+	int cpu;
-+
-+	cpumask_and(&tmp_mask, dest, cpu_online_mask);
-+	if (cpumask_empty(&tmp_mask))
-+		return -ENODEV;
-+
-+	cpu = cpumask_first(&tmp_mask);
-+	apicd->hw_irq_cfg.dest_apicid = apic->calc_dest_apicid(cpu);
-+	irq_data_update_effective_affinity(irqd, cpumask_of(cpu));
-+
-+	return IRQ_SET_MASK_OK;
-+}
-+
- #else
- # define apic_set_affinity	NULL
-+# define apic_nmi_set_affinity	NULL
- #endif
- 
- static int apic_retrigger_irq(struct irq_data *irqd)
-@@ -914,6 +965,12 @@ static struct irq_chip lapic_controller = {
- 	.irq_retrigger		= apic_retrigger_irq,
- };
- 
-+static struct irq_chip lapic_nmi_controller = {
-+	.name			= "APIC-NMI",
-+	.irq_set_affinity	= apic_nmi_set_affinity,
-+	.irq_compose_msi_msg	= x86_vector_msi_compose_msg,
-+};
-+
- #ifdef CONFIG_SMP
- 
- static void free_moved_vector(struct apic_chip_data *apicd)
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b1b28affb32a..c8738b36e316 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -263,6 +263,11 @@ static inline bool irqd_is_per_cpu(struct irq_data *d)
- 	return __irqd_to_state(d) & IRQD_PER_CPU;
- }
- 
-+static inline void irqd_set_no_balance(struct irq_data *d)
-+{
-+	__irqd_to_state(d) |= IRQD_NO_BALANCING;
-+}
-+
- static inline bool irqd_can_balance(struct irq_data *d)
- {
- 	return !(__irqd_to_state(d) & (IRQD_PER_CPU | IRQD_NO_BALANCING));
+ struct irq_remap_ops intel_irq_remap_ops = {
 -- 
 2.25.1
 
