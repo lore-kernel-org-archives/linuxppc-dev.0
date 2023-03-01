@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8920BC7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:56:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B20B8C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:57:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrk608fHz3flk
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:56:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrlH2Zzsz3fTP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:57:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AOBB/LWd;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZAbHbTcF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AOBB/LWd;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ZAbHbTcF;
 	dkim-atps=neutral
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJc5K9yz3cMy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJd1P7qz3cKD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:09 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1677713888; x=1709249888;
+  t=1677713889; x=1709249889;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=OqhPN6kNm1+6G6yIlNPIASa1IBCFVuZdDvhvGUbI0q8=;
-  b=AOBB/LWdZLdxtjd4r+sxXsRjAkrteQbBt3PTcA4zb1+ePNicyjt2fNTB
-   p7t4QptGyVpwdH2ji3gNCXPOISf0HYVSk5/JwwNtmET5EWMMa+uswDWv5
-   tbQ/fpB+GrNA8AAErsmEeehWUspm+/SDdMiZTGtPv/D/7mptGBuyS6em3
-   RI8lKjQXFNGrGpIv6yvTD4e5FKPrCucSNGJqgK+NM5Zh0TnHUJQRf6+Yl
-   S9ASruNx1dwvqfux+XyQwROFMtt2kjANF5p7yeOKattvHAideDM6ZDP7o
-   d3pdbbC2zHlob5Kpw4+NBut4/SoFliTTZ0XyP1vf2EUeAogwY5r7fprH+
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818792"
+  bh=TJtWiEKn9cKtWyiPL16X6Q+Hc9VuKWnOfoMEGJZdAM0=;
+  b=ZAbHbTcFOyZ2HMg5U6+7zoE73BhrYTXz6lzCN3hJyU18fkqmj/9lXgDJ
+   CJX4r86woOWQ7zoXP6zd9VTEkPRhLkRRo8bIeJzqRM0FL6GUfIc1jwzIB
+   D8o5CTZ1g+fiJIZJrq4YLzvzU8ys7BKkXW+cWQxneSZMvKShkO9zOayRT
+   HXFD7kWMcKAMcPO4CEGV/YOmyGkW1oe7+SHMDNPb8bKnomF34iFM/M5qg
+   /OLrt4EiDnmO9izIEi5aS803wfdcBb7Z4sbmTm5HNByHFVGeYTlbenEXV
+   XSNTVXyWbHbcZqKy0SGPDeiiaCAH27M6V2pjz9BF+AyW2JM6a8Xpjqtnz
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818801"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="420818792"
+   d="scan'208";a="420818801"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:38:00 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:38:01 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826868"
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826874"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="738826868"
+   d="scan'208";a="738826874"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
   by fmsmga008.fm.intel.com with ESMTP; 01 Mar 2023 15:38:00 -0800
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
@@ -52,9 +52,9 @@ To: Tony Luck <tony.luck@intel.com>,
 	Reinette Chatre <reinette.chatre@intel.com>,
 	Dan Williams <dan.j.williams@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH v7 21/24] watchdog/hardlockup/hpet: Only enable the HPET watchdog via a boot parameter
-Date: Wed,  1 Mar 2023 15:47:50 -0800
-Message-Id: <20230301234753.28582-22-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v7 23/24] watchdog: Introduce hardlockup_detector_mark_unavailable()
+Date: Wed,  1 Mar 2023 15:47:52 -0800
+Message-Id: <20230301234753.28582-24-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
@@ -73,107 +73,97 @@ Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Keep the HPET-based hardlockup detector disabled unless explicitly enabled
-via a command-line argument. If such parameter is not given, the
-initialization of the HPET-based hardlockup detector fails and the NMI
-watchdog will fall back to use the perf-based implementation.
+The NMI watchdog may become unreliable during runtime. This is the case
+in x86 if, for instance, the HPET-based hardlockup detector is in use and
+the TSC counter becomes unstable.
+
+Introduce a new interface to mark the hardlockup detector as unavailable
+in such cases. When doing this, update the state of /proc/sys/kernel/
+nmi_watchdog to keep it consistent.
 
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Stephane Eranian <eranian@google.com>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Cc: iommu@lists.linux-foundation.org
 Cc: linuxppc-dev@lists.ozlabs.org
-Reviewed-by: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
---
+---
 Changes since v6:
- * Do not reuse the nmi_watchdog command line option. Instead, use a
-   separate command line option. (Nicholas Piggin)
- * Document conflict with conflict between `hpet_nmi_watchdog` and
-   `nohz_full` and dependency on `no_ipi_broadcast`.
+ * Introduced this patch
 
 Changes since v5:
- * None
+ * N/A
 
-Changes since v4:
- * None
+Changes since v4
+ * N/A
 
-Changes since v3:
- * None
+Changes since v3
+ * N/A
 
 Changes since v2:
- * Do not imply that using nmi_watchdog=hpet means the detector is
-   enabled. Instead, print a warning in such case.
+ * N/A
 
 Changes since v1:
- * Added documentation to the function handing the nmi_watchdog
-   kernel command-line argument.
+ * N/A
 ---
- Documentation/admin-guide/kernel-parameters.txt |  8 ++++++++
- arch/x86/kernel/watchdog_hld_hpet.c             | 17 +++++++++++++++++
- 2 files changed, 25 insertions(+)
+ include/linux/nmi.h |  2 ++
+ kernel/watchdog.c   | 20 ++++++++++++++++++++
+ 2 files changed, 22 insertions(+)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 46268d6baa43..2d1262bb99c7 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1708,6 +1708,14 @@
- 	hpet_mmap=	[X86, HPET_MMAP] Allow userspace to mmap HPET
- 			registers.  Default set by CONFIG_HPET_MMAP_DEFAULT.
+diff --git a/include/linux/nmi.h b/include/linux/nmi.h
+index a38c4509f9eb..40a97139ec65 100644
+--- a/include/linux/nmi.h
++++ b/include/linux/nmi.h
+@@ -83,9 +83,11 @@ static inline void reset_hung_task_detector(void) { }
  
-+	hpet_nmi_watchdog [X86, KNL]
-+			Drive the NMI watchdog with an HPET channel. This option
-+			has no effect if the NMI watchdog is not enabled.
-+			The HPET NMI watchdog conflicts with the parameters
-+			nohz_full, no_ipi_broadcast, and hpet=disable. If any
-+			of these parameters is present the NMI watchdog will
-+			fall back to the perf-driven implementation.
+ #if defined(CONFIG_HARDLOCKUP_DETECTOR)
+ extern void hardlockup_detector_disable(void);
++extern void hardlockup_detector_mark_unavailable(void);
+ extern unsigned int hardlockup_panic;
+ #else
+ static inline void hardlockup_detector_disable(void) {}
++static inline void hardlockup_detector_mark_unavailable(void) {}
+ #endif
+ 
+ #if defined(CONFIG_HAVE_NMI_WATCHDOG) || defined(CONFIG_HARDLOCKUP_DETECTOR)
+diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+index 8e61f21e7e33..0e4fed6d95b9 100644
+--- a/kernel/watchdog.c
++++ b/kernel/watchdog.c
+@@ -47,6 +47,8 @@ static int __read_mostly nmi_watchdog_available;
+ struct cpumask watchdog_cpumask __read_mostly;
+ unsigned long *watchdog_cpumask_bits = cpumask_bits(&watchdog_cpumask);
+ 
++static void __lockup_detector_reconfigure(void);
 +
- 	hugepages=	[HW] Number of HugeTLB pages to allocate at boot.
- 			If this follows hugepagesz (below), it specifies
- 			the number of pages of hugepagesz to be allocated.
-diff --git a/arch/x86/kernel/watchdog_hld_hpet.c b/arch/x86/kernel/watchdog_hld_hpet.c
-index a03126e02eda..0fc728ad6f15 100644
---- a/arch/x86/kernel/watchdog_hld_hpet.c
-+++ b/arch/x86/kernel/watchdog_hld_hpet.c
-@@ -39,6 +39,7 @@
- #include "apic/local.h"
+ #ifdef CONFIG_HARDLOCKUP_DETECTOR
  
- static struct hpet_hld_data *hld_data;
-+static bool hardlockup_use_hpet;
- static u64 tsc_next_error;
- 
- static void __init setup_hpet_channel(struct hpet_hld_data *hdata)
-@@ -366,6 +367,19 @@ void hardlockup_detector_hpet_start(void)
- 	enable_timer(hld_data);
+ # ifdef CONFIG_SMP
+@@ -85,6 +87,24 @@ static int __init hardlockup_panic_setup(char *str)
  }
+ __setup("nmi_watchdog=", hardlockup_panic_setup);
  
 +/**
-+ * hardlockup_detector_hpet_setup() - Parse command-line parameters
-+ * @str:	A string containing the kernel command line
++ * hardlockup_detector_mark_unavailable - Mark the NMI watchdog as unavailable
 + *
-+ * If selected by the user, enable this hardlockup detector.
++ * Indicate that the hardlockup detector has become unavailable. This may
++ * happen if the hardware resources that the detector uses have become
++ * unreliable.
 + */
-+static int __init hardlockup_detector_hpet_setup(char *str)
++void hardlockup_detector_mark_unavailable(void)
 +{
-+	hardlockup_use_hpet = true;
-+	return 1;
++	mutex_lock(&watchdog_mutex);
++
++	/* These variables can be updated without stopping the detector. */
++	nmi_watchdog_user_enabled = 0;
++	nmi_watchdog_available = false;
++
++	__lockup_detector_reconfigure();
++	mutex_unlock(&watchdog_mutex);
 +}
-+__setup("hpet_nmi_watchdog", hardlockup_detector_hpet_setup);
-+
- static const char hpet_hld_init_failed[] = "Initialization failed:";
+ #endif /* CONFIG_HARDLOCKUP_DETECTOR */
  
- /**
-@@ -382,6 +396,9 @@ int __init hardlockup_detector_hpet_init(void)
- {
- 	int ret;
- 
-+	if (!hardlockup_use_hpet)
-+		return -ENODEV;
-+
- 	if (!is_hpet_enabled()) {
- 		pr_info("%s HPET unavailable\n", hpet_hld_init_failed);
- 		return -ENODEV;
+ /*
 -- 
 2.25.1
 
