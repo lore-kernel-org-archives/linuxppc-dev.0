@@ -4,68 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10EAAC6FA9D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 19:08:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8049EC7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 21:15:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRkKS1YyGz3cLr
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 06:08:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRn8271x2z3cFw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 08:15:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Tc+Lfvs4;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=1drUTVAX;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=5Ajx6tsc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::1130; helo=mail-yw1-x1130.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=Tc+Lfvs4;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=1drUTVAX;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=5Ajx6tsc;
 	dkim-atps=neutral
-Received: from mail-yw1-x1130.google.com (mail-yw1-x1130.google.com [IPv6:2607:f8b0:4864:20::1130])
+X-Greylist: delayed 394 seconds by postgrey-1.36 at boromir; Thu, 02 Mar 2023 08:14:37 AEDT
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRkJR3nQ3z2xD7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 06:07:35 +1100 (AEDT)
-Received: by mail-yw1-x1130.google.com with SMTP id 00721157ae682-536c2a1cc07so383010507b3.5
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 11:07:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112; t=1677697653;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=BlFKPaHxV4jQ7dMxp37PMOa6KmgzjBmeyyNBQBavDx8=;
-        b=Tc+Lfvs4SS8u1UCDBpYQvIJ9La6W49lFb2CZ+De1a11FXObIXWCF3BlBujuIEcWfXR
-         K8XAAg8gxr2xVbV3LBMHTffyEYatSSzLtxaJ1thDWIz6aZ6tnyaWtD/HgJU6tyGJYf3q
-         jp3IKu6nyN7tV0mKfmzcHMG74wGuu0zdP7wmqBrP/k7QLFJgyU3CURBojezcQXpqpSdo
-         Fxa0y0DporTUWfiigj1CH1bgpxQ8jMFxnIOpFeF8j43Xe59cuxyCaa5vcLCOhN+5MFUV
-         PmN47d5ZRn6yecRBiQTEpYT20b93V+dsHO/LeLSVH6nyRn1/7A+vnbXttfD2d7rTtMJ5
-         iIiA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677697653;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BlFKPaHxV4jQ7dMxp37PMOa6KmgzjBmeyyNBQBavDx8=;
-        b=ulvBwHp5W3vPxNfvgylYioN6iXAhVbngZEzO1ZGhqiZL0N3gEWp+hU38UcWtoDQJL5
-         C5G0Rj5vfBcladyxaJZjy5HlC1VFoztE2E0MUI0QEM31B9fUnUnTQN33zXY8XpHWOZUq
-         dY4U9cbG6SokG5IL1yxJFz1lIo8qiECkztZcYfJiCpGmXNPp23PMSvVUMccwKRgnk28g
-         nCtNtGfva2Lpt7KrULYGV+YaX11Dh+PkQacqv5xWufCUDHJftAAr6OznVkpRNU6gFxNU
-         icAllnHIZFedfU0Ko98KvTm+lwo+AhfByiHTJ7xPI9e2jXsZoh9RpnW3nbnpKxGuULVr
-         3nAg==
-X-Gm-Message-State: AO0yUKXH141gywPRqg+3kKRJhS89TYC0gJDio5QE2+XIBsB3FbdqiT6A
-	3NVxiH90dNZxSzwADHzXCuL24kkNtFMxuqWfXHL+aQ==
-X-Google-Smtp-Source: AK7set9ZsSbg+lkgd2HRMSAvJ/YkGIQu9aJDVRfhrq6ARtmp15/GeLDk6fPjITpwN8ANRiWlqv4jLhfWt2ZLpWW0OEA=
-X-Received: by 2002:a81:ac16:0:b0:536:4194:e6eb with SMTP id
- k22-20020a81ac16000000b005364194e6ebmr4616550ywh.0.1677697652553; Wed, 01 Mar
- 2023 11:07:32 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRn710cDCz2xl6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 08:14:36 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1677704869;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=B374OxTzVS9QcjckHvkiwhr+6E3lqWByqJOzxF2qGow=;
+	b=1drUTVAXKqngwe09WrmIidH/RzxI6ZIGMbKPz/8rOfWchpWKji8v3Sd9k/iiJSrrs0Iqav
+	rbrDSJRayQwz/HBJVgZWfK4WdTEZ9ZLJ36vYw81BaHEcJEbQQ8FnZ8/CjwLJi1YHx0fioe
+	FpS8swwObQDVsKoiMAY6dQv8F4JwaAZjs4QrDFdNznCDcVxVD5LRWiE6z7+xGAYA2bVXj7
+	S9Jyrmmiu+gesDGg71KvcSeCYWfjOwaACVFvCfUsv2R1Flux+bdkbfqUQqSI/G1XHmq0uW
+	WXlWEHaA477XPYFtRUjNP8uOeSKbkX7NXdZQuCu18GBZIlqT7qUEnWqh6749wQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1677704869;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=B374OxTzVS9QcjckHvkiwhr+6E3lqWByqJOzxF2qGow=;
+	b=5Ajx6tscPHnH64xp+028YR2a9czj6LIZcEPYMzh0ULXNf96J2x0Dqr24aGYiU87iLVJuBC
+	Ka5YEgQGUGeS9VBg==
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [patch 05/39] genirq/msi: Remove filter from
+ msi_free_descs_free_range()
+In-Reply-To: <20230301115530.5ccea5ae@xps-13>
+References: <20221111120501.026511281@linutronix.de>
+ <20221111122013.888850936@linutronix.de> <20230301115530.5ccea5ae@xps-13>
+Date: Wed, 01 Mar 2023 22:07:48 +0100
+Message-ID: <87mt4wkwnv.ffs@tglx>
 MIME-Version: 1.0
-References: <20230227173632.3292573-1-surenb@google.com> <20230227173632.3292573-19-surenb@google.com>
- <Y/8CJQGNuMUTdLwP@localhost> <Y/8FNM9czzPHb5eG@localhost> <CAJuCfpHYT++MBC6T-p80n_m5hHWRRC4Y1bO9J-bFFZZDqNX-BQ@mail.gmail.com>
-In-Reply-To: <CAJuCfpHYT++MBC6T-p80n_m5hHWRRC4Y1bO9J-bFFZZDqNX-BQ@mail.gmail.com>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 1 Mar 2023 11:07:21 -0800
-Message-ID: <CAJuCfpH9HRSuh2sWZDr0oCXh5dpgS+LmzL=kO-TR9a0yFnT_xg@mail.gmail.com>
-Subject: Re: [PATCH v4 18/33] mm: write-lock VMAs before removing them from
- VMA tree
-To: Hyeonggon Yoo <42.hyeyoo@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,129 +66,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundati
- on.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
+Cc: linux-pci@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Will Deacon <will@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Dave Jiang <dave.jiang@intel.com>, Ashok Raj <ashok.raj@intel.com>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org, Jason Gunthorpe <jgg@mellanox.com>, Allen Hubbe <allenbh@gmail.com>, Kevin Tian <kevin.tian@intel.com>, "Ahmed
+ S. Darwish" <darwi@linutronix.de>, Jon Mason <jdmason@kudzu.us>, linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>, Bjorn Helgaas <bhelgaas@google.com>, Dan Williams <dan.j.williams@intel.com>, Reinette Chatre <reinette.chatre@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Marc Zyngier <maz@kernel.org>, Logan Gunthorpe <logang@deltatee.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 1, 2023 at 10:34=E2=80=AFAM Suren Baghdasaryan <surenb@google.c=
-om> wrote:
->
-> On Tue, Feb 28, 2023 at 11:57=E2=80=AFPM Hyeonggon Yoo <42.hyeyoo@gmail.c=
-om> wrote:
-> >
-> > On Wed, Mar 01, 2023 at 07:43:33AM +0000, Hyeonggon Yoo wrote:
-> > > On Mon, Feb 27, 2023 at 09:36:17AM -0800, Suren Baghdasaryan wrote:
-> > > > Write-locking VMAs before isolating them ensures that page fault
-> > > > handlers don't operate on isolated VMAs.
-> > > >
-> > > > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > > > ---
-> > > >  mm/mmap.c  | 1 +
-> > > >  mm/nommu.c | 5 +++++
-> > > >  2 files changed, 6 insertions(+)
-> > > >
-> > > > diff --git a/mm/mmap.c b/mm/mmap.c
-> > > > index 1f42b9a52b9b..f7ed357056c4 100644
-> > > > --- a/mm/mmap.c
-> > > > +++ b/mm/mmap.c
-> > > > @@ -2255,6 +2255,7 @@ int split_vma(struct vma_iterator *vmi, struc=
-t vm_area_struct *vma,
-> > > >  static inline int munmap_sidetree(struct vm_area_struct *vma,
-> > > >                                struct ma_state *mas_detach)
-> > > >  {
-> > > > +   vma_start_write(vma);
-> > > >     mas_set_range(mas_detach, vma->vm_start, vma->vm_end - 1);
-> > >
-> > > I may be missing something, but have few questions:
-> > >
-> > >       1) Why does a writer need to both write-lock a VMA and mark the=
- VMA detached
-> > >          when unmapping it, isn't it enough to just only write-lock a=
- VMA?
->
-> We need to mark the VMA detached to avoid handling page fault in a
-> detached VMA. The possible scenario is:
->
-> lock_vma_under_rcu
->   vma =3D mas_walk(&mas)
->                                                         munmap_sidetree
->                                                           vma_start_write=
-(vma)
->
-> mas_store_gfp() // remove VMA from the tree
->                                                           vma_end_write_a=
-ll()
->   vma_start_read(vma)
->   // we locked the VMA but it is not part of the tree anymore.
->
-> So, marking the VMA locked before vma_end_write_all() and checking
-> vma->detached after vma_start_read() helps us avoid handling faults in
-> the detached VMA.
->
->
-> > >
-> > >       2) as VMAs that are going to be removed are already locked in v=
-ma_prepare(),
-> > >          so I think this hunk could be dropped?
-> >
-> > After sending this just realized that I did not consider simple munmap =
-case :)
-> > But I still think 1) and 3) are valid question.
-> >
-> > >
-> > > >     if (mas_store_gfp(mas_detach, vma, GFP_KERNEL))
-> > > >             return -ENOMEM;
-> > > > diff --git a/mm/nommu.c b/mm/nommu.c
-> > > > index 57ba243c6a37..2ab162d773e2 100644
-> > > > --- a/mm/nommu.c
-> > > > +++ b/mm/nommu.c
-> > > > @@ -588,6 +588,7 @@ static int delete_vma_from_mm(struct vm_area_st=
-ruct *vma)
-> > > >                    current->pid);
-> > > >             return -ENOMEM;
-> > > >     }
-> > > > +   vma_start_write(vma);
-> > > >     cleanup_vma_from_mm(vma);
-> > >
-> > >       3) I think this hunk could be dropped as Per-VMA lock depends o=
-n MMU anyway.
->
-> Ah, yes, you are right. We can safely remove the changes in nommu.c
-> Andrew, should I post a fixup or you can make the removal directly in
-> mm-unstable?
+Miquel!
 
-I went ahead and posted the fixup for this at:
-https://lore.kernel.org/all/20230301190457.1498985-1-surenb@google.com/
-
-> Thanks,
-> Suren.
+On Wed, Mar 01 2023 at 11:55, Miquel Raynal wrote:
+> tglx@linutronix.de wrote on Fri, 11 Nov 2022 14:54:22 +0100 (CET):
 >
-> > >
-> > > Thanks,
-> > > Hyeonggon
-> > >
-> > > >
-> > > >     /* remove from the MM's tree and list */
-> > > > @@ -1519,6 +1520,10 @@ void exit_mmap(struct mm_struct *mm)
-> > > >      */
-> > > >     mmap_write_lock(mm);
-> > > >     for_each_vma(vmi, vma) {
-> > > > +           /*
-> > > > +            * No need to lock VMA because this is the only mm user=
- and no
-> > > > +            * page fault handled can race with it.
-> > > > +            */
-> > > >             cleanup_vma_from_mm(vma);
-> > > >             delete_vma(mm, vma);
-> > > >             cond_resched();
-> > > > --
-> > > > 2.39.2.722.g9855ee24e9-goog
-> > > >
-> > > >
-> > >
-> >
-> > --
-> > To unsubscribe from this group and stop receiving emails from it, send =
-an email to kernel-team+unsubscribe@android.com.
-> >
+>> When a range of descriptors is freed then all of them are not associated to
+>> a linux interrupt. Remove the filter and add a warning to the free function.
+>> +		/* Leak the descriptor when it is still referenced */
+>> +		if (WARN_ON_ONCE(msi_desc_match(desc, MSI_DESC_ASSOCIATED)))
+>> +			continue;
+>> +		msi_free_desc(desc);
+>>  	}
+>>  }
+>
+> It looks like since this commit I am getting warnings upon EPROBE_DEFER
+> errors in the mvpp2 Marvell Ethernet driver. I looked a bit at the
+> internals to understand why this warning was shown, and it seems that
+> nothing "de-references" the descriptors, which would mean here:
+> resetting desc->irq to 0.
+
+Correct. This platform-msi ^(*&!@&^ hack really needs to die ASAP.
+
+Marc, where are we on that? Is this still in limbo?
+
+> I am wondering how useful thisd WARN_ON() is, or otherwise where the
+
+It is useful as it caught bugs already.
+
+> desc->irq entry should be zeroed (if I understand that correctly), any
+> help will be appreciated.
+
+Untested workaround below. I hate it with a passion, but *shrug*.
+
+Thanks,
+
+        tglx
+---
+ drivers/base/platform-msi.c |    1 +
+ include/linux/msi.h         |    2 ++
+ kernel/irq/msi.c            |   23 ++++++++++++++++++++++-
+ 3 files changed, 25 insertions(+), 1 deletion(-)
+
+--- a/drivers/base/platform-msi.c
++++ b/drivers/base/platform-msi.c
+@@ -324,6 +324,7 @@ void platform_msi_device_domain_free(str
+ 	struct platform_msi_priv_data *data = domain->host_data;
+ 
+ 	msi_lock_descs(data->dev);
++	msi_domain_depopulate_descs(data->dev, virq, nr_irqs);
+ 	irq_domain_free_irqs_common(domain, virq, nr_irqs);
+ 	msi_free_msi_descs_range(data->dev, virq, virq + nr_irqs - 1);
+ 	msi_unlock_descs(data->dev);
+--- a/include/linux/msi.h
++++ b/include/linux/msi.h
+@@ -631,6 +631,8 @@ int msi_domain_prepare_irqs(struct irq_d
+ 			    int nvec, msi_alloc_info_t *args);
+ int msi_domain_populate_irqs(struct irq_domain *domain, struct device *dev,
+ 			     int virq, int nvec, msi_alloc_info_t *args);
++void msi_domain_depopulate_descs(struct device *dev, int virq, int nvec);
++
+ struct irq_domain *
+ __platform_msi_create_device_domain(struct device *dev,
+ 				    unsigned int nvec,
+--- a/kernel/irq/msi.c
++++ b/kernel/irq/msi.c
+@@ -1109,14 +1109,35 @@ int msi_domain_populate_irqs(struct irq_
+ 	return 0;
+ 
+ fail:
+-	for (--virq; virq >= virq_base; virq--)
++	for (--virq; virq >= virq_base; virq--) {
++		msi_domain_depopulate_descs(dev, virq, 1);
+ 		irq_domain_free_irqs_common(domain, virq, 1);
++	}
+ 	msi_domain_free_descs(dev, &ctrl);
+ unlock:
+ 	msi_unlock_descs(dev);
+ 	return ret;
+ }
+ 
++void msi_domain_depopulate_descs(struct device *dev, int virq_base, int nvec)
++{
++	struct msi_ctrl ctrl = {
++		.domid	= MSI_DEFAULT_DOMAIN,
++		.first  = virq_base,
++		.last	= virq_base + nvec - 1,
++	};
++	struct msi_desc *desc;
++	struct xarray *xa;
++	unsigned long idx;
++
++	if (!msi_ctrl_valid(dev, &ctrl))
++		return;
++
++	xa = &dev->msi.data->__domains[ctrl.domid].store;
++	xa_for_each_range(xa, idx, desc, ctrl.first, ctrl.last)
++		desc->irq = 0;
++}
++
+ /*
+  * Carefully check whether the device can use reservation mode. If
+  * reservation mode is enabled then the early activation will assign a
