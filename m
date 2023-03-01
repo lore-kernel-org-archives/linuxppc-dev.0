@@ -4,53 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4F8FC7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49866C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:38:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRqjB74SCz3cNM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:10:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrKW3DZDz3cdy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:38:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P5D5QOYg;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RkqbnzZE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P5D5QOYg;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=RkqbnzZE;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRqh744klz301F
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:09:59 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id E4FDE6131D;
-	Wed,  1 Mar 2023 23:09:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04918C433EF;
-	Wed,  1 Mar 2023 23:09:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1677712195;
-	bh=6xF2bS9+IFQDCx6Cz15lcI9nmFQE54LHi90Yyw/kHvk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=P5D5QOYgEyKNQZ9f6ppESpNkKgS5MnyG2PjBtyyalUY+ZBeKlty4L6Mzd+TMR+F95
-	 t4nvGP5IdizIJhOERO/0RHxbulT3yM+w+JWQF9Y65P7a4N83w6Wp80Ux45qlgS/fCd
-	 0XZxCl7Wm9idMSzdwiVBjElevlBebEMNfKO5JmDK2Oe7ppXS7brxo6jSLIZpLZwrDm
-	 en8+StcvKLIcX1ze3lzYJsUEe/olilY7rrMXdqqa+kpPzJpTOFhUo7s/1odVnPiupH
-	 9hUKym8mFaOgl2TB44HiLLvQ9jWyISJwad3DQpxHAOqrpYfVkheHb6ejgJTcdBdz0l
-	 LMScX42SKYdkQ==
-Date: Thu, 2 Mar 2023 01:09:53 +0200
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc/tpm: Create linux,sml-base/size as big endian
-Message-ID: <Y//bQe1Zd32bLy+J@kernel.org>
-References: <20230224032508.3331281-1-mpe@ellerman.id.au>
- <c2afd163-5f23-acab-fd39-3a5593ed6257@linux.ibm.com>
- <Y/1wm3kmsto5tzeB@kernel.org>
- <87r0uaujb3.fsf@mpe.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87r0uaujb3.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJV4sRNz3c4Y
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1677713882; x=1709249882;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references;
+  bh=RjtAUFRJrzBKfA0+yFHKXNZopzCyfP9+J4w+QU7OMp8=;
+  b=RkqbnzZEyg8YxkM8895UqwBEuXNsvdIlDe+2tyYWL/FVhUJvjUxG17lm
+   tbmInyvVUP9Mn8pxJIO3Rf4/3xX1J5ZwtfQeenrZFvgP8hvjsXaapTGYY
+   fQZ9CjBTJBN+Oo8aZL5UxmekxS4W101L0WawGJIuOGfrnuJ5oEkZnvMKb
+   LiJjw99293rKACHJFFrKRRFo6y3H2wYgAcRfS5atrwZHEU2O3EZ2pUm60
+   Fpxx5NuziP8Feke0koHdBTiAOFzuGvCadPRdUwa2gSHZLvewP9BVRhe7l
+   +O7cfAGTnremlnBd2yjwt/1AvRcG6ghegux+nzwrU1aWlYtUHbO6N5DDe
+   w==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818681"
+X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
+   d="scan'208";a="420818681"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:37:55 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826789"
+X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
+   d="scan'208";a="738826789"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by fmsmga008.fm.intel.com with ESMTP; 01 Mar 2023 15:37:55 -0800
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: Tony Luck <tony.luck@intel.com>,
+	Dave Hansen <dave.hansen@intel.com>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	Reinette Chatre <reinette.chatre@intel.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Len Brown <len.brown@intel.com>
+Subject: [PATCH v7 02/24] x86/apic/msi: Use the delivery mode from irq_cfg for message composition
+Date: Wed,  1 Mar 2023 15:47:31 -0800
+Message-Id: <20230301234753.28582-3-ricardo.neri-calderon@linux.intel.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
+References: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,58 +69,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: eajames@linux.ibm.com, jgg@ziepe.ca, yangyingliang@huawei.com, linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, peterhuewe@gmx.de, Stefan Berger <stefanb@linux.ibm.com>
+Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com>, Ricardo Neri <ricardo.neri-calderon@linux.intel.com>, Ricardo Neri <ricardo.neri@intel.com>, Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 28, 2023 at 10:21:36PM +1100, Michael Ellerman wrote:
-> Jarkko Sakkinen <jarkko@kernel.org> writes:
-> > On Mon, Feb 27, 2023 at 06:08:31PM -0500, Stefan Berger wrote:
-> >> On 2/23/23 22:25, Michael Ellerman wrote:
-> >> > There's code in prom_instantiate_sml() to do a "SML handover" (Stored
-> >> > Measurement Log) from OF to Linux, before Linux shuts down Open
-> >> > Firmware.
-> >> > 
-> >> > This involves creating a buffer to hold the SML, and creating two device
-> >> > tree properties to record its base address and size. The kernel then
-> >> > later reads those properties from the device tree to find the SML.
-> >> > 
-> >> > When the code was initially added in commit 4a727429abec ("PPC64: Add
-> >> > support for instantiating SML from Open Firmware") the powerpc kernel
-> >> > was always built big endian, so the properties were created big endian
-> >> > by default.
-> >> > 
-> >> > However since then little endian support was added to powerpc, and now
-> >> > the code lacks conversions to big endian when creating the properties.
-> >> > 
-> >> > This means on little endian kernels the device tree properties are
-> >> > little endian, which is contrary to the device tree spec, and in
-> >> > contrast to all other device tree properties.
-> >> > 
-> >> > To cope with that a workaround was added in tpm_read_log_of() to skip
-> >> > the endian conversion if the properties were created via the SML
-> >> > handover.
-> >> > 
-> >> > A better solution is to encode the properties as big endian as they
-> >> > should be, and remove the workaround.
-> >> > 
-> >> > Typically changing the encoding of a property like this would present
-> >> > problems for kexec. However the SML is not propagated across kexec, so
-> >> > changing the encoding of the properties is a non-issue.
-> >> > 
-> >> > Fixes: e46e22f12b19 ("tpm: enhance read_log_of() to support Physical TPM event log")
-> >> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> >> 
-> >> Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
-> >
-> > 2/2 does not have a fixes tag.
-> 
-> True. Arguably the bug goes back to the introduction of
-> kexec_file_load() support, although the patch won't backport that far
-> due to code refactoring. So that would be:
-> 
-> Fixes: a0458284f062 ("powerpc: Add support code for kexec_file_load()")
+irq_cfg provides a delivery mode for each interrupt. Use it instead
+of the hardcoded APIC_DELIVERY_MODE_FIXED. This allows to compose
+messages for NMI delivery mode which is required to implement a HPET-
+based NMI watchdog.
 
-Hmm... IMHO, it would still make sense to document this.
+No functional change as the default delivery mode is set to
+APIC_DELIVERY_MODE_FIXED.
 
-BR, Jarkko
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: iommu@lists.linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+---
+Changes since v6:
+ * Reworded changelog as per suggestion from Thomas.
+
+Changes since v5:
+ * Introduced this patch
+
+Changes since v4:
+ * N/A
+
+Changes since v3:
+ * N/A
+
+Changes since v2:
+ * N/A
+
+Changes since v1:
+ * N/A
+---
+ arch/x86/kernel/apic/apic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 20d9a604da7c..352738238e52 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2562,7 +2562,7 @@ void __irq_msi_compose_msg(struct irq_cfg *cfg, struct msi_msg *msg,
+ 	msg->arch_addr_lo.dest_mode_logical = apic->dest_mode_logical;
+ 	msg->arch_addr_lo.destid_0_7 = cfg->dest_apicid & 0xFF;
+ 
+-	msg->arch_data.delivery_mode = APIC_DELIVERY_MODE_FIXED;
++	msg->arch_data.delivery_mode = cfg->delivery_mode;
+ 	msg->arch_data.vector = cfg->vector;
+ 
+ 	msg->address_hi = X86_MSI_BASE_ADDRESS_HIGH;
+-- 
+2.25.1
+
