@@ -4,88 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48C3BC7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 22:07:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97B7DC7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 22:46:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRpHS3lN7z3cV7
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 09:07:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRq995t5Jz3cMS
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 09:46:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iKe0O2Lc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mtKxL1K1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=msl0000023508@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iKe0O2Lc;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=mtKxL1K1;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRpGK6zkMz3bh5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 09:06:01 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 321LMTWG027826;
-	Wed, 1 Mar 2023 22:05:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=39c11Ssc1CX8s2GyMWJeHdQmYlK8L6WtbDOGfOdmh68=;
- b=iKe0O2Lc5KkXR5ERdZWkP/fQ5VATfwlWMkhls6rIzEHd0ZJJwuJZb9iwCVRqA4+8/rtv
- QTZp4mNzYlIF2y6u33DUXnmclc8fYiyCaUG8hxAaXj/7dpLeXXk04uveFv3k+cxmQttK
- VEr49CBvVtQ0XObImwmLC+uUeV9oBhngtZeH446kcgVr2nKA5WzXxhdapTVOkzLeix1v
- R3rrjpJFAfflcS5vUmLbbPe9s5JjzPI1mjAwGGMfXF0kUxk4Y+qS1iGDbWpZEYUi9tYs
- h2/8ag2cm3rO2cUYzk7hxloSM2mA7m27wUo68d0TGLncJR236WrTLtAXi/jf1iFTX9Wp 8Q== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p2ejms520-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Mar 2023 22:05:55 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 3210UQow009219;
-	Wed, 1 Mar 2023 22:05:53 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3nybbyumhk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Mar 2023 22:05:52 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 321M5oqU67043768
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Mar 2023 22:05:50 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9F1EA20080;
-	Wed,  1 Mar 2023 22:05:50 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 217FC2007F;
-	Wed,  1 Mar 2023 22:05:50 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Mar 2023 22:05:50 +0000 (GMT)
-Received: from [10.61.2.107] (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id A5045602FD;
-	Thu,  2 Mar 2023 09:05:46 +1100 (AEDT)
-Message-ID: <5a796d43f45c86d770ee88cffaae78f4ca305103.camel@linux.ibm.com>
-Subject: Re: [PATCH 2/2] selftests/powerpc/pmu: fix including of utils.h
- when event.h is included
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: Kajol Jain <kjain@linux.ibm.com>, mpe@ellerman.id.au
-Date: Thu, 02 Mar 2023 09:05:46 +1100
-In-Reply-To: <20230301170918.69176-2-kjain@linux.ibm.com>
-References: <20230301170918.69176-1-kjain@linux.ibm.com>
-	 <20230301170918.69176-2-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRZjH33mPz2xvL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 00:25:06 +1100 (AEDT)
+Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-536be69eadfso364124837b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 05:25:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :references:in-reply-to:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=exR2+TqEpSlqFevQJNeEfA94A0V1nCJq85nKX6qDaLw=;
+        b=mtKxL1K1iXvX51NRMmhZlJ7hMmHivPnRS3Ube7FFi8h22uB+E0k1e9jhzPc+9TkXud
+         JTuvuGrzgcaxYL1ftWBYWP5YrslTP+xc2Ti12Pwx6pVFByy9MJCrXfYOTwg6CeTyt3KD
+         +CHaijY9m+p7BbBuArmtcWcCmFm7grWZ3fJWG0kRNFwHFzi5QbzgvF0rZIGQokw2kLxL
+         KPoc3BKDK7HQ2cNeeGjK4Ad+hF7KXk2+ZGT7AchCOp6oPi1Ok99Snc/puoOPsNjeo4vg
+         /+/rLpLxgHs9prkXTpBfF48+lVH9FHdEKLnYls6asmGaRuc8hsbbuj3mFN4tlSnSeoSm
+         H/Sw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :references:in-reply-to:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=exR2+TqEpSlqFevQJNeEfA94A0V1nCJq85nKX6qDaLw=;
+        b=fkIEDlbnVEJbjYrB0cWUyO/W3Z+JlpJykC/l4km4/i0gNKFAdskFovQh6wj8YDZ/pR
+         yF/ZPvxwHW6JGczqjezNAtHdTK4InRscktyS/9h1MqZSU4/HVU/oCGLyJ9GTmzZX9tJm
+         BdMYn4KJI2e1qpzdGFT11flLVnXE2VU6Y19O12fQRf3TeabNVJlVU4LTPTYr+AezK+s1
+         SxXnQ1+0IHV7vOP3pElFmOTd61/2k/WBDMG8s1mKKcHO1AaQHBXUSbdFXsiSPhMAhFdO
+         jAowuTAokkhiF6Af4Xxt7/kj9isltaOrHYA5kklMGiXm6aN5MJu0UigtLuLOKqSAmb18
+         v6XA==
+X-Gm-Message-State: AO0yUKUIM7quo1VyCxbAXoOTOEjOcemkY/hdYVi9/Eu9Rn/7qSHQvKr0
+	ea+jv0FnRI68RQM8WjpZuTF8bINfbWKD7UPsRy1YyyY7ssw=
+X-Google-Smtp-Source: AK7set8tiqLvHhgexArZdvrmT7IyXZMyr3vtYFQq7S2W/T098k3GBbIJ05CrE41Z0ifAM355eGWBJwgY5vN7Z2GilfY=
+X-Received: by 2002:a81:b65b:0:b0:53c:70c7:405b with SMTP id
+ h27-20020a81b65b000000b0053c70c7405bmr1054124ywk.4.1677677102949; Wed, 01 Mar
+ 2023 05:25:02 -0800 (PST)
+MIME-Version: 1.0
+Received: by 2002:a05:7000:a309:b0:480:bd65:1f87 with HTTP; Wed, 1 Mar 2023
+ 05:25:02 -0800 (PST)
+In-Reply-To: <CAPge7yekNA633CiWbCftS5GRHTzYAMeraOmKKSMZL=5GdWzqfw@mail.gmail.com>
+References: <CAPge7ycxEpms_wQoDoCncz743N2BfzVCZPLmbHCVTs6ZKSp=nA@mail.gmail.com>
+ <Y/27PBzfeRNEhWnA@kroah.com> <CAPge7yekNA633CiWbCftS5GRHTzYAMeraOmKKSMZL=5GdWzqfw@mail.gmail.com>
+From: =?UTF-8?B?546L5piK54S2?= <msl0000023508@gmail.com>
+Date: Wed, 1 Mar 2023 21:25:02 +0800
+Message-ID: <CAPge7ydHNFbnxT2SJYfvJAeb9K2uyG0ynTWwii74X0Tv27HADw@mail.gmail.com>
+Subject: Fwd: Symbol cpu_feature_keys should be exported to all modules on powerpc
+To: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.46.4 (3.46.4-1.fc37) 
-MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: SxXqKe2oB6PNCtNcfJzA034VYeknEGws
-X-Proofpoint-ORIG-GUID: SxXqKe2oB6PNCtNcfJzA034VYeknEGws
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-01_15,2023-03-01_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 adultscore=0
- malwarescore=0 mlxlogscore=908 mlxscore=0 spamscore=0 impostorscore=0
- bulkscore=0 lowpriorityscore=0 priorityscore=1501 clxscore=1015
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2303010176
+X-Mailman-Approved-At: Thu, 02 Mar 2023 09:45:46 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,25 +79,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: atrajeev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, disgoel@linux.vnet.ibm.com
+Cc: Kevin Hao <haokexin@gmail.com>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2023-03-01 at 22:39 +0530, Kajol Jain wrote:
-> From: Madhavan Srinivasan <maddy@linux.ibm.com>
->=20
-> event.h header already includes utlis.h. Avoid including
-> the same explicitly in the code when event.h included.
->=20
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+---------- Forwarded message ----------
+From: =E7=8E=8B=E6=98=8A=E7=84=B6 <msl0000023508@gmail.com>
+Date: Tue, 28 Feb 2023 18:16:14 +0800
+Subject: Re: Symbol cpu_feature_keys should be exported to all modules
+on powerpc
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: stable@vger.kernel.org
 
-As I understand, transitive includes should not be depended upon. If
-you use a thing, and the thing is declared in a header, you should
-include _that_ header. Anything else is a recipe for weird include
-dependencies, ordering of the includes, etc.
+2023-02-28 16:28 GMT+08:00, Greg KH <gregkh@linuxfoundation.org>:
+> On Tue, Feb 28, 2023 at 04:18:12PM +0800, =E7=8E=8B=E6=98=8A=E7=84=B6 wro=
+te:
+>> Just like symbol 'mmu_feature_keys'[1], 'cpu_feature_keys' was reference=
+d
+>> indirectly by many inline functions; any GPL-incompatible modules using
+>> such
+>> a function will be potentially broken due to 'cpu_feature_keys' being
+>> exported as GPL-only.
+>>
+>> For example it still breaks ZFS, see
+>> https://github.com/openzfs/zfs/issues/14545
+>>
+>> [1]:
+>> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20220329085709.4=
+132729-1-haokexin@gmail.com/
+>
+> External modules are always on their own, sorry.  Especially ones that
+> are not released under the GPL.
+>
+> good luck!
+>
+> greg k-h
+>
 
-These files all use FAIL_IF, etc., which are declared in utils.h. So
-utils.h is a legitimate include. The fact that events.h also includes
-it (for u64) is a coincidence. If the u64 type def gets moved to, e.g.,
-types.h, and utils.h is removed from events.h, suddenly all these files
-stop compiling.
+Some inline functions are just powerpc implementation of some generic KPIs,
+such as flush_dcache_page, which indirectly references 'cpu_feature_keys' i=
+n
+powerpc-specific code; this essentially makes 'flush_dcache_page' GPL-only =
+in
+Linux powerpc, but not in other architectures.
