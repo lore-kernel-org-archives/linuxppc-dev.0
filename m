@@ -4,80 +4,68 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D076C6FA9D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 17:11:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A77BC64ED6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 18:36:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRgkk3gggz3cf4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 04:11:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRjby3vV9z3cMc
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 05:35:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kX0OuRux;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=sMqxKmMP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kjain@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kX0OuRux;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=sMqxKmMP;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com [IPv6:2607:f8b0:4864:20::b35])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRghn5qKCz3cJK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 04:10:01 +1100 (AEDT)
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 321Fnhvr013114;
-	Wed, 1 Mar 2023 17:09:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=q3yISbL596Xf6C2+YeXvyQa2NArgF4/wQPTX5Ez7OyM=;
- b=kX0OuRux1nxRmWh/qoSXwlYLxdd0Kk2ruv/b+oq3V5Rwx1pLRv6uX53RTe6n0nuz17rT
- FfH+HNLM8gUiZFkiWt0PznSFcx3qKBkH5SO8kfRpKiR+LPupx94agKMa18BfWIUyPd2O
- 9MK8w31Fqvj/6mejY1L/IGIfXbg/KpQ/OYTKeSWaS9rGBrUqJtzNHFWanFhhPKeX+pKN
- DYJj6/jD0Q4DeZZERjUToLSZXTE7N2c/OpiH1X7OiCHQnC9ZcbX1qDiXgK+yc7Q3axC6
- GkfCBCsU6Sd6ItanTKYPWpW6N9DNBUidxuG3o/AkWQwypsoUHpeChz8tsGQgqWxJkcAi QA== 
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p29phjdbs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Mar 2023 17:09:55 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 31SM0j8p024684;
-	Wed, 1 Mar 2023 17:09:53 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3nybdfuf2a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 01 Mar 2023 17:09:52 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 321H9nYv66584890
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 1 Mar 2023 17:09:49 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2683C2004F;
-	Wed,  1 Mar 2023 17:09:49 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4C36920043;
-	Wed,  1 Mar 2023 17:09:47 +0000 (GMT)
-Received: from li-e8dccbcc-2adc-11b2-a85c-bc1f33b9b810.ibm.com.com (unknown [9.43.25.125])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  1 Mar 2023 17:09:47 +0000 (GMT)
-From: Kajol Jain <kjain@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH 2/2] selftests/powerpc/pmu: fix including of utils.h when event.h is included
-Date: Wed,  1 Mar 2023 22:39:18 +0530
-Message-Id: <20230301170918.69176-2-kjain@linux.ibm.com>
-X-Mailer: git-send-email 2.31.1
-In-Reply-To: <20230301170918.69176-1-kjain@linux.ibm.com>
-References: <20230301170918.69176-1-kjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRjZw4zWtz2yfq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 05:35:03 +1100 (AEDT)
+Received: by mail-yb1-xb35.google.com with SMTP id y144so1304864yby.12
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 10:35:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20210112; t=1677695700;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sf6UrJ/lIWn1fjlxCohn27ZSd8Q0TfJriVXXcU5qWAE=;
+        b=sMqxKmMPWADCyZTd0B+sCUFvSsU0xwpbUR9hz5KDANoBtXhUgELy2PB9S6CmdcPdLB
+         9DuY263Lca20XWKvkKm/VeE8UXAxbFZ7UbMDjj/GdF33ace4U+qR3SuprdJIyGlg0kh4
+         8ZY6tqKyRCrC4qSvVBH79BPeROQDCdXsUZHeJsRV9J+lzs8QF19Sft8unbL3LhV+NyMQ
+         rULPzaHubsvYpBIvwRVqUZqOtQrYMTbpInxvEOTwI44gseylO/JwJ1XsAHZVMuGFZ8ce
+         lLm3lv4Ir2Kuf2SdE943w0lXUD4jHslpCCCCxHMHmN15vxuLPQ0RJvPoRPshybRhAX6v
+         429Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1677695700;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=sf6UrJ/lIWn1fjlxCohn27ZSd8Q0TfJriVXXcU5qWAE=;
+        b=P8E29iedMFlAuakAyS72/axbr4Bn5JPGTpv9YlplDH60o7gusQZKwx3eCZWRVmdgBb
+         i+vZDBoznEXdmvpxDe8Jl7PKNJsfw0enTbvc6JoclS57Vw2v/gOcswW5GnjAOzxvRTQu
+         b6LvhZXJ0CyS3PnPIPXgkkQVFT80dx8fbfppS62F1LthI9/ZTFS2kGJJIQ5Axd8lxwUU
+         oUlbBwYbIDd1SLglTKPlrOsppxYHPW41SFXANHALKIhQxliz12KgZW+vJjr5xiNgHXKx
+         eFDOQCOEP+EYOIG+MNzWbR4ExvNr1NF78KswQMVmt4dT7awMTZ0CwPNwxfDPT1yUQSnL
+         klDg==
+X-Gm-Message-State: AO0yUKXTA+HckH1oBCjqaSqhFZ9ZzvuehCDFRxaYTwzXbmxsZdM2l629
+	abKlMIoGafdoUhV+ZL6X9b6wpIiJkUPg/ioB5kLX9A==
+X-Google-Smtp-Source: AK7set/vwIRLhIQIPE3GkkxKkfmhP1CRU34HRxLzx1/Rma4BTfbR6X5PIRaaOJxNUaM1YhGtm7HsF2b9hYcFbnNAeaU=
+X-Received: by 2002:a25:9704:0:b0:a30:38fb:a2e4 with SMTP id
+ d4-20020a259704000000b00a3038fba2e4mr3269439ybo.6.1677695699906; Wed, 01 Mar
+ 2023 10:34:59 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Zy103QF3_XzLh6WchTZCkie2x1sq2F3c
-X-Proofpoint-GUID: Zy103QF3_XzLh6WchTZCkie2x1sq2F3c
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-01_13,2023-03-01_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015 suspectscore=0
- mlxscore=0 priorityscore=1501 adultscore=0 phishscore=0 bulkscore=0
- lowpriorityscore=0 malwarescore=0 mlxlogscore=999 spamscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2303010141
+References: <20230227173632.3292573-1-surenb@google.com> <20230227173632.3292573-19-surenb@google.com>
+ <Y/8CJQGNuMUTdLwP@localhost> <Y/8FNM9czzPHb5eG@localhost>
+In-Reply-To: <Y/8FNM9czzPHb5eG@localhost>
+From: Suren Baghdasaryan <surenb@google.com>
+Date: Wed, 1 Mar 2023 10:34:48 -0800
+Message-ID: <CAJuCfpHYT++MBC6T-p80n_m5hHWRRC4Y1bO9J-bFFZZDqNX-BQ@mail.gmail.com>
+Subject: Re: [PATCH v4 18/33] mm: write-lock VMAs before removing them from
+ VMA tree
+To: Hyeonggon Yoo <42.hyeyoo@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,435 +77,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kjain@linux.ibm.com, atrajeev@linux.vnet.ibm.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, disgoel@linux.vnet.ibm.com
+Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundati
+ on.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
+On Tue, Feb 28, 2023 at 11:57=E2=80=AFPM Hyeonggon Yoo <42.hyeyoo@gmail.com=
+> wrote:
+>
+> On Wed, Mar 01, 2023 at 07:43:33AM +0000, Hyeonggon Yoo wrote:
+> > On Mon, Feb 27, 2023 at 09:36:17AM -0800, Suren Baghdasaryan wrote:
+> > > Write-locking VMAs before isolating them ensures that page fault
+> > > handlers don't operate on isolated VMAs.
+> > >
+> > > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
+> > > ---
+> > >  mm/mmap.c  | 1 +
+> > >  mm/nommu.c | 5 +++++
+> > >  2 files changed, 6 insertions(+)
+> > >
+> > > diff --git a/mm/mmap.c b/mm/mmap.c
+> > > index 1f42b9a52b9b..f7ed357056c4 100644
+> > > --- a/mm/mmap.c
+> > > +++ b/mm/mmap.c
+> > > @@ -2255,6 +2255,7 @@ int split_vma(struct vma_iterator *vmi, struct =
+vm_area_struct *vma,
+> > >  static inline int munmap_sidetree(struct vm_area_struct *vma,
+> > >                                struct ma_state *mas_detach)
+> > >  {
+> > > +   vma_start_write(vma);
+> > >     mas_set_range(mas_detach, vma->vm_start, vma->vm_end - 1);
+> >
+> > I may be missing something, but have few questions:
+> >
+> >       1) Why does a writer need to both write-lock a VMA and mark the V=
+MA detached
+> >          when unmapping it, isn't it enough to just only write-lock a V=
+MA?
 
-event.h header already includes utlis.h. Avoid including
-the same explicitly in the code when event.h included.
+We need to mark the VMA detached to avoid handling page fault in a
+detached VMA. The possible scenario is:
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
- tools/testing/selftests/powerpc/pmu/count_instructions.c         | 1 -
- tools/testing/selftests/powerpc/pmu/count_stcx_fail.c            | 1 -
- .../powerpc/pmu/event_code_tests/group_constraint_cache_test.c   | 1 -
- .../pmu/event_code_tests/group_constraint_l2l3_sel_test.c        | 1 -
- .../pmu/event_code_tests/group_constraint_thresh_cmp_test.c      | 1 -
- .../pmu/event_code_tests/group_constraint_thresh_ctl_test.c      | 1 -
- .../pmu/event_code_tests/group_constraint_thresh_sel_test.c      | 1 -
- .../powerpc/pmu/event_code_tests/group_constraint_unit_test.c    | 1 -
- .../powerpc/pmu/event_code_tests/hw_cache_event_type_test.c      | 1 -
- tools/testing/selftests/powerpc/pmu/l3_bank_test.c               | 1 -
- tools/testing/selftests/powerpc/pmu/per_event_excludes.c         | 1 -
- .../selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c  | 1 -
- .../powerpc/pmu/sampling_tests/bhrb_no_crash_wo_pmu_test.c       | 1 -
- .../powerpc/pmu/sampling_tests/intr_regs_no_crash_wo_pmu_test.c  | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c    | 1 -
- .../powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c        | 1 -
- .../powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c          | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c    | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c     | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c       | 1 -
- .../powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c       | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c    | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c       | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c        | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_any_test.c   | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_cond_test.c  | 1 -
- .../pmu/sampling_tests/mmcra_bhrb_disable_no_branch_test.c       | 1 -
- .../powerpc/pmu/sampling_tests/mmcra_bhrb_disable_test.c         | 1 -
- .../powerpc/pmu/sampling_tests/mmcra_bhrb_ind_call_test.c        | 1 -
- .../selftests/powerpc/pmu/sampling_tests/mmcra_thresh_cmp_test.c | 1 -
- .../powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c | 1 -
- 32 files changed, 32 deletions(-)
+lock_vma_under_rcu
+  vma =3D mas_walk(&mas)
+                                                        munmap_sidetree
+                                                          vma_start_write(v=
+ma)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/count_instructions.c b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-index a3984ef1e96a..a0f77065a1e0 100644
---- a/tools/testing/selftests/powerpc/pmu/count_instructions.c
-+++ b/tools/testing/selftests/powerpc/pmu/count_instructions.c
-@@ -11,7 +11,6 @@
- #include <sys/prctl.h>
- 
- #include "event.h"
--#include "utils.h"
- #include "lib.h"
- 
- extern void thirty_two_instruction_loop(u64 loops);
-diff --git a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-index 2070a1e2b3a5..07ddac28d3cf 100644
---- a/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-+++ b/tools/testing/selftests/powerpc/pmu/count_stcx_fail.c
-@@ -11,7 +11,6 @@
- #include <sys/prctl.h>
- 
- #include "event.h"
--#include "utils.h"
- #include "lib.h"
- 
- extern void thirty_two_instruction_loop_with_ll_sc(u64 loops, u64 *ll_sc_target);
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_cache_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_cache_test.c
-index f4be05aa3a3d..ad529b8a03ba 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_cache_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_cache_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /* All L1 D cache load references counted at finish, gated by reject */
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_l2l3_sel_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_l2l3_sel_test.c
-index 85a636886069..b2fa5fc54545 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_l2l3_sel_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_l2l3_sel_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /* All successful D-side store dispatches for this thread */
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_cmp_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_cmp_test.c
-index 9f1197104e8c..d77a730e00df 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_cmp_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_cmp_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /*
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
-index e0852ebc1671..f8b79953655a 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_ctl_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /*
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_sel_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_sel_test.c
-index 50a8cd843ce7..05eb1cf6c5f9 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_sel_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_thresh_sel_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /*
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_unit_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_unit_test.c
-index a2c18923dcec..151c0b1cff11 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_unit_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/group_constraint_unit_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /* All successful D-side store dispatches for this thread with PMC 2 */
-diff --git a/tools/testing/selftests/powerpc/pmu/event_code_tests/hw_cache_event_type_test.c b/tools/testing/selftests/powerpc/pmu/event_code_tests/hw_cache_event_type_test.c
-index a45b1da5b568..8020be598d9d 100644
---- a/tools/testing/selftests/powerpc/pmu/event_code_tests/hw_cache_event_type_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/event_code_tests/hw_cache_event_type_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "../event.h"
--#include "utils.h"
- #include "../sampling_tests/misc.h"
- 
- /*
-diff --git a/tools/testing/selftests/powerpc/pmu/l3_bank_test.c b/tools/testing/selftests/powerpc/pmu/l3_bank_test.c
-index a5dfa9bf3b9f..29b3039f8fde 100644
---- a/tools/testing/selftests/powerpc/pmu/l3_bank_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/l3_bank_test.c
-@@ -7,7 +7,6 @@
- #include <stdlib.h>
- 
- #include "event.h"
--#include "utils.h"
- 
- #define MALLOC_SIZE     (0x10000 * 10)  /* Ought to be enough .. */
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/per_event_excludes.c b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-index ad32a09a6540..5d00220b62ba 100644
---- a/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-+++ b/tools/testing/selftests/powerpc/pmu/per_event_excludes.c
-@@ -14,7 +14,6 @@
- 
- #include "event.h"
- #include "lib.h"
--#include "utils.h"
- 
- /*
-  * Test that per-event excludes work.
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
-index 3f43c315c666..6a639f255bfa 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_filter_map_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /*
-  * A perf sampling test to check bhrb filter
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_no_crash_wo_pmu_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_no_crash_wo_pmu_test.c
-index 4644c6782974..a6deba5dea00 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_no_crash_wo_pmu_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/bhrb_no_crash_wo_pmu_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /*
-  * A perf sampling test for making sure
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/intr_regs_no_crash_wo_pmu_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/intr_regs_no_crash_wo_pmu_test.c
-index 839d2d225da0..a8c1197a577d 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/intr_regs_no_crash_wo_pmu_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/intr_regs_no_crash_wo_pmu_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /*
-  * A perf sampling test for making sure
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
-index ae4172f83817..c560073f0f2c 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_cc56run_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c
-index 982aa56d2171..f10e5de08302 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_exceptionbits_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c
-index 1c1813c182c0..02d32a5d81ef 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc1ce_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c
-index 332d24b5ab9c..918f72c90e20 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_fc56_pmc56_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c
-index dfd186cd8eec..26c5e3219d8b 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmccext_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c
-index fdd8ed9bf725..60584f64ed02 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr0_pmcjce_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c
-index 5aea6499ee9a..0759a4efc050 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_comb_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /* All successful D-side store dispatches for this thread that were L2 Miss */
- #define EventCode 0x46880
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c
-index f0c003282630..b1b34254018c 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr1_sel_unit_cache_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- #define MALLOC_SIZE     (0x10000 * 10)  /* Ought to be enough .. */
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c
-index 4e242fd61b25..ac3ee2b236c2 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_fcs_fch_test.c
-@@ -10,7 +10,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c
-index ceca597016b2..dd4e99dcb6b7 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr2_l2l3_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /* All successful D-side store dispatches for this thread */
- #define EventCode 0x010000046080
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c
-index e154e2a4cc3a..b8792ee1004b 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcr3_src_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop_with_ll_sc(u64 loops, u64 *ll_sc_target);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_any_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_any_test.c
-index 14854694af62..e2d1c98602a3 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_any_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_any_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_cond_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_cond_test.c
-index 3e08176eb7f8..f502d52c0f5a 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_cond_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_cond_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_no_branch_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_no_branch_test.c
-index 488c865387e4..eae8634736c0 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_no_branch_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_no_branch_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_test.c
-index 186a853c0f62..73d66306c010 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_disable_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void thirty_two_instruction_loop(int loops);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_ind_call_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_ind_call_test.c
-index f0706730c099..c5905303e657 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_ind_call_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_bhrb_ind_call_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- extern void indirect_branch_loop(void);
- 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_cmp_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_cmp_test.c
-index 904362f172c9..ab2dc52766f6 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_cmp_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_cmp_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /*
-  * Primary PMU event used here is PM_MRK_INST_CMPL (0x401e0)
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c
-index 75527876ad3c..6f47e2211163 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/mmcra_thresh_marked_sample_test.c
-@@ -8,7 +8,6 @@
- 
- #include "../event.h"
- #include "misc.h"
--#include "utils.h"
- 
- /*
-  * Primary PMU event used here is PM_MRK_INST_CMPL (0x401e0)
--- 
-2.39.1
+mas_store_gfp() // remove VMA from the tree
+                                                          vma_end_write_all=
+()
+  vma_start_read(vma)
+  // we locked the VMA but it is not part of the tree anymore.
 
+So, marking the VMA locked before vma_end_write_all() and checking
+vma->detached after vma_start_read() helps us avoid handling faults in
+the detached VMA.
+
+
+> >
+> >       2) as VMAs that are going to be removed are already locked in vma=
+_prepare(),
+> >          so I think this hunk could be dropped?
+>
+> After sending this just realized that I did not consider simple munmap ca=
+se :)
+> But I still think 1) and 3) are valid question.
+>
+> >
+> > >     if (mas_store_gfp(mas_detach, vma, GFP_KERNEL))
+> > >             return -ENOMEM;
+> > > diff --git a/mm/nommu.c b/mm/nommu.c
+> > > index 57ba243c6a37..2ab162d773e2 100644
+> > > --- a/mm/nommu.c
+> > > +++ b/mm/nommu.c
+> > > @@ -588,6 +588,7 @@ static int delete_vma_from_mm(struct vm_area_stru=
+ct *vma)
+> > >                    current->pid);
+> > >             return -ENOMEM;
+> > >     }
+> > > +   vma_start_write(vma);
+> > >     cleanup_vma_from_mm(vma);
+> >
+> >       3) I think this hunk could be dropped as Per-VMA lock depends on =
+MMU anyway.
+
+Ah, yes, you are right. We can safely remove the changes in nommu.c
+Andrew, should I post a fixup or you can make the removal directly in
+mm-unstable?
+Thanks,
+Suren.
+
+> >
+> > Thanks,
+> > Hyeonggon
+> >
+> > >
+> > >     /* remove from the MM's tree and list */
+> > > @@ -1519,6 +1520,10 @@ void exit_mmap(struct mm_struct *mm)
+> > >      */
+> > >     mmap_write_lock(mm);
+> > >     for_each_vma(vmi, vma) {
+> > > +           /*
+> > > +            * No need to lock VMA because this is the only mm user a=
+nd no
+> > > +            * page fault handled can race with it.
+> > > +            */
+> > >             cleanup_vma_from_mm(vma);
+> > >             delete_vma(mm, vma);
+> > >             cond_resched();
+> > > --
+> > > 2.39.2.722.g9855ee24e9-goog
+> > >
+> > >
+> >
+>
+> --
+> To unsubscribe from this group and stop receiving emails from it, send an=
+ email to kernel-team+unsubscribe@android.com.
+>
