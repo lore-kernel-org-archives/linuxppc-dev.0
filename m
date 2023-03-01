@@ -4,57 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53990C6FA9D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 18:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19FD4C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 21:02:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRjBr4DCxz3cK6
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 05:17:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRmrV44TPz3cLB
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 08:02:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jgvht4/3;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qwnNOgDo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Jgvht4/3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qwnNOgDo;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRj9r2Y8Cz2yNm
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 05:16:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRmqN5ZRzz2yfq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 08:01:04 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 37293B810C3;
-	Wed,  1 Mar 2023 18:16:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41182C433EF;
-	Wed,  1 Mar 2023 18:16:41 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id EF5DDB81037
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 21:00:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F778C433D2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 21:00:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1677694603;
-	bh=y8I+qHPjyMsWTIcZZzinTslQl9KBS0SHFE/bCto1EBg=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Jgvht4/35VGCp62Mm0crvOWS+Q7yksEpq6+xalFSCejazQSuSFo7RkAWv8vzHB9S2
-	 zSy/z5Ss9N5OsVMpm/HzrMXHuWn7HjaEGg9AyzGemnp6Rfdd/r+gRYAGt5E/grCKaY
-	 X2FljVYzonJlRyi4MEX9i01auwqLdTducL4xcx2MIAX09cIiSGLJDeVasqEnZsN3Vo
-	 LsgtvCrNy6uIrbuQ7oURfpO6JyzJiRyDby5JhWqmOoSrGxzF3cyQh0NFHygpNf7/m9
-	 a/zuTndIX0Ftw16vWcuXp1h96arpnB/D6P/tnWRBJjLkk9cGU04BzQjtCx6PDs5EjX
-	 5Blvv0WLKwW1w==
-Date: Wed, 1 Mar 2023 10:16:39 -0800
-From: Josh Poimboeuf <jpoimboe@kernel.org>
-To: Philippe =?utf-8?Q?Mathieu-Daud=C3=A9?= <philmd@linaro.org>
-Subject: Re: [PATCH v2.1 09/24] mips/cpu: Expose play_dead()'s prototype
- definition
-Message-ID: <20230301181639.ajqdeh7g3m3fpqhk@treble>
-References: <cover.1676358308.git.jpoimboe@kernel.org>
- <39835bc75af2e812fce56400533cb2ab41bcf0e2.1676358308.git.jpoimboe@kernel.org>
- <080a5ccb-7fa0-1a75-538f-a09dc146fc4e@linaro.org>
- <20230214181101.3a2tscbmwdnwbqpu@treble>
- <c56dc4b9-035d-7773-ecb2-0e1ac6af7abc@linaro.org>
- <20230216184249.ogaqsaykottpxtcb@treble>
+	s=k20201202; t=1677704458;
+	bh=Ijy28NfIAolHq1kijXKPv1A9Prn6Z4PgPnz0SF2ZvmE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=qwnNOgDopWNiUb4dKzA0Y6sT0gASegFoNl0l1oHhxaeFwidRVACqKvo9Zw4Lq2uLa
+	 DkRPAf51+Vr8EEyQ7IwC/Bj5H1tJVAjANsJyJLagfb6dQBIR+9OsGjhNPWRat2SOtH
+	 5jiteysKnyeBDdmsXExcQfoBUuLwKJRarM2/PpsDCzlFSlDaYiuiIN6Yn50f7C1yat
+	 Kl5hMVdu4kXvgesUhxebkvb/oOudYsbAKXyirkpGD3xB/LvTXAtTlhB/h40wU7a9WI
+	 X+6tPt1WSw58XL3OkDSeUjRPC3OEETL51n26pr7wfG3C7UJmYklBJjZHN6oNtzMzrG
+	 H1pgP6Xi9fu0w==
+Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-536cb25982eso387424287b3.13
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 13:00:58 -0800 (PST)
+X-Gm-Message-State: AO0yUKVshEGWOqKx+4Y72X/F7D3dQwqyhfK1IKt5hl5KmtM0+ZsuJOH8
+	FHsWNPZS4zBDwjAeT5orAIS83fRutylye2AAaA==
+X-Google-Smtp-Source: AK7set/B7w4SIUVUY+fuTrfn39/aDxu+LSL+nDi5aDHHQnm81UFIS2ScAXvxaj+SUvgnwt845OQ2PIVb1st0BjISJs0=
+X-Received: by 2002:a05:6102:3ca9:b0:41e:bccf:5669 with SMTP id
+ c41-20020a0561023ca900b0041ebccf5669mr6637793vsv.2.1677704437053; Wed, 01 Mar
+ 2023 13:00:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230216184249.ogaqsaykottpxtcb@treble>
+References: <20230301185209.274134-1-jjhiblot@traphandler.com> <20230301185209.274134-4-jjhiblot@traphandler.com>
+In-Reply-To: <20230301185209.274134-4-jjhiblot@traphandler.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Wed, 1 Mar 2023 15:00:25 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJvYnBtaOwaRbNo5Eqp51yxhJpnSYQWEGfKjtZKjm7R4g@mail.gmail.com>
+Message-ID: <CAL_JsqJvYnBtaOwaRbNo5Eqp51yxhJpnSYQWEGfKjtZKjm7R4g@mail.gmail.com>
+Subject: Re: [PATCH 3/3] of: irq: release the node after looking up for "interrupts-extended"
+To: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,58 +68,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-mips@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, bristot@redhat.com, linux-kern
- el@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Nishanth Menon <nm@ti.com>, zajec5@gmail.com, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pci@vger.kernel.org, ssantosh@kernel.org, linux-tegra@vger.kernel.org, thierry.reding@gmail.com, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, saravanak@google.com, Samuel Holland <samuel@sholland.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, jonathanh@nvidia.com, Chen-Yu Tsai <wens@csie.org>, clement.leger@bootlin.com, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, mathias.nyman@intel.com, Manivannan Sadhasivam <mani@kernel.org>, linux-actions@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.o
+ rg, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-renesas-soc@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Marc Zyngier <maz@kernel.org>, linuxppc-dev@lists.ozlabs.org, afaerber@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 16, 2023 at 10:42:52AM -0800, Josh Poimboeuf wrote:
-> Include <asm/smp.h> to make sure play_dead() matches its prototype going
-> forward.
-> 
-> Acked-by: Florian Fainelli <f.fainelli@gmail.com>
-> Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
-> Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
+On Wed, Mar 1, 2023 at 12:53=E2=80=AFPM Jean-Jacques Hiblot
+<jjhiblot@traphandler.com> wrote:
+>
+> When of_parse_phandle_with_args() succeeds, a get() is performed on
+> out_irq->np. And another get() is performed in of_irq_parse_raw(),
+> resulting in the refcount being incremented twice.
+> Fixing this by calling put() after of_irq_parse_raw().
 
-The latest version of this patch triggered a new kbuild warning which is
-fixed by the below patch.  If there are no objections I'll bundle it in
-with the rest of the set for merging.
+This looks like a band-aid to me. It only makes sense that the caller
+of of_irq_parse_raw() already holds a ref to out_irq->np. So the first
+of_node_get() in it looks wrong. It looks like the refcounting was
+originally balanced, but commit 2f53a713c4b6 ("of/irq: Fix device_node
+refcount in of_irq_parse_raw()") dropped the put on exit after 'got
+it!'. I'm not sure if just adding it back would be correct or not
+though.
 
----8<---
+All this needs some test cases to be sure we get things right...
 
-Subject: [PATCH] mips/smp: Add CONFIG_SMP guard for raw_smp_processor_id()
-Content-type: text/plain
-
-Without CONFIG_SMP, raw_smp_processor_id() is not expected to be defined
-by the arch.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/oe-kbuild-all/202302220755.HM8J8GOR-lkp@intel.com/
-Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
----
- arch/mips/include/asm/smp.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/mips/include/asm/smp.h b/arch/mips/include/asm/smp.h
-index 4eee29b7845c..cf992b8b1e46 100644
---- a/arch/mips/include/asm/smp.h
-+++ b/arch/mips/include/asm/smp.h
-@@ -25,6 +25,7 @@ extern cpumask_t cpu_sibling_map[];
- extern cpumask_t cpu_core_map[];
- extern cpumask_t cpu_foreign_map[];
- 
-+#ifdef CONFIG_SMP
- static inline int raw_smp_processor_id(void)
- {
- #if defined(__VDSO__)
-@@ -36,6 +37,7 @@ static inline int raw_smp_processor_id(void)
- #endif
- }
- #define raw_smp_processor_id raw_smp_processor_id
-+#endif
- 
- /* Map from cpu id to sequential logical cpu number.  This will only
-    not be idempotent when cpus failed to come on-line.	*/
--- 
-2.39.1
-
+Rob
