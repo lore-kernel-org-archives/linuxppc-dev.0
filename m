@@ -4,59 +4,70 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19FD4C7EE23
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 21:02:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4727C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 22:47:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRmrV44TPz3cLB
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 08:02:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRqBC1qZHz3cd1
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 09:47:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qwnNOgDo;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=RacUjtkK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::102d; helo=mail-pj1-x102d.google.com; envelope-from=debug@rivosinc.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qwnNOgDo;
+	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=RacUjtkK;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pj1-x102d.google.com (mail-pj1-x102d.google.com [IPv6:2607:f8b0:4864:20::102d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRmqN5ZRzz2yfq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 08:01:04 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id EF5DDB81037
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 21:00:59 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9F778C433D2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 21:00:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1677704458;
-	bh=Ijy28NfIAolHq1kijXKPv1A9Prn6Z4PgPnz0SF2ZvmE=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=qwnNOgDopWNiUb4dKzA0Y6sT0gASegFoNl0l1oHhxaeFwidRVACqKvo9Zw4Lq2uLa
-	 DkRPAf51+Vr8EEyQ7IwC/Bj5H1tJVAjANsJyJLagfb6dQBIR+9OsGjhNPWRat2SOtH
-	 5jiteysKnyeBDdmsXExcQfoBUuLwKJRarM2/PpsDCzlFSlDaYiuiIN6Yn50f7C1yat
-	 Kl5hMVdu4kXvgesUhxebkvb/oOudYsbAKXyirkpGD3xB/LvTXAtTlhB/h40wU7a9WI
-	 X+6tPt1WSw58XL3OkDSeUjRPC3OEETL51n26pr7wfG3C7UJmYklBJjZHN6oNtzMzrG
-	 H1pgP6Xi9fu0w==
-Received: by mail-yw1-f182.google.com with SMTP id 00721157ae682-536cb25982eso387424287b3.13
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 13:00:58 -0800 (PST)
-X-Gm-Message-State: AO0yUKVshEGWOqKx+4Y72X/F7D3dQwqyhfK1IKt5hl5KmtM0+ZsuJOH8
-	FHsWNPZS4zBDwjAeT5orAIS83fRutylye2AAaA==
-X-Google-Smtp-Source: AK7set/B7w4SIUVUY+fuTrfn39/aDxu+LSL+nDi5aDHHQnm81UFIS2ScAXvxaj+SUvgnwt845OQ2PIVb1st0BjISJs0=
-X-Received: by 2002:a05:6102:3ca9:b0:41e:bccf:5669 with SMTP id
- c41-20020a0561023ca900b0041ebccf5669mr6637793vsv.2.1677704437053; Wed, 01 Mar
- 2023 13:00:37 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRdkr1cKtz3bgj
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 02:41:38 +1100 (AEDT)
+Received: by mail-pj1-x102d.google.com with SMTP id m3-20020a17090ade0300b00229eec90a7fso1525660pjv.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 07:41:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=rivosinc-com.20210112.gappssmtp.com; s=20210112; t=1677685296;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=T04RMfKzSUFRrZ3CYc3+bErGU8vpxkP2QVI3mwlpG78=;
+        b=RacUjtkKVhkSdFUBywOGho+8dt8NsK+GHdxWXdQ69WX2yCf/yYWl7r6icMXBWT/ShM
+         KzbzJEeKqlnWntlEh4Hu5sno9Ak81pDzhFum2pY94j4Sv2hldxTUvXOesOtDXjR8r6gc
+         qTgIZDS9fRsSDLNbTTTqAFsgPsTJ/DQ+0jjGE9ek1g+5UBhUcmjFAxCNoVki1FxJorhz
+         1mqoDsTuoBLwUNz+cTKmWUvmBN0WlvjuL/8NCCPe/UsZ69pgJ+6lNteW1mdicJGes/KY
+         sz2TvcyHAjAaMaJRH5/VJiCFama3PVa+Xs98E38Ow6CsZfQ4ni3p2/e/LUrMvV5jGCLw
+         yEmQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1677685296;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=T04RMfKzSUFRrZ3CYc3+bErGU8vpxkP2QVI3mwlpG78=;
+        b=7jRAx1U8jFDFJYx/uvCF9ntqE1DUgYa3n6LduCXERvqcIwCwFC5WDe5o2aDQ9nSg1L
+         5IqTVFh+56IONXcGrGJlZvPviVIy4oboh3ioXifRo5pCMI/KfjmUaBBLkudBSCn8o7Ib
+         ZOg6WICKj7xz01YpWVvSy1ZexhBxLZcHa+tgYl0S02sOzebw1brXUiMls2DAyu2u46rX
+         8IESkfWT774LaQEX1leigZi0lWe9EDb304ww6FZrYbD325Hyj7+H49F7qCPqdG7wcZXr
+         B5khWar8HX2Ujt6KhBehO0hw9ImoYDqSIstLI0toTyCZrShsf1AT9w0letLSYbsfxL9J
+         Z2TA==
+X-Gm-Message-State: AO0yUKXMSIoBLnTOPH01XImEp92kKukWsNT33G8ynSpAOjjUF06t5nES
+	k6a4wogDynvy9VElGuNSG48j8Q==
+X-Google-Smtp-Source: AK7set89u8u7K351sr+Ck6r7PKKsfq0NxjZus48TDBYC9SmTqwP5jGqb0tSf18Db2RC/D0Tp3KOSQg==
+X-Received: by 2002:a05:6a20:2444:b0:cc:ac05:88f7 with SMTP id t4-20020a056a20244400b000ccac0588f7mr8304959pzc.34.1677685295782;
+        Wed, 01 Mar 2023 07:41:35 -0800 (PST)
+Received: from debug.ba.rivosinc.com ([66.220.2.162])
+        by smtp.gmail.com with ESMTPSA id l12-20020a62be0c000000b005821c109cebsm8058970pff.199.2023.03.01.07.41.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Mar 2023 07:41:35 -0800 (PST)
+Date: Wed, 1 Mar 2023 07:41:30 -0800
+From: Deepak Gupta <debug@rivosinc.com>
+To: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Subject: Re: [PATCH v6 13/41] mm: Make pte_mkwrite() take a VMA
+Message-ID: <20230301154130.GB3505369@debug.ba.rivosinc.com>
+References: <20230218211433.26859-1-rick.p.edgecombe@intel.com>
+ <20230218211433.26859-14-rick.p.edgecombe@intel.com>
 MIME-Version: 1.0
-References: <20230301185209.274134-1-jjhiblot@traphandler.com> <20230301185209.274134-4-jjhiblot@traphandler.com>
-In-Reply-To: <20230301185209.274134-4-jjhiblot@traphandler.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Wed, 1 Mar 2023 15:00:25 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJvYnBtaOwaRbNo5Eqp51yxhJpnSYQWEGfKjtZKjm7R4g@mail.gmail.com>
-Message-ID: <CAL_JsqJvYnBtaOwaRbNo5Eqp51yxhJpnSYQWEGfKjtZKjm7R4g@mail.gmail.com>
-Subject: Re: [PATCH 3/3] of: irq: release the node after looking up for "interrupts-extended"
-To: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20230218211433.26859-14-rick.p.edgecombe@intel.com>
+X-Mailman-Approved-At: Thu, 02 Mar 2023 09:45:46 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,27 +79,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nishanth Menon <nm@ti.com>, zajec5@gmail.com, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pci@vger.kernel.org, ssantosh@kernel.org, linux-tegra@vger.kernel.org, thierry.reding@gmail.com, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, saravanak@google.com, Samuel Holland <samuel@sholland.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, jonathanh@nvidia.com, Chen-Yu Tsai <wens@csie.org>, clement.leger@bootlin.com, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, mathias.nyman@intel.com, Manivannan Sadhasivam <mani@kernel.org>, linux-actions@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.o
- rg, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-renesas-soc@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Marc Zyngier <maz@kernel.org>, linuxppc-dev@lists.ozlabs.org, afaerber@suse.de
+Cc: kcc@google.com, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, david@redhat.com, eranian@google.com, Oleg Nesterov <oleg@redhat.com>, linux-mm@kvack.org, linux-csky@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, dethoma@microsoft.com, Jonathan Corbet <corbet@lwn.net>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, Eugene Syromiatnikov <esyr@redhat.com>, jamorris@linux.microsoft.com, Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, "H . J . Lu" <hjl.tools@gmail.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>, linux-alpha@vger.kernel.org, linux-um@lists.inf
+ radead.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Florian Weimer <fweimer@redhat.com>, Michal Simek <monstr@monstr.eu>, John Allen <john.allen@amd.com>, linux-parisc@vger.kernel.org, Weijiang Yang <weijiang.yang@intel.com>, linux-api@vger.kernel.org, christina.schimpe@intel.com, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, rppt@kernel.org, Andrew.Cooper3@citrix.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 1, 2023 at 12:53=E2=80=AFPM Jean-Jacques Hiblot
-<jjhiblot@traphandler.com> wrote:
+On Sat, Feb 18, 2023 at 01:14:05PM -0800, Rick Edgecombe wrote:
+>The x86 Control-flow Enforcement Technology (CET) feature includes a new
+>type of memory called shadow stack. This shadow stack memory has some
+>unusual properties, which requires some core mm changes to function
+>properly.
 >
-> When of_parse_phandle_with_args() succeeds, a get() is performed on
-> out_irq->np. And another get() is performed in of_irq_parse_raw(),
-> resulting in the refcount being incremented twice.
-> Fixing this by calling put() after of_irq_parse_raw().
+>One of these unusual properties is that shadow stack memory is writable,
+>but only in limited ways. These limits are applied via a specific PTE
+>bit combination. Nevertheless, the memory is writable, and core mm code
+>will need to apply the writable permissions in the typical paths that
+>call pte_mkwrite().
+>
+>In addition to VM_WRITE, the shadow stack VMA's will have a flag denoting
+>that they are special shadow stack flavor of writable memory. So make
+>pte_mkwrite() take a VMA, so that the x86 implementation of it can know to
+>create regular writable memory or shadow stack memory.
+>
+>Apply the same changes for pmd_mkwrite() and huge_pte_mkwrite().
+>
+>No functional change.
+>
+>Cc: linux-doc@vger.kernel.org
+>Cc: linux-kernel@vger.kernel.org
+>Cc: linux-alpha@vger.kernel.org
+>Cc: linux-snps-arc@lists.infradead.org
+>Cc: linux-arm-kernel@lists.infradead.org
+>Cc: linux-csky@vger.kernel.org
+>Cc: linux-hexagon@vger.kernel.org
+>Cc: linux-ia64@vger.kernel.org
+>Cc: loongarch@lists.linux.dev
+>Cc: linux-m68k@lists.linux-m68k.org
+>Cc: Michal Simek <monstr@monstr.eu>
+>Cc: Dinh Nguyen <dinguyen@kernel.org>
+>Cc: linux-mips@vger.kernel.org
+>Cc: openrisc@lists.librecores.org
+>Cc: linux-parisc@vger.kernel.org
+>Cc: linuxppc-dev@lists.ozlabs.org
+>Cc: linux-riscv@lists.infradead.org
+>Cc: linux-s390@vger.kernel.org
+>Cc: linux-sh@vger.kernel.org
+>Cc: sparclinux@vger.kernel.org
+>Cc: linux-um@lists.infradead.org
+>Cc: xen-devel@lists.xenproject.org
+>Cc: linux-arch@vger.kernel.org
+>Cc: linux-mm@kvack.org
+>Tested-by: Pengfei Xu <pengfei.xu@intel.com>
+>Suggested-by: David Hildenbrand <david@redhat.com>
+>Signed-off-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+>
 
-This looks like a band-aid to me. It only makes sense that the caller
-of of_irq_parse_raw() already holds a ref to out_irq->np. So the first
-of_node_get() in it looks wrong. It looks like the refcounting was
-originally balanced, but commit 2f53a713c4b6 ("of/irq: Fix device_node
-refcount in of_irq_parse_raw()") dropped the put on exit after 'got
-it!'. I'm not sure if just adding it back would be correct or not
-though.
-
-All this needs some test cases to be sure we get things right...
-
-Rob
+Acked-by: Deepak Gupta <debug@rivosinc.com>
