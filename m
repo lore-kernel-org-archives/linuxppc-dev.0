@@ -4,49 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10B0DC64EC7
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 13:18:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B441C6FA9D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 14:19:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRZYC1w1Qz3cf8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 00:18:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRbw24vkwz3cF8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 01:19:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=thaison-nguyen.de header.i=@thaison-nguyen.de header.a=rsa-sha256 header.s=dkim header.b=XEdEkFyb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=AyJkYHBa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=O2DMRQr+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=thaison-nguyen.de (client-ip=5.45.104.163; helo=mail.thaison-nguyen.de; envelope-from=mail@thaison-nguyen.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flygoat.com (client-ip=66.111.4.28; helo=out4-smtp.messagingengine.com; envelope-from=jiaxun.yang@flygoat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=thaison-nguyen.de header.i=@thaison-nguyen.de header.a=rsa-sha256 header.s=dkim header.b=XEdEkFyb;
+	dkim=pass (2048-bit key; unprotected) header.d=flygoat.com header.i=@flygoat.com header.a=rsa-sha256 header.s=fm2 header.b=AyJkYHBa;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=O2DMRQr+;
 	dkim-atps=neutral
-Received: from mail.thaison-nguyen.de (thaison-nguyen.de [5.45.104.163])
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com [66.111.4.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRS9j6R9rz3bhY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Mar 2023 19:30:49 +1100 (AEDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 303CBE392F;
-	Wed,  1 Mar 2023 09:30:40 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=thaison-nguyen.de;
-	s=dkim; t=1677659443;
-	h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:content-language;
-	bh=oEWkW5wEYrzuuez8tZMMzh/jr7Rxp40QcWdWTz9fZqE=;
-	b=XEdEkFybAl76IDPQgfL4LZy/C5Ej60jjDpNOC8NXdXVEd187snt7TQIXXwwFKmm6P9lF4n
-	z4k2JqWf0GLrq60lAYitYIPprxPhzsqD2112ZhhGiWQbF6Cp5A8ThhNospDb/GFxC6nTyu
-	ItaDeutSlYVBg78OVJKYuZTnRnVJfuY6xYqiG3jm+0I+xZYuWfVhmiLNakK7xVSf7Kk5SE
-	VBCm1Bq8cQ2T5Hghteyx5R6WLQky8Qd1+epvJBiF9FhRBTaZMxTg6McNNzbnXo/GCY648E
-	R/NewaYm87ZCeZ1uQ+/JwD9cD2Gl07PqiP1YtZQwTCci/GOLJFYi+r1BJF6k6g==
-From: "Thaison Nguyen" <mail@thaison-nguyen.de>
-To: <johannes@sipsolutions.net>
-Subject: [Patch] sound/aoa: Add support for iBook G4 (powerbook6,5)
-Date: Wed, 1 Mar 2023 09:30:39 +0100
-Message-ID: <008801d94c18$1c7424c0$555c6e40$@thaison-nguyen.de>
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRbtx42kMz3bhY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 01:18:31 +1100 (AEDT)
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.nyi.internal (Postfix) with ESMTP id 875B45C0163;
+	Wed,  1 Mar 2023 09:18:25 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute3.internal (MEProxy); Wed, 01 Mar 2023 09:18:25 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=flygoat.com; h=
+	cc:cc:content-transfer-encoding:content-type:date:date:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to; s=fm2; t=1677680305; x=
+	1677766705; bh=IU/BrE3ixZGyLbVgFOOh2R6wZHPN5yx1P6eJFhscw+U=; b=A
+	yJkYHBaTE99CfV0zEVGrqCLHzthiENTPQupgFPss0vM4CUrpWrkivXAApij0gYsT
+	+xPD3Rpc/++PsYBQvrW9hn/hGp5z1kJoDTKu8esHfTpzxYVj9sjk/5h3FzsALxOv
+	+quyZGu6DFBwv/POff8XjUz23+OiS94YV8ZMnxMa30GHbjgA0qdpfeDWzdFegUTF
+	JjgiC69It8pIoz8XTrMim7wSiJQMJF1b4cUGUEECraqzCDqEeaP20zLliPVFQSXu
+	TFPADhCVuhmaN0vJCDGwg+YI7rNie7XSDZJJWMWzxl32RfaTabum+2CLoI+WuKF2
+	vmkG+p5H/Nx0Wcq/maTew==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:in-reply-to:message-id:mime-version:references
+	:reply-to:sender:subject:subject:to:to:x-me-proxy:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1677680305; x=
+	1677766705; bh=IU/BrE3ixZGyLbVgFOOh2R6wZHPN5yx1P6eJFhscw+U=; b=O
+	2DMRQr+RXddOPya6ZL9/CwAlS0f67jYqs3r1/Tlci3ZUhBGuFRNTySolg0fc7Thx
+	Qwacb6833WSWgprw759VX997Y1jW+3qR/bkZkoKW2rIWeamlDTJeiURTx2UoPtON
+	37KjaIaMAuuf+VuEQlHeQ1/zcmzg/xbOlgtcyA1S2Prbx6J+UQJM25m5oczStOf/
+	DSdt8RYBPeIGDB9mZQShW0pkEPhqjglEsNSLbjsPcIa1rQSzYHphHvExC+MV1uel
+	Gl7rmQYC6i2Q33m6SdZ8SQbk9LXGoK4Cda7mixuoDB6nOELcKMRoGgJ56iG6GTQT
+	WCXy1cmw5jPXa4B4W3r9g==
+X-ME-Sender: <xms:r17_Y-tUFo2LL8eR0fi-GokoMXitP2n_JUf-XIy5nnStsSe6FJRj2g>
+    <xme:r17_YzdmZ32m1yaGJBQRp-URupP-6PBTv_L6UVtboHOI4DESaWNr17PvtrpLA_r8d
+    Yf3Wwzo8la7sbRUHjs>
+X-ME-Received: <xmr:r17_Y5xH8C7zLFMosNSu7Rk8dva1PbIKD44Fj8-pO12vIfF3EwUQ2C7l9wT2zjo29ZAQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrudelhedgheehucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurheptggguffhjgffvefgkfhfvffosehtqhhmtdhhtdejnecuhfhrohhmpeflihgr
+    gihunhcujggrnhhguceojhhirgiguhhnrdihrghnghesfhhlhihgohgrthdrtghomheqne
+    cuggftrfgrthhtvghrnhepuddtjeffteetfeekjeeiheefueeigeeutdevieejveeihfff
+    ledvgfduiefhvddtnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilh
+    hfrhhomhepjhhirgiguhhnrdihrghnghesfhhlhihgohgrthdrtghomh
+X-ME-Proxy: <xmx:r17_Y5MRWG36jqqYcsG4mbJe5qRD3FWZkO-uj5TIkFXI7jBOennvjw>
+    <xmx:r17_Y-9REZjCJ_ziFlN4x3EGZMLQymJqqL1O5OR4K6IL99QYuA_3vA>
+    <xmx:r17_YxU5N5rhCyqTaH1Kivq2jpad5SoUB9zVRzgaSZZg74d7WWBPiA>
+    <xmx:sV7_Y_09vA_UNMGlZu7NoezTW3ovu03S-v6NaeYyYQxNqODnkQ-mww>
+Feedback-ID: ifd894703:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 1 Mar 2023 09:18:22 -0500 (EST)
 Content-Type: text/plain;
-	charset="UTF-8"
+	charset=utf-8
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.400.51.1.1\))
+Subject: Re: [PATCH v2 5/5] of: address: Always use dma_default_coherent for
+ default coherency
+From: Jiaxun Yang <jiaxun.yang@flygoat.com>
+In-Reply-To: <20230301130613.GC467@lst.de>
+Date: Wed, 1 Mar 2023 14:18:10 +0000
 Content-Transfer-Encoding: quoted-printable
-thread-index: AdlMFjpemFCBQa8GRkebkHE1IVtr+w==
-Content-Language: de
-X-Last-TLS-Session-Version: TLSv1.2
-X-Mailman-Approved-At: Thu, 02 Mar 2023 00:14:32 +1100
+Message-Id: <B43602D1-89D4-465F-83B1-CD106E07CB29@flygoat.com>
+References: <20230223113644.23356-1-jiaxun.yang@flygoat.com>
+ <20230223113644.23356-6-jiaxun.yang@flygoat.com>
+ <20230301130613.GC467@lst.de>
+To: Christoph Hellwig <hch@lst.de>
+X-Mailer: Apple Mail (2.3731.400.51.1.1)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,69 +98,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, palmer@dabbelt.com, paul.walmsley@sifive.com, robin.murphy@arm.com, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The audio on my iBook G4 (powerbook65) has not been working.
-This is because the ids of the device were missing in the aoa audio =
-driver.
-With this patch, the IDs of Powerbook6,4 and Powerbook6,5 are added to =
-the driver.
 
-Signed-off-by: Thaison Nguyen <mail@thaison-nguyen.de>
----
- sound/aoa/fabrics/layout.c       | 15 +++++++++++++++
- sound/aoa/soundbus/i2sbus/core.c |  2 +-
- 2 files changed, 16 insertions(+), 1 deletions(-)
 
-diff a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
---- a/sound/aoa/fabrics/layout.c
-+++ b/sound/aoa/fabrics/layout.c
-@@ -111,7 +111,9 @@
- MODULE_ALIAS("aoa-device-id-14");
- MODULE_ALIAS("aoa-device-id-22");
- MODULE_ALIAS("aoa-device-id-31");
- MODULE_ALIAS("aoa-device-id-35");
-+MODULE_ALIAS("aoa-device-id-38");
-+MODULE_ALIAS("aoa-device-id-40");
- MODULE_ALIAS("aoa-device-id-44");
-=20
- /* onyx with all but microphone connected */
-@@ -368,7 +368,20 @@
- 		.connections =3D tas_connections_nolineout,
- 	  },
- 	},
-+	/* PowerBook6,4 */
-+	{ .device_id =3D 40,
-+	  .codecs[0] =3D {
-+		.name =3D "tas",
-+		.connections =3D tas_connections_all,
-+	  },
-+	},
- 	/* PowerBook6,5 */
-+	{ .device_id =3D 38,
-+	  .codecs[0] =3D {
-+		.name =3D "tas",
-+		.connections =3D tas_connections_all,
-+	  },
-+	},
- 	{ .device_id =3D 44,
- 	  .codecs[0] =3D {
- 		.name =3D "tas",
-diff a/sound/aoa/soundbus/i2sbus/core.c =
-b/sound/aoa/soundbus/i2sbus/core.c
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -197,7 +197,7 @@
- 			 * so restrict to those we do handle for now.
- 			 */
- 			if (id && (*id =3D=3D 22 || *id =3D=3D 14 || *id =3D=3D 35 ||
--				   *id =3D=3D 31 || *id =3D=3D 44)) {
-+				   *id =3D=3D 31 || *id =3D=3D 44 || *id =3D=3D 40 || *id =3D=3D =
-38)) {
- 				snprintf(dev->sound.modalias, 32,
- 					 "aoa-device-id-%d", *id);
- 				ok =3D 1;
+> 2023=E5=B9=B43=E6=9C=881=E6=97=A5 13:06=EF=BC=8CChristoph Hellwig =
+<hch@lst.de> =E5=86=99=E9=81=93=EF=BC=9A
+>=20
+>> - select OF_DMA_DEFAULT_COHERENT if !NOT_COHERENT_CACHE
+>=20
+> Doesn't powerpc need to select CONFIG_ARCH_DMA_DEFAULT_COHERENT now,
+> or even better should be doing that in the patch adding that
+> symbol?
 
+If I read the code correctly for powerpc OF_DMA_DEFAULT_COHERENT is only =
+selected
+with !NOT_COHERENT_CACHE, which means non-coherent dma support is =
+disabled=E2=80=A6.
+
+>=20
+> In fact I wonder if adding CONFIG_ARCH_DMA_DEFAULT_COHERENT and =
+removing
+> OF_DMA_DEFAULT_COHERENT should be one patch, as that seems to bring
+> over the intent a little better I'd say.
 
