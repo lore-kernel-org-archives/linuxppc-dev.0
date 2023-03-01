@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D51EC678D4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14765C678D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  1 Mar 2023 23:47:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrVr3z0Dz3fQd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:47:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRrWs598Wz3cdH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:47:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EjOj3TX/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=n168adnf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EjOj3TX/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=n168adnf;
 	dkim-atps=neutral
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJZ33LJz3c6C
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRrJZ5jWdz3c9K
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:38:06 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
   t=1677713886; x=1709249886;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references;
-  bh=mR16pLKgTuMhf9u2kE2UXUD7nzGYQyqB0h6xQLOZJvc=;
-  b=EjOj3TX/NnDJ23yE1tNidQhgHdR5cOao0Y3OYzRo5hYttFGEf1PIgryG
-   8VsrJHlagz8RJ7ldoGfoZLZBdGs0EX+VqpWDZZCuty9kJ0iygKqtZJGWN
-   h6I+np9mNPYzgWb2rZVuhRWc/ZzrGbDdbCs2h9AHUfL/6HXtX9Mvva35J
-   1GrzfihXDZ8FemsELDl8c+TRNL1mz+ofrqcE37Li5RKU+zDFwQ47ZDgpi
-   kpO8hpgSyP4c+GdciI/caiSmc7GKy2dFkZFFktvmzgTKPRWgkwMnTsfc5
-   lT90b3C5g3Fjt6+5s184Fzt9psSBX6sfdCz+Xygh42C28sHnC6z8g8ol/
-   g==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818723"
+  bh=YMNfvnXnJB4uXk1mrYyUpmBPZvcLm4WxebEkvmrXwQo=;
+  b=n168adnfUZB3psphHcNy3h3h5bKl0sXQdrNJ8bhaKib4Pc2VM2Bt7DqC
+   2Ka34KuTrQCb3JYWL5y15T28sjZKCmG6Ofy6E6XSBeTTDBvBlDEuK+Rvr
+   uK3UrG2RNhl2RvnoxQ4WISFnc0Das1jnwe/4QB9bBD7xlZCJ6QR+ziPy0
+   tGTaeV0JmXJWAqjGoe5mqpEnWctO1LhxVfBKGMxmtOlbRD96x3JFnB43L
+   5a4zWZP+c852M/ojwvBaglxbVucIUv+mmr+MJuRHxSM+WETZHndVBnyYx
+   bWsvrelGuCN/piJ0U0Wb+QitOqjmuYTKOTAfoqYAk3otdR882b+pWiwKv
+   Q==;
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="420818733"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="420818723"
+   d="scan'208";a="420818733"
 Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:37:57 -0800
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Mar 2023 15:37:58 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826821"
+X-IronPort-AV: E=McAfee;i="6500,9779,10636"; a="738826831"
 X-IronPort-AV: E=Sophos;i="5.98,225,1673942400"; 
-   d="scan'208";a="738826821"
+   d="scan'208";a="738826831"
 Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
   by fmsmga008.fm.intel.com with ESMTP; 01 Mar 2023 15:37:57 -0800
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
@@ -52,9 +52,9 @@ To: Tony Luck <tony.luck@intel.com>,
 	Reinette Chatre <reinette.chatre@intel.com>,
 	Dan Williams <dan.j.williams@intel.com>,
 	Len Brown <len.brown@intel.com>
-Subject: [PATCH v7 09/24] iommu/amd: Expose [set|get]_dev_entry_bit()
-Date: Wed,  1 Mar 2023 15:47:38 -0800
-Message-Id: <20230301234753.28582-10-ricardo.neri-calderon@linux.intel.com>
+Subject: [PATCH v7 11/24] iommu/amd: Compose MSI messages for NMIs in non-IR format
+Date: Wed,  1 Mar 2023 15:47:40 -0800
+Message-Id: <20230301234753.28582-12-ricardo.neri-calderon@linux.intel.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
 References: <20230301234753.28582-1-ricardo.neri-calderon@linux.intel.com>
@@ -73,10 +73,13 @@ Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>, Andi Kleen <ak@linux.intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If an interrupt is allocated with NMI as delivery mode, the Device Table
-Entry needs to be modified accordingly in irq_remapping_alloc().
+If NMIPass is enabled in a Device Table Entry, the IOMMU lets NMI interrupt
+messages pass through unmapped. The contents of the MSI message, not an
+IRTE, determine how and where the NMI is delivered.
 
-No functional changes.
+The IOMMU driver owns the MSI message of the NMI. Compose it using the non-
+interrupt-remapping format. Let descendant irqchips write the composed
+message.
 
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
@@ -88,7 +91,9 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
 Changes since v6:
- * None
+ * Reworded changelog to remove acronyms. (Thomas)
+ * Removed confusing comment regarding interrupt vector cleanup after
+   changing the affinity of an interrupt. (Thomas)
 
 Changes since v5:
  * Introduced this patch
@@ -105,43 +110,46 @@ Changes since v2:
 Changes since v1:
  * N/A
 ---
- drivers/iommu/amd/amd_iommu.h | 3 +++
- drivers/iommu/amd/init.c      | 4 ++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/iommu/amd/iommu.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/iommu/amd/amd_iommu.h b/drivers/iommu/amd/amd_iommu.h
-index c160a332ce33..b9b87a8cd48e 100644
---- a/drivers/iommu/amd/amd_iommu.h
-+++ b/drivers/iommu/amd/amd_iommu.h
-@@ -141,4 +141,7 @@ extern u64 amd_iommu_efr;
- extern u64 amd_iommu_efr2;
+diff --git a/drivers/iommu/amd/iommu.c b/drivers/iommu/amd/iommu.c
+index 9bf71e7335f5..c6b0c365bf33 100644
+--- a/drivers/iommu/amd/iommu.c
++++ b/drivers/iommu/amd/iommu.c
+@@ -3254,7 +3254,16 @@ static void irq_remapping_prepare_irte(struct amd_ir_data *data,
+ 	case X86_IRQ_ALLOC_TYPE_HPET:
+ 	case X86_IRQ_ALLOC_TYPE_PCI_MSI:
+ 	case X86_IRQ_ALLOC_TYPE_PCI_MSIX:
+-		fill_msi_msg(&data->msi_entry, irte_info->index);
++		if (irq_cfg->delivery_mode == APIC_DELIVERY_MODE_NMI)
++			/*
++			 * The IOMMU lets NMIs pass through unmapped. Thus, the
++			 * MSI message, not the IRTE, determines the interrupt
++			 * configuration. Since we own the MSI message,
++			 * compose it.
++			 */
++			__irq_msi_compose_msg(irq_cfg, &data->msi_entry, true);
++		else
++			fill_msi_msg(&data->msi_entry, irte_info->index);
+ 		break;
  
- extern bool amd_iommu_snp_en;
+ 	default:
+@@ -3643,6 +3652,15 @@ static int amd_ir_set_affinity(struct irq_data *data,
+ 	 */
+ 	send_cleanup_vector(cfg);
+ 
++	/*
++	 * When the delivery mode of an interrupt is NMI, the IOMMU lets the NMI
++	 * interrupt messages pass through unmapped. Changes in the destination
++	 * must be reflected in the MSI message, not the IRTE. Descendant
++	 * irqchips must set the affinity and write the MSI message.
++	 */
++	if (cfg->delivery_mode == APIC_DELIVERY_MODE_NMI)
++		return IRQ_SET_MASK_OK;
 +
-+extern void set_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit);
-+extern int get_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit);
- #endif
-diff --git a/drivers/iommu/amd/init.c b/drivers/iommu/amd/init.c
-index 19a46b9f7357..559a9ecb785f 100644
---- a/drivers/iommu/amd/init.c
-+++ b/drivers/iommu/amd/init.c
-@@ -999,7 +999,7 @@ static void __set_dev_entry_bit(struct dev_table_entry *dev_table,
- 	dev_table[devid].data[i] |= (1UL << _bit);
+ 	return IRQ_SET_MASK_OK_DONE;
  }
- 
--static void set_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit)
-+void set_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit)
- {
- 	struct dev_table_entry *dev_table = get_dev_table(iommu);
- 
-@@ -1015,7 +1015,7 @@ static int __get_dev_entry_bit(struct dev_table_entry *dev_table,
- 	return (dev_table[devid].data[i] & (1UL << _bit)) >> _bit;
- }
- 
--static int get_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit)
-+int get_dev_entry_bit(struct amd_iommu *iommu, u16 devid, u8 bit)
- {
- 	struct dev_table_entry *dev_table = get_dev_table(iommu);
  
 -- 
 2.25.1
