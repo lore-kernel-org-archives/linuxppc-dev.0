@@ -4,76 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B822C678D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 10:57:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5809DC6FA8E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 18:53:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PS7Mw68gJz3cdr
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 21:57:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSKxW3PMqz3ccl
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 05:53:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=e+rBLcD3;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=BDkuvwlB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::42f; helo=mail-wr1-x42f.google.com; envelope-from=philmd@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=5.9.137.197; helo=mail.skyhub.de; envelope-from=bp@alien8.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=e+rBLcD3;
+	dkim=pass (1024-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=dkim header.b=BDkuvwlB;
 	dkim-atps=neutral
-Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+X-Greylist: delayed 378 seconds by postgrey-1.36 at boromir; Thu, 02 Mar 2023 23:26:35 AEDT
+Received: from mail.skyhub.de (mail.skyhub.de [5.9.137.197])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PS7Lv5MyBz3cNF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 21:56:07 +1100 (AEDT)
-Received: by mail-wr1-x42f.google.com with SMTP id h11so4345447wrm.5
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Mar 2023 02:56:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1677754561;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=KcB+LkE9o/I91gQw86q7yd+Ffjb03AeLOMDNvAVG6zU=;
-        b=e+rBLcD31qUq8ofcmunQB9T7cslMikWVWW6tnNkoeRTZSr0ibaKWx6rD8a8dIYWPbf
-         fW0lAdd1SlGla3ldAdLc2WNM647uUJVdreNaB/qg7aUUMgDDePMIWN3pb/AoMCiJb+St
-         tow4zUg3XCJzfV66feCzlombFmSlirJwAwJYJJXxg73C74+IUIAmk+CfZV7/C8RF237X
-         ATaGKPpZHMGMf9NOyVzbyWTAcRJ2fyN3xTL77ldU6Hy2rlID/O21D1kJ//SZkIYlIO5l
-         DDGWvkXwGEua7w2cyrIHn6vIVLfQNHuKTWku29kPg5x4VOTcuWrsPVQur+EkO3X8IVit
-         RLEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677754561;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=KcB+LkE9o/I91gQw86q7yd+Ffjb03AeLOMDNvAVG6zU=;
-        b=KFhCQoMF9Ugd6stHP1bo+P3iA9/8Kf191i30lTgPwPVBVQOccXEq/Pcv5LEhFgyWE0
-         tmG2uGfhTTovF04B+CxdkeA0WW7QEGX+gcycMmauUUF+Af57wo+I5ZWhEScXz1EDlujQ
-         vOkuAQmJHNXABtIhdEKeLJRkkubMhVdNh5ZVO9iRVjyQq7ykm50pIMKgOHwvV+11OQkZ
-         wrD1nHlZFsV3mSS/yrbeqXNHe4TZflMDQmKmQf2hS3WwVoWDAjyp/5pulQTV5cIFJ2lj
-         DabU3A9i7mqyM8fNTD13t8AVsSQi0QnCgDYtQeLLNxGLPGJxbox3gw+l5Uha2eTm2pUY
-         BBQg==
-X-Gm-Message-State: AO0yUKWakNg0w2cUYDoNlDPn5O7Sfh2CfW1X871T5AmYoB2HBAxWykB8
-	uI3uZskvqMQRbjvz3Do3vvxCgw==
-X-Google-Smtp-Source: AK7set/m1l0TRmjNbMf9+h0ZaEF1Xb+SrFR0Wb95q+XihEhxpIYi+zG0JloSFSR6HCHnrFBnWnL2Qw==
-X-Received: by 2002:a5d:4d43:0:b0:2c7:1e43:f46e with SMTP id a3-20020a5d4d43000000b002c71e43f46emr7571202wru.37.1677754561094;
-        Thu, 02 Mar 2023 02:56:01 -0800 (PST)
-Received: from [192.168.74.175] (89.red-88-28-21.dynamicip.rima-tde.net. [88.28.21.89])
-        by smtp.gmail.com with ESMTPSA id l16-20020adfe590000000b002c70e60eb40sm15183667wrm.11.2023.03.02.02.55.53
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Mar 2023 02:56:00 -0800 (PST)
-Message-ID: <1a4df71c-3934-6956-4120-d6cf3fcf4ca9@linaro.org>
-Date: Thu, 2 Mar 2023 11:55:52 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PS9MH35Tjz3cLr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 23:26:35 +1100 (AEDT)
+Received: from zn.tnic (p5de8e9fe.dip0.t-ipconnect.de [93.232.233.254])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id E292B1EC04F0;
+	Thu,  2 Mar 2023 13:19:57 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+	t=1677759598;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+	bh=EXqRPO+1UJ/Jugo4uZb8s1y5eA/PT9L+UzCFhY6JB88=;
+	b=BDkuvwlB34QQjIUo59EDVmj7oKCVncxfi5b5gZ5JgkhU3aIBDgDeTmJNn7jbJHW3znTvCf
+	YFoHuKLNQrQyliq8pTOmjR9MRkIeF/W/wjuynsx9rHark059JR7Yp19Rw8Aocd30uUMCn6
+	EDHphDviZmnnExDRi0VvwD18ImB95dQ=
+Date: Thu, 2 Mar 2023 13:19:52 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Rick Edgecombe <rick.p.edgecombe@intel.com>
+Subject: Re: [PATCH v7 13/41] mm: Make pte_mkwrite() take a VMA
+Message-ID: <ZACUaN0NRNXMwkT2@zn.tnic>
+References: <20230227222957.24501-1-rick.p.edgecombe@intel.com>
+ <20230227222957.24501-14-rick.p.edgecombe@intel.com>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.8.0
-Subject: Re: [PATCH v2.1 04/24] arm64/cpu: Mark cpu_die() __noreturn
-Content-Language: en-US
-To: Josh Poimboeuf <jpoimboe@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-References: <cover.1676358308.git.jpoimboe@kernel.org>
- <e47fc487980d5330e6059ac6e16416bec88cda0e.1676358308.git.jpoimboe@kernel.org>
- <14274f04-2991-95bd-c29b-07e86e8755c1@linaro.org>
- <Y+zZgZIP7RPIgyQf@FVFF77S0Q05N> <20230215194538.aiiris3uabnuvkkg@treble>
- <20230216184157.4hup6y6mmspr2kll@treble>
-From: =?UTF-8?Q?Philippe_Mathieu-Daud=c3=a9?= <philmd@linaro.org>
-In-Reply-To: <20230216184157.4hup6y6mmspr2kll@treble>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20230227222957.24501-14-rick.p.edgecombe@intel.com>
+X-Mailman-Approved-At: Fri, 03 Mar 2023 05:52:28 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,21 +59,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: juri.lelli@redhat.com, dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, dave.hansen@linux.intel.com, x86@kernel.org, jiaxun.yang@flygoat.com, linux-kernel@vger.kernel.org, bsegall@google.com, jcmvbkbc@gmail.com, guoren@kernel.org, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, will@kernel.org, vschneid@redhat.com, f.fainelli@gmail.com, vincent.guittot@linaro.org, ysato@users.sourceforge.jp, chenhuacai@kernel.org, linux@armlinux.org.uk, linux-csky@vger.kernel.org, mingo@redhat.com, bcm-kernel-feedback-list@broadcom.com, mgorman@suse.de, mattst88@gmail.com, linux-xtensa@linux-xtensa.org, paulmck@kernel.org, richard.henderson@linaro.org, npiggin@gmail.com, ink@jurassic.park.msu.ru, rostedt@goodmis.org, loongarch@lists.linux.dev, tglx@linutronix.de, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, jgross@suse.com, chris@zankel.net, tsbogend@alpha.franken.de, linuxppc-dev@lists.ozlabs.or
- g, linux-mips@vger.kernel.org, linux-alpha@vger.kernel.org, bp@alien8.de, bristot@redhat.com, davem@davemloft.net
+Cc: kcc@google.com, linux-ia64@vger.kernel.org, loongarch@lists.linux.dev, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, david@redhat.com, eranian@google.com, Oleg Nesterov <oleg@redhat.com>, linux-mm@kvack.org, linux-csky@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Nadav Amit <nadav.amit@gmail.com>, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, dethoma@microsoft.com, Jonathan Corbet <corbet@lwn.net>, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org, Eugene Syromiatnikov <esyr@redhat.com>, jamorris@linux.microsoft.com, Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, "H . J . Lu" <hjl.tools@gmail.com>, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Jann Horn <jannh@google.com>, linux-alpha@vger.kernel.org, linux-um@lists.inf
+ radead.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, debug@rivosinc.com, Florian Weimer <fweimer@redhat.com>, Michal Simek <monstr@monstr.eu>, John Allen <john.allen@amd.com>, linux-parisc@vger.kernel.org, Weijiang Yang <weijiang.yang@intel.com>, linux-api@vger.kernel.org, christina.schimpe@intel.com, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Cyrill Gorcunov <gorcunov@gmail.com>, Dinh Nguyen <dinguyen@kernel.org>, rppt@kernel.org, Andrew.Cooper3@citrix.com, linux-openrisc@vger.kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Mike Kravetz <mike.kravetz@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 16/2/23 19:41, Josh Poimboeuf wrote:
-> cpu_die() doesn't return.  Annotate it as such.  By extension this also
-> makes arch_cpu_idle_dead() noreturn.
-> 
-> Acked-by: Mark Rutland <mark.rutland@arm.com>
-> Signed-off-by: Josh Poimboeuf <jpoimboe@kernel.org>
-> ---
->   arch/arm64/include/asm/smp.h | 2 +-
->   arch/arm64/kernel/smp.c      | 2 +-
->   2 files changed, 2 insertions(+), 2 deletions(-)
+On Mon, Feb 27, 2023 at 02:29:29PM -0800, Rick Edgecombe wrote:
+> [0] https://lore.kernel.org/lkml/0e29a2d0-08d8-bcd6-ff26-4bea0e4037b0@redhat.com/#t
 
-Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+I guess that sub-thread about how you arrived at this "pass a VMA"
+decision should be in the Link tag. But that's for the committer, I'd
+say.
 
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
