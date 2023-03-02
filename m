@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 39FDDC678D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 02:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 909C6C7EE23
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 03:18:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRvyv1rsVz3cJg
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 13:23:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PRxBc5nNnz3cd5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 14:18:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ICNzManC;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=05BK9h2o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::b2c; helo=mail-yb1-xb2c.google.com; envelope-from=surenb@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=palmer@rivosinc.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20210112 header.b=ICNzManC;
+	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=05BK9h2o;
 	dkim-atps=neutral
-Received: from mail-yb1-xb2c.google.com (mail-yb1-xb2c.google.com [IPv6:2607:f8b0:4864:20::b2c])
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRvxs3P8sz3cDp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 13:22:08 +1100 (AEDT)
-Received: by mail-yb1-xb2c.google.com with SMTP id v101so2303156ybi.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 18:22:08 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRx9Y5nJRz3cFN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 14:17:20 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id me6-20020a17090b17c600b0023816b0c7ceso1454244pjb.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 19:17:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20210112; t=1677723725;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=icYcAz4iENgGguq1MUlInM5/6GsRcXFU+8O5VO7eInA=;
-        b=ICNzManCzUgms4+COGza4gk5YsyseuO5Ijt4EWhpqNEDkAg12yxO+M+x6EF7wlGyGp
-         18xfcjTQdZvnANZNl2A9rF7rCOHTU3O7UgOEldBj8JFxYXSdYiuqfdORdbYK3a8OzBha
-         GPx1R+762t651JyT8Cj6YRDfJYCZzRhsZnsEISTad9RtLN+lwUYObGJty8p+v5C9AyGP
-         3XXAHVdDVphOLPBe2/6syAoOKCOBT/gqoC22awkzHgd0AJ3EE9WzeagQuz79d2V/uPYP
-         8Lqoil99Y13JGIIeKOkn5jKR1Pgy1Y4lYmhZVpRrJLR83i3rnovCLcQAjwV4uywIdJzG
-         i4rA==
+        d=rivosinc-com.20210112.gappssmtp.com; s=20210112; t=1677727038;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=hgpf8cgLJj50M86L5F9BUoIAMwjT++SeEfR1/zwwwE0=;
+        b=05BK9h2oN73d+vLQZ8AXICX+yqZH9PJw8eGQwQu3aLpPw/PQkKLBM+zl4FHFPDCMbr
+         oT2a7ycW9j4IvNJVs7ZNd3qeiw85Qtha4m0oAo5Q0QiPipyRwzSV4J3XcelEef5d8yqB
+         I4KXQDK7qQ+mAPYeZvAqQG78vIyZoGQH/5i1rIXtVNLbcQNF9Kn0gW9O7HWaBv1Z1Hfx
+         4q2OGZuaoqmuPypq3KgIWVltCxcy5gmQYJ+016KcQmuC/U0yrGY0o6z+m+PHYIZUzGYI
+         1grLiGwuTn7D4jkc5r6I/7tUA73EppBwvM41vkni8yrDAA+aUFBNlGO/ZUE432ubFqlh
+         lUug==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1677723725;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=icYcAz4iENgGguq1MUlInM5/6GsRcXFU+8O5VO7eInA=;
-        b=aY/QkjnNT+xNZxfs1G+6j0SI8VIQht4A8u2Qd0RYZrnhP/f59P8AV4ic+PB8lA7h/n
-         qGsQsab9hqYFpuB1mAvpYQs3I0i15PrhAS3B8/USIIHAcjFb3ULljdrGX5wwu7we4p+S
-         +f1QKpCnmgMH5YSvdvrx/RMQG6tLASwSjl8vVUPmpxFutxkFGd90EimHHwbsbDhL1xRP
-         OehufyuUN7SE+Gp0YDqT2DqVCty469EM44WhDNOo8g8l9wa2peNxcpdFfoAQo877HfrN
-         e7rGV3Earie1tZItyB7CrSIgfwA2v7sGGs8mVe6IFrhMvl5U4IWItMgHoceK2DJcRgdN
-         B2Iw==
-X-Gm-Message-State: AO0yUKXtv5AWiwDreRQ2/tKbpkEl2oFn8lyd4suuk4kY/z62NsiXCZAS
-	2TIbPbxQWgI/cDz98co/kT7mxtevspRZI1L1qtGzwQ==
-X-Google-Smtp-Source: AK7set8f8UCPLp9V1R6/ru3EOI4J1mkBQgV1T32GNF0OvprkrFWWd8Ter81Ipe29QBKiksN2yO0CRLf6M0naPga3SGQ=
-X-Received: by 2002:a25:aa03:0:b0:a06:538f:265f with SMTP id
- s3-20020a25aa03000000b00a06538f265fmr407354ybi.4.1677723724623; Wed, 01 Mar
- 2023 18:22:04 -0800 (PST)
-MIME-Version: 1.0
-References: <20230227173632.3292573-1-surenb@google.com> <20230227173632.3292573-19-surenb@google.com>
- <Y/8CJQGNuMUTdLwP@localhost> <Y/8FNM9czzPHb5eG@localhost> <CAJuCfpHYT++MBC6T-p80n_m5hHWRRC4Y1bO9J-bFFZZDqNX-BQ@mail.gmail.com>
- <CAJuCfpFax8LSdcq1qiz3sp0XPLaNZnkFFky2tQekG2_Azvw9_g@mail.gmail.com> <Y//zmYeu6uexiyOY@localhost>
-In-Reply-To: <Y//zmYeu6uexiyOY@localhost>
-From: Suren Baghdasaryan <surenb@google.com>
-Date: Wed, 1 Mar 2023 18:21:53 -0800
-Message-ID: <CAJuCfpEhwye9dn3eUaYE1gSHt+8M5ztBR3ZMoTYyBR7+uSL5aQ@mail.gmail.com>
-Subject: Re: [PATCH v4 18/33] mm: write-lock VMAs before removing them from
- VMA tree
-To: Hyeonggon Yoo <42.hyeyoo@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        d=1e100.net; s=20210112; t=1677727038;
+        h=content-transfer-encoding:mime-version:message-id:to:from:cc
+         :in-reply-to:subject:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=hgpf8cgLJj50M86L5F9BUoIAMwjT++SeEfR1/zwwwE0=;
+        b=22yAr3G9Q+y/9FUJALJjbDPpjc62vgHh18GcVI+JAHeyEdr7LCU/Ko+8Se+Wn77AJa
+         ht90S+tfTflenlObJTWNIcY3GjPsT81LfosYAcmf7xr6sh2WsC4pXzETeT4Oyll3HGHS
+         0eEcT1EovnHXuzYrFYESwmqNDuzT6xLuKNav5Eu83rkMwRUMhdZds4myhFrhuWID7Eue
+         3uoyLcC0ZnS/Z12Qc9HGmcjgzT7Q5oDzhlGX2Io8yRqmHDgYJ6FpTWURlNb5gVopbidv
+         7NXUk6awuJDZfeFHNthbkLkLdDL4Ci5CNKEgPHPgsEE61bcilka0IaVjfx2woGb07m4H
+         3dHQ==
+X-Gm-Message-State: AO0yUKWnAAzIMLTLvtSmfR16CMFc1bNiwdzV7rVFjFHCoT07hL0JrYqw
+	xqbxj5hvEIBAFIm9NKcOgltCGQ==
+X-Google-Smtp-Source: AK7set9sdV/+BdUm2bBjL395AsIYL1A1j9eCLS8ecMxY0Ws8WD4l1oqL273WzlVwyO1Yv4lm9xFKPQ==
+X-Received: by 2002:a05:6a20:1bde:b0:cc:de56:957a with SMTP id cv30-20020a056a201bde00b000ccde56957amr8709472pzb.13.1677727037881;
+        Wed, 01 Mar 2023 19:17:17 -0800 (PST)
+Received: from localhost ([50.221.140.188])
+        by smtp.gmail.com with ESMTPSA id h192-20020a636cc9000000b00502f5cd216bsm8183287pgc.6.2023.03.01.19.17.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 01 Mar 2023 19:17:16 -0800 (PST)
+Date: Wed, 01 Mar 2023 19:17:16 -0800 (PST)
+X-Google-Original-Date: Wed, 01 Mar 2023 18:55:30 PST (-0800)
+Subject: Re: [PATCH v3 03/24] arm: Remove COMMAND_LINE_SIZE from uapi
+In-Reply-To: <874b8076-b0d1-4aaa-bcd8-05d523060152@app.fastmail.com>
+From: Palmer Dabbelt <palmer@rivosinc.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <mhng-78901e66-16df-4563-9e2c-3a9744ef2828@palmer-ri-x1c9a>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,99 +78,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: michel@lespinasse.org, joelaf@google.com, songliubraving@fb.com, mhocko@suse.com, leewalsh@google.com, david@redhat.com, peterz@infradead.org, bigeasy@linutronix.de, peterx@redhat.com, dhowells@redhat.com, linux-mm@kvack.org, edumazet@google.com, jglisse@google.com, punit.agrawal@bytedance.com, will@kernel.org, arjunroy@google.com, chriscli@google.com, dave@stgolabs.net, minchan@google.com, x86@kernel.org, hughd@google.com, willy@infradead.org, gurua@google.com, mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com, axelrasmussen@google.com, kernel-team@android.com, michalechner92@googlemail.com, soheil@google.com, paulmck@kernel.org, jannh@google.com, liam.howlett@oracle.com, shakeelb@google.com, luto@kernel.org, gthelen@google.com, ldufour@linux.ibm.com, vbabka@suse.cz, posk@google.com, lstoakes@gmail.com, peterjung1337@gmail.com, linuxppc-dev@lists.ozlabs.org, kent.overstreet@linux.dev, linux-kernel@vger.kernel.org, hannes@cmpxchg.org, akpm@linux-foundati
- on.org, tatashin@google.com, mgorman@techsingularity.net, rppt@kernel.org
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, dave.hansen@linux.intel.com, x86@kernel.org, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, jcmvbkbc@gmail.com, hpa@zytor.com, sparclinux@vger.kernel.org, kernel@xen0n.name, Will Deacon <will@kernel.org>, agordeev@linux.ibm.com, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, ysato@users.sourceforge.jp, corbet@lwn.net, linux-sh@vger.kernel.org, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, geert@linux-m68k.org, vgupta@kernel.org, mattst88@gmail.com, borntraeger@linux.ibm.com, aou@eecs.berkeley.edu, alexghiti@rivosinc.com, gor@linux.ibm.com, hca@linux.ibm.com, Richard Henderson <richard.henderson@linaro.org>, npiggin@gmail.com, linux-m68k@lists.linux-m68k.org, ink@jurassic.park.msu.ru, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, tglx@linutronix.de,
+  linux-arm-kernel@lists.infradead.org, chris@zankel.net, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, svens@linux.ibm.com, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 1, 2023 at 4:54 PM Hyeonggon Yoo <42.hyeyoo@gmail.com> wrote:
+On Thu, 23 Feb 2023 05:09:17 PST (-0800), Arnd Bergmann wrote:
+> On Thu, Feb 23, 2023, at 10:54, Alexandre Ghiti wrote:
+>> On Wed, Feb 15, 2023 at 2:05 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>>>
+>>> On Wed, Feb 15, 2023, at 13:59, Russell King (Oracle) wrote:
+>>> > On Tue, Feb 14, 2023 at 08:49:04AM +0100, Alexandre Ghiti wrote:
+>>> >> From: Palmer Dabbelt <palmer@rivosinc.com>
+>>> >>
+>>> >> As far as I can tell this is not used by userspace and thus should not
+>>> >> be part of the user-visible API.
+>>> >>
+>>> >> Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
+>>> >
+>>> > Looks good to me. What's the merge plan for this?
+>>>
+>>> The easiest way is probably if I merge it through the whole
+>>> series through the asm-generic tree. The timing is a bit
+>>> unfortunate as we're just ahead of the merge window, so unless
+>>> we really need this in 6.3, I'd suggest that Alexandre resend
+>>> the series to me in two weeks with the Acks added in and I'll
+>>> pick it up for 6.4.
+>>
+>> Sorry for the response delay, I was waiting to see if Palmer would
+>> merge my KASAN patchset in 6.3 (which he does): I have to admit that
+>> fixing the command line size + the KASAN patchset would allow 6.3 to
+>> run on syzkaller, which would be nice.
+>>
+>> If I don't see this merged in 6.3, I'll send another round as you
+>> suggested in 1 week now :)
 >
-> On Wed, Mar 01, 2023 at 10:42:48AM -0800, Suren Baghdasaryan wrote:
-> > On Wed, Mar 1, 2023 at 10:34=E2=80=AFAM Suren Baghdasaryan <surenb@goog=
-le.com> wrote:
-> > >
-> > > On Tue, Feb 28, 2023 at 11:57=E2=80=AFPM Hyeonggon Yoo <42.hyeyoo@gma=
-il.com> wrote:
-> > > >
-> > > > On Wed, Mar 01, 2023 at 07:43:33AM +0000, Hyeonggon Yoo wrote:
-> > > > > On Mon, Feb 27, 2023 at 09:36:17AM -0800, Suren Baghdasaryan wrot=
-e:
-> > > > > > Write-locking VMAs before isolating them ensures that page faul=
-t
-> > > > > > handlers don't operate on isolated VMAs.
-> > > > > >
-> > > > > > Signed-off-by: Suren Baghdasaryan <surenb@google.com>
-> > > > > > ---
-> > > > > >  mm/mmap.c  | 1 +
-> > > > > >  mm/nommu.c | 5 +++++
-> > > > > >  2 files changed, 6 insertions(+)
-> > > > > >
-> > > > > > diff --git a/mm/mmap.c b/mm/mmap.c
-> > > > > > index 1f42b9a52b9b..f7ed357056c4 100644
-> > > > > > --- a/mm/mmap.c
-> > > > > > +++ b/mm/mmap.c
-> > > > > > @@ -2255,6 +2255,7 @@ int split_vma(struct vma_iterator *vmi, s=
-truct vm_area_struct *vma,
-> > > > > >  static inline int munmap_sidetree(struct vm_area_struct *vma,
-> > > > > >                                struct ma_state *mas_detach)
-> > > > > >  {
-> > > > > > +   vma_start_write(vma);
-> > > > > >     mas_set_range(mas_detach, vma->vm_start, vma->vm_end - 1);
-> > > > >
-> > > > > I may be missing something, but have few questions:
-> > > > >
-> > > > >       1) Why does a writer need to both write-lock a VMA and mark=
- the VMA detached
-> > > > >          when unmapping it, isn't it enough to just only write-lo=
-ck a VMA?
-> > >
-> > > We need to mark the VMA detached to avoid handling page fault in a
-> > > detached VMA. The possible scenario is:
-> > >
-> > > lock_vma_under_rcu
-> > >   vma =3D mas_walk(&mas)
-> > >                                                         munmap_sidetr=
-ee
-> > >                                                           vma_start_w=
-rite(vma)
-> > >
-> > > mas_store_gfp() // remove VMA from the tree
-> > >                                                           vma_end_wri=
-te_all()
-> > >   vma_start_read(vma)
-> > >   // we locked the VMA but it is not part of the tree anymore.
-> > >
-> > > So, marking the VMA locked before vma_end_write_all() and checking
-> >
-> > Sorry, I should have said "marking the VMA *detached* before
-> > vma_end_write_all() and checking vma->detached after vma_start_read()
-> > helps us avoid handling faults in the detached VMA."
-> >
-> > > vma->detached after vma_start_read() helps us avoid handling faults i=
-n
-> > > the detached VMA.
+> Hi Alexandre,
 >
-> Thank you for explanation, that makes sense!
->
-> By the way, if there are no 32bit users of Per-VMA lock (are there?),
-> "detached" bool could be a VMA flag (i.e. making it depend on 64BIT
-> and selecting ARCH_USES_HIGH_VMA_FLAGS)
+> I have no plans to still pick up the series for 6.3. The patches
+> all look fine to me, but it's clearly too late now. What is the
+> actual dependency for KASAN, do you just need a longer command
+> line or something else? If it's just the command line size,
+> I would suggest that Palmer can still pick up a oneline change
+> to increase it and refer to this thread in the changelog as a
+> reference for why it is not an actual UAPI break.
 
-Yeah, I thought about it but didn't want to make assumptions about
-potential users just yet. Besides, I heard there are attempts to make
-vm_flags to be always 64-bit (I think Matthew mentioned that to me
-once). If that happens, we won't need any dependencies here. Either
-way, this conversion into a flag can be done as an additional
-optimization later on. I prefer to keep the main patchset as simple as
-possible for now.
-Thanks,
-Suren.
+Sorry for being slow here, I just queued up the original patch in the 
+RISC-V tree and intend on sending it for 6.3 -- the main worry was that 
+it's a uABi change and we're confident it's not.  It's late, but I'd 
+prefer to have this as it should let us start running syzkaller now and 
+that'll probably find more bugs than this is likely to trigger.
 
->
-> Thanks,
-> Hyeonggon
->
-> --
-> To unsubscribe from this group and stop receiving emails from it, send an=
- email to kernel-team+unsubscribe@android.com.
->
+https://lore.kernel.org/r/mhng-b5f934ff-a9bb-4c2b-9ba6-3ab68312077a@palmer-ri-x1c9a/
