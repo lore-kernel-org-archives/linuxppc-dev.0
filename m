@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D4D2C6FA8E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 16:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42B20C6FA8E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 22:07:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSH4k0Qflz3cfd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 03:44:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSQDy2lC4z3cgR
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 09:06:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C1V38pM6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rmPnvfMg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSQCt0M1Fz3bh0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 09:06:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C1V38pM6;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=rmPnvfMg;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSH3l0swZz3cMJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 03:43:30 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 84F82B81223;
-	Thu,  2 Mar 2023 16:43:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ECDEFC4339B;
-	Thu,  2 Mar 2023 16:43:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1677775406;
-	bh=/3EG9mCgYljy/AeNWULKubu7iLxYcPdrWpi0iqQTytY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=C1V38pM6W0R0c4lmN/gk2Mx8h/SqlsjawPWMlCSIv8hZ9pB/m7y0UzuDUVuLP/OFe
-	 CExGzW77LyaF8WISi8o3nE7QTvY+XLe1fx22+jLoEMI9pBSE6a3xVBqcz3xIN7WTRy
-	 YycmUDrVoA73rZeiT8jdUoh7R02yjc421jVDD+c3vPumzHioshg/naG6t/75sTQmKQ
-	 XnHhugdZq143WrmcNLLjeTfpAVC75ISekxuGCzKaHQxUTEed3l+bD6q4ofU37hXO94
-	 4QFlZgzfncjEBLKT15uWJkU0v5OjaW+KkvjMVUgWOJGxhaQEjHUxrxvE/Z/55jNt6j
-	 EQdf9k+nbJybg==
-Date: Thu, 2 Mar 2023 09:43:24 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/64: Use -mtune=pwr10/9/8 for clang
-Message-ID: <20230302164324.GB3010526@dev-arch.thelio-3990X>
-References: <20230302131656.50626-1-mpe@ellerman.id.au>
- <20230302131656.50626-2-mpe@ellerman.id.au>
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PSQCk4Np4z4x5X;
+	Fri,  3 Mar 2023 09:05:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1677794756;
+	bh=njD69v3qeL/tVCMhfNiTs5MobAt0JdOQQTm+aBdwWRc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=rmPnvfMg3GoJQDDhJlf4Rvyw1ed7sbTv5te2/xeBfNddk5N49v7FTLME4/8hWIb5S
+	 3Ho/Cm+zvbgRm94hvzNc9YijkJUXUz2g9ojCzEIZQSnkhNQ8/Pjdm4ZXTT2s/8L6mR
+	 QEXDW8Ru3Udc1/rlxh1DDPs67+cDO9MhgQD3O5tQMa4NbILJ3m5GqxZByAjEYFTpdc
+	 Xf2H4ymHuSYPneDuilR0lJsuQIyai36uQzxJfSjp/OBPI2SNBgfgR5gJcMGfd8AFnZ
+	 U/HW7AKZrxkED75qP+/Sayt+7/nO4TzS075iK6bh49qxf59dh5DEZf0tDCMcdx9L15
+	 z5IqKwkVoyTgQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stefan Berger <stefanb@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc/tpm: Reserve SML log when kexec'ing
+In-Reply-To: <6c5ee8fe-9970-54cb-263e-b8af7a25ed95@linux.ibm.com>
+References: <20230224032508.3331281-1-mpe@ellerman.id.au>
+ <20230224032508.3331281-2-mpe@ellerman.id.au>
+ <6c5ee8fe-9970-54cb-263e-b8af7a25ed95@linux.ibm.com>
+Date: Fri, 03 Mar 2023 09:05:47 +1100
+Message-ID: <87bklalsg4.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230302131656.50626-2-mpe@ellerman.id.au>
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,66 +59,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
+Cc: eajames@linux.ibm.com, jgg@ziepe.ca, jarkko@kernel.org, yangyingliang@huawei.com, linux-integrity@vger.kernel.org, peterhuewe@gmx.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+Stefan Berger <stefanb@linux.ibm.com> writes:
+> On 2/23/23 22:25, Michael Ellerman wrote:
+>> The TPM code in prom_init.c creates a small buffer of memory to store
+>> the TPM's SML (Stored Measurement Log). It's communicated to Linux via
+>> the linux,sml-base/size device tree properties of the TPM node.
+>> 
+>> When kexec'ing that buffer can be overwritten, or when kdump'ing it may
+>> not be mapped by the second kernel. The latter can lead to a crash when
+>> booting the second kernel such as:
+>> 
+>>    tpm_ibmvtpm 71000003: CRQ initialization completed
+>>    BUG: Unable to handle kernel data access on read at 0xc00000002ffb0000
+>>    Faulting instruction address: 0xc0000000200a70e0
+>>    Oops: Kernel access of bad area, sig: 11 [#1]
+>>    LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=2048 NUMA pSeries
+>>    Modules linked in:
+>>    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 6.2.0-rc2-00134-g9307ce092f5d #314
+>>    Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1200 0xf000005 of:SLOF,git-5b4c5a pSeries
+>>    NIP:  c0000000200a70e0 LR: c0000000203dd5dc CTR: 0000000000000800
+>>    REGS: c000000024543280 TRAP: 0300   Not tainted  (6.2.0-rc2-00134-g9307ce092f5d)
+>>    MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 24002280  XER: 00000006
+>>    CFAR: c0000000200a70c8 DAR: c00000002ffb0000 DSISR: 40000000 IRQMASK: 0
+>>    ...
+>>    NIP memcpy_power7+0x400/0x7d0
+>>    LR  kmemdup+0x5c/0x80
+>>    Call Trace:
+>>      memcpy_power7+0x274/0x7d0 (unreliable)
+>>      kmemdup+0x5c/0x80
+>>      tpm_read_log_of+0xe8/0x1b0
+>>      tpm_bios_log_setup+0x60/0x210
+>>      tpm_chip_register+0x134/0x320
+>>      tpm_ibmvtpm_probe+0x520/0x7d0
+>>      vio_bus_probe+0x9c/0x460
+>>      really_probe+0x104/0x420
+>>      __driver_probe_device+0xb0/0x170
+>>      driver_probe_device+0x58/0x180
+>>      __driver_attach+0xd8/0x250
+>>      bus_for_each_dev+0xb4/0x140
+>>      driver_attach+0x34/0x50
+>>      bus_add_driver+0x1e8/0x2d0
+>>      driver_register+0xb4/0x1c0
+>>      __vio_register_driver+0x74/0x9c
+>>      ibmvtpm_module_init+0x34/0x48
+>>      do_one_initcall+0x80/0x320
+>>      kernel_init_freeable+0x304/0x3ac
+>>      kernel_init+0x30/0x1a0
+>>      ret_from_kernel_thread+0x5c/0x64
+>
+> I have not been able to reproduce this particular crash issue with a
+> 6.2 kernel running on P10 PowerVM when NOT applying your patches.
 
-Thanks for the workaround and sorry this has come to bite us :/
+The crash only happens for a crashdump kernel, not a regular kexec.
 
-On Fri, Mar 03, 2023 at 12:16:56AM +1100, Michael Ellerman wrote:
-> For the -mtune option clang doesn't accept power10/9/8, instead it
-> accepts pwr10/9/8. That will be fixed in future versions of clang, but
-> the kernel must support the clang versions in the wild.
-> 
-> So add support for the "pwr" spelling if clang is in use.
-> 
-> Reported-by: Nathan Chancellor <nathan@kernel.org>
+And depending on where the SML is in memory, compared to where the
+crashkernel is, the SML might be mapped accidentally in which case there
+is no crash.
 
-I think that should actually be
+> For my tests I have used the following parameter with the 16GB VM:
+> crashkernel=2G-4G:384M,4G-16G:1G,16G-64G:2G,64G-128G:2G,128G-:4G
 
-Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+So you should be seeing a 2GB crashkernel reservation at 512MB.
 
-> BugLink: https://github.com/ClangBuiltLinux/linux/issues/1799
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> What I noticed is that the log gets corrupted when the 2 patches are applied:
+>
+> After fresh boot:
+>
+>> cp /sys/kernel/security/tpm0/binary_bios_measurements ./
+>> ls -l binary_bios_measurements
+> -r--r-----. 1 root root 10051 Feb 28 12:09 binary_bios_measurements
+>
+>
+>> kexec -l /boot/vmlinuz-6.2.0+ --initrd /boot/initramfs-6.2.0+.img '--append=BOOT_IMAGE=/vmlinuz-6.2.0+ root=/dev/mapper/rhel_XYZ ro crashkernel=2G-4G:384M,4G-16G:1G,16G-64G:2G,64G-128G:2G,128G-:4G rd.lvm.lv=rhel_XYZ/root rd.lvm.lv=rhel_XYZ/swap biosdevname=0' -s
+>> kexec -e
 
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+That's a normal kexec, not a crash kexec, so it doesn't use the
+crashkernel region mentioned above.
 
-> ---
->  arch/powerpc/platforms/Kconfig.cputype | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> Need to confirm the clang <= 16 statement is correct.
+>> cp /sys/kernel/security/tpm0/binary_bios_measurements ./
+>> ls -l binary_bios_measurements
+> -r--r-----. 1 root root 32 Feb 28 12:10 binary_bios_measurements
+>
+>> od -t x1 < binary_bios_measurements
+> 0000000 d0 0d fe ed 00 00 77 80 00 00 00 a0 00 00 4f 4c
+> 0000020 00 00 00 28 00 00 00 11 00 00 00 11 00 00 00 00
+> 0000040
 
-Currently, this is indeed the case. It is possible that Nemanja's patch
-will get applied to release/16.x before 16.0.0 final but it might not.
-We can always update it later. I think we do want to push to get that
-patch applied because I forgot that it is only in 16.0.0 that '-mtune'
-starts to do something on PowerPC:
+That's a device tree header !? O_o
 
-https://github.com/llvm/llvm-project/commit/1dc26b80b872a94c581549a21943756a8c3448a3
+#define OF_DT_HEADER		0xd00dfeed	/* marker */
 
-Prior to that change, '-mtune' was accepted but did nothing. It is only
-once it was hooked up to the backend that we got the spew of warnings. I
-think that warrants us trying to get Nemanja's patch into 16.0.0, which
-may allow us to drop this workaround altogether...
+> The contents have changed and these first 4 bytes of it are always the
+> same once it has become this 32 byte file, otherwise they would be
+> zero.
 
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 7d7477b73951..e4e0e81be7de 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -278,6 +278,10 @@ config TUNE_CPU
->  	default "-mtune=power10" if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power10)
->  	default "-mtune=power9"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power9)
->  	default "-mtune=power8"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power8)
-> +	# clang <= 16 only supports the "pwr" names
-> +	default "-mtune=pwr10"   if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr10)
-> +	default "-mtune=pwr9"    if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr9)
-> +	default "-mtune=pwr8"    if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr8)
->  
->  config PPC_BOOK3S
->  	def_bool y
-> -- 
-> 2.39.2
-> 
+I'm not sure what's happening there. We'll need to debug it some more :/
+
+cheers
