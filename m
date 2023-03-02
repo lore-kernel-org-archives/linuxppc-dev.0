@@ -4,67 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CB46C6FA8E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 12:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E325C678D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 13:18:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PS9fN2k9fz3f5N
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 23:39:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::223; helo=relay3-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::223])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSBVv2hhBz3cj5
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 00:18:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mx3WB01f;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PS9dk1DVRz3cMK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 23:39:03 +1100 (AEDT)
-Received: (Authenticated sender: alex@ghiti.fr)
-	by mail.gandi.net (Postfix) with ESMTPSA id B7D6960008;
-	Thu,  2 Mar 2023 12:38:45 +0000 (UTC)
-Message-ID: <6b206e38-2e2e-0236-1b7d-96a537d0038e@ghiti.fr>
-Date: Thu, 2 Mar 2023 13:38:45 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSBTq3grcz3cCy
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 00:17:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=mx3WB01f;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PSBTq2Dr6z4x80;
+	Fri,  3 Mar 2023 00:17:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1677763039;
+	bh=0JIQWJKznz7AtiZOyXNJNdwCGrnZhYEwd8v6MXpZZbk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=mx3WB01f/BIglEyoyz+c+rctgDHNseoJp9meZk/si0LfJlCdGCBb32q1e/Ju7OZ9c
+	 fXqmqO2TeyTW5dj1LmXzJsKsDNHVmNC80eQ5YlYFfXOxIBMVZZaSB1U+0Ql/J0swlZ
+	 HpYWMXDdtuuH1WvKQcsjx4DRRY8cSrMlXnL7HX+al/ESHnErySHt/jcQTcTNmJlIeS
+	 GVC9R/XgWOd22ZBBJ6fYGZDm5xjhWtTQzVWiAQLA8pHPu4p64HSRTd4gjDsoSY5Z9W
+	 Mwiy64D7rMVg/u6kj/lzGJwTsM2wWvU7ouw7MSegeBNawSOrewwjZP4s4IqhHlR48X
+	 frBVjzrU/EnoA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2] powerpc/64: Use -mtune=pwr10/9/8 for clang
+Date: Fri,  3 Mar 2023 00:16:56 +1100
+Message-Id: <20230302131656.50626-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230302131656.50626-1-mpe@ellerman.id.au>
+References: <20230302131656.50626-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.7.1
-Subject: Re: [PATCH v4 00/24] Remove COMMAND_LINE_SIZE from uapi
-Content-Language: en-US
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Alexandre Ghiti <alexghiti@rivosinc.com>, Jonathan Corbet
- <corbet@lwn.net>, Richard Henderson <richard.henderson@linaro.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner
- <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H . Peter Anvin" <hpa@zytor.com>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Arnd Bergmann <arnd@arndb.de>, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linux-ia64@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.org,
- =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
-References: <20230302093539.372962-1-alexghiti@rivosinc.com>
- <040104fc-81b7-fd45-b268-111e39f2927f@ghiti.fr>
-In-Reply-To: <040104fc-81b7-fd45-b268-111e39f2927f@ghiti.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,150 +58,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: nathan@kernel.org, linux-kbuild@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+For the -mtune option clang doesn't accept power10/9/8, instead it
+accepts pwr10/9/8. That will be fixed in future versions of clang, but
+the kernel must support the clang versions in the wild.
 
-On 3/2/23 11:06, Alexandre Ghiti wrote:
-> Hi Arnd,
->
-> On 3/2/23 10:35, Alexandre Ghiti wrote:
->> This all came up in the context of increasing COMMAND_LINE_SIZE in the
->> RISC-V port.  In theory that's a UABI break, as COMMAND_LINE_SIZE is the
->> maximum length of /proc/cmdline and userspace could staticly rely on
->> that to be correct.
->>
->> Usually I wouldn't mess around with changing this sort of thing, but
->> PowerPC increased it with a5980d064fe2 ("powerpc: Bump COMMAND_LINE_SIZE
->> to 2048").  There are also a handful of examples of COMMAND_LINE_SIZE
->> increasing, but they're from before the UAPI split so I'm not quite sure
->> what that means: e5a6a1c90948 ("powerpc: derive COMMAND_LINE_SIZE from
->> asm-generic"), 684d2fd48e71 ("[S390] kernel: Append scpdata to kernel
->> boot command line"), 22242681cff5 ("MIPS: Extend COMMAND_LINE_SIZE"),
->> and 2b74b85693c7 ("sh: Derive COMMAND_LINE_SIZE from
->> asm-generic/setup.h.").
->>
->> It seems to me like COMMAND_LINE_SIZE really just shouldn't have been
->> part of the uapi to begin with, and userspace should be able to handle
->> /proc/cmdline of whatever length it turns out to be.  I don't see any
->> references to COMMAND_LINE_SIZE anywhere but Linux via a quick Google
->> search, but that's not really enough to consider it unused on my end.
->>
->> This issue was already considered in s390 and they reached the same
->> conclusion in commit 622021cd6c56 ("s390: make command line
->> configurable").
->>
->> The feedback on the v1 seemed to indicate that COMMAND_LINE_SIZE really
->> shouldn't be part of uapi, so this now touches all the ports. I've
->> tried to split this all out and leave it bisectable, but I haven't
->> tested it all that aggressively.
->>
->> Changes since v3 
->> <https://lore.kernel.org/all/20230214074925.228106-1-alexghiti@rivosinc.com/>:
->> * Added RB/AB
->> * Added a mention to commit 622021cd6c56 ("s390: make command line
->>    configurable") in the cover letter
->>
->> Changes since v2 
->> <https://lore.kernel.org/all/20221211061358.28035-1-palmer@rivosinc.com/>:
->> * Fix sh, csky and ia64 builds, as reported by kernel test robot
->>
->> Changes since v1 
->> <https://lore.kernel.org/all/20210423025545.313965-1-palmer@dabbelt.com/>:
->> * Touches every arch.
->>
->> base-commit-tag: next-20230207
->>
->> Palmer Dabbelt (24):
->>    alpha: Remove COMMAND_LINE_SIZE from uapi
->>    arm64: Remove COMMAND_LINE_SIZE from uapi
->>    arm: Remove COMMAND_LINE_SIZE from uapi
->>    ia64: Remove COMMAND_LINE_SIZE from uapi
->>    m68k: Remove COMMAND_LINE_SIZE from uapi
->>    microblaze: Remove COMMAND_LINE_SIZE from uapi
->>    mips: Remove COMMAND_LINE_SIZE from uapi
->>    parisc: Remove COMMAND_LINE_SIZE from uapi
->>    powerpc: Remove COMMAND_LINE_SIZE from uapi
->>    sparc: Remove COMMAND_LINE_SIZE from uapi
->>    xtensa: Remove COMMAND_LINE_SIZE from uapi
->>    asm-generic: Remove COMMAND_LINE_SIZE from uapi
->>    alpha: Remove empty <uapi/asm/setup.h>
->>    arc: Remove empty <uapi/asm/setup.h>
->>    m68k: Remove empty <uapi/asm/setup.h>
->>    arm64: Remove empty <uapi/asm/setup.h>
->>    microblaze: Remove empty <uapi/asm/setup.h>
->>    sparc: Remove empty <uapi/asm/setup.h>
->>    parisc: Remove empty <uapi/asm/setup.h>
->>    x86: Remove empty <uapi/asm/setup.h>
->>    xtensa: Remove empty <uapi/asm/setup.h>
->>    powerpc: Remove empty <uapi/asm/setup.h>
->>    mips: Remove empty <uapi/asm/setup.h>
->>    s390: Remove empty <uapi/asm/setup.h>
->>
->>   .../admin-guide/kernel-parameters.rst         |  2 +-
->>   arch/alpha/include/asm/setup.h                |  4 +--
->>   arch/alpha/include/uapi/asm/setup.h           |  7 -----
->>   arch/arc/include/asm/setup.h                  |  1 -
->>   arch/arc/include/uapi/asm/setup.h             |  6 -----
->>   arch/arm/include/asm/setup.h                  |  1 +
->>   arch/arm/include/uapi/asm/setup.h             |  2 --
->>   arch/arm64/include/asm/setup.h                |  3 ++-
->>   arch/arm64/include/uapi/asm/setup.h           | 27 -------------------
->>   arch/ia64/include/asm/setup.h                 | 10 +++++++
->>   arch/ia64/include/uapi/asm/setup.h            |  6 ++---
->>   arch/loongarch/include/asm/setup.h            |  2 +-
->>   arch/m68k/include/asm/setup.h                 |  3 +--
->>   arch/m68k/include/uapi/asm/setup.h            | 17 ------------
->>   arch/microblaze/include/asm/setup.h           |  2 +-
->>   arch/microblaze/include/uapi/asm/setup.h      | 20 --------------
->>   arch/mips/include/asm/setup.h                 |  3 ++-
->>   arch/mips/include/uapi/asm/setup.h            |  8 ------
->>   arch/parisc/include/{uapi => }/asm/setup.h    |  0
->>   arch/powerpc/include/asm/setup.h              |  2 +-
->>   arch/powerpc/include/uapi/asm/setup.h         |  7 -----
->>   arch/s390/include/asm/setup.h                 |  1 -
->>   arch/s390/include/uapi/asm/setup.h            |  1 -
->>   arch/sh/include/asm/setup.h                   |  2 +-
->>   arch/sparc/include/asm/setup.h                |  6 ++++-
->>   arch/sparc/include/uapi/asm/setup.h           | 16 -----------
->>   arch/x86/include/asm/setup.h                  |  2 --
->>   arch/x86/include/uapi/asm/setup.h             |  1 -
->>   arch/xtensa/include/{uapi => }/asm/setup.h    |  0
->>   include/asm-generic/Kbuild                    |  1 +
->>   include/{uapi => }/asm-generic/setup.h        |  0
->>   include/uapi/asm-generic/Kbuild               |  1 -
->>   32 files changed, 31 insertions(+), 133 deletions(-)
->>   delete mode 100644 arch/alpha/include/uapi/asm/setup.h
->>   delete mode 100644 arch/arc/include/uapi/asm/setup.h
->>   delete mode 100644 arch/arm64/include/uapi/asm/setup.h
->>   create mode 100644 arch/ia64/include/asm/setup.h
->>   delete mode 100644 arch/m68k/include/uapi/asm/setup.h
->>   delete mode 100644 arch/microblaze/include/uapi/asm/setup.h
->>   delete mode 100644 arch/mips/include/uapi/asm/setup.h
->>   rename arch/parisc/include/{uapi => }/asm/setup.h (100%)
->>   delete mode 100644 arch/powerpc/include/uapi/asm/setup.h
->>   delete mode 100644 arch/s390/include/uapi/asm/setup.h
->>   delete mode 100644 arch/sparc/include/uapi/asm/setup.h
->>   delete mode 100644 arch/x86/include/uapi/asm/setup.h
->>   rename arch/xtensa/include/{uapi => }/asm/setup.h (100%)
->>   rename include/{uapi => }/asm-generic/setup.h (100%)
->>
-> Björn noticed that I should also remove the command line size for 
-> riscv since it was picked up in 6.3 by Palmer...I send a v6 right now, 
-> sorry about that.
->
-> Alex
->
+So add support for the "pwr" spelling if clang is in use.
 
-Hmmm when implementing the riscv patch, I noticed that the patches that 
-introduce a new include/asm/setup.h file add the following SPDX header:
+Reported-by: Nathan Chancellor <nathan@kernel.org>
+BugLink: https://github.com/ClangBuiltLinux/linux/issues/1799
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/Kconfig.cputype | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+Need to confirm the clang <= 16 statement is correct.
 
-To me we should not add "WITH Linux-syscall-note" as this header is not 
-part of the user visible headers: any opinion before I send the v5?
-
-Thanks,
-
-Alex
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 7d7477b73951..e4e0e81be7de 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -278,6 +278,10 @@ config TUNE_CPU
+ 	default "-mtune=power10" if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power10)
+ 	default "-mtune=power9"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power9)
+ 	default "-mtune=power8"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power8)
++	# clang <= 16 only supports the "pwr" names
++	default "-mtune=pwr10"   if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr10)
++	default "-mtune=pwr9"    if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr9)
++	default "-mtune=pwr8"    if POWERPC64_CPU && CC_IS_CLANG && $(cc-option,-mtune=pwr8)
+ 
+ config PPC_BOOK3S
+ 	def_bool y
+-- 
+2.39.2
 
