@@ -4,95 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 612D3C678D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 23:02:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9F34C7EE30
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 23:54:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSRSw03vfz3cff
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 10:02:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSScS6Sshz3chS
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 10:54:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jHCT19v+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o3WsOut0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSSbN6JV6z3c9V
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 10:53:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jHCT19v+;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o3WsOut0;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSRRt0hTsz3cG1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 10:01:29 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 322Mq0jx008133;
-	Thu, 2 Mar 2023 23:01:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : subject :
- from : to : cc : date : in-reply-to : references : content-type :
- content-transfer-encoding : mime-version; s=pp1;
- bh=Heyyd7Bx/WdZEwmdkmmCHSXQpBopTgEimLG4hnk4DaU=;
- b=jHCT19v+GC/3RJKHObtA7HD3aankBQA+pgeOBIqsBdht7GXGy3BgsaMk0xYmAWvm/FdW
- QyMQd/2NB0cCJkcQRhyH4HHciNnTqfxj0txiKOyEj1jdUdMau4dEuyTCSkEuHjpiGkWo
- RY1SiVQF7oieas5HZ7JywY4+/9syzXfI726xpK9T5pCQnqLLHTck/C9wTb5y1PNrsiTb
- T16ZpgOGlm4NJf05f7ycmVWIUa653h2XJQmG/J+54kYu8LDMCAMzv2z1XdlBOgYGZK1G
- qcjScHT/GwSvLsNsjaP6UYgC9UWrXlXq6toOvzW7G96nkNt4DlmYStZiu/jEvjRE6OEf vw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3p34yd85h4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Mar 2023 23:01:26 +0000
-Received: from m0098416.ppops.net (m0098416.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 322MsXTO014729;
-	Thu, 2 Mar 2023 23:01:26 GMT
-Received: from ppma02fra.de.ibm.com (47.49.7a9f.ip4.static.sl-reverse.com [159.122.73.71])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3p34yd85g7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Mar 2023 23:01:26 +0000
-Received: from pps.filterd (ppma02fra.de.ibm.com [127.0.0.1])
-	by ppma02fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 322Kw2kv028341;
-	Thu, 2 Mar 2023 23:01:24 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma02fra.de.ibm.com (PPS) with ESMTPS id 3nybe2mqhd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 02 Mar 2023 23:01:24 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 322N1MiH65667346
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 2 Mar 2023 23:01:22 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2605020040;
-	Thu,  2 Mar 2023 23:01:22 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9D3B12004B;
-	Thu,  2 Mar 2023 23:01:21 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  2 Mar 2023 23:01:21 +0000 (GMT)
-Received: from [9.177.66.63] (unknown [9.177.66.63])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EA766600E5;
-	Fri,  3 Mar 2023 10:01:17 +1100 (AEDT)
-Message-ID: <fb0a85a1033a46235d312314d01936452c873316.camel@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: Fix __pte_needs_flush() false positive
- warning
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 03 Mar 2023 10:01:13 +1100
-In-Reply-To: <20230302225203.75685-1-bgray@linux.ibm.com>
-References: <20230302225203.75685-1-bgray@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.46.4 (3.46.4-1.fc37) 
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: F7L4IsjUSd3ZjtIPjBNChNKEW7FD2AeR
-X-Proofpoint-ORIG-GUID: e9f25O8VkpIhoOwgv-TUkangdPe7yeud
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PSSbL53c3z4x1R;
+	Fri,  3 Mar 2023 10:53:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1677801183;
+	bh=xuqUkcOcM+A60OFN+8mffp69qEpQc4jR8LVTswUzgd8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=o3WsOut0g4DzM8MBqXBE3rEuKste6e7hZgsYIRNyrWZTaa5U/M/AIDCigOzTyTP0h
+	 ZlkeLkC9WLYjpFBDAtW32+VXOA+aYExDouGbFHhcbqOOijhrQMKWLpF2UIN+rUtxx0
+	 myCFggwdzcDH80OlPSrdoaVdvpzdXHDiG4bVfN+lDtLApZah2hgTXJWngrLtBm/7XH
+	 G9W/KK7rFS1uCZ05p/EC0ZOebO8qyPJUD7af5cuNnia6846hNI6U+btvgGtgNcZrI6
+	 yoT3oUONElMQKUXzpktEreDjV7/jymv3fEtmhDaOlvLS9dE1xZSXQR3/pxKlgaMLDh
+	 X1t9k25cbIobg==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nathan Chancellor <nathan@kernel.org>
+Subject: Re: [PATCH 2/2] powerpc/64: Use -mtune=pwr10/9/8 for clang
+In-Reply-To: <20230302164324.GB3010526@dev-arch.thelio-3990X>
+References: <20230302131656.50626-1-mpe@ellerman.id.au>
+ <20230302131656.50626-2-mpe@ellerman.id.au>
+ <20230302164324.GB3010526@dev-arch.thelio-3990X>
+Date: Fri, 03 Mar 2023 10:53:02 +1100
+Message-ID: <878rgelnhd.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.219,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-02_15,2023-03-02_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- bulkscore=0 mlxscore=0 spamscore=0 malwarescore=0 impostorscore=0
- phishscore=0 clxscore=1015 adultscore=0 suspectscore=0 mlxlogscore=540
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2212070000 definitions=main-2303020195
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,10 +59,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, ruscur@russell.cc
+Cc: Nick Desaulniers <ndesaulniers@google.com>, llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Accidentally added a bad auto-import, V2 sent
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20230302225947.8108=
-3-1-bgray@linux.ibm.com/
+Nathan Chancellor <nathan@kernel.org> writes:
+> Hi Michael,
+>
+> Thanks for the workaround and sorry this has come to bite us :/
+>
+> On Fri, Mar 03, 2023 at 12:16:56AM +1100, Michael Ellerman wrote:
+>> For the -mtune option clang doesn't accept power10/9/8, instead it
+>> accepts pwr10/9/8. That will be fixed in future versions of clang, but
+>> the kernel must support the clang versions in the wild.
+>> 
+>> So add support for the "pwr" spelling if clang is in use.
+>> 
+>> Reported-by: Nathan Chancellor <nathan@kernel.org>
+>
+> I think that should actually be
+>
+> Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+
+I guess yeah.
+
+>> BugLink: https://github.com/ClangBuiltLinux/linux/issues/1799
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+
+Thanks.
+
+>> ---
+>>  arch/powerpc/platforms/Kconfig.cputype | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>> 
+>> Need to confirm the clang <= 16 statement is correct.
+>
+> Currently, this is indeed the case. It is possible that Nemanja's patch
+> will get applied to release/16.x before 16.0.0 final but it might not.
+>
+> We can always update it later. I think we do want to push to get that
+> patch applied because I forgot that it is only in 16.0.0 that '-mtune'
+> starts to do something on PowerPC:
+>
+> https://github.com/llvm/llvm-project/commit/1dc26b80b872a94c581549a21943756a8c3448a3
+>
+> Prior to that change, '-mtune' was accepted but did nothing. It is only
+> once it was hooked up to the backend that we got the spew of warnings. I
+> think that warrants us trying to get Nemanja's patch into 16.0.0, which
+> may allow us to drop this workaround altogether...
+
+Aha OK, I missed that the warning was new in 16.
+
+I'll sit on this for now then until we know if that change will make it
+into clang 16.
+
+cheers
