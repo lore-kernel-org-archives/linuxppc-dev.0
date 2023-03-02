@@ -4,49 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B651C678D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 23:55:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D047C678D4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 00:07:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSSdf5RPcz3chc
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 10:55:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MZDf4yRl;
-	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSSvT45STz3f52
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 11:07:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+X-Greylist: delayed 2002 seconds by postgrey-1.36 at boromir; Fri, 03 Mar 2023 11:06:29 AEDT
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSScf0l4nz3cgp
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 10:54:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=MZDf4yRl;
-	dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PSScd6djDz4x80;
-	Fri,  3 Mar 2023 10:54:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1677801250;
-	bh=nqFX4Y4vkX54mC0WYyvMlxv/TCFdzS+dMyZeNTfKKeI=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=MZDf4yRlxCoC0fP6tuwl0GnEAK4yjGFJb/QCBYFdieZCvJKHbBqhoCGLoNXUyFP24
-	 0joIM2hqfb7QvZf+xmWERv8+Nduf18+QH+DonzGNlByudGo1u5xJsHHuXdreojE26N
-	 rfkPe7pOwrNowzoTsWTws03CvQUPVlKd7WUMxufswPycsyODarwSfFkj9ADFL5HZMc
-	 06DCv2wV0tHNRd0HQPIblszKkr8Mb9TM41BH+HjPtcq5SqSuMquiJk48okyjO6XOYa
-	 CpU28H7JX2FKKKoUSfJgCzYqfggXOmX33SX5WAZjCfm36jSB3SMEiDTzWijgCwPXvL
-	 pVsMiLyw1a9GA==
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Chancellor <nathan@kernel.org>
-Subject: Re: [PATCH 1/2] powerpc/64: Move CPU -mtune options into Kconfig
-In-Reply-To: <20230302163055.GA3010526@dev-arch.thelio-3990X>
-References: <20230302131656.50626-1-mpe@ellerman.id.au>
- <20230302163055.GA3010526@dev-arch.thelio-3990X>
-Date: Fri, 03 Mar 2023 10:54:09 +1100
-Message-ID: <875ybilnfi.fsf@mpe.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSSts27Tcz30Mn
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 11:06:29 +1100 (AEDT)
+Received: from [2601:447:c680:c050::eaf6]
+	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <oss@buserror.net>)
+	id 1pXsNs-006371-0d; Thu, 02 Mar 2023 17:30:49 -0600
+Message-ID: <8f1b02433cbeb90fab982a0b5377e8558e4eb5d3.camel@buserror.net>
+From: Crystal Wood <oss@buserror.net>
+To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Paul Gortmaker
+	 <paul.gortmaker@windriver.com>
+Date: Thu, 02 Mar 2023 17:30:45 -0600
+In-Reply-To: <20230221214930.35ttgzntv2vfwlo6@pali>
+References: <20230221194637.28436-1-paul.gortmaker@windriver.com>
+	 <20230221194637.28436-5-paul.gortmaker@windriver.com>
+	 <20230221200308.gu3pwrg7layxzkpt@pali> <Y/U3vIKzkKJAc5iU@windriver.com>
+	 <20230221214930.35ttgzntv2vfwlo6@pali>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.44.4-0ubuntu1 
 MIME-Version: 1.0
-Content-Type: text/plain
+X-SA-Exim-Connect-IP: 2601:447:c680:c050::eaf6
+X-SA-Exim-Rcpt-To: pali@kernel.org, paul.gortmaker@windriver.com, linuxppc-dev@lists.ozlabs.org, leoyang.li@nxp.com, claudiu.manoil@nxp.com, mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: [PATCH 4/4] powerpc: remove orphaned MPC85xx kernel config
+ fragments.
+X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,74 +55,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
+Cc: Li Yang <leoyang.li@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Nathan Chancellor <nathan@kernel.org> writes:
-> On Fri, Mar 03, 2023 at 12:16:55AM +1100, Michael Ellerman wrote:
->> Currently the -mtune options are set in the Makefile, depending on what
->> is the compiler supports.
->> 
->> One downside of doing it that way is that the chosen -mtune option is
->> not recorded in the .config.
->> 
->> Another downside is that doing more complicated logic to calculate the
->> correct option gets messy in the Makefile.
->> 
->> So move the determination of which -mtune option to use into Kconfig
->> logic.
->> 
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> Reviewed-by: Nathan Chancellor <nathan@kernel.org>
->
->> ---
->>  arch/powerpc/Makefile                  | 4 +---
->>  arch/powerpc/platforms/Kconfig.cputype | 6 ++++++
->>  2 files changed, 7 insertions(+), 3 deletions(-)
->> 
->> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->> index 87d6ac27eebd..779956007f0c 100644
->> --- a/arch/powerpc/Makefile
->> +++ b/arch/powerpc/Makefile
->> @@ -156,9 +156,7 @@ endif
->>  CFLAGS-$(CONFIG_TARGET_CPU_BOOL) += -mcpu=$(CONFIG_TARGET_CPU)
->>  AFLAGS-$(CONFIG_TARGET_CPU_BOOL) += -mcpu=$(CONFIG_TARGET_CPU)
->>  
->> -CFLAGS-$(CONFIG_POWERPC64_CPU) += $(call cc-option,-mtune=power10,	\
->> -				  $(call cc-option,-mtune=power9,	\
->> -				  $(call cc-option,-mtune=power8)))
->> +CFLAGS-y += $(CONFIG_TUNE_CPU)
->>  
->>  asinstr := $(call as-instr,lis 9$(comma)foo@high,-DHAVE_AS_ATHIGH=1)
->>  
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
->> index 046b571496b1..7d7477b73951 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -273,6 +273,12 @@ config TARGET_CPU
->>  	default "e500mc" if E500MC_CPU
->>  	default "powerpc" if POWERPC_CPU
->>  
->> +config TUNE_CPU
->> +	string
->> +	default "-mtune=power10" if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power10)
->> +	default "-mtune=power9"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power9)
->> +	default "-mtune=power8"  if POWERPC64_CPU && CC_IS_GCC   && $(cc-option,-mtune=power8)
->
-> Would it be cleaner to hoist the POWERPC64_CPU dependency?
+On Tue, 2023-02-21 at 22:49 +0100, Pali Roh=C3=A1r wrote:
+> On Tuesday 21 February 2023 16:29:32 Paul Gortmaker wrote:
+> > [Re: [PATCH 4/4] powerpc: remove orphaned MPC85xx kernel config
+> > fragments.] On 21/02/2023 (Tue 21:03) Pali Roh??r wrote:
+> >=20
+> > > On Tuesday 21 February 2023 14:46:37 Paul Gortmaker wrote:
+> > > > None of these have a reference anymore anywhere, such as like this:
+> > > >=20
+> > > > =C2=A0 arch/powerpc/Makefile:=C2=A0 $(call
+> > > > merge_into_defconfig,mpc85xx_base.config,\
+> > > >=20
+> > > > As such, we probably should just clean up and remove them.
+> > > >=20
+> > > > Cc: Scott Wood <oss@buserror.net>
+> > > > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > > Cc: Paul Mackerras <paulus@samba.org>
+> > > > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> > > > ---
+> > > > =C2=A0arch/powerpc/configs/85xx-32bit.config |=C2=A0=C2=A0 5 -
+> > > > =C2=A0arch/powerpc/configs/85xx-hw.config=C2=A0=C2=A0=C2=A0 | 139 -=
+-----------------------
+> > > > -
+> > > > =C2=A0arch/powerpc/configs/85xx-smp.config=C2=A0=C2=A0 |=C2=A0=C2=
+=A0 2 -
+> > > > =C2=A03 files changed, 146 deletions(-)
+> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-32bit.config
+> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-hw.config
+> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-smp.config
+> > >=20
+> > > This change is likely going to break mpc85xx platform because defconf=
+ig
+> > > files includes all these files which you are going to remove. For
+> > > example in arch/powerpc/Makefile is:
+> > >=20
+> > > PHONY +=3D mpc85xx_smp_defconfig
+> > > mpc85xx_smp_defconfig:
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0$(call merge_into_def=
+config,mpc85xx_base.config,\
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A085xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
+> >=20
+> > OK, it seems you've answered a question for me.=C2=A0 That being "why d=
+idn't
+> > grep find a reference to these fragments?"
+> >=20
+> > It seems the ".config" extension is optional?
+>=20
+> I really do not know. (And I'm not sure if I want to know answer :D)
 
-I was experimenting with some follow-on patches that add more cases for
-other CPUs, but that got messy and it'll need a bit more work.
+It's not optional; you have to leave it off:
 
-So for now yes I should just hoist that dependency.
+# Used to create 'merged defconfigs'
+# To use it $(call) it with the first argument as the base defconfig
+# and the second argument as a space separated list of .config files to mer=
+ge,
+# without the .config suffix.
+define merge_into_defconfig
+...
 
-cheers
+> > This seems inconsistent at best, to reference some files with the
+> > .config extension and others without it.=C2=A0 Not blaming you for that=
+,
+> > but it is probably something that needs looking into.
+>=20
+> I agree it is inconsistent. But it was there before I looked or touched
+> any powerpc code. So it looks like something which nobody wanted to
+> cleanup because "it works" and had no motivation.
 
-> config TUNE_CPU
-> 	string
-> 	default "-mtune=power10" if CC_IS_GCC   && $(cc-option,-mtune=power10)
-> 	default "-mtune=power9"  if CC_IS_GCC   && $(cc-option,-mtune=power9)
-> 	default "-mtune=power8"  if CC_IS_GCC   && $(cc-option,-mtune=power8)
-> 	depends on POWERPC64_CPU
+No, it's intentional to reduce verbosity.  If by "inconsistent" you're
+referring to mpc85xx_base.config, that argument sometimes refers to _defcon=
+fig
+files (i.e. the pseries targets which were the initial user of
+merge_into_config) so that argument can't autoappend .config.
+
+-Crystal
+
