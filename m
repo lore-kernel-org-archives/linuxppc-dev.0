@@ -4,57 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0AA9C6FA8E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 04:11:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA824C6FA8E
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 07:50:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PRyMq2Wrzz3fWd
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 15:11:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=traphandler.com (client-ip=46.105.34.251; helo=smtpout1.mo528.mail-out.ovh.net; envelope-from=jjhiblot@traphandler.com; receiver=<UNKNOWN>)
-Received: from smtpout1.mo528.mail-out.ovh.net (smtpout1.mo528.mail-out.ovh.net [46.105.34.251])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PS3FD0w9mz3f3V
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 18:50:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.46; helo=mail-oa1-f46.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oa1-f46.google.com (mail-oa1-f46.google.com [209.85.160.46])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PRqYd2xV8z3bZv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 10:04:18 +1100 (AEDT)
-Received: from pro2.mail.ovh.net (unknown [10.109.156.120])
-	by mo528.mail-out.ovh.net (Postfix) with ESMTPS id 694A92195F;
-	Wed,  1 Mar 2023 18:52:58 +0000 (UTC)
-Received: from localhost.localdomain (88.161.25.233) by DAG1EX1.emp2.local
- (172.16.2.1) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.21; Wed, 1 Mar
- 2023 19:52:57 +0100
-From: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
-To: <saravanak@google.com>, <clement.leger@bootlin.com>, Geert Uytterhoeven
-	<geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Russell King
-	<linux@armlinux.org.uk>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
-	<zajec5@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas
- Gleixner <tglx@linutronix.de>, Claudiu Beznea <claudiu.beznea@microchip.com>,
-	Marc Zyngier <maz@kernel.org>, <afaerber@suse.de>, Manivannan Sadhasivam
-	<mani@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Paul Walmsley
-	<paul.walmsley@sifive.com>, Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec
-	<jernej.skrabec@gmail.com>, Samuel Holland <samuel@sholland.org>, Rob Herring
-	<robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Bjorn Helgaas
-	<bhelgaas@google.com>, Nishanth Menon <nm@ti.com>, <ssantosh@kernel.org>,
-	<mathias.nyman@intel.com>, <gregkh@linuxfoundation.org>,
-	<thierry.reding@gmail.com>, <jonathanh@nvidia.com>
-Subject: [PATCH 0/3] of: irq: Fixes refcount issues with of_irq_parse_one()/of_irq_parse_raw()
-Date: Wed, 1 Mar 2023 19:52:06 +0100
-Message-ID: <20230301185209.274134-1-jjhiblot@traphandler.com>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PS3Db5MSkz3c2v
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Mar 2023 18:50:21 +1100 (AEDT)
+Received: by mail-oa1-f46.google.com with SMTP id 586e51a60fabf-1722c48a773so17249825fac.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 23:50:21 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=m9NdTpfDEMV32UTE9lZbQp6kQQhUJVdsU2kqbFsl+ZA=;
+        b=wXczfoP8lcaHq3NaTZO5m/Bxi8aOgG3GaRgXGHgElr6bKJdxbJdeDPZ/MGo8Pe9ni/
+         34SvhcbdCnY4aw0qGMel8U3ycgoyImQOqcMY2KCBQmAyIjo1CR20RePEwu9ANA8X65Xi
+         mLSG5S8iadOiAqymYoNwgqi+c1dIZFq0BDKISUggPe2O1SA4MZNKhGN3UbngwhlBjT80
+         gKWJetsQKW4BE4AwlU36by8em9vbaupzg7yMmQu9uankZsOr35GNe+BKB247rNLdEytq
+         0pEiOYMwoTpwmn2ZD10eBPdfsrGLcDVtQaLtDrh990mOy5yQ7Sb9R7SVQzIdkGsZ3cMU
+         6gNA==
+X-Gm-Message-State: AO0yUKUgfxwHu4n2i8KBiBtjwC405Vo6jXJ/U9NlF0XP4qdmHIk9FPIe
+	POiyZsAQwzFa/8gIZ0H8IrJLGwD3yfPp7g==
+X-Google-Smtp-Source: AK7set9HJg5DClfCLNfXbVH1sWQVT0mBMp23X0g55Hidie8RYip9YtkoDI0JxS3qTAfq+6vUQKOHKA==
+X-Received: by 2002:a05:6870:a794:b0:171:8716:f0be with SMTP id x20-20020a056870a79400b001718716f0bemr5240999oao.59.1677743417390;
+        Wed, 01 Mar 2023 23:50:17 -0800 (PST)
+Received: from mail-oo1-f52.google.com (mail-oo1-f52.google.com. [209.85.161.52])
+        by smtp.gmail.com with ESMTPSA id x131-20020a4a4189000000b00517fc5fdf5bsm5827914ooa.17.2023.03.01.23.50.17
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 01 Mar 2023 23:50:17 -0800 (PST)
+Received: by mail-oo1-f52.google.com with SMTP id a23-20020a4ad5d7000000b005250867d3d9so2509406oot.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Mar 2023 23:50:17 -0800 (PST)
+X-Received: by 2002:a81:ad1b:0:b0:52f:1c23:ef1 with SMTP id
+ l27-20020a81ad1b000000b0052f1c230ef1mr5784211ywh.5.1677743396691; Wed, 01 Mar
+ 2023 23:49:56 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [88.161.25.233]
-X-ClientProxiedBy: DAG3EX2.emp2.local (172.16.2.22) To DAG1EX1.emp2.local
- (172.16.2.1)
-X-Ovh-Tracer-Id: 11460535153186650492
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrudelhedguddutdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefhvfevufffkffoggfgtghisehtkeertdertddtnecuhfhrohhmpeflvggrnhdqlfgrtghquhgvshcujfhisghlohhtuceojhhjhhhisghlohhtsehtrhgrphhhrghnughlvghrrdgtohhmqeenucggtffrrghtthgvrhhnpeejuefhkeelgffhlefhtefhgeektdevvdfgkeeltdehgeeujeeutdehkeeuhffftdenucfkphepuddvjedrtddrtddruddpkeekrdduiedurddvhedrvdeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduvdejrddtrddtrddupdhmrghilhhfrhhomhepoehjjhhhihgslhhothesthhrrghphhgrnhgulhgvrhdrtghomheqpdhnsggprhgtphhtthhopedupdhrtghpthhtohepshgrrhgrvhgrnhgrkhesghhoohhglhgvrdgtohhmpdhnmhesthhirdgtohhmpdhsshgrnhhtohhshheskhgvrhhnvghlrdhorhhgpdhmrghthhhirghsrdhnhihmrghnsehinhhtvghlrdgtohhmpdhgrhgvghhkhheslhhinhhugihfohhunhgurghtihhonhdrohhrghdpthhhihgvrhhrhidrrhgvughinhhgsehgmhgrihhlrdgtohhmpdhjohhnrghthhgrnhhhsehnvhhiughirgdrtghomhdplhhinhhugidqrh
- gvnhgvshgrshdqshhotgesvhhgvghrrdhkvghrnhgvlhdrohhrghdplhhinhhugidqrghrmhdqkhgvrhhnvghlsehlihhsthhsrdhinhhfrhgruggvrggurdhorhhgpdhlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrghdplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdplhhinhhugidqfihirhgvlhgvshhssehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhlihhnuhigqdgrtghtihhonhhssehlihhsthhsrdhinhhfrhgruggvrggurdhorhhgpdhlihhnuhigqdhrihhstghvsehlihhsthhsrdhinhhfrhgruggvrggurdhorhhgpdhlihhnuhigqdhsuhhngihisehlihhsthhsrdhlihhnuhigrdguvghvpdguvghvihgtvghtrhgvvgesvhhgvghrrdhkvghrnhgvlhdrohhrghdplhhinhhugidqphgtihesvhhgvghrrdhkvghrnhgvlhdrohhrghdplhhinhhugidquhhssgesvhhgvghrrdhkvghrnhgvlhdrohhrghdpsghhvghlghgrrghssehgohhoghhlvgdrtghomhdpfhhrohifrghnugdrlhhishhtsehgmhgrihhlrdgtohhmpdhrohgshhdoughtsehkvghrnhgvlhdrohhrghdpshgrmhhuvghlsehshhholhhlrghnugdrohhrghdptghlvghmvghnthdrlhgvghgvrhessghoohhtlhhinhdrtghomhdpghgvvghrthdorhgvnhgvshgrshesghhlihguvghrrdgsvgdpmhgrghhnuhhsrdgurghmmhesghhmrghilhdrtghomhdplhhinhhugiesrghrmhhlihhnuhigrdhorhh
- grdhukhdpmhhpvgesvghllhgvrhhmrghnrdhiugdrrghupdhnphhighhgihhnsehgmhgrihhlrdgtohhmpdgthhhrihhsthhophhhvgdrlhgvrhhohiestghsghhrohhuphdrvghupdiirghjvggtheesghhmrghilhdrtghomhdplhhinhhugidqthgvghhrrgesvhhgvghrrdhkvghrnhgvlhdrohhrghdpuggrnhhivghlrdhlvgiitggrnhhosehlihhnrghrohdrohhrghdptghlrghuughiuhdrsggviihnvggrsehmihgtrhhotghhihhprdgtohhmpdhmrgiisehkvghrnhgvlhdrohhrghdprghfrggvrhgsvghrsehsuhhsvgdruggvpdhmrghniheskhgvrhhnvghlrdhorhhgpdhprghlmhgvrhesuggrsggsvghlthdrtghomhdpphgruhhlrdifrghlmhhslhgvhiesshhifhhivhgvrdgtohhmpdifvghnshestghsihgvrdhorhhgpdhjvghrnhgvjhdrshhkrhgrsggvtgesghhmrghilhdrtghomhdpthhglhigsehlihhnuhhtrhhonhhigidruggvpdfovfetjfhoshhtpehmohehvdekpdhmohguvgepshhmthhpohhuth
-X-Mailman-Approved-At: Thu, 02 Mar 2023 15:09:14 +1100
+References: <20230301185209.274134-1-jjhiblot@traphandler.com> <20230301185209.274134-3-jjhiblot@traphandler.com>
+In-Reply-To: <20230301185209.274134-3-jjhiblot@traphandler.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 2 Mar 2023 08:49:44 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdVF337k+zyjpbzoDtWWDnYhM6eM3+As6UuZ7FCgASsMQg@mail.gmail.com>
+Message-ID: <CAMuHMdVF337k+zyjpbzoDtWWDnYhM6eM3+As6UuZ7FCgASsMQg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] of: irq: make callers of of_irq_parse_one() release
+ the device node
+To: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,46 +68,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Jean-Jacques Hiblot <jjhiblot@traphandler.com>, linux-actions@lists.infradead.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-sunxi@lists.linux.dev, linux-arm-kernel@lists.infradead.org
+Cc: Nishanth Menon <nm@ti.com>, zajec5@gmail.com, linux-pci@vger.kernel.org, ssantosh@kernel.org, linux-tegra@vger.kernel.org, thierry.reding@gmail.com, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, saravanak@google.com, Samuel Holland <samuel@sholland.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, jonathanh@nvidia.com, Chen-Yu Tsai <wens@csie.org>, clement.leger@bootlin.com, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, mathias.nyman@intel.com, Manivannan Sadhasivam <mani@kernel.org>, linux-actions@lists.infradead.org, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, Claudiu 
+ Beznea <claudiu.beznea@microchip.com>, linux-renesas-soc@vger.kernel.org, Palmer Dabbelt <palmer@dabbelt.com>, Marc Zyngier <maz@kernel.org>, linuxppc-dev@lists.ozlabs.org, afaerber@suse.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series attempts to fix refcounting issues related to of_irq_parse_one()
-and of_irq_parse_raw().
+Hi Jean-Jacques,
 
-The first issue is simply that most callers of of_irq_parse_one() and
-of_irq_parse_raw() don't call of_node_put() on the returned device node when
-they no longer need it.
+Thanks for your patch!
 
-The second issue is a double get() happening in of_irq_parse_one() when
-parsing the "interrupts-extended" properties.
+On Wed, Mar 1, 2023 at 7:53=E2=80=AFPM Jean-Jacques Hiblot
+<jjhiblot@traphandler.com> wrote:
+> of_irq_parse_one() does a get() on the device node returned in out_irq->n=
+p.
+> Callers of of_irq_parse_one() must do a put() when they are done with it.
 
-WARNING: I tried to be careful when modifying the callers of
-of_irq_parse_one()/of_irq_parse_raw() but haven't test-build all the changes.
+What does "be done with it" really mean here?
 
+> Signed-off-by: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
 
-Jean-Jacques Hiblot (3):
-  of: irq: make callers of of_irq_parse_raw() release the device node
-  of: irq: make callers of of_irq_parse_one() release the device node
-  of: irq: release the node after looking up for "interrupts-extended"
+> --- a/arch/arm/mach-shmobile/regulator-quirk-rcar-gen2.c
+> +++ b/arch/arm/mach-shmobile/regulator-quirk-rcar-gen2.c
+> @@ -184,6 +184,7 @@ static int __init rcar_gen2_regulator_quirk(void)
+>                         kfree(quirk);
+>                         continue;
+>                 }
+> +               of_node_put(argsa->np);
 
- .../mach-shmobile/regulator-quirk-rcar-gen2.c |  1 +
- arch/powerpc/platforms/fsl_uli1575.c          |  1 +
- arch/powerpc/sysdev/mpic_msi.c                |  1 +
- drivers/bcma/main.c                           |  5 +++-
- drivers/clocksource/timer-clint.c             |  1 +
- drivers/irqchip/irq-mchp-eic.c                |  1 +
- drivers/irqchip/irq-owl-sirq.c                |  1 +
- drivers/irqchip/irq-renesas-rzg2l.c           |  1 +
- drivers/irqchip/irq-sifive-plic.c             |  1 +
- drivers/irqchip/irq-sun6i-r.c                 |  2 ++
- drivers/of/irq.c                              | 30 ++++++++++++++-----
- drivers/of/unittest.c                         |  7 +++++
- drivers/pci/of.c                              |  6 +++-
- drivers/soc/ti/knav_qmss_queue.c              |  3 ++
- drivers/usb/host/xhci-tegra.c                 |  1 +
- 15 files changed, 53 insertions(+), 9 deletions(-)
+The quirk object, which is a container of argsa, is still used below,
+and stored in a linked list.  I agree argsa->np is not dereferenced,
+but the pointer itself is still compared to other pointers.
+IIUIC, calling of_node_put() might cause the reference count to drop to
+zero, and the underlying struct node object to be deallocated.
+So when a future reference to the same DT node will be taken, a new
+struct node object will be allocated, and the pointer comparison below
+will fail?
 
--- 
-2.25.1
+Or am I missing something?
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
