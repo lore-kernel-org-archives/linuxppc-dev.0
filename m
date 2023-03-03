@@ -4,46 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D047C678D4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 00:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A34AC678D4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 00:12:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSSvT45STz3f52
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 11:07:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=buserror.net (client-ip=165.227.176.147; helo=baldur.buserror.net; envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-X-Greylist: delayed 2002 seconds by postgrey-1.36 at boromir; Fri, 03 Mar 2023 11:06:29 AEDT
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PST2F37m6z3cdk
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 11:12:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nCx/NlLy;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSSts27Tcz30Mn
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 11:06:29 +1100 (AEDT)
-Received: from [2601:447:c680:c050::eaf6]
-	by baldur.buserror.net with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-	(Exim 4.94.2)
-	(envelope-from <oss@buserror.net>)
-	id 1pXsNs-006371-0d; Thu, 02 Mar 2023 17:30:49 -0600
-Message-ID: <8f1b02433cbeb90fab982a0b5377e8558e4eb5d3.camel@buserror.net>
-From: Crystal Wood <oss@buserror.net>
-To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali@kernel.org>, Paul Gortmaker
-	 <paul.gortmaker@windriver.com>
-Date: Thu, 02 Mar 2023 17:30:45 -0600
-In-Reply-To: <20230221214930.35ttgzntv2vfwlo6@pali>
-References: <20230221194637.28436-1-paul.gortmaker@windriver.com>
-	 <20230221194637.28436-5-paul.gortmaker@windriver.com>
-	 <20230221200308.gu3pwrg7layxzkpt@pali> <Y/U3vIKzkKJAc5iU@windriver.com>
-	 <20230221214930.35ttgzntv2vfwlo6@pali>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.44.4-0ubuntu1 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PST1D3XsTz3bP1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 11:12:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=nCx/NlLy;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PST185lsbz4x1R;
+	Fri,  3 Mar 2023 11:11:56 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1677802320;
+	bh=y8wWNYars5Wp25KTgB4IaQUGxk80vrVSQ9DCSBUaDpQ=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=nCx/NlLyhE7MIPjtBUMoILPKlGudC5d2X4jiywJrXt2G2IbBAq3FuwrzyeIV1XsQ/
+	 NJhxQxGiIyBkyMp8QrPWxWlSps7uA0HF0VhGHR8xtsyc5kcZdN8wLecb13lRYyN5Hz
+	 JvK4CU2orYG4IpG++/9+SS5Tnbgxt4LZ7o7S0eHrjAY8/NH1bGMEfge/UGx+342qiA
+	 8n1Mfv5d3ZTVAJoN4lBQczBMy4E8yRwtygE/uOKh0UeJvdODbBM5s6hm+TCpqKu5ID
+	 j22U/sK3TyINj7wezs+YeHg9OQFhmM2QorjVFKz4640ZVitj5YmZ1+DCSX/d+VPxM1
+	 nK5PnlzmxfGRw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jiaxun Yang <jiaxun.yang@flygoat.com>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v2 5/5] of: address: Always use dma_default_coherent for
+ default coherency
+In-Reply-To: <B43602D1-89D4-465F-83B1-CD106E07CB29@flygoat.com>
+References: <20230223113644.23356-1-jiaxun.yang@flygoat.com>
+ <20230223113644.23356-6-jiaxun.yang@flygoat.com>
+ <20230301130613.GC467@lst.de>
+ <B43602D1-89D4-465F-83B1-CD106E07CB29@flygoat.com>
+Date: Fri, 03 Mar 2023 11:11:56 +1100
+Message-ID: <87356mlmlv.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 2601:447:c680:c050::eaf6
-X-SA-Exim-Rcpt-To: pali@kernel.org, paul.gortmaker@windriver.com, linuxppc-dev@lists.ozlabs.org, leoyang.li@nxp.com, claudiu.manoil@nxp.com, mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH 4/4] powerpc: remove orphaned MPC85xx kernel config
- fragments.
-X-SA-Exim-Version: 4.2.1 (built Sat, 13 Feb 2021 17:57:42 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,84 +62,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Yang <leoyang.li@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>, robin.murphy@arm.com, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, palmer@dabbelt.com, paul.walmsley@sifive.com, linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, m.szyprowski@samsung.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2023-02-21 at 22:49 +0100, Pali Roh=C3=A1r wrote:
-> On Tuesday 21 February 2023 16:29:32 Paul Gortmaker wrote:
-> > [Re: [PATCH 4/4] powerpc: remove orphaned MPC85xx kernel config
-> > fragments.] On 21/02/2023 (Tue 21:03) Pali Roh??r wrote:
-> >=20
-> > > On Tuesday 21 February 2023 14:46:37 Paul Gortmaker wrote:
-> > > > None of these have a reference anymore anywhere, such as like this:
-> > > >=20
-> > > > =C2=A0 arch/powerpc/Makefile:=C2=A0 $(call
-> > > > merge_into_defconfig,mpc85xx_base.config,\
-> > > >=20
-> > > > As such, we probably should just clean up and remove them.
-> > > >=20
-> > > > Cc: Scott Wood <oss@buserror.net>
-> > > > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > > Cc: Paul Mackerras <paulus@samba.org>
-> > > > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> > > > ---
-> > > > =C2=A0arch/powerpc/configs/85xx-32bit.config |=C2=A0=C2=A0 5 -
-> > > > =C2=A0arch/powerpc/configs/85xx-hw.config=C2=A0=C2=A0=C2=A0 | 139 -=
------------------------
-> > > > -
-> > > > =C2=A0arch/powerpc/configs/85xx-smp.config=C2=A0=C2=A0 |=C2=A0=C2=
-=A0 2 -
-> > > > =C2=A03 files changed, 146 deletions(-)
-> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-32bit.config
-> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-hw.config
-> > > > =C2=A0delete mode 100644 arch/powerpc/configs/85xx-smp.config
-> > >=20
-> > > This change is likely going to break mpc85xx platform because defconf=
-ig
-> > > files includes all these files which you are going to remove. For
-> > > example in arch/powerpc/Makefile is:
-> > >=20
-> > > PHONY +=3D mpc85xx_smp_defconfig
-> > > mpc85xx_smp_defconfig:
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0$(call merge_into_def=
-config,mpc85xx_base.config,\
-> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A085xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
-> >=20
-> > OK, it seems you've answered a question for me.=C2=A0 That being "why d=
-idn't
-> > grep find a reference to these fragments?"
-> >=20
-> > It seems the ".config" extension is optional?
->=20
-> I really do not know. (And I'm not sure if I want to know answer :D)
+Jiaxun Yang <jiaxun.yang@flygoat.com> writes:
+>> 2023=E5=B9=B43=E6=9C=881=E6=97=A5 13:06=EF=BC=8CChristoph Hellwig <hch@l=
+st.de> =E5=86=99=E9=81=93=EF=BC=9A
+>>=20
+>>> - select OF_DMA_DEFAULT_COHERENT if !NOT_COHERENT_CACHE
+>>=20
+>> Doesn't powerpc need to select CONFIG_ARCH_DMA_DEFAULT_COHERENT now,
+>> or even better should be doing that in the patch adding that
+>> symbol?
+>
+> If I read the code correctly for powerpc OF_DMA_DEFAULT_COHERENT is only =
+selected
+> with !NOT_COHERENT_CACHE, which means non-coherent dma support is disable=
+d=E2=80=A6.
 
-It's not optional; you have to leave it off:
+I think you're right, but it's not easy to understand.
 
-# Used to create 'merged defconfigs'
-# To use it $(call) it with the first argument as the base defconfig
-# and the second argument as a space separated list of .config files to mer=
-ge,
-# without the .config suffix.
-define merge_into_defconfig
-...
+powerpc's NOT_COHERENT_CACHE selects:
 
-> > This seems inconsistent at best, to reference some files with the
-> > .config extension and others without it.=C2=A0 Not blaming you for that=
-,
-> > but it is probably something that needs looking into.
->=20
-> I agree it is inconsistent. But it was there before I looked or touched
-> any powerpc code. So it looks like something which nobody wanted to
-> cleanup because "it works" and had no motivation.
+  select ARCH_HAS_DMA_PREP_COHERENT
+  select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+  select ARCH_HAS_SYNC_DMA_FOR_CPU
 
-No, it's intentional to reduce verbosity.  If by "inconsistent" you're
-referring to mpc85xx_base.config, that argument sometimes refers to _defcon=
-fig
-files (i.e. the pseries targets which were the initial user of
-merge_into_config) so that argument can't autoappend .config.
 
--Crystal
+Then in your patch 3 you do:
 
+ #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+-bool dma_default_coherent;
++bool dma_default_coherent =3D IS_ENABLED(CONFIG_ARCH_DMA_DEFAULT_COHERENT);
+ #endif
+
+So for powerpc if NOT_COHERENT_CACHE=3Dn, then none of those ARCH_HAS
+symbols are defined, and so CONFIG_ARCH_DMA_DEFAULT_COHERENT is never used.
+
+But like I said it's not very obvious, and it also seems fragile to
+future changes.
+
+So it seems it would be more future proof, and self documenting for
+powerpc to just have:
+
+        select ARCH_DMA_DEFAULT_COHERENT if !NOT_COHERENT_CACHE
+
+
+cheers
