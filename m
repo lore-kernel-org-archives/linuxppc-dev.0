@@ -4,70 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 851C7C64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 10:29:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65A67C7EE2D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 15:15:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSkk86nlJz3f3l
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 21:29:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSs3B3xhwz3f3C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 02:15:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d1ZSam3N;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d1ZSam3N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XUBMaRMG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d1ZSam3N;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=d1ZSam3N;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XUBMaRMG;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSkj35MtMz3ccs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 21:28:54 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1677839331;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yopmX6MDTRKlcNmu9WG5Rv8YrLrJS47N2LsvKHp9hMg=;
-	b=d1ZSam3NCMUDZlRxUttTeHptzYWFxBRTBmOyWflYp0vlSlgR8w8ha0NDrQCYKVepZUskg/
-	r4FBepWXeQ1uCpYygIve4tn7KuNxB4+70qSFzQEkWOQ4Ys0izXry27b4vjdf9Fc8ZrO9Qc
-	qmzMVQxkvJsN3V9rwZK4EVtQGkDPRJU=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1677839331;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yopmX6MDTRKlcNmu9WG5Rv8YrLrJS47N2LsvKHp9hMg=;
-	b=d1ZSam3NCMUDZlRxUttTeHptzYWFxBRTBmOyWflYp0vlSlgR8w8ha0NDrQCYKVepZUskg/
-	r4FBepWXeQ1uCpYygIve4tn7KuNxB4+70qSFzQEkWOQ4Ys0izXry27b4vjdf9Fc8ZrO9Qc
-	qmzMVQxkvJsN3V9rwZK4EVtQGkDPRJU=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-595-xP6UApinMKagTPm--UP9rw-1; Fri, 03 Mar 2023 05:28:48 -0500
-X-MC-Unique: xP6UApinMKagTPm--UP9rw-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.rdu2.redhat.com [10.11.54.8])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSs266kNxz3ccn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2023 02:14:06 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 1E57285A5A3;
-	Fri,  3 Mar 2023 10:28:47 +0000 (UTC)
-Received: from MiWiFi-R3L-srv.redhat.com (ovpn-13-150.pek2.redhat.com [10.72.13.150])
-	by smtp.corp.redhat.com (Postfix) with ESMTP id E2FBCC16900;
-	Fri,  3 Mar 2023 10:28:34 +0000 (UTC)
-From: Baoquan He <bhe@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/2] arch/*/io.h: remove ioremap_uc in some architectures
-Date: Fri,  3 Mar 2023 18:28:17 +0800
-Message-Id: <20230303102817.212148-3-bhe@redhat.com>
-In-Reply-To: <20230303102817.212148-1-bhe@redhat.com>
-References: <20230303102817.212148-1-bhe@redhat.com>
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 81D3D6184D;
+	Fri,  3 Mar 2023 15:14:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A00B9C433EF;
+	Fri,  3 Mar 2023 15:14:02 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1677856443;
+	bh=SY8yapFxxlbxxr+YImm1QNyDrMxq689GISGUK9dvGzM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XUBMaRMGAHRCenjd4RbPqV/bhxgnkH1olWU6j3dlWBghBnruGBN5UDe9zwKa/fyKb
+	 QHI0/euHioxKSC5BSqzq3ASq1njWsB+n17cjtNA+19sLHnRqfwteqnCCSte8OjneH9
+	 4RwJUm+5zpBUdUZRmVOA4308F9ALarlAACp/dqRo6eUbB19LqpD1tCQV68UsxOw0GO
+	 9QnmFWsrQ7csVOffJ8OAYY5A2zSAVjVjT7rAwY/iJ150pJ7wmGIyxhPiGnAU763VtE
+	 EaNqwxweAfIhs/Dv/1BWZTTmThYvrPact4rTfCX+ZCVxHZOAxAIK+XkE5evbh5RuIE
+	 WcKK8GEuU7MKw==
+Date: Fri, 3 Mar 2023 08:14:00 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc/64: Use -mtune=pwr10/9/8 for clang
+Message-ID: <20230303151400.GA2665@dev-arch.thelio-3990X>
+References: <20230302131656.50626-1-mpe@ellerman.id.au>
+ <20230302131656.50626-2-mpe@ellerman.id.au>
+ <20230302164324.GB3010526@dev-arch.thelio-3990X>
+ <878rgelnhd.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <878rgelnhd.fsf@mpe.ellerman.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,173 +62,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Baoquan He <bhe@redhat.com>, arnd@arndb.de, linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, hch@infradead.org, linux-mm@kvack.org, mcgrof@kernel.org, geert@linux-m68k.org, linux-parisc@vger.kernel.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Nick Desaulniers <ndesaulniers@google.com>, llvm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ioremap_uc() is only meaningful on old x86-32 systems with the PAT
-extension, and on ia64 with its slightly unconventional ioremap()
-behavior, everywhere else this is the same as ioremap() anyway.
+On Fri, Mar 03, 2023 at 10:53:02AM +1100, Michael Ellerman wrote:
+> Nathan Chancellor <nathan@kernel.org> writes:
+> > Hi Michael,
+> >
+> > Thanks for the workaround and sorry this has come to bite us :/
+> >
+> > On Fri, Mar 03, 2023 at 12:16:56AM +1100, Michael Ellerman wrote:
+> >> For the -mtune option clang doesn't accept power10/9/8, instead it
+> >> accepts pwr10/9/8. That will be fixed in future versions of clang, but
+> >> the kernel must support the clang versions in the wild.
+> >> 
+> >> So add support for the "pwr" spelling if clang is in use.
+> >> 
+> >> Reported-by: Nathan Chancellor <nathan@kernel.org>
+> >
+> > I think that should actually be
+> >
+> > Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+> 
+> I guess yeah.
+> 
+> >> BugLink: https://github.com/ClangBuiltLinux/linux/issues/1799
+> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> >
+> > Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+> 
+> Thanks.
+> 
+> >> ---
+> >>  arch/powerpc/platforms/Kconfig.cputype | 4 ++++
+> >>  1 file changed, 4 insertions(+)
+> >> 
+> >> Need to confirm the clang <= 16 statement is correct.
+> >
+> > Currently, this is indeed the case. It is possible that Nemanja's patch
+> > will get applied to release/16.x before 16.0.0 final but it might not.
+> >
+> > We can always update it later. I think we do want to push to get that
+> > patch applied because I forgot that it is only in 16.0.0 that '-mtune'
+> > starts to do something on PowerPC:
+> >
+> > https://github.com/llvm/llvm-project/commit/1dc26b80b872a94c581549a21943756a8c3448a3
+> >
+> > Prior to that change, '-mtune' was accepted but did nothing. It is only
+> > once it was hooked up to the backend that we got the spew of warnings. I
+> > think that warrants us trying to get Nemanja's patch into 16.0.0, which
+> > may allow us to drop this workaround altogether...
+> 
+> Aha OK, I missed that the warning was new in 16.
+> 
+> I'll sit on this for now then until we know if that change will make it
+> into clang 16.
 
-Here, remove the ioremap_uc() definition in architecutures other
-than x86 and ia64. These architectures all have asm-generic/io.h
-included and will have the default ioremap_uc() definition which
-returns NULL.
+It was merged into release/16.x a few hours ago:
 
-Note: This changes the existing behaviour and could break code
-calling ioremap_uc(). If any ARCH meets this breakage and really
-needs a specific ioremap_uc() for its own usage, one ioremap_uc()
-can be added in the ARCH.
+https://github.com/llvm/llvm-project/issues/61128
 
-Link: https://lore.kernel.org/all/20191112105507.GA7122@lst.de/#t
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Baoquan He <bhe@redhat.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-hexagon@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
+https://github.com/llvm/llvm-project/commit/9b2e09e9fb1aa3bbe3668d7cc585188a3014d1b9
 
----
- Documentation/driver-api/device-io.rst | 14 +++++++++-----
- arch/alpha/include/asm/io.h            |  1 -
- arch/hexagon/include/asm/io.h          |  3 ---
- arch/m68k/include/asm/kmap.h           |  1 -
- arch/mips/include/asm/io.h             |  1 -
- arch/parisc/include/asm/io.h           |  2 --
- arch/powerpc/include/asm/io.h          |  1 -
- arch/sh/include/asm/io.h               |  2 --
- arch/sparc/include/asm/io_64.h         |  1 -
- 9 files changed, 9 insertions(+), 17 deletions(-)
+So I think this particular workaround is no longer needed :)
 
-diff --git a/Documentation/driver-api/device-io.rst b/Documentation/driver-api/device-io.rst
-index 4d2baac0311c..12c2ebbaa41e 100644
---- a/Documentation/driver-api/device-io.rst
-+++ b/Documentation/driver-api/device-io.rst
-@@ -408,11 +408,15 @@ functions for details on the CPU side of things.
- ioremap_uc()
- ------------
- 
--ioremap_uc() behaves like ioremap() except that on the x86 architecture without
--'PAT' mode, it marks memory as uncached even when the MTRR has designated
--it as cacheable, see Documentation/x86/pat.rst.
--
--Portable drivers should avoid the use of ioremap_uc().
-+ioremap_uc() will be obsoleted since it's only expected on x86 and ia64.
-+X86 non-PAT system marks memory as uncached even when the MTRR has designated
-+it as cacheable in ioremap_uc()(see Documentation/x86/pat.rst). Ia64 system
-+need check if attributes match, otherwise fails. Other than these two
-+architectures, ioremap_uc() will default to NULL. Any architectures which
-+meets breakage by ioremap_uc() returning NULL should provide a specific
-+implementation to override the default version.
-+
-+Portable drivers should avoid the use of ioremap_uc(), use ioremap() instead.
- 
- ioremap_cache()
- ---------------
-diff --git a/arch/alpha/include/asm/io.h b/arch/alpha/include/asm/io.h
-index 7aeaf7c30a6f..076f0e4e7f1e 100644
---- a/arch/alpha/include/asm/io.h
-+++ b/arch/alpha/include/asm/io.h
-@@ -308,7 +308,6 @@ static inline void __iomem *ioremap(unsigned long port, unsigned long size)
- }
- 
- #define ioremap_wc ioremap
--#define ioremap_uc ioremap
- 
- static inline void iounmap(volatile void __iomem *addr)
- {
-diff --git a/arch/hexagon/include/asm/io.h b/arch/hexagon/include/asm/io.h
-index dcd9cbbf5934..b9847472f25c 100644
---- a/arch/hexagon/include/asm/io.h
-+++ b/arch/hexagon/include/asm/io.h
-@@ -176,9 +176,6 @@ static inline void writel(u32 data, volatile void __iomem *addr)
- #define _PAGE_IOREMAP (_PAGE_PRESENT | _PAGE_READ | _PAGE_WRITE | \
- 		       (__HEXAGON_C_DEV << 6))
- 
--#define ioremap_uc(addr, size) ioremap((addr), (size))
--
--
- #define __raw_writel writel
- 
- static inline void memcpy_fromio(void *dst, const volatile void __iomem *src,
-diff --git a/arch/m68k/include/asm/kmap.h b/arch/m68k/include/asm/kmap.h
-index 4efb3efa593a..b778f015c917 100644
---- a/arch/m68k/include/asm/kmap.h
-+++ b/arch/m68k/include/asm/kmap.h
-@@ -25,7 +25,6 @@ static inline void __iomem *ioremap(unsigned long physaddr, unsigned long size)
- 	return __ioremap(physaddr, size, IOMAP_NOCACHE_SER);
- }
- 
--#define ioremap_uc ioremap
- #define ioremap_wt ioremap_wt
- static inline void __iomem *ioremap_wt(unsigned long physaddr,
- 				       unsigned long size)
-diff --git a/arch/mips/include/asm/io.h b/arch/mips/include/asm/io.h
-index 6756baadba6c..da0a625c3c6d 100644
---- a/arch/mips/include/asm/io.h
-+++ b/arch/mips/include/asm/io.h
-@@ -167,7 +167,6 @@ void iounmap(const volatile void __iomem *addr);
-  */
- #define ioremap(offset, size)						\
- 	ioremap_prot((offset), (size), _CACHE_UNCACHED)
--#define ioremap_uc		ioremap
- 
- /*
-  * ioremap_cache -	map bus memory into CPU space
-diff --git a/arch/parisc/include/asm/io.h b/arch/parisc/include/asm/io.h
-index 366537042465..48630c78714a 100644
---- a/arch/parisc/include/asm/io.h
-+++ b/arch/parisc/include/asm/io.h
-@@ -132,8 +132,6 @@ static inline void gsc_writeq(unsigned long long val, unsigned long addr)
- 
- #define ioremap_wc(addr, size)  \
- 	ioremap_prot((addr), (size), _PAGE_IOREMAP)
--#define ioremap_uc(addr, size)  \
--	ioremap_prot((addr), (size), _PAGE_IOREMAP)
- 
- #define pci_iounmap			pci_iounmap
- 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index 978d687edf32..7873fc83c82c 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -863,7 +863,6 @@ void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
- #endif
- 
- void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
--#define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
- 	ioremap_prot((addr), (size), pgprot_val(PAGE_KERNEL))
- 
-diff --git a/arch/sh/include/asm/io.h b/arch/sh/include/asm/io.h
-index b3a26b405c8d..12a892804082 100644
---- a/arch/sh/include/asm/io.h
-+++ b/arch/sh/include/asm/io.h
-@@ -278,8 +278,6 @@ unsigned long long poke_real_address_q(unsigned long long addr,
- 	ioremap_prot((addr), (size), pgprot_val(PAGE_KERNEL))
- #endif /* CONFIG_MMU */
- 
--#define ioremap_uc	ioremap
--
- /*
-  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-  * access
-diff --git a/arch/sparc/include/asm/io_64.h b/arch/sparc/include/asm/io_64.h
-index 9303270b22f3..d8ee1442f303 100644
---- a/arch/sparc/include/asm/io_64.h
-+++ b/arch/sparc/include/asm/io_64.h
-@@ -423,7 +423,6 @@ static inline void __iomem *ioremap(unsigned long offset, unsigned long size)
- 	return (void __iomem *)offset;
- }
- 
--#define ioremap_uc(X,Y)			ioremap((X),(Y))
- #define ioremap_wc(X,Y)			ioremap((X),(Y))
- #define ioremap_wt(X,Y)			ioremap((X),(Y))
- static inline void __iomem *ioremap_np(unsigned long offset, unsigned long size)
--- 
-2.34.1
-
+Cheers,
+Nathan
