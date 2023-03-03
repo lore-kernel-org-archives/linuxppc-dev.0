@@ -4,53 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDD3CC678D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  2 Mar 2023 21:24:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48ACBC64EC4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 12:00:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSPJT63qrz30QD
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 08:24:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2023020601 header.b=EoMqj2Nr;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=198.137.202.136; helo=terminus.zytor.com; envelope-from=hpa@zytor.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2023020601 header.b=EoMqj2Nr;
-	dkim-atps=neutral
-X-Greylist: delayed 3593 seconds by postgrey-1.36 at boromir; Fri, 03 Mar 2023 08:24:01 AEDT
-Received: from terminus.zytor.com (terminus.zytor.com [198.137.202.136])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PSmkB4P7pz3fBf
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 23:00:02 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ghiti.fr (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSPHP3579z2yw0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 08:23:59 +1100 (AEDT)
-Received: from [127.0.0.1] ([73.223.221.228])
-	(authenticated bits=0)
-	by mail.zytor.com (8.17.1/8.17.1) with ESMTPSA id 322JolfB1654568
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Thu, 2 Mar 2023 11:50:48 -0800
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 322JolfB1654568
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2023020601; t=1677786658;
-	bh=n/GRsm1pImWCPNm4dPoe5zec7Kp4K3JReb8gPrI8/mc=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=EoMqj2NrvtdnnKP1K3ZY31x6mzZLyhmRVv+AfJ7wKdoAJbCxWwA+q2O/5sMmJVAVH
-	 CBl1NaM0Y8H4KZuzvQjbNwKYV6dXCiIfmDalzvbDgGVmn+bMayegSv6UvQXFNOV7kH
-	 d/WVC69GzUYAENKo48YQjfv0/LuQNbAN20Le/uIDHGiGr9P8B8oHP2fS95eG5xB58F
-	 uasUM1VqxwzDuwffGGAapL9uswmgoHxhnTzGnsDohaOFjOu2pxA/e5nnYVugsNl2zn
-	 98XlC/4jazJIi0XM8kFrS6seI0EpKbWqSgJdlLGlfl4yBTPVtfQW74gM369HHmiIcn
-	 4YRgUzYFXGcXg==
-Date: Thu, 02 Mar 2023 11:50:45 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Palmer Dabbelt <palmer@dabbelt.com>, hca@linux.ibm.com
-Subject: Re: [PATCH v3 00/24] Remove COMMAND_LINE_SIZE from uapi
-User-Agent: K-9 Mail for Android
-In-Reply-To: <mhng-e8b09772-24e5-4729-a0bf-01a9e4c76636@palmer-ri-x1c9a>
-References: <mhng-e8b09772-24e5-4729-a0bf-01a9e4c76636@palmer-ri-x1c9a>
-Message-ID: <21F95EC4-71EA-4154-A7DC-8A5BA54F174B@zytor.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSmjW5Ms3z3c65
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 22:59:25 +1100 (AEDT)
+Received: (Authenticated sender: alex@ghiti.fr)
+	by mail.gandi.net (Postfix) with ESMTPSA id 078BCFF807;
+	Fri,  3 Mar 2023 11:59:01 +0000 (UTC)
+Message-ID: <674bc31e-e4ed-988f-820d-54213d83f9c7@ghiti.fr>
+Date: Fri, 3 Mar 2023 12:59:01 +0100
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.7.1
+Subject: Re: [PATCH v3 00/24] Remove COMMAND_LINE_SIZE from uapi
+Content-Language: en-US
+To: "H. Peter Anvin" <hpa@zytor.com>, Palmer Dabbelt <palmer@dabbelt.com>,
+ hca@linux.ibm.com
+References: <mhng-e8b09772-24e5-4729-a0bf-01a9e4c76636@palmer-ri-x1c9a>
+ <21F95EC4-71EA-4154-A7DC-8A5BA54F174B@zytor.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+In-Reply-To: <21F95EC4-71EA-4154-A7DC-8A5BA54F174B@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,82 +49,61 @@ Cc: linux-m68k@vger.kernel.org, ysato@users.osdn.me, linux-ia64@vger.kernel.org,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On March 1, 2023 7:17:18 PM PST, Palmer Dabbelt <palmer@dabbelt=2Ecom> wrot=
-e:
->On Tue, 14 Feb 2023 01:19:02 PST (-0800), hca@linux=2Eibm=2Ecom wrote:
->> On Tue, Feb 14, 2023 at 09:58:17AM +0100, Geert Uytterhoeven wrote:
->>> Hi Heiko,
->>>=20
->>> On Tue, Feb 14, 2023 at 9:39 AM Heiko Carstens <hca@linux=2Eibm=2Ecom>=
- wrote:
->>> > On Tue, Feb 14, 2023 at 08:49:01AM +0100, Alexandre Ghiti wrote:
->>> > > This all came up in the context of increasing COMMAND_LINE_SIZE in=
- the
->>> > > RISC-V port=2E  In theory that's a UABI break, as COMMAND_LINE_SIZ=
-E is the
->>> > > maximum length of /proc/cmdline and userspace could staticly rely =
-on
->>> > > that to be correct=2E
->>> > >
->>> > > Usually I wouldn't mess around with changing this sort of thing, b=
-ut
->>> > > PowerPC increased it with a5980d064fe2 ("powerpc: Bump COMMAND_LIN=
-E_SIZE
->>> > > to 2048")=2E  There are also a handful of examples of COMMAND_LINE=
-_SIZE
->>> > > increasing, but they're from before the UAPI split so I'm not quit=
-e sure
->>> > > what that means: e5a6a1c90948 ("powerpc: derive COMMAND_LINE_SIZE =
-from
->>> > > asm-generic"), 684d2fd48e71 ("[S390] kernel: Append scpdata to ker=
-nel
->>> > > boot command line"), 22242681cff5 ("MIPS: Extend COMMAND_LINE_SIZE=
-"),
->>> > > and 2b74b85693c7 ("sh: Derive COMMAND_LINE_SIZE from
->>> > > asm-generic/setup=2Eh=2E")=2E
->>> > >
->>> > > It seems to me like COMMAND_LINE_SIZE really just shouldn't have b=
-een
->>> > > part of the uapi to begin with, and userspace should be able to ha=
-ndle
->>> > > /proc/cmdline of whatever length it turns out to be=2E  I don't se=
-e any
->>> > > references to COMMAND_LINE_SIZE anywhere but Linux via a quick Goo=
-gle
->>> > > search, but that's not really enough to consider it unused on my e=
-nd=2E
->>> > >
->>> > > The feedback on the v1 seemed to indicate that COMMAND_LINE_SIZE r=
-eally
->>> > > shouldn't be part of uapi, so this now touches all the ports=2E  I=
-'ve
->>> > > tried to split this all out and leave it bisectable, but I haven't
->>> > > tested it all that aggressively=2E
->>> >
->>> > Just to confirm this assumption a bit more: that's actually the same
->>> > conclusion that we ended up with when commit 3da0243f906a ("s390: ma=
-ke
->>> > command line configurable") went upstream=2E
->
->Thanks, I guess I'd missed that one=2E  At some point I think there was s=
-ome discussion of making this a Kconfig for everyone, which seems reasonabl=
-e to me -- our use case for this being extended is syzkaller, but we're sor=
-t of just picking a value that's big enough for now and running with it=2E
->
->Probably best to get it out of uapi first, though, as that way at least i=
-t's clear that it's not uABI=2E
->
->>> Commit 622021cd6c560ce7 ("s390: make command line configurable"),
->>> I assume?
->>=20
->> Yes, sorry for that=2E I got distracted while writing and used the wron=
-g
->> branch to look this up=2E
->
->Alex: Probably worth adding that to the list in the cover letter as it lo=
-oks like you were planning on a v4 anyway (which I guess you now have to do=
-, given that I just added the issue to RISC-V)=2E
+Hi Peter,
 
-The only use that is uapi is the *default* length of the command line if t=
-he kernel header doesn't include it (in the case of x86, it is in the bzIma=
-ge header, but that is atchitecture- or even boot format-specific=2E)
+
+On 3/2/23 20:50, H. Peter Anvin wrote:
+> On March 1, 2023 7:17:18 PM PST, Palmer Dabbelt <palmer@dabbelt.com> wrote:
+>> On Tue, 14 Feb 2023 01:19:02 PST (-0800), hca@linux.ibm.com wrote:
+>>> On Tue, Feb 14, 2023 at 09:58:17AM +0100, Geert Uytterhoeven wrote:
+>>>> Hi Heiko,
+>>>>
+>>>> On Tue, Feb 14, 2023 at 9:39 AM Heiko Carstens <hca@linux.ibm.com> wrote:
+>>>>> On Tue, Feb 14, 2023 at 08:49:01AM +0100, Alexandre Ghiti wrote:
+>>>>>> This all came up in the context of increasing COMMAND_LINE_SIZE in the
+>>>>>> RISC-V port.  In theory that's a UABI break, as COMMAND_LINE_SIZE is the
+>>>>>> maximum length of /proc/cmdline and userspace could staticly rely on
+>>>>>> that to be correct.
+>>>>>>
+>>>>>> Usually I wouldn't mess around with changing this sort of thing, but
+>>>>>> PowerPC increased it with a5980d064fe2 ("powerpc: Bump COMMAND_LINE_SIZE
+>>>>>> to 2048").  There are also a handful of examples of COMMAND_LINE_SIZE
+>>>>>> increasing, but they're from before the UAPI split so I'm not quite sure
+>>>>>> what that means: e5a6a1c90948 ("powerpc: derive COMMAND_LINE_SIZE from
+>>>>>> asm-generic"), 684d2fd48e71 ("[S390] kernel: Append scpdata to kernel
+>>>>>> boot command line"), 22242681cff5 ("MIPS: Extend COMMAND_LINE_SIZE"),
+>>>>>> and 2b74b85693c7 ("sh: Derive COMMAND_LINE_SIZE from
+>>>>>> asm-generic/setup.h.").
+>>>>>>
+>>>>>> It seems to me like COMMAND_LINE_SIZE really just shouldn't have been
+>>>>>> part of the uapi to begin with, and userspace should be able to handle
+>>>>>> /proc/cmdline of whatever length it turns out to be.  I don't see any
+>>>>>> references to COMMAND_LINE_SIZE anywhere but Linux via a quick Google
+>>>>>> search, but that's not really enough to consider it unused on my end.
+>>>>>>
+>>>>>> The feedback on the v1 seemed to indicate that COMMAND_LINE_SIZE really
+>>>>>> shouldn't be part of uapi, so this now touches all the ports.  I've
+>>>>>> tried to split this all out and leave it bisectable, but I haven't
+>>>>>> tested it all that aggressively.
+>>>>> Just to confirm this assumption a bit more: that's actually the same
+>>>>> conclusion that we ended up with when commit 3da0243f906a ("s390: make
+>>>>> command line configurable") went upstream.
+>> Thanks, I guess I'd missed that one.  At some point I think there was some discussion of making this a Kconfig for everyone, which seems reasonable to me -- our use case for this being extended is syzkaller, but we're sort of just picking a value that's big enough for now and running with it.
+>>
+>> Probably best to get it out of uapi first, though, as that way at least it's clear that it's not uABI.
+>>
+>>>> Commit 622021cd6c560ce7 ("s390: make command line configurable"),
+>>>> I assume?
+>>> Yes, sorry for that. I got distracted while writing and used the wrong
+>>> branch to look this up.
+>> Alex: Probably worth adding that to the list in the cover letter as it looks like you were planning on a v4 anyway (which I guess you now have to do, given that I just added the issue to RISC-V).
+> The only use that is uapi is the *default* length of the command line if the kernel header doesn't include it (in the case of x86, it is in the bzImage header, but that is atchitecture- or even boot format-specific.)
+
+Is COMMAND_LINE_SIZE what you call the default length? Does that mean 
+that to you the patchset is wrong?
+
+Thanks,
+
+Alex
+
+
