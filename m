@@ -4,30 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1C1CC678DB
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 10:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3F08C678DB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 10:37:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PTLrS2JXfz3fCs
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 21:37:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PTLs23wrQz3cjb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 21:37:58 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PTLqr0y2Cz3bVD
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PTLqr2PFvz3bVD
 	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2023 21:36:56 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PTLqq0XFXz4x7s;
-	Sat,  4 Mar 2023 21:36:55 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PTLqp0J0Xz4x5R;
+	Sat,  4 Mar 2023 21:36:54 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20230222060037.2897169-1-mpe@ellerman.id.au>
-References: <20230222060037.2897169-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/vmlinux.lds: Add .text.asan/tsan sections
-Message-Id: <167792619634.383795.17468627291991919392.b4-ty@ellerman.id.au>
-Date: Sat, 04 Mar 2023 21:36:36 +1100
+In-Reply-To: <20230221130331.2714199-1-mpe@ellerman.id.au>
+References: <20230221130331.2714199-1-mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Avoid dead code/data elimination when using recordmcount
+Message-Id: <167792619787.383795.11115043565491314467.b4-ty@ellerman.id.au>
+Date: Sat, 04 Mar 2023 21:36:37 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -42,26 +42,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathan@kernel.org, ndesaulniers@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 22 Feb 2023 17:00:37 +1100, Michael Ellerman wrote:
-> When KASAN/KCSAN are enabled clang generates .text.asan/tsan sections.
-> Because they are not mentioned in the linker script warnings are
-> generated, and when orphan handling is set to error that becomes a build
-> error, eg:
+On Wed, 22 Feb 2023 00:03:31 +1100, Michael Ellerman wrote:
+> Although powerpc now has objtool mcount support, it's not enabled in all
+> configurations due to dependencies.
 > 
->   ld.lld: error: vmlinux.a(init/main.o):(.text.tsan.module_ctor) is
->   being placed in '.text.tsan.module_ctor' ld.lld: error:
->   vmlinux.a(init/version.o):(.text.tsan.module_ctor) is being placed in
->   '.text.tsan.module_ctor'
+> On those configurations, with some linkers (binutils 2.37 at least),
+> it's still possible to hit the dreaded "recordmcount bug", eg. errors
+> such as:
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/vmlinux.lds: Add .text.asan/tsan sections
-      https://git.kernel.org/powerpc/c/acd35dbab871d61021284ff06daccdc0ebb51e61
+[1/1] powerpc: Avoid dead code/data elimination when using recordmcount
+      https://git.kernel.org/powerpc/c/f8b2336f15f3bc30e37ce5c052cde5b6319bb6df
 
 cheers
