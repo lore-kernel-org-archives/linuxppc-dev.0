@@ -4,35 +4,136 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48ACBC64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 12:00:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51E38C6FA8E
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 07:33:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PSmkB4P7pz3fBf
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  3 Mar 2023 23:00:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ghiti.fr (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net [217.70.183.199])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PTGlw0trkz3f3P
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  4 Mar 2023 18:33:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=oTgsBdqC;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::603; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=oTgsBdqC;
+	dkim-atps=neutral
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20603.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::603])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PSmjW5Ms3z3c65
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Mar 2023 22:59:25 +1100 (AEDT)
-Received: (Authenticated sender: alex@ghiti.fr)
-	by mail.gandi.net (Postfix) with ESMTPSA id 078BCFF807;
-	Fri,  3 Mar 2023 11:59:01 +0000 (UTC)
-Message-ID: <674bc31e-e4ed-988f-820d-54213d83f9c7@ghiti.fr>
-Date: Fri, 3 Mar 2023 12:59:01 +0100
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PTGkm1J2Bz3c8h
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Mar 2023 18:32:14 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=jdJSMRcsJzvC/vmuavfhnw5qnoxgJeDwtr4RjF3QOG+thUMq7VbsnYc55Lf8vR8JFclb+DtSJWP9uw4i5zEc74jDjAW0kQpxunLiA7pebMFDE5Jyft0c91aL2xFgJ4G5PnevO4qlJFkpClCeP9u52Z6J5N4Zc+XBVCrwkaFHDY9Em3LGu7FMAy/1uvfLbF7qeVkEefNqfRfJzoms9NNERevGbfRa3FsA8YXyb57W3iZw9po8rMxg/S5UqY1u5w0AnnBcfgu/vKlNys5O/152ZMSfODg2WwtzYlBDHbgPuJjE5R67BDpCqpXZPRuOYwmLNnDQQMgR6X1sYj29DRbv1g==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=hlmOrjOojsUiykGWi2NZpRR3ZSnJPF2xjKJwDsnDxNA=;
+ b=bbyk60lrO+QVDqRbb7JRiewPcBrZ1V5Y7Q5dV5I7ORXk9ktxGkuq+a924I8LL4DgpDpr+YJRPdV1MbZTakgUak6cHuh7YMORIjRXLHS+6Ms/flheH5HDIj7yBrKKYcP+t4P0d8vEV6/5E93HUppbLhVzbTCGPXn+f09U6+AZIsJQwVSdpI302OEX3+1fEDpoC8k6FVg/sgF2kT9nVPikzX+LRMFU7SZ8cCukXHA/IKwBnytjyE+D/9XM/RTsKuMeUE7TY+nFPrSL+yIj2AqTOJMGJnaWPSkYlQHbenLoUHmNacWRLfRI4x7U1k+02QEYQg1hmKySqa7FQiUdzeB+Bw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hlmOrjOojsUiykGWi2NZpRR3ZSnJPF2xjKJwDsnDxNA=;
+ b=oTgsBdqCu18tcRWDSvw+CcS4ofeBaw82qOVq0pqep2j2Zh7eJU/BXLrcFQOdEC/IQ1L2b52AQyNGOQvjPPdP9WBjeU2CY3ujFe6thC8b6ZGpvDpqlm97u0HrNANARfyHTIXlAlClOJijfo5ozaPQaZT/NWLjlaTu7ULmSpDBGAP5aQGzbyI7VPbLMflDYRDbZNSCft1d1YmOwfOdpfstcLti6szyaDVVuO3ektGD/r2gdXSPSPtrNdVj9cwcToH+yZA/crVqKD4beQb0PpjpS5Z6EcAGtkXdGqL70ovb57MKUtkKqx9r2kkAJVL6KJDaOTWv0TqIx0/ykmOqJLt+vQ==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by MR1P264MB2179.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:12::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6156.19; Sat, 4 Mar
+ 2023 07:31:49 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::3943:154a:eccc:fe3a]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::3943:154a:eccc:fe3a%8]) with mapi id 15.20.6156.023; Sat, 4 Mar 2023
+ 07:31:49 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Crystal Wood <oss@buserror.net>, Arnd Bergmann <arnd@arndb.de>, Paul
+ Gortmaker <paul.gortmaker@windriver.com>, =?utf-8?B?UGFsaSBSb2jDoXI=?=
+	<pali@kernel.org>
+Subject: Re: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+Thread-Topic: [RFC PATCH 0/4] Remove some e300/MPC83xx evaluation platforms
+Thread-Index:  AQHZRSlRQroQjo8Bc0a1UitSGMqXAa7eoBaAgAFIPICAA2b4AIAA3ieAgACCsgCAAVhcAIACRWSAgACI0ICAAK9IgIAAxnYA
+Date: Sat, 4 Mar 2023 07:31:49 +0000
+Message-ID: <7b1bf4dc-d09d-35b8-f4df-16bf00429b6d@csgroup.eu>
+References: <20230220115913.25811-1-paul.gortmaker@windriver.com>
+ <AM0PR04MB6289FA528F76DDADB2BB0F958FA89@AM0PR04MB6289.eurprd04.prod.outlook.com>
+ <Y/o8bQz5CuRhdD8B@windriver.com>
+ <CADRPPNRTZmhEbS0Ts6iA7bmviT_C+caUkyFwJ5WGcN6q1rTORg@mail.gmail.com>
+ <1b9d4d586ae7bb5cddbb97fbc9ec7de1c475afee.camel@infinera.com>
+ <83565b97-8149-492e-8f22-e3722e659b98@app.fastmail.com>
+ <a1e955cb-f48d-4630-6c9d-2fb3e2212aff@csgroup.eu>
+ <ZAFHnaSN6F5ZYTO5@windriver.com>
+ <3efa1e29-3be9-4047-beef-eb02762ae8db@app.fastmail.com>
+ <2a48667f70276ad7097e898d439dea6a9c0b414b.camel@buserror.net>
+In-Reply-To: <2a48667f70276ad7097e898d439dea6a9c0b414b.camel@buserror.net>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.7.1
-Subject: Re: [PATCH v3 00/24] Remove COMMAND_LINE_SIZE from uapi
-Content-Language: en-US
-To: "H. Peter Anvin" <hpa@zytor.com>, Palmer Dabbelt <palmer@dabbelt.com>,
- hca@linux.ibm.com
-References: <mhng-e8b09772-24e5-4729-a0bf-01a9e4c76636@palmer-ri-x1c9a>
- <21F95EC4-71EA-4154-A7DC-8A5BA54F174B@zytor.com>
-From: Alexandre Ghiti <alex@ghiti.fr>
-In-Reply-To: <21F95EC4-71EA-4154-A7DC-8A5BA54F174B@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|MR1P264MB2179:EE_
+x-ms-office365-filtering-correlation-id: 1afa42d0-efc2-4603-6e60-08db1c828445
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  Qd6fslBjvzqw5j+gTh4WUa5BiLTlacTQzuj+80U2kZoy35dKmU9BhSh4jBInnPHVpXf3Ln9QLmI2iOFL+QZNtDcAb/+j+3amKIgKY68luIFeB+nFr30z4mX2nXX8tVpQRmFcHiSTFklU4TDGLrx5A5ydG32ScQ8YFI/YNiN6mN8rJZP2A2tLY1tb+cjQaOKZ73Lw3ALoN05XAknx9MldsaTk4KC9N/saWzkFo2FzCS2EQdaBQvJ6PFP3mJ2WoENRWV07ab4Zq69VhOeX5xci4HTPxTQDoD85no1EYkhAfULQSMGNUHE2zJsCjh8FGdeeltPeYKLVdkXiiqd52R5s9Fw5R7ymXyOfOPl/JXW4MeHpfZBET1BAFpCjOICba/BUW2gnfFsNvb85XETpFaua05AoaJ4y+PKbKxiMDKLcg6T3W8buqxkjGDG9uNSMWjxFVcQsgXOg1aW4jQcAsgCHKGlsdRaY034JKN5dCm2V2Q8fzHf9UMVBcE/g0+87qaMGgvTDoP03/fZEHCwjxGHy5pvK42XNLZZ0yacbUIPWqBesGS2FQO55zueTia5ut8PgHy447AOxuZ+jNpCplNmZ+7jGgNFcD4KQ+/M8lxbccu1ub5TB0Ci7ZlbeVrundGjF4qb+Qz+YeNIl5VMojs8PfalsJURmHfvS/4ddYjUPhD8lclo7FomlMTRRRqJwKEF5lHlYf3FDEFf7w8xxLkO7VhSgog2U4IuwlpFLg/gtRdTlDlZmB0qmnBiKSdB64RI8SvOvxIxLap28KovNoNwlKw==
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230025)(4636009)(376002)(366004)(396003)(136003)(346002)(39850400004)(451199018)(31686004)(83380400001)(36756003)(478600001)(110136005)(122000001)(38070700005)(54906003)(316002)(38100700002)(71200400001)(41300700001)(2616005)(6486002)(6506007)(6512007)(26005)(186003)(5660300002)(44832011)(66476007)(66946007)(76116006)(31696002)(66446008)(66556008)(8936002)(91956017)(86362001)(2906002)(8676002)(4326008)(64756008)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?WmFlVGJRaEZwTEJVbG15cFBwYUxiZGZjeUVvNzF2djc1Rlo1cXBIOFZ3SmJF?=
+ =?utf-8?B?dEFGTUtNbHdCWEp6N09sbC8zYTFWcVVld2c3azJDSnRJNVZYUENPUWFJci9Y?=
+ =?utf-8?B?WEx5cjV0ZFhmMmdldVFGYlRLdkFCYUUwRjdFSGNXTXExNzJqaHhFd0lyaUli?=
+ =?utf-8?B?K1pjanh4NFVwTmJhVVZjVndOQi9LY1hmRUM2czFXSFlxY2tTSDVwWFJxdUov?=
+ =?utf-8?B?K05VUkdYZ2JqVTF5R2lob3QzZDRaemgyeFQ5VUV1V2tDYS83eFRsWGVHVTNq?=
+ =?utf-8?B?SitCajIyQXJzOW92Z2E1RWdlSVZkanN1TnErdmQ5dC9LSDV3THZjS1RuT0g2?=
+ =?utf-8?B?RTZ1dEkxdm1hVWNoQm45S1ljb3o1MmdMenh1OVpvUWhMbjdZWjNwUU45Nmhn?=
+ =?utf-8?B?aWJhY295MldCNVVyaEN5b1dvblY1Skt4eWswMWZodWhSQmJhWDd0WjZCb1ph?=
+ =?utf-8?B?dmtibVR6NjhFSTU3VEg4cHlEWUhrWWc1aStTUmpOcDR2eUljNXBXaEwwejE5?=
+ =?utf-8?B?cFAyWjhTcmsrOVV5Q0dNWW5UcVRxNW4xZjZ0dlcrSkJNQTIrUmM5VGc2ak1H?=
+ =?utf-8?B?dFpVMDlEbUFoMi82bkI3QVl0ZEIxS1NYZ29yTW5acGNSbmZzc0R3VFRJekpo?=
+ =?utf-8?B?U3ZhejQxcmw3cmQzUml3b3YyMXphZ21LWEIzWDlpdFlqU0pkSWZVOEFsampP?=
+ =?utf-8?B?N3JVTmNUcGZrUEF4Q2R6TVRrcjZ6Nlg1bnBPWWZXaFhjUHU2NFNDb0ZxWFNy?=
+ =?utf-8?B?Zlp0K3htOUpBQ2lVdVBLSStvMGNlS2V0TGFVektxWGNOb2NEaDArNFJXYVRp?=
+ =?utf-8?B?eVJwcVBEaW5jbDgvRzZueVQ0T1NiSG1sMmhJSTFQQjBlNm5KNmI5SWxQcE9y?=
+ =?utf-8?B?Mm1tZU9rVDBaem01bWc3V01CekVvTGxlb0c2TVRYTGcwTlNmOHNSa2h1UC9R?=
+ =?utf-8?B?andDYnlqbm1sS2hQZG1CUm56cWNkcGtUd0w4QmczR3AyakxGakxQTFNBRFdQ?=
+ =?utf-8?B?NzNBMThobjZIUGFxMlEzMFNhVlRiUkM4OCtPcVBlbUVYV1VDNVB2RnF1Q3Ax?=
+ =?utf-8?B?RnpPTDNOaXdKcHNHUFNmZGtIb1FMZmh6VVFIalAxclAyRGpIUG14bmpEbitt?=
+ =?utf-8?B?allkUFcxRUlPOTFzWHlUZmFhUC9ENCs3TmNjKzVjZUlFZFdVS3J5RkpCTGRS?=
+ =?utf-8?B?eDB3UVA4Qkdxc3puR1JmTk1zN3E4VVpUQzNvZ0FFUWFkWkNrSnNLOUJ2WkJx?=
+ =?utf-8?B?SXRMWkRqMGc0UGwwMGs1MUVaMDJwZlFYR2Z5SjFHRTJpTkxKNjdRNGZpVnBm?=
+ =?utf-8?B?aXJtNU5GMDdRYnhUTVRQdlN1QklwN2grUnhhc3JjblRhVzZtV2hKc016WEVn?=
+ =?utf-8?B?SnlVZ0srOGN3VWlwYUwzbS9BcnlTcWp3dUtkU1hCMHA3N0xUdFExVU84WE8y?=
+ =?utf-8?B?ZDRxNU05RldodFFId3hNajlzVDUzeE1keGhOMW5Qb2cvOTF3S20yS3VzaVFO?=
+ =?utf-8?B?MWd2c0NUU3ZHZUdxVkk5OFU3MXdMZktxbzBHdUsycXJtMHk2bmJWbzZnYVZw?=
+ =?utf-8?B?eUxXNWlvVlZQamwyYVZaajNrVHlZUGtUaGR5OWgvKzQxQWVoaUtKQkloaWJ0?=
+ =?utf-8?B?K0duS1gxc2podjNhc2MrbHRpNUtBa0M0ZXFiN0Z6a2hodVJodWNNQU5McHFm?=
+ =?utf-8?B?b3AyL2g4WTVoL2lBMjE1THluYkNnbG1ZSEpJZ0luYWV6OEFoZ1FPbmtvenVp?=
+ =?utf-8?B?a2MwZlhDQlFlWFJDQ3Z0aVhxYXZkUkVJNkJ2cHVrbGV6SlVDM3N2WXBPdjQ1?=
+ =?utf-8?B?bUpSUTBGcTRxdjRRSFdoVVIxUFVsbEtrb3BVNXRnZU1FMWd6M1RHMVN0QXc5?=
+ =?utf-8?B?TFVuUDZpNXhzUWNiaHozeHRzRE9CTEZDckNJRE9TbjJZQ3JUSXBXemNkWlEy?=
+ =?utf-8?B?cTRPTG9yWHJuVGwvYnlsU0RnUTNtWFVhZmZrSGIwaVhkRGlWWUhJV0M3RGZm?=
+ =?utf-8?B?V2hYZE1UaG40WUJCbloyVjlWOUM2dUJxZzAzY25OeVE3K1FITmVOQ1NEVHFG?=
+ =?utf-8?B?L0pxYkJPb1pxbmNoWmJhdStGVTVXSkdSZGtMc0MzZ0ticjhSTzFSVmZQTUdI?=
+ =?utf-8?B?a0UwTVVUTkhFNEJuUlN3RmplVmhvRWVnQ3dEdTZ1aGV2VEFKUkRjZ3R6dzZr?=
+ =?utf-8?B?cHc9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <52FCD841C8901F4DA0546A78590B4CE0@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: 1afa42d0-efc2-4603-6e60-08db1c828445
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Mar 2023 07:31:49.3213
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: BInm5SxA8HDKvkOTzRlknChNdXwG1TDBs7x6rh/FDk9Ph3cL6zLcL5yqv66sAfZtkFib+0dYeiAr5uN+cQLUpYtuzUn4nLq53nw3fBieRz4=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MR1P264MB2179
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -44,66 +145,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-m68k@vger.kernel.org, ysato@users.osdn.me, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, dave.hansen@linux.intel.com, x86@kernel.org, linux-mips@vger.kernel.org, James.Bottomley@hansenpartnership.com, jcmvbkbc@gmail.com, dalias@libc.org, sparclinux@vger.kernel.org, kernel@xen0n.name, Will Deacon <will@kernel.org>, agordeev@linux.ibm.com, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-snps-arc@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, corbet@lwn.net, linux-sh@vger.kernel.org, deller@gmx.de, chenhuacai@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, geert@linux-m68k.org, vgupta@kernel.org, mattst88@gmail.com, borntraeger@linux.ibm.com, linux-xtensa@linux-xtensa.org, aou@eecs.berkeley.edu, alexghiti@rivosinc.com, gor@linux.ibm.com, Richard Henderson <richard.henderson@linaro.org>, npiggin@gmail.com, ink@jurassic.park.msu.ru, loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>, tgl
- x@linutronix.de, linux-arm-kernel@lists.infradead.org, chris@zankel.net, monstr@monstr.eu, tsbogend@alpha.franken.de, linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, svens@linux.ibm.com, linux-alpha@vger.kernel.org, bp@alien8.de, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, Leo Li <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Peter,
-
-
-On 3/2/23 20:50, H. Peter Anvin wrote:
-> On March 1, 2023 7:17:18 PM PST, Palmer Dabbelt <palmer@dabbelt.com> wrote:
->> On Tue, 14 Feb 2023 01:19:02 PST (-0800), hca@linux.ibm.com wrote:
->>> On Tue, Feb 14, 2023 at 09:58:17AM +0100, Geert Uytterhoeven wrote:
->>>> Hi Heiko,
->>>>
->>>> On Tue, Feb 14, 2023 at 9:39 AM Heiko Carstens <hca@linux.ibm.com> wrote:
->>>>> On Tue, Feb 14, 2023 at 08:49:01AM +0100, Alexandre Ghiti wrote:
->>>>>> This all came up in the context of increasing COMMAND_LINE_SIZE in the
->>>>>> RISC-V port.  In theory that's a UABI break, as COMMAND_LINE_SIZE is the
->>>>>> maximum length of /proc/cmdline and userspace could staticly rely on
->>>>>> that to be correct.
->>>>>>
->>>>>> Usually I wouldn't mess around with changing this sort of thing, but
->>>>>> PowerPC increased it with a5980d064fe2 ("powerpc: Bump COMMAND_LINE_SIZE
->>>>>> to 2048").  There are also a handful of examples of COMMAND_LINE_SIZE
->>>>>> increasing, but they're from before the UAPI split so I'm not quite sure
->>>>>> what that means: e5a6a1c90948 ("powerpc: derive COMMAND_LINE_SIZE from
->>>>>> asm-generic"), 684d2fd48e71 ("[S390] kernel: Append scpdata to kernel
->>>>>> boot command line"), 22242681cff5 ("MIPS: Extend COMMAND_LINE_SIZE"),
->>>>>> and 2b74b85693c7 ("sh: Derive COMMAND_LINE_SIZE from
->>>>>> asm-generic/setup.h.").
->>>>>>
->>>>>> It seems to me like COMMAND_LINE_SIZE really just shouldn't have been
->>>>>> part of the uapi to begin with, and userspace should be able to handle
->>>>>> /proc/cmdline of whatever length it turns out to be.  I don't see any
->>>>>> references to COMMAND_LINE_SIZE anywhere but Linux via a quick Google
->>>>>> search, but that's not really enough to consider it unused on my end.
->>>>>>
->>>>>> The feedback on the v1 seemed to indicate that COMMAND_LINE_SIZE really
->>>>>> shouldn't be part of uapi, so this now touches all the ports.  I've
->>>>>> tried to split this all out and leave it bisectable, but I haven't
->>>>>> tested it all that aggressively.
->>>>> Just to confirm this assumption a bit more: that's actually the same
->>>>> conclusion that we ended up with when commit 3da0243f906a ("s390: make
->>>>> command line configurable") went upstream.
->> Thanks, I guess I'd missed that one.  At some point I think there was some discussion of making this a Kconfig for everyone, which seems reasonable to me -- our use case for this being extended is syzkaller, but we're sort of just picking a value that's big enough for now and running with it.
->>
->> Probably best to get it out of uapi first, though, as that way at least it's clear that it's not uABI.
->>
->>>> Commit 622021cd6c560ce7 ("s390: make command line configurable"),
->>>> I assume?
->>> Yes, sorry for that. I got distracted while writing and used the wrong
->>> branch to look this up.
->> Alex: Probably worth adding that to the list in the cover letter as it looks like you were planning on a v4 anyway (which I guess you now have to do, given that I just added the issue to RISC-V).
-> The only use that is uapi is the *default* length of the command line if the kernel header doesn't include it (in the case of x86, it is in the bzImage header, but that is atchitecture- or even boot format-specific.)
-
-Is COMMAND_LINE_SIZE what you call the default length? Does that mean 
-that to you the patchset is wrong?
-
-Thanks,
-
-Alex
-
-
+DQoNCkxlIDAzLzAzLzIwMjMgw6AgMjA6NDEsIENyeXN0YWwgV29vZCBhIMOpY3JpdMKgOg0KPiBP
+biBGcmksIDIwMjMtMDMtMDMgYXQgMTA6MTQgKzAxMDAsIEFybmQgQmVyZ21hbm4gd3JvdGU6DQo+
+PiBPbiBGcmksIE1hciAzLCAyMDIzLCBhdCAwMjowNCwgUGF1bCBHb3J0bWFrZXIgd3JvdGU6DQo+
+Pj4gMDEvMDMvMjAyMyAoV2VkIDE0OjIzKSBDaHJpc3RvcGhlIExlcm95IHdyb3RlOg0KPj4+PiBM
+ZSAyOC8wMi8yMDIzID8/IDE4OjUxLCBBcm5kIEJlcmdtYW5uIGEgPz9jcml0Pz86DQo+Pj4+IEhv
+cGUgaXQgY2xhcmlmaWVzIGhvdyB0aG9zZSByZWZlcmVuY2UgYm9hcmRzIGFyZSB1c2VkLg0KPj4+
+DQo+Pj4gSXQgd2FzIHJlYWxseSB1c2VmdWwgaW5wdXQgYW5kIGdhdmUgYW4gaW5zaWdodCBpbnRv
+IGhvdyB0aGluZ3MgZ2V0IHVzZWQuDQo+Pj4NCj4+PiBCdXQgbGV0IG1lIHB1dCBhIHNsaWdodGx5
+IGRpZmZlcmVudCBzbGFudCBvbiB0aGluZ3MuwqAgSWYgdGhlcmUgaXMgbm8NCj4+PiBtYWludGFp
+bmVyIGZvciB0aGUgcGxhdGZvcm0vYXJjaGl0ZWN0dXJlL0NQVSwgdGhlbiB3aGVyZSBpcyB0aGUN
+Cj4+PiBvYmxpZ2F0aW9uIGZvciBtYWlubGluZSB0byBrZWVwIGl0IHVwIHRvIGRhdGUganVzdCBm
+b3IgeW91ciBjb21wYW55IHRvDQo+Pj4gdXNlIHRoZSBjb2RlL0JTUCBhcyBhIHJlZmVyZW5jZT8N
+Cj4+Pg0KPj4+IERvIHRoZXkgY29udGludWUgdG8gZG8gdGhpcyBmb3Igb25lIG1vcmUgeWVhciwg
+b3IgdGhyZWUgb3IgLi4uwqAgPz8/DQo+Pj4gRG9lcyBzb21lb25lIGxpc3QgdGhlbXNlbHZlcyBp
+biBNQUlOVEFJTkVSUyBmb3IgYXJjaC9wb3dlcnBjLzgzeHggPw0KPj4gLi4uDQo+Pj4NCj4+PiBJ
+ZiB5b3Ugc2VlIGNoYW5nZSAwMTIzYWJjZGVmIGJyZWFrcyBib290IG9uIHlvdXIgcGxhdGZvcm0s
+IHlvdSBoYXZlIGENCj4+PiBsZWdpdCB2b2ljZSB0byBncmlwZSBhYm91dCBpdCByaWdodCB0aGVu
+IGFuZCB0aGVyZS7CoCBEb24ndCB3YWl0ISEhDQo+Pg0KPj4gSSB0aGluayB0aGUgYW5zd2VyIGhl
+cmUgaXMgdGhhdCBDaHJpc3RvcGhlIGlzIGFscmVhZHkgdGhlIG9ubHkgcGVyc29uDQo+PiB0aGF0
+IGRvZXMgdGhpcywgc28gaGUgaXMgdGhlIGRlLWZhY3RvIG1haW50YWluZXIgZm9yIHBwYzMyIHJl
+Z2FyZGxlc3MNCj4+IG9mIHdoZXRoZXIgaGUgd2FudHMgaGltc2VsZiBsaXN0ZWQgaW4gdGhlIGZp
+bGUgb3Igbm90Og0KPj4NCj4+ICQgZ2l0IGxvZyAtLW5vLW1lcmdlcyAtLWZvcm1hdD0iJWFuIiB2
+NS4wLi4gYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9bNDU4ZV0qIHwNCj4+IHNvcnQgfCB1bmlxIC1j
+IHwgc29ydCAtcm4gfCBncmVwIC12dyAxDQo+PiAgwqDCoMKgwqAgNjEgQ2hyaXN0b3BoZSBMZXJv
+eQ0KPj4gIMKgwqDCoMKgIDEyIE1pY2hhZWwgRWxsZXJtYW4NCj4+ICDCoMKgwqDCoCAxMSBUaG9t
+YXMgR2xlaXhuZXINCj4+ICDCoMKgwqDCoCAxMSBPbGl2ZXIgTydIYWxsb3Jhbg0KPj4gIMKgwqDC
+oMKgIDExIExpYW5nIEhlDQo+PiAgwqDCoMKgwqDCoCA3IFV3ZSBLbGVpbmUtS8O2bmlnDQo+PiAg
+wqDCoMKgwqDCoCA2IE5pY2sgQ2hpbGQNCj4+ICDCoMKgwqDCoMKgIDQgUmFzbXVzIFZpbGxlbW9l
+cw0KPj4gIMKgwqDCoMKgwqAgNCBSYW5keSBEdW5sYXANCj4+ICDCoMKgwqDCoMKgIDQgTWlrZSBS
+YXBvcG9ydA0KPj4gIMKgwqDCoMKgwqAgNCBKdWxpYSBMYXdhbGwNCj4+ICDCoMKgwqDCoMKgIDQg
+QW5keSBTaGV2Y2hlbmtvDQo+PiAgwqDCoMKgwqDCoCAzIFhpYW9taW5nIE5pDQo+PiAgwqDCoMKg
+wqDCoCAzIE5pY2hvbGFzIFBpZ2dpbg0KPj4gIMKgwqDCoMKgwqAgMyBNYXJjIFp5bmdpZXINCj4+
+ICDCoMKgwqDCoMKgIDMgQ2hyaXN0b3BoZSBKQUlMTEVUDQo+PiAgwqDCoMKgwqDCoCAzIENocmlz
+dG9waCBIZWxsd2lnDQo+PiAgwqDCoMKgwqDCoCAyIFBhdWwgR29ydG1ha2VyDQo+PiAgwqDCoMKg
+wqDCoCAyIE1hdGhpZXUgTWFsYXRlcnJlDQo+PiAgwqDCoMKgwqDCoCAyIE1hcmt1cyBFbGZyaW5n
+DQo+PiAgwqDCoMKgwqDCoCAyIEpvcmRhbiBOaWV0aGUNCj4+ICDCoMKgwqDCoMKgIDIgRG1pdHJ5
+IFRvcm9raG92DQo+PiAgwqDCoMKgwqDCoCAyIEFybmQgQmVyZ21hbm4NCj4+DQo+PiBQcmV0dHkg
+bXVjaCBldmVyeW9uZSBlbHNlIG9uIHRoZSBsaXN0IGFib3ZlIG9ubHkgZGlkIHRyZWV3aWRlDQo+
+PiBjbGVhbnVwcywgZGVhZCBjb2RlIHJlbW92YWwgb3IgY29tcGlsZS10aW1lIGZpeGVzLCB3aGls
+ZSBDaHJpc3RvcGhlDQo+PiBpcyB0aGUgb25lIHRoYXQgZml4ZWQgbWFjaGluZSBzcGVjaWZpYyBi
+dWdzIGFuZCBhZGRlZCBuZXcgZmVhdHVyZXMuDQo+IA0KPiBTcGVha2luZyBvZiB0aGF0LCBJJ2Qg
+YmUgZmluZSB3aXRoIENocmlzdG9waGUgcmVwbGFjaW5nIG1lIGluIHRoZSAiTElOVVggRk9SDQo+
+IFBPV0VSUEMgRU1CRURERUQgUFBDODNYWCBBTkQgUFBDODVYWCIgZW50cnksIGdpdmVuIHRoYXQg
+aGUncyBiZWVuIHdheSBtb3JlDQo+IGludm9sdmVkIHRoYW4gbWUgbGF0ZWx5Lg0KDQpNUEM4M1hY
+IHllcyBJIGNhbiwgSSBoYXZlIE1QQzgzMjFFIEhhcmR3YXJlLCBidXQgUFBDODVYWCBJJ20gbm90
+IHN1cmUuIEkgDQpkb24ndCBrbm93IG11Y2ggbW9yZSB0aGFuIHdoYXQgSSBjYW4gZXhwZXJpbWVu
+dCB3aXRoIFFFTVUuDQoNCk1heWJlIFBhbGkgZm9yIE1QQzg1WFggPw0KDQpDaHJpc3RvcGhlDQo=
