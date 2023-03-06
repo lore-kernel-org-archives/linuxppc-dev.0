@@ -4,62 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17EF8C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:41:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC15DC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:42:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsTt3sj8z3fcg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:41:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsVt4JRHz3ffH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:42:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQalm81r;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KtvAdpWD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQalm81r;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KtvAdpWD;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp2bVPz3bjb
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp2nKsz3cCn
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 08:34:37 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 0893BB8113A;
-	Mon,  6 Mar 2023 21:34:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id C3F07C4339C;
-	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
+	by ams.source.kernel.org (Postfix) with ESMTPS id BF683B8112D;
+	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 11AB2C433A4;
+	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1678138472;
-	bh=yjTcU/4O54QXaOp7kD6dImYu6+xNwXi4eA/qEkkPwEk=;
+	s=k20201202; t=1678138473;
+	bh=7XOvV2BHwXa+pZlvU66eqwbPxipc2XJxBAsvpm6XWvA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=mQalm81rD7wUE6QNY+8RtKrUaCDGV0FjQeOBFtAPCDCiqem12E/PBuDFC4fqlwI1A
-	 N8j4MbdC3MRaFoq95q+bad3MkjkQZqRt+DGo6aMIiGPVHjwhJWIjEc+nrPwIo/MY8t
-	 x5UgYsKBJ8Gf36BFgOEPOgimQ+HFkcV8uzICsoHfhyiDB03f7vVFKjUov0eSaFwgYo
-	 C76Ys/lgjZcuwg6wUvx/2Jv7Ks8TxanKKSefnbC/tz/YDjloQdSocZxOwAYvr92/Og
-	 imarrZx07G7ocbzrb0UZxH4VSj30as5z21yKFFJ4FhEw0vhWrfU44yoMVJPifGUAux
-	 FqJxt0aTWnepg==
+	b=KtvAdpWDVluIBHmLU1EdKkIeMpt+nNinuaHNqeCs3yXoIe7Z3YssmGG4Tag6syvrE
+	 JJPUpFbkKij8+f4zL7IC2Q+UfdWS7nVQRN7DqeiX1T0cmgEFuvyPRKSH19pCj1p8qv
+	 aQT9b9Oa92VsF/NB5bHmRPyzy4GZ9Xasn4dju0TX9TfLQzqYDdrCL6Lt3Cei39N+J1
+	 xJBqAZDjmvUZvJ3rmZlNvUzWPwuDj7gVvW1PEqjvBLQhCiFZp2d3HyDpH7DL/fPxZd
+	 I5GQMIlYbGi77qd389mW0s8ubn9aaC/gx2o7JT3wPiUkXfB/PJWqK3IkUxs2qILHq3
+	 c/0/QrGl93eTA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B051EC61DA4;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0055EC6FD1A;
 	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Mar 2023 15:33:41 -0600
-Subject: [PATCH 2/8] powerpc/rtas: use memmove for potentially overlapping
- buffer copy
+Date: Mon, 06 Mar 2023 15:33:45 -0600
+Subject: [PATCH 6/8] powerpc/rtas: lockdep annotations
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230220-rtas-queue-for-6-4-v1-2-010e4416f13f@linux.ibm.com>
+Message-Id: <20230220-rtas-queue-for-6-4-v1-6-010e4416f13f@linux.ibm.com>
 References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1353;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=4264;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=iWkx+OV9QpoHxF/qvBxckPhdHb72VXY4C4EjDwgRbNo=;
- b=i8fE9w68n3B/oGU9/B8fTt+wTYwinlIQ64WdShpt/OV/8YPE2G5kbZ3OFxpa6UqcLuzoc7qGu
- POX1zbZuGLlBmSQiOSAMjDzZFeEXYPVuyMI0Lhh4Iab84Ir9y2X2zrD
+ bh=TIYvEdY23gtBTIiUG7IOtdTO7sVemxII+naaI6fhqrI=;
+ b=G81ih7ytuTYeJtOafeh8+PWdLr0CDAIDjMOYZ9Z7li2Vgm4lTR3Ny7UI2WB4UCM1XZf3WGCVQ
+ tiK7vd4VW8jCEhGPM4seOBzaJBay6jbKAOjGEnTQhJiYCCgyi0DZyxf
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -82,46 +81,136 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Using memcpy() isn't safe when buf is identical to rtas_err_buf, which
-can happen during boot before slab is up. Full context which may not
-be obvious from the diff:
+Add lockdep annotations for the following properties that must hold:
 
-	if (altbuf) {
-		buf = altbuf;
-	} else {
-		buf = rtas_err_buf;
-		if (slab_is_available())
-			buf = kmalloc(RTAS_ERROR_LOG_MAX, GFP_ATOMIC);
-	}
-	if (buf)
-		memcpy(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
+* Any error log retrieval must be atomically coupled with the prior
+  RTAS call, without a window for another RTAS call to occur before the
+  error log can be retrieved.
 
-This was found by inspection and I'm not aware of it causing problems
-in practice. It appears to have been introduced by commit
-033ef338b6e0 ("powerpc: Merge rtas.c into arch/powerpc/kernel"); the
-old ppc64 version of this code did not have this problem.
+* All users of the core rtas_args parameter block must hold rtas_lock.
 
-Use memmove() instead.
+Move the definitions of rtas_lock and rtas_args up in the file so that
+__do_enter_rtas_trace() can refer to them.
 
-Fixes: 033ef338b6e0 ("powerpc: Merge rtas.c into arch/powerpc/kernel")
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/rtas.c | 33 +++++++++++++++++++++++----------
+ 1 file changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 31175b34856a..9256cfaa8b6f 100644
+index 96a10a0abe3a..633c925164e7 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -981,7 +981,7 @@ static char *__fetch_rtas_last_error(char *altbuf)
- 				buf = kmalloc(RTAS_ERROR_LOG_MAX, GFP_ATOMIC);
- 		}
- 		if (buf)
--			memcpy(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
-+			memmove(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
+@@ -16,6 +16,7 @@
+ #include <linux/init.h>
+ #include <linux/kconfig.h>
+ #include <linux/kernel.h>
++#include <linux/lockdep.h>
+ #include <linux/memblock.h>
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+@@ -453,6 +454,16 @@ static struct rtas_function rtas_function_table[] __ro_after_init = {
+ 	},
+ };
+ 
++/*
++ * Nearly all RTAS calls need to be serialized. All uses of the
++ * default rtas_args block must hold rtas_lock.
++ *
++ * Exceptions to the RTAS serialization requirement (e.g. stop-self)
++ * must use a separate rtas_args structure.
++ */
++static DEFINE_RAW_SPINLOCK(rtas_lock);
++static struct rtas_args rtas_args;
++
+ /**
+  * rtas_function_token() - RTAS function token lookup.
+  * @handle: Function handle, e.g. RTAS_FN_EVENT_SCAN.
+@@ -560,6 +571,9 @@ static void __do_enter_rtas(struct rtas_args *args)
+ static void __do_enter_rtas_trace(struct rtas_args *args)
+ {
+ 	const char *name = NULL;
++
++	if (args == &rtas_args)
++		lockdep_assert_held(&rtas_lock);
+ 	/*
+ 	 * If the tracepoints that consume the function name aren't
+ 	 * active, avoid the lookup.
+@@ -619,16 +633,6 @@ static void do_enter_rtas(struct rtas_args *args)
+ 
+ struct rtas_t rtas;
+ 
+-/*
+- * Nearly all RTAS calls need to be serialized. All uses of the
+- * default rtas_args block must hold rtas_lock.
+- *
+- * Exceptions to the RTAS serialization requirement (e.g. stop-self)
+- * must use a separate rtas_args structure.
+- */
+-static DEFINE_RAW_SPINLOCK(rtas_lock);
+-static struct rtas_args rtas_args;
+-
+ DEFINE_SPINLOCK(rtas_data_buf_lock);
+ EXPORT_SYMBOL_GPL(rtas_data_buf_lock);
+ 
+@@ -951,6 +955,8 @@ static char *__fetch_rtas_last_error(char *altbuf)
+ 	u32 bufsz;
+ 	char *buf = NULL;
+ 
++	lockdep_assert_held(&rtas_lock);
++
+ 	if (token == -1)
+ 		return NULL;
+ 
+@@ -1107,6 +1113,7 @@ static bool token_is_restricted_errinjct(s32 token)
+  */
+ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
+ {
++	struct pin_cookie cookie;
+ 	va_list list;
+ 	int i;
+ 	unsigned long flags;
+@@ -1133,6 +1140,8 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
  	}
  
- 	return buf;
+ 	raw_spin_lock_irqsave(&rtas_lock, flags);
++	cookie = lockdep_pin_lock(&rtas_lock);
++
+ 	/* We use the global rtas args buffer */
+ 	args = &rtas_args;
+ 
+@@ -1150,6 +1159,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
+ 			outputs[i] = be32_to_cpu(args->rets[i + 1]);
+ 	ret = (nret > 0) ? be32_to_cpu(args->rets[0]) : 0;
+ 
++	lockdep_unpin_lock(&rtas_lock, cookie);
+ 	raw_spin_unlock_irqrestore(&rtas_lock, flags);
+ 
+ 	if (buff_copy) {
+@@ -1781,6 +1791,7 @@ static bool block_rtas_call(int token, int nargs,
+ /* We assume to be passed big endian arguments */
+ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ {
++	struct pin_cookie cookie;
+ 	struct rtas_args args;
+ 	unsigned long flags;
+ 	char *buff_copy, *errbuf = NULL;
+@@ -1849,6 +1860,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 	buff_copy = get_errorlog_buffer();
+ 
+ 	raw_spin_lock_irqsave(&rtas_lock, flags);
++	cookie = lockdep_pin_lock(&rtas_lock);
+ 
+ 	rtas_args = args;
+ 	do_enter_rtas(&rtas_args);
+@@ -1859,6 +1871,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
+ 	if (be32_to_cpu(args.rets[0]) == -1)
+ 		errbuf = __fetch_rtas_last_error(buff_copy);
+ 
++	lockdep_unpin_lock(&rtas_lock, cookie);
+ 	raw_spin_unlock_irqrestore(&rtas_lock, flags);
+ 
+ 	if (buff_copy) {
 
 -- 
 2.39.1
