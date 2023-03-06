@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2AFBC64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:39:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6A80C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:40:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsRv1BQSz3f4p
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:39:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsSt2tljz3fZV
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:40:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GPjImbaT;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aZce+h+N;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GPjImbaT;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aZce+h+N;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp1jr2z3c1K
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp2767z3c9H
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 08:34:37 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 0317BB81135;
+	by ams.source.kernel.org (Postfix) with ESMTPS id C2466B80FE3;
 	Mon,  6 Mar 2023 21:34:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B9734C4339B;
-	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 05381C433A1;
+	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1678138472;
-	bh=SKARpZaPWMeMkRaK0GQ8aW0KrcIsPOLhz7ZL9TMTJNE=;
+	s=k20201202; t=1678138473;
+	bh=lQNGdTblBvled8YnNr01N/d2ekXWREjHE/KOYzxz2a4=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=GPjImbaTExCz3yC4flP/59ez6PXbmVhIGKYZfwu+vYOJ8dqsLggOCfalqEZ0ZQUO7
-	 ygbyN9bt0j+2lkKhQeTHBjfAmj/5oaQXr+cVCpmYC7o4oD1jffAqOPStiLO9uLDrpQ
-	 5UYecqqtsuq8rze5oalWWjJMTfLBQ2GKOomA5sQGFJa65H5EllRgoySbObnlTUw8mS
-	 KI2xjHQ6D4Oz/hofTHyjbtMKUxvBo5lCFcSgeO4ZDyI3dYdfZVScLjxNxuaecI6Ox+
-	 prKVaikZ8hDbCy4UClasZuolhaFRdEY+NZY4csK/ijRT40//pJg4Beqih4ER8GSv3K
-	 YGbT7pf7VE17w==
+	b=aZce+h+Nq6Ab1cp1RVSZZgpUt5hy2jOlmN4WN6kBQzfz7u1koMvSSe3DguE/VMFpL
+	 tiCtDu4s7ds+c59p1TZUfLV75Q4OZiGWgwxGoM9QwA8w2W5H5tUI7IMgR1pmP3JuVQ
+	 uTilZXh4hRd4ijueXOei/N2+p4izmK7/QNjk1gUCw1CMQ8/3ePKxCUTnqqmEQ7jYe0
+	 +5lXG4lbmjt+qGcIYZUYcJyufotP9GYQvT1HqcXDESLLM6s/S/fK6IbnMU8nb6gK9C
+	 o70F09oc3282OkF4E6h40i6UBlq4lypuQOA4jXlkJh9OR0JFzd0e7wl4Aa63lwkEeN
+	 mFvh4013WOzzA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97DDBC6FD1A;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E20B2C6FD1B;
 	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Mar 2023 15:33:40 -0600
-Subject: [PATCH 1/8] powerpc/rtas: ensure 8-byte alignment for struct
- rtas_args
+Date: Mon, 06 Mar 2023 15:33:44 -0600
+Subject: [PATCH 5/8] powerpc/rtas: rename va_rtas_call_unlocked() to
+ va_rtas_call()
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230220-rtas-queue-for-6-4-v1-1-010e4416f13f@linux.ibm.com>
+Message-Id: <20230220-rtas-queue-for-6-4-v1-5-010e4416f13f@linux.ibm.com>
 References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1749;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1417;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=zKZp717erQqHtOsvnKGf8gvxVdLkX7Wsrykg3a+ZIso=;
- b=8LQBmszSbhhO1K662MFxCVWJBULbaSR1bc6FAbL87L53kqm9VMT24SZFjff7JqszJMrzUUwOL
- lkKnhMWsQHuC5JdsUAT0Z7Sf/mQQ/bPP0enmq/PvhgtELu8RcIa/9EI
+ bh=zmpUoFBlYm32z8pVAFlRUtoMohEKmXli9AeFhKjMQFg=;
+ b=VGctELNY89LqxoRzb4VrgmHdLwMUcWBqKyta27DSpPKXM1UtERnFPbWJQIZhuaUny4HzEJxrS
+ E50XCOo/kufC0X9abjpsWnuTo12q8ffkCOWJGT6mdo4/7vOSr+C2vC6
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -82,54 +82,48 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-CHRP and PAPR agree: "In order to make an RTAS call, the operating
-system must construct an argument call buffer aligned on an eight byte
-boundary in physically contiguous real memory [...]." (7.2.7 Calling
-Mechanism and Conventions).
-
-struct rtas_args is the type used for this argument call buffer. The
-unarchitected 'rets' member happens to produce 8-byte alignment for
-the struct on 64-bit targets in practice. But without an alignment
-directive the structure will have only 4-byte alignment on 32-bit
-targets:
-
-  $ nm b/{before,after}/chrp32/vmlinux | grep rtas_args
-  c096881c b rtas_args
-  c0968820 b rtas_args
-
-Add an alignment directive to the struct rtas_args declaration so all
-instances have the alignment required by the specs. rtas-types.h no
-longer refers to any spinlock types, so drop the spinlock_types.h
-inclusion while we're here.
+The function name va_rtas_call_unlocked() is confusing: it may be
+called with or without rtas_lock held. Rename it to va_rtas_call().
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/include/asm/rtas-types.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/rtas.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/rtas-types.h b/arch/powerpc/include/asm/rtas-types.h
-index f2ad4a96cbc5..861145c8a021 100644
---- a/arch/powerpc/include/asm/rtas-types.h
-+++ b/arch/powerpc/include/asm/rtas-types.h
-@@ -2,7 +2,8 @@
- #ifndef _ASM_POWERPC_RTAS_TYPES_H
- #define _ASM_POWERPC_RTAS_TYPES_H
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index c29c38b1a55a..96a10a0abe3a 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -996,9 +996,8 @@ static void __init init_error_log_max(void) {}
+ #endif
  
--#include <linux/spinlock_types.h>
-+#include <linux/compiler_attributes.h>
-+#include <linux/sizes.h>
  
- typedef __be32 rtas_arg_t;
+-static void
+-va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
+-		      va_list list)
++static void va_rtas_call(struct rtas_args *args, int token, int nargs, int nret,
++			 va_list list)
+ {
+ 	int i;
  
-@@ -12,7 +13,7 @@ struct rtas_args {
- 	__be32 nret;
- 	rtas_arg_t args[16];
- 	rtas_arg_t *rets;     /* Pointer to return values in args[]. */
--};
-+} __aligned(SZ_8);
+@@ -1038,7 +1037,7 @@ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
+ 	va_list list;
  
- struct rtas_t {
- 	unsigned long entry;		/* physical address pointer */
+ 	va_start(list, nret);
+-	va_rtas_call_unlocked(args, token, nargs, nret, list);
++	va_rtas_call(args, token, nargs, nret, list);
+ 	va_end(list);
+ }
+ 
+@@ -1138,7 +1137,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
+ 	args = &rtas_args;
+ 
+ 	va_start(list, outputs);
+-	va_rtas_call_unlocked(args, token, nargs, nret, list);
++	va_rtas_call(args, token, nargs, nret, list);
+ 	va_end(list);
+ 
+ 	/* A -1 return code indicates that the last command couldn't
 
 -- 
 2.39.1
