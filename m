@@ -4,58 +4,90 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E7F7C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 17:42:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69CA4C64EC4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 18:19:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PVm9r5Qfxz3f7M
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 04:42:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PVn164GmWz3f74
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 05:19:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=uHoulabi;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FVDfNAgp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gerald.schaefer@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=uHoulabi;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FVDfNAgp;
 	dkim-atps=neutral
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVm8r085fz3c9x
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 04:41:31 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 73F0C37E2D6066;
-	Mon,  6 Mar 2023 11:29:54 -0600 (CST)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id D7rELOLGaTDI; Mon,  6 Mar 2023 11:29:54 -0600 (CST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 0548C37E2D6063;
-	Mon,  6 Mar 2023 11:29:54 -0600 (CST)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 0548C37E2D6063
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1678123794; bh=UblfvVqy9JNKkVyg/QuZ/+8/xeR2o4hFr+a9TaQPCgY=;
-	h=Date:From:To:Message-ID:MIME-Version;
-	b=uHoulabi+TH0mWyAwgoNubPmUcb33a10FRzDDSZPtMCTu4FxE8PB/cSfNfzyGK3rE
-	 Z3BAGJ6KYPl6nvCWd1eH69hJa1SVQxoulF06TB37Qm/H2LQxaQR0h3ku2vaW2lh8h5
-	 XKbfRDoAVUfin1LEht5L8wWJ7ZgJefa+Z7h6C9sI=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id vkFWYm9eZgZS; Mon,  6 Mar 2023 11:29:53 -0600 (CST)
-Received: from vali.starlink.edu (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id D4B1537E2D6060;
-	Mon,  6 Mar 2023 11:29:53 -0600 (CST)
-Date: Mon, 6 Mar 2023 11:29:53 -0600 (CST)
-From: Timothy Pearson <tpearson@raptorengineering.com>
-To: kvm <kvm@vger.kernel.org>
-Message-ID: <8398361.16996856.1678123793664.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH v2 0/4] Reenable VFIO support on POWER systems
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVn04656Cz3c6V
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 05:19:00 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 326H2k6Z022466;
+	Mon, 6 Mar 2023 18:18:21 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : in-reply-to : references : mime-version :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=IVmI4yH9tG0Ae6va4zPFZiTf9ybnBWkjBZy2t1uuqgI=;
+ b=FVDfNAgpf8FNutgMtGmbr7YUIcfZ6UlNMzv62++SW/PpJWUKNBbsWlIWOOXh5XRvstMB
+ oQq9GnjROL9WsFXrvWRTTbG1dP6hEt0ExxI1cCBJocLCnJMIU5HNhN6nN8y8tPWZ4YOp
+ ng80xkfQUFRwW4aS+3UpsTrEByxgs5oYeTCpiVt1ao1mpIIcT4b+0rr8mLZSwXRA1qT/
+ NLh0PguCBuPOYQWMXxLYpZRrIK0c/ftTYpJsqM5jw1jlRX9Q1jFIHyOvuyJ8mdXNFxyY
+ eykQgYPVHIUGiVQNrBiSVfJvwVAJbabnLI2eNQTfornfdxnPanacqqn9a9bVAWzU8fIS kg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p4vp269gh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Mar 2023 18:18:21 +0000
+Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 326I74HM020418;
+	Mon, 6 Mar 2023 18:18:20 GMT
+Received: from ppma06fra.de.ibm.com (48.49.7a9f.ip4.static.sl-reverse.com [159.122.73.72])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3p4vp269f2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Mar 2023 18:18:20 +0000
+Received: from pps.filterd (ppma06fra.de.ibm.com [127.0.0.1])
+	by ppma06fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32649vYR011365;
+	Mon, 6 Mar 2023 18:18:16 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma06fra.de.ibm.com (PPS) with ESMTPS id 3p418v2fck-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 06 Mar 2023 18:18:15 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 326IIC4457016778
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 6 Mar 2023 18:18:12 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4E74F2004E;
+	Mon,  6 Mar 2023 18:18:12 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 31A4620040;
+	Mon,  6 Mar 2023 18:18:11 +0000 (GMT)
+Received: from thinkpad (unknown [9.171.75.232])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with SMTP;
+	Mon,  6 Mar 2023 18:18:11 +0000 (GMT)
+Date: Mon, 6 Mar 2023 19:18:09 +0100
+From: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH] mm: add PTE pointer parameter to
+ flush_tlb_fix_spurious_fault()
+Message-ID: <20230306191809.77144eec@thinkpad>
+In-Reply-To: <ZAYdpLCxicptr4MJ@arm.com>
+References: <20230306161548.661740-1-gerald.schaefer@linux.ibm.com>
+	<ZAYdpLCxicptr4MJ@arm.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.36; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC110 (Linux)/8.5.0_GA_3042)
-Thread-Index: uScuXMMJXypW8VSpxfj7HiX7Gk0vWQ==
-Thread-Topic: Reenable VFIO support on POWER systems
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Q6RU0_1d33mcmcSdtwyO-VmlbiReyfsE
+X-Proofpoint-GUID: PmcJFWFlbELOtLm7Z0Wo3Lyr_EPiLECW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.219,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-03-06_11,2023-03-06_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 impostorscore=0
+ lowpriorityscore=0 malwarescore=0 bulkscore=0 clxscore=1015 suspectscore=0
+ mlxlogscore=937 mlxscore=0 priorityscore=1501 adultscore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2212070000
+ definitions=main-2303060156
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,35 +99,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-x86 <x86@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Anshuman Khandual <anshuman.khandual@arm.com>, David Hildenbrand <david@redhat.com>, linux-mips <linux-mips@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Will Deacon <will@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, linux-s390 <linux-s390@vger.kernel.org>, linux-power <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series reenables VFIO support on POWER systems.  It
-is based on Alexey Kardashevskiys's patch series, rebased and
-successfully tested under QEMU with a Marvell PCIe SATA controller
-on a POWER9 Blackbird host.
+On Mon, 6 Mar 2023 17:06:44 +0000
+Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-Alexey Kardashevskiy (3):
-  powerpc/iommu: Add "borrowing" iommu_table_group_ops
-  powerpc/pci_64: Init pcibios subsys a bit later
-  powerpc/iommu: Add iommu_ops to report capabilities and allow blocking
-    domains
+> On Mon, Mar 06, 2023 at 05:15:48PM +0100, Gerald Schaefer wrote:
+> > diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> > index b6ba466e2e8a..0bd18de9fd97 100644
+> > --- a/arch/arm64/include/asm/pgtable.h
+> > +++ b/arch/arm64/include/asm/pgtable.h
+> > @@ -57,7 +57,7 @@ static inline bool arch_thp_swp_supported(void)
+> >   * fault on one CPU which has been handled concurrently by another CPU
+> >   * does not need to perform additional invalidation.
+> >   */
+> > -#define flush_tlb_fix_spurious_fault(vma, address) do { } while (0)
+> > +#define flush_tlb_fix_spurious_fault(vma, address, ptep) do { } while (0)
+> 
+> For arm64:
+> 
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+> 
+> > diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+> > index 2c70b4d1263d..c1f6b46ec555 100644
+> > --- a/arch/s390/include/asm/pgtable.h
+> > +++ b/arch/s390/include/asm/pgtable.h
+> > @@ -1239,7 +1239,8 @@ static inline int pte_allow_rdp(pte_t old, pte_t new)
+> >  }
+> >  
+> >  static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
+> > -						unsigned long address)
+> > +						unsigned long address,
+> > +						pte_t *ptep)
+> >  {
+> >  	/*
+> >  	 * RDP might not have propagated the PTE protection reset to all CPUs,
+> > @@ -1247,11 +1248,12 @@ static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
+> >  	 * NOTE: This will also be called when a racing pagetable update on
+> >  	 * another thread already installed the correct PTE. Both cases cannot
+> >  	 * really be distinguished.
+> > -	 * Therefore, only do the local TLB flush when RDP can be used, to avoid
+> > -	 * unnecessary overhead.
+> > +	 * Therefore, only do the local TLB flush when RDP can be used, and the
+> > +	 * PTE does not have _PAGE_PROTECT set, to avoid unnecessary overhead.
+> > +	 * A local RDP can be used to do the flush.
+> >  	 */
+> > -	if (MACHINE_HAS_RDP)
+> > -		asm volatile("ptlb" : : : "memory");
+> > +	if (MACHINE_HAS_RDP && !(pte_val(*ptep) & _PAGE_PROTECT))
+> > +		__ptep_rdp(address, ptep, 0, 0, 1);
+> 
+> I wonder whether passing the actual entry is somewhat quicker as it
+> avoids another memory access (though it might already be in the cache).
 
-Timothy Pearson (1):
-  Add myself to MAINTAINERS for Power VFIO support
+The RDP instruction itself only requires the PTE pointer as input, or more
+precisely a pointer to the pagetable origin. We calculate that from the PTE
+pointer, by masking out some bits, w/o actual memory access to the PTE entry
+value.
 
- MAINTAINERS                               |   5 +
- arch/powerpc/include/asm/iommu.h          |   6 +-
- arch/powerpc/include/asm/pci-bridge.h     |   7 +
- arch/powerpc/kernel/iommu.c               | 246 +++++++++++++++++++++-
- arch/powerpc/kernel/pci_64.c              |   2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c |  36 +++-
- arch/powerpc/platforms/pseries/iommu.c    |  27 +++
- arch/powerpc/platforms/pseries/pseries.h  |   4 +
- arch/powerpc/platforms/pseries/setup.c    |   3 +
- drivers/vfio/vfio_iommu_spapr_tce.c       |  96 ++-------
- 10 files changed, 338 insertions(+), 94 deletions(-)
+Of course, there is the pte_val(*ptep) & _PAGE_PROTECT check here, with
+memory access, but this might get removed in the future. TBH, I simply
+wasn't sure (enough) yet, if we could technically ever end up here with
+_PAGE_PROTECT set at all. For "real" spurious protection faults, it should
+never be set, not so sure about racing pagetable updates though.
 
--- 
-2.30.2
+So this might actually be an unnecessary / overly cautious check, that
+gets removed in the future, and not worth passing along the PTE value
+in addition to the pointer.
