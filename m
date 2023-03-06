@@ -4,62 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 281C0C64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:36:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35650C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:37:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsMt5kzsz3f4p
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:36:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsNt5vcFz3f82
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:37:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbEQbhjU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uZL0vL1i;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pbEQbhjU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uZL0vL1i;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKn2nnJz3bgX
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKn2yJzz3bjb
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 08:34:37 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 166C460C95;
-	Mon,  6 Mar 2023 21:34:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 20344C433A0;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 6CA4360A10;
 	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id D2B76C433D2;
+	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1678138473;
-	bh=LDdXDgoactf7W8hxaHxrd0axH/SHQ0LmO4BLXhADMfA=;
+	s=k20201202; t=1678138472;
+	bh=c3tV59eVvTL3GB2JpBKYEG3EnJNKFS4sB1Y/mOXXFxo=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=pbEQbhjUunEzhWOTaV+kO12idOijfFDAiJDoqc6O9sbX0Jm2CxcP2VGDJrQ+Luqg2
-	 yxxWMMgRsPO4bYQAP+Hr1Yj9Xq7GjC62tGPgfpjIxZJysbp6wSvRrF5gt1TXr7dnk7
-	 Vzg6nP6xekDhtm3DqcvvD7B4hFvWTV9ie0rwMLRxZdPPO36hDrIDRmgOyLSVq8kIqa
-	 ECiSjPooUdcyW21pBZEhcx+80OlJe28wOowhPHyAisy20pUCA8aLdzwfChs/ooMTV/
-	 bdPpK2yTc0QaTYPX2ZBQrRweCY3NJRoOhby4KCKFCKrPzrxUseUcBuFgVjCL6IxaKg
-	 imC6UUwL5lqDw==
+	b=uZL0vL1izz0igtaI0+hy4MCC9TZlft3a7oEYO58fv0t967Y1dioY8oQDlHuEoE0kZ
+	 7miikejHiDZgL0HLBpU3vsckF7U+sxjZlwSujdebPeYqU8lFkqYq7lPpy09lzUIpBp
+	 g7b6D1pTOcKNc+Fzqc9JU++r7Mnd4gq8OSKE0NOoOgJTR3TQju+jy3zGV7Ovl5wFQ+
+	 g7mP2GUIrKewbdWlHOBjKwP+r/9t0RlcFtXARvimFO54lMNRH6Fw+6qCojLkXL+IQv
+	 FG3o9CpX8l3tQdgUiVtS2H2BXYU63oKizmSCwKXv/FK75S/UkGoJ0uLFRuRhDSBH0u
+	 Bi/nqDJFg/bzQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EC3EC64EC4;
-	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0197C6FD1C;
+	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Mar 2023 15:33:46 -0600
-Subject: [PATCH 7/8] powerpc/rtas: warn on unsafe argument to
- rtas_call_unlocked()
+Date: Mon, 06 Mar 2023 15:33:42 -0600
+Subject: [PATCH 3/8] powerpc/rtas: rtas_call_unlocked() kerneldoc
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230220-rtas-queue-for-6-4-v1-7-010e4416f13f@linux.ibm.com>
+Message-Id: <20230220-rtas-queue-for-6-4-v1-3-010e4416f13f@linux.ibm.com>
 References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=999;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1514;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=pRZxRj5QyWZZ4hjbHO7mJTWLLN6i/dgDWwjlJ8ybXFE=;
- b=Rkqr5NU/NmQkjMAiyWXvNzoRrabkCKdVa2SubSeba/PWegiwywXG43gH5h/cni5BSahtv5QWC
- aHznaQvex61BBHtWlutyjRX5cjjKBrQY6+07y21mTmGWUFfWVljZ46l
+ bh=aNVQYLIYeghDvruaF+K17N+vFRgqaX8hcKm6FIHWhcU=;
+ b=LntxrFKMlrhF9aFjjxyXXyYyP1Piy6ap2oSPQLn+38HuUrpD1XXw4JjbJ2YiakTWd7YRMT4mu
+ nwSeXE6mlLYAJIJ5ZjcFF/zs4sbogpjGPyNRFH9VDSYqi8rEuEP8rHl
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -82,34 +81,42 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-Any caller of rtas_call_unlocked() must provide an rtas_args parameter
-block distinct from the core rtas_args buffer used by the rtas_call()
-path. It's an unlikely error to make, but the potential consequences
-are grim, and it's trivial to check.
+Add documentation for rtas_call_unlocked(), including details on how
+it differs from rtas_call().
 
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/kernel/rtas.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 633c925164e7..47a2aa43d7d4 100644
+index 9256cfaa8b6f..c73b01d722f6 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -1042,6 +1042,13 @@ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
+@@ -1016,6 +1016,23 @@ va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
+ 	do_enter_rtas(args);
+ }
+ 
++/**
++ * rtas_call_unlocked() - Invoke an RTAS firmware function without synchronization.
++ * @args: RTAS parameter block to be used for the call, must obey RTAS addressing
++ *        constraints.
++ * @token: Identifies the function being invoked.
++ * @nargs: Number of input parameters. Does not include token.
++ * @nret: Number of output parameters, including the call status.
++ * @....: List of @nargs input parameters.
++ *
++ * Invokes the RTAS function indicated by @token, which the caller
++ * should obtain via rtas_function_token().
++ *
++ * This function is similar to rtas_call(), but must be used with a
++ * limited set of RTAS calls specifically exempted from the general
++ * requirement that only one RTAS call may be in progress at any
++ * time. Examples include stop-self and ibm,nmi-interlock.
++ */
+ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret, ...)
  {
  	va_list list;
- 
-+	/*
-+	 * Callers must not use rtas_args; otherwise they risk
-+	 * corrupting the state of the rtas_call() path, which is
-+	 * serialized by rtas_lock.
-+	 */
-+	WARN_ON(args == &rtas_args);
-+
- 	va_start(list, nret);
- 	va_rtas_call(args, token, nargs, nret, list);
- 	va_end(list);
 
 -- 
 2.39.1
