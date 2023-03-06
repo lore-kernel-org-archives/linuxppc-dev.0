@@ -4,62 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6A80C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:40:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17EF8C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  6 Mar 2023 21:41:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsSt2tljz3fZV
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:40:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PVsTt3sj8z3fcg
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  7 Mar 2023 08:41:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aZce+h+N;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQalm81r;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=devnull+nathanl.linux.ibm.com@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aZce+h+N;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mQalm81r;
 	dkim-atps=neutral
 Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp2767z3c9H
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PVsKp2bVPz3bjb
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Mar 2023 08:34:37 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id C2466B80FE3;
+	by ams.source.kernel.org (Postfix) with ESMTPS id 0893BB8113A;
 	Mon,  6 Mar 2023 21:34:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 05381C433A1;
-	Mon,  6 Mar 2023 21:34:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id C3F07C4339C;
+	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1678138473;
-	bh=lQNGdTblBvled8YnNr01N/d2ekXWREjHE/KOYzxz2a4=;
+	s=k20201202; t=1678138472;
+	bh=yjTcU/4O54QXaOp7kD6dImYu6+xNwXi4eA/qEkkPwEk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=aZce+h+Nq6Ab1cp1RVSZZgpUt5hy2jOlmN4WN6kBQzfz7u1koMvSSe3DguE/VMFpL
-	 tiCtDu4s7ds+c59p1TZUfLV75Q4OZiGWgwxGoM9QwA8w2W5H5tUI7IMgR1pmP3JuVQ
-	 uTilZXh4hRd4ijueXOei/N2+p4izmK7/QNjk1gUCw1CMQ8/3ePKxCUTnqqmEQ7jYe0
-	 +5lXG4lbmjt+qGcIYZUYcJyufotP9GYQvT1HqcXDESLLM6s/S/fK6IbnMU8nb6gK9C
-	 o70F09oc3282OkF4E6h40i6UBlq4lypuQOA4jXlkJh9OR0JFzd0e7wl4Aa63lwkEeN
-	 mFvh4013WOzzA==
+	b=mQalm81rD7wUE6QNY+8RtKrUaCDGV0FjQeOBFtAPCDCiqem12E/PBuDFC4fqlwI1A
+	 N8j4MbdC3MRaFoq95q+bad3MkjkQZqRt+DGo6aMIiGPVHjwhJWIjEc+nrPwIo/MY8t
+	 x5UgYsKBJ8Gf36BFgOEPOgimQ+HFkcV8uzICsoHfhyiDB03f7vVFKjUov0eSaFwgYo
+	 C76Ys/lgjZcuwg6wUvx/2Jv7Ks8TxanKKSefnbC/tz/YDjloQdSocZxOwAYvr92/Og
+	 imarrZx07G7ocbzrb0UZxH4VSj30as5z21yKFFJ4FhEw0vhWrfU44yoMVJPifGUAux
+	 FqJxt0aTWnepg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E20B2C6FD1B;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B051EC61DA4;
 	Mon,  6 Mar 2023 21:34:32 +0000 (UTC)
 From: Nathan Lynch via B4 Relay <devnull+nathanl.linux.ibm.com@kernel.org>
-Date: Mon, 06 Mar 2023 15:33:44 -0600
-Subject: [PATCH 5/8] powerpc/rtas: rename va_rtas_call_unlocked() to
- va_rtas_call()
+Date: Mon, 06 Mar 2023 15:33:41 -0600
+Subject: [PATCH 2/8] powerpc/rtas: use memmove for potentially overlapping
+ buffer copy
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230220-rtas-queue-for-6-4-v1-5-010e4416f13f@linux.ibm.com>
+Message-Id: <20230220-rtas-queue-for-6-4-v1-2-010e4416f13f@linux.ibm.com>
 References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, 
  Nicholas Piggin <npiggin@gmail.com>, 
  Christophe Leroy <christophe.leroy@csgroup.eu>
 X-Mailer: b4 0.12.1
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1417;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1678138471; l=1353;
  i=nathanl@linux.ibm.com; s=20230206; h=from:subject:message-id;
- bh=zmpUoFBlYm32z8pVAFlRUtoMohEKmXli9AeFhKjMQFg=;
- b=VGctELNY89LqxoRzb4VrgmHdLwMUcWBqKyta27DSpPKXM1UtERnFPbWJQIZhuaUny4HzEJxrS
- E50XCOo/kufC0X9abjpsWnuTo12q8ffkCOWJGT6mdo4/7vOSr+C2vC6
+ bh=iWkx+OV9QpoHxF/qvBxckPhdHb72VXY4C4EjDwgRbNo=;
+ b=i8fE9w68n3B/oGU9/B8fTt+wTYwinlIQ64WdShpt/OV/8YPE2G5kbZ3OFxpa6UqcLuzoc7qGu
+ POX1zbZuGLlBmSQiOSAMjDzZFeEXYPVuyMI0Lhh4Iab84Ir9y2X2zrD
 X-Developer-Key: i=nathanl@linux.ibm.com; a=ed25519;
  pk=6daubz/ymoaMF+8voz7UHwnhluEsmDZuqygIIMWpQQY=
 X-Endpoint-Received:  by B4 Relay for nathanl@linux.ibm.com/20230206 with auth_id=27
@@ -82,48 +82,46 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Nathan Lynch <nathanl@linux.ibm.com>
 
-The function name va_rtas_call_unlocked() is confusing: it may be
-called with or without rtas_lock held. Rename it to va_rtas_call().
+Using memcpy() isn't safe when buf is identical to rtas_err_buf, which
+can happen during boot before slab is up. Full context which may not
+be obvious from the diff:
 
+	if (altbuf) {
+		buf = altbuf;
+	} else {
+		buf = rtas_err_buf;
+		if (slab_is_available())
+			buf = kmalloc(RTAS_ERROR_LOG_MAX, GFP_ATOMIC);
+	}
+	if (buf)
+		memcpy(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
+
+This was found by inspection and I'm not aware of it causing problems
+in practice. It appears to have been introduced by commit
+033ef338b6e0 ("powerpc: Merge rtas.c into arch/powerpc/kernel"); the
+old ppc64 version of this code did not have this problem.
+
+Use memmove() instead.
+
+Fixes: 033ef338b6e0 ("powerpc: Merge rtas.c into arch/powerpc/kernel")
 Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
 ---
- arch/powerpc/kernel/rtas.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/rtas.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index c29c38b1a55a..96a10a0abe3a 100644
+index 31175b34856a..9256cfaa8b6f 100644
 --- a/arch/powerpc/kernel/rtas.c
 +++ b/arch/powerpc/kernel/rtas.c
-@@ -996,9 +996,8 @@ static void __init init_error_log_max(void) {}
- #endif
+@@ -981,7 +981,7 @@ static char *__fetch_rtas_last_error(char *altbuf)
+ 				buf = kmalloc(RTAS_ERROR_LOG_MAX, GFP_ATOMIC);
+ 		}
+ 		if (buf)
+-			memcpy(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
++			memmove(buf, rtas_err_buf, RTAS_ERROR_LOG_MAX);
+ 	}
  
- 
--static void
--va_rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
--		      va_list list)
-+static void va_rtas_call(struct rtas_args *args, int token, int nargs, int nret,
-+			 va_list list)
- {
- 	int i;
- 
-@@ -1038,7 +1037,7 @@ void rtas_call_unlocked(struct rtas_args *args, int token, int nargs, int nret,
- 	va_list list;
- 
- 	va_start(list, nret);
--	va_rtas_call_unlocked(args, token, nargs, nret, list);
-+	va_rtas_call(args, token, nargs, nret, list);
- 	va_end(list);
- }
- 
-@@ -1138,7 +1137,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
- 	args = &rtas_args;
- 
- 	va_start(list, outputs);
--	va_rtas_call_unlocked(args, token, nargs, nret, list);
-+	va_rtas_call(args, token, nargs, nret, list);
- 	va_end(list);
- 
- 	/* A -1 return code indicates that the last command couldn't
+ 	return buf;
 
 -- 
 2.39.1
