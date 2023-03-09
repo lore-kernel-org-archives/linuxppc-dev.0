@@ -4,49 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56EF2C64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Mar 2023 13:52:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDD69C61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Mar 2023 13:55:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PXVwm2SP1z3f3b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 00:52:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PXW0n6v0Gz3cf6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 00:55:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E9BcdDkq;
-	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fJTtut1q;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Rp3KGGnn;
+	dkim=fail reason="signature verification failed" header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QQYquVVI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E9BcdDkq;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fJTtut1q;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Rp3KGGnn;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=QQYquVVI;
 	dkim-atps=neutral
-X-Greylist: delayed 145 seconds by postgrey-1.36 at boromir; Fri, 10 Mar 2023 00:51:15 AEDT
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PXVvl0NXMz3cMc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 00:51:15 +1100 (AEDT)
-Date: Thu, 9 Mar 2023 14:51:10 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PXVzn75Gmz2xBF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 00:54:45 +1100 (AEDT)
+Date: Thu, 9 Mar 2023 14:48:31 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1678369872;
+	s=2020; t=1678369712;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=16hHdUVfCNdMlPVnfLlqaviU4kMu2Q10n9ftvvZYWR0=;
-	b=E9BcdDkqZdxtF4r0kWuu+xz/Dl9d6t7D4pFlW2tXNyzdh3tQ0QtA1+OLylWosPRYYe5Dvv
-	yK1re3X7op9Wff/zskNXdMRasIuzOK7ZoHkSPvYcoO2w3md1ASXalh+5/9KD/8CZGfClae
-	61eT+NyHlxeKAWF8W/i0QnOAz+Hq9ZmgLdK65ZJ26YvWJZdtKZkcphxiyZ5e4+L6sOPCcI
-	gS4Zv0F9AMnH2EscgGYo1tjgCXNyWfkU69WYVfJdnN7dmDPtD8VAzGQJ92vwHdlgmSVieC
-	KXC6jg8ZwaaDPubEH2j2zP09BnYpdQhjn35j3elh/XX20H8EG/2cf/r2X1cuNg==
+	bh=nKbsaRAVtSiu1fp/cSPXFa2YfgKRKFV9YS0w//SxP2U=;
+	b=Rp3KGGnnkEk5+rJW7r7OwEpIf6LKBbK8HSw8imUuaPZlpO1buxElTqfSKNVF0mXrz0dBjz
+	LmkG1uqYZO96M1Fu+8H4QftqEXGPf/0w5AK7Nx7pLSvkIV6J0OOUy1r19Jw9kgWq7EXvKi
+	O1EiqCI0mjci++5LUTt2PyzWcgrfvkrm/Qx1I3aAqu7V4ByThdDnQw/swjo411ovSXgwyz
+	BCWqk8/NHZwacePkuOtTx7pjGLETzKVHnZZqtyoonv/JV6MfIhWyDtya5MM+HIcZUOmYlW
+	ZRGZdf+2TUO/3nf+VHPZyKRRLkRVVR8rQ3NvkljcNycB2XOAA5rvn8dTNSa2AA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1678369872;
+	s=2020e; t=1678369712;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type;
-	bh=16hHdUVfCNdMlPVnfLlqaviU4kMu2Q10n9ftvvZYWR0=;
-	b=fJTtut1qqNzs9IUg/vtKwA522VtqglazOsudLM6J7kyW9JLBXiJNaw4rv2PlIFPgz1m3S6
-	90+21v4nBizZMpAA==
+	bh=nKbsaRAVtSiu1fp/cSPXFa2YfgKRKFV9YS0w//SxP2U=;
+	b=QQYquVVIsVa7id6SSOtQTK7wpbUwRb0sOeZknvqGICSUguSLYgrut6bxGeSRMdOcUijc1a
+	Jez+IEbesvyD72AQ==
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: Select the generic memory allocator.
-Message-ID: <20230309135110.uAxhqRFk@linutronix.de>
+Subject: [PATCH] powerpc/imc-pmu: Use the correct spinlock initializer.
+Message-ID: <20230309134831.Nz12nqsU@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -61,33 +60,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nathan Lynch <nathanl@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Nicholas Piggin <npiggin@gmail.com>, Kajol Jain <kjain@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The RTAS work area allocator is using the generic memory allocator and
-as such it must select it.
+The macro __SPIN_LOCK_INITIALIZER() is implementation specific. Users
+that desire to initialize a spinlock in a struct must use
+__SPIN_LOCK_UNLOCKED().
 
-Select the generic memory allocator on pseries.
+Use __SPIN_LOCK_UNLOCKED() for the spinlock_t in imc_global_refc.
 
-Fixes: 43033bc62d349 ("powerpc/pseries: add RTAS work area allocator")
+Fixes: 76d588dddc459 ("powerpc/imc-pmu: Fix use of mutex in IRQs disabled section")
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- arch/powerpc/platforms/pseries/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/perf/imc-pmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index b481c5c8bae11..1c23f2d4ed557 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -2,6 +2,7 @@
- config PPC_PSERIES
- 	depends on PPC64 && PPC_BOOK3S
- 	bool "IBM pSeries & new (POWER5-based) iSeries"
-+	select GENERIC_ALLOCATOR
- 	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
- 	select OF_DYNAMIC
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index 9d229ef7f86ef..ada817c49b722 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -51,7 +51,7 @@ static int trace_imc_mem_size;
+  * core and trace-imc
+  */
+ static struct imc_pmu_ref imc_global_refc = {
+-	.lock = __SPIN_LOCK_INITIALIZER(imc_global_refc.lock),
++	.lock = __SPIN_LOCK_UNLOCKED(imc_global_refc.lock),
+ 	.id = 0,
+ 	.refc = 0,
+ };
 -- 
 2.39.2
 
