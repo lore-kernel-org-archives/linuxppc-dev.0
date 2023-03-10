@@ -4,83 +4,129 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7AA7C64EC4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 17:18:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE6F9C6FA99
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 18:27:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PYCSb380Qz3fWN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 04:18:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PYF0R67Hqz3f8R
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 05:27:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eSda2sCv;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=r5GQFObs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=2a01:111:f400:7e19::605; helo=fra01-mr2-obe.outbound.protection.outlook.com; envelope-from=christophe.leroy@csgroup.eu; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eSda2sCv;
+	dkim=pass (2048-bit key; unprotected) header.d=csgroup.eu header.i=@csgroup.eu header.a=rsa-sha256 header.s=selector1 header.b=r5GQFObs;
 	dkim-atps=neutral
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+Received: from FRA01-MR2-obe.outbound.protection.outlook.com (mail-mr2fra01on20605.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e19::605])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PYCMV24nMz3cd4
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 04:14:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1678468454; x=1710004454;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=eHidnQb8OVGw2m65PUEJlimfsZ9DgoEAjYSy55tHAGc=;
-  b=eSda2sCvxSXIuDuH1mPo+4jFQhIhW6MzVIpDbucv7HGQUQU8OBJNbxJy
-   GkE1wk+QRlcwKaOlaMHRRKpUBO4Ax7FBi9Z5uabU71Ad0NA+7j6E7t4kj
-   yL0SxmNAzyrOKKLdm3/kUMhkICoa8wjyVI9A+Gz/cxFenG4IHIyv+NK7w
-   L9OayAH1hjDLDp7f9s7PURDXjSeRq1XCL+VspiETlvs3ZVbH8loLUiKRU
-   J+hd9mdKsIzk8Lz7IE7acWmuwq8B2Tg4p1hm5ngxF5s876mCfrSinYvjx
-   UVu8e5oebPNQE5jsBAwkD12Ycuyo3hpJgXD1tI/1jq2qKBjwQo2DNTEG+
-   w==;
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="325132342"
-X-IronPort-AV: E=Sophos;i="5.98,250,1673942400"; 
-   d="scan'208";a="325132342"
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Mar 2023 09:13:48 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6500,9779,10645"; a="655250078"
-X-IronPort-AV: E=Sophos;i="5.98,250,1673942400"; 
-   d="scan'208";a="655250078"
-Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga006.jf.intel.com with ESMTP; 10 Mar 2023 09:13:37 -0800
-Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 5964C94; Fri, 10 Mar 2023 19:14:21 +0200 (EET)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
-	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-	Mika Westerberg <mika.westerberg@linux.intel.com>,
-	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Randy Dunlap <rdunlap@infradead.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Bjorn Helgaas <helgaas@kernel.org>,
-	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-	Niklas Schnelle <schnelle@linux.ibm.com>,
-	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
-	"Maciej W. Rozycki" <macro@orcam.me.uk>,
-	Juergen Gross <jgross@suse.com>,
-	Dominik Brodowski <linux@dominikbrodowski.net>,
-	linux-kernel@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	xen-devel@lists.xenproject.org,
-	linux-acpi@vger.kernel.org
-Subject: [PATCH v4 1/4] PCI: Introduce pci_dev_for_each_resource()
-Date: Fri, 10 Mar 2023 19:14:13 +0200
-Message-Id: <20230310171416.23356-2-andriy.shevchenko@linux.intel.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230310171416.23356-1-andriy.shevchenko@linux.intel.com>
-References: <20230310171416.23356-1-andriy.shevchenko@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PYDzK6RLmz3f3f
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 05:26:52 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=C7Itvey3Ky2uV5RIHMa8Bw/k/jWSOKlWxcqVhXAnzY7d+bbaJOKbFWce52SDr021RkItSm6zIQLrvuEgKVpFFOP16F9UigGbMPGx/N6ZADmPjPzUBwrS2bJ86dbiqKmmyZKVwb2feLkPl5kY2zE2YAtdK18nR3F0hgfzPjNlol1++PfCX0ynWJfTIVviCd/dKQqxJSsDe8mcmllznCDuQJBeCRbtGYSYoBQSGESM+bvtoNkuyD411Y3U5v31SHuU7w1x+ndieDxL7gfEnA3Ws/gXflV/khrQ8v8jXgc7t2P39Tjg4SLaqgUI5wriFRB3VAnRoBxSmLGYkBVjKcn9zQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=YaG2a/v2yLxTSix5FNqZvtN791cvLBglDuv9wScAE6U=;
+ b=f0Z52FtcywuVdUagMwKLkuMWMAmEuLONmrdOuFfjfSExXGv78q6WohkVe1N9sSeTardTBgYzdWLmoDzS0lfEj1wMqEbvq6XrMZ8UUZwPha0OM+bawhr73F9ZlhXIUPClUMjSDn6m24TckIMX0byZDsf2Fa0SHua5ZYImEmRJbq1pG8ztPQoIvyMKFVUX36GO2Ae0+SWCUtmujMtM31tkpvXllp+AT6Rx+sUYHjDyoaFiaGRzd+98Nzywdfz4S8/yB6Ev2vkRpqpdXkCqg82EXxjtoioNpw3S7Z8wZnoP6SwDyytNIiLZY9bdJMGs4KR7WFO2IxkkFggsMHn3vpLkSg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=csgroup.eu; dmarc=pass action=none header.from=csgroup.eu;
+ dkim=pass header.d=csgroup.eu; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=csgroup.eu;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=YaG2a/v2yLxTSix5FNqZvtN791cvLBglDuv9wScAE6U=;
+ b=r5GQFObs1jScVoK4U/DCZ8aacEgOjoKONnH/zohJTrE5nOyxD09vtpvGm/Sk47fFftrdPafHz6Vm4vNGMhCG6MK7UwFh3sBzCJPYNclINebK5MLMIIW7d4R2vgmFPr6ifdRmK9yfTXbjfiojbNHtHtXklBOVi1mGBYU8jpEogKEmEP04gkGJUKh8+nLwhB1yfyYNDZx03L2jje2K060sE5Qx18LS2lVxk68ZH5ZC253tfe9jALJCPSmRD0mw7Jq6nV7L6KZqpO7XAl3MQqyyu/EOBXn7+PuI7ZTRrL1ufHzDs9h5BxLX6hjTXsz7Jy6xKOO5zQOfmChwmw7cgRy9HA==
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM (2603:10a6:501:31::15)
+ by PR1P264MB2245.FRAP264.PROD.OUTLOOK.COM (2603:10a6:102:1b1::6) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.19; Fri, 10 Mar
+ 2023 18:26:31 +0000
+Received: from MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::3943:154a:eccc:fe3a]) by MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+ ([fe80::3943:154a:eccc:fe3a%9]) with mapi id 15.20.6178.019; Fri, 10 Mar 2023
+ 18:26:31 +0000
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Hari Bathini <hbathini@linux.ibm.com>, linuxppc-dev
+	<linuxppc-dev@lists.ozlabs.org>, "bpf@vger.kernel.org" <bpf@vger.kernel.org>
+Subject: Re: [PATCH v2 1/4] powerpc/code-patching: introduce
+ patch_instructions()
+Thread-Topic: [PATCH v2 1/4] powerpc/code-patching: introduce
+ patch_instructions()
+Thread-Index: AQHZUrFQDrsIHyWY3ESw1VPTGTv4cK70VkgA
+Date: Fri, 10 Mar 2023 18:26:31 +0000
+Message-ID: <6bf2ec65-485e-afd4-13af-75ff24f2649a@csgroup.eu>
+References: <20230309180213.180263-1-hbathini@linux.ibm.com>
+ <20230309180213.180263-2-hbathini@linux.ibm.com>
+In-Reply-To: <20230309180213.180263-2-hbathini@linux.ibm.com>
+Accept-Language: fr-FR, en-US
+Content-Language: fr-FR
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=csgroup.eu;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: MRZP264MB2988:EE_|PR1P264MB2245:EE_
+x-ms-office365-filtering-correlation-id: eabc9961-c91c-4c0b-e813-08db2194f8c8
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  D7F5w8ovzu2u0nFZBt9pONl+Ju1+LAQi0DsaJ8lUfcNTlFwTj4wVt2b72CuiEGEmcTqsfkrVSjsR/eBbca0hBKBM1sPHUmzAnLgbuMNOjOTfM2btAkP0v0T0GSFiHrrd6LqMvlCjzObI8OodSx2QVyBxGRD50xpHSL/o4+e57qI/RTGyjynsbv7F/mnf2ANjlR78Ty6KoduQ5Ofmh90CpaUYGbffTWhToJPn69rkV1J6g4/m53gteeEBgHQYWXa+dWHAUDl3QxTHZevXMwrnzJarsgdC4XFG48NtyyW/Wkh1e4fy+ktsmCdUz55IiUrejEaqilKg83f3lNMW0vX5nO8bwfMogUWNgRT49d0yTw4kvFsU6zZbF7dFgcHMnV9xACMu3bmmxamk1LnjyBTpOEDmfsq7mlqCPSNF7406/myM4NfoFA/vHPl6Ym2prdlUMCbV16Xr+2QtOb1QN3TBtxVHGc/aAX2RQJKSB/OS+ME07wmgC6zbBxRuiUrnD24QpaTKF/yPy4/24x1t5Ntuz3iUR0loJxM/vHhswnXPBwIC4CLI0kkMhdM7Y4cxpfDI95OynWN712l/3IeWVbb2+3Arw+NcYBeg1LvsA5lM4m9krG/bNXLdSjpR7tt0dGOz+/Ej1JMMSndrSPxNw0+0/qBjibO3H6h2muM4y+6HgFRXj8YjMr/3/YA8gWYhY1nVt0AhK3So7K8OPBJVgAUhYCabUXHHEnjWh/qT9Y1m0RnauBjFfijfP/Hbikg2/2KI
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230025)(4636009)(136003)(39860400002)(376002)(346002)(396003)(366004)(451199018)(91956017)(76116006)(66556008)(8676002)(66476007)(66446008)(64756008)(4326008)(31686004)(66946007)(316002)(54906003)(41300700001)(71200400001)(110136005)(5660300002)(44832011)(6486002)(2906002)(6512007)(26005)(6506007)(2616005)(186003)(66574015)(8936002)(478600001)(38070700005)(36756003)(86362001)(31696002)(122000001)(83380400001)(38100700002)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?utf-8?B?UlJqQnZoRnUxcXdzRGlrQWJZYlRsUlppSGtCeUNNR3J6QWFBS3QzMWFTeEVm?=
+ =?utf-8?B?bGZsalBScURvRlhDaXgxNnJHaVVBNTNUODkray9CTmlReHBOQ0xOdnJjNGY5?=
+ =?utf-8?B?bUZEdFlMaEFTR2lYM2lGSDdGVVlqdmdPbWhBVlM0V3VQWkYzZS9oakIvRThH?=
+ =?utf-8?B?RkpJWXdhYk42emRoYkFRQmVyZDZ6UVAxS24yZEZVK1dyRDVNSEtBYVdqZk1r?=
+ =?utf-8?B?Vk05SnZON3FHTUQrVWs2blpDc09iZGRaK1pIZk9WZjE5cVdsRTFhMUhIbUVx?=
+ =?utf-8?B?VG5ndFRLRUoyWGlzeW5RUEZBc2ovVjBPQng1bHZTUjNFTVp0eHhtUzVuMDIv?=
+ =?utf-8?B?VzZhMk93VVJTeGVrYzVjZUhlVktsKzk4cnhTL005Um1uRVNKWi9ZeUt3a2Rt?=
+ =?utf-8?B?ck9mYUNJUXRHRytpbjFvWmNsTU1lcXZmQ2xINmdBaHhmdzFyS0l0TThoZzZZ?=
+ =?utf-8?B?R08yQmE5NEpDUjJhQnVlSDFNWHJXVk1JMlpSMTk3TFl2ZDJVUitIRjdFQWRO?=
+ =?utf-8?B?UjJmTTMrT1BxTVdGRytGRkdEdkhURkNiaXpCTlo1aTdPZ1JUc3lZY3cyLzIz?=
+ =?utf-8?B?aVh1TFpZYnpRcVgyRmtYOVFjdUM2YW1CUEpFQ0FEUFZWaXptaUQ0V2ZUazZ1?=
+ =?utf-8?B?R0hqU0ttaFB5TVJQT1hIZmZ5c0Z2YlQxUXhvanpiQ0VaLy9wN2tlSWMveDV4?=
+ =?utf-8?B?YnJSNFZ1Zk1PeUhmK0tiaDlESHZoQnRUQzRod29LSHFDODYyQit5ZVNUeGYv?=
+ =?utf-8?B?NW5JdjBDVzdBaVNqV281Skx5V2xJOTM3SjZLUDg4ZSs5dHlNNk0vZ1BZS2Q4?=
+ =?utf-8?B?cWN5cUJjNE5oZEl5eHcyaHp4c1JiWUpUM2wxSEp6QkFzdFV3bXRkakdFemw0?=
+ =?utf-8?B?Mk12V0w0aGxpTFBCVUFGTlZyTTlwUytFUGUvTHdRWDVFSkxoenBJOEkvQzk3?=
+ =?utf-8?B?Ty91QWkvRjV0UzN2Y3Q1bUp4ZXZscFVkNExYT0U5T2RKcXN2ZG03NG1hdU0y?=
+ =?utf-8?B?ODg2bkRVVXducXhteUUyZzBRdk1GczNzUmMxd01RWEFxNVlrVXRuT292QjFa?=
+ =?utf-8?B?S0pHNGxqL0J5ZjRXcDNqOC9EVUovd0hXVVFCQUpIZy9PNGJjcWg5YzVpSlQ0?=
+ =?utf-8?B?azZLNUNINSs3Zm9BRndLbWNDSkFMNFJXT1dYSGdCRjJQNEhJdEtTNnlOMnV1?=
+ =?utf-8?B?WEFPbWRIRFZkZU8zenZCSUVNRENXUTU4VnpBbkpzb1gzeUhwYnY1cWg3ZTA2?=
+ =?utf-8?B?VFBMZldURWxEcU1yVkwxNys2Y3pLRWI3bTAwbDJQemdxOFRadzNDN2hYbzhP?=
+ =?utf-8?B?Y20xMDhSNUdQMWhvd1J3WlczdUd4b3RDWUp3Z1BzS3EzM0V3NmdYYzVSMmlx?=
+ =?utf-8?B?eFVBS3F5R0lhR2NnU3d6dzMzcGZjUkh5RnlIQytOWVNFS0FoRFZtQWRjTzM4?=
+ =?utf-8?B?WDdGK1dCWm8wN1diMENyZW1FWlJzNXp4cDNQRkNKTHpFKzE1cWk5VkZRYTRm?=
+ =?utf-8?B?VUQ5eHBiVmEydS9NcGVwcjlsbmcySXcreUk4RDU2ck0rOUkvOHBrYlRTSTQ1?=
+ =?utf-8?B?VkxQdDNpVENldmhHZFN4VDlFVXMxVXdGU0tYYlRoN0dGTFBZZ2Z6YXV0Ymw4?=
+ =?utf-8?B?SmxOdmo1RmJxbTlScG84MHI3bXdqK001LzlxTzQySVh6cnpYQ0E5OU8rM2ph?=
+ =?utf-8?B?Sm5KL1dYcE51NHA0VURmQ3BLY1JobFMyV3Y5R2hvaVhGcU9QTFBsT2Uza0p3?=
+ =?utf-8?B?UWZyelY0WEEzcXNaNkJadVJ3ZzlpODVHTUU2a0ZVTFQ0SFhDMTRqU2ZWdlVH?=
+ =?utf-8?B?djRWR1dJSUpuM01sNDQ2SGZGYWZ2ZU0zTDFGSFIyUmUybHhTRzcwcCtHcVor?=
+ =?utf-8?B?Y1dXRmZtcGw5TE94bmZqeGU0WGVobVptNkFMVmtNdlVaOXNOdmxOeTFqYk1j?=
+ =?utf-8?B?VDRVaDdyTE9MWTdiWUhrckZxWHQ5OEJoSEgybmsxbFBqQUtLa0pPcTlZSEti?=
+ =?utf-8?B?YS9MbnFnZkxWVlpzY3hwU3hzRis2VjdtZzV5NGJCaWkrNEFSUWg0N2daRUhi?=
+ =?utf-8?B?WjM0Rm1LVmptdC9YcTk1Zjh1MnIxMUllMEtVZjNsNHpnSktPNkdQcVNxT0Fy?=
+ =?utf-8?B?TXNxb1AwMEdoV01TTzYyWXBmQlNlTXRra0lpcTJXMjdHSllMMVF2bmd2Y1JO?=
+ =?utf-8?B?N2c9PQ==?=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <482B5A3793027C4FB3754975B70B4A2F@FRAP264.PROD.OUTLOOK.COM>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: csgroup.eu
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: MRZP264MB2988.FRAP264.PROD.OUTLOOK.COM
+X-MS-Exchange-CrossTenant-Network-Message-Id: eabc9961-c91c-4c0b-e813-08db2194f8c8
+X-MS-Exchange-CrossTenant-originalarrivaltime: 10 Mar 2023 18:26:31.5537
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 9914def7-b676-4fda-8815-5d49fb3b45c8
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: xtzmdc4VjaIgqceLRKz1ojBlfnD5lE0G1yjt8RxqaSG1zpWS5ufda3DhRDuSBf4kR1aOmNR3GdrMdqOevM9O+vw8R8Qcw3regN5Mys3eorU=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR1P264MB2245
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,756 +138,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Gregory Clement <gregory.clement@bootlin.com>, Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Rich Felker <dalias@libc.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Miguel Ojeda <ojeda@kernel.org>, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, "David S. Miller" <davem@davemloft.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Song Liu <songliubraving@fb.com>, Daniel Borkmann <daniel@iogearbox.net>, Alexei Starovoitov <ast@kernel.org>, Andrii Nakryiko <andrii@kernel.org>, "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-
-Instead of open-coding it everywhere introduce a tiny helper that can be
-used to iterate over each resource of a PCI device, and convert the most
-obvious users into it.
-
-While at it drop doubled empty line before pdev_sort_resources().
-
-No functional changes intended.
-
-Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Krzysztof Wilczyński <kw@linux.com>
----
- .clang-format                             |  2 ++
- arch/alpha/kernel/pci.c                   |  5 ++--
- arch/arm/kernel/bios32.c                  | 16 ++++++-------
- arch/arm/mach-dove/pcie.c                 | 10 ++++----
- arch/arm/mach-mv78xx0/pcie.c              | 10 ++++----
- arch/arm/mach-orion5x/pci.c               | 10 ++++----
- arch/mips/pci/ops-bcm63xx.c               |  8 +++----
- arch/mips/pci/pci-legacy.c                |  3 +--
- arch/powerpc/kernel/pci-common.c          | 21 ++++++++--------
- arch/powerpc/platforms/4xx/pci.c          |  8 +++----
- arch/powerpc/platforms/52xx/mpc52xx_pci.c |  4 ++--
- arch/powerpc/platforms/pseries/pci.c      | 16 ++++++-------
- arch/sh/drivers/pci/pcie-sh7786.c         | 10 ++++----
- arch/sparc/kernel/leon_pci.c              |  5 ++--
- arch/sparc/kernel/pci.c                   | 10 ++++----
- arch/sparc/kernel/pcic.c                  |  5 ++--
- drivers/pci/remove.c                      |  5 ++--
- drivers/pci/setup-bus.c                   | 27 ++++++++-------------
- drivers/pci/setup-res.c                   |  4 +---
- drivers/pci/vgaarb.c                      | 17 ++++---------
- drivers/pci/xen-pcifront.c                |  4 +---
- drivers/pnp/quirks.c                      | 29 ++++++++---------------
- include/linux/pci.h                       | 12 ++++++++++
- 23 files changed, 110 insertions(+), 131 deletions(-)
-
-diff --git a/.clang-format b/.clang-format
-index d988e9fa9b26..266abb843654 100644
---- a/.clang-format
-+++ b/.clang-format
-@@ -520,6 +520,8 @@ ForEachMacros:
-   - 'of_property_for_each_string'
-   - 'of_property_for_each_u32'
-   - 'pci_bus_for_each_resource'
-+  - 'pci_dev_for_each_resource'
-+  - 'pci_dev_for_each_resource_p'
-   - 'pci_doe_for_each_off'
-   - 'pcl_for_each_chunk'
-   - 'pcl_for_each_segment'
-diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
-index 64fbfb0763b2..4458eb7f44f0 100644
---- a/arch/alpha/kernel/pci.c
-+++ b/arch/alpha/kernel/pci.c
-@@ -288,11 +288,10 @@ pcibios_claim_one_bus(struct pci_bus *b)
- 	struct pci_bus *child_bus;
- 
- 	list_for_each_entry(dev, &b->devices, bus_list) {
-+		struct resource *r;
- 		int i;
- 
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			struct resource *r = &dev->resource[i];
--
-+		pci_dev_for_each_resource(dev, r, i) {
- 			if (r->parent || !r->start || !r->flags)
- 				continue;
- 			if (pci_has_flag(PCI_PROBE_ONLY) ||
-diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-index e7ef2b5bea9c..5254734b23e6 100644
---- a/arch/arm/kernel/bios32.c
-+++ b/arch/arm/kernel/bios32.c
-@@ -142,15 +142,15 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND2, PCI_DEVICE_ID_WINBOND2_89C940F,
-  */
- static void pci_fixup_dec21285(struct pci_dev *dev)
- {
--	int i;
--
- 	if (dev->devfn == 0) {
-+		struct resource *r;
-+
- 		dev->class &= 0xff;
- 		dev->class |= PCI_CLASS_BRIDGE_HOST << 8;
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end   = 0;
--			dev->resource[i].flags = 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start = 0;
-+			r->end = 0;
-+			r->flags = 0;
- 		}
- 	}
- }
-@@ -162,13 +162,11 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_21285, pci_fixup_d
- static void pci_fixup_ide_bases(struct pci_dev *dev)
- {
- 	struct resource *r;
--	int i;
- 
- 	if ((dev->class >> 8) != PCI_CLASS_STORAGE_IDE)
- 		return;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		r = dev->resource + i;
-+	pci_dev_for_each_resource_p(dev, r) {
- 		if ((r->start & ~0x80) == 0x374) {
- 			r->start |= 2;
- 			r->end = r->start;
-diff --git a/arch/arm/mach-dove/pcie.c b/arch/arm/mach-dove/pcie.c
-index 754ca381f600..58cecd79a204 100644
---- a/arch/arm/mach-dove/pcie.c
-+++ b/arch/arm/mach-dove/pcie.c
-@@ -142,14 +142,14 @@ static struct pci_ops pcie_ops = {
- static void rc_pci_fixup(struct pci_dev *dev)
- {
- 	if (dev->bus->parent == NULL && dev->devfn == 0) {
--		int i;
-+		struct resource *r;
- 
- 		dev->class &= 0xff;
- 		dev->class |= PCI_CLASS_BRIDGE_HOST << 8;
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end   = 0;
--			dev->resource[i].flags = 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start = 0;
-+			r->end   = 0;
-+			r->flags = 0;
- 		}
- 	}
- }
-diff --git a/arch/arm/mach-mv78xx0/pcie.c b/arch/arm/mach-mv78xx0/pcie.c
-index 6190f538a124..f59f02150a36 100644
---- a/arch/arm/mach-mv78xx0/pcie.c
-+++ b/arch/arm/mach-mv78xx0/pcie.c
-@@ -186,14 +186,14 @@ static struct pci_ops pcie_ops = {
- static void rc_pci_fixup(struct pci_dev *dev)
- {
- 	if (dev->bus->parent == NULL && dev->devfn == 0) {
--		int i;
-+		struct resource *r;
- 
- 		dev->class &= 0xff;
- 		dev->class |= PCI_CLASS_BRIDGE_HOST << 8;
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end   = 0;
--			dev->resource[i].flags = 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start = 0;
-+			r->end   = 0;
-+			r->flags = 0;
- 		}
- 	}
- }
-diff --git a/arch/arm/mach-orion5x/pci.c b/arch/arm/mach-orion5x/pci.c
-index 888fdc9099c5..0933b47b601a 100644
---- a/arch/arm/mach-orion5x/pci.c
-+++ b/arch/arm/mach-orion5x/pci.c
-@@ -522,14 +522,14 @@ static int __init pci_setup(struct pci_sys_data *sys)
- static void rc_pci_fixup(struct pci_dev *dev)
- {
- 	if (dev->bus->parent == NULL && dev->devfn == 0) {
--		int i;
-+		struct resource *r;
- 
- 		dev->class &= 0xff;
- 		dev->class |= PCI_CLASS_BRIDGE_HOST << 8;
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end   = 0;
--			dev->resource[i].flags = 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start	= 0;
-+			r->end		= 0;
-+			r->flags	= 0;
- 		}
- 	}
- }
-diff --git a/arch/mips/pci/ops-bcm63xx.c b/arch/mips/pci/ops-bcm63xx.c
-index dc6dc2741272..c0efcbf3c63f 100644
---- a/arch/mips/pci/ops-bcm63xx.c
-+++ b/arch/mips/pci/ops-bcm63xx.c
-@@ -413,18 +413,18 @@ struct pci_ops bcm63xx_cb_ops = {
- static void bcm63xx_fixup(struct pci_dev *dev)
- {
- 	static int io_window = -1;
--	int i, found, new_io_window;
-+	int found, new_io_window;
-+	struct resource *r;
- 	u32 val;
- 
- 	/* look for any io resource */
- 	found = 0;
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		if (pci_resource_flags(dev, i) & IORESOURCE_IO) {
-+	pci_dev_for_each_resource_p(dev, r) {
-+		if (resource_type(r) == IORESOURCE_IO) {
- 			found = 1;
- 			break;
- 		}
- 	}
--
- 	if (!found)
- 		return;
- 
-diff --git a/arch/mips/pci/pci-legacy.c b/arch/mips/pci/pci-legacy.c
-index 468722c8a5c6..ec2567f8efd8 100644
---- a/arch/mips/pci/pci-legacy.c
-+++ b/arch/mips/pci/pci-legacy.c
-@@ -249,12 +249,11 @@ static int pcibios_enable_resources(struct pci_dev *dev, int mask)
- 
- 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
- 	old_cmd = cmd;
--	for (idx = 0; idx < PCI_NUM_RESOURCES; idx++) {
-+	pci_dev_for_each_resource(dev, r, idx) {
- 		/* Only set up the requested stuff */
- 		if (!(mask & (1<<idx)))
- 			continue;
- 
--		r = &dev->resource[idx];
- 		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
- 			continue;
- 		if ((idx == PCI_ROM_RESOURCE) &&
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index d67cf79bf5d0..1908a46cad54 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -880,6 +880,7 @@ int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
- static void pcibios_fixup_resources(struct pci_dev *dev)
- {
- 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct resource *res;
- 	int i;
- 
- 	if (!hose) {
-@@ -891,9 +892,9 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
- 	if (dev->is_virtfn)
- 		return;
- 
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		struct resource *res = dev->resource + i;
-+	pci_dev_for_each_resource(dev, res, i) {
- 		struct pci_bus_region reg;
-+
- 		if (!res->flags)
- 			continue;
- 
-@@ -1452,11 +1453,10 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
- 	struct pci_bus *child_bus;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct resource *r;
- 		int i;
- 
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			struct resource *r = &dev->resource[i];
--
-+		pci_dev_for_each_resource(dev, r, i) {
- 			if (r->parent || !r->start || !r->flags)
- 				continue;
- 
-@@ -1705,19 +1705,20 @@ EXPORT_SYMBOL_GPL(pcibios_scan_phb);
- 
- static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
- {
--	int i, class = dev->class >> 8;
-+	int class = dev->class >> 8;
- 	/* When configured as agent, programming interface = 1 */
- 	int prog_if = dev->class & 0xf;
-+	struct resource *r;
- 
- 	if ((class == PCI_CLASS_PROCESSOR_POWERPC ||
- 	     class == PCI_CLASS_BRIDGE_OTHER) &&
- 		(dev->hdr_type == PCI_HEADER_TYPE_NORMAL) &&
- 		(prog_if == 0) &&
- 		(dev->bus->parent == NULL)) {
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start = 0;
--			dev->resource[i].end = 0;
--			dev->resource[i].flags = 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start = 0;
-+			r->end = 0;
-+			r->flags = 0;
- 		}
- 	}
- }
-diff --git a/arch/powerpc/platforms/4xx/pci.c b/arch/powerpc/platforms/4xx/pci.c
-index ca5dd7a5842a..9d19123c0da8 100644
---- a/arch/powerpc/platforms/4xx/pci.c
-+++ b/arch/powerpc/platforms/4xx/pci.c
-@@ -57,7 +57,7 @@ static inline int ppc440spe_revA(void)
- static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
--	int i;
-+	struct resource *r;
- 
- 	if (dev->devfn != 0 || dev->bus->self != NULL)
- 		return;
-@@ -79,9 +79,9 @@ static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
- 	/* Hide the PCI host BARs from the kernel as their content doesn't
- 	 * fit well in the resource management
- 	 */
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		dev->resource[i].start = dev->resource[i].end = 0;
--		dev->resource[i].flags = 0;
-+	pci_dev_for_each_resource_p(dev, r) {
-+		r->start = r->end = 0;
-+		r->flags = 0;
- 	}
- 
- 	printk(KERN_INFO "PCI: Hiding 4xx host bridge resources %s\n",
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index 859e2818c43d..f0b0ac298484 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -327,14 +327,14 @@ mpc52xx_pci_setup(struct pci_controller *hose,
- static void
- mpc52xx_pci_fixup_resources(struct pci_dev *dev)
- {
-+	struct resource *res;
- 	int i;
- 
- 	pr_debug("%s() %.4x:%.4x\n", __func__, dev->vendor, dev->device);
- 
- 	/* We don't rely on boot loader for PCI and resets all
- 	   devices */
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		struct resource *res = &dev->resource[i];
-+	pci_dev_for_each_resource_p(dev, res) {
- 		if (res->end > res->start) {	/* Only valid resources */
- 			res->end -= res->start;
- 			res->start = 0;
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 60e0a58928ef..ee7b2c737c92 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -240,7 +240,7 @@ void __init pSeries_final_fixup(void)
-  */
- static void fixup_winbond_82c105(struct pci_dev* dev)
- {
--	int i;
-+	struct resource *r;
- 	unsigned int reg;
- 
- 	if (!machine_is(pseries))
-@@ -251,14 +251,14 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
- 	/* Enable LEGIRQ to use INTC instead of ISA interrupts */
- 	pci_write_config_dword(dev, 0x40, reg | (1<<11));
- 
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; ++i) {
-+	pci_dev_for_each_resource_p(dev, r) {
- 		/* zap the 2nd function of the winbond chip */
--		if (dev->resource[i].flags & IORESOURCE_IO
--		    && dev->bus->number == 0 && dev->devfn == 0x81)
--			dev->resource[i].flags &= ~IORESOURCE_IO;
--		if (dev->resource[i].start == 0 && dev->resource[i].end) {
--			dev->resource[i].flags = 0;
--			dev->resource[i].end = 0;
-+		if (dev->bus->number == 0 && dev->devfn == 0x81 &&
-+		    r->flags & IORESOURCE_IO)
-+			r->flags &= ~IORESOURCE_IO;
-+		if (r->start == 0 && r->end) {
-+			r->flags = 0;
-+			r->end = 0;
- 		}
- 	}
- }
-diff --git a/arch/sh/drivers/pci/pcie-sh7786.c b/arch/sh/drivers/pci/pcie-sh7786.c
-index b0c2a5238d04..982f9aec2f2f 100644
---- a/arch/sh/drivers/pci/pcie-sh7786.c
-+++ b/arch/sh/drivers/pci/pcie-sh7786.c
-@@ -140,12 +140,12 @@ static void sh7786_pci_fixup(struct pci_dev *dev)
- 	 * Prevent enumeration of root complex resources.
- 	 */
- 	if (pci_is_root_bus(dev->bus) && dev->devfn == 0) {
--		int i;
-+		struct resource *r;
- 
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			dev->resource[i].start	= 0;
--			dev->resource[i].end	= 0;
--			dev->resource[i].flags	= 0;
-+		pci_dev_for_each_resource_p(dev, r) {
-+			r->start	= 0;
-+			r->end		= 0;
-+			r->flags	= 0;
- 		}
- 	}
- }
-diff --git a/arch/sparc/kernel/leon_pci.c b/arch/sparc/kernel/leon_pci.c
-index e5e5ff6b9a5c..b6663a3fbae9 100644
---- a/arch/sparc/kernel/leon_pci.c
-+++ b/arch/sparc/kernel/leon_pci.c
-@@ -62,15 +62,14 @@ void leon_pci_init(struct platform_device *ofdev, struct leon_pci_info *info)
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
- {
-+	struct resource *res;
- 	u16 cmd, oldcmd;
- 	int i;
- 
- 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
- 	oldcmd = cmd;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--
-+	pci_dev_for_each_resource(dev, res, i) {
- 		/* Only set up the requested stuff */
- 		if (!(mask & (1<<i)))
- 			continue;
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index cb1ef25116e9..a948a49817c7 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -663,11 +663,10 @@ static void pci_claim_bus_resources(struct pci_bus *bus)
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct resource *r;
- 		int i;
- 
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			struct resource *r = &dev->resource[i];
--
-+		pci_dev_for_each_resource(dev, r, i) {
- 			if (r->parent || !r->start || !r->flags)
- 				continue;
- 
-@@ -724,15 +723,14 @@ struct pci_bus *pci_scan_one_pbm(struct pci_pbm_info *pbm,
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
- {
-+	struct resource *res;
- 	u16 cmd, oldcmd;
- 	int i;
- 
- 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
- 	oldcmd = cmd;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--
-+	pci_dev_for_each_resource(dev, res, i) {
- 		/* Only set up the requested stuff */
- 		if (!(mask & (1<<i)))
- 			continue;
-diff --git a/arch/sparc/kernel/pcic.c b/arch/sparc/kernel/pcic.c
-index ee4c9a9a171c..25fe0a061732 100644
---- a/arch/sparc/kernel/pcic.c
-+++ b/arch/sparc/kernel/pcic.c
-@@ -643,15 +643,14 @@ void pcibios_fixup_bus(struct pci_bus *bus)
- 
- int pcibios_enable_device(struct pci_dev *dev, int mask)
- {
-+	struct resource *res;
- 	u16 cmd, oldcmd;
- 	int i;
- 
- 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
- 	oldcmd = cmd;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--
-+	pci_dev_for_each_resource(dev, res, i) {
- 		/* Only set up the requested stuff */
- 		if (!(mask & (1<<i)))
- 			continue;
-diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-index 0145aef1b930..1310e01fb540 100644
---- a/drivers/pci/remove.c
-+++ b/drivers/pci/remove.c
-@@ -5,10 +5,9 @@
- 
- static void pci_free_resources(struct pci_dev *dev)
- {
--	int i;
-+	struct resource *res;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = dev->resource + i;
-+	pci_dev_for_each_resource_p(dev, res) {
- 		if (res->parent)
- 			release_resource(res);
- 	}
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index c690572b10ce..d4fc7665f70a 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -124,20 +124,17 @@ static resource_size_t get_res_add_align(struct list_head *head,
- 	return dev_res ? dev_res->min_align : 0;
- }
- 
--
- /* Sort resources by alignment */
- static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
- {
-+	struct resource *r;
- 	int i;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *r;
-+	pci_dev_for_each_resource(dev, r, i) {
- 		struct pci_dev_resource *dev_res, *tmp;
- 		resource_size_t r_align;
- 		struct list_head *n;
- 
--		r = &dev->resource[i];
--
- 		if (r->flags & IORESOURCE_PCI_FIXED)
- 			continue;
- 
-@@ -895,10 +892,9 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
- 
- 	min_align = window_alignment(bus, IORESOURCE_IO);
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		int i;
-+		struct resource *r;
- 
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			struct resource *r = &dev->resource[i];
-+		pci_dev_for_each_resource_p(dev, r) {
- 			unsigned long r_size;
- 
- 			if (r->parent || !(r->flags & IORESOURCE_IO))
-@@ -1014,10 +1010,10 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- 	size = 0;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct resource *r;
- 		int i;
- 
--		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--			struct resource *r = &dev->resource[i];
-+		pci_dev_for_each_resource(dev, r, i) {
- 			resource_size_t r_size;
- 
- 			if (r->parent || (r->flags & IORESOURCE_PCI_FIXED) ||
-@@ -1358,11 +1354,10 @@ static void assign_fixed_resource_on_bus(struct pci_bus *b, struct resource *r)
-  */
- static void pdev_assign_fixed_resources(struct pci_dev *dev)
- {
--	int i;
-+	struct resource *r;
- 
--	for (i = 0; i <  PCI_NUM_RESOURCES; i++) {
-+	pci_dev_for_each_resource_p(dev, r) {
- 		struct pci_bus *b;
--		struct resource *r = &dev->resource[i];
- 
- 		if (r->parent || !(r->flags & IORESOURCE_PCI_FIXED) ||
- 		    !(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
-@@ -1795,11 +1790,9 @@ static void remove_dev_resources(struct pci_dev *dev, struct resource *io,
- 				 struct resource *mmio,
- 				 struct resource *mmio_pref)
- {
--	int i;
--
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
-+	struct resource *res;
- 
-+	pci_dev_for_each_resource_p(dev, res) {
- 		if (resource_type(res) == IORESOURCE_IO) {
- 			remove_dev_resource(io, dev, res);
- 		} else if (resource_type(res) == IORESOURCE_MEM) {
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index b492e67c3d87..967f9a758923 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -484,12 +484,10 @@ int pci_enable_resources(struct pci_dev *dev, int mask)
- 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
- 	old_cmd = cmd;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
-+	pci_dev_for_each_resource(dev, r, i) {
- 		if (!(mask & (1 << i)))
- 			continue;
- 
--		r = &dev->resource[i];
--
- 		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
- 			continue;
- 		if ((i == PCI_ROM_RESOURCE) &&
-diff --git a/drivers/pci/vgaarb.c b/drivers/pci/vgaarb.c
-index f80b6ec88dc3..3ec6a0b7dbf0 100644
---- a/drivers/pci/vgaarb.c
-+++ b/drivers/pci/vgaarb.c
-@@ -548,10 +548,8 @@ static bool vga_is_firmware_default(struct pci_dev *pdev)
- #if defined(CONFIG_X86) || defined(CONFIG_IA64)
- 	u64 base = screen_info.lfb_base;
- 	u64 size = screen_info.lfb_size;
-+	struct resource *r;
- 	u64 limit;
--	resource_size_t start, end;
--	unsigned long flags;
--	int i;
- 
- 	/* Select the device owning the boot framebuffer if there is one */
- 
-@@ -561,19 +559,14 @@ static bool vga_is_firmware_default(struct pci_dev *pdev)
- 	limit = base + size;
- 
- 	/* Does firmware framebuffer belong to us? */
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		flags = pci_resource_flags(pdev, i);
--
--		if ((flags & IORESOURCE_MEM) == 0)
-+	pci_dev_for_each_resource_p(pdev, r) {
-+		if (resource_type(r) != IORESOURCE_MEM)
- 			continue;
- 
--		start = pci_resource_start(pdev, i);
--		end  = pci_resource_end(pdev, i);
--
--		if (!start || !end)
-+		if (!r->start || !r->end)
- 			continue;
- 
--		if (base < start || limit >= end)
-+		if (base < r->start || limit >= r->end)
- 			continue;
- 
- 		return true;
-diff --git a/drivers/pci/xen-pcifront.c b/drivers/pci/xen-pcifront.c
-index fcd029ca2eb1..83c0ab50676d 100644
---- a/drivers/pci/xen-pcifront.c
-+++ b/drivers/pci/xen-pcifront.c
-@@ -390,9 +390,7 @@ static int pcifront_claim_resource(struct pci_dev *dev, void *data)
- 	int i;
- 	struct resource *r;
- 
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		r = &dev->resource[i];
--
-+	pci_dev_for_each_resource(dev, r, i) {
- 		if (!r->parent && r->start && r->flags) {
- 			dev_info(&pdev->xdev->dev, "claiming resource %s/%d\n",
- 				pci_name(dev), i);
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index ac98b9919029..420121954ffd 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -229,8 +229,7 @@ static void quirk_ad1815_mpu_resources(struct pnp_dev *dev)
- static void quirk_system_pci_resources(struct pnp_dev *dev)
- {
- 	struct pci_dev *pdev = NULL;
--	struct resource *res;
--	resource_size_t pnp_start, pnp_end, pci_start, pci_end;
-+	struct resource *res, *r;
- 	int i, j;
- 
- 	/*
-@@ -243,32 +242,26 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 	 * so they won't be claimed by the PNP system driver.
- 	 */
- 	for_each_pci_dev(pdev) {
--		for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--			unsigned long flags, type;
-+		pci_dev_for_each_resource(pdev, r, i) {
-+			unsigned long type = resource_type(r);
- 
--			flags = pci_resource_flags(pdev, i);
--			type = flags & (IORESOURCE_IO | IORESOURCE_MEM);
--			if (!type || pci_resource_len(pdev, i) == 0)
-+			if (type != IORESOURCE_IO || type != IORESOURCE_MEM ||
-+			    resource_size(r) == 0)
- 				continue;
- 
--			if (flags & IORESOURCE_UNSET)
-+			if (r->flags & IORESOURCE_UNSET)
- 				continue;
- 
--			pci_start = pci_resource_start(pdev, i);
--			pci_end = pci_resource_end(pdev, i);
- 			for (j = 0;
- 			     (res = pnp_get_resource(dev, type, j)); j++) {
- 				if (res->start == 0 && res->end == 0)
- 					continue;
- 
--				pnp_start = res->start;
--				pnp_end = res->end;
--
- 				/*
- 				 * If the PNP region doesn't overlap the PCI
- 				 * region at all, there's no problem.
- 				 */
--				if (pnp_end < pci_start || pnp_start > pci_end)
-+				if (!resource_overlaps(res, r))
- 					continue;
- 
- 				/*
-@@ -278,8 +271,7 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				 * PNP device describes a bridge with PCI
- 				 * behind it.
- 				 */
--				if (pnp_start <= pci_start &&
--				    pnp_end >= pci_end)
-+				if (res->start <= r->start && res->end >= r->end)
- 					continue;
- 
- 				/*
-@@ -288,9 +280,8 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				 * driver from requesting its resources.
- 				 */
- 				dev_warn(&dev->dev,
--					 "disabling %pR because it overlaps "
--					 "%s BAR %d %pR\n", res,
--					 pci_name(pdev), i, &pdev->resource[i]);
-+					 "disabling %pR because it overlaps %s BAR %d %pR\n",
-+					 res, pci_name(pdev), i, r);
- 				res->flags |= IORESOURCE_DISABLED;
- 			}
- 		}
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index fafd8020c6d7..670f01c5538c 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1404,6 +1404,18 @@ void pdev_enable_device(struct pci_dev *);
- int pci_enable_resources(struct pci_dev *, int mask);
- void pci_assign_irq(struct pci_dev *dev);
- struct resource *pci_find_resource(struct pci_dev *dev, struct resource *res);
-+
-+#define __pci_dev_for_each_resource(dev, res, __i, vartype)		\
-+	for (vartype __i = 0;						\
-+		res = &(dev)->resource[__i], __i < PCI_NUM_RESOURCES;	\
-+		__i++)
-+
-+#define pci_dev_for_each_resource(dev, res, i)				\
-+       __pci_dev_for_each_resource(dev, res, i, )
-+
-+#define pci_dev_for_each_resource_p(dev, res)				\
-+	__pci_dev_for_each_resource(dev, res, i, unsigned int)
-+
- #define HAVE_PCI_REQ_REGIONS	2
- int __must_check pci_request_regions(struct pci_dev *, const char *);
- int __must_check pci_request_regions_exclusive(struct pci_dev *, const char *);
--- 
-2.39.1
-
+DQoNCkxlIDA5LzAzLzIwMjMgw6AgMTk6MDIsIEhhcmkgQmF0aGluaSBhIMOpY3JpdMKgOg0KPiBw
+YXRjaF9pbnN0cnVjdGlvbigpIGVudGFpbHMgc2V0dGluZyB1cCBwdGUsIHBhdGNoaW5nIHRoZSBp
+bnN0cnVjdGlvbiwNCj4gY2xlYXJpbmcgdGhlIHB0ZSBhbmQgZmx1c2hpbmcgdGhlIHRsYi4gSWYg
+bXVsdGlwbGUgaW5zdHJ1Y3Rpb25zIG5lZWQNCj4gdG8gYmUgcGF0Y2hlZCwgZXZlcnkgaW5zdHJ1
+Y3Rpb24gd291bGQgaGF2ZSB0byBnbyB0aHJvdWdoIHRoZSBhYm92ZQ0KPiBkcmlsbCB1bm5lY2Vz
+c2FyaWx5LiBJbnN0ZWFkLCBpbnRyb2R1Y2UgZnVuY3Rpb24gcGF0Y2hfaW5zdHJ1Y3Rpb25zKCkN
+Cj4gdGhhdCBwYXRjaGVzIG11bHRpcGxlIGluc3RydWN0aW9ucyBhdCBvbmUgZ28gd2hpbGUgc2V0
+dGluZyB1cCB0aGUgcHRlLA0KPiBjbGVhcmluZyB0aGUgcHRlIGFuZCBmbHVzaGluZyB0aGUgdGxi
+IG9ubHkgb25jZSBwZXIgcGFnZSByYW5nZSBvZg0KPiBpbnN0cnVjdGlvbnMuIE9ic2VydmVkIH41
+WCBpbXByb3ZlbWVudCBpbiBzcGVlZCBvZiBleGVjdXRpb24gdXNpbmcNCj4gcGF0Y2hfaW5zdHJ1
+Y3Rpb25zKCkgb3ZlciBwYXRjaF9pbnN0cnVjdGlvbnMoKSwgd2hlbiBtb3JlIGluc3RydWN0aW9u
+cw0KPiBhcmUgdG8gYmUgcGF0Y2hlZC4NCg0KSSBnZXQgYSAxMyUgZGVncmFkYXRpb24gb24gdGhl
+IHRpbWUgbmVlZGVkIHRvIGFjdGl2YXRlIGZ0cmFjZSBvbiBhIA0KcG93ZXJwYyA4eHguDQoNCkJl
+Zm9yZSB5b3VyIHBhdGNoLCBhY3RpdmF0aW9uIGZ0cmFjZSB0YWtlcyA1NTBrIHRpbWViYXNlIHRp
+Y2tzLiBBZnRlciANCnlvdXIgcGF0Y2ggaXQgdGFrZXMgNjIwayB0aW1lYmFzZSB0aWNrcy4NCg0K
+Q2hyaXN0b3BoZQ0KDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBIYXJpIEJhdGhpbmkgPGhiYXRoaW5p
+QGxpbnV4LmlibS5jb20+DQo+IC0tLQ0KPiAgIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9jb2Rl
+LXBhdGNoaW5nLmggfCAgIDEgKw0KPiAgIGFyY2gvcG93ZXJwYy9saWIvY29kZS1wYXRjaGluZy5j
+ICAgICAgICAgfCAxNTEgKysrKysrKysrKysrKysrKy0tLS0tLS0NCj4gICAyIGZpbGVzIGNoYW5n
+ZWQsIDEwNiBpbnNlcnRpb25zKCspLCA0NiBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vY29kZS1wYXRjaGluZy5oIGIvYXJjaC9wb3dlcnBj
+L2luY2x1ZGUvYXNtL2NvZGUtcGF0Y2hpbmcuaA0KPiBpbmRleCAzZjg4MTU0OGZiNjEuLjA1OWZj
+NGZlNzAwZSAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2NvZGUtcGF0
+Y2hpbmcuaA0KPiArKysgYi9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vY29kZS1wYXRjaGluZy5o
+DQo+IEBAIC03NCw2ICs3NCw3IEBAIGludCBjcmVhdGVfY29uZF9icmFuY2gocHBjX2luc3RfdCAq
+aW5zdHIsIGNvbnN0IHUzMiAqYWRkciwNCj4gICBpbnQgcGF0Y2hfYnJhbmNoKHUzMiAqYWRkciwg
+dW5zaWduZWQgbG9uZyB0YXJnZXQsIGludCBmbGFncyk7DQo+ICAgaW50IHBhdGNoX2luc3RydWN0
+aW9uKHUzMiAqYWRkciwgcHBjX2luc3RfdCBpbnN0cik7DQo+ICAgaW50IHJhd19wYXRjaF9pbnN0
+cnVjdGlvbih1MzIgKmFkZHIsIHBwY19pbnN0X3QgaW5zdHIpOw0KPiAraW50IHBhdGNoX2luc3Ry
+dWN0aW9ucyh1MzIgKmFkZHIsIHUzMiAqY29kZSwgYm9vbCBmaWxsX2luc3QsIHNpemVfdCBsZW4p
+Ow0KPiAgIA0KPiAgIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgbG9uZyBwYXRjaF9zaXRlX2FkZHIo
+czMyICpzaXRlKQ0KPiAgIHsNCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9saWIvY29kZS1w
+YXRjaGluZy5jIGIvYXJjaC9wb3dlcnBjL2xpYi9jb2RlLXBhdGNoaW5nLmMNCj4gaW5kZXggYjAw
+MTEyZDdhZDQ2Li4zMzg1N2I5YjUzZGUgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9saWIv
+Y29kZS1wYXRjaGluZy5jDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9saWIvY29kZS1wYXRjaGluZy5j
+DQo+IEBAIC0yNzgsNzcgKzI3OCwxMTcgQEAgc3RhdGljIHZvaWQgdW5tYXBfcGF0Y2hfYXJlYSh1
+bnNpZ25lZCBsb25nIGFkZHIpDQo+ICAgCWZsdXNoX3RsYl9rZXJuZWxfcmFuZ2UoYWRkciwgYWRk
+ciArIFBBR0VfU0laRSk7DQo+ICAgfQ0KPiAgIA0KPiAtc3RhdGljIGludCBfX2RvX3BhdGNoX2lu
+c3RydWN0aW9uX21tKHUzMiAqYWRkciwgcHBjX2luc3RfdCBpbnN0cikNCj4gK3N0YXRpYyBpbnQg
+X19kb19wYXRjaF9pbnN0cnVjdGlvbnNfbW0odTMyICphZGRyLCB1MzIgKmNvZGUsIGJvb2wgZmls
+bF9pbnN0LCBzaXplX3QgbGVuKQ0KPiAgIHsNCj4gLQlpbnQgZXJyOw0KPiAtCXUzMiAqcGF0Y2hf
+YWRkcjsNCj4gLQl1bnNpZ25lZCBsb25nIHRleHRfcG9rZV9hZGRyOw0KPiAtCXB0ZV90ICpwdGU7
+DQo+IC0JdW5zaWduZWQgbG9uZyBwZm4gPSBnZXRfcGF0Y2hfcGZuKGFkZHIpOw0KPiAtCXN0cnVj
+dCBtbV9zdHJ1Y3QgKnBhdGNoaW5nX21tOw0KPiAtCXN0cnVjdCBtbV9zdHJ1Y3QgKm9yaWdfbW07
+DQo+ICsJc3RydWN0IG1tX3N0cnVjdCAqcGF0Y2hpbmdfbW0sICpvcmlnX21tOw0KPiArCXVuc2ln
+bmVkIGxvbmcgdGV4dF9wb2tlX2FkZHIsIHBmbjsNCj4gKwl1MzIgKnBhdGNoX2FkZHIsICplbmQs
+ICpwZW5kOw0KPiArCXBwY19pbnN0X3QgaW5zdHI7DQo+ICAgCXNwaW5sb2NrX3QgKnB0bDsNCj4g
+KwlpbnQgaWxlbiwgZXJyOw0KPiArCXB0ZV90ICpwdGU7DQo+ICAgDQo+ICAgCXBhdGNoaW5nX21t
+ID0gX190aGlzX2NwdV9yZWFkKGNwdV9wYXRjaGluZ19jb250ZXh0Lm1tKTsNCj4gICAJdGV4dF9w
+b2tlX2FkZHIgPSBfX3RoaXNfY3B1X3JlYWQoY3B1X3BhdGNoaW5nX2NvbnRleHQuYWRkcik7DQo+
+IC0JcGF0Y2hfYWRkciA9ICh1MzIgKikodGV4dF9wb2tlX2FkZHIgKyBvZmZzZXRfaW5fcGFnZShh
+ZGRyKSk7DQo+ICAgDQo+ICAgCXB0ZSA9IGdldF9sb2NrZWRfcHRlKHBhdGNoaW5nX21tLCB0ZXh0
+X3Bva2VfYWRkciwgJnB0bCk7DQo+ICAgCWlmICghcHRlKQ0KPiAgIAkJcmV0dXJuIC1FTk9NRU07
+DQo+ICAgDQo+IC0JX19zZXRfcHRlX2F0KHBhdGNoaW5nX21tLCB0ZXh0X3Bva2VfYWRkciwgcHRl
+LCBwZm5fcHRlKHBmbiwgUEFHRV9LRVJORUwpLCAwKTsNCj4gKwllbmQgPSAodm9pZCAqKWFkZHIg
+KyBsZW47DQo+ICsJZG8gew0KPiArCQlwZm4gPSBnZXRfcGF0Y2hfcGZuKGFkZHIpOw0KPiArCQlf
+X3NldF9wdGVfYXQocGF0Y2hpbmdfbW0sIHRleHRfcG9rZV9hZGRyLCBwdGUsIHBmbl9wdGUocGZu
+LCBQQUdFX0tFUk5FTCksIDApOw0KPiAgIA0KPiAtCS8qIG9yZGVyIFBURSB1cGRhdGUgYmVmb3Jl
+IHVzZSwgYWxzbyBzZXJ2ZXMgYXMgdGhlIGh3c3luYyAqLw0KPiAtCWFzbSB2b2xhdGlsZSgicHRl
+c3luYyI6IDogOiJtZW1vcnkiKTsNCj4gLQ0KPiAtCS8qIG9yZGVyIGNvbnRleHQgc3dpdGNoIGFm
+dGVyIGFyYml0cmFyeSBwcmlvciBjb2RlICovDQo+IC0JaXN5bmMoKTsNCj4gLQ0KPiAtCW9yaWdf
+bW0gPSBzdGFydF91c2luZ190ZW1wX21tKHBhdGNoaW5nX21tKTsNCj4gLQ0KPiAtCWVyciA9IF9f
+cGF0Y2hfaW5zdHJ1Y3Rpb24oYWRkciwgaW5zdHIsIHBhdGNoX2FkZHIpOw0KPiArCQkvKiBvcmRl
+ciBQVEUgdXBkYXRlIGJlZm9yZSB1c2UsIGFsc28gc2VydmVzIGFzIHRoZSBod3N5bmMgKi8NCj4g
+KwkJYXNtIHZvbGF0aWxlKCJwdGVzeW5jIjogOiA6Im1lbW9yeSIpOw0KPiAgIA0KPiAtCS8qIGh3
+c3luYyBwZXJmb3JtZWQgYnkgX19wYXRjaF9pbnN0cnVjdGlvbiAoc3luYykgaWYgc3VjY2Vzc2Z1
+bCAqLw0KPiAtCWlmIChlcnIpDQo+IC0JCW1iKCk7ICAvKiBzeW5jICovDQo+ICsJCS8qIG9yZGVy
+IGNvbnRleHQgc3dpdGNoIGFmdGVyIGFyYml0cmFyeSBwcmlvciBjb2RlICovDQo+ICsJCWlzeW5j
+KCk7DQo+ICsNCj4gKwkJb3JpZ19tbSA9IHN0YXJ0X3VzaW5nX3RlbXBfbW0ocGF0Y2hpbmdfbW0p
+Ow0KPiArDQo+ICsJCXBhdGNoX2FkZHIgPSAodTMyICopKHRleHRfcG9rZV9hZGRyICsgb2Zmc2V0
+X2luX3BhZ2UoYWRkcikpOw0KPiArCQlwZW5kID0gKHZvaWQgKilhZGRyICsgUEFHRV9TSVpFIC0g
+b2Zmc2V0X2luX3BhZ2UoYWRkcik7DQo+ICsJCWlmIChlbmQgPCBwZW5kKQ0KPiArCQkJcGVuZCA9
+IGVuZDsNCj4gKw0KPiArCQl3aGlsZSAoYWRkciA8IHBlbmQpIHsNCj4gKwkJCWluc3RyID0gcHBj
+X2luc3RfcmVhZChjb2RlKTsNCj4gKwkJCWlsZW4gPSBwcGNfaW5zdF9sZW4oaW5zdHIpOw0KPiAr
+CQkJZXJyID0gX19wYXRjaF9pbnN0cnVjdGlvbihhZGRyLCBpbnN0ciwgcGF0Y2hfYWRkcik7DQo+
+ICsJCQkvKiBod3N5bmMgcGVyZm9ybWVkIGJ5IF9fcGF0Y2hfaW5zdHJ1Y3Rpb24gKHN5bmMpIGlm
+IHN1Y2Nlc3NmdWwgKi8NCj4gKwkJCWlmIChlcnIpIHsNCj4gKwkJCQltYigpOyAgLyogc3luYyAq
+Lw0KPiArCQkJCWJyZWFrOw0KPiArCQkJfQ0KPiArDQo+ICsJCQlwYXRjaF9hZGRyID0gKHZvaWQg
+KilwYXRjaF9hZGRyICsgaWxlbjsNCj4gKwkJCWFkZHIgPSAodm9pZCAqKWFkZHIgKyBpbGVuOw0K
+PiArCQkJaWYgKCFmaWxsX2luc3QpDQo+ICsJCQkJY29kZSA9ICh2b2lkICopY29kZSArIGlsZW47
+DQo+ICsJCX0NCj4gICANCj4gLQkvKiBjb250ZXh0IHN5bmNocm9uaXNhdGlvbiBwZXJmb3JtZWQg
+YnkgX19wYXRjaF9pbnN0cnVjdGlvbiAoaXN5bmMgb3IgZXhjZXB0aW9uKSAqLw0KPiAtCXN0b3Bf
+dXNpbmdfdGVtcF9tbShwYXRjaGluZ19tbSwgb3JpZ19tbSk7DQo+ICsJCS8qIGNvbnRleHQgc3lu
+Y2hyb25pc2F0aW9uIHBlcmZvcm1lZCBieSBfX3BhdGNoX2luc3RydWN0aW9uIChpc3luYyBvciBl
+eGNlcHRpb24pICovDQo+ICsJCXN0b3BfdXNpbmdfdGVtcF9tbShwYXRjaGluZ19tbSwgb3JpZ19t
+bSk7DQo+ICAgDQo+IC0JcHRlX2NsZWFyKHBhdGNoaW5nX21tLCB0ZXh0X3Bva2VfYWRkciwgcHRl
+KTsNCj4gLQkvKg0KPiAtCSAqIHB0ZXN5bmMgdG8gb3JkZXIgUFRFIHVwZGF0ZSBiZWZvcmUgVExC
+IGludmFsaWRhdGlvbiBkb25lDQo+IC0JICogYnkgcmFkaXhfX2xvY2FsX2ZsdXNoX3RsYl9wYWdl
+X3BzaXplIChpbiBfdGxiaWVsX3ZhKQ0KPiAtCSAqLw0KPiAtCWxvY2FsX2ZsdXNoX3RsYl9wYWdl
+X3BzaXplKHBhdGNoaW5nX21tLCB0ZXh0X3Bva2VfYWRkciwgbW11X3ZpcnR1YWxfcHNpemUpOw0K
+PiArCQlwdGVfY2xlYXIocGF0Y2hpbmdfbW0sIHRleHRfcG9rZV9hZGRyLCBwdGUpOw0KPiArCQkv
+Kg0KPiArCQkgKiBwdGVzeW5jIHRvIG9yZGVyIFBURSB1cGRhdGUgYmVmb3JlIFRMQiBpbnZhbGlk
+YXRpb24gZG9uZQ0KPiArCQkgKiBieSByYWRpeF9fbG9jYWxfZmx1c2hfdGxiX3BhZ2VfcHNpemUg
+KGluIF90bGJpZWxfdmEpDQo+ICsJCSAqLw0KPiArCQlsb2NhbF9mbHVzaF90bGJfcGFnZV9wc2l6
+ZShwYXRjaGluZ19tbSwgdGV4dF9wb2tlX2FkZHIsIG1tdV92aXJ0dWFsX3BzaXplKTsNCj4gKwkJ
+aWYgKGVycikNCj4gKwkJCWJyZWFrOw0KPiArCX0gd2hpbGUgKGFkZHIgPCBlbmQpOw0KPiAgIA0K
+PiAgIAlwdGVfdW5tYXBfdW5sb2NrKHB0ZSwgcHRsKTsNCj4gICANCj4gICAJcmV0dXJuIGVycjsN
+Cj4gICB9DQo+ICAgDQo+IC1zdGF0aWMgaW50IF9fZG9fcGF0Y2hfaW5zdHJ1Y3Rpb24odTMyICph
+ZGRyLCBwcGNfaW5zdF90IGluc3RyKQ0KPiArc3RhdGljIGludCBfX2RvX3BhdGNoX2luc3RydWN0
+aW9ucyh1MzIgKmFkZHIsIHUzMiAqY29kZSwgYm9vbCBmaWxsX2luc3QsIHNpemVfdCBsZW4pDQo+
+ICAgew0KPiAtCWludCBlcnI7DQo+IC0JdTMyICpwYXRjaF9hZGRyOw0KPiAtCXVuc2lnbmVkIGxv
+bmcgdGV4dF9wb2tlX2FkZHI7DQo+ICsJdW5zaWduZWQgbG9uZyB0ZXh0X3Bva2VfYWRkciwgcGZu
+Ow0KPiArCXUzMiAqcGF0Y2hfYWRkciwgKmVuZCwgKnBlbmQ7DQo+ICsJcHBjX2luc3RfdCBpbnN0
+cjsNCj4gKwlpbnQgaWxlbiwgZXJyOw0KPiAgIAlwdGVfdCAqcHRlOw0KPiAtCXVuc2lnbmVkIGxv
+bmcgcGZuID0gZ2V0X3BhdGNoX3BmbihhZGRyKTsNCj4gICANCj4gICAJdGV4dF9wb2tlX2FkZHIg
+PSAodW5zaWduZWQgbG9uZylfX3RoaXNfY3B1X3JlYWQoY3B1X3BhdGNoaW5nX2NvbnRleHQuYWRk
+cikgJiBQQUdFX01BU0s7DQo+IC0JcGF0Y2hfYWRkciA9ICh1MzIgKikodGV4dF9wb2tlX2FkZHIg
+KyBvZmZzZXRfaW5fcGFnZShhZGRyKSk7DQo+IC0NCj4gICAJcHRlID0gX190aGlzX2NwdV9yZWFk
+KGNwdV9wYXRjaGluZ19jb250ZXh0LnB0ZSk7DQo+IC0JX19zZXRfcHRlX2F0KCZpbml0X21tLCB0
+ZXh0X3Bva2VfYWRkciwgcHRlLCBwZm5fcHRlKHBmbiwgUEFHRV9LRVJORUwpLCAwKTsNCj4gLQkv
+KiBTZWUgcHRlc3luYyBjb21tZW50IGluIHJhZGl4X19zZXRfcHRlX2F0KCkgKi8NCj4gLQlpZiAo
+cmFkaXhfZW5hYmxlZCgpKQ0KPiAtCQlhc20gdm9sYXRpbGUoInB0ZXN5bmMiOiA6IDoibWVtb3J5
+Iik7DQo+ICAgDQo+IC0JZXJyID0gX19wYXRjaF9pbnN0cnVjdGlvbihhZGRyLCBpbnN0ciwgcGF0
+Y2hfYWRkcik7DQo+ICsJZW5kID0gKHZvaWQgKilhZGRyICsgbGVuOw0KPiArCWRvIHsNCj4gKwkJ
+cGZuID0gZ2V0X3BhdGNoX3BmbihhZGRyKTsNCj4gKwkJX19zZXRfcHRlX2F0KCZpbml0X21tLCB0
+ZXh0X3Bva2VfYWRkciwgcHRlLCBwZm5fcHRlKHBmbiwgUEFHRV9LRVJORUwpLCAwKTsNCj4gKwkJ
+LyogU2VlIHB0ZXN5bmMgY29tbWVudCBpbiByYWRpeF9fc2V0X3B0ZV9hdCgpICovDQo+ICsJCWlm
+IChyYWRpeF9lbmFibGVkKCkpDQo+ICsJCQlhc20gdm9sYXRpbGUoInB0ZXN5bmMiOiA6IDoibWVt
+b3J5Iik7DQo+ICsNCj4gKwkJcGF0Y2hfYWRkciA9ICh1MzIgKikodGV4dF9wb2tlX2FkZHIgKyBv
+ZmZzZXRfaW5fcGFnZShhZGRyKSk7DQo+ICsJCXBlbmQgPSAodm9pZCAqKWFkZHIgKyBQQUdFX1NJ
+WkUgLSBvZmZzZXRfaW5fcGFnZShhZGRyKTsNCj4gKwkJaWYgKGVuZCA8IHBlbmQpDQo+ICsJCQlw
+ZW5kID0gZW5kOw0KPiArDQo+ICsJCXdoaWxlIChhZGRyIDwgcGVuZCkgew0KPiArCQkJaW5zdHIg
+PSBwcGNfaW5zdF9yZWFkKGNvZGUpOw0KPiArCQkJaWxlbiA9IHBwY19pbnN0X2xlbihpbnN0cik7
+DQo+ICsJCQllcnIgPSBfX3BhdGNoX2luc3RydWN0aW9uKGFkZHIsIGluc3RyLCBwYXRjaF9hZGRy
+KTsNCj4gKwkJCWlmIChlcnIpDQo+ICsJCQkJYnJlYWs7DQo+ICsNCj4gKwkJCXBhdGNoX2FkZHIg
+PSAodm9pZCAqKXBhdGNoX2FkZHIgKyBpbGVuOw0KPiArCQkJYWRkciA9ICh2b2lkICopYWRkciAr
+IGlsZW47DQo+ICsJCQlpZiAoIWZpbGxfaW5zdCkNCj4gKwkJCQljb2RlID0gKHZvaWQgKiljb2Rl
+ICsgaWxlbjsNCj4gKwkJfQ0KPiAgIA0KPiAtCXB0ZV9jbGVhcigmaW5pdF9tbSwgdGV4dF9wb2tl
+X2FkZHIsIHB0ZSk7DQo+IC0JZmx1c2hfdGxiX2tlcm5lbF9yYW5nZSh0ZXh0X3Bva2VfYWRkciwg
+dGV4dF9wb2tlX2FkZHIgKyBQQUdFX1NJWkUpOw0KPiArCQlwdGVfY2xlYXIoJmluaXRfbW0sIHRl
+eHRfcG9rZV9hZGRyLCBwdGUpOw0KPiArCQlmbHVzaF90bGJfa2VybmVsX3JhbmdlKHRleHRfcG9r
+ZV9hZGRyLCB0ZXh0X3Bva2VfYWRkciArIFBBR0VfU0laRSk7DQo+ICsJCWlmIChlcnIpDQo+ICsJ
+CQlicmVhazsNCj4gKwl9IHdoaWxlIChhZGRyIDwgZW5kKTsNCj4gICANCj4gICAJcmV0dXJuIGVy
+cjsNCj4gICB9DQo+IEBAIC0zNjksMTUgKzQwOSwzNCBAQCBpbnQgcGF0Y2hfaW5zdHJ1Y3Rpb24o
+dTMyICphZGRyLCBwcGNfaW5zdF90IGluc3RyKQ0KPiAgIA0KPiAgIAlsb2NhbF9pcnFfc2F2ZShm
+bGFncyk7DQo+ICAgCWlmIChtbV9wYXRjaF9lbmFibGVkKCkpDQo+IC0JCWVyciA9IF9fZG9fcGF0
+Y2hfaW5zdHJ1Y3Rpb25fbW0oYWRkciwgaW5zdHIpOw0KPiArCQllcnIgPSBfX2RvX3BhdGNoX2lu
+c3RydWN0aW9uc19tbShhZGRyLCAodTMyICopJmluc3RyLCBmYWxzZSwgcHBjX2luc3RfbGVuKGlu
+c3RyKSk7DQo+ICAgCWVsc2UNCj4gLQkJZXJyID0gX19kb19wYXRjaF9pbnN0cnVjdGlvbihhZGRy
+LCBpbnN0cik7DQo+ICsJCWVyciA9IF9fZG9fcGF0Y2hfaW5zdHJ1Y3Rpb25zKGFkZHIsICh1MzIg
+KikmaW5zdHIsIGZhbHNlLCBwcGNfaW5zdF9sZW4oaW5zdHIpKTsNCj4gICAJbG9jYWxfaXJxX3Jl
+c3RvcmUoZmxhZ3MpOw0KPiAgIA0KPiAgIAlyZXR1cm4gZXJyOw0KPiAgIH0NCj4gICBOT0tQUk9C
+RV9TWU1CT0wocGF0Y2hfaW5zdHJ1Y3Rpb24pOw0KPiAgIA0KPiArLyoNCj4gKyAqIFBhdGNoICdh
+ZGRyJyB3aXRoICdsZW4nIGJ5dGVzIG9mIGluc3RydWN0aW9ucyBmcm9tICdjb2RlJy4NCj4gKyAq
+Lw0KPiAraW50IHBhdGNoX2luc3RydWN0aW9ucyh1MzIgKmFkZHIsIHUzMiAqY29kZSwgYm9vbCBm
+aWxsX2luc3QsIHNpemVfdCBsZW4pDQo+ICt7DQo+ICsJdW5zaWduZWQgbG9uZyBmbGFnczsNCj4g
+KwlpbnQgZXJyOw0KPiArDQo+ICsJbG9jYWxfaXJxX3NhdmUoZmxhZ3MpOw0KPiArCWlmIChtbV9w
+YXRjaF9lbmFibGVkKCkpDQo+ICsJCWVyciA9IF9fZG9fcGF0Y2hfaW5zdHJ1Y3Rpb25zX21tKGFk
+ZHIsIGNvZGUsIGZpbGxfaW5zdCwgbGVuKTsNCj4gKwllbHNlDQo+ICsJCWVyciA9IF9fZG9fcGF0
+Y2hfaW5zdHJ1Y3Rpb25zKGFkZHIsIGNvZGUsIGZpbGxfaW5zdCwgbGVuKTsNCj4gKwlsb2NhbF9p
+cnFfcmVzdG9yZShmbGFncyk7DQo+ICsNCj4gKwlyZXR1cm4gZXJyOw0KPiArfQ0KPiArTk9LUFJP
+QkVfU1lNQk9MKHBhdGNoX2luc3RydWN0aW9ucyk7DQo+ICsNCj4gICBpbnQgcGF0Y2hfYnJhbmNo
+KHUzMiAqYWRkciwgdW5zaWduZWQgbG9uZyB0YXJnZXQsIGludCBmbGFncykNCj4gICB7DQo+ICAg
+CXBwY19pbnN0X3QgaW5zdHI7DQo=
