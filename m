@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02A0AC6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 14:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA57C74A44
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PY8B64ZlQz3fnJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 01:50:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.54; helo=mail-ot1-f54.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PY8Bh39yTz3fZc
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 01:51:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.49; helo=mail-ot1-f49.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com [209.85.210.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PY87L0RJ5z3fWN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 01:48:29 +1100 (AEDT)
-Received: by mail-ot1-f54.google.com with SMTP id q11-20020a056830440b00b00693c1a62101so3127187otv.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 06:48:29 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PY87Y0Zbcz3fQk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 01:48:40 +1100 (AEDT)
+Received: by mail-ot1-f49.google.com with SMTP id g6-20020a056830308600b0068d4b30536aso3027325ots.9
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 06:48:40 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459707;
+        d=1e100.net; s=20210112; t=1678459718;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=SAwxMVgEJW/diY6+z5s1oE+bbPFu7/bM9oM0FwFsxyE=;
-        b=C4IX/fJHDMntWPyfLN2JRnaBuQSruMazWXndUPR6fDvr6xkH15Q3xkDbzQJep1FCzR
-         QNVdHUSdIbmecCJshXL6/yXY/rX1AGBcL7xTcefTsM5HibluAnz7WvfMkdDkW24z497c
-         OzDIDF4oGhVd0urw3rRhQGwrCqbAmfX+rjdkcCjfqv3+T6QY6aWEGPJHuyRdL6BfmfRp
-         HcIk6ZnUXmunTDJV7zsDSlpCUlAsSIFlzyql4Odefejyb2vmZ9z6uITGdmHguShlIx49
-         Mqw8NF6JYGk2dsWyQVtg4eNIFeDZuRu8pWUbvfYT77Eann4zJnih6K0bj4aULRHfqmYN
-         96vQ==
-X-Gm-Message-State: AO0yUKWG8W2mI9OVk1fftnuAOeNEvyk+W2CH0MRES2tjkL2VfVEF4IuJ
-	hostpB9leZfFv8FRU6O5Yw==
-X-Google-Smtp-Source: AK7set96ixhp821kK8jijKchnvAgmkphcExUaHLLv7P6NqMK7LhdxgFUjRonphsIl2+XBIEkxGUmRQ==
-X-Received: by 2002:a05:6830:248f:b0:68b:cb5c:8e1 with SMTP id u15-20020a056830248f00b0068bcb5c08e1mr13902010ots.13.1678459707649;
-        Fri, 10 Mar 2023 06:48:27 -0800 (PST)
+        bh=vK9rI6mTHq76BhXmDPa7BjkMjKI93uQSgJiPM86yG6U=;
+        b=AftkAnZ1XUFFGeRcYSYgJlrsprsO7ORxnTdSXIdJesVY739sIUmrzbUK8aIuYn7EuI
+         SDEtGwqAfOtkbhO8jx792tfp9sk840uDr7t18fN1A9f8Uav0cRSEsPRiu1DpsFQ4agHd
+         UWvZksBOey+5uycS8jJt+SmgKNpKS4ZNQQKr7Enz7Y3GtyZ+baTBPuC7iluHJOALDCN7
+         nmMJRlJ4rG6kl73VvilF9EH0i5LcFcRlVcoUrO++fnXEVkN7BtMMPfPa6V2u1kxl1AM7
+         p2tFXxGstjBXuKWc4iRz+/+h7xTItkayB0yO2DuDRlOZ4n4GlnaFEtr3VzuaAkoS1mCA
+         IuwQ==
+X-Gm-Message-State: AO0yUKUOLSWPf8t2+PILHygcsCf5LjsR7iowQ3qyL5be0yDWwdFfvKbp
+	ETMkjh79W710V+gwqQTmg2r5FkeykQ==
+X-Google-Smtp-Source: AK7set+EbOmyZ/AksMSYYEuG7lFqQ6jiaAPpDlPQ5Tum+fcZZiV0qWudibu3pk/iibkSVwuFhfXHxg==
+X-Received: by 2002:a9d:2e9:0:b0:684:dbfd:f239 with SMTP id 96-20020a9d02e9000000b00684dbfdf239mr1088619otl.9.1678459718677;
+        Fri, 10 Mar 2023 06:48:38 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id q19-20020a05683022d300b0068bd20cf07dsm115696otc.48.2023.03.10.06.48.26
+        by smtp.gmail.com with ESMTPSA id t18-20020a9d7292000000b0068bc476d777sm132335otj.13.2023.03.10.06.48.37
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:48:27 -0800 (PST)
-Received: (nullmailer pid 1544470 invoked by uid 1000);
-	Fri, 10 Mar 2023 14:47:19 -0000
+        Fri, 10 Mar 2023 06:48:38 -0800 (PST)
+Received: (nullmailer pid 1545743 invoked by uid 1000);
+	Fri, 10 Mar 2023 14:47:27 -0000
 From: Rob Herring <robh@kernel.org>
-To: Thierry Reding <thierry.reding@gmail.com>, Lorenzo Pieralisi <lpieralisi@kernel.org>, =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>, Bjorn Helgaas <bhelgaas@google.com>, Jonathan Hunter <jonathanh@nvidia.com>, Ryder Lee <ryder.lee@mediatek.com>, Jianjun Wang <jianjun.wang@mediatek.com>, Tyrel Datwyler <tyreld@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Matthias Brugger <matthias.bgg@gmail.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Subject: [PATCH] PCI: Use of_property_present() for testing DT property presence
-Date: Fri, 10 Mar 2023 08:47:19 -0600
-Message-Id: <20230310144719.1544443-1-robh@kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, Timur Tabi <timur@kernel.org>
+Subject: [PATCH] serial: Use of_property_read_bool() for boolean properties
+Date: Fri, 10 Mar 2023 08:47:27 -0600
+Message-Id: <20230310144727.1545699-1-robh@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -60,95 +60,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 It is preferred to use typed property access functions (i.e.
 of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties. As
-part of this, convert of_get_property/of_find_property calls to the
-recently added of_property_present() helper when we just want to test
-for presence of a property and nothing more.
+of_get_property/of_find_property functions for reading properties.
+Convert reading boolean properties to to of_property_read_bool().
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/pci/controller/pci-tegra.c     | 4 ++--
- drivers/pci/controller/pcie-mediatek.c | 2 +-
- drivers/pci/hotplug/rpaphp_core.c      | 4 ++--
- drivers/pci/of.c                       | 2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/tty/serial/imx.c       | 14 +++++---------
+ drivers/tty/serial/mxs-auart.c |  4 ++--
+ drivers/tty/serial/ucc_uart.c  |  2 +-
+ 3 files changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/pci/controller/pci-tegra.c b/drivers/pci/controller/pci-tegra.c
-index 74c109f14ff0..79630885b9c8 100644
---- a/drivers/pci/controller/pci-tegra.c
-+++ b/drivers/pci/controller/pci-tegra.c
-@@ -1375,7 +1375,7 @@ static int tegra_pcie_phys_get(struct tegra_pcie *pcie)
- 	struct tegra_pcie_port *port;
- 	int err;
- 
--	if (!soc->has_gen2 || of_find_property(np, "phys", NULL) != NULL)
-+	if (!soc->has_gen2 || of_property_present(np, "phys"))
- 		return tegra_pcie_phys_get_legacy(pcie);
- 
- 	list_for_each_entry(port, &pcie->ports, list) {
-@@ -1944,7 +1944,7 @@ static bool of_regulator_bulk_available(struct device_node *np,
- 	for (i = 0; i < num_supplies; i++) {
- 		snprintf(property, 32, "%s-supply", supplies[i].supply);
- 
--		if (of_find_property(np, property, NULL) == NULL)
-+		if (!of_property_present(np, property))
- 			return false;
+diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+index 5712a4f29607..be168792b635 100644
+--- a/drivers/tty/serial/imx.c
++++ b/drivers/tty/serial/imx.c
+@@ -2262,20 +2262,16 @@ static int imx_uart_probe(struct platform_device *pdev)
  	}
+ 	sport->port.line = ret;
  
-diff --git a/drivers/pci/controller/pcie-mediatek.c b/drivers/pci/controller/pcie-mediatek.c
-index ae5ad05ddc1d..31de7a29192c 100644
---- a/drivers/pci/controller/pcie-mediatek.c
-+++ b/drivers/pci/controller/pcie-mediatek.c
-@@ -643,7 +643,7 @@ static int mtk_pcie_setup_irq(struct mtk_pcie_port *port,
- 		return err;
+-	if (of_get_property(np, "uart-has-rtscts", NULL) ||
+-	    of_get_property(np, "fsl,uart-has-rtscts", NULL) /* deprecated */)
+-		sport->have_rtscts = 1;
++	sport->have_rtscts = of_property_read_bool(np, "uart-has-rtscts") ||
++		of_property_read_bool(np, "fsl,uart-has-rtscts"); /* deprecated */
+ 
+-	if (of_get_property(np, "fsl,dte-mode", NULL))
+-		sport->dte_mode = 1;
++	sport->dte_mode = of_property_read_bool(np, "fsl,dte-mode");
+ 
+ 	sport->have_rtsgpio = of_property_present(np, "rts-gpios");
+ 
+-	if (of_get_property(np, "fsl,inverted-tx", NULL))
+-		sport->inverted_tx = 1;
++	sport->inverted_tx = of_property_read_bool(np, "fsl,inverted-tx");
+ 
+-	if (of_get_property(np, "fsl,inverted-rx", NULL))
+-		sport->inverted_rx = 1;
++	sport->inverted_rx = of_property_read_bool(np, "fsl,inverted-rx");
+ 
+ 	if (!of_property_read_u32_array(np, "fsl,dma-info", dma_buf_conf, 2)) {
+ 		sport->rx_period_length = dma_buf_conf[0];
+diff --git a/drivers/tty/serial/mxs-auart.c b/drivers/tty/serial/mxs-auart.c
+index ef6e7bb6105c..a368f4293967 100644
+--- a/drivers/tty/serial/mxs-auart.c
++++ b/drivers/tty/serial/mxs-auart.c
+@@ -1587,8 +1587,8 @@ static int mxs_auart_probe(struct platform_device *pdev)
  	}
+ 	s->port.line = ret;
  
--	if (of_find_property(dev->of_node, "interrupt-names", NULL))
-+	if (of_property_present(dev->of_node, "interrupt-names"))
- 		port->irq = platform_get_irq_byname(pdev, "pcie_irq");
- 	else
- 		port->irq = platform_get_irq(pdev, port->slot);
-diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-index 491986197c47..2316de0fd198 100644
---- a/drivers/pci/hotplug/rpaphp_core.c
-+++ b/drivers/pci/hotplug/rpaphp_core.c
-@@ -278,7 +278,7 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
- 		return -EINVAL;
- 	}
+-	if (of_get_property(np, "uart-has-rtscts", NULL) ||
+-	    of_get_property(np, "fsl,uart-has-rtscts", NULL) /* deprecated */)
++	if (of_property_read_bool(np, "uart-has-rtscts") ||
++	    of_property_read_bool(np, "fsl,uart-has-rtscts") /* deprecated */)
+ 		set_bit(MXS_AUART_RTSCTS, &s->flags);
  
--	if (of_find_property(dn->parent, "ibm,drc-info", NULL))
-+	if (of_property_present(dn->parent, "ibm,drc-info"))
- 		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
- 						be32_to_cpu(*my_index));
- 	else
-@@ -440,7 +440,7 @@ int rpaphp_add_slot(struct device_node *dn)
- 	if (!of_node_name_eq(dn, "pci"))
- 		return 0;
+ 	if (s->port.line >= ARRAY_SIZE(auart_port)) {
+diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
+index 32c7a5b43f8e..676840847962 100644
+--- a/drivers/tty/serial/ucc_uart.c
++++ b/drivers/tty/serial/ucc_uart.c
+@@ -1179,7 +1179,7 @@ static int soft_uart_init(struct platform_device *ofdev)
+ 	struct qe_firmware_info *qe_fw_info;
+ 	int ret;
  
--	if (of_find_property(dn, "ibm,drc-info", NULL))
-+	if (of_property_present(dn, "ibm,drc-info"))
- 		return rpaphp_drc_info_add_slot(dn);
- 	else
- 		return rpaphp_drc_add_slot(dn);
-diff --git a/drivers/pci/of.c b/drivers/pci/of.c
-index 196834ed44fe..e085f2eca372 100644
---- a/drivers/pci/of.c
-+++ b/drivers/pci/of.c
-@@ -447,7 +447,7 @@ static int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *
- 		return -ENODEV;
- 
- 	/* Local interrupt-map in the device node? Use it! */
--	if (of_get_property(dn, "interrupt-map", NULL)) {
-+	if (of_property_present(dn, "interrupt-map")) {
- 		pin = pci_swizzle_interrupt_pin(pdev, pin);
- 		ppnode = dn;
- 	}
+-	if (of_find_property(np, "soft-uart", NULL)) {
++	if (of_property_read_bool(np, "soft-uart")) {
+ 		dev_dbg(&ofdev->dev, "using Soft-UART mode\n");
+ 		soft_uart = 1;
+ 	} else {
 -- 
 2.39.2
 
