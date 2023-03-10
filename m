@@ -4,48 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBA57C74A44
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8188C6FA99
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Mar 2023 14:51:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PY8Bh39yTz3fZc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 01:51:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.49; helo=mail-ot1-f49.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com [209.85.210.49])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PY8CG24xlz3fv9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 11 Mar 2023 01:51:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.181; helo=mail-oi1-f181.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PY87Y0Zbcz3fQk
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 01:48:40 +1100 (AEDT)
-Received: by mail-ot1-f49.google.com with SMTP id g6-20020a056830308600b0068d4b30536aso3027325ots.9
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 06:48:40 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PY87f5zxhz3fWl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Mar 2023 01:48:46 +1100 (AEDT)
+Received: by mail-oi1-f181.google.com with SMTP id c11so4412398oiw.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Mar 2023 06:48:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678459718;
+        d=1e100.net; s=20210112; t=1678459724;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=vK9rI6mTHq76BhXmDPa7BjkMjKI93uQSgJiPM86yG6U=;
-        b=AftkAnZ1XUFFGeRcYSYgJlrsprsO7ORxnTdSXIdJesVY739sIUmrzbUK8aIuYn7EuI
-         SDEtGwqAfOtkbhO8jx792tfp9sk840uDr7t18fN1A9f8Uav0cRSEsPRiu1DpsFQ4agHd
-         UWvZksBOey+5uycS8jJt+SmgKNpKS4ZNQQKr7Enz7Y3GtyZ+baTBPuC7iluHJOALDCN7
-         nmMJRlJ4rG6kl73VvilF9EH0i5LcFcRlVcoUrO++fnXEVkN7BtMMPfPa6V2u1kxl1AM7
-         p2tFXxGstjBXuKWc4iRz+/+h7xTItkayB0yO2DuDRlOZ4n4GlnaFEtr3VzuaAkoS1mCA
-         IuwQ==
-X-Gm-Message-State: AO0yUKUOLSWPf8t2+PILHygcsCf5LjsR7iowQ3qyL5be0yDWwdFfvKbp
-	ETMkjh79W710V+gwqQTmg2r5FkeykQ==
-X-Google-Smtp-Source: AK7set+EbOmyZ/AksMSYYEuG7lFqQ6jiaAPpDlPQ5Tum+fcZZiV0qWudibu3pk/iibkSVwuFhfXHxg==
-X-Received: by 2002:a9d:2e9:0:b0:684:dbfd:f239 with SMTP id 96-20020a9d02e9000000b00684dbfdf239mr1088619otl.9.1678459718677;
-        Fri, 10 Mar 2023 06:48:38 -0800 (PST)
+        bh=ZSlcrAdOk2ZHbJaFPGHkD2mhUxcO2+0jdOc1ehU4BF0=;
+        b=do+XO4Ibk45tOoCb2ZUm65UIu377n+zZIJs1iPR3h1Vy/aYVa717qGzIM8gBVlMFWs
+         CRE3C2lZ2LfzalNUR/Xz9swFPsVoidfTAcCBPdjTUjKAVIH2fHdcTkomQTfpLbtLD8YV
+         47m2yflELDNXVXoBOoMvFGTN65WoQ7CIT6h/7QRDvjYn7dCjJOSbmSBaF+nYXv0+dTQS
+         c4Uz0KlMrzYs49kP3kwjjckmG6dQkmh+w9plMj/IvLhSVlQOXoouFQ5NCa7RpZ7xEjGr
+         pI3Rw05+hboUtM3e7TuQAQhDkK0OAgydaQQZptZiCgQqiPXngbB+hRjCYG3Sm99XIImt
+         AvTQ==
+X-Gm-Message-State: AO0yUKV3JIB2SleNYrVSbw7JKoIYxd0XvbLGiUR6k3gqlaUcjtEQip+T
+	zTfjvNCcT3PM/VS1nYXaD7rBbgzPfQ==
+X-Google-Smtp-Source: AK7set81+R7SptvFiU1mElhgKcbUszs0JCXieCGbcvg5GrDnQizYVUU/z1OANIDVszl1Z9u1lrX8nw==
+X-Received: by 2002:aca:2210:0:b0:384:ea9:237d with SMTP id b16-20020aca2210000000b003840ea9237dmr11076654oic.36.1678459724416;
+        Fri, 10 Mar 2023 06:48:44 -0800 (PST)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id t18-20020a9d7292000000b0068bc476d777sm132335otj.13.2023.03.10.06.48.37
+        by smtp.gmail.com with ESMTPSA id y129-20020acae187000000b0038476262f65sm967368oig.33.2023.03.10.06.48.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Mar 2023 06:48:38 -0800 (PST)
-Received: (nullmailer pid 1545743 invoked by uid 1000);
-	Fri, 10 Mar 2023 14:47:27 -0000
+        Fri, 10 Mar 2023 06:48:43 -0800 (PST)
+Received: (nullmailer pid 1546844 invoked by uid 1000);
+	Fri, 10 Mar 2023 14:47:35 -0000
 From: Rob Herring <robh@kernel.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jirislaby@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, NXP Linux Team <linux-imx@nxp.com>, Timur Tabi <timur@kernel.org>
-Subject: [PATCH] serial: Use of_property_read_bool() for boolean properties
-Date: Fri, 10 Mar 2023 08:47:27 -0600
-Message-Id: <20230310144727.1545699-1-robh@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Colin Leroy <colin@colino.net>
+Subject: [PATCH] macintosh: Use of_property_present() for testing DT property presence
+Date: Fri, 10 Mar 2023 08:47:35 -0600
+Message-Id: <20230310144735.1546817-1-robh@kernel.org>
 X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -60,80 +60,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 It is preferred to use typed property access functions (i.e.
 of_property_read_<type> functions) rather than low-level
-of_get_property/of_find_property functions for reading properties.
-Convert reading boolean properties to to of_property_read_bool().
+of_get_property/of_find_property functions for reading properties. As
+part of this, convert of_get_property/of_find_property calls to the
+recently added of_property_present() helper when we just want to test
+for presence of a property and nothing more.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/tty/serial/imx.c       | 14 +++++---------
- drivers/tty/serial/mxs-auart.c |  4 ++--
- drivers/tty/serial/ucc_uart.c  |  2 +-
- 3 files changed, 8 insertions(+), 12 deletions(-)
+ drivers/macintosh/rack-meter.c    | 2 +-
+ drivers/macintosh/therm_adt746x.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
-index 5712a4f29607..be168792b635 100644
---- a/drivers/tty/serial/imx.c
-+++ b/drivers/tty/serial/imx.c
-@@ -2262,20 +2262,16 @@ static int imx_uart_probe(struct platform_device *pdev)
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index c28893e41a8b..40240bce77b0 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -387,7 +387,7 @@ static int rackmeter_probe(struct macio_dev* mdev,
+ 	       if (of_node_name_eq(np, "lightshow"))
+ 		       break;
+ 	       if (of_node_name_eq(np, "sound") &&
+-		   of_get_property(np, "virtual", NULL) != NULL)
++		   of_property_present(np, "virtual"))
+ 		       break;
  	}
- 	sport->port.line = ret;
+ 	if (np == NULL) {
+diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
+index 8f5db9093c9a..384b87d661e1 100644
+--- a/drivers/macintosh/therm_adt746x.c
++++ b/drivers/macintosh/therm_adt746x.c
+@@ -483,7 +483,7 @@ static int probe_thermostat(struct i2c_client *client)
+ 	if (vers != 1)
+ 		return -ENXIO;
  
--	if (of_get_property(np, "uart-has-rtscts", NULL) ||
--	    of_get_property(np, "fsl,uart-has-rtscts", NULL) /* deprecated */)
--		sport->have_rtscts = 1;
-+	sport->have_rtscts = of_property_read_bool(np, "uart-has-rtscts") ||
-+		of_property_read_bool(np, "fsl,uart-has-rtscts"); /* deprecated */
- 
--	if (of_get_property(np, "fsl,dte-mode", NULL))
--		sport->dte_mode = 1;
-+	sport->dte_mode = of_property_read_bool(np, "fsl,dte-mode");
- 
- 	sport->have_rtsgpio = of_property_present(np, "rts-gpios");
- 
--	if (of_get_property(np, "fsl,inverted-tx", NULL))
--		sport->inverted_tx = 1;
-+	sport->inverted_tx = of_property_read_bool(np, "fsl,inverted-tx");
- 
--	if (of_get_property(np, "fsl,inverted-rx", NULL))
--		sport->inverted_rx = 1;
-+	sport->inverted_rx = of_property_read_bool(np, "fsl,inverted-rx");
- 
- 	if (!of_property_read_u32_array(np, "fsl,dma-info", dma_buf_conf, 2)) {
- 		sport->rx_period_length = dma_buf_conf[0];
-diff --git a/drivers/tty/serial/mxs-auart.c b/drivers/tty/serial/mxs-auart.c
-index ef6e7bb6105c..a368f4293967 100644
---- a/drivers/tty/serial/mxs-auart.c
-+++ b/drivers/tty/serial/mxs-auart.c
-@@ -1587,8 +1587,8 @@ static int mxs_auart_probe(struct platform_device *pdev)
- 	}
- 	s->port.line = ret;
- 
--	if (of_get_property(np, "uart-has-rtscts", NULL) ||
--	    of_get_property(np, "fsl,uart-has-rtscts", NULL) /* deprecated */)
-+	if (of_property_read_bool(np, "uart-has-rtscts") ||
-+	    of_property_read_bool(np, "fsl,uart-has-rtscts") /* deprecated */)
- 		set_bit(MXS_AUART_RTSCTS, &s->flags);
- 
- 	if (s->port.line >= ARRAY_SIZE(auart_port)) {
-diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index 32c7a5b43f8e..676840847962 100644
---- a/drivers/tty/serial/ucc_uart.c
-+++ b/drivers/tty/serial/ucc_uart.c
-@@ -1179,7 +1179,7 @@ static int soft_uart_init(struct platform_device *ofdev)
- 	struct qe_firmware_info *qe_fw_info;
- 	int ret;
- 
--	if (of_find_property(np, "soft-uart", NULL)) {
-+	if (of_property_read_bool(np, "soft-uart")) {
- 		dev_dbg(&ofdev->dev, "using Soft-UART mode\n");
- 		soft_uart = 1;
- 	} else {
+-	if (of_get_property(np, "hwsensor-location", NULL)) {
++	if (of_property_present(np, "hwsensor-location")) {
+ 		for (i = 0; i < 3; i++) {
+ 			sensor_location[i] = of_get_property(np,
+ 					"hwsensor-location", NULL) + offset;
 -- 
 2.39.2
 
