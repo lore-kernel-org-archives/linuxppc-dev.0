@@ -4,51 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C949C6FD19
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 06:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB34BC6FD19
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 09:12:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PZnYr4n2yz3cJF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 17:58:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PZrWr1VYjz3cdt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 20:12:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OV3Qmz/I;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=Td5KyCXS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kvalo@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=microchip.com (client-ip=68.232.154.123; helo=esa.microchip.iphmx.com; envelope-from=nicolas.ferre@microchip.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OV3Qmz/I;
+	dkim=pass (2048-bit key; unprotected) header.d=microchip.com header.i=@microchip.com header.a=rsa-sha256 header.s=mchp header.b=Td5KyCXS;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+X-Greylist: delayed 63 seconds by postgrey-1.36 at boromir; Mon, 13 Mar 2023 20:11:12 AEDT
+Received: from esa.microchip.iphmx.com (esa.microchip.iphmx.com [68.232.154.123])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PZnXn0xZPz3c1K
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 17:57:45 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id A057E610E8;
-	Mon, 13 Mar 2023 06:57:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF9A8C433EF;
-	Mon, 13 Mar 2023 06:57:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1678690661;
-	bh=yXZd505XmCeN942UNqXIjHQ5Kwm2nMyuVli34Flsl0k=;
-	h=From:To:Cc:Subject:References:Date:In-Reply-To:From;
-	b=OV3Qmz/IfYFypeHG/KN765o4V5OmR9wF58a5r9sl82BrhzjL6RJ0t2BMCNGpw1ntM
-	 KjslQkVZ0JESUZldaRATa7IiEt8tChEUY7aZGOsKDbNPnUsdLkk50GUTNcHuQt8uwu
-	 /nvJPmC0zq/U3J3CkrwQSJOg3YVsyp9NHgqDbR+vvwKY5uHZfopN5Xhlfq4vRJqL5K
-	 2lcLp4KOgNNKzHrc3lBCwzRTQhSEaT9H270FVzm0fOR5LBxNIFif2HMZyuJyMpJZPr
-	 JZdom+77L9fbpCIolgn8UTraemz7xWvoDX9JRXWvn+mO+3wAXa1vcYQvfqy6DaFU28
-	 H00x/o9omaPFw==
-From: Kalle Valo <kvalo@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] net: Use of_property_read_bool() for boolean properties
-References: <20230310144718.1544169-1-robh@kernel.org>
-Date: Mon, 13 Mar 2023 08:57:31 +0200
-In-Reply-To: <20230310144718.1544169-1-robh@kernel.org> (Rob Herring's message
-	of "Fri, 10 Mar 2023 08:47:16 -0600")
-Message-ID: <87ttypnnok.fsf@kernel.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PZrVm1xC1z2ynD
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 20:11:12 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
+  t=1678698672; x=1710234672;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=YivqxS+zeFWZMfPdu5ClCSUPNAcBM+7zK7hLm2cpsW4=;
+  b=Td5KyCXSlvcuki39ie2vsZiFnks6d2UfywIIO6JhPz9waan0k8toejLi
+   I/gVK8YNpH8oi9LrNAArvmYnR0lhT40l6iCA/cehbVqMx35Avp1qRnW3F
+   3AZLdOn/n+7xEfb5hYnOYsgpFraTAi65mrUXXY0/oWVyvkCR0VRhgQM80
+   gMV8OW3VlIfWnhSUFdRVTPg93WNLwpbMX+cG1mRiQxi9COnn2IpcIpxfD
+   3qonNPDKx68AWVlDphxCdHY5QpBzWvuNq8VMOgU9FXHHDZZNbX2zxLiDt
+   DvAHOOKTV7VugSfvVGKeQO9rRu04jrHrDEQLASwZLkR5fxnl8cv+rbBhN
+   w==;
+X-IronPort-AV: E=Sophos;i="5.98,256,1673938800"; 
+   d="scan'208";a="205062965"
+Received: from unknown (HELO email.microchip.com) ([170.129.1.10])
+  by esa2.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 13 Mar 2023 02:10:01 -0700
+Received: from chn-vm-ex04.mchp-main.com (10.10.85.152) by
+ chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.21; Mon, 13 Mar 2023 02:09:47 -0700
+Received: from [10.159.245.112] (10.10.115.15) by chn-vm-ex04.mchp-main.com
+ (10.10.85.152) with Microsoft SMTP Server id 15.1.2507.21 via Frontend
+ Transport; Mon, 13 Mar 2023 02:09:40 -0700
+Message-ID: <21d44d0b-05c0-1912-15de-a5c74d3ff4c6@microchip.com>
+Date: Mon, 13 Mar 2023 10:09:37 +0100
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH] net: Use of_property_read_bool() for boolean properties
+Content-Language: en-US
+To: Rob Herring <robh@kernel.org>, Wolfgang Grandegger <wg@grandegger.com>,
+	Marc Kleine-Budde <mkl@pengutronix.de>, "David S. Miller"
+	<davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski
+	<kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Claudiu Beznea
+	<claudiu.beznea@microchip.com>, Wei Fang <wei.fang@nxp.com>, Shenwei Wang
+	<shenwei.wang@nxp.com>, Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team
+	<linux-imx@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>, "Giuseppe
+ Cavallaro" <peppe.cavallaro@st.com>, Alexandre Torgue
+	<alexandre.torgue@foss.st.com>, Jose Abreu <joabreu@synopsys.com>, Shawn Guo
+	<shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, "Pengutronix
+ Kernel Team" <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>,
+	Maxime Coquelin <mcoquelin.stm32@gmail.com>, Grygorii Strashko
+	<grygorii.strashko@ti.com>, Francois Romieu <romieu@fr.zoreil.com>, "Michal
+ Simek" <michal.simek@xilinx.com>, Zhao Qiang <qiang.zhao@nxp.com>, Kalle Valo
+	<kvalo@kernel.org>, Samuel Mendoza-Jonas <sam@mendozajonas.com>
+References: <20230310144718.1544169-1-robh@kernel.org>
+From: Nicolas Ferre <nicolas.ferre@microchip.com>
+Organization: microchip
+In-Reply-To: <20230310144718.1544169-1-robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,44 +85,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Torgue <alexandre.torgue@foss.st.com>, linux-kernel@vger.kernel.org, Eric Dumazet <edumazet@google.com>, Shenwei Wang <shenwei.wang@nxp.com>, Fabio Estevam <festevam@gmail.com>, linux-stm32@st-md-mailman.stormreply.com, Zhao Qiang <qiang.zhao@nxp.com>, Michal Simek <michal.simek@xilinx.com>, Jose Abreu <joabreu@synopsys.com>, Clark Wang <xiaoning.wang@nxp.com>, NXP Linux Team <linux-imx@nxp.com>, Francois Romieu <romieu@fr.zoreil.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Wolfgang Grandegger <wg@grandegger.com>, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Pengutronix Kernel Team <kernel@pengutronix.de>, Sascha Hauer <s.hauer@pengutronix.de>, linuxppc-dev@lists.ozlabs.org, linux-can@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Marc Kleine-Budde <mkl@pengutronix.de>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, 
- linux-wireless@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>, "David S. Miller" <davem@davemloft.net>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Wei Fang <wei.fang@nxp.com>, Samuel Mendoza-Jonas <sam@mendozajonas.com>, Shawn Guo <shawnguo@kernel.org>, Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: devicetree@vger.kernel.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-can@vger.kernel.org, linux-omap@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Rob Herring <robh@kernel.org> writes:
-
+On 10/03/2023 at 15:47, Rob Herring wrote:
+> EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
+> 
 > It is preferred to use typed property access functions (i.e.
 > of_property_read_<type> functions) rather than low-level
 > of_get_property/of_find_property functions for reading properties.
 > Convert reading boolean properties to to of_property_read_bool().
->
+> 
 > Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
->  drivers/net/can/cc770/cc770_platform.c          | 12 ++++++------
->  drivers/net/ethernet/cadence/macb_main.c        |  2 +-
->  drivers/net/ethernet/davicom/dm9000.c           |  4 ++--
->  drivers/net/ethernet/freescale/fec_main.c       |  2 +-
->  drivers/net/ethernet/freescale/fec_mpc52xx.c    |  2 +-
->  drivers/net/ethernet/freescale/gianfar.c        |  4 ++--
->  drivers/net/ethernet/ibm/emac/core.c            |  8 ++++----
->  drivers/net/ethernet/ibm/emac/rgmii.c           |  2 +-
->  drivers/net/ethernet/stmicro/stmmac/dwmac-imx.c |  3 +--
->  drivers/net/ethernet/sun/niu.c                  |  2 +-
->  drivers/net/ethernet/ti/cpsw-phy-sel.c          |  3 +--
->  drivers/net/ethernet/ti/netcp_ethss.c           |  8 +++-----
->  drivers/net/ethernet/via/via-velocity.c         |  3 +--
->  drivers/net/ethernet/xilinx/ll_temac_main.c     |  9 ++++-----
->  drivers/net/wan/fsl_ucc_hdlc.c                  | 11 +++--------
->  drivers/net/wireless/ti/wlcore/spi.c            |  3 +--
->  net/ncsi/ncsi-manage.c                          |  4 ++--
->  17 files changed, 35 insertions(+), 47 deletions(-)
+>   drivers/net/can/cc770/cc770_platform.c          | 12 ++++++------
+>   drivers/net/ethernet/cadence/macb_main.c        |  2 +-
 
-For wireless:
+Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
 
-Acked-by: Kalle Valo <kvalo@kernel.org>
+>   drivers/net/ethernet/davicom/dm9000.c           |  4 ++--
+
+[..]
+
+> --- a/drivers/net/ethernet/cadence/macb_main.c
+> +++ b/drivers/net/ethernet/cadence/macb_main.c
+> @@ -4990,7 +4990,7 @@ static int macb_probe(struct platform_device *pdev)
+>                  bp->jumbo_max_len = macb_config->jumbo_max_len;
+> 
+>          bp->wol = 0;
+> -       if (of_get_property(np, "magic-packet", NULL))
+> +       if (of_property_read_bool(np, "magic-packet"))
+>                  bp->wol |= MACB_WOL_HAS_MAGIC_PACKET;
+>          device_set_wakeup_capable(&pdev->dev, bp->wol & MACB_WOL_HAS_MAGIC_PACKET);
+
+[..]
 
 -- 
-https://patchwork.kernel.org/project/linux-wireless/list/
+Nicolas Ferre
 
-https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
