@@ -4,122 +4,108 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 351F3C61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 16:25:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6DA9C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 16:27:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb28H5cGTz3fmC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 03:25:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb29m39gqz3fph
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 03:27:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=YUrAqnGN;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=YUrAqnGN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jEJOGOD/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe16::32c; helo=eur02-vi1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb20N45hRz3cjF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 03:19:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=YUrAqnGN;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=YUrAqnGN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jEJOGOD/;
 	dkim-atps=neutral
-Received: from EUR02-VI1-obe.outbound.protection.outlook.com (mail-vi1eur02hn2032c.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe16::32c])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by gandalf.ozlabs.org (Postfix) with ESMTP id 4Pb20N3gkhz4x4r
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 03:19:00 +1100 (AEDT)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4Pb20N3c7Tz4x5R; Tue, 14 Mar 2023 03:19:00 +1100 (AEDT)
+Authentication-Results: gandalf.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: gandalf.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: gandalf.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jEJOGOD/;
+	dkim-atps=neutral
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb1sS6KQ8z3cCD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 03:13:00 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
- b=YUrAqnGNNumPkAcyXkNrJ5rbySlZsdBKqcssmR/5SBpjx2LdwZFYkoiFQ7I6lDhkwFb2jXHmJ9awHaGzlYsVZPcFHKkOeHMp8Pjxn1MEfrczogBpWpryXD+q+3TCtSSbUaIFth+U5fldjFJrqnkJofoNo8o+UZJ75kK2SKW3tZtL5w2ChNO+8CUZtFRk4KxPlItTfvcScOWmU561LsyR9uxhxRxC90EAY2947aS8qUWKkQSIbcjMc+Nmw2MwArNpfTaRvZcUgS8oUG5ZRDXX1h6QdqSDSHFKi0YH6vmx9aJvBxHeUCuSEKmnDctgZ2T9WS7zKZfY4JH3vtMuJ+rq2Q==
-Received: from AS9PR04CA0040.eurprd04.prod.outlook.com (2603:10a6:20b:46a::32)
- by PAVPR03MB9678.eurprd03.prod.outlook.com (2603:10a6:102:318::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
- 2023 16:12:42 +0000
-Received: from VI1EUR05FT023.eop-eur05.prod.protection.outlook.com
- (2603:10a6:20b:46a:cafe::cb) by AS9PR04CA0040.outlook.office365.com
- (2603:10a6:20b:46a::32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.25 via Frontend
- Transport; Mon, 13 Mar 2023 16:12:41 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.86)
- smtp.mailfrom=seco.com; dkim=pass (signature was verified)
- header.d=seco.com;dmarc=pass action=none header.from=seco.com;
-Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
- 20.160.56.86 as permitted sender) receiver=protection.outlook.com;
- client-ip=20.160.56.86; helo=inpost-eu.tmcas.trendmicro.com; pr=C
-Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.86) by
- VI1EUR05FT023.mail.protection.outlook.com (10.233.242.111) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6199.11 via Frontend Transport; Mon, 13 Mar 2023 16:12:41 +0000
-Received: from outmta (unknown [192.168.82.135])
-	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id 3C9FE2008088A;
-	Mon, 13 Mar 2023 16:12:41 +0000 (UTC)
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com (unknown [104.47.0.56])
-	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id 5E3DE20080075;
-	Mon, 13 Mar 2023 16:03:41 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=aotph7ozVEsT7e9cu5qgnn24ehnacuZOSf2O/kOsfyvKPst4WUvAsSrLZItbF5K0fLnFqPkc13O/GPOwhJu7VP2ZXZIMwpXpcOFP7XnpWVV3bD7ZbN6/w3c+aNODqV+ElFYkS1UJGcxwIv5PWSmOmZORT5El37kHDhqqh+f63nvi4zwZhMwek+QydlhL4RwoM98tMsTYxUYVgFbP9dPD/vYDRGuos6v8iZ+640KgA/eGftO4MiDw1uhaIIgYWysgrqQDx1ajKYnUrKyD43sY6vYOCgJUg3xqMsjaWjZ7pfOmoM//j7HKpUXzqN/hN5NNOdU5bFDltwa0zLUB8gvx/w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
- b=RCK29F5ZQF2f7Lh8CFe0SIemsg2vdke4ZZ2aF6BBxxYM01Xmn34/e+sXlT7AYgcKgLLWGrTQvxdrac1mFwAxIobAew+5bJ56P9RySgFApah39iDL/G/JL08TbP/IZudwrU4TdO5g6YyU4EtKBlxS9Nv5uQpcglFuPt36G9+GEZFu4bGbOws+eV0MaalMMJyjVi7/S1OwhbUZGBQK0K0Fig8nQbWGCRrmVt5ihs83gIekxCBKQo4SX0EKV7DVy/LxvF/4cFD14b0R4oNPXwdQQVKm/qzx3FIb7WUtCyXmHytT1L3s8vXqcfEOXJhJznvqB3xweHbXK+LWDMi3/mncUA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
- dkim=pass header.d=seco.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
- b=YUrAqnGNNumPkAcyXkNrJ5rbySlZsdBKqcssmR/5SBpjx2LdwZFYkoiFQ7I6lDhkwFb2jXHmJ9awHaGzlYsVZPcFHKkOeHMp8Pjxn1MEfrczogBpWpryXD+q+3TCtSSbUaIFth+U5fldjFJrqnkJofoNo8o+UZJ75kK2SKW3tZtL5w2ChNO+8CUZtFRk4KxPlItTfvcScOWmU561LsyR9uxhxRxC90EAY2947aS8qUWKkQSIbcjMc+Nmw2MwArNpfTaRvZcUgS8oUG5ZRDXX1h6QdqSDSHFKi0YH6vmx9aJvBxHeUCuSEKmnDctgZ2T9WS7zKZfY4JH3vtMuJ+rq2Q==
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=seco.com;
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
- by DBBPR03MB6828.eurprd03.prod.outlook.com (2603:10a6:10:20f::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
- 2023 16:12:27 +0000
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::dbcf:1089:3242:614e]) by DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::dbcf:1089:3242:614e%4]) with mapi id 15.20.6178.024; Mon, 13 Mar 2023
- 16:12:27 +0000
-From: Sean Anderson <sean.anderson@seco.com>
-To: Vinod Koul <vkoul@kernel.org>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
-	linux-phy@lists.infradead.org
-Subject: [PATCH v11 12/13] arm64: dts: ls1088a: Prevent PCSs from probing as phys
-Date: Mon, 13 Mar 2023 12:11:36 -0400
-Message-Id: <20230313161138.3598068-13-sean.anderson@seco.com>
-X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
-In-Reply-To: <20230313161138.3598068-1-sean.anderson@seco.com>
-References: <20230313161138.3598068-1-sean.anderson@seco.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BL1P221CA0013.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:208:2c5::11) To DB9PR03MB8847.eurprd03.prod.outlook.com
- (2603:10a6:10:3dd::13)
+	by gandalf.ozlabs.org (Postfix) with ESMTPS id 4Pb20N1LbCz4x4r
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Mar 2023 03:19:00 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32DErl69031884;
+	Mon, 13 Mar 2023 16:18:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=sk/zhX+MZmMRyNGz/YjxsJfOmQ26B0S/YX6WsMSN5bU=;
+ b=jEJOGOD/HSVnmyNwebuOGS2vqsrIhvGvGYY0eVmKq/0bZ2vTlRQDOsBJk7fy7bc08zpI
+ PGtSsjhxB1ha5YaCBgMMU3Px8VdDTiwmn8P60A1jYSjskVKeFoFgw0J2yVhaYswNaxOH
+ RJVa6IGtgy+jHM/UULapGQ4t80H2oRh8BA01fiknAhL7DM6AXqtNoQwMeh6f1hOyhw5L
+ ZtunUT3t5QK3ytTNZHxSLPIrki99IfQ0aiAkvVaAoopjq9JqjbAH3o4B1Hxk7oz/EQUx
+ nQj9XMlK9lvglenhk9NPrv1cAcBu+Vy2YmO0U7LGBo8rUFJ9q/NqnLl4FtqoSw5FkD3C DA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pa60dtgkp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Mar 2023 16:18:47 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32DErmYJ031918;
+	Mon, 13 Mar 2023 16:18:46 GMT
+Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pa60dtgjr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Mar 2023 16:18:46 +0000
+Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
+	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32DCvikX015761;
+	Mon, 13 Mar 2023 16:18:44 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3p8h96jt20-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 13 Mar 2023 16:18:44 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32DGIeZL40894962
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 13 Mar 2023 16:18:40 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5C8542004B;
+	Mon, 13 Mar 2023 16:18:40 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F2BD820043;
+	Mon, 13 Mar 2023 16:18:39 +0000 (GMT)
+Received: from [9.101.4.33] (unknown [9.101.4.33])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 13 Mar 2023 16:18:39 +0000 (GMT)
+Message-ID: <d2346e25-56f0-f198-43cd-efdf73321f09@linux.ibm.com>
+Date: Mon, 13 Mar 2023 17:18:39 +0100
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|DBBPR03MB6828:EE_|VI1EUR05FT023:EE_|PAVPR03MB9678:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5cbad9a2-81a2-4141-e5ee-08db23ddc5ca
-X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  /zQCURQNmYEQ/8iEA3HneA26EjJfpJK+Mgf3tfHrTJbeemcm1KIlAPnGlV6t59TdzYAW6yzV2V+PRUyTkHFXmKFqxjaN9ajWtccUBrsmUutGlQ06g1vWMXtuudi20WkRIo7W5+9HMZxCFkteYP0LDsa4tvQMLsg7+6AqMFKiB9CxnGmU5W35f9DV0/H0Jw9nbH8lyl/luAltSZacf2MDQGP//P4BUj8eUGSMggZ1tkKIMODaNQy40ymKdsNx0fX4jKNBDz8HPkVjnQgNSZjD3AsHDLPOE5WPMDpKS9SvNdP5xxnxbTHN4oGIAytkn0A/BD8whuMqFk9ef/NkESSi6RCxEdXNPllPpcp08YlwRvorMxddWNd356HGa8bDqRSn0xCZmv/d3razLXHuI7q/h3iXwcmZ0In6I11nQa9P8ZcH/fOQ+CLaGbpwT2BRVrcdg1HfTQRmvChvxRANEdWSdEHvM/aVxA6l9j4d7pWx2f4gCgmpqn38YVQp39y6KbIDVNe6TJDDkWrG7m6xBEBXNAP+7PqPw0T4FLpjafHxdKOKC7UYHA3YjFHabFvCKjCoYsIg7trPZ9nMTkoTwytDek5uDFBcYLds/jv63lwk91JkghRbQ2lHKGX3QfUZTyH+xBevLagTpL6s6D+24x14TSmNFxXDEsQZnICwjFaLlbMfy5hujw/K1nDdil7+tvjAvsvbKn0cd5tVvUZwXiJikw==
-X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(346002)(366004)(136003)(376002)(396003)(39850400004)(451199018)(7416002)(5660300002)(52116002)(44832011)(86362001)(36756003)(38350700002)(38100700002)(2616005)(186003)(6512007)(1076003)(6506007)(6666004)(26005)(2906002)(478600001)(41300700001)(66946007)(6486002)(8936002)(316002)(110136005)(54906003)(66556008)(4326008)(83380400001)(8676002)(66476007);DIR:OUT;SFP:1101;
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DBBPR03MB6828
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  VI1EUR05FT023.eop-eur05.prod.protection.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	8933030d-5352-4bc2-c22b-08db23ddbcfe
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	/1kbC4agnmukZDvlwihv2l6u8fUAZYv4BC1XXjGHhCcezquHh4lurnjuJsQNFCz546wtMfYM2xswmXLYEESIfMtoqhZEBluUDbdn1n7SLH4YqT2iXvNlMcwT+TanrO4o2Z7FskRIO04m381cG5ElK7bWFPhrEYsewWALxdM7mvV+hSAb/ebhiq5y2ADgEMQvcq9WuqVxLOp48mANbY/L+xmeEVathvLYli/A4GU03T4t3fIzYrsFPmVbPIL1ql/QiH6Jb8Z8ekXJrTk5VW209WTuOu0rs21w9PoDWphml/sgxyAvCK/aAjE31Gdy2SHoWY2BaF9sMqSM6KY9Va70zfewA/bxCE4ZC63EDuzm2+K9kLGvuinII/u+EzXr2F/kD6ChW1oXiGZDUxzTrYRMX3vuDaFbZCPEvBQqmaJJSPKje/q2FM4oZYtO5BgZmS4uU7f/Rxudi4Wb1fcbyrA/VUnKefWOczZfMXQF55Da7poK+jvvfpzeM4NPFSTia2Np4I5pgyju4zTuiFxrdqSbG2rj2BUUwNhgJOQn1ZE2JzkmACnIaAfNgk1MZJJFcko3NYwhogyV30zXf/2r/vxWOmoNS9vLXXJ8a5UieSoOBOiz+x9Wp12sppI0JWPE/vSLAZMjjaifBVvWTmzY4o26vx8XX8I10j1e7m0fm9dyWXZj+2MulHtE+Z1fb7/wl0mJlrmg/RardoIC+YtYx1CHICfgJ4fFN6RnZfXyuqhQ0+VhSb31MtOff0/egm5ciaoTlRvvVjQ3e/AwGwOVk36Cbg==
-X-Forefront-Antispam-Report: 	CIP:20.160.56.86;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230025)(346002)(396003)(376002)(39850400004)(136003)(5400799012)(451199018)(36840700001)(46966006)(40470700004)(336012)(2616005)(7416002)(186003)(44832011)(6512007)(6506007)(26005)(1076003)(8936002)(83380400001)(34020700004)(6666004)(82310400005)(36860700001)(356005)(82740400003)(6486002)(47076005)(5660300002)(40460700003)(4326008)(70206006)(2906002)(8676002)(40480700001)(70586007)(41300700001)(7596003)(7636003)(110136005)(316002)(478600001)(36756003)(54906003)(86362001)(12100799021);DIR:OUT;SFP:1501;
-X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 16:12:41.5272
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5cbad9a2-81a2-4141-e5ee-08db23ddc5ca
-X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.86];Helo=[inpost-eu.tmcas.trendmicro.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	VI1EUR05FT023.eop-eur05.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAVPR03MB9678
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.7.2
+Subject: Re: [PATCH v9 1/6] powerpc/kexec: turn some static helper functions
+ public
+Content-Language: en-US
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@ozlabs.org,
+        mpe@ellerman.id.au
+References: <20230312181154.278900-1-sourabhjain@linux.ibm.com>
+ <20230312181154.278900-2-sourabhjain@linux.ibm.com>
+From: Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <20230312181154.278900-2-sourabhjain@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: Mfh-fOOz55VIWrT_2K_0_1vEo45tft9i
+X-Proofpoint-GUID: 4UZXnQnVyTjSzpwLbt9sNd8towLY1FZ-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-03-13_07,2023-03-13_02,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0
+ priorityscore=1501 lowpriorityscore=0 adultscore=0 clxscore=1011
+ mlxlogscore=999 malwarescore=0 mlxscore=0 spamscore=0 phishscore=0
+ suspectscore=0 impostorscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2212070000 definitions=main-2303130125
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -131,107 +117,421 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: mahesh@linux.vnet.ibm.com, eric.devolder@oracle.com, kexec@lists.infradead.org, bhe@redhat.com, hbathini@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The internal PCSs are not always accessible during boot (such as if the
-serdes has deselected the appropriate link mode). Give them appropriate
-compatible strings so they don't automatically (fail to) probe as
-genphys.
+On 12/03/2023 19:11:49, Sourabh Jain wrote:
+> Move update_cpus_node and get_crash_memory_ranges functions from
+> kexec/file_load.c to kexec/core_64.c to make these functions usable
+        file_load_64.c
+> by other kexec compoenets.
+                 components
+> 
+> Later in the series, these functions are utilized to do in-kernel update to
+> kexec segments on CPU/Memory hotplug events for both kexec_load and
+> kexec_file_load syscalls.
+> 
+> No functional change intended.
+>
 
-Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+FWIW, despite the 2 minor typos above,
 
----
+Reviewed-by: Laurent Dufour <laurent.dufour@fr.ibm.com>
 
-(no changes since v8)
-
-Changes in v8:
-- New
-
- .../arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 30 ++++++++++++-------
- 1 file changed, 20 insertions(+), 10 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-index 59b401daad4d..bbc714f84577 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
-@@ -932,7 +932,8 @@ pcs_mdio1: mdio@8c07000 {
- 			#size-cells = <0>;
- 			status = "disabled";
- 
--			pcs1: ethernet-phy@0 {
-+			pcs1: ethernet-pcs@0 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <0>;
- 			};
- 		};
-@@ -945,7 +946,8 @@ pcs_mdio2: mdio@8c0b000 {
- 			#size-cells = <0>;
- 			status = "disabled";
- 
--			pcs2: ethernet-phy@0 {
-+			pcs2: ethernet-pcs@0 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <0>;
- 			};
- 		};
-@@ -958,19 +960,23 @@ pcs_mdio3: mdio@8c0f000 {
- 			#size-cells = <0>;
- 			status = "disabled";
- 
--			pcs3_0: ethernet-phy@0 {
-+			pcs3_0: ethernet-pcs@0 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <0>;
- 			};
- 
--			pcs3_1: ethernet-phy@1 {
-+			pcs3_1: ethernet-pcs@1 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <1>;
- 			};
- 
--			pcs3_2: ethernet-phy@2 {
-+			pcs3_2: ethernet-pcs@2 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <2>;
- 			};
- 
--			pcs3_3: ethernet-phy@3 {
-+			pcs3_3: ethernet-pcs@3 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <3>;
- 			};
- 		};
-@@ -983,19 +989,23 @@ pcs_mdio7: mdio@8c1f000 {
- 			#size-cells = <0>;
- 			status = "disabled";
- 
--			pcs7_0: ethernet-phy@0 {
-+			pcs7_0: ethernet-pcs@0 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <0>;
- 			};
- 
--			pcs7_1: ethernet-phy@1 {
-+			pcs7_1: ethernet-pcs@1 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <1>;
- 			};
- 
--			pcs7_2: ethernet-phy@2 {
-+			pcs7_2: ethernet-pcs@2 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <2>;
- 			};
- 
--			pcs7_3: ethernet-phy@3 {
-+			pcs7_3: ethernet-pcs@3 {
-+				compatible = "fsl,lynx-pcs";
- 				reg = <3>;
- 			};
- 		};
--- 
-2.35.1.1320.gc452695387.dirty
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kexec.h  |   6 ++
+>  arch/powerpc/kexec/core_64.c      | 166 ++++++++++++++++++++++++++++++
+>  arch/powerpc/kexec/file_load_64.c | 162 -----------------------------
+>  3 files changed, 172 insertions(+), 162 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+> index a1ddba01e7d13..8090ad7d97d9d 100644
+> --- a/arch/powerpc/include/asm/kexec.h
+> +++ b/arch/powerpc/include/asm/kexec.h
+> @@ -99,6 +99,12 @@ void relocate_new_kernel(unsigned long indirection_page, unsigned long reboot_co
+>  
+>  void kexec_copy_flush(struct kimage *image);
+>  
+> +#ifdef CONFIG_PPC64
+> +struct crash_mem;
+> +int update_cpus_node(void *fdt);
+> +int get_crash_memory_ranges(struct crash_mem **mem_ranges);
+> +#endif
+> +
+>  #if defined(CONFIG_CRASH_DUMP) && defined(CONFIG_PPC_RTAS)
+>  void crash_free_reserved_phys_range(unsigned long begin, unsigned long end);
+>  #define crash_free_reserved_phys_range crash_free_reserved_phys_range
+> diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+> index a79e28c91e2be..0b292f93a74cc 100644
+> --- a/arch/powerpc/kexec/core_64.c
+> +++ b/arch/powerpc/kexec/core_64.c
+> @@ -17,6 +17,8 @@
+>  #include <linux/cpu.h>
+>  #include <linux/hardirq.h>
+>  #include <linux/of.h>
+> +#include <linux/libfdt.h>
+> +#include <linux/memblock.h>
+>  
+>  #include <asm/page.h>
+>  #include <asm/current.h>
+> @@ -30,6 +32,8 @@
+>  #include <asm/hw_breakpoint.h>
+>  #include <asm/svm.h>
+>  #include <asm/ultravisor.h>
+> +#include <asm/kexec_ranges.h>
+> +#include <asm/crashdump-ppc64.h>
+>  
+>  int machine_kexec_prepare(struct kimage *image)
+>  {
+> @@ -377,6 +381,168 @@ void default_machine_kexec(struct kimage *image)
+>  	/* NOTREACHED */
+>  }
+>  
+> +/**
+> + * get_crash_memory_ranges - Get crash memory ranges. This list includes
+> + *                           first/crashing kernel's memory regions that
+> + *                           would be exported via an elfcore.
+> + * @mem_ranges:              Range list to add the memory ranges to.
+> + *
+> + * Returns 0 on success, negative errno on error.
+> + */
+> +int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+> +{
+> +	phys_addr_t base, end;
+> +	struct crash_mem *tmem;
+> +	u64 i;
+> +	int ret;
+> +
+> +	for_each_mem_range(i, &base, &end) {
+> +		u64 size = end - base;
+> +
+> +		/* Skip backup memory region, which needs a separate entry */
+> +		if (base == BACKUP_SRC_START) {
+> +			if (size > BACKUP_SRC_SIZE) {
+> +				base = BACKUP_SRC_END + 1;
+> +				size -= BACKUP_SRC_SIZE;
+> +			} else
+> +				continue;
+> +		}
+> +
+> +		ret = add_mem_range(mem_ranges, base, size);
+> +		if (ret)
+> +			goto out;
+> +
+> +		/* Try merging adjacent ranges before reallocation attempt */
+> +		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
+> +			sort_memory_ranges(*mem_ranges, true);
+> +	}
+> +
+> +	/* Reallocate memory ranges if there is no space to split ranges */
+> +	tmem = *mem_ranges;
+> +	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
+> +		tmem = realloc_mem_ranges(mem_ranges);
+> +		if (!tmem)
+> +			goto out;
+> +	}
+> +
+> +	/* Exclude crashkernel region */
+> +	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
+> +	if (ret)
+> +		goto out;
+> +
+> +	/*
+> +	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
+> +	 *        regions are exported to save their context at the time of
+> +	 *        crash, they should actually be backed up just like the
+> +	 *        first 64K bytes of memory.
+> +	 */
+> +	ret = add_rtas_mem_range(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	ret = add_opal_mem_range(mem_ranges);
+> +	if (ret)
+> +		goto out;
+> +
+> +	/* create a separate program header for the backup region */
+> +	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
+> +	if (ret)
+> +		goto out;
+> +
+> +	sort_memory_ranges(*mem_ranges, false);
+> +out:
+> +	if (ret)
+> +		pr_err("Failed to setup crash memory ranges\n");
+> +	return ret;
+> +}
+> +
+> +/**
+> + * add_node_props - Reads node properties from device node structure and add
+> + *                  them to fdt.
+> + * @fdt:            Flattened device tree of the kernel
+> + * @node_offset:    offset of the node to add a property at
+> + * @dn:             device node pointer
+> + *
+> + * Returns 0 on success, negative errno on error.
+> + */
+> +static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
+> +{
+> +	int ret = 0;
+> +	struct property *pp;
+> +
+> +	if (!dn)
+> +		return -EINVAL;
+> +
+> +	for_each_property_of_node(dn, pp) {
+> +		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
+> +		if (ret < 0) {
+> +			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
+> +			return ret;
+> +		}
+> +	}
+> +	return ret;
+> +}
+> +
+> +/**
+> + * update_cpus_node - Update cpus node of flattened device tree using of_root
+> + *                    device node.
+> + * @fdt:              Flattened device tree of the kernel.
+> + *
+> + * Returns 0 on success, negative errno on error.
+> + */
+> +int update_cpus_node(void *fdt)
+> +{
+> +	struct device_node *cpus_node, *dn;
+> +	int cpus_offset, cpus_subnode_offset, ret = 0;
+> +
+> +	cpus_offset = fdt_path_offset(fdt, "/cpus");
+> +	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
+> +		pr_err("Malformed device tree: error reading /cpus node: %s\n",
+> +		       fdt_strerror(cpus_offset));
+> +		return cpus_offset;
+> +	}
+> +
+> +	if (cpus_offset > 0) {
+> +		ret = fdt_del_node(fdt, cpus_offset);
+> +		if (ret < 0) {
+> +			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
+> +			return -EINVAL;
+> +		}
+> +	}
+> +
+> +	/* Add cpus node to fdt */
+> +	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
+> +	if (cpus_offset < 0) {
+> +		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Add cpus node properties */
+> +	cpus_node = of_find_node_by_path("/cpus");
+> +	ret = add_node_props(fdt, cpus_offset, cpus_node);
+> +	of_node_put(cpus_node);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* Loop through all subnodes of cpus and add them to fdt */
+> +	for_each_node_by_type(dn, "cpu") {
+> +		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
+> +		if (cpus_subnode_offset < 0) {
+> +			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
+> +			       fdt_strerror(cpus_subnode_offset));
+> +			ret = cpus_subnode_offset;
+> +			goto out;
+> +		}
+> +
+> +		ret = add_node_props(fdt, cpus_subnode_offset, dn);
+> +		if (ret < 0)
+> +			goto out;
+> +	}
+> +out:
+> +	of_node_put(dn);
+> +	return ret;
+> +}
+> +
+>  #ifdef CONFIG_PPC_64S_HASH_MMU
+>  /* Values we need to export to the second kernel via the device tree. */
+>  static unsigned long htab_base;
+> diff --git a/arch/powerpc/kexec/file_load_64.c b/arch/powerpc/kexec/file_load_64.c
+> index 110d28bede2a7..5b0b3f61e0e72 100644
+> --- a/arch/powerpc/kexec/file_load_64.c
+> +++ b/arch/powerpc/kexec/file_load_64.c
+> @@ -133,81 +133,6 @@ static int get_usable_memory_ranges(struct crash_mem **mem_ranges)
+>  	return ret;
+>  }
+>  
+> -/**
+> - * get_crash_memory_ranges - Get crash memory ranges. This list includes
+> - *                           first/crashing kernel's memory regions that
+> - *                           would be exported via an elfcore.
+> - * @mem_ranges:              Range list to add the memory ranges to.
+> - *
+> - * Returns 0 on success, negative errno on error.
+> - */
+> -static int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+> -{
+> -	phys_addr_t base, end;
+> -	struct crash_mem *tmem;
+> -	u64 i;
+> -	int ret;
+> -
+> -	for_each_mem_range(i, &base, &end) {
+> -		u64 size = end - base;
+> -
+> -		/* Skip backup memory region, which needs a separate entry */
+> -		if (base == BACKUP_SRC_START) {
+> -			if (size > BACKUP_SRC_SIZE) {
+> -				base = BACKUP_SRC_END + 1;
+> -				size -= BACKUP_SRC_SIZE;
+> -			} else
+> -				continue;
+> -		}
+> -
+> -		ret = add_mem_range(mem_ranges, base, size);
+> -		if (ret)
+> -			goto out;
+> -
+> -		/* Try merging adjacent ranges before reallocation attempt */
+> -		if ((*mem_ranges)->nr_ranges == (*mem_ranges)->max_nr_ranges)
+> -			sort_memory_ranges(*mem_ranges, true);
+> -	}
+> -
+> -	/* Reallocate memory ranges if there is no space to split ranges */
+> -	tmem = *mem_ranges;
+> -	if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
+> -		tmem = realloc_mem_ranges(mem_ranges);
+> -		if (!tmem)
+> -			goto out;
+> -	}
+> -
+> -	/* Exclude crashkernel region */
+> -	ret = crash_exclude_mem_range(tmem, crashk_res.start, crashk_res.end);
+> -	if (ret)
+> -		goto out;
+> -
+> -	/*
+> -	 * FIXME: For now, stay in parity with kexec-tools but if RTAS/OPAL
+> -	 *        regions are exported to save their context at the time of
+> -	 *        crash, they should actually be backed up just like the
+> -	 *        first 64K bytes of memory.
+> -	 */
+> -	ret = add_rtas_mem_range(mem_ranges);
+> -	if (ret)
+> -		goto out;
+> -
+> -	ret = add_opal_mem_range(mem_ranges);
+> -	if (ret)
+> -		goto out;
+> -
+> -	/* create a separate program header for the backup region */
+> -	ret = add_mem_range(mem_ranges, BACKUP_SRC_START, BACKUP_SRC_SIZE);
+> -	if (ret)
+> -		goto out;
+> -
+> -	sort_memory_ranges(*mem_ranges, false);
+> -out:
+> -	if (ret)
+> -		pr_err("Failed to setup crash memory ranges\n");
+> -	return ret;
+> -}
+> -
+>  /**
+>   * get_reserved_memory_ranges - Get reserve memory ranges. This list includes
+>   *                              memory regions that should be added to the
+> @@ -1018,93 +943,6 @@ unsigned int kexec_extra_fdt_size_ppc64(struct kimage *image)
+>  	return extra_size;
+>  }
+>  
+> -/**
+> - * add_node_props - Reads node properties from device node structure and add
+> - *                  them to fdt.
+> - * @fdt:            Flattened device tree of the kernel
+> - * @node_offset:    offset of the node to add a property at
+> - * @dn:             device node pointer
+> - *
+> - * Returns 0 on success, negative errno on error.
+> - */
+> -static int add_node_props(void *fdt, int node_offset, const struct device_node *dn)
+> -{
+> -	int ret = 0;
+> -	struct property *pp;
+> -
+> -	if (!dn)
+> -		return -EINVAL;
+> -
+> -	for_each_property_of_node(dn, pp) {
+> -		ret = fdt_setprop(fdt, node_offset, pp->name, pp->value, pp->length);
+> -		if (ret < 0) {
+> -			pr_err("Unable to add %s property: %s\n", pp->name, fdt_strerror(ret));
+> -			return ret;
+> -		}
+> -	}
+> -	return ret;
+> -}
+> -
+> -/**
+> - * update_cpus_node - Update cpus node of flattened device tree using of_root
+> - *                    device node.
+> - * @fdt:              Flattened device tree of the kernel.
+> - *
+> - * Returns 0 on success, negative errno on error.
+> - */
+> -static int update_cpus_node(void *fdt)
+> -{
+> -	struct device_node *cpus_node, *dn;
+> -	int cpus_offset, cpus_subnode_offset, ret = 0;
+> -
+> -	cpus_offset = fdt_path_offset(fdt, "/cpus");
+> -	if (cpus_offset < 0 && cpus_offset != -FDT_ERR_NOTFOUND) {
+> -		pr_err("Malformed device tree: error reading /cpus node: %s\n",
+> -		       fdt_strerror(cpus_offset));
+> -		return cpus_offset;
+> -	}
+> -
+> -	if (cpus_offset > 0) {
+> -		ret = fdt_del_node(fdt, cpus_offset);
+> -		if (ret < 0) {
+> -			pr_err("Error deleting /cpus node: %s\n", fdt_strerror(ret));
+> -			return -EINVAL;
+> -		}
+> -	}
+> -
+> -	/* Add cpus node to fdt */
+> -	cpus_offset = fdt_add_subnode(fdt, fdt_path_offset(fdt, "/"), "cpus");
+> -	if (cpus_offset < 0) {
+> -		pr_err("Error creating /cpus node: %s\n", fdt_strerror(cpus_offset));
+> -		return -EINVAL;
+> -	}
+> -
+> -	/* Add cpus node properties */
+> -	cpus_node = of_find_node_by_path("/cpus");
+> -	ret = add_node_props(fdt, cpus_offset, cpus_node);
+> -	of_node_put(cpus_node);
+> -	if (ret < 0)
+> -		return ret;
+> -
+> -	/* Loop through all subnodes of cpus and add them to fdt */
+> -	for_each_node_by_type(dn, "cpu") {
+> -		cpus_subnode_offset = fdt_add_subnode(fdt, cpus_offset, dn->full_name);
+> -		if (cpus_subnode_offset < 0) {
+> -			pr_err("Unable to add %s subnode: %s\n", dn->full_name,
+> -			       fdt_strerror(cpus_subnode_offset));
+> -			ret = cpus_subnode_offset;
+> -			goto out;
+> -		}
+> -
+> -		ret = add_node_props(fdt, cpus_subnode_offset, dn);
+> -		if (ret < 0)
+> -			goto out;
+> -	}
+> -out:
+> -	of_node_put(dn);
+> -	return ret;
+> -}
+> -
+>  static int copy_property(void *fdt, int node_offset, const struct device_node *dn,
+>  			 const char *propname)
+>  {
 
