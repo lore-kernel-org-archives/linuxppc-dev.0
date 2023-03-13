@@ -4,120 +4,122 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6D12AC6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 16:14:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFFC4C6FD19
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 16:15:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb1vC6CsDz3cgR
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 03:14:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb1wG3XYzz3ch5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 03:15:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nz0hg+9z;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nz0hg+9z;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=wrFQfRFy;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=wrFQfRFy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe0c::320; helo=eur04-db3-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:7e1b::31a; helo=eur05-am6-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nz0hg+9z;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nz0hg+9z;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=wrFQfRFy;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=wrFQfRFy;
 	dkim-atps=neutral
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com (mail-db3eur04hn0320.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe0c::320])
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (mail-am6eur05hn2031a.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e1b::31a])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb1s374wTz3bgr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 03:12:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb1s403Cfz3bjW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 03:12:39 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=59SQBEH3AfsZR6ImQtjw4Hzj+qikHduW0/M5DS0gEws=;
- b=nz0hg+9zeioqPE7u+zE0s5wUFN75BglYXKTuzexTSifoCQxQU/5S+Tib7hFdKt/flLvWpE+ABavSjuxpXI9Qz6I2tBrzKqBEGa16JNZ1xuIohOAOKIombGkpXz+rF//1+Fz+ZU4OZYKA3PoB9fvS3YkeYYP5EIdPHlJIuCUiKRHDQJqtR61DlY31YlDrdSzST89uBVHfZTNgiGk2s0QCiQbW2lF5+UePi8sS585KpZcZ5vGwxYBvYX4vbz4q15QEuE1vmNRTCeW4QYQXHFmBJOBkm+jVQgZg4JJR6jBoy5adg9ch90D0rbmfRHk7T1GwpeJOGGQoU9+Txzu7uxJ1jQ==
-Received: from AS9PR04CA0105.eurprd04.prod.outlook.com (2603:10a6:20b:50e::27)
- by AM9PR03MB7849.eurprd03.prod.outlook.com (2603:10a6:20b:430::18) with
+ bh=Iie0Bl1raO6MNQbx9dABBRV7HF/h/2HGK/e4/Sj3ooA=;
+ b=wrFQfRFyOFtUzK+lEV57Vki0KgPbszS9KeiUKNyUoJGLeYAexb4t8rHFH6jEuGYJgjS/5NQpSqu/meK69aw62vE/+R1Lgr9I01hi82JAY61BcKNYZTOTbwKdX7nNpeUWyYiqWLY1++9ZVoC/BDih6XX9pKtiUrOLiO9ggojgRXeS1AbcremYGWYILnNpCYVTu3JT+vB+d9a/qQuOyetyIXXr2fhqdyRtAiyB/AKfzlft8GvzX3YqR71Q1qfZteDDe70CZegL8xG15s1wLehkIaOSI6vFiotkLmPeb0EJR3cGmlqEeACI8XjWCP/qISnkyAIfLt8VcdPFItU4llXvUQ==
+Received: from FR3P281CA0097.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:a1::15)
+ by GVXPR03MB8330.eurprd03.prod.outlook.com (2603:10a6:150:6f::19) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
- 2023 16:12:18 +0000
-Received: from AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
- (2603:10a6:20b:50e:cafe::86) by AS9PR04CA0105.outlook.office365.com
- (2603:10a6:20b:50e::27) with Microsoft SMTP Server (version=TLS1_2,
+ 2023 16:12:19 +0000
+Received: from VI1EUR05FT011.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:d10:a1:cafe::7) by FR3P281CA0097.outlook.office365.com
+ (2603:10a6:d10:a1::15) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.25 via Frontend
- Transport; Mon, 13 Mar 2023 16:12:18 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.87)
+ Transport; Mon, 13 Mar 2023 16:12:17 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.84)
  smtp.mailfrom=seco.com; dkim=pass (signature was verified)
  header.d=seco.com;dmarc=pass action=none header.from=seco.com;
 Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
- 20.160.56.87 as permitted sender) receiver=protection.outlook.com;
- client-ip=20.160.56.87; helo=inpost-eu.tmcas.trendmicro.com; pr=C
-Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.87) by
- AM6EUR05FT062.mail.protection.outlook.com (10.233.240.254) with Microsoft
+ 20.160.56.84 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.160.56.84; helo=inpost-eu.tmcas.trendmicro.com; pr=C
+Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.84) by
+ VI1EUR05FT011.mail.protection.outlook.com (10.233.242.148) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6199.11 via Frontend Transport; Mon, 13 Mar 2023 16:12:16 +0000
-Received: from outmta (unknown [192.168.82.140])
-	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id B64C720080273;
+ 15.20.6199.10 via Frontend Transport; Mon, 13 Mar 2023 16:12:16 +0000
+Received: from outmta (unknown [192.168.82.132])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id 6C87820080270;
 	Mon, 13 Mar 2023 16:12:16 +0000 (UTC)
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com (unknown [104.47.14.52])
-	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id A49782008006F;
-	Mon, 13 Mar 2023 16:10:26 +0000 (UTC)
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com (unknown [104.47.14.56])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id 0DBFC20080077;
+	Mon, 13 Mar 2023 16:10:30 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=A/O34+NjZnyeUEALjyKxEYk7rx9eHCMZPiW+RQ9YWXv/diet1MYpqgoDSGwAufpXFPaIhS7rYh+TSLkeHzU8ZUkCnKdQXOzmjBHeqeBYUG4K5lB6X05dzAPFmyw1qI3T7ecqFPBg/rEPboARfwh+P9ela6lCDNKsyPIaAjSgaUabw81M47EyVGfFbrwKGtqbyaJOaG9HurhqLNkpIeJiXKliMXZCgePc7peZa1XULtSXEyPSvp+/vHreMExtj7Su04SeG0fVOuY+xEoG1F3SYWS0pweeI1SgVZ+V73dSbq947vIlvjDwQ0WVs6QPBeq+KAEqQ7cbUEF4XsrfINPXZQ==
+ b=dUH5QZM6mnIdhAPYEaiR9RCQ/Ubg6DHaMlv615vCTouRKP2ht4TsGJoQpxQoLTGG3W2RHMnUgDWdTi9WlrR1+0CYcNwABuU3J/ASNbMdv4+JVvgtkL1hDgy69G3H0IS9AVF9dzpk5JjtHnJrI5X47x9zHNAGRjoe4/PgO42nTFvTQXymYvvE7VVGZD0KvpCsDKZVxe0pEeRECZyXueyHKPRsmiPWi1GbuQ2h75zLhaOvkKmbeHc2EqhM/ZgQdhYZWUJp3fT0Upy+ukXhJM/KAW7AemhVR84CCUDABub0rRm/DoqaL4rKL2O51/j4c8lcVgpjBXaGBTfjxFv/mMwIZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=59SQBEH3AfsZR6ImQtjw4Hzj+qikHduW0/M5DS0gEws=;
- b=lhpqIQatL/vN0p3kIEqtsPEYGHvYQo6IPXmKyy+OcJ9ZyrX5n4kXKinPEcbYbYF/kduPIgSIPBzKRwrwc8k3MW9vzejPG/eK2k9NKXOgzg0Lx7/PgH+Wq9MDQnqvgwxYPvp5RpMqfKJYE+W7e2NoZzDU/o/XtXmuVR4nqZhcZlFKQdL26vQ4xI2tcnTHCZj6Lt2BDiehVx8HBFv4ezJ19zCfUtmoJQtGVb+jztTcpRk3fISOBsMfYZJC05y7BySmmfGfJ8S/oihrr7WBEWNW5uOLNk4skjiEdekmSQLMBPp+QZUfiBfT56P7aW+3+D9PZcHeyeNMvKZXWd+GChx7OQ==
+ bh=Iie0Bl1raO6MNQbx9dABBRV7HF/h/2HGK/e4/Sj3ooA=;
+ b=ThGPTGmOtZliXdPbhuTKLArukCZGtmJ8TbI8v/56nOEQH4sPgLwSkBBc7SsH6CSb5MZCiSBrG2Vd1RemWk3vTQFITGLPDzFohFcBnolWE7LHDIsOzuISt3bsa736wHzjFttTwExisAtRtKx/UnZ62HodFQCJi7tAPM5V6mg7EMotlVRC8Zh5E52Xxr+tQFNCnD+koDuhuF7BA6UVquNrdRE1He1/S/wMZWrCZB3lIQhKmHsLS63LzwEgDr/EsXELQjyHMLvXzNoy6YJgVACZ0lWKEEYnt1Y3c0OgtFNaFLv8YmDGFcjYpYrqAwxEULKDQwHZnaWXvrkAKyroPwzghA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
  dkim=pass header.d=seco.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=59SQBEH3AfsZR6ImQtjw4Hzj+qikHduW0/M5DS0gEws=;
- b=nz0hg+9zeioqPE7u+zE0s5wUFN75BglYXKTuzexTSifoCQxQU/5S+Tib7hFdKt/flLvWpE+ABavSjuxpXI9Qz6I2tBrzKqBEGa16JNZ1xuIohOAOKIombGkpXz+rF//1+Fz+ZU4OZYKA3PoB9fvS3YkeYYP5EIdPHlJIuCUiKRHDQJqtR61DlY31YlDrdSzST89uBVHfZTNgiGk2s0QCiQbW2lF5+UePi8sS585KpZcZ5vGwxYBvYX4vbz4q15QEuE1vmNRTCeW4QYQXHFmBJOBkm+jVQgZg4JJR6jBoy5adg9ch90D0rbmfRHk7T1GwpeJOGGQoU9+Txzu7uxJ1jQ==
+ bh=Iie0Bl1raO6MNQbx9dABBRV7HF/h/2HGK/e4/Sj3ooA=;
+ b=wrFQfRFyOFtUzK+lEV57Vki0KgPbszS9KeiUKNyUoJGLeYAexb4t8rHFH6jEuGYJgjS/5NQpSqu/meK69aw62vE/+R1Lgr9I01hi82JAY61BcKNYZTOTbwKdX7nNpeUWyYiqWLY1++9ZVoC/BDih6XX9pKtiUrOLiO9ggojgRXeS1AbcremYGWYILnNpCYVTu3JT+vB+d9a/qQuOyetyIXXr2fhqdyRtAiyB/AKfzlft8GvzX3YqR71Q1qfZteDDe70CZegL8xG15s1wLehkIaOSI6vFiotkLmPeb0EJR3cGmlqEeACI8XjWCP/qISnkyAIfLt8VcdPFItU4llXvUQ==
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=seco.com;
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
  by AS8PR03MB7781.eurprd03.prod.outlook.com (2603:10a6:20b:405::5) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
- 2023 16:12:06 +0000
+ 2023 16:12:09 +0000
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::dbcf:1089:3242:614e]) by DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::dbcf:1089:3242:614e%4]) with mapi id 15.20.6178.024; Mon, 13 Mar 2023
- 16:12:06 +0000
+ 16:12:09 +0000
 From: Sean Anderson <sean.anderson@seco.com>
 To: Vinod Koul <vkoul@kernel.org>,
 	Kishon Vijay Abraham I <kishon@kernel.org>,
 	linux-phy@lists.infradead.org
-Subject: [PATCH v11 00/13] phy: Add support for Lynx 10G SerDes
-Date: Mon, 13 Mar 2023 12:11:24 -0400
-Message-Id: <20230313161138.3598068-1-sean.anderson@seco.com>
+Subject: [PATCH v11 02/13] dt-bindings: phy: Add Lynx 10G phy binding
+Date: Mon, 13 Mar 2023 12:11:26 -0400
+Message-Id: <20230313161138.3598068-3-sean.anderson@seco.com>
 X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20230313161138.3598068-1-sean.anderson@seco.com>
+References: <20230313161138.3598068-1-sean.anderson@seco.com>
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-ClientProxiedBy: BL1P221CA0013.NAMP221.PROD.OUTLOOK.COM
  (2603:10b6:208:2c5::11) To DB9PR03MB8847.eurprd03.prod.outlook.com
  (2603:10a6:10:3dd::13)
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|AS8PR03MB7781:EE_|AM6EUR05FT062:EE_|AM9PR03MB7849:EE_
-X-MS-Office365-Filtering-Correlation-Id: 3394703c-c416-47c0-b44b-08db23ddb711
+X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|AS8PR03MB7781:EE_|VI1EUR05FT011:EE_|GVXPR03MB8330:EE_
+X-MS-Office365-Filtering-Correlation-Id: e88adec8-54e9-4927-10b1-08db23ddb706
 X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  AxdZo//gBilkZzOELK5j2m/iV0B8RzUn++4GmnHI4K08X/T1TObuR93ZggLs+Du9cAbm6rXr+Mh9QRV7gENE/Lu/ARFx2itZy2PlRDRIAhjW5np6QGylNqKjKrDjcMN/KDv/pjMB31IxRHLPZ14My/l9c++S2P7wqJKpBEmL8H9KJxo0L/UdplkVG/UTkc+p/qn8e4bieWpwFhVFHfTV26w85sN97gOgnbHxVMNNDrTc1Tna8Q2ZTJrTXDY2fn8ZxDEsVxKpNkSz3idFwsrCzlhnTf3dqZpl4/MqJdo+LMhT4ZbVNedgOfAButdykLgDOox/FYHOjQ37gLBlbu1GuN95rQT3dhBwuhFGkiq2KeAqGn2HBSmUDt/+2/1wuwf+eF1AKgTw7rT+emIvo3rWBP9tqZou/fWpSw0EmYB4CDqQFfHhTPAL+xbOZjNEjxH74vtLZNR7+x+UryeMMOjAPiDYMHpvLaNhykK1AtVIBmqc1XUQWOmkY9/ql4Jy+otf44+BagFEM+OOubmzbnd7oOj0YRSFR2/kOKspLlFxiL2LgxEq1c5AFHOLJwdFIS5XsOlGLfaatRR1deBnRn0zVeja4UyPX49JgwtgFs171K/kc2cZ6FB56cYUwDDXCgKkaewYG18k5BDMm92sfh9vGSmvLQg1mR6p4b3715PNUMdcrFea8rYy2cDLRl7NNUTshPqKcAPYcwXY6opOpJx9bw==
-X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(39850400004)(346002)(396003)(376002)(136003)(451199018)(110136005)(41300700001)(54906003)(478600001)(8676002)(4326008)(66556008)(66476007)(66946007)(8936002)(36756003)(86362001)(38350700002)(38100700002)(26005)(6512007)(1076003)(6486002)(6666004)(186003)(52116002)(30864003)(44832011)(5660300002)(7416002)(2906002)(316002)(6506007)(83380400001)(2616005);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info-Original:  2fWJV7+S5FFhNOn5BNLpLqq3aJmm1H1E4YaWdG7CMZcpz36nrtoReGaZDiJwBK1OWseEOPiNVGRghoBPvfR+KcY86KpqZQOExQ6HMONdIMl5VKpfwTVcUGr7WcuFHWMzGyIseT3xVgagbmXFLC3OCGVD3YHdzXamHgMOJHR30lHromuJQn/EN8QN2k5b8xgRckMOefvN+BR3SLOne47LmqQ5eV84+nx4K9VaIW4eLe6dGw5AXK1jhdjowg5iRtEck75EJW2EuZLTx+AgUgt/ZPHWlmTkxAPOLpG8ewWYyYSnS+P2voYPk2BOAcbsDSGGmo4JnkvQqsbT8n9i7nt92t1hM92UtGqibIhwDZlAd4Sjyrj7jRcOn+i98Aulz3rZkcgzmcaP8MCNBaI/t6OmV/KRJxXFkDxSbjh42LCgJvfSzN4iNnq5iGtXsnNKj5hXri4Czo+zhtwZKOECIc3Z7VC5kJXOWDtppp2i+aVcjEUXM9oPBLNGldFvHBkYvwegoq1n9YrE4fODZfPiHEixYPQPX+Rs86I6wCY+3RmCjn/CDwgzz9qvj3v1Kb+WH3b7+fcabf8f0lB/YUnAq04cx01TGTcWHrbY5QgFVuxkkXo95mNtG7odIM1JCC1WGYGWZ4tBHzSYiWrni2QwFUqBznnyM7q+m0lpnt9Idu7wy2uvkZ/csnHh2aYs3RPLHd6L
+X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(366004)(39850400004)(346002)(396003)(376002)(136003)(451199018)(110136005)(41300700001)(54906003)(478600001)(8676002)(4326008)(66556008)(66476007)(66946007)(8936002)(36756003)(86362001)(38350700002)(38100700002)(26005)(6512007)(1076003)(966005)(6486002)(6666004)(186003)(52116002)(44832011)(5660300002)(7416002)(2906002)(316002)(6506007)(83380400001)(2616005);DIR:OUT;SFP:1101;
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR03MB7781
 X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  VI1EUR05FT011.eop-eur05.prod.protection.outlook.com
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	19196007-a896-47d8-d063-08db23ddb0bb
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	bc293c93-f4b2-4e3f-61e9-08db23ddb2c1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	FyOKlkz9HNmj7EakKDZyaCAI22TIrTVCx65vkArcn1QAuEErF4dqtwbwF1DfRZYxeBBnrBH0OKsUbSUOTu2M3QZbs9BFNCGoUgdC8FQ3+PBEqJpPauZafyB6K/eDe8fV8TdzP25YapKK7rWqFwDhojujvBRhAGNX/5l/opAyymOwdgC2m7R/6REDKWfr7w6aS9w0vGuxPwddT8w3jxNxzVHowICehb6f9vf4jSrUvUEdFV9KMGbJE9Abv1sZCvNLbkQXlF7gIfFs5eDfT6cynfuhwIR619ftc0HOxEeM24Ilz2a5CNZt7Kiog3yh/40Yj8VJZD/laT6u/tAfWvE3l2h0rmX0FI7KrOyHJbhS8zOJXmSmOXh9NbvhhxtgJGjXvfMVu+Gk0oGzGFXuFyT2S1S0TMpuen8SdHh2G/dS2B2SVlR9BuoXDs6jWVy3DT47IBNaGZ3P1mDh7RKHRIltT1kkw7h7jpIsfsc61Sbk/WJJ861LL0ohF/uCNVt6pwlfIX6mf0O386imkhlck7nIlF8S6KKz6S2mxta48LuIrFEwuyTQ//rWkKXphunsLs4Q946h8NjNUmIuXDYMi3QB9zMps9FvsAlaXnNEe/c4SEivjFeDDRCcLT3lI4pJ/YsRXEFwX7/JaNG88qyPPPC5KDvcJdyTXktgakNQleim8tIvhyRIp1/96+YzDqMS04+pjMVlgakaWhRRUhcwer6lQB0iJ0FehYCdBr4RhBQ6juvHUvBNWZhPn7KzLDisKGCRovxqlO33/Rx7xZe93CsjXQ==
-X-Forefront-Antispam-Report: 	CIP:20.160.56.87;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230025)(346002)(396003)(376002)(39850400004)(136003)(5400799012)(451199018)(36840700001)(46966006)(40470700004)(336012)(2616005)(7416002)(186003)(44832011)(6512007)(6506007)(26005)(1076003)(8936002)(83380400001)(34020700004)(6666004)(82310400005)(36860700001)(356005)(82740400003)(30864003)(6486002)(47076005)(5660300002)(40460700003)(4326008)(70206006)(2906002)(8676002)(40480700001)(70586007)(41300700001)(7596003)(7636003)(110136005)(316002)(478600001)(36756003)(54906003)(86362001)(12100799021);DIR:OUT;SFP:1501;
+X-Microsoft-Antispam-Message-Info: 	CL/yuRhzFOVlp+uX1KYPtUOmBX74PYsw9Ff9PyIL9THAgFRIAq1Nxhg1wMZd2o8iNJNQZc5YJyss0aoRKns0FMzmvGHByGPw9fYFq/ljAr5ndcHjki0hZIXXAHoTeC7wlsFkb/j4E/D6wbxKHI3MCLuoz1zFuD0hm9aNqWFQl5+zkw+2zC3D/CrsuEvoucfv0KS3fDzNsXEnyhRzkWTAxpfTDmgsGmb8Ni2bkKT37fi/aeFQ2oWg6a3/Nf+DTT7ubsrcMRVjD1410z8/i3MA+L3Ps4AEfEfQG+HXN606rKJ1aKRAD4AWm1sqkKlH+xPDjw2Au0yZxDRHmNtQJmgEa2EquB1vG90hAZKi6rIYpVoSNsHGS7EW/1BsTiChVhz6x1ZSTVDh9A7kjg53w3lnxH7BWenDrKQ2XOrE5fFKX3poR3+1yDFN2Ou09eyH5+O910vZCgbdLPVxfl16iAaCg8D5wgpGBAKpdFZz4hmEPDq3kHUOxXe9xrW46NyEFSuO7zTwsF2OHmDY/MqQHdFFuvcEW4IzV5bw4yAPlErVPwEEfhT4jvIGS44K9QEct2pOc+Vpr8yAuTbX/GT+MT+JXoTHkNnqv/C4YQzacF/8TLJ29WSGS9s3vGsJ0+qF0P+gjMoW0ny6TPqgMO9hUqJYezDVemKt5J4goBf5iQsK6wUgZRel9vhclVPgWCsT+mgBivhe0a6G3TEhVVALX99AZLFu7RM7Q2o2rKaR0vLlhzNAMgS27gjhUlqXUsFeUbJq
+X-Forefront-Antispam-Report: 	CIP:20.160.56.84;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230025)(376002)(136003)(39850400004)(346002)(396003)(451199018)(5400799012)(36840700001)(46966006)(40470700004)(2906002)(82740400003)(7596003)(7636003)(41300700001)(83380400001)(36756003)(44832011)(40460700003)(7416002)(5660300002)(8676002)(70586007)(8936002)(356005)(4326008)(70206006)(316002)(34020700004)(40480700001)(36860700001)(54906003)(86362001)(110136005)(82310400005)(478600001)(47076005)(186003)(336012)(2616005)(26005)(6666004)(6512007)(1076003)(6506007)(966005)(6486002)(12100799021);DIR:OUT;SFP:1501;
 X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 16:12:16.8723
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 16:12:16.7336
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3394703c-c416-47c0-b44b-08db23ddb711
+X-MS-Exchange-CrossTenant-Network-Message-Id: e88adec8-54e9-4927-10b1-08db23ddb706
 X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.87];Helo=[inpost-eu.tmcas.trendmicro.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.84];Helo=[inpost-eu.tmcas.trendmicro.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	VI1EUR05FT011.eop-eur05.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR03MB7849
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: GVXPR03MB8330
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,181 +131,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: =?UTF-8?q?Fern=C3=A1ndez=20Rojas?= <noltari@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linux-doc@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Jonas Gorski <jonas.gorski@gmail.com>, linux-clk@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Sean Anderson <sean.anderson@seco.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Madalin Bucur <madalin.bucur@nxp.com>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, devicetree@vger.kernel.org, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoyang.li@nxp.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds support for the Lynx 10G SerDes found on the QorIQ T-series
-and Layerscape series. Due to limited time and hardware, only support
-for the LS1046ARDB and LS1088ARDB is added in this initial series.
+This adds a binding for the SerDes module found on QorIQ processors.
+Each phy is a subnode of the top-level device, possibly supporting
+multiple lanes and protocols. This "thick" #phy-cells is used due to
+allow for better organization of parameters. Note that the particular
+parameters necessary to select a protocol-controller/lane combination
+vary across different SoCs, and even within different SerDes on the same
+SoC.
 
-This series is ready for review by the phy maintainers. I have addressed
-all known feedback and there are no outstanding issues.
+The driver is designed to be able to completely reconfigure lanes at
+runtime. Generally, the phy consumer can select the appropriate
+protocol using set_mode.
 
-Major reconfiguration of baud rate (e.g. 1G->10G) does not work. From my
-testing, SerDes register settings appear identical. The issue appears to
-be between the PCS and the MAC. The link itself comes up at both ends,
-and a mac loopback succeeds. However, a PCS loopback results in dropped
-packets. Perhaps there is some undocumented register in the PCS?
+There are two PLLs, each of which can be used as the master clock for
+each lane. Each PLL has its own reference. For the moment they are
+required, because it simplifies the driver implementation. Absent
+reference clocks can be modeled by a fixed-clock with a rate of 0.
 
-I suspect this driver is around 95% complete, but I don't have the
-documentation to make it work completely. At the very least it is useful
-for two cases:
+Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
 
-- Although this is untested, it should support 2.5G SGMII as well as
-  1000BASE-KX. The latter needs MAC and PCS support, but the former
-  should work out of the box.
-- It allows for clock configurations not supported by the RCW. This is
-  very useful if you want to use e.g. SRDS_PRTCL_S1=0x3333 and =0x1133
-  on the same board. This is because the former setting will use PLL1
-  as the 1G reference, but the latter will use PLL1 as the 10G
-  reference. Because we can reconfigure the PLLs, it is possible to
-  always use PLL1 as the 1G reference.
-
-Changes in v11:
-- Keep empty (or almost-empty) properties on a single line
-- Don't use | unnecessarily
-- Use gpio as the node name for examples
-- Rename brcm,bcm6345-gpio.yaml to brcm,bcm63xx-gpio.yaml
-
-Changes in v10:
-- Convert gpio-mmio to yaml
-- Add compatible for QIXIS
-- Remove unnecessary inclusion of clk.h
-- Don't gate clocks in compatibility mode
-- Fix debugging print with incorrect error variable
-- Move serdes bindings to SoC dtsi
-- Add support for all (ethernet) serdes modes
-- Refer to "nodes" instead of "bindings"
-- Move compatible/reg first
+(no changes since v9)
 
 Changes in v9:
 - Add fsl,unused-lanes-reserved to allow for a gradual transition
   between firmware and Linux control of the SerDes
 - Change phy-type back to fsl,type, as I was getting the error
     '#phy-cells' is a dependency of 'phy-type'
-- Convert some u32s to unsigned long to match arguments
-- Switch from round_rate to determine_rate
-- Drop explicit reference to reference clock
-- Use .parent_names when requesting parents
-- Use devm_clk_hw_get_clk to pass clocks back to serdes
-- Fix indentation
-- Split off clock "driver" into its own patch to allow for better
-  review.
-- Add ability to defer lane initialization to phy_init. This allows
-  for easier transitioning between firmware-managed serdes and Linux-
-  managed serdes, as the consumer (such as dpaa2, which knows what the
-  firmware is doing) has the last say on who gets control.
-- Fix name of phy mode node
-- Add fsl,unused-lanes-reserved to allow a gradual transition, depending
-  on the mac link type.
-- Remove unused clocks
-- Fix some phy mode node names
-
-Changes in v8:
-- Remove unused variable from lynx_ls_mode_init
-- Rename serdes phy handles to use _A, _B, etc. instead of _0, _1, etc.
-  This should help remind readers that the numbering corresponds to the
-  physical layout of the registers, and not the lane (pin) number.
-- Prevent PCSs from probing as phys
-- Rename serdes phy handles like the LS1046A
-- Add SFP slot binding
-- Fix incorrect lane ordering (it's backwards on the LS1088A just like it is in
-  the LS1046A).
-- Fix duplicated lane 2 (it should have been lane 3).
-- Fix incorrectly-documented value for XFI1.
-- Remove interrupt for aquantia phy. It never fired for whatever reason,
-  preventing the link from coming up.
-- Add GPIOs for QIXIS FPGA.
-- Enable MAC1 PCS
-- Remove si5341 binding
 
 Changes in v7:
 - Use double quotes everywhere in yaml
-- Break out call order into generic documentation
-- Refuse to switch "major" protocols
-- Update Kconfig to reflect restrictions
-- Remove set/clear of "pcs reset" bit, since it doesn't seem to fix
-  anything.
 
 Changes in v6:
-- Bump PHY_TYPE_2500BASEX to 13, since PHY_TYPE_USXGMII was added in the
-  meantime
 - fsl,type -> phy-type
-- frequence -> frequency
-- Update MAINTAINERS to include new files
-- Include bitfield.h and slab.h to allow compilation on non-arm64
-  arches.
-- Depend on COMMON_CLK and either layerscape/ppc
-- XGI.9 -> XFI.9
-
-Changes in v5:
-- Update commit description
-- Dual id header
-- Remove references to PHY_INTERFACE_MODE_1000BASEKX to allow this
-  series to be applied directly to linux/master.
-- Add fsl,lynx-10g.h to MAINTAINERS
 
 Changes in v4:
-- Add 2500BASE-X and 10GBASE-R phy types
 - Use subnodes to describe lane configuration, instead of describing
   PCCRs. This is the same style used by phy-cadence-sierra et al.
-- Add ids for Lynx 10g PLLs
-- Rework all debug statements to remove use of __func__. Additional
-  information has been provided as necessary.
-- Consider alternative parent rates in round_rate and not in set_rate.
-  Trying to modify out parent's rate in set_rate will deadlock.
-- Explicitly perform a stop/reset sequence in set_rate. This way we
-  always ensure that the PLL is properly stopped.
-- Set the power-down bit when disabling the PLL. We can do this now that
-  enable/disable aren't abused during the set rate sequence.
-- Fix typos in QSGMII_OFFSET and XFI_OFFSET
-- Rename LNmTECR0_TEQ_TYPE_PRE to LNmTECR0_TEQ_TYPE_POST to better
-  reflect its function (adding post-cursor equalization).
-- Use of_clk_hw_onecell_get instead of a custom function.
-- Return struct clks from lynx_clks_init instead of embedding lynx_clk
-  in lynx_priv.
-- Rework PCCR helper functions; T-series SoCs differ from Layerscape SoCs
-  primarily in the layout and offset of the PCCRs. This will help bring a
-  cleaner abstraction layer. The caps have been removed, since this handles the
-  only current usage.
-- Convert to use new binding format. As a result of this, we no longer need to
-  have protocols for PCIe or SATA. Additionally, modes now live in lynx_group
-  instead of lynx_priv.
-- Remove teq from lynx_proto_params, since it can be determined from
-  preq_ratio/postq_ratio.
-- Fix an early return from lynx_set_mode not releasing serdes->lock.
-- Rename lynx_priv.conf to .cfg, since I kept mistyping it.
 
 Changes in v3:
 - Manually expand yaml references
 - Add mode configuration to device tree
-- Rename remaining references to QorIQ SerDes to Lynx 10G
-- Fix PLL enable sequence by waiting for our reset request to be cleared
-  before continuing. Do the same for the lock, even though it isn't as
-  critical. Because we will delay for 1.5ms on average, use prepare
-  instead of enable so we can sleep.
-- Document the status of each protocol
-- Fix offset of several bitfields in RECR0
-- Take into account PLLRST_B, SDRST_B, and SDEN when considering whether
-  a PLL is "enabled."
-- Only power off unused lanes.
-- Split mode lane mask into first/last lane (like group)
-- Read modes from device tree
-- Use caps to determine whether KX/KR are supported
-- Move modes to lynx_priv
-- Ensure that the protocol controller is not already in-use when we try
-  to configure a new mode. This should only occur if the device tree is
-  misconfigured (e.g. when QSGMII is selected on two lanes but there is
-  only one QSGMII controller).
-- Split PLL drivers off into their own file
-- Add clock for "ext_dly" instead of writing the bit directly (and
-  racing with any clock code).
-- Use kasprintf instead of open-coding the snprintf dance
-- Support 1000BASE-KX in lynx_lookup_proto. This still requires PCS
-  support, so nothing is truly "enabled" yet.
-- Describe modes in device tree
-- ls1088a: Add serdes bindings
 
 Changes in v2:
 - Rename to fsl,lynx-10g.yaml
@@ -319,63 +192,265 @@ Changes in v2:
 - Add #clock-cells. This will allow using assigned-clocks* to configure
   the PLLs.
 - Document the structure of the compatible strings
-- Rename driver to Lynx 10G (etc.)
-- Fix not clearing group->pll after disabling it
-- Support 1 and 2 phy-cells
-- Power off lanes during probe
-- Clear SGMIIaCR1_PCS_EN during probe
-- Rename LYNX_PROTO_UNKNOWN to LYNX_PROTO_NONE
-- Handle 1000BASE-KX in lynx_proto_mode_prep
-- Use one phy cell for SerDes1, since no lanes can be grouped
-- Disable SerDes by default to prevent breaking boards inadvertently.
 
-Sean Anderson (13):
-  dt-bindings: phy: Add 2500BASE-X and 10GBASE-R
-  dt-bindings: phy: Add Lynx 10G phy binding
-  dt-bindings: Convert gpio-mmio to yaml
-  dt-bindings: gpio-mmio: Add compatible for QIXIS
-  dt-bindings: clock: Add ids for Lynx 10g PLLs
-  clk: Add Lynx 10G SerDes PLL driver
-  phy: fsl: Add Lynx 10G SerDes driver
-  phy: lynx10g: Enable by default on Layerscape
-  arm64: dts: ls1046a: Add serdes nodes
-  arm64: dts: ls1046ardb: Add serdes descriptions
-  arm64: dts: ls1088a: Add serdes nodes
-  arm64: dts: ls1088a: Prevent PCSs from probing as phys
-  arm64: dts: ls1088ardb: Add serdes descriptions
-
- ...m6345-gpio.yaml => brcm,bcm63xx-gpio.yaml} |   16 +-
- .../devicetree/bindings/gpio/gpio-mmio.yaml   |  140 ++
- .../bindings/gpio/ni,169445-nand-gpio.txt     |   38 -
- .../devicetree/bindings/gpio/wd,mbl-gpio.txt  |   38 -
- .../devicetree/bindings/phy/fsl,lynx-10g.yaml |  248 ++++
- Documentation/driver-api/phy/index.rst        |    1 +
- Documentation/driver-api/phy/lynx_10g.rst     |   58 +
- MAINTAINERS                                   |    9 +
- .../boot/dts/freescale/fsl-ls1046a-rdb.dts    |   26 +
- .../arm64/boot/dts/freescale/fsl-ls1046a.dtsi |  111 ++
- .../boot/dts/freescale/fsl-ls1088a-rdb.dts    |   82 +-
- .../arm64/boot/dts/freescale/fsl-ls1088a.dtsi |  156 ++-
- drivers/clk/Makefile                          |    1 +
- drivers/clk/clk-fsl-lynx-10g.c                |  510 +++++++
- drivers/phy/freescale/Kconfig                 |   23 +
- drivers/phy/freescale/Makefile                |    1 +
- drivers/phy/freescale/phy-fsl-lynx-10g.c      | 1224 +++++++++++++++++
- include/dt-bindings/clock/fsl,lynx-10g.h      |   14 +
- include/dt-bindings/phy/phy.h                 |    2 +
- include/linux/phy/lynx-10g.h                  |   16 +
- 20 files changed, 2611 insertions(+), 103 deletions(-)
- rename Documentation/devicetree/bindings/gpio/{brcm,bcm6345-gpio.yaml => brcm,bcm63xx-gpio.yaml} (78%)
- create mode 100644 Documentation/devicetree/bindings/gpio/gpio-mmio.yaml
- delete mode 100644 Documentation/devicetree/bindings/gpio/ni,169445-nand-gpio.txt
- delete mode 100644 Documentation/devicetree/bindings/gpio/wd,mbl-gpio.txt
+ .../devicetree/bindings/phy/fsl,lynx-10g.yaml | 248 ++++++++++++++++++
+ 1 file changed, 248 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
- create mode 100644 Documentation/driver-api/phy/lynx_10g.rst
- create mode 100644 drivers/clk/clk-fsl-lynx-10g.c
- create mode 100644 drivers/phy/freescale/phy-fsl-lynx-10g.c
- create mode 100644 include/dt-bindings/clock/fsl,lynx-10g.h
- create mode 100644 include/linux/phy/lynx-10g.h
 
+diff --git a/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml b/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+new file mode 100644
+index 000000000000..7c364f7de85c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/phy/fsl,lynx-10g.yaml
+@@ -0,0 +1,248 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/phy/fsl,lynx-10g.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: NXP Lynx 10G SerDes
++
++maintainers:
++  - Sean Anderson <sean.anderson@seco.com>
++
++description: |
++  These Lynx "SerDes" devices are found in NXP's QorIQ line of processors. The
++  SerDes provides up to eight lanes. Each lane may be configured individually,
++  or may be combined with adjacent lanes for a multi-lane protocol. The SerDes
++  supports a variety of protocols, including up to 10G Ethernet, PCIe, SATA, and
++  others. The specific protocols supported for each lane depend on the
++  particular SoC.
++
++properties:
++  compatible:
++    items:
++      - enum:
++          - fsl,ls1046a-serdes
++          - fsl,ls1088a-serdes
++      - const: fsl,lynx-10g
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  "#clock-cells":
++    const: 1
++    description: |
++      The cell contains an ID as described in dt-bindings/clock/fsl,lynx-10g.h.
++      Note that when assigning a rate to a PLL, the PLL's rate is divided by
++      1000 to avoid overflow. A rate of 5000000 corresponds to 5GHz.
++
++  clocks:
++    maxItems: 2
++    description: |
++      Clock for each PLL reference clock input.
++
++  clock-names:
++    minItems: 2
++    maxItems: 2
++    items:
++      enum:
++        - ref0
++        - ref1
++
++  fsl,unused-lanes-reserved:
++    $ref: /schemas/types.yaml#/definitions/flag
++    description: |
++      Unused lanes are reserved for firmware use, and should not be disabled.
++      Normally, groups containing unused lanes may be reconfigured or disabled
++      to save power. However, when this property is present, unused lanes will
++      not be touched until they are used by another driver. This allows
++      migrating from firmware control of lanes to driver control.
++
++      Lanes not present in any group will never be modified, regardless of the
++      presence of this property.
++
++  reg:
++    maxItems: 1
++
++patternProperties:
++  "^phy@":
++    type: object
++
++    description: |
++      A contiguous group of lanes which will be configured together. Each group
++      corresponds to one phy device. Lanes not described by any group will be
++      left as-is.
++
++    properties:
++      "#phy-cells":
++        const: 0
++
++      reg:
++        minItems: 1
++        maxItems: 8
++        description:
++          The lanes in the group. These must be listed in order. The first lane
++          will have the FIRST_LANE bit set in GCR0. The order of lanes also
++          determines the reset order (TRSTDIR).
++
++    patternProperties:
++      "^(q?sgmii|xfi)":
++        type: object
++
++        description: |
++          A protocol controller which may control the group of lanes. Each
++          controller is selected through the PCCRs. In addition to protocols
++          desired for use by the OS, protocols which may have been configured
++          by the bootloader must also be described. This ensures that only one
++          protocol controller is attached to a group of lanes at once.
++
++        properties:
++          fsl,pccr:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            description: |
++              The index of the PCCR which configures this protocol controller.
++              This is the same as the register name suffix. For example, PCCR8
++              would use a value of 8 for an offset of 0x220 (0x200 + 4 * 8).
++
++          fsl,index:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            description: |
++              The index of the protocol controller. This corresponds to the
++              suffix in the documentation. For example, PEXa would be 0, PEXb
++              1, etc. Generally, higher fields occupy lower bits.
++
++          fsl,cfg:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            minimum: 1
++            description: |
++              The configuration value to program into the protocol controller
++              field.
++
++          fsl,type:
++            $ref: /schemas/types.yaml#/definitions/uint32
++            enum:
++              - 8 # PHY_TYPE_SGMII
++              - 9 # PHY_TYPE_QSGMII
++              - 13 # PHY_TYPE_2500BASEX
++              - 14 # PHY_TYPE_10GBASER
++            description: |
++              The category of protocols supported by this controller. See
++              "dt-bindings/phy/phy.h" for the relevant definitions. Individual
++              protocols are selected by the phy consumer. The availability of
++              1000BASE-KX and 10GBASE-KR depends on the SoC.
++
++              - PHY_TYPE_SGMII: 1000BASE-X, SGMII, and 1000BASE-KX
++              - PHY_TYPE_2500BASEX: 2500BASE-X, 1000BASE-X, SGMII, and
++                                    1000BASE-KX
++              - PHY_TYPE_QSGMII: QSGMII
++              - PHY_TYPE_10GBASER: 10GBASE-R and 10GBASE-KR
++
++        required:
++          - fsl,pccr
++          - fsl,index
++          - fsl,cfg
++          - fsl,type
++
++        additionalProperties: false
++
++    required:
++      - "#phy-cells"
++      - reg
++
++    additionalProperties: false
++
++required:
++  - "#address-cells"
++  - "#clock-cells"
++  - "#size-cells"
++  - compatible
++  - clocks
++  - clock-names
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/phy/phy.h>
++
++    serdes1: serdes@1ea0000 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++      #clock-cells = <1>;
++      compatible = "fsl,ls1046a-serdes", "fsl,lynx-10g";
++      reg = <0x1ea0000 0x2000>;
++      clocks = <&clk_100mhz>, <&clk_156mhz>;
++      clock-names = "ref0", "ref1";
++
++      serdes1_0: phy@0 {
++        #phy-cells = <0>;
++        reg = <0>;
++
++        /* SGMII.6 */
++        sgmii-0 {
++          fsl,pccr = <0x8>;
++          fsl,index = <0>;
++          fsl,cfg = <0x1>;
++          fsl,type = <PHY_TYPE_SGMII>;
++        };
++      };
++
++      serdes1_1: phy@1 {
++        #phy-cells = <0>;
++        reg = <1>;
++
++        /* SGMII.5 */
++        sgmii-1 {
++          fsl,pccr = <0x8>;
++          fsl,index = <1>;
++          fsl,cfg = <0x1>;
++          fsl,type = <PHY_TYPE_2500BASEX>;
++        };
++      };
++
++      serdes1_2: phy@2 {
++        #phy-cells = <0>;
++        reg = <2>;
++
++        /* SGMII.10 */
++        sgmii-2 {
++          fsl,pccr = <0x8>;
++          fsl,index = <2>;
++          fsl,cfg = <0x1>;
++          fsl,type = <PHY_TYPE_2500BASEX>;
++        };
++
++        /* XFI.10 */
++        xfi-0 {
++          fsl,pccr = <0xb>;
++          fsl,index = <0>;
++          fsl,cfg = <0x2>;
++          fsl,type = <PHY_TYPE_10GBASER>;
++        };
++      };
++
++      serdes1_3: phy@3 {
++        #phy-cells = <0>;
++        reg = <3>;
++
++        /* SGMII.9 */
++        sgmii-3 {
++          fsl,pccr = <0x8>;
++          fsl,index = <3>;
++          fsl,cfg = <0x1>;
++          fsl,type = <PHY_TYPE_2500BASEX>;
++        };
++
++        /* XFI.9 */
++        xfi-1 {
++          fsl,pccr = <0xb>;
++          fsl,index = <1>;
++          fsl,cfg = <0x1>;
++          fsl,type = <PHY_TYPE_10GBASER>;
++        };
++      };
++    };
++...
 -- 
 2.35.1.1320.gc452695387.dirty
 
