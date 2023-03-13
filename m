@@ -4,111 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F204FC61DA4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 13:47:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69DEEC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 15:21:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PZydx73XPz3cG1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 00:47:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb0js50YNz3cJn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 02:21:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=SlUsVTku;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=EnRSO+oc;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=EnRSO+oc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe16::603; helo=eur02-vi1-obe.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe1f::312; helo=eur01-ve1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=SlUsVTku;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=EnRSO+oc;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=EnRSO+oc;
 	dkim-atps=neutral
-Received: from EUR02-VI1-obe.outbound.protection.outlook.com (mail-vi1eur02on20603.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe16::603])
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com (mail-ve1eur01hn0312.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe1f::312])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PZycr48Bpz3bdm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 00:46:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb0hl3Bt6z30Mn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 02:20:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=cEs+9qOhDFKKTY8izAGlaf3NYgbcGCxilpGjnpatgQQ=;
+ b=EnRSO+ocRTEukPY8696YhDWb+fCylUFnaRKPbmNbo6F9PGNa14xDZqdaq40qdoyhikKxwS+UNmXbuBG3Gh7LnuARcBy5cslZUbBdZtSqkTP+ihAZ3YmoK1ibenzxnABohElqvGvm0llUfd7GFnGo8ql37cBg7rt4E4xYSfQpBExObLpvm4xfmclfMLpmiqzH0Ovkd6X0YgH3ezgbinWKXBl0Fa6SJrkb+ZCl3qNCTfmknqQ3T5xlm23s828Cvkvt/9xBCVvmHKI5ofovFwacU3XibL5MDbUP+pwwAmnR35/IPs1BcjMLScx0PkhW5k4H/k9V8fVSSAe9NCOWJTyFIA==
+Received: from FR3P281CA0013.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:1d::18)
+ by PR3PR03MB6490.eurprd03.prod.outlook.com (2603:10a6:102:7e::19) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
+ 2023 15:19:59 +0000
+Received: from VI1EUR05FT022.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:d10:1d:cafe::3b) by FR3P281CA0013.outlook.office365.com
+ (2603:10a6:d10:1d::18) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.25 via Frontend
+ Transport; Mon, 13 Mar 2023 15:19:59 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.80)
+ smtp.mailfrom=seco.com; dkim=pass (signature was verified)
+ header.d=seco.com;dmarc=pass action=none header.from=seco.com;
+Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
+ 20.160.56.80 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.160.56.80; helo=inpost-eu.tmcas.trendmicro.com; pr=C
+Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.80) by
+ VI1EUR05FT022.mail.protection.outlook.com (10.233.242.130) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6199.11 via Frontend Transport; Mon, 13 Mar 2023 15:19:58 +0000
+Received: from outmta (unknown [192.168.82.132])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id B1A642008088A;
+	Mon, 13 Mar 2023 15:19:58 +0000 (UTC)
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com (unknown [104.47.2.53])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id D906F2008006F;
+	Mon, 13 Mar 2023 15:18:59 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=E33ZGJC/A16AYGaRBrfjXNu9EHSuHdQEwj9kwe9fuyjCDlEnaDUZWcrcv2U/GaTv/5BCzVzozozgmOJT5cb+eZQRoe7E4Kut8ALdUSc13dZSNQ+kOck6V5c/F4tokr/j+p+zts3uWCkL8aoiFQNnLp1eBH6asIxN6iKHEVLMQkJvWonfL0k61/XO6UwNTLfAS1fouHcRFXRH2+rYC4RGJX869fUkkt8cg2vssNc0vDCQS7psPOWkVwcjhvu255GsFeJu3ibqcW4BtVla4jv3Dhua90RAPHz+bJhA3Y+jmaAXgAre+MA5f5RZSWx4Gr0TxKL9VrSZKUtHBjU11c1hZA==
+ b=REDl4vfPJ+6hJDj1QCDj1vNeDHevRJYCyXcwhdy/xfvs2NQfP4GGkDl2YZljD+lw9OfTOZfCUxq9tsuQ2JipjoeXBcX9OfZnGumsCRxd7lEjpBKVY0wO5p1exVhNgFYp4Bfbl+VrLcEG9tvJo+W9fkibPEXw7otBHZLWamm4PL3QoyvY6BHWWk3aASpxJOFj/uuaAnAU9qbr2foaJN5xzDTaVFCgb5LG+QCkAk7T5M86yQmTGhHo4aHDzJOrLzK2mWbxPnUVQs/7RhOkHoRgHHpF+aMZgHt3qAiHl5gddpYOhkjix1H2le0/DqeJuuGavixhwDZV6pmVrArbcx/mGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=ULyG7tRBn7S53XsWo6pfLYmQ49V+7t/mtHGYReqonv4=;
- b=Nb9ZekzRNuZdf+PZCUwvAUmj5ZrO8TTgxiwqzMYF7oNpyDeB2E/4T5wnacuJ999MSUfC84R8TH1RbBnQDexKqWWui00g8VJwt4cEpyPxmgy5W/xE0ToRH03LQCRj1rD9OHFmV4UAiBc9l6uRfSHy/mFTmBe0IxRYNLnfdPf3C/yEYFvVOK/3DkT+s0HG4wcNzjC7nl4FMr4mi5rIN3FI79a8fAG8R83BQCKezBpsXi+EToZshNWFzrrpew23fYw0l3M9HKyfpVKFVuOjRy4F/tM4oHXtzmbb1yB303+GdYVnM9DL6FEPQkJV0mEr3lZ89mP7iEz6iTp98XyXntQ0mg==
+ bh=cEs+9qOhDFKKTY8izAGlaf3NYgbcGCxilpGjnpatgQQ=;
+ b=jN1IWAHddy6GPDBqbVcnNajKnKF4HG2e4jtAEVjteVSteyzlxILRevJ1op94vZCSnp8hdzpPXBh5VGCIKicG+d0CDKj696MCgNw6QN5BrRvrj092X9hJlDHtw3JpuDQ83hhIS7xNXgacUVFphBRu9r7R+UyMnXNVTqDr5Jym1cRb7whDPMkapmiya9ypYSLdBR5OHLTKBj8vXddtLRgBdYQZD6PIQ2dt3JeGsn4x8+RNM89I3iluJmqDKWvEADvj0OgwxXUabQo0nwJ3jiCSBNl5xIgNFiydBLrdLC/ZERQAjQFgo/6eZLYXz6nyWtGWIlUmrX8P3i/FwbkykBWzdg==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
+ dkim=pass header.d=seco.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ULyG7tRBn7S53XsWo6pfLYmQ49V+7t/mtHGYReqonv4=;
- b=SlUsVTkuJFQXm6bKmn2Gun9JGi1xpdkUxYi4q5u8ZIXRti8SZ3zgiTT+nG8RjlPStj6zTbUH2OCRyXrxbFR0rcrMgoFyedd6sS47vB15jg+umjgn2OLQjWAumbhd38BoET+WA1TBQI+6A7dKXKvWYk17U96eDN0zH3eENMFNh0o=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from GV1PR04MB9055.eurprd04.prod.outlook.com (2603:10a6:150:1e::22)
- by PR3PR04MB7306.eurprd04.prod.outlook.com (2603:10a6:102:81::13) with
+ bh=cEs+9qOhDFKKTY8izAGlaf3NYgbcGCxilpGjnpatgQQ=;
+ b=EnRSO+ocRTEukPY8696YhDWb+fCylUFnaRKPbmNbo6F9PGNa14xDZqdaq40qdoyhikKxwS+UNmXbuBG3Gh7LnuARcBy5cslZUbBdZtSqkTP+ihAZ3YmoK1ibenzxnABohElqvGvm0llUfd7GFnGo8ql37cBg7rt4E4xYSfQpBExObLpvm4xfmclfMLpmiqzH0Ovkd6X0YgH3ezgbinWKXBl0Fa6SJrkb+ZCl3qNCTfmknqQ3T5xlm23s828Cvkvt/9xBCVvmHKI5ofovFwacU3XibL5MDbUP+pwwAmnR35/IPs1BcjMLScx0PkhW5k4H/k9V8fVSSAe9NCOWJTyFIA==
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=seco.com;
+Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
+ by DB3PR0302MB9183.eurprd03.prod.outlook.com (2603:10a6:10:429::5) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
- 2023 13:46:29 +0000
-Received: from GV1PR04MB9055.eurprd04.prod.outlook.com
- ([fe80::9c6d:d40c:fbe5:58bd]) by GV1PR04MB9055.eurprd04.prod.outlook.com
- ([fe80::9c6d:d40c:fbe5:58bd%7]) with mapi id 15.20.6178.024; Mon, 13 Mar 2023
- 13:46:28 +0000
-Date: Mon, 13 Mar 2023 15:46:21 +0200
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 0/6] bus: fsl-mc: Make remove function return void
-Message-ID: <20230313134621.5rmzawmhv3lvis32@LXL00007.wbi.nxp.com>
-References: <20230310224128.2638078-1-u.kleine-koenig@pengutronix.de>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+ 2023 15:19:52 +0000
+Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
+ ([fe80::dbcf:1089:3242:614e]) by DB9PR03MB8847.eurprd03.prod.outlook.com
+ ([fe80::dbcf:1089:3242:614e%4]) with mapi id 15.20.6178.024; Mon, 13 Mar 2023
+ 15:19:52 +0000
+Message-ID: <f5cad70a-aa0e-9f25-d76a-f1149c345b24@seco.com>
+Date: Mon, 13 Mar 2023 11:19:46 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Subject: Re: [PATCH v10 03/13] dt-bindings: Convert gpio-mmio to yaml
+Content-Language: en-US
+To: "Leonard, Niall" <Niall.Leonard@ncr.com>,
+ Linus Walleij <linus.walleij@linaro.org>
+References: <20230306191535.1917656-1-sean.anderson@seco.com>
+ <20230306191535.1917656-4-sean.anderson@seco.com>
+ <4c039e53-e3ca-29d7-e5ea-f24e385d28b0@linaro.org>
+ <42ccbac0-53e2-f599-fb3d-064b896bde4a@seco.com>
+ <CACRpkdaj-0dyqWdSbQbjyUed+khDLi-awgan1BnuDvuY2JBzFQ@mail.gmail.com>
+ <d26bad8d-82ea-ed18-fa3e-081ba0d5dcf6@ncr.com>
+From: Sean Anderson <sean.anderson@seco.com>
+In-Reply-To: <d26bad8d-82ea-ed18-fa3e-081ba0d5dcf6@ncr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20230310224128.2638078-1-u.kleine-koenig@pengutronix.de>
-X-ClientProxiedBy: VI1PR0302CA0008.eurprd03.prod.outlook.com
- (2603:10a6:800:e9::18) To GV1PR04MB9055.eurprd04.prod.outlook.com
- (2603:10a6:150:1e::22)
+X-ClientProxiedBy: MN2PR18CA0030.namprd18.prod.outlook.com
+ (2603:10b6:208:23c::35) To DB9PR03MB8847.eurprd03.prod.outlook.com
+ (2603:10a6:10:3dd::13)
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: GV1PR04MB9055:EE_|PR3PR04MB7306:EE_
-X-MS-Office365-Filtering-Correlation-Id: a701bb84-b878-42a6-b8ff-08db23c95769
+X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|DB3PR0302MB9183:EE_|VI1EUR05FT022:EE_|PR3PR03MB6490:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0b2aae52-b552-40e2-93ab-08db23d668c5
+X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;
+X-Microsoft-Antispam-Message-Info-Original:  +EvhdVs/uEQBfSOGlKoMsyyGOxQ9aAAdsGsTNgfV9c9oxZyiJQWGUD97ARVPkEzJoOWdaM9zSokhI1ApgnHIKK4k5HUqb/6mpGjI1TFO7DXoCyTinnktuDf6SRjjiGcM0JWC0lt6jdMrw/MPxbqDJ7xrRjz6eHH5YW65OA+fGKph9TvK/6VqOxvxWUHh4NmID6NnIgrmyUGSVD7JM9a4TBMQkgjH6WRcepTbxf4dTgUTtOXWQRnaxguLuNlqFCACIEGrMnUknV3HEYAU0ENJmOQVwzcWQowuQYa5qF9Z4kw3KPAKu7r/YfX5WLHtrAVfvhv0WJZzjMzNMZ4sujjhkapPRWjSHgDmPoRikeKn2OB+33C3hf+8C2qEUEUvtAv4Ze/rmk3JZXTqj1fJ4daNjwawl9AKEmPsr7y9fx4whnDXkdZyKl6I4KASThr6UYlccK3UYQvIC9WvWKNI+LedSk4BzS2rjuV3t3NLXpwqExekKddvkizdY+YyJVSDBXP1drmB6qsgVJBlhzwUAH7pxFyEpOX/G2m5d0Dk6ccfLouuT7wcUl+57lyv12HE0dUcb4oOji9bs/YQMHljUd5ZT4TVLg1xsI4snPvURyMqNgZGO4L34FuA9PSH39cesE057MIAeOkIu7E5dYokDB/C2fa2nttN5YiKZmLYm6Ywl6DFGt2c4IyqvFUlO1FiRC+wYOo5kRjak+cIgvHYjFM5GrfL5IbIMuhdwi/pCNUjSQ+PdQZx/SVB54GZX2hSsO+G
+X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(376002)(396003)(39850400004)(136003)(366004)(346002)(451199018)(31696002)(86362001)(36756003)(38350700002)(38100700002)(4326008)(66556008)(8676002)(66946007)(66476007)(54906003)(110136005)(8936002)(478600001)(41300700001)(316002)(6512007)(7416002)(5660300002)(44832011)(2906002)(2616005)(83380400001)(6486002)(52116002)(966005)(186003)(6666004)(53546011)(6506007)(26005)(31686004)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0302MB9183
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  VI1EUR05FT022.eop-eur05.prod.protection.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	f994076d-526e-4358-0398-08db23d6649e
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	n++m2zcQ+ipq0ce5NaO6z3K5JFwhXBR07BOWqpwwqTNVFonElZQmMVlXbOiUMYM0rbGB4WcyeXT6fazthwwWNMRAsjjGNs8vC5gScg4Lw7aNTjQXQUpSfZco2ntf4eOzT+WBSS8QcoaAltUptCa4UiaKAmenwMiQ4JS6Q2XpRycPA+2g/HvzoPu+WxH5afaloLSAEaanDMr9lJ7zzHxpW0TPtU/9k43Q2IDnw6Ij1fBjMbOnia5Kz+kZbSBW1a7qszymuaHtTpXTRyLxbAi28HI9NSlmmU9VmyczNUosovRCkdT8pWN+1SqNumSBeaj76Sa6QufHCvbXOLJ7QR7NiOLa/k2B1WCAWBvzijR2e2/go+/ztC20c3CwWZYX4II6fk2c2yVzmCV2JEtNTmo10oUVZNHVVaDeKu8yZtEHV7mkdzs5XcdVSooYze+3HLbLYknunJyCi0Iul74sOfCF3Eg1GPAUdEpswt16BeofNrGKG41BPE9MWIV7rtgj/nm4DOQPeq034W4YGEOaLdZJbGsU6BcqEqRBTy/CgC808Zi6y6/Oq3gH7xycXE7r2cJ1Kv7+aTpPTrp3b7x4ykUJzcDFS4HstzgKzIzoeIssYkd/nBhqu92cHXn+NkYoZ942/ZxfwCZOfbHAHma/T8leAw==
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV1PR04MB9055.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(396003)(136003)(346002)(39860400002)(366004)(376002)(451199018)(2906002)(83380400001)(7416002)(44832011)(5660300002)(66556008)(66946007)(41300700001)(8936002)(4326008)(6916009)(8676002)(66476007)(38100700002)(54906003)(86362001)(316002)(478600001)(66574015)(186003)(6486002)(26005)(6666004)(6506007)(1076003)(6512007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?iso-8859-1?Q?B5i8T64NYVV+0AFGAs8jsVs5EXj+XBj2AdCggRWOQqzyC5xWjESJIgluSl?=
- =?iso-8859-1?Q?Sds4Zm8R869qoMmEAXmkF78kjUhKIvxQ/+4567qAGZcULMdHKNQRPary22?=
- =?iso-8859-1?Q?wlCuF1WtBLfUBkgQTQu1tks0yKialOfkLz1Bp25deDHRbbNh0YBBSw8d+t?=
- =?iso-8859-1?Q?ALQHtK8vMPlJtXVKGsPrLO0wNFnPKnQ0jzmUV8ZE5kaRIBvMl2em0v02RQ?=
- =?iso-8859-1?Q?0Tf597dQ5J3iF9F+cTK5XH0pwk9M7BIMyjlAIofkRE/gLy80qbuiCSurWN?=
- =?iso-8859-1?Q?jwZd3wxR0Nibo5p/l6LsKqnKKb/7E4BYFxLVYZJcu7NlGUMOsAC0q9tPlY?=
- =?iso-8859-1?Q?Uge0XTcY8naxS6FuHz9FQ0ytMvaW4soWlToVFRcyinZWoA/jK7HaMy/hwQ?=
- =?iso-8859-1?Q?VN5/Ko7wULCz4KF6H/ee+OTDjkipVipuypRYRkk5oObkIBCMpnxLN8RS+u?=
- =?iso-8859-1?Q?OuMM7dOalRxVHE38cju960+h7kDYbkoua64hAk/PF+5WubFmnDLSeQt6NH?=
- =?iso-8859-1?Q?L1SmH5OnY9YrGduCVyUiS6v4taUb8KoWM1lk++tjrV2LvP9OKAcEb3Xuuw?=
- =?iso-8859-1?Q?UCwvy6gL5JkSedKpvQQaGJA9bjQdDPDZyXZqY5k3MDu8oGcdGdK2kd8eEV?=
- =?iso-8859-1?Q?gjK2xREyRVSyOm9UOUL1GVIIu5lrnmkiOZnmMcPfpG55/7MF5hNmTvGeBT?=
- =?iso-8859-1?Q?LQGovQ1ZZYDIQ5t8ypxAt0CY4FKUtd2w/Jg+yyFiZqiU/e0ohD+3JHeOFQ?=
- =?iso-8859-1?Q?1gm+xPInNh3Fs32K2gsH1isHhu7o4CiR/WVMvMSGJoh3/4g++6e+TQe6oN?=
- =?iso-8859-1?Q?O4p/NBvcMlvaBIDNRSfibosaQZKvChExuKTGP4MTBem6yX5ufoDMuaQ0VF?=
- =?iso-8859-1?Q?mGx9lAbsAL9EJ0a6KEsccWptvxyIoUZ3ZC7CgoE+j7tXVwGtOfqBA8TSr4?=
- =?iso-8859-1?Q?HMxy38tDFVESxZmOEg6I6jla6PWGida7vl7kjzeZl8VQZTH8GDj+FfKJ35?=
- =?iso-8859-1?Q?8kCR6sfBYgqnl8rGrSL9IrFqobnaISupAbY3F9m5oUal17qH2vQ+qzr4SI?=
- =?iso-8859-1?Q?4ioWyWf+FdGnVXBQPo6Vzt67qmFSa+3uk6SgiuS68zY3blKSN+/yjow25V?=
- =?iso-8859-1?Q?FCEQfF4a6aaN0nln65UqyPtf/+ZrxhKu3sSRGrrN6bmV1nzKKWA21ARPIj?=
- =?iso-8859-1?Q?fQsH4EWXQwbr48sSrOwSNVlFFlhPusH6JYuvJrjTSegBiQzietXOwtXzYM?=
- =?iso-8859-1?Q?7jv//pxY7QJ3VS80yrmoK2V2UVTXTb4oIQ+kisQgtEx+90SVk0oJ2efJJQ?=
- =?iso-8859-1?Q?Pjfx5mK4uiTbo1L8rF5EfFsD2WjbyL59vuRxEnGuxOyNjwNbe/TJC7E+Qw?=
- =?iso-8859-1?Q?9z+0JTigUHgpBM8nK242Q7ZyuAB30oh5iRac9owlETgH5Qo/btApaDLbst?=
- =?iso-8859-1?Q?UZtihIAzRpois361AZ04EzJJZya6EedlRepb2nhnbJ5S4dXIOX9owvyBfA?=
- =?iso-8859-1?Q?Jg55ct9UQk9zUUR4BGeG1KpWMJITUIL0jeHI1i1NafydjFOLj/A+L4yNmZ?=
- =?iso-8859-1?Q?+O4/lAJBzexYBbgQiD1VTPdOUiMwbqkhQmn+ShNGDDzXGE4NZkpX8wrJfn?=
- =?iso-8859-1?Q?u1s0Pgx0ESWd+kneC/a3t+gU0/DUJJjvl9/4fNd1bwPQsI1T7T5jHHjQ?=
- =?iso-8859-1?Q?=3D=3D?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a701bb84-b878-42a6-b8ff-08db23c95769
-X-MS-Exchange-CrossTenant-AuthSource: GV1PR04MB9055.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 13:46:28.2498
+X-Microsoft-Antispam-Message-Info: 	8K2f4i4gTRAT+AXrRm6PuoEV3B2UZOGQiBNZAWVGty14FU3UXpAeEA55QcKGNDxbX0QE+mmZJKspXiYT68knwPO/6CHFwEcA1ezUIE2MiU9ROJwR8YH2gIlFt4lHt8i0bEOE2AGtlNCvKnOe2rz/hsPzjU6qNAlGFYyBB41noIVLqoVAqzjkVEz9Iw6hM5Qi5uuOaQI8kTrnlNxjFdudfku4NlXH1gg/6+mKFTLwkLgrrU0g+qbF2tr/qaRNBlph7Lnah8hdi0qxhY5LM08g7y8NZE24/7F84VSzR87ySC/KCf4iP3hKGvj9jNfEvymmV1xfbImV9XMB8B9083cgWyms4GMhqcoYLKD06MbbrMuuwI1+OVhpa0uR+UTwVIAySkhNENmAiM5q4M3CQR58i7IYi2nv7PVs4SLwH5hGEcTp31vbWGtxW/0vtD9EwyKCTsMZfKPVnI2NCJQF2nsPKSwmUVPJoNzs8YtBV0NqNPkrTDODaESyD87GJ4a3D3d/0HEu6+QbfFgfwsOFxT+a5tSKj4isSs4ihdRFQfoxXI6pPrW+Th3GXsSeEKEqHn8Orkdzu3kbeYDfVp3C7W4Xc5YLWPPRO6oAQJcJ0Pehnfi74V+6Of4akh/d8R6SCP9A4us/7gX/uH1flkmrxwah1ArTGC1NzjO36UiQErA/jbvs2CdpQClX61mLS5Asf41acOpCB25XTm/+38sM0duIAQtvLLcQTRcQs2PRNwvjFoUyyWGJ33avx8M/Tm9xua01W+i57MdlLlmsJkiatxLHtFjTn06DABpcpdremuMDAUc=
+X-Forefront-Antispam-Report: 	CIP:20.160.56.80;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230025)(396003)(136003)(39850400004)(346002)(376002)(451199018)(5400799012)(46966006)(40470700004)(36840700001)(82740400003)(70586007)(36860700001)(82310400005)(356005)(2906002)(41300700001)(70206006)(40480700001)(8676002)(4326008)(40460700003)(316002)(478600001)(31696002)(86362001)(36756003)(110136005)(7636003)(54906003)(7596003)(47076005)(966005)(5660300002)(6486002)(26005)(7416002)(44832011)(6506007)(53546011)(6512007)(2616005)(336012)(31686004)(186003)(6666004)(34020700004)(8936002)(83380400001)(43740500002)(12100799021);DIR:OUT;SFP:1501;
+X-OriginatorOrg: seco.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 15:19:58.9872
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: rvWiizfBB/cqLXnu63ye5XHWmzfzQeInv+HCziodOjzxZUXq8kgBJ05v0L56p9R2g9FMXYCInnc1f9lzM36GwA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7306
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0b2aae52-b552-40e2-93ab-08db23d668c5
+X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.80];Helo=[inpost-eu.tmcas.trendmicro.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	VI1EUR05FT022.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR03MB6490
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -120,36 +137,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stuart Yoder <stuyoder@gmail.com>, Gaurav Jain <gaurav.jain@nxp.com>, Roy Pledge <Roy.Pledge@nxp.com>, Eric Dumazet <edumazet@google.com>, Diana Craciun <diana.craciun@oss.nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>, Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Laurentiu Tudor <laurentiu.tudor@nxp.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, linux-crypto@vger.kernel.org, kernel@pengutronix.de, Yangbo Lu <yangbo.lu@nxp.com>, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Cc: Kishon Vijay Abraham I <kishon@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?UTF-8?Q?Fern=c3=a1ndez_Rojas?= <noltari@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Madalin Bucur <madalin.bucur@nxp.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Jonas Gorski <jonas.gorski@gmail.com>, Vinod Koul <vkoul@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 10, 2023 at 11:41:22PM +0100, Uwe Kleine-König wrote:
-> Hello,
+On 3/13/23 04:53, Leonard, Niall wrote:
+> [You don't often get email from niall.leonard@ncr.com. Learn why this is important at https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> many bus remove functions return an integer which is a historic
-> misdesign that makes driver authors assume that there is some kind of
-> error handling in the upper layers. This is wrong however and returning
-> and error code only yields an error message.
-> 
-> This series improves the fsl-mc bus by changing the remove callback to
-> return no value instead. As a preparation all drivers are changed to
-> return zero before so that they don't trigger the error message.
-> 
-> Best regards
-> Uwe
-> 
-> Uwe Kleine-König (6):
->   bus: fsl-mc: Only warn once about errors on device unbind
->   bus: fsl-mc: dprc: Push down error message from fsl_mc_driver_remove()
->   bus: fsl-mc: fsl-mc-allocator: Drop if block with always wrong
->     condition
->   bus: fsl-mc: fsl-mc-allocator: Improve error reporting
->   soc: fsl: dpio: Suppress duplicated error reporting on device remove
->   bus: fsl-mc: Make remove function return void
-> 
+> On 09/03/2023 09:16, Linus Walleij wrote:
+>> *External Message* - Use caution before opening links or attachments
+>>
+>> On Tue, Mar 7, 2023 at 4:35â€¯PM Sean Anderson <sean.anderson@seco.com> wrote:
+>>> On 3/7/23 03:42, Krzysztof Kozlowski wrote:
+>>
+>>>> https://urldefense.com/v3/__https://lore.kernel.org/all/20230126-gpio-mmio-fix-v2-1-38397aace340@ncr.com/__;!!In4Qlw!uQKGkt7dO5TA-561XcuPNoqyti_AogqJ0cV3ymFZNob-Q1-Z1xmcOv_22JBP5xO-OIemaCZ1VY37nWLIe1AXyOkieg$
+>>>
+>>> Thanks for linking to that.
+>>>
+>>> I believe this patch should be applied instead of that one because
+>>>
+>>> - It documents all the registers, which were previously only documented
+>>>    in the driver
+>>> - It handles the endianness properties.
+>>> - It consolidates the various descriptions of this binding into one
+>>>    schema.
+>>
+>> Niall are you sending a v3 of this patch soon?
+>> Include Sean on the reviewer list!
+>>
+>> Yours,
+>> Linus Walleij
+> I never got around to working on the V3 patch. The hold up for me was
+> the changes to the bindings.
+> I'm now wondering if I should wait on Sean's patch being accepted and
+> then I could re-submit the driver changes.
+> What's the consensus ?
 
-Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
-Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com> # sanity checks
+I am going to submit v11 later today. However, the phy subsystem
+maintainer refuses to review the phy patches until all the other patches
+are ready. Therefore, I suspect v11 may not be the last revision of this
+series. If the GPIO folks want to pick v11 of this patch separately, I
+think that would help accelerate the process.
 
-
+--Sean
