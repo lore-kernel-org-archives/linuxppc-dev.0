@@ -4,77 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9886C6FD19
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 20:33:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2966C6FD19
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 21:44:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb7ds0P41z3cFw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 07:33:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb9Cq60Ylz3cLC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 08:44:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=L9ACVyqb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wNETqUCx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.122; helo=smtp-relay-internal-0.canonical.com; envelope-from=andrea.righi@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::b31; helo=mail-yb1-xb31.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=L9ACVyqb;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=wNETqUCx;
 	dkim-atps=neutral
-Received: from smtp-relay-internal-0.canonical.com (smtp-relay-internal-0.canonical.com [185.125.188.122])
+Received: from mail-yb1-xb31.google.com (mail-yb1-xb31.google.com [IPv6:2607:f8b0:4864:20::b31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb7cm44KYz3c1K
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 07:32:22 +1100 (AEDT)
-Received: from mail-ed1-f69.google.com (mail-ed1-f69.google.com [209.85.208.69])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-0.canonical.com (Postfix) with ESMTPS id E26213FDAE
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 20:32:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20210705; t=1678739538;
-	bh=1KExiXuZ2mrX5RXNq61mPBXSlFqkJlTHfvOGTBT7ZaY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:In-Reply-To;
-	b=L9ACVyqbZ4voDv/g2b6pvCSLm5ZVhomB2e7jwLZGuNpGJBQdj+/Jm2NzWJatA2Hu2
-	 tx6aS4Ldgk9rndaiHWM4qotlR5S2wX2cn6110Iz74dhgabT3pNMxJzz6f8KDBaUjlv
-	 qXes8CzdfFY9cX+0bZLQhFw80p9VatkEbDkkImiV8lr/fS/Y4MeuSHBCD8m5WB4ony
-	 C0FiLcPOat8Nfb/ysbEaOxacG7CwH4GdG9l0ccz0/SOIaACYWJLmxsfiEY687JvNb7
-	 DQcUz72VoWANTdS+EfGQnVK7z+EgsenAPla0zHjevAmaG/Urps2H769qgqbz659g0L
-	 551yaEcJWLWzw==
-Received: by mail-ed1-f69.google.com with SMTP id fi8-20020a056402550800b004a26cc7f6cbso18573686edb.4
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 13:32:18 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678739537;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb9Bp1xLgz3bW0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 08:43:29 +1100 (AEDT)
+Received: by mail-yb1-xb31.google.com with SMTP id i6so13483428ybu.8
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 14:43:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1678743806;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=1KExiXuZ2mrX5RXNq61mPBXSlFqkJlTHfvOGTBT7ZaY=;
-        b=insxd41wMp+a7zE2uURcZoWDFJWMBltkghxioVV6ZZXorsIjEiG/iYNXXvLOweItmn
-         ZNkVItjh5s7X4aypY9Off3SpGIIah4ElSg970CkcaW7P7KT2YG6bj5yslJ8FB5tTFlfT
-         zjdpcQrSN6W3uO61fZVwQ8gv2lvxHc9gwucYirnDkI0oPmty1yCti9LJdMz2xbIzVl6Q
-         /6WJ/JnrN4FpEuQc4jnj6yyR+5i4kWeHnESABKdigRVmbx3VRs0HtIOijGkb2RNG2fIJ
-         fA/d/buNgwEVPh8V8HT9ilw7VSPPIYtjzsz+1Fap5FFEHxPCo7AZwjFT1ej6J+wlxfTf
-         Qrzg==
-X-Gm-Message-State: AO0yUKWmoWgRViH3r3mStJEGdbZYdhVslkUh4J2rj1hE5M46wWv9NUZI
-	6c8RiuKTx6EbNn0oD7G4JkgGvIupsRhP3KMWtQi6pasrzsa1guTc12xf1eaeiyxdSmdsqAm62Rw
-	sofDBnQFLr+FP8AVfP1YjcXrC+8zpJxiOCSkJRmpNWOg=
-X-Received: by 2002:a17:907:2d2c:b0:92c:1756:8c4b with SMTP id gs44-20020a1709072d2c00b0092c17568c4bmr85348ejc.3.1678739537657;
-        Mon, 13 Mar 2023 13:32:17 -0700 (PDT)
-X-Google-Smtp-Source: AK7set8Hz/NflAYKnUyIH0ZlDjBEhCXB+FjCSw+3FgiE4kBEpxbt1v3na1v9YXEAxYpTvm5i83j1pQ==
-X-Received: by 2002:a17:907:2d2c:b0:92c:1756:8c4b with SMTP id gs44-20020a1709072d2c00b0092c17568c4bmr85306ejc.3.1678739537315;
-        Mon, 13 Mar 2023 13:32:17 -0700 (PDT)
-Received: from localhost (host-79-53-23-214.retail.telecomitalia.it. [79.53.23.214])
-        by smtp.gmail.com with ESMTPSA id ke4-20020a17090798e400b0092153c6b549sm216886ejc.22.2023.03.13.13.32.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Mar 2023 13:32:17 -0700 (PDT)
-Date: Mon, 13 Mar 2023 21:32:16 +0100
-From: Andrea Righi <andrea.righi@canonical.com>
-To: Gary Guo <gary@garyguo.net>
-Subject: Re: [PATCH] modpost: support arbitrary symbol length in modversion
-Message-ID: <ZA+IUIOAgrWH2oZ0@righiandr-XPS-13-7390>
-References: <20230111161155.1349375-1-gary@garyguo.net>
+        bh=RSd3V+HZ2T3mn2cPqXWrHfR5YkKZfdZAyYpCo4chbXU=;
+        b=wNETqUCxQ2QTd0peBTohCpYEJ2IuKEYfhzChAAwi15Ax+cZ7Nu5/9on8O8dEN3/Yhk
+         uUGfMvg+3ONZHcO34fS2YEBbMgnkk0EjwRwnZsdKpZoc5KuSgpvVSqF//mB1TCI7rcr4
+         DHyrzg0Rc6r31JQtJXvJJR4kaM/Sb6kinPnzSv/iHCW5UCe6wbyk8dQIZB0PkpSMnWGe
+         ttkmmIR2DJNzR+RoFcTUnKUx/ndmMrYASfV+2JBR/gqgzJDHaSw1/wb3/vHHmbOc5Moj
+         v1D7GhXJa6ikrvJDzXnH1h0rYF3IQJnTCt4v6ikbPATQZBqEJ8YkTZNNhxRUOMTsjBRy
+         T30w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1678743806;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=RSd3V+HZ2T3mn2cPqXWrHfR5YkKZfdZAyYpCo4chbXU=;
+        b=eJ6WxZ0jzj43wFrTsDRFLRk6nhw4krue5kG6XaS2f+oBSP4LgYLGEQ32Q+zb+K9dib
+         lhp+/zQGPkVsgv7abjkYW8RdQrnKgJWqjWPYm/NRlYCUgOozWfngCrjlK6N48HFpR15u
+         OqHp1OwO7MpKlnxCrWQFswnMTeiSxxwLr5qs16UtnRZlmKsFRcXFCiKLHlUIK4KBq0L+
+         YZNZZ06q9VgnfUaiE6EA0LdFPuMkbN/HODKHcv7w7t09heI3OdbgbodJU/ohin4k9AEX
+         /QB5e2tbW4AjmXTgLjSjNf2DXpk0NxnOxaML5spNmokabo5cNOSB638ttLOR7Ks24+OM
+         gnaw==
+X-Gm-Message-State: AO0yUKVLXbCq6KjzWjPlyE2kk4HuzwptGl+EEgQOXhXf+MDr3i4wwuU3
+	WCbGuRgccJtOS+7KmSpE6tFkhV1qQ7VSo7KWHwFnxA==
+X-Google-Smtp-Source: AK7set/44tdYO4dx/yFdy6mWrlex/dEJSg8Dq1+hFA0Q9cUVadFi5fLDSwyepQRkDs4fZQ1h3nRg33KAEHniI/POZO0=
+X-Received: by 2002:a5b:c7:0:b0:b3b:d433:b063 with SMTP id d7-20020a5b00c7000000b00b3bd433b063mr168215ybp.4.1678743806009;
+ Mon, 13 Mar 2023 14:43:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230111161155.1349375-1-gary@garyguo.net>
+References: <20230313161138.3598068-1-sean.anderson@seco.com> <20230313161138.3598068-4-sean.anderson@seco.com>
+In-Reply-To: <20230313161138.3598068-4-sean.anderson@seco.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 13 Mar 2023 22:43:14 +0100
+Message-ID: <CACRpkdan3xZPWazk5tS-i9uAvKB=UO3kt5WS0VALkwnUk6ckgg@mail.gmail.com>
+Subject: Re: [PATCH v11 03/13] dt-bindings: Convert gpio-mmio to yaml
+To: Sean Anderson <sean.anderson@seco.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,49 +74,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, Masahiro Yamada <masahiroy@kernel.org>, linux-kbuild@vger.kernel.org, Wedson Almeida Filho <wedsonaf@google.com>, Joel Stanley <joel@jms.id.au>, Alex Gaynor <alex.gaynor@gmail.com>, Miguel Ojeda <ojeda@kernel.org>, Wedson Almeida Filho <wedsonaf@gmail.com>, Nicolas Schier <nicolas@fjasle.eu>, rust-for-linux@vger.kernel.org, Guo Zhengkui <guozhengkui@vivo.com>, Boqun Feng <boqun.feng@gmail.com>, Nicholas Piggin <npiggin@gmail.com>, =?iso-8859-1?Q?Bj=F6rn?= Roy Baron <bjorn3_gh@protonmail.com>, Nathan Chancellor <nathan@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>, linux-kernel@vger.kernel.org, Julia Lawall <Julia.Lawall@inria.fr>, Luis Chamberlain <mcgrof@kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-modules@vger.kernel.org
+Cc: Kishon Vijay Abraham I <kishon@kernel.org>, devicetree@vger.kernel.org, =?UTF-8?Q?Fern=C3=A1ndez_Rojas?= <noltari@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Jonas Gorski <jonas.gorski@gmail.com>, linux-gpio@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linux-phy@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 11, 2023 at 04:11:51PM +0000, Gary Guo wrote:
-> Currently modversion uses a fixed size array of size (64 - sizeof(long))
-> to store symbol names, thus placing a hard limit on length of symbols.
-> Rust symbols (which encodes crate and module names) can be quite a bit
-> longer. The length limit in kallsyms is increased to 512 for this reason.
-> 
-> It's a waste of space to simply expand the fixed array size to 512 in
-> modversion info entries. I therefore make it variably sized, with offset
-> to the next entry indicated by the initial "next" field.
-> 
-> In addition to supporting longer-than-56/60 byte symbols, this patch also
-> reduce the size for short symbols by getting rid of excessive 0 paddings.
-> There are still some zero paddings to ensure "next" and "crc" fields are
-> properly aligned.
-> 
-> This patch does have a tiny drawback that it makes ".mod.c" files generated
-> a bit less easy to read, as code like
-> 
-> 	"\x08\x00\x00\x00\x78\x56\x34\x12"
-> 	"symbol\0\0"
-> 
-> is generated as opposed to
-> 
-> 	{ 0x12345678, "symbol" },
-> 
-> because the structure is now variable-length. But hopefully nobody reads
-> the generated file :)
-> 
-> Link: b8a94bfb3395 ("kallsyms: increase maximum kernel symbol length to 512")
-> Link: https://github.com/Rust-for-Linux/linux/pull/379
-> 
-> Signed-off-by: Gary Guo <gary@garyguo.net>
+On Mon, Mar 13, 2023 at 5:12=E2=80=AFPM Sean Anderson <sean.anderson@seco.c=
+om> wrote:
 
-Is there any newer version of this patch?
+> This is a generic binding for simple MMIO GPIO controllers. Although we
+> have a single driver for these controllers, they were previously spread
+> over several files. Consolidate them. The register descriptions are
+> adapted from the comments in the source. There is no set order for the
+> registers, so I have not specified one.
+>
+> Rename brcm,bcm6345-gpio to brcm,bcm63xx-gpio to reflect that bcm6345
+> has moved.
+>
+> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+> Linus or Bartosz, feel free to pick this up as the rest of this series
+> may not be merged any time soon.
 
-I'm doing some tests with it, but I'm getting boot failures on ppc64
-with this applied (at boot kernel is spitting out lots of oops'es and
-unfortunately it's really hard to copy paste or just read them from the
-console).
+I think Bartosz will pick this as soon as the DT maintainers ACK it.
 
-Thanks,
--Andrea
+Yours,
+Linus Walleij
