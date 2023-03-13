@@ -4,69 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14764C74A4B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 22:15:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63174C6FD19
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 22:44:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pb9vB1l6jz3bym
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 09:15:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PbBY34jFJz3cNN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 09:44:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=i8CxBO0W;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a2JoV3Ky;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=145.40.68.75; helo=ams.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=i8CxBO0W;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a2JoV3Ky;
 	dkim-atps=neutral
-Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from ams.source.kernel.org (ams.source.kernel.org [145.40.68.75])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb9t93H0Xz2xY3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 09:14:07 +1100 (AEDT)
-Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-5418d54d77bso97344207b3.12
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 15:14:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1678745644;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ixG+7bGig9QHUQWnSF4UiYBq7vDEpHXZ8tekX/nmxsQ=;
-        b=i8CxBO0WR7OmBfqqlAHQje/zcyzikon1rCEQV8cWh4onUJHRcEPZyLMZHhYU8qM+wG
-         tJzYFRNjiv1Z/A/sTasyGUOYa4VvMcsgTB5BpgqWnfGW84mjSKI5Mz89MrAdDJnorOwL
-         BwanhOpukWSMVYSZyxO3rXY1pN8mY+BqNm4Beaw6YsLf/JPIPXUbt3MXDFT3t8Y0LK6u
-         zZTkyf3m+KAQ5GPL/bPmsc+4fAsNSOagyt6yPbRI6DD016o5xrlwDmOcru7T9XjoLIPp
-         A7B29wj2g8acbk3A5z+k4Kl0d5CN0tP0/YDsUdxAqmZ1w5q4Uq4UFH5TuzFxn1wneijl
-         AKGQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678745644;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=ixG+7bGig9QHUQWnSF4UiYBq7vDEpHXZ8tekX/nmxsQ=;
-        b=a4XDdxgFgoB5DDhMwTBkHa9v8R62xW/5nko8lOx6tNA31txOOYKunJyAUIzUNknq3g
-         ioV36bRu6lUdtjr4RNOEZR1ANI9PRhMbAlvKdEqmJDvPnnoK1zFR2bo90q6aTjGeIYl7
-         ItHH22zxhExOPj0wMqViQp7MPMsDYj1Kt+8EfMCOrm70Z2Y6x8m4BaGaCDXMe4pIVw0O
-         bPi6FRA6l1gZd0YDlf/4orqRv9XprmqQFHg4EiHah06ElEwNICvL8mZdRD3+P0yQNKaO
-         i/gAg6PzsoaRwJoGlPtnZRFQj5RwVgNteIZuDc6KsbzKYGRaFqXS3Jiymkg4itMGAHK5
-         tXCA==
-X-Gm-Message-State: AO0yUKXskk/fS/3xgEJo3vbk4wrDX84VatWjWa8usdb+0bDBzLDTQfEa
-	dkJdSdvJ7SxURgNh94yCTu0LsSHUPGEWZNSW+97ASg==
-X-Google-Smtp-Source: AK7set+Bv76Po4Imp7oNwzB71WD5iLKQpfUzXDzH+Fp9A4JeoAaFi4DIdhTJ4chpyUfVvGitWyG/QEjZRdrFvDwK63c=
-X-Received: by 2002:a81:4005:0:b0:532:e887:2c23 with SMTP id
- l5-20020a814005000000b00532e8872c23mr24535003ywn.9.1678745644324; Mon, 13 Mar
- 2023 15:14:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pb2gv5Z7yz2xHJ;
+	Tue, 14 Mar 2023 03:49:47 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by ams.source.kernel.org (Postfix) with ESMTPS id D7852B811A0;
+	Mon, 13 Mar 2023 16:49:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AD418C433EF;
+	Mon, 13 Mar 2023 16:49:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1678726182;
+	bh=8KYXMoHAD5Z4NBIseAq6bsT/0yPZHnSTiR9g+F3H6mQ=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=a2JoV3Ky1b2rAYHvjxOxSJk1TNI3heElPwvSF5YrOvneNeV0VdzwNhQXiUrffvmto
+	 JA7P0WeiStnDt/6J8n1J9O5jnVgObXfH8lS4KXLMLBqO4DJUKBDJIvP6ivTa/Y09Sn
+	 HR1pOKRuwrPDI/baAtt5wUZ6Gocqmmqr2buMgjA/aCshs3yaJSkT/BdMx60/VeJQN4
+	 dkvphu6x3RN4fI6sEcajBAho9BdeW92stv1wsZ7bHVNaqIqINFZydvDFvpdEiWiF0m
+	 eG/X/a/XjC1FXr2cscVZU8Cm2pQpTkDOWTAiQQum9/Cqx4Qc/c+wOmHVG5htVbTJPc
+	 eI6rbG1xa4RhQ==
+From: Mark Brown <broonie@kernel.org>
+To: miquel.raynal@bootlin.com, richard@nod.at, vigneshr@ti.com, 
+ jic23@kernel.org, pratyush@kernel.org, Sanju.Mehta@amd.com, 
+ chin-ting_kuo@aspeedtech.com, clg@kaod.org, kdasu.kdev@gmail.com, 
+ f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, 
+ eajames@linux.ibm.com, olteanv@gmail.com, han.xu@nxp.com, 
+ john.garry@huawei.com, shawnguo@kernel.org, s.hauer@pengutronix.de, 
+ khilman@baylibre.com, matthias.bgg@gmail.com, haibo.chen@nxp.com, 
+ linus.walleij@linaro.org, daniel@zonque.org, haojian.zhuang@gmail.com, 
+ robert.jarzmik@free.fr, agross@kernel.org, heiko@sntech.de, 
+ krzysztof.kozlowski@linaro.org, andi@etezian.org, mcoquelin.stm32@gmail.com, 
+ alexandre.torgue@foss.st.com, wens@csie.org, jernej.skrabec@gmail.com, 
+ samuel@sholland.org, masahisa.kojima@linaro.org, jaswinder.singh@linaro.org, 
+ rostedt@goodmis.org, mingo@redhat.com, l.stelmach@samsung.com, 
+ davem@davemloft.net, edumazet@google.com, kuba@kernel.org, 
+ pabeni@redhat.com, alex.aring@gmail.com, stefan@datenfreihafen.org, 
+ kvalo@kernel.org, james.schulman@cirrus.com, david.rhodes@cirrus.com, 
+ tanureal@opensource.cirrus.com, rf@opensource.cirrus.com, perex@perex.cz, 
+ tiwai@suse.com, npiggin@gmail.com, christophe.leroy@csgroup.eu, 
+ mpe@ellerman.id.au, oss@buserror.net, windhl@126.com, 
+ yangyingliang@huawei.com, william.zhang@broadcom.com, 
+ kursad.oney@broadcom.com, jonas.gorski@gmail.com, anand.gore@broadcom.com, 
+ rafal@milecki.pl, Tudor Ambarus <tudor.ambarus@linaro.org>, 
+ Neil Armstrong <neil.armstrong@linaro.org>, 
+ Bjorn Andersson <andersson@kernel.org>, 
+ Amit Kumar Mahapatra <amit.kumar-mahapatra@amd.com>
+In-Reply-To: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
+References: <20230306172109.595464-1-amit.kumar-mahapatra@amd.com>
+Subject: Re: (subset) [PATCH V5 00/15] spi: Add support for
+ stacked/parallel memories
+Message-Id: <167872615942.75015.12960472969249845825.b4-ty@kernel.org>
+Date: Mon, 13 Mar 2023 16:49:19 +0000
 MIME-Version: 1.0
-References: <20230306191535.1917656-1-sean.anderson@seco.com>
- <20230306191535.1917656-4-sean.anderson@seco.com> <4c039e53-e3ca-29d7-e5ea-f24e385d28b0@linaro.org>
- <42ccbac0-53e2-f599-fb3d-064b896bde4a@seco.com> <CACRpkdaj-0dyqWdSbQbjyUed+khDLi-awgan1BnuDvuY2JBzFQ@mail.gmail.com>
- <d26bad8d-82ea-ed18-fa3e-081ba0d5dcf6@ncr.com>
-In-Reply-To: <d26bad8d-82ea-ed18-fa3e-081ba0d5dcf6@ncr.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 13 Mar 2023 23:13:52 +0100
-Message-ID: <CACRpkdbDftrKzSHfRaO8Bk83FT=JwjR-X3M6wyjds4Jo9y8cEw@mail.gmail.com>
-Subject: Re: [PATCH v10 03/13] dt-bindings: Convert gpio-mmio to yaml
-To: "Leonard, Niall" <Niall.Leonard@ncr.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: b4 0.13-dev-bd1bf
+X-Mailman-Approved-At: Tue, 14 Mar 2023 09:43:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,24 +86,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kishon Vijay Abraham I <kishon@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?UTF-8?Q?Fern=C3=A1ndez_Rojas?= <noltari@gmail.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Jonas Gorski <jonas.gorski@gmail.com>, Vinod Koul <vkoul@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, "linux-phy@lists.infradead.org" <linux-phy@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: alexandre.belloni@bootlin.com, tmaimon77@gmail.com, linux-aspeed@lists.ozlabs.org, linux-iio@vger.kernel.org, konrad.dybcio@somainline.org, alsa-devel@alsa-project.org, tali.perry1@gmail.com, ldewangan@nvidia.com, linux-mtd@lists.infradead.org, alim.akhtar@samsung.com, linux-riscv@lists.infradead.org, linux-spi@vger.kernel.org, festevam@gmail.com, linux-stm32@st-md-mailman.stormreply.com, jbrunet@baylibre.com, git@amd.com, linux-samsung-soc@vger.kernel.org, benjaminfair@google.com, yogeshgaur.83@gmail.com, openbmc@lists.ozlabs.org, jonathanh@nvidia.com, yuenn@google.com, bcm-kernel-feedback-list@broadcom.com, joel@jms.id.au, linux-rockchip@lists.infradead.org, linux-sunxi@lists.linux.dev, linux-imx@nxp.com, amitrkcian2002@gmail.com, Michael.Hennerich@analog.com, martin.blumenstingl@googlemail.com, linux-arm-msm@vger.kernel.org, radu_nicolae.pirea@upb.ro, linuxppc-dev@lists.ozlabs.org, lars@metafoo.de, linux-mediatek@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux
+ -tegra@vger.kernel.org, linux-amlogic@lists.infradead.org, michal.simek@amd.com, linux-arm-kernel@lists.infradead.org, avifishman70@gmail.com, venture@google.com, libertas-dev@lists.infradead.org, linux-wireless@vger.kernel.org, nicolas.ferre@microchip.com, fancer.lancer@gmail.com, linux-kernel@vger.kernel.org, andrew@aj.id.au, michael@walle.cc, thierry.reding@gmail.com, palmer@dabbelt.com, kernel@pengutronix.de, netdev@vger.kernel.org, patches@opensource.cirrus.com, linux-wpan@vger.kernel.org, claudiu.beznea@microchip.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 13, 2023 at 9:53=E2=80=AFAM Leonard, Niall <Niall.Leonard@ncr.c=
-om> wrote:
+On Mon, 06 Mar 2023 22:50:54 +0530, Amit Kumar Mahapatra wrote:
+> This patch is in the continuation to the discussions which happened on
+> 'commit f89504300e94 ("spi: Stacked/parallel memories bindings")' for
+> adding dt-binding support for stacked/parallel memories.
+> 
+> This patch series updated the spi-nor, spi core and the spi drivers
+> to add stacked and parallel memories support.
+> 
+> [...]
 
-> > Niall are you sending a v3 of this patch soon?
-> > Include Sean on the reviewer list!
+Applied to
 
-> I never got around to working on the V3 patch. The hold up for me was
-> the changes to the bindings.
-> I'm now wondering if I should wait on Sean's patch being accepted and
-> then I could re-submit the driver changes.
-> What's the consensus ?
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
 
-Sean picked it up for shepherding, it looks very good, as soon as
-the DT maintainers give it a nod Bartosz can merge it.
+Thanks!
 
-Yours,
-Linus Walleij
+[01/15] spi: Replace all spi->chip_select and spi->cs_gpiod references with function call
+        commit: 9e264f3f85a56cc109cc2d6010a48aa89d5c1ff1
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
