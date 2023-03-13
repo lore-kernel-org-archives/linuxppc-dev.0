@@ -4,76 +4,111 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 986DDC6FD19
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 11:44:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F204FC61DA4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 13:47:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PZvw91RV5z3cfd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 13 Mar 2023 22:44:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PZydx73XPz3cG1
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Mar 2023 00:47:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=u4NObk0m;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=SlUsVTku;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canonical.com (client-ip=185.125.188.123; helo=smtp-relay-internal-1.canonical.com; envelope-from=andrea.righi@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f400:fe16::603; helo=eur02-vi1-obe.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=canonical.com header.i=@canonical.com header.a=rsa-sha256 header.s=20210705 header.b=u4NObk0m;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector2 header.b=SlUsVTku;
 	dkim-atps=neutral
-Received: from smtp-relay-internal-1.canonical.com (smtp-relay-internal-1.canonical.com [185.125.188.123])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from EUR02-VI1-obe.outbound.protection.outlook.com (mail-vi1eur02on20603.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe16::603])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PZrSJ4WZ9z3bqB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 20:09:02 +1100 (AEDT)
-Received: from mail-ed1-f72.google.com (mail-ed1-f72.google.com [209.85.208.72])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-relay-internal-1.canonical.com (Postfix) with ESMTPS id 18E113F18C
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 09:08:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canonical.com;
-	s=20210705; t=1678698537;
-	bh=+zLoqF6BfOdUSle6q2rHxZJA0reMzMkFf8cRs0TMdRQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type;
-	b=u4NObk0mBe5anmHno4p1kOA1LCd0VO0DtY6vrcB9bzBjLeth4JWOgaWt4ZluKQfdH
-	 wa/wX/K1yxG8iQZD1NhyroCmXC90uvp8iUJi4cxbewXbDhQ8czgwtbRk6S+rdIjhBU
-	 F4oXz+4mIZMCcEXdUOoAYYAY29Xec0atmAV0iqYIFY8oMmz6A/3oA9rHnoIY8nVWg3
-	 J8ZM0MopCtRPTxW7LZjw8oDJPzSNSISVL8HtGHLCSFROxaMf9TvZaM5ic/HUCgNXnb
-	 G4PKqyFL4p1H+xpolew8EHMCgFQQXQozofXGqOxCMSRdZoQLyXC2XmOT4Ltxxh+RJI
-	 8dH8pSYzrNVDg==
-Received: by mail-ed1-f72.google.com with SMTP id h15-20020a056402280f00b004bf9e193c23so16101812ede.11
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Mar 2023 02:08:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1678698535;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+zLoqF6BfOdUSle6q2rHxZJA0reMzMkFf8cRs0TMdRQ=;
-        b=M8Fb8R+/JA0HBmHJqkrRXBimpQt8JTGb+kY4cl2qCM9DyYO4JXg3bSyhHHjtNEcU+h
-         ZdgtOi2GbpuI+kPTcMpMwYd+rnX6L03i8dAXpImZi40RZ/9i+G5TwiRPBvRqz70cnu9E
-         HYjsQqgLYdfS79Q8290wKvZuOofy97K2Vu9C6Z14A0i884l0SIprvxQYkEw84df44jhy
-         P9+wOaSO3vQJkpHGnYIPlVpvRy9e0wHsLKtZAnCx+Y60VngtGFV4SClabmAIhPkAaIUO
-         MZxHDbuLZJ05DMBL+zE0S1vOrNOhaaNfL5fL6l7Yoz1lKONpFOv5dpXi39HV9b52fHZm
-         8YJg==
-X-Gm-Message-State: AO0yUKWW4YBfhLSK17X2Gos2qQ1DVB4HE5bhk0yKIvkNf423DId2wErR
-	hkSNphR8mOvhFb0SLsYG78URMnvM9sXC7cdkf6qtQDKAsvqQFgkKiUiQndmYY8edj8piRGIAuyK
-	fEEiQ1vyT6kGpb2ja4jjv6fWbjNKwfQS6oHzwQ4KJhXc=
-X-Received: by 2002:a17:907:3fa6:b0:877:a9d2:e5e9 with SMTP id hr38-20020a1709073fa600b00877a9d2e5e9mr43351031ejc.42.1678698535564;
-        Mon, 13 Mar 2023 02:08:55 -0700 (PDT)
-X-Google-Smtp-Source: AK7set8zaIoGIKt5CAbGfpbiLF+2JUW2fmQCY3xX2N3r1L5GI3QhgID5iSiMfAUqw3n4GDt4lI95/w==
-X-Received: by 2002:a17:907:3fa6:b0:877:a9d2:e5e9 with SMTP id hr38-20020a1709073fa600b00877a9d2e5e9mr43350998ejc.42.1678698535272;
-        Mon, 13 Mar 2023 02:08:55 -0700 (PDT)
-Received: from localhost (host-79-53-23-214.retail.telecomitalia.it. [79.53.23.214])
-        by smtp.gmail.com with ESMTPSA id ox29-20020a170907101d00b008e53874f8d8sm3157668ejb.180.2023.03.13.02.08.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Mar 2023 02:08:55 -0700 (PDT)
-Date: Mon, 13 Mar 2023 10:08:54 +0100
-From: Andrea Righi <andrea.righi@canonical.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: boot regression on ppc64 with linux 6.2
-Message-ID: <ZA7oJr1/Z4vzWy4N@righiandr-XPS-13-7390>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PZycr48Bpz3bdm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Mar 2023 00:46:51 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=E33ZGJC/A16AYGaRBrfjXNu9EHSuHdQEwj9kwe9fuyjCDlEnaDUZWcrcv2U/GaTv/5BCzVzozozgmOJT5cb+eZQRoe7E4Kut8ALdUSc13dZSNQ+kOck6V5c/F4tokr/j+p+zts3uWCkL8aoiFQNnLp1eBH6asIxN6iKHEVLMQkJvWonfL0k61/XO6UwNTLfAS1fouHcRFXRH2+rYC4RGJX869fUkkt8cg2vssNc0vDCQS7psPOWkVwcjhvu255GsFeJu3ibqcW4BtVla4jv3Dhua90RAPHz+bJhA3Y+jmaAXgAre+MA5f5RZSWx4Gr0TxKL9VrSZKUtHBjU11c1hZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=ULyG7tRBn7S53XsWo6pfLYmQ49V+7t/mtHGYReqonv4=;
+ b=Nb9ZekzRNuZdf+PZCUwvAUmj5ZrO8TTgxiwqzMYF7oNpyDeB2E/4T5wnacuJ999MSUfC84R8TH1RbBnQDexKqWWui00g8VJwt4cEpyPxmgy5W/xE0ToRH03LQCRj1rD9OHFmV4UAiBc9l6uRfSHy/mFTmBe0IxRYNLnfdPf3C/yEYFvVOK/3DkT+s0HG4wcNzjC7nl4FMr4mi5rIN3FI79a8fAG8R83BQCKezBpsXi+EToZshNWFzrrpew23fYw0l3M9HKyfpVKFVuOjRy4F/tM4oHXtzmbb1yB303+GdYVnM9DL6FEPQkJV0mEr3lZ89mP7iEz6iTp98XyXntQ0mg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=ULyG7tRBn7S53XsWo6pfLYmQ49V+7t/mtHGYReqonv4=;
+ b=SlUsVTkuJFQXm6bKmn2Gun9JGi1xpdkUxYi4q5u8ZIXRti8SZ3zgiTT+nG8RjlPStj6zTbUH2OCRyXrxbFR0rcrMgoFyedd6sS47vB15jg+umjgn2OLQjWAumbhd38BoET+WA1TBQI+6A7dKXKvWYk17U96eDN0zH3eENMFNh0o=
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from GV1PR04MB9055.eurprd04.prod.outlook.com (2603:10a6:150:1e::22)
+ by PR3PR04MB7306.eurprd04.prod.outlook.com (2603:10a6:102:81::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.24; Mon, 13 Mar
+ 2023 13:46:29 +0000
+Received: from GV1PR04MB9055.eurprd04.prod.outlook.com
+ ([fe80::9c6d:d40c:fbe5:58bd]) by GV1PR04MB9055.eurprd04.prod.outlook.com
+ ([fe80::9c6d:d40c:fbe5:58bd%7]) with mapi id 15.20.6178.024; Mon, 13 Mar 2023
+ 13:46:28 +0000
+Date: Mon, 13 Mar 2023 15:46:21 +0200
+From: Ioana Ciornei <ioana.ciornei@nxp.com>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 0/6] bus: fsl-mc: Make remove function return void
+Message-ID: <20230313134621.5rmzawmhv3lvis32@LXL00007.wbi.nxp.com>
+References: <20230310224128.2638078-1-u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Mailman-Approved-At: Mon, 13 Mar 2023 22:43:12 +1100
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20230310224128.2638078-1-u.kleine-koenig@pengutronix.de>
+X-ClientProxiedBy: VI1PR0302CA0008.eurprd03.prod.outlook.com
+ (2603:10a6:800:e9::18) To GV1PR04MB9055.eurprd04.prod.outlook.com
+ (2603:10a6:150:1e::22)
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: GV1PR04MB9055:EE_|PR3PR04MB7306:EE_
+X-MS-Office365-Filtering-Correlation-Id: a701bb84-b878-42a6-b8ff-08db23c95769
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	n++m2zcQ+ipq0ce5NaO6z3K5JFwhXBR07BOWqpwwqTNVFonElZQmMVlXbOiUMYM0rbGB4WcyeXT6fazthwwWNMRAsjjGNs8vC5gScg4Lw7aNTjQXQUpSfZco2ntf4eOzT+WBSS8QcoaAltUptCa4UiaKAmenwMiQ4JS6Q2XpRycPA+2g/HvzoPu+WxH5afaloLSAEaanDMr9lJ7zzHxpW0TPtU/9k43Q2IDnw6Ij1fBjMbOnia5Kz+kZbSBW1a7qszymuaHtTpXTRyLxbAi28HI9NSlmmU9VmyczNUosovRCkdT8pWN+1SqNumSBeaj76Sa6QufHCvbXOLJ7QR7NiOLa/k2B1WCAWBvzijR2e2/go+/ztC20c3CwWZYX4II6fk2c2yVzmCV2JEtNTmo10oUVZNHVVaDeKu8yZtEHV7mkdzs5XcdVSooYze+3HLbLYknunJyCi0Iul74sOfCF3Eg1GPAUdEpswt16BeofNrGKG41BPE9MWIV7rtgj/nm4DOQPeq034W4YGEOaLdZJbGsU6BcqEqRBTy/CgC808Zi6y6/Oq3gH7xycXE7r2cJ1Kv7+aTpPTrp3b7x4ykUJzcDFS4HstzgKzIzoeIssYkd/nBhqu92cHXn+NkYoZ942/ZxfwCZOfbHAHma/T8leAw==
+X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:GV1PR04MB9055.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230025)(4636009)(396003)(136003)(346002)(39860400002)(366004)(376002)(451199018)(2906002)(83380400001)(7416002)(44832011)(5660300002)(66556008)(66946007)(41300700001)(8936002)(4326008)(6916009)(8676002)(66476007)(38100700002)(54906003)(86362001)(316002)(478600001)(66574015)(186003)(6486002)(26005)(6666004)(6506007)(1076003)(6512007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: 	=?iso-8859-1?Q?B5i8T64NYVV+0AFGAs8jsVs5EXj+XBj2AdCggRWOQqzyC5xWjESJIgluSl?=
+ =?iso-8859-1?Q?Sds4Zm8R869qoMmEAXmkF78kjUhKIvxQ/+4567qAGZcULMdHKNQRPary22?=
+ =?iso-8859-1?Q?wlCuF1WtBLfUBkgQTQu1tks0yKialOfkLz1Bp25deDHRbbNh0YBBSw8d+t?=
+ =?iso-8859-1?Q?ALQHtK8vMPlJtXVKGsPrLO0wNFnPKnQ0jzmUV8ZE5kaRIBvMl2em0v02RQ?=
+ =?iso-8859-1?Q?0Tf597dQ5J3iF9F+cTK5XH0pwk9M7BIMyjlAIofkRE/gLy80qbuiCSurWN?=
+ =?iso-8859-1?Q?jwZd3wxR0Nibo5p/l6LsKqnKKb/7E4BYFxLVYZJcu7NlGUMOsAC0q9tPlY?=
+ =?iso-8859-1?Q?Uge0XTcY8naxS6FuHz9FQ0ytMvaW4soWlToVFRcyinZWoA/jK7HaMy/hwQ?=
+ =?iso-8859-1?Q?VN5/Ko7wULCz4KF6H/ee+OTDjkipVipuypRYRkk5oObkIBCMpnxLN8RS+u?=
+ =?iso-8859-1?Q?OuMM7dOalRxVHE38cju960+h7kDYbkoua64hAk/PF+5WubFmnDLSeQt6NH?=
+ =?iso-8859-1?Q?L1SmH5OnY9YrGduCVyUiS6v4taUb8KoWM1lk++tjrV2LvP9OKAcEb3Xuuw?=
+ =?iso-8859-1?Q?UCwvy6gL5JkSedKpvQQaGJA9bjQdDPDZyXZqY5k3MDu8oGcdGdK2kd8eEV?=
+ =?iso-8859-1?Q?gjK2xREyRVSyOm9UOUL1GVIIu5lrnmkiOZnmMcPfpG55/7MF5hNmTvGeBT?=
+ =?iso-8859-1?Q?LQGovQ1ZZYDIQ5t8ypxAt0CY4FKUtd2w/Jg+yyFiZqiU/e0ohD+3JHeOFQ?=
+ =?iso-8859-1?Q?1gm+xPInNh3Fs32K2gsH1isHhu7o4CiR/WVMvMSGJoh3/4g++6e+TQe6oN?=
+ =?iso-8859-1?Q?O4p/NBvcMlvaBIDNRSfibosaQZKvChExuKTGP4MTBem6yX5ufoDMuaQ0VF?=
+ =?iso-8859-1?Q?mGx9lAbsAL9EJ0a6KEsccWptvxyIoUZ3ZC7CgoE+j7tXVwGtOfqBA8TSr4?=
+ =?iso-8859-1?Q?HMxy38tDFVESxZmOEg6I6jla6PWGida7vl7kjzeZl8VQZTH8GDj+FfKJ35?=
+ =?iso-8859-1?Q?8kCR6sfBYgqnl8rGrSL9IrFqobnaISupAbY3F9m5oUal17qH2vQ+qzr4SI?=
+ =?iso-8859-1?Q?4ioWyWf+FdGnVXBQPo6Vzt67qmFSa+3uk6SgiuS68zY3blKSN+/yjow25V?=
+ =?iso-8859-1?Q?FCEQfF4a6aaN0nln65UqyPtf/+ZrxhKu3sSRGrrN6bmV1nzKKWA21ARPIj?=
+ =?iso-8859-1?Q?fQsH4EWXQwbr48sSrOwSNVlFFlhPusH6JYuvJrjTSegBiQzietXOwtXzYM?=
+ =?iso-8859-1?Q?7jv//pxY7QJ3VS80yrmoK2V2UVTXTb4oIQ+kisQgtEx+90SVk0oJ2efJJQ?=
+ =?iso-8859-1?Q?Pjfx5mK4uiTbo1L8rF5EfFsD2WjbyL59vuRxEnGuxOyNjwNbe/TJC7E+Qw?=
+ =?iso-8859-1?Q?9z+0JTigUHgpBM8nK242Q7ZyuAB30oh5iRac9owlETgH5Qo/btApaDLbst?=
+ =?iso-8859-1?Q?UZtihIAzRpois361AZ04EzJJZya6EedlRepb2nhnbJ5S4dXIOX9owvyBfA?=
+ =?iso-8859-1?Q?Jg55ct9UQk9zUUR4BGeG1KpWMJITUIL0jeHI1i1NafydjFOLj/A+L4yNmZ?=
+ =?iso-8859-1?Q?+O4/lAJBzexYBbgQiD1VTPdOUiMwbqkhQmn+ShNGDDzXGE4NZkpX8wrJfn?=
+ =?iso-8859-1?Q?u1s0Pgx0ESWd+kneC/a3t+gU0/DUJJjvl9/4fNd1bwPQsI1T7T5jHHjQ?=
+ =?iso-8859-1?Q?=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a701bb84-b878-42a6-b8ff-08db23c95769
+X-MS-Exchange-CrossTenant-AuthSource: GV1PR04MB9055.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2023 13:46:28.2498
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: rvWiizfBB/cqLXnu63ye5XHWmzfzQeInv+HCziodOjzxZUXq8kgBJ05v0L56p9R2g9FMXYCInnc1f9lzM36GwA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PR3PR04MB7306
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,45 +120,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Cc: Stuart Yoder <stuyoder@gmail.com>, Gaurav Jain <gaurav.jain@nxp.com>, Roy Pledge <Roy.Pledge@nxp.com>, Eric Dumazet <edumazet@google.com>, Diana Craciun <diana.craciun@oss.nxp.com>, Herbert Xu <herbert@gondor.apana.org.au>, Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@nxp.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, Richard Cochran <richardcochran@gmail.com>, Pankaj Gupta <pankaj.gupta@nxp.com>, Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Laurentiu Tudor <laurentiu.tudor@nxp.com>, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, linux-crypto@vger.kernel.org, kernel@pengutronix.de, Yangbo Lu <yangbo.lu@nxp.com>, dmaengine@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I'm triggering the following bug when booting my qemu powerpc VM:
+On Fri, Mar 10, 2023 at 11:41:22PM +0100, Uwe Kleine-König wrote:
+> Hello,
+> 
+> many bus remove functions return an integer which is a historic
+> misdesign that makes driver authors assume that there is some kind of
+> error handling in the upper layers. This is wrong however and returning
+> and error code only yields an error message.
+> 
+> This series improves the fsl-mc bus by changing the remove callback to
+> return no value instead. As a preparation all drivers are changed to
+> return zero before so that they don't trigger the error message.
+> 
+> Best regards
+> Uwe
+> 
+> Uwe Kleine-König (6):
+>   bus: fsl-mc: Only warn once about errors on device unbind
+>   bus: fsl-mc: dprc: Push down error message from fsl_mc_driver_remove()
+>   bus: fsl-mc: fsl-mc-allocator: Drop if block with always wrong
+>     condition
+>   bus: fsl-mc: fsl-mc-allocator: Improve error reporting
+>   soc: fsl: dpio: Suppress duplicated error reporting on device remove
+>   bus: fsl-mc: Make remove function return void
+> 
 
-event-sources: Unable to request interrupt 23 for /event-sources/hot-plug-events
-WARNING: CPU: 0 PID: 1 at arch/powerpc/platforms/pseries/event_sources.c:26 request_event_sources_irqs+0xbc/0xf0
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W          6.2.2-kc #1
-Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1200 0xf000005 of:SLOF,HEAD pSeries
-NIP:  c000000002022eec LR: c000000002022ee8 CTR: 0000000000000000
-REGS: c000000003483910 TRAP: 0700   Tainted: G        W           (6.2.2-kc)
-MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 24483200  XER: 00000000
-CFAR: c000000000180838 IRQMASK: 0 
-GPR00: c000000002022ee8 c000000003483bb0 c000000001a5ce00 0000000000000050 
-GPR04: c000000002437d78 c000000002437e28 0000000000000001 0000000000000001 
-GPR08: c000000002437d00 0000000000000001 0000000000000000 0000000044483200 
-GPR12: 0000000000000000 c000000002720000 c000000000012758 0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR24: 0000000000000000 c0000000020033fc cccccccccccccccd c0000000000e07f0 
-GPR28: c000000000db0520 0000000000000000 c0000000fff92ac0 0000000000000017 
-NIP [c000000002022eec] request_event_sources_irqs+0xbc/0xf0
-LR [c000000002022ee8] request_event_sources_irqs+0xb8/0xf0
-Call Trace:
-[c000000003483bb0] [c000000002022ee8] request_event_sources_irqs+0xb8/0xf0 (unreliable)
-[c000000003483c40] [c000000002022fa0] __machine_initcall_pseries_init_ras_hotplug_IRQ+0x80/0xb0
-[c000000003483c70] [c0000000000121b8] do_one_initcall+0x98/0x300
-[c000000003483d50] [c000000002004b28] kernel_init_freeable+0x2ec/0x370
-[c000000003483df0] [c000000000012780] kernel_init+0x30/0x190
-[c000000003483e50] [c00000000000cf5c] ret_from_kernel_thread+0x5c/0x64
---- interrupt: 0 at 0x0
+Reviewed-by: Ioana Ciornei <ioana.ciornei@nxp.com>
+Tested-by: Ioana Ciornei <ioana.ciornei@nxp.com> # sanity checks
 
-I did a bisect it and it seems that the offending commit is:
-baa49d81a94b ("powerpc/pseries: hvcall stack frame overhead")
 
-Reverting that and also dfecd06bc552 ("powerpc: remove
-STACK_FRAME_OVERHEAD"), because we need to re-introduce
-STACK_FRAME_OVERHEAD, seems to fix everything.
-
--Andrea
