@@ -4,54 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3F01C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 07:08:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5E3EC6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 11:54:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pcddq0v0sz3cjC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 18:08:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pclzl6xMpz3f3m
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 22:54:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BSYZpQwa;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qIzjIba+;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pcdcq0BgRz3c6v
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2023 18:07:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pclyj1mS7z3bvH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2023 22:53:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BSYZpQwa;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=qIzjIba+;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pcdcj43gLz4x8y;
-	Thu, 16 Mar 2023 18:07:33 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pclyg6cyLz4x7s;
+	Thu, 16 Mar 2023 22:53:31 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1678950457;
-	bh=Uoa/qK0tdF63rSzU8djzTz2HMi5Ua/1t+ckmoNcslIw=;
+	s=201909; t=1678967612;
+	bh=b/pQ2wE5S7nHv3es7WZVEfLm9S28WgiyyZ+VQ07K+Ks=;
 	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=BSYZpQwasbtNcuTSoDT6bijTCDl/Cvkd6x8Dqlk1pdpNNQdO/1PUOyGunqOTUT5Qc
-	 ygnhlTaj0iW/PdkSEXieW1paBdk42bWFmbyxKAvIZyTV14cIlLdJuA14ixp8Hw2+Gp
-	 EBI6k1e4XLgR/uGhvP1M1Kzy20URNHQzzTAMWRmFMXZOR1DCDmfcuMTsDXoDodpCpS
-	 Ps7I+glJbtuhKuKkGArjbYELq5M0RTCCMIB+nfLYWp3ZMKkNirQUYbIK2H/rZzK3Lz
-	 QdbNQ0prhjt3knA8sTFJJ0N4OBkqKqj6CEEd8vLXBkynAotbyO1nSlLpyLsqbRQU8J
-	 6f5dWSD2Gzbbw==
+	b=qIzjIba+mLcN086XIllglaE3vpNgjSbNqfTWiHDhkQI/yDg9IRVyGDcDRkvLrgBm9
+	 w686YLSGO77RfMqR0D0LaJKZBKz0cMIEkBLpasaVnjoC2N/CMSCm/T3V2wZFufdsAh
+	 +ag39Zz2ywZP5NTmBUZQ2cTXvvSG1H1GxsylB3DiO9IYE4Hdc+ZhYPRyataH7ZvVy8
+	 Z84sTgzD3Ooomk2dJ+phz1hOWkWILTW6fJrz5zPhB19Bvc/G21W+5nfZawGNyvx1xH
+	 5/wSSVYKPsa9Y78wVDOWkf3lYWaolMNfklGMxMCMdRMpzuevSkuMJtYYmIFWGhb4SX
+	 o6YTUUoRp+XAw==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ira Weiny <ira.weiny@intel.com>, Dave Hansen <dave.hansen@intel.com>,
- Ira Weiny <ira.weiny@intel.com>, Dave Hansen
- <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
- <christophe.leroy@csgroup.eu>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav
- Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/3] COVER: Remove memcpy_page_flushcache()
-In-Reply-To: <64126d113d163_2595222942@iweiny-mobl.notmuch>
-References: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
- <3523ddf9-03f5-3179-9f39-cec09f79aa97@intel.com>
- <64126d113d163_2595222942@iweiny-mobl.notmuch>
-Date: Thu, 16 Mar 2023 18:07:31 +1100
-Message-ID: <87lejxmax8.fsf@mpe.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH 0/2] KVM: PPC: support kvm selftests
+In-Reply-To: <20230316031732.3591455-1-npiggin@gmail.com>
+References: <20230316031732.3591455-1-npiggin@gmail.com>
+Date: Thu, 16 Mar 2023 22:53:26 +1100
+Message-ID: <87ilf0nc95.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -65,47 +57,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, Shuah Khan <shuah@kernel.org>, kvm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ira Weiny <ira.weiny@intel.com> writes:
-> Dave Hansen wrote:
->> On 3/15/23 16:20, Ira Weiny wrote:
->> > Commit 21b56c847753 ("iov_iter: get rid of separate bvec and xarray 
->> > callbacks") removed the calls to memcpy_page_flushcache().
->> > 
->> > kmap_atomic() is deprecated and used in the x86 version of
->> > memcpy_page_flushcache().
->> > 
->> > Remove the unnecessary memcpy_page_flushcache() call from all arch's.
->> 
->> Hi Ira,
->> 
->> Since the common code user is already gone these three patches seem
->> quite independent.  It seems like the right thing to do is have
->> individual arch maintainers cherry pick their arch patch and carry it
->> independently.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Hi,
 >
-> Yes.
+> This series adds initial KVM selftests support for powerpc
+> (64-bit, BookS).
+
+Awesome.
+ 
+> It spans 3 maintainers but it does not really
+> affect arch/powerpc, and it is well contained in selftests
+> code, just touches some makefiles and a tiny bit headers so
+> conflicts should be unlikely and trivial.
 >
->> 
->> Is there a compelling reason to have someone pick up and carry these all
->> together that I'm missing?
->
-> No reason.  Would you like me to submit them individually?
+> I guess Paolo is the best point to merge these, if no comments
+> or objections?
 
-I'll just grab the powerpc one from the thread, no need to resend.
+Yeah. If it helps:
 
-> Sorry, submitting them separately crossed my mind when I wrote them but I
-> kind of forgot as they were all on the same branch and I was waiting for
-> after the merge window to submit them.
-
-It's also much easier to run git-send-email HEAD^^^, rather than running
-it three separate times, let alone if it's a 20 patch series.
-
-I wonder if we could come up with some convention to indicate that a
-series is made up of independent patches, and maintainers are free to
-pick them individually - but still sent as a single series.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 cheers
