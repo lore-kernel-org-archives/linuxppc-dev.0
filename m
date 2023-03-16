@@ -4,88 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99235C6FD19
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 05:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3F01C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 07:08:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pcb580vkmz3chZ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 16:13:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pcddq0v0sz3cjC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 18:08:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BVJPgfVX;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BSYZpQwa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kconsul@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BVJPgfVX;
-	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pcb230Btrz3bjb
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2023 16:10:50 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32G2FR1e027835;
-	Thu, 16 Mar 2023 05:10:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=uYipp+sMLzD8OSZ1BiR/1D4F0+IZY95zYF+fapiciJU=;
- b=BVJPgfVX1lTBc2DDPlCMiJYxDo57DblQbwl2TfrTwIvwZjzOmxTO0jIiw29N7psFMOzR
- mxGR3Lj/ZpXuUeFUJwXZngyg4fICzrybk0BXMga1YJGxudl8C60/6TPtGg0X7yv0TYId
- fHlD8ipxozzLEnKtTgjXCsx1/I1Vik+aAZf4fXCvT9X6ULwoZ5et59Ecxgp+160FEysx
- 7s2PixBLTTlJ0T/G9kUxw2f5WMohON8nltUsLQIZcITmL7N3Tfq9eGIm6hljZ2uThads
- NZGcRVbdx7O0YsdAihsVRAbV/Sk2aFBB6dIVN1XEZsmtQ/q71W9PMecYyHZ6fSyyAozu 8Q== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbpwayds0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Mar 2023 05:10:39 +0000
-Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32G58BTD010788;
-	Thu, 16 Mar 2023 05:10:39 GMT
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pbpwaydrd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Mar 2023 05:10:38 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32G22pIO027542;
-	Thu, 16 Mar 2023 05:10:36 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3pbsyxr4bx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 16 Mar 2023 05:10:36 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32G5AWjt42074794
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 16 Mar 2023 05:10:32 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A78282004B;
-	Thu, 16 Mar 2023 05:10:32 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F359520043;
-	Thu, 16 Mar 2023 05:10:30 +0000 (GMT)
-Received: from r223l.aus.stglabs.ibm.com (unknown [9.3.109.14])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 16 Mar 2023 05:10:30 +0000 (GMT)
-From: Kautuk Consul <kconsul@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Fabiano Rosas <farosas@linux.ibm.com>,
-        Sathvika Vasireddy <sv@linux.ibm.com>,
-        Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: [PATCH v3 0/2] Improving calls to kvmppc_hv_entry
-Date: Thu, 16 Mar 2023 01:10:23 -0400
-Message-Id: <20230316051025.1424093-1-kconsul@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.39.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pcdcq0BgRz3c6v
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2023 18:07:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=BSYZpQwa;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pcdcj43gLz4x8y;
+	Thu, 16 Mar 2023 18:07:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1678950457;
+	bh=Uoa/qK0tdF63rSzU8djzTz2HMi5Ua/1t+ckmoNcslIw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=BSYZpQwasbtNcuTSoDT6bijTCDl/Cvkd6x8Dqlk1pdpNNQdO/1PUOyGunqOTUT5Qc
+	 ygnhlTaj0iW/PdkSEXieW1paBdk42bWFmbyxKAvIZyTV14cIlLdJuA14ixp8Hw2+Gp
+	 EBI6k1e4XLgR/uGhvP1M1Kzy20URNHQzzTAMWRmFMXZOR1DCDmfcuMTsDXoDodpCpS
+	 Ps7I+glJbtuhKuKkGArjbYELq5M0RTCCMIB+nfLYWp3ZMKkNirQUYbIK2H/rZzK3Lz
+	 QdbNQ0prhjt3knA8sTFJJ0N4OBkqKqj6CEEd8vLXBkynAotbyO1nSlLpyLsqbRQU8J
+	 6f5dWSD2Gzbbw==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ira Weiny <ira.weiny@intel.com>, Dave Hansen <dave.hansen@intel.com>,
+ Ira Weiny <ira.weiny@intel.com>, Dave Hansen
+ <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+ <christophe.leroy@csgroup.eu>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav
+ Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/3] COVER: Remove memcpy_page_flushcache()
+In-Reply-To: <64126d113d163_2595222942@iweiny-mobl.notmuch>
+References: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
+ <3523ddf9-03f5-3179-9f39-cec09f79aa97@intel.com>
+ <64126d113d163_2595222942@iweiny-mobl.notmuch>
+Date: Thu, 16 Mar 2023 18:07:31 +1100
+Message-ID: <87lejxmax8.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -IptIBy7kycJfyJVBIPSgrKplw3aZsKk
-X-Proofpoint-ORIG-GUID: 5O-4PcWa-da0N6P7c6oPIJ6KO0wQA9sh
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-16_03,2023-03-15_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 suspectscore=0
- lowpriorityscore=0 impostorscore=0 mlxlogscore=797 malwarescore=0
- adultscore=0 clxscore=1015 phishscore=0 priorityscore=1501 bulkscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303150002 definitions=main-2303160042
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,24 +65,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Kautuk Consul <kconsul@linux.vnet.ibm.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-- remove .global scope of kvmppc_hv_entry
-- remove r4 argument to kvmppc_hv_entry as it is not required
+Ira Weiny <ira.weiny@intel.com> writes:
+> Dave Hansen wrote:
+>> On 3/15/23 16:20, Ira Weiny wrote:
+>> > Commit 21b56c847753 ("iov_iter: get rid of separate bvec and xarray 
+>> > callbacks") removed the calls to memcpy_page_flushcache().
+>> > 
+>> > kmap_atomic() is deprecated and used in the x86 version of
+>> > memcpy_page_flushcache().
+>> > 
+>> > Remove the unnecessary memcpy_page_flushcache() call from all arch's.
+>> 
+>> Hi Ira,
+>> 
+>> Since the common code user is already gone these three patches seem
+>> quite independent.  It seems like the right thing to do is have
+>> individual arch maintainers cherry pick their arch patch and carry it
+>> independently.
+>
+> Yes.
+>
+>> 
+>> Is there a compelling reason to have someone pick up and carry these all
+>> together that I'm missing?
+>
+> No reason.  Would you like me to submit them individually?
 
-Changes since v2:
-- Add the lwsync instruction before the load to r4 to order
-  load of vcore before load of vcpu
+I'll just grab the powerpc one from the thread, no need to resend.
 
-Kautuk Consul (2):
-  arch/powerpc/kvm: kvmppc_hv_entry: remove .global scope
-  arch/powerpc/kvm: kvmppc_hv_entry: remove r4 argument
+> Sorry, submitting them separately crossed my mind when I wrote them but I
+> kind of forgot as they were all on the same branch and I was waiting for
+> after the merge window to submit them.
 
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+It's also much easier to run git-send-email HEAD^^^, rather than running
+it three separate times, let alone if it's a 20 patch series.
 
--- 
-2.39.2
+I wonder if we could come up with some convention to indicate that a
+series is made up of independent patches, and maintainers are free to
+pick them individually - but still sent as a single series.
 
+cheers
