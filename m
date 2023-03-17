@@ -4,78 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4765C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 20:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCBDFC6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 00:07:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pczdq0qxmz3cf2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 07:39:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pd4G020Nkz3f3q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 11:07:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=tUxTjQkQ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o41p3n4g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=82.165.159.35; helo=mout-xforward.web.de; envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=tUxTjQkQ;
-	dkim-atps=neutral
-Received: from mout-xforward.web.de (mout-xforward.web.de [82.165.159.35])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pczcr1ZvKz2xWc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 07:38:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
-	t=1678999124; i=markus.elfring@web.de;
-	bh=yRVNOUfOjIhUPee+fsAseodxf2S6OlCum8nReJFE93E=;
-	h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=tUxTjQkQ7qmrjjTm3Aw0xyEHhXJrTo5Q0Jpe8B+Lls4cEwMQFkFEmvFIOWRaybNEw
-	 kD8G01jFz/Fqer7ZvR9zY3Tl8YyMUN25gjSzeisPRBC5F8JnOGE4sq0YLqo8+/xUJm
-	 fX0MYZZ8v0IlIIFctUjPBg/NiRScBCnZxCKcJq1Igi6GPslTuv3X4jBxLeCAuvk3mA
-	 pCzCHefJwFe1q+e4m/sPvcyIrKw4usgLkyxfwYacya0FRGUDxEkj4FQnJkVmt1N2na
-	 yh/IQTHJCNtcsom9Ky/kwEVRQUewYG87PIkW5yQuzB7LogY/ITYJvMupmQDRrjmoys
-	 rkv5CyzdE4Vag==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.81.83]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MQPZj-1ppjyW2Y3V-00MLmY; Thu, 16
- Mar 2023 21:18:13 +0100
-Message-ID: <349247ba-a539-2a36-0371-93a8f59d2975@web.de>
-Date: Thu, 16 Mar 2023 21:18:11 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pd4Dx3PbZz3bgT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 11:06:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=o41p3n4g;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pd4Dm6VRWz4x1d;
+	Fri, 17 Mar 2023 11:06:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1679011613;
+	bh=FemQ0r+ZrnNoov3LxFCLx/ucheRNYuW9mVDhtcSxxkw=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=o41p3n4gHlMH1a6O9sa4u2HDueAdy5L+DmaZHS1IwqrwxoPhT13FQBLodLJzHVVqc
+	 qhOP51lQcsVmk73MKlketjZpGz7XjFL++bNbE47gggZVtv//t1eODaSXr5NUL9SdpK
+	 yZifaVcAy9OHTjk5ey2hiEsPy5izdTkldv/T7ENsboOJ3eTlCa1hLIAOEAs2EILUvL
+	 voHBq1QiquJC1G7brtNvVtb6SQtDp6M4mM5EGJUOOEbAwD1I+2BYEAji3ZgkuJJ7au
+	 xgv+jVNKOziNoQzSnfSiEs7Apr29/bAHZqThZfq0J1UrTgdxaMlX2SuArCznJ2kxjX
+	 EfMz7D1FTU+xQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ira Weiny <ira.weiny@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dave
+ Hansen <dave.hansen@intel.com>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ingo Molnar
+ <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, "H.
+ Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/3] COVER: Remove memcpy_page_flushcache()
+In-Reply-To: <641340e2998b4_2695182944f@iweiny-mobl.notmuch>
+References: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
+ <3523ddf9-03f5-3179-9f39-cec09f79aa97@intel.com>
+ <64126d113d163_2595222942@iweiny-mobl.notmuch>
+ <87lejxmax8.fsf@mpe.ellerman.id.au>
+ <641340e2998b4_2695182944f@iweiny-mobl.notmuch>
+Date: Fri, 17 Mar 2023 11:06:44 +1100
+Message-ID: <87fsa4meaz.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: [PATCH 4/4] powerpc/4xx: Delete unnecessary variable initialisations
- in four functions
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-To: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Stefan Roese <sr@denx.de>
-References: <f9303bdc-b1a7-be5e-56c6-dfa8232b8b55@web.de>
- <72a7bfe2-6051-01b0-6c51-a0f8cc0c93a5@web.de>
-In-Reply-To: <72a7bfe2-6051-01b0-6c51-a0f8cc0c93a5@web.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:v5sxuo7kDJ5P/yxyZ+V2WDJ7myWWQ9vYnkaF7vGJ9Yc7F09yr6H
- 1Nk7mYpmcD19JSqxExH7u01veIt3FvRCZZUh2fOvgQ8U2HviY84gTDL3SDZAzWVTFBJwETo
- ggL/fjNKn4DG/1/XkX8P+pQ6I+hTBhsHW3lEB2S2n22ktWlFqcTUq94vXV+P4HStmT90bN+
- J8oXcs3FZrMOSTkstHQqQ==
-UI-OutboundReport: junk:10;M01:P0:wOhVZOuePdk=;FRPb3rW6EGgP/qav5XR+fbvmv3QEQ
- KxbJefXXdZPd50GcqK4okf/GhK9pCmbxNG1vRtsVknsagr+yPGfRLwa5IUvb1Vxb+tnK7GMfz
- zUB6bmgSHUdgl2QRQ1kp0G5vol8feM0hMfNzEMCni0oo4WNQsgUsxLKM/BPFk/feEc2SlPyR7
- Cb7lYql3UKYQacvCP4g5Zj70QfdOjkXANfm7qyHz4roXRzPzO6pDQNPeoA3Djw2MEeid+WmcU
- noVmfvyales7VfC04LqG8EfHwFxPRZrLq8lN6g+KWKWUyXldPPhdjl+UNFNT9Unuazy/zxMQl
- +Mk2cgf6gtv1BQbcARf512RsK9zdy8OlMj3nFBxM1oNZN0FaCIXgtkY3Rb+987IWSrqhOQlok
- pB0zyAjAdS3BGuueCNFW3NVme6GdrXNHj/JzZkYu0B0hhJrthkq498VSPsTx28lx8dCM1j57g
- IL7jfjDM8PstGLNv4ADsHsPQy7P/W5SJbygxH0Vul6zKbnrNnwiFM4Mtr5VrZGZdC1qLn4XaG
- SQOzPcARcxnbASpHbJ0pt3ubcJw4Ix5izXPWIHxxkdjisyBt8gQ3/NLmSzSKequCgVX9BoiMP
- OMxC6RWVWlfSSn10LRZ0zRqtW6x4/awbA4DZwEYDSGb5KehwNaBibuHy36ws/wfDPMpDWJUye
- bbScx8tra3Bts49AsfXC+2wPojN2uzZgf4nYCUeXHAbhwKaoidInlB/JMI6hW2HBfjS1qTYUe
- RMfM4m7/HZE/u1ADzOlScDxJCx8fj5hTw9otKt7JzrgKyPd+VEwSxwf9ToHnoouwsFJ9x7R77
- zpCpHzKHd8C9Bkv1Ts0xd1VStV9/kXBH3uiOHFpnR98w68i9779V/EpiiHcEknmT21fEaznir
- BZ+zKdxlh5O4ABfJAa1ebyrzYkv0oNMVULdz5ykgjoBS9nTtg5RWIcmrhuLma0PML3gOxfeX1
- LGrS237xyx1iU8S66A8Y85TlE30Q5Ov1sH9ggrwfgDDRBo66isT19WDrSABHjHvuVmv86Z/5O
- ngRHyZnkhaAZbSgg=
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,76 +67,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>, Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Konstantin Ryabitsev <konstantin@linuxfoundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Date: Thu, 16 Mar 2023 19:56:21 +0100
+Ira Weiny <ira.weiny@intel.com> writes:
+> + Konstantin
+>
+> Michael Ellerman wrote:
+>> Ira Weiny <ira.weiny@intel.com> writes:
+>> > Dave Hansen wrote:
+>> >> On 3/15/23 16:20, Ira Weiny wrote:
+>> >> > Commit 21b56c847753 ("iov_iter: get rid of separate bvec and xarray 
+>> >> > callbacks") removed the calls to memcpy_page_flushcache().
+>> >> > 
+>> >> > kmap_atomic() is deprecated and used in the x86 version of
+>> >> > memcpy_page_flushcache().
+>> >> > 
+>> >> > Remove the unnecessary memcpy_page_flushcache() call from all arch's.
+>> >> 
+>> >> Hi Ira,
+>> >> 
+>> >> Since the common code user is already gone these three patches seem
+>> >> quite independent.  It seems like the right thing to do is have
+>> >> individual arch maintainers cherry pick their arch patch and carry it
+>> >> independently.
+>> >
+>> > Yes.
+>> >
+>> >> 
+>> >> Is there a compelling reason to have someone pick up and carry these all
+>> >> together that I'm missing?
+>> >
+>> > No reason.  Would you like me to submit them individually?
+>> 
+>> I'll just grab the powerpc one from the thread, no need to resend.
+>
+> Thanks.
+>
+>> 
+>> > Sorry, submitting them separately crossed my mind when I wrote them but I
+>> > kind of forgot as they were all on the same branch and I was waiting for
+>> > after the merge window to submit them.
+>> 
+>> It's also much easier to run git-send-email HEAD^^^, rather than running
+>> it three separate times, let alone if it's a 20 patch series.
+>
+> Exactly.  And I'm using b4 which would have forced me to create a separate
+> branch for each of the patches to track.  So I was keeping them around in
+> a single branch to let 0day run after the merge window.  Then I forgot
+> about the idea of splitting them because b4 had it all packaged up nice!
+>
+>> 
+>> I wonder if we could come up with some convention to indicate that a
+>> series is made up of independent patches, and maintainers are free to
+>> pick them individually - but still sent as a single series.
+>
+> Maybe.  But perhaps b4 could have a send option which would split them
+> out?  I'll see about adding an option to b4 but I've Cc'ed Konstantin as
+> well for the idea.
 
-Some local variables will be set to an appropriate value before usage.
-Thus omit explicit initialisations at the beginning of these functions.
+Yes you're right that's probably a better idea. b4 to the rescue!
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-=2D--
-=C2=A0arch/powerpc/platforms/4xx/pci.c | 14 +++++++-------
-=C2=A01 file changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/platforms/4xx/pci.c b/arch/powerpc/platforms/4xx=
-/pci.c
-index 0c0848f0c819..ebc030e12663 100644
-=2D-- a/arch/powerpc/platforms/4xx/pci.c
-+++ b/arch/powerpc/platforms/4xx/pci.c
-@@ -323,8 +323,8 @@ static void __init ppc4xx_probe_pci_bridge(struct devi=
-ce_node *np)
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource rsrc_cfg;
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource rsrc_reg;
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource dma_window;
--=C2=A0=C2=A0 =C2=A0struct pci_controller *hose =3D NULL;
--=C2=A0=C2=A0 =C2=A0void __iomem *reg =3D NULL;
-+=C2=A0=C2=A0 =C2=A0struct pci_controller *hose;
-+=C2=A0=C2=A0 =C2=A0void __iomem *reg;
-=C2=A0=C2=A0=C2=A0 =C2=A0const int *bus_range;
-=C2=A0=C2=A0=C2=A0 =C2=A0int primary =3D 0;
-=C2=A0
-@@ -523,8 +523,8 @@ static void __init ppc4xx_probe_pcix_bridge(struct dev=
-ice_node *np)
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource rsrc_cfg;
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource rsrc_reg;
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource dma_window;
--=C2=A0=C2=A0 =C2=A0struct pci_controller *hose =3D NULL;
--=C2=A0=C2=A0 =C2=A0void __iomem *reg =3D NULL;
-+=C2=A0=C2=A0 =C2=A0struct pci_controller *hose;
-+=C2=A0=C2=A0 =C2=A0void __iomem *reg;
-=C2=A0=C2=A0=C2=A0 =C2=A0const int *bus_range;
-=C2=A0=C2=A0=C2=A0 =C2=A0int big_pim =3D 0, msi =3D 0, primary =3D 0;
-=C2=A0
-@@ -1403,7 +1403,7 @@ static struct ppc4xx_pciex_hwops ppc_476fpe_pcie_hwo=
-ps __initdata =3D
-=C2=A0static int __init ppc4xx_pciex_check_core_init(struct device_node *n=
-p)
-=C2=A0{
-=C2=A0=C2=A0=C2=A0 =C2=A0static int core_init;
--=C2=A0=C2=A0 =C2=A0int count =3D -ENODEV;
-+=C2=A0=C2=A0 =C2=A0int count;
-=C2=A0
-=C2=A0=C2=A0=C2=A0 =C2=A0if (core_init++)
-=C2=A0=C2=A0=C2=A0 =C2=A0=C2=A0=C2=A0 =C2=A0return 0;
-@@ -1905,10 +1905,10 @@ static void __init ppc4xx_configure_pciex_PIMs(str=
-uct ppc4xx_pciex_port *port,
-=C2=A0static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_=
-port *port)
-=C2=A0{
-=C2=A0=C2=A0=C2=A0 =C2=A0struct resource dma_window;
--=C2=A0=C2=A0 =C2=A0struct pci_controller *hose =3D NULL;
-+=C2=A0=C2=A0 =C2=A0struct pci_controller *hose;
-=C2=A0=C2=A0=C2=A0 =C2=A0const int *bus_range;
-=C2=A0=C2=A0=C2=A0 =C2=A0int primary =3D 0, busses;
--=C2=A0=C2=A0 =C2=A0void __iomem *mbase =3D NULL, *cfg_data =3D NULL;
-+=C2=A0=C2=A0 =C2=A0void __iomem *mbase, *cfg_data =3D NULL;
-=C2=A0=C2=A0=C2=A0 =C2=A0const u32 *pval;
-=C2=A0=C2=A0=C2=A0 =C2=A0u32 val;
-=C2=A0
-=2D-
-2.39.2
-
-
+cheers
