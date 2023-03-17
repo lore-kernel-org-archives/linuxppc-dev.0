@@ -4,72 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21720C74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 16 Mar 2023 23:59:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24201C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 14:27:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pd44m25GNz3f4L
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 10:59:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PdRKG2wr7z3f4N
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 18 Mar 2023 01:26:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=H9aXq6XW;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vrFmJJMH;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=b1irkMk2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.28; helo=smtp-out1.suse.de; envelope-from=tiwai@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.4; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=H9aXq6XW;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=vrFmJJMH;
+	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=b1irkMk2;
 	dkim-atps=neutral
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.220.28])
+X-Greylist: delayed 326 seconds by postgrey-1.36 at boromir; Sat, 18 Mar 2023 01:26:01 AEDT
+Received: from mout.web.de (mout.web.de [212.227.15.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pchqg0z84z3c34
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Mar 2023 20:32:14 +1100 (AEDT)
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id E58EF21852;
-	Thu, 16 Mar 2023 09:32:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1678959130; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=LgQ6KC2ybaQuhcxvNbj5yWV84Hdg07Eok3qBPbbxY94=;
-	b=H9aXq6XWzgXy3V6gUMaMgKEQOC4u2wwCwuM31XT6epw3vcSavDTpG7v1DmpLitT3aAzvrb
-	Uij7YtTtCMzKsnoVFyM4P36fE8radT/BVqUmJO5oz33vf5WRPcRwuHN+AiCd+tOxzXuyQp
-	7HO6F55yqLXCARRi8VELwLEQafIfemA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1678959130;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=LgQ6KC2ybaQuhcxvNbj5yWV84Hdg07Eok3qBPbbxY94=;
-	b=vrFmJJMHnJyGAG4vQo3kBbAm10wkR+7Kjjsf57BxURiziFHRuM5x12k5OToJ7bvAHK8XWM
-	BGwhhqI50dx0VBCA==
-Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
-	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id DE806133E0;
-	Thu, 16 Mar 2023 09:32:08 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([192.168.254.65])
-	by imap2.suse-dmz.suse.de with ESMTPSA
-	id 9o+MNRjiEmRkRAAAMHmgww
-	(envelope-from <tiwai@suse.de>); Thu, 16 Mar 2023 09:32:08 +0000
-Date: Thu, 16 Mar 2023 10:32:08 +0100
-Message-ID: <87ttylhwiv.wl-tiwai@suse.de>
-From: Takashi Iwai <tiwai@suse.de>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 000/173] ALSA/ASoC: Convert to platform remove callback returning void
-In-Reply-To: <20230315150745.67084-1-u.kleine-koenig@pengutronix.de>
-References: <20230315150745.67084-1-u.kleine-koenig@pengutronix.de>
-User-Agent: Wanderlust/2.15.9 (Almost Unreal) Emacs/27.2 Mule/6.0
-MIME-Version: 1.0 (generated by SEMI-EPG 1.14.7 - "Harue")
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 17 Mar 2023 10:59:01 +1100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PdRJ95Xb6z3cDT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Mar 2023 01:26:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
+	t=1679063147; i=markus.elfring@web.de;
+	bh=SCwrapoV90k7PPQXDoRWVOZ47w9dirURaRogquQ3emo=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=b1irkMk2EyV5IjLVoCRR85PqkzNEepHkRNaJ5mcabkqu78aSA7wUtQVP7J5wmYuC5
+	 o3KeXChE6AHUtJrwoJqOmdJ4sP1sN2lvA2qtwHXOBSycggLVZ5d4mOIhygUn4tjTMr
+	 6xhfkWkwpugLRFiw2ES7UTtt0YIWnxofec6CxRscR++na8IEDB+X81NREsF5poQztY
+	 CoKPdCDjCjz7BcCWmmvewb6s0WaHHOsxpkRDnv1O7r9U/Bz2yUM2NI8+BEQvn6Cnmy
+	 CPre1P+dwmW9c/yZmLs82rr843z7zlhL1AOKd+y/dhRK9VjYr1+khjilqmiQ2XRpPi
+	 HqRwLg+U+iB+Q==
+X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
+Received: from [192.168.178.21] ([94.31.81.83]) by smtp.web.de (mrweb005
+ [213.165.67.108]) with ESMTPSA (Nemesis) id 1MF2gW-1pjjS22i6a-00Fmzu; Fri, 17
+ Mar 2023 15:20:14 +0100
+Message-ID: <a01643fd-1e4a-1183-2fa6-000465bc81f3@web.de>
+Date: Fri, 17 Mar 2023 15:20:12 +0100
+MIME-Version: 1.0
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.0
+Subject: Re: powerpc/pseries: Fix exception handling in
+ pSeries_reconfig_add_node()
+Content-Language: en-GB
+To: Nathan Lynch <nathanl@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+References: <f9303bdc-b1a7-be5e-56c6-dfa8232b8b55@web.de>
+ <0981dc33-95d0-4a1b-51d9-168907da99e6@web.de> <871qln8quw.fsf@linux.ibm.com>
+From: Markus Elfring <Markus.Elfring@web.de>
+In-Reply-To: <871qln8quw.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:CIqQ89eGA+84OKhR0u04OjAu5Q0Bl7u7oC4Tlc8vFMvrrqZUMoi
+ OKxoF+lovWdcDuCsiU10l4UWIJo9ZTDwa+FwNcRxwZ+vgwFRNd8yjjjX7otII4+B8f/oKmC
+ IoH3lEmVCRAimgsaSCe6egrfLQfOSIqWAPoWIYHbRdBbP/o0K+Z39MxXsJhUHzadOZjKpA5
+ 5cUVNqWeYbCmSi6/TKzXA==
+UI-OutboundReport: notjunk:1;M01:P0:+H5OaRK7vvw=;lS2azn5E0I1bAqHcvUiLw1cSN01
+ +LJs87L+NZjUN9vJeo7eZrYqNufe8TrW4yDZkU/lC0KHUkHvA26jIBQMkt+6PfubcmDzc2SgV
+ YinCfUBbAWnXOL+0/bMTN3xB8lGiguQ+XwOxGL0MbIdqLtGUQ5ZJCLoRqu0tBsMMUn3gzgBd+
+ nPKf3SJEacR16Zgo70nXF/Tk0D2JE3k8S1htzwcxMtbcFzQL1kfsNTrOpLxVvCewDxSSdSxW6
+ +ezeLT9uYIqqdskxGfRWGmF+8yc37Qpc7R+wLJ61vu+vdOhA8nksdHAxfVPCm0wvW5puKQwcC
+ 0+eid+m8R26EdauypIxGd86FyddHT9D/4PJ1YTGLo4L7Yt/j+mg4QrybowpU8tXZKeaAZtsId
+ DiNYljPIyU7bl7jEiyg6aDKR4uSy3OLHDCTI2QhfY2Ibb/Dy8wHodz6hOoDZYpAlkLW1YExG1
+ PpDggJq/q3DqF1bJzy2/fqjU4iXRKuxM07flVlVKRvBGGHpaiIx08CLMh711Rl+AtAKDsJB18
+ torRrz3MZqSJVkNXG9r9EZhe9UFTw1LyiYlldJuzvKySGl6diVlNSp85xZQG7p1Lz0y5xMsVB
+ vLx1l7Y6zwOrXj64oqKpP7rTMpl48DsIHuMbmS3p8+LJbGSmDN+G7WOZt6c8E+auHuxg3Tv0o
+ tfBzCDZ1IIjIl60UZGYH66ZkQPe+WraL2b1aZX7RrVKD37EAHjfhp9lWbuJBt0Uzfqot7XIkY
+ YORbHVT7OdT4z/tMkKDAzlSNzjGLofoK8nsU7HlmrNdEnf+GsHQenHXFtamqMFBCwVuUwKOPF
+ 0ySsd+We6vEEtiDs8n2IcUPuUKOW1SfgJ8kSTrEDwFDI0DwAX9GyMl5edGQEPMwmEzGpOk+iW
+ f+IPL8jIPvJkCJY2jZBuFPcF1Z+makwMXfuHpmSzmA0/QF6S177h1AIlbH3MPr69mXMggQL9L
+ HSmDVg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,48 +83,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Lunn <andrew@lunn.ch>, Heiko Stuebner <heiko@sntech.de>, Xiubo Li <Xiubo.Lee@gmail.com>, Moises Cardona <moisesmcardona@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Liam Girdwood <liam.r.girdwood@linux.intel.com>, Muralidhar Reddy <muralidhar.reddy@intel.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Gongjun Song <gongjun.song@intel.com>, Gaosheng Cui <cuigaosheng1@huawei.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Samuel Holland <samuel@sholland.org>, Ranjani Sridharan <ranjani.sridharan@linux.intel.com>, NXP Linux Team <linux-imx@nxp.com>, Olivier Moysan <olivier.moysan@foss.st.com>, Martin =?ISO-8859-2?Q?Povi=B9er?= <povik+lin@cutebit.org>, Linus Walleij <linus.walleij@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>, Nicholas Piggin <npiggin@gmail.com>, James Schulman <james.schulman@cirrus.com>, syed saba kareem <syed.sabakareem@amd.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, Alexander Sverdlin <alexander.sverdlin@gmail.com>, 
- Allison Randal <allison@lohutok.net>, Scott Branden <sbranden@broadcom.com>, Geoff Levand <geoff@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zhang Qilong <zhangqilong3@huawei.com>, linux-stm32@st-md-mailman.stormreply.com, Shang XiaoJing <shangxiaojing@huawei.com>, Masami Hiramatsu <mhiramat@kernel.org>, kernel@pengutronix.de, Li Chen <lchen@ambarella.com>, Claudiu Beznea <claudiu.beznea@microchip.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Lucas Tanure <tanureal@opensource.cirrus.com>, David Rhodes <david.rhodes@cirrus.com>, Max Filippov <jcmvbkbc@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Mario Limonciello <mario.limonciello@amd.com>, Liang He <windhl@126.com>, Ban Tao <fengzheng923@gmail.com>, Hezi Shahmoon <hezi@marvell.com>, Chunyan Zhang <zhang.lyra@gmail.com>, YueHaibing <yuehaibing@huawei.com>, Pierre-Louis Bossart <pierre-louis.bossar
- t@linux.intel.com>, Minghao Chi <chi.minghao@zte.com.cn>, Jonathan Hunter <jonathanh@nvidia.com>, linux-rockchip@lists.infradead.org, Vijendar Mukunda <Vijendar.Mukunda@amd.com>, Jerome Brunet <jbrunet@baylibre.com>, Colin Ian King <colin.i.king@gmail.com>, linux-xtensa@linux-xtensa.org, Charles Keepax <ckeepax@opensource.cirrus.com>, Aidan MacDonald <aidanmacdonald.0x0@gmail.com>, alsa-devel@alsa-project.org, Martin Blumenstingl <martin.blumenstingl@googlemail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Peter Ujfalusi <peter.ujfalusi@gmail.com>, Biju Das <biju.das.jz@bp.renesas.com>, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstrong@linaro.org>, Kai Vehmanen <kai.vehmanen@linux.intel.com>, Meng Tang <tangmeng@uniontech.com>, Banajit Goswami <bgoswami@quicinc.com>, Amadeusz =?ISO-8859-2?Q?S=B3awi=F1ski?= <amadeuszx.slawinski@linux.intel.com>, linux-mediatek@lists.infradead.org, linux-sunxi@lists.linux.dev, Cezary Rojewski <c
- ezary.rojewski@intel.com>, Dan Carpenter <error27@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Sameer Pujar <spujar@nvidia.com>, Li kunyu <kunyu@nfschina.com>, Miaoqian Lin <linmq006@gmail.com>, Michal Simek <michal.simek@xilinx.com>, linux-tegra@vger.kernel.org, Neta Zur Hershkovits <neta@marvell.com>, Bard Liao <yung-chuan.liao@linux.intel.com>, Marcin Wojtas <mw@semihalf.com>, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Jernej Skrabec <jernej.skrabec@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Broadcom internal kernel review list <bcm-kernel-feedback-list@broadcom.com>, Kevin Hilman <khilman@baylibre.com>, Yang Yingliang <yangyingliang@huawei.com>, Orson Zhai <orsonzhai@gmail.com>, Codrin Ciubotariu <codrin.ciubotariu@microchip.com>, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Andrey Turkin <andrey.turkin@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Ray Jui <rjui@broadcom.com>, Jiasheng Jiang <jiasheng@iscas.ac.cn>, Richard Fitzge
- rald <rf@opensource.cirrus.com>, Mark Brown <broonie@kernel.org>, Baolin Wang <baolin.wang@linux.alibaba.com>, Shuming Fan <shumingf@realtek.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Mohan Kumar <mkumard@nvidia.com>, Zhen Ni <nizhen@uniontech.com>, Liam Girdwood <lgirdwood@gmail.com>, Takashi Sakamoto <o-takashi@sakamocchi.jp>, Linh Phung <linh.phung.jy@renesas.com>, asahi@lists.linux.dev, Akihiko Odaki <akihiko.odaki@gmail.com>, Ricardo Ribalda <ribalda@chromium.org>, Arnaud Pouliquen <arnaud.pouliquen@foss.st.com>, Shawn Guo <shawnguo@kernel.org>, Peter Rosin <peda@axentia.se>, Lior Amsalem <alior@marvell.com>, Alexandre Torgue <alexandre.torgue@foss.st.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, V sujith kumar Reddy <Vsujithkumar.Reddy@amd.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Jiapeng Chong <jiapeng.chong@linux.alibaba.com>, Zhu Ning <zhuning0077@gmail.com>, Shengjiu Wang <shengjiu.wang@gmail.com>, Nicolas Frattaroli <frattaroli.nicolas@gmail.com>, Trevor 
- Wu <trevor.wu@mediatek.com>, Yong Zhi <yong.zhi@intel.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Fabio Estevam <festevam@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Peter Ujfalusi <peter.ujfalusi@linux.intel.com>, Mikhail Rudenko <mike.rudenko@gmail.com>, patches@opensource.cirrus.com, Takashi Iwai <tiwai@suse.com>, Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>, linuxppc-dev@lists.ozlabs.org, Daniel Mack <daniel@zonque.org>
+Cc: Paul Moore <paul@paul-moore.com>, LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>, cocci@inria.fr
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Mar 2023 16:04:52 +0100,
-Uwe Kleine-König wrote:
-> 
-> Hello,
-> 
-> this series adapts the platform drivers below sound/ to use the .remove_new()
-> callback. Compared to the traditional .remove() callback .remove_new() returns
-> no value. This is a good thing because the driver core doesn't (and cannot)
-> cope for errors during remove. The only effect of a non-zero return value in
-> .remove() is that the driver core emits a warning. The device is removed anyhow
-> and an early return from .remove() usually yields a resource leak.
-> 
-> By changing the remove callback to return void driver authors cannot
-> reasonably assume any more that there is some kind of cleanup later.
-> 
-> The first two patches simplify a driver each to return zero unconditionally,
-> and then all drivers are trivially converted to .remove_new().
-> 
-> There are nearly no interdependencies in this patch set---only 1 <- 11 and
-> 2 <- 16. So even if some individual problems are found (I don't expect that),
-> the other patches can (and from my POV should) still be applied.
-> 
-> Best regards
-> Uwe
-> 
-> Uwe Kleine-König (173):
-(snip)
+>> The label =E2=80=9Cout_err=E2=80=9D was used to jump to another pointer=
+ check despite of
+>> the detail in the implementation of the function =E2=80=9CpSeries_recon=
+fig_add_node=E2=80=9D
+>> that it was determined already that the corresponding variable containe=
+d
+>> a null pointer (because of a failed function call in two cases).
+>>
+>> 1. Thus return directly after a call of the function =E2=80=9Ckzalloc=
+=E2=80=9D failed.
+>>
+>> 2. Use more appropriate labels instead.
+>>
+>> 3. Delete a redundant check.
+>>
+>> 4. Omit an explicit initialisation for the local variable =E2=80=9Cerr=
+=E2=80=9D.
+>>
+>> This issue was detected by using the Coccinelle software.
+> Is there a correctness or safety issue here?
 
-For the whole series,
-
-Acked-by: Takashi Iwai <tiwai@suse.de>
+I got the impression that the application of only a single label like =E2=
+=80=9Cout_err=E2=80=9D
+resulted in improvable implementation details.
 
 
-thanks,
+> The subject uses the word "fix" but the commit message doesn't seem to i=
+dentify one.
 
-Takashi
+Can you find the proposed adjustments reasonable?
+
+
+> Can you share how Coccinelle is being invoked and its output?
+
+Please take another look at available information sources.
+https://lore.kernel.org/cocci/f9303bdc-b1a7-be5e-56c6-dfa8232b8b55@web.de/
+https://sympa.inria.fr/sympa/arc/cocci/2023-03/msg00017.html
+
+Another command example:
+Markus_Elfring@Sonne:=E2=80=A6/Projekte/Linux/next-patched> spatch --timeo=
+ut 23 -j4 --chunksize 1 -dir . =E2=80=A6/Projekte/Coccinelle/janitor/show_=
+jumps_to_pointer_check.cocci > ../show_jumps_to_pointer_check-next-2023031=
+5.diff 2> ../show_jumps_to_pointer_check-errors-next-20230315.txt
+
+
+Regards,
+Markus
