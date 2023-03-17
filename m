@@ -4,67 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 764B3C74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 12:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C4A8C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 12:39:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PdNwD6qgjz3fC2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 23:38:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PdNxD4f36z3f54
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Mar 2023 23:39:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ne3UNZCL;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=EWpbQwx8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1034; helo=mail-pj1-x1034.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102a; helo=mail-pj1-x102a.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=Ne3UNZCL;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=EWpbQwx8;
 	dkim-atps=neutral
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
+Received: from mail-pj1-x102a.google.com (mail-pj1-x102a.google.com [IPv6:2607:f8b0:4864:20::102a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PdNt742XBz3ccw
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 23:36:47 +1100 (AEDT)
-Received: by mail-pj1-x1034.google.com with SMTP id fy10-20020a17090b020a00b0023b4bcf0727so5081081pjb.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 05:36:47 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PdNt711r7z3c38
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 23:36:45 +1100 (AEDT)
+Received: by mail-pj1-x102a.google.com with SMTP id j3-20020a17090adc8300b0023d09aea4a6so8932223pjv.5
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Mar 2023 05:36:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1679056605;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=+tTjZq7Z3XuFiNFhzKWYEU/rRE2o6iWMeH5Xuljn3+Q=;
-        b=Ne3UNZCLGAwWcmVqOT78Mg3hkiCk35vhbBgIy3mt/mCTFBQbIjkWDwYjTM/E26b/bO
-         3ZVXvs/cf5aHpPqo/VGl9PN3m6ByXiMEjHZK362TZ8jDjHdcScuF3KexyQAiHWB/mMmu
-         LytVw57nXtwqsxm5U7NxznXJ9w/pULIdsolov9xS76tPDhr/rfXDoXNTtsexbczWUxFi
-         V7Nyz7RaUWvI1tG2sawf/cSvkCtvYq4fqCyE+ImZ7ffb4XyKPt58jAQ9bc0ilWh/cNsu
-         lCc/mYiQKk9Olz5N8mU2P7zz6T3W9t7QWjg94oyFHqQ1yfNz7UJoAyrvpRBCNLV/yO/a
-         r+vw==
+        d=gmail.com; s=20210112; t=1679056599;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=E5PF3sqkFmxXngJQJQHQ0RIO725f9lA9+mqcaHUiq3c=;
+        b=EWpbQwx8Widt3BIdhrfMY5Nauao90WBf7m5d8GzkIFKqrtUuGdiWQETekCYtaXmZLc
+         D5aHQ/9oQEJ70RzfGExhknVfs+KZJIB6Br0QZz/NfIaLTHVa9IPWnQChoYwSHQbLbnRV
+         bBXet7j8G54dojD3aSSaxv2q3H2T1G7xE4oXlTZi/EfDxfkBAXDgCrAVi0pWqrui/KCp
+         JNR6SWAM4b27n3pWPQmuGzqQqjkoMXShUFFfrbf5yJ79tY0/KhmYKqBG5c/PCnYchBBd
+         AMGVxsdx06Mdxd3mOv+qikfYvjj8uufD39LKZMVCDbkQhhY8nvarPCJzYVeYVWA+qFRB
+         wNIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679056605;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=+tTjZq7Z3XuFiNFhzKWYEU/rRE2o6iWMeH5Xuljn3+Q=;
-        b=72YqELAhyTfFvq6j4PlUk35x5aMF+TW7XfEOOOww8k4qEOIPUR9clfubgg+fyXdjVu
-         vqq4HCGKOxg+dyAdr3AcNM5f3kuEugG1S91KYFoVB/KY+1IimhZd8L37t/O70w8Cizly
-         EWL4uwF3PcYLfFrUalVrihlIdRtq0bDIFimdNRG6LjYFoaTC7MdDfndfvc8Ve09Jpi6A
-         9+QQ9iZsbY3OUuX+qASweTbW1ASx9FupnC0qWrmSh1f+UB05FUB5UbRQNNiLvLyq0UyL
-         5zhAT5rOnF0FvLrqrT/DNisbfJ5ru0yTfimfzQI92tLIQKWIjIaPsG6+FS8KqSWZGbFz
-         H44A==
-X-Gm-Message-State: AO0yUKUOvxYAGcDDYDVNeG8YVvs1ZeS3K4D3rFQ3lGzao+b6MdglOhuw
-	cLl+eSdqiVqxLZo5ipNLzbA=
-X-Google-Smtp-Source: AK7set9TnyUdJAVUv9lK7slr27weM+mbnOsdUTUdrBpOI2GcH7cVe+u5jdT2N2vTyTuWaS/0bNGHyw==
-X-Received: by 2002:a17:90b:38d1:b0:234:b03:5a70 with SMTP id nn17-20020a17090b38d100b002340b035a70mr8134937pjb.35.1679056605187;
-        Fri, 17 Mar 2023 05:36:45 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1679056599;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=E5PF3sqkFmxXngJQJQHQ0RIO725f9lA9+mqcaHUiq3c=;
+        b=djtHHx6CLO3kkDCPX5DifvhE37OtyxmFYwrWO65p7P2gxC6D6nXiunJk9JGJ0TDL+L
+         FcABJZho6ERiyjyZnzhyfOUhYkD7HjxJPPVyZtyyilMnmDLua99lImvNiztNJRAMt4/Q
+         Y98sXrPu5JT2rBdama01FVL3sSYOL5L+eR4PkfgNeZMC2ZZDxWIU8JPBpkMAz2v745q8
+         EBUI8v3WCIzzgBIcIT9gozMlfTtWczX5XjWRCKm7aV4mo1c0Gx3uWY8tb7R095h4vwXe
+         9g43oF5ATblHFrkp1DLslpe07rqDea+w3XUcqR17qjPOZsGgFfHrYXqW3edTcd7niCYi
+         BAsg==
+X-Gm-Message-State: AO0yUKVdJPLC5WqVwmH9kHQuhHK/hXNkWVGG35xBqrgyu0/bxw0i2wI2
+	lsh8YUeZK0poIZQTK/F1ZTo=
+X-Google-Smtp-Source: AK7set/r/9tsLIqaVCwWrJ+ljYodip91oYy0rj6NR5ublKD7VENvXuoiFu7Ci7CtZmpPRDXWdlYjNg==
+X-Received: by 2002:a17:902:fa8b:b0:19d:14c:e590 with SMTP id lc11-20020a170902fa8b00b0019d014ce590mr5864922plb.9.1679056599077;
+        Fri, 17 Mar 2023 05:36:39 -0700 (PDT)
 Received: from bobo.ozlabs.ibm.com (121-44-69-75.tpgi.com.au. [121.44.69.75])
-        by smtp.gmail.com with ESMTPSA id u4-20020a170902b28400b001a19d4592e1sm1430990plr.282.2023.03.17.05.36.42
+        by smtp.gmail.com with ESMTPSA id u4-20020a170902b28400b001a19d4592e1sm1430990plr.282.2023.03.17.05.36.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Mar 2023 05:36:44 -0700 (PDT)
+        Fri, 17 Mar 2023 05:36:38 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: kvm@vger.kernel.org
-Subject: [kvm-unit-tests PATCH 3/7] powerpc: abstract H_CEDE calls into a sleep() function
-Date: Fri, 17 Mar 2023 22:36:10 +1000
-Message-Id: <20230317123614.3687163-3-npiggin@gmail.com>
+Subject: [kvm-unit-tests PATCH 1/7] MAINTAINERS: Update powerpc list
+Date: Fri, 17 Mar 2023 22:36:08 +1000
+Message-Id: <20230317123614.3687163-1-npiggin@gmail.com>
 X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20230317123614.3687163-1-npiggin@gmail.com>
-References: <20230317123614.3687163-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -82,204 +79,28 @@ Cc: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>, linuxpp
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This consolidates several implementations, and it no longer leaves
-MSR[EE] enabled after the decrementer interrupt is handled, but
-rather disables it on return.
-
-The handler no longer allows a continuous ticking, but rather dec
-has to be re-armed and EE re-enabled (e.g., via H_CEDE hcall) each
-time.
+KVM development on powerpc has moved to the Linux on Power mailing list,
+as per linux.git commit 19b27f37ca97d ("MAINTAINERS: Update powerpc KVM
+entry").
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- lib/powerpc/asm/handlers.h  |  2 +-
- lib/powerpc/asm/ppc_asm.h   |  1 +
- lib/powerpc/asm/processor.h |  1 +
- lib/powerpc/handlers.c      | 10 ++++------
- lib/powerpc/processor.c     | 31 +++++++++++++++++++++++++++++++
- powerpc/sprs.c              |  6 +-----
- powerpc/tm.c                | 20 +-------------------
- 7 files changed, 40 insertions(+), 31 deletions(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/lib/powerpc/asm/handlers.h b/lib/powerpc/asm/handlers.h
-index 64ba727..e4a0cd4 100644
---- a/lib/powerpc/asm/handlers.h
-+++ b/lib/powerpc/asm/handlers.h
-@@ -3,6 +3,6 @@
- 
- #include <asm/ptrace.h>
- 
--void dec_except_handler(struct pt_regs *regs, void *data);
-+void dec_handler_oneshot(struct pt_regs *regs, void *data);
- 
- #endif /* _ASMPOWERPC_HANDLERS_H_ */
-diff --git a/lib/powerpc/asm/ppc_asm.h b/lib/powerpc/asm/ppc_asm.h
-index 1b85f6b..6299ff5 100644
---- a/lib/powerpc/asm/ppc_asm.h
-+++ b/lib/powerpc/asm/ppc_asm.h
-@@ -36,6 +36,7 @@
- #endif /* __BYTE_ORDER__ */
- 
- /* Machine State Register definitions: */
-+#define MSR_EE_BIT	15			/* External Interrupts Enable */
- #define MSR_SF_BIT	63			/* 64-bit mode */
- 
- #endif /* _ASMPOWERPC_PPC_ASM_H */
-diff --git a/lib/powerpc/asm/processor.h b/lib/powerpc/asm/processor.h
-index ac001e1..1467f2c 100644
---- a/lib/powerpc/asm/processor.h
-+++ b/lib/powerpc/asm/processor.h
-@@ -20,6 +20,7 @@ static inline uint64_t get_tb(void)
- 
- extern void delay(uint64_t cycles);
- extern void udelay(uint64_t us);
-+extern void sleep(uint64_t cycles);
- 
- static inline void mdelay(uint64_t ms)
- {
-diff --git a/lib/powerpc/handlers.c b/lib/powerpc/handlers.c
-index c8721e0..296f14f 100644
---- a/lib/powerpc/handlers.c
-+++ b/lib/powerpc/handlers.c
-@@ -9,15 +9,13 @@
- #include <libcflat.h>
- #include <asm/handlers.h>
- #include <asm/ptrace.h>
-+#include <asm/ppc_asm.h>
- 
- /*
-  * Generic handler for decrementer exceptions (0x900)
-- * Just reset the decrementer back to the value specified when registering the
-- * handler
-+ * Return with MSR[EE] disabled.
-  */
--void dec_except_handler(struct pt_regs *regs __unused, void *data)
-+void dec_handler_oneshot(struct pt_regs *regs, void *data)
- {
--	uint64_t dec = *((uint64_t *) data);
--
--	asm volatile ("mtdec %0" : : "r" (dec));
-+	regs->msr &= ~(1UL << MSR_EE_BIT);
- }
-diff --git a/lib/powerpc/processor.c b/lib/powerpc/processor.c
-index ec85b9d..f1fb50f 100644
---- a/lib/powerpc/processor.c
-+++ b/lib/powerpc/processor.c
-@@ -10,6 +10,8 @@
- #include <asm/ptrace.h>
- #include <asm/setup.h>
- #include <asm/barrier.h>
-+#include <asm/hcall.h>
-+#include <asm/handlers.h>
- 
- static struct {
- 	void (*func)(struct pt_regs *, void *data);
-@@ -54,3 +56,32 @@ void udelay(uint64_t us)
- {
- 	delay((us * tb_hz) / 1000000);
- }
-+
-+void sleep(uint64_t cycles)
-+{
-+	uint64_t start, end, now;
-+
-+	start = now = get_tb();
-+	end = start + cycles;
-+
-+	while (end > now) {
-+		uint64_t left = end - now;
-+
-+		/* Could support large decrementer */
-+		if (left > 0x7fffffff)
-+			left = 0x7fffffff;
-+
-+		asm volatile ("mtdec %0" : : "r" (left));
-+		handle_exception(0x900, &dec_handler_oneshot, NULL);
-+		if (hcall(H_CEDE) != H_SUCCESS) {
-+			printf("H_CEDE failed\n");
-+			abort();
-+		}
-+		handle_exception(0x900, NULL, NULL);
-+
-+		if (left < 0x7fffffff)
-+			break;
-+
-+		now = get_tb();
-+	}
-+}
-diff --git a/powerpc/sprs.c b/powerpc/sprs.c
-index 5cc1cd1..161a6ba 100644
---- a/powerpc/sprs.c
-+++ b/powerpc/sprs.c
-@@ -254,7 +254,6 @@ int main(int argc, char **argv)
- 		0x1234567890ABCDEFULL, 0xFEDCBA0987654321ULL,
- 		-1ULL,
- 	};
--	static uint64_t decr = 0x7FFFFFFF; /* Max value */
- 
- 	for (i = 1; i < argc; i++) {
- 		if (!strcmp(argv[i], "-w")) {
-@@ -288,10 +287,7 @@ int main(int argc, char **argv)
- 	if (pause) {
- 		migrate_once();
- 	} else {
--		puts("Sleeping...\n");
--		handle_exception(0x900, &dec_except_handler, &decr);
--		asm volatile ("mtdec %0" : : "r" (0x3FFFFFFF));
--		hcall(H_CEDE);
-+		sleep(0x10000000);
- 	}
- 
- 	get_sprs(after);
-diff --git a/powerpc/tm.c b/powerpc/tm.c
-index 65cacdf..61bacf4 100644
---- a/powerpc/tm.c
-+++ b/powerpc/tm.c
-@@ -48,17 +48,6 @@ static int count_cpus_with_tm(void)
- 	return available;
- }
- 
--static int h_cede(void)
--{
--	register uint64_t r3 asm("r3") = H_CEDE;
--
--	asm volatile ("sc 1" : "+r"(r3) :
--			     : "r0", "r4", "r5", "r6", "r7", "r8", "r9",
--			       "r10", "r11", "r12", "xer", "ctr", "cc");
--
--	return r3;
--}
--
- /*
-  * Enable transactional memory
-  * Returns:	FALSE - Failure
-@@ -95,14 +84,10 @@ static bool enable_tm(void)
- static void test_h_cede_tm(int argc, char **argv)
- {
- 	int i;
--	static uint64_t decr = 0x3FFFFF; /* ~10ms */
- 
- 	if (argc > 2)
- 		report_abort("Unsupported argument: '%s'", argv[2]);
- 
--	handle_exception(0x900, &dec_except_handler, &decr);
--	asm volatile ("mtdec %0" : : "r" (decr));
--
- 	if (!start_all_cpus(halt, 0))
- 		report_abort("Failed to start secondary cpus");
- 
-@@ -120,10 +105,7 @@ static void test_h_cede_tm(int argc, char **argv)
- 		      "bf 2,1b" : : : "cr0");
- 
- 	for (i = 0; i < 500; i++) {
--		uint64_t rval = h_cede();
--
--		if (rval != H_SUCCESS)
--			break;
-+		sleep(0x3FFFFF); /* ~10ms */
- 		mdelay(5);
- 	}
- 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 649de50..b545a45 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -79,7 +79,7 @@ M: Laurent Vivier <lvivier@redhat.com>
+ M: Thomas Huth <thuth@redhat.com>
+ S: Maintained
+ L: kvm@vger.kernel.org
+-L: kvm-ppc@vger.kernel.org
++L: linuxppc-dev@lists.ozlabs.org
+ F: powerpc/
+ F: lib/powerpc/
+ F: lib/ppc64/
 -- 
 2.37.2
 
