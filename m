@@ -4,78 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F569C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Mar 2023 10:32:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16414C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Mar 2023 10:34:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pgnwh5PNDz3cV7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Mar 2023 21:32:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pgnzg2kXvz3ch5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Mar 2023 21:34:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=q8Ner4fy;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NmottEFE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=217.72.192.78; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=q8Ner4fy;
-	dkim-atps=neutral
-Received: from mout.web.de (mout.web.de [217.72.192.78])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pgnvg12vHz2xdw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2023 21:31:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de; s=s29768273;
-	t=1679394657; i=markus.elfring@web.de;
-	bh=CT7xHXG8JhBeOVufCmoBkVwuGJ+QQcGx0Cjdf+u/rjo=;
-	h=X-UI-Sender-Class:Date:Subject:From:To:Cc:References:In-Reply-To;
-	b=q8Ner4fyHjhZM3MaiXKTZ6CilhhyzZJc/gyP7RQ+qmNKPyAPDxEkRP78nX7DvGouE
-	 HWFI9yJfxr3xFXmponEhY/MDX+Ho+g4ZwU2tup3mDJkD3w6ixzMhI/n0Kle8/Z7mXq
-	 HpUswXEVz0a00QZycvx/hiAi6fluX7OfaKd/y/k2uz7/M4s38Q45j826csJMjL6+YN
-	 7IMAmcTXfeZO1W3Zv0uKu7ui+SUtJ6tTeo1Izy9a3JgjwyQNntgu+7Jz9QXYQwPgtb
-	 nQU16R67FX30cWu9dFRWsf08fi0iBUf06mWtSbTgSdB2erDznE1NXf9dY9L4GncUwS
-	 h9ZwGXY4WAyyA==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.21] ([94.31.81.83]) by smtp.web.de (mrweb105
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MQ8Wg-1prqvg3li4-00MGg8; Tue, 21
- Mar 2023 11:30:56 +0100
-Message-ID: <d4bcde15-b4f1-0e98-9072-3153d1bd21bc@web.de>
-Date: Tue, 21 Mar 2023 11:30:54 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pgnyc5WfBz2ynD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Mar 2023 21:34:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=NmottEFE;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pgnyc0xzqz4whr;
+	Tue, 21 Mar 2023 21:33:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1679394840;
+	bh=AZBxZBErI7bC11AKURL/fDXfLU64bJPXSy0jubRl/1M=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=NmottEFE7a/dSPZAqpGNXOii0lvujqTNochXP/A2xjAxplMCo5826IR1XghamjbiL
+	 yBpJ7GT3bcNmN1deVy1dV3s71td0RwyFWQBVmTSYcYgtIK0Yd3ToyCYatSo1M6ZtOM
+	 AUFiFuRX9nBBXh7VzgpryEqIaEaSJcInnAEAiIXjAhq5CwXr7lsNqeYWpDXQsZD1yC
+	 FvFVoFaYwdpglqTvVEIiWXY2hEhxzLUZ1apH0PTozTjG18Mug0uoThZTqi1lE3Q2pR
+	 G60to+oMPHhrnORuRrotwGqP7DuGb0aPkLouHl0yfzxeeIo4z63kZoY8ZfEE61X+41
+	 0ATiOG3XCzYCQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Timothy Pearson <tpearson@raptorengineering.com>, Timothy Pearson
+ <tpearson@raptorengineering.com>
+Subject: Re: [PATCH v2 0/4] Reenable VFIO support on POWER systems
+In-Reply-To: <2099448392.25626899.1679166370571.JavaMail.zimbra@raptorengineeringinc.com>
+References: <8398361.16996856.1678123793664.JavaMail.zimbra@raptorengineeringinc.com>
+ <87bkl2ywz2.fsf@mpe.ellerman.id.au>
+ <1816556668.17777469.1678390100763.JavaMail.zimbra@raptorengineeringinc.com>
+ <2099448392.25626899.1679166370571.JavaMail.zimbra@raptorengineeringinc.com>
+Date: Tue, 21 Mar 2023 21:33:57 +1100
+Message-ID: <877cvav1ey.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: [PATCH v2 0/2] powerpc/pseries: Fixes for exception handling in
- pSeries_reconfig_add_node()
-Content-Language: en-GB
-From: Markus Elfring <Markus.Elfring@web.de>
-To: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Michael Ellerman <mpe@ellerman.id.au>, Nathan Lynch <nathanl@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Moore <paul@paul-moore.com>
-References: <f9303bdc-b1a7-be5e-56c6-dfa8232b8b55@web.de>
- <0981dc33-95d0-4a1b-51d9-168907da99e6@web.de> <871qln8quw.fsf@linux.ibm.com>
- <a01643fd-1e4a-1183-2fa6-000465bc81f3@web.de> <87v8iz75ck.fsf@linux.ibm.com>
- <2f5a00f6-f3fb-9f00-676a-acdcbef90c6c@web.de> <87pm9377qt.fsf@linux.ibm.com>
- <afb528f2-5960-d107-c3ba-42a3356ffc65@web.de>
-In-Reply-To: <afb528f2-5960-d107-c3ba-42a3356ffc65@web.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:SLleS0P+H73Nybkhw8BxrdfS/dXDDovlM3aLN+oPSrpwr76OOc+
- rzdxlaYdZ57zLjQzG7CKlLloAPFukKnt2yYW76WvVOdL3cPE8aIutleaC45LyLxrx1YB+og
- BxdHjHpbRU1hL+PxsHPg8XNvQBoJGko6AI3HXHGZjgCwWJlS2QmdkAfVlia/IKOVWLJdFw4
- cHIRCAgnsYKWInFirH7gg==
-UI-OutboundReport: notjunk:1;M01:P0:WVBGSyKNTaE=;9fsatsBPW+TcfwzouDdkJeHRc1R
- al4qDFd2oRGDmBC629xDeyNEmF/sn5NAVVNvJSxg6PJ5gSR8JNpYFekonxmdrshPCCgFny/mD
- uALTIunjwdIKTG1gAh1b5GLa3izxUvlxyxG/gXUhjb/EonxMjCXNUTPZQPMiioSaD0RlpSljv
- FsZiihEG5CsB1NKYhD7VENLjX4qjwJ1Jcj1kRVZFdOh7dToJiWtXZzVtBgBqm6QwJU6Y8rvsQ
- IHTrA6l6kWL9PXHeoIXfNs7fkuygxOaacsqyiFAfuayfn9rn67pW8WInGO0ysBtIQ14D4uE+t
- Td/PrQCclxZcCzi4DgcSP8c8qBGJDu85uTZF+6ef8pBZX9hQr5HcRh91gh2112gp32o+IsFTo
- 4hJ24VZ3MaO59ydXcbYxZZ2L9dZytNik00cKpNWYlDZCW1iokA7absyvqsmbvPE7Mk/3B9dP8
- 69wOVaPQJCXZn0LvrjlNxM/Jn86DLiqOfIeBKSlHpZ2zKdKG1DUj8szIFUKNYcINZH+fDgFum
- AYppCg+9CRpetQLVf1CwKakGrkB0OagCjxm8hR1yJZvVHid5rQdHbF8itfJ9eR9Iu6654Dvss
- eZT7STk6I7C1e6c+w8aL+7Mg93EXEHS/quspwTZIphtbDx9u8/6QqOzlxh3U7EbA5/GTbwVaE
- OBWzqErLeTvzGa0CWjs1WJGr+JSpgsPGta8zMzqhd6Gz+cFrKERiXMQH5Vud61yFjtelAOShv
- +t4cO71EgqFrIa96IvskQj9PZ50zV2NfOrF/SSC3FvMu/sE/eXo2KrVJTW49/V9fZJzBU3EZ/
- wktEy7hNbXVymtU15qahGNip6LeXwZCCIWgHi+FFcew2uK5mlNp3Cv38TTXtXRwOOSSTfWejf
- lwKtsBpAK4iOAc5Sh6QcdeI/tB1x6y48Wi/o7StIawKo0BANuC8Sqp70ctVBc7GC1+mFwCjQF
- kSjnJw==
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,24 +61,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, cocci@inria.fr
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, kvm <kvm@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Date: Tue, 21 Mar 2023 11:26:32 +0100
+Timothy Pearson <tpearson@raptorengineering.com> writes:
+> ----- Original Message -----
+>> From: "Timothy Pearson" <tpearson@raptorengineering.com>
+>> To: "Michael Ellerman" <mpe@ellerman.id.au>
+>> Cc: "Timothy Pearson" <tpearson@raptorengineering.com>, "kvm" <kvm@vger.kernel.org>, "linuxppc-dev"
+>> <linuxppc-dev@lists.ozlabs.org>
+>> Sent: Thursday, March 9, 2023 1:28:20 PM
+>> Subject: Re: [PATCH v2 0/4] Reenable VFIO support on POWER systems
+>
+>> ----- Original Message -----
+>>> From: "Michael Ellerman" <mpe@ellerman.id.au>
+>>> To: "Timothy Pearson" <tpearson@raptorengineering.com>, "kvm"
+>>> <kvm@vger.kernel.org>
+>>> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
+>>> Sent: Thursday, March 9, 2023 5:40:01 AM
+>>> Subject: Re: [PATCH v2 0/4] Reenable VFIO support on POWER systems
+>> 
+>>> Timothy Pearson <tpearson@raptorengineering.com> writes:
+>>>> This patch series reenables VFIO support on POWER systems.  It
+>>>> is based on Alexey Kardashevskiys's patch series, rebased and
+>>>> successfully tested under QEMU with a Marvell PCIe SATA controller
+>>>> on a POWER9 Blackbird host.
+>>>>
+>>>> Alexey Kardashevskiy (3):
+>>>>   powerpc/iommu: Add "borrowing" iommu_table_group_ops
+>>>>   powerpc/pci_64: Init pcibios subsys a bit later
+>>>>   powerpc/iommu: Add iommu_ops to report capabilities and allow blocking
+>>>>     domains
+>>> 
+>>> As sent the patches had lost Alexey's authorship (no From: line), I
+>>> fixed it up when applying so the first 3 are authored by Alexey.
+>>> 
+>>> cheers
+>> 
+>> Thanks for catching that, it wasn't intentional.  Probably used a wrong Git
+>> command...
+>
+> Just wanted to touch base on the patches, since they're still listed as Under Review on patchwork.  Are we good to go for the 6.4 merge window?
 
-A few update suggestions were taken into account
-from static source code analysis.
+They've been in my next (and so linux-next), since last week. I just
+haven't updated patchwork yet.
 
-Markus Elfring (2):
-=C2=A0 Do not pass an error pointer to of_node_put()
-=C2=A0 Fix exception handling
+So yeah they are on track to go into mainline during the v6.4 merge window.
 
-=C2=A0arch/powerpc/platforms/pseries/reconfig.c | 26 ++++++++++++---------=
---
-=C2=A01 file changed, 14 insertions(+), 12 deletions(-)
-
-=2D-
-2.40.0
-
-
+cheers
