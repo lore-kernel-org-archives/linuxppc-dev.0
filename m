@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1A60C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 12:27:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEFC2C6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 12:28:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PhSRY0hhwz3cdG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 23:27:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PhSS63Jh2z3cj0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 23:28:22 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhSR045gNz3cCn
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 23:27:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhSR21mYcz3cL0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 23:27:26 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PhSR02bcJz4xDq;
-	Wed, 22 Mar 2023 23:27:24 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PhSR12tddz4xFT;
+	Wed, 22 Mar 2023 23:27:25 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Pali Rohár <pali@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <6cb9865d916231c38401ba34ad1a98c249fae135.1676711562.git.christophe.leroy@csgroup.eu>
-References: <6cb9865d916231c38401ba34ad1a98c249fae135.1676711562.git.christophe.leroy@csgroup.eu>
-Subject: Re: (subset) [PATCH v2 01/10] powerpc/machdep: Make machine name const
-Message-Id: <167948793443.559204.11323646799927591600.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, Jason@zx2c4.com, gregkh@linuxfoundation.org, ebiederm@xmission.com, naveen.n.rao@linux.vnet.ibm.com, Bo Liu <liubo03@inspur.com>
+In-Reply-To: <20221101015452.3216-1-liubo03@inspur.com>
+References: <20221101015452.3216-1-liubo03@inspur.com>
+Subject: Re: [PATCH] powerpc: Fix some kernel-doc warnings
+Message-Id: <167948793439.559204.11260632595393457332.b4-ty@ellerman.id.au>
 Date: Wed, 22 Mar 2023 23:25:34 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,28 +46,15 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 18 Feb 2023 10:15:44 +0100, Christophe Leroy wrote:
-> Machine name in struct machdep_calls should never be modified.
-> 
-> Mark it const.
+On Mon, 31 Oct 2022 21:54:52 -0400, Bo Liu wrote:
+> The current code provokes some kernel-doc warnings:
+> 	arch/powerpc/kernel/process.c:1606: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
 > 
 > 
 
-Patches 1-7 applied to powerpc/next.
+Applied to powerpc/next.
 
-[01/10] powerpc/machdep: Make machine name const
-        https://git.kernel.org/powerpc/c/0aafbdf35c75cbfec82636d01e6dc7950bc1507c
-[02/10] powerpc/machdep: Define 'compatible' property in ppc_md and use it
-        https://git.kernel.org/powerpc/c/2fc39acfcacf3dc1392d8062f6d7b7d94eb2537c
-[03/10] powerpc/platforms: Use 'compatible' property for simple cases
-        https://git.kernel.org/powerpc/c/1c96fcdef8c7492ecf34ed70102a1ae5253ef9d1
-[04/10] powerpc/47x: Split ppc47x machine in two
-        https://git.kernel.org/powerpc/c/357f82395cd8a0279067805841e5968f4e6dc932
-[05/10] powerpc/gamecube|wii : Use machine_device_initcall()
-        https://git.kernel.org/powerpc/c/f47b17d51997cd47e0e6fb1b90145d516ebe6b3e
-[06/10] powerpc/85xx: Fix function naming for p1023_rdb platform
-        https://git.kernel.org/powerpc/c/5a81c02d0cc5067170e49452d55a4dfd21333257
-[07/10] powerpc: Make generic_calibrate_decr() the default
-        https://git.kernel.org/powerpc/c/0aafbdf35c75cbfec82636d01e6dc7950bc1507c
+[1/1] powerpc: Fix some kernel-doc warnings
+      https://git.kernel.org/powerpc/c/be994293544f1c0b032dabfe0832d9c1dfcea14b
 
 cheers
