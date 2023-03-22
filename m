@@ -4,84 +4,91 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00B9DC6FD1C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 05:50:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D2D0C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 05:51:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PhHcm4YBVz3f4h
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 16:50:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PhHdn6dmSz3fHy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 16:51:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CPo0Ll+K;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNvnBGdE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CPo0Ll+K;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sNvnBGdE;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhHXh526dz3cCc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 16:46:43 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32M5CKDQ031661
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhHXh5PtQz3c8x
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 16:46:44 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32M1wtIc000970
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:40 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=pp1;
- bh=0S3grYh8nBoHowjAd8/XMG71HPN+3pbrCfsSZU7hoLw=;
- b=CPo0Ll+KBE5R9Kscwn2twpg2wFZ7lRgoHSt2b98aQKjUDlggalH7NuKd/rL6LhRBzSTv
- IBXy8QrDhPyZoX11wtAZ55PXKC3G7h+rxrdm7fzYI9q1Hn2kAzzOQ8NSaKZeUHPhaWV5
- U3nnMZQNdLCtYdSwbKu/0TxuTwbLqApLK6+i0/iT5Mt/jdRv2I8BapEh81nyzNMfsM7Y
- FVEs429fEhnzWU59XhXRIqoV3N3ldvz469BVPFPZWyk/yiUOPDmrOvEZyupbuL8kZfBw
- vKaK8Rl45asVCTLkUguZF5zEOioc6b7gG7U1YRwmstuC+tG3Yl/YQhSeoQIJDFEOID+o BA== 
-Received: from ppma03fra.de.ibm.com (6b.4a.5195.ip4.static.sl-reverse.com [149.81.74.107])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3pfpgse0en-1
+ bh=b2LsZlHVE+vma50K3IOm9eitQrqBlMfQ4G49ERy5Bu4=;
+ b=sNvnBGdEZMcDRxhV3cjorLUy1/XirX6vaI2SLqvXeduoloIWVl8hNwGuBOgFbVUZLQlh
+ Y3KDXP3uErrG1dmdfL91RZ0YpGrRJoP9HsPleechcEzDQo7xfHsLy0dUNxFZurTmTPkN
+ TmE0HOQ35E6Pybqm4YejP84Ur1nH++mX2E+Mg/tQyWrXp0qLiHO49Toh/w5yAiJEjLvu
+ NnveobcGKkFHfI4vY/y5cTQ6LS3z4xFiLzHyDDIopF+f7dh1qLgxxK+j7Gw2lbge5tvW
+ pXKNnXWUTYoUd5C8NnXP7XaIWV/gybP2KqLrncJIolq0/N+gimq0C/S9xpGss5SlOmK0 UQ== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pfjje3ang-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:40 +0000
-Received: from pps.filterd (ppma03fra.de.ibm.com [127.0.0.1])
-	by ppma03fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32M3Mgau003981
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:38 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma03fra.de.ibm.com (PPS) with ESMTPS id 3pd4x64k8c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:38 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32M5kabX25625102
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:36 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2831E20040
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:36 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 298562004F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32M5jTqH004595
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:40 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pfjje3an2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 22 Mar 2023 05:46:40 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32M0BpVN015137;
+	Wed, 22 Mar 2023 05:46:38 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3pd4jfdftj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 22 Mar 2023 05:46:38 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32M5kZsR58458412
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 22 Mar 2023 05:46:35 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A9BCB2004B;
+	Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2A23720043;
+	Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
 Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8544A60511;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 816A160463;
 	Wed, 22 Mar 2023 16:46:32 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 3/9] powerpc/dexcr: Handle hashchk exception
-Date: Wed, 22 Mar 2023 16:46:06 +1100
-Message-Id: <20230322054612.1340573-4-bgray@linux.ibm.com>
+Subject: [PATCH 1/9] powerpc/book3s: Add missing <linux/sched.h> include
+Date: Wed, 22 Mar 2023 16:46:04 +1100
+Message-Id: <20230322054612.1340573-2-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230322054612.1340573-1-bgray@linux.ibm.com>
 References: <20230322054612.1340573-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: uHmCyl49lCz8SRN1x1GR8wyvOJQNHmwB
-X-Proofpoint-GUID: uHmCyl49lCz8SRN1x1GR8wyvOJQNHmwB
+X-Proofpoint-GUID: SXXlMSHN-GB5CwBFbxHGdJATjUG-ZRH8
+X-Proofpoint-ORIG-GUID: I-SK2irAaO4uhql_3p6GLJoeLxqRIdc4
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-03-21_11,2023-03-21_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
- lowpriorityscore=0 mlxlogscore=611 spamscore=0 phishscore=0 malwarescore=0
- suspectscore=0 bulkscore=0 priorityscore=1501 clxscore=1015 mlxscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ mlxlogscore=999 spamscore=0 malwarescore=0 lowpriorityscore=0
+ suspectscore=0 mlxscore=0 impostorscore=0 clxscore=1015 adultscore=0
+ phishscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2303150002 definitions=main-2303220039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -94,144 +101,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Benjamin Gray <bgray@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Recognise and pass the appropriate signal to the user program when a
-hashchk instruction triggers. This is independent of allowing
-configuration of DEXCR[NPHIE], as a hypervisor can enforce this aspect
-regardless of the kernel.
+The functions here use struct thread_struct fields, so need to import
+the full definition from <linux/sched.h>. The <asm/current.h> header
+that defines current only forward declares struct thread_struct.
 
-The signal mirrors how ARM reports their similar check failure. For
-example, their FPAC handler in arch/arm64/kernel/traps.c do_el0_fpac()
-does this. When we fail to read the instruction that caused the fault
-we send a segfault, similar to how emulate_math() does it.
+Failing to include this <linux/sched.h> header leads to a compilation
+error when a translation unit does not also include <linux/sched.h>
+indirectly.
 
 Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 ---
 
-v1:	* Refactor the hashchk check to return 0 on success, an error
-	  code on failure. Determine what to do based on specific error
-	  code.
-	* Motivate signal and code
+v1:	* Add npiggin reviewed-by
 ---
- arch/powerpc/include/asm/ppc-opcode.h |  1 +
- arch/powerpc/include/asm/processor.h  |  9 +++++++
- arch/powerpc/kernel/Makefile          |  1 +
- arch/powerpc/kernel/dexcr.c           | 36 +++++++++++++++++++++++++++
- arch/powerpc/kernel/traps.c           | 10 ++++++++
- 5 files changed, 57 insertions(+)
- create mode 100644 arch/powerpc/kernel/dexcr.c
+ arch/powerpc/include/asm/book3s/64/kup.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 21e33e46f4b8..89b316466ed1 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -215,6 +215,7 @@
- #define OP_31_XOP_STFSX	    663
- #define OP_31_XOP_STFSUX    695
- #define OP_31_XOP_STFDX     727
-+#define OP_31_XOP_HASHCHK   754
- #define OP_31_XOP_STFDUX    759
- #define OP_31_XOP_LHBRX     790
- #define OP_31_XOP_LFIWAX    855
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index e96c9b8c2a60..bad64d6a5d36 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -455,6 +455,15 @@ int exit_vmx_usercopy(void);
- int enter_vmx_ops(void);
- void *exit_vmx_ops(void *dest);
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 54cf46808157..84c09e546115 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -194,6 +194,7 @@
+ #else /* !__ASSEMBLY__ */
  
-+#ifdef CONFIG_PPC_BOOK3S_64
-+int check_hashchk_trap(struct pt_regs const *regs);
-+#else
-+static inline int check_hashchk_trap(struct pt_regs const *regs)
-+{
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_PPC_BOOK3S_64 */
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- #endif /* _ASM_POWERPC_PROCESSOR_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 9bf2be123093..07181e508754 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -88,6 +88,7 @@ obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_DAWR)		+= dawr.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= dexcr.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_64e.o
- obj-$(CONFIG_PPC_BARRIER_NOSPEC) += security.o
-diff --git a/arch/powerpc/kernel/dexcr.c b/arch/powerpc/kernel/dexcr.c
-new file mode 100644
-index 000000000000..f263e5439cc6
---- /dev/null
-+++ b/arch/powerpc/kernel/dexcr.c
-@@ -0,0 +1,36 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * DEXCR infrastructure
-+ *
-+ * Copyright 2023, Benjamin Gray, IBM Corporation.
-+ */
-+#include <linux/compiler_types.h>
-+
-+#include <asm/cpu_has_feature.h>
-+#include <asm/cputable.h>
-+#include <asm/disassemble.h>
-+#include <asm/errno.h>
-+#include <asm/inst.h>
-+#include <asm/ppc-opcode.h>
-+#include <asm/ptrace.h>
-+#include <asm/reg.h>
-+
-+int check_hashchk_trap(struct pt_regs const *regs)
-+{
-+	ppc_inst_t insn;
-+
-+	if (!cpu_has_feature(CPU_FTR_DEXCR_NPHIE))
-+		return -EINVAL;
-+
-+	if (!user_mode(regs))
-+		return -EINVAL;
-+
-+	if (get_user_instr(insn, (void __user *)regs->nip))
-+		return -EFAULT;
-+
-+	if (ppc_inst_primary_opcode(insn) != 31 ||
-+	    get_xop(ppc_inst_val(insn)) != OP_31_XOP_HASHCHK)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 9bdd79aa51cf..ade67e23b974 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1516,6 +1516,16 @@ static void do_program_check(struct pt_regs *regs)
- 				return;
- 			}
- 		}
-+
-+		switch (check_hashchk_trap(regs)) {
-+		case 0:
-+			_exception(SIGILL, regs, ILL_ILLOPN, regs->nip);
-+			return;
-+		case -EFAULT:
-+			_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-+			return;
-+		}
-+
- 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- 		return;
- 	}
+ #include <linux/jump_label.h>
++#include <linux/sched.h>
+ 
+ DECLARE_STATIC_KEY_FALSE(uaccess_flush_key);
+ 
 -- 
 2.39.2
 
