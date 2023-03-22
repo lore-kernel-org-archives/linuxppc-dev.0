@@ -4,54 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 210B3C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 05:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BDBCC6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 05:48:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PhHYh3072z3cjN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 16:47:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PhHZj66Pvz3f5j
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 16:48:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ec+5l2ct;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oIJGNivC;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ec+5l2ct;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oIJGNivC;
 	dkim-atps=neutral
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhHXg690vz3c6P
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhHXg6QWnz3c8x
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 16:46:43 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32M2EeuM015263
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32M2xsqB026295
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:40 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : content-transfer-encoding : mime-version; s=pp1;
- bh=NbDB3sqAJI8YjsUkvs3De2aVZgoy+DptZYtx7sfBn1s=;
- b=Ec+5l2ctexCJlPHel1SEF8RKguOO/oVxP7dv64Jjhg5MP6BCxpaLgSssM7eOrZV2ckZj
- FgMJdSq2pU6A6BWdN+e8yH4lyoIF8CcMsH4a3uRjiMHpbbiP6u+SrGhvd/RnobNa+zWU
- ggrGZdZ8CgNXy5B+X9325VdKQaFuqZYqjhTg4UY0TRpMUI907nWdWd3ZGwpPIfjR0wjs
- 9U3M1l0gp2aFREW/B6ovntk4FbSRKIinAjyBiZZU6E2SzwNrj1C+NwAKxIwEDS5UmstR
- UPY9Er/CuATwiBSyiOdYUrWajrPZVNHh+uEe4z2hc+2hEqXCr/84/bIt20R4faoJRVDA tQ== 
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pfrqg3cuh-1
+ : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=pp1;
+ bh=d886q0LZw7HHvfgjcFLqD5Ac8CcYOVDgOvuAz91JOSQ=;
+ b=oIJGNivCuTb5wix5t892a2kUhPiAuJZro4gJhXINlNT67dxb+WaoG+5T1nPrfdx3lWSJ
+ y5dryAdGjlpziCcOwKdYgOWSbnQhKfQu34cPd67yVTqHEZGQCD7Du2ZJ7bCEXlmqHsC1
+ QGjPZ8iADVpSvfsQRZxXD4PmMc5VKGEmrGeQqLQB27bLJ1RGCckVyf/ShauIdAsCWBPW
+ F+v/bnZbymvlA9lWxfM8bwtrJjcrGGQAMSDpjJQNKIMeeDSD9UTepekQ8cqLTPj130MP
+ XEhcFRgXvPsdd2Hqlbv8AXW65pHyJCZuqH0QJtOBkPAHIMAoyv5SI14itjQdFt0+XpKr Fg== 
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pfscstp7j-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:40 +0000
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32M1rIGa015024
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32M0VRaH004806
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:38 GMT
 Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3pd4jfdftk-1
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3pd4x6ckf7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:38 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32M5kZlJ12190226
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32M5kZ6k21430994
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:35 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A76D12004D
+	by IMSVA (Postfix) with ESMTP id A9F502004E
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2833020043
+	by IMSVA (Postfix) with ESMTP id 2886D20049
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 05:46:35 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP
@@ -59,27 +60,28 @@ Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
 Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7F51E6010A;
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 86E36605A7;
 	Wed, 22 Mar 2023 16:46:32 +1100 (AEDT)
 From: Benjamin Gray <bgray@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/9] Add static DEXCR support
-Date: Wed, 22 Mar 2023 16:46:03 +1100
-Message-Id: <20230322054612.1340573-1-bgray@linux.ibm.com>
+Subject: [PATCH 4/9] powerpc/dexcr: Support userspace ROP protection
+Date: Wed, 22 Mar 2023 16:46:07 +1100
+Message-Id: <20230322054612.1340573-5-bgray@linux.ibm.com>
 X-Mailer: git-send-email 2.39.2
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: MpMbjqkZLM5iuka_al_YXoyKrKfjA2yv
-X-Proofpoint-GUID: MpMbjqkZLM5iuka_al_YXoyKrKfjA2yv
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+In-Reply-To: <20230322054612.1340573-1-bgray@linux.ibm.com>
+References: <20230322054612.1340573-1-bgray@linux.ibm.com>
 MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: wTifvRnYW1ZIxamS_JHhacfkCsELRQpy
+X-Proofpoint-GUID: wTifvRnYW1ZIxamS_JHhacfkCsELRQpy
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
  definitions=2023-03-21_11,2023-03-21_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
- lowpriorityscore=0 suspectscore=0 bulkscore=0 spamscore=0 mlxlogscore=999
- mlxscore=0 impostorscore=0 adultscore=0 phishscore=0 priorityscore=1501
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
+ lowpriorityscore=0 bulkscore=0 phishscore=0 clxscore=1015 spamscore=0
+ malwarescore=0 mlxlogscore=907 mlxscore=0 priorityscore=1501
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2303150002 definitions=main-2303220039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -96,64 +98,86 @@ Cc: Benjamin Gray <bgray@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This series is a partial iteration of the RFC [1]. It strips out the dynamic
-support and just adds the supporting infrastructure and static DEXCR
-configuration. It should therefore not be introducing any new userspace ABI.
+The ISA 3.1B hashst and hashchk instructions use a per-cpu SPR HASHKEYR
+to hold a key used in the hash calculation. This key should be different
+for each process to make it harder for a malicious process to recreate
+valid hash values for a victim process.
 
-I could keep iterating and refactoring, but I figure there's enough
-here to get useful feedback on the design.
+Add support for storing a per-thread hash key, and setting/clearing
+HASHKEYR appropriately.
 
-[1]: https://lore.kernel.org/all/20221128024458.46121-1-bgray@linux.ibm.com/
+Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
 
-Benjamin Gray (9):
-  powerpc/book3s: Add missing <linux/sched.h> include
-  powerpc/dexcr: Add initial Dynamic Execution Control Register (DEXCR)
-    support
-  powerpc/dexcr: Handle hashchk exception
-  powerpc/dexcr: Support userspace ROP protection
-  powerpc/dexcr: Support custom default DEXCR value
-  Documentation: Document PowerPC kernel DEXCR interface
-  selftests/powerpc: Add more utility macros
-  selftests/powerpc/dexcr: Add hashst/hashchk test
-  selftests/powerpc/dexcr: Add DEXCR status utility lsdexcr
+---
 
- Documentation/powerpc/dexcr.rst               |  41 ++++
- Documentation/powerpc/index.rst               |   1 +
- arch/powerpc/Kconfig                          |  14 ++
- arch/powerpc/include/asm/book3s/64/kexec.h    |   5 +
- arch/powerpc/include/asm/book3s/64/kup.h      |   1 +
- arch/powerpc/include/asm/cputable.h           |   4 +-
- arch/powerpc/include/asm/ppc-opcode.h         |   1 +
- arch/powerpc/include/asm/processor.h          |  10 +
- arch/powerpc/include/asm/reg.h                |   7 +
- arch/powerpc/kernel/Makefile                  |   1 +
- arch/powerpc/kernel/cpu_setup_power.c         |   9 +
- arch/powerpc/kernel/dexcr.c                   |  36 +++
- arch/powerpc/kernel/process.c                 |  17 ++
- arch/powerpc/kernel/prom.c                    |   1 +
- arch/powerpc/kernel/traps.c                   |  10 +
- tools/testing/selftests/powerpc/Makefile      |   1 +
- .../selftests/powerpc/dexcr/.gitignore        |   2 +
- .../testing/selftests/powerpc/dexcr/Makefile  |   9 +
- tools/testing/selftests/powerpc/dexcr/dexcr.c | 132 ++++++++++
- tools/testing/selftests/powerpc/dexcr/dexcr.h |  49 ++++
- .../selftests/powerpc/dexcr/hashchk_test.c    | 227 ++++++++++++++++++
- .../testing/selftests/powerpc/dexcr/lsdexcr.c | 141 +++++++++++
- tools/testing/selftests/powerpc/include/reg.h |   4 +
- .../testing/selftests/powerpc/include/utils.h |  31 ++-
- .../powerpc/pmu/sampling_tests/misc.h         |   2 -
- tools/testing/selftests/powerpc/utils.c       |  24 ++
- 26 files changed, 776 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/powerpc/dexcr.rst
- create mode 100644 arch/powerpc/kernel/dexcr.c
- create mode 100644 tools/testing/selftests/powerpc/dexcr/.gitignore
- create mode 100644 tools/testing/selftests/powerpc/dexcr/Makefile
- create mode 100644 tools/testing/selftests/powerpc/dexcr/dexcr.c
- create mode 100644 tools/testing/selftests/powerpc/dexcr/dexcr.h
- create mode 100644 tools/testing/selftests/powerpc/dexcr/hashchk_test.c
- create mode 100644 tools/testing/selftests/powerpc/dexcr/lsdexcr.c
+v1:	* Guard HASHKEYR update behind change check
+	* HASHKEYR reset moved earlier to patch 2
+---
+ arch/powerpc/include/asm/processor.h |  1 +
+ arch/powerpc/kernel/process.c        | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+)
 
-
-base-commit: 065ffaee73892e8a3629b4cfbe635697807a3c6f
---
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bad64d6a5d36..666d4e9804a8 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -264,6 +264,7 @@ struct thread_struct {
+ 	unsigned long   mmcr3;
+ 	unsigned long   sier2;
+ 	unsigned long   sier3;
++	unsigned long	hashkeyr;
+ 
+ #endif
+ };
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 4b29ac5ddac6..62762795e24e 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1182,6 +1182,9 @@ static inline void save_sprs(struct thread_struct *t)
+ 		 */
+ 		t->tar = mfspr(SPRN_TAR);
+ 	}
++
++	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE))
++		t->hashkeyr = mfspr(SPRN_HASHKEYR);
+ #endif
+ }
+ 
+@@ -1260,6 +1263,10 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ 	if (cpu_has_feature(CPU_FTR_P9_TIDR) &&
+ 	    old_thread->tidr != new_thread->tidr)
+ 		mtspr(SPRN_TIDR, new_thread->tidr);
++
++	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE) &&
++	    old_thread->hashkeyr != new_thread->hashkeyr)
++		mtspr(SPRN_HASHKEYR, new_thread->hashkeyr);
+ #endif
+ 
+ }
+@@ -1844,6 +1851,10 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 		childregs->ppr = DEFAULT_PPR;
+ 
+ 	p->thread.tidr = 0;
++#endif
++#ifdef CONFIG_PPC_BOOK3S_64
++	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE))
++		p->thread.hashkeyr = current->thread.hashkeyr;
+ #endif
+ 	/*
+ 	 * Run with the current AMR value of the kernel
+@@ -1972,6 +1983,12 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
+ 	current->thread.tm_tfiar = 0;
+ 	current->thread.load_tm = 0;
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
++#ifdef CONFIG_PPC_BOOK3S_64
++	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE)) {
++		current->thread.hashkeyr = get_random_long();
++		mtspr(SPRN_HASHKEYR, current->thread.hashkeyr);
++	}
++#endif /* CONFIG_PPC_BOOK3S_64 */
+ }
+ EXPORT_SYMBOL(start_thread);
+ 
+-- 
 2.39.2
+
