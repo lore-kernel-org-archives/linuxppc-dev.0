@@ -4,43 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55CECC6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 13:39:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B52A4C77B60
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 14:06:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PhV282pGyz3chm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 00:39:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::223; helo=relay3-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Received: from relay3-d.mail.gandi.net (relay3-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::223])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PhVdL0fwVz3cfS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 01:06:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=jBjNHOC7;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=desiato.20200630 header.b=jBjNHOC7;
+	dkim-atps=neutral
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhV1V6QGRz3cFW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 00:38:52 +1100 (AEDT)
-Received: (Authenticated sender: alex@ghiti.fr)
-	by mail.gandi.net (Postfix) with ESMTPSA id C1BD960013;
-	Wed, 22 Mar 2023 13:38:35 +0000 (UTC)
-Message-ID: <459b4e6d-f469-d7f3-99e4-2efbc461b61d@ghiti.fr>
-Date: Wed, 22 Mar 2023 14:38:34 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhVcD1X2bz3cM1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 01:05:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=sOH/P4JrokMCYAgfWwj5ycXuOYqJurQfzeUI9onBv2s=; b=jBjNHOC7qWB4oHhln7lym2SyvG
+	13fiewzNurZdmqlPmM5LTnqVATc7bc7Ck81ekMH2BdQufrQhM/S/cYdNh+nUd/SS8jlISkZJdxng9
+	UGDNfRGIVcLBM0n4Q0WPB/BTCRBw/oZTgxkxh/MFcemdwuVVMfRrzZwT8hleSfze70nwksyC7FdQo
+	URq2nt3wWzTns3K+z/QYKTG28lEJZKPQMPsDVNr07WZ093beJ4RGvPV3dW+CYaEfTPjs2OhVfICrD
+	rnE+0tsqva+jhkqwvNTu6Df6g8GtY/D7ezclkZESxvIP2EapnT7/e9uX8x4F6vTPNIrjB5GOcYvb0
+	GUSRtrjg==;
+Received: from j130084.upc-j.chello.nl ([24.132.130.84] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1pez4w-004ZNU-0e;
+	Wed, 22 Mar 2023 14:04:38 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(Client did not present a certificate)
+	by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id CFDD830031E;
+	Wed, 22 Mar 2023 15:04:34 +0100 (CET)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+	id B8585240C838E; Wed, 22 Mar 2023 15:04:34 +0100 (CET)
+Date: Wed, 22 Mar 2023 15:04:34 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Valentin Schneider <vschneid@redhat.com>
+Subject: Re: [PATCH v5 7/7] sched, smp: Trace smp callback causing an IPI
+Message-ID: <20230322140434.GC2357380@hirez.programming.kicks-ass.net>
+References: <20230307143558.294354-1-vschneid@redhat.com>
+ <20230307143558.294354-8-vschneid@redhat.com>
+ <20230322095329.GS2017917@hirez.programming.kicks-ass.net>
+ <xhsmhmt45c703.mognet@vschneid.remote.csb>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.8.0
-Subject: Re: [PATCH v8 1/3] riscv: Introduce CONFIG_RELOCATABLE
-Content-Language: en-US
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: Alexandre Ghiti <alexghiti@rivosinc.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, nathan@kernel.org,
- linux-kbuild@vger.kernel.org, llvm@lists.linux.dev, ndesaulniers@google.com,
- =?UTF-8?B?QmrDtnJuIFTDtnBlbA==?= <bjorn@kernel.org>
-References: <20230215143626.453491-1-alexghiti@rivosinc.com>
- <20230215143626.453491-2-alexghiti@rivosinc.com>
- <4a6fc7a3-9697-a49b-0941-97f32194b0d7@ghiti.fr>
-In-Reply-To: <4a6fc7a3-9697-a49b-0941-97f32194b0d7@ghiti.fr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <xhsmhmt45c703.mognet@vschneid.remote.csb>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,325 +68,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.
+ org, Daniel Bristot de Oliveira <bristot@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-@linux-kbuild: Does anyone has an idea to solve this?
+On Wed, Mar 22, 2023 at 12:20:28PM +0000, Valentin Schneider wrote:
+> On 22/03/23 10:53, Peter Zijlstra wrote:
 
-Thanks!
+> > Hurmph... so we only really consume @func when we IPI. Would it not be
+> > more useful to trace this thing for *every* csd enqeued?
+> 
+> It's true that any CSD enqueued on that CPU's call_single_queue in the
+> [first CSD llist_add()'ed, IPI IRQ hits] timeframe is a potential source of
+> interference.
+> 
+> However, can we be sure that first CSD isn't an indirect cause for the
+> following ones? say the target CPU exits RCU EQS due to the IPI, there's a
+> bit of time before it gets to flush_smp_call_function_queue() where some other CSD
+> could be enqueued *because* of that change in state.
+> 
+> I couldn't find a easy example of that, I might be biased as this is where
+> I'd like to go wrt IPI'ing isolated CPUs in usermode. But regardless, when
+> correlating an IPI IRQ with its source, we'd always have to look at the
+> first CSD in that CSD stack.
 
-On 2/22/23 13:29, Alexandre Ghiti wrote:
-> +cc linux-kbuild, llvm, Nathan, Nick
->
-> On 2/15/23 15:36, Alexandre Ghiti wrote:
->> From: Alexandre Ghiti <alex@ghiti.fr>
->>
->> This config allows to compile 64b kernel as PIE and to relocate it at
->> any virtual address at runtime: this paves the way to KASLR.
->> Runtime relocation is possible since relocation metadata are embedded 
->> into
->> the kernel.
->>
->> Note that relocating at runtime introduces an overhead even if the
->> kernel is loaded at the same address it was linked at and that the 
->> compiler
->> options are those used in arm64 which uses the same RELA relocation
->> format.
->>
->> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
->> ---
->>   arch/riscv/Kconfig              | 14 +++++++++
->>   arch/riscv/Makefile             |  7 +++--
->>   arch/riscv/kernel/efi-header.S  |  6 ++--
->>   arch/riscv/kernel/vmlinux.lds.S | 10 ++++--
->>   arch/riscv/mm/Makefile          |  4 +++
->>   arch/riscv/mm/init.c            | 54 ++++++++++++++++++++++++++++++++-
->>   6 files changed, 87 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
->> index e2b656043abf..e0ee7ce4b2e3 100644
->> --- a/arch/riscv/Kconfig
->> +++ b/arch/riscv/Kconfig
->> @@ -544,6 +544,20 @@ config COMPAT
->>           If you want to execute 32-bit userspace applications, say Y.
->>   +config RELOCATABLE
->> +    bool "Build a relocatable kernel"
->> +    depends on MMU && 64BIT && !XIP_KERNEL
->> +    help
->> +          This builds a kernel as a Position Independent Executable 
->> (PIE),
->> +          which retains all relocation metadata required to relocate 
->> the
->> +          kernel binary at runtime to a different virtual address 
->> than the
->> +          address it was linked at.
->> +          Since RISCV uses the RELA relocation format, this requires a
->> +          relocation pass at runtime even if the kernel is loaded at 
->> the
->> +          same address it was linked at.
->> +
->> +          If unsure, say N.
->> +
->>   endmenu # "Kernel features"
->>     menu "Boot options"
->> diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
->> index 82153960ac00..97c34136b027 100644
->> --- a/arch/riscv/Makefile
->> +++ b/arch/riscv/Makefile
->> @@ -7,9 +7,12 @@
->>   #
->>     OBJCOPYFLAGS    := -O binary
->> -LDFLAGS_vmlinux :=
->> +ifeq ($(CONFIG_RELOCATABLE),y)
->> +    LDFLAGS_vmlinux += -shared -Bsymbolic -z notext -z norelro
->> +    KBUILD_CFLAGS += -fPIE
->> +endif
->>   ifeq ($(CONFIG_DYNAMIC_FTRACE),y)
->> -    LDFLAGS_vmlinux := --no-relax
->> +    LDFLAGS_vmlinux += --no-relax
->>       KBUILD_CPPFLAGS += -DCC_USING_PATCHABLE_FUNCTION_ENTRY
->>       CC_FLAGS_FTRACE := -fpatchable-function-entry=8
->>   endif
->> diff --git a/arch/riscv/kernel/efi-header.S 
->> b/arch/riscv/kernel/efi-header.S
->> index 8e733aa48ba6..f7ee09c4f12d 100644
->> --- a/arch/riscv/kernel/efi-header.S
->> +++ b/arch/riscv/kernel/efi-header.S
->> @@ -33,7 +33,7 @@ optional_header:
->>       .byte    0x02                    // MajorLinkerVersion
->>       .byte    0x14                    // MinorLinkerVersion
->>       .long    __pecoff_text_end - efi_header_end    // SizeOfCode
->> -    .long    __pecoff_data_virt_size            // 
->> SizeOfInitializedData
->> +    .long    __pecoff_data_virt_end - __pecoff_text_end    // 
->> SizeOfInitializedData
->>       .long    0                    // SizeOfUninitializedData
->>       .long    __efistub_efi_pe_entry - _start        // 
->> AddressOfEntryPoint
->>       .long    efi_header_end - _start            // BaseOfCode
->> @@ -91,9 +91,9 @@ section_table:
->>           IMAGE_SCN_MEM_EXECUTE            // Characteristics
->>         .ascii    ".data\0\0\0"
->> -    .long    __pecoff_data_virt_size            // VirtualSize
->> +    .long    __pecoff_data_virt_end - __pecoff_text_end    // 
->> VirtualSize
->>       .long    __pecoff_text_end - _start        // VirtualAddress
->> -    .long    __pecoff_data_raw_size            // SizeOfRawData
->> +    .long    __pecoff_data_raw_end - __pecoff_text_end    // 
->> SizeOfRawData
->>       .long    __pecoff_text_end - _start        // PointerToRawData
->>         .long    0                    // PointerToRelocations
->> diff --git a/arch/riscv/kernel/vmlinux.lds.S 
->> b/arch/riscv/kernel/vmlinux.lds.S
->> index 4e6c88aa4d87..8be2de3be08c 100644
->> --- a/arch/riscv/kernel/vmlinux.lds.S
->> +++ b/arch/riscv/kernel/vmlinux.lds.S
->> @@ -122,9 +122,15 @@ SECTIONS
->>           *(.sdata*)
->>       }
->>   +    .rela.dyn : ALIGN(8) {
->> +        __rela_dyn_start = .;
->> +        *(.rela .rela*)
->> +        __rela_dyn_end = .;
->> +    }
->> +
->
->
-> So I realized those relocations would be better in the init section so 
-> we can get rid of them at some point. So I tried the following:
->
-> diff --git a/arch/riscv/kernel/vmlinux.lds.S 
-> b/arch/riscv/kernel/vmlinux.lds.S
-> index 7ac215467fd5..6111023a89ef 100644
-> --- a/arch/riscv/kernel/vmlinux.lds.S
-> +++ b/arch/riscv/kernel/vmlinux.lds.S
-> @@ -93,6 +93,12 @@ SECTIONS
->                 *(.rel.dyn*)
->         }
->
-> +       .rela.dyn : ALIGN(8) {
-> +               __rela_dyn_start = .;
-> +               *(.rela .rela*)
-> +               __rela_dyn_end = .;
-> +       }
-> +
->         __init_data_end = .;
->
->         . = ALIGN(8);
-> @@ -119,12 +125,6 @@ SECTIONS
->                 *(.sdata*)
->         }
->
-> -       .rela.dyn : ALIGN(8) {
-> -               __rela_dyn_start = .;
-> -               *(.rela .rela*)
-> -               __rela_dyn_end = .;
-> -       }
-> -
->  #ifdef CONFIG_EFI
->         .pecoff_edata_padding : { BYTE(0); . = 
-> ALIGN(PECOFF_FILE_ALIGNMENT); }
->         __pecoff_data_raw_end = ABSOLUTE(.);
->
->
-> But then all the relocations in vmlinux end up being null:
->
-> vmlinux:     file format elf64-littleriscv
->
-> $ riscv64-linux-gnu-objdump -R vmlinux
->
-> DYNAMIC RELOCATION RECORDS
-> OFFSET           TYPE              VALUE
-> 0000000000000000 R_RISCV_NONE      *ABS*
-> 0000000000000000 R_RISCV_NONE      *ABS*
-> ....
->
->  I also noticed that re-linking vmlinux with the same command right 
-> after works (ie, the relocations are now valid):
->
-> $ riscv64-linux-gnu-objdump -R vmlinux
->
-> vmlinux:     file format elf64-littleriscv
->
-> DYNAMIC RELOCATION RECORDS
-> OFFSET           TYPE              VALUE
-> ffffffff82600718 R_RISCV_RELATIVE  *ABS*-0x000000007d9ff8e8
-> ffffffff82600720 R_RISCV_RELATIVE  *ABS*-0x000000007d9ff8e8
-> ...
->
-> Below is the command used to generate this working vmlinux:
->
-> riscv64-unknown-linux-gnu-ld -melf64lriscv -z noexecstack 
-> --no-warn-rwx-segments -shared -Bsymbolic -z notext -z norelro 
-> --no-relax --build-id=sha1 --script=./arch/riscv/kernel/vmlinux.lds 
-> -Map=vmlinux.map -o vmlinux --whole-archive vmlinux.a 
-> .vmlinux.export.o init/version-timestamp.o --no-whole-archive 
-> --start-group ./drivers/firmware/efi/libstub/lib.a --end-group 
-> .tmp_vmlinux.kallsyms3.o
->
-> I tried a lot of things, but I struggle to understand, does anyone 
-> have any idea? FYI, the same problem happens with LLVM.
->
-> Thanks,
->
-> Alex
->
->
->>   #ifdef CONFIG_EFI
->>       .pecoff_edata_padding : { BYTE(0); . = 
->> ALIGN(PECOFF_FILE_ALIGNMENT); }
->> -    __pecoff_data_raw_size = ABSOLUTE(. - __pecoff_text_end);
->> +    __pecoff_data_raw_end = ABSOLUTE(.);
->>   #endif
->>         /* End of data section */
->> @@ -134,7 +140,7 @@ SECTIONS
->>     #ifdef CONFIG_EFI
->>       . = ALIGN(PECOFF_SECTION_ALIGNMENT);
->> -    __pecoff_data_virt_size = ABSOLUTE(. - __pecoff_text_end);
->> +    __pecoff_data_virt_end = ABSOLUTE(.);
->>   #endif
->>       _end = .;
->>   diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
->> index 2ac177c05352..b85e9e82f082 100644
->> --- a/arch/riscv/mm/Makefile
->> +++ b/arch/riscv/mm/Makefile
->> @@ -1,6 +1,10 @@
->>   # SPDX-License-Identifier: GPL-2.0-only
->>     CFLAGS_init.o := -mcmodel=medany
->> +ifdef CONFIG_RELOCATABLE
->> +CFLAGS_init.o += -fno-pie
->> +endif
->> +
->>   ifdef CONFIG_FTRACE
->>   CFLAGS_REMOVE_init.o = $(CC_FLAGS_FTRACE)
->>   CFLAGS_REMOVE_cacheflush.o = $(CC_FLAGS_FTRACE)
->> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
->> index 7f01c2e56efe..3862696c2ac9 100644
->> --- a/arch/riscv/mm/init.c
->> +++ b/arch/riscv/mm/init.c
->> @@ -20,6 +20,9 @@
->>   #include <linux/dma-map-ops.h>
->>   #include <linux/crash_dump.h>
->>   #include <linux/hugetlb.h>
->> +#ifdef CONFIG_RELOCATABLE
->> +#include <linux/elf.h>
->> +#endif
->>     #include <asm/fixmap.h>
->>   #include <asm/tlbflush.h>
->> @@ -146,7 +149,7 @@ static void __init print_vm_layout(void)
->>           print_ml("kasan", KASAN_SHADOW_START, KASAN_SHADOW_END);
->>   #endif
->>   -        print_ml("kernel", (unsigned long)KERNEL_LINK_ADDR,
->> +        print_ml("kernel", (unsigned long)kernel_map.virt_addr,
->>                (unsigned long)ADDRESS_SPACE_END);
->>       }
->>   }
->> @@ -854,6 +857,44 @@ static __init void set_satp_mode(uintptr_t dtb_pa)
->>   #error "setup_vm() is called from head.S before relocate so it 
->> should not use absolute addressing."
->>   #endif
->>   +#ifdef CONFIG_RELOCATABLE
->> +extern unsigned long __rela_dyn_start, __rela_dyn_end;
->> +
->> +static void __init relocate_kernel(void)
->> +{
->> +    Elf64_Rela *rela = (Elf64_Rela *)&__rela_dyn_start;
->> +    /*
->> +     * This holds the offset between the linked virtual address and the
->> +     * relocated virtual address.
->> +     */
->> +    uintptr_t reloc_offset = kernel_map.virt_addr - KERNEL_LINK_ADDR;
->> +    /*
->> +     * This holds the offset between kernel linked virtual address and
->> +     * physical address.
->> +     */
->> +    uintptr_t va_kernel_link_pa_offset = KERNEL_LINK_ADDR - 
->> kernel_map.phys_addr;
->> +
->> +    for ( ; rela < (Elf64_Rela *)&__rela_dyn_end; rela++) {
->> +        Elf64_Addr addr = (rela->r_offset - va_kernel_link_pa_offset);
->> +        Elf64_Addr relocated_addr = rela->r_addend;
->> +
->> +        if (rela->r_info != R_RISCV_RELATIVE)
->> +            continue;
->> +
->> +        /*
->> +         * Make sure to not relocate vdso symbols like rt_sigreturn
->> +         * which are linked from the address 0 in vmlinux since
->> +         * vdso symbol addresses are actually used as an offset from
->> +         * mm->context.vdso in VDSO_OFFSET macro.
->> +         */
->> +        if (relocated_addr >= KERNEL_LINK_ADDR)
->> +            relocated_addr += reloc_offset;
->> +
->> +        *(Elf64_Addr *)addr = relocated_addr;
->> +    }
->> +}
->> +#endif /* CONFIG_RELOCATABLE */
->> +
->>   #ifdef CONFIG_XIP_KERNEL
->>   static void __init create_kernel_page_table(pgd_t *pgdir,
->>                           __always_unused bool early)
->> @@ -1039,6 +1080,17 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa)
->>       BUG_ON((kernel_map.virt_addr + kernel_map.size) > 
->> ADDRESS_SPACE_END - SZ_4K);
->>   #endif
->>   +#ifdef CONFIG_RELOCATABLE
->> +    /*
->> +     * Early page table uses only one PUD, which makes it possible
->> +     * to map PUD_SIZE aligned on PUD_SIZE: if the relocation offset
->> +     * makes the kernel cross over a PUD_SIZE boundary, raise a bug
->> +     * since a part of the kernel would not get mapped.
->> +     */
->> +    BUG_ON(PUD_SIZE - (kernel_map.virt_addr & (PUD_SIZE - 1)) < 
->> kernel_map.size);
->> +    relocate_kernel();
->> +#endif
->> +
->>       apply_early_boot_alternatives();
->>       pt_ops_set_early();
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+So I was thinking something like this:
+
+---
+Subject: trace,smp: Trace all smp_function_call*() invocations
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Wed Mar 22 14:58:36 CET 2023
+
+(Ab)use the trace_ipi_send_cpu*() family to trace all
+smp_function_call*() invocations, not only those that result in an
+actual IPI.
+
+The queued entries log their callback function while the actual IPIs
+are traced on generic_smp_call_function_single_interrupt().
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ kernel/smp.c |   58 ++++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 30 insertions(+), 28 deletions(-)
+
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -106,18 +106,20 @@ void __init call_function_init(void)
+ }
+ 
+ static __always_inline void
+-send_call_function_single_ipi(int cpu, smp_call_func_t func)
++send_call_function_single_ipi(int cpu)
+ {
+ 	if (call_function_single_prep_ipi(cpu)) {
+-		trace_ipi_send_cpu(cpu, _RET_IP_, func);
++		trace_ipi_send_cpu(cpu, _RET_IP_,
++				   generic_smp_call_function_single_interrupt);
+ 		arch_send_call_function_single_ipi(cpu);
+ 	}
+ }
+ 
+ static __always_inline void
+-send_call_function_ipi_mask(const struct cpumask *mask, smp_call_func_t func)
++send_call_function_ipi_mask(const struct cpumask *mask)
+ {
+-	trace_ipi_send_cpumask(mask, _RET_IP_, func);
++	trace_ipi_send_cpumask(mask, _RET_IP_,
++			       generic_smp_call_function_single_interrupt);
+ 	arch_send_call_function_ipi_mask(mask);
+ }
+ 
+@@ -318,25 +320,6 @@ static __always_inline void csd_unlock(s
+ 	smp_store_release(&csd->node.u_flags, 0);
+ }
+ 
+-static __always_inline void
+-raw_smp_call_single_queue(int cpu, struct llist_node *node, smp_call_func_t func)
+-{
+-	/*
+-	 * The list addition should be visible to the target CPU when it pops
+-	 * the head of the list to pull the entry off it in the IPI handler
+-	 * because of normal cache coherency rules implied by the underlying
+-	 * llist ops.
+-	 *
+-	 * If IPIs can go out of order to the cache coherency protocol
+-	 * in an architecture, sufficient synchronisation should be added
+-	 * to arch code to make it appear to obey cache coherency WRT
+-	 * locking and barrier primitives. Generic code isn't really
+-	 * equipped to do the right thing...
+-	 */
+-	if (llist_add(node, &per_cpu(call_single_queue, cpu)))
+-		send_call_function_single_ipi(cpu, func);
+-}
+-
+ static DEFINE_PER_CPU_SHARED_ALIGNED(call_single_data_t, csd_data);
+ 
+ void __smp_call_single_queue(int cpu, struct llist_node *node)
+@@ -356,10 +339,23 @@ void __smp_call_single_queue(int cpu, st
+ 		func = CSD_TYPE(csd) == CSD_TYPE_TTWU ?
+ 			sched_ttwu_pending : csd->func;
+ 
+-		raw_smp_call_single_queue(cpu, node, func);
+-	} else {
+-		raw_smp_call_single_queue(cpu, node, NULL);
++		trace_ipi_send_cpu(cpu, _RET_IP_, func);
+ 	}
++
++	/*
++	 * The list addition should be visible to the target CPU when it pops
++	 * the head of the list to pull the entry off it in the IPI handler
++	 * because of normal cache coherency rules implied by the underlying
++	 * llist ops.
++	 *
++	 * If IPIs can go out of order to the cache coherency protocol
++	 * in an architecture, sufficient synchronisation should be added
++	 * to arch code to make it appear to obey cache coherency WRT
++	 * locking and barrier primitives. Generic code isn't really
++	 * equipped to do the right thing...
++	 */
++	if (llist_add(node, &per_cpu(call_single_queue, cpu)))
++		send_call_function_single_ipi(cpu);
+ }
+ 
+ /*
+@@ -798,14 +794,20 @@ static void smp_call_function_many_cond(
+ 		}
+ 
+ 		/*
++		 * Trace each smp_function_call_*() as an IPI, actual IPIs
++		 * will be traced with func==generic_smp_call_function_single_ipi().
++		 */
++		trace_ipi_send_cpumask(cfd->cpumask_ipi, _RET_IP_, func);
++
++		/*
+ 		 * Choose the most efficient way to send an IPI. Note that the
+ 		 * number of CPUs might be zero due to concurrent changes to the
+ 		 * provided mask.
+ 		 */
+ 		if (nr_cpus == 1)
+-			send_call_function_single_ipi(last_cpu, func);
++			send_call_function_single_ipi(last_cpu);
+ 		else if (likely(nr_cpus > 1))
+-			send_call_function_ipi_mask(cfd->cpumask_ipi, func);
++			send_call_function_ipi_mask(cfd->cpumask_ipi);
+ 	}
+ 
+ 	if (run_local && (!cond_func || cond_func(this_cpu, info))) {
