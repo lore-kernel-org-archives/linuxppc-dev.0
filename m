@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 222D1C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 12:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB29DC6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 12:30:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PhSTP4Xhjz3fSK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 23:29:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PhSTz25SQz3fdc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Mar 2023 23:29:59 +1100 (AEDT)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhSR34fNlz3cf1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 23:27:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PhSR473twz3chZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Mar 2023 23:27:28 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PhSR33nrnz4xFb;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PhSR374XHz4xFc;
 	Wed, 22 Mar 2023 23:27:27 +1100 (AEDT)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: mpe@ellerman.id.au, Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20230307213614.2652059-1-mikey@neuling.org>
-References: <20230307213614.2652059-1-mikey@neuling.org>
-Subject: Re: [PATCH] selftests/powerpc: Increase timeout for vsx_signal test
-Message-Id: <167948793436.559204.15635521716389386877.b4-ty@ellerman.id.au>
+To: mpe@ellerman.id.au, Nathan Chancellor <nathan@kernel.org>
+In-Reply-To: <20230118-ppc64-elfv2-llvm-v1-0-b9e2ec9da11d@kernel.org>
+References: <20230118-ppc64-elfv2-llvm-v1-0-b9e2ec9da11d@kernel.org>
+Subject: Re: [PATCH 0/3] Allow CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 with ld.lld 15+
+Message-Id: <167948793442.559204.2964050663889516909.b4-ty@ellerman.id.au>
 Date: Wed, 22 Mar 2023 23:25:34 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com
+Cc: erhard_f@mailbox.org, trix@redhat.com, llvm@lists.linux.dev, ndesaulniers@google.com, linux-kernel@vger.kernel.org, patches@lists.linux.dev, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 08 Mar 2023 08:36:14 +1100, Michael Neuling wrote:
-> On the max config P10 machine (1920 threads and 64TB) this test fails
-> with a timeout:
+On Wed, 15 Feb 2023 11:41:14 -0700, Nathan Chancellor wrote:
+> Currently, CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 is not selectable with
+> ld.lld because of an explicit dependency on GNU ld, due to lack of
+> testing with LLVM.
 > 
->     Sending signals to all threads 10 times...!! killing vmx_signal
->     !! child died by signal 15
->     failure: vmx_signal
+> Erhard was kind enough to test this option on his hardware with LLVM 15,
+> which ran without any issues. This should not be too surprising, as
+> ld.lld does not have support for the ELFv1 ABI, only ELFv2, so it should
+> have decent support. With this series, big endian kernels can be built
+> with LLVM=1.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] selftests/powerpc: Increase timeout for vsx_signal test
-      https://git.kernel.org/powerpc/c/493648d6795f00b6dcd6295b2b4221871bc1b25b
+[1/3] powerpc/boot: Only use '-mabi=elfv2' with CONFIG_PPC64_BOOT_WRAPPER
+      https://git.kernel.org/powerpc/c/d1c5accacb234c3a9f1609a73b4b2eaa4ef07d1a
+[2/3] powerpc: Fix use of '-mabi=elfv2' with clang
+      https://git.kernel.org/powerpc/c/7c3bd8362b06cff0a4044a4975adb7d71db2dfba
+[3/3] powerpc: Allow CONFIG_PPC64_BIG_ENDIAN_ELF_ABI_V2 with ld.lld 15+
+      https://git.kernel.org/powerpc/c/a11334d8327b3fd7987cbfb38e956a44c722d88f
 
 cheers
