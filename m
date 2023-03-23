@@ -4,84 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDD88C6FD1C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 17:32:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE77C6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 17:36:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PjC8R0kQsz3fBB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 04:32:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PjCFN0Bhsz3fQs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 04:36:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pNhny9if;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HD47gxMe;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pNhny9if;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HD47gxMe;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjC7K3zKZz3f52
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 04:31:25 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32NFgsjF024916;
-	Thu, 23 Mar 2023 17:31:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=MNoS4Gyvfm8TosyaqhjyVn5ODMUmahFiqFYTcJIr4/o=;
- b=pNhny9ifE0nNUadSDSsy3qDaEfC7GYSakjO1mO5IiNSS9JJpNe6nIhdP+8bwXjXTM/1j
- cAEhzMwHfPrnKmRIXkuIuOdJ6q6BHNo6IDecRkBVy2LTbu+Tuk8zRcSAVxWMBQDXWh2O
- ve5IQO6Ck9HJhW1i3xvseagi+7/nyDIXpfrbcGOxc76rFMRPC91nkAtuxiXbI3OdGLq1
- zbhx1SrpVkdAQjXo2R4rrZLGIXKvK6De9LJ0A7bcDswOn7nToAlEMVfZ4FrHGO9anPa3
- dHCEWCmf6r6ju+uyEO0F4CBvymwu9+zcJioQPl3DBw33q84m7cMq8lrX8v2HvJNCnaNN Wg== 
-Received: from ppma05fra.de.ibm.com (6c.4a.5195.ip4.static.sl-reverse.com [149.81.74.108])
-	by mx0b-001b2d01.pphosted.com (PPS) with ESMTPS id 3pgmu7k4rx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Mar 2023 17:31:16 +0000
-Received: from pps.filterd (ppma05fra.de.ibm.com [127.0.0.1])
-	by ppma05fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32NDlMbY014687;
-	Thu, 23 Mar 2023 17:31:14 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma05fra.de.ibm.com (PPS) with ESMTPS id 3pd4x6eepn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Mar 2023 17:31:14 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32NHVCEC24052346
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Mar 2023 17:31:12 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E91C220043;
-	Thu, 23 Mar 2023 17:31:11 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DD73820040;
-	Thu, 23 Mar 2023 17:31:10 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.43.34.166])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Mar 2023 17:31:10 +0000 (GMT)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.400.51.1.1\))
-Subject: Re: [next-20230322] Kernel WARN at kernel/workqueue.c:3182
- (rcutorture)
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <fbb628c1-08bd-44ff-a613-794b134f6d46@paulmck-laptop>
-Date: Thu, 23 Mar 2023 23:00:59 +0530
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <233B28DA-70DD-4AD8-9C72-1FFCA6EFE56D@linux.ibm.com>
-References: <139BEB3F-BC1C-4ABA-8928-9A8EF3FB5EDD@linux.ibm.com>
- <fbb628c1-08bd-44ff-a613-794b134f6d46@paulmck-laptop>
-To: "Paul E. McKenney" <paulmck@kernel.org>
-X-Mailer: Apple Mail (2.3731.400.51.1.1)
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 3M356xG5GLdKkxm4sUicxH7aE3_zQHtU
-X-Proofpoint-GUID: 3M356xG5GLdKkxm4sUicxH7aE3_zQHtU
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-22_21,2023-03-23_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0 mlxscore=0
- malwarescore=0 suspectscore=0 adultscore=0 bulkscore=0 impostorscore=0
- mlxlogscore=999 phishscore=0 priorityscore=1501 spamscore=0 clxscore=1011
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303150002
- definitions=main-2303230124
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjCDJ4p1Dz3f4M
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 04:35:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679592944; x=1711128944;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=vwh9ptbMJOXQlZJdSj8+frJlz0P5NOeD/IEPLf/bFeA=;
+  b=HD47gxMezRTqZpB4BFkBHSKlPSBtBo/TDs1zAVkP7+6Af1rEz7nMC5tA
+   KVIH8xD1ruEEgPQ9JVstYUMiKBV+zxR17QHVdLhKoJPPm28sPj55JPnNy
+   qDKk+N9U14tSoBXQ1WX062KFdNxy4+zfP+AMxoUCAm8cnVLTsXGG0Tcai
+   C24PvLDNPmrLxDPIyU7HGtEcdS8sjRBCTPEZj4jpCLd2GTe0H8LgftxVb
+   a0whg37vQITGLAYK8HV7Vw308OXyr/6EQUGgh6csiTkv/UzuqnecEZv07
+   7ONYnmCN/GICyGRzYqo7N1HGXy7KkVm9ofGIvkSl7Uk4pjvLE7cMAkz3m
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="327969609"
+X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
+   d="scan'208";a="327969609"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2023 10:35:37 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="675794215"
+X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
+   d="scan'208";a="675794215"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga007.jf.intel.com with ESMTP; 23 Mar 2023 10:35:25 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id AF393D0; Thu, 23 Mar 2023 19:36:11 +0200 (EET)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Niklas Schnelle <schnelle@linux.ibm.com>,
+	Bjorn Helgaas <helgaas@kernel.org>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Juergen Gross <jgross@suse.com>,
+	Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-kernel@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	xen-devel@lists.xenproject.org,
+	linux-acpi@vger.kernel.org
+Subject: [PATCH v7 1/6] kernel.h: Split out COUNT_ARGS() and CONCATENATE()
+Date: Thu, 23 Mar 2023 19:36:05 +0200
+Message-Id: <20230323173610.60442-2-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+In-Reply-To: <20230323173610.60442-1-andriy.shevchenko@linux.intel.com>
+References: <20230323173610.60442-1-andriy.shevchenko@linux.intel.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,43 +91,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Zqiang <qiang1.zhang@intel.com>, linux-next@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, open list <linux-kernel@vger.kernel.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Gregory Clement <gregory.clement@bootlin.com>, Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Rich Felker <dalias@libc.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Miguel Ojeda <ojeda@kernel.org>, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, "David S. Miller" <davem@davemloft.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+kernel.h is being used as a dump for all kinds of stuff for a long time.
+The COUNT_ARGS() and CONCATENATE() macros may be used in some places
+without need of the full kernel.h dependency train with it.
 
->> [ 3629.243407] NIP [00007fff8cd39558] 0x7fff8cd39558
->> [ 3629.243410] LR [000000010d800398] 0x10d800398
->> [ 3629.243413] --- interrupt: c00
->> [ 3629.243415] Code: 419dffa4 e93a0078 39400001 552907be 2f890000 =
-7d20579e 0b090000 e95a0078 e91a0080 39200001 7fa85000 7d204f9e =
-<0b090000> 7f23cb78 4bfffd65 0b030000=20
->> [ 3629.243430] ---[ end trace 0000000000000000 ]=E2=80=94
->>=20
->> These warnings are repeated few times. The LTP test is marked as =
-PASS.
->>=20
->> Git bisect point to the following patch
->> commit f46a5170e6e7d5f836f2199fe82cdb0b4363427f
->>    srcu: Use static init for statically allocated in-module =
-srcu_struct
->=20
-> Hello, Sachin, and it looks like you hit something that Zqiang and I
-> have been tracking down.  I am guessing that you were using modprobe
-> and rmmod to make this happen, and that this happened at rmmod time.
->=20
-Yes, the LTP test script rcu_torture.sh relies on modprobe to =
-load/unload
-the rcutorture module.
+Here is the attempt on cleaning it up by splitting out these macros().
 
-> Whatever the reproducer, does the following patch help?
->=20
-> Thanx, Paul
->=20
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ include/linux/args.h   | 13 +++++++++++++
+ include/linux/kernel.h |  8 +-------
+ 2 files changed, 14 insertions(+), 7 deletions(-)
+ create mode 100644 include/linux/args.h
 
-Thank you for the patch. Yes, with this patch applied, the test =
-completes
-successfully without the reported warning.
-
-- Sachin
+diff --git a/include/linux/args.h b/include/linux/args.h
+new file mode 100644
+index 000000000000..16ef6fad8add
+--- /dev/null
++++ b/include/linux/args.h
+@@ -0,0 +1,13 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef _LINUX_ARGS_H
++#define _LINUX_ARGS_H
++
++/* This counts to 12. Any more, it will return 13th argument. */
++#define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
++#define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
++
++#define __CONCAT(a, b) a ## b
++#define CONCATENATE(a, b) __CONCAT(a, b)
++
++#endif	/* _LINUX_ARGS_H */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 40bce7495af8..c049d3394425 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/stdarg.h>
+ #include <linux/align.h>
++#include <linux/args.h>
+ #include <linux/limits.h>
+ #include <linux/linkage.h>
+ #include <linux/stddef.h>
+@@ -484,13 +485,6 @@ ftrace_vprintk(const char *fmt, va_list ap)
+ static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
+ #endif /* CONFIG_TRACING */
+ 
+-/* This counts to 12. Any more, it will return 13th argument. */
+-#define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
+-#define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+-
+-#define __CONCAT(a, b) a ## b
+-#define CONCATENATE(a, b) __CONCAT(a, b)
+-
+ /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
+ #ifdef CONFIG_FTRACE_MCOUNT_RECORD
+ # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
+-- 
+2.40.0.1.gaa8946217a0b
 
