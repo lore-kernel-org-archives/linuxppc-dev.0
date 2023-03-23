@@ -4,93 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18188C6FD1C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 16:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 144DDC6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 16:26:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pj9P22f4Bz3f98
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 03:13:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pj9hS2xH0z3fL0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 03:26:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oKkYeaYF;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WtAcDI5L;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Yv1j5KZ9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vschneid@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oKkYeaYF;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WtAcDI5L;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Yv1j5KZ9;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pj9Mx2xJwz3cjM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 03:12:13 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32NF80lH022777;
-	Thu, 23 Mar 2023 16:12:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=oSJEVLwEKqQwTZPvAIjerxVBtlI2bT9tUq/P1hkllzw=;
- b=oKkYeaYFpdQzukV79DS0LyuS2Vz3Oa1Z+CXoVABqn6mS+ZYa/O+wwUxLoiySZ+SwLpEc
- stZoBW0xdiQ8LMUXUwB3t6jY3gPGxYdeeDo+capF5mbLXlUXr83WclwelOvr0yFzmfww
- INhNaLIUp86bPBD5YzFTSjv6UD3tnxcIkxEQRkCtLDcBmkE/Itfe59n/n+OtdW3BEE/f
- 8Q48Wyl6CM1ADUUSk4x7nbAZI+ayc+cB6cN62Rxwt3qqHsqqTHpL2QIFh5wlbEdriPex
- TzNMvKcjR3Fx9yFbNh3FE0Cn41CWtXDw1j/SM6REUr37A1WTn5zub2k5HNkZTcIZa0cB 5w== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pge77tm84-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Mar 2023 16:12:02 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32NEVKUs036320;
-	Thu, 23 Mar 2023 16:12:02 GMT
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pge77tm7k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Mar 2023 16:12:02 +0000
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
-	by ppma01wdc.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32ND8nVD012813;
-	Thu, 23 Mar 2023 16:12:01 GMT
-Received: from smtprelay04.wdc07v.mail.ibm.com ([9.208.129.114])
-	by ppma01wdc.us.ibm.com (PPS) with ESMTPS id 3pd4x76tds-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 23 Mar 2023 16:12:00 +0000
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32NGBxhp53674396
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 23 Mar 2023 16:11:59 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 37C4658062;
-	Thu, 23 Mar 2023 16:11:59 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1695D5805D;
-	Thu, 23 Mar 2023 16:11:59 +0000 (GMT)
-Received: from localhost (unknown [9.41.178.242])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 23 Mar 2023 16:11:59 +0000 (GMT)
-From: Nathan Lynch <nathanl@linux.ibm.com>
-To: Andrew Donnellan <ajd@linux.ibm.com>,
-        Michael Ellerman
- <mpe@ellerman.id.au>,
-        Nicholas
-	Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH 5/8] powerpc/rtas: rename va_rtas_call_unlocked() to
- va_rtas_call()
-In-Reply-To: <84edcbaacd87e84997cd77664048799a3f93d169.camel@linux.ibm.com>
-References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
- <20230220-rtas-queue-for-6-4-v1-5-010e4416f13f@linux.ibm.com>
- <84edcbaacd87e84997cd77664048799a3f93d169.camel@linux.ibm.com>
-Date: Thu, 23 Mar 2023 11:11:58 -0500
-Message-ID: <87h6ub78hd.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pj9gM59B4z3cj9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 03:25:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1679588731;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Rf1EargHhjBzXfO07IgMLtInuWGSM9rCL6OoPVE8vbA=;
+	b=WtAcDI5Li9QEuKB6ODiSX0jbpDGrOdDIqwDU2vDXzdQwZ4qWnByqG4ED6i+CW3k0/Gt+V+
+	SVdKQ2jON8/0A7itlPWthpIyCtnBE9lSlxelDZpNicneCJ0cDdPReRYWbuxzJPXW1v+V1a
+	wK0EDzKZaf+WDd+bqZnKQXTlkS1uyOQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1679588732;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Rf1EargHhjBzXfO07IgMLtInuWGSM9rCL6OoPVE8vbA=;
+	b=Yv1j5KZ9npGgkOhmsonRh7yVkFGx+qvFcWuu4HV5xDbie6ISSOjJHPtXUxqss8NP1Ohf0Y
+	atE43w/TAHJClbILu60Aq+DT7IwPv7vrsfgeaN9LzQPTIFn/T6K3BX2mFOmej/iCpR4fri
+	a9cnrxzwTpiruJFOgXNRzvxjnKBVjZQ=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-282-NgWkUOm3M_WR7Cf0B5YQmw-1; Thu, 23 Mar 2023 12:25:30 -0400
+X-MC-Unique: NgWkUOm3M_WR7Cf0B5YQmw-1
+Received: by mail-wm1-f70.google.com with SMTP id m5-20020a05600c4f4500b003ee8db23ef9so1076419wmq.8
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 09:25:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1679588728;
+        h=mime-version:message-id:date:references:in-reply-to:subject:cc:to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=Rf1EargHhjBzXfO07IgMLtInuWGSM9rCL6OoPVE8vbA=;
+        b=5WPTtk9qWx1I/zzFYx6ZwN0GgDBz80Dwxld9IbSZI6mUrPhupYumTpqU9MaFakoa+2
+         DIPzRGpO6Td0ztw9AIar3wxMiR0Zas0CJuyLesqhASvZUHGdT3RY4JnlheIHf1YEBh3S
+         Vj9SOM1YeIWU0sIQO9201v7fqtbO+vvHKDVynciMFH2p8FHaN4Aa3Ti1ROqWD6h6pxBH
+         30rAe03jREpO+SJyyhkR7WSq+3Fu02YJWrhIxxG7wo1jJcT+HRawEYYPMARVNgNLaNrl
+         E3O3PRdh8EL5pCO99LkktqC2tgXcf6eERn6WV6IwJWDArDEnmi+w+OAOMwKTSBGN+JA+
+         COLg==
+X-Gm-Message-State: AAQBX9f0I3MYFp5BJenm+Xu5F1GqrvxpFDxVeLAkZ5H/6D1XDwZxqoty
+	nExCADkl5k1zaZLApEFUz494xNgGahcU1Ag4nFWbX7oiiya/8hwkh+NgVsyNOMVgJi1tuE07nYw
+	7CIjX4qFEcAlaypITV0JoJGjuLA==
+X-Received: by 2002:a5d:4568:0:b0:2c7:e5f:e0e0 with SMTP id a8-20020a5d4568000000b002c70e5fe0e0mr2967368wrc.65.1679588728477;
+        Thu, 23 Mar 2023 09:25:28 -0700 (PDT)
+X-Google-Smtp-Source: AKy350Z2pOP19Ooh7wiG9F4iyBZnUcLGOtnlVl1iiXTySJV6QCXnwRVxEdgZiRrRO9IHVKHT4hkvPQ==
+X-Received: by 2002:a5d:4568:0:b0:2c7:e5f:e0e0 with SMTP id a8-20020a5d4568000000b002c70e5fe0e0mr2967333wrc.65.1679588728212;
+        Thu, 23 Mar 2023 09:25:28 -0700 (PDT)
+Received: from vschneid.remote.csb ([154.57.232.159])
+        by smtp.gmail.com with ESMTPSA id d10-20020adfe88a000000b002c70e60abd4sm16586783wrm.2.2023.03.23.09.25.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 23 Mar 2023 09:25:27 -0700 (PDT)
+From: Valentin Schneider <vschneid@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v5 7/7] sched, smp: Trace smp callback causing an IPI
+In-Reply-To: <20230322140434.GC2357380@hirez.programming.kicks-ass.net>
+References: <20230307143558.294354-1-vschneid@redhat.com>
+ <20230307143558.294354-8-vschneid@redhat.com>
+ <20230322095329.GS2017917@hirez.programming.kicks-ass.net>
+ <xhsmhmt45c703.mognet@vschneid.remote.csb>
+ <20230322140434.GC2357380@hirez.programming.kicks-ass.net>
+Date: Thu, 23 Mar 2023 16:25:25 +0000
+Message-ID: <xhsmhbkkjcu4q.mognet@vschneid.remote.csb>
 MIME-Version: 1.0
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
 Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: XuqutOKwDFKnOpofaluIEvXYKAgzoI7r
-X-Proofpoint-ORIG-GUID: kuK9mClv2bRC-EwoPnt69zynvp22elSu
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-22_21,2023-03-23_02,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxscore=0
- clxscore=1015 adultscore=0 spamscore=0 impostorscore=0 lowpriorityscore=0
- malwarescore=0 priorityscore=1501 suspectscore=0 mlxlogscore=859
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303150002 definitions=main-2303230118
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,30 +98,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Scott Cheloha <cheloha@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, Nick Child <nnac123@linux.ibm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, Mark Rutland <mark.rutland@arm.com>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Dave Hansen <dave.hansen@linux.intel.com>, linux-mips@vger.kernel.org, Guo Ren <guoren@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, Marc Zyngier <maz@kernel.org>, linux-hexagon@vger.kernel.org, x86@kernel.org, Russell King <linux@armlinux.org.uk>, linux-csky@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Paul E. McKenney" <paulmck@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>, Nicholas Piggin <npiggin@gmail.com>, loongarch@lists.linux.dev, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.
+ org, Daniel Bristot de Oliveira <bristot@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Donnellan <ajd@linux.ibm.com> writes:
+On 22/03/23 15:04, Peter Zijlstra wrote:
+> @@ -798,14 +794,20 @@ static void smp_call_function_many_cond(
+>  		}
+>  
+>  		/*
+> +		 * Trace each smp_function_call_*() as an IPI, actual IPIs
+> +		 * will be traced with func==generic_smp_call_function_single_ipi().
+> +		 */
+> +		trace_ipi_send_cpumask(cfd->cpumask_ipi, _RET_IP_, func);
 
-> On Mon, 2023-03-06 at 15:33 -0600, Nathan Lynch via B4 Relay wrote:
->> From: Nathan Lynch <nathanl@linux.ibm.com>
->> 
->> The function name va_rtas_call_unlocked() is confusing: it may be
->> called with or without rtas_lock held. Rename it to va_rtas_call().
->> 
->> Signed-off-by: Nathan Lynch <nathanl@linux.ibm.com>
->
-> Not a huge fan of the name, the va_ suggests that the only difference
-> between this function and rtas_call() is the varargs handling. Perhaps
-> something like __rtas_call()?
+I just got a trace pointing out this can emit an event even though no IPI
+is sent if e.g. the cond_func predicate filters all CPUs in the argument
+mask:
 
-I would be more inclined to agree if va_rtas_call() were a public API,
-like rtas_call().
+  ipi_send_cpumask:     cpumask= callsite=on_each_cpu_cond_mask+0x3c callback=flush_tlb_func+0x0
 
-But it's not, so the convention you're appealing to shouldn't inform the
-expectations of external users of the rtas_* APIs, at least.
+Maybe something like so on top?
 
-__rtas_call() conveys strictly less information than va_rtas_call()
-IMO. Most functions in the kernel that take a va_list have a "v" worked
-into their name somehow.
+---
+diff --git a/kernel/smp.c b/kernel/smp.c
+index ba5478814e677..1dc452017d000 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -791,6 +791,8 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
+ 			}
+ 		}
+ 
++		if (!nr_cpus)
++			goto local;
+ 		/*
+ 		 * Trace each smp_function_call_*() as an IPI, actual IPIs
+ 		 * will be traced with func==generic_smp_call_function_single_ipi().
+@@ -804,10 +806,10 @@ static void smp_call_function_many_cond(const struct cpumask *mask,
+ 		 */
+ 		if (nr_cpus == 1)
+ 			send_call_function_single_ipi(last_cpu);
+-		else if (likely(nr_cpus > 1))
++		else
+ 			send_call_function_ipi_mask(cfd->cpumask_ipi);
+ 	}
+-
++local:
+ 	if (run_local && (!cond_func || cond_func(this_cpu, info))) {
+ 		unsigned long flags;
+ 
+
