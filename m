@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFE77C6FD1C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 17:36:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB5E8C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 17:37:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PjCFN0Bhsz3fQs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 04:36:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PjCGN0s0Yz3fSD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 04:37:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HD47gxMe;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QSaSrPyw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HD47gxMe;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=QSaSrPyw;
 	dkim-atps=neutral
 Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjCDJ4p1Dz3f4M
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 04:35:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjCDL23Zjz3f4M
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 04:35:46 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1679592944; x=1711128944;
+  t=1679592946; x=1711128946;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=vwh9ptbMJOXQlZJdSj8+frJlz0P5NOeD/IEPLf/bFeA=;
-  b=HD47gxMezRTqZpB4BFkBHSKlPSBtBo/TDs1zAVkP7+6Af1rEz7nMC5tA
-   KVIH8xD1ruEEgPQ9JVstYUMiKBV+zxR17QHVdLhKoJPPm28sPj55JPnNy
-   qDKk+N9U14tSoBXQ1WX062KFdNxy4+zfP+AMxoUCAm8cnVLTsXGG0Tcai
-   C24PvLDNPmrLxDPIyU7HGtEcdS8sjRBCTPEZj4jpCLd2GTe0H8LgftxVb
-   a0whg37vQITGLAYK8HV7Vw308OXyr/6EQUGgh6csiTkv/UzuqnecEZv07
-   7ONYnmCN/GICyGRzYqo7N1HGXy7KkVm9ofGIvkSl7Uk4pjvLE7cMAkz3m
-   A==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="327969609"
+  bh=+tkQnp5raP0E2HuwxHdpBNe2fRW/pW0M4CrsRaTr0mM=;
+  b=QSaSrPywXF8RhfXFHvhFTGz2B+As7nEnJuhabBEyqtNNZL49H8/A4G7C
+   DI6Lq3P3fSrBPFVQfou/v76vUTY/SDaSAuhkoiGFAbI32hCYYVnAx9UiM
+   StrfuVV+I0J6gfImirDju5zB4Mu0A3hnHAKHxDY5JSzgbMThsqMM161uu
+   R3//xoAzfkylBh+AMnu3BoZjT9s6GIJzY9HFAzju9Ao9V/190Siz6tti/
+   O2Ux4Ffc67ZIABzMP21L/sfpczjeWpjDWBkDwRDpHMQ/f+7ALoQuStKur
+   tNqnPGwdnkIpqROkrgEvY+qnhyNvGHNYM7XWxBg7ehF2NKyURbcQEGzEW
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="327969633"
 X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
-   d="scan'208";a="327969609"
+   d="scan'208";a="327969633"
 Received: from orsmga007.jf.intel.com ([10.7.209.58])
   by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Mar 2023 10:35:37 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="675794215"
+X-IronPort-AV: E=McAfee;i="6600,9927,10658"; a="675794214"
 X-IronPort-AV: E=Sophos;i="5.98,285,1673942400"; 
-   d="scan'208";a="675794215"
+   d="scan'208";a="675794214"
 Received: from black.fi.intel.com ([10.237.72.28])
   by orsmga007.jf.intel.com with ESMTP; 23 Mar 2023 10:35:25 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id AF393D0; Thu, 23 Mar 2023 19:36:11 +0200 (EET)
+	id EA7F02AA; Thu, 23 Mar 2023 19:36:11 +0200 (EET)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -72,13 +72,14 @@ To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	linux-pci@vger.kernel.org,
 	xen-devel@lists.xenproject.org,
 	linux-acpi@vger.kernel.org
-Subject: [PATCH v7 1/6] kernel.h: Split out COUNT_ARGS() and CONCATENATE()
-Date: Thu, 23 Mar 2023 19:36:05 +0200
-Message-Id: <20230323173610.60442-2-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v7 4/6] EISA: Convert to use less arguments in pci_bus_for_each_resource()
+Date: Thu, 23 Mar 2023 19:36:08 +0200
+Message-Id: <20230323173610.60442-5-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 In-Reply-To: <20230323173610.60442-1-andriy.shevchenko@linux.intel.com>
 References: <20230323173610.60442-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -95,64 +96,39 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-kernel.h is being used as a dump for all kinds of stuff for a long time.
-The COUNT_ARGS() and CONCATENATE() macros may be used in some places
-without need of the full kernel.h dependency train with it.
-
-Here is the attempt on cleaning it up by splitting out these macros().
+The pci_bus_for_each_resource() can hide the iterator loop since
+it may be not used otherwise. With this, we may drop that iterator
+variable definition.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Krzysztof Wilczyński <kw@linux.com>
 ---
- include/linux/args.h   | 13 +++++++++++++
- include/linux/kernel.h |  8 +-------
- 2 files changed, 14 insertions(+), 7 deletions(-)
- create mode 100644 include/linux/args.h
+ drivers/eisa/pci_eisa.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/args.h b/include/linux/args.h
-new file mode 100644
-index 000000000000..16ef6fad8add
---- /dev/null
-+++ b/include/linux/args.h
-@@ -0,0 +1,13 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef _LINUX_ARGS_H
-+#define _LINUX_ARGS_H
-+
-+/* This counts to 12. Any more, it will return 13th argument. */
-+#define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
-+#define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-+
-+#define __CONCAT(a, b) a ## b
-+#define CONCATENATE(a, b) __CONCAT(a, b)
-+
-+#endif	/* _LINUX_ARGS_H */
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 40bce7495af8..c049d3394425 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -13,6 +13,7 @@
+diff --git a/drivers/eisa/pci_eisa.c b/drivers/eisa/pci_eisa.c
+index 930c2332c3c4..8173e60bb808 100644
+--- a/drivers/eisa/pci_eisa.c
++++ b/drivers/eisa/pci_eisa.c
+@@ -20,8 +20,8 @@ static struct eisa_root_device pci_eisa_root;
  
- #include <linux/stdarg.h>
- #include <linux/align.h>
-+#include <linux/args.h>
- #include <linux/limits.h>
- #include <linux/linkage.h>
- #include <linux/stddef.h>
-@@ -484,13 +485,6 @@ ftrace_vprintk(const char *fmt, va_list ap)
- static inline void ftrace_dump(enum ftrace_dump_mode oops_dump_mode) { }
- #endif /* CONFIG_TRACING */
+ static int __init pci_eisa_init(struct pci_dev *pdev)
+ {
+-	int rc, i;
+ 	struct resource *res, *bus_res = NULL;
++	int rc;
  
--/* This counts to 12. Any more, it will return 13th argument. */
--#define __COUNT_ARGS(_0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _n, X...) _n
--#define COUNT_ARGS(X...) __COUNT_ARGS(, ##X, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
--
--#define __CONCAT(a, b) a ## b
--#define CONCATENATE(a, b) __CONCAT(a, b)
--
- /* Rebuild everything on CONFIG_FTRACE_MCOUNT_RECORD */
- #ifdef CONFIG_FTRACE_MCOUNT_RECORD
- # define REBUILD_DUE_TO_FTRACE_MCOUNT_RECORD
+ 	if ((rc = pci_enable_device (pdev))) {
+ 		dev_err(&pdev->dev, "Could not enable device\n");
+@@ -38,7 +38,7 @@ static int __init pci_eisa_init(struct pci_dev *pdev)
+ 	 * eisa_root_register() can only deal with a single io port resource,
+ 	*  so we use the first valid io port resource.
+ 	 */
+-	pci_bus_for_each_resource(pdev->bus, res, i)
++	pci_bus_for_each_resource(pdev->bus, res)
+ 		if (res && (res->flags & IORESOURCE_IO)) {
+ 			bus_res = res;
+ 			break;
 -- 
 2.40.0.1.gaa8946217a0b
 
