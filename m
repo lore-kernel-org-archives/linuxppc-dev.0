@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41533C74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 16:31:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE352C6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Mar 2023 16:36:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pj9pQ3xB3z3fFV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 03:31:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.53; helo=mail-oa1-f53.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f53.google.com (mail-oa1-f53.google.com [209.85.160.53])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pj9w220SDz3fSb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 03:36:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.179; helo=mail-qt1-f179.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com [209.85.160.179])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pj9nl5y4jz3cj9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 03:31:05 +1100 (AEDT)
-Received: by mail-oa1-f53.google.com with SMTP id 586e51a60fabf-17aeb49429eso22940393fac.6
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 09:31:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pj9vN0dTXz3f4X
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 03:35:59 +1100 (AEDT)
+Received: by mail-qt1-f179.google.com with SMTP id s12so27212831qtq.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 09:35:59 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679589063;
+        d=1e100.net; s=20210112; t=1679589357;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=j7GNIdZ5wgfU6KCXGbmsavLHJtcjfO2exto0gDOFK7Q=;
-        b=qoyy/1SRIb6/qZSkoxYffFtl4AzWUpGU3FyVrC2dQHXqgWAX9p04cScyY2oafcb9m9
-         lA4zqoEiwvEY5nETVb1IAw8NJyVvTC2YNjMXWj0YTVEGb0iwsuESyYAaP1u93TkeqhO6
-         s8bgt/dzi6N1KulC4s+BUH03sYt40om5ogPRJ/BHZ4Zugm4Z0t1bxzTDfrfzoDfD9iS3
-         O4+Ung2UdXowCKVQ2i4PwqbvZPM7GJoeXF63o4wyh/4hrGL6WCA5Izvgd4eObpH8lIsL
-         XzE2VQcT/9pO8fB6guqQeyUarM+pD0EkiiczsNS0zTz5vVMhCMFxk1PEMacYs7RS6Hx3
-         g/Tw==
-X-Gm-Message-State: AAQBX9cZa7GnZnQ5MS+M7AHGaqQwrpPEueoJl1Ca+IqCCRFVyT6iKO2T
-	ToZNXQjWyeVof6H48r4uQWVGcnt8bGASU131
-X-Google-Smtp-Source: AKy350YWb9Qp6ZZgxTkl2VY1EY9kWrGHeQjgddYEM86sdlABTE3vtQ8QAq4dDy/bD56q9sNyRonzag==
-X-Received: by 2002:a05:6870:d207:b0:177:9b62:6b7e with SMTP id g7-20020a056870d20700b001779b626b7emr2887472oac.24.1679589062719;
-        Thu, 23 Mar 2023 09:31:02 -0700 (PDT)
-Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com. [209.85.160.48])
-        by smtp.gmail.com with ESMTPSA id z14-20020a54458e000000b0037b6f5d6309sm646725oib.2.2023.03.23.09.31.02
+        bh=UL3/4GqvmmUqfCC6k4K5nIi6sLrnnlUEco09johNyxg=;
+        b=aDDq4TyYsXL9MCvuIL4huVH9sNUbT86z3X5H0XJduSnN9hqUSg5gvzPEq1PH4FzIaw
+         ItH9PJWUtcfHdisRrBXresBcas3wlf+DM4EmmVMosVFtAEd1TzHM5AI7TgygbaynVyRh
+         h9veVYYoirujXkdAVcKr+rxTQAOAz8KHEt6IQhKtvX/tIuJrm5ErVXvsGJbY5bfTH5mX
+         x7Gv7ixUk5wMUE0IsmTKonBO9LVh+bXnMJHw8RWGrOifrU8XD0n6O15mM02d54Vjwe7Q
+         O3i86WWKK2sbAOUYggfdXBdFP4KrIrJDtK18epXcBwR8E/Mg3DE5LBcV9ZNbrlJMpSk/
+         2QuQ==
+X-Gm-Message-State: AO0yUKUK4zzJITrc0ogjmtfql+Y6XOnDqawKrifitOgiClZvPBeChQP6
+	uEOwpbiofJaX3LAi96WzIOesQvnN0GBeSA==
+X-Google-Smtp-Source: AK7set9Iq1ciwaPBxs2fTwzA7bohcAE+9LhSWNc2IIn9CPBFp05WqoYXJ6bkL75TWnFyY9dTaHy8BA==
+X-Received: by 2002:ac8:4e42:0:b0:3bf:e415:5cc3 with SMTP id e2-20020ac84e42000000b003bfe4155cc3mr14496699qtw.58.1679589356686;
+        Thu, 23 Mar 2023 09:35:56 -0700 (PDT)
+Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com. [209.85.160.179])
+        by smtp.gmail.com with ESMTPSA id w2-20020ac87182000000b003b9a6d54b6csm11868126qto.59.2023.03.23.09.35.56
         for <linuxppc-dev@lists.ozlabs.org>
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 23 Mar 2023 09:31:02 -0700 (PDT)
-Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-17ac5ee3f9cso23200607fac.12
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 09:31:02 -0700 (PDT)
+        Thu, 23 Mar 2023 09:35:56 -0700 (PDT)
+Received: by mail-qt1-f179.google.com with SMTP id s12so27212743qtq.11
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Mar 2023 09:35:56 -0700 (PDT)
 X-Received: by 2002:a05:6902:728:b0:a09:314f:a3ef with SMTP id
- l8-20020a056902072800b00a09314fa3efmr2593946ybt.12.1679588687557; Thu, 23 Mar
- 2023 09:24:47 -0700 (PDT)
+ l8-20020a056902072800b00a09314fa3efmr2603297ybt.12.1679588947338; Thu, 23 Mar
+ 2023 09:29:07 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230323092156.2545741-1-rppt@kernel.org> <20230323092156.2545741-7-rppt@kernel.org>
-In-Reply-To: <20230323092156.2545741-7-rppt@kernel.org>
+References: <ZBxiaflGTeK8Jlgx@smile.fi.intel.com> <20230323150238.GA2550157@bhelgaas>
+ <ZBxrfy83MRjnReAs@smile.fi.intel.com>
+In-Reply-To: <ZBxrfy83MRjnReAs@smile.fi.intel.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 23 Mar 2023 17:24:35 +0100
-X-Gmail-Original-Message-ID: <CAMuHMdWSE1OzYQfNx=cbP+yKZLkgv=nUS-Ddqk2ORv9qdWFahw@mail.gmail.com>
-Message-ID: <CAMuHMdWSE1OzYQfNx=cbP+yKZLkgv=nUS-Ddqk2ORv9qdWFahw@mail.gmail.com>
-Subject: Re: [PATCH 06/14] m68k: reword ARCH_FORCE_MAX_ORDER prompt and help text
-To: Mike Rapoport <rppt@kernel.org>
+Date: Thu, 23 Mar 2023 17:28:55 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWkavUwZrfuJ5YSsb2kkHVZ0TCzcme5o6CkYGcSDVt+jw@mail.gmail.com>
+Message-ID: <CAMuHMdWkavUwZrfuJ5YSsb2kkHVZ0TCzcme5o6CkYGcSDVt+jw@mail.gmail.com>
+Subject: Re: [PATCH v6 1/4] PCI: Introduce pci_dev_for_each_resource()
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,22 +68,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, Will Deacon <will@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Russell King <linux@armlinux.org.uk>, Zi Yan <ziy@nvidia.com>, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, linux-m68k@lists.linux-m68k.org, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, linux-pci@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Andrew Lunn <andrew@lunn.ch>, sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Gregory Clement <gregory.clement@bootlin.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@armlinux.org.uk>, linux-acpi@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Miguel Ojeda <ojeda@kernel.org>, xen-devel@lists.xenproject.org, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Niklas Schnelle <schnelle@linux.ibm.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, 
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linuxppc-dev@lists.ozlabs.org, Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, linux-alpha@vger.kernel.org, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, "David S. Miller" <davem@davemloft.net>, "Maciej W. Rozycki" <macro@orcam.me.uk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Mar 23, 2023 at 10:23=E2=80=AFAM Mike Rapoport <rppt@kernel.org> wr=
-ote:
-> From: "Mike Rapoport (IBM)" <rppt@kernel.org>
->
-> The prompt and help text of ARCH_FORCE_MAX_ORDER are not even close to
-> describe this configuration option.
->
-> Update both to actually describe what this option does.
->
-> Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+Hi Andy,
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+On Thu, Mar 23, 2023 at 4:15=E2=80=AFPM Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+> On Thu, Mar 23, 2023 at 10:02:38AM -0500, Bjorn Helgaas wrote:
+> > I poked around looking for similar patterns elsewhere with:
+> >   git grep "#define.*for_each_.*_p("
+> >   git grep "#define.*for_each_.*_idx("
+> >
+> > I didn't find any other "_p" iterators and just a few "_idx" ones, so
+> > my hope is to follow what little precedent there is, as well as
+> > converge on the basic "*_for_each_resource()" iterators and remove the
+> > "_idx()" versions over time by doing things like the
+> > pci_claim_resource() change.
+>
+> The p is heavily used in the byte order conversion helpers.
+
+I can't seem to find them. Example?
+
+Or do you mean cpu_to_be32p()? There "p" means pointer,
+which is something completely different.
+
+> > What do you think?  If it seems like excessive churn, we can do it
+> > as-is and still try to reduce the use of the index variable over time.
+>
+> I think _p has a precedent as well. But I can think about it a bit, maybe
+> we can come up with something smarter.
 
 Gr{oetje,eeting}s,
 
