@@ -4,45 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BCE4C6FD20
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 05:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9CF2C6FD1C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 05:28:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PjW1P5hZNz3fJK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 16:27:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PjW2P1tgdz3fSc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 24 Mar 2023 16:28:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mrbi/dJO;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BFdj3KWz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Mrbi/dJO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BFdj3KWz;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjVwp5Jqjz3fQg
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 16:23:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PjVwy3Sb3z3fR0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Mar 2023 16:23:30 +1100 (AEDT)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0FB8E62956;
-	Fri, 24 Mar 2023 05:23:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AF65CC433EF;
-	Fri, 24 Mar 2023 05:23:13 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id AD1E462952;
+	Fri, 24 Mar 2023 05:23:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 08A2CC433A1;
+	Fri, 24 Mar 2023 05:23:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1679635400;
-	bh=LeuV23DH0esmotNA2QlUjum35xKgU+8zbcmhGeC5TeU=;
+	s=k20201202; t=1679635407;
+	bh=gU9WeuZrKKhjWnkXo6iMK8oK3OAW8JY6v5zyZrx1gFQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Mrbi/dJOtzaHgUiVL6QgdFc+kWlVrRKxGkCrNKJ0d1YIPw/3/evFLS/HHQ3psMOAH
-	 g1W3YYeg3M8dZx/uIirKdmBNpJT/KKM40fWcK1ZgrnOjerfxRIfSD9MYqUVGMg99pT
-	 ZJLSaBF4mwowIdE+5Dax3W0pqpyOqiGomjRLmihUtgrfpg0guPJO4WOUpiTQBwKCDU
-	 a0AM0PtMtMYiyp6e298B4MR0/VCNihR56/I+CKVI7d3wK3rIuc8en7Uz8PegvCRN5d
-	 kwj//m/F+5wNDBtWdUtQuBkSPTMzlj5xAG91xj//nXn+uGHI2yM594pHZAftDp2s0N
-	 hyaYR2lpyMSgg==
+	b=BFdj3KWzf6zlwHRXi2kvBaCDK5IwWYveapciy+Fji7CcGbm732iPsb/YPjuvv9zIH
+	 6i/jctZje1DXV7S3ZbrzoNueEf3rgMbP1vrj5lEVq/aRm4XrKWctECPRaTak7reTfU
+	 X3bPUKdu2HQPSs5HJYswtyCMeFb3EDxzWvEKXLYUCFm77id4DyAMfHYE60U/qRW8li
+	 9bHSq1dQRA9au494Ssx/8QcgyTFdNnBwStfwCPJOzY34mgMs4Dqp2sK3UmVVoJH6ft
+	 QZQXJ6pXN41I6wxusj7EPI/Lgw6R8KopT9u+INsszNrq0btGsDgeht5cmNYtrImKK5
+	 R+FtwuPNMfntA==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 04/14] csky: drop ARCH_FORCE_MAX_ORDER
-Date: Fri, 24 Mar 2023 08:22:23 +0300
-Message-Id: <20230324052233.2654090-5-rppt@kernel.org>
+Subject: [PATCH v2 05/14] ia64: don't allow users to override ARCH_FORCE_MAX_ORDER
+Date: Fri, 24 Mar 2023 08:22:24 +0300
+Message-Id: <20230324052233.2654090-6-rppt@kernel.org>
 X-Mailer: git-send-email 2.35.1
 In-Reply-To: <20230324052233.2654090-1-rppt@kernel.org>
 References: <20230324052233.2654090-1-rppt@kernel.org>
@@ -65,33 +65,31 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 
-The default value of ARCH_FORCE_MAX_ORDER matches the generic default
-defined in the MM code, the architecture does not support huge pages, so
-there is no need to keep ARCH_FORCE_MAX_ORDER option available.
+It is enough to keep default values for base and huge pages without
+letting users to override ARCH_FORCE_MAX_ORDER.
 
-Drop it.
+Drop the prompt to make the option unvisible in *config.
 
 Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
 Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 ---
- arch/csky/Kconfig | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/ia64/Kconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
-index c694fac43bed..00379a843c37 100644
---- a/arch/csky/Kconfig
-+++ b/arch/csky/Kconfig
-@@ -332,10 +332,6 @@ config HIGHMEM
- 	select KMAP_LOCAL
- 	default y
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 0d2f41fa56ee..b61437cae162 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -202,8 +202,7 @@ config IA64_CYCLONE
+ 	  If you're unsure, answer N.
  
--config ARCH_FORCE_MAX_ORDER
--	int "Maximum zone order"
--	default "10"
--
- config DRAM_BASE
- 	hex "DRAM start addr (the same with memory-section in dts)"
- 	default 0x0
+ config ARCH_FORCE_MAX_ORDER
+-	int "MAX_ORDER (10 - 16)"  if !HUGETLB_PAGE
+-	range 10 16  if !HUGETLB_PAGE
++	int
+ 	default "16" if HUGETLB_PAGE
+ 	default "10"
+ 
 -- 
 2.35.1
 
