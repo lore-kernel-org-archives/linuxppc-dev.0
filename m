@@ -4,42 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75B45C6FD1F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Mar 2023 06:39:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C2B9C6FD1F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Mar 2023 06:55:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pk8YZ6tb0z3fXH
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Mar 2023 17:38:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
-X-Greylist: delayed 174 seconds by postgrey-1.36 at boromir; Sat, 25 Mar 2023 17:38:24 AEDT
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pk8wL4PFDz3fVL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 25 Mar 2023 17:55:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=wangkefeng.wang@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pk8Xw564lz3c72
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2023 17:38:24 +1100 (AEDT)
-Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.57])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4Pk8V53f06zKvCx;
-	Sat, 25 Mar 2023 14:35:57 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pk8vh6Cz8z3cHX
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Mar 2023 17:54:37 +1100 (AEDT)
+Received: from dggpemm500001.china.huawei.com (unknown [172.30.72.54])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4Pk8Pj2Yl7z17Nsw;
+	Sat, 25 Mar 2023 14:32:09 +0800 (CST)
 Received: from [10.174.177.243] (10.174.177.243) by
  dggpemm500001.china.huawei.com (7.185.36.107) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Sat, 25 Mar 2023 14:38:16 +0800
-Message-ID: <02dd2437-32fa-31aa-4ff3-b33a058f2363@huawei.com>
-Date: Sat, 25 Mar 2023 14:38:15 +0800
+ 15.1.2507.21; Sat, 25 Mar 2023 14:35:18 +0800
+Message-ID: <c4a228ea-a438-a442-b2be-ee46510124e2@huawei.com>
+Date: Sat, 25 Mar 2023 14:35:17 +0800
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
  Thunderbird/102.5.1
-Subject: Re: [PATCH v3 05/14] ia64: don't allow users to override
+Subject: Re: [PATCH v3 02/14] arm64: drop ranges in definition of
  ARCH_FORCE_MAX_ORDER
 Content-Language: en-US
 To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 References: <20230325060828.2662773-1-rppt@kernel.org>
- <20230325060828.2662773-6-rppt@kernel.org>
+ <20230325060828.2662773-3-rppt@kernel.org>
 From: Kefeng Wang <wangkefeng.wang@huawei.com>
-In-Reply-To: <20230325060828.2662773-6-rppt@kernel.org>
+In-Reply-To: <20230325060828.2662773-3-rppt@kernel.org>
 Content-Type: text/plain; charset="UTF-8"; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Originating-IP: [10.174.177.243]
-X-ClientProxiedBy: dggems702-chm.china.huawei.com (10.3.19.179) To
+X-ClientProxiedBy: dggems704-chm.china.huawei.com (10.3.19.181) To
  dggpemm500001.china.huawei.com (7.185.36.107)
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -62,48 +61,39 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 On 2023/3/25 14:08, Mike Rapoport wrote:
 > From: "Mike Rapoport (IBM)" <rppt@kernel.org>
 > 
-> It is enough to keep default values for base and huge pages without
-> letting users to override ARCH_FORCE_MAX_ORDER.
+> It is not a good idea to change fundamental parameters of core memory
+> management. Having predefined ranges suggests that the values within
+> those ranges are sensible, but one has to *really* understand
+> implications of changing MAX_ORDER before actually amending it and
+> ranges don't help here.
 > 
-> Drop the prompt to make the option unvisible in *config.
+> Drop ranges in definition of ARCH_FORCE_MAX_ORDER and make its prompt
+> visible only if EXPERT=y
 > 
 > Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 > Reviewed-by: Zi Yan <ziy@nvidia.com>
 > Signed-off-by: Mike Rapoport (IBM) <rppt@kernel.org>
+
+Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+
 > ---
->   arch/ia64/Kconfig | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
+>   arch/arm64/Kconfig | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index 0d2f41fa56ee..b61437cae162 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -202,8 +202,7 @@ config IA64_CYCLONE
->   	  If you're unsure, answer N.
->   
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index e60baf7859d1..7324032af859 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -1487,11 +1487,9 @@ config XEN
+>   # 16K |       27          |      14      |       13        |         11         |
+>   # 64K |       29          |      16      |       13        |         13         |
 >   config ARCH_FORCE_MAX_ORDER
-> -	int "MAX_ORDER (10 - 16)"  if !HUGETLB_PAGE
-> -	range 10 16  if !HUGETLB_PAGE
-> +	int
->   	default "16" if HUGETLB_PAGE
+> -	int "Maximum zone order" if ARM64_4K_PAGES || ARM64_16K_PAGES
+> +	int "Maximum zone order" if EXPERT && (ARM64_4K_PAGES || ARM64_16K_PAGES)
+>   	default "13" if ARM64_64K_PAGES
+> -	range 11 13 if ARM64_16K_PAGES
+>   	default "11" if ARM64_16K_PAGES
+> -	range 10 15 if ARM64_4K_PAGES
 >   	default "10"
->   
-
-It seems that we could drop the following part?
-
-diff --git a/arch/ia64/include/asm/sparsemem.h 
-b/arch/ia64/include/asm/sparsemem.h
-index a58f8b466d96..18187551b183 100644
---- a/arch/ia64/include/asm/sparsemem.h
-+++ b/arch/ia64/include/asm/sparsemem.h
-@@ -11,11 +11,6 @@
-
-  #define SECTION_SIZE_BITS      (30)
-  #define MAX_PHYSMEM_BITS       (50)
--#ifdef CONFIG_ARCH_FORCE_MAX_ORDER
--#if (CONFIG_ARCH_FORCE_MAX_ORDER + PAGE_SHIFT > SECTION_SIZE_BITS)
--#undef SECTION_SIZE_BITS
--#define SECTION_SIZE_BITS (CONFIG_ARCH_FORCE_MAX_ORDER + PAGE_SHIFT)
--#endif
-  #endif
-
+>   	help
+>   	  The kernel memory allocator divides physically contiguous memory
