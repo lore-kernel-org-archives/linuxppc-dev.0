@@ -4,52 +4,125 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 415D4C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 19:42:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9824C761A6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 19:58:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PljsB5MNQz3fYB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 06:42:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kaod.org (client-ip=178.33.105.233; helo=2.mo552.mail-out.ovh.net; envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-X-Greylist: delayed 11978 seconds by postgrey-1.36 at boromir; Tue, 28 Mar 2023 06:42:23 AEDT
-Received: from 2.mo552.mail-out.ovh.net (2.mo552.mail-out.ovh.net [178.33.105.233])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PlkBj1X9Hz3fTY
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 06:58:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=umu3x1D/;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=umu3x1D/;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe0e::310; helo=eur04-vi1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=umu3x1D/;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=umu3x1D/;
+	dkim-atps=neutral
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com (mail-vi1eur04hn0310.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe0e::310])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pljrb2S3sz3cdV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 06:42:20 +1100 (AEDT)
-Received: from mxplan5.mail.ovh.net (unknown [10.108.4.92])
-	by mo552.mail-out.ovh.net (Postfix) with ESMTPS id 14AA02AB66;
-	Mon, 27 Mar 2023 16:06:57 +0000 (UTC)
-Received: from kaod.org (37.59.142.99) by DAG4EX2.mxp5.local (172.16.2.32)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Mon, 27 Mar
- 2023 18:06:57 +0200
-Authentication-Results: garm.ovh; auth=pass (GARM-99G003f272ab9f-64c6-4114-8d7c-8cea46af14a8,
-                    A6C3435B678E6C193C864925704A598F32E2E8B9) smtp.auth=clg@kaod.org
-X-OVh-ClientIp: 82.64.250.170
-Message-ID: <ef5bb38f-772d-9ef3-b387-a6f7723e1706@kaod.org>
-Date: Mon, 27 Mar 2023 18:06:56 +0200
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Plk9Z5sLlz2xZp
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 06:57:05 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LuAJCNux07RHgBnJpGno2yMpVhKiZSt8TefWL+PbKRU=;
+ b=umu3x1D/qbEcL/ZciHrF9WyntOisu8TpsQKKwt05gBZ5cflZmhWARbxAIXAHgIQ5S1esHUefT76dtLOZdDKQZ7yFmXWmegtCyKbIGiQ6DyQIwV3oGVwzWBKeBrk8nwCK1rOMy2VQ2VNrByzd8vWJZi9qMyzagGcQsQx9gC8p8Gpz4cxXHw4N/9DaBFYaNmp2bBlUwPjMlirDtLnsaBMlJO/xIVZQKQ3sHOmUv+Or9cfDTzt/5CFWLwJOksNsEgoI1nhxUEiPpql4k1PUTqLv44E2W+xtl6SV8eCvs9ri7giB4DJvFP5dfzHjJwPYnvicsZtDXJXqjqevEpb+0ouNtg==
+Received: from FR3P281CA0093.DEUP281.PROD.OUTLOOK.COM (2603:10a6:d10:a1::13)
+ by PAWPR03MB9738.eurprd03.prod.outlook.com (2603:10a6:102:2ed::15) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6178.41; Mon, 27 Mar
+ 2023 19:56:44 +0000
+Received: from VI1EUR05FT065.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:d10:a1:cafe::a4) by FR3P281CA0093.outlook.office365.com
+ (2603:10a6:d10:a1::13) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6254.16 via Frontend
+ Transport; Mon, 27 Mar 2023 19:56:44 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.83)
+ smtp.mailfrom=seco.com; dkim=pass (signature was verified)
+ header.d=seco.com;dmarc=pass action=none header.from=seco.com;
+Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
+ 20.160.56.83 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.160.56.83; helo=inpost-eu.tmcas.trendmicro.com; pr=C
+Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.83) by
+ VI1EUR05FT065.mail.protection.outlook.com (10.233.243.91) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6199.32 via Frontend Transport; Mon, 27 Mar 2023 19:56:44 +0000
+Received: from outmta (unknown [192.168.82.140])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id A034A2008026E;
+	Mon, 27 Mar 2023 19:56:43 +0000 (UTC)
+Received: from EUR05-VI1-obe.outbound.protection.outlook.com (unknown [104.47.17.171])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id CD4072008006C;
+	Mon, 27 Mar 2023 19:56:43 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=biIvwNk5ueke9NB15QTqJclaw4N+qyXB75mVJakI8n8+V4ICbuX4hOd6ZBfDIalVcOjA4QpXekjTekpevJQZ0qHUFEY8qLE+ZLnh6a5iQrcioNiqE6P1yRbmK1mHAcE18U2URONSRFWgT1z6FJIUliaFCzMv1qHj7OsfT6T7qJXorxqw04/HLsDonmqqTd14WC8bbbkXVCP9NjwhqXka5dIID/BtkhnXy27Ba2ycAmFYPNLoXfY6YDZoLBZWQ+r3dgb16ZxcZwnTpfhJrRKUtsA1v++MZLj9U3+wE7yWa+LWPK8s5in5Z3A5jNFNzp3Bpad0t9aEb9GsW5xIi0cQNg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LuAJCNux07RHgBnJpGno2yMpVhKiZSt8TefWL+PbKRU=;
+ b=VspCPf7fr1HVjQaFzvLj+52ZYXFyV5lXAqKhEZQbv+rgrG4hxCjxzBu7s4cQ32mutPot2LWD/qO9713GEP6fxerl/E3hoP6GUlNGuKyfjOwSgbKgDXqSkEREhOm7PAMOv8jZtVdWhM7xqugUaXtO0OsCGzLguB5DdpsExWF0nH7tVvRaf3yqXJFiagV6XNf6kJEnTIsJSOMczmpL/KxjKiSvlg6WlZsKelFn7DtEj/3Nb1qAFZUf4yZVdEdCZ/bLlFY8bdW0XLALOdNh26RtlfgoxW6zPKAzIwMEX7n3M535H88aBJWuL4zMXgXeBH76B3x5JycneqIx/G552WWJlg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
+ dkim=pass header.d=seco.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LuAJCNux07RHgBnJpGno2yMpVhKiZSt8TefWL+PbKRU=;
+ b=umu3x1D/qbEcL/ZciHrF9WyntOisu8TpsQKKwt05gBZ5cflZmhWARbxAIXAHgIQ5S1esHUefT76dtLOZdDKQZ7yFmXWmegtCyKbIGiQ6DyQIwV3oGVwzWBKeBrk8nwCK1rOMy2VQ2VNrByzd8vWJZi9qMyzagGcQsQx9gC8p8Gpz4cxXHw4N/9DaBFYaNmp2bBlUwPjMlirDtLnsaBMlJO/xIVZQKQ3sHOmUv+Or9cfDTzt/5CFWLwJOksNsEgoI1nhxUEiPpql4k1PUTqLv44E2W+xtl6SV8eCvs9ri7giB4DJvFP5dfzHjJwPYnvicsZtDXJXqjqevEpb+0ouNtg==
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=seco.com;
+Received: from AS8PR03MB8832.eurprd03.prod.outlook.com (2603:10a6:20b:56e::11)
+ by AM9PR03MB6993.eurprd03.prod.outlook.com (2603:10a6:20b:2db::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6222.33; Mon, 27 Mar
+ 2023 19:56:36 +0000
+Received: from AS8PR03MB8832.eurprd03.prod.outlook.com
+ ([fe80::6c3f:aabb:5e8f:6126]) by AS8PR03MB8832.eurprd03.prod.outlook.com
+ ([fe80::6c3f:aabb:5e8f:6126%4]) with mapi id 15.20.6222.028; Mon, 27 Mar 2023
+ 19:56:36 +0000
+Message-ID: <aa37e04b-95bc-c7f6-bda7-be83e97f5db1@seco.com>
+Date: Mon, 27 Mar 2023 15:56:31 -0400
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: [kvm-unit-tests v3 12/13] powerpc: Support powernv machine with
- QEMU TCG
+ Thunderbird/102.4.0
+Subject: Re: [PATCH v12 13/13] arm64: dts: ls1088ardb: Add serdes descriptions
 Content-Language: en-US
-To: Nicholas Piggin <npiggin@gmail.com>, <kvm@vger.kernel.org>
-References: <20230327124520.2707537-1-npiggin@gmail.com>
- <20230327124520.2707537-13-npiggin@gmail.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-In-Reply-To: <20230327124520.2707537-13-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [37.59.142.99]
-X-ClientProxiedBy: DAG9EX1.mxp5.local (172.16.2.81) To DAG4EX2.mxp5.local
- (172.16.2.32)
-X-Ovh-Tracer-GUID: d2c56c3a-2798-4302-9baf-922df3ece07f
-X-Ovh-Tracer-Id: 13772289139134204835
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedvhedrvdehvddgleekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepkfffgggfuffvvehfhfgjtgfgihesthekredttdefjeenucfhrhhomhepveorughrihgtucfnvgcuifhorghtvghruceotghlgheskhgrohgurdhorhhgqeenucggtffrrghtthgvrhhnpeeffeelheduhefhhfegjedvueeutedvieekudehudejieeuffdtfeeuteeigedtkeenucffohhmrghinhepohhprghlqdgtrghllhhsrdhssgdptghsthgrrhhtieegrdhssgenucfkphepuddvjedrtddrtddruddpfeejrdehledrudegvddrleelnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepuddvjedrtddrtddruddpmhgrihhlfhhrohhmpeeotghlgheskhgrohgurdhorhhgqedpnhgspghrtghpthhtohepuddprhgtphhtthhopehnphhighhgihhnsehgmhgrihhlrdgtohhmpdhkvhhmsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhlvhhivhhivghrsehrvgguhhgrthdrtghomhdpthhhuhhthhesrhgvughhrghtrdgtohhmpdfovfetjfhoshhtpehmohehhedvpdhmohguvgepshhmthhpohhuth
+From: Sean Anderson <sean.anderson@seco.com>
+To: Ioana Ciornei <ioana.ciornei@nxp.com>
+References: <20230321201313.2507539-1-sean.anderson@seco.com>
+ <20230321201313.2507539-14-sean.anderson@seco.com>
+ <20230324131701.4ucxf65sxfdtqcai@LXL00007.wbi.nxp.com>
+ <5ca4aeba-db2c-4c0c-c620-d380b4b839bb@seco.com>
+In-Reply-To: <5ca4aeba-db2c-4c0c-c620-d380b4b839bb@seco.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ClientProxiedBy: MN2PR16CA0050.namprd16.prod.outlook.com
+ (2603:10b6:208:234::19) To AS8PR03MB8832.eurprd03.prod.outlook.com
+ (2603:10a6:20b:56e::11)
+MIME-Version: 1.0
+X-MS-TrafficTypeDiagnostic: 	AS8PR03MB8832:EE_|AM9PR03MB6993:EE_|VI1EUR05FT065:EE_|PAWPR03MB9738:EE_
+X-MS-Office365-Filtering-Correlation-Id: 828ebec0-9eb9-46be-6706-08db2efd63f4
+X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;
+X-Microsoft-Antispam-Message-Info-Original:  GBq86owKPnBM+sQt+IWzQw8iqw34zpraDXTGAyobzMyJA++KfnlpPEt4FlDOCEWwDJ8Z+1+BmJCO1U/HkEp/fXu/eU4BF/vlNfKQezhjKhIZItIwFa80zNxSuCN8dzg5NqrgTkfZwek1lDRON41JYY6lL8uaFFV/rWB0INP1pFHNvTPs1Kvu9hFkhO7vh2FRL/h1WnRM40sI/HanGIw+MwjD1wq3lr6+Py8E70UPm01CH1KJxLch4t9egEA5AejVQ8T1kl3jdLRRfBoHVTFt2H2k8mCP6IHcwCiOA5AhxuY0I1Ne7ZgJIfpajuDBcTBLpZFNF6GM0LedGFCGqv8UbBFhIaPnYjkE1AapJGcXEicKEAQb/0sW8GNuzfWd3nU+J1zOrjP0ic1DJ9wxTRMU7a+LdjLBQAX/8I9fPgoDPXGTDkaxLjpgH4C+39OC0VEX3pmPpyHyoI/6tr7mLPiPoHKLtz5eTDLLXi7HOWXqqXpEKnSEhtOzq45k29PNe5fc0atepAKHeZbdD0rcvqC+LQ9aEwdzmhxeNCkLek+dmHc4w+Ad05//m4APdI3CaBTuO/2gBqXA8E5zkwlppBfY8SfGBK+7C5w3HvdxG9F9vcuLHalh2JUfOwRJdrR9uOdts9ODEY1ovAKpfOPWBwjzhPUsUnCIy008LjbmGvKlvNNavHLKFUHGWh/f4ciOTFmf
+X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR03MB8832.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(136003)(366004)(396003)(376002)(39850400004)(346002)(451199021)(2906002)(38350700002)(38100700002)(44832011)(52116002)(6486002)(8676002)(66476007)(316002)(66556008)(66946007)(6916009)(4326008)(41300700001)(36756003)(54906003)(5660300002)(7416002)(478600001)(8936002)(83380400001)(6666004)(186003)(31696002)(6512007)(6506007)(26005)(53546011)(2616005)(86362001)(31686004)(45980500001)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR03MB6993
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  VI1EUR05FT065.eop-eur05.prod.protection.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	92f3b425-7306-4d36-07a9-08db2efd5f2e
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	ljJuNnRgf7hjJEDJkUa0n980F+8OgMeZIZnp5el5N7wvy01vCdBdZY76FXC81IK/mFcoGLkRZ3oOxDMpCw+p3AqtagSI2k4pqD4uzXTg2tEaujqwtdCyTNV+OAp73S1wytgyVIQd3gHdaP3kp9Xua0LuzfFWxSqF9MJoAaxXuQujfpT3rxeqoRe4chFoqBJUxHxfZfb3RjoKp4bo0tubA+oK0oms+PMr4cbCv2BklUZdKbFV7J0AKOYhVYzdgqgR6tV0IzI5qtgPLlGy4IZg3RXmld+VhnJRO1kCRZPtk2/oFfYaExROWUOrAnQpKQSx8P1yZSabZtqEjlCnSyfIKack3ZAUaCroBaEBol8baEZjcoSO6PmVjSPiD5U+mAHJrM2UPmn9XVODvEGpWZVmhLtQtoC90Dgg8p4+sKzn7KzkLeiXEuQOh3CxvbnH52fsb824ZmBsTmw89iAUQGBfnSTGG5DMGL/VLLpv/uRHWaW5ZsWB2gexKM+IViq+rDof6X6CFqNfcQnQz6S29jrlD21q2fE6xIqcVnGNjBG355CjEIYFS3lsRI6raIaLitvliCls7GxWyHzbUViNnJJWvfbs5nOqYuxinf/MPeKx1JMVLrDfCUU7rBrvKnLK2GeQsdp1RNR80bt82eqSyTn2H7J1Y+B5sNM8tFvBXkjnxgFfQ+baZ9w3DoCGeqx4t7QIY1Wg03BnFIdEeV6nCsPj2FrFqy9lik8usu1/bfj2URdaIa7uvWehep11Wd/x+/mU43qQoJfSVePEB2UoBveUXZUruoClqUUMb0MEf4KXnSY=
+X-Forefront-Antispam-Report: 	CIP:20.160.56.83;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(396003)(376002)(136003)(39850400004)(346002)(451199021)(5400799015)(40470700004)(36840700001)(46966006)(40460700003)(31686004)(6486002)(4326008)(54906003)(316002)(70586007)(70206006)(8676002)(6916009)(41300700001)(36756003)(356005)(31696002)(86362001)(478600001)(6666004)(2616005)(6512007)(6506007)(26005)(47076005)(2906002)(8936002)(7416002)(336012)(34020700004)(44832011)(5660300002)(82310400005)(40480700001)(7596003)(186003)(82740400003)(53546011)(36860700001)(83380400001)(7636003)(43740500002)(12100799027);DIR:OUT;SFP:1501;
+X-OriginatorOrg: seco.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 27 Mar 2023 19:56:44.0841
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 828ebec0-9eb9-46be-6706-08db2efd63f4
+X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.83];Helo=[inpost-eu.tmcas.trendmicro.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	VI1EUR05FT065.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR03MB9738
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,479 +134,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, Thomas Huth <thuth@redhat.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Kishon Vijay Abraham I <kishon@kernel.org>, devicetree@vger.kernel.org, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, linux-phy@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/27/23 14:45, Nicholas Piggin wrote:
-> This is a basic first pass at powernv support using OPAL (skiboot)
-> firmware.
+On 3/27/23 14:15, Sean Anderson wrote:
+> On 3/24/23 09:17, Ioana Ciornei wrote:
+>> On Tue, Mar 21, 2023 at 04:13:12PM -0400, Sean Anderson wrote:
+>>> This adds serdes support to the LS1088ARDB. I have tested the QSGMII
+>>> ports as well as the two 10G ports. The SFP slot is now fully supported,
+>>> instead of being modeled as a fixed-link.
+>>> 
+>>> Linux hangs around when the serdes is initialized if the si5341 is
+>>> enabled with the in-tree driver, so I have modeled it as a two fixed
+>>> clocks instead. There are a few registers in the QIXIS FPGA which
+>>> control the SFP GPIOs; I have modeled them as discrete GPIO controllers
+>>> for now. I never saw the AQR105 interrupt fire; not sure what was going
+>>> on, but I have removed it to force polling.
+>> 
+>> So you didn't see the interrupt fire even without these patches?
 > 
-> The ACCEL is a bit clunky, defaulting to kvm for powernv machine, which
-> isn't right and has to be manually overridden. It also does not yet run
-> in the run_tests.sh batch process, more work is needed to exclude
-> certain tests (e.g., rtas) and adjust parameters (e.g., increase memory
-> size) to allow powernv to work. For now it can run single test cases.
+> Not sure. I went to check this, and discovered I could no longer get the
+> link to come up in Linux, even on v6.0 (before the rate adaptation
+> tuff). I see the LEDs blinking in U-Boot, so presumably it's some
+> configuration problem. I'm going to look into this further when I have
+> more time.
+
+I figured it out. I forgot the dpmac2 was 10G only (no rate adaptation
+for the AQR105).
+
+And the interrupt does not fire on net/main:
+
+# cat /proc/interrupts | grep extirq
+ 22:          0          0          0          0          0          0          0          0  ls-extirq   2 Level     0x0000000008b97000:00
+
+Inspecting the phy manually shows the link coming up. By removing the
+interrupt, the link comes up as usual. I wanted to look into this
+further, but the IRQ goes through the QIXIS and the firmware source
+isn't available so I wasn't able to do so.
+
+If you'd like, I can try probing the signal (to see where the problem
+is), but I won't have time for a bit.
+
+>> I just tested this on a LS1088ARDB and it works.
+>> 
+>> 	root@localhost:~# cat /proc/interrupts | grep extirq
+>> 	 99:          5  ls-extirq   2 Level     0x0000000008b97000:00
+>> 	root@localhost:~# ip link set dev endpmac2 up
+>> 	root@localhost:~# cat /proc/interrupts | grep extirq
+>> 	 99:          6  ls-extirq   2 Level     0x0000000008b97000:00
+>> 	root@localhost:~# ip link set dev endpmac2 down
+>> 	root@localhost:~# cat /proc/interrupts | grep extirq
+>> 	 99:          7  ls-extirq   2 Level     0x0000000008b97000:00
+>> 
+>> Please don't just remove things.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Well, polling isn't the worst thing for a single interface... I do
+> remember having a problem with the interrupt. If this series works
+> with interrupts enabled, I can leave it in.
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
+Anyway, given that interrupts seem to be broken for some boards? some
+configurations? I would like to keep polling.
 
+> Did you have a chance to look at the core (patches 7 and 8) of this
+> series? Does it make sense to you? Am I missing something which would
+> allow switching from 1G->10G?
 
-
-> ---
-> Since v2:
-> - Don't call opal_init() twice [Cedric review]
-> - Added BMC device to machine (helps with power-off and getting through
->    BIOS with fewer error messages).
-> - Set machine to little-endian mode with OPAL call if built LE.
-> - Poll OPAL after making power-off call so IPMI state machine runs and
->    it actually powers off QEMU properly.
-> 
->   lib/powerpc/asm/ppc_asm.h   |  5 +++
->   lib/powerpc/asm/processor.h | 10 +++++
->   lib/powerpc/hcall.c         |  4 +-
->   lib/powerpc/io.c            | 27 +++++++++++++-
->   lib/powerpc/io.h            |  6 +++
->   lib/powerpc/processor.c     | 10 +++++
->   lib/powerpc/setup.c         |  8 ++--
->   lib/ppc64/asm/opal.h        | 15 ++++++++
->   lib/ppc64/opal-calls.S      | 46 +++++++++++++++++++++++
->   lib/ppc64/opal.c            | 74 +++++++++++++++++++++++++++++++++++++
->   powerpc/Makefile.ppc64      |  2 +
->   powerpc/cstart64.S          |  7 ++++
->   powerpc/run                 | 35 ++++++++++++++++--
->   13 files changed, 238 insertions(+), 11 deletions(-)
->   create mode 100644 lib/ppc64/asm/opal.h
->   create mode 100644 lib/ppc64/opal-calls.S
->   create mode 100644 lib/ppc64/opal.c
-> 
-> diff --git a/lib/powerpc/asm/ppc_asm.h b/lib/powerpc/asm/ppc_asm.h
-> index 6299ff5..5eec9d3 100644
-> --- a/lib/powerpc/asm/ppc_asm.h
-> +++ b/lib/powerpc/asm/ppc_asm.h
-> @@ -36,7 +36,12 @@
->   #endif /* __BYTE_ORDER__ */
->   
->   /* Machine State Register definitions: */
-> +#define MSR_LE_BIT	0
->   #define MSR_EE_BIT	15			/* External Interrupts Enable */
-> +#define MSR_HV_BIT	60			/* Hypervisor mode */
->   #define MSR_SF_BIT	63			/* 64-bit mode */
->   
-> +#define SPR_HSRR0	0x13A
-> +#define SPR_HSRR1	0x13B
-> +
->   #endif /* _ASMPOWERPC_PPC_ASM_H */
-> diff --git a/lib/powerpc/asm/processor.h b/lib/powerpc/asm/processor.h
-> index 4ad6612..9b318c3 100644
-> --- a/lib/powerpc/asm/processor.h
-> +++ b/lib/powerpc/asm/processor.h
-> @@ -3,6 +3,7 @@
->   
->   #include <libcflat.h>
->   #include <asm/ptrace.h>
-> +#include <asm/ppc_asm.h>
->   
->   #ifndef __ASSEMBLY__
->   void handle_exception(int trap, void (*func)(struct pt_regs *, void *), void *);
-> @@ -43,6 +44,15 @@ static inline void mtmsr(uint64_t msr)
->   	asm volatile ("mtmsrd %[msr]" :: [msr] "r" (msr) : "memory");
->   }
->   
-> +/*
-> + * This returns true on PowerNV / OPAL machines which run in hypervisor
-> + * mode. False on pseries / PAPR machines that run in guest mode.
-> + */
-> +static inline bool machine_is_powernv(void)
-> +{
-> +	return !!(mfmsr() & (1ULL << MSR_HV_BIT));
-> +}
-> +
->   static inline uint64_t get_tb(void)
->   {
->   	return mfspr(SPR_TB);
-> diff --git a/lib/powerpc/hcall.c b/lib/powerpc/hcall.c
-> index 711cb1b..37e52f5 100644
-> --- a/lib/powerpc/hcall.c
-> +++ b/lib/powerpc/hcall.c
-> @@ -25,7 +25,7 @@ int hcall_have_broken_sc1(void)
->   	return r3 == (unsigned long)H_PRIVILEGE;
->   }
->   
-> -void putchar(int c)
-> +void papr_putchar(int c)
->   {
->   	unsigned long vty = 0;		/* 0 == default */
->   	unsigned long nr_chars = 1;
-> @@ -34,7 +34,7 @@ void putchar(int c)
->   	hcall(H_PUT_TERM_CHAR, vty, nr_chars, chars);
->   }
->   
-> -int __getchar(void)
-> +int __papr_getchar(void)
->   {
->   	register unsigned long r3 asm("r3") = H_GET_TERM_CHAR;
->   	register unsigned long r4 asm("r4") = 0; /* 0 == default vty */
-> diff --git a/lib/powerpc/io.c b/lib/powerpc/io.c
-> index a381688..ab7bb84 100644
-> --- a/lib/powerpc/io.c
-> +++ b/lib/powerpc/io.c
-> @@ -9,13 +9,33 @@
->   #include <asm/spinlock.h>
->   #include <asm/rtas.h>
->   #include <asm/setup.h>
-> +#include <asm/processor.h>
->   #include "io.h"
->   
->   static struct spinlock print_lock;
->   
-> +void putchar(int c)
-> +{
-> +	if (machine_is_powernv())
-> +		opal_putchar(c);
-> +	else
-> +		papr_putchar(c);
-> +}
-> +
-> +int __getchar(void)
-> +{
-> +	if (machine_is_powernv())
-> +		return __opal_getchar();
-> +	else
-> +		return __papr_getchar();
-> +}
-> +
->   void io_init(void)
->   {
-> -	rtas_init();
-> +	if (machine_is_powernv())
-> +		assert(!opal_init());
-> +	else
-> +		rtas_init();
->   }
->   
->   void puts(const char *s)
-> @@ -38,7 +58,10 @@ void exit(int code)
->   // FIXME: change this print-exit/rtas-poweroff to chr_testdev_exit(),
->   //        maybe by plugging chr-testdev into a spapr-vty.
->   	printf("\nEXIT: STATUS=%d\n", ((code) << 1) | 1);
-> -	rtas_power_off();
-> +	if (machine_is_powernv())
-> +		opal_power_off();
-> +	else
-> +		rtas_power_off();
->   	halt(code);
->   	__builtin_unreachable();
->   }
-> diff --git a/lib/powerpc/io.h b/lib/powerpc/io.h
-> index d4f21ba..943bf14 100644
-> --- a/lib/powerpc/io.h
-> +++ b/lib/powerpc/io.h
-> @@ -8,6 +8,12 @@
->   #define _POWERPC_IO_H_
->   
->   extern void io_init(void);
-> +extern int opal_init(void);
-> +extern void opal_power_off(void);
->   extern void putchar(int c);
-> +extern void opal_putchar(int c);
-> +extern void papr_putchar(int c);
-> +extern int __opal_getchar(void);
-> +extern int __papr_getchar(void);
->   
->   #endif
-> diff --git a/lib/powerpc/processor.c b/lib/powerpc/processor.c
-> index 411e013..58b67d1 100644
-> --- a/lib/powerpc/processor.c
-> +++ b/lib/powerpc/processor.c
-> @@ -78,6 +78,16 @@ void sleep_tb(uint64_t cycles)
->   {
->   	uint64_t start, end, now;
->   
-> +	if (machine_is_powernv()) {
-> +		/*
-> +		 * Could use 'stop' to sleep here which would be interesting.
-> +		 * stop with ESL=0 should be simple enough, ESL=1 would require
-> +		 * SRESET based wakeup which is more involved.
-> +		 */
-> +		delay(cycles);
-> +		return;
-> +	}
-> +
->   	start = now = get_tb();
->   	end = start + cycles;
->   
-> diff --git a/lib/powerpc/setup.c b/lib/powerpc/setup.c
-> index 1be4c03..dd758db 100644
-> --- a/lib/powerpc/setup.c
-> +++ b/lib/powerpc/setup.c
-> @@ -18,6 +18,7 @@
->   #include <argv.h>
->   #include <asm/setup.h>
->   #include <asm/page.h>
-> +#include <asm/processor.h>
->   #include <asm/hcall.h>
->   #include "io.h"
->   
-> @@ -97,12 +98,13 @@ static void cpu_init(void)
->   	tb_hz = params.tb_hz;
->   
->   	/* Interrupt Endianness */
-> -
-> +	if (!machine_is_powernv()) {
->   #if  __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-> -        hcall(H_SET_MODE, 1, 4, 0, 0);
-> +		hcall(H_SET_MODE, 1, 4, 0, 0);
->   #else
-> -        hcall(H_SET_MODE, 0, 4, 0, 0);
-> +		hcall(H_SET_MODE, 0, 4, 0, 0);
->   #endif
-> +	}
->   }
->   
->   static void mem_init(phys_addr_t freemem_start)
-> diff --git a/lib/ppc64/asm/opal.h b/lib/ppc64/asm/opal.h
-> new file mode 100644
-> index 0000000..7b1299f
-> --- /dev/null
-> +++ b/lib/ppc64/asm/opal.h
-> @@ -0,0 +1,15 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +#ifndef _ASMPPC64_HCALL_H_
-> +#define _ASMPPC64_HCALL_H_
-> +
-> +#define OPAL_SUCCESS				0
-> +
-> +#define OPAL_CONSOLE_WRITE			1
-> +#define OPAL_CONSOLE_READ			2
-> +#define OPAL_CEC_POWER_DOWN			5
-> +#define OPAL_POLL_EVENTS			10
-> +#define OPAL_REINIT_CPUS			70
-> +# define OPAL_REINIT_CPUS_HILE_BE		(1 << 0)
-> +# define OPAL_REINIT_CPUS_HILE_LE		(1 << 1)
-> +
-> +#endif
-> diff --git a/lib/ppc64/opal-calls.S b/lib/ppc64/opal-calls.S
-> new file mode 100644
-> index 0000000..1833358
-> --- /dev/null
-> +++ b/lib/ppc64/opal-calls.S
-> @@ -0,0 +1,46 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/*
-> + * Copyright (c) 2016 IBM Corporation.
-> + */
-> +
-> +#include <asm/ppc_asm.h>
-> +
-> +	.text
-> +	.globl opal_call
-> +opal_call:
-> +	mr	r0,r3
-> +	mr	r3,r4
-> +	mr	r4,r5
-> +	mr	r5,r6
-> +	mr	r6,r7
-> +	mflr	r11
-> +	std	r11,16(r1)
-> +	mfcr	r12
-> +	stw	r12,8(r1)
-> +	mr	r13,r2
-> +
-> +	/* Set opal return address */
-> +	LOAD_REG_ADDR(r11, opal_return)
-> +	mtlr	r11
-> +	mfmsr	r12
-> +
-> +	/* switch to BE when we enter OPAL */
-> +	li	r11,(1 << MSR_LE_BIT)
-> +	andc	r12,r12,r11
-> +	mtspr	SPR_HSRR1,r12
-> +
-> +	/* load the opal call entry point and base */
-> +	LOAD_REG_ADDR(r11, opal)
-> +	ld	r12,8(r11)
-> +	ld	r2,0(r11)
-> +	mtspr	SPR_HSRR0,r12
-> +	hrfid
-> +
-> +opal_return:
-> +	FIXUP_ENDIAN
-> +	mr	r2,r13;
-> +	lwz	r11,8(r1);
-> +	ld	r12,16(r1)
-> +	mtcr	r11;
-> +	mtlr	r12
-> +	blr
-> diff --git a/lib/ppc64/opal.c b/lib/ppc64/opal.c
-> new file mode 100644
-> index 0000000..84ab97b
-> --- /dev/null
-> +++ b/lib/ppc64/opal.c
-> @@ -0,0 +1,74 @@
-> +/* SPDX-License-Identifier: GPL-2.0-or-later */
-> +/*
-> + * OPAL call helpers
-> + */
-> +#include <asm/opal.h>
-> +#include <libcflat.h>
-> +#include <libfdt/libfdt.h>
-> +#include <devicetree.h>
-> +#include <asm/io.h>
-> +#include "../powerpc/io.h"
-> +
-> +struct opal {
-> +	uint64_t base;
-> +	uint64_t entry;
-> +} opal;
-> +
-> +extern int64_t opal_call(int64_t token, int64_t arg1, int64_t arg2, int64_t arg3);
-> +
-> +int opal_init(void)
-> +{
-> +	const struct fdt_property *prop;
-> +	int node, len;
-> +
-> +	node = fdt_path_offset(dt_fdt(), "/ibm,opal");
-> +	if (node < 0)
-> +		return -1;
-> +
-> +	prop = fdt_get_property(dt_fdt(), node, "opal-base-address", &len);
-> +	if (!prop)
-> +		return -1;
-> +	opal.base = fdt64_to_cpu(*(uint64_t *)prop->data);
-> +
-> +	prop = fdt_get_property(dt_fdt(), node, "opal-entry-address", &len);
-> +	if (!prop)
-> +		return -1;
-> +	opal.entry = fdt64_to_cpu(*(uint64_t *)prop->data);
-> +
-> +#if  __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-> +	if (opal_call(OPAL_REINIT_CPUS, OPAL_REINIT_CPUS_HILE_LE, 0, 0) != OPAL_SUCCESS)
-> +		return -1;
-> +#endif
-> +
-> +	return 0;
-> +}
-> +
-> +extern void opal_power_off(void)
-> +{
-> +	opal_call(OPAL_CEC_POWER_DOWN, 0, 0, 0);
-> +	while (true)
-> +		opal_call(OPAL_POLL_EVENTS, 0, 0, 0);
-> +}
-> +
-> +void opal_putchar(int c)
-> +{
-> +	unsigned long vty = 0;		/* 0 == default */
-> +	unsigned long nr_chars = cpu_to_be64(1);
-> +	char ch = c;
-> +
-> +	opal_call(OPAL_CONSOLE_WRITE, (int64_t)vty, (int64_t)&nr_chars, (int64_t)&ch);
-> +}
-> +
-> +int __opal_getchar(void)
-> +{
-> +	unsigned long vty = 0;		/* 0 == default */
-> +	unsigned long nr_chars = cpu_to_be64(1);
-> +	char ch;
-> +	int rc;
-> +
-> +	rc = opal_call(OPAL_CONSOLE_READ, (int64_t)vty, (int64_t)&nr_chars, (int64_t)&ch);
-> +	if (rc != OPAL_SUCCESS)
-> +		return -1;
-> +
-> +	return ch;
-> +}
-> diff --git a/powerpc/Makefile.ppc64 b/powerpc/Makefile.ppc64
-> index b0ed2b1..06a7cf6 100644
-> --- a/powerpc/Makefile.ppc64
-> +++ b/powerpc/Makefile.ppc64
-> @@ -17,6 +17,8 @@ cstart.o = $(TEST_DIR)/cstart64.o
->   reloc.o  = $(TEST_DIR)/reloc64.o
->   
->   OBJDIRS += lib/ppc64
-> +cflatobjs += lib/ppc64/opal.o
-> +cflatobjs += lib/ppc64/opal-calls.o
->   
->   # ppc64 specific tests
->   tests = $(TEST_DIR)/spapr_vpa.elf
-> diff --git a/powerpc/cstart64.S b/powerpc/cstart64.S
-> index 0592e03..2c82cd9 100644
-> --- a/powerpc/cstart64.S
-> +++ b/powerpc/cstart64.S
-> @@ -92,6 +92,13 @@ start:
->   	sync
->   	isync
->   
-> +	/* powernv machine does not check broken_sc1 */
-> +	mfmsr	r3
-> +	li	r4,1
-> +	sldi	r4,r4,MSR_HV_BIT
-> +	and.	r3,r3,r4
-> +	bne	1f
-> +
->   	/* patch sc1 if needed */
->   	bl	hcall_have_broken_sc1
->   	cmpwi	r3, 0
-> diff --git a/powerpc/run b/powerpc/run
-> index ee38e07..f4ddd39 100755
-> --- a/powerpc/run
-> +++ b/powerpc/run
-> @@ -1,5 +1,14 @@
->   #!/usr/bin/env bash
->   
-> +get_qemu_machine ()
-> +{
-> +	if [ "$MACHINE" ]; then
-> +		echo $MACHINE
-> +	else
-> +		echo pseries
-> +	fi
-> +}
-> +
->   if [ -z "$KUT_STANDALONE" ]; then
->   	if [ ! -f config.mak ]; then
->   		echo "run ./configure && make first. See ./configure -h"
-> @@ -12,17 +21,35 @@ fi
->   ACCEL=$(get_qemu_accelerator) ||
->   	exit $?
->   
-> +MACHINE=$(get_qemu_machine) ||
-> +	exit $?
-> +
-> +if [[ "$MACHINE" == "powernv"* ]] && [ "$ACCEL" = "kvm" ]; then
-> +	echo "PowerNV machine does not support KVM. ACCEL=tcg must be specified."
-> +	exit 2
-> +fi
-> +
->   qemu=$(search_qemu_binary) ||
->   	exit $?
->   
-> -if ! $qemu -machine '?' 2>&1 | grep 'pseries' > /dev/null; then
-> -	echo "$qemu doesn't support pSeries ('-machine pseries'). Exiting."
-> +if ! $qemu -machine '?' 2>&1 | grep $MACHINE > /dev/null; then
-> +	echo "$qemu doesn't support '-machine $MACHINE'. Exiting."
->   	exit 2
->   fi
->   
-> -M='-machine pseries'
-> +M="-machine $MACHINE"
->   M+=",accel=$ACCEL"
-> -command="$qemu -nodefaults $M -bios $FIRMWARE"
-> +B=""
-> +if [[ "$MACHINE" == "pseries"* ]] ; then
-> +	B+="-bios $FIRMWARE"
-> +fi
-> +
-> +D=""
-> +if [[ "$MACHINE" == "powernv"* ]] ; then
-> +	D+="-device ipmi-bmc-sim,id=bmc0 -device isa-ipmi-bt,bmc=bmc0,irq=10"
-> +fi
-> +
-> +command="$qemu -nodefaults $M $B $D"
->   command+=" -display none -serial stdio -kernel"
->   command="$(migration_cmd) $(timeout_cmd) $command"
->   
-
+--Sean
