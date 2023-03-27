@@ -4,71 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A10C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 26 Mar 2023 22:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2B9AC76195
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 04:23:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pl9KT1xGcz3fG7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 09:17:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PlKS96g4qz3f4b
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 15:23:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=ZAGgSG23;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FrX2YzE6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.dk (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=ZAGgSG23;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=FrX2YzE6;
 	dkim-atps=neutral
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pl9JP1PNYz3c6P
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2023 09:16:02 +1100 (AEDT)
-Received: by mail-pl1-x630.google.com with SMTP id kq3so6668877plb.13
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Mar 2023 15:16:02 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PlKR54k7Sz3bqw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2023 15:22:24 +1100 (AEDT)
+Received: by mail-pl1-x631.google.com with SMTP id c18so7177097ple.11
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Mar 2023 21:22:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20210112.gappssmtp.com; s=20210112; t=1679868959; x=1682460959;
-        h=content-transfer-encoding:subject:from:to:content-language
-         :user-agent:mime-version:date:message-id:from:to:cc:subject:date
+        d=gmail.com; s=20210112; t=1679890940;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=xKxkpTyDkoOgmmhauSQXq3aTxLtXZ7dckp0QUTgkTYc=;
-        b=ZAGgSG23sEfXvfAq7VGcMZJhmVrKmVk+UAFykSBVf7IeMb0F9TkQSE7aTlsyBD/XSq
-         S75w5j50slc5lYE4mZBiVQNql+ZXso0Jc4uTeqwO3lqZ34dm/yqyhPDNxMhwuES2ECHg
-         JNSRLfWgwpOT/NY1RAJocbuHbaQVTWosZbQF7eCX57rwWhbaRwbTA5eLct5cApqcB5CN
-         OkkX+35z1unMEITA+i/DGdl9//E42PjdQXs876s74LlryjvM3CKjsW/C+1cEupMQFalP
-         LFtZa1qtbhtHArRylB08ORUVmraMlQCQrFw/KFTQKTCAOXbfwB387rIvPwoYf4L04p7W
-         T7DA==
+        bh=zbNEvqm/LgKf3xD8kfnZuqgmA6+B2XoCfN1MLRIliNE=;
+        b=FrX2YzE6K9vXSpkUYkcZQiyK7N6fIFS3OjQWLayfmzfOGc+LhJKquKBQoX6zFPJBvz
+         vY0nqJL+mWEQt7y8HkF4ru0z479ph1CR0WVvWPTTFhX8xvjslx2YRlyHw9g/XGz2RJe1
+         CQTZp9fxIzdS19STF2ZbA5TcBwM6tt9+2lU9JaJMqzNafvCgwQmgTE20Uv1O+c3kmgdM
+         nzoNu5uMYfYJ7ciyBIBHrsOfFdpdz3Z8bZhKLo28OofLeHJSk1ccle2nVUDHk4i4YvoW
+         vBVknTAFMMF7/UyHwW5rv3LCytQM6d97GuUd/bTu1hSWW4n9XuV5ZFp4QXIyI/vYk80x
+         gXYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679868959; x=1682460959;
-        h=content-transfer-encoding:subject:from:to:content-language
-         :user-agent:mime-version:date:message-id:x-gm-message-state:from:to
+        d=1e100.net; s=20210112; t=1679890940;
+        h=in-reply-to:references:to:from:subject:cc:message-id:date
+         :content-transfer-encoding:mime-version:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=xKxkpTyDkoOgmmhauSQXq3aTxLtXZ7dckp0QUTgkTYc=;
-        b=1xkp5VPosbrViGNulG/g7DCSoIZvZ8P5jmX3sVPk3CicykSLKOPD4xRQjvNlosimmS
-         yWU5GvEk00BiUDtxXa6wv4eUTZqoyWvPj3aTFqScGbTAZsh9lUqW7a0zKYi3+1J9+DAf
-         gGX8QIkRQYL6QG1xms1+5WMP49g93y+pJx9Wjt9Z6aB5YS0wzzOnCKgmKxEJxOTaAXkg
-         ketCDTJDMS9qoeGFtmTgb9Z9rVKyyF4ssI0ANdY1CExvCH5C+l9Yhc13S0+e1wgBYCdn
-         L2K47xdoi6NGk/k78AgNbMCjNF0E9rtYd6oe+AE8cd6zwoTJolyPLvDtLENV3sTwNARv
-         28Qw==
-X-Gm-Message-State: AAQBX9eoHpN5W98LQ0GQ/wmoVOGyqgjXsIY7YpDJuS1LqNEF0bFSg5Fu
-	H68rrKgmDMUFZULo0S9JEyUFUDxBxAzYnFMOMUzEjQ==
-X-Google-Smtp-Source: AKy350ZwlEJYvS731OjbiE7yxh8pcQTcXul88edEvrJElEkn4lfqrjXxskxbfdCjhlwYR48jKa4wFA==
-X-Received: by 2002:a17:902:720a:b0:1a1:b51b:4d3b with SMTP id ba10-20020a170902720a00b001a1b51b4d3bmr8194457plb.1.1679868958836;
-        Sun, 26 Mar 2023 15:15:58 -0700 (PDT)
-Received: from [192.168.1.136] ([198.8.77.157])
-        by smtp.gmail.com with ESMTPSA id ix18-20020a170902f81200b0019f1027f88bsm17790815plb.307.2023.03.26.15.15.58
-        for <linuxppc-dev@lists.ozlabs.org>
+        bh=zbNEvqm/LgKf3xD8kfnZuqgmA6+B2XoCfN1MLRIliNE=;
+        b=4GjZNdrufKXbRG30+Tt4rZf0IbeQN6FDKhhnQ+OSbZGP4rMgXTz/IQFGOQlcGCzj3V
+         ZwKyJ3d11WNYynAbQwOHEE38qgTGAr5KZ+5UuGPX2PQ3sHrMeJqlBUOULDi4Q6tG5XHh
+         vKTg3YzjNX7zqyTopP/VU5LzEvX/Bc2jQL2Yi12Gbevlij2pWdUXbD3GKyYdvw7c37Yo
+         IxweUsV1NiNx7Ze6hD8rEJ3N4qOQ9DUC/Wi5QBzerQCDF7qM+jhJj5ftz5BNXgjngxXi
+         PVq1Gw16oF+O8v8lSurdTKaEIsbCBnveh51FTvgov2TRqmLib3xjtm7gjq3e/sxBYvZg
+         Q5iw==
+X-Gm-Message-State: AAQBX9dys56YpVSzsHwOC6KIuA5pRTybA+iXAbeSm+046LTnRS4h/4AC
+	1UOS1kTRBPfApH78f0quxXY=
+X-Google-Smtp-Source: AKy350aVt1YV2VYny4GqoNv4qxwnoK8ss5Uggj/slp+67Q24lhQbRk1Wlg8tiEQzxKeu1+LF49eNmA==
+X-Received: by 2002:a17:90b:3e82:b0:23f:78d6:6ac5 with SMTP id rj2-20020a17090b3e8200b0023f78d66ac5mr11341150pjb.19.1679890940015;
+        Sun, 26 Mar 2023 21:22:20 -0700 (PDT)
+Received: from localhost ([203.221.180.225])
+        by smtp.gmail.com with ESMTPSA id y4-20020a17090a134400b00233afe09177sm3403472pjf.8.2023.03.26.21.22.17
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 26 Mar 2023 15:15:58 -0700 (PDT)
-Message-ID: <d9f63344-fe7c-56ae-b420-4a1a04a2ae4c@kernel.dk>
-Date: Sun, 26 Mar 2023 16:15:57 -0600
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux aarch64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Content-Language: en-US
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-From: Jens Axboe <axboe@kernel.dk>
-Subject: [PATCH] powerpc: don't try to copy ppc for task with NULL pt_regs
+        Sun, 26 Mar 2023 21:22:19 -0700 (PDT)
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Date: Mon, 27 Mar 2023 14:22:14 +1000
+Message-Id: <CRGVMXJ46PPN.1VWRMA1IMPHW2@bobo>
+Subject: Re: Memory coherency issue with IO thread offloading?
+From: "Nicholas Piggin" <npiggin@gmail.com>
+To: "Jens Axboe" <axboe@kernel.dk>, "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Christophe Leroy" <christophe.leroy@csgroup.eu>
+X-Mailer: aerc 0.13.0
+References: <2b015a34-220e-674e-7301-2cf17ef45ed9@kernel.dk>
+ <87h6u9u0e0.fsf@mpe.ellerman.id.au>
+ <872a1b2b-5fe6-e1ac-5dda-dc806b21b3f5@kernel.dk>
+ <9753c624-66e0-aace-6540-731cba9da864@kernel.dk>
+In-Reply-To: <9753c624-66e0-aace-6540-731cba9da864@kernel.dk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,101 +83,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Powerpc sets up PF_KTHREAD and PF_IO_WORKER with a NULL pt_regs, which
-from my (arguably very short) checking is not commonly done for other
-archs. This is fine, except when PF_IO_WORKER's have been created and
-the task does something that causes a coredump to be generated. Then we
-get this crash:
+On Sat Mar 25, 2023 at 11:20 AM AEST, Jens Axboe wrote:
+> On 3/24/23 7:15?PM, Jens Axboe wrote:
+> >> Are there any CONFIG options I'd need to trip this?
+> >=20
+> > I don't think you need any special CONFIG options. I'll attach my confi=
+g
+> > here, and I know the default distro one hits it too. But perhaps the
+> > mariadb version is not new enough? I think you need 10.6 or above, as
+> > will use io_uring by default. What version are you running?
+>
+> And here's the .config and the patch for using queue_work().
 
-Kernel attempted to read user page (160) - exploit attempt? (uid: 1000)
-BUG: Kernel NULL pointer dereference on read at 0x00000160
-Faulting instruction address: 0xc0000000000c3a60
-Oops: Kernel access of bad area, sig: 11 [#1]
-LE PAGE_SIZE=64K MMU=Radix SMP NR_CPUS=32 NUMA pSeries
-Modules linked in: bochs drm_vram_helper drm_kms_helper xts binfmt_misc ecb ctr syscopyarea sysfillrect cbc sysimgblt drm_ttm_helper aes_generic ttm sg libaes evdev joydev virtio_balloon vmx_crypto gf128mul drm dm_mod fuse loop configfs drm_panel_orientation_quirks ip_tables x_tables autofs4 hid_generic usbhid hid xhci_pci xhci_hcd usbcore usb_common sd_mod
-CPU: 1 PID: 1982 Comm: ppc-crash Not tainted 6.3.0-rc2+ #88
-Hardware name: IBM pSeries (emulated by qemu) POWER9 (raw) 0x4e1202 0xf000005 of:SLOF,HEAD hv:linux,kvm pSeries
-NIP:  c0000000000c3a60 LR: c000000000039944 CTR: c0000000000398e0
-REGS: c0000000041833b0 TRAP: 0300   Not tainted  (6.3.0-rc2+)
-MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  CR: 88082828  XER: 200400f8
-CFAR: c0000000000c386c DAR: 0000000000000160 DSISR: 40000000 IRQMASK: 0
-GPR00: c000000000039920 c000000004183650 c00000000175d600 c0000000040f9800
-GPR04: 0000000000000160 0000000000000008 c000000000039920 0000000000000000
-GPR08: 0000000000000000 0000000000000000 00000003fe060000 0000000000002000
-GPR12: c0000000000398e0 c0000003fffff200 c0000000015edbc0 c00000000ba2f648
-GPR16: c00000000ba2f600 c000000001616ea8 0000000000000004 00000000ffffffff
-GPR20: 0000000000000048 c000000004183918 c000000001410f00 c000000001410ef8
-GPR24: c0000000040f9800 c0000000040f9800 c0000000041837b8 c0000000000398e0
-GPR28: c00000000cc4cb80 c0000000040f9800 0000000000000008 0000000000000008
-NIP [c0000000000c3a60] memcpy_power7+0x200/0x7d0
-LR [c000000000039944] ppr_get+0x64/0xb0
-Call Trace:
-[c000000004183650] [c000000000039920] ppr_get+0x40/0xb0 (unreliable)
-[c000000004183690] [c0000000001e5e80] __regset_get+0x180/0x1f0
-[c000000004183700] [c0000000001e5f94] regset_get_alloc+0x64/0x90
-[c000000004183740] [c0000000007ae638] elf_core_dump+0xb98/0x1b60
-[c0000000041839c0] [c0000000007bb564] do_coredump+0x1c34/0x24a0
-[c000000004183ba0] [c0000000001acf0c] get_signal+0x71c/0x1410
-[c000000004183ce0] [c0000000000228a0] do_notify_resume+0x140/0x6f0
-[c000000004183db0] [c0000000000353bc] interrupt_exit_user_prepare_main+0x29c/0x320
-[c000000004183e20] [c00000000003579c] interrupt_exit_user_prepare+0x6c/0xa0
-[c000000004183e50] [c00000000000c6f4] interrupt_return_srr_user+0x8/0x138
---- interrupt: 300 at 0x183ee09e0
-NIP:  0000000183ee09e0 LR: 0000000183ee09dc CTR: 800000000280f033
-REGS: c000000004183e80 TRAP: 0300   Not tainted  (6.3.0-rc2+)
-MSR:  800000000000d033 <SF,EE,PR,ME,IR,DR,RI,LE>  CR: 22002848  XER: 000000f8
-CFAR: 00007ffe6d746aa8 DAR: 0000000000000000 DSISR: 42000000 IRQMASK: 0
-GPR00: 0000000183ee09dc 00007ffff20d37c0 0000000183f07f00 0000000000000000
-GPR04: 0000000000000000 00007ffff20d37a8 0000000000000000 00007ffe6d9eae00
-GPR08: 00007ffff20d3710 0000000000000000 0000000000000000 0000000000000000
-GPR12: 0000000000000000 00007ffe6d9eae00 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000183ee0860
-GPR24: 00007ffe6d9df820 00007ffe6d9e0000 00007ffff20d7d98 0000000000000001
-GPR28: 0000000183ee0c60 00007ffff20d7924 00007ffff20d7820 0000000000000000
-NIP [0000000183ee09e0] 0x183ee09e0
-LR [0000000183ee09dc] 0x183ee09dc
---- interrupt: 300
-Code: f9030018 38630020 409f001c e8040000 e8c40008 38840010 f8030000 f8c30008 38630010 78a50720 7cb01120 409c001c <80040000> 80c40004 38840008 90030000
----[ end trace 0000000000000000 ]---
+So if you *don't* apply this patch, the work gets queued up with an IO
+thread? In io-wq.c? Does that worker end up just doing an io_write()
+same as this one?
 
-note: ppc-crash[1982] exited with irqs disabled
+Can the  queueing cause the creation of an IO thread (if one does not
+exist, or all blocked?)
 
-because ppr_get() is trying to copy from a PF_IO_WORKER with a NULL
-pt_regs.
+I'm wondering what the practical differences are between this patch and
+upstream.
 
-Check for a valid pt_regs in both ppc_get/ppr_set, and return an error
-if not set. The actual error value doesn't seem to be important here,
-so just pick -EINVAL.
+kthread_use_mm() should be basically the same as context switching to an
+IO thread. There is maybe a difference in that kthread_switch_mm() has
+a 'sync' instruction *after* the MMU is switched to the new thread from
+the membarrier code, but a regular context switch might not. The MMU
+switch does have an isync() after it though, so loads *should* be
+prohibited from moving ahead of that.
 
-Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Something like this adds a sync roughly where kthread_use_mm() has one.
+It's a pretty unlikely shot in the dark though. I'm more inclined to
+think the work submission to the IO thread might have a problem.
 
-diff --git a/arch/powerpc/kernel/ptrace/ptrace-view.c b/arch/powerpc/kernel/ptrace/ptrace-view.c
-index 2087a785f05f..80b699dd0d7f 100644
---- a/arch/powerpc/kernel/ptrace/ptrace-view.c
-+++ b/arch/powerpc/kernel/ptrace/ptrace-view.c
-@@ -290,6 +290,8 @@ static int gpr_set(struct task_struct *target, const struct user_regset *regset,
- static int ppr_get(struct task_struct *target, const struct user_regset *regset,
- 		   struct membuf to)
- {
-+	if (!target->thread.regs)
-+		return -EINVAL;
- 	return membuf_write(&to, &target->thread.regs->ppr, sizeof(u64));
- }
- 
-@@ -297,6 +299,8 @@ static int ppr_set(struct task_struct *target, const struct user_regset *regset,
- 		   unsigned int pos, unsigned int count, const void *kbuf,
- 		   const void __user *ubuf)
- {
-+	if (!target->thread.regs)
-+		return -EINVAL;
- 	return user_regset_copyin(&pos, &count, &kbuf, &ubuf,
- 				  &target->thread.regs->ppr, 0, sizeof(u64));
- }
+Thanks,
+Nick
 
--- 
-Jens Axboe
 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 488655f2319f..417c0652dc66 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5180,6 +5180,7 @@ static struct rq *finish_task_switch(struct task_stru=
+ct *prev)
+        tick_nohz_task_switch();
+        finish_lock_switch(rq);
+        finish_arch_post_lock_switch();
++       smp_mb();
+        kcov_finish_switch(current);
+        /*
+         * kmap_local_sched_out() is invoked with rq::lock held and
