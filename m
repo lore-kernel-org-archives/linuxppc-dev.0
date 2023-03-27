@@ -4,50 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3050C76195
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 12:30:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E10BC6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 14:32:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PlXGk4NwTz3g89
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 23:30:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PlZyv50G0z3chQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 01:32:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QCmyJCl/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A8eGl7uu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4601:e00::1; helo=ams.source.kernel.org; envelope-from=arnd@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.65; helo=mga03.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QCmyJCl/;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A8eGl7uu;
 	dkim-atps=neutral
-Received: from ams.source.kernel.org (ams.source.kernel.org [IPv6:2604:1380:4601:e00::1])
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PlWyF6GKKz3fXf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2023 23:16:37 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ams.source.kernel.org (Postfix) with ESMTPS id 6CEA2B81190;
-	Mon, 27 Mar 2023 12:16:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B5CB3C433A7;
-	Mon, 27 Mar 2023 12:16:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1679919394;
-	bh=1MU8OJwkkHt5sEwmg8fMO+rrTE5E92A6N2HbXcY8t6o=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=QCmyJCl/uzmN1uz2WuiI28nvGTdQ3lWgo54Cvdn08zKuIbJa9uJcuJ8xzBRXQvews
-	 zKHW2YzyjTX3fmCevlSQv1CJi6qVy6a7mTohS+a+ZEr0cox2g66ZhqqI5Abxw/oto0
-	 P/sEVO8x1ykQCyatBDMsdjeI/Pe2xX5XTT0o3XFFGqVARAM4XnGYvAnca6YV0ylyPC
-	 KcxwbXOMCWgYj2vBgK6jHoppx9FGJbLvjkaveAjYX/B70ILKZ2bbJKjWcUElbwSJwd
-	 8CPaWdKfzxNXZElXaT68suXPSJw1GtUNGMnFvxRzugvDhkrpDk3xSbqnenBGWsGCvb
-	 enei6QONy/e1w==
-From: Arnd Bergmann <arnd@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 18/21] ARM: drop SMP support for ARM11MPCore
-Date: Mon, 27 Mar 2023 14:13:14 +0200
-Message-Id: <20230327121317.4081816-19-arnd@kernel.org>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230327121317.4081816-1-arnd@kernel.org>
-References: <20230327121317.4081816-1-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PlZxq1z7rz30Lt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 01:31:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1679927487; x=1711463487;
+  h=date:from:to:cc:subject:message-id:mime-version:
+   content-transfer-encoding;
+  bh=V4HdO/wCXnZEq9bGSWy5icmFpkrtnY+w0QxMnsWGDjc=;
+  b=A8eGl7uui4OiPxzYC1V5OP8kBTYx0+M2LOm5+0QMnaqJdiceKjELtlHY
+   YBZaYWpRR9GbuuCG9x+XCVNNbf1++unXJ8l88jJq1uuQbkf6dRl/88+oT
+   OswgMs1X+NqySGkWIIj23nNyr82dwTc0OiyuTxxjkS8wnGJ8zF3muaIxV
+   Q/Ok0dKOPMCK8IBCLm1NHqjkW1o81RZ7nyu9uPhfQvpB69Yp2EJgXbZyD
+   BF/5ywB3C0xTCPwJXBXApwBfXyCwS+rA/RtMs8lIgw5PXipeS3NpglpM7
+   Fs+qzOx/wCcCnmGiA8mxLGhGP7xtY5TGuemcSSu/IS8qysfpeKq+/L3px
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10662"; a="342680673"
+X-IronPort-AV: E=Sophos;i="5.98,294,1673942400"; 
+   d="scan'208";a="342680673"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Mar 2023 07:31:17 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10662"; a="827051686"
+X-IronPort-AV: E=Sophos;i="5.98,294,1673942400"; 
+   d="scan'208";a="827051686"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by fmsmga001.fm.intel.com with ESMTP; 27 Mar 2023 07:31:14 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1pgnsQ-000Hlu-03;
+	Mon, 27 Mar 2023 14:31:14 +0000
+Date: Mon, 27 Mar 2023 22:30:49 +0800
+From: kernel test robot <lkp@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [linux-next:master] BUILD REGRESSION
+ 011eb7443621f49ca1e8cdf9c74c215f25019118
+Message-ID: <6421a899.CYoIodGi0EEt3iOT%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,369 +70,216 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Daniel Golle <daniel@makrotopia.org>, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <n
- eil.armstrong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
+Cc: linux-s390@vger.kernel.org, linux-watchdog@vger.kernel.org, Linux Memory Management List <linux-mm@kvack.org>, linux-wireless@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-gpio@vger.kernel.org, bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, io-uring@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+branch HEAD: 011eb7443621f49ca1e8cdf9c74c215f25019118  Add linux-next specific files for 20230327
 
-The cache management operations for noncoherent DMA on ARMv6 work
-in two different ways:
+Error/Warning reports:
 
- * When CONFIG_DMA_CACHE_RWFO is set, speculative prefetches on in-flight
-   DMA buffers lead to data corruption when the prefetched data is written
-   back on top of data from the device.
+https://lore.kernel.org/oe-kbuild-all/202303082135.NjdX1Bij-lkp@intel.com
+https://lore.kernel.org/oe-kbuild-all/202303161521.jbGbaFjJ-lkp@intel.com
 
- * When CONFIG_DMA_CACHE_RWFO is disabled, a cache flush on one CPU
-   is not seen by the other core(s), leading to inconsistent contents
-   accross the system.
+Error/Warning: (recently discovered and may have been fixed)
 
-As a consequence, neither configuration is actually safe to use in a
-general-purpose kernel that is used on both MPCore systems and ARM1176
-with prefetching enabled.
+drivers/gpu/drm/amd/amdgpu/../display/dc/link/link_validation.c:351:13: warning: variable 'bw_needed' set but not used [-Wunused-but-set-variable]
+drivers/gpu/drm/amd/amdgpu/../display/dc/link/link_validation.c:352:25: warning: variable 'link' set but not used [-Wunused-but-set-variable]
+drivers/gpu/drm/amd/amdgpu/../pm/swsmu/smu13/smu_v13_0_6_ppt.c:309:17: sparse:    int
+drivers/gpu/drm/amd/amdgpu/../pm/swsmu/smu13/smu_v13_0_6_ppt.c:309:17: sparse:    void
+drivers/net/wireless/legacy/ray_cs.c:628:17: warning: 'strncpy' specified bound 32 equals destination size [-Wstringop-truncation]
+kernel/bpf/verifier.c:18485: undefined reference to `find_kallsyms_symbol_value'
+verifier.c:(.text+0x1d110): undefined reference to `find_kallsyms_symbol_value'
+verifier.c:(.text+0x37992): undefined reference to `find_kallsyms_symbol_value'
 
-We could add further workarounds to make the behavior more dynamic based
-on the system, but realistically, there are close to zero remaining
-users on any ARM11MPCore anyway, and nobody seems too interested in it,
-compared to the more popular ARM1176 used in BMC2835 and AST2500.
+Unverified Error/Warning (likely false positive, please contact us if interested):
 
-The Oxnas platform has some minimal support in OpenWRT, but most of the
-drivers and dts files never made it into the mainline kernel, while the
-Arm Versatile/Realview platform mainly serves as a reference system but
-is not necessary to be kept working once all other ARM11MPCore are gone.
+drivers/pinctrl/pinctrl-mlxbf3.c:162:20: sparse: sparse: symbol 'mlxbf3_pmx_funcs' was not declared. Should it be static?
+drivers/s390/crypto/ap_bus.c:1596:20: error: initialization of 'ssize_t (*)(const struct bus_type *, char *)' {aka 'long int (*)(const struct bus_type *, char *)'} from incompatible pointer type 'ssize_t (*)(struct bus_type *, char *)' {aka 'long int (*)(struct bus_type *, char *)'} [-Werror=incompatible-pointer-types]
+drivers/soc/fsl/qe/tsa.c:140:26: sparse: sparse: incorrect type in argument 2 (different address spaces)
+drivers/soc/fsl/qe/tsa.c:150:27: sparse: sparse: incorrect type in argument 1 (different address spaces)
+drivers/soc/fsl/qe/tsa.c:189:26: sparse: sparse: dereference of noderef expression
+drivers/soc/fsl/qe/tsa.c:663:22: sparse: sparse: incorrect type in assignment (different address spaces)
+drivers/soc/fsl/qe/tsa.c:673:21: sparse: sparse: incorrect type in assignment (different address spaces)
+drivers/watchdog/imx2_wdt.c:442:22: sparse: sparse: symbol 'imx_wdt' was not declared. Should it be static?
+drivers/watchdog/imx2_wdt.c:446:22: sparse: sparse: symbol 'imx_wdt_legacy' was not declared. Should it be static?
+include/linux/gpio/consumer.h: linux/err.h is included more than once.
+include/linux/gpio/driver.h: asm/bug.h is included more than once.
+io_uring/io_uring.c:432 io_prep_async_work() error: we previously assumed 'req->file' could be null (see line 425)
+io_uring/kbuf.c:221 __io_remove_buffers() warn: variable dereferenced before check 'bl->buf_ring' (see line 219)
 
-Take the easy way out here and drop support for multiprocessing on
-ARMv6, along with the CONFIG_DMA_CACHE_RWFO option and the cache
-management implementation for it. This also helps with other ARMv6
-issues, but for the moment leaves the ability to build a kernel that
-can run on both ARMv7 SMP and single-processor ARMv6, which we probably
-want to stop supporting as well, but not as part of this series.
+Error/Warning ids grouped by kconfigs:
 
-Cc: Neil Armstrong <neil.armstrong@linaro.org>
-Cc: Daniel Golle <daniel@makrotopia.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-oxnas@groups.io
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-I could use some help clarifying the above changelog text to describe
-the exact problem, and how the CONFIG_DMA_CACHE_RWFO actually works on
-MPCore. The TRMs for both 1176 and 11MPCore only describe prefetching
-into the instruction cache, not the data cache, but this can end up in
-the outercache as a result. The 1176 has some extra control bits to
-control prefetching, but I found no reference that explains why an
-MPCore does not run into the problem.
----
- arch/arm/mach-oxnas/Kconfig                |  4 -
- arch/arm/mach-oxnas/Makefile               |  1 -
- arch/arm/mach-oxnas/headsmp.S              | 23 ------
- arch/arm/mach-oxnas/platsmp.c              | 96 ----------------------
- arch/arm/mach-versatile/platsmp-realview.c |  4 -
- arch/arm/mm/Kconfig                        | 19 -----
- arch/arm/mm/cache-v6.S                     | 31 -------
- 7 files changed, 178 deletions(-)
- delete mode 100644 arch/arm/mach-oxnas/headsmp.S
- delete mode 100644 arch/arm/mach-oxnas/platsmp.c
+gcc_recent_errors
+|-- alpha-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|   `-- drivers-net-wireless-legacy-ray_cs.c:warning:strncpy-specified-bound-equals-destination-size
+|-- alpha-randconfig-r001-20230327
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- arc-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- arm-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- arm-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- arm64-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- csky-randconfig-s043-20230326
+|   `-- drivers-pinctrl-pinctrl-mlxbf3.c:sparse:sparse:symbol-mlxbf3_pmx_funcs-was-not-declared.-Should-it-be-static
+|-- i386-allyesconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- ia64-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|   `-- drivers-net-wireless-legacy-ray_cs.c:warning:strncpy-specified-bound-equals-destination-size
+|-- ia64-buildonly-randconfig-r004-20230326
+|   `-- kernel-bpf-verifier.c:undefined-reference-to-find_kallsyms_symbol_value
+|-- ia64-randconfig-r003-20230326
+|   `-- verifier.c:(.text):undefined-reference-to-find_kallsyms_symbol_value
+|-- ia64-randconfig-s031-20230326
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|   |-- drivers-gpu-drm-amd-amdgpu-..-pm-swsmu-smu13-smu_v13_0_6_ppt.c:sparse:int
+|   |-- drivers-gpu-drm-amd-amdgpu-..-pm-swsmu-smu13-smu_v13_0_6_ppt.c:sparse:sparse:incompatible-types-in-conditional-expression-(different-base-types):
+|   `-- drivers-gpu-drm-amd-amdgpu-..-pm-swsmu-smu13-smu_v13_0_6_ppt.c:sparse:void
+|-- loongarch-allmodconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- loongarch-defconfig
+|   |-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-bw_needed-set-but-not-used
+|   `-- drivers-gpu-drm-amd-amdgpu-..-display-dc-link-link_validation.c:warning:variable-link-set-but-not-used
+|-- microblaze-randconfig-s042-20230326
+|   |-- drivers-soc-fsl-qe-tsa.c:sparse:sparse:dereference-of-noderef-expression
+|   |-- drivers-soc-fsl-qe-tsa.c:sparse:sparse:incorrect-type-in-argument-(different-address-spaces)-expected-void-const-volatile-noderef-__iomem-addr-got-void-noderef-__iomem-addr
+|   |-- drivers-soc-fsl-qe-tsa.c:sparse:sparse:incorrect-type-in-argument-(different-address-spaces)-expected-void-volatile-noderef-__iomem-addr-got-void-noderef-__iomem-addr
+|   |-- drivers-soc-fsl-qe-tsa.c:sparse:sparse:incorrect-type-in-assignment-(different-address-spaces)-expected-void-noderef-si_ram-got-void-noderef-__iomem
+|   |-- drivers-soc-fsl-qe-tsa.c:sparse:sparse:incorrect-type-in-assignment-(different-address-spaces)-expected-void-noderef-si_regs-got-void-noderef-__iomem
 
-diff --git a/arch/arm/mach-oxnas/Kconfig b/arch/arm/mach-oxnas/Kconfig
-index a9ded7079268..a054235c3d6c 100644
---- a/arch/arm/mach-oxnas/Kconfig
-+++ b/arch/arm/mach-oxnas/Kconfig
-@@ -28,10 +28,6 @@ config MACH_OX820
- 	bool "Support OX820 Based Products"
- 	depends on ARCH_MULTI_V6
- 	select ARM_GIC
--	select DMA_CACHE_RWFO if SMP
--	select HAVE_SMP
--	select HAVE_ARM_SCU if SMP
--	select HAVE_ARM_TWD if SMP
- 	help
- 	  Include Support for the Oxford Semiconductor OX820 SoC Based Products.
- 
-diff --git a/arch/arm/mach-oxnas/Makefile b/arch/arm/mach-oxnas/Makefile
-index 0e78ecfe6c49..a4e40e534e6a 100644
---- a/arch/arm/mach-oxnas/Makefile
-+++ b/arch/arm/mach-oxnas/Makefile
-@@ -1,2 +1 @@
- # SPDX-License-Identifier: GPL-2.0-only
--obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
-diff --git a/arch/arm/mach-oxnas/headsmp.S b/arch/arm/mach-oxnas/headsmp.S
-deleted file mode 100644
-index 9c0f1479f33a..000000000000
---- a/arch/arm/mach-oxnas/headsmp.S
-+++ /dev/null
-@@ -1,23 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
-- * Copyright (c) 2003 ARM Limited
-- * All Rights Reserved
-- */
--#include <linux/linkage.h>
--#include <linux/init.h>
--
--	__INIT
--
--/*
-- * OX820 specific entry point for secondary CPUs.
-- */
--ENTRY(ox820_secondary_startup)
--	mov r4, #0
--	/* invalidate both caches and branch target cache */
--	mcr p15, 0, r4, c7, c7, 0
--	/*
--	 * we've been released from the holding pen: secondary_stack
--	 * should now contain the SVC stack for this core
--	 */
--	b	secondary_startup
-diff --git a/arch/arm/mach-oxnas/platsmp.c b/arch/arm/mach-oxnas/platsmp.c
-deleted file mode 100644
-index f0a50b9e61df..000000000000
---- a/arch/arm/mach-oxnas/platsmp.c
-+++ /dev/null
-@@ -1,96 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Copyright (C) 2016 Neil Armstrong <narmstrong@baylibre.com>
-- * Copyright (C) 2013 Ma Haijun <mahaijuns@gmail.com>
-- * Copyright (C) 2002 ARM Ltd.
-- * All Rights Reserved
-- */
--#include <linux/io.h>
--#include <linux/delay.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--
--#include <asm/cacheflush.h>
--#include <asm/cp15.h>
--#include <asm/smp_plat.h>
--#include <asm/smp_scu.h>
--
--extern void ox820_secondary_startup(void);
--
--static void __iomem *cpu_ctrl;
--static void __iomem *gic_cpu_ctrl;
--
--#define HOLDINGPEN_CPU_OFFSET		0xc8
--#define HOLDINGPEN_LOCATION_OFFSET	0xc4
--
--#define GIC_NCPU_OFFSET(cpu)		(0x100 + (cpu)*0x100)
--#define GIC_CPU_CTRL			0x00
--#define GIC_CPU_CTRL_ENABLE		1
--
--static int __init ox820_boot_secondary(unsigned int cpu,
--		struct task_struct *idle)
--{
--	/*
--	 * Write the address of secondary startup into the
--	 * system-wide flags register. The BootMonitor waits
--	 * until it receives a soft interrupt, and then the
--	 * secondary CPU branches to this address.
--	 */
--	writel(virt_to_phys(ox820_secondary_startup),
--			cpu_ctrl + HOLDINGPEN_LOCATION_OFFSET);
--
--	writel(cpu, cpu_ctrl + HOLDINGPEN_CPU_OFFSET);
--
--	/*
--	 * Enable GIC cpu interface in CPU Interface Control Register
--	 */
--	writel(GIC_CPU_CTRL_ENABLE,
--		gic_cpu_ctrl + GIC_NCPU_OFFSET(cpu) + GIC_CPU_CTRL);
--
--	/*
--	 * Send the secondary CPU a soft interrupt, thereby causing
--	 * the boot monitor to read the system wide flags register,
--	 * and branch to the address found there.
--	 */
--	arch_send_wakeup_ipi_mask(cpumask_of(cpu));
--
--	return 0;
--}
--
--static void __init ox820_smp_prepare_cpus(unsigned int max_cpus)
--{
--	struct device_node *np;
--	void __iomem *scu_base;
--
--	np = of_find_compatible_node(NULL, NULL, "arm,arm11mp-scu");
--	scu_base = of_iomap(np, 0);
--	of_node_put(np);
--	if (!scu_base)
--		return;
--
--	/* Remap CPU Interrupt Interface Registers */
--	np = of_find_compatible_node(NULL, NULL, "arm,arm11mp-gic");
--	gic_cpu_ctrl = of_iomap(np, 1);
--	of_node_put(np);
--	if (!gic_cpu_ctrl)
--		goto unmap_scu;
--
--	np = of_find_compatible_node(NULL, NULL, "oxsemi,ox820-sys-ctrl");
--	cpu_ctrl = of_iomap(np, 0);
--	of_node_put(np);
--	if (!cpu_ctrl)
--		goto unmap_scu;
--
--	scu_enable(scu_base);
--	flush_cache_all();
--
--unmap_scu:
--	iounmap(scu_base);
--}
--
--static const struct smp_operations ox820_smp_ops __initconst = {
--	.smp_prepare_cpus	= ox820_smp_prepare_cpus,
--	.smp_boot_secondary	= ox820_boot_secondary,
--};
--
--CPU_METHOD_OF_DECLARE(ox820_smp, "oxsemi,ox820-smp", &ox820_smp_ops);
-diff --git a/arch/arm/mach-versatile/platsmp-realview.c b/arch/arm/mach-versatile/platsmp-realview.c
-index 5d363385c801..fa31fd2d211d 100644
---- a/arch/arm/mach-versatile/platsmp-realview.c
-+++ b/arch/arm/mach-versatile/platsmp-realview.c
-@@ -18,16 +18,12 @@
- #define REALVIEW_SYS_FLAGSSET_OFFSET	0x30
- 
- static const struct of_device_id realview_scu_match[] = {
--	{ .compatible = "arm,arm11mp-scu", },
- 	{ .compatible = "arm,cortex-a9-scu", },
- 	{ .compatible = "arm,cortex-a5-scu", },
- 	{ }
- };
- 
- static const struct of_device_id realview_syscon_match[] = {
--        { .compatible = "arm,core-module-integrator", },
--        { .compatible = "arm,realview-eb-syscon", },
--        { .compatible = "arm,realview-pb11mp-syscon", },
-         { .compatible = "arm,realview-pbx-syscon", },
-         { },
- };
-diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
-index c5bbae86f725..16b62bc0a970 100644
---- a/arch/arm/mm/Kconfig
-+++ b/arch/arm/mm/Kconfig
-@@ -937,25 +937,6 @@ config VDSO
- 	  You must have glibc 2.22 or later for programs to seamlessly
- 	  take advantage of this.
- 
--config DMA_CACHE_RWFO
--	bool "Enable read/write for ownership DMA cache maintenance"
--	depends on CPU_V6K && SMP
--	default y
--	help
--	  The Snoop Control Unit on ARM11MPCore does not detect the
--	  cache maintenance operations and the dma_{map,unmap}_area()
--	  functions may leave stale cache entries on other CPUs. By
--	  enabling this option, Read or Write For Ownership in the ARMv6
--	  DMA cache maintenance functions is performed. These LDR/STR
--	  instructions change the cache line state to shared or modified
--	  so that the cache operation has the desired effect.
--
--	  Note that the workaround is only valid on processors that do
--	  not perform speculative loads into the D-cache. For such
--	  processors, if cache maintenance operations are not broadcast
--	  in hardware, other workarounds are needed (e.g. cache
--	  maintenance broadcasting in software via FIQ).
--
- config OUTER_CACHE
- 	bool
- 
-diff --git a/arch/arm/mm/cache-v6.S b/arch/arm/mm/cache-v6.S
-index abae7ff5defc..f6ee53c1de20 100644
---- a/arch/arm/mm/cache-v6.S
-+++ b/arch/arm/mm/cache-v6.S
-@@ -201,10 +201,6 @@ ENTRY(v6_flush_kern_dcache_area)
-  *	- end     - virtual end address of region
-  */
- ENTRY(v6_dma_inv_range)
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldrb	r2, [r0]			@ read for ownership
--	strb	r2, [r0]			@ write for ownership
--#endif
- 	tst	r0, #D_CACHE_LINE_SIZE - 1
- 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
- #ifdef HARVARD_CACHE
-@@ -213,10 +209,6 @@ ENTRY(v6_dma_inv_range)
- 	mcrne	p15, 0, r0, c7, c11, 1		@ clean unified line
- #endif
- 	tst	r1, #D_CACHE_LINE_SIZE - 1
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldrbne	r2, [r1, #-1]			@ read for ownership
--	strbne	r2, [r1, #-1]			@ write for ownership
--#endif
- 	bic	r1, r1, #D_CACHE_LINE_SIZE - 1
- #ifdef HARVARD_CACHE
- 	mcrne	p15, 0, r1, c7, c14, 1		@ clean & invalidate D line
-@@ -231,10 +223,6 @@ ENTRY(v6_dma_inv_range)
- #endif
- 	add	r0, r0, #D_CACHE_LINE_SIZE
- 	cmp	r0, r1
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldrlo	r2, [r0]			@ read for ownership
--	strlo	r2, [r0]			@ write for ownership
--#endif
- 	blo	1b
- 	mov	r0, #0
- 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
-@@ -248,9 +236,6 @@ ENTRY(v6_dma_inv_range)
- ENTRY(v6_dma_clean_range)
- 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
- 1:
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldr	r2, [r0]			@ read for ownership
--#endif
- #ifdef HARVARD_CACHE
- 	mcr	p15, 0, r0, c7, c10, 1		@ clean D line
- #else
-@@ -269,10 +254,6 @@ ENTRY(v6_dma_clean_range)
-  *	- end     - virtual end address of region
-  */
- ENTRY(v6_dma_flush_range)
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldrb	r2, [r0]		@ read for ownership
--	strb	r2, [r0]		@ write for ownership
--#endif
- 	bic	r0, r0, #D_CACHE_LINE_SIZE - 1
- 1:
- #ifdef HARVARD_CACHE
-@@ -282,10 +263,6 @@ ENTRY(v6_dma_flush_range)
- #endif
- 	add	r0, r0, #D_CACHE_LINE_SIZE
- 	cmp	r0, r1
--#ifdef CONFIG_DMA_CACHE_RWFO
--	ldrblo	r2, [r0]			@ read for ownership
--	strblo	r2, [r0]			@ write for ownership
--#endif
- 	blo	1b
- 	mov	r0, #0
- 	mcr	p15, 0, r0, c7, c10, 4		@ drain write buffer
-@@ -301,13 +278,7 @@ ENTRY(v6_dma_map_area)
- 	add	r1, r1, r0
- 	teq	r2, #DMA_FROM_DEVICE
- 	beq	v6_dma_inv_range
--#ifndef CONFIG_DMA_CACHE_RWFO
- 	b	v6_dma_clean_range
--#else
--	teq	r2, #DMA_TO_DEVICE
--	beq	v6_dma_clean_range
--	b	v6_dma_flush_range
--#endif
- ENDPROC(v6_dma_map_area)
- 
- /*
-@@ -317,11 +288,9 @@ ENDPROC(v6_dma_map_area)
-  *	- dir	- DMA direction
-  */
- ENTRY(v6_dma_unmap_area)
--#ifndef CONFIG_DMA_CACHE_RWFO
- 	add	r1, r1, r0
- 	teq	r2, #DMA_TO_DEVICE
- 	bne	v6_dma_inv_range
--#endif
- 	ret	lr
- ENDPROC(v6_dma_unmap_area)
- 
+elapsed time: 721m
+
+configs tested: 110
+configs skipped: 10
+
+tested configs:
+alpha                            allyesconfig   gcc  
+alpha                               defconfig   gcc  
+alpha                randconfig-r001-20230327   gcc  
+arc                              allyesconfig   gcc  
+arc                                 defconfig   gcc  
+arc                  randconfig-r024-20230326   gcc  
+arc                  randconfig-r043-20230326   gcc  
+arc                  randconfig-r043-20230327   gcc  
+arm                              allmodconfig   gcc  
+arm                              allyesconfig   gcc  
+arm          buildonly-randconfig-r002-20230327   gcc  
+arm                                 defconfig   gcc  
+arm                  randconfig-r023-20230326   clang
+arm                  randconfig-r034-20230326   gcc  
+arm                  randconfig-r036-20230327   clang
+arm                  randconfig-r046-20230326   clang
+arm                  randconfig-r046-20230327   gcc  
+arm64                            allyesconfig   gcc  
+arm64        buildonly-randconfig-r002-20230326   clang
+arm64                               defconfig   gcc  
+arm64                randconfig-r026-20230326   gcc  
+csky                                defconfig   gcc  
+csky                 randconfig-r005-20230326   gcc  
+csky                 randconfig-r033-20230326   gcc  
+hexagon              randconfig-r002-20230326   clang
+hexagon              randconfig-r024-20230327   clang
+hexagon              randconfig-r041-20230326   clang
+hexagon              randconfig-r041-20230327   clang
+hexagon              randconfig-r045-20230326   clang
+hexagon              randconfig-r045-20230327   clang
+i386                             allyesconfig   gcc  
+i386         buildonly-randconfig-r006-20230327   gcc  
+i386                              debian-10.3   gcc  
+i386                                defconfig   gcc  
+i386                 randconfig-a006-20230327   gcc  
+i386                 randconfig-a016-20230327   clang
+ia64                             allmodconfig   gcc  
+ia64                                defconfig   gcc  
+ia64                 randconfig-r003-20230326   gcc  
+ia64                 randconfig-r022-20230326   gcc  
+loongarch                        allmodconfig   gcc  
+loongarch                         allnoconfig   gcc  
+loongarch    buildonly-randconfig-r005-20230327   gcc  
+loongarch                           defconfig   gcc  
+loongarch            randconfig-r016-20230327   gcc  
+loongarch            randconfig-r021-20230326   gcc  
+loongarch            randconfig-r023-20230327   gcc  
+m68k                             allmodconfig   gcc  
+m68k         buildonly-randconfig-r003-20230327   gcc  
+m68k         buildonly-randconfig-r004-20230326   gcc  
+m68k                                defconfig   gcc  
+m68k                 randconfig-r036-20230326   gcc  
+microblaze   buildonly-randconfig-r004-20230327   gcc  
+microblaze   buildonly-randconfig-r005-20230326   gcc  
+microblaze           randconfig-r005-20230327   gcc  
+microblaze           randconfig-r032-20230327   gcc  
+mips                             allmodconfig   gcc  
+mips                             allyesconfig   gcc  
+mips                 randconfig-r031-20230326   gcc  
+nios2                               defconfig   gcc  
+nios2                randconfig-r012-20230327   gcc  
+nios2                randconfig-r015-20230327   gcc  
+openrisc             randconfig-r001-20230326   gcc  
+openrisc             randconfig-r026-20230327   gcc  
+parisc                              defconfig   gcc  
+parisc64                            defconfig   gcc  
+powerpc                          allmodconfig   gcc  
+powerpc                           allnoconfig   gcc  
+powerpc                      ppc44x_defconfig   clang
+powerpc                      ppc6xx_defconfig   gcc  
+powerpc              randconfig-r006-20230326   clang
+powerpc              randconfig-r025-20230326   gcc  
+powerpc              randconfig-r032-20230326   clang
+powerpc                     tqm8541_defconfig   gcc  
+riscv                            allmodconfig   gcc  
+riscv                             allnoconfig   gcc  
+riscv        buildonly-randconfig-r001-20230326   gcc  
+riscv                               defconfig   gcc  
+riscv                randconfig-r011-20230327   clang
+riscv                randconfig-r033-20230327   gcc  
+riscv                randconfig-r042-20230326   gcc  
+riscv                randconfig-r042-20230327   clang
+riscv                          rv32_defconfig   gcc  
+s390                             allmodconfig   gcc  
+s390                             allyesconfig   gcc  
+s390                                defconfig   gcc  
+s390                 randconfig-r044-20230326   gcc  
+s390                 randconfig-r044-20230327   clang
+sh                               allmodconfig   gcc  
+sh                   randconfig-r006-20230327   gcc  
+sparc                               defconfig   gcc  
+sparc                randconfig-r031-20230327   gcc  
+sparc64              randconfig-r003-20230327   gcc  
+sparc64              randconfig-r004-20230326   gcc  
+sparc64              randconfig-r004-20230327   gcc  
+sparc64              randconfig-r013-20230327   gcc  
+sparc64              randconfig-r035-20230326   gcc  
+um                             i386_defconfig   gcc  
+um                           x86_64_defconfig   gcc  
+x86_64                            allnoconfig   gcc  
+x86_64                           allyesconfig   gcc  
+x86_64       buildonly-randconfig-r001-20230327   gcc  
+x86_64                              defconfig   gcc  
+x86_64                                  kexec   gcc  
+x86_64               randconfig-a006-20230327   gcc  
+x86_64               randconfig-a016-20230327   clang
+x86_64                               rhel-8.3   gcc  
+xtensa       buildonly-randconfig-r006-20230326   gcc  
+xtensa               randconfig-r021-20230327   gcc  
+xtensa               randconfig-r022-20230327   gcc  
+
 -- 
-2.39.2
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
