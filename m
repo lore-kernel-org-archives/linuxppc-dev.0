@@ -4,78 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 824ABC6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 21:25:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86501C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 22:31:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Plm835dzJz3cKv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 08:25:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=oHN+8rjJ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.dk (client-ip=2607:f8b0:4864:20::131; helo=mail-il1-x131.google.com; envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel-dk.20210112.gappssmtp.com header.i=@kernel-dk.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=oHN+8rjJ;
-	dkim-atps=neutral
-Received: from mail-il1-x131.google.com (mail-il1-x131.google.com [IPv6:2607:f8b0:4864:20::131])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Plnbl6DXnz3fRF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 09:31:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.171; helo=mail-oi1-f171.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f171.google.com (mail-oi1-f171.google.com [209.85.167.171])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Plm6z0P27z3bjW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 08:24:57 +1100 (AEDT)
-Received: by mail-il1-x131.google.com with SMTP id e9e14a558f8ab-3230125dde5so295635ab.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2023 14:24:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernel-dk.20210112.gappssmtp.com; s=20210112; t=1679952293;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=0eftNLvSesPHZioQvbRv9TEAEEp18MP4qcagijDbKiA=;
-        b=oHN+8rjJd161d9xb+O7uebxDzzMGQtRYlNB2UrEfskZdwJeZvMBLPNZ097JNHbu+/7
-         qX68v+uIuNeR++zL0y3VQYxHqagYmh0RgEXYUCVfx+z1XsRHiLvAwMMja2cESu2oWVw4
-         rQskRggjvr6y7ymfkcuQkp/a643UhRJfwgROio380BX94Lg1nuqLwZDhM1WSet47BJDn
-         ylkZhm/3rulXimy+X7vSj0+ekZaAgCghT56qcKZhs7utZy02bQD8ROYWrFCsTgruLOSM
-         GRBQKy6gOIwfU9iPmFwTLWOzRjttTErV0q4+IxbEGfX4tO3mLITrcBxOCoKy9IRVJuat
-         t2Gw==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Plnb62kbwz3cfd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 09:30:57 +1100 (AEDT)
+Received: by mail-oi1-f171.google.com with SMTP id bi31so7580333oib.9
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Mar 2023 15:30:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1679952293;
-        h=content-transfer-encoding:in-reply-to:references:cc:to:from
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=0eftNLvSesPHZioQvbRv9TEAEEp18MP4qcagijDbKiA=;
-        b=BFNucdFIpH8NtgjU6GMDso84BlKS/b6oW9W+ApeQgjW+Gdba5cW3ZIMySWIaPAZr//
-         +O1bwAQZVNtixx1549wp3ZbgVQZRrMfpuV9IWYeh2v+eCwJttyMwIDNCEgmeb3uDoqAD
-         x+nCaZDC/oxESupdUUE3zOXTjHhk0CVjTuwiBEn5wPTYdO/fRcrFJ/GYkmiNinqI8QxJ
-         oILHI3C8paYB3t++fdHI9c6BjVpix4KH/rJ3uRKzTvWeM5a3X8vqIE0NWWgL6k2VrARP
-         O/67erDTWWXQLVq1VIAg00mUnqqwoVL/H2uRQfDKx/xGIbDjgFCrntDYOU5e0HUNeE9k
-         DX4g==
-X-Gm-Message-State: AO0yUKUha6auUy6fG+zjS6UgQ0+ZeMiTQG7v8TVTFHN2D8mShuDu/Zl1
-	SxzdlMDSRCn+D50rZ+f3tzSEXQ==
-X-Google-Smtp-Source: AK7set9Wmkys4++12vnjWBDl13cixURA6bgcXr68KQowkdjg1VjxParnfG/MzfdxE4BhJEFFiXBoEQ==
-X-Received: by 2002:a05:6602:3405:b0:758:9c9e:d6c6 with SMTP id n5-20020a056602340500b007589c9ed6c6mr8015847ioz.2.1679952293049;
-        Mon, 27 Mar 2023 14:24:53 -0700 (PDT)
-Received: from [192.168.1.94] ([96.43.243.2])
-        by smtp.gmail.com with ESMTPSA id p15-20020a056638216f00b00403089c2a1dsm9339308jak.108.2023.03.27.14.24.52
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Mar 2023 14:24:52 -0700 (PDT)
-Message-ID: <3ae396db-4aa3-c031-67a7-2df341214b5b@kernel.dk>
-Date: Mon, 27 Mar 2023 15:24:51 -0600
+        d=1e100.net; s=20210112; t=1679956255;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=gaM8q8QF+IQ6nWYjMCRw/gvGqbSwmBUlsgKxklFnTd4=;
+        b=OaS7wduJGEw7JgPRKqElSiKuks1/GrQUYH4NE9wa+9/jS6vNuX8pIgl5ZN/rVvW2Nm
+         QCeab+GljqMJDmcpnbmRUqDdHl3DVmyjpVdNRj+erPpMioHtZMJjYvt2QNHsYFPNU8i2
+         seLEqdidzL0dUGF8yPAc9zdas+ZHGPEZN3vNaY4cqCzteXIpZWLm2EDEfVqd9YInlO0m
+         8eT8Jcs6o1QjSGkWA/Ehj4YCvyOhWw7qzSFBG+O52uCkv+JxAd8hxCvLS0YGxHjyqZMx
+         N5CHt2IOHj5T+VBlBtbDLqf/PrO18xjpK2uks119bGbYJJSmifukxBk8f1KYWbvAZ97I
+         lxuw==
+X-Gm-Message-State: AO0yUKWZQF/xLICb4vo9BGJUeGAg1BPiBeHgCEs+8zoi16FhCuOKNVxq
+	hWzBm8ue5Tn2OapJM7gDPA==
+X-Google-Smtp-Source: AK7set/1miGgLn0ymy+7VSFsPmHFvN9Y36ZA0WMc3bkqnmG77aBzAjHJgPqJMDiFTxWo0Dk8xMgWQQ==
+X-Received: by 2002:a54:4418:0:b0:378:6ca0:11e9 with SMTP id k24-20020a544418000000b003786ca011e9mr5643146oiw.28.1679956254438;
+        Mon, 27 Mar 2023 15:30:54 -0700 (PDT)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id y184-20020aca32c1000000b0037841fb9a65sm11730984oiy.5.2023.03.27.15.30.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Mar 2023 15:30:53 -0700 (PDT)
+Received: (nullmailer pid 820043 invoked by uid 1000);
+	Mon, 27 Mar 2023 22:30:53 -0000
+From: Rob Herring <robh@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: [PATCH] powerpc: isa-bridge: Remove open coded "ranges" parsing
+Date: Mon, 27 Mar 2023 17:30:45 -0500
+Message-Id: <20230327223045.819852-1-robh@kernel.org>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux aarch64; rv:102.0) Gecko/20100101
- Thunderbird/102.9.0
-Subject: Re: Memory coherency issue with IO thread offloading?
-Content-Language: en-US
-From: Jens Axboe <axboe@kernel.dk>
-To: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
-References: <2b015a34-220e-674e-7301-2cf17ef45ed9@kernel.dk>
- <87h6u9u0e0.fsf@mpe.ellerman.id.au>
- <872a1b2b-5fe6-e1ac-5dda-dc806b21b3f5@kernel.dk>
- <9753c624-66e0-aace-6540-731cba9da864@kernel.dk>
- <CRGVMXJ46PPN.1VWRMA1IMPHW2@bobo>
- <6f32b504-ccd5-d67c-1b67-95d8fe1cf185@kernel.dk>
-In-Reply-To: <6f32b504-ccd5-d67c-1b67-95d8fe1cf185@kernel.dk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,56 +60,250 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->> Can the  queueing cause the creation of an IO thread (if one does not
->> exist, or all blocked?)
-> 
-> Yep
-> 
-> Since writing this email, I've gone through a lot of different tests.
-> Here's a rough listing of what I found:
-> 
-> - Like using the hack patch, if I just limit the number of IO thread
->   workers to 1, it seems to pass. At least longer than before, does 1000
->   iterations.
-> 
-> - If I pin each IO worker to a single CPU, it also passes.
-> 
-> - If I liberally sprinkle smp_mb() for the io-wq side, test still fails.
->   I've added one before queueing the work item, and after. One before
->   the io-wq worker grabs a work item and one after. Eg full hammer
->   approach. This still fails.
-> 
-> Puzzling... For the "pin each IO worker to a single CPU" I added some
-> basic code around trying to ensure that a work item queued on CPU X
-> would be processed by a worker on CPU X, and too a large degree, this
-> does happen. But since the work list is a normal list, it's quite
-> possible that some other worker finishes its work on CPU Y just in time
-> to grab the one from cpu X. I checked and this does happen in the test
-> case, yet it still passes. This may be because I got a bit lucky, but
-> seems suspect with thousands of passes of the test case.
-> 
-> Another theory there is that it's perhaps related to an io-wq worker
-> being rescheduled on a different CPU. Though again puzzled as to why the
-> smp_mb sprinkling didn't fix that then. I'm going to try and run the
-> test case with JUST the io-wq worker pinning and not caring about where
-> the work is processed to see if that does anything.
+"ranges" is a standard property with common parsing functions. Users
+shouldn't be implementing their own parsing of it. Reimplement the
+ISA brige "ranges" parsing using the common ranges iterator functions.
 
-Just pinning each worker to whatever CPU they got created on seemingly
-fixes the issue too. This does not mean that each worker will process
-work on the CPU on which it was queued, just that each worker will
-remain on whatever CPU it originally got created on.
+The common routines are flexible enough to work on PCI and non-PCI to
+ISA bridges, so refactor pci_process_ISA_OF_ranges() and
+isa_bridge_init_non_pci() into a single implementation.
 
-Puzzling...
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+Compile tested only!
+---
+ arch/powerpc/kernel/isa-bridge.c | 169 ++++++++-----------------------
+ 1 file changed, 40 insertions(+), 129 deletions(-)
 
-Note that it is indeed quite possible that this isn't a ppc issue at
-all, just shows on ppc. It could be page cache related, or it could even
-be a bug in mariadb itself.
-
+diff --git a/arch/powerpc/kernel/isa-bridge.c b/arch/powerpc/kernel/isa-bridge.c
+index dc746611ebc0..438605395cd4 100644
+--- a/arch/powerpc/kernel/isa-bridge.c
++++ b/arch/powerpc/kernel/isa-bridge.c
+@@ -55,80 +55,52 @@ static void remap_isa_base(phys_addr_t pa, unsigned long size)
+ 	}
+ }
+ 
+-static void pci_process_ISA_OF_ranges(struct device_node *isa_node,
+-				      unsigned long phb_io_base_phys)
++static int process_ISA_OF_ranges(struct device_node *isa_node,
++				  unsigned long phb_io_base_phys)
+ {
+-	/* We should get some saner parsing here and remove these structs */
+-	struct pci_address {
+-		u32 a_hi;
+-		u32 a_mid;
+-		u32 a_lo;
+-	};
+-
+-	struct isa_address {
+-		u32 a_hi;
+-		u32 a_lo;
+-	};
+-
+-	struct isa_range {
+-		struct isa_address isa_addr;
+-		struct pci_address pci_addr;
+-		unsigned int size;
+-	};
+-
+-	const struct isa_range *range;
+-	unsigned long pci_addr;
+-	unsigned int isa_addr;
+ 	unsigned int size;
+-	int rlen = 0;
++	struct of_range_parser parser;
++	struct of_range range;
+ 
+-	range = of_get_property(isa_node, "ranges", &rlen);
+-	if (range == NULL || (rlen < sizeof(struct isa_range)))
++	if (of_range_parser_init(&parser, isa_node))
+ 		goto inval_range;
+ 
+-	/* From "ISA Binding to 1275"
+-	 * The ranges property is laid out as an array of elements,
+-	 * each of which comprises:
+-	 *   cells 0 - 1:	an ISA address
+-	 *   cells 2 - 4:	a PCI address
+-	 *			(size depending on dev->n_addr_cells)
+-	 *   cell 5:		the size of the range
+-	 */
+-	if ((range->isa_addr.a_hi & ISA_SPACE_MASK) != ISA_SPACE_IO) {
+-		range++;
+-		rlen -= sizeof(struct isa_range);
+-		if (rlen < sizeof(struct isa_range))
+-			goto inval_range;
+-	}
+-	if ((range->isa_addr.a_hi & ISA_SPACE_MASK) != ISA_SPACE_IO)
+-		goto inval_range;
++	for_each_of_range(&parser, &range) {
++		if ((range.flags & ISA_SPACE_MASK) != ISA_SPACE_IO)
++			continue;
+ 
+-	isa_addr = range->isa_addr.a_lo;
+-	pci_addr = (unsigned long) range->pci_addr.a_mid << 32 |
+-		range->pci_addr.a_lo;
++		if (range.cpu_addr == OF_BAD_ADDR) {
++			printk(KERN_ERR "ISA: Bad CPU mapping: %s\n",
++			__func__);
++			return -EINVAL;
++		}
+ 
+-	/* Assume these are both zero. Note: We could fix that and
+-	 * do a proper parsing instead ... oh well, that will do for
+-	 * now as nobody uses fancy mappings for ISA bridges
+-	 */
+-	if ((pci_addr != 0) || (isa_addr != 0)) {
+-		printk(KERN_ERR "unexpected isa to pci mapping: %s\n",
+-		       __func__);
+-		return;
+-	}
++		/* We need page alignment */
++		if ((range.bus_addr & ~PAGE_MASK) || (range.cpu_addr & ~PAGE_MASK)) {
++			pr_warn("ISA: bridge %pOF has non aligned IO range\n",
++				isa_node);
++			return -EINVAL;
++		}
+ 
+-	/* Align size and make sure it's cropped to 64K */
+-	size = PAGE_ALIGN(range->size);
+-	if (size > 0x10000)
+-		size = 0x10000;
++		/* Align size and make sure it's cropped to 64K */
++		size = PAGE_ALIGN(range.size);
++		if (size > 0x10000)
++			size = 0x10000;
+ 
+-	remap_isa_base(phb_io_base_phys, size);
+-	return;
++		if (!phb_io_base_phys)
++			phb_io_base_phys = range.cpu_addr;
++
++		remap_isa_base(phb_io_base_phys, size);
++		return 0;
++	}
+ 
+ inval_range:
+-	printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
+-	       "mapping 64k\n");
+-	remap_isa_base(phb_io_base_phys, 0x10000);
++	if (!phb_io_base_phys) {
++		printk(KERN_ERR "no ISA IO ranges or unexpected isa range, "
++		       "mapping 64k\n");
++		remap_isa_base(phb_io_base_phys, 0x10000);
++	}
++	return 0;
+ }
+ 
+ 
+@@ -170,7 +142,7 @@ void __init isa_bridge_find_early(struct pci_controller *hose)
+ 	isa_bridge_devnode = np;
+ 
+ 	/* Now parse the "ranges" property and setup the ISA mapping */
+-	pci_process_ISA_OF_ranges(np, hose->io_base_phys);
++	process_ISA_OF_ranges(np, hose->io_base_phys);
+ 
+ 	/* Set the global ISA io base to indicate we have an ISA bridge */
+ 	isa_io_base = ISA_IO_BASE;
+@@ -186,75 +158,15 @@ void __init isa_bridge_find_early(struct pci_controller *hose)
+  */
+ void __init isa_bridge_init_non_pci(struct device_node *np)
+ {
+-	const __be32 *ranges, *pbasep = NULL;
+-	int rlen, i, rs;
+-	u32 na, ns, pna;
+-	u64 cbase, pbase, size = 0;
++	int ret;
+ 
+ 	/* If we already have an ISA bridge, bail off */
+ 	if (isa_bridge_devnode != NULL)
+ 		return;
+ 
+-	pna = of_n_addr_cells(np);
+-	if (of_property_read_u32(np, "#address-cells", &na) ||
+-	    of_property_read_u32(np, "#size-cells", &ns)) {
+-		pr_warn("ISA: Non-PCI bridge %pOF is missing address format\n",
+-			np);
+-		return;
+-	}
+-
+-	/* Check it's a supported address format */
+-	if (na != 2 || ns != 1) {
+-		pr_warn("ISA: Non-PCI bridge %pOF has unsupported address format\n",
+-			np);
+-		return;
+-	}
+-	rs = na + ns + pna;
+-
+-	/* Grab the ranges property */
+-	ranges = of_get_property(np, "ranges", &rlen);
+-	if (ranges == NULL || rlen < rs) {
+-		pr_warn("ISA: Non-PCI bridge %pOF has absent or invalid ranges\n",
+-			np);
+-		return;
+-	}
+-
+-	/* Parse it. We are only looking for IO space */
+-	for (i = 0; (i + rs - 1) < rlen; i += rs) {
+-		if (be32_to_cpup(ranges + i) != 1)
+-			continue;
+-		cbase = be32_to_cpup(ranges + i + 1);
+-		size = of_read_number(ranges + i + na + pna, ns);
+-		pbasep = ranges + i + na;
+-		break;
+-	}
+-
+-	/* Got something ? */
+-	if (!size || !pbasep) {
+-		pr_warn("ISA: Non-PCI bridge %pOF has no usable IO range\n",
+-			np);
++	ret = process_ISA_OF_ranges(np, 0);
++	if (ret)
+ 		return;
+-	}
+-
+-	/* Align size and make sure it's cropped to 64K */
+-	size = PAGE_ALIGN(size);
+-	if (size > 0x10000)
+-		size = 0x10000;
+-
+-	/* Map pbase */
+-	pbase = of_translate_address(np, pbasep);
+-	if (pbase == OF_BAD_ADDR) {
+-		pr_warn("ISA: Non-PCI bridge %pOF failed to translate IO base\n",
+-			np);
+-		return;
+-	}
+-
+-	/* We need page alignment */
+-	if ((cbase & ~PAGE_MASK) || (pbase & ~PAGE_MASK)) {
+-		pr_warn("ISA: Non-PCI bridge %pOF has non aligned IO range\n",
+-			np);
+-		return;
+-	}
+ 
+ 	/* Got it */
+ 	isa_bridge_devnode = np;
+@@ -263,7 +175,6 @@ void __init isa_bridge_init_non_pci(struct device_node *np)
+ 	 * and map it
+ 	 */
+ 	isa_io_base = ISA_IO_BASE;
+-	remap_isa_base(pbase, size);
+ 
+ 	pr_debug("ISA: Non-PCI bridge is %pOF\n", np);
+ }
+@@ -282,7 +193,7 @@ static void isa_bridge_find_late(struct pci_dev *pdev,
+ 	isa_bridge_pcidev = pdev;
+ 
+ 	/* Now parse the "ranges" property and setup the ISA mapping */
+-	pci_process_ISA_OF_ranges(devnode, hose->io_base_phys);
++	process_ISA_OF_ranges(devnode, hose->io_base_phys);
+ 
+ 	/* Set the global ISA io base to indicate we have an ISA bridge */
+ 	isa_io_base = ISA_IO_BASE;
 -- 
-Jens Axboe
-
+2.39.2
 
