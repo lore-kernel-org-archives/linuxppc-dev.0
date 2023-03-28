@@ -4,50 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7DDF5C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 17:22:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 511E6C6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmGhF5Hfgz3fSZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 04:22:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kcCgVmfo;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kcCgVmfo;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmLYr4fHlz3f4k
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:16:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.50; helo=mail-oo1-f50.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmGg96d59z3cNF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 04:21:09 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id D6A5161888;
-	Tue, 28 Mar 2023 17:21:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6738FC433EF;
-	Tue, 28 Mar 2023 17:21:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1680024066;
-	bh=XG4Gv1uDdcHMJWold8r+MUkd4gUOdU/9HSIAESk1/iI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=kcCgVmfoCcOL/fkAXJQsz0LR/9b+X2wFGZS6g8nS9Cva1U101OE0U3EYyXbdkbqTy
-	 aceP/+FEMtrdQPPfqvP04qtm8sFXLHSaf041pAalMFGJKoaaGgN8X+pOn+S8oI33Ye
-	 tIOd6sKIwS0xLixDLCa1mNY9dJyX+ECsqXhzOWdH8m5AScZp6HCSXUJID+reaRG3Wz
-	 Xv6Te2/TzBDwEPhxKQBKWns6Kx3J+HnN4AVGU1YcceA5efROf1luvolQTWIUtyl5IO
-	 RMLsJC8X3gumbnI1bFdMRIw1+8QGPcoQSwj8r8cEwhoZVTVT+phzktL1gEY8PnExS5
-	 mxpemz9CNneEQ==
-Date: Tue, 28 Mar 2023 12:21:04 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Robert Richter <rrichter@amd.com>
-Subject: Re: [PATCH v2 4/5] cxl/pci: Forward RCH downstream port-detected
- errors to the CXL.mem dev handler
-Message-ID: <20230328172104.GA2897826@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmLYF48b1z3cLT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 07:16:16 +1100 (AEDT)
+Received: by mail-oo1-f50.google.com with SMTP id l7-20020a4abe07000000b0053e1205c84bso1725733oop.9
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 13:16:16 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680034574;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=wq9MleJbVtyTb3QrV3Xlq0I3I3gqQWPoavFTMvWxBWU=;
+        b=NGWlRR8WG7ZgrU81D+/m5BTtO5Ahw23MVCvV3PyVucJ29760Jle9NV8FB/WCnBfJjj
+         gyj4j5hUeD/3mHbG0uU8z1u4d1kzsxj2agEMQqfhSKQWyXCtqJ6QerOWfKkdSEjJXgxp
+         sxorX9GnPlkqJBH1CJ9VR2Z6m8lPKPsiIKt0P7yjYi3rqobm4DkgYJnVusGTQcyJ4geg
+         WZWMwNQ2zDzE9FDnqfaJlzMOfHRqWc001M3I2NJ31ZtVPf7F/18Z7pJQ44JDCqAh2ujx
+         UF+7jul7tgF4XAJ6iHk4rvKE9EFdPop4qW12JYhZ8njYuJMHMdt/LHtbKxPmw8tc1DIl
+         23Dw==
+X-Gm-Message-State: AO0yUKXDFDqWf3QViHGv8FLDt8oNgvvLQ1aVyp5RDAwk3/9ei27g2ybT
+	OxSFc8r6ulww5l7aZ6JGlQ==
+X-Google-Smtp-Source: AK7set9De6XnycHJIQgLEMSB8BvrDZtnx3/knyjsjlWaCorjvDtfznD+X/H4ZPT08mbWWvY4Eor3wg==
+X-Received: by 2002:a4a:4f83:0:b0:53b:4b94:45bf with SMTP id c125-20020a4a4f83000000b0053b4b9445bfmr8745156oob.3.1680034574395;
+        Tue, 28 Mar 2023 13:16:14 -0700 (PDT)
+Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
+        by smtp.gmail.com with ESMTPSA id c192-20020a4a4fc9000000b0053b88b03e24sm7136185oob.18.2023.03.28.13.16.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Mar 2023 13:16:13 -0700 (PDT)
+Received: (nullmailer pid 3993734 invoked by uid 1000);
+	Tue, 28 Mar 2023 20:16:10 -0000
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 28 Mar 2023 15:15:59 -0500
+Subject: [PATCH 4/5] of/address: Add of_range_count() helper
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ZCIPuPM+LZsOFIIZ@rric.localdomain>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230328-dt-address-helpers-v1-4-e2456c3e77ab@kernel.org>
+References: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
+In-Reply-To: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Stuart Yoder <stuyoder@gmail.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+X-Mailer: b4 0.13-dev
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,113 +63,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alison.schofield@intel.com, dave.jiang@intel.com, Terry Bowman <terry.bowman@amd.com>, vishal.l.verma@intel.com, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-cxl@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, bhelgaas@google.com, Oliver O'Halloran <oohall@gmail.com>, Jonathan.Cameron@huawei.com, bwidawsk@kernel.org, dan.j.williams@intel.com, ira.weiny@intel.com
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc linux-pci, more error handling folks; beginning of thread at
-https://lore.kernel.org/all/20230323213808.398039-1-terry.bowman@amd.com/]
+Some users need a count of the number of ranges entries before
+iterating over the entries. Typically this is for allocating some data
+structure based on the size. Add a helper, of_range_count(), to get the
+count. The helper must be called with an struct of_range_parser
+initialized by of_range_parser_init().
 
-On Mon, Mar 27, 2023 at 11:51:39PM +0200, Robert Richter wrote:
-> On 24.03.23 17:36:56, Bjorn Helgaas wrote:
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/of/unittest.c      |  7 ++++++-
+ include/linux/of_address.h | 16 ++++++++++++++++
+ 2 files changed, 22 insertions(+), 1 deletion(-)
 
-> > > The CXL device driver is then responsible to
-> > > enable error reporting in the RCEC's AER cap
-> > 
-> > I don't know exactly what you mean by "error reporting in the RCEC's
-> > AER cap", but IIUC, for non-Root Port devices, generation of ERR_COR/
-> > ERR_NONFATAL/ERR_FATAL messages is controlled by the Device Control
-> > register and should already be enabled by pci_aer_init().
-> > 
-> > Maybe you mean setting AER mask/severity specifically for Internal
-> > Errors?  I'm hoping to get as much of AER management as we can in the
-> 
-> Richt, this is implemented in patch #5 in function
-> rcec_enable_aer_ints().
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 29066ecbed47..eaeb58065acc 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -1014,7 +1014,7 @@ static void __init of_unittest_bus_ranges(void)
+ 	struct of_range range;
+ 	struct of_range_parser parser;
+ 	struct resource res;
+-	int ret, i = 0;
++	int ret, count, i = 0;
+ 
+ 	np = of_find_node_by_path("/testcase-data/address-tests");
+ 	if (!np) {
+@@ -1040,6 +1040,11 @@ static void __init of_unittest_bus_ranges(void)
+ 		"of_range_to_resource wrong resource start address on node %pOF res=%pR\n",
+ 		np, &res);
+ 
++	count = of_range_count(&parser);
++	unittest(count == 2,
++		"of_range_count wrong size on node %pOF count=%d\n",
++		np, count);
++
+ 	/*
+ 	 * Get the "ranges" from the device tree
+ 	 */
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 1d005439f026..5292f62c1baa 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -35,6 +35,22 @@ struct of_pci_range {
+ 	for (; of_pci_range_parser_one(parser, range);)
+ #define for_each_of_range for_each_of_pci_range
+ 
++/*
++ * of_range_count - Get the number of "ranges" or "dma-ranges" entries
++ * @parser:	Parser state initialized by of_range_parser_init()
++ *
++ * Returns the number of entries or 0 if none.
++ *
++ * Note that calling this within or after the for_each_of_range() iterator will
++ * be inaccurate giving the number of entries remaining.
++ */
++static inline int of_range_count(const struct of_range_parser *parser)
++{
++	if (!parser || !parser->node || !parser->range || parser->range == parser->end)
++		return 0;
++	return (parser->end - parser->range) / (parser->na + parser->pna + parser->ns);
++}
++
+ /* Translate a DMA address from device space to CPU space */
+ extern u64 of_translate_dma_address(struct device_node *dev,
+ 				    const __be32 *in_addr);
 
-I think we should add a PCI core interface for this so we can enforce
-the AER ownership question (all the crud like pcie_aer_is_native()) in
-one place.
+-- 
+2.39.2
 
-> > PCI core and out of drivers, so maybe we need a new PCI interface to
-> > do that.
-> > 
-> > In any event, I assume this sort of configuration would be an
-> > enumeration-time thing, while *this* patch is a run-time thing, so
-> > maybe this information belongs with a different patch?
-> 
-> Do you mean once a Restricted CXL host (RCH) is detected, the internal
-> errors should be enabled in the device mask, all this done during
-> device enumeration? But wouldn't interrupts being enabled then before
-> the CXL device is ready?
-
-I'm not sure what you mean by "before the CXL device is ready."  What
-makes a CXL device ready, and how do we know when it is ready?
-
-pci_aer_init() turns on PCI_EXP_DEVCTL_CERE, PCI_EXP_DEVCTL_FERE, etc
-as soon as we enumerate the device, before any driver claims the
-device.  I'm wondering whether we can do this PCI_ERR_COR_INTERNAL and
-PCI_ERR_UNC_INTN fiddling around the same time?
-
-> > I haven't worked all the way through this, but I thought Sean Kelley's
-> > and Qiuxu Zhuo's work was along the same line and might cover this,
-> > e.g.,
-> > 
-> >   a175102b0a82 ("PCI/ERR: Recover from RCEC AER errors")
-> >   579086225502 ("PCI/ERR: Recover from RCiEP AER errors")
-> >   af113553d961 ("PCI/AER: Add pcie_walk_rcec() to RCEC AER handling")
-> > 
-> > But I guess maybe it's not quite the same case?
-> 
-> Actually, we use this code to handle errors that are reported to the
-> RCEC and only implement here the CXL specifics. That is, checking if
-> the RCEC receives something from a CXL downstream port and forwarding
-> that to a CXL handler (this patch). The handler then checks the AER
-> err cap in the RCRB of all CXL downstream ports associated to the RCEC
-> (not visible in the PCI hierarchy), but discovered through the :00.0
-> RCiEP (patch #5).
-
-There are two calls to pcie_walk_rcec():
-
-  1) The existing one in find_source_device()
-  2) The one you add in handle_cxl_error()
-
-Does the call in handle_cxl_error() look at devices that the existing
-call in find_source_device() does not?  I'm trying to understand why
-we need both calls.
-
-> > > +static bool is_internal_error(struct aer_err_info *info)
-> > > +{
-> > > +	if (info->severity == AER_CORRECTABLE)
-> > > +		return info->status & PCI_ERR_COR_INTERNAL;
-> > > +
-> > > +	return info->status & PCI_ERR_UNC_INTN;
-> > > +}
-> > > +
-> > > +static void handle_cxl_error(struct pci_dev *dev, struct aer_err_info *info)
-> > > +{
-> > > +	if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC &&
-> > > +	    is_internal_error(info))
-> > 
-> > What's unique about Internal Errors?  I'm trying to figure out why you
-> > wouldn't do this for *all* CXL errors.
-> 
-> Per CXL specification downstream port errors are signaled using
-> internal errors. 
-
-Maybe a spec reference here to explain is_internal_error()?  Is the
-point of the check to *exclude* non-internal errors?  Or is basically
-documentation that there shouldn't ever *be* any non-internal errors?
-I guess the latter wouldn't make sense because at this point we don't
-know whether this is a CXL hierarchy.
-
-> All other errors would be device specific, we cannot
-> handle that in a generic CXL driver.
-
-I'm missing the point here.  We don't have any device-specific error
-handling in aer.c; it only connects the generic *reporting* mechanism
-(AER log registers and Root Port interrupts) to the drivers that do
-the device-specific things via err_handler hooks.  I assume we want a
-similar model for CXL.
-
-Bjorn
