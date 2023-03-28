@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 214D5C76196
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 20:18:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30131C6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 20:19:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmLbt3PGyz3fZd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:18:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.174; helo=mail-oi1-f174.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oi1-f174.google.com (mail-oi1-f174.google.com [209.85.167.174])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmLcN2zH0z3fsf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:19:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.54; helo=mail-oa1-f54.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oa1-f54.google.com (mail-oa1-f54.google.com [209.85.160.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmLYH0SG8z3cP0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 07:16:18 +1100 (AEDT)
-Received: by mail-oi1-f174.google.com with SMTP id bm2so9952655oib.4
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 13:16:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmLYJ41rSz3cP0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 07:16:20 +1100 (AEDT)
+Received: by mail-oa1-f54.google.com with SMTP id 586e51a60fabf-17ab3a48158so14034104fac.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 13:16:20 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680034577;
+        d=1e100.net; s=20210112; t=1680034578;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=VpsM8Gyt+E2oU3DAGA2Cy9raNlOEiWzk+fnJGTbZemI=;
-        b=Ptx0xEDwa3XYxM7/LtL0NF8XFTlCyMbT8VykkbOTs/QTvTkTy9ONb68FCn1my4Xchc
-         SfTb7FiSXcYeh1l2YpQzSzzEkZLqNQ14k2KDKSIf0Eg5xChdKrRBUoXY/uo5wmCMqHPs
-         WNDzSr42jcia8hTti8XUIAL1wjcl6XICExuC8xgqQC4lEuXxzJBPSjGyike3RmGIW8TN
-         +Lf2XexdD7HBsUGIMIoe6mF7avax+k5kckHykI94v3UYpTBYWZb+G1xGmZp7gWbKYIZO
-         EOvcQem7JcVaWyC9wdzsKYQYMSJ9z7cm1SlCmCc0LObMAoVQcp3pJhRSy2K8LTqxgBgj
-         qWaA==
-X-Gm-Message-State: AO0yUKVtnBLnwIrHVrDsZ4Qw7deSuMrbPKkOmq8DwAONA6wHqSdBZD3x
-	qth+LpyKaObzO8NdAtiD1g==
-X-Google-Smtp-Source: AK7set9zxFcHUmej6FZI0b/r9kzi7HNM/sTT+QF7paaDfTXpKf0/Bz0qzrUkdUNA414JIRwtcEX/5g==
-X-Received: by 2002:a05:6808:de6:b0:387:1a46:8317 with SMTP id g38-20020a0568080de600b003871a468317mr7680846oic.13.1680034576781;
-        Tue, 28 Mar 2023 13:16:16 -0700 (PDT)
+        bh=bCPFOdIpNQUFJhPrmeiDu2DdLbGsab44HmyQyVjGzEY=;
+        b=q/umkkuegG2CMmWn/x37FiUhK+YdBwquoPH1GUTNTO8UCpV008kCIFpXiZOWL1RYS9
+         uB2QhPd4EaNv7PBmbZmGoCwzv4N01r+R9g1PWGqzH9GITI0yLnzJAvtuHGeKvpFEs9oF
+         DLp0w/EBGrf1UcBxfwLCRNQ3Y1Jm1oNs2Pn89g9NG4yoXJC2fS6Q2D/8y3/xGrWrhvWn
+         jcIMGaG6fXzUWVqVeUuXGVklpYo+9nzvBo78+Nq5XsCl8wAsU+QmE+1R/BZ4vjbN2I7n
+         QgRTEqyCtMDF99M99g6WmekCRC3J6KnCeBHJ+ZDwfSoCNv/scn33lRgMxhzSxk88Fppc
+         vnsA==
+X-Gm-Message-State: AAQBX9fwV3BOwNGTujoUkX9qHKbnsZCNN8TVTq6Hu2SujrdhPH8Clmu0
+	RnfKTGwh7itDeZgnytQ4jQ==
+X-Google-Smtp-Source: AK7set/9uPgN0yCrXLJT35rq7Qat3QtTAkbocxc8t5r/+YdjprY4iCDY11yfxUH4UdUAQpsUjhc5qg==
+X-Received: by 2002:a05:6870:a454:b0:177:c8dc:501f with SMTP id n20-20020a056870a45400b00177c8dc501fmr12122129oal.29.1680034578097;
+        Tue, 28 Mar 2023 13:16:18 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id v7-20020a4aaec7000000b00529cc3986c8sm2696062oon.40.2023.03.28.13.16.15
+        by smtp.gmail.com with ESMTPSA id v23-20020a056870709700b0017280f7d653sm11129807oae.35.2023.03.28.13.16.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Mar 2023 13:16:16 -0700 (PDT)
-Received: (nullmailer pid 3993710 invoked by uid 1000);
+        Tue, 28 Mar 2023 13:16:17 -0700 (PDT)
+Received: (nullmailer pid 3993737 invoked by uid 1000);
 	Tue, 28 Mar 2023 20:16:10 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 28 Mar 2023 15:15:56 -0500
-Subject: [PATCH 1/5] of: unittest: Add bus address range parsing tests
+Date: Tue, 28 Mar 2023 15:16:00 -0500
+Subject: [PATCH 5/5] of/address: Add of_property_read_reg() helper
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230328-dt-address-helpers-v1-1-e2456c3e77ab@kernel.org>
+Message-Id: <20230328-dt-address-helpers-v1-5-e2456c3e77ab@kernel.org>
 References: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
 In-Reply-To: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Stuart Yoder <stuyoder@gmail.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -67,72 +67,78 @@ Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While there are tests for "dma-ranges" helpers, "ranges" is missing any
-tests. It's the same underlying code, but for completeness add a test
-for "ranges" parsing iterators. This is in preparation to add some
-additional "ranges" helpers.
+Add a helper, of_property_read_reg(), to read "reg" entries untranslated
+address and size. This function is intended mainly for cases with an
+untranslatable "reg" address (i.e. not MMIO). There's also a few
+translatable cases such as address cells containing a bus chip-select
+number.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/of/unittest.c | 53 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+ drivers/of/address.c       | 23 +++++++++++++++++++++++
+ drivers/of/unittest.c      | 22 ++++++++++++++++++++++
+ include/linux/of_address.h |  7 +++++++
+ 3 files changed, 52 insertions(+)
 
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 8cfae24148e0..fdb15c6fb3b1 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -760,6 +760,29 @@ const __be32 *__of_get_address(struct device_node *dev, int index, int bar_no,
+ }
+ EXPORT_SYMBOL(__of_get_address);
+ 
++/**
++ * of_property_read_reg - Retrieve the specified "reg" entry index without translating
++ * @np: device tree node for which to retrieve "reg" from
++ * @idx: "reg" entry index to read
++ * @addr: return value for the untranslated address
++ * @size: return value for the entry size
++ *
++ * Returns -EINVAL if "reg" is not found. Returns 0 on success with addr and
++ * size values filled in.
++ */
++int of_property_read_reg(struct device_node *np, int idx, u64 *addr, u64 *size)
++{
++	const __be32 *prop = of_get_address(np, idx, size, NULL);
++
++	if (!prop)
++		return -EINVAL;
++
++	*addr = of_read_number(prop, of_n_addr_cells(np));
++
++	return 0;
++}
++EXPORT_SYMBOL(of_property_read_reg);
++
+ static int parser_init(struct of_pci_range_parser *parser,
+ 			struct device_node *node, const char *name)
+ {
 diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index b5a7a31d8bd2..1a45df1f354a 100644
+index eaeb58065acc..e73ecbef977b 100644
 --- a/drivers/of/unittest.c
 +++ b/drivers/of/unittest.c
-@@ -1008,6 +1008,58 @@ static void __init of_unittest_pci_dma_ranges(void)
+@@ -1134,6 +1134,27 @@ static void __init of_unittest_bus_3cell_ranges(void)
  	of_node_put(np);
  }
  
-+static void __init of_unittest_bus_ranges(void)
++static void __init of_unittest_reg(void)
 +{
 +	struct device_node *np;
-+	struct of_range range;
-+	struct of_range_parser parser;
-+	int i = 0;
++	int ret;
++	u64 addr, size;
 +
-+	np = of_find_node_by_path("/testcase-data/address-tests");
++	np = of_find_node_by_path("/testcase-data/address-tests/bus@80000000/device@1000");
 +	if (!np) {
 +		pr_err("missing testcase data\n");
 +		return;
 +	}
 +
-+	if (of_range_parser_init(&parser, np)) {
-+		pr_err("missing ranges property\n");
-+		return;
-+	}
-+
-+	/*
-+	 * Get the "ranges" from the device tree
-+	 */
-+	for_each_of_range(&parser, &range) {
-+		unittest(range.flags == IORESOURCE_MEM,
-+			"for_each_of_range wrong flags on node %pOF flags=%x (expected %x)\n",
-+			np, range.flags, IORESOURCE_MEM);
-+		if (!i) {
-+			unittest(range.size == 0x40000000,
-+				 "for_each_of_range wrong size on node %pOF size=%llx\n",
-+				 np, range.size);
-+			unittest(range.cpu_addr == 0x70000000,
-+				 "for_each_of_range wrong CPU addr (%llx) on node %pOF",
-+				 range.cpu_addr, np);
-+			unittest(range.bus_addr == 0x70000000,
-+				 "for_each_of_range wrong bus addr (%llx) on node %pOF",
-+				 range.pci_addr, np);
-+		} else {
-+			unittest(range.size == 0x20000000,
-+				 "for_each_of_range wrong size on node %pOF size=%llx\n",
-+				 np, range.size);
-+			unittest(range.cpu_addr == 0xd0000000,
-+				 "for_each_of_range wrong CPU addr (%llx) on node %pOF",
-+				 range.cpu_addr, np);
-+			unittest(range.bus_addr == 0x00000000,
-+				 "for_each_of_range wrong bus addr (%llx) on node %pOF",
-+				 range.pci_addr, np);
-+		}
-+		i++;
-+	}
++	ret = of_property_read_reg(np, 0, &addr, &size);
++	unittest(!ret, "of_property_read_reg(%pOF) returned error %d\n",
++		np, ret);
++	unittest(addr == 0x1000, "of_property_read_reg(%pOF) untranslated address (%llx) incorrect\n",
++		np, addr);
 +
 +	of_node_put(np);
 +}
@@ -140,14 +146,39 @@ index b5a7a31d8bd2..1a45df1f354a 100644
  static void __init of_unittest_parse_interrupts(void)
  {
  	struct device_node *np;
-@@ -3644,6 +3696,7 @@ static int __init of_unittest(void)
- 	of_unittest_dma_get_max_cpu_address();
- 	of_unittest_parse_dma_ranges();
+@@ -3772,6 +3793,7 @@ static int __init of_unittest(void)
  	of_unittest_pci_dma_ranges();
-+	of_unittest_bus_ranges();
+ 	of_unittest_bus_ranges();
+ 	of_unittest_bus_3cell_ranges();
++	of_unittest_reg();
  	of_unittest_match_node();
  	of_unittest_platform_populate();
  	of_unittest_overlay();
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 5292f62c1baa..95cb6c5c2d67 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -72,6 +72,8 @@ void __iomem *of_io_request_and_map(struct device_node *device,
+ extern const __be32 *__of_get_address(struct device_node *dev, int index, int bar_no,
+ 				      u64 *size, unsigned int *flags);
+ 
++int of_property_read_reg(struct device_node *np, int idx, u64 *addr, u64 *size);
++
+ extern int of_pci_range_parser_init(struct of_pci_range_parser *parser,
+ 			struct device_node *node);
+ extern int of_pci_dma_range_parser_init(struct of_pci_range_parser *parser,
+@@ -106,6 +108,11 @@ static inline const __be32 *__of_get_address(struct device_node *dev, int index,
+ 	return NULL;
+ }
+ 
++static int of_property_read_reg(struct device_node *np, int idx, u64 *addr, u64 *size)
++{
++	return -ENOSYS;
++}
++
+ static inline int of_pci_range_parser_init(struct of_pci_range_parser *parser,
+ 			struct device_node *node)
+ {
 
 -- 
 2.39.2
