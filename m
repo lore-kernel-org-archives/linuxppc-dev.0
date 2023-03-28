@@ -4,52 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 511E6C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 20:16:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD346C761A6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 20:17:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmLYr4fHlz3f4k
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:16:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.50; helo=mail-oo1-f50.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oo1-f50.google.com (mail-oo1-f50.google.com [209.85.161.50])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmLZL6yP2z3fbm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:17:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.54; helo=mail-ot1-f54.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com [209.85.210.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmLYF48b1z3cLT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 07:16:16 +1100 (AEDT)
-Received: by mail-oo1-f50.google.com with SMTP id l7-20020a4abe07000000b0053e1205c84bso1725733oop.9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmLYF4mVqz3cLh
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 07:16:17 +1100 (AEDT)
+Received: by mail-ot1-f54.google.com with SMTP id l39-20020a9d1b2a000000b006a121324abdso5479005otl.7
         for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 13:16:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680034574;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wq9MleJbVtyTb3QrV3Xlq0I3I3gqQWPoavFTMvWxBWU=;
-        b=NGWlRR8WG7ZgrU81D+/m5BTtO5Ahw23MVCvV3PyVucJ29760Jle9NV8FB/WCnBfJjj
-         gyj4j5hUeD/3mHbG0uU8z1u4d1kzsxj2agEMQqfhSKQWyXCtqJ6QerOWfKkdSEjJXgxp
-         sxorX9GnPlkqJBH1CJ9VR2Z6m8lPKPsiIKt0P7yjYi3rqobm4DkgYJnVusGTQcyJ4geg
-         WZWMwNQ2zDzE9FDnqfaJlzMOfHRqWc001M3I2NJ31ZtVPf7F/18Z7pJQ44JDCqAh2ujx
-         UF+7jul7tgF4XAJ6iHk4rvKE9EFdPop4qW12JYhZ8njYuJMHMdt/LHtbKxPmw8tc1DIl
-         23Dw==
-X-Gm-Message-State: AO0yUKXDFDqWf3QViHGv8FLDt8oNgvvLQ1aVyp5RDAwk3/9ei27g2ybT
-	OxSFc8r6ulww5l7aZ6JGlQ==
-X-Google-Smtp-Source: AK7set9De6XnycHJIQgLEMSB8BvrDZtnx3/knyjsjlWaCorjvDtfznD+X/H4ZPT08mbWWvY4Eor3wg==
-X-Received: by 2002:a4a:4f83:0:b0:53b:4b94:45bf with SMTP id c125-20020a4a4f83000000b0053b4b9445bfmr8745156oob.3.1680034574395;
-        Tue, 28 Mar 2023 13:16:14 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680034572;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=LJY6pOPdDa4oqX5OXa+Badi5ySmgsIj2CbDDOIk/1F8=;
+        b=aCwsff8kxypM4VB3qVWS+PG4WvvIpEtYPM90Je0nHuuG1NcAyAXwGVR8Mos5wx94g1
+         jDn5nG7QVYnaen/oNa/GSfJM38SWddBWLBpcl1RALs0njv6qQ/yZy90eX0UCTGLG+F9I
+         hWxwfZHSELp9fdy1e/M6Lsl+K99DQGH0X9cyOPlHVf705TMl3dXXQO+VvxGsljOqSWjI
+         bSw2ovPPFUQ7hNNjc52KPNaJen/cfBteFXeSp8awwcV28TlYde6tbYzQcmpjnxMek65l
+         sGLzQntGeLtRRDx18+YIWHik/CN5H+jDLhCJfvmkZtREb2wvwnr+GZDmyE8QFRm/0Hr9
+         TlTA==
+X-Gm-Message-State: AO0yUKX89kw1yxvKQjUQviIvU9SybisHyf1Ael6ThDZ3nuW6FMacD98R
+	XA4ImYaCC9Xsc2/aMHwXBzOdRlX0+g==
+X-Google-Smtp-Source: AK7set9GAgC93luzWNZuofJauP57z3vXyLI4sRAP80NLLCHRI4Txb9cd8obWGvd6gSVOAMPakodRgQ==
+X-Received: by 2002:a9d:6d82:0:b0:69f:8da7:5463 with SMTP id x2-20020a9d6d82000000b0069f8da75463mr8887322otp.31.1680034571938;
+        Tue, 28 Mar 2023 13:16:11 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id c192-20020a4a4fc9000000b0053b88b03e24sm7136185oob.18.2023.03.28.13.16.13
+        by smtp.gmail.com with ESMTPSA id l26-20020a0568301d7a00b0069fa776d3c2sm6931170oti.18.2023.03.28.13.16.11
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Mar 2023 13:16:13 -0700 (PDT)
-Received: (nullmailer pid 3993734 invoked by uid 1000);
+        Tue, 28 Mar 2023 13:16:11 -0700 (PDT)
+Received: (nullmailer pid 3993665 invoked by uid 1000);
 	Tue, 28 Mar 2023 20:16:10 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 28 Mar 2023 15:15:59 -0500
-Subject: [PATCH 4/5] of/address: Add of_range_count() helper
+Subject: [PATCH 0/5] of: More address parsing helpers
+Date: Tue, 28 Mar 2023 15:15:55 -0500
+Message-Id: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230328-dt-address-helpers-v1-4-e2456c3e77ab@kernel.org>
-References: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
-In-Reply-To: <20230328-dt-address-helpers-v1-0-e2456c3e77ab@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAPxKI2QC/x2N0QrCMAwAf2Xk2UDXTRB/RXxI28wGSh2JDmHs3
+ w17vIPjdjBWYYP7sIPyJibv7jBeBsiV+otRijPEEKcwxRuWD1IpymZYua2shnEJIV/zyIlm8DC
+ RMSalnqun/duay1V5kd95ejyP4w80lXgveQAAAA==
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Stuart Yoder <stuyoder@gmail.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 X-Mailer: b4 0.13-dev
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -67,71 +68,37 @@ Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some users need a count of the number of ranges entries before
-iterating over the entries. Typically this is for allocating some data
-structure based on the size. Add a helper, of_range_count(), to get the
-count. The helper must be called with an struct of_range_parser
-initialized by of_range_parser_init().
+This series is part of some clean-ups to reduce the open coded parsing 
+of "reg" and "ranges" in the kernel. As those are standard properties, 
+the common DT code should be able to handle parsing them. However, there 
+are a few gaps in the API for what some drivers need which this series 
+addresses (pun intended).
+
+I intend to add these helpers for v6.4 and then convert the users in 
+v6.5 to avoid any dependency issues. This series and the WIP conversions 
+are on this branch[1].
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git dt/address-helpers
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/of/unittest.c      |  7 ++++++-
- include/linux/of_address.h | 16 ++++++++++++++++
- 2 files changed, 22 insertions(+), 1 deletion(-)
+Rob Herring (5):
+      of: unittest: Add bus address range parsing tests
+      of/address: Add of_range_to_resource() helper
+      of/address: Add support for 3 address cell bus
+      of/address: Add of_range_count() helper
+      of/address: Add of_property_read_reg() helper
 
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 29066ecbed47..eaeb58065acc 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -1014,7 +1014,7 @@ static void __init of_unittest_bus_ranges(void)
- 	struct of_range range;
- 	struct of_range_parser parser;
- 	struct resource res;
--	int ret, i = 0;
-+	int ret, count, i = 0;
- 
- 	np = of_find_node_by_path("/testcase-data/address-tests");
- 	if (!np) {
-@@ -1040,6 +1040,11 @@ static void __init of_unittest_bus_ranges(void)
- 		"of_range_to_resource wrong resource start address on node %pOF res=%pR\n",
- 		np, &res);
- 
-+	count = of_range_count(&parser);
-+	unittest(count == 2,
-+		"of_range_count wrong size on node %pOF count=%d\n",
-+		np, count);
-+
- 	/*
- 	 * Get the "ranges" from the device tree
- 	 */
-diff --git a/include/linux/of_address.h b/include/linux/of_address.h
-index 1d005439f026..5292f62c1baa 100644
---- a/include/linux/of_address.h
-+++ b/include/linux/of_address.h
-@@ -35,6 +35,22 @@ struct of_pci_range {
- 	for (; of_pci_range_parser_one(parser, range);)
- #define for_each_of_range for_each_of_pci_range
- 
-+/*
-+ * of_range_count - Get the number of "ranges" or "dma-ranges" entries
-+ * @parser:	Parser state initialized by of_range_parser_init()
-+ *
-+ * Returns the number of entries or 0 if none.
-+ *
-+ * Note that calling this within or after the for_each_of_range() iterator will
-+ * be inaccurate giving the number of entries remaining.
-+ */
-+static inline int of_range_count(const struct of_range_parser *parser)
-+{
-+	if (!parser || !parser->node || !parser->range || parser->range == parser->end)
-+		return 0;
-+	return (parser->end - parser->range) / (parser->na + parser->pna + parser->ns);
-+}
-+
- /* Translate a DMA address from device space to CPU space */
- extern u64 of_translate_dma_address(struct device_node *dev,
- 				    const __be32 *in_addr);
+ drivers/of/address.c                        |  76 +++++++++++++-
+ drivers/of/unittest-data/tests-address.dtsi |   9 +-
+ drivers/of/unittest.c                       | 150 ++++++++++++++++++++++++++++
+ include/linux/of_address.h                  |  31 ++++++
+ 4 files changed, 262 insertions(+), 4 deletions(-)
+---
+base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
+change-id: 20230328-dt-address-helpers-2f00c5c1eba4
 
+Best regards,
 -- 
-2.39.2
+Rob Herring <robh@kernel.org>
 
