@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCCAAC6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:56:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A52B5C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:57:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrlZ3NMBz3fK8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:56:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.178; helo=mail-oi1-f178.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrm41ZgTz3fWv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:57:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.47; helo=mail-oo1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrg80GP6z3f4k
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:07 +1100 (AEDT)
-Received: by mail-oi1-f178.google.com with SMTP id f17so11895625oiw.10
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:07 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgB3GdGz3f5g
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:10 +1100 (AEDT)
+Received: by mail-oo1-f47.google.com with SMTP id m6-20020a4ae846000000b0053b9059edd5so2497190oom.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:10 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105185;
+        d=1e100.net; s=20210112; t=1680105188;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=m4/7KPsNb+9xFZnBvWPuvHxFUZ+0wY+oqrqhzOTeb8U=;
-        b=nNMd6q8SMzsnn4i0k9xUQKiPw+MFrMFf1Bnwr1NcxugEvP97K4kmMiXI2YIaWvzDb8
-         gbmhMzcP4fHj6qG9jg1kyCycvr8iLuFxHMsiOHrrw/7z0Lnbb1uyZhDZf4+QONcfJyrg
-         OJvhORNUsyzLVvKqlW2JgDMBN1GI1U/QLZQNSGVd2a3Ramb5injTT6Yums/vJhEObrIr
-         s2ciyBO7CR4NROaVP36WToeTOZQkyG3bZAWWaPEZ2t/ZLI1+/3IxNjF8nyC4dMVTvsxx
-         mtvsdPxT/vTOKuLgGtE2dvNx2rAjteypqLZoUDhjJha3xfv6ZBCDAM/3SThRL175mRGa
-         Atag==
-X-Gm-Message-State: AO0yUKXJynoG4Kd6vcfLF2rTfSOjP8IKh4OALCirW/3yx6ob7LOsTYU5
-	pu8w654crIWKceb9YR8V/g==
-X-Google-Smtp-Source: AK7set+4b8TVt2XSxmpWLVvJqTy6ovjjoLfneQ9RKzw6pkGeQwoKn8nerPqu8oZLFPwkmZXWaUmfeA==
-X-Received: by 2002:a05:6808:2995:b0:37f:7770:4c01 with SMTP id ex21-20020a056808299500b0037f77704c01mr7467612oib.28.1680105185402;
-        Wed, 29 Mar 2023 08:53:05 -0700 (PDT)
+        bh=/qOq2NGpUAbxXp1g8F5WR4fkX2S7bH0m0xxnMP60FJ8=;
+        b=2kCao1YLkYuOdEqaHb1m6FpPvuwpAJ53ROk6Rh9jL6EZHUM1/Xzr56ZZ5mzUOVzF6R
+         nCVubjFwGbrdletmFcziI9dSJXNXAna/unYXnA4+/ZAzIJoQYj5c+lU3WAFlhrF/9zWl
+         EJfLuZ6ohd2Mmltw0YnFAaA1quYvERF1wA9URVKaGYxkL79kYkUhLHMXJHW4hS2eObXE
+         VvsF/BzbZU29+BlwTRj2Z85AS7YDbeTQHEjqRwizdz1c53VdJHd7K1jprhvrMzB9iIiV
+         nZUQcGsaNtgrsZl4sSop+IOeNw30VUfLRbuwu4Ku9u9DNpGhaclwB6xxQ9Am17lNKe/v
+         vWjQ==
+X-Gm-Message-State: AO0yUKVtIsSzCeawJr0t9zEAOtO2ktQUY+Bq6EcydLkLJHfH74M/W5Vg
+	bZChLR7AAyfknIU6LrcK7A==
+X-Google-Smtp-Source: AK7set+oji6+6UZVdlF32jW97Cd5wKPzdK3BfB/MTFUCEZ/Z55TdZpfcLorcJt7g+5txg06Aa2xkVA==
+X-Received: by 2002:a4a:3797:0:b0:538:1e63:1725 with SMTP id r145-20020a4a3797000000b005381e631725mr10070334oor.4.1680105187664;
+        Wed, 29 Mar 2023 08:53:07 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y184-20020aca32c1000000b0037841fb9a65sm13730637oiy.5.2023.03.29.08.53.03
+        by smtp.gmail.com with ESMTPSA id s9-20020a4a9689000000b005255e556399sm13966954ooi.43.2023.03.29.08.53.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:04 -0700 (PDT)
-Received: (nullmailer pid 3198077 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:07 -0700 (PDT)
+Received: (nullmailer pid 3198063 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:05 -0500
-Subject: [PATCH 08/19] riscv: Add explicit include for cpu.h
+Date: Wed, 29 Mar 2023 10:51:58 -0500
+Subject: [PATCH 01/19] of: Make devtree_lock declaration private
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-8-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-1-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -86,40 +86,69 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Removing the include of cpu.h from of_device.h (included by
-of_platform.h) causes an error in setup.c:
-
-arch/riscv/kernel/setup.c:313:22: error: arithmetic on a pointer to an incomplete type 'typeof(struct cpu)' (aka 'struct cpu')
-
-The of_platform.h header is not necessary either, so it can be dropped.
+Sparc is the only place devtree_lock is used outside of drivers/of/.
+Move the devtree_lock declaration into of_private.h and Sparc's prom.h
+so pulling in spinlock.h to of.h can be avoided for everything besides
+Sparc.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
-Please ack and I will take the series via the DT tree.
----
- arch/riscv/kernel/setup.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc/include/asm/prom.h | 3 +++
+ drivers/of/of_private.h       | 1 +
+ include/linux/of.h            | 2 --
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 376d2827e736..dcfa4b6fa4b1 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -8,6 +8,7 @@
-  *  Nick Kossifidis <mick@ics.forth.gr>
-  */
+diff --git a/arch/sparc/include/asm/prom.h b/arch/sparc/include/asm/prom.h
+index 587edb8b5a65..8184575b1336 100644
+--- a/arch/sparc/include/asm/prom.h
++++ b/arch/sparc/include/asm/prom.h
+@@ -19,11 +19,14 @@
+ #include <linux/mutex.h>
+ #include <linux/atomic.h>
+ #include <linux/irqdomain.h>
++#include <linux/spinlock.h>
  
-+#include <linux/cpu.h>
- #include <linux/init.h>
- #include <linux/mm.h>
- #include <linux/memblock.h>
-@@ -15,7 +16,6 @@
- #include <linux/console.h>
- #include <linux/screen_info.h>
- #include <linux/of_fdt.h>
--#include <linux/of_platform.h>
- #include <linux/sched/task.h>
- #include <linux/smp.h>
- #include <linux/efi.h>
+ #define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
+ #define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
+ #define of_node_cmp(s1, s2)		strcmp((s1), (s2))
+ 
++extern raw_spinlock_t devtree_lock;
++
+ struct of_irq_controller {
+ 	unsigned int	(*irq_build)(struct device_node *, unsigned int, void *);
+ 	void		*data;
+diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
+index fb6792d381a6..b57f1014e419 100644
+--- a/drivers/of/of_private.h
++++ b/drivers/of/of_private.h
+@@ -38,6 +38,7 @@ struct alias_prop {
+ #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT 1
+ 
+ extern struct mutex of_mutex;
++extern raw_spinlock_t devtree_lock;
+ extern struct list_head aliases_lookup;
+ extern struct kset *of_kset;
+ 
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 0af611307db2..36cf94596eba 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -16,7 +16,6 @@
+ #include <linux/errno.h>
+ #include <linux/kobject.h>
+ #include <linux/mod_devicetable.h>
+-#include <linux/spinlock.h>
+ #include <linux/topology.h>
+ #include <linux/notifier.h>
+ #include <linux/property.h>
+@@ -145,7 +144,6 @@ extern struct device_node *of_root;
+ extern struct device_node *of_chosen;
+ extern struct device_node *of_aliases;
+ extern struct device_node *of_stdout;
+-extern raw_spinlock_t devtree_lock;
+ 
+ /*
+  * struct device_node flag descriptions
 
 -- 
 2.39.2
