@@ -4,42 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15EF4C761AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 04:16:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 620A2C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 04:36:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmYBs5FKTz3fgS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:16:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmYfd4K0nz3f8M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:36:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=F7V0aggb;
+	dkim-atps=neutral
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmY9l62Xvz3fW2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 15:15:07 +1100 (AEDT)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.55])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4PmXgs5t2gzgZWQ;
-	Wed, 29 Mar 2023 11:52:41 +0800 (CST)
-Received: from localhost.localdomain (10.50.163.32) by
- canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.21; Wed, 29 Mar 2023 11:55:57 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <akpm@linux-foundation.org>, <linux-mm@kvack.org>,
-	<linux-arm-kernel@lists.infradead.org>, <x86@kernel.org>,
-	<catalin.marinas@arm.com>, <will@kernel.org>, <anshuman.khandual@arm.com>,
-	<linux-doc@vger.kernel.org>
-Subject: [PATCH v8 1/2] mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
-Date: Wed, 29 Mar 2023 11:55:11 +0800
-Message-ID: <20230329035512.57392-2-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
-In-Reply-To: <20230329035512.57392-1-yangyicong@huawei.com>
-References: <20230329035512.57392-1-yangyicong@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmYdf3cW5z3byZ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 15:35:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=F7V0aggb;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PmYdc1kZvz4x7x;
+	Wed, 29 Mar 2023 15:35:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1680064548;
+	bh=0xWuzHEKv0l2lURA6D+HsOlFxSEYf23qqC/bdO5BUa8=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=F7V0aggbOnog2AYFJ2xU7lNEcNaEq+c15GuhP8TDZ2/TUMktL6fgMG20xxNNJAK1o
+	 7Sl4t3BPj6XKpdwElXaIZgrdnMqCiGqSPCxu2VEBrsuFlnzzQYcGgFbG5SYCmIW/Xo
+	 yyJ1YpF8n++0rG3VPBMcLHwavcuKUqZKLq5wYEWoD7kRmN0h8JfunUWQhZzyaiwBuS
+	 Cn/7jU3vDPL2XiHFkdL46whhHSCGj3PYQURyLekliZrwrfy80FT4v1N+zJCNpB67c2
+	 P9vbicyooTMCPLMuI6lqza2sPW/BM+Err28UMPYp79wYNRZLPafg1e4oMjz2KFK364
+	 BJPy6sWCL+iSQ==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: kernel test robot <lkp@intel.com>
+Subject: Re: [powerpc:next-test] BUILD REGRESSION
+ c827c932c00ccd231a73da9816a51ce2c2b557d6
+In-Reply-To: <642395b2.9xXK0P9s+LMbMRgG%lkp@intel.com>
+References: <642395b2.9xXK0P9s+LMbMRgG%lkp@intel.com>
+Date: Wed, 29 Mar 2023 15:35:47 +1100
+Message-ID: <874jq4cgyk.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
-X-Originating-IP: [10.50.163.32]
-X-ClientProxiedBy: dggems701-chm.china.huawei.com (10.3.19.178) To
- canpemm500009.china.huawei.com (7.192.105.203)
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,79 +58,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, guojian@oppo.com, linux-riscv@lists.infradead.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, Jonathan.Cameron@Huawei.com, Barry Song <baohua@kernel.org>, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+kernel test robot <lkp@intel.com> writes:
+> tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+> branch HEAD: c827c932c00ccd231a73da9816a51ce2c2b557d6  powerpc: Use of_address_to_resource()
+>
+> Error/Warning reports:
+>
+> https://lore.kernel.org/oe-kbuild-all/202303240411.Tq2tZKiG-lkp@intel.com
+>
+> Error/Warning: (recently discovered and may have been fixed)
+>
+> arch/powerpc/platforms/embedded6xx/ls_uart.c:128:15: error: implicit declaration of function 'of_address_to_resource' [-Werror=implicit-function-declaration]
+>
+> Error/Warning ids grouped by kconfigs:
+>
+> gcc_recent_errors
+> `-- powerpc-linkstation_defconfig
+>     `-- arch-powerpc-platforms-embedded6xx-ls_uart.c:error:implicit-declaration-of-function-of_address_to_resource
 
-The entire scheme of deferred TLB flush in reclaim path rests on the
-fact that the cost to refill TLB entries is less than flushing out
-individual entries by sending IPI to remote CPUs. But architecture
-can have different ways to evaluate that. Hence apart from checking
-TTU_BATCH_FLUSH in the TTU flags, rest of the decision should be
-architecture specific.
+I've dropped that patch for now.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-[https://lore.kernel.org/linuxppc-dev/20171101101735.2318-2-khandual@linux.vnet.ibm.com/]
-Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
-[Rebase and fix incorrect return value type]
-Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
-Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
-Reviewed-by: Barry Song <baohua@kernel.org>
-Reviewed-by: Xin Hao <xhao@linux.alibaba.com>
-Tested-by: Punit Agrawal <punit.agrawal@bytedance.com>
----
- arch/x86/include/asm/tlbflush.h | 12 ++++++++++++
- mm/rmap.c                       |  9 +--------
- 2 files changed, 13 insertions(+), 8 deletions(-)
-
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index cda3118f3b27..8a497d902c16 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -240,6 +240,18 @@ static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
- 	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
- }
- 
-+static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
-+{
-+	bool should_defer = false;
-+
-+	/* If remote CPUs need to be flushed then defer batch the flush */
-+	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
-+		should_defer = true;
-+	put_cpu();
-+
-+	return should_defer;
-+}
-+
- static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
- {
- 	/*
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 8632e02661ac..38ccb700748c 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -686,17 +686,10 @@ static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
-  */
- static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
- {
--	bool should_defer = false;
--
- 	if (!(flags & TTU_BATCH_FLUSH))
- 		return false;
- 
--	/* If remote CPUs need to be flushed then defer batch the flush */
--	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
--		should_defer = true;
--	put_cpu();
--
--	return should_defer;
-+	return arch_tlbbatch_should_defer(mm);
- }
- 
- /*
--- 
-2.24.0
-
+cheers
