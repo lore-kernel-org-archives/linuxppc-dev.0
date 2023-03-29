@@ -4,50 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78BE9C74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:01:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26DF8C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:01:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrrR1D6qz3fvF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:01:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.47; helo=mail-oo1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrrx4fbnz3fdM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:01:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.181; helo=mail-oi1-f181.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgT6J3Bz3fVX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:25 +1100 (AEDT)
-Received: by mail-oo1-f47.google.com with SMTP id m6-20020a4ae846000000b0053b9059edd5so2497343oom.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgX1RK4z3fQh
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:28 +1100 (AEDT)
+Received: by mail-oi1-f181.google.com with SMTP id y184so11917391oiy.8
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:28 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105205;
+        d=1e100.net; s=20210112; t=1680105207;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=GxrilhvfwDlef/A2YTUefG5k1p916jMGPiiHrDKkFR0=;
-        b=Q2gekZnLdNdt7TcnRH4/xD0T1A8gdffYGtnzvM6NaDrA1EGIF3YvER84dTadrzkPHL
-         Ax1kVUE49FbCCbnf9/A2FhRq555Ow4l/ouXKkohg+VI0j7e4iVKwEBJFHf5XHNFFWps1
-         ZtGm9JkZjwRZE9QCyMw7JOC5sXWHGJfzHTlQzanASRUI3SqYA9cn0uPUPQ2U2xoGZlpQ
-         zCXWgChJJuG+mv87u5AONSWXt3r86Drb93FGJiNl6ER5nKgcGMpweRN+8TPITI/onq7B
-         bSx1j/0rxvRRjr0fZSkD2CbdVGlr8gUOUItt0HQw9Vcuhgr4wM19QFUApG6JtZy2jHNT
-         ypzg==
-X-Gm-Message-State: AO0yUKV/Dd4TSTQdR8Nm639nbVLeegEAZS+dQt3lVrO8EPdi1zZaI7cc
-	XD2aqXiNDbdshTN79N4zMw==
-X-Google-Smtp-Source: AK7set/IvKP58b96RyfRxVRB8Yjm2uXbhHwCU35QLNRLqkqctfQoMFiFz1/Ijy3GHwDVb/O3xlHYvQ==
-X-Received: by 2002:a4a:52d4:0:b0:53b:8b5:48d0 with SMTP id d203-20020a4a52d4000000b0053b08b548d0mr9782179oob.1.1680105205203;
-        Wed, 29 Mar 2023 08:53:25 -0700 (PDT)
+        bh=022ntgbo/qozcpOEnF6DlWHlLfWcIn+6VTfzUh5A9FY=;
+        b=zdPrP82mz6nq7UhKX/MN6B04M3bCn0J2ZleE42FpaAd4tChME4f2S+ZRAC4GzmaFrb
+         In9mMhmQ28rdLqryYCPU37livyY8UK6bO4eZpdx2QUWDLcZxjGEyYrEJvKimtUYHhrHc
+         4V/cU7qL2zHx689RodXnPKTNezKTXF9R+yTB10PiaC1JOQSZrECK+zMwDynC12aH6ZYX
+         F8sRBsZtWoHNvGgcFCCPPquQ3rRRoiX+zVXbWZU+5oQ7N6ioYvx4Z1jy+QA1j/q2HP5E
+         kL6uiXqxdFfUKPQyIuJec6HSvQQaVmaeTxsWJIDJ5IA9mT+Rrso7VZnbAIN1cwkyijYr
+         7NiQ==
+X-Gm-Message-State: AO0yUKXyH+0nE06gaa6/JmHKPuNwYU2rmeE4qAtlc8vJu0r9abL67OaN
+	zol3/CO6X2XvYTC4fzKoYw==
+X-Google-Smtp-Source: AK7set+mgwqrtp3sj8LCfLB0ZJyIWcTnGcbFer41ylAZRGD0ZYDF+G/GFDHWLU149fBQcrWXcPEKPQ==
+X-Received: by 2002:a05:6808:616:b0:386:db46:f6fb with SMTP id y22-20020a056808061600b00386db46f6fbmr8106850oih.17.1680105207535;
+        Wed, 29 Mar 2023 08:53:27 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id 4-20020a4a1704000000b00524faf3d2d7sm13940444ooe.41.2023.03.29.08.53.23
+        by smtp.gmail.com with ESMTPSA id l8-20020a056808020800b003874631e249sm8002092oie.36.2023.03.29.08.53.25
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:24 -0700 (PDT)
-Received: (nullmailer pid 3198097 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:26 -0700 (PDT)
+Received: (nullmailer pid 3198085 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:15 -0500
-Subject: [PATCH 18/19] OPP: Adjust includes to remove of_device.h
+Date: Wed, 29 Mar 2023 10:52:09 -0500
+Subject: [PATCH 12/19] thermal: cpuidle_cooling: Adjust includes to remove
+ of_device.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-18-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-12-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -95,22 +96,28 @@ Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- drivers/opp/of.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/cpuidle_cooling.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index e55c6095adf0..63b126c6215e 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -13,7 +13,7 @@
- #include <linux/cpu.h>
- #include <linux/errno.h>
+diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
+index 4f41102e8b16..6f6daead485e 100644
+--- a/drivers/thermal/cpuidle_cooling.c
++++ b/drivers/thermal/cpuidle_cooling.c
+@@ -7,12 +7,13 @@
+  */
+ #define pr_fmt(fmt) "cpuidle cooling: " fmt
+ 
++#include <linux/cpu.h>
+ #include <linux/cpu_cooling.h>
+ #include <linux/cpuidle.h>
  #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/idle_inject.h>
 -#include <linux/of_device.h>
 +#include <linux/of.h>
- #include <linux/pm_domain.h>
  #include <linux/slab.h>
- #include <linux/export.h>
+ #include <linux/thermal.h>
+ 
 
 -- 
 2.39.2
