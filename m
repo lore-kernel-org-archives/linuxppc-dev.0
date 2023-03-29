@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3CDEC7EE24
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:53:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CD8FC77B6F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrgw0tj2z3fB4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:53:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.170; helo=mail-oi1-f170.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com [209.85.167.170])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrhQ43s1z3cgT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:54:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.41; helo=mail-oo1-f41.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrfr4X9vz3cLF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:52 +1100 (AEDT)
-Received: by mail-oi1-f170.google.com with SMTP id b19so11913331oib.7
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:52 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrft3Rqlz3cLF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:54 +1100 (AEDT)
+Received: by mail-oo1-f41.google.com with SMTP id l7-20020a4abe07000000b0053e1205c84bso2136683oop.9
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105169;
+        d=1e100.net; s=20210112; t=1680105172;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=UL9zh/S00J+cmPfrAtv4vflOTxQVISfijtGfdl2R3L0=;
-        b=nG0mCMvzjt5fK3OTvxhRLJGIgaBgWs5acqhiG5gH9xpUMHd+m+FnDwg73RRw82btP7
-         W7gwKPt+V5IIAIFWoTwZno0GlTF5Wx5UG13IUCC8RxpFJrd5B0DIoBg4N4IiH0dAKt1a
-         +7xMXDGI4s2dy3jaTZh29Dq7w/5krby0qhjW5gPkgMobWPcEwsw2E6oLUhWETKky3Wsc
-         TuIF0RJVYTWIun2tlRK97Z2FbCCo/lp2QVUVS/CY/NV0qlzQYxkzfH+/rX1FIq27/Bsd
-         to4UFyHW0SqaFPxuE+d6JQoI/f8LS3XQVzPsE8Y4nHAiGO62bJMk8XtK+3VVT0FBxx5Q
-         3DhQ==
-X-Gm-Message-State: AAQBX9cSxduTTRBZ6K7BzehVFZQxqEeWTdeBhbwmy2f7Wdi1BN1Sh53w
-	8UyMO+Vk2OjaDTBggYhmqA==
-X-Google-Smtp-Source: AKy350YWPg6naXojJ+dh5QDGD5h6eaepx41Bc/m1xdmR3LQVsEP9dglulW7uPvOZ4q19z4rMeJNnvA==
-X-Received: by 2002:a05:6808:4da:b0:386:9883:ca9d with SMTP id a26-20020a05680804da00b003869883ca9dmr1291968oie.2.1680105169571;
-        Wed, 29 Mar 2023 08:52:49 -0700 (PDT)
+        bh=hUvdSWvlelGy1WbXkwFcUNCtjmz5cL2Z3yoJim8fyN4=;
+        b=im0dLVLy9D5gZwzJYdtxv7pjmbaI2tNECGsWLgI19QH+Ebr1Gd0ILS+lM8lBKlUK6P
+         rqfqOxh42uZLbylGq/GqczaNZXSyq2L3zVn4YS8N0O7GjV1kFw5IPm5F7Vp2bpEZrwYH
+         IdI/CzJR+j23GlvSZGioGC/4L3MbrMyewT1TsGsXCkMefGEYZHYSj0gA0KEkrpGpxgbK
+         JdkoO70vEPuILXQNoauSPi9tZmhxXpAGs0OubQZY20UZmHAAuL805NvkLMWg47LJq+r+
+         MMR0o4bmgUyP+DnLwzSc49Gf4XjnzPIgDq8IIK6OjLNAD8w7Yhhq1CpzO95khkitC7cJ
+         58qA==
+X-Gm-Message-State: AO0yUKVT4VqwNvUH/F0Ry77fopcxHFKNFNPmMs8udYW0d2pGU8brY8kq
+	Vz6aRk4p6VaYnOp9XIOzeQ==
+X-Google-Smtp-Source: AK7set8fZmNpueyLlqRjeVxsIcrGmIm7sG0omBAJB7zOEj3TTntZfmKbMnjZiGlZRcAnzZ6+ha8iMg==
+X-Received: by 2002:a4a:4191:0:b0:538:4d29:30cb with SMTP id x139-20020a4a4191000000b005384d2930cbmr9034039ooa.8.1680105171818;
+        Wed, 29 Mar 2023 08:52:51 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id v184-20020acadec1000000b003871471f894sm10161090oig.27.2023.03.29.08.52.47
+        by smtp.gmail.com with ESMTPSA id 129-20020a4a1887000000b005252d376caesm13850273ooo.22.2023.03.29.08.52.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:52:49 -0700 (PDT)
-Received: (nullmailer pid 3198065 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:52:51 -0700 (PDT)
+Received: (nullmailer pid 3198095 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:51:59 -0500
-Subject: [PATCH 02/19] of: Move of_device_(add|register|unregister) to
- of_platform.h
+Date: Wed, 29 Mar 2023 10:52:14 -0500
+Subject: [PATCH 17/19] irqchip: loongson-eiointc: Add explicit include for
+ cpuhotplug.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-2-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-17-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -87,48 +87,41 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As of_device_(add|register|unregister) functions work on struct
-platform_device, they should be declared in of_platform.h instead.
+Removing the include of cpu.h from of_device.h causes an error:
 
-This move is transparent for now as both headers include each other.
+drivers/irqchip/irq-loongson-eiointc.c:420:9: error: implicit declaration of function 'cpuhp_setup_state_nocalls' [-Werror=implicit-function-declaration]
+
+This driver doesn't even use DT, so all the DT includes can be dropped.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- include/linux/of_device.h   | 4 ----
- include/linux/of_platform.h | 5 +++++
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Please ack and I will take the series via the DT tree.
+---
+ drivers/irqchip/irq-loongson-eiointc.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-index f4b57614979d..e4aa61cb2bd0 100644
---- a/include/linux/of_device.h
-+++ b/include/linux/of_device.h
-@@ -26,10 +26,6 @@ static inline int of_driver_match_device(struct device *dev,
- 	return of_match_device(drv->of_match_table, dev) != NULL;
- }
+diff --git a/drivers/irqchip/irq-loongson-eiointc.c b/drivers/irqchip/irq-loongson-eiointc.c
+index d15fd38c1756..fd9d87f1470e 100644
+--- a/drivers/irqchip/irq-loongson-eiointc.c
++++ b/drivers/irqchip/irq-loongson-eiointc.c
+@@ -7,16 +7,13 @@
  
--extern int of_device_add(struct platform_device *pdev);
--extern int of_device_register(struct platform_device *ofdev);
--extern void of_device_unregister(struct platform_device *ofdev);
--
- extern const void *of_device_get_match_data(const struct device *dev);
+ #define pr_fmt(fmt) "eiointc: " fmt
  
- extern ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len);
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index d15b6cd5e1c3..8ac5cb933dc3 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -52,6 +52,11 @@ extern const struct of_device_id of_default_bus_match_table[];
- extern struct platform_device *of_device_alloc(struct device_node *np,
- 					 const char *bus_id,
- 					 struct device *parent);
-+
-+extern int of_device_add(struct platform_device *pdev);
-+extern int of_device_register(struct platform_device *ofdev);
-+extern void of_device_unregister(struct platform_device *ofdev);
-+
- #ifdef CONFIG_OF
- extern struct platform_device *of_find_device_by_node(struct device_node *np);
- #else
++#include <linux/cpuhotplug.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/irqchip.h>
+ #include <linux/irqdomain.h>
+ #include <linux/irqchip/chained_irq.h>
+ #include <linux/kernel.h>
+-#include <linux/platform_device.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-#include <linux/of_platform.h>
+ #include <linux/syscore_ops.h>
+ 
+ #define EIOINTC_REG_NODEMAP	0x14a0
 
 -- 
 2.39.2
