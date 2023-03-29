@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFFEBC74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCCAAC6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:56:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrl41gxYz3fyx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:56:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.181; helo=mail-oi1-f181.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrlZ3NMBz3fK8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:56:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.178; helo=mail-oi1-f178.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f178.google.com (mail-oi1-f178.google.com [209.85.167.178])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrg5574Sz3f65
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:05 +1100 (AEDT)
-Received: by mail-oi1-f181.google.com with SMTP id y184so11916416oiy.8
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrg80GP6z3f4k
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:07 +1100 (AEDT)
+Received: by mail-oi1-f178.google.com with SMTP id f17so11895625oiw.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:07 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105183;
+        d=1e100.net; s=20210112; t=1680105185;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ZxkTC00mmtvkJ/ocm+Trr4LHDuiGbRgef51Eh65eFno=;
-        b=hXKrZ6AwsezNUP13Ncc/NdUBiUmbJTDkZAn/NUvpHBXtaCBiKjHCC+eS/BF9gtK72z
-         xklnzqiJz6DeNqFSLAqKccjkiijiPe6E00munGsfg19/Mhm5B8/1vf3rrnWBcQwJ1l+9
-         D6Xw9a0uXLXd3bd4BxdjPoR6D2jLtxj/n9O+uPo4SZpVlXnG63kM6yOUzKjmKfQWT2ml
-         rTReWZSgjjXhbXqLcSmsj2CpEH0e7pKpZo8qzIop8sdnhS955kSUtE5MR1gyvUurxDd5
-         Wfbouqe6KPPUEdC4cgk9luiMIkJ5YvAL2d0MNSewMJJ4KWSPwVgXFRWnoMHVIe7cO3Kf
-         2pbg==
-X-Gm-Message-State: AO0yUKWCC6W1jkIrRrFbSbZY2hBgTmqQdCVxncQ+2spJaxPfnkx2dV/h
-	7+3c8xhu7IpSU4PDT6qjvw==
-X-Google-Smtp-Source: AK7set/XHs0DeHUv3FR5klH7bLctWLDiPHbV4Bgynq9MiBxHYJ127vn5iRHwUkAWb6rjGdajk82w8Q==
-X-Received: by 2002:a05:6808:1445:b0:387:715e:56b8 with SMTP id x5-20020a056808144500b00387715e56b8mr10764982oiv.56.1680105182676;
-        Wed, 29 Mar 2023 08:53:02 -0700 (PDT)
+        bh=m4/7KPsNb+9xFZnBvWPuvHxFUZ+0wY+oqrqhzOTeb8U=;
+        b=nNMd6q8SMzsnn4i0k9xUQKiPw+MFrMFf1Bnwr1NcxugEvP97K4kmMiXI2YIaWvzDb8
+         gbmhMzcP4fHj6qG9jg1kyCycvr8iLuFxHMsiOHrrw/7z0Lnbb1uyZhDZf4+QONcfJyrg
+         OJvhORNUsyzLVvKqlW2JgDMBN1GI1U/QLZQNSGVd2a3Ramb5injTT6Yums/vJhEObrIr
+         s2ciyBO7CR4NROaVP36WToeTOZQkyG3bZAWWaPEZ2t/ZLI1+/3IxNjF8nyC4dMVTvsxx
+         mtvsdPxT/vTOKuLgGtE2dvNx2rAjteypqLZoUDhjJha3xfv6ZBCDAM/3SThRL175mRGa
+         Atag==
+X-Gm-Message-State: AO0yUKXJynoG4Kd6vcfLF2rTfSOjP8IKh4OALCirW/3yx6ob7LOsTYU5
+	pu8w654crIWKceb9YR8V/g==
+X-Google-Smtp-Source: AK7set+4b8TVt2XSxmpWLVvJqTy6ovjjoLfneQ9RKzw6pkGeQwoKn8nerPqu8oZLFPwkmZXWaUmfeA==
+X-Received: by 2002:a05:6808:2995:b0:37f:7770:4c01 with SMTP id ex21-20020a056808299500b0037f77704c01mr7467612oib.28.1680105185402;
+        Wed, 29 Mar 2023 08:53:05 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id p184-20020acad8c1000000b003896e31867esm228723oig.49.2023.03.29.08.53.01
+        by smtp.gmail.com with ESMTPSA id y184-20020aca32c1000000b0037841fb9a65sm13730637oiy.5.2023.03.29.08.53.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:02 -0700 (PDT)
-Received: (nullmailer pid 3198083 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:04 -0700 (PDT)
+Received: (nullmailer pid 3198077 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:08 -0500
-Subject: [PATCH 11/19] clocksource: ingenic: Add explicit include for
- cpuhotplug.h
+Date: Wed, 29 Mar 2023 10:52:05 -0500
+Subject: [PATCH 08/19] riscv: Add explicit include for cpu.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-11-581e2605fe47@kernel.org>
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-8-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -87,41 +86,40 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Removing include of cpu.h from of_device.h (included by of_platform.h)
-causes an error in ingenic-timer:
+Removing the include of cpu.h from of_device.h (included by
+of_platform.h) causes an error in setup.c:
 
-drivers/clocksource/ingenic-timer.c: In function ‘ingenic_tcu_init’:
-drivers/clocksource/ingenic-timer.c:338:15: error: implicit declaration of function ‘cpuhp_setup_state’
+arch/riscv/kernel/setup.c:313:22: error: arithmetic on a pointer to an incomplete type 'typeof(struct cpu)' (aka 'struct cpu')
 
-The of_platform.h header is not necessary either, so it and of_address.h
-can be dropped.
+The of_platform.h header is not necessary either, so it can be dropped.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- drivers/clocksource/ingenic-timer.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/riscv/kernel/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clocksource/ingenic-timer.c b/drivers/clocksource/ingenic-timer.c
-index 24ed0f1f089b..089ce64b1c3f 100644
---- a/drivers/clocksource/ingenic-timer.c
-+++ b/drivers/clocksource/ingenic-timer.c
-@@ -9,13 +9,12 @@
- #include <linux/clk.h>
- #include <linux/clockchips.h>
- #include <linux/clocksource.h>
-+#include <linux/cpuhotplug.h>
- #include <linux/interrupt.h>
- #include <linux/mfd/ingenic-tcu.h>
- #include <linux/mfd/syscon.h>
- #include <linux/of.h>
--#include <linux/of_address.h>
- #include <linux/of_irq.h>
+diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+index 376d2827e736..dcfa4b6fa4b1 100644
+--- a/arch/riscv/kernel/setup.c
++++ b/arch/riscv/kernel/setup.c
+@@ -8,6 +8,7 @@
+  *  Nick Kossifidis <mick@ics.forth.gr>
+  */
+ 
++#include <linux/cpu.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/memblock.h>
+@@ -15,7 +16,6 @@
+ #include <linux/console.h>
+ #include <linux/screen_info.h>
+ #include <linux/of_fdt.h>
 -#include <linux/of_platform.h>
- #include <linux/overflow.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
+ #include <linux/sched/task.h>
+ #include <linux/smp.h>
+ #include <linux/efi.h>
 
 -- 
 2.39.2
