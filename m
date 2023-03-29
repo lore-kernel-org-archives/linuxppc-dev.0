@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CD8FC77B6F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22BD9C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:54:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrhQ43s1z3cgT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:54:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.41; helo=mail-oo1-f41.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oo1-f41.google.com (mail-oo1-f41.google.com [209.85.161.41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrhw3RJJz3fk6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:54:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.179; helo=mail-oi1-f179.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f179.google.com (mail-oi1-f179.google.com [209.85.167.179])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrft3Rqlz3cLF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:54 +1100 (AEDT)
-Received: by mail-oo1-f41.google.com with SMTP id l7-20020a4abe07000000b0053e1205c84bso2136683oop.9
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:54 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrfw533lz3cJY
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:56 +1100 (AEDT)
+Received: by mail-oi1-f179.google.com with SMTP id l18so11894539oic.13
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105172;
+        d=1e100.net; s=20210112; t=1680105174;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=hUvdSWvlelGy1WbXkwFcUNCtjmz5cL2Z3yoJim8fyN4=;
-        b=im0dLVLy9D5gZwzJYdtxv7pjmbaI2tNECGsWLgI19QH+Ebr1Gd0ILS+lM8lBKlUK6P
-         rqfqOxh42uZLbylGq/GqczaNZXSyq2L3zVn4YS8N0O7GjV1kFw5IPm5F7Vp2bpEZrwYH
-         IdI/CzJR+j23GlvSZGioGC/4L3MbrMyewT1TsGsXCkMefGEYZHYSj0gA0KEkrpGpxgbK
-         JdkoO70vEPuILXQNoauSPi9tZmhxXpAGs0OubQZY20UZmHAAuL805NvkLMWg47LJq+r+
-         MMR0o4bmgUyP+DnLwzSc49Gf4XjnzPIgDq8IIK6OjLNAD8w7Yhhq1CpzO95khkitC7cJ
-         58qA==
-X-Gm-Message-State: AO0yUKVT4VqwNvUH/F0Ry77fopcxHFKNFNPmMs8udYW0d2pGU8brY8kq
-	Vz6aRk4p6VaYnOp9XIOzeQ==
-X-Google-Smtp-Source: AK7set8fZmNpueyLlqRjeVxsIcrGmIm7sG0omBAJB7zOEj3TTntZfmKbMnjZiGlZRcAnzZ6+ha8iMg==
-X-Received: by 2002:a4a:4191:0:b0:538:4d29:30cb with SMTP id x139-20020a4a4191000000b005384d2930cbmr9034039ooa.8.1680105171818;
-        Wed, 29 Mar 2023 08:52:51 -0700 (PDT)
+        bh=/yItqnZ9vRLGQesakQq7xospJXeaAueRctcAXfNX28w=;
+        b=dCIkLwJCIDtrG0vrwWChe4qqUK9e0FDwfYiOZ/hBo1OSH4KGvXW/UG44q9vDE7LXSv
+         A38gmLbMItRXf2gp3Wp83wZ0f0BCw5t9smYFiSHi57/j+WIzspwRlqWZ6wVtKDc9mOuu
+         g2ZcOadT/xspmY5r3COb7r++S1d7/4SzBJda4KSHooeNTBdHkgqfzIaIR4hwwFPK35s7
+         MPSTbNCPevgS/fVFuVjwsi1Zt2mrViyXae6PP/YsQnSK2clzuBQyzhslBgvyL7TAHMKl
+         ODRIYw9ATnbxElS/H5i4gFSemNrzP6DoqzUJRlArPMFhu7Txd0d5UdwyUG3E9rFh9n4F
+         AIeg==
+X-Gm-Message-State: AO0yUKX9tq/CI6EHl2SisW9bSt16fwvIX2PsjKuhykox6hKhfbb+S5ND
+	THxD4kVXtlAO+fRWzgKrrg==
+X-Google-Smtp-Source: AK7set8VenL+CVecLJkZQ+2YD6HECaZWNdDHKrwGAWt0Tn+DIRoRNNZ1eYx2LdRkWm+8wMeNY2nxyA==
+X-Received: by 2002:aca:1c07:0:b0:386:9dba:4571 with SMTP id c7-20020aca1c07000000b003869dba4571mr8390718oic.25.1680105174043;
+        Wed, 29 Mar 2023 08:52:54 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id 129-20020a4a1887000000b005252d376caesm13850273ooo.22.2023.03.29.08.52.49
+        by smtp.gmail.com with ESMTPSA id q132-20020acac08a000000b0037fa035f4f3sm13719284oif.53.2023.03.29.08.52.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:52:51 -0700 (PDT)
-Received: (nullmailer pid 3198095 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:52:53 -0700 (PDT)
+Received: (nullmailer pid 3198099 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:14 -0500
-Subject: [PATCH 17/19] irqchip: loongson-eiointc: Add explicit include for
- cpuhotplug.h
+Date: Wed, 29 Mar 2023 10:52:16 -0500
+Subject: [PATCH 19/19] of: Drop cpu.h include from of_device.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-17-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-19-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -87,41 +86,26 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Removing the include of cpu.h from of_device.h causes an error:
-
-drivers/irqchip/irq-loongson-eiointc.c:420:9: error: implicit declaration of function 'cpuhp_setup_state_nocalls' [-Werror=implicit-function-declaration]
-
-This driver doesn't even use DT, so all the DT includes can be dropped.
+Now that all users which had an implicit dependency on cpu.h have been
+fixed. the cpu.h include can be dropped from of_device.h
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
-Please ack and I will take the series via the DT tree.
----
- drivers/irqchip/irq-loongson-eiointc.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ include/linux/of_device.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/irqchip/irq-loongson-eiointc.c b/drivers/irqchip/irq-loongson-eiointc.c
-index d15fd38c1756..fd9d87f1470e 100644
---- a/drivers/irqchip/irq-loongson-eiointc.c
-+++ b/drivers/irqchip/irq-loongson-eiointc.c
-@@ -7,16 +7,13 @@
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index 5cdafe19dc80..7ac9a8ae9c80 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -2,7 +2,6 @@
+ #ifndef _LINUX_OF_DEVICE_H
+ #define _LINUX_OF_DEVICE_H
  
- #define pr_fmt(fmt) "eiointc: " fmt
+-#include <linux/cpu.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_platform.h> /* temporary until merge */
  
-+#include <linux/cpuhotplug.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/irqchip.h>
- #include <linux/irqdomain.h>
- #include <linux/irqchip/chained_irq.h>
- #include <linux/kernel.h>
--#include <linux/platform_device.h>
--#include <linux/of_address.h>
--#include <linux/of_irq.h>
--#include <linux/of_platform.h>
- #include <linux/syscore_ops.h>
- 
- #define EIOINTC_REG_NODEMAP	0x14a0
 
 -- 
 2.39.2
