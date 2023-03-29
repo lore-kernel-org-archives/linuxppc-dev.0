@@ -4,47 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24E55C77B6C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:25:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C572C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 12:21:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmdPQ4cHPz3bjX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 18:25:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmlzJ2p3dz3fGQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 23:21:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lxjKslNH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=R3oQSXFG;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmdMb3QLKz3cML
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 18:23:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmlyK2vm5z3cLC
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 23:20:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=lxjKslNH;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=R3oQSXFG;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PmdMX277yz4xDj;
-	Wed, 29 Mar 2023 18:23:52 +1100 (AEDT)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PmlyD4s92z4x7x;
+	Wed, 29 Mar 2023 23:20:52 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1680074632;
-	bh=kbej4vwQfJJU4SOHkjGKDbZ4TpGVIfeR5bgGlWqPA98=;
-	h=From:To:Subject:Date:From;
-	b=lxjKslNHDGNzt6vKlCi6ZyO2sCp9lNoMKzSdOCY/bWSDTCdpk4mL2MF8LMMEN6w63
-	 lU01t1ERK0ILhOAHeSIetd1IEPj8wnBdEBTd1znas85gxY284jsIPRA35AZrmkTAZH
-	 aCN2RWlj4qk+ceBmWK8MkDIpPB3k83ULf9+stOfXPkoHy64ubDzlohhLO0K5VQkbMo
-	 4khrkCVf0YV/3FPSepfwB2aaokkdq3hFg0m5s6ET0rwSzR77i8wm6m0w+nTgPusMej
-	 bAI/TZFyJ/fs/ZewvhmWYbcBZSONqfobIaPZ9yCHkKC0JXekEhxh11ua4bbn6Bj3dQ
-	 jhZPhlbWna++Q==
+	s=201909; t=1680092454;
+	bh=g7pJq13gLamVMdRYT2o20Cf0Lqj5XS9R5CmmqtotjLg=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=R3oQSXFGG58OOPn/TbspbRFfN8kSyolg3daz2PcvdgDrAIwzv+wCHfaIZwdsb6QWX
+	 C3oUyTaW2HiRbh+65h7IFzWVlv4RO9aoz4RbeDa7tkeqmK8ta8/XPqK+8NamG0W84z
+	 9Pi1DTvMlf3e0s2ZiD/g81sj76eO/qdMWZqnMmaDQTcwawPpLFg1EWg/GSNCcpJAC1
+	 UQmHAEcGCHrtaU3ZgQqRJjmmw47zySMPaCfabi6v75enoNWl+MyhNR/DD3ZyBgZ6GR
+	 QLj9tunOs4OdqCd4cZrteJ6ve7PIuYIPPggW19I6VvFySnhI5EXaQjEWUpNRd35uhM
+	 5k0GiPXvPxhSQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2] powerpc/Makefile: Don't prefix archhelp commands with "@"
-Date: Wed, 29 Mar 2023 18:23:33 +1100
-Message-Id: <20230329072334.2023357-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.39.2
+To: Nathan Lynch <nathanl@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>
+Subject: Re: [PATCH 7/8] powerpc/rtas: warn on unsafe argument to
+ rtas_call_unlocked()
+In-Reply-To: <871qlf6k7m.fsf@linux.ibm.com>
+References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
+ <20230220-rtas-queue-for-6-4-v1-7-010e4416f13f@linux.ibm.com>
+ <e0f8c82707dce0300fc5a2bc5f0a3ab90a83cee0.camel@linux.ibm.com>
+ <87mt437jcu.fsf@linux.ibm.com> <871qlf6k7m.fsf@linux.ibm.com>
+Date: Wed, 29 Mar 2023 23:20:49 +1100
+Message-ID: <87zg7vbvfi.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,67 +61,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>, Scott Cheloha <cheloha@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It's not necessary to prefix every command in archhelp with "@" (to
-supress echoing the command), because that is done by the top level
-Makefile when it evaluates archhelp.
+Nathan Lynch <nathanl@linux.ibm.com> writes:
+> Nathan Lynch <nathanl@linux.ibm.com> writes:
+>>
+>> aside: does anyone know if the display_status() code is worth keeping?
+>> It looks like it is used to drive the 16-character wide physical LCD I
+>> remember seeing on P4-era and older machines. Is it a vestige of
+>> non-LPAR pseries that should be dropped, or is it perhaps useful for
+>> chrp or cell?
+>
+> Never mind, I see the display-character token and associated properties
+> on a P8 LPAR and in a current PAPR.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Makefile | 38 +++++++++++++++++++-------------------
- 1 file changed, 19 insertions(+), 19 deletions(-)
+Or a P10 LPAR even.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index dc4cbf0a5ca9..b9bfa9ac3f06 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -349,25 +349,25 @@ PHONY += ppc64_randconfig
- 		-f $(srctree)/Makefile randconfig
- 
- define archhelp
--  @echo '* zImage          - Build default images selected by kernel config'
--  @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
--  @echo '  uImage          - U-Boot native image format'
--  @echo '  cuImage.<dt>    - Backwards compatible U-Boot image for older'
--  @echo '                    versions which do not support device trees'
--  @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
--  @echo '  simpleImage.<dt> - Firmware independent image.'
--  @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
--  @echo '  install         - Install kernel using'
--  @echo '                    (your) ~/bin/$(INSTALLKERNEL) or'
--  @echo '                    (distribution) /sbin/$(INSTALLKERNEL) or'
--  @echo '                    install to $$(INSTALL_PATH) and run lilo'
--  @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
--  @echo ''
--  @echo '  Targets with <dt> embed a device tree blob inside the image'
--  @echo '  These targets support board with firmware that does not'
--  @echo '  support passing a device tree directly.  Replace <dt> with the'
--  @echo '  name of a dts file from the arch/$(ARCH)/boot/dts/ directory'
--  @echo '  (minus the .dts extension).'
-+  echo '* zImage          - Build default images selected by kernel config'
-+  echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-+  echo '  uImage          - U-Boot native image format'
-+  echo '  cuImage.<dt>    - Backwards compatible U-Boot image for older'
-+  echo '                    versions which do not support device trees'
-+  echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
-+  echo '  simpleImage.<dt> - Firmware independent image.'
-+  echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
-+  echo '  install         - Install kernel using'
-+  echo '                    (your) ~/bin/$(INSTALLKERNEL) or'
-+  echo '                    (distribution) /sbin/$(INSTALLKERNEL) or'
-+  echo '                    install to $$(INSTALL_PATH) and run lilo'
-+  echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
-+  echo ''
-+  echo '  Targets with <dt> embed a device tree blob inside the image'
-+  echo '  These targets support board with firmware that does not'
-+  echo '  support passing a device tree directly.  Replace <dt> with the'
-+  echo '  name of a dts file from the arch/$(ARCH)/boot/dts/ directory'
-+  echo '  (minus the .dts extension).'
- endef
- 
- PHONY += install
--- 
-2.39.2
+The characters written using it are shown on the HMC, somewhere on the
+partition info page.
 
+cheers
