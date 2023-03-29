@@ -4,80 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51545C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 05:00:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF70BC74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 07:24:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmZB76xmnz3ffK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:00:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmdNW0VMvz3f8M
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 18:24:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=a+A3vmtN;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Lq5QhhYs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rivosinc.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=alexghiti@rivosinc.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=rivosinc-com.20210112.gappssmtp.com header.i=@rivosinc-com.20210112.gappssmtp.com header.a=rsa-sha256 header.s=20210112 header.b=a+A3vmtN;
-	dkim-atps=neutral
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmZ9C3ssrz2xKS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 15:59:43 +1100 (AEDT)
-Received: by mail-wm1-x32f.google.com with SMTP id l15-20020a05600c4f0f00b003ef6d684102so5338005wmq.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 21:59:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20210112.gappssmtp.com; s=20210112; t=1680065980;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=l2nyBWkEl893cb8p3Xcv9ddibZeqm3dx5h/n4mJzM0I=;
-        b=a+A3vmtN33rV7G2K+kBT5+09RNfw/x9RSy+q2X3PBbr29xgkn5AQt12Fbediy1rrcC
-         iHU5gwK6JXKuap5Q1K7ZWEHCpYah/bxgqzwBr1yWkZ7mh7r58y1ARcbbZcV8tzEpyFZf
-         VDgXJr/tDJG2F0g9ahkj0NkZFJvy+ATuc/EtdJZvDtU/skKpBzTkNMEHgFcM7dZ0S8Er
-         0eHpqVt7Wim1e1rCAGgxA04h6ZrRWhIYTlP6NK+v9auLZyoJkLfTpVcTWrSdLfMq4V8r
-         hjcdeqmxZeOMiEHhoNumsB/hafrv2w9DmhB2P7mDfgctEKEXOeNUvMmKfuAJRA7CSlDX
-         2FeA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680065980;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=l2nyBWkEl893cb8p3Xcv9ddibZeqm3dx5h/n4mJzM0I=;
-        b=pD1KxzxD5s6KZiMcCkPTMGZm6CjdZGV7T9X6YmmWQGG+Fg10nZlQqDa0AbHQkpBTnf
-         KtkqkZjmAsumB5fy2alNlAssmk9Cp/9LPWp578hn5oAVw6NR0j/yZ4bHS9uWb5vxkiB0
-         NURB2iqBLyfZpxvWiWkpd9BvwLWY10y3L3zf7RVMs0lse5esJE1XxjjkDlQB003vYF3D
-         oshBmlRIf1ShSWBFfWNOQlK9gZvKaB6wHRRI/Ks038YMdEc1Ty8N8OCg70YjXwcopR3l
-         bZcfW6U9PlNWukAuQ1N12nDh5oKyDbFE3RMDVeEHrxNnUlTS5BgFmSZVU5IotgrVfij7
-         iamA==
-X-Gm-Message-State: AO0yUKWSC9LFfOPiGh4+QtFugE8wZTi0faTC12PK6Ytph3N5hMWL0rpE
-	a3F2lCw7jQINL22Et4qwvdAvGw==
-X-Google-Smtp-Source: AK7set/hrrFzd6yhsYIengKEXesiDvT2OHC1fUfzzUtI8h99/a73zFv/Utk9ctYdbI75FCHmhSsncw==
-X-Received: by 2002:a05:600c:209:b0:3ee:282d:1016 with SMTP id 9-20020a05600c020900b003ee282d1016mr13218010wmi.25.1680065980323;
-        Tue, 28 Mar 2023 21:59:40 -0700 (PDT)
-Received: from alex-rivos.home (amontpellier-656-1-456-62.w92-145.abo.wanadoo.fr. [92.145.124.62])
-        by smtp.gmail.com with ESMTPSA id q18-20020a7bce92000000b003ef71d541cbsm842566wmj.1.2023.03.28.21.59.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 28 Mar 2023 21:59:39 -0700 (PDT)
-From: Alexandre Ghiti <alexghiti@rivosinc.com>
-To: Nick Desaulniers <ndesaulniers@google.com>,
-	=?UTF-8?q?Bj=C3=B6rn=20T=C3=B6pel?= <bjorn@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-kbuild@vger.kernel.org
-Subject: [PATCH v9 6/6] riscv: Use --emit-relocs in order to move .rela.dyn in init
-Date: Wed, 29 Mar 2023 06:53:29 +0200
-Message-Id: <20230329045329.64565-7-alexghiti@rivosinc.com>
-X-Mailer: git-send-email 2.37.2
-In-Reply-To: <20230329045329.64565-1-alexghiti@rivosinc.com>
-References: <20230329045329.64565-1-alexghiti@rivosinc.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmdMZ66f9z3cML
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 18:23:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Lq5QhhYs;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PmdMZ55VWz4xDq;
+	Wed, 29 Mar 2023 18:23:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1680074634;
+	bh=9Nt7fztvECqyTexwQ+AMG8AVeisSA2rv6ZuT58fiykA=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=Lq5QhhYsmRfSte4eg8Gf/5iNAuMwG36qeKzSA0eYnW46jdi5bu+kKJH7xOF5uXovw
+	 3eimplNJw9ZoNUJlZfoouQh6x6lh9iRbJGf74svOanLRBgC3fiS8NFT5TWan7znV0A
+	 iWUQweoy4WS22HyvdcZUeLmRMXYdTQcpox17jhjNKXYYZaTykM+stk+jLxAJrav5FU
+	 +DZl9NqrW9dlRI8uAxW+IaU1sTIlZ/7CTNKpX0vT+kHbI/+6m6d3JrisTvTcSQjBdW
+	 /dFD7jnf85CRalxSeR9WZpNc8yPskqpXJilLvB7yYxZZlre34OGQSTo1RBuWIIr8sd
+	 M3BDNUPzCEWDA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 2/2] powerpc/Makefile: Add generated defconfigs to help output
+Date: Wed, 29 Mar 2023 18:23:34 +1100
+Message-Id: <20230329072334.2023357-2-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.39.2
+In-Reply-To: <20230329072334.2023357-1-mpe@ellerman.id.au>
+References: <20230329072334.2023357-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -90,87 +58,157 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alexghiti@rivosinc.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To circumvent an issue where placing the relocations inside the init
-sections produces empty relocations, use --emit-relocs. But to avoid
-carrying those relocations in vmlinux, use an intermediate
-vmlinux.relocs file which is a copy of vmlinux *before* stripping its
-relocations.
+Currently none of the generated defconfigs appear in the help output,
+because the help text discovers defconfigs by looking for actual files
+named "*_defconfig".
 
-Suggested-by: Björn Töpel <bjorn@kernel.org>
-Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
-Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+Collect the generated defconfig names into a variable and then print
+those out in archhelp.
+
+Output looks like eg:
+
+  pseries_le_defconfig        - Build for pseries_le
+  ppc64le_defconfig           - Build for ppc64le
+  ppc64le_guest_defconfig     - Build for ppc64le_guest
+  ...
+  ppc64_randconfig            - Build for ppc64_randconfig
+
+  adder875_defconfig          - Build for adder875
+  amigaone_defconfig          - Build for amigaone
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/riscv/Makefile          |  2 +-
- arch/riscv/Makefile.postlink | 13 +++++++++++++
- arch/riscv/boot/Makefile     |  7 +++++++
- 3 files changed, 21 insertions(+), 1 deletion(-)
+ arch/powerpc/Makefile | 41 +++++++++++++++++++++++------------------
+ 1 file changed, 23 insertions(+), 18 deletions(-)
 
-diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-index 860b09e409c7..7dc6904a6836 100644
---- a/arch/riscv/Makefile
-+++ b/arch/riscv/Makefile
-@@ -8,7 +8,7 @@
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b9bfa9ac3f06..0a99aa425326 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -264,90 +264,92 @@ define merge_into_defconfig
+ 	+$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
+ endef
  
- OBJCOPYFLAGS    := -O binary
- ifeq ($(CONFIG_RELOCATABLE),y)
--	LDFLAGS_vmlinux += -shared -Bsymbolic -z notext -z norelro
-+	LDFLAGS_vmlinux += -shared -Bsymbolic -z notext -z norelro --emit-relocs
- 	KBUILD_CFLAGS += -fPIE
- endif
- ifeq ($(CONFIG_DYNAMIC_FTRACE),y)
-diff --git a/arch/riscv/Makefile.postlink b/arch/riscv/Makefile.postlink
-index d5de8d520d3e..a46fc578b30b 100644
---- a/arch/riscv/Makefile.postlink
-+++ b/arch/riscv/Makefile.postlink
-@@ -15,12 +15,25 @@ quiet_cmd_relocs_check = CHKREL  $@
- cmd_relocs_check = 							\
- 	$(CONFIG_SHELL) $(srctree)/arch/riscv/tools/relocs_check.sh "$(OBJDUMP)" "$(NM)" "$@"
+-PHONY += pseries_le_defconfig
++generated_configs += pseries_le_defconfig
+ pseries_le_defconfig:
+ 	$(call merge_into_defconfig,pseries_defconfig,le)
  
-+ifdef CONFIG_RELOCATABLE
-+quiet_cmd_cp_vmlinux_relocs = CPREL   vmlinux.relocs
-+cmd_cp_vmlinux_relocs = cp vmlinux vmlinux.relocs
+-PHONY += ppc64le_defconfig
++generated_configs += ppc64le_defconfig
+ ppc64le_defconfig:
+ 	$(call merge_into_defconfig,ppc64_defconfig,le)
+ 
+-PHONY += ppc64le_guest_defconfig
++generated_configs += ppc64le_guest_defconfig
+ ppc64le_guest_defconfig:
+ 	$(call merge_into_defconfig,ppc64_defconfig,le guest)
+ 
+-PHONY += ppc64_guest_defconfig
++generated_configs += ppc64_guest_defconfig
+ ppc64_guest_defconfig:
+ 	$(call merge_into_defconfig,ppc64_defconfig,be guest)
+ 
+-PHONY += powernv_be_defconfig
++generated_configs += powernv_be_defconfig
+ powernv_be_defconfig:
+ 	$(call merge_into_defconfig,powernv_defconfig,be)
+ 
+-PHONY += mpc85xx_defconfig
++generated_configs += mpc85xx_defconfig
+ mpc85xx_defconfig:
+ 	$(call merge_into_defconfig,mpc85xx_base.config,\
+ 		85xx-32bit 85xx-hw fsl-emb-nonhw)
+ 
+-PHONY += mpc85xx_smp_defconfig
++generated_configs += mpc85xx_smp_defconfig
+ mpc85xx_smp_defconfig:
+ 	$(call merge_into_defconfig,mpc85xx_base.config,\
+ 		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
+ 
+-PHONY += corenet32_smp_defconfig
++generated_configs += corenet32_smp_defconfig
+ corenet32_smp_defconfig:
+ 	$(call merge_into_defconfig,corenet_base.config,\
+ 		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw dpaa)
+ 
+-PHONY += corenet64_smp_defconfig
++generated_configs += corenet64_smp_defconfig
+ corenet64_smp_defconfig:
+ 	$(call merge_into_defconfig,corenet_base.config,\
+ 		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw dpaa)
+ 
+-PHONY += mpc86xx_defconfig
++generated_configs += mpc86xx_defconfig
+ mpc86xx_defconfig:
+ 	$(call merge_into_defconfig,mpc86xx_base.config,\
+ 		86xx-hw fsl-emb-nonhw)
+ 
+-PHONY += mpc86xx_smp_defconfig
++generated_configs += mpc86xx_smp_defconfig
+ mpc86xx_smp_defconfig:
+ 	$(call merge_into_defconfig,mpc86xx_base.config,\
+ 		86xx-smp 86xx-hw fsl-emb-nonhw)
+ 
+-PHONY += ppc32_allmodconfig
++generated_configs += ppc32_allmodconfig
+ ppc32_allmodconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+ 		-f $(srctree)/Makefile allmodconfig
+ 
+-PHONY += ppc_defconfig
++generated_configs += ppc_defconfig
+ ppc_defconfig:
+ 	$(call merge_into_defconfig,book3s_32.config,)
+ 
+-PHONY += ppc64le_allmodconfig
++generated_configs += ppc64le_allmodconfig
+ ppc64le_allmodconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/le.config \
+ 		-f $(srctree)/Makefile allmodconfig
+ 
+-PHONY += ppc64le_allnoconfig
++generated_configs += ppc64le_allnoconfig
+ ppc64le_allnoconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/ppc64le.config \
+ 		-f $(srctree)/Makefile allnoconfig
+ 
+-PHONY += ppc64_book3e_allmodconfig
++generated_configs += ppc64_book3e_allmodconfig
+ ppc64_book3e_allmodconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/85xx-64bit.config \
+ 		-f $(srctree)/Makefile allmodconfig
+ 
+-PHONY += ppc32_randconfig
++generated_configs += ppc32_randconfig
+ ppc32_randconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/32-bit.config \
+ 		-f $(srctree)/Makefile randconfig
+ 
+-PHONY += ppc64_randconfig
++generated_configs += ppc64_randconfig
+ ppc64_randconfig:
+ 	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/64-bit.config \
+ 		-f $(srctree)/Makefile randconfig
+ 
++PHONY := $(generated_configs)
 +
-+quiet_cmd_relocs_strip = STRIPREL $@
-+cmd_relocs_strip = $(OBJCOPY)   --remove-section='.rel.*'       \
-+                                --remove-section='.rel__*'      \
-+                                --remove-section='.rela.*'      \
-+                                --remove-section='.rela__*' $@
-+endif
-+
- # `@true` prevents complaint when there is nothing to be done
+ define archhelp
+   echo '* zImage          - Build default images selected by kernel config'
+   echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+@@ -368,6 +370,9 @@ define archhelp
+   echo '  support passing a device tree directly.  Replace <dt> with the'
+   echo '  name of a dts file from the arch/$(ARCH)/boot/dts/ directory'
+   echo '  (minus the .dts extension).'
++  echo 
++  $(foreach cfg,$(generated_configs),
++    printf "  %-27s - Build for %s\\n" $(cfg) $(subst _defconfig,,$(cfg));)
+ endef
  
- vmlinux: FORCE
- 	@true
- ifdef CONFIG_RELOCATABLE
- 	$(call if_changed,relocs_check)
-+	$(call if_changed,cp_vmlinux_relocs)
-+	$(call if_changed,relocs_strip)
- endif
- 
- %.ko: FORCE
-diff --git a/arch/riscv/boot/Makefile b/arch/riscv/boot/Makefile
-index c72de7232abb..22b13947bd13 100644
---- a/arch/riscv/boot/Makefile
-+++ b/arch/riscv/boot/Makefile
-@@ -33,7 +33,14 @@ $(obj)/xipImage: vmlinux FORCE
- 
- endif
- 
-+ifdef CONFIG_RELOCATABLE
-+vmlinux.relocs: vmlinux
-+	@ (! [ -f vmlinux.relocs ] && echo "vmlinux.relocs can't be found, please remove vmlinux and try again") || true
-+
-+$(obj)/Image: vmlinux.relocs FORCE
-+else
- $(obj)/Image: vmlinux FORCE
-+endif
- 	$(call if_changed,objcopy)
- 
- $(obj)/Image.gz: $(obj)/Image FORCE
+ PHONY += install
 -- 
-2.37.2
+2.39.2
 
