@@ -4,31 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4713DC6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Mar 2023 22:26:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E01D0C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:02:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PlnTL530Dz3fXH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Mar 2023 09:25:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=lst.de (client-ip=213.95.11.211; helo=verein.lst.de; envelope-from=hch@lst.de; receiver=<UNKNOWN>)
-Received: from verein.lst.de (verein.lst.de [213.95.11.211])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrtB2z8Wz3gqs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:02:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.208.48; helo=mail-ed1-f48.google.com; envelope-from=wens213@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-ed1-f48.google.com (mail-ed1-f48.google.com [209.85.208.48])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PlnSh3j7cz3cfH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Mar 2023 09:25:23 +1100 (AEDT)
-Received: by verein.lst.de (Postfix, from userid 2407)
-	id 31BF267373; Tue, 28 Mar 2023 00:25:15 +0200 (CEST)
-Date: Tue, 28 Mar 2023 00:25:15 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@kernel.org>
-Subject: Re: [PATCH 21/21] dma-mapping: replace custom code with generic
- implementation
-Message-ID: <20230327222514.GA17904@lst.de>
-References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-22-arnd@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrlt4JLMz3g51
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:57:14 +1100 (AEDT)
+Received: by mail-ed1-f48.google.com with SMTP id t10so65134417edd.12
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:57:14 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680105431;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :reply-to:in-reply-to:references:mime-version:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=Mv45vqNNvk7gfjj9ywv5t87xL9EGo+L1vyvtzDS68LU=;
+        b=QBj93ltn7axau7Z9XQ6Bcn2XAqmqFx37WAiihhbW2nUShjJWGXvEKEc0+RDdlcHgAi
+         XgTq+mQsBXCIn14jykSuLkPDDKUVh5BOzcI114XiyUNVws5B+vDejTatj2ajw8wmllCH
+         tJtLEXFkbiObkvS1KiiVhsqsL5/e8Pga32dlTbtliqn2sbk8ND2eEXNAMNE56VPN0JkP
+         d5kNkHYP4evD74hALXQlZTB7Bj5g2nkXJ2szfI0b51DNPpULVBqkp2uivuRPtpooJpar
+         SRnjeqKBqPbiFtRzRXQniBB7wA1pFQOeNyqldUpbwzB0AJ7qEqXg5+UUkscHfSmdWiVa
+         Nw0A==
+X-Gm-Message-State: AAQBX9dM5vI3LNGJfO7X2aHEa6CjES5iw3ZFWQpAGny3/fgVgRPOQdLj
+	X1BgHuYi8gAS2NzZE6oUVk8+kMnVd4GKmc2b
+X-Google-Smtp-Source: AKy350ZnFE6GZG38IXatMCC/ciPBhi//96/TrJG/hazihXeeRlbdHtzo3tZ+RvLwiTYWZ2RdtQaCyA==
+X-Received: by 2002:a17:906:380a:b0:93b:943f:6261 with SMTP id v10-20020a170906380a00b0093b943f6261mr19946445ejc.74.1680105430786;
+        Wed, 29 Mar 2023 08:57:10 -0700 (PDT)
+Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com. [209.85.221.54])
+        by smtp.gmail.com with ESMTPSA id g13-20020a170906198d00b008c16025b318sm16628141ejd.155.2023.03.29.08.57.10
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 29 Mar 2023 08:57:10 -0700 (PDT)
+Received: by mail-wr1-f54.google.com with SMTP id l12so16250298wrm.10
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:57:10 -0700 (PDT)
+X-Received: by 2002:a5d:591c:0:b0:2ca:4533:5d6a with SMTP id
+ v28-20020a5d591c000000b002ca45335d6amr4154237wrd.7.1680105410028; Wed, 29 Mar
+ 2023 08:56:50 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230327121317.4081816-22-arnd@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org> <20230329-dt-cpu-header-cleanups-v1-6-581e2605fe47@kernel.org>
+In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-6-581e2605fe47@kernel.org>
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Wed, 29 Mar 2023 23:56:38 +0800
+X-Gmail-Original-Message-ID: <CAGb2v64tNZa_LCUpHBbBUdpftB_Dms=oHcb7ZAD42qL-ov73hw@mail.gmail.com>
+Message-ID: <CAGb2v64tNZa_LCUpHBbBUdpftB_Dms=oHcb7ZAD42qL-ov73hw@mail.gmail.com>
+Subject: Re: [PATCH 06/19] ARM: sunxi: Drop of_device.h include
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -40,55 +67,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstr
- ong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
+Reply-To: wens@csie.org
+Cc: Nishanth Menon <nm@ti.com>, Huacai Chen <chenhuacai@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Yangtao Li <tiny.windzz@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Amit Kucheria <amitk@kernel.org>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-mips@vger.kernel.org, linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, Viresh Kumar <vireshk@kernel.org>, Bjorn Andersson <andersson@kernel.org>, Marc Zyngier <maz@kernel.org>, Samuel Holland <samuel@sholland.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Andy Gross <agross@kernel.org>, Anup Patel <anup@brainfault.org>, Zhang Rui <rui.zhang@intel.com>, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, Albert Ou <aou@eecs.berkeley.ed
+ u>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Paul Walmsley <paul.walmsley@sifive.com>, Matthias Brugger <matthias.bgg@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Stephen Boyd <sboyd@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, linux-kernel@vger.kernel.org, Konrad Dybcio <konrad.dybcio@linaro.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sudeep Holla <sudeep.holla@arm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Lukasz Luba <lukasz.luba@arm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> +static inline void arch_dma_cache_wback(phys_addr_t paddr, size_t size)
->  {
-> +	dma_cache_wback(paddr, size);
-> +}
->  
-> +static inline void arch_dma_cache_inv(phys_addr_t paddr, size_t size)
-> +{
-> +	dma_cache_inv(paddr, size);
->  }
+On Wed, Mar 29, 2023 at 11:53=E2=80=AFPM Rob Herring <robh@kernel.org> wrot=
+e:
+>
+> Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
+> implicitly including other includes, and is no longer needed. Just drop
+> including of_device.h as of.h is already included.
+>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> Please ack and I will take the series via the DT tree.
 
-> +static inline void arch_dma_cache_wback_inv(phys_addr_t paddr, size_t size)
->  {
-> +	dma_cache_wback_inv(paddr, size);
-> +}
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 
-There are the only calls for the three functions for each of the
-involved functions.  So I'd rather rename the low-level symbols
-(and drop the pointless exports for two of them) rather than adding
-these wrapppers.
+I doubt this file would ever see any more changes.
 
-The same is probably true for many other architectures.
-
-> +static inline bool arch_sync_dma_clean_before_fromdevice(void)
-> +{
-> +	return false;
-> +}
->  
-> +static inline bool arch_sync_dma_cpu_needs_post_dma_flush(void)
-> +{
-> +	return true;
->  }
-
-Is there a way to cut down on this boilerplate code by just having
-sane default, and Kconfig options to override them if they are not
-runtime decisions?
-
-> +#include <linux/dma-sync.h>
-
-I can't really say I like the #include version here despite your
-rationale in the commit log.  I can probably live with it if you
-think it is absolutely worth it, but I'm really not in favor of it.
-
-> +config ARCH_DMA_MARK_DCACHE_CLEAN
-> +	def_bool y
-
-What do we need this symbol for?  Unless I'm missing something it is
-always enable for arm32, and only used in arm32 code.
+> ---
+>  arch/arm/mach-sunxi/mc_smp.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/arm/mach-sunxi/mc_smp.c b/arch/arm/mach-sunxi/mc_smp.c
+> index 26cbce135338..cb63921232a6 100644
+> --- a/arch/arm/mach-sunxi/mc_smp.c
+> +++ b/arch/arm/mach-sunxi/mc_smp.c
+> @@ -19,7 +19,6 @@
+>  #include <linux/irqchip/arm-gic.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> -#include <linux/of_device.h>
+>  #include <linux/smp.h>
+>
+>  #include <asm/cacheflush.h>
+>
+> --
+> 2.39.2
+>
