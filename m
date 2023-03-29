@@ -4,50 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91526C761AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFFEBC74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:56:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrkZ1b46z3fdl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:56:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.49; helo=mail-oa1-f49.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f49.google.com (mail-oa1-f49.google.com [209.85.160.49])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrl41gxYz3fyx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:56:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.181; helo=mail-oi1-f181.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f181.google.com (mail-oi1-f181.google.com [209.85.167.181])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrg34JHsz3fBK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:03 +1100 (AEDT)
-Received: by mail-oa1-f49.google.com with SMTP id 586e51a60fabf-17ac5ee3f9cso16642755fac.12
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:03 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrg5574Sz3f65
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:05 +1100 (AEDT)
+Received: by mail-oi1-f181.google.com with SMTP id y184so11916416oiy.8
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105180;
+        d=1e100.net; s=20210112; t=1680105183;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=tGkcT5R0a8JeH9pr+tvR6Dp+SnQFVzxwMvRKP+oraeM=;
-        b=JlBDwE/yS8dKNG610/XV9BQtCa6fqxhh+HDQPWHQdYmhqKAJbF7Bkh+aMsaeF/6O35
-         knv0VoV96mp4iBDGkVmN5eA1UbwoxBzKbjBgua+FO33X6Zjyxkei7bnbSgXQ+09Nq/If
-         3pxq3umnxPynIQjQaL9BsyfDJhgRIecTukEqFkayY3eBIoPi4dM1owJ+ZS6VnhQWxrs1
-         +4CL9DoErb89JfmV0nIGDgcxWOo0/nNQhyy7ouSZu6r6Dhm5OC/yK3jx+psVfCCJrkOS
-         VhCb8eSblVmI/xLo9HRFnqX1C/wIsvXJ2didh0L4jVFRIVf7AftrstCAaOGphoWmOiZL
-         P9/A==
-X-Gm-Message-State: AAQBX9c3Oz/HmS0o3S33vBSQSmxVxWKee1iQLQ/C+MYTPTFkI4QtMln2
-	lyjJTmjKPntaXqhJzSO0RA==
-X-Google-Smtp-Source: AKy350Zzh18IDSS9PRm/nm4uzfWROBk4i8K8e/GnmjZJixonIc4wyA8Ejs1S5hYlKdIJ6vpTCTaGZw==
-X-Received: by 2002:a05:6870:1fcd:b0:172:5de5:785 with SMTP id gp13-20020a0568701fcd00b001725de50785mr13981327oac.6.1680105180656;
-        Wed, 29 Mar 2023 08:53:00 -0700 (PDT)
+        bh=ZxkTC00mmtvkJ/ocm+Trr4LHDuiGbRgef51Eh65eFno=;
+        b=hXKrZ6AwsezNUP13Ncc/NdUBiUmbJTDkZAn/NUvpHBXtaCBiKjHCC+eS/BF9gtK72z
+         xklnzqiJz6DeNqFSLAqKccjkiijiPe6E00munGsfg19/Mhm5B8/1vf3rrnWBcQwJ1l+9
+         D6Xw9a0uXLXd3bd4BxdjPoR6D2jLtxj/n9O+uPo4SZpVlXnG63kM6yOUzKjmKfQWT2ml
+         rTReWZSgjjXhbXqLcSmsj2CpEH0e7pKpZo8qzIop8sdnhS955kSUtE5MR1gyvUurxDd5
+         Wfbouqe6KPPUEdC4cgk9luiMIkJ5YvAL2d0MNSewMJJ4KWSPwVgXFRWnoMHVIe7cO3Kf
+         2pbg==
+X-Gm-Message-State: AO0yUKWCC6W1jkIrRrFbSbZY2hBgTmqQdCVxncQ+2spJaxPfnkx2dV/h
+	7+3c8xhu7IpSU4PDT6qjvw==
+X-Google-Smtp-Source: AK7set/XHs0DeHUv3FR5klH7bLctWLDiPHbV4Bgynq9MiBxHYJ127vn5iRHwUkAWb6rjGdajk82w8Q==
+X-Received: by 2002:a05:6808:1445:b0:387:715e:56b8 with SMTP id x5-20020a056808144500b00387715e56b8mr10764982oiv.56.1680105182676;
+        Wed, 29 Mar 2023 08:53:02 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id b4-20020a056871030400b001762ce27f9asm11853490oag.23.2023.03.29.08.52.58
+        by smtp.gmail.com with ESMTPSA id p184-20020acad8c1000000b003896e31867esm228723oig.49.2023.03.29.08.53.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:00 -0700 (PDT)
-Received: (nullmailer pid 3198091 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:02 -0700 (PDT)
+Received: (nullmailer pid 3198083 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:12 -0500
-Subject: [PATCH 15/19] cpufreq: sun50i: Add explicit include for cpu.h
+Date: Wed, 29 Mar 2023 10:52:08 -0500
+Subject: [PATCH 11/19] clocksource: ingenic: Add explicit include for
+ cpuhotplug.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-15-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-11-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -86,36 +87,41 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Removing the include of cpu.h from of_device.h causes an error:
+Removing include of cpu.h from of_device.h (included by of_platform.h)
+causes an error in ingenic-timer:
 
-drivers/cpufreq/sun50i-cpufreq-nvmem.c:42:19: error: implicit declaration of function ‘get_cpu_device’; did you mean ‘get_device’? [-Werror=implicit-function-declaration]
+drivers/clocksource/ingenic-timer.c: In function ‘ingenic_tcu_init’:
+drivers/clocksource/ingenic-timer.c:338:15: error: implicit declaration of function ‘cpuhp_setup_state’
 
-As of_device.h is not otherwise needed, it can be replaced with of.h
-(also implicitly included).
+The of_platform.h header is not necessary either, so it and of_address.h
+can be dropped.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/clocksource/ingenic-timer.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-index 1583a370da39..4321d7bbe769 100644
---- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-@@ -10,9 +10,10 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/cpu.h>
- #include <linux/module.h>
- #include <linux/nvmem-consumer.h>
--#include <linux/of_device.h>
-+#include <linux/of.h>
+diff --git a/drivers/clocksource/ingenic-timer.c b/drivers/clocksource/ingenic-timer.c
+index 24ed0f1f089b..089ce64b1c3f 100644
+--- a/drivers/clocksource/ingenic-timer.c
++++ b/drivers/clocksource/ingenic-timer.c
+@@ -9,13 +9,12 @@
+ #include <linux/clk.h>
+ #include <linux/clockchips.h>
+ #include <linux/clocksource.h>
++#include <linux/cpuhotplug.h>
+ #include <linux/interrupt.h>
+ #include <linux/mfd/ingenic-tcu.h>
+ #include <linux/mfd/syscon.h>
+ #include <linux/of.h>
+-#include <linux/of_address.h>
+ #include <linux/of_irq.h>
+-#include <linux/of_platform.h>
+ #include <linux/overflow.h>
  #include <linux/platform_device.h>
- #include <linux/pm_opp.h>
- #include <linux/slab.h>
+ #include <linux/regmap.h>
 
 -- 
 2.39.2
