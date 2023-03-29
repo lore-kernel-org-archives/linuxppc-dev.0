@@ -4,51 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EF51BC74A5B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:00:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78BE9C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 16:01:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrqv3TlCz3gXy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:00:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.49; helo=mail-ot1-f49.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com [209.85.210.49])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrrR1D6qz3fvF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:01:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.47; helo=mail-oo1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oo1-f47.google.com (mail-oo1-f47.google.com [209.85.161.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgT4B4Gz3fFY
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgT6J3Bz3fVX
 	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:25 +1100 (AEDT)
-Received: by mail-ot1-f49.google.com with SMTP id 61-20020a9d02c3000000b0069fe8de3139so8451455otl.1
+Received: by mail-oo1-f47.google.com with SMTP id m6-20020a4ae846000000b0053b9059edd5so2497343oom.3
         for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:25 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105203;
+        d=1e100.net; s=20210112; t=1680105205;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=GcRNyMomlVIyDJBO4v13lmumWoZCHsVn17zoo+wPdkk=;
-        b=Eim/y7hWtOSaUWHC46Xerebnv00bQ329BJ9HvRyqfos1qC3z1UlI/AY5lNwvtJ3R6Z
-         2X0CU1wYRPC6Bw1rfVLZhQhqpAPveB569Z1b+tCoTEm6oUJM7RpUuOcJEuugr7zB5XS6
-         zQYK9SoHC3numbvIXXJvdysePZaJ4qVt+TxyXrXnAgPPwJPaRIoeHlGlVmK+NeLfQPYo
-         dPWQAuXGcxJBMeDNPO9SKjHYfhpOpshsx2AI/3MzyBlXRsND5rV1yvWyNF3m7QnpxX//
-         J386FXLDkSsIUS1l7eIzNXpDsJuUMKNByuIKKJrp1yKTA7AjqyzsjJZkwFQ5cLyLGD32
-         cDJw==
-X-Gm-Message-State: AO0yUKXW+v1WRg+kKDtL7oMlQtUfzBVBVVptL6HDToU1Buos5fSm+pgB
-	4LEXRx7XDaqtW+JUUHFMRA==
-X-Google-Smtp-Source: AK7set+G4RUI7e7LVlBDXGQ8p8x17CahM2R0t8c+RybdcRc83FcjeXtVKZHsxX3oO+Yqeus+IJNu+w==
-X-Received: by 2002:a05:6830:124e:b0:68e:da51:2cb2 with SMTP id s14-20020a056830124e00b0068eda512cb2mr10233310otp.37.1680105202916;
-        Wed, 29 Mar 2023 08:53:22 -0700 (PDT)
+        bh=GxrilhvfwDlef/A2YTUefG5k1p916jMGPiiHrDKkFR0=;
+        b=Q2gekZnLdNdt7TcnRH4/xD0T1A8gdffYGtnzvM6NaDrA1EGIF3YvER84dTadrzkPHL
+         Ax1kVUE49FbCCbnf9/A2FhRq555Ow4l/ouXKkohg+VI0j7e4iVKwEBJFHf5XHNFFWps1
+         ZtGm9JkZjwRZE9QCyMw7JOC5sXWHGJfzHTlQzanASRUI3SqYA9cn0uPUPQ2U2xoGZlpQ
+         zCXWgChJJuG+mv87u5AONSWXt3r86Drb93FGJiNl6ER5nKgcGMpweRN+8TPITI/onq7B
+         bSx1j/0rxvRRjr0fZSkD2CbdVGlr8gUOUItt0HQw9Vcuhgr4wM19QFUApG6JtZy2jHNT
+         ypzg==
+X-Gm-Message-State: AO0yUKV/Dd4TSTQdR8Nm639nbVLeegEAZS+dQt3lVrO8EPdi1zZaI7cc
+	XD2aqXiNDbdshTN79N4zMw==
+X-Google-Smtp-Source: AK7set/IvKP58b96RyfRxVRB8Yjm2uXbhHwCU35QLNRLqkqctfQoMFiFz1/Ijy3GHwDVb/O3xlHYvQ==
+X-Received: by 2002:a4a:52d4:0:b0:53b:8b5:48d0 with SMTP id d203-20020a4a52d4000000b0053b08b548d0mr9782179oob.1.1680105205203;
+        Wed, 29 Mar 2023 08:53:25 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y26-20020a056830209a00b006a06e7972ebsm6242943otq.38.2023.03.29.08.53.21
+        by smtp.gmail.com with ESMTPSA id 4-20020a4a1704000000b00524faf3d2d7sm13940444ooe.41.2023.03.29.08.53.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:22 -0700 (PDT)
-Received: (nullmailer pid 3198087 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:24 -0700 (PDT)
+Received: (nullmailer pid 3198097 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:10 -0500
-Subject: [PATCH 13/19] soc: mediatek: mtk-svs: Add explicit include for
- cpu.h
+Date: Wed, 29 Mar 2023 10:52:15 -0500
+Subject: [PATCH 18/19] OPP: Adjust includes to remove of_device.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-13-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-18-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -87,32 +86,31 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Removing the include of cpu.h from of_device.h (included by
-of_platform.h) causes an error:
-
-drivers/soc/mediatek/mtk-svs.c:2134:41: error: implicit declaration of function 'get_cpu_device'; did you mean 'get_swap_device'? [-Werror=implicit-function-declaration]
-
-of_platform.h is still needed for of_find_device_by_node().
+Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
+implicitly including other includes, and is no longer needed. Adjust the
+include files with what was implicitly included by of_device.h (cpu.h and
+of.h) and drop including of_device.h.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- drivers/soc/mediatek/mtk-svs.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/opp/of.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/soc/mediatek/mtk-svs.c b/drivers/soc/mediatek/mtk-svs.c
-index f26eb2f637d5..1b7579a5bec6 100644
---- a/drivers/soc/mediatek/mtk-svs.c
-+++ b/drivers/soc/mediatek/mtk-svs.c
-@@ -7,6 +7,7 @@
- #include <linux/bits.h>
- #include <linux/clk.h>
- #include <linux/completion.h>
-+#include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/debugfs.h>
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index e55c6095adf0..63b126c6215e 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -13,7 +13,7 @@
+ #include <linux/cpu.h>
+ #include <linux/errno.h>
  #include <linux/device.h>
+-#include <linux/of_device.h>
++#include <linux/of.h>
+ #include <linux/pm_domain.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
 
 -- 
 2.39.2
