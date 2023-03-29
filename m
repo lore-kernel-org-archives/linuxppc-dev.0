@@ -4,53 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 552AAC77B61
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:53:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3CDEC7EE24
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:53:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrgP66qGz3fLT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:53:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.43; helo=mail-oa1-f43.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f43.google.com (mail-oa1-f43.google.com [209.85.160.43])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrgw0tj2z3fB4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:53:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.170; helo=mail-oi1-f170.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oi1-f170.google.com (mail-oi1-f170.google.com [209.85.167.170])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrfq1NXfz3cLF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:50 +1100 (AEDT)
-Received: by mail-oa1-f43.google.com with SMTP id 586e51a60fabf-17997ccf711so16696391fac.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pmrfr4X9vz3cLF
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:52:52 +1100 (AEDT)
+Received: by mail-oi1-f170.google.com with SMTP id b19so11913331oib.7
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:52:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105167;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=myNahkzgyzJXsmSpdQrVTovV/3CgUWg7sSEu7RQwjG0=;
-        b=vckGBVePqs2Wska1Tc+6ZjmjbH8F/YCWotKtgMEa65Y6DGUNJkFwbKfSaiH63cWj6g
-         OEf0xmWFJ3I396d6iu3UFEHjnNhH0bMN5hlNbl0S3+RapI+uvKXcWoltx9i1o056PGyn
-         u+sp+DWk+2R1COzdUtfW7lBpVIIfDgVpkmN3Ng2Gu31e5mCUcX+QFNqMRv2B6T8FQ8l/
-         PyWWTEkgRnrylOJtdrH1VYHbJqDOwsL+R0Vi7u2+rgzGyfrX3OnjfdiiRYFQaVI/M2f5
-         8xr5o4KEEdlvBTffeUOaR8b2d2DrvevmeE7vMKNt0WkREJXMbQLuX7315602rxachEj/
-         OUpQ==
-X-Gm-Message-State: AAQBX9c0MW37t5/MwcI4mjJCH6OVqpgLti6KDFVwPXyrKJOPzezaislG
-	CtgYnZISlwhOAnRTtidJRg==
-X-Google-Smtp-Source: AK7set9u04Mn8XGtckt02xXgvmDdYPAodmqaRmO7QbQsn4pMne9ZnJvBTvxw9bjwWx1vNoyCfeyKQg==
-X-Received: by 2002:a05:6870:eca0:b0:177:baf4:5b10 with SMTP id eo32-20020a056870eca000b00177baf45b10mr12821109oab.31.1680105167283;
-        Wed, 29 Mar 2023 08:52:47 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680105169;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=UL9zh/S00J+cmPfrAtv4vflOTxQVISfijtGfdl2R3L0=;
+        b=nG0mCMvzjt5fK3OTvxhRLJGIgaBgWs5acqhiG5gH9xpUMHd+m+FnDwg73RRw82btP7
+         W7gwKPt+V5IIAIFWoTwZno0GlTF5Wx5UG13IUCC8RxpFJrd5B0DIoBg4N4IiH0dAKt1a
+         +7xMXDGI4s2dy3jaTZh29Dq7w/5krby0qhjW5gPkgMobWPcEwsw2E6oLUhWETKky3Wsc
+         TuIF0RJVYTWIun2tlRK97Z2FbCCo/lp2QVUVS/CY/NV0qlzQYxkzfH+/rX1FIq27/Bsd
+         to4UFyHW0SqaFPxuE+d6JQoI/f8LS3XQVzPsE8Y4nHAiGO62bJMk8XtK+3VVT0FBxx5Q
+         3DhQ==
+X-Gm-Message-State: AAQBX9cSxduTTRBZ6K7BzehVFZQxqEeWTdeBhbwmy2f7Wdi1BN1Sh53w
+	8UyMO+Vk2OjaDTBggYhmqA==
+X-Google-Smtp-Source: AKy350YWPg6naXojJ+dh5QDGD5h6eaepx41Bc/m1xdmR3LQVsEP9dglulW7uPvOZ4q19z4rMeJNnvA==
+X-Received: by 2002:a05:6808:4da:b0:386:9883:ca9d with SMTP id a26-20020a05680804da00b003869883ca9dmr1291968oie.2.1680105169571;
+        Wed, 29 Mar 2023 08:52:49 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id hv12-20020a056870f98c00b00176209a6d6asm11896178oab.10.2023.03.29.08.52.45
+        by smtp.gmail.com with ESMTPSA id v184-20020acadec1000000b003871471f894sm10161090oig.27.2023.03.29.08.52.47
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:52:46 -0700 (PDT)
-Received: (nullmailer pid 3198060 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:52:49 -0700 (PDT)
+Received: (nullmailer pid 3198065 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Subject: [PATCH 00/19] DT header disentangling, part 1
-Date: Wed, 29 Mar 2023 10:51:57 -0500
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
+Date: Wed, 29 Mar 2023 10:51:59 -0500
+Subject: [PATCH 02/19] of: Move of_device_(add|register|unregister) to
+ of_platform.h
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAJ1eJGQC/x2NywoCMQwAf2XJ2UBtER+/Ih7SNNpCqaWxi7Dsv
- xs8zsAwG6iMIgq3ZYMha9HybgbHwwKcqb0ESzIG73xwwV8xfZD7xCyUZCBXoTa7Ip+jpAu7GE4
- eLI6kgnFQ42x5m7Wa7EOe5fu/3R/7/gPTb5swfQAAAA==
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-2-581e2605fe47@kernel.org>
+References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
+In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
 	Frank Rowand <frowand.list@gmail.com>, Russell King <linux@armlinux.org.uk>, 
 	Chen-Yu Tsai <wens@csie.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
@@ -87,100 +87,49 @@ Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is the first of a series of clean-ups to disentangle the DT 
-includes. There's a decade plus old comment in of_device.h:
+As of_device_(add|register|unregister) functions work on struct
+platform_device, they should be declared in of_platform.h instead.
 
- #include <linux/of_platform.h> /* temporary until merge */
-
-Who's this Grant person that wrote this? ;)
-
-It gets better. of_device.h also pulls in of.h, and of_platform.h 
-includes of_device.h. So naturally, drivers include all combinations of 
-those 3 headers and sometimes they actually need them. 
-
-I started on fixing this years ago, but just dropping the circular 
-includes and fixing all the fallout was massive and didn't sit well. 
-Pulling in of_device.h in all the drivers that happen to call only
-of_device_get_match_data/of_match_device didn't seem great when the rest 
-of of_device.h would never be needed. of_device.h being everything that 
-works on a struct device is not a great split because several types of 
-users deal with struct device. The better split seems to be by user 
-(subsys driver vs. consumer) which several subsystems now do. For 
-of_device.h, the users can primarily be split between bus 
-implementations and device drivers. Device drivers also typically need 
-of.h to read properties. So let's move of_device.h towards just bus 
-related functions and move device driver related functions to of.h.
-
-This series is just the first step. It makes a couple of clean-ups to 
-replace some includes with forward declarations. It moves 
-of_device_get_match_data() and of_cpu_device_node_get() to of.h. The 
-former move is transparent for now and preparation for the next series.
-The last part of the series updates drivers using 
-of_cpu_device_node_get() and/or relying on the implicit cpu.h include 
-which is removed in the last patch.
+This move is transparent for now as both headers include each other.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
-Rob Herring (19):
-      of: Make devtree_lock declaration private
-      of: Move of_device_(add|register|unregister) to of_platform.h
-      of: Move of_device_get_match_data() declaration
-      of: Move CPU node related functions to their own file
-      of: Drop unnecessary includes in headers
-      ARM: sunxi: Drop of_device.h include
-      ARM: cpuidle: Drop of_device.h include
-      riscv: Add explicit include for cpu.h
-      riscv: cacheinfo: Adjust includes to remove of_device.h
-      cacheinfo: Adjust includes to remove of_device.h
-      clocksource: ingenic: Add explicit include for cpuhotplug.h
-      thermal: cpuidle_cooling: Adjust includes to remove of_device.h
-      soc: mediatek: mtk-svs: Add explicit include for cpu.h
-      cpufreq: Adjust includes to remove of_device.h
-      cpufreq: sun50i: Add explicit include for cpu.h
-      cpuidle: Adjust includes to remove of_device.h
-      irqchip: loongson-eiointc: Add explicit include for cpuhotplug.h
-      OPP: Adjust includes to remove of_device.h
-      of: Drop cpu.h include from of_device.h
+ include/linux/of_device.h   | 4 ----
+ include/linux/of_platform.h | 5 +++++
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
- arch/arm/kernel/cpuidle.c              |   1 -
- arch/arm/mach-sunxi/mc_smp.c           |   1 -
- arch/riscv/kernel/cacheinfo.c          |   1 -
- arch/riscv/kernel/setup.c              |   2 +-
- arch/sparc/include/asm/prom.h          |   3 +
- drivers/base/cacheinfo.c               |   2 +-
- drivers/clocksource/ingenic-timer.c    |   3 +-
- drivers/cpufreq/cpufreq-dt-platdev.c   |   1 -
- drivers/cpufreq/kirkwood-cpufreq.c     |   2 +-
- drivers/cpufreq/maple-cpufreq.c        |   2 +-
- drivers/cpufreq/pmac32-cpufreq.c       |   2 +-
- drivers/cpufreq/pmac64-cpufreq.c       |   2 +-
- drivers/cpufreq/qcom-cpufreq-hw.c      |   4 +-
- drivers/cpufreq/spear-cpufreq.c        |   2 +-
- drivers/cpufreq/sun50i-cpufreq-nvmem.c |   3 +-
- drivers/cpufreq/tegra124-cpufreq.c     |   1 -
- drivers/cpufreq/tegra20-cpufreq.c      |   2 +-
- drivers/cpuidle/cpuidle-psci.c         |   1 -
- drivers/cpuidle/cpuidle-qcom-spm.c     |   3 +-
- drivers/cpuidle/cpuidle-riscv-sbi.c    |   2 +-
- drivers/cpuidle/dt_idle_states.c       |   1 -
- drivers/irqchip/irq-loongson-eiointc.c |   5 +-
- drivers/of/Makefile                    |   2 +-
- drivers/of/base.c                      | 187 -----------------------------
- drivers/of/cpu.c                       | 210 +++++++++++++++++++++++++++++++++
- drivers/of/of_private.h                |   1 +
- drivers/opp/of.c                       |   2 +-
- drivers/soc/mediatek/mtk-svs.c         |   1 +
- drivers/thermal/cpuidle_cooling.c      |   3 +-
- include/linux/cpufreq.h                |   1 -
- include/linux/of.h                     |  28 +++--
- include/linux/of_device.h              |  24 +---
- include/linux/of_platform.h            |  10 +-
- 33 files changed, 261 insertions(+), 254 deletions(-)
----
-base-commit: fe15c26ee26efa11741a7b632e9f23b01aca4cc6
-change-id: 20230329-dt-cpu-header-cleanups-c7bed8c0b352
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index f4b57614979d..e4aa61cb2bd0 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -26,10 +26,6 @@ static inline int of_driver_match_device(struct device *dev,
+ 	return of_match_device(drv->of_match_table, dev) != NULL;
+ }
+ 
+-extern int of_device_add(struct platform_device *pdev);
+-extern int of_device_register(struct platform_device *ofdev);
+-extern void of_device_unregister(struct platform_device *ofdev);
+-
+ extern const void *of_device_get_match_data(const struct device *dev);
+ 
+ extern ssize_t of_device_modalias(struct device *dev, char *str, ssize_t len);
+diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
+index d15b6cd5e1c3..8ac5cb933dc3 100644
+--- a/include/linux/of_platform.h
++++ b/include/linux/of_platform.h
+@@ -52,6 +52,11 @@ extern const struct of_device_id of_default_bus_match_table[];
+ extern struct platform_device *of_device_alloc(struct device_node *np,
+ 					 const char *bus_id,
+ 					 struct device *parent);
++
++extern int of_device_add(struct platform_device *pdev);
++extern int of_device_register(struct platform_device *ofdev);
++extern void of_device_unregister(struct platform_device *ofdev);
++
+ #ifdef CONFIG_OF
+ extern struct platform_device *of_find_device_by_node(struct device_node *np);
+ #else
 
-Best regards,
 -- 
-Rob Herring <robh@kernel.org>
+2.39.2
 
