@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7BB1C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:57:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF653C74A5B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Mar 2023 15:58:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PmrmZ2KJ6z3fkn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:57:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.48; helo=mail-oa1-f48.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-oa1-f48.google.com (mail-oa1-f48.google.com [209.85.160.48])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pmrn44B7qz3gF7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 02:58:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.160.47; helo=mail-oa1-f47.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+Received: from mail-oa1-f47.google.com (mail-oa1-f47.google.com [209.85.160.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgD4RtWz3cV8
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:12 +1100 (AEDT)
-Received: by mail-oa1-f48.google.com with SMTP id 586e51a60fabf-17aeb49429eso16663893fac.6
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:12 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PmrgG5drPz3fSq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 02:53:14 +1100 (AEDT)
+Received: by mail-oa1-f47.google.com with SMTP id 586e51a60fabf-17aceccdcf6so16646500fac.9
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 08:53:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680105190;
+        d=1e100.net; s=20210112; t=1680105192;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=o+n6GH4Nk3FkonjtkMjc2Nc5AHFrGJ7ZcCh9y20RfPM=;
-        b=Ophmj3NMjHJKneEm5PXug7tIuyEf1CLr1bjT3GCOOC2PwsQ3Uw7qLSwOFI91T5AVGb
-         4liGvx0qj7i+2b7M0FlWrEt3o4zA6FqKQ5L3vJsfP8THBpw+pNrCaF7tEcl74eY5dYL5
-         zHS3LL6keEtasi3rW0CH6ODw0d55D7fLvHHpqg+HF752zEx1bIC/GAWZnEuY6upxUjfs
-         Ctsh73N7sxh4Js1E051qRUhiIYJl2+JKCBL+EYRewNVspQhfIaq1AKzmnV+8HG+ISfz8
-         bFPU3uDaNttD2Y+/0tYE+ioLL9qKRsaXMqJNIYD1m2uAAuePbioiJV+ZIAH53pHbzb8y
-         EN0g==
-X-Gm-Message-State: AAQBX9dSOrFyC7PMnlnoOX4ao2TAplfHNleErVVo2rPgKaQTYiJqy9qt
-	hoX3mzYCdXfT2jMvcsjc+w==
-X-Google-Smtp-Source: AK7set9TWw7WlWpaVRoaXna+i6jfLH3b5BBVKHUpgOSqr1CxQaOSf7zeRp9d9vawXGilKhjHZUk1VQ==
-X-Received: by 2002:a05:6870:a2d4:b0:17a:a959:ea2c with SMTP id w20-20020a056870a2d400b0017aa959ea2cmr12910266oak.34.1680105189867;
-        Wed, 29 Mar 2023 08:53:09 -0700 (PDT)
+        bh=WurTN6TQClVnhKzRVCxCDshUnc0lAKMY5Mp4cC77h0Y=;
+        b=ikRIAR7myTixogJpXSi8+mOGH/yOYw36nWEQ97N0hEWpx0Hvx5b9lQjDWrIpbaMp8x
+         kKpfQg2llW6Q03IytJFyOYBlEPDbTQpaN1ALM9lGmV5C6Q1Xg7yi6QdN53afYM4RLJC2
+         9WK0GaU7QmYyqt5vn3oRLiUMcy959qktPfGKWkRKGy/TsjqJz0pNzGPvl4V4C9uCSGX+
+         q7P1o2amgZbg5SRY8Za0iUY1YwMx0WycR3X+fI7ikC8cflbz0/NZUQH0nJQhw8xfRU3H
+         iJS6Zr9gEgQLrwnpzE427WOGJAf5nRl65bLUJ1tbCOkCYF14BchJsPfa8MUTsIjOo5FC
+         ttKQ==
+X-Gm-Message-State: AAQBX9ejKqb45K1aZ4ymcoq9Xz+utsUfYO3xjbUGTkOx5t1ELdvAVBlf
+	7HOVc9F1ka81Zx2t6HvuHQ==
+X-Google-Smtp-Source: AKy350Zo9NclgwNBZoANioCGcuLyMicsG3a/5+eN9bgHMpdMdqlYEHn7LZHT8hqlsIh4r2ZmsXlMnw==
+X-Received: by 2002:a05:6870:2194:b0:17e:cb7:29c0 with SMTP id l20-20020a056870219400b0017e0cb729c0mr13838293oae.13.1680105192039;
+        Wed, 29 Mar 2023 08:53:12 -0700 (PDT)
 Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id y18-20020a056830109200b0069fb033f577sm7210819oto.51.2023.03.29.08.53.08
+        by smtp.gmail.com with ESMTPSA id aw8-20020a0568707f8800b001762d1bf6a9sm11897731oac.45.2023.03.29.08.53.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 08:53:09 -0700 (PDT)
-Received: (nullmailer pid 3198081 invoked by uid 1000);
+        Wed, 29 Mar 2023 08:53:11 -0700 (PDT)
+Received: (nullmailer pid 3198075 invoked by uid 1000);
 	Wed, 29 Mar 2023 15:52:45 -0000
 From: Rob Herring <robh@kernel.org>
-Date: Wed, 29 Mar 2023 10:52:07 -0500
-Subject: [PATCH 10/19] cacheinfo: Adjust includes to remove of_device.h
+Date: Wed, 29 Mar 2023 10:52:04 -0500
+Subject: [PATCH 07/19] ARM: cpuidle: Drop of_device.h include
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20230329-dt-cpu-header-cleanups-v1-10-581e2605fe47@kernel.org>
+Message-Id: <20230329-dt-cpu-header-cleanups-v1-7-581e2605fe47@kernel.org>
 References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
 To: "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, 
@@ -87,29 +87,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
-implicitly including other includes, and is no longer needed. Update the
-includes to use of.h instead of of_device.h.
+implicitly including other includes, and is no longer needed. Just drop
+including of_device.h as of.h is already included.
 
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Please ack and I will take the series via the DT tree.
 ---
- drivers/base/cacheinfo.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/kernel/cpuidle.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
-index f6573c335f4c..a5f7a1063411 100644
---- a/drivers/base/cacheinfo.c
-+++ b/drivers/base/cacheinfo.c
-@@ -14,7 +14,7 @@
- #include <linux/cpu.h>
- #include <linux/device.h>
- #include <linux/init.h>
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 437ff39f7808..fba1f8bb03b5 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -5,7 +5,6 @@
+ 
+ #include <linux/cpuidle.h>
+ #include <linux/of.h>
 -#include <linux/of_device.h>
-+#include <linux/of.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
- #include <linux/smp.h>
+ #include <asm/cpuidle.h>
+ 
+ extern struct of_cpuidle_method __cpuidle_method_of_table[];
 
 -- 
 2.39.2
