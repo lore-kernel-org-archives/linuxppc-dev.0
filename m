@@ -4,63 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C762DC761A6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 13:00:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 020D3C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 13:27:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnNnR5Zwwz3fTq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 00:00:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnPNw4XBdz3fRG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 00:27:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gvyLOSrV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ipMmc4f2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::d31; helo=mail-io1-xd31.google.com; envelope-from=prabhakar.csengg@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::12a; helo=mail-il1-x12a.google.com; envelope-from=prabhakar.csengg@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=gvyLOSrV;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=ipMmc4f2;
 	dkim-atps=neutral
-Received: from mail-io1-xd31.google.com (mail-io1-xd31.google.com [IPv6:2607:f8b0:4864:20::d31])
+Received: from mail-il1-x12a.google.com (mail-il1-x12a.google.com [IPv6:2607:f8b0:4864:20::12a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnNmS4w4Lz3bT7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 23:59:35 +1100 (AEDT)
-Received: by mail-io1-xd31.google.com with SMTP id x3so724425iov.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 05:59:35 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnPMs4KJlz3cNj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 00:26:48 +1100 (AEDT)
+Received: by mail-il1-x12a.google.com with SMTP id u8so9794467ilb.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 06:26:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1680181172; x=1682773172;
+        d=gmail.com; s=20210112; t=1680182805; x=1682774805;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=db58zgLapT4+5eM+e2dEcRQMOxpl02qLJJqJynMawPw=;
-        b=gvyLOSrV5NqLHUuxidIYczTpyccsUd898Kt8qAjGZCJm8EQYH5JcTmwLqg57uC0cvB
-         j7U0x9dcm2RsX8dLxVGcboGq4Pdvm6cDFGIifVhW5LUG0BZhpnkLq+12fDfUITmPUgDN
-         KJqbUWD1A1NNvcxlD8Va+DklQ7yRgA9v4iGNa+yDzNCF8hz/BAHOp1sivo3m/ett+i3j
-         AtVwEXoZrtByosb2V89SvT6DgwFv0o1YJU+4lunFRTh6XWRbkQcRhcsLjusSr3Liunwq
-         utzWcTAPvMsNoessMz8HZ9Y6dfPH5hnImowquLEBicF67L5RSN3ovwZ4QUhqVrtpFGVk
-         CyWA==
+        bh=n2pZnebNGLahNe2yjgjrKsFqnYvTRYd7uF1JoUeedu4=;
+        b=ipMmc4f2rhe9ZxmiesNtaMCdByaDBx7tN+zc7KMJSrXwy2WiELheDph1YzfOyUJK5G
+         2D9w1lws05LiLD96ktr9W079igf4FZMXTfy1rli6Syf8wtA/xOvdvesIM/xHoHpQ4mp2
+         kGaQPBqZIeQg75WZRmLC1J0vvz0N+J/wHgPfeNx6CWqljr2xVRlnhMmqStDFXeH9OteD
+         UdDKlBrcDx+IHVgGRnNql6fNqhC8UJ/0zLJcMACiQdKHQjGURJds5lWBs1vyz5ebkPWw
+         0o6fGsGo2wE6PVztfykuJW8aKjmi0krcntJGszy/82gq0ndxxs4fJ8aJQW98nZewfAkA
+         hgxg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680181172; x=1682773172;
+        d=1e100.net; s=20210112; t=1680182805; x=1682774805;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=db58zgLapT4+5eM+e2dEcRQMOxpl02qLJJqJynMawPw=;
-        b=LrWuJRphwpRixFwAP/bGfgu9fr7NcRFJAxgNsrjfuGGHSv98gWUsH9H1u06NyW9PSo
-         po0NhfSE/UiBguxj9JKhpejx8PkC9/epWs3LL9k69Syzkvod63YNHtgdafCtja09DU0j
-         nnc78iwF/k0U3qR8U1FkTteQzaiS3qQko3S4VvOWHhJnglxKaa3AHdMO7c9cJoAARBmB
-         v482490kWa0ndaV2sP4IAe5FTWIdrM22osB6JP7pSBTCLdPaG5Md4DpNHUWGoFJ+ypSS
-         AkNXMes9KJmBiTDYM3ubg9lOFoHy1vJLPGpH2CP9QV+UG5NcWylKFEe6x+jMhyYXo7SY
-         umHQ==
-X-Gm-Message-State: AAQBX9cC7ul1MWuf9OfCu1erBQ24m8Jb3iZQQ99/NPviU2tPm4KFjzkD
-	D6g6fioZm6qMBEYLhnrJJkgLkBxRVNHgOyLCp9c=
-X-Google-Smtp-Source: AKy350Yt7w4HDnt8ZzJ1OA1g5OCPUWPp6heQMoQ57xTct+y1JPFpMNsPMtx4N97vitPklV5i5ccLJReO6yCW0ia7/Oo=
-X-Received: by 2002:a02:95c3:0:b0:3eb:3166:9da4 with SMTP id
- b61-20020a0295c3000000b003eb31669da4mr2710421jai.2.1680181172425; Thu, 30 Mar
- 2023 05:59:32 -0700 (PDT)
+        bh=n2pZnebNGLahNe2yjgjrKsFqnYvTRYd7uF1JoUeedu4=;
+        b=gvv0Ci9OxSs+MuAycc8w6noy9dPTJCMeL62qDUdZ83p5oeCjLfaYZnr0f24bEon8uV
+         c4yLJlPelKhS9wbB8VDp/dNDJ3j8oESK6Mw40iBl+NC7/jCkyL5r2nKs49v83KX5ntqD
+         0pxBrhYio5vloClxv63v1ONYJ/kkApn4EYdYLodNKMODTSZR9syb33rAJ4ODj/k7hAC0
+         qmmoYar5frI1FKO83+HDfzarxwZcVzzKirL2/RpHytuU1edJ+x+pzgscEEaIV8W0olIk
+         vDCJ1ZBPMc34xpCrS2UMpdCej9+HjRCoFBtibCOKvWHH/+skHFtPxb2b1Xa6uYxV2C93
+         pLJw==
+X-Gm-Message-State: AAQBX9cKLoXHZUDm1rV0V0ecpFnuLRKmVYr7bat82k0qMvUP3tx1fH0N
+	Be25/I8aPaK9z2vQvjUIR71MzW3eHG1RRGyWvw4=
+X-Google-Smtp-Source: AKy350b7GKjd6GbmSD4bjqzZzqd/x8SBG7vY+M0wf9Tl0Xt+rzmxZqELne3/hmMfJjmFaGc7B3VEjdENhXkZ8+X22Co=
+X-Received: by 2002:a05:6e02:1047:b0:325:dd36:7451 with SMTP id
+ p7-20020a056e02104700b00325dd367451mr11322497ilj.1.1680182805604; Thu, 30 Mar
+ 2023 06:26:45 -0700 (PDT)
 MIME-Version: 1.0
-References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-9-arnd@kernel.org>
-In-Reply-To: <20230327121317.4081816-9-arnd@kernel.org>
+References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-10-arnd@kernel.org>
+In-Reply-To: <20230327121317.4081816-10-arnd@kernel.org>
 From: "Lad, Prabhakar" <prabhakar.csengg@gmail.com>
-Date: Thu, 30 Mar 2023 13:59:06 +0100
-Message-ID: <CA+V-a8v--RqxFJYTZ04vVgiA69VJsFWk=r=TvRvokhpAV-famg@mail.gmail.com>
-Subject: Re: [PATCH 08/21] riscv: dma-mapping: only invalidate after DMA, not flush
+Date: Thu, 30 Mar 2023 14:26:18 +0100
+Message-ID: <CA+V-a8twDb_P3TOpOqhz3Umump_NZg2Bw-8tgMCAmAdadUxfkw@mail.gmail.com>
+Subject: Re: [PATCH 09/21] riscv: dma-mapping: skip invalidation before
+ bidirectional DMA
 To: Arnd Bergmann <arnd@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
@@ -85,18 +86,18 @@ te:
 >
 > From: Arnd Bergmann <arnd@arndb.de>
 >
-> No other architecture intentionally writes back dirty cache lines into
-> a buffer that a device has just finished writing into. If the cache is
-> clean, this has no effect at all, but if a cacheline in the buffer has
-> actually been written by the CPU,  there is a drive bug that is likely
-> made worse by overwriting that buffer.
+> For a DMA_BIDIRECTIONAL transfer, the caches have to be cleaned
+> first to let the device see data written by the CPU, and invalidated
+> after the transfer to let the CPU see data written by the device.
+>
+> riscv also invalidates the caches before the transfer, which does
+> not appear to serve any purpose.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
 >  arch/riscv/mm/dma-noncoherent.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-
 Reviewed-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 
 Cheers,
@@ -104,16 +105,16 @@ Prabhakar
 
 > diff --git a/arch/riscv/mm/dma-noncoherent.c b/arch/riscv/mm/dma-noncoher=
 ent.c
-> index d919efab6eba..640f4c496d26 100644
+> index 640f4c496d26..69c80b2155a1 100644
 > --- a/arch/riscv/mm/dma-noncoherent.c
 > +++ b/arch/riscv/mm/dma-noncoherent.c
-> @@ -42,7 +42,7 @@ void arch_sync_dma_for_cpu(phys_addr_t paddr, size_t si=
-ze,
+> @@ -25,7 +25,7 @@ void arch_sync_dma_for_device(phys_addr_t paddr, size_t=
+ size,
+>                 ALT_CMO_OP(clean, vaddr, size, riscv_cbom_block_size);
 >                 break;
->         case DMA_FROM_DEVICE:
 >         case DMA_BIDIRECTIONAL:
 > -               ALT_CMO_OP(flush, vaddr, size, riscv_cbom_block_size);
-> +               ALT_CMO_OP(inval, vaddr, size, riscv_cbom_block_size);
+> +               ALT_CMO_OP(clean, vaddr, size, riscv_cbom_block_size);
 >                 break;
 >         default:
 >                 break;
