@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3BC3C761A6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 16:29:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25E3FC761A6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 16:30:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnTQL2Jf4z3fSs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 03:29:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnTRR2WBgz3fXB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 03:30:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JDLky8Yp;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XevMXvln;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JDLky8Yp;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=XevMXvln;
 	dkim-atps=neutral
 Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTPN6Xfrz3bh0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:28:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTPV0287z3fBv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:28:29 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680193705; x=1711729705;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=+jsYsz3z4S0KxQURpz+5dUW16i3yUqiq6XHaWQFPwWw=;
-  b=JDLky8YpRZDiQne3+8Epb05oxsHxqHNEsQBrUg2XyjcGbXqKzsZy9j2j
-   qkHAkVJ3w3cg/GTiH0USzWzZ7N2p19vsdCBowpsTudPGT2kqkLmStfPq/
-   rEzyoZxZnrnId0lqa1jR7/NZmMBfbM1xR7Bf3lq3VFZKzlN9/3xIuzoKR
-   FAHs/i2cHZyNTX0PA7Q9zVpfCHGhFLIaN28Gs2fbXU++Kb2egXZEUtHyY
-   KXl9l5pKAZPa9ZbyUi0/wOY6tN3FjNgFE0+/BzabKaYkIzPZT4WJE/j1T
-   767WftHBixWJcc/jASUcSfftxYatf+FhTJg2fbLL/gHnza7KCWY64WJSS
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="427495898"
+  t=1680193710; x=1711729710;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=yhhBl9vHYjEoa/C6LYyaGmzTAsrwMbBX/9yhSQi3PhY=;
+  b=XevMXvlnS5SMzwKv8aaFd5tw0ctMus2Tr/eBYpvIGFvB1LlE6T6oHXqQ
+   h8BrK9obWJJukjUsO0NRcRn2uQwlK9i5Y3vGRi1rzfxJJK2Z+i/QYvMip
+   VBjMqMhCI+iQk82BOBHEK9sAfXeYfr5NYJrzldVM0lro5LyRd3AUUoxCX
+   aI7n0Ey+G7G0xcgxIXyTI2mhFbW+lV5toZ+8KYHaU9Uj/DfO3RSq2fgw6
+   lZa9SMwevxPJAsjUNod0kfhc8c9fT9I+78CO/ytgfs5geYbCcHHRUK7XR
+   bK1AidE8XAH6q3apD1m6waeO/fn5XYSFLtcW8sHHnL2QNN3q2F/l6girs
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="427495983"
 X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
-   d="scan'208";a="427495898"
+   d="scan'208";a="427495983"
 Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2023 09:28:21 -0700
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2023 09:28:28 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="858971536"
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="858971546"
 X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
-   d="scan'208";a="858971536"
+   d="scan'208";a="858971546"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by orsmga005.jf.intel.com with ESMTP; 30 Mar 2023 09:28:11 -0700
+  by orsmga005.jf.intel.com with ESMTP; 30 Mar 2023 09:28:18 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1003)
-	id 9DDDB13A; Thu, 30 Mar 2023 19:24:42 +0300 (EEST)
+	id DCBBF1D9; Thu, 30 Mar 2023 19:24:49 +0300 (EEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -73,10 +73,12 @@ To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
 	linux-pci@vger.kernel.org,
 	xen-devel@lists.xenproject.org,
 	linux-acpi@vger.kernel.org
-Subject: [PATCH v8 0/7] Add pci_dev_for_each_resource() helper and update users
-Date: Thu, 30 Mar 2023 19:24:27 +0300
-Message-Id: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v8 2/7] PCI: Introduce pci_resource_n()
+Date: Thu, 30 Mar 2023 19:24:29 +0300
+Message-Id: <20230330162434.35055-3-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+In-Reply-To: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
+References: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -95,91 +97,41 @@ Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Provide two new helper macros to iterate over PCI device resources and
-convert users.
+Introduce pci_resource_n() and replace open-coded implementations of it
+in pci.h.
 
-Looking at it, refactor existing pci_bus_for_each_resource() and convert
-users accordingly.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
+---
+ include/linux/pci.h | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
-Note, the amount of lines grew due to the documentation update.
-
-Changelog v8:
-- fixed issue with pci_bus_for_each_resource() macro (LKP)
-- due to above added a new patch to document how it works
-- moved the last patch to be #2 (Philippe)
-- added tags (Philippe)
-
-Changelog v7:
-- made both macros to share same name (Bjorn)
-- split out the pci_resource_n() conversion (Bjorn)
-
-Changelog v6:
-- dropped unused variable in PPC code (LKP)
-
-Changelog v5:
-- renamed loop variable to minimize the clash (Keith)
-- addressed smatch warning (Dan)
-- addressed 0-day bot findings (LKP)
-
-Changelog v4:
-- rebased on top of v6.3-rc1
-- added tag (Krzysztof)
-
-Changelog v3:
-- rebased on top of v2 by Mika, see above
-- added tag to pcmcia patch (Dominik)
-
-Changelog v2:
-- refactor to have two macros
-- refactor existing pci_bus_for_each_resource() in the same way and
-  convert users
-
-Andy Shevchenko (6):
-  kernel.h: Split out COUNT_ARGS() and CONCATENATE()
-  PCI: Introduce pci_resource_n()
-  PCI: Document pci_bus_for_each_resource() to avoid confusion
-  PCI: Allow pci_bus_for_each_resource() to take less arguments
-  EISA: Convert to use less arguments in pci_bus_for_each_resource()
-  pcmcia: Convert to use less arguments in pci_bus_for_each_resource()
-
-Mika Westerberg (1):
-  PCI: Introduce pci_dev_for_each_resource()
-
- .clang-format                             |  1 +
- arch/alpha/kernel/pci.c                   |  5 +-
- arch/arm/kernel/bios32.c                  | 16 +++--
- arch/arm/mach-dove/pcie.c                 | 10 ++--
- arch/arm/mach-mv78xx0/pcie.c              | 10 ++--
- arch/arm/mach-orion5x/pci.c               | 10 ++--
- arch/mips/pci/ops-bcm63xx.c               |  8 +--
- arch/mips/pci/pci-legacy.c                |  3 +-
- arch/powerpc/kernel/pci-common.c          | 21 +++----
- arch/powerpc/platforms/4xx/pci.c          |  8 +--
- arch/powerpc/platforms/52xx/mpc52xx_pci.c |  5 +-
- arch/powerpc/platforms/pseries/pci.c      | 16 ++---
- arch/sh/drivers/pci/pcie-sh7786.c         | 10 ++--
- arch/sparc/kernel/leon_pci.c              |  5 +-
- arch/sparc/kernel/pci.c                   | 10 ++--
- arch/sparc/kernel/pcic.c                  |  5 +-
- drivers/eisa/pci_eisa.c                   |  4 +-
- drivers/pci/bus.c                         |  7 +--
- drivers/pci/hotplug/shpchp_sysfs.c        |  8 +--
- drivers/pci/pci.c                         |  3 +-
- drivers/pci/probe.c                       |  2 +-
- drivers/pci/remove.c                      |  5 +-
- drivers/pci/setup-bus.c                   | 37 +++++-------
- drivers/pci/setup-res.c                   |  4 +-
- drivers/pci/vgaarb.c                      | 17 ++----
- drivers/pci/xen-pcifront.c                |  4 +-
- drivers/pcmcia/rsrc_nonstatic.c           |  9 +--
- drivers/pcmcia/yenta_socket.c             |  3 +-
- drivers/pnp/quirks.c                      | 29 ++++-----
- include/linux/args.h                      | 13 ++++
- include/linux/kernel.h                    |  8 +--
- include/linux/pci.h                       | 72 +++++++++++++++++++----
- 32 files changed, 190 insertions(+), 178 deletions(-)
- create mode 100644 include/linux/args.h
-
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index b50e5c79f7e3..aeaa95455d4c 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1995,14 +1995,13 @@ int pci_iobar_pfn(struct pci_dev *pdev, int bar, struct vm_area_struct *vma);
+  * These helpers provide future and backwards compatibility
+  * for accessing popular PCI BAR info
+  */
+-#define pci_resource_start(dev, bar)	((dev)->resource[(bar)].start)
+-#define pci_resource_end(dev, bar)	((dev)->resource[(bar)].end)
+-#define pci_resource_flags(dev, bar)	((dev)->resource[(bar)].flags)
+-#define pci_resource_len(dev,bar) \
+-	((pci_resource_end((dev), (bar)) == 0) ? 0 :	\
+-							\
+-	 (pci_resource_end((dev), (bar)) -		\
+-	  pci_resource_start((dev), (bar)) + 1))
++#define pci_resource_n(dev, bar)	(&(dev)->resource[(bar)])
++#define pci_resource_start(dev, bar)	(pci_resource_n(dev, bar)->start)
++#define pci_resource_end(dev, bar)	(pci_resource_n(dev, bar)->end)
++#define pci_resource_flags(dev, bar)	(pci_resource_n(dev, bar)->flags)
++#define pci_resource_len(dev,bar)					\
++	(pci_resource_end((dev), (bar)) ? 				\
++	 resource_size(pci_resource_n((dev), (bar))) : 0)
+ 
+ /*
+  * Similar to the helpers above, these manipulate per-pci_dev
 -- 
 2.40.0.1.gaa8946217a0b
 
