@@ -4,69 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FB93C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 03:57:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB877C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 11:53:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pn8kX3rXGz3fT4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 14:57:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnMJ04XM7z3fRX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 22:53:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KDkr9Guk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MpfjvNz3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=viresh.kumar@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ardb@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KDkr9Guk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MpfjvNz3;
 	dkim-atps=neutral
-Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pn8h04tkPz3fBL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 14:54:56 +1100 (AEDT)
-Received: by mail-pj1-x102b.google.com with SMTP id l7so16063558pjg.5
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Mar 2023 20:54:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680148494;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=ORTcc1S4DbhSj9bYXgbzlVEJUmJSEuJEOt6fEFrhs3I=;
-        b=KDkr9GukbLDb5E0cjryjb5Wh0SCZaycf/IUr90YlJNe0yf+CJFbuqVLgseHvC1XTAs
-         Mj696hVP3J+/JyxeccnDx4sbyBLoQR8t6nLYlyTiLLcc21ZTbl5DObP3Sn5N4aoPtg5K
-         vT05+Dy7pELaLbJ3Jtjg4yd67A4IfUXlaie5LW1NfYlipHOIwyXNtqF0se+FNlmkrAW9
-         0bSdtfv+XKaMh8hj340BwSg3B4py1O/ULmxkhI+S+4sADQi7xMUd3Eyip4T50rRfAII+
-         GbYAWTbGyTjtff51zxbKYOhiJVlu3d4/NXIx3s+ZSTQbkwQZhq1bYkwIvzgmP/zufxWD
-         V87Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680148494;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ORTcc1S4DbhSj9bYXgbzlVEJUmJSEuJEOt6fEFrhs3I=;
-        b=ibHb+39lLRCmbntTUquE6vnRxQqTn42N5BJLbWIX0IZgtSva26GOXX2hWTLVi4HlAt
-         Xo1MNW1boDbzLOZmLt/WGbV6aL8hhw6fL0kU4QYNCgliq7a8Nd2CZDsJS0IRIti1omQN
-         3rj6XdTRRRwo9JPV197vgWUdbmBMpThvn/fQNiGvA0WcLU0uhB/TPy/Ih6lby9kpkmFJ
-         Zjgr2mGCNxqaADIWpKn+17uoYuxsZPd7gvPL01LAahHlBoX1yEhnfh8OcfJ4KGSLdihA
-         8oUqPT75/rPJd9GvUTq6V0KMhHrRSSaKxvOaT01jDZxEWVnFY1D16oPoZTrJrpbGPjoL
-         3iZQ==
-X-Gm-Message-State: AAQBX9e/+1sfZ3V7965KY9cdFakEMldju+dAGmDuaAEIO+B1BNNsnyS6
-	RmZDeQfoOlBh7BIg49AiAN1STg==
-X-Google-Smtp-Source: AKy350Z3+wrY9ZgUHedACp4BaESa2FvIEkabhjg74d5bnPV2JCYBYbJoHjnYpjGWoPDBynyeKDWcRw==
-X-Received: by 2002:a17:902:d503:b0:19d:1720:3873 with SMTP id b3-20020a170902d50300b0019d17203873mr24981326plg.57.1680148494287;
-        Wed, 29 Mar 2023 20:54:54 -0700 (PDT)
-Received: from localhost ([122.172.85.168])
-        by smtp.gmail.com with ESMTPSA id q9-20020a17090ad38900b002340d317f3esm2154710pju.52.2023.03.29.20.54.53
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Mar 2023 20:54:53 -0700 (PDT)
-Date: Thu, 30 Mar 2023 09:24:51 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 18/19] OPP: Adjust includes to remove of_device.h
-Message-ID: <20230330035451.huc3ae2acvgoh4xs@vireshk-i7>
-References: <20230329-dt-cpu-header-cleanups-v1-0-581e2605fe47@kernel.org>
- <20230329-dt-cpu-header-cleanups-v1-18-581e2605fe47@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnMH36kyhz3c92
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 22:52:31 +1100 (AEDT)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id B3ED962010
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 11:52:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28351C4339E
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 11:52:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1680177147;
+	bh=Lg8Woq7ScP2NFdPayLKkYeMtRMZwMJRAR9+KtXakJhE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=MpfjvNz3QVNu+fY1rMmWZnxdA+hNa8jPOs57jjlAv+SbX6ELS7K81oGiVcqhRDjg+
+	 eoBMkaBtle7odj6vdzhQadnDpKZgZ+Yn1tY1qLnfFhhyIhVXwZhcOGt8ZJYYUyHtOF
+	 OxpJG1M7N+qBiqHBKE3WNoTlZm50smzwFbXAxe1gIoOMFrl6VFP48vMRbNGTwqoaVO
+	 5jBSzrN/ss+0Rb18/EOm4KhLPCW5PD/38A5D0oyLDRXlDYfCY5FW5uMBIo564e9NDz
+	 kU2dVxcG9LdL4/Y2D/xqBi2HPaK0rAiqFTRkuz8bnLAT5XIx/km8y9fN8xybvX+vOt
+	 3oOylnX04Wbjw==
+Received: by mail-ed1-f54.google.com with SMTP id h8so75359959ede.8
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 04:52:27 -0700 (PDT)
+X-Gm-Message-State: AAQBX9eLC8ejncP9dKRkBwTM1U+EjJdJzL2/soiM5WZopOQ1/eIXsb8P
+	RjWqeNP4HJnObm5Toc29V/Vcm5vwK4QDb23DFl8=
+X-Google-Smtp-Source: AKy350aaxBOgSqlP959KpS9cfZAsDCsvbSuFf+7QcLc+VlamdgSrDzoUdXNjAn81KSsW2remp6yjeVooIQhT3qtniP0=
+X-Received: by 2002:a19:f007:0:b0:4db:b4:c8d7 with SMTP id p7-20020a19f007000000b004db00b4c8d7mr1755725lfc.2.1680177124990;
+ Thu, 30 Mar 2023 04:52:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230329-dt-cpu-header-cleanups-v1-18-581e2605fe47@kernel.org>
+References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-19-arnd@kernel.org>
+In-Reply-To: <20230327121317.4081816-19-arnd@kernel.org>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Thu, 30 Mar 2023 13:51:53 +0200
+X-Gmail-Original-Message-ID: <CAMj1kXGNjrmTr1R+-09UYtHSgvT6fSgZxvpbEOfeTFxhWtgGcQ@mail.gmail.com>
+Message-ID: <CAMj1kXGNjrmTr1R+-09UYtHSgvT6fSgZxvpbEOfeTFxhWtgGcQ@mail.gmail.com>
+Subject: Re: [PATCH 18/21] ARM: drop SMP support for ARM11MPCore
+To: Arnd Bergmann <arnd@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,39 +66,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nishanth Menon <nm@ti.com>, Huacai Chen <chenhuacai@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Yangtao Li <tiny.windzz@gmail.com>, Viresh Kumar <vireshk@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, Amit Kucheria <amitk@kernel.org>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-mips@vger.kernel.org, linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, Bjorn Andersson <andersson@kernel.org>, Marc Zyngier <maz@kernel.org>, Samuel Holland <samuel@sholland.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Russell King <linux@armlinux.org.uk>, Jernej Skrabec <jernej.skrabec@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Chen-Yu Tsai <wens@csie.org>, Andy Gross <agross@kernel.org>, Anup Patel <anup@brainfault.org>, Zhang Rui <rui.zhang@intel.com>, linux-sunxi@lists.linux.dev, devicetree@vger.kernel.org, Albert Ou <aou@eecs.berkeley.edu>, linux-
- pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Paul Walmsley <paul.walmsley@sifive.com>, Matthias Brugger <matthias.bgg@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>, Stephen Boyd <sboyd@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, linux-kernel@vger.kernel.org, Konrad Dybcio <konrad.dybcio@linaro.org>, Palmer Dabbelt <palmer@dabbelt.com>, Sudeep Holla <sudeep.holla@arm.com>, linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Daniel Golle <daniel@makrotopia.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infr
+ adead.org, Neil Armstrong <neil.armstrong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 29-03-23, 10:52, Rob Herring wrote:
-> Now that of_cpu_device_node_get() is defined in of.h, of_device.h is just
-> implicitly including other includes, and is no longer needed. Adjust the
-> include files with what was implicitly included by of_device.h (cpu.h and
-> of.h) and drop including of_device.h.
-> 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> Please ack and I will take the series via the DT tree.
-> ---
->  drivers/opp/of.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index e55c6095adf0..63b126c6215e 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -13,7 +13,7 @@
->  #include <linux/cpu.h>
->  #include <linux/errno.h>
->  #include <linux/device.h>
-> -#include <linux/of_device.h>
-> +#include <linux/of.h>
->  #include <linux/pm_domain.h>
->  #include <linux/slab.h>
->  #include <linux/export.h>
+On Mon, 27 Mar 2023 at 14:18, Arnd Bergmann <arnd@kernel.org> wrote:
+>
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> The cache management operations for noncoherent DMA on ARMv6 work
+> in two different ways:
+>
+>  * When CONFIG_DMA_CACHE_RWFO is set, speculative prefetches on in-flight
+>    DMA buffers lead to data corruption when the prefetched data is written
+>    back on top of data from the device.
+>
+>  * When CONFIG_DMA_CACHE_RWFO is disabled, a cache flush on one CPU
+>    is not seen by the other core(s), leading to inconsistent contents
+>    accross the system.
+>
+> As a consequence, neither configuration is actually safe to use in a
+> general-purpose kernel that is used on both MPCore systems and ARM1176
+> with prefetching enabled.
+>
+> We could add further workarounds to make the behavior more dynamic based
+> on the system, but realistically, there are close to zero remaining
+> users on any ARM11MPCore anyway, and nobody seems too interested in it,
+> compared to the more popular ARM1176 used in BMC2835 and AST2500.
+>
+> The Oxnas platform has some minimal support in OpenWRT, but most of the
+> drivers and dts files never made it into the mainline kernel, while the
+> Arm Versatile/Realview platform mainly serves as a reference system but
+> is not necessary to be kept working once all other ARM11MPCore are gone.
+>
+> Take the easy way out here and drop support for multiprocessing on
+> ARMv6, along with the CONFIG_DMA_CACHE_RWFO option and the cache
+> management implementation for it. This also helps with other ARMv6
+> issues, but for the moment leaves the ability to build a kernel that
+> can run on both ARMv7 SMP and single-processor ARMv6, which we probably
+> want to stop supporting as well, but not as part of this series.
+>
+> Cc: Neil Armstrong <neil.armstrong@linaro.org>
+> Cc: Daniel Golle <daniel@makrotopia.org>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: linux-oxnas@groups.io
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
