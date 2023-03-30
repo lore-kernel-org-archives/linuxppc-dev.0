@@ -4,50 +4,83 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC2B4C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 17:34:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF6D3C761A6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 17:42:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnVsR75Wlz3fTN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 04:34:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnW2L0jp8z3fVB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 04:42:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dz70Ywfc;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Tk6cDvXv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dz70Ywfc;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Tk6cDvXv;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnVrS5tmbz3fBv
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 04:33:28 +1100 (AEDT)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 33F556214B;
-	Thu, 30 Mar 2023 17:33:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E270AC4339B;
-	Thu, 30 Mar 2023 17:33:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1680197605;
-	bh=TGL8LvZqyVxudl1AdJeWsuMMfvnopGjKpYxAOrJpzy4=;
-	h=From:To:Cc:Subject:Date:From;
-	b=Dz70YwfcOg3FFIMMjW+kEPATlY4d4XAso+J4MLhYZCUi8c1MQIJJR9ArlXFXtn6Po
-	 WDizL1uUvqCozQYSQxSGBFe8f2C3v7pTaHXUTsCfRis0BTMRd8IM52D+aDAh9Uw5qR
-	 XgTB12gaYTU5pfa5zfjNcQyNjaeZnmQO6wtjpPzGTBWflqEkFW6iJ5LEoEH8gGnONb
-	 spzh9sQIoTBqSgYRgUeI+AX39IpoaQhu2Fgf7ZaBIwjoezxBbkSiwxrWPsQT9bbfXq
-	 2ucqx2MUXVSPeRzhcnFHQUK5mJ43Erp/lrqjCN5cQA/Lm9E89eECLFThDkws4GiOJy
-	 Dt5+Es/74O7+g==
-From: Conor Dooley <conor@kernel.org>
-To: Rob Herring <robh+dt@kernel.org>,
-	Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>
-Subject: [PATCH v1] dt-bindings: move cache controller bindings to a cache directory
-Date: Thu, 30 Mar 2023 18:32:56 +0100
-Message-Id: <20230330173255.109731-1-conor@kernel.org>
-X-Mailer: git-send-email 2.39.2
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTPb03j8z3fRS
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:28:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680193715; x=1711729715;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=xbQWUNZRhMDKSfWq+Wm+hoCdoGH5KZ6pm5K/n+XSSwM=;
+  b=Tk6cDvXvMIRJfKUIp9+IwbMhjVACYp+B6dMRg+2LD2yuLXBDYUJeEvFN
+   DRr8foiiQi0uhjiISRz3bU0vwFldMcBNRtds7il19++Wys6S7CgObrtUa
+   qdXVCJc9HDDkwIOrof58Ny+hhLFmxBfnkeMeljeJKyReU+IH4TBGeeY6O
+   9Zdsi63Xce65zwzTD5rfziYxgUr9K3UAKni7bYeWhXN3yvZyd74iY5WGt
+   z9MZSINslQXlt+uS4MHFNz5/rZpxATsEVcqGtQbVvYCeea1noQxYOVZNj
+   TgZxqnULCdwcxQ3PTa62oiYBSx+Ykg2O0lhw/Wi/XPwDn6sozL59h26vZ
+   Q==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="427496107"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="427496107"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2023 09:28:32 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="858971554"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="858971554"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga005.jf.intel.com with ESMTP; 30 Mar 2023 09:28:22 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 85CC62BE; Thu, 30 Mar 2023 19:24:52 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	=?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+	Niklas Schnelle <schnelle@linux.ibm.com>,
+	Bjorn Helgaas <helgaas@kernel.org>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Juergen Gross <jgross@suse.com>,
+	Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-kernel@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	xen-devel@lists.xenproject.org,
+	linux-acpi@vger.kernel.org
+Subject: [PATCH v8 6/7] EISA: Convert to use less arguments in pci_bus_for_each_resource()
+Date: Thu, 30 Mar 2023 19:24:33 +0300
+Message-Id: <20230330162434.35055-7-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
+In-Reply-To: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
+References: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=7705; i=conor.dooley@microchip.com; h=from:subject; bh=U174NDGDWgBy3a6MdGCxngbevjl5LWTvwwYlkqVhFOU=; b=owGbwMvMwCFWscWwfUFT0iXG02pJDCmqx4+/W3VH8+eXe3LXF4bmrv5kxlLtPcvql9nNt4wlY kpd3r0yHaUsDGIcDLJiiiyJt/tapNb/cdnh3PMWZg4rE8gQBi5OAZjIv0yGv8IP2QrkFOpE/P6p VB84cOlmx07PxwW2PffnVz7lMOBpL2Fk6Ej/scgw8P6E9Tv7D97XSDn+oOgS24HLK7mm2Vl9nW3 FyAsA
-X-Developer-Key: i=conor.dooley@microchip.com; a=openpgp; fpr=F9ECA03CF54F12CD01F1655722E2C55B37CF380C
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -60,152 +93,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Conor Dooley <conor.dooley@microchip.com>, Serge Semin <fancer.lancer@gmail.com>, linux-riscv@lists.infradead.org, Prakash Ranjan <saiprakash.ranjan@codeaurora.org>, Andy Gross <agross@kernel.org>, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Scott Wood <oss@buserror.net>, Paul Walmsley <paul.walmsley@sifive.com>, linux-arm-kernel@lists.infradead.org, Bjorn Andersson <andersson@kernel.org>, linux-kernel@vger.kernel.org, conor@kernel.org, Konrad Dybcio <konrad.dybcio@linaro.org>, Palmer Dabbelt <palmer@dabbelt.com>, Masami Hiramatsu <mhiramat@kernel.org>, Rishabh Bhatnagar <rishabhb@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Gregory Clement <gregory.clement@bootlin.com>, Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Rich Felker <dalias@libc.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Miguel Ojeda <ojeda@kernel.org>, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, "David S. Miller" <davem@davemloft.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Conor Dooley <conor.dooley@microchip.com>
+The pci_bus_for_each_resource() can hide the iterator loop since
+it may be not used otherwise. With this, we may drop that iterator
+variable definition.
 
-There's a bunch of bindings for (mostly l2) cache controllers
-scattered to the four winds, move them to a common directory.
-I renamed the freescale l2cache.txt file, as while that might make sense
-when the parent dir is fsl, it's confusing after the move.
-The two Marvell bindings have had a "marvell," prefix added to match
-their compatibles.
-
-Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Krzysztof Wilczyński <kw@linux.com>
+Reviewed-by: Philippe Mathieu-Daudé <philmd@linaro.org>
 ---
- .../{memory-controllers => cache}/baikal,bt1-l2-ctl.yaml        | 2 +-
- .../{powerpc/fsl/l2cache.txt => cache/freescale-l2cache.txt}    | 0
- Documentation/devicetree/bindings/{arm => cache}/l2c2x0.yaml    | 2 +-
- .../{arm/mrvl/feroceon.txt => cache/marvell,feroceon-cache.txt} | 0
- .../{arm/mrvl/tauros2.txt => cache/marvell,tauros2-cache.txt}   | 0
- .../devicetree/bindings/{arm/msm => cache}/qcom,llcc.yaml       | 2 +-
- .../devicetree/bindings/{riscv => cache}/sifive,ccache0.yaml    | 2 +-
- .../socionext => cache}/socionext,uniphier-system-cache.yaml    | 2 +-
- MAINTAINERS                                                     | 2 ++
- 9 files changed, 7 insertions(+), 5 deletions(-)
- rename Documentation/devicetree/bindings/{memory-controllers => cache}/baikal,bt1-l2-ctl.yaml (95%)
- rename Documentation/devicetree/bindings/{powerpc/fsl/l2cache.txt => cache/freescale-l2cache.txt} (100%)
- rename Documentation/devicetree/bindings/{arm => cache}/l2c2x0.yaml (99%)
- rename Documentation/devicetree/bindings/{arm/mrvl/feroceon.txt => cache/marvell,feroceon-cache.txt} (100%)
- rename Documentation/devicetree/bindings/{arm/mrvl/tauros2.txt => cache/marvell,tauros2-cache.txt} (100%)
- rename Documentation/devicetree/bindings/{arm/msm => cache}/qcom,llcc.yaml (96%)
- rename Documentation/devicetree/bindings/{riscv => cache}/sifive,ccache0.yaml (98%)
- rename Documentation/devicetree/bindings/{arm/socionext => cache}/socionext,uniphier-system-cache.yaml (96%)
+ drivers/eisa/pci_eisa.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/baikal,bt1-l2-ctl.yaml b/Documentation/devicetree/bindings/cache/baikal,bt1-l2-ctl.yaml
-similarity index 95%
-rename from Documentation/devicetree/bindings/memory-controllers/baikal,bt1-l2-ctl.yaml
-rename to Documentation/devicetree/bindings/cache/baikal,bt1-l2-ctl.yaml
-index 1fca282f64a2..ec4f367bc0b4 100644
---- a/Documentation/devicetree/bindings/memory-controllers/baikal,bt1-l2-ctl.yaml
-+++ b/Documentation/devicetree/bindings/cache/baikal,bt1-l2-ctl.yaml
-@@ -2,7 +2,7 @@
- # Copyright (C) 2020 BAIKAL ELECTRONICS, JSC
- %YAML 1.2
- ---
--$id: http://devicetree.org/schemas/memory-controllers/baikal,bt1-l2-ctl.yaml#
-+$id: http://devicetree.org/schemas/cache/baikal,bt1-l2-ctl.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/eisa/pci_eisa.c b/drivers/eisa/pci_eisa.c
+index 930c2332c3c4..8173e60bb808 100644
+--- a/drivers/eisa/pci_eisa.c
++++ b/drivers/eisa/pci_eisa.c
+@@ -20,8 +20,8 @@ static struct eisa_root_device pci_eisa_root;
  
- title: Baikal-T1 L2-cache Control Block
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/cache/freescale-l2cache.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-rename to Documentation/devicetree/bindings/cache/freescale-l2cache.txt
-diff --git a/Documentation/devicetree/bindings/arm/l2c2x0.yaml b/Documentation/devicetree/bindings/cache/l2c2x0.yaml
-similarity index 99%
-rename from Documentation/devicetree/bindings/arm/l2c2x0.yaml
-rename to Documentation/devicetree/bindings/cache/l2c2x0.yaml
-index 6b8f4d4fa580..d7840a5c4037 100644
---- a/Documentation/devicetree/bindings/arm/l2c2x0.yaml
-+++ b/Documentation/devicetree/bindings/cache/l2c2x0.yaml
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- %YAML 1.2
- ---
--$id: http://devicetree.org/schemas/arm/l2c2x0.yaml#
-+$id: http://devicetree.org/schemas/cache/l2c2x0.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
+ static int __init pci_eisa_init(struct pci_dev *pdev)
+ {
+-	int rc, i;
+ 	struct resource *res, *bus_res = NULL;
++	int rc;
  
- title: ARM L2 Cache Controller
-diff --git a/Documentation/devicetree/bindings/arm/mrvl/feroceon.txt b/Documentation/devicetree/bindings/cache/marvell,feroceon-cache.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/arm/mrvl/feroceon.txt
-rename to Documentation/devicetree/bindings/cache/marvell,feroceon-cache.txt
-diff --git a/Documentation/devicetree/bindings/arm/mrvl/tauros2.txt b/Documentation/devicetree/bindings/cache/marvell,tauros2-cache.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/arm/mrvl/tauros2.txt
-rename to Documentation/devicetree/bindings/cache/marvell,tauros2-cache.txt
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,llcc.yaml b/Documentation/devicetree/bindings/cache/qcom,llcc.yaml
-similarity index 96%
-rename from Documentation/devicetree/bindings/arm/msm/qcom,llcc.yaml
-rename to Documentation/devicetree/bindings/cache/qcom,llcc.yaml
-index 38efcad56dbd..14eb5175dac4 100644
---- a/Documentation/devicetree/bindings/arm/msm/qcom,llcc.yaml
-+++ b/Documentation/devicetree/bindings/cache/qcom,llcc.yaml
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause)
- %YAML 1.2
- ---
--$id: http://devicetree.org/schemas/arm/msm/qcom,llcc.yaml#
-+$id: http://devicetree.org/schemas/cache/qcom,llcc.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
- title: Last Level Cache Controller
-diff --git a/Documentation/devicetree/bindings/riscv/sifive,ccache0.yaml b/Documentation/devicetree/bindings/cache/sifive,ccache0.yaml
-similarity index 98%
-rename from Documentation/devicetree/bindings/riscv/sifive,ccache0.yaml
-rename to Documentation/devicetree/bindings/cache/sifive,ccache0.yaml
-index eb6ab73c0f31..8a6a78e1a7ab 100644
---- a/Documentation/devicetree/bindings/riscv/sifive,ccache0.yaml
-+++ b/Documentation/devicetree/bindings/cache/sifive,ccache0.yaml
-@@ -2,7 +2,7 @@
- # Copyright (C) 2020 SiFive, Inc.
- %YAML 1.2
- ---
--$id: http://devicetree.org/schemas/riscv/sifive,ccache0.yaml#
-+$id: http://devicetree.org/schemas/cache/sifive,ccache0.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
- title: SiFive Composable Cache Controller
-diff --git a/Documentation/devicetree/bindings/arm/socionext/socionext,uniphier-system-cache.yaml b/Documentation/devicetree/bindings/cache/socionext,uniphier-system-cache.yaml
-similarity index 96%
-rename from Documentation/devicetree/bindings/arm/socionext/socionext,uniphier-system-cache.yaml
-rename to Documentation/devicetree/bindings/cache/socionext,uniphier-system-cache.yaml
-index 6096c082d56d..3196263685a3 100644
---- a/Documentation/devicetree/bindings/arm/socionext/socionext,uniphier-system-cache.yaml
-+++ b/Documentation/devicetree/bindings/cache/socionext,uniphier-system-cache.yaml
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
- %YAML 1.2
- ---
--$id: http://devicetree.org/schemas/arm/socionext/socionext,uniphier-system-cache.yaml#
-+$id: http://devicetree.org/schemas/cache/socionext,uniphier-system-cache.yaml#
- $schema: http://devicetree.org/meta-schemas/core.yaml#
- 
- title: UniPhier outer cache controller
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8d5bc223f305..bbb0f252522b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11893,6 +11893,7 @@ M:	Scott Wood <oss@buserror.net>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Odd fixes
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
-+F:	Documentation/devicetree/bindings/cache/freescale-l2cache.txt
- F:	Documentation/devicetree/bindings/powerpc/fsl/
- F:	arch/powerpc/platforms/83xx/
- F:	arch/powerpc/platforms/85xx/
-@@ -19073,6 +19074,7 @@ M:	Conor Dooley <conor@kernel.org>
- L:	linux-riscv@lists.infradead.org
- S:	Maintained
- T:	git https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/
-+F:	Documentation/devicetree/bindings/cache/sifive,ccache0.yaml
- F:	drivers/soc/sifive/
- 
- SILEAD TOUCHSCREEN DRIVER
+ 	if ((rc = pci_enable_device (pdev))) {
+ 		dev_err(&pdev->dev, "Could not enable device\n");
+@@ -38,7 +38,7 @@ static int __init pci_eisa_init(struct pci_dev *pdev)
+ 	 * eisa_root_register() can only deal with a single io port resource,
+ 	*  so we use the first valid io port resource.
+ 	 */
+-	pci_bus_for_each_resource(pdev->bus, res, i)
++	pci_bus_for_each_resource(pdev->bus, res)
+ 		if (res && (res->flags & IORESOURCE_IO)) {
+ 			bus_res = res;
+ 			break;
 -- 
-2.39.2
+2.40.0.1.gaa8946217a0b
 
