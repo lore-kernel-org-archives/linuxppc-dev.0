@@ -4,92 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A257C761AF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 06:01:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E054C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 07:12:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnCV84PgFz3fH2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 17:01:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnF3r3MCCz3fK8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 18:12:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jYbyksnH;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=QVEDTKeV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=oomTeCD5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=bgray@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.230; helo=new4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=jYbyksnH;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=QVEDTKeV;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=oomTeCD5;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from new4-smtp.messagingengine.com (new4-smtp.messagingengine.com [66.111.4.230])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnCG62Bnnz3f92
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 16:51:10 +1100 (AEDT)
-Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32U5cM9Z015269;
-	Thu, 30 Mar 2023 05:51:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=EYuqqypfBsTCiKMs3pBLwLBh09b3vknLiLEYORZ/vpk=;
- b=jYbyksnH+f9mb7Xz4uzY5oCLib24SN5nWDAIjlGWv1YCVlIFnLhf3sf7zOi1OX+9wcF4
- Ehrv0b/lR7WGznFB0GlVLpv6C9ivp0v4eQbN2QbZ5G5u+4vWf1c0+vdxbMdu8+V0LjDA
- qv0oFoTdl4bSqGSgYW7kgFoo+VpFq/MaRcM11LDvfRQPFO66myIBuTHp7j78Mozt9xLk
- p4L9He77QplsGgoYPZceJbuIP0cKEihrcp/DJktPp4EphogPBiPVZB/B6GhuzZmrIa8g
- 8Fc4Z32mrw1XX6nakqhBxgXBN75+3P0JNg4zklfXuMllUnhutpVGgUyW/Ppk/6CFqD38 vw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pmph94s9h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 05:51:02 +0000
-Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32U5dDHs019672;
-	Thu, 30 Mar 2023 05:51:01 GMT
-Received: from ppma01fra.de.ibm.com (46.49.7a9f.ip4.static.sl-reverse.com [159.122.73.70])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pmph94s8s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 05:51:01 +0000
-Received: from pps.filterd (ppma01fra.de.ibm.com [127.0.0.1])
-	by ppma01fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32U3IgeZ011237;
-	Thu, 30 Mar 2023 05:50:58 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma01fra.de.ibm.com (PPS) with ESMTPS id 3phrk6mmce-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 05:50:56 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32U5os0m33948376
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Mar 2023 05:50:54 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 31BDC20040;
-	Thu, 30 Mar 2023 05:50:54 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A610F2004D;
-	Thu, 30 Mar 2023 05:50:53 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 30 Mar 2023 05:50:53 +0000 (GMT)
-Received: from bgray-lenovo-p15.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 4AD9F6063F;
-	Thu, 30 Mar 2023 16:50:48 +1100 (AEDT)
-From: Benjamin Gray <bgray@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 05/12] powerpc/dexcr: Support userspace ROP protection
-Date: Thu, 30 Mar 2023 16:50:33 +1100
-Message-Id: <20230330055040.434133-6-bgray@linux.ibm.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230330055040.434133-1-bgray@linux.ibm.com>
-References: <20230330055040.434133-1-bgray@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: fngkn1m2UuBUhcXVnGCAQs0CyFijNn7P
-X-Proofpoint-ORIG-GUID: WPALDh-YrHwd9soC9ZvTzWWUDR1JWOI8
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-30_02,2023-03-30_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
- malwarescore=0 spamscore=0 mlxscore=0 priorityscore=1501 clxscore=1015
- impostorscore=0 lowpriorityscore=0 mlxlogscore=990 adultscore=0
- bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2303300043
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnF2m0yZBz3cMr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 18:11:26 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailnew.nyi.internal (Postfix) with ESMTP id 91091581DB4;
+	Thu, 30 Mar 2023 03:11:20 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Thu, 30 Mar 2023 03:11:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm1; t=1680160280; x=1680167480; bh=wG
+	Aj9k8TObyqA6xHoUKa8szJrjCAJbphSDFQitQcQQs=; b=QVEDTKeVke/4u7Kg+r
+	/f0Ng8qyMJQjA0k7T1uZbzE62G/ueNBnWjpEnArFMDM92zNIXQ0BVhpsTK81gyt0
+	xSP5pbZY1IxVpqUBM+h72I4sgGKqPjbLqxNcKo6QCWkB1PzdfOUSKkfxHkuBpgbQ
+	cYQ6HqJa3bwV0Vkf7hmy8ejQKyFDSRYDfGJpYSPAochCUC5d86UJcSmtdy6Sxo6B
+	Jwxhii7JHhX5S3HrIP0mKrvU6BvYZqwsLNUfy16VYFyQuCPOCAze4qZ6sDRlwyQw
+	F08a6VUS4QIWlJ5ptfnwv75T7l2QsYPv/2qWlc1FTlhkx6SDxxZZxa17eJWjG25W
+	8QyA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm2; t=1680160280; x=1680167480; bh=wGAj9k8TObyqA
+	6xHoUKa8szJrjCAJbphSDFQitQcQQs=; b=oomTeCD59PNC83Jndx1U6VLOVE5Dm
+	iHmSiz3n1GUnKD2uHg/nJb7LQ4xFS4iggJ6sXq9/uqeoafmTb21qaw3LmGDGWVXs
+	zFRwDOtSbIgfSbefSTdQy+SDzfOWXM+Nas8Aqo7qkiw5wE6y4qdG6iwjS4DRWXtn
+	XctTZFf5GY9RMg5ciHLqGdffXqZGKOwN45T9El3FCgUi5LSy7a/pQo0750iSwL/f
+	RG+pNkv9fRAgzmmzo4HLa1cEOhymbMSIXzYbzI354FYA0THouxwTuuuM0yobQ3gk
+	LFgzGrnAkD2cRuN42h7TslpEIGdInF1W2TSA3tfbtXeFABGM7k1iBb/7Q==
+X-ME-Sender: <xms:FTYlZOrkzwdxpCxeIZzclV90hxzPUSC3ms8-E11J67_aPSJXJ1BIkg>
+    <xme:FTYlZMrP3FZFc1NJSA8GIlQPVO9kl25CsPN1r07QL_dGO5vWTCxWy7o2eATgnKdQ9
+    a578gSy3QQoXr1upcg>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrvdehjedguddujecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfgh
+    necuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+    enucfjughrpefofgggkfgjfhffhffvvefutgesthdtredtreertdenucfhrhhomhepfdet
+    rhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrg
+    htthgvrhhnpeevhfffledtgeehfeffhfdtgedvheejtdfgkeeuvefgudffteettdekkeeu
+    feehudenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecuvehluhhsthgvrhfuihiivg
+    eptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:FjYlZDNNTBCw6HhWBDqV-oUWPDwRI7BTNiBMI3iXI3sHS545zVmJ2w>
+    <xmx:FjYlZN4cwCdj47vqSASOc6XR5L2duLCySn6_f-BJZvURW8Sn6XqTzw>
+    <xmx:FjYlZN6Cp-M6Z89_Yu31L8qrA-V1bCiPBKi9s_taeLF3yPIrQttNLw>
+    <xmx:GDYlZL7CJyRZz1a_FlDEKTyWBaiLrIUUjNVWWchrrS5Jr6hXYCWp0A>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id E08C7B60086; Thu, 30 Mar 2023 03:11:17 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-238-g746678b8b6-fm-20230329.001-g746678b8
+Mime-Version: 1.0
+Message-Id: <34f3e043-20eb-40b2-a7f5-b1b98a0d452a@app.fastmail.com>
+In-Reply-To: <2668e232-ae83-4576-beaa-08e420236996@spud>
+References: <20230327121317.4081816-1-arnd@kernel.org>
+ <20230327121317.4081816-9-arnd@kernel.org>
+ <2668e232-ae83-4576-beaa-08e420236996@spud>
+Date: Thu, 30 Mar 2023 09:10:57 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Conor Dooley" <conor@kernel.org>, "Arnd Bergmann" <arnd@kernel.org>
+Subject: Re: [PATCH 08/21] riscv: dma-mapping: only invalidate after DMA, not flush
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,90 +94,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com, Benjamin Gray <bgray@linux.ibm.com>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, "Conor.Dooley" <conor.dooley@microchip.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Samuel Holland <samuel@sholland.org>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Brian Cain <bcain@quicinc.com>, "Lad,
+ Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstrong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, "linux-oxnas@groups.io" <linux-oxnas@groups.io>, Robin Murphy <robin.murphy@arm.com>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The ISA 3.1B hashst and hashchk instructions use a per-cpu SPR HASHKEYR
-to hold a key used in the hash calculation. This key should be different
-for each process to make it harder for a malicious process to recreate
-valid hash values for a victim process.
+On Wed, Mar 29, 2023, at 22:48, Conor Dooley wrote:
+> On Mon, Mar 27, 2023 at 02:13:04PM +0200, Arnd Bergmann wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>> 
+>> No other architecture intentionally writes back dirty cache lines into
+>> a buffer that a device has just finished writing into. If the cache is
+>> clean, this has no effect at all, but
+>
+>> if a cacheline in the buffer has
+>> actually been written by the CPU,  there is a drive bug that is likely
+>> made worse by overwriting that buffer.
+>
+> So does this need a
+> Fixes: 1631ba1259d6 ("riscv: Add support for non-coherent devices using 
+> zicbom extension")
+> then, even if the cacheline really should not have been touched by the
+> CPU?
+> Also, minor typo, s/drive/driver/.
 
-Add support for storing a per-thread hash key, and setting/clearing
-HASHKEYR appropriately.
+done
 
-Signed-off-by: Benjamin Gray <bgray@linux.ibm.com>
+> In the thread we had that sparked this, I went digging for the source of
+> the flushes, and it came from a review comment:
+> https://lore.kernel.org/linux-riscv/342e3c12-ebb0-badf-7d4c-c444a2b842b2@sholland.org/
 
----
+Ah, so the comment that led to it was 
 
-v1:	* Guard HASHKEYR update behind change check
-	* HASHKEYR reset moved earlier to patch 2
----
- arch/powerpc/include/asm/processor.h |  1 +
- arch/powerpc/kernel/process.c        | 17 +++++++++++++++++
- 2 files changed, 18 insertions(+)
+"For arch_sync_dma_for_cpu(DMA_BIDIRECTIONAL), we expect the CPU to have
+written to the buffer, so this should flush, not invalidate."
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index bad64d6a5d36..666d4e9804a8 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -264,6 +264,7 @@ struct thread_struct {
- 	unsigned long   mmcr3;
- 	unsigned long   sier2;
- 	unsigned long   sier3;
-+	unsigned long	hashkeyr;
- 
- #endif
- };
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index a7f9f3f85e20..a966adb5447f 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1182,6 +1182,9 @@ static inline void save_sprs(struct thread_struct *t)
- 		 */
- 		t->tar = mfspr(SPRN_TAR);
- 	}
-+
-+	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE))
-+		t->hashkeyr = mfspr(SPRN_HASHKEYR);
- #endif
- }
- 
-@@ -1260,6 +1263,10 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- 	if (cpu_has_feature(CPU_FTR_P9_TIDR) &&
- 	    old_thread->tidr != new_thread->tidr)
- 		mtspr(SPRN_TIDR, new_thread->tidr);
-+
-+	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE) &&
-+	    old_thread->hashkeyr != new_thread->hashkeyr)
-+		mtspr(SPRN_HASHKEYR, new_thread->hashkeyr);
- #endif
- 
- }
-@@ -1844,6 +1851,10 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
- 		childregs->ppr = DEFAULT_PPR;
- 
- 	p->thread.tidr = 0;
-+#endif
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE))
-+		p->thread.hashkeyr = current->thread.hashkeyr;
- #endif
- 	/*
- 	 * Run with the current AMR value of the kernel
-@@ -1972,6 +1983,12 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	current->thread.tm_tfiar = 0;
- 	current->thread.load_tm = 0;
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	if (cpu_has_feature(CPU_FTR_DEXCR_NPHIE)) {
-+		current->thread.hashkeyr = get_random_long();
-+		mtspr(SPRN_HASHKEYR, current->thread.hashkeyr);
-+	}
-+#endif /* CONFIG_PPC_BOOK3S_64 */
- }
- EXPORT_SYMBOL(start_thread);
- 
--- 
-2.39.2
+which sounds like Samuel just misunderstood what "bidirectional"
+means: the comment implies that both the cpu and the device access
+the buffer before arch_sync_dma_for_cpu(DMA_BIDIRECTIONAL), but
+this is not allowed. Instead, the point is that the device may both
+read and write the buffer, requiring that we must do a writeback
+at arch_sync_dma_for_device(DMA_BIDIRECTIONAL) and an invalidate
+at arch_sync_dma_for_cpu(DMA_BIDIRECTIONAL).
 
+The comment about arch_sync_dma_for_device(DMA_FROM_DEVICE) (in the
+same email) seems equally confused. It's of course easy to
+misunderstand these, and many others have gotten confused in
+similar ways before.
+
+> But *surely* if no other arch needs to do that, then we are safe to also
+> not do it... Your logic seems right by me at least, especially given the
+> lack of flushes elsewhere.
+
+Right, I remove the extra writeback from powerpc, parisc and microblaze
+for the same reason. Those appear to only be there because they used the
+same function for _for_device() as for _for_cpu(), not because someone
+thought they were required.
+
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+Thanks!
+
+     Arnd
