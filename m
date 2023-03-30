@@ -4,88 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46BE6C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 16:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3BC3C761A6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 16:29:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnTMY4MPKz3f7M
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 03:26:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnTQL2Jf4z3fSs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 03:29:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T3nQN+mU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JDLky8Yp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.43; helo=mga05.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=T3nQN+mU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=JDLky8Yp;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTLZ1VCwz3bh0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:25:57 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32UFEQL1019431;
-	Thu, 30 Mar 2023 16:25:50 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : subject :
- in-reply-to : references : date : message-id : mime-version :
- content-type; s=pp1; bh=XdWnTvDtTo7LhXCdnV2v3He3CuM9RJZvqgmWc1ncHwo=;
- b=T3nQN+mUQhz2OkgLc0nTfp/Z0ERcNrv/uJbQ5F6mhtHcOuVXl5LVAQXUCU3GJTcNdEA1
- X1dOQkR+k4+zU9xT64lm3ih20hWEqPVy+Vp197vNdJiuJpG/uQ4JYpH6iqXWlIJkWbUC
- I6LKEn6xjz6RytFQYfC7hHC/Dc6NY1RU0JNeqJWVk7qFwTua0TAu/hl4ODkMsnGEpLST
- yEG2drRtapaO+UeIvJ7pKFsSRUpbrN3ODc/qyDJYRjKA9c8hxue+oTdSXbHOX0b9EzKM
- S8MLp+QZdK/wys98KsjM9HivbgzS2JwtkGNHxDcrbw2j0UhShT3s+jzqVPoPhR32eS7V Uw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pnb4qdt0f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 16:25:49 +0000
-Received: from m0098409.ppops.net (m0098409.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32UFrlKG020763;
-	Thu, 30 Mar 2023 16:25:49 GMT
-Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pnb4qdt04-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 16:25:49 +0000
-Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
-	by ppma04dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32UE7e1i019763;
-	Thu, 30 Mar 2023 16:25:48 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
-	by ppma04dal.us.ibm.com (PPS) with ESMTPS id 3phrk83v6r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 30 Mar 2023 16:25:48 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32UGPlba26411726
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Mar 2023 16:25:47 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DFF2258059;
-	Thu, 30 Mar 2023 16:25:46 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 300CD58058;
-	Thu, 30 Mar 2023 16:25:45 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.43.103.32])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 30 Mar 2023 16:25:44 +0000 (GMT)
-X-Mailer: emacs 29.0.60 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu
-Subject: Re: [PATCH] powerpc/papr_scm: Update the NUMA distance table for
- the target node
-In-Reply-To: <20230330123502.1524429-1-aneesh.kumar@linux.ibm.com>
-References: <20230330123502.1524429-1-aneesh.kumar@linux.ibm.com>
-Date: Thu, 30 Mar 2023 21:55:42 +0530
-Message-ID: <87r0t6dx4p.fsf@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTPN6Xfrz3bh0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:28:23 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680193705; x=1711729705;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=+jsYsz3z4S0KxQURpz+5dUW16i3yUqiq6XHaWQFPwWw=;
+  b=JDLky8YpRZDiQne3+8Epb05oxsHxqHNEsQBrUg2XyjcGbXqKzsZy9j2j
+   qkHAkVJ3w3cg/GTiH0USzWzZ7N2p19vsdCBowpsTudPGT2kqkLmStfPq/
+   rEzyoZxZnrnId0lqa1jR7/NZmMBfbM1xR7Bf3lq3VFZKzlN9/3xIuzoKR
+   FAHs/i2cHZyNTX0PA7Q9zVpfCHGhFLIaN28Gs2fbXU++Kb2egXZEUtHyY
+   KXl9l5pKAZPa9ZbyUi0/wOY6tN3FjNgFE0+/BzabKaYkIzPZT4WJE/j1T
+   767WftHBixWJcc/jASUcSfftxYatf+FhTJg2fbLL/gHnza7KCWY64WJSS
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="427495898"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="427495898"
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2023 09:28:21 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10665"; a="858971536"
+X-IronPort-AV: E=Sophos;i="5.98,305,1673942400"; 
+   d="scan'208";a="858971536"
+Received: from black.fi.intel.com ([10.237.72.28])
+  by orsmga005.jf.intel.com with ESMTP; 30 Mar 2023 09:28:11 -0700
+Received: by black.fi.intel.com (Postfix, from userid 1003)
+	id 9DDDB13A; Thu, 30 Mar 2023 19:24:42 +0300 (EEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: =?UTF-8?q?Micka=C3=ABl=20Sala=C3=BCn?= <mic@digikod.net>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	=?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>,
+	Mika Westerberg <mika.westerberg@linux.intel.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Randy Dunlap <rdunlap@infradead.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	=?UTF-8?q?Philippe=20Mathieu-Daud=C3=A9?= <philmd@linaro.org>,
+	Niklas Schnelle <schnelle@linux.ibm.com>,
+	Bjorn Helgaas <helgaas@kernel.org>,
+	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+	=?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
+	"Maciej W. Rozycki" <macro@orcam.me.uk>,
+	Juergen Gross <jgross@suse.com>,
+	Dominik Brodowski <linux@dominikbrodowski.net>,
+	linux-kernel@vger.kernel.org,
+	linux-alpha@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	xen-devel@lists.xenproject.org,
+	linux-acpi@vger.kernel.org
+Subject: [PATCH v8 0/7] Add pci_dev_for_each_resource() helper and update users
+Date: Thu, 30 Mar 2023 19:24:27 +0300
+Message-Id: <20230330162434.35055-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.40.0.1.gaa8946217a0b
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: NsHSbmk3lkM__io5ywctUm9DIoQ_Bme1
-X-Proofpoint-ORIG-GUID: 0awJeey-jYybcpsdXioeAh2sGUJqf4ig
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-30_09,2023-03-30_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
- lowpriorityscore=0 bulkscore=0 mlxlogscore=918 adultscore=0 malwarescore=0
- suspectscore=0 priorityscore=1501 clxscore=1015 mlxscore=0 spamscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2303300127
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,75 +91,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Stefano Stabellini <sstabellini@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Gregory Clement <gregory.clement@bootlin.com>, Richard Henderson <richard.henderson@linaro.org>, Russell King <linux@armlinux.org.uk>, Nicholas Piggin <npiggin@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, Rich Felker <dalias@libc.org>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Miguel Ojeda <ojeda@kernel.org>, Matt Turner <mattst88@gmail.com>, Anatolij Gustschin <agust@denx.de>, "David S. Miller" <davem@davemloft.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+Provide two new helper macros to iterate over PCI device resources and
+convert users.
 
-> platform device helper routines won't update the NUMA distance table
-> while creating a platform device, even if the device is present on
-> a NUMA node that doesn't have memory or CPU. This is especially true
-> for pmem devices. If the target node of the pmem device is not online, we
-> find the nearest online node to the device and associate the pmem
-> device with that online node. To find the nearest online node, we should
-> have the numa distance table updated correctly. Update the distance
-> information during the device probe.
->
-> distance_lookup_table value for distance_ref_points_depth = 2 before and after
-> fix is below
-> node 3 distance depth 0  - 0
-> node 3 distance depth 1  - 0
-> node 4 distance depth 0  - 4
-> node 4 distance depth 1  - 2
-> node 5 distance depth 0  - 5
-> node 5 distance depth 1  - 1
->
-> after fix
-> node 3 distance depth 0  - 3
-> node 3 distance depth 1  - 1
-> node 4 distance depth 0  - 4
-> node 4 distance depth 1  - 2
-> node 5 distance depth 0  - 5
-> node 5 distance depth 1  - 1
->
-> Without the fix, the nearest numa node to the pmem device will be picked as 4.
-> After the fix, we get the correct numa node which is 5.
->
-> Fixes: da1115fdbd6e ("powerpc/nvdimm: Pick nearby online node if the device node is not online")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/papr_scm.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-> index 2f8385523a13..5bef75714bd5 100644
-> --- a/arch/powerpc/platforms/pseries/papr_scm.c
-> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
-> @@ -1428,6 +1428,10 @@ static int papr_scm_probe(struct platform_device *pdev)
->  		return -ENODEV;
->  	}
->  
-> +	/*
-> +	 * of platform device create won't update the numa distance table
-> +	 */
-> +	update_numa_distance(dn);
->  
->  	p = kzalloc(sizeof(*p), GFP_KERNEL);
->  	if (!p)
-> -- 
-> 2.39.2
+Looking at it, refactor existing pci_bus_for_each_resource() and convert
+users accordingly.
 
-This also requires export of update_numa_distance()
+Note, the amount of lines grew due to the documentation update.
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index b44ce71917d7..16cfe56be05b 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -366,6 +366,7 @@ void update_numa_distance(struct device_node *node)
- 	WARN(numa_distance_table[nid][nid] == -1,
- 	     "NUMA distance details for node %d not provided\n", nid);
- }
-+EXPORT_SYMBOL_GPL(update_numa_distance);
- 
- /*
-  * ibm,numa-lookup-index-table= {N, domainid1, domainid2, ..... domainidN}
+Changelog v8:
+- fixed issue with pci_bus_for_each_resource() macro (LKP)
+- due to above added a new patch to document how it works
+- moved the last patch to be #2 (Philippe)
+- added tags (Philippe)
+
+Changelog v7:
+- made both macros to share same name (Bjorn)
+- split out the pci_resource_n() conversion (Bjorn)
+
+Changelog v6:
+- dropped unused variable in PPC code (LKP)
+
+Changelog v5:
+- renamed loop variable to minimize the clash (Keith)
+- addressed smatch warning (Dan)
+- addressed 0-day bot findings (LKP)
+
+Changelog v4:
+- rebased on top of v6.3-rc1
+- added tag (Krzysztof)
+
+Changelog v3:
+- rebased on top of v2 by Mika, see above
+- added tag to pcmcia patch (Dominik)
+
+Changelog v2:
+- refactor to have two macros
+- refactor existing pci_bus_for_each_resource() in the same way and
+  convert users
+
+Andy Shevchenko (6):
+  kernel.h: Split out COUNT_ARGS() and CONCATENATE()
+  PCI: Introduce pci_resource_n()
+  PCI: Document pci_bus_for_each_resource() to avoid confusion
+  PCI: Allow pci_bus_for_each_resource() to take less arguments
+  EISA: Convert to use less arguments in pci_bus_for_each_resource()
+  pcmcia: Convert to use less arguments in pci_bus_for_each_resource()
+
+Mika Westerberg (1):
+  PCI: Introduce pci_dev_for_each_resource()
+
+ .clang-format                             |  1 +
+ arch/alpha/kernel/pci.c                   |  5 +-
+ arch/arm/kernel/bios32.c                  | 16 +++--
+ arch/arm/mach-dove/pcie.c                 | 10 ++--
+ arch/arm/mach-mv78xx0/pcie.c              | 10 ++--
+ arch/arm/mach-orion5x/pci.c               | 10 ++--
+ arch/mips/pci/ops-bcm63xx.c               |  8 +--
+ arch/mips/pci/pci-legacy.c                |  3 +-
+ arch/powerpc/kernel/pci-common.c          | 21 +++----
+ arch/powerpc/platforms/4xx/pci.c          |  8 +--
+ arch/powerpc/platforms/52xx/mpc52xx_pci.c |  5 +-
+ arch/powerpc/platforms/pseries/pci.c      | 16 ++---
+ arch/sh/drivers/pci/pcie-sh7786.c         | 10 ++--
+ arch/sparc/kernel/leon_pci.c              |  5 +-
+ arch/sparc/kernel/pci.c                   | 10 ++--
+ arch/sparc/kernel/pcic.c                  |  5 +-
+ drivers/eisa/pci_eisa.c                   |  4 +-
+ drivers/pci/bus.c                         |  7 +--
+ drivers/pci/hotplug/shpchp_sysfs.c        |  8 +--
+ drivers/pci/pci.c                         |  3 +-
+ drivers/pci/probe.c                       |  2 +-
+ drivers/pci/remove.c                      |  5 +-
+ drivers/pci/setup-bus.c                   | 37 +++++-------
+ drivers/pci/setup-res.c                   |  4 +-
+ drivers/pci/vgaarb.c                      | 17 ++----
+ drivers/pci/xen-pcifront.c                |  4 +-
+ drivers/pcmcia/rsrc_nonstatic.c           |  9 +--
+ drivers/pcmcia/yenta_socket.c             |  3 +-
+ drivers/pnp/quirks.c                      | 29 ++++-----
+ include/linux/args.h                      | 13 ++++
+ include/linux/kernel.h                    |  8 +--
+ include/linux/pci.h                       | 72 +++++++++++++++++++----
+ 32 files changed, 190 insertions(+), 178 deletions(-)
+ create mode 100644 include/linux/args.h
+
+-- 
+2.40.0.1.gaa8946217a0b
+
