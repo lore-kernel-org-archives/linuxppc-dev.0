@@ -4,65 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD30CC6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 05:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B9FC6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 09:09:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnpZ46tMyz3fVT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 16:22:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pnvcg115pz3fSw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 20:09:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=j6snYCTS;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=ln4+Y+gW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::434; helo=mail-wr1-x434.google.com; envelope-from=shengjiu.wang@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=j6snYCTS;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=ln4+Y+gW;
 	dkim-atps=neutral
-Received: from mail-wr1-x434.google.com (mail-wr1-x434.google.com [IPv6:2a00:1450:4864:20::434])
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnlKD6RHmz3cR7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 13:55:43 +1100 (AEDT)
-Received: by mail-wr1-x434.google.com with SMTP id r29so20963914wra.13
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 19:55:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1680231337; x=1682823337;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=R0f0oYaBiIjZngwKKrarE3ZU4R7VLA65VkJQmbsO7p4=;
-        b=j6snYCTSc3mn9magen+ARP9tyBjdlqAg7Msxhi4LmTS+IMoHqzu/tVUg95/7GQ6fK1
-         Ab33kcxf2rMwtLKQFmY0q2/ynhw8dxHAA/ErsVFtm/f8HYQqlkegFOko3J2MRW/gozSA
-         zbFnAUPiwIsIfxZeD3NpRyiDH1t8mHcxYUHFlEa3a5uH/Q4E0EOa5K2KdXoGm2ikXbEJ
-         cFacjZNut43G140mcjfDOYCH49vCCq1WXMeWr4OoqMcEDx1mVacsHdDwvKbriOa6D9An
-         8vEDs5Gks6sYn2jJamaaMSvpCJ2dMNSlgydmr867/IW5q8kungIpa1YhWEGPeH+UTAyt
-         yw1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680231337; x=1682823337;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=R0f0oYaBiIjZngwKKrarE3ZU4R7VLA65VkJQmbsO7p4=;
-        b=nQAn+c6IMBrZKfTNQhBiY0/w83PyqsZJSH2M9SI9D2n7DmKP1SVzBuwgZbPiud56wT
-         m51A19gdV/2xfcxrAhwUvr45zWbi15izq8QmS+UAC3+2FWFa3/thLAucSre1apYFbmcb
-         I08G8F+DLqPVtXsIvFTEL8FL5tDIoCjBTRxldCe+0ulO2WcbMwHFZF17BwwFfV7oJKz+
-         dM1s836SefmxCKShLHXq56ZaJPjzXje6bxehn6vgem4drrO42TX4ghS+uz5o0tlBsiam
-         //GQ9/C/oUfsY0nyb3BH/GluXxk/u+ugRogQcuUDa1aZsGwqgOxR+I206432yAYZaePo
-         QYug==
-X-Gm-Message-State: AAQBX9cm7sBV9az1w2K0opaZZxCPjJI1HzQgPK8kgb19uhhMnCoUNH8d
-	9KMkTa7pRLivSPCCnB9EJbr4Ok1K6e4LG07tEU8=
-X-Google-Smtp-Source: AKy350aoW6eyWZ7Vy7uL9TzBTgI+9gM4kG0Y6ga+Ywwo/3Ce7novHeVGH33oyhBjPnINiHx5c4pgOiCGaiSL/Y/+Rnw=
-X-Received: by 2002:a5d:5152:0:b0:2c7:17b8:5759 with SMTP id
- u18-20020a5d5152000000b002c717b85759mr4385251wrt.3.1680231336775; Thu, 30 Mar
- 2023 19:55:36 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pnvbh12lfz3cMb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 20:08:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=BFqC7haDTybAEGUq1e2Uhe+LahY2lMZuCKo7e1OI8xQ=; b=ln4+Y+gWAHQSIKd2IosmEm1kwL
+	9rQrpQ4E43SCxGnY7oCiHOfu1wEhrtmLCIph2RoTF0Zr9Jl+lwXk0EloYYwZp1vP4G9309e+oavO1
+	W4gscCHtGYQQ/lE4PaexTfIzVhVn8ZkbG/CF1gjy/6j2N0CDUb+u8PLNi0SvNP4j7UurXdo8YXnzj
+	FgTE97HTmPYCpw04O/SaUQ6wP2EslXB8dKZxMKdUsN6rI1OT+fm2ale4gtGaRCzwcx2OlTpIpkN9b
+	CgHQYxdDR/G/k11QZy1D2M1/SQxlzh6J/tvaEB5xTC8HOr4tRJNRZhsIJXbX/XtjKGw1Lgk2JQN4g
+	bD8q98ew==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:48688)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1piAjS-0004Sf-1D; Fri, 31 Mar 2023 10:07:38 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1piAjI-000119-8l; Fri, 31 Mar 2023 10:07:28 +0100
+Date: Fri, 31 Mar 2023 10:07:28 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Arnd Bergmann <arnd@kernel.org>
+Subject: Re: [PATCH 15/21] ARM: dma-mapping: always invalidate WT caches
+ before DMA
+Message-ID: <ZCai0FmZiOqsMkzc@shell.armlinux.org.uk>
+References: <20230327121317.4081816-1-arnd@kernel.org>
+ <20230327121317.4081816-16-arnd@kernel.org>
 MIME-Version: 1.0
-References: <20230330083040.77085-1-emas@bang-olufsen.dk>
-In-Reply-To: <20230330083040.77085-1-emas@bang-olufsen.dk>
-From: Shengjiu Wang <shengjiu.wang@gmail.com>
-Date: Fri, 31 Mar 2023 10:55:25 +0800
-Message-ID: <CAA+D8AOMTQ00Ah21w54DVXin3KcYkVxaGVd64Z_pSzv+Ooj9vw@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Use physical format width
-To: Emil Abildgaard Svendsen <EMAS@bang-olufsen.dk>
-Content-Type: multipart/alternative; boundary="000000000000f8129e05f829571b"
-X-Mailman-Approved-At: Fri, 31 Mar 2023 16:21:17 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230327121317.4081816-16-arnd@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,122 +65,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Xiubo Li <Xiubo.Lee@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio Estevam <festevam@gmail.com>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstrong@linaro.org>, Michal Simek <monstr@
+ monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---000000000000f8129e05f829571b
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 27, 2023 at 02:13:11PM +0200, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> Most ARM CPUs can have write-back caches and that require
+> cache management to be done in the dma_sync_*_for_device()
+> operation. This is typically done in both writeback and
+> writethrough mode.
+> 
+> The cache-v4.S (arm720/740/7tdmi/9tdmi) and cache-v4wt.S
+> (arm920t, arm940t) implementations are the exception here,
+> and only do the cache management after the DMA is complete,
+> in the dma_sync_*_for_cpu() operation.
+> 
+> Change this for consistency with the other platforms. This
+> should have no user visible effect.
 
-On Thu, Mar 30, 2023 at 4:30=E2=80=AFPM Emil Abildgaard Svendsen <
-EMAS@bang-olufsen.dk> wrote:
+NAK...
 
-> Slot width should follow the physical width of the format instead of the
-> data width.
->
-> This is needed for formats like SNDRV_PCM_FMTBIT_S24_LE where physical
-> width is 32 and data width is 24. By using the physical width, data
-> won't get misaligned.
+The reason we do cache management _after_ is to ensure that there
+is no stale data. The kernel _has_ (at the very least in the past)
+performed DMA to data structures that are embedded within other
+data structures, resulting in cache lines being shared. If one of
+those cache lines is touched while DMA is progressing, then we
+must to cache management _after_ the DMA operation has completed.
+Doing it before is no good.
 
-
-There are different requirements for this slot width. Some need physical
-width,
-Some need format width. We need to be careful about change here.
-
-Actually there is .set_tdm_slot API for slot specific setting, please use
-this API.
-
-best regards
-wang shengjiu
-
->
-> Signed-off-by: Emil Svendsen <emas@bang-olufsen.dk>
-> ---
->  sound/soc/fsl/fsl_sai.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> index 939c6bdd22c4..213e2d462076 100644
-> --- a/sound/soc/fsl/fsl_sai.c
-> +++ b/sound/soc/fsl/fsl_sai.c
-> @@ -519,13 +519,13 @@ static int fsl_sai_hw_params(struct
-> snd_pcm_substream *substream,
->         unsigned int channels =3D params_channels(params);
->         struct snd_dmaengine_dai_dma_data *dma_params;
->         struct fsl_sai_dl_cfg *dl_cfg =3D sai->dl_cfg;
-> +       u32 slot_width =3D params_physical_width(params);
->         u32 word_width =3D params_width(params);
->         int trce_mask =3D 0, dl_cfg_idx =3D 0;
->         int dl_cfg_cnt =3D sai->dl_cfg_cnt;
->         u32 dl_type =3D FSL_SAI_DL_I2S;
->         u32 val_cr4 =3D 0, val_cr5 =3D 0;
->         u32 slots =3D (channels =3D=3D 1) ? 2 : channels;
-> -       u32 slot_width =3D word_width;
->         int adir =3D tx ? RX : TX;
->         u32 pins, bclk;
->         u32 watermark;
-> --
-> 2.34.1
->
-
---000000000000f8129e05f829571b
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div dir=3D"ltr"><br></div><br><div class=3D"gmail_quote">=
-<div dir=3D"ltr" class=3D"gmail_attr">On Thu, Mar 30, 2023 at 4:30=E2=80=AF=
-PM Emil Abildgaard Svendsen &lt;<a href=3D"mailto:EMAS@bang-olufsen.dk">EMA=
-S@bang-olufsen.dk</a>&gt; wrote:<br></div><blockquote class=3D"gmail_quote"=
- style=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);p=
-adding-left:1ex">Slot width should follow the physical width of the format =
-instead of the<br>
-data width.<br>
-<br>
-This is needed for formats like SNDRV_PCM_FMTBIT_S24_LE where physical<br>
-width is 32 and data width is 24. By using the physical width, data<br>
-won&#39;t get misaligned.</blockquote><div>=C2=A0</div><div>There are diffe=
-rent requirements for this slot width. Some=C2=A0need physical width,=C2=A0=
-</div><div>Some need format width. We need to be careful about change here.=
-=C2=A0</div><div><br></div><div>Actually there is=C2=A0.set_tdm_slot API fo=
-r slot specific setting, please use this API.</div><div><br></div><div>best=
- regards</div><div>wang shengjiu</div><blockquote class=3D"gmail_quote" sty=
-le=3D"margin:0px 0px 0px 0.8ex;border-left:1px solid rgb(204,204,204);paddi=
-ng-left:1ex">
-<br>
-Signed-off-by: Emil Svendsen &lt;<a href=3D"mailto:emas@bang-olufsen.dk" ta=
-rget=3D"_blank">emas@bang-olufsen.dk</a>&gt;<br>
----<br>
-=C2=A0sound/soc/fsl/fsl_sai.c | 2 +-<br>
-=C2=A01 file changed, 1 insertion(+), 1 deletion(-)<br>
-<br>
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c<br>
-index 939c6bdd22c4..213e2d462076 100644<br>
---- a/sound/soc/fsl/fsl_sai.c<br>
-+++ b/sound/soc/fsl/fsl_sai.c<br>
-@@ -519,13 +519,13 @@ static int fsl_sai_hw_params(struct snd_pcm_substream=
- *substream,<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 unsigned int channels =3D params_channels(param=
-s);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct snd_dmaengine_dai_dma_data *dma_params;<=
-br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 struct fsl_sai_dl_cfg *dl_cfg =3D sai-&gt;dl_cf=
-g;<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0u32 slot_width =3D params_physical_width(params=
-);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 word_width =3D params_width(params);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 int trce_mask =3D 0, dl_cfg_idx =3D 0;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 int dl_cfg_cnt =3D sai-&gt;dl_cfg_cnt;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 dl_type =3D FSL_SAI_DL_I2S;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 val_cr4 =3D 0, val_cr5 =3D 0;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 slots =3D (channels =3D=3D 1) ? 2 : channel=
-s;<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0u32 slot_width =3D word_width;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 int adir =3D tx ? RX : TX;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 pins, bclk;<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 u32 watermark;<br>
--- <br>
-2.34.1<br>
-</blockquote></div></div>
-
---000000000000f8129e05f829571b--
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
