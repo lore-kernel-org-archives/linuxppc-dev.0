@@ -4,77 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD0F4C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Mar 2023 23:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2852EC6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 00:26:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PnfJN3P9Rz3fS0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 10:09:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pnh0s2J6Qz3fSy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 11:26:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ZlHh9rnb;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Aip2zx3i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=neil.armstrong@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=ZlHh9rnb;
-	dkim-atps=neutral
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnTgm3YSgz3c92
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 03:40:49 +1100 (AEDT)
-Received: by mail-wm1-x32f.google.com with SMTP id o24-20020a05600c511800b003ef59905f26so12173299wms.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Mar 2023 09:40:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680194444;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=kz/2H/BTIuKLAKXpo3BrU6LM5Cbhbn/nr7Y/43JgHBo=;
-        b=ZlHh9rnbOioBf3nV/3JYjFE5Qh/bXo4StWdfNEsfuVogmTWridktEfoOhrvWpVNNhE
-         0z/X0MYaJjK/QYT4ITLVIUdplXX/DuXksJC0IpeVKtHOrPLMJe9eSvHXtK4aOFvf4tZs
-         /AbEoXyA7m4P/L9dHHblxxWiEqpMvlOY5GomHTzf+A7mUydBq8mvV4Xac+jQ3DUw+m7d
-         M7bxCvgbaGFMHEPdtiAa6ky4qk4LVn0KlYFTszccyx+U9QZE1gLR26fPAJN9gaLHkJpX
-         WQORjeI04LW5T5Q3kvDg17MPl5M4+c/QRypn5gBwOkQH/rvgvQ4KM27LU9sBhn9IdM+7
-         8UVg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680194444;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=kz/2H/BTIuKLAKXpo3BrU6LM5Cbhbn/nr7Y/43JgHBo=;
-        b=FeHnfuLwrm7bQuoWfpJV4vezV2TNK3Zedlrage1oR9XbSnWHjzA42VLqrmPTh1xdpZ
-         PeFQaYfcDT5z0C29KtdP147/okm4zL/qgdeTit+cCrA1pjB7fYBVh5eBtSgP9ZCPWhuH
-         QcYajtGzghnsNZwpnRUYmUbs+NToExxN+3tGMijDHFBcW1dBsmBqtLtHg+kSgZ5w5Cim
-         8QCqBxQKE4VxW9BPwf2NzyS8J1jsnqACkX8wkc84hkbh2dYjLQe8b02CFFFNL6YaTzAe
-         w2zYpi07WRowBgGN3teZlGgDHJxxU5oqlGkS0Rs49hIVYfr1PlZ/qYSsybZIabZvWO+J
-         yn/A==
-X-Gm-Message-State: AO0yUKVLu5Lh7x+RwxJInmSAvEf/IJ7WVRncHPPoqDUN4gEhQCxkZnpd
-	FRVv9+Q746/nwkNZc8dQdoazgQ==
-X-Google-Smtp-Source: AK7set+T5+LX8G1drB7duDYdeQf04Abk5u9lOdEbqBzlttJPRn/c1AIIE43phBoZUQBtKJJiVWYC7Q==
-X-Received: by 2002:a7b:c8d0:0:b0:3eb:39e7:35fe with SMTP id f16-20020a7bc8d0000000b003eb39e735femr17905942wml.30.1680194443891;
-        Thu, 30 Mar 2023 09:40:43 -0700 (PDT)
-Received: from [172.20.10.2] ([37.166.66.243])
-        by smtp.gmail.com with ESMTPSA id w20-20020a05600c475400b003f034c76e85sm3545852wmo.38.2023.03.30.09.40.40
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 30 Mar 2023 09:40:43 -0700 (PDT)
-Message-ID: <cad25e0a-9594-3d5e-79e7-fd00a80f67ac@linaro.org>
-Date: Thu, 30 Mar 2023 18:40:39 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pngzw4bl6z3cL8
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 11:25:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Aip2zx3i;
+	dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pngzq3jNBz4xDp;
+	Fri, 31 Mar 2023 11:25:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1680222328;
+	bh=IryaxfhF/Yu8DUfVEv0KgipT5BAJ/9tMkYoQyyLxF6U=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=Aip2zx3iDhkXq6NqWtDY+HltrHSZmUQdB11c7c89fIKPWRqWQEEIynfhnHz2ck8WF
+	 359JBYgI6ZIuPaDDZzhCkh7wJ/pIROeoX8ARyX8ysA8shyHZT5JvHhR8ZXsdOXkZQk
+	 RAlLZEGGG+9UFv8KXtYlNhK7Mp57mcBh5oEgSDoOSRfAk3IAYAZf03TmugBzRYtKMo
+	 iaa2uwM28h9fOlmZVefWFxBTvctMLQZyJOd3u+i17AqhWccL3FLz50PwttPqAIvZir
+	 TBxWE+z37fD3HlA+yls6PaDUEPY9DaUVLmBsw1adqwDg3DnWcLYmmhKL0OQ2MRi1xK
+	 BMOnDuxrmRRGA==
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rohan McLure <rmclure@linux.ibm.com>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v8 0/7] Support page table check
+In-Reply-To: <3D9F951A-5132-4EE8-8A28-A23F74306C8C@linux.ibm.com>
+References: <20230215231153.2147454-1-rmclure@linux.ibm.com>
+ <3D9F951A-5132-4EE8-8A28-A23F74306C8C@linux.ibm.com>
+Date: Fri, 31 Mar 2023 11:25:22 +1100
+Message-ID: <87r0t5bwct.fsf@mpe.ellerman.id.au>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
- Gecko/20100101 Thunderbird/102.9.0
-Subject: Re: [PATCH 18/21] ARM: drop SMP support for ARM11MPCore
-Content-Language: en-GB
-To: Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
- linux-kernel@vger.kernel.org
-References: <20230327121317.4081816-1-arnd@kernel.org>
- <20230327121317.4081816-19-arnd@kernel.org>
- <d7f36a28-0cae-a035-791b-363754aefeee@linaro.org>
- <6a5bd3a3-87e0-4a24-89ca-d265b0817a95@app.fastmail.com>
-From: Neil Armstrong <neil.armstrong@linaro.org>
-In-Reply-To: <6a5bd3a3-87e0-4a24-89ca-d265b0817a95@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Mailman-Approved-At: Fri, 31 Mar 2023 10:07:14 +1100
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,64 +59,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Daniel Golle <daniel@makrotopia.org>, Max Filippov <jcmvbkbc@gmail.com>, "Conor.Dooley" <conor.dooley@microchip.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Michal Simek 
- <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, "linux-oxnas@groups.io" <linux-oxnas@groups.io>, Robin Murphy <robin.murphy@arm.com>, "David S . Miller" <davem@davemloft.net>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Andrew Donnellan <ajd@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Le 30/03/2023 à 12:03, Arnd Bergmann a écrit :
-> On Thu, Mar 30, 2023, at 09:48, Neil Armstrong wrote:
->> On 27/03/2023 14:13, Arnd Bergmann wrote:
->>> From: Arnd Bergmann <arnd@arndb.de>
->>>
->>> The cache management operations for noncoherent DMA on ARMv6 work
->>> in two different ways:
->>>
->>>    * When CONFIG_DMA_CACHE_RWFO is set, speculative prefetches on in-flight
->>>      DMA buffers lead to data corruption when the prefetched data is written
->>>      back on top of data from the device.
->>>
->>>    * When CONFIG_DMA_CACHE_RWFO is disabled, a cache flush on one CPU
->>>      is not seen by the other core(s), leading to inconsistent contents
->>>      accross the system.
->>>
->>> As a consequence, neither configuration is actually safe to use in a
->>> general-purpose kernel that is used on both MPCore systems and ARM1176
->>> with prefetching enabled.
->>>
->>> We could add further workarounds to make the behavior more dynamic based
->>> on the system, but realistically, there are close to zero remaining
->>> users on any ARM11MPCore anyway, and nobody seems too interested in it,
->>> compared to the more popular ARM1176 used in BMC2835 and AST2500.
->>>
->>> The Oxnas platform has some minimal support in OpenWRT, but most of the
->>> drivers and dts files never made it into the mainline kernel, while the
->>> Arm Versatile/Realview platform mainly serves as a reference system but
->>> is not necessary to be kept working once all other ARM11MPCore are gone.
->>
->> Acked-by: Neil Armstrong <neil.armstrong@linaro.org>
->>
->> It's sad but it's the reality, there's no chance full OXNAS support will
->> ever come upstream and no real work has been done for years.
->>
->> I think OXNAS support can be programmed for removal for next release,
->> it would need significant work to rework current support to make it acceptable
->> before trying to upstream missing bits anyway.
-> 
-> Ok, thanks for your reply!
-> 
-> To clarify, do you think we should plan for removal after the next
-> stable release (6.3, removed in 6.4), or after the next LTS
-> release (probably 6.6, removed in 6.7)? As far as I understand,
-> the next OpenWRT release (23.x) will be based on linux-5.15,
-> and the one after that (24.x) would likely still use 6.1, unless
-> they skip an LTS kernel.
+Rohan McLure <rmclure@linux.ibm.com> writes:
+> Anyone got time to review this one?
 
-I think it's ok to remove it ASAP, or at least before the next LTS,
-not having SMP makes the platform barely usable so the earliest is the best.
+I was planning to pick it up, but it's going to conflict badly with the
+set_ptes() series:
 
-Neil
+  https://lore.kernel.org/all/20230315051444.3229621-1-willy@infradead.org/
 
-> 
->       Arnd
+I thought that series was likely to go in soon, but I see it's still not
+in linux-next.
 
+Hopefully there'll be a v5 of that series soon and we can try and work
+out the conflicts. I might need to create a topic branch, or have this
+series go via -mm.
+
+cheers
+
+
+>> On 16 Feb 2023, at 10:11 am, Rohan McLure <rmclure@linux.ibm.com> wrote:
+>> 
+>> Support the page table check sanitiser on all PowerPC platforms. This
+>> sanitiser works by serialising assignments, reassignments and clears of
+>> page table entries at each level in order to ensure that anonymous
+>> mappings have at most one writable consumer, and likewise that
+>> file-backed mappings are not simultaneously also anonymous mappings.
+>> 
+>> In order to support this infrastructure, a number of stubs must be
+>> defined for all powerpc platforms. Additionally, seperate set_pte_at
+>> and set_pte, to allow for internal, uninstrumented mappings.
+>> 
+>> v8:
+>> * Fix linux/page_table_check.h include in asm/pgtable.h breaking
+>>   32-bit.
+>> 
+>> v7:
+>> * Remove use of extern in set_pte prototypes
+>> * Clean up pmdp_collapse_flush macro
+>> * Replace set_pte_at with static inline function
+>> * Fix commit message for patch 7
+>> Link: https://lore.kernel.org/linuxppc-dev/20230215020155.1969194-1-rmclure@linux.ibm.com/
+>> 
+>> v6:
+>> * Support huge pages and p{m,u}d accounting.
+>> * Remove instrumentation from set_pte from kernel internal pages.
+>> * 64s: Implement pmdp_collapse_flush in terms of __pmdp_collapse_flush
+>>   as access to the mm_struct * is required.
+>> Link: https://lore.kernel.org/linuxppc-dev/20230214015939.1853438-1-rmclure@linux.ibm.com/
+>> 
+>> v5:
+>> Link: https://lore.kernel.org/linuxppc-dev/20221118002146.25979-1-rmclure@linux.ibm.com/
+>> 
+>> Rohan McLure (7):
+>>  powerpc: mm: Separate set_pte, set_pte_at for internal, external use
+>>  powerpc/64s: mm: Introduce __pmdp_collapse_flush with mm_struct
+>>    argument
+>>  powerpc: mm: Replace p{u,m,4}d_is_leaf with p{u,m,4}_leaf
+>>  powerpc: mm: Implement p{m,u,4}d_leaf on all platforms
+>>  powerpc: mm: Add common pud_pfn stub for all platforms
+>>  powerpc: mm: Add p{te,md,ud}_user_accessible_page helpers
+>>  powerpc: mm: Support page table check
+>> 
+>> arch/powerpc/Kconfig                         |  1 +
+>> arch/powerpc/include/asm/book3s/32/pgtable.h | 17 +++-
+>> arch/powerpc/include/asm/book3s/64/pgtable.h | 85 +++++++++++++-------
+>> arch/powerpc/include/asm/book3s/pgtable.h    |  3 +-
+>> arch/powerpc/include/asm/nohash/32/pgtable.h | 12 ++-
+>> arch/powerpc/include/asm/nohash/64/pgtable.h | 24 +++++-
+>> arch/powerpc/include/asm/nohash/pgtable.h    |  9 ++-
+>> arch/powerpc/include/asm/pgtable.h           | 60 +++++++++-----
+>> arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 +--
+>> arch/powerpc/mm/book3s64/hash_pgtable.c      |  2 +-
+>> arch/powerpc/mm/book3s64/pgtable.c           | 16 ++--
+>> arch/powerpc/mm/book3s64/radix_pgtable.c     | 24 +++---
+>> arch/powerpc/mm/nohash/book3e_pgtable.c      |  2 +-
+>> arch/powerpc/mm/pgtable.c                    |  9 +--
+>> arch/powerpc/mm/pgtable_32.c                 |  2 +-
+>> arch/powerpc/mm/pgtable_64.c                 |  6 +-
+>> arch/powerpc/xmon/xmon.c                     |  6 +-
+>> 17 files changed, 197 insertions(+), 93 deletions(-)
+>> 
+>> -- 
+>> 2.37.2
+>> 
