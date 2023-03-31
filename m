@@ -4,56 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B9FC6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 09:09:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5258C76196
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 09:37:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pnvcg115pz3fSw
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 20:09:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnwDQ1ZMVz3fTP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 20:37:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=ln4+Y+gW;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=UKbXTqzh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=ln4+Y+gW;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=UKbXTqzh;
 	dkim-atps=neutral
 Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pnvbh12lfz3cMb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 20:08:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnwCV66ysz3cTC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 20:36:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
 	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
 	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
 	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
-	bh=BFqC7haDTybAEGUq1e2Uhe+LahY2lMZuCKo7e1OI8xQ=; b=ln4+Y+gWAHQSIKd2IosmEm1kwL
-	9rQrpQ4E43SCxGnY7oCiHOfu1wEhrtmLCIph2RoTF0Zr9Jl+lwXk0EloYYwZp1vP4G9309e+oavO1
-	W4gscCHtGYQQ/lE4PaexTfIzVhVn8ZkbG/CF1gjy/6j2N0CDUb+u8PLNi0SvNP4j7UurXdo8YXnzj
-	FgTE97HTmPYCpw04O/SaUQ6wP2EslXB8dKZxMKdUsN6rI1OT+fm2ale4gtGaRCzwcx2OlTpIpkN9b
-	CgHQYxdDR/G/k11QZy1D2M1/SQxlzh6J/tvaEB5xTC8HOr4tRJNRZhsIJXbX/XtjKGw1Lgk2JQN4g
-	bD8q98ew==;
-Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:48688)
+	bh=LizQNlR5xeQ9Nx7+wKPFYUJj75jOfRmgpvd1Wr0G7No=; b=UKbXTqzhq2L4s+MyI6LAhZHXPR
+	JEXjbEnQAW9YjlzhOJTLAm3faUqrzczga5/5A+k3OzAcg8y2zTvhiGLWpnnuu9Ohj85XsU4grnYcD
+	yk5M61TG+xOGvvpr7BdospIoI188Iq0Jt42tRt/xOCB196NQnP2eeZJxFhk6W8d3WLrvzOeDmeDGp
+	JdEZ4IItk3nxicikeyfyOXcN5BcpLJAlq5iFuQOYzNedzBy1kDsV1y5AtlHxecOF2ffvGBufXeIlS
+	4QoK4UR/YHLQPaOKfszLD1j9qGgpZKpcHV1ssSQAyjuKCuBpMtpEGtTDYtwzgJ2cUFhaZW4SwHxwU
+	CCfEAozA==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:34852)
 	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 	(Exim 4.94.2)
 	(envelope-from <linux@armlinux.org.uk>)
-	id 1piAjS-0004Sf-1D; Fri, 31 Mar 2023 10:07:38 +0100
+	id 1piBAV-0004Wr-DT; Fri, 31 Mar 2023 10:35:35 +0100
 Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
 	(envelope-from <linux@shell.armlinux.org.uk>)
-	id 1piAjI-000119-8l; Fri, 31 Mar 2023 10:07:28 +0100
-Date: Fri, 31 Mar 2023 10:07:28 +0100
+	id 1piBAM-00012N-TR; Fri, 31 Mar 2023 10:35:26 +0100
+Date: Fri, 31 Mar 2023 10:35:26 +0100
 From: "Russell King (Oracle)" <linux@armlinux.org.uk>
 To: Arnd Bergmann <arnd@kernel.org>
 Subject: Re: [PATCH 15/21] ARM: dma-mapping: always invalidate WT caches
  before DMA
-Message-ID: <ZCai0FmZiOqsMkzc@shell.armlinux.org.uk>
+Message-ID: <ZCapXlrqMOpRxkSu@shell.armlinux.org.uk>
 References: <20230327121317.4081816-1-arnd@kernel.org>
  <20230327121317.4081816-16-arnd@kernel.org>
+ <ZCai0FmZiOqsMkzc@shell.armlinux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20230327121317.4081816-16-arnd@kernel.org>
+In-Reply-To: <ZCai0FmZiOqsMkzc@shell.armlinux.org.uk>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,31 +71,46 @@ Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <ca
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 27, 2023 at 02:13:11PM +0200, Arnd Bergmann wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+On Fri, Mar 31, 2023 at 10:07:28AM +0100, Russell King (Oracle) wrote:
+> On Mon, Mar 27, 2023 at 02:13:11PM +0200, Arnd Bergmann wrote:
+> > From: Arnd Bergmann <arnd@arndb.de>
+> > 
+> > Most ARM CPUs can have write-back caches and that require
+> > cache management to be done in the dma_sync_*_for_device()
+> > operation. This is typically done in both writeback and
+> > writethrough mode.
+> > 
+> > The cache-v4.S (arm720/740/7tdmi/9tdmi) and cache-v4wt.S
+> > (arm920t, arm940t) implementations are the exception here,
+> > and only do the cache management after the DMA is complete,
+> > in the dma_sync_*_for_cpu() operation.
+> > 
+> > Change this for consistency with the other platforms. This
+> > should have no user visible effect.
 > 
-> Most ARM CPUs can have write-back caches and that require
-> cache management to be done in the dma_sync_*_for_device()
-> operation. This is typically done in both writeback and
-> writethrough mode.
+> NAK...
 > 
-> The cache-v4.S (arm720/740/7tdmi/9tdmi) and cache-v4wt.S
-> (arm920t, arm940t) implementations are the exception here,
-> and only do the cache management after the DMA is complete,
-> in the dma_sync_*_for_cpu() operation.
-> 
-> Change this for consistency with the other platforms. This
-> should have no user visible effect.
+> The reason we do cache management _after_ is to ensure that there
+> is no stale data. The kernel _has_ (at the very least in the past)
+> performed DMA to data structures that are embedded within other
+> data structures, resulting in cache lines being shared. If one of
+> those cache lines is touched while DMA is progressing, then we
+> must to cache management _after_ the DMA operation has completed.
+> Doing it before is no good.
 
-NAK...
+It looks like the main offender of "touching cache lines shared
+with DMA" has now been resolved - that was the SCSI sense buffer,
+and was fixed some time ago:
 
-The reason we do cache management _after_ is to ensure that there
-is no stale data. The kernel _has_ (at the very least in the past)
-performed DMA to data structures that are embedded within other
-data structures, resulting in cache lines being shared. If one of
-those cache lines is touched while DMA is progressing, then we
-must to cache management _after_ the DMA operation has completed.
-Doing it before is no good.
+commit de25deb18016f66dcdede165d07654559bb332bc
+Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date:   Wed Jan 16 13:32:17 2008 +0900
+
+/if/ that is the one and only case, then we're probably fine, but
+having been through an era where this kind of thing was the norm
+and requests to fix it did not get great responses from subsystem
+maintainers, I just don't trust the kernel not to want to DMA to
+overlapping cache lines.
 
 -- 
 RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
