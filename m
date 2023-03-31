@@ -4,84 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57432C76196
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 15:42:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE947C76196
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 16:06:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pp4KR5nLWz3fS8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Apr 2023 02:42:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pp4sf0vdDz3fXj
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Apr 2023 03:06:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OTJWbur3;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vssTaNEW;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lsKnCu+H;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OTJWbur3;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=vssTaNEW;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=lsKnCu+H;
 	dkim-atps=neutral
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pp4rd6ffHz3cdB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Apr 2023 03:05:37 +1100 (AEDT)
+Received: from relay2.suse.de (relay2.suse.de [149.44.160.134])
+	by smtp-out2.suse.de (Postfix) with ESMTP id 43ADF1F8A3;
+	Fri, 31 Mar 2023 16:05:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1680278731; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=n3FsFrFZEEvyj+FZQD8XDhYw0Rbs8LXkmS09BCUboQc=;
+	b=vssTaNEWuuOsvjH3CRaxUE7nk3r5WyiLxXjHnxHcAwsTHXqvcamczlJG+a/RTzstGjOEZ5
+	A+v7TzmBTWvwU1rlJScZlbOr1IUEjCIlasM7gaJS4B2AkFT769JIugzmcOgKKLboutpMTn
+	7hnRsV6zpCfqTsfxmGEbELMZJBiVwCk=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1680278731;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=n3FsFrFZEEvyj+FZQD8XDhYw0Rbs8LXkmS09BCUboQc=;
+	b=lsKnCu+HdX2lZj2g10HGMbRNwSuJexFbUDF1aTZbyySaNPuFBHuk0Z8rZcnO4MmSKoqwYs
+	0Kqb4TIvqTNVJVDA==
+Received: from kitsune.suse.cz (kitsune.suse.cz [10.100.12.127])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pp4Gf5Gncz3fRH
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Apr 2023 02:39:38 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 32VDcdWs022563;
-	Fri, 31 Mar 2023 15:39:31 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=UpblJDU7vz76uVVRKDbjzEDuGN2orkZu8ubqezXdWbs=;
- b=OTJWbur3s7IbBmMNrVsQpr0xoy5xbM6TsEE29muFuNCkorilSyW0HeecFJm6Q7yy957F
- BXTwz+ST4yVCWAE8ubCd36XYuACR4FC2lEePBy6JS9CVCO2ZPYAuNQ1Ql4hlRwMe9XFP
- XRYx6ZqSh1QXnZSyw7wxvxRXMBzr3+iXJqbBnr7hihsDqNY32TXj9sbF2iR6TMaFFy2d
- My/qktrPFcSTUE5r0vnc8kyxb2NV4ApjU50qhdZXFe/dCu/oMcVU9M153Gnu8eIKtC4I
- V+45YvpvpoDdgIqc+TrxmhYA52lPMcvH5ITI08sJaVvqOf6jAKN9UoLIjlLzFvrI8vT/ cw== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pnyyx47xs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Mar 2023 15:39:30 +0000
-Received: from m0098396.ppops.net (m0098396.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 32VEqurx015243;
-	Fri, 31 Mar 2023 15:39:30 GMT
-Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pnyyx47t2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Mar 2023 15:39:29 +0000
-Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
-	by ppma03ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 32UKhWc9019202;
-	Fri, 31 Mar 2023 15:39:20 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma03ams.nl.ibm.com (PPS) with ESMTPS id 3phrk6pw6m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Mar 2023 15:39:20 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 32VFdGJA25428694
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 31 Mar 2023 15:39:16 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C8F4E20043;
-	Fri, 31 Mar 2023 15:39:16 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1613D20040;
-	Fri, 31 Mar 2023 15:39:16 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.179.0.144])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 31 Mar 2023 15:39:15 +0000 (GMT)
-From: Laurent Dufour <ldufour@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
-Subject: [PATCH 0/2] Online new threads according to the current SMT level
-Date: Fri, 31 Mar 2023 17:39:03 +0200
-Message-Id: <20230331153905.31698-1-ldufour@linux.ibm.com>
-X-Mailer: git-send-email 2.40.0
+	by relay2.suse.de (Postfix) with ESMTPS id 7F6B42C141;
+	Fri, 31 Mar 2023 16:05:28 +0000 (UTC)
+Date: Fri, 31 Mar 2023 18:05:27 +0200
+From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+To: Laurent Dufour <ldufour@linux.ibm.com>
+Subject: Re: [PATCH 1/2] pseries/smp: export the smt level in the SYS FS.
+Message-ID: <20230331160527.GA3132@kitsune.suse.cz>
+References: <20230331153905.31698-1-ldufour@linux.ibm.com>
+ <20230331153905.31698-2-ldufour@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: QIhdxJvQkW_D27aogd9MPS49xoIDn8XO
-X-Proofpoint-ORIG-GUID: eRf1oP8p4BOZ73N2skgpM0sMxePKXi_-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-03-31_07,2023-03-31_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- mlxlogscore=947 clxscore=1015 priorityscore=1501 impostorscore=0
- bulkscore=0 malwarescore=0 suspectscore=0 mlxscore=0 adultscore=0
- phishscore=0 spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2303200000 definitions=main-2303310123
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230331153905.31698-2-ldufour@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,53 +71,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: nathanl@linux.ibm.com, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: nathanl@linux.ibm.com, Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a new CPU is added, the kernel is activating all its threads. This
-leads to weird, but functional, result when adding CPU on a SMT 4 system
-for instance.
+Hello,
 
-Here the newly added CPU 1 has 8 threads while the other one has 4 threads
-active (system has been booted with the 'smt-enabled=4' kernel option):
+On Fri, Mar 31, 2023 at 05:39:04PM +0200, Laurent Dufour wrote:
+> There is no SMT level recorded in the kernel neither in user space.
+> Indeed there is no real constraint about that and mixed SMT levels are
+> allowed and system is working fine this way.
+> 
+> However when new CPU are added, the kernel is onlining all the threads
+> which is leading to mixed SMT levels and confuse end user a bit.
+> 
+> To prevent this exports a SMT level from the kernel so user space
+> application like the energy daemon, could read it to adjust their settings.
+> There is no action unless recording the value when a SMT value is written
+> into the new sysfs entry. User space applications like ppc64_cpu should
+> update the sysfs when changing the SMT level to keep the system consistent.
+> 
+> Suggested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/pseries.h |  3 ++
+>  arch/powerpc/platforms/pseries/smp.c     | 39 ++++++++++++++++++++++++
+>  2 files changed, 42 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+> index f8bce40ebd0c..af0a145af98f 100644
+> --- a/arch/powerpc/platforms/pseries/pseries.h
+> +++ b/arch/powerpc/platforms/pseries/pseries.h
+> @@ -23,7 +23,9 @@ extern int pSeries_machine_check_exception(struct pt_regs *regs);
+>  extern long pseries_machine_check_realmode(struct pt_regs *regs);
+>  void pSeries_machine_check_log_err(void);
+>  
+> +
+>  #ifdef CONFIG_SMP
+> +extern int pseries_smt;
+>  extern void smp_init_pseries(void);
+>  
+>  /* Get state of physical CPU from query_cpu_stopped */
+> @@ -34,6 +36,7 @@ int smp_query_cpu_stopped(unsigned int pcpu);
+>  #define QCSS_HARDWARE_ERROR -1
+>  #define QCSS_HARDWARE_BUSY -2
+>  #else
+> +#define pseries_smt 1
 
-ltcden3-lp12:~ # ppc64_cpu --info
-Core   0:    0*    1*    2*    3*    4     5     6     7
-Core   1:    8*    9*   10*   11*   12*   13*   14*   15*
+Is this really needed for anything?
 
-This mixed SMT level is confusing end users and some application like
-lparstat are reporting wrong values.
+The code using pseries_smt would not compile with a define, and would be
+only compiled with SMP enabled anyway so we should not need this.
 
-There is no SMT level recorded in the kernel, neither in user space. Such a
-level could be helpful when adding new CPU or when optimizing the energy
-efficiency. This series introduce a new SYS FS entry named 'pseries_smt' to
-store the current SMT level.
+Thanks
 
-The SMT level is provided in best effort, writing a new value into that
-entry is only recording it into the kernel. This way, it can be used when
-new CPU are onlined for instance. There is no real change to the CPU setup
-when a value is written, no CPU are onlined or offlined.
+Michal
 
-At boot time `pseries_smt` is loaded with smt_enabled_at_boot which is
-containing the SMT level set at boot time, even if no kernel option is
-specified.
-
-The change is specific to pseries since CPU hot-plug is only provided for
-this platform.
-
-The second patch of this series is implementing the change to online only
-the right number of threads when a new CPU is added.
-
-Laurent Dufour (2):
-  pseries/smp: export the smt level in the SYS FS.
-  powerpc/pseries/cpuhp: respect current SMT when adding new CPU
-
- arch/powerpc/platforms/pseries/hotplug-cpu.c | 18 ++++++---
- arch/powerpc/platforms/pseries/pseries.h     |  3 ++
- arch/powerpc/platforms/pseries/smp.c         | 39 ++++++++++++++++++++
- 3 files changed, 55 insertions(+), 5 deletions(-)
-
--- 
-2.40.0
-
+>  static inline void smp_init_pseries(void) { }
+>  #endif
+>  
+> diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+> index c597711ef20a..6c382922f8f3 100644
+> --- a/arch/powerpc/platforms/pseries/smp.c
+> +++ b/arch/powerpc/platforms/pseries/smp.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/device.h>
+>  #include <linux/cpu.h>
+>  #include <linux/pgtable.h>
+> +#include <linux/sysfs.h>
+>  
+>  #include <asm/ptrace.h>
+>  #include <linux/atomic.h>
+> @@ -45,6 +46,8 @@
+>  
+>  #include "pseries.h"
+>  
+> +int pseries_smt;
+> +
+>  /*
+>   * The Primary thread of each non-boot processor was started from the OF client
+>   * interface by prom_hold_cpus and is spinning on secondary_hold_spinloop.
+> @@ -280,3 +283,39 @@ void __init smp_init_pseries(void)
+>  
+>  	pr_debug(" <- smp_init_pSeries()\n");
+>  }
+> +
+> +static ssize_t pseries_smt_store(struct class *class,
+> +			 struct class_attribute *attr,
+> +			 const char *buf, size_t count)
+> +{
+> +	int smt;
+> +
+> +	if (kstrtou32(buf, 0, &smt) || !smt || smt > (u32) threads_per_core) {
+> +		pr_err("Invalid pseries_smt specified.\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	pseries_smt = smt;
+> +
+> +	return count;
+> +}
+> +
+> +static ssize_t pseries_smt_show(struct class *class, struct class_attribute *attr,
+> +			  char *buf)
+> +{
+> +	return sysfs_emit(buf, "%d\n", pseries_smt);
+> +}
+> +
+> +static CLASS_ATTR_RW(pseries_smt);
+> +
+> +static int __init pseries_smt_init(void)
+> +{
+> +	int rc;
+> +
+> +	pseries_smt = smt_enabled_at_boot;
+> +	rc = sysfs_create_file(kernel_kobj, &class_attr_pseries_smt.attr);
+> +	if (rc)
+> +		pr_err("Can't create pseries_smt sysfs/kernel entry.\n");
+> +	return rc;
+> +}
+> +machine_device_initcall(pseries, pseries_smt_init);
+> -- 
+> 2.40.0
+> 
