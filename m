@@ -4,67 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98197C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 09:11:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88D55C6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 11:09:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pnvg80zKkz3fT4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 20:11:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PnyHL6nBPz3fVL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Mar 2023 22:09:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=NHiE7PIU;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=PPtcwauT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::1132; helo=mail-yw1-x1132.google.com; envelope-from=linus.walleij@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=NHiE7PIU;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=PPtcwauT;
 	dkim-atps=neutral
-Received: from mail-yw1-x1132.google.com (mail-yw1-x1132.google.com [IPv6:2607:f8b0:4864:20::1132])
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnvfD56glz3cdX
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 20:10:59 +1100 (AEDT)
-Received: by mail-yw1-x1132.google.com with SMTP id 00721157ae682-545e907790fso287797947b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 02:10:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1680253856;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=h5CSdrZ6l2xgXTKH1xLlq+jBgcd46ofV0BIoXJ6/6jM=;
-        b=NHiE7PIU/1phremrSsF3/CQl6d7YKEdlDtlJ9Vwel53T7D2fDOz9Eopk4FcpZ1dSIm
-         yu9e8Xh0JHbk1x3sJ/r5+kRcRDuV43DeZbQfu0w/kMYchm+WG+IUDHf/BC224Jw6v7Hy
-         BSChRpraLXKpD4dnyCnfqBFCzvRsPoxHhXE18GrmUrPhY5zXpmqt7RX+zSjGr8+FpZWf
-         ToQfnMbBgbPLRwCOIxrk4oSI0MRhYms+6xQVhERPGNAPOHshN0F5ZLgiT7jrBiYwUPBP
-         vXOpSg0fjuin5LV315t/YgapeHNpqFNhTohezab0YMYOQMGNlql4NMgvD7BZ1XLyiAEG
-         j5lA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680253856;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=h5CSdrZ6l2xgXTKH1xLlq+jBgcd46ofV0BIoXJ6/6jM=;
-        b=hQABVr14gkH53W3Q+VGKm9alTqYrr2CcuT/ojkJBBNZM3vAttImEf192iTgSPJnIgG
-         VfpKcDK7HNRpqqIE2kAZlIvB/AjDzLZ3CRV9hvz1Wq03DCnzKOzM/h4fUFBAaI/uN8SS
-         1D8/VWvqm1urOncizmm2HM2JWM5/TZh2PomXNy0HwmEkFomuk32QO4qvx+BCt1e80IkA
-         3/3dSG+7rZNQufowUVpNVb3eiGc71oRVkVce5dK5t53GWZqqxx3dsloFyHcS38MiLPiE
-         l1pLWh1XP1QbLCbkkDLh3fntkxwo9f74Jf9jrAwZtLWMa2fB6oiyiHtqKPw/0QRx7xJ7
-         Pzyw==
-X-Gm-Message-State: AAQBX9dYYlAQKRe5hJjnon/euVNLEZ5spyJ3gBKeMEa+a7toThUMoodC
-	1ldjdVT8/LuA4FJ7jvqRU9Eif8Q3FpUn8pBkvalxFA==
-X-Google-Smtp-Source: AKy350bTzBXM6ycL3U98ZDogsouHVf6LJB3iu5qAKOjHJ8TlZEoTyW1DjaakW8G4QqD9ZcHPHI8e6e7vqfXcHXD2Pfk=
-X-Received: by 2002:a81:b388:0:b0:545:8202:bbcf with SMTP id
- r130-20020a81b388000000b005458202bbcfmr12463339ywh.9.1680253856716; Fri, 31
- Mar 2023 02:10:56 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PnyGR20hFz3bdm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Mar 2023 22:09:00 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=FP8lga4DIdHpNC0kamUnt9iIXQ9vJ47gtBSwTDmI4Fo=; b=PPtcwauT+B3dG8oaJ+oVdcoVVI
+	Axs1VUpRIhHVBk9kjzqXMf0BxMrU5nUcHd9wiJiPpSiyvB4EBHKxgx0LwGEdU3MHUbLiQvurk3Ir2
+	jHUABX6iK7+/X6xdVRn0mIdNwpBVhvETlCEgtUG2TQNB9WaBH9+FoZ9lEESLeT40IgtxFK61dNkqh
+	CGuhr72PZEeuC1v0GBxu1Vb+6ktcbsiZbA0C7dSMDpKGCtFWqsJdkm95qZx845fdHVPwOaRMNoKh5
+	ts0jTf0R1kbKjCH8KJbtEBZ48A8fhDIK9vhNHV11ebVTkEld3z53CFg/6yoghmin0tW1vUHWWnjoW
+	uxWmZ3Uw==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:42490)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.94.2)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1piCcE-0004q2-Uz; Fri, 31 Mar 2023 12:08:18 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.94.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1piCc2-00015p-1q; Fri, 31 Mar 2023 12:08:06 +0100
+Date: Fri, 31 Mar 2023 12:08:06 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 15/21] ARM: dma-mapping: always invalidate WT caches
+ before DMA
+Message-ID: <ZCa/FlTVT/GSl1af@shell.armlinux.org.uk>
+References: <20230327121317.4081816-1-arnd@kernel.org>
+ <20230327121317.4081816-16-arnd@kernel.org>
+ <ZCai0FmZiOqsMkzc@shell.armlinux.org.uk>
+ <ZCapXlrqMOpRxkSu@shell.armlinux.org.uk>
+ <a8a90181-a003-47a1-8257-fcbf55752249@app.fastmail.com>
 MIME-Version: 1.0
-References: <20230327121317.4081816-1-arnd@kernel.org> <20230327121317.4081816-18-arnd@kernel.org>
-In-Reply-To: <20230327121317.4081816-18-arnd@kernel.org>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 31 Mar 2023 11:10:44 +0200
-Message-ID: <CACRpkdZdnTX4-jnnXZveXxwOg76yH4Zyoa-ZSGeC7KzOnn+6Lg@mail.gmail.com>
-Subject: Re: [PATCH 17/21] ARM: dma-mapping: use arch_sync_dma_for_{device,cpu}()
- internally
-To: Arnd Bergmann <arnd@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8a90181-a003-47a1-8257-fcbf55752249@app.fastmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,37 +68,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, Conor Dooley <conor.dooley@microchip.com>, Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>, Brian Cain <bcain@quicinc.com>, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Neil Armstrong <neil.armstrong@linaro.org>, Michal Simek <monstr@mons
- tr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, linux-oxnas@groups.io, Robin Murphy <robin.murphy@arm.com>, "David S. Miller" <davem@davemloft.net>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>, "Conor.Dooley" <conor.dooley@microchip.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, linux-snps-arc@lists.infradead.org, linux-xtensa@linux-xtensa.org, Neil Armstrong <neil.armstrong@linaro.org>, "Lad, Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, linux-m68k@lists.linux-m68k.org, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, linux-arm-kernel@lists.infradead.org, Brian Cain <bcain@quicinc.com>, Arnd Bergmann <ar
+ nd@kernel.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-parisc@vger.kernel.org, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-hexagon@vger.kernel.org, "linux-oxnas@groups.io" <linux-oxnas@groups.io>, Robin Murphy <robin.murphy@arm.com>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 27, 2023 at 2:16=E2=80=AFPM Arnd Bergmann <arnd@kernel.org> wro=
-te:
+On Fri, Mar 31, 2023 at 12:38:45PM +0200, Arnd Bergmann wrote:
+> On Fri, Mar 31, 2023, at 11:35, Russell King (Oracle) wrote:
+> > On Fri, Mar 31, 2023 at 10:07:28AM +0100, Russell King (Oracle) wrote:
+> >> On Mon, Mar 27, 2023 at 02:13:11PM +0200, Arnd Bergmann wrote:
+> >> > From: Arnd Bergmann <arnd@arndb.de>
+> >> > 
+> >> > Most ARM CPUs can have write-back caches and that require
+> >> > cache management to be done in the dma_sync_*_for_device()
+> >> > operation. This is typically done in both writeback and
+> >> > writethrough mode.
+> >> > 
+> >> > The cache-v4.S (arm720/740/7tdmi/9tdmi) and cache-v4wt.S
+> >> > (arm920t, arm940t) implementations are the exception here,
+> >> > and only do the cache management after the DMA is complete,
+> >> > in the dma_sync_*_for_cpu() operation.
+> >> > 
+> >> > Change this for consistency with the other platforms. This
+> >> > should have no user visible effect.
+> >> 
+> >> NAK...
+> >> 
+> >> The reason we do cache management _after_ is to ensure that there
+> >> is no stale data. The kernel _has_ (at the very least in the past)
+> >> performed DMA to data structures that are embedded within other
+> >> data structures, resulting in cache lines being shared. If one of
+> >> those cache lines is touched while DMA is progressing, then we
+> >> must to cache management _after_ the DMA operation has completed.
+> >> Doing it before is no good.
+> 
+> What I'm trying to address here is the inconsistency between
+> implementations. If we decide that we always want to invalidate
+> after FROM_DEVICE, I can do that as part of the series, but then
+> I have to change most of the other arm implementations.
 
-> From: Arnd Bergmann <arnd@arndb.de>
->
-> The arm specific iommu code in dma-mapping.c uses the page+offset based
-> __dma_page_cpu_to_dev()/__dma_page_dev_to_cpu() helpers in place of the
-> phys_addr_t based arch_sync_dma_for_device()/arch_sync_dma_for_cpu()
-> wrappers around the.
+Why?
 
-Broken sentence?
+First thing to say is that DMA to buffers where the cache lines are
+shared with data the CPU may be accessing need to be outlawed - they
+are a recipe for data corruption - always have been. Sadly, some folk
+don't see it that way because of a passed "x86 just works and we demand
+that all architectures behave like x86!" attitude. The SCSI sense
+buffer has historically been a big culpret for that.
 
-> In order to be able to move the latter part set of functions into
-> common code, change the iommu implementation to use them directly
-> and remove the internal ones as a separate interface.
->
-> As page+offset and phys_address are equivalent, but are used in
-> different parts of the code here, this allows removing some of
-> the conversion but adds them elsewhere.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Looks good to me, took me some time to verify and understand
-the open-coded version of PFN_UP() and this refactoring alone
-makes the patch highly valuable.
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+For WT, FROM_DEVICE, invalidating after DMA is the right thing to do,
+because we want to ensure that the DMA'd data is properly readable upon
+completion of the DMA. If overlapping cache lines have been touched
+while DMA is progressing, and we invalidate before DMA, then the cache
+will contain stale data that will remain in the cache after DMA has
+completed. Invalidating a WT cache does not destroy any data, so is
+safe to do. So the safest approach is to invalidate after DMA has
+completed in this instance.
 
-Yours,
-Linus Walleij
+
+For WB, FROM_DEVICE, we have the problem of dirty cache lines which
+we have to get rid of. For the overlapping cache lines, we have to
+clean those before DMA begins to ensure that data written to the
+non-DMA-buffer part is preserved. All other cache lines need to be
+invalidated before DMA begins to ensure that writebacks do not
+corrupt data from the device. Hence why it's different.
+
+
+And hence why the ARM implementation is based around buffer ownership.
+And hence why they're called dma_map_area()/dma_unmap_area() rather
+than the cache operations themselves. This is an intentional change,
+one that was done when ARMv6 came along.
+
+> OTOH, most machines that are actually in use today (armv6+,
+> powerpc, later mips, microblaze, riscv, nios2) also have to
+> deal with speculative accesses, so they end up having to
+> invalidate or flush both before and after a DMA_FROM_DEVICE
+> and DMA_BIDIRECTIONAL.
+
+Again, these are implementation details of the cache, and this is
+precisely why having the map/unmap interface is so much better than
+having generic code explicitly call "clean" and "invalidate"
+interfaces into arch code.
+
+If we treat everything as a speculative cache, then we're doing
+needless extra work for those caches that aren't speculative. So,
+ARM would have to step through every cache line for every DMA
+buffer at 32-byte intervals performing cache maintenance whether
+the cache is speculative or not. That is expensive, and hurts
+performance.
+
+I put a lot of thought into this when I updated the ARM DMA
+implementation when we started seeing these different cache types
+particularly when ARMv6 came along. I really don't want that work
+wrecked.
+
+-- 
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 40Mbps down 10Mbps up. Decent connectivity at last!
