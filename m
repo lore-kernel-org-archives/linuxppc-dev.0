@@ -4,71 +4,110 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02726C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 13:24:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EFB7C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 13:49:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PrT4f13nqz3cjB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 23:24:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PrTd642dBz3cdZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 23:48:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=CxCzEj2L;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::72b; helo=mail-qk1-x72b.google.com; envelope-from=ubizjak@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=CxCzEj2L;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
 	dkim-atps=neutral
-Received: from mail-qk1-x72b.google.com (mail-qk1-x72b.google.com [IPv6:2607:f8b0:4864:20::72b])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrT3d249Pz2yNm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2023 23:23:24 +1000 (AEST)
-Received: by mail-qk1-x72b.google.com with SMTP id ay7so2185186qkb.6
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2023 06:23:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1680614601;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=kVV5FfyLXKvr30JASXaFzrtmOvguU/pSGwBivgkkCt8=;
-        b=CxCzEj2L7VIhJL6LkhpoeSyjitfjUIwxyK7WygTAvIMrtL8sNfxriP0xlU7D62WQoz
-         JS8ax3M/Eesvd5oi0sr1H03A3xMMSSa82fhef9qRDqrlsouM+KCZqqtCxNs6kzj4t5Ub
-         F7DDt5YscrWWbseYb3G5W9hFZRpZsQPXo27yv0jzn2w9mDA1ooRuDwc7z6znLG2Vi+Bi
-         tq4rA2ZMQA51NCQ7Ksdo8VwWalrmJJS5r9RCMSPpRrKxpS4no0h4o3ze6IAi22w6AMMd
-         0et5DLzt+KCxhgyjPFDLnq1TYfArzjvJxF3PKXuT3UfUffLUWpYKI/WE/kzz1oDnvdpX
-         Etng==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrTc61vLmz3c6f
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2023 23:48:05 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1680616082;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
+	b=YhmCImWgyH1oTFbmb2X1DxdAwli7ivxE8jb3CvClzX9cZHmx8R33CMxyaQuPSlD0ISpoX0
+	2aQqcwt+eAmnuxlWihBgJSmeppoWjD9XTHi3/nuO/umFMHV8UYHvsxjRJjEz/29mb/y0V2
+	zw9KSAG81pJuyzGSFPUilIskzS+C9xU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1680616082;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
+	b=YhmCImWgyH1oTFbmb2X1DxdAwli7ivxE8jb3CvClzX9cZHmx8R33CMxyaQuPSlD0ISpoX0
+	2aQqcwt+eAmnuxlWihBgJSmeppoWjD9XTHi3/nuO/umFMHV8UYHvsxjRJjEz/29mb/y0V2
+	zw9KSAG81pJuyzGSFPUilIskzS+C9xU=
+Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
+ [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-671-bjkNTa1NOkOG6gzIJj3G3Q-1; Tue, 04 Apr 2023 09:48:00 -0400
+X-MC-Unique: bjkNTa1NOkOG6gzIJj3G3Q-1
+Received: by mail-wr1-f70.google.com with SMTP id t9-20020adfba49000000b002dd3986083bso3732091wrg.12
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2023 06:48:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680614601;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kVV5FfyLXKvr30JASXaFzrtmOvguU/pSGwBivgkkCt8=;
-        b=06UkxbA7I3sgMMJ3KHE9oVboy/BXuIHa/ga+1od3pHUYw6CIUCOYqpfo9QnY7Tn3YC
-         5kJeR4r4fFn/i7k6g/k93JO6hkOTARcJ8xPBQqFKpKI3heMxp5kDCr+I0y3/7vo8OF7L
-         by9jauYFuuzW7rQf0TXPR4Ji57lvqyM9naanpGSPA2RwbMO7Rr3d7oU2+sNbsMqnZCxn
-         BGhaxCg829p/b8m95vvzGJXjPhQFnzUdj2CX2mU+1dplkV400VKCEETU/Jx4rcpeGrD3
-         bQyZ805GvxIJbl3C153P+rGhx1lGU2NEneqD41lTRaeDKBPaFm6tO/RJkKD62JSyJ4qB
-         EyPA==
-X-Gm-Message-State: AAQBX9e7mOLLVFJBxSnDp/IEhWv/xyzGfxmASVrQ5URgq4Xxn0g7hM3Q
-	QNjUrjwWyAtOpq8AUSFBwkC05w8JY1yP5GVaNno=
-X-Google-Smtp-Source: AKy350b/r9epx7QN6cXCoxgIbACmW4sFS0VlXrzPHDsCvgVLRBRS+bIi9gMlH812VAfYBgK5rBITGvtyCoxFOxnCyYI=
-X-Received: by 2002:a05:620a:404f:b0:74a:28c4:64ea with SMTP id
- i15-20020a05620a404f00b0074a28c464eamr911755qko.6.1680614600864; Tue, 04 Apr
- 2023 06:23:20 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680616079;
+        h=content-transfer-encoding:in-reply-to:organization:from:references
+         :cc:to:content-language:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
+        b=vjpZY3RLa1iPfPdUEd4I++k9OITBJoqxDyc+S2vmxXwHut9hj45ZQ/EPe1yC+ffhwP
+         UZFUzQ+1+ZRqWuwiV56gxh3o3oWQ5YiDqOpNZsubO4n+2DMlleSbeV3vfh34ppyfOs/h
+         pO4jO6wi5rVXMRQIfYau6ak8nuI1qULdUe0GUdNzh+qnu6w4DeCFmDRJ5y7RhIA05XMq
+         7ydZIt9EpOrD+CPf2M0gMyt6wVJaisdTFnhwnGiqpmyTbTrNDqGBNeWeW057rx7r2hep
+         znGU0tPUR7xiiCBBOJiO3ZQZRXGgU8JDEH5e3eXdLDngJbB+5gSlDu4qGBZI4qj4mL3I
+         Whjw==
+X-Gm-Message-State: AAQBX9ewrU3tFsn3UdetyMYzZlVm+pzQd8Ee/vOE0lO4gML4s5+KD+wN
+	txGWNipa/U7eRinEB1Nrc4cT71moyNxJ2+zHzOWa9WdeeVoQuXF7T8n5SmpoWOB/6V776uKnE+r
+	cTnMXrHlNEThjV66GDQjH29iviA==
+X-Received: by 2002:a5d:4d11:0:b0:2ce:9819:1c1e with SMTP id z17-20020a5d4d11000000b002ce98191c1emr1783374wrt.30.1680616079631;
+        Tue, 04 Apr 2023 06:47:59 -0700 (PDT)
+X-Google-Smtp-Source: AKy350bmtLhdkOTL49G5hyyIR/dGwEI3AOPEAjf+veEKXRQyea3PV+FawQK0/io3jdVH76JN5ImpWw==
+X-Received: by 2002:a5d:4d11:0:b0:2ce:9819:1c1e with SMTP id z17-20020a5d4d11000000b002ce98191c1emr1783320wrt.30.1680616079268;
+        Tue, 04 Apr 2023 06:47:59 -0700 (PDT)
+Received: from ?IPV6:2003:cb:c709:b600:e63:6c3b:7b5d:f439? (p200300cbc709b6000e636c3b7b5df439.dip0.t-ipconnect.de. [2003:cb:c709:b600:e63:6c3b:7b5d:f439])
+        by smtp.gmail.com with ESMTPSA id d7-20020adfe2c7000000b002d419f661d6sm12391832wrj.82.2023.04.04.06.47.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 04 Apr 2023 06:47:58 -0700 (PDT)
+Message-ID: <78a31392-8f9b-9705-918a-24edb650f395@redhat.com>
+Date: Tue, 4 Apr 2023 15:47:56 +0200
 MIME-Version: 1.0
-References: <20230305205628.27385-1-ubizjak@gmail.com> <20230305205628.27385-2-ubizjak@gmail.com>
- <ZB2v+avNt52ac/+w@FVFF77S0Q05N> <CAFULd4ZCgxDYnyy--qdgKoAo_y7MbNSaQdbdBFefnFuMoM2OYw@mail.gmail.com>
- <ZB3MR8lGbnea9ui6@FVFF77S0Q05N> <ZB3QtDYuWdpiD5qk@FVFF77S0Q05N>
- <CAFULd4aFUF5k=QJD8tDp4qzm2iBF7=rNvp1SJWrg44X5hTFxtQ@mail.gmail.com>
- <ZCqoRNU8EJhKJVEu@FVFF77S0Q05N> <CAFULd4ZUnbtDYXBBbuTJnq9wLSf5cZTc=hUPxg6-8KRNA7YVeQ@mail.gmail.com>
- <ZCwj19okhYNRN8er@FVFF77S0Q05N.cambridge.arm.com>
-In-Reply-To: <ZCwj19okhYNRN8er@FVFF77S0Q05N.cambridge.arm.com>
-From: Uros Bizjak <ubizjak@gmail.com>
-Date: Tue, 4 Apr 2023 15:23:09 +0200
-Message-ID: <CAFULd4ZypxQULgq-MYgzsYd8k_BV0aH0eRhggX3MHWCgvKW=Bg@mail.gmail.com>
-Subject: Re: [PATCH 01/10] locking/atomic: Add missing cast to try_cmpxchg() fallbacks
-To: Mark Rutland <mark.rutland@arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.9.1
+Subject: Re: [PATCH 1/3] arch: Introduce ARCH_HAS_CPUMASK_BITS
+To: Yair Podemsky <ypodemsk@redhat.com>, linux@armlinux.org.uk,
+ mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
+ borntraeger@linux.ibm.com, svens@linux.ibm.com, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, x86@kernel.org, hpa@zytor.com, will@kernel.org,
+ aneesh.kumar@linux.ibm.com, akpm@linux-foundation.org, peterz@infradead.org,
+ arnd@arndb.de, keescook@chromium.org, paulmck@kernel.org,
+ jpoimboe@kernel.org, samitolvanen@google.com, frederic@kernel.org,
+ ardb@kernel.org, juerg.haefliger@canonical.com, rmk+kernel@armlinux.org.uk,
+ geert+renesas@glider.be, tony@atomide.com, linus.walleij@linaro.org,
+ sebastian.reichel@collabora.com, nick.hawkins@hpe.com,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
+ mtosatti@redhat.com, vschneid@redhat.com, dhildenb@redhat.com
+References: <20230404134224.137038-1-ypodemsk@redhat.com>
+ <20230404134224.137038-2-ypodemsk@redhat.com>
+From: David Hildenbrand <david@redhat.com>
+Organization: Red Hat
+In-Reply-To: <20230404134224.137038-2-ypodemsk@redhat.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,132 +119,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Will Deacon <will@kernel.org>, Boqun Feng <boqun.feng@gmail.com>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: alougovs@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Apr 4, 2023 at 3:19=E2=80=AFPM Mark Rutland <mark.rutland@arm.com> =
-wrote:
->
-> On Tue, Apr 04, 2023 at 02:24:38PM +0200, Uros Bizjak wrote:
-> > On Mon, Apr 3, 2023 at 12:19=E2=80=AFPM Mark Rutland <mark.rutland@arm.=
-com> wrote:
-> > >
-> > > On Sun, Mar 26, 2023 at 09:28:38PM +0200, Uros Bizjak wrote:
-> > > > On Fri, Mar 24, 2023 at 5:33=E2=80=AFPM Mark Rutland <mark.rutland@=
-arm.com> wrote:
-> > > > >
-> > > > > On Fri, Mar 24, 2023 at 04:14:22PM +0000, Mark Rutland wrote:
-> > > > > > On Fri, Mar 24, 2023 at 04:43:32PM +0100, Uros Bizjak wrote:
-> > > > > > > On Fri, Mar 24, 2023 at 3:13=E2=80=AFPM Mark Rutland <mark.ru=
-tland@arm.com> wrote:
-> > > > > > > >
-> > > > > > > > On Sun, Mar 05, 2023 at 09:56:19PM +0100, Uros Bizjak wrote=
-:
-> > > > > > > > > Cast _oldp to the type of _ptr to avoid incompatible-poin=
-ter-types warning.
-> > > > > > > >
-> > > > > > > > Can you give an example of where we are passing an incompat=
-ible pointer?
-> > > > > > >
-> > > > > > > An example is patch 10/10 from the series, which will fail wi=
-thout
-> > > > > > > this fix when fallback code is used. We have:
-> > > > > > >
-> > > > > > > -       } while (local_cmpxchg(&rb->head, offset, head) !=3D =
-offset);
-> > > > > > > +       } while (!local_try_cmpxchg(&rb->head, &offset, head)=
-);
-> > > > > > >
-> > > > > > > where rb->head is defined as:
-> > > > > > >
-> > > > > > > typedef struct {
-> > > > > > >    atomic_long_t a;
-> > > > > > > } local_t;
-> > > > > > >
-> > > > > > > while offset is defined as 'unsigned long'.
-> > > > > >
-> > > > > > Ok, but that's because we're doing the wrong thing to start wit=
-h.
-> > > > > >
-> > > > > > Since local_t is defined in terms of atomic_long_t, we should d=
-efine the
-> > > > > > generic local_try_cmpxchg() in terms of atomic_long_try_cmpxchg=
-(). We'll still
-> > > > > > have a mismatch between 'long *' and 'unsigned long *', but the=
-n we can fix
-> > > > > > that in the callsite:
-> > > > > >
-> > > > > >       while (!local_try_cmpxchg(&rb->head, &(long *)offset, hea=
-d))
-> > > > >
-> > > > > Sorry, that should be:
-> > > > >
-> > > > >         while (!local_try_cmpxchg(&rb->head, (long *)&offset, hea=
-d))
-> > > >
-> > > > The fallbacks are a bit more complicated than above, and are differ=
-ent
-> > > > from atomic_try_cmpxchg.
-> > > >
-> > > > Please note in patch 2/10, the falbacks when arch_try_cmpxchg_local
-> > > > are not defined call arch_cmpxchg_local. Also in patch 2/10,
-> > > > try_cmpxchg_local is introduced, where it calls
-> > > > arch_try_cmpxchg_local. Targets (and generic code) simply define (e=
-.g.
-> > > > :
-> > > >
-> > > > #define local_cmpxchg(l, o, n) \
-> > > >        (cmpxchg_local(&((l)->a.counter), (o), (n)))
-> > > > +#define local_try_cmpxchg(l, po, n) \
-> > > > +       (try_cmpxchg_local(&((l)->a.counter), (po), (n)))
-> > > >
-> > > > which is part of the local_t API. Targets should either define all
-> > > > these #defines, or none. There are no partial fallbacks as is the c=
-ase
-> > > > with atomic_t.
-> > >
-> > > Whether or not there are fallbacks is immaterial.
-> > >
-> > > In those cases, architectures can just as easily write C wrappers, e.=
-g.
-> > >
-> > > long local_cmpxchg(local_t *l, long old, long new)
-> > > {
-> > >         return cmpxchg_local(&l->a.counter, old, new);
-> > > }
-> > >
-> > > long local_try_cmpxchg(local_t *l, long *old, long new)
-> > > {
-> > >         return try_cmpxchg_local(&l->a.counter, old, new);
-> > > }
-> >
-> > Please find attached the complete prototype patch that implements the
-> > above suggestion.
-> >
-> > The patch includes:
-> > - implementation of instrumented try_cmpxchg{,64}_local definitions
-> > - corresponding arch_try_cmpxchg{,64}_local fallback definitions
-> > - generic local{,64}_try_cmpxchg (and local{,64}_cmpxchg) C wrappers
-> >
-> > - x86 specific local_try_cmpxchg (and local_cmpxchg) C wrappers
-> > - x86 specific arch_try_cmpxchg_local definition
-> >
-> > - kernel/events/ring_buffer.c change to test local_try_cmpxchg
-> > implementation and illustrate the transition
-> > - arch/x86/events/core.c change to test local64_try_cmpxchg
-> > implementation and illustrate the transition
-> >
-> > The definition of atomic_long_t is different for 64-bit and 32-bit
-> > targets (s64 vs int), so target specific C wrappers have to use
-> > different casts to account for this difference.
-> >
-> > Uros.
->
-> Thanks for this!
->
-> FWIW, the patch (inline below) looks good to me.
+On 04.04.23 15:42, Yair Podemsky wrote:
+> Some architectures set and maintain the mm_cpumask bits when loading
+> or removing process from cpu.
+> This Kconfig will mark those to allow different behavior between
+> kernels that maintain the mm_cpumask and those that do not.
+> 
 
-Thanks, I will prepare a patch series for submission later today.
+I was wondering if we should do something along the lines of:
 
-Uros.
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 0722859c3647..1f5c15d8e8ed 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -767,11 +767,13 @@ struct mm_struct {
+  #endif /* CONFIG_LRU_GEN */
+         } __randomize_layout;
+
++#ifdef CONFIG_MM_CPUMASK
+         /*
+          * The mm_cpumask needs to be at the end of mm_struct, because it
+          * is dynamically sized based on nr_cpu_ids.
+          */
+         unsigned long cpu_bitmap[];
++#endif
+  };
+
+But that would, of course, require additional changes to make it 
+compile. What concerns me a bit is that we have in mm/rmap.c a 
+mm_cpumask() usage. But it's glued to 
+CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH ... shaky.
+
+At least if we would properly fence it, there would be no
+accidental abuse anymore.
+
+
+> Signed-off-by: Yair Podemsky <ypodemsk@redhat.com>
+> ---
+>   arch/Kconfig         | 8 ++++++++
+>   arch/arm/Kconfig     | 1 +
+>   arch/powerpc/Kconfig | 1 +
+>   arch/s390/Kconfig    | 1 +
+>   arch/sparc/Kconfig   | 1 +
+>   arch/x86/Kconfig     | 1 +
+
+As Valentin says, there are other architectures that do the same.
+
+-- 
+Thanks,
+
+David / dhildenb
+
