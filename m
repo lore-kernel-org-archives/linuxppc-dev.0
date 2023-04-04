@@ -4,84 +4,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EFB7C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 13:49:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0629FC761AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 14:04:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PrTd642dBz3cdZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 23:48:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PrTzL1LZpz3cgm
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 00:04:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=TrIW2UM8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Fv0fNI06;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YhmCImWg;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=TrIW2UM8;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Fv0fNI06;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrTc61vLmz3c6f
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2023 23:48:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrTyN4gnCz3cJq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2023 00:03:55 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1680616082;
+	s=mimecast20190719; t=1680617032;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
-	b=YhmCImWgyH1oTFbmb2X1DxdAwli7ivxE8jb3CvClzX9cZHmx8R33CMxyaQuPSlD0ISpoX0
-	2aQqcwt+eAmnuxlWihBgJSmeppoWjD9XTHi3/nuO/umFMHV8UYHvsxjRJjEz/29mb/y0V2
-	zw9KSAG81pJuyzGSFPUilIskzS+C9xU=
+	bh=+eiQuy0297qofRfcSxKqcQyipv7GSPC3sFo1rtx/hWs=;
+	b=TrIW2UM84QTciJZaQbRY4R6uJhA3yyagw6fR7txvIh9ql9oFyDKUJ4Pk536SMSerkmpvBo
+	5iDcqxSEpGENmVhj+SNYD8XDHjf0wCs9jyIz/efjt/KEzDza3dK7G0l5o5GxsYQCG3Vn9z
+	RS9rZivhd8jeTWPu8pXSQZuxMIzGpJc=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1680616082;
+	s=mimecast20190719; t=1680617033;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
-	b=YhmCImWgyH1oTFbmb2X1DxdAwli7ivxE8jb3CvClzX9cZHmx8R33CMxyaQuPSlD0ISpoX0
-	2aQqcwt+eAmnuxlWihBgJSmeppoWjD9XTHi3/nuO/umFMHV8UYHvsxjRJjEz/29mb/y0V2
-	zw9KSAG81pJuyzGSFPUilIskzS+C9xU=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=+eiQuy0297qofRfcSxKqcQyipv7GSPC3sFo1rtx/hWs=;
+	b=Fv0fNI06y/UdDNiDyi1e7ikp4q0OiNcf2HfmNnCr3v3s5qkn44gvovb9A6RNys+HeW0KnP
+	zd8gywl2UGkEQ8wrUJNRUbRbkX34Nj//NihP/gR96/Z/8QCa59pJw0EgJ48BUYdslXV0LD
+	rgfyU/0yXeH7f0s2jSIIQ28+VknFoAU=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-671-bjkNTa1NOkOG6gzIJj3G3Q-1; Tue, 04 Apr 2023 09:48:00 -0400
-X-MC-Unique: bjkNTa1NOkOG6gzIJj3G3Q-1
-Received: by mail-wr1-f70.google.com with SMTP id t9-20020adfba49000000b002dd3986083bso3732091wrg.12
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2023 06:48:00 -0700 (PDT)
+ us-mta-578-s711xQ2LNRy-us6jvpLV0Q-1; Tue, 04 Apr 2023 10:03:46 -0400
+X-MC-Unique: s711xQ2LNRy-us6jvpLV0Q-1
+Received: by mail-wm1-f71.google.com with SMTP id ay37-20020a05600c1e2500b003ee69edec16so17851272wmb.5
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2023 07:03:44 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680616079;
+        d=1e100.net; s=20210112; t=1680617022;
         h=content-transfer-encoding:in-reply-to:organization:from:references
          :cc:to:content-language:subject:user-agent:mime-version:date
          :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=zsTIZUaOt4/p51daq2PZX1n16o1nkazviHKpSzXwqxo=;
-        b=vjpZY3RLa1iPfPdUEd4I++k9OITBJoqxDyc+S2vmxXwHut9hj45ZQ/EPe1yC+ffhwP
-         UZFUzQ+1+ZRqWuwiV56gxh3o3oWQ5YiDqOpNZsubO4n+2DMlleSbeV3vfh34ppyfOs/h
-         pO4jO6wi5rVXMRQIfYau6ak8nuI1qULdUe0GUdNzh+qnu6w4DeCFmDRJ5y7RhIA05XMq
-         7ydZIt9EpOrD+CPf2M0gMyt6wVJaisdTFnhwnGiqpmyTbTrNDqGBNeWeW057rx7r2hep
-         znGU0tPUR7xiiCBBOJiO3ZQZRXGgU8JDEH5e3eXdLDngJbB+5gSlDu4qGBZI4qj4mL3I
-         Whjw==
-X-Gm-Message-State: AAQBX9ewrU3tFsn3UdetyMYzZlVm+pzQd8Ee/vOE0lO4gML4s5+KD+wN
-	txGWNipa/U7eRinEB1Nrc4cT71moyNxJ2+zHzOWa9WdeeVoQuXF7T8n5SmpoWOB/6V776uKnE+r
-	cTnMXrHlNEThjV66GDQjH29iviA==
-X-Received: by 2002:a5d:4d11:0:b0:2ce:9819:1c1e with SMTP id z17-20020a5d4d11000000b002ce98191c1emr1783374wrt.30.1680616079631;
-        Tue, 04 Apr 2023 06:47:59 -0700 (PDT)
-X-Google-Smtp-Source: AKy350bmtLhdkOTL49G5hyyIR/dGwEI3AOPEAjf+veEKXRQyea3PV+FawQK0/io3jdVH76JN5ImpWw==
-X-Received: by 2002:a5d:4d11:0:b0:2ce:9819:1c1e with SMTP id z17-20020a5d4d11000000b002ce98191c1emr1783320wrt.30.1680616079268;
-        Tue, 04 Apr 2023 06:47:59 -0700 (PDT)
+        bh=+eiQuy0297qofRfcSxKqcQyipv7GSPC3sFo1rtx/hWs=;
+        b=FDvOtisqjb6KO3MLMy+E6qqm4mjto80n3lU2qnXsmjeBlZXKLTHatY1A9Qzg6sPUV+
+         OBPXJawS7jARureMdUy1GzYDBKZCZdHjgKVjIspogEP1UBsVA/7SZa8Wxxwmol+mGb2W
+         K9zoloB16nkXag7Sg+16P99N3l2jmOjtHBYq6zg2RdaXEHUo12lVkK8HGFXd0yXjHytV
+         TQSqp86o/0hFdSfW7wkrRmTgCA2iIxM86lxZ1htEViuoGSSArX6r7Un1I5A+buBGuzAq
+         mx0YGz6vsj5FNX/75VMw6OzcXzp7TLgnmeHu+RpBXs7QgxwDuA69TQthTtgv2llwlVqx
+         3UTg==
+X-Gm-Message-State: AAQBX9cKqRokvyALV2PNjRHqzm15iwE0RScwurNKq/jCsezeX1T+59si
+	uZlw9vh3zXkvNb0+Vi0u3iQhj5QYuCmA7QQViaVhD8WX8NQ+WVootFLJXyOXnM78y744m0br3ab
+	N5AbJbgDDjaKzSbySrc5Nx4gt6Q==
+X-Received: by 2002:a5d:6291:0:b0:2d6:5afe:7b99 with SMTP id k17-20020a5d6291000000b002d65afe7b99mr1501599wru.10.1680617021964;
+        Tue, 04 Apr 2023 07:03:41 -0700 (PDT)
+X-Google-Smtp-Source: AKy350ZgF89ZubYczhCwXf0n6e5MiZ9Gbs+vNGbCQed6l+DJFU8EvLia/3dXAX7rxTgsIMUPc3yreQ==
+X-Received: by 2002:a5d:6291:0:b0:2d6:5afe:7b99 with SMTP id k17-20020a5d6291000000b002d65afe7b99mr1501576wru.10.1680617021501;
+        Tue, 04 Apr 2023 07:03:41 -0700 (PDT)
 Received: from ?IPV6:2003:cb:c709:b600:e63:6c3b:7b5d:f439? (p200300cbc709b6000e636c3b7b5df439.dip0.t-ipconnect.de. [2003:cb:c709:b600:e63:6c3b:7b5d:f439])
-        by smtp.gmail.com with ESMTPSA id d7-20020adfe2c7000000b002d419f661d6sm12391832wrj.82.2023.04.04.06.47.57
+        by smtp.gmail.com with ESMTPSA id i17-20020a5d5591000000b002eaac3a9beesm2694936wrv.8.2023.04.04.07.03.39
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 04 Apr 2023 06:47:58 -0700 (PDT)
-Message-ID: <78a31392-8f9b-9705-918a-24edb650f395@redhat.com>
-Date: Tue, 4 Apr 2023 15:47:56 +0200
+        Tue, 04 Apr 2023 07:03:40 -0700 (PDT)
+Message-ID: <d21bfe1d-46e6-5547-cdcb-0d851bf0834a@redhat.com>
+Date: Tue, 4 Apr 2023 16:03:38 +0200
 MIME-Version: 1.0
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
  Thunderbird/102.9.1
-Subject: Re: [PATCH 1/3] arch: Introduce ARCH_HAS_CPUMASK_BITS
+Subject: Re: [PATCH 3/3] mm/mmu_gather: send tlb_remove_table_smp_sync IPI
+ only to CPUs in kernel mode
 To: Yair Podemsky <ypodemsk@redhat.com>, linux@armlinux.org.uk,
  mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
  hca@linux.ibm.com, gor@linux.ibm.com, agordeev@linux.ibm.com,
@@ -99,10 +100,10 @@ To: Yair Podemsky <ypodemsk@redhat.com>, linux@armlinux.org.uk,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org,
  mtosatti@redhat.com, vschneid@redhat.com, dhildenb@redhat.com
 References: <20230404134224.137038-1-ypodemsk@redhat.com>
- <20230404134224.137038-2-ypodemsk@redhat.com>
+ <20230404134224.137038-4-ypodemsk@redhat.com>
 From: David Hildenbrand <david@redhat.com>
 Organization: Red Hat
-In-Reply-To: <20230404134224.137038-2-ypodemsk@redhat.com>
+In-Reply-To: <20230404134224.137038-4-ypodemsk@redhat.com>
 X-Mimecast-Spam-Score: 0
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
@@ -124,50 +125,130 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 04.04.23 15:42, Yair Podemsky wrote:
-> Some architectures set and maintain the mm_cpumask bits when loading
-> or removing process from cpu.
-> This Kconfig will mark those to allow different behavior between
-> kernels that maintain the mm_cpumask and those that do not.
+> The tlb_remove_table_smp_sync IPI is used to ensure the outdated tlb page
+> is not currently being accessed and can be cleared.
+> This occurs once all CPUs have left the lockless gup code section.
+> If they reenter the page table walk, the pointers will be to the new
+> pages.
+> Therefore the IPI is only needed for CPUs in kernel mode.
+> By preventing the IPI from being sent to CPUs not in kernel mode,
+> Latencies are reduced.
 > 
-
-I was wondering if we should do something along the lines of:
-
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 0722859c3647..1f5c15d8e8ed 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -767,11 +767,13 @@ struct mm_struct {
-  #endif /* CONFIG_LRU_GEN */
-         } __randomize_layout;
-
-+#ifdef CONFIG_MM_CPUMASK
-         /*
-          * The mm_cpumask needs to be at the end of mm_struct, because it
-          * is dynamically sized based on nr_cpu_ids.
-          */
-         unsigned long cpu_bitmap[];
-+#endif
-  };
-
-But that would, of course, require additional changes to make it 
-compile. What concerns me a bit is that we have in mm/rmap.c a 
-mm_cpumask() usage. But it's glued to 
-CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH ... shaky.
-
-At least if we would properly fence it, there would be no
-accidental abuse anymore.
-
-
+> Race conditions considerations:
+> The context state check is vulnerable to race conditions between the
+> moment the context state is read to when the IPI is sent (or not).
+> 
+> Here are these scenarios.
+> case 1:
+> CPU-A                                             CPU-B
+> 
+>                                                    state == CONTEXT_KERNEL
+> int state = atomic_read(&ct->state);
+>                                                    Kernel-exit:
+>                                                    state == CONTEXT_USER
+> if (state & CT_STATE_MASK == CONTEXT_KERNEL)
+> 
+> In this case, the IPI will be sent to CPU-B despite it is no longer in
+> the kernel. The consequence of which would be an unnecessary IPI being
+> handled by CPU-B, causing a reduction in latency.
+> This would have been the case every time without this patch.
+> 
+> case 2:
+> CPU-A                                             CPU-B
+> 
+> modify pagetables
+> tlb_flush (memory barrier)
+>                                                    state == CONTEXT_USER
+> int state = atomic_read(&ct->state);
+>                                                    Kernel-enter:
+>                                                    state == CONTEXT_KERNEL
+>                                                    READ(pagetable values)
+> if (state & CT_STATE_MASK == CONTEXT_USER)
+> 
+> In this case, the IPI will not be sent to CPU-B despite it returning to
+> the kernel and even reading the pagetable.
+> However since this CPU-B has entered the pagetable after the
+> modification it is reading the new, safe values.
+> 
+> The only case when this IPI is truly necessary is when CPU-B has entered
+> the lockless gup code section before the pagetable modifications and
+> has yet to exit them, in which case it is still in the kernel.
+> 
 > Signed-off-by: Yair Podemsky <ypodemsk@redhat.com>
 > ---
->   arch/Kconfig         | 8 ++++++++
->   arch/arm/Kconfig     | 1 +
->   arch/powerpc/Kconfig | 1 +
->   arch/s390/Kconfig    | 1 +
->   arch/sparc/Kconfig   | 1 +
->   arch/x86/Kconfig     | 1 +
+>   mm/mmu_gather.c | 19 +++++++++++++++++--
+>   1 file changed, 17 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/mmu_gather.c b/mm/mmu_gather.c
+> index 5ea9be6fb87c..731d955e152d 100644
+> --- a/mm/mmu_gather.c
+> +++ b/mm/mmu_gather.c
+> @@ -9,6 +9,7 @@
+>   #include <linux/smp.h>
+>   #include <linux/swap.h>
+>   #include <linux/rmap.h>
+> +#include <linux/context_tracking_state.h>
+>   
+>   #include <asm/pgalloc.h>
+>   #include <asm/tlb.h>
+> @@ -191,6 +192,20 @@ static void tlb_remove_table_smp_sync(void *arg)
+>   	/* Simply deliver the interrupt */
+>   }
+>   
+> +
+> +#ifdef CONFIG_CONTEXT_TRACKING
+> +static bool cpu_in_kernel(int cpu, void *info)
+> +{
+> +	struct context_tracking *ct = per_cpu_ptr(&context_tracking, cpu);
+> +	int state = atomic_read(&ct->state);
+> +	/* will return true only for cpus in kernel space */
+> +	return state & CT_STATE_MASK == CONTEXT_KERNEL;
+> +}
+> +#define CONTEXT_PREDICATE cpu_in_kernel
+> +#else
+> +#define CONTEXT_PREDICATE NULL
+> +#endif /* CONFIG_CONTEXT_TRACKING */
+> +
+>   #ifdef CONFIG_ARCH_HAS_CPUMASK_BITS
+>   #define REMOVE_TABLE_IPI_MASK mm_cpumask(mm)
+>   #else
+> @@ -206,8 +221,8 @@ void tlb_remove_table_sync_one(struct mm_struct *mm)
+>   	 * It is however sufficient for software page-table walkers that rely on
+>   	 * IRQ disabling.
+>   	 */
+> -	on_each_cpu_mask(REMOVE_TABLE_IPI_MASK, tlb_remove_table_smp_sync,
+> -			NULL, true);
+> +	on_each_cpu_cond_mask(CONTEXT_PREDICATE, tlb_remove_table_smp_sync,
+> +			NULL, true, REMOVE_TABLE_IPI_MASK);
+>   }
+>   
+>   static void tlb_remove_table_rcu(struct rcu_head *head)
 
-As Valentin says, there are other architectures that do the same.
+
+Maybe a bit cleaner by avoiding CONTEXT_PREDICATE, still not completely nice
+(an empty dummy function "cpu_maybe_in_kernel" might be cleanest but would
+be slightly slower for !CONFIG_CONTEXT_TRACKING):
+
+#ifdef CONFIG_CONTEXT_TRACKING
+static bool cpu_in_kernel(int cpu, void *info)
+{
+	struct context_tracking *ct = per_cpu_ptr(&context_tracking, cpu);
+	int state = atomic_read(&ct->state);
+	/* will return true only for cpus in kernel space */
+	return state & CT_STATE_MASK == CONTEXT_KERNEL;
+}
+#endif /* CONFIG_CONTEXT_TRACKING */
+
+
+...
+#ifdef CONFIG_CONTEXT_TRACKING
+	on_each_cpu_mask(REMOVE_TABLE_IPI_MASK, tlb_remove_table_smp_sync,
+			 NULL, true);
+#else /* CONFIG_CONTEXT_TRACKING */
+	on_each_cpu_cond_mask(cpu_in_kernel, tlb_remove_table_smp_sync,
+			      NULL, true, REMOVE_TABLE_IPI_MASK);
+#endif /* CONFIG_CONTEXT_TRACKING */
+
 
 -- 
 Thanks,
