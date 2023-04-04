@@ -4,22 +4,21 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D748C76188
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 22:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10C66C76188
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Apr 2023 22:04:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Prhcm0cytz3fQX
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 08:04:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PrhdG4FyNz3fV3
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 08:04:50 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=2001:4190:8020::34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=<UNKNOWN>)
-X-Greylist: delayed 472 seconds by postgrey-1.36 at boromir; Wed, 05 Apr 2023 08:03:56 AEST
 Received: from angie.orcam.me.uk (angie.orcam.me.uk [IPv6:2001:4190:8020::34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PrhcD41Ptz2x9d
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PrhcD4bngz2xG9
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2023 08:03:56 +1000 (AEST)
 Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id D974592009C; Tue,  4 Apr 2023 23:55:51 +0200 (CEST)
+	id 990E39200B3; Tue,  4 Apr 2023 23:55:58 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id D399B92009B;
-	Tue,  4 Apr 2023 22:55:51 +0100 (BST)
-Date: Tue, 4 Apr 2023 22:55:51 +0100 (BST)
+	by angie.orcam.me.uk (Postfix) with ESMTP id 96A0992009E;
+	Tue,  4 Apr 2023 22:55:58 +0100 (BST)
+Date: Tue, 4 Apr 2023 22:55:58 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@orcam.me.uk>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
     Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
@@ -30,9 +29,10 @@ To: Bjorn Helgaas <bhelgaas@google.com>,
     "David S. Miller" <davem@davemloft.net>, 
     Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
     Paolo Abeni <pabeni@redhat.com>
-Subject: [PATCH v7 0/7] pci: Work around ASMedia ASM2824 PCIe link training
- failures
-Message-ID: <alpine.DEB.2.21.2304042200040.37565@angie.orcam.me.uk>
+Subject: [PATCH v7 1/7] PCI: Export PCI link retrain timeout
+In-Reply-To: <alpine.DEB.2.21.2304042200040.37565@angie.orcam.me.uk>
+Message-ID: <alpine.DEB.2.21.2304042232270.37565@angie.orcam.me.uk>
+References: <alpine.DEB.2.21.2304042200040.37565@angie.orcam.me.uk>
 User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -51,18 +51,54 @@ Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>, David Abdurachmanov <david.ab
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Rename LINK_RETRAIN_TIMEOUT to PCIE_LINK_RETRAIN_TIMEOUT and make it
+available via "pci.h" for PCI drivers to use.
 
- This is v7 of the change to work around a PCIe link training phenomenon 
-where a pair of devices both capable of operating at a link speed above 
-2.5GT/s seems unable to negotiate the link speed and continues training 
-indefinitely with the Link Training bit switching on and off repeatedly 
-and the data link layer never reaching the active state.
+Signed-off-by: Maciej W. Rozycki <macro@orcam.me.uk>
+---
+No change from v6.
 
- This version has been trivially rebased on top of 6.3-rc5 and verified at 
-run time.  
+No change from v5.
 
- Previous iteration: 
-<https://lore.kernel.org/r/alpine.DEB.2.21.2302022022230.45310@angie.orcam.me.uk/>.
+New change in v5.
+---
+ drivers/pci/pci.h       |    2 ++
+ drivers/pci/pcie/aspm.c |    4 +---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-  Maciej
+linux-pcie-link-retrain-timeout.diff
+Index: linux-macro/drivers/pci/pci.h
+===================================================================
+--- linux-macro.orig/drivers/pci/pci.h
++++ linux-macro/drivers/pci/pci.h
+@@ -11,6 +11,8 @@
+ 
+ #define PCI_VSEC_ID_INTEL_TBT	0x1234	/* Thunderbolt */
+ 
++#define PCIE_LINK_RETRAIN_TIMEOUT HZ
++
+ extern const unsigned char pcie_link_speed[];
+ extern bool pci_early_dump;
+ 
+Index: linux-macro/drivers/pci/pcie/aspm.c
+===================================================================
+--- linux-macro.orig/drivers/pci/pcie/aspm.c
++++ linux-macro/drivers/pci/pcie/aspm.c
+@@ -90,8 +90,6 @@ static const char *policy_str[] = {
+ 	[POLICY_POWER_SUPERSAVE] = "powersupersave"
+ };
+ 
+-#define LINK_RETRAIN_TIMEOUT HZ
+-
+ /*
+  * The L1 PM substate capability is only implemented in function 0 in a
+  * multi function device.
+@@ -213,7 +211,7 @@ static bool pcie_retrain_link(struct pci
+ 	}
+ 
+ 	/* Wait for link training end. Break out after waiting for timeout */
+-	end_jiffies = jiffies + LINK_RETRAIN_TIMEOUT;
++	end_jiffies = jiffies + PCIE_LINK_RETRAIN_TIMEOUT;
+ 	do {
+ 		pcie_capability_read_word(parent, PCI_EXP_LNKSTA, &reg16);
+ 		if (!(reg16 & PCI_EXP_LNKSTA_LT))
