@@ -4,74 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 477B2C76188
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 14:22:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7060DC76188
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 15:06:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ps6Kk4WY3z3fVq
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:22:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ps7Jb66MLz3f6k
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:06:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=dcJpf62S;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aPWxJrqN;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wNobhRpj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::52a; helo=mail-ed1-x52a.google.com; envelope-from=ubizjak@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=dcJpf62S;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aPWxJrqN;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=wNobhRpj;
 	dkim-atps=neutral
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ps6D75MYmz3f42
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 00:17:59 +1000 (AEST)
-Received: by mail-ed1-x52a.google.com with SMTP id t10so141323317edd.12
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Apr 2023 07:17:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1680704276;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tX2Wz3EA82OevW9OfamI7/Kvuo0JRd1kfWWZWf7tBPI=;
-        b=dcJpf62STM2t7wBeMFWRHA65D4e8ki42FaDdkuuO3agKqVH6m85Cy4lQ8Jc6WqjxoF
-         fnnlug9El9w16kuSLGTsPbq74oNaQ+P8JDxMAcNUZHQhE8u+5jySMEVYMmtE4egR+MrD
-         Yo63AeJfrWzh2LWw4CUsO/Jz8F4pDt2KwqewSmosxEslt2xhDsBYXNkotYBZ0u2SUb3b
-         bY44Ptodk1vZVbJl1WFw1p9lD7pDptPbaK3ykNtKWYarwScxbwyxAFGsy3vIZ++4+u08
-         7sJWtj5rpBofs9g4DRnm1uwhZ6aYf1PTSfC6VMfZ4+8IxgDtdbMLLd8hp6MXeYVptMAQ
-         HEzw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680704276;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=tX2Wz3EA82OevW9OfamI7/Kvuo0JRd1kfWWZWf7tBPI=;
-        b=6ZH17dBvjGIOCxWWmELfqwwbjWHMz44bUf8YHnS7FSdDb+z0ZArsQPmFXDW0imbHCN
-         ZJAfr2gVJPuTPLzzmIeC+OiyurJ/ecVO77IDchTs63a8K/x/iLWwLofgK07+QBHUBFMt
-         ST6WAYpO4HmxR78aTfq8gxFLaARPrZBFC4PVUBNzqo4PT3YJacbLcDX4Qzdx2rfgiHeT
-         CKtKC2M9bePbXnY546yIzmEmnepsXT6FG9B8dUet65v0RXFYzEUKUob1+291WAbO44W3
-         yRCTAlYhwK1U5H0Lt0aNOOokTKDSfhKMr0TP1xG/5JEiHdprg07e+KQVw+EETMigCWUs
-         joyA==
-X-Gm-Message-State: AAQBX9eqo2y8eoTb7HsPaQfG3ceq8Us1L0lG+RwxiKkROEqavkyxI0rT
-	y8ahlSNb7PZNivFFWcXqNG8=
-X-Google-Smtp-Source: AKy350ZbYZNSgst5kJdLcblY6mgsM4CglBWBhr5I5xeGEgTa/9eOQOFET04v+j0TrQ94wu4NswT8dQ==
-X-Received: by 2002:a17:906:53c3:b0:947:791b:fdcb with SMTP id p3-20020a17090653c300b00947791bfdcbmr2772881ejo.21.1680704276052;
-        Wed, 05 Apr 2023 07:17:56 -0700 (PDT)
-Received: from localhost.localdomain ([46.248.82.114])
-        by smtp.gmail.com with ESMTPSA id g6-20020a170906348600b009334219656dsm7381246ejb.56.2023.04.05.07.17.55
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Apr 2023 07:17:55 -0700 (PDT)
-From: Uros Bizjak <ubizjak@gmail.com>
-To: linux-alpha@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH v2 5/5] events: Illustrate the transition to local{,64}_try_cmpxchg
-Date: Wed,  5 Apr 2023 16:17:10 +0200
-Message-Id: <20230405141710.3551-6-ubizjak@gmail.com>
-X-Mailer: git-send-email 2.39.2
-In-Reply-To: <20230405141710.3551-1-ubizjak@gmail.com>
-References: <20230405141710.3551-1-ubizjak@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ps7HZ4dxDz3cB4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 01:06:02 +1000 (AEST)
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 3E2872064F;
+	Wed,  5 Apr 2023 15:05:59 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1680707159; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Lx1SiYMoPblobWQV3Y8ege1Ac9VeTo2HJVjw9lN70UA=;
+	b=aPWxJrqNwLdQycG78DQKj0AN0HtJwj7y7Pss6+/k+ouZCc57PoWj2gvJKtyrMC61DiQQgl
+	9NxCi+fenSM6Y4IEtqFEAhmFFmu+0LFE/2mSTaqvjpZMxysJxtU2tqRGvMoJqJ+KH9wBxw
+	rNr4S5ecLKvuHRsB3zCkrl6e1HjRSoM=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1680707159;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Lx1SiYMoPblobWQV3Y8ege1Ac9VeTo2HJVjw9lN70UA=;
+	b=wNobhRpjJpHIhTvVIjZ02da4FsfrsV5Upx5qouftXFU1GPfwXKta8Kn1crsmMdqowoVE67
+	4JhFW8HmM4EgLQCQ==
+Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
+	(No client certificate requested)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id C855113A92;
+	Wed,  5 Apr 2023 15:05:58 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([192.168.254.65])
+	by imap2.suse-dmz.suse.de with ESMTPSA
+	id uGgJMFaOLWTPIAAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Wed, 05 Apr 2023 15:05:58 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: arnd@arndb.de,
+	daniel.vetter@ffwll.ch,
+	deller@gmx.de,
+	javierm@redhat.com,
+	gregkh@linuxfoundation.org
+Subject: [PATCH 03/18] arch/arm: Implement <asm/fb.h> with generic helpers
+Date: Wed,  5 Apr 2023 17:05:39 +0200
+Message-Id: <20230405150554.30540-4-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230405150554.30540-1-tzimmermann@suse.de>
+References: <20230405150554.30540-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -85,66 +83,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Uros Bizjak <ubizjak@gmail.com>
+Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, Russell King <linux@armlinux.org.uk>, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch illustrates the transition to local{,64}_try_cmpxchg.
-It is not intended to be merged as-is.
+Replace the architecture's fb_is_primary_device() with the generic
+one from <asm-generic/fb.h>. No functional changes.
 
-Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Russell King <linux@armlinux.org.uk>
 ---
- arch/x86/events/core.c      | 9 ++++-----
- kernel/events/ring_buffer.c | 5 +++--
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ arch/arm/include/asm/fb.h | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/events/core.c b/arch/x86/events/core.c
-index d096b04bf80e..d9310e9363f1 100644
---- a/arch/x86/events/core.c
-+++ b/arch/x86/events/core.c
-@@ -129,13 +129,12 @@ u64 x86_perf_event_update(struct perf_event *event)
- 	 * exchange a new raw count - then add that new-prev delta
- 	 * count to the generic event atomically:
- 	 */
--again:
- 	prev_raw_count = local64_read(&hwc->prev_count);
--	rdpmcl(hwc->event_base_rdpmc, new_raw_count);
+diff --git a/arch/arm/include/asm/fb.h b/arch/arm/include/asm/fb.h
+index d92e99cd8c8a..a341d76e6d8f 100644
+--- a/arch/arm/include/asm/fb.h
++++ b/arch/arm/include/asm/fb.h
+@@ -1,19 +1,17 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
  
--	if (local64_cmpxchg(&hwc->prev_count, prev_raw_count,
--					new_raw_count) != prev_raw_count)
--		goto again;
-+	do {
-+		rdpmcl(hwc->event_base_rdpmc, new_raw_count);
-+	} while (!local64_try_cmpxchg(&hwc->prev_count, &prev_raw_count,
-+				      new_raw_count));
+-#include <linux/fb.h>
+-#include <linux/fs.h>
+ #include <asm/page.h>
  
- 	/*
- 	 * Now we have the new raw value and have updated the prev
-diff --git a/kernel/events/ring_buffer.c b/kernel/events/ring_buffer.c
-index 273a0fe7910a..111ab85ee97d 100644
---- a/kernel/events/ring_buffer.c
-+++ b/kernel/events/ring_buffer.c
-@@ -191,9 +191,10 @@ __perf_output_begin(struct perf_output_handle *handle,
++struct file;
++
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
+ {
+ 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
+ }
++#define fb_pgprotect fb_pgprotect
  
- 	perf_output_get_handle(handle);
+-static inline int fb_is_primary_device(struct fb_info *info)
+-{
+-	return 0;
+-}
++#include <asm-generic/fb.h>
  
-+	offset = local_read(&rb->head);
- 	do {
- 		tail = READ_ONCE(rb->user_page->data_tail);
--		offset = head = local_read(&rb->head);
-+		head = offset;
- 		if (!rb->overwrite) {
- 			if (unlikely(!ring_buffer_has_space(head, tail,
- 							    perf_data_size(rb),
-@@ -217,7 +218,7 @@ __perf_output_begin(struct perf_output_handle *handle,
- 			head += size;
- 		else
- 			head -= size;
--	} while (local_cmpxchg(&rb->head, offset, head) != offset);
-+	} while (!local_try_cmpxchg(&rb->head, &offset, head));
- 
- 	if (backward) {
- 		offset = head;
+ #endif /* _ASM_FB_H_ */
 -- 
-2.39.2
+2.40.0
 
