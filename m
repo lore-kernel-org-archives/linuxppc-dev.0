@@ -4,113 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD581C6FD1D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 01:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 306BFC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 04:54:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Prmyk1xtFz3cdt
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 11:20:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Prsjz16WKz3cjJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 14:54:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dsTJvQlq;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dsTJvQlq;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=RqoT6vjC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=ypodemsk@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dsTJvQlq;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dsTJvQlq;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=RqoT6vjC;
 	dkim-atps=neutral
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrTVg6680z3cJn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Apr 2023 23:43:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1680615801;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/5AmH2Sv0AFTXQ2yib2CUEzf+dnZkAWR6OfJs2RIyZU=;
-	b=dsTJvQlqNOmXlbwNDrf2yMdGgZcSaexFcwNKOXWmxVc12PL3wcQmqc5foYNLuNnes5CoIo
-	4qfMJWGPeIjK9WPn5MQ2uiJuPHEyoHbwe9XCufgWIlswVmLjjJmPBp3cNGbo+/8LNCgC3h
-	Wsb+lLK2+h/Y/rXJQSocqBBCwjj9PbI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1680615801;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/5AmH2Sv0AFTXQ2yib2CUEzf+dnZkAWR6OfJs2RIyZU=;
-	b=dsTJvQlqNOmXlbwNDrf2yMdGgZcSaexFcwNKOXWmxVc12PL3wcQmqc5foYNLuNnes5CoIo
-	4qfMJWGPeIjK9WPn5MQ2uiJuPHEyoHbwe9XCufgWIlswVmLjjJmPBp3cNGbo+/8LNCgC3h
-	Wsb+lLK2+h/Y/rXJQSocqBBCwjj9PbI=
-Received: from mimecast-mx02.redhat.com (mimecast-mx02.redhat.com
- [66.187.233.88]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- us-mta-175-4B_pK5R4OeycA85aaITT_g-1; Tue, 04 Apr 2023 09:43:15 -0400
-X-MC-Unique: 4B_pK5R4OeycA85aaITT_g-1
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.rdu2.redhat.com [10.11.54.6])
-	(using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mimecast-mx02.redhat.com (Postfix) with ESMTPS id 5B2548030CD;
-	Tue,  4 Apr 2023 13:43:13 +0000 (UTC)
-Received: from ypodemsk.tlv.csb (unknown [10.39.194.160])
-	by smtp.corp.redhat.com (Postfix) with ESMTPS id 8A2D02166B26;
-	Tue,  4 Apr 2023 13:43:05 +0000 (UTC)
-From: Yair Podemsky <ypodemsk@redhat.com>
-To: linux@armlinux.org.uk,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	hca@linux.ibm.com,
-	gor@linux.ibm.com,
-	agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com,
-	svens@linux.ibm.com,
-	davem@davemloft.net,
-	tglx@linutronix.de,
-	mingo@redhat.com,
-	bp@alien8.de,
-	dave.hansen@linux.intel.com,
-	x86@kernel.org,
-	hpa@zytor.com,
-	will@kernel.org,
-	aneesh.kumar@linux.ibm.com,
-	akpm@linux-foundation.org,
-	peterz@infradead.org,
-	arnd@arndb.de,
-	keescook@chromium.org,
-	paulmck@kernel.org,
-	jpoimboe@kernel.org,
-	samitolvanen@google.com,
-	frederic@kernel.org,
-	ardb@kernel.org,
-	juerg.haefliger@canonical.com,
-	rmk+kernel@armlinux.org.uk,
-	geert+renesas@glider.be,
-	tony@atomide.com,
-	linus.walleij@linaro.org,
-	sebastian.reichel@collabora.com,
-	nick.hawkins@hpe.com,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-mm@kvack.org,
-	mtosatti@redhat.com,
-	vschneid@redhat.com,
-	dhildenb@redhat.com
-Subject: [PATCH 3/3] mm/mmu_gather: send tlb_remove_table_smp_sync IPI only to CPUs in kernel mode
-Date: Tue,  4 Apr 2023 16:42:24 +0300
-Message-Id: <20230404134224.137038-4-ypodemsk@redhat.com>
-In-Reply-To: <20230404134224.137038-1-ypodemsk@redhat.com>
-References: <20230404134224.137038-1-ypodemsk@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Prsj01Tn0z3bNj
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2023 14:53:38 +1000 (AEST)
+Received: by mail-pj1-x102b.google.com with SMTP id x15so32783864pjk.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Apr 2023 21:53:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20210112; t=1680670414;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:sender:from:to:cc:subject:date:message-id:reply-to;
+        bh=xWE1BdjjONbSdvZOnpSK61k+ESjWxs05enNGucW95n4=;
+        b=RqoT6vjCQR1qdSGF2iuUSsuPO0sWrRE4MWl5gPRef0/dNL92YQB6piemjZSmqDweEd
+         bolTZ7aSSG22HOxanbfceXyAqPa2mhVKdqCVptC0AWxFGh3BSnro81mNEjjhI1Q30Yug
+         vpEBP1xvK1Yo2ptMZ1qc2szlZATlPkPTVtdHfNXoHEl2pkR6avu2lOgnv0oSZ3LgHB+1
+         SYvWhxnyXFNMQ6jLsl+LjFjz/5r03c9pNMi2wLTDZQlh6IoaIUV1dPN7my2Pau9Sveiu
+         Qw4CblGveahZPZqk3yVZY3u5z9XzpQDf88/p31kvGI7XgGwbbjwc+TdsAeoR6X8GTRpd
+         U3Rg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20210112; t=1680670414;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:to
+         :from:sender:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=xWE1BdjjONbSdvZOnpSK61k+ESjWxs05enNGucW95n4=;
+        b=oDslgQ3LCtmj1hyRWKCPxMQdoQVfDFCQ5w5Vz28z3lKxzFqbleFM/n43SThN9OpSjv
+         Rehwrf6+bFKs5j89Izvn5UsM62cTccIGjRCKYKKILopBgkjfFh7k9A4YBXkrWNa1yvVN
+         2n6NvhPhsqUTT98mi0ePStZio2VYiOkDBrD/rx1CdoZ3zydeOa2yvqObxnVh95JrKuxL
+         7J3yl4dJwE/5PdzqrfTlMvbTviMzJlQVg6zrZSjj7qtXQH4FJ2CNuvp+IVA/8Fnl1vwJ
+         FLudWAdT4NFilIdzpB+nFLAo5mi8AzTZMpSdAPUocpcKQQ4hvakahaDXv1eFztUdfdhF
+         jM0g==
+X-Gm-Message-State: AAQBX9clVmTSfPREKC/x0AldyjnvX2w6S6xunSpJ0OfYTv3XOuxA8m0R
+	eQcpaugoEYvKwQBbzUTjxiri+quyMaQ=
+X-Google-Smtp-Source: AKy350bO1dDnCaiZ6Qp2vAmME2Tx9T6tsrd8UbiKj6KMjmCx7KOqLE1S8ZzclkApSP7K9VfedkY5zg==
+X-Received: by 2002:a17:902:f541:b0:1a2:8940:6dbd with SMTP id h1-20020a170902f54100b001a289406dbdmr6043956plf.45.1680670414116;
+        Tue, 04 Apr 2023 21:53:34 -0700 (PDT)
+Received: from localhost.localdomain ([45.124.203.18])
+        by smtp.gmail.com with ESMTPSA id h4-20020a170902704400b0019a593e45f1sm9122900plt.261.2023.04.04.21.53.32
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 04 Apr 2023 21:53:33 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Remove duplicate SPRN_HSRR definitions
+Date: Wed,  5 Apr 2023 14:23:16 +0930
+Message-Id: <20230405045316.95003-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.39.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 3.1 on 10.11.54.6
-X-Mailman-Approved-At: Wed, 05 Apr 2023 11:17:04 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -122,108 +76,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alougovs@redhat.com, ypodemsk@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The tlb_remove_table_smp_sync IPI is used to ensure the outdated tlb page
-is not currently being accessed and can be cleared.
-This occurs once all CPUs have left the lockless gup code section.
-If they reenter the page table walk, the pointers will be to the new
-pages.
-Therefore the IPI is only needed for CPUs in kernel mode.
-By preventing the IPI from being sent to CPUs not in kernel mode,
-Latencies are reduced.
+There are two copies of these defines. Keep the older ones as they have
+associated bit definitions.
 
-Race conditions considerations:
-The context state check is vulnerable to race conditions between the
-moment the context state is read to when the IPI is sent (or not).
-
-Here are these scenarios.
-case 1:
-CPU-A                                             CPU-B
-
-                                                  state == CONTEXT_KERNEL
-int state = atomic_read(&ct->state);
-                                                  Kernel-exit:
-                                                  state == CONTEXT_USER
-if (state & CT_STATE_MASK == CONTEXT_KERNEL)
-
-In this case, the IPI will be sent to CPU-B despite it is no longer in
-the kernel. The consequence of which would be an unnecessary IPI being
-handled by CPU-B, causing a reduction in latency.
-This would have been the case every time without this patch.
-
-case 2:
-CPU-A                                             CPU-B
-
-modify pagetables
-tlb_flush (memory barrier)
-                                                  state == CONTEXT_USER
-int state = atomic_read(&ct->state);
-                                                  Kernel-enter:
-                                                  state == CONTEXT_KERNEL
-                                                  READ(pagetable values)
-if (state & CT_STATE_MASK == CONTEXT_USER)
-
-In this case, the IPI will not be sent to CPU-B despite it returning to
-the kernel and even reading the pagetable.
-However since this CPU-B has entered the pagetable after the
-modification it is reading the new, safe values.
-
-The only case when this IPI is truly necessary is when CPU-B has entered
-the lockless gup code section before the pagetable modifications and
-has yet to exit them, in which case it is still in the kernel.
-
-Signed-off-by: Yair Podemsky <ypodemsk@redhat.com>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- mm/mmu_gather.c | 19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
+Today I learnt that if you have two copies of the define, but they are
+the same value, the compiler won't warn.
 
-diff --git a/mm/mmu_gather.c b/mm/mmu_gather.c
-index 5ea9be6fb87c..731d955e152d 100644
---- a/mm/mmu_gather.c
-+++ b/mm/mmu_gather.c
-@@ -9,6 +9,7 @@
- #include <linux/smp.h>
- #include <linux/swap.h>
- #include <linux/rmap.h>
-+#include <linux/context_tracking_state.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/tlb.h>
-@@ -191,6 +192,20 @@ static void tlb_remove_table_smp_sync(void *arg)
- 	/* Simply deliver the interrupt */
- }
- 
-+
-+#ifdef CONFIG_CONTEXT_TRACKING
-+static bool cpu_in_kernel(int cpu, void *info)
-+{
-+	struct context_tracking *ct = per_cpu_ptr(&context_tracking, cpu);
-+	int state = atomic_read(&ct->state);
-+	/* will return true only for cpus in kernel space */
-+	return state & CT_STATE_MASK == CONTEXT_KERNEL;
-+}
-+#define CONTEXT_PREDICATE cpu_in_kernel
-+#else
-+#define CONTEXT_PREDICATE NULL
-+#endif /* CONFIG_CONTEXT_TRACKING */
-+
- #ifdef CONFIG_ARCH_HAS_CPUMASK_BITS
- #define REMOVE_TABLE_IPI_MASK mm_cpumask(mm)
- #else
-@@ -206,8 +221,8 @@ void tlb_remove_table_sync_one(struct mm_struct *mm)
- 	 * It is however sufficient for software page-table walkers that rely on
- 	 * IRQ disabling.
- 	 */
--	on_each_cpu_mask(REMOVE_TABLE_IPI_MASK, tlb_remove_table_smp_sync,
--			NULL, true);
-+	on_each_cpu_cond_mask(CONTEXT_PREDICATE, tlb_remove_table_smp_sync,
-+			NULL, true, REMOVE_TABLE_IPI_MASK);
- }
- 
- static void tlb_remove_table_rcu(struct rcu_head *head)
+ arch/powerpc/include/asm/reg.h | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1e8b2e04e626..0bf4c506a1eb 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -382,8 +382,6 @@
+ #define SPRN_HIOR	0x137	/* 970 Hypervisor interrupt offset */
+ #define SPRN_RMOR	0x138	/* Real mode offset register */
+ #define SPRN_HRMOR	0x139	/* Real mode offset register */
+-#define SPRN_HSRR0	0x13A	/* Hypervisor Save/Restore 0 */
+-#define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
+ #define SPRN_ASDR	0x330	/* Access segment descriptor register */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
 -- 
-2.31.1
+2.39.2
 
