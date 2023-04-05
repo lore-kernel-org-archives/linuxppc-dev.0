@@ -4,57 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4A23C76188
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 00:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C338C6FD1D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 00:51:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PrmJg1tZDz3c6y
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 10:50:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PrmKk5glWz3fV9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Apr 2023 10:51:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YHGHz5gr;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AJNVvhnb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.93; helo=mga11.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YHGHz5gr;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AJNVvhnb;
 	dkim-atps=neutral
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrmGl4v2Mz2ypJ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2023 10:49:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PrmHl45SYz3f68
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Apr 2023 10:49:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680655743; x=1712191743;
+  t=1680655795; x=1712191795;
   h=date:from:to:cc:subject:message-id:mime-version:
    content-transfer-encoding;
-  bh=gqrJ374ZhkocAkiriHS5fmOlDtC2gYrieULz8lWmzFU=;
-  b=YHGHz5grBQqAmODRXP0yuKepC/h86sdXqXJIwIHxKYp3w3mgg7kXUKwl
-   RkqLsrK/AwGx9eKMKUCT0pwNvKCJbFQjjxs0I/5rSYMXIHyfIPXI8GS65
-   JozPTGrqKw7JNtJN32HRuknhcEFQmoXLvGU5uhnnswi0TJVxVtyauesR3
-   yddiXFJhiEosQFU2iaRrI7BJcwRxFoC2uUJtBbtRN+M8glRAkEyi7K9Rn
-   iTzzhIIFAuH6Lv3ZuT5wSCZh5+4gVOH0O88rCi7UvbRVtp77P1oYNJ9Wu
-   j77D8AML1NLxcePkhpr+dm6HDFMG4c5sxDLywk49orNJANTLG8WUnaR+5
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10670"; a="339833792"
+  bh=i4nCjewCbQrZTCjq6iKn++5Pb413nuaWrVERL8j3UdE=;
+  b=AJNVvhnbaAz5Gb5soMwJtqIr3XO8dMkmY6hdeT6tQi0+87uEiF8eTjoG
+   44qsK6gtAlHmZOcqrK2hx7dNH2CSfrWS4d0sViRjJnuLJEEK30jqDFQfB
+   zHbEV/JeIKDcceAm0DFIrrQQ5+44d8iYI22K5xLAUFJRUGOn4uxVnu7vW
+   rZtc/CZvH/PnhF7GaA3h4OvRoyMjlxP/fRg7Az7sNUwRDjyrj3t3ZUhLQ
+   CcutsTSLTIZyuQJdJt1953tb7cT2t4fQKTAuiMt2nhtPwKGz/Y7rh9ipp
+   OXHguiP4GncLYpWP5UnVdaGqinCDJU02dxg8qhOUeCxkqW2unvufVh3Yo
+   g==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10670"; a="370162033"
 X-IronPort-AV: E=Sophos;i="5.98,319,1673942400"; 
-   d="scan'208";a="339833792"
-Received: from fmsmga008.fm.intel.com ([10.253.24.58])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Apr 2023 17:48:53 -0700
+   d="scan'208";a="370162033"
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Apr 2023 17:49:52 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10670"; a="751083462"
+X-IronPort-AV: E=McAfee;i="6600,9927,10670"; a="830184076"
 X-IronPort-AV: E=Sophos;i="5.98,319,1673942400"; 
-   d="scan'208";a="751083462"
+   d="scan'208";a="830184076"
 Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by fmsmga008.fm.intel.com with ESMTP; 04 Apr 2023 17:48:51 -0700
+  by fmsmga001.fm.intel.com with ESMTP; 04 Apr 2023 17:49:51 -0700
 Received: from kbuild by b613635ddfff with local (Exim 4.96)
 	(envelope-from <lkp@intel.com>)
-	id 1pjrKU-000Q8c-1r;
-	Wed, 05 Apr 2023 00:48:50 +0000
-Date: Wed, 05 Apr 2023 08:48:23 +0800
+	id 1pjrLS-000Q8t-2N;
+	Wed, 05 Apr 2023 00:49:50 +0000
+Date: Wed, 05 Apr 2023 08:49:13 +0800
 From: kernel test robot <lkp@intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:fixes-test] BUILD SUCCESS
- b277fc793daf258877b4c0744b52f69d6e6ba22e
-Message-ID: <642cc557.Ch77gLPLBjrU6JA2%lkp@intel.com>
+Subject: [powerpc:next-test] BUILD SUCCESS
+ 9709343cb567c7ff0dd93e583810ec29a9b497d5
+Message-ID: <642cc589.ozwUH2t0fjMVRt+0%lkp@intel.com>
 User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,13 +74,13 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
-branch HEAD: b277fc793daf258877b4c0744b52f69d6e6ba22e  powerpc/papr_scm: Update the NUMA distance table for the target node
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: 9709343cb567c7ff0dd93e583810ec29a9b497d5  powerpc/64: Always build with 128-bit long double
 
-elapsed time: 728m
+elapsed time: 726m
 
-configs tested: 182
-configs skipped: 139
+configs tested: 189
+configs skipped: 11
 
 The following configs have been built successfully.
 More configs may be tested in the coming days.
@@ -89,19 +89,17 @@ tested configs:
 alpha                            allyesconfig   gcc  
 alpha        buildonly-randconfig-r001-20230403   gcc  
 alpha                               defconfig   gcc  
-alpha                randconfig-r002-20230403   gcc  
 alpha                randconfig-r015-20230403   gcc  
-alpha                randconfig-r021-20230403   gcc  
+alpha                randconfig-r016-20230403   gcc  
 alpha                randconfig-r024-20230403   gcc  
 alpha                randconfig-r025-20230403   gcc  
-alpha                randconfig-r026-20230403   gcc  
 alpha                randconfig-r036-20230403   gcc  
 arc                              allyesconfig   gcc  
 arc          buildonly-randconfig-r006-20230403   gcc  
 arc                                 defconfig   gcc  
-arc                  randconfig-r006-20230403   gcc  
 arc                  randconfig-r011-20230403   gcc  
 arc                  randconfig-r013-20230403   gcc  
+arc                  randconfig-r022-20230403   gcc  
 arc                  randconfig-r032-20230403   gcc  
 arc                  randconfig-r033-20230403   gcc  
 arc                  randconfig-r034-20230403   gcc  
@@ -109,7 +107,9 @@ arc                  randconfig-r043-20230403   gcc
 arm                              allmodconfig   gcc  
 arm                              allyesconfig   gcc  
 arm                                 defconfig   gcc  
+arm                  randconfig-r025-20230403   clang
 arm                  randconfig-r034-20230403   gcc  
+arm                  randconfig-r046-20230403   clang
 arm                        realview_defconfig   gcc  
 arm                           sama5_defconfig   gcc  
 arm                        shmobile_defconfig   gcc  
@@ -118,12 +118,14 @@ arm64                            allyesconfig   gcc
 arm64                               defconfig   gcc  
 arm64                randconfig-r004-20230403   clang
 arm64                randconfig-r024-20230403   gcc  
+csky         buildonly-randconfig-r002-20230403   gcc  
 csky                                defconfig   gcc  
 csky                 randconfig-r021-20230403   gcc  
-hexagon      buildonly-randconfig-r001-20230403   clang
+csky                 randconfig-r031-20230403   gcc  
 hexagon      buildonly-randconfig-r006-20230404   clang
 hexagon              randconfig-r005-20230403   clang
-hexagon              randconfig-r024-20230403   clang
+hexagon              randconfig-r041-20230403   clang
+hexagon              randconfig-r045-20230403   clang
 i386                             allyesconfig   gcc  
 i386         buildonly-randconfig-r002-20230403   clang
 i386                              debian-10.3   gcc  
@@ -142,11 +144,13 @@ i386                 randconfig-a015-20230403   gcc
 i386                 randconfig-a016-20230403   gcc  
 i386                 randconfig-r014-20230403   gcc  
 i386                 randconfig-r015-20230403   gcc  
-i386                 randconfig-r022-20230403   gcc  
+i386                 randconfig-r021-20230403   gcc  
+i386                 randconfig-r023-20230403   gcc  
 i386                 randconfig-r026-20230403   gcc  
 ia64                             allmodconfig   gcc  
-ia64         buildonly-randconfig-r002-20230403   gcc  
 ia64         buildonly-randconfig-r004-20230403   gcc  
+ia64         buildonly-randconfig-r004-20230404   gcc  
+ia64         buildonly-randconfig-r006-20230403   gcc  
 ia64                                defconfig   gcc  
 ia64                 randconfig-r012-20230403   gcc  
 loongarch                        allmodconfig   gcc  
@@ -155,16 +159,17 @@ loongarch                           defconfig   gcc
 loongarch                 loongson3_defconfig   gcc  
 loongarch            randconfig-r013-20230403   gcc  
 m68k                             allmodconfig   gcc  
+m68k         buildonly-randconfig-r005-20230403   gcc  
 m68k                                defconfig   gcc  
 m68k                        m5307c3_defconfig   gcc  
 m68k                 randconfig-r012-20230403   gcc  
 m68k                 randconfig-r016-20230403   gcc  
 m68k                 randconfig-r023-20230403   gcc  
+m68k                 randconfig-r024-20230403   gcc  
+m68k                 randconfig-r032-20230403   gcc  
 m68k                 randconfig-r033-20230403   gcc  
 m68k                        stmark2_defconfig   gcc  
 microblaze   buildonly-randconfig-r005-20230403   gcc  
-microblaze           randconfig-r002-20230403   gcc  
-microblaze           randconfig-r004-20230403   gcc  
 microblaze           randconfig-r011-20230403   gcc  
 microblaze           randconfig-r023-20230403   gcc  
 microblaze           randconfig-r031-20230403   gcc  
@@ -172,17 +177,20 @@ mips                             allmodconfig   gcc
 mips                             allyesconfig   gcc  
 mips         buildonly-randconfig-r001-20230403   gcc  
 mips                           gcw0_defconfig   gcc  
-mips                 randconfig-r004-20230403   gcc  
+mips                 randconfig-r015-20230403   clang
+mips                 randconfig-r034-20230403   gcc  
+mips                 randconfig-r035-20230403   gcc  
+mips                 randconfig-r036-20230403   gcc  
 nios2        buildonly-randconfig-r004-20230403   gcc  
 nios2                               defconfig   gcc  
-nios2                randconfig-r023-20230403   gcc  
 nios2                randconfig-r032-20230403   gcc  
+nios2                randconfig-r033-20230403   gcc  
 nios2                randconfig-r034-20230403   gcc  
 nios2                randconfig-r035-20230403   gcc  
 openrisc                         alldefconfig   gcc  
 openrisc     buildonly-randconfig-r003-20230403   gcc  
-openrisc     buildonly-randconfig-r006-20230403   gcc  
-openrisc             randconfig-r006-20230403   gcc  
+openrisc     buildonly-randconfig-r005-20230404   gcc  
+openrisc             randconfig-r003-20230403   gcc  
 openrisc             randconfig-r011-20230403   gcc  
 openrisc             randconfig-r013-20230403   gcc  
 openrisc             randconfig-r016-20230403   gcc  
@@ -190,6 +198,7 @@ openrisc             randconfig-r035-20230403   gcc
 parisc       buildonly-randconfig-r003-20230403   gcc  
 parisc       buildonly-randconfig-r005-20230403   gcc  
 parisc                              defconfig   gcc  
+parisc               randconfig-r011-20230403   gcc  
 parisc               randconfig-r013-20230403   gcc  
 parisc               randconfig-r014-20230403   gcc  
 parisc               randconfig-r022-20230403   gcc  
@@ -204,17 +213,13 @@ powerpc                     ksi8560_defconfig   clang
 powerpc                      pcm030_defconfig   gcc  
 powerpc              randconfig-r001-20230403   clang
 powerpc              randconfig-r005-20230403   clang
-powerpc              randconfig-r025-20230403   gcc  
-powerpc              randconfig-r034-20230403   clang
-powerpc              randconfig-r035-20230403   clang
-powerpc              randconfig-r036-20230403   clang
 powerpc                    sam440ep_defconfig   gcc  
 riscv                            allmodconfig   gcc  
 riscv                             allnoconfig   gcc  
 riscv        buildonly-randconfig-r002-20230403   gcc  
 riscv                               defconfig   gcc  
 riscv                randconfig-r002-20230403   clang
-riscv                randconfig-r031-20230403   clang
+riscv                randconfig-r014-20230403   gcc  
 riscv                randconfig-r042-20230403   gcc  
 riscv                          rv32_defconfig   gcc  
 s390                             allmodconfig   gcc  
@@ -225,20 +230,20 @@ s390                 randconfig-r006-20230403   clang
 s390                 randconfig-r012-20230403   gcc  
 s390                 randconfig-r044-20230403   gcc  
 sh                               allmodconfig   gcc  
-sh           buildonly-randconfig-r001-20230403   gcc  
-sh           buildonly-randconfig-r005-20230403   gcc  
 sh                               j2_defconfig   gcc  
+sh                   randconfig-r002-20230403   gcc  
 sh                   randconfig-r011-20230403   gcc  
 sh                           se7705_defconfig   gcc  
 sh                           se7751_defconfig   gcc  
 sh                   sh7724_generic_defconfig   gcc  
+sparc        buildonly-randconfig-r001-20230403   gcc  
+sparc        buildonly-randconfig-r001-20230404   gcc  
 sparc                               defconfig   gcc  
 sparc                randconfig-r025-20230403   gcc  
 sparc                randconfig-r031-20230403   gcc  
 sparc                randconfig-r032-20230403   gcc  
 sparc64      buildonly-randconfig-r006-20230403   gcc  
 sparc64                             defconfig   gcc  
-sparc64              randconfig-r005-20230403   gcc  
 sparc64              randconfig-r014-20230403   gcc  
 sparc64              randconfig-r022-20230403   gcc  
 um                             i386_defconfig   gcc  
@@ -260,13 +265,15 @@ x86_64               randconfig-a013-20230403   gcc
 x86_64               randconfig-a014-20230403   gcc  
 x86_64               randconfig-a015-20230403   gcc  
 x86_64               randconfig-a016-20230403   gcc  
+x86_64               randconfig-r012-20230403   gcc  
 x86_64               randconfig-r014-20230403   gcc  
 x86_64               randconfig-r023-20230403   gcc  
 x86_64                               rhel-8.3   gcc  
-xtensa       buildonly-randconfig-r004-20230403   gcc  
+xtensa               randconfig-r001-20230403   gcc  
 xtensa               randconfig-r012-20230403   gcc  
 xtensa               randconfig-r021-20230403   gcc  
 xtensa               randconfig-r022-20230403   gcc  
+xtensa               randconfig-r026-20230403   gcc  
 xtensa               randconfig-r031-20230403   gcc  
 
 -- 
