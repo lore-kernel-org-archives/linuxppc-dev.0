@@ -4,31 +4,31 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BDCEC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:37:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2EF5C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:38:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMz51MWYz3fkp
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:37:37 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMzb1Mc7z3fq8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:38:03 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMxc2mtSz3bP1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMxc6Q9Fz3bT7
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
 Received: by gandalf.ozlabs.org (Postfix)
-	id 4PsMxc2Jhqz4xFL; Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
+	id 4PsMxc5vFkz4xFZ; Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMxc1WWbz4xDt;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMxc57kcz4xFL;
 	Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-In-Reply-To: <20230330103224.3589928-1-npiggin@gmail.com>
-References: <20230330103224.3589928-1-npiggin@gmail.com>
-Subject: Re: [PATCH v2 0/2] KVM: PPC: Book3S HV: Injected interrupt SRR1
-Message-Id: <168074126988.3672916.619022230380161209.b4-ty@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org, kvm@vger.kernel.org, Paul Mackerras <paulus@ozlabs.org>
+In-Reply-To: <ZAgsR04beDcARCiw@cleo>
+References: <ZAgsR04beDcARCiw@cleo>
+Subject: Re: [PATCH 0/3] powerpc/kvm: Enable HV KVM guests to use prefixed instructions to access emulated MMIO
+Message-Id: <168074126988.3672916.555286026450877376.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 10:34:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -44,25 +44,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Neuling <mikey@neuling.org>, kvm@vger.kernel.org
+Cc: Michael Neuling <mikey@neuling.org>, kvm-ppc@vger.kernel.org, Nick Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 30 Mar 2023 20:32:22 +1000, Nicholas Piggin wrote:
-> I missed this in my earlier review and testing, but I think we need
-> these in the prefix instruction enablement series before the final patch
-> that enables HFSCR[PREFIX] for guests.
-> 
-> Thanks,
-> Nick
+On Wed, 08 Mar 2023 17:33:43 +1100, Paul Mackerras wrote:
+> This series changes the powerpc KVM code so that HV KVM can fetch
+> prefixed instructions from the guest in those situations where there
+> is a need to emulate an instruction, which for HV KVM means emulating
+> loads and stores to emulated MMIO devices.  (Prefixed instructions
+> were introduced with POWER10 and Power ISA v3.1, and consist of two
+> 32-bit words, called the prefix and the suffix.)
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/2] KVM: PPC: Permit SRR1 flags in more injected interrupt types
-      https://git.kernel.org/powerpc/c/460ba21d83fef766a5d34260e464c9ab8f10aa05
-[2/2] KVM: PPC: Book3S HV: Set SRR1[PREFIX] bit on injected interrupts
-      https://git.kernel.org/powerpc/c/6cd5c1db9983600f1848822e86e4906377b4a899
+[1/3] powerpc/kvm: Make kvmppc_get_last_inst() produce a ppc_inst_t
+      https://git.kernel.org/powerpc/c/acf17878da680a0c11c0bcb8a54b4f676ff39c80
+[2/3] powerpc/kvm: Fetch prefixed instructions from the guest
+      https://git.kernel.org/powerpc/c/953e37397fb61be61f095d36972188bac5235021
+[3/3] powerpc/kvm: Enable prefixed instructions for HV KVM and disable for PR KVM
+      https://git.kernel.org/powerpc/c/a3800ef9c48c4497dafe5ede1b65d91d9ef9cf1e
 
 cheers
