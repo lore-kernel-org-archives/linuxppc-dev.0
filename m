@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A383EC7618D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:14:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0D96C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:15:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNns0Gw7z3fpc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:14:41 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNpV1KJfz3ft5
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:15:14 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr6Tk3z3cLx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjt5bb9z3fBH
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:14 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjr5kM9z4xFj;
-	Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjs2PWVz4xFk;
+	Thu,  6 Apr 2023 11:11:13 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Nicholas Miehlbradt <nicholas@linux.ibm.com>
-In-Reply-To: <20230228054355.300628-1-nicholas@linux.ibm.com>
-References: <20230228054355.300628-1-nicholas@linux.ibm.com>
-Subject: Re: [PATCH v3] powerpc: Implement arch_within_stack_frames
-Message-Id: <168074339917.3678997.7175238870685255123.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, "Nysal Jan K.A" <nysal@linux.ibm.com>
+In-Reply-To: <20230224103940.1328725-1-nysal@linux.ibm.com>
+References: <20230224103940.1328725-1-nysal@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/atomics: Remove unused function
+Message-Id: <168074339923.3678997.8618844633149678926.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ruscur@russell.cc
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org, Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Will Deacon <will@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 28 Feb 2023 05:43:55 +0000, Nicholas Miehlbradt wrote:
-> Walks the stack when copy_{to,from}_user address is in the stack to
-> ensure that the object being copied is entirely a single stack frame and
-> does not contain stack metadata.
+On Fri, 24 Feb 2023 16:09:40 +0530, Nysal Jan K.A wrote:
+> Remove arch_atomic_try_cmpxchg_lock function as it is no longer used
+> since commit 9f61521c7a28 ("powerpc/qspinlock: powerpc qspinlock
+> implementation")
 > 
-> Substantially similar to the x86 implementation. The back chain is used
-> to traverse the stack and identify stack frame boundaries.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: Implement arch_within_stack_frames
-      https://git.kernel.org/powerpc/c/ac9c8901cb10aab043bf3599d19eebacfcda2858
+[1/1] powerpc/atomics: Remove unused function
+      https://git.kernel.org/powerpc/c/b0bbe5a2915201e3231e788d716d39dc54493b03
 
 cheers
