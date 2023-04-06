@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 781EAC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:17:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70BC4C7618D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:17:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNrY1CQdz3fj2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:17:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNs30FX6z3gC3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:17:27 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjy5nsvz3fQp
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjz2QFrz3fR3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:19 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjy4gf5z4xFn;
-	Thu,  6 Apr 2023 11:11:18 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjz17xwz4xFq;
+	Thu,  6 Apr 2023 11:11:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Rob Herring <robh@kernel.org>
-In-Reply-To: <20230327223045.819852-1-robh@kernel.org>
-References: <20230327223045.819852-1-robh@kernel.org>
-Subject: Re: [PATCH] powerpc: isa-bridge: Remove open coded "ranges" parsing
-Message-Id: <168074339913.3678997.512446611502736454.b4-ty@ellerman.id.au>
+In-Reply-To: <20230327223109.820381-1-robh@kernel.org>
+References: <20230327223109.820381-1-robh@kernel.org>
+Subject: Re: [PATCH] powerpc: usbgecko: Use of_iomap()
+Message-Id: <168074339915.3678997.15828377180569786953.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,20 +46,15 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Mar 2023 17:30:45 -0500, Rob Herring wrote:
-> "ranges" is a standard property with common parsing functions. Users
-> shouldn't be implementing their own parsing of it. Reimplement the
-> ISA brige "ranges" parsing using the common ranges iterator functions.
+On Mon, 27 Mar 2023 17:31:09 -0500, Rob Herring wrote:
+> Replace of_get_property()+of_translate_address()+ioremap() with a call
+> to of_iomap() which does all those steps.
 > 
-> The common routines are flexible enough to work on PCI and non-PCI to
-> ISA bridges, so refactor pci_process_ISA_OF_ranges() and
-> isa_bridge_init_non_pci() into a single implementation.
 > 
-> [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc: isa-bridge: Remove open coded "ranges" parsing
-      https://git.kernel.org/powerpc/c/e4ab08be5b4902e5b350b0e1e1a3c25eb21d76d4
+[1/1] powerpc: usbgecko: Use of_iomap()
+      https://git.kernel.org/powerpc/c/83a8fe569ef84d6eefcb99420a731cb87508f004
 
 cheers
