@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B8F2C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:14:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A383EC7618D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:14:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNnM0C0Gz3fRM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:14:15 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNns0Gw7z3fpc
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:14:41 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr67Nyz3bT7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr6Tk3z3cLx
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjn5SJJz4xFL;
-	Thu,  6 Apr 2023 11:11:09 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjr5kM9z4xFj;
+	Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <99ca1da2e5a6cf82a8abf4bc034918e500e31781.1677513277.git.christophe.leroy@csgroup.eu>
-References: <99ca1da2e5a6cf82a8abf4bc034918e500e31781.1677513277.git.christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH] powerpc/perf: Properly detect mpc7450 family
-Message-Id: <168074339918.3678997.525922814661699693.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Nicholas Miehlbradt <nicholas@linux.ibm.com>
+In-Reply-To: <20230228054355.300628-1-nicholas@linux.ibm.com>
+References: <20230228054355.300628-1-nicholas@linux.ibm.com>
+Subject: Re: [PATCH v3] powerpc: Implement arch_within_stack_frames
+Message-Id: <168074339917.3678997.7175238870685255123.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,27 +42,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>, kernel test robot <lkp@intel.com>
+Cc: ruscur@russell.cc
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Feb 2023 16:54:45 +0100, Christophe Leroy wrote:
-> Unlike PVR_POWER8, etc ...., PVR_7450 represents a full PVR
-> value and not a family value.
+On Tue, 28 Feb 2023 05:43:55 +0000, Nicholas Miehlbradt wrote:
+> Walks the stack when copy_{to,from}_user address is in the stack to
+> ensure that the object being copied is entirely a single stack frame and
+> does not contain stack metadata.
 > 
-> To avoid confusion, do like E500 family and define the relevant
-> PVR_VER_xxxx values for the 7450 family:
->   0x8000 ==> 7450
->   0x8001 ==> 7455
->   0x8002 ==> 7447
->   0x8003 ==> 7447A
->   0x8004 ==> 7448
+> Substantially similar to the x86 implementation. The back chain is used
+> to traverse the stack and identify stack frame boundaries.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/1] powerpc/perf: Properly detect mpc7450 family
-      https://git.kernel.org/powerpc/c/e7299f961fe5e4496db0bfaa9e819f5e97f3846b
+[1/1] powerpc: Implement arch_within_stack_frames
+      https://git.kernel.org/powerpc/c/ac9c8901cb10aab043bf3599d19eebacfcda2858
 
 cheers
