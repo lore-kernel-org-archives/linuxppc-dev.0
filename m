@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70BC4C7618D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:17:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3176DC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:17:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNs30FX6z3gC3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:17:27 +1000 (AEST)
-Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNsX4TsCz3fkk
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:17:52 +1000 (AEST)
+Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjz2QFrz3fR3
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNk05vqJz3fRC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjz17xwz4xFq;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjz4qyMz4xFr;
 	Thu,  6 Apr 2023 11:11:19 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Rob Herring <robh@kernel.org>
-In-Reply-To: <20230327223109.820381-1-robh@kernel.org>
-References: <20230327223109.820381-1-robh@kernel.org>
-Subject: Re: [PATCH] powerpc: usbgecko: Use of_iomap()
-Message-Id: <168074339915.3678997.15828377180569786953.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Rob Herring <robh@kernel.org>
+In-Reply-To: <20230319163154.225597-1-robh@kernel.org>
+References: <20230319163154.225597-1-robh@kernel.org>
+Subject: Re: [PATCH] powerpc: Use of_address_to_resource()
+Message-Id: <168074339913.3678997.5583804591970225065.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -46,15 +46,16 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 27 Mar 2023 17:31:09 -0500, Rob Herring wrote:
-> Replace of_get_property()+of_translate_address()+ioremap() with a call
-> to of_iomap() which does all those steps.
+On Sun, 19 Mar 2023 11:31:53 -0500, Rob Herring wrote:
+> Replace open coded reading of "reg" or of_get_address()/
+> of_translate_address() calls with a single call to
+> of_address_to_resource().
 > 
 > 
 
 Applied to powerpc/next.
 
-[1/1] powerpc: usbgecko: Use of_iomap()
-      https://git.kernel.org/powerpc/c/83a8fe569ef84d6eefcb99420a731cb87508f004
+[1/1] powerpc: Use of_address_to_resource()
+      https://git.kernel.org/powerpc/c/2500763dd3db37fad94d9b506907c59c2f5e97c6
 
 cheers
