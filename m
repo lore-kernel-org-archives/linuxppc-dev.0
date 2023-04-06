@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 929A7C7618D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F7E4C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:13:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNmM1zlzz3fbr
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:13:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNms12Bzz3fgv
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:13:49 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr0TK3z3cMl
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr37yHz3cMy
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjp28TSz4xFZ;
-	Thu,  6 Apr 2023 11:11:10 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjr2MrLz4xFg;
+	Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Ira Weiny <ira.weiny@intel.com>
-In-Reply-To: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
-References: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
-Subject: Re: (subset) [PATCH 0/3] COVER: Remove memcpy_page_flushcache()
-Message-Id: <168074339910.3678997.3908311433579261627.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Lynch <nathanl@linux.ibm.com>
+In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
+References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
+Subject: Re: (subset) [PATCH 0/8] RTAS changes for 6.4
+Message-Id: <168074339916.3678997.1713532883621826400.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,24 +42,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Scott Cheloha <cheloha@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 15 Mar 2023 16:20:53 -0700, Ira Weiny wrote:
-> Commit 21b56c847753 ("iov_iter: get rid of separate bvec and xarray
-> callbacks") removed the calls to memcpy_page_flushcache().
+On Mon, 06 Mar 2023 15:33:39 -0600, Nathan Lynch wrote:
+> Proposed changes for the RTAS subsystem and client code.
 > 
-> kmap_atomic() is deprecated and used in the x86 version of
-> memcpy_page_flushcache().
+> Fixes that are subject to backporting are at the front of the queue,
+> followed by documentation and cleanups, with enhancements at the end.
 > 
-> Remove the unnecessary memcpy_page_flushcache() call from all arch's.
+> Noteworthy changes:
+> * Change sys_rtas() to consume -2/990x statuses instead of returning
+>   them to user space.
+> * Lockdep annotations for invariants in rtas.c.
 > 
 > [...]
 
-Patch 2 applied to powerpc/next.
+Applied to powerpc/next.
 
-[2/3] powerpc: Remove memcpy_page_flushcache()
-      https://git.kernel.org/powerpc/c/0398abca61482ae47a41ae8f2401338aea366327
+[6/8] powerpc/rtas: lockdep annotations
+      https://git.kernel.org/powerpc/c/af8bc68263b2184e63ee67ca70cecff4636f7901
 
 cheers
