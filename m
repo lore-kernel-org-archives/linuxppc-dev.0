@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D968BC7618D
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:16:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5050FC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:16:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNqX3G4Lz3g1c
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:16:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNr308ddz3f3x
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:16:35 +1000 (AEST)
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjx64skz3f96
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjy2FHlz3cj8
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:18 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjw2j83z4xDr;
-	Thu,  6 Apr 2023 11:11:16 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjy15TLz4xFf;
+	Thu,  6 Apr 2023 11:11:18 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Colin Leroy <colin@colino.net>, Rob Herring <robh@kernel.org>
-In-Reply-To: <20230310144735.1546817-1-robh@kernel.org>
-References: <20230310144735.1546817-1-robh@kernel.org>
-Subject: Re: [PATCH] macintosh: Use of_property_present() for testing DT property presence
-Message-Id: <168074339913.3678997.309383378188824409.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Rob Herring <robh@kernel.org>
+In-Reply-To: <20230327223103.820229-1-robh@kernel.org>
+References: <20230327223103.820229-1-robh@kernel.org>
+Subject: Re: [PATCH] powerpc: fsl_rio: Use of_iomap()
+Message-Id: <168074339914.3678997.751758742830339616.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,23 +42,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 10 Mar 2023 08:47:35 -0600, Rob Herring wrote:
-> It is preferred to use typed property access functions (i.e.
-> of_property_read_<type> functions) rather than low-level
-> of_get_property/of_find_property functions for reading properties. As
-> part of this, convert of_get_property/of_find_property calls to the
-> recently added of_property_present() helper when we just want to test
-> for presence of a property and nothing more.
+On Mon, 27 Mar 2023 17:31:02 -0500, Rob Herring wrote:
+> Replace of_address_to_resource()+ioremap() with a call to of_iomap()
+> which does both of those steps.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] macintosh: Use of_property_present() for testing DT property presence
-      https://git.kernel.org/powerpc/c/87b626a66dd4ab7d5caf5199d98ec0b5953d73f8
+[1/1] powerpc: fsl_rio: Use of_iomap()
+      https://git.kernel.org/powerpc/c/de8d11bc6ec412a498acf795911c8597ae37d4e7
 
 cheers
