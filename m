@@ -4,33 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5CA8C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:37:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BDCEC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:37:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMyb366Nz3fcY
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:37:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMz51MWYz3fkp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:37:37 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMxc0kJkz3bP1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMxc2mtSz3bP1
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
+Received: by gandalf.ozlabs.org (Postfix)
+	id 4PsMxc2Jhqz4xFL; Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMxb5Hs4z4xDr;
-	Thu,  6 Apr 2023 10:36:19 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMxc1WWbz4xDt;
+	Thu,  6 Apr 2023 10:36:20 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-In-Reply-To: <20230403045314.3095410-1-mpe@ellerman.id.au>
-References: <20230403045314.3095410-1-mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] KVM: PPC: BookE: Fix W=1 warnings
-Message-Id: <168074126988.3672916.8350769200565877785.b4-ty@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+In-Reply-To: <20230330103224.3589928-1-npiggin@gmail.com>
+References: <20230330103224.3589928-1-npiggin@gmail.com>
+Subject: Re: [PATCH v2 0/2] KVM: PPC: Book3S HV: Injected interrupt SRR1
+Message-Id: <168074126988.3672916.619022230380161209.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 10:34:29 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,23 +44,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Michael Neuling <mikey@neuling.org>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 03 Apr 2023 14:53:14 +1000, Michael Ellerman wrote:
-> Fix various W=1 warnings in booke.c:
+On Thu, 30 Mar 2023 20:32:22 +1000, Nicholas Piggin wrote:
+> I missed this in my earlier review and testing, but I think we need
+> these in the prefix instruction enablement series before the final patch
+> that enables HFSCR[PREFIX] for guests.
 > 
->   arch/powerpc/kvm/booke.c:1008:5: error: no previous prototype for ‘kvmppc_handle_exit’ [-Werror=missing-prototypes]
->    1008 | int kvmppc_handle_exit(struct kvm_vcpu *vcpu, unsigned int exit_nr)
->         |     ^~~~~~~~~~~~~~~~~~
->   arch/powerpc/kvm/booke.c:1009: warning: Function parameter or member 'vcpu' not described in 'kvmppc_handle_exit'
->   arch/powerpc/kvm/booke.c:1009: warning: Function parameter or member 'exit_nr' not described in 'kvmppc_handle_exit'
+> Thanks,
+> Nick
 > 
 > [...]
 
 Applied to powerpc/topic/ppc-kvm.
 
-[1/1] KVM: PPC: BookE: Fix W=1 warnings
-      https://git.kernel.org/powerpc/c/43d05c6123ca1ace5982ca326c156502e735b7d5
+[1/2] KVM: PPC: Permit SRR1 flags in more injected interrupt types
+      https://git.kernel.org/powerpc/c/460ba21d83fef766a5d34260e464c9ab8f10aa05
+[2/2] KVM: PPC: Book3S HV: Set SRR1[PREFIX] bit on injected interrupts
+      https://git.kernel.org/powerpc/c/6cd5c1db9983600f1848822e86e4906377b4a899
 
 cheers
