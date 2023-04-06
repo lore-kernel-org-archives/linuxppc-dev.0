@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F7E4C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:13:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B8F2C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:14:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNms12Bzz3fgv
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:13:49 +1000 (AEST)
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNnM0C0Gz3fRM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:14:15 +1000 (AEST)
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr37yHz3cMy
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr67Nyz3bT7
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjr2MrLz4xFg;
-	Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjn5SJJz4xFL;
+	Thu,  6 Apr 2023 11:11:09 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Nathan Lynch <nathanl@linux.ibm.com>
-In-Reply-To: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
-References: <20230220-rtas-queue-for-6-4-v1-0-010e4416f13f@linux.ibm.com>
-Subject: Re: (subset) [PATCH 0/8] RTAS changes for 6.4
-Message-Id: <168074339916.3678997.1713532883621826400.b4-ty@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <99ca1da2e5a6cf82a8abf4bc034918e500e31781.1677513277.git.christophe.leroy@csgroup.eu>
+References: <99ca1da2e5a6cf82a8abf4bc034918e500e31781.1677513277.git.christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH] powerpc/perf: Properly detect mpc7450 family
+Message-Id: <168074339918.3678997.525922814661699693.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -42,26 +42,27 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tyrel Datwyler <tyreld@linux.ibm.com>, Nick Child <nnac123@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Scott Cheloha <cheloha@linux.ibm.com>, Laurent Dufour <ldufour@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>, kernel test robot <lkp@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 06 Mar 2023 15:33:39 -0600, Nathan Lynch wrote:
-> Proposed changes for the RTAS subsystem and client code.
+On Mon, 27 Feb 2023 16:54:45 +0100, Christophe Leroy wrote:
+> Unlike PVR_POWER8, etc ...., PVR_7450 represents a full PVR
+> value and not a family value.
 > 
-> Fixes that are subject to backporting are at the front of the queue,
-> followed by documentation and cleanups, with enhancements at the end.
-> 
-> Noteworthy changes:
-> * Change sys_rtas() to consume -2/990x statuses instead of returning
->   them to user space.
-> * Lockdep annotations for invariants in rtas.c.
+> To avoid confusion, do like E500 family and define the relevant
+> PVR_VER_xxxx values for the 7450 family:
+>   0x8000 ==> 7450
+>   0x8001 ==> 7455
+>   0x8002 ==> 7447
+>   0x8003 ==> 7447A
+>   0x8004 ==> 7448
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[6/8] powerpc/rtas: lockdep annotations
-      https://git.kernel.org/powerpc/c/af8bc68263b2184e63ee67ca70cecff4636f7901
+[1/1] powerpc/perf: Properly detect mpc7450 family
+      https://git.kernel.org/powerpc/c/e7299f961fe5e4496db0bfaa9e819f5e97f3846b
 
 cheers
