@@ -4,87 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0372C77B70
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 14:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73AF9C7618D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 17:52:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pskzz2ZJzz3ggT
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Apr 2023 00:54:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PspxM4H6Bz3fVh
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Apr 2023 03:52:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=SAvTW0KP;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=JPS0WnF6;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Tf0RxFDm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.17; helo=wnew3-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=SAvTW0KP;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=JPS0WnF6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Tf0RxFDm;
 	dkim-atps=neutral
-Received: from wnew3-smtp.messagingengine.com (wnew3-smtp.messagingengine.com [64.147.123.17])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PskwW0qVWz3g97
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2023 00:51:39 +1000 (AEST)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
-	by mailnew.west.internal (Postfix) with ESMTP id C99D82B06973;
-	Thu,  6 Apr 2023 10:51:35 -0400 (EDT)
-Received: from imap51 ([10.202.2.101])
-  by compute6.internal (MEProxy); Thu, 06 Apr 2023 10:51:37 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-type:content-type:date:date:from:from:in-reply-to
-	:in-reply-to:message-id:mime-version:references:reply-to:sender
-	:subject:subject:to:to; s=fm2; t=1680792695; x=1680799895; bh=Pv
-	VeZJF1LUSrqLOZVN7G2amPFlD1uKLgk4hVw/5gFkk=; b=SAvTW0KPiUiO6nJkgF
-	hXZ6OppFeDIVldU5nH5Nk87ZkoYm0QSz5etEIyB9L3eiPRe38qOn7Yay2vgGarg1
-	5sJwAO+fTphyJMnizGXGMZA7MS5VH44wwWkJ1MrHruWcMBzAdQsbwr/HG8Ar2/6h
-	ssfgDaEh1nygQh/jhR37h09WkE3hI3ETItSeiXNozl3KXDBURktHhmDVxZ7Wdzy/
-	n7mzlrgcvLLYYl4GB0Jixsnnu33HHsW0S8bOvegaRFpXUzyUpg1Wrf+HHQe3JHm6
-	yvJTSISUw4ZJyAl6RHWKH0+KTevm+bV6eZ5nm+FcceTSwKUlPuUP8ZQUE6Rf/952
-	Fm7A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:sender:subject
-	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
-	:x-sasl-enc; s=fm2; t=1680792695; x=1680799895; bh=PvVeZJF1LUSrq
-	LOZVN7G2amPFlD1uKLgk4hVw/5gFkk=; b=JPS0WnF6RsH6+Xmuz649TIwf6ULqn
-	iR7dqMhGcWUzrcWDkP1wJOBg+pHwmqt0HjkWV3uYIx/iYEHGdo34iUw0sMt7lXAF
-	TCiFGvS91OUTZmU8mGXL1ZAIYc+2wcAVLuiGns+9hZ9Q3u+wIDdzJwLYP/GBb0jY
-	PipBM8nu/zuG+9luvqZ8Jihpwj/glGEHTGAsmTUO/OhJ+2KiMp2ZX3fbsikDkl9X
-	CYmcVn5Qz5pgqlithu+GeIWG615/DhpktzMk+iHq+vbMD1i48CEcdpePaPEsYSg+
-	/NqG6gY4RjzahVDTu3l6p6nPXr1gPCO41q3EMcyeoONEMlvZajqF4chSg==
-X-ME-Sender: <xms:dtwuZISp_urJ8m5y_mrgBVrKzfVtV7jyqafaPhhnLlaMLrxVu-zOdQ>
-    <xme:dtwuZFzhYOAHcjhP_UJhiFjuMOrAhWGolGLd007OLGuh7HLcDq44kr2pBY-nRsouX
-    s_u4XRoQiKraC7XyvE>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrvdejfedgjeelucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
-    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
-    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
-    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
-    hrnhgusegrrhhnuggsrdguvg
-X-ME-Proxy: <xmx:dtwuZF306BOOE6te4r8pL4BLeM6iLePYsvNvQT3RmqPvhsiPWIJBkw>
-    <xmx:dtwuZMAFW_bz-t7uH1fIUNzgL7C4poUL5vgpabFNXqjqsotT3NYUJg>
-    <xmx:dtwuZBi3L7XVmnFUihWDoER0dw0JdG93uknsbqbi8fYB_9UR12Cn-w>
-    <xmx:d9wuZKZ3_VssJzan2b5oOIi7ZSLdwGBHtiVEVQK6f1B3PNR-RJRUt7wGRy0>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.nyi.internal (Postfix, from userid 501)
-	id D73D5B6009B; Thu,  6 Apr 2023 10:51:34 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
-User-Agent: Cyrus-JMAP/3.9.0-alpha0-334-g8c072af647-fm-20230330.001-g8c072af6
-Mime-Version: 1.0
-Message-Id: <cfa36e9a-7e19-4c43-b9b4-1ae4f9ef51c3@app.fastmail.com>
-In-Reply-To: <20230406143019.6709-10-tzimmermann@suse.de>
-References: <20230406143019.6709-1-tzimmermann@suse.de>
- <20230406143019.6709-10-tzimmermann@suse.de>
-Date: Thu, 06 Apr 2023 16:51:14 +0200
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Thomas Zimmermann" <tzimmermann@suse.de>,
- "Daniel Vetter" <daniel.vetter@ffwll.ch>, "Helge Deller" <deller@gmx.de>,
- "Javier Martinez Canillas" <javierm@redhat.com>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 09/19] arch/mips: Implement <asm/fb.h> with generic helpers
-Content-Type: text/plain
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PspwK6rLCz3cMl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2023 03:51:45 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id D8F3D644F5;
+	Thu,  6 Apr 2023 17:51:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CFCB2C433D2;
+	Thu,  6 Apr 2023 17:51:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1680803502;
+	bh=URrz+/2zLMv5BZoWzv7thKBt/9KhKr4iJnpzdXcOan4=;
+	h=From:Date:Subject:To:Cc:From;
+	b=Tf0RxFDm45UqXgi6dExO+oP/E+Imqbva0ixze2k33AyMriVQtuVAdoRIsjMaXpwXR
+	 6yYvzHv8gShmSTcmNA0mhHoGZ2GqKcf1n0KT7tuywb6N0SPYZ6x8MjHLHJHTmRUWFP
+	 dc3ShRr0J9KRr8Bn+wsdvgUop8W6BkLrdGrCW/zyeqeBNMp4tS+9S1Kc4gLlF6gJvr
+	 D+NPXG/YBiUJePDXpIcD7L/O/4n5HLySLLgRkjOdXvYr3C8kTij6kem/jMZ8PUZ3b4
+	 pordRq8Cr3h7tI+laW7oeWVfBUm7qXodMTmm3ul9DBP0Ch9dCzwQt/Eiz7eRbFRZol
+	 77h129dJ4Tt2w==
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Thu, 06 Apr 2023 10:51:30 -0700
+Subject: [PATCH] powerpc/32: Include thread_info.h in head_booke.h
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20230406-wundef-thread_shift_booke-v1-1-8deffa4d84f9@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAKEGL2QC/x2N2wrCMBAFf6Xss4FYNRR/RaQkzYlZxFR24wVK/
+ 93Ux+EwZxZSCEPp3C0keLPyXBrsdx1N2ZcbDMfG1Nv+YI/Wmc+rRCRTs8DHUTOnOoZ5vsPADnG
+ wDtGdHDU/eIUJ4suUt4eH1wrZhqcg8fcfvVzX9QeVWPMxhAAAAA==
+To: mpe@ellerman.id.au
+X-Mailer: b4 0.13-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1458; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=URrz+/2zLMv5BZoWzv7thKBt/9KhKr4iJnpzdXcOan4=;
+ b=owGbwMvMwCEmm602sfCA1DTG02pJDCn6bGurV5UtO5C8Kohhtktf/ZGoQ9I13gGRhVOfZj9XX
+ aBncN6wo5SFQYyDQVZMkaX6sepxQ8M5ZxlvnJoEM4eVCWQIAxenAEzEpJWR4eoRtoUKslHPfvud
+ kGQ5KvXthVH8f/XPEvJryve9PHMo/SLDP52Xn3j+xPw2/Bl0jc16uczsl6s5Ar+v23uGPctLwN0
+ riwUA
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,25 +69,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-fbdev@vger.kernel.org, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: kernel test robot <lkp@intel.com>, masahiroy@kernel.org, patches@lists.linux.dev, Nathan Chancellor <nathan@kernel.org>, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 6, 2023, at 16:30, Thomas Zimmermann wrote:
-> Replace the architecture's fb_is_primary_device() with the generic
-> one from <asm-generic/fb.h>. No functional changes.
->
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+When building with W=1 after commit 80b6093b55e3 ("kbuild: add -Wundef
+to KBUILD_CPPFLAGS for W=1 builds"), the following warning occurs.
 
-I think you should at least mention that the existing
-fb_pgprotect() function is probably incorrect and should
-be replaced with the generic version.
+  In file included from arch/powerpc/kvm/bookehv_interrupts.S:26:
+  arch/powerpc/kvm/../kernel/head_booke.h:20:6: warning: "THREAD_SHIFT" is not defined, evaluates to 0 [-Wundef]
+     20 | #if (THREAD_SHIFT < 15)
+        |      ^~~~~~~~~~~~
 
-For reference, the fb_pgprotect function using pgprot_uncached()
-was introduced in 2.6.22 along with all the other ones, but
-the pgprot_writecombine function was only added in commit
-4b050ba7a66c ("MIPS: pgtable.h: Implement the pgprot_writecombine
-function for MIPS") for 3.18.
+THREAD_SHIFT is defined in thread_info.h but it is not directly included
+in head_booke.h, so it is possible for THREAD_SHIFT to be undefined. Add
+the include to ensure that THREAD_SHIFT is always defined.
 
-     Arnd
+Reported-by: kernel test robot <lkp@intel.com>
+Link: https://lore.kernel.org/202304050954.yskLdczH-lkp@intel.com/
+Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+---
+ arch/powerpc/kernel/head_booke.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+index 37d43c172676..b6b5b01a173c 100644
+--- a/arch/powerpc/kernel/head_booke.h
++++ b/arch/powerpc/kernel/head_booke.h
+@@ -5,6 +5,7 @@
+ #include <asm/ptrace.h>	/* for STACK_FRAME_REGS_MARKER */
+ #include <asm/kvm_asm.h>
+ #include <asm/kvm_booke_hv_asm.h>
++#include <asm/thread_info.h>	/* for THREAD_SHIFT */
+ 
+ #ifdef __ASSEMBLY__
+ 
+
+---
+base-commit: b0bbe5a2915201e3231e788d716d39dc54493b03
+change-id: 20230406-wundef-thread_shift_booke-e08d806ed656
+
+Best regards,
+-- 
+Nathan Chancellor <nathan@kernel.org>
+
