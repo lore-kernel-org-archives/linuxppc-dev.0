@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E690C76196
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 14:52:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FAC5C76196
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 14:52:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pskx23yWNz3gX2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Apr 2023 00:52:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pskxz17gtz3gB9
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Apr 2023 00:52:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PomG6mQ/;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kaqSS7OI;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Psknt4VLNz3gG4
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2023 00:45:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Psknv352vz3g1q
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Apr 2023 00:45:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=PomG6mQ/;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=kaqSS7OI;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pskns5wjWz4xFg;
-	Fri,  7 Apr 2023 00:45:53 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Psknr5wJ0z4xFf;
+	Fri,  7 Apr 2023 00:45:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1680792353;
-	bh=PhB58uze5HlGPHSG/12cRhkZxsbgZpkZh1JDz6mWDqo=;
+	s=201909; t=1680792352;
+	bh=qodY2Q6CbcE/PBC3R4o7HdbOAge0infBVNAA92K2ITM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=PomG6mQ/2mwsj91pMOfaq7VGozCNnqo7xGd3TcNgdJaArP1yzdIS0/Bpt6jpF7Phy
-	 52r4c0TlQIOisgmJjwevDhaUAhTS3uKcyviEoPj1EIX3qABFLwThWqVf/bBLw5BY0a
-	 WXXwhxJ5widHbtL8W9pfZBjN5Iuu3Wm7HlIxQJo90wa2gfqmSkcv8IaJBMrVgnxeju
-	 Ihor3ePVjXDjYZPyZLoHivHAaWLcuLlerVqilNBwEtvTal+xNU0xUjKfx9zCUB4xuP
-	 vIr/RAxYstKjPG3hw5x59OwxvjdZgVXoD76NsCjJY9EKbdA9QqudBXv9U+0LIEKm8c
-	 mK5Hk2K8Sm6uQ==
+	b=kaqSS7OIeEjpjtZkELzMk9V5UHap9SFDVhQEU8UA/HqCTcI7sas9JLN8XNzH/LJOm
+	 iziSdk9lq8QXDYKBnbxOKVLBgZwI/8bXMT6THnPtst17zYR8sBjkaEZ9hEoYsTZ4c2
+	 IJdFCX686rb1UHn06jWbPbZhOIgAAiEpoOtnhUuD2M/inJn2SXkDkfudQC0UnbsOez
+	 RnK5r1DKlo1QAqkt2GmF4tSDT43o3TEZHkD+QRSIpcLvd4hR0JdM6SpDVI4FL1uJwN
+	 lKY8t6Q+20u7CrZlm+0RXkn/BselT3D+fumGMIRaaFB/EmKnUQvD0uAKUFdXN8r2xd
+	 tT4lpP6G/ygfQ==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 4/4] powerpc/pseries: Always inline functions called from cpuidle
-Date: Fri,  7 Apr 2023 00:45:35 +1000
-Message-Id: <20230406144535.3786008-4-mpe@ellerman.id.au>
+Subject: [PATCH 2/4] powerpc/64: Don't call trace_hardirqs_on() in prep_irq_for_idle()
+Date: Fri,  7 Apr 2023 00:45:33 +1000
+Message-Id: <20230406144535.3786008-2-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230406144535.3786008-1-mpe@ellerman.id.au>
 References: <20230406144535.3786008-1-mpe@ellerman.id.au>
@@ -62,70 +62,43 @@ Cc: peterz@infradead.org, npiggin@gmail.com, linux-pm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Code in the idle path is not allowed to be instrumented because RCU is
-disabled, see commit 0e985e9d2286 ("cpuidle: Add comments about
-noinstr/__cpuidle usage").
+Since commit a01353cf1896 ("cpuidle: Fix ct_idle_*() usage"), the
+cpuidle entry code calls trace_hardirqs_on() (actually
+trace_hardirqs_on_prepare()) in ct_cpuidle_enter() before calling into
+the cpuidle driver.
 
-Force inlining of the inline functions called from cpuidle, to ensure
-they are not emitted out-of-line and then available for tracing.
-
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/idle.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/irq_64.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/idle.h b/arch/powerpc/include/asm/idle.h
-index accd1f50085a..00f360667391 100644
---- a/arch/powerpc/include/asm/idle.h
-+++ b/arch/powerpc/include/asm/idle.h
-@@ -9,17 +9,17 @@ DECLARE_PER_CPU(u64, idle_spurr_cycles);
- DECLARE_PER_CPU(u64, idle_entry_purr_snap);
- DECLARE_PER_CPU(u64, idle_entry_spurr_snap);
+diff --git a/arch/powerpc/kernel/irq_64.c b/arch/powerpc/kernel/irq_64.c
+index 2ab0e8d84c1d..938e66829eae 100644
+--- a/arch/powerpc/kernel/irq_64.c
++++ b/arch/powerpc/kernel/irq_64.c
+@@ -348,9 +348,8 @@ EXPORT_SYMBOL(arch_local_irq_restore);
+  * already the case when ppc_md.power_save is called). The function
+  * will return whether to enter power save or just return.
+  *
+- * In the former case, it will have notified lockdep of interrupts
+- * being re-enabled and generally sanitized the lazy irq state,
+- * and in the latter case it will leave with interrupts hard
++ * In the former case, it will have generally sanitized the lazy irq
++ * state, and in the latter case it will leave with interrupts hard
+  * disabled and marked as such, so the local_irq_enable() call
+  * in arch_cpu_idle() will properly re-enable everything.
+  */
+@@ -370,9 +369,6 @@ __cpuidle bool prep_irq_for_idle(void)
+ 	if (lazy_irq_pending())
+ 		return false;
  
--static inline void snapshot_purr_idle_entry(void)
-+static __always_inline void snapshot_purr_idle_entry(void)
- {
- 	*this_cpu_ptr(&idle_entry_purr_snap) = mfspr(SPRN_PURR);
- }
- 
--static inline void snapshot_spurr_idle_entry(void)
-+static __always_inline void snapshot_spurr_idle_entry(void)
- {
- 	*this_cpu_ptr(&idle_entry_spurr_snap) = mfspr(SPRN_SPURR);
- }
- 
--static inline void update_idle_purr_accounting(void)
-+static __always_inline void update_idle_purr_accounting(void)
- {
- 	u64 wait_cycles;
- 	u64 in_purr = *this_cpu_ptr(&idle_entry_purr_snap);
-@@ -29,7 +29,7 @@ static inline void update_idle_purr_accounting(void)
- 	get_lppaca()->wait_state_cycles = cpu_to_be64(wait_cycles);
- }
- 
--static inline void update_idle_spurr_accounting(void)
-+static __always_inline void update_idle_spurr_accounting(void)
- {
- 	u64 *idle_spurr_cycles_ptr = this_cpu_ptr(&idle_spurr_cycles);
- 	u64 in_spurr = *this_cpu_ptr(&idle_entry_spurr_snap);
-@@ -37,7 +37,7 @@ static inline void update_idle_spurr_accounting(void)
- 	*idle_spurr_cycles_ptr += mfspr(SPRN_SPURR) - in_spurr;
- }
- 
--static inline void pseries_idle_prolog(void)
-+static __always_inline void pseries_idle_prolog(void)
- {
- 	ppc64_runlatch_off();
- 	snapshot_purr_idle_entry();
-@@ -49,7 +49,7 @@ static inline void pseries_idle_prolog(void)
- 	get_lppaca()->idle = 1;
- }
- 
--static inline void pseries_idle_epilog(void)
-+static __always_inline void pseries_idle_epilog(void)
- {
- 	update_idle_purr_accounting();
- 	update_idle_spurr_accounting();
+-	/* Tell lockdep we are about to re-enable */
+-	trace_hardirqs_on();
+-
+ 	/*
+ 	 * Mark interrupts as soft-enabled and clear the
+ 	 * PACA_IRQ_HARD_DIS from the pending mask since we
 -- 
 2.39.2
 
