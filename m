@@ -4,33 +4,33 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8255DC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:12:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 929A7C7618D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 01:13:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNks1T58z3f8R
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:12:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsNmM1zlzz3fbr
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 11:13:23 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjp07tdz3cMl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsNjr0TK3z3cMl
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 11:11:12 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjl26Clz4xDr;
-	Thu,  6 Apr 2023 11:11:07 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsNjp28TSz4xFZ;
+	Thu,  6 Apr 2023 11:11:10 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Petr Vaněk <arkamar@atlas.cz>
-In-Reply-To: <20230324220041.11378-1-arkamar@atlas.cz>
-References: <20230324220041.11378-1-arkamar@atlas.cz>
-Subject: Re: [PATCH] powerpc/pseries: Add spaces around / operator
-Message-Id: <168074339922.3678997.13080367170781307764.b4-ty@ellerman.id.au>
+To: Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Ira Weiny <ira.weiny@intel.com>
+In-Reply-To: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
+References: <20221230-kmap-x86-v1-0-15f1ecccab50@intel.com>
+Subject: Re: (subset) [PATCH 0/3] COVER: Remove memcpy_page_flushcache()
+Message-Id: <168074339910.3678997.3908311433579261627.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 11:09:59 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -42,20 +42,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org
+Cc: Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 24 Mar 2023 23:00:41 +0100, Petr Vaněk wrote:
-> This is follow up change after 14b5d59a261b ("powerpc/pseries: Fix
-> formatting to make code look more beautiful") to conform to kernel
-> coding style.
+On Wed, 15 Mar 2023 16:20:53 -0700, Ira Weiny wrote:
+> Commit 21b56c847753 ("iov_iter: get rid of separate bvec and xarray
+> callbacks") removed the calls to memcpy_page_flushcache().
 > 
+> kmap_atomic() is deprecated and used in the x86 version of
+> memcpy_page_flushcache().
 > 
+> Remove the unnecessary memcpy_page_flushcache() call from all arch's.
+> 
+> [...]
 
-Applied to powerpc/next.
+Patch 2 applied to powerpc/next.
 
-[1/1] powerpc/pseries: Add spaces around / operator
-      https://git.kernel.org/powerpc/c/2747fd26f801c98d0a8177278b4f5c91b8de9c94
+[2/3] powerpc: Remove memcpy_page_flushcache()
+      https://git.kernel.org/powerpc/c/0398abca61482ae47a41ae8f2401338aea366327
 
 cheers
