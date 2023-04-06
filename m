@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15F80C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:28:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4EB1C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 00:28:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMmS4Fnzz3fjc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:28:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PsMmy30Slz3fZp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Apr 2023 10:28:50 +1000 (AEST)
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMlw0d3fz3fdk
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PsMlw13f2z3ff6
 	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Apr 2023 10:27:56 +1000 (AEST)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMls5tn2z4x1N;
-	Thu,  6 Apr 2023 10:27:53 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4PsMlv3PxVz4x91;
+	Thu,  6 Apr 2023 10:27:55 +1000 (AEST)
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-In-Reply-To: <20230404041433.1781804-1-aneesh.kumar@linux.ibm.com>
-References: <20230404041433.1781804-1-aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/papr_scm: Update the NUMA distance table for the target node
-Message-Id: <168074081765.3666874.4766413676138573175.b4-ty@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org, Jens Axboe <axboe@kernel.dk>
+In-Reply-To: <d9f63344-fe7c-56ae-b420-4a1a04a2ae4c@kernel.dk>
+References: <d9f63344-fe7c-56ae-b420-4a1a04a2ae4c@kernel.dk>
+Subject: Re: [PATCH] powerpc: don't try to copy ppc for task with NULL pt_regs
+Message-Id: <168074081763.3666874.7697892587390998192.b4-ty@ellerman.id.au>
 Date: Thu, 06 Apr 2023 10:26:57 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -45,21 +45,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 04 Apr 2023 09:44:33 +0530, Aneesh Kumar K.V wrote:
-> platform device helper routines won't update the NUMA distance table
-> while creating a platform device, even if the device is present on
-> a NUMA node that doesn't have memory or CPU. This is especially true
-> for pmem devices. If the target node of the pmem device is not online, we
-> find the nearest online node to the device and associate the pmem
-> device with that online node. To find the nearest online node, we should
-> have the numa distance table updated correctly. Update the distance
-> information during the device probe.
+On Sun, 26 Mar 2023 16:15:57 -0600, Jens Axboe wrote:
+> Powerpc sets up PF_KTHREAD and PF_IO_WORKER with a NULL pt_regs, which
+> from my (arguably very short) checking is not commonly done for other
+> archs. This is fine, except when PF_IO_WORKER's have been created and
+> the task does something that causes a coredump to be generated. Then we
+> get this crash:
 > 
 > [...]
 
 Applied to powerpc/fixes.
 
-[1/1] powerpc/papr_scm: Update the NUMA distance table for the target node
-      https://git.kernel.org/powerpc/c/b277fc793daf258877b4c0744b52f69d6e6ba22e
+[1/1] powerpc: don't try to copy ppc for task with NULL pt_regs
+      https://git.kernel.org/powerpc/c/fd7276189450110ed835eb0a334e62d2f1c4e3be
 
 cheers
