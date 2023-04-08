@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7A60C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43B32C77B6C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:06:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptxpc2PsWz3fkt
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:05:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PtxqX6Yn8z3fjR
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:06:32 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JTlRNgAr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PcQ+lKN7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JTlRNgAr;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=PcQ+lKN7;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkt6FvNz3fCk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkv20b6z3fDD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:31 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id C00B561592;
-	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13F5CC433EF;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 4166061597;
+	Sat,  8 Apr 2023 14:02:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 81AB5C4339E;
 	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1680962548;
-	bh=z4CMNIF+qP0p1YpfeYDlFb1xIAtUPldYnJb0Qxk6MbA=;
+	bh=BetVWQQ1Px1KBs5A5CIK9YDSLjKUAhqlUhnTQwa8n9A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JTlRNgAr6TjlIcgmsijbR4WXf7ZyxtKssulrtvr2jCkDNoKJTRgR9WpZejL5SFGbH
-	 0MdsufXtLcjQ2Ojiv1yUOYYT+j2kYkVceCybtLtuZBe7gU4lZRxpHE4D81TCR7p72q
-	 naKzPrvJPRNB+27A4b/2NezePV2LLg0iv0xY/LWJzMwfUb8Znxmf9mRXlDf9N2V+TG
-	 KaSx8wA4akLn9zUPLzOVUuWqO7syL16K5yDUBIkGANHcx50HIPoM4kJQD46zneXzBz
-	 fLhDcdWR/xKZU2v/MpkpZgvOxaMD1VQd0r1TcjP4ywsZmQiqosbnK5YwFWE7VB93mv
-	 cazH65j0kHJew==
+	b=PcQ+lKN74rGwX1D5L7CC8afdmO61Wr7xmapsvOnd7/6PRzFm6KqLiT9KZcP5B3JqU
+	 3VdYaIvy5mPjPDSFQi0bnu7kypznqauVlK+YREwTLoTlhI/7rszE561buBRPGVctk+
+	 kZH189Yv80NPvdF2QauURCZ6j7iRwuTaTvgetRD5aQj6MgF/0JgIPIUV1pS7RUKqgf
+	 +I7+VmnD4DSWVCMWRZCB1jk3qJbmYmQ/r4pVkX7NW1C3oJNiBgOLWcAqL5IRwKE1dP
+	 ExpM/ZopX0NGZjBbYThd3oifZiCybr/7LJZi05rpkkYz1mrGGQNodgOpjPLQYCuOkt
+	 HKG7GfOKwA7Tg==
 Received: by pali.im (Postfix)
-	id CC2521C97; Sat,  8 Apr 2023 16:02:25 +0200 (CEST)
+	id 28365209C; Sat,  8 Apr 2023 16:02:26 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v5 02/13] powerpc/85xx: mpc85xx_{ds/rdb} compact the call to mpic_alloc()
-Date: Sat,  8 Apr 2023 16:01:11 +0200
-Message-Id: <20230408140122.25293-3-pali@kernel.org>
+Subject: [PATCH v5 04/13] powerpc/85xx: mpc85xx_{ds/rdb} replace prink by pr_xxx macro
+Date: Sat,  8 Apr 2023 16:01:13 +0200
+Message-Id: <20230408140122.25293-5-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
 References: <20230408140122.25293-1-pali@kernel.org>
@@ -70,77 +70,59 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Reduce number of lines in the call to mpic_alloc().
+Use pr_debug() instead of printk(KERN_DEBUG
+Use pr_err() instead of printk(KERN_ERR
+Use pr_info() instead of printk(KERN_INFO or printk("
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_ds.c  | 18 ++++++------------
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 16 +++++-----------
- 2 files changed, 11 insertions(+), 23 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c  | 6 +++---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 25edfe1b8ae1..c6016915264c 100644
+index 98cca1102e0b..d8d13438e18f 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -50,23 +50,17 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
- void __init mpc85xx_ds_pic_init(void)
- {
- 	struct mpic *mpic;
-+	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
- #ifdef CONFIG_PPC_I8259
- 	struct device_node *np;
- 	struct device_node *cascade_node = NULL;
- 	int cascade_irq;
- #endif
--	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP")) {
--		mpic = mpic_alloc(NULL, 0,
--			MPIC_NO_RESET |
--			MPIC_BIG_ENDIAN |
--			MPIC_SINGLE_DEST_CPU,
--			0, 256, " OpenPIC  ");
--	} else {
--		mpic = mpic_alloc(NULL, 0,
--			  MPIC_BIG_ENDIAN |
--			  MPIC_SINGLE_DEST_CPU,
--			0, 256, " OpenPIC  ");
--	}
-+
-+	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP"))
-+		flags |= MPIC_NO_RESET;
-+
-+	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
+@@ -76,13 +76,13 @@ void __init mpc85xx_ds_pic_init(void)
+ 	}
  
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
+ 	if (cascade_node == NULL) {
+-		printk(KERN_DEBUG "Could not find i8259 PIC\n");
++		pr_debug("Could not find i8259 PIC\n");
+ 		return;
+ 	}
+ 
+ 	cascade_irq = irq_of_parse_and_map(cascade_node, 0);
+ 	if (!cascade_irq) {
+-		printk(KERN_ERR "Failed to map cascade interrupt\n");
++		pr_err("Failed to map cascade interrupt\n");
+ 		return;
+ 	}
+ 
+@@ -108,7 +108,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+ 	uli_init();
+ 	mpc85xx_smp_init();
+ 
+-	printk("MPC85xx DS board from Freescale Semiconductor\n");
++	pr_info("MPC85xx DS board from Freescale Semiconductor\n");
+ }
+ 
+ machine_arch_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index acc4145adcf7..c7ce8a79992d 100644
+index a802053b37b3..64badacf126d 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -32,18 +32,12 @@
- void __init mpc85xx_rdb_pic_init(void)
- {
- 	struct mpic *mpic;
-+	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
+@@ -92,7 +92,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ #endif
+ #endif	/* CONFIG_QUICC_ENGINE */
  
--	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP")) {
--		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
--			MPIC_BIG_ENDIAN |
--			MPIC_SINGLE_DEST_CPU,
--			0, 256, " OpenPIC  ");
--	} else {
--		mpic = mpic_alloc(NULL, 0,
--		  MPIC_BIG_ENDIAN |
--		  MPIC_SINGLE_DEST_CPU,
--		  0, 256, " OpenPIC  ");
--	}
-+	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP"))
-+		flags |= MPIC_NO_RESET;
-+
-+	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
+-	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
++	pr_info("MPC85xx RDB board from Freescale Semiconductor\n");
+ }
  
- 	BUG_ON(mpic == NULL);
- 	mpic_init(mpic);
+ machine_arch_initcall(p2020_rdb, mpc85xx_common_publish_devices);
 -- 
 2.20.1
 
