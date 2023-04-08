@@ -4,64 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C6AAC76196
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 02:19:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17185C76196
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 02:20:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptf815QLrz3fdc
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 12:19:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptf8y36Wxz3fZC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 12:20:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YES0KXe9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=oUVD0o2B;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::632; helo=mail-pl1-x632.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=YES0KXe9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=oUVD0o2B;
 	dkim-atps=neutral
-Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+Received: from mail-pl1-x632.google.com (mail-pl1-x632.google.com [IPv6:2607:f8b0:4864:20::632])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptf670szxz3cjW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2023 12:18:06 +1000 (AEST)
-Received: by mail-pj1-x1032.google.com with SMTP id v9so5021370pjk.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2023 19:18:06 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptf6B2Pywz3cjW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2023 12:18:10 +1000 (AEST)
+Received: by mail-pl1-x632.google.com with SMTP id bg9so482543plb.2
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2023 19:18:10 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20210112; t=1680920281; x=1683512281;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=EZ5pDWVAfCYMt3CtCued/ZR5758nWJMVEl2HGKc0JRc=;
-        b=YES0KXe9KlKz/6DZ4HcEzHh+wkfLDWd05Z+gP2Ob9oN0RgdZtvUDjuGKovUnRg//Up
-         xZ1fs0AEdI30u+qDNkIW1v3gG3uQWS8EWuLdazQY9vTbMQgEHiUss4v83yhJTonmXQaO
-         OxqOAlQ7g3yFud44nWegVOwBG7225OSBaZCPoFMzfLWutyFFa+Rf276Sno8wHFa1qRyn
-         Q6Fg9tNlmPbUBL9tFPAuxB+WHhIZdcOJitgfk5QFGBQYps4MnmJtobwlbFWb1poyR+kH
-         7yzm/wG8jY6UA18k896ApQhvSVrSgDLXKOmN6MXT+npQ+ZWcNW5zp5TR4Yt9JMhcxupV
-         lm6w==
+        d=gmail.com; s=20210112; t=1680920288; x=1683512288;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dWV2YzJkSdVhHH8yn695MrgwE31x1dFs+RHWpfsQ+HM=;
+        b=oUVD0o2BKraOLnU1M2aVt007Fep2I5ZrdfPI97jvkSC/OP/WDGlB+LBk45h7JS/te5
+         TafSpWW/9Ilj2YD91+H82o3m1WP0KJzlfMaYS1EBTYfLQyxqrMY+1K7lXMbGolNcvffb
+         E8UY2b71eatIFFrvW0mCrk3MO1WHzcqKYAXOiAtgzU6awKp8cX+GRZLT7E6YafKAbU8d
+         u102Up98pfVFfl4kZ2TPdL3K4eIax5J67Y1B+uEPyLzTt1BZEbhaljkUdilSBShdFGRi
+         DlmJJGUlkYidMyAD+7F9Ll644jyeR8UyQ9c1QPH1T8hfIdXs9d5wcEyCVBp69KWTN5Sb
+         oxYw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680920281; x=1683512281;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=EZ5pDWVAfCYMt3CtCued/ZR5758nWJMVEl2HGKc0JRc=;
-        b=tTvMXf6qnRn0gfuuQKRhVeXlDkSEFUdBjW8LcqLLwVeZ4pReJyLHg1VWvMx0sjt+8o
-         RJQGes6c+hh8GI5lEO2hs83fYqQ1degA+pYiHJfCsdjbTR9Yk69gh2aNoTlGAFsCirwG
-         f2jE1Cr5VchM5XG/JXKztuZNLkn2kBnnFp83SmqMupXTNgRIsl1VGuCUUMnaPbuy5n+q
-         rabrpRd2fciyBfOnVC9aNrhhPNiyyfoYhTG9jbuGPWzBTtuBa/aeYJ3xIZzdJojsYFHO
-         uMCT4u6JhQk1gZEkdk3CkKPlQvtXd2J20xPfLyPerLaBzSu2CocCCFyZM/hvWTLA26V3
-         XplQ==
-X-Gm-Message-State: AAQBX9dI074DJ2+V8L+E6hpSzeUOsw3qkDcmuwGXnpPhaYpE+DiPO4Tl
-	bzghd3tm2ENKewVgpgQ5cV9Ejz4Fh7ma5g==
-X-Google-Smtp-Source: AKy350YD4coUp7MvN+3o8IyI1+Dzs6xhyIryBHySRWXJ8/qrDTJ2XIpPg6nb6EiNjJwYDLEYNZCeyw==
-X-Received: by 2002:a17:902:e405:b0:1a4:f1cd:c286 with SMTP id m5-20020a170902e40500b001a4f1cdc286mr516595ple.9.1680920281438;
-        Fri, 07 Apr 2023 19:18:01 -0700 (PDT)
+        d=1e100.net; s=20210112; t=1680920288; x=1683512288;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dWV2YzJkSdVhHH8yn695MrgwE31x1dFs+RHWpfsQ+HM=;
+        b=K1wXsBUfZrDP9PDsK03VrpaM8Y2bgsIu2fOEvMg6H4WnJ07ZVUL/TGwANtY7YL3jgo
+         eyEiyLGfZk2SpXuTrxerYGzneGV/buYjz+FFNgrrq4QfxCWex1j/LNWjvOWh2dx0CfUR
+         F3dv0QlaLdrrILoXv4nLxcf/IGJ9vCMtRpULyi0VneYHb3VV/t+vUrAm+I+P1Sn9NhT7
+         zY6AEx0qwGHKJUmGGHyZmZoM99AE7x6D/a4TKr7+VPXvkdfXqw0BeoVNGWAcVBK+X/Q5
+         Jtxa0T026yxiWzr4JoALTqQTTuteo2BDHCBLPWzjDNjuo7ks525+KWjROaV/agq4lFhs
+         MGWA==
+X-Gm-Message-State: AAQBX9cSdlP7vV1dklKfGTzqPWPL5TnqarS6sEre8RHnnWDWMw2jOHt7
+	6MWYoOjz5oi8gmBMw2vwDBHeIx1LYb3u/g==
+X-Google-Smtp-Source: AKy350b22zyVMsb1yYBJJL9V6XIjuSZ8BsSu/Mq7hMA9TKDSGMQs8r/B3tVTX8DIL4NHX0IHIcbRnQ==
+X-Received: by 2002:a17:90b:180e:b0:246:725e:cd42 with SMTP id lw14-20020a17090b180e00b00246725ecd42mr1172845pjb.21.1680920287917;
+        Fri, 07 Apr 2023 19:18:07 -0700 (PDT)
 Received: from wheely.local0.net ([203.59.189.25])
-        by smtp.gmail.com with ESMTPSA id d11-20020a170902654b00b001a19f3a661esm3498577pln.138.2023.04.07.19.17.58
+        by smtp.gmail.com with ESMTPSA id d11-20020a170902654b00b001a19f3a661esm3498577pln.138.2023.04.07.19.18.05
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Apr 2023 19:18:00 -0700 (PDT)
+        Fri, 07 Apr 2023 19:18:07 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/6] powerpc/64: Build with PC-Relative addressing
-Date: Sat,  8 Apr 2023 12:17:46 +1000
-Message-Id: <20230408021752.862660-1-npiggin@gmail.com>
+Subject: [PATCH 2/6] powerpc/64s: Run at the kernel virtual address earlier in boot
+Date: Sat,  8 Apr 2023 12:17:48 +1000
+Message-Id: <20230408021752.862660-3-npiggin@gmail.com>
 X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230408021752.862660-1-npiggin@gmail.com>
+References: <20230408021752.862660-1-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,68 +82,228 @@ Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This won't see a lot of real use until POWER10 is the oldest supported
-CPU for distros, but being as we're quite a unique user of toolchain I'd
-like to start ironing things out earlier rather than later. I'm making a
-list of observations here, https://github.com/linuxppc/issues/issues/455
-and will take them to toolchan developers after the kernel work is a bit
-further along.
+This mostly consolidates the Book3E and Book3S behaviour in boot WRT
+executing from the physical or virtual address.
 
-The series is working pretty well for me on pseries and powernv systems.
-Since RFC I've tidied things a bit and fixed the remaining hacks and
-known issues, mainly in the module loader.
+Book3E sets up kernel virtual linear map in start_initialization_book3e
+and runs from the virtual linear alias after that. This change makes
+Book3S begin to execute from the virtual alias at the same point. Book3S
+can not use its MMU for that at this point, but when the MMU is disabled,
+the virtual linear address correctly aliases to physical memory because
+the top bits of the address are ignored with MMU disabled.
 
-The first two patches are already posted to the list, boot code changes
-that aren't too interesting to toolchain.
+Secondaries execute from the virtual address similarly early.
 
-Thanks,
-Nick
+This reduces the differences between subarchs, but the main motivation
+was to enable the PC-relative addressing ABI for Book3S, where pointer
+calculations must execute from the virtual address or the top bits of
+the pointer will be lost. This is similar to the requirement the TOC
+relative addressing already has that the TOC pointer use its virtual
+address.
 
-Nicholas Piggin (6):
-  powerpc/64: Move initial base and TOC pointer calculation
-  powerpc/64s: Run at the kernel virtual address earlier in boot
-  powerpc/64: Add support to build with prefixed instructions
-  powerpc: add CFUNC assembly label annotation
-  powerpc/64: vmlinux support building with PCREL addresing
-  powerpc/64: modules support building with PCREL addresing
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/head_64.S | 82 +++++++++++++++++++----------------
+ 1 file changed, 44 insertions(+), 38 deletions(-)
 
- arch/powerpc/Kconfig                    |   6 +
- arch/powerpc/Makefile                   |  10 +
- arch/powerpc/include/asm/atomic.h       |  24 +-
- arch/powerpc/include/asm/io.h           |  37 +++
- arch/powerpc/include/asm/module.h       |  10 +-
- arch/powerpc/include/asm/paca.h         |   2 +
- arch/powerpc/include/asm/ppc-opcode.h   |   8 +
- arch/powerpc/include/asm/ppc_asm.h      |  24 ++
- arch/powerpc/include/asm/sections.h     |   5 +
- arch/powerpc/include/asm/uaccess.h      |  28 +-
- arch/powerpc/include/uapi/asm/elf.h     |   4 +
- arch/powerpc/kernel/asm-offsets.c       |   2 +
- arch/powerpc/kernel/exceptions-64s.S    | 112 +++----
- arch/powerpc/kernel/head_64.S           | 130 ++++----
- arch/powerpc/kernel/interrupt_64.S      |  28 +-
- arch/powerpc/kernel/irq.c               |   8 +
- arch/powerpc/kernel/misc_64.S           |   2 +-
- arch/powerpc/kernel/module_64.c         | 376 +++++++++++++++++++++---
- arch/powerpc/kernel/paca.c              |   2 +
- arch/powerpc/kernel/trace/ftrace.c      |  52 +++-
- arch/powerpc/kernel/vdso/gettimeofday.S |   6 +-
- arch/powerpc/kernel/vector.S            |   6 +
- arch/powerpc/kernel/vmlinux.lds.S       |   6 +
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |  16 +-
- arch/powerpc/lib/copypage_64.S          |  10 +
- arch/powerpc/lib/copypage_power7.S      |   4 +-
- arch/powerpc/lib/copyuser_power7.S      |   8 +-
- arch/powerpc/lib/hweight_64.S           |   8 +-
- arch/powerpc/lib/memcmp_64.S            |   4 +-
- arch/powerpc/lib/memcpy_power7.S        |   6 +-
- arch/powerpc/net/bpf_jit.h              |  10 +-
- arch/powerpc/net/bpf_jit_comp64.c       |  35 ++-
- arch/powerpc/platforms/Kconfig.cputype  |  38 +++
- arch/powerpc/platforms/pseries/hvCall.S |   4 +-
- arch/powerpc/xmon/xmon.c                |   2 +
- 35 files changed, 814 insertions(+), 219 deletions(-)
-
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 5b2d607cd1e8..66c21061036b 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -76,6 +76,13 @@
+  *   2. The kernel is entered at __start
+  */
+ 
++/*
++ * boot_from_prom and prom_init run at the physical address. Everything
++ * after prom and kexec entry run at the virtual address (PAGE_OFFSET).
++ * Secondaries run at the virtual address from generic_secondary_common_init
++ * onward.
++ */
++
+ OPEN_FIXED_SECTION(first_256B, 0x0, 0x100)
+ USE_FIXED_SECTION(first_256B)
+ 	/*
+@@ -303,13 +310,11 @@ _GLOBAL(fsl_secondary_thread_init)
+ 	/* turn on 64-bit mode */
+ 	bl	enable_64b_mode
+ 
+-	/* get a valid TOC pointer, wherever we're mapped at */
+-	bl	relative_toc
+-	tovirt(r2,r2)
+-
+ 	/* Book3E initialization */
+ 	mr	r3,r24
+ 	bl	book3e_secondary_thread_init
++	bl	relative_toc
++
+ 	b	generic_secondary_common_init
+ 
+ #endif /* CONFIG_PPC_BOOK3E_64 */
+@@ -331,16 +336,12 @@ _GLOBAL(generic_secondary_smp_init)
+ 	/* turn on 64-bit mode */
+ 	bl	enable_64b_mode
+ 
+-	/* get a valid TOC pointer, wherever we're mapped at */
+-	bl	relative_toc
+-	tovirt(r2,r2)
+-
+ #ifdef CONFIG_PPC_BOOK3E_64
+ 	/* Book3E initialization */
+ 	mr	r3,r24
+ 	mr	r4,r25
+ 	bl	book3e_secondary_core_init
+-
++	/* Now NIA and r2 are relocated to PAGE_OFFSET if not already */
+ /*
+  * After common core init has finished, check if the current thread is the
+  * one we wanted to boot. If not, start the specified thread and stop the
+@@ -378,6 +379,16 @@ _GLOBAL(generic_secondary_smp_init)
+ 10:
+ 	b	10b
+ 20:
++#else
++	/* Now the MMU is off, can branch to our PAGE_OFFSET address */
++	bcl	20,31,$+4
++1:	mflr	r11
++	addi	r11,r11,(2f - 1b)
++	tovirt(r11, r11)
++	mtctr	r11
++	bctr
++2:
++	bl	relative_toc
+ #endif
+ 
+ generic_secondary_common_init:
+@@ -492,6 +503,8 @@ SYM_FUNC_START_LOCAL(start_initialization_book3s)
+ 	/* Switch off MMU if not already off */
+ 	bl	__mmu_off
+ 
++	/* Now the MMU is off, can return to our PAGE_OFFSET address */
++	tovirt(r25,r25)
+ 	mtlr	r25
+ 	blr
+ SYM_FUNC_END(start_initialization_book3s)
+@@ -531,16 +544,19 @@ __start_initialization_multiplatform:
+ 	mr	r29,r9
+ #endif
+ 
++	/* These functions return to the virtual (PAGE_OFFSET) address */
+ #ifdef CONFIG_PPC_BOOK3E_64
+ 	bl	start_initialization_book3e
+ #else
+ 	bl	start_initialization_book3s
+ #endif /* CONFIG_PPC_BOOK3E_64 */
+ 
+-	/* Get TOC pointer */
++	/* Get TOC pointer, virtual */
+ 	bl	relative_toc
+ 
+ 	/* find out where we are now */
++
++	/* OPAL doesn't pass base address in r4, have to derive it. */
+ 	bcl	20,31,$+4
+ 0:	mflr	r26			/* r26 = runtime addr here */
+ 	addis	r26,r26,(_stext - 0b)@ha
+@@ -551,7 +567,7 @@ __start_initialization_multiplatform:
+ __REF
+ __boot_from_prom:
+ #ifdef CONFIG_PPC_OF_BOOT_TRAMPOLINE
+-	/* Get TOC pointer */
++	/* Get TOC pointer, non-virtual */
+ 	bl	relative_toc
+ 
+ 	/* find out where we are now */
+@@ -600,18 +616,11 @@ __boot_from_prom:
+ __after_prom_start:
+ #ifdef CONFIG_RELOCATABLE
+ 	/* process relocations for the final address of the kernel */
+-	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+-	sldi	r25,r25,32
+-#if defined(CONFIG_PPC_BOOK3E_64)
+-	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
+-#endif
+ 	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
+-#if defined(CONFIG_PPC_BOOK3E_64)
+-	tophys(r26,r26)
+-#endif
+ 	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
+-	bne	1f
+-	add	r25,r25,r26
++	mr	r25,r26		/* then use current kernel base */
++	beq	1f
++	LOAD_REG_IMMEDIATE(r25, PAGE_OFFSET) /* else use static kernel base */
+ 1:	mr	r3,r25
+ 	bl	relocate
+ #if defined(CONFIG_PPC_BOOK3E_64)
+@@ -627,14 +636,8 @@ __after_prom_start:
+  *
+  * Note: This process overwrites the OF exception vectors.
+  */
+-	li	r3,0			/* target addr */
+-#ifdef CONFIG_PPC_BOOK3E_64
+-	tovirt(r3,r3)		/* on booke, we already run at PAGE_OFFSET */
+-#endif
++	LOAD_REG_IMMEDIATE(r3, PAGE_OFFSET)
+ 	mr.	r4,r26			/* In some cases the loader may  */
+-#if defined(CONFIG_PPC_BOOK3E_64)
+-	tovirt(r4,r4)
+-#endif
+ 	beq	9f			/* have already put us at zero */
+ 	li	r6,0x100		/* Start offset, the first 0x100 */
+ 					/* bytes were copied earlier.	 */
+@@ -645,9 +648,6 @@ __after_prom_start:
+  * variable __run_at_load, if it is set the kernel is treated as relocatable
+  * kernel, otherwise it will be moved to PHYSICAL_START
+  */
+-#if defined(CONFIG_PPC_BOOK3E_64)
+-	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
+-#endif
+ 	lwz	r7,(FIXED_SYMBOL_ABS_ADDR(__run_at_load))(r26)
+ 	cmplwi	cr0,r7,1
+ 	bne	3f
+@@ -766,9 +766,15 @@ _GLOBAL(pmac_secondary_start)
+ 	sync
+ 	slbia
+ 
+-	/* get TOC pointer (real address) */
++	/* Branch to our PAGE_OFFSET address */
++	bcl	20,31,$+4
++1:	mflr	r11
++	addi	r11,r11,(2f - 1b)
++	tovirt(r11, r11)
++	mtctr	r11
++	bctr
++2:
+ 	bl	relative_toc
+-	tovirt(r2,r2)
+ 
+ 	/* Copy some CPU settings from CPU 0 */
+ 	bl	__restore_cpu_ppc970
+@@ -907,8 +913,9 @@ SYM_FUNC_END(enable_64b_mode)
+  * TOC in -mcmodel=medium mode. After we relocate to 0 but before
+  * the MMU is on we need our TOC to be a virtual address otherwise
+  * these pointers will be real addresses which may get stored and
+- * accessed later with the MMU on. We use tovirt() at the call
+- * sites to handle this.
++ * accessed later with the MMU on. We branch to the virtual address
++ * while still in real mode then call relative_toc again to handle
++ * this.
+  */
+ _GLOBAL(relative_toc)
+ 	mflr	r0
+@@ -927,9 +934,8 @@ p_toc:	.8byte	.TOC. - 0b
+  */
+ __REF
+ start_here_multiplatform:
+-	/* set up the TOC */
+-	bl      relative_toc
+-	tovirt(r2,r2)
++	/* Adjust TOC for moved kernel. Could adjust when moving it instead. */
++	bl	relative_toc
+ 
+ 	/* Clear out the BSS. It may have been done in prom_init,
+ 	 * already but that's irrelevant since prom_init will soon
 -- 
 2.40.0
 
