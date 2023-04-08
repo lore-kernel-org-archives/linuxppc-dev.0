@@ -4,55 +4,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B347C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:14:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 209F4C77B6C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 15:26:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pty084vVSz3g7K
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:14:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PtzbH3BlGz3fbh
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 01:26:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m7/ul2Rk;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UTlpqmjB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m7/ul2Rk;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=UTlpqmjB;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxl423SHz3fXW
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:40 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 92977615AC;
-	Sat,  8 Apr 2023 14:02:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE934C4339B;
-	Sat,  8 Apr 2023 14:02:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1680962551;
-	bh=UnGtV5BVxvXKqPWOEAt96UXn/bp5B5sv9wg2mMjagoY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=m7/ul2RkVvHroOCKT+cSaOvKQnqE0kB+oOFBocBOs9GYpcWqlqkMWOpO54XsRwxi/
-	 ADrOV+yqOFSq0OAjaWA/W1etZwvDqvrau2Ve/EvPK0iEsTpo/xWb9vr2Krkv0oLGH3
-	 3Xn2MCJAhWe4VE8Yci2N2o+CYuoqa4+48uk1jxG7sC+L2IOz0b39D+ohY+TmrYQ0fW
-	 cwTZrM/HlIV+OnbmJ8QUacIP2sPug7i9og5z7KfYsUMq5RUx3QGja9wkfX8ZbqiOdc
-	 cH2AeCxwdhJwm4q46TTrJD91Ye1kTgFcv/WtDJQE4d7wLeaQmgoC+bV0TkKTJynoMl
-	 sy3lg8Iii/qRA==
-Received: by pali.im (Postfix)
-	id 8492839D1; Sat,  8 Apr 2023 16:02:27 +0200 (CEST)
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PtzZH5rmfz3cLs
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 01:25:06 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1680967512; x=1712503512;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=di7Ds/VR6M8pH9m2c+PMCl3GLjlLGEaWbNcwA8dycJU=;
+  b=UTlpqmjBk7hI3a3ehcBAlej1yc3scmICD1sGQueLhM5xnOoC/gBWCJiV
+   aqbV2ApscmTp24BUUqAXGV229+0B6MlAiGwL98BoqfenLmCSC1xEJg+f4
+   N8pzfFsnEN2ZsI1WwmVDCYqrfQd+OJXRbmhg8D9pJr7rjZzhdWDoG/g1K
+   5LxESEYdz4I9yrr6eCfhVaMrmch0ESDRcKUaGnuXTCcXqn0G50HYACxh2
+   1KMELyXylnAGb+sHpSjVQPkKtZP+RlciZ6Q5NKpOWk2Dz5n6BKGPPAKqx
+   U+e9H3SFRhaEnnO+hYbZHK7KsFuNtI2BgBOVj5zkoJC6y0BqRsuYHX4Ob
+   w==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="322780704"
+X-IronPort-AV: E=Sophos;i="5.98,329,1673942400"; 
+   d="scan'208";a="322780704"
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2023 08:25:02 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="681297497"
+X-IronPort-AV: E=Sophos;i="5.98,329,1673942400"; 
+   d="scan'208";a="681297497"
+Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
+  by orsmga007.jf.intel.com with ESMTP; 08 Apr 2023 08:24:59 -0700
+Received: from kbuild by b613635ddfff with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1plAR1-000Tqn-0d;
+	Sat, 08 Apr 2023 15:24:59 +0000
+Date: Sat, 8 Apr 2023 23:24:07 +0800
+From: kernel test robot <lkp@intel.com>
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v5 12/13] powerpc/85xx: p2020: Enable boards by new config option CONFIG_PPC_P2020
-Date: Sat,  8 Apr 2023 16:01:21 +0200
-Message-Id: <20230408140122.25293-13-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
-References: <20230408140122.25293-1-pali@kernel.org>
+Subject: Re: [PATCH 1/8] powerpc/fsl_uli1575: Misc cleanup
+Message-ID: <202304082352.xhNWS4WV-lkp@intel.com>
+References: <20230408132151.8902-2-pali@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230408132151.8902-2-pali@kernel.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,96 +73,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, oe-kbuild-all@lists.linux.dev
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Generic unified P2020 machine description which supports all P2020-based
-boards is now in separate file p2020.c. So create a separate config option
-CONFIG_PPC_P2020 for it.
+Hi Pali,
 
-Previously machine descriptions for P2020 boards were enabled by
-CONFIG_MPC85xx_DS or CONFIG_MPC85xx_RDB option. So set CONFIG_PPC_P2020 to
-be enabled by default when one of those option is enabled.
+kernel test robot noticed the following build errors:
 
-This allows to compile support for P2020 boards without need to have
-enabled support for older mpc85xx boards. And to compile kernel for old
-mpc85xx boards without having enabled support for new P2020 boards.
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on powerpc/fixes linus/master v6.3-rc5 next-20230406]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Signed-off-by: Pali Rohár <pali@kernel.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/platforms/85xx/Kconfig  | 22 ++++++++++++++++++----
- arch/powerpc/platforms/85xx/Makefile |  5 +++--
- 2 files changed, 21 insertions(+), 6 deletions(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Pali-Roh-r/powerpc-fsl_uli1575-Misc-cleanup/20230408-212610
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20230408132151.8902-2-pali%40kernel.org
+patch subject: [PATCH 1/8] powerpc/fsl_uli1575: Misc cleanup
+config: powerpc-allnoconfig (https://download.01.org/0day-ci/archive/20230408/202304082352.xhNWS4WV-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 12.1.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/4d3f86e2ae53d180d2cbbe556355ff5b03d4251b
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Pali-Roh-r/powerpc-fsl_uli1575-Misc-cleanup/20230408-212610
+        git checkout 4d3f86e2ae53d180d2cbbe556355ff5b03d4251b
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash arch/powerpc/kernel/
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index a8ce6616fd0a..9315a3b69d6d 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -78,23 +78,37 @@ config MPC8536_DS
- 	  This option enables support for the MPC8536 DS board
- 
- config MPC85xx_DS
--	bool "Freescale MPC8544 DS / MPC8572 DS / P2020 DS"
-+	bool "Freescale MPC8544 DS / MPC8572 DS"
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	select FSL_ULI1575 if PCI
- 	select SWIOTLB
- 	help
--	  This option enables support for the MPC8544 DS, MPC8572 DS and P2020 DS boards
-+	  This option enables support for the MPC8544 DS and MPC8572 DS boards
- 
- config MPC85xx_RDB
--	bool "Freescale P102x MBG/UTM/RDB and P2020 RDB"
-+	bool "Freescale P102x MBG/UTM/RDB"
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
- 	select SWIOTLB
- 	help
- 	  This option enables support for the P1020 MBG PC, P1020 UTM PC,
- 	  P1020 RDB PC, P1020 RDB PD, P1020 RDB, P1021 RDB PC, P1024 RDB,
--	  P1025 RDB, P2020 RDB and P2020 RDB PC boards
-+	  and P1025 RDB boards
-+
-+config PPC_P2020
-+	bool "Freescale P2020"
-+	default y if MPC85xx_DS || MPC85xx_RDB
-+	select DEFAULT_UIMAGE
-+	select SWIOTLB
-+	imply PPC_I8259
-+	imply FSL_ULI1575 if PCI
-+	help
-+	  This option enables generic unified support for any board with the
-+	  Freescale P2020 processor.
-+
-+	  For example: P2020 DS board, P2020 RDB board, P2020 RDB PC board or
-+	  CZ.NIC Turris 1.x boards.
- 
- config P1010_RDB
- 	bool "Freescale P1010 RDB"
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 0a0011e8c63c..e3d977624e33 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -17,13 +17,14 @@ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
- obj-$(CONFIG_MPC8536_DS)  += mpc8536_ds.o
- obj8259-$(CONFIG_PPC_I8259)   += mpc85xx_8259.o
--obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o p2020.o $(obj8259-y)
-+obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o $(obj8259-y)
- obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
--obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o p2020.o
-+obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
- obj-$(CONFIG_P1010_RDB)   += p1010rdb.o
- obj-$(CONFIG_P1022_DS)    += p1022_ds.o
- obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
- obj-$(CONFIG_P1023_RDB)   += p1023_rdb.o
-+obj-$(CONFIG_PPC_P2020)   += p2020.o $(obj8259-y)
- obj-$(CONFIG_TWR_P102x)   += twr_p102x.o
- obj-$(CONFIG_CORENET_GENERIC)   += corenet_generic.o
- obj-$(CONFIG_FB_FSL_DIU)	+= t1042rdb_diu.o
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304082352.xhNWS4WV-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from arch/powerpc/kernel/sys_ppc32.c:56:
+   arch/powerpc/include/asm/ppc-pci.h:71:45: error: 'struct pci_controller' declared inside parameter list will not be visible outside of this definition or declaration [-Werror]
+      71 | static inline int uli_exclude_device(struct pci_controller *hose, u_char bus, u_char devfn) { return PCIBIOS_SUCCESSFUL; }
+         |                                             ^~~~~~~~~~~~~~
+   arch/powerpc/include/asm/ppc-pci.h: In function 'uli_exclude_device':
+>> arch/powerpc/include/asm/ppc-pci.h:71:102: error: 'PCIBIOS_SUCCESSFUL' undeclared (first use in this function)
+      71 | static inline int uli_exclude_device(struct pci_controller *hose, u_char bus, u_char devfn) { return PCIBIOS_SUCCESSFUL; }
+         |                                                                                                      ^~~~~~~~~~~~~~~~~~
+   arch/powerpc/include/asm/ppc-pci.h:71:102: note: each undeclared identifier is reported only once for each function it appears in
+   cc1: all warnings being treated as errors
+
+
+vim +/PCIBIOS_SUCCESSFUL +71 arch/powerpc/include/asm/ppc-pci.h
+
+    69	
+    70	#if !defined(CONFIG_PCI) || !defined(CONFIG_FSL_ULI1575)
+  > 71	static inline int uli_exclude_device(struct pci_controller *hose, u_char bus, u_char devfn) { return PCIBIOS_SUCCESSFUL; }
+    72	#endif /* !defined(CONFIG_PCI) || !defined(CONFIG_FSL_ULI1575) */
+    73	
+
 -- 
-2.20.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
