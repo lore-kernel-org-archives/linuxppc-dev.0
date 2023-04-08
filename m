@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F28EC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 13:29:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF027C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 13:30:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptx1C6HzPz3fYH
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 23:29:51 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptx2842y6z3fhJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 23:30:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ovdA74Zm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B5DDK8GI;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ovdA74Zm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B5DDK8GI;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptwtj2SBRz3cHG
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptwtj2yS0z3fCp
 	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2023 23:24:13 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 56D31614B3;
-	Sat,  8 Apr 2023 13:24:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9066FC433A0;
-	Sat,  8 Apr 2023 13:24:08 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 73DA461073;
+	Sat,  8 Apr 2023 13:24:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BA873C433D2;
+	Sat,  8 Apr 2023 13:24:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1680960248;
-	bh=1B1bdtjGi0qphccKaW9xvXzqnYHpNRSwmcqFmuJLGRY=;
+	s=k20201202; t=1680960250;
+	bh=ps76pyu3TDlG2IApvb70QcdiPajYqBKpLTa4tWI5Ohs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ovdA74ZmhTEzQHM1M24Vjg5ZfQdf6MhINoVwXgCNOzI+f6Y24yYNafplYhnMEN2AU
-	 2BocP5u05IeYQc27SIuh84Qz5nY0Z06/kgX0/OCqkIhOvy8lhOXmb+URVTO3Yf1S6I
-	 VK+I6E/f0CZeUgqQRzbp8rsLP7HYcTrtDWKbKKK+S+i6D6hadTUNmSlShrGwZA/+9H
-	 Xbl+SHmzOwgecuHkHe2ejkKUy8XAh0+VDqUitOR+j8du31pqnGBHzOE2MxeTjZegET
-	 NJJVNNNR9gRdwQxXnkK2wjLIOoj0qRxEoyhj7sIbA2wau+vP3QVHUdTUDOvbznJcfM
-	 O06DLaM1oFyBw==
+	b=B5DDK8GI+rwvjJPfZEVp80zJfVVp8JpL4yQrVaExPzOfnPcYpewHbcb5OA0jfC1rR
+	 FHldYjZtQ3UtLbQmXxZYby67EG6pS3EDZw4FZwfF5wdVDOq+CCE1sYgVfmtd9ay2v5
+	 zVWKDlIBpuKD1K3Twseu/S0T8Ou5vkSc0od8dPDrr827ViP++aIiHuocJImOSlfdWr
+	 uS7nRFH5WeDt3n83/E0Z/APHg5ni6LV8Un316/6feLD/cHnLGcqps/Q2vp5iEDnwjR
+	 qamRvrC64lD4ebM4jH81mls0fVgHqsp08bLb0QrpJvGCvgYe5X+OSYbrOacGvxpc1n
+	 SNxbneZmpBL9w==
 Received: by pali.im (Postfix)
-	id 0DE2D20A8; Sat,  8 Apr 2023 15:24:06 +0200 (CEST)
+	id 6F567213C; Sat,  8 Apr 2023 15:24:06 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 5/8] powerpc/mpc85xx: mpc85xx_rdb: Do not automatically select FSL_ULI1575
-Date: Sat,  8 Apr 2023 15:21:48 +0200
-Message-Id: <20230408132151.8902-6-pali@kernel.org>
+Subject: [PATCH 7/8] powerpc/mpc86xx: mpc86xx_hpcn: Call uli_init() instead of explicit ppc_md assignment
+Date: Sat,  8 Apr 2023 15:21:50 +0200
+Message-Id: <20230408132151.8902-8-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20230408132151.8902-1-pali@kernel.org>
 References: <20230408132151.8902-1-pali@kernel.org>
@@ -68,26 +68,38 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Boards provided by CONFIG_MPC85xx_RDB option do not initialize
-fsl_uli1575.c driver. So remove explicit select dependency on it.
+After calling fsl_pci_assign_primary(), it is possible to use uli_init() to
+conditionally initialize ppc_md.pci_exclude_device callback based on the
+uli1575 detection.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index b92cb2b4d54d..a8ce6616fd0a 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -90,7 +90,6 @@ config MPC85xx_RDB
- 	bool "Freescale P102x MBG/UTM/RDB and P2020 RDB"
- 	select PPC_I8259
- 	select DEFAULT_UIMAGE
--	select FSL_ULI1575 if PCI
- 	select SWIOTLB
- 	help
- 	  This option enables support for the P1020 MBG PC, P1020 UTM PC,
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 645125cc8420..812110673d88 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -46,10 +46,6 @@ mpc86xx_hpcn_setup_arch(void)
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	ppc_md.pci_exclude_device = uli_exclude_device;
+-#endif
+-
+ 	printk("MPC86xx HPCN board from Freescale Semiconductor\n");
+ 
+ #ifdef CONFIG_SMP
+@@ -57,6 +53,7 @@ mpc86xx_hpcn_setup_arch(void)
+ #endif
+ 
+ 	fsl_pci_assign_primary();
++	uli_init();
+ 
+ 	swiotlb_detect_4g();
+ }
 -- 
 2.20.1
 
