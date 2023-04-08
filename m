@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C542C77B6C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:09:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9280FC77B6C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:09:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PtxtL3jWMz3fYy
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:08:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PtxvQ1hjzz3fpq
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:09:54 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vHYPZPhc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=apch3ZsR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=vHYPZPhc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=apch3ZsR;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkw6ZBqz3fSD
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkx6ZpQz3fVt
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:33 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9EAA160A4E;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 87FDD6159F;
 	Sat,  8 Apr 2023 14:02:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E6314C433EF;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4459C433A4;
 	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1680962549;
-	bh=EYkoivVbC90IhkNPwKngRi4B+5+jGi4J3fzGRmyKcFU=;
+	bh=jbQirVnPPVloFTYjJFk7nyK5o6hQwE8ZafKlV8Ygph8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=vHYPZPhc78lA/uUbvXLHHqeJqDcvHneiTOHaghStzw3BIeGPRys0pIOSXMIXODAzM
-	 xbrqXHMcOwuO9XdYY6VDf1bgpt8Maet79lgtdwXdf6XxkgePMz3vJr5yiHyU7fD+uX
-	 V5Y1tLjnbWyozbBSsu5FYS6pfQv6a4hVMozkEZC4t8u1lpcrp+MFyGK4zTiFXYbsYm
-	 PKx0ZWCFYpjcinHlK19DFhLnyV7Ul8zSS7TAiKZWbw+VeWOp0UMY9MWaaxOGXWcusW
-	 3o4dBZN5eVVh0nM2uhuXtpM8CsYU0yyEwe3xA/HcYCUq0UO870BgCzj+IjWlDiFqa1
-	 rvdVCKJWNV/lA==
+	b=apch3ZsRdK68wnRVwCB9cxtfA8GAzqAr4nVPQ8kE9cEItnHE6Rtno8tgkJLwKfaYp
+	 8Et3BeR3vltGc/KD7ta4Y3I0/9us0PASidQf8Tbq27N8ab5BJtTSMwFZwTIl1K/Kyr
+	 dCuyLX2J0qycSQCUEymYrtl7n9hltcUKxC4226iLgHw7EFO7xPFwgMXZ37+2hZ02LJ
+	 OBEa0wFXd/h9o6g4yTEAMFIy6/0FwPqdBee7OJjuq8skfuc23zjcY/J0oHOKQwbgOv
+	 6mpk0DnCF04/5FUNczWN+Y8egf9iHFzDZpfTxYQ/TKaAoa1oe4xoOHSXq25PdWBuJf
+	 0Dq/W0+4ZhOYw==
 Received: by pali.im (Postfix)
-	id 5665432FC; Sat,  8 Apr 2023 16:02:27 +0200 (CEST)
+	id EFD622317; Sat,  8 Apr 2023 16:02:26 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v5 11/13] powerpc/85xx: p2020: Define just one machine description
-Date: Sat,  8 Apr 2023 16:01:20 +0200
-Message-Id: <20230408140122.25293-12-pali@kernel.org>
+Subject: [PATCH v5 08/13] powerpc/85xx: p2020: Move all P2020 RDB machine descriptions to p2020.c
+Date: Sat,  8 Apr 2023 16:01:17 +0200
+Message-Id: <20230408140122.25293-9-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
 References: <20230408140122.25293-1-pali@kernel.org>
@@ -68,93 +68,159 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Combine machine descriptions and code of all P2020 boards into just one
-generic unified P2020 machine description. This allows kernel to boot on
-any P2020-based board with P2020 DTS file without need to patch kernel and
-define a new machine description in 85xx powerpc platform directory.
+This moves P2020 RDB machine descriptions into new p2020.c source file.
+This is preparation for code de-duplication and providing one unified
+machine description for all P2020 boards.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/platforms/85xx/p2020.c | 57 ++++++++++-------------------
- 1 file changed, 19 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/p2020.c b/arch/powerpc/platforms/85xx/p2020.c
-index 0e7be454b2de..0e4d715145af 100644
---- a/arch/powerpc/platforms/85xx/p2020.c
-+++ b/arch/powerpc/platforms/85xx/p2020.c
-@@ -47,47 +47,29 @@ static void __init p2020_setup_arch(void)
- 	mpc85xx_qe_par_io_init();
+---
+Changes in v5:
+* Fix commit message
+* Reduce includes
+---
+ arch/powerpc/platforms/85xx/Makefile      |  2 +-
+ arch/powerpc/platforms/85xx/mpc85xx.h     |  2 ++
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 30 +--------------------
+ arch/powerpc/platforms/85xx/p2020.c       | 33 +++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 30 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 1f54623db9b7..93451850ed83 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -18,7 +18,7 @@ obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
+ obj-$(CONFIG_MPC8536_DS)  += mpc8536_ds.o
+ obj-$(CONFIG_MPC85xx_DS)  += mpc85xx_ds.o p2020.o
+ obj-$(CONFIG_MPC85xx_MDS) += mpc85xx_mds.o
+-obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o
++obj-$(CONFIG_MPC85xx_RDB) += mpc85xx_rdb.o p2020.o
+ obj-$(CONFIG_P1010_RDB)   += p1010rdb.o
+ obj-$(CONFIG_P1022_DS)    += p1022_ds.o
+ obj-$(CONFIG_P1022_RDK)   += p1022_rdk.o
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/platforms/85xx/mpc85xx.h
+index ca8b39e6b05a..8f7b37c1de87 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx.h
++++ b/arch/powerpc/platforms/85xx/mpc85xx.h
+@@ -17,5 +17,7 @@ static inline void __init mpc85xx_qe_par_io_init(void) {}
+ 
+ void __init mpc85xx_ds_pic_init(void);
+ void __init mpc85xx_ds_setup_arch(void);
++void __init mpc85xx_rdb_setup_arch(void);
++void __init mpc85xx_rdb_pic_init(void);
+ 
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index cdafecaecf56..dbedffc57ce8 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -48,7 +48,7 @@ void __init mpc85xx_rdb_pic_init(void)
+ /*
+  * Setup the architecture
+  */
+-static void __init mpc85xx_rdb_setup_arch(void)
++void __init mpc85xx_rdb_setup_arch(void)
+ {
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
+@@ -93,8 +93,6 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 	pr_info("MPC85xx RDB board from Freescale Semiconductor\n");
  }
  
--#ifdef CONFIG_MPC85xx_DS
--machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
--#endif /* CONFIG_MPC85xx_DS */
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init p2020_probe(void)
-+{
-+	struct device_node *p2020_cpu;
- 
--#ifdef CONFIG_MPC85xx_RDB
 -machine_arch_initcall(p2020_rdb, mpc85xx_common_publish_devices);
 -machine_arch_initcall(p2020_rdb_pc, mpc85xx_common_publish_devices);
--#endif /* CONFIG_MPC85xx_RDB */
-+	/*
-+	 * There is no common compatible string for all P2020 boards.
-+	 * The only common thing is "PowerPC,P2020@0" cpu node.
-+	 * So check for P2020 board via this cpu node.
-+	 */
-+	p2020_cpu = of_find_node_by_path("/cpus/PowerPC,P2020@0");
-+	of_node_put(p2020_cpu);
+ machine_arch_initcall(p1020_mbg_pc, mpc85xx_common_publish_devices);
+ machine_arch_initcall(p1020_rdb, mpc85xx_common_publish_devices);
+ machine_arch_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
+@@ -104,19 +102,6 @@ machine_arch_initcall(p1021_rdb_pc, mpc85xx_common_publish_devices);
+ machine_arch_initcall(p1025_rdb, mpc85xx_common_publish_devices);
+ machine_arch_initcall(p1024_rdb, mpc85xx_common_publish_devices);
  
--#ifdef CONFIG_MPC85xx_DS
--define_machine(p2020_ds) {
--	.name			= "P2020 DS",
--	.compatible		= "fsl,P2020DS",
--	.setup_arch		= p2020_setup_arch,
--	.init_IRQ		= p2020_pic_init,
--#ifdef CONFIG_PCI
--	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
--#endif
--	.get_irq		= mpic_get_irq,
--	.progress		= udbg_progress,
--};
--#endif /* CONFIG_MPC85xx_DS */
-+	return !!p2020_cpu;
-+}
- 
--#ifdef CONFIG_MPC85xx_RDB
 -define_machine(p2020_rdb) {
 -	.name			= "P2020 RDB",
 -	.compatible		= "fsl,P2020RDB",
--	.setup_arch		= p2020_setup_arch,
--	.init_IRQ		= p2020_pic_init,
+-	.setup_arch		= mpc85xx_rdb_setup_arch,
+-	.init_IRQ		= mpc85xx_rdb_pic_init,
 -#ifdef CONFIG_PCI
 -	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
+-	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
 -#endif
 -	.get_irq		= mpic_get_irq,
 -	.progress		= udbg_progress,
 -};
-+machine_arch_initcall(p2020, mpc85xx_common_publish_devices);
+-
+ define_machine(p1020_rdb) {
+ 	.name			= "P1020 RDB",
+ 	.compatible		= "fsl,P1020RDB",
+@@ -143,19 +128,6 @@ define_machine(p1021_rdb_pc) {
+ 	.progress		= udbg_progress,
+ };
  
 -define_machine(p2020_rdb_pc) {
 -	.name			= "P2020RDB-PC",
 -	.compatible		= "fsl,P2020RDB-PC",
-+define_machine(p2020) {
-+	.name			= "Freescale P2020",
-+	.probe			= p2020_probe,
- 	.setup_arch		= p2020_setup_arch,
- 	.init_IRQ		= p2020_pic_init,
- #ifdef CONFIG_PCI
-@@ -97,4 +79,3 @@ define_machine(p2020_rdb_pc) {
- 	.get_irq		= mpic_get_irq,
+-	.setup_arch		= mpc85xx_rdb_setup_arch,
+-	.init_IRQ		= mpc85xx_rdb_pic_init,
+-#ifdef CONFIG_PCI
+-	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+-	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+-#endif
+-	.get_irq		= mpic_get_irq,
+-	.progress		= udbg_progress,
+-};
+-
+ define_machine(p1025_rdb) {
+ 	.name			= "P1025 RDB",
+ 	.compatible		= "fsl,P1025RDB",
+diff --git a/arch/powerpc/platforms/85xx/p2020.c b/arch/powerpc/platforms/85xx/p2020.c
+index 356335122153..41bba8c0e335 100644
+--- a/arch/powerpc/platforms/85xx/p2020.c
++++ b/arch/powerpc/platforms/85xx/p2020.c
+@@ -25,6 +25,11 @@
+ machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
+ #endif /* CONFIG_MPC85xx_DS */
+ 
++#ifdef CONFIG_MPC85xx_RDB
++machine_arch_initcall(p2020_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p2020_rdb_pc, mpc85xx_common_publish_devices);
++#endif /* CONFIG_MPC85xx_RDB */
++
+ #ifdef CONFIG_MPC85xx_DS
+ define_machine(p2020_ds) {
+ 	.name			= "P2020 DS",
+@@ -39,3 +44,31 @@ define_machine(p2020_ds) {
  	.progress		= udbg_progress,
  };
--#endif /* CONFIG_MPC85xx_RDB */
+ #endif /* CONFIG_MPC85xx_DS */
++
++#ifdef CONFIG_MPC85xx_RDB
++define_machine(p2020_rdb) {
++	.name			= "P2020 RDB",
++	.compatible		= "fsl,P2020RDB",
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
++#endif
++	.get_irq		= mpic_get_irq,
++	.progress		= udbg_progress,
++};
++
++define_machine(p2020_rdb_pc) {
++	.name			= "P2020RDB-PC",
++	.compatible		= "fsl,P2020RDB-PC",
++	.setup_arch		= mpc85xx_rdb_setup_arch,
++	.init_IRQ		= mpc85xx_rdb_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
++#endif
++	.get_irq		= mpic_get_irq,
++	.progress		= udbg_progress,
++};
++#endif /* CONFIG_MPC85xx_RDB */
 -- 
 2.20.1
 
