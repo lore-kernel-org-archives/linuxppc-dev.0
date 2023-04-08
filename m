@@ -4,65 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A850C77B6C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Apr 2023 23:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E58EC76196
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 02:18:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PtZqy4W9rz3fZH
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 09:50:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptf754Ygrz3fXd
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 12:18:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=LfFAt7rJ;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MKy47Eau;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::831; helo=mail-qt1-x831.google.com; envelope-from=grundler@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=LfFAt7rJ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20210112 header.b=MKy47Eau;
 	dkim-atps=neutral
-Received: from mail-qt1-x831.google.com (mail-qt1-x831.google.com [IPv6:2607:f8b0:4864:20::831])
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PtZq259BRz3fTN
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2023 09:49:50 +1000 (AEST)
-Received: by mail-qt1-x831.google.com with SMTP id d75a77b69052e-3e673b5f558so514221cf.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2023 16:49:50 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptf672gQJz3f4n
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Apr 2023 12:18:07 +1000 (AEST)
+Received: by mail-pl1-x631.google.com with SMTP id ke16so280923plb.6
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Apr 2023 19:18:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1680911388; x=1683503388;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
+        d=gmail.com; s=20210112; t=1680920284; x=1683512284;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=qqjTxx7icMTYukspTJWOyXAdc8KUgw2cKmRcRpT5B70=;
-        b=LfFAt7rJUt1pUj98t+F2Quk+iZHTggmA6ET02STj58xiL96wfom24Bhd5OmXVYsW9r
-         i99ls8sk7qvxcW0e1zkLKqFhmDpkZ0BboRA2FbvRREmlEw1c72OMdwWyBYdPznan12x3
-         evBfPx9CvCBr2kyG+W7G5UebTVPHerxyHia8g=
+        bh=MZe2nbGJOI28vfjum9rWlwMPlOLWV73edr0aQhbjJQs=;
+        b=MKy47EauwKtdGsoGTPUclS81miWhit8Gjarm2jRBl2oiUJ3QAt6gWxO3FRfULSJFcx
+         2F0JouVjz5KE3KMDXHCiQu6J8ETmCWeoUx8xYxJguu4d1tNVDG+XNDktXHvWhUkgBPbP
+         rA5CnLbG7OoSzuJZF3UmTa/vx9tkUKqk2vC1d/jEHZem6dPI0y0g4huffttbSVaTcmro
+         x103iJTyMm8+rkvVRm0nHG1xFlgUNffoVwwYYmduOv9CdPRqHd1fGCK3xAcyBmG2PYsU
+         2dYM3RFxRKyG+O/ojSIrD/Uh+TX64pbw7myOQtbeLwIvxAE0nktag3ElncoXr4v9wyot
+         pe5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1680911388; x=1683503388;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20210112; t=1680920284; x=1683512284;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=qqjTxx7icMTYukspTJWOyXAdc8KUgw2cKmRcRpT5B70=;
-        b=AdIdu2cw3Qt1CbgGut2tDp3O6jY8vFF43SdPtET4A1iAviiJ5u29ALNqfzO0WybeTR
-         dyak+fsueFHpPFW7DJVvg+dhWOHgkErAD9eRFgEyPh4IzcnmeXMj+138zmW8DplGPCUZ
-         /+lDmXuzX4z3HAXro6Cd0e102BESLlEKluT0lph5wGZ9Ht7W9UsTCz7Mm9FyhpfN7Pxg
-         1BES+SBHZKcYtq4FMr9IT14rmNq+81niNR8EWAER57zNhJ7pOZKirsBbexXWKdsznU6P
-         yD+fh4W63cfTiaUhq4ZGWXloRhU+I8u/CL8zbdFoJ7It3HSOJXuo+c7fVn7RG3awNw4e
-         ygkw==
-X-Gm-Message-State: AAQBX9foT9RHXWHxDmoKqUmyV1WFX5WtImR2+1wmwmUxR/+Gw8nLMgG5
-	vhnqphQMANfG1eLvt1fY3yrXaeEEcLFazP2INFAyTg==
-X-Google-Smtp-Source: AKy350YqUSXVlmbwDJr3UQsJTE8KS7rADBSmXy0bQ5nLTgrofx1yY7eU48cqTzdgtXifug4KW09JduqdhsqfhvTfN6I=
-X-Received: by 2002:ac8:5f93:0:b0:3bf:d313:77dd with SMTP id
- j19-20020ac85f93000000b003bfd31377ddmr152060qta.14.1680911388085; Fri, 07 Apr
- 2023 16:49:48 -0700 (PDT)
+        bh=MZe2nbGJOI28vfjum9rWlwMPlOLWV73edr0aQhbjJQs=;
+        b=Ik07vjyKR4NvO9iWcOh3jH7t9QgvsB5SeToMZ2+Xsmc4GEDmMBAAqWuLztWC/ls+7v
+         lQypLzEND/HF8vFNIdI+qb0XH+SihRNABDlYb7SM7Y+bw53nRrElXPflGJz7mryh9zHx
+         9ad8Y7LMeS9zBos1LW9Oi2ke+wPu9ikJFHKLlxGjcMrJwfN80Uz/2H3N3/yZSvyTrijh
+         TWVLkVQVw1dId7LBO/l3OKHcrjupi8LYd0jMWggeIqXBoodQHoEkl1uBLGwaM3ssDcrS
+         nd+IogKDPYSYDYe/clUN8GMPilxgm2kODUzWfl0c4fhpAR5Mj1D3YR8x0p4V94/h3GI5
+         hnDA==
+X-Gm-Message-State: AAQBX9eDj5An7xlDktmBK3lGM2iLP6ZC3kKBCkR75pUBOqlMS4GW01Yx
+	09gugVRC4qUb28F5R3sLNNCEjMcf/5lmOg==
+X-Google-Smtp-Source: AKy350YH8J3xshCznNosNzZWcNItH4HKYHcTzJk1h+ZpR2zMVgOmk5GbIg9rkwQQWlZ5Zyv+Y7fnpw==
+X-Received: by 2002:a17:903:32cb:b0:1a2:98b1:1ee2 with SMTP id i11-20020a17090332cb00b001a298b11ee2mr6102014plr.15.1680920284545;
+        Fri, 07 Apr 2023 19:18:04 -0700 (PDT)
+Received: from wheely.local0.net ([203.59.189.25])
+        by smtp.gmail.com with ESMTPSA id d11-20020a170902654b00b001a19f3a661esm3498577pln.138.2023.04.07.19.18.01
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 07 Apr 2023 19:18:04 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/6] powerpc/64: Move initial base and TOC pointer calculation
+Date: Sat,  8 Apr 2023 12:17:47 +1000
+Message-Id: <20230408021752.862660-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230408021752.862660-1-npiggin@gmail.com>
+References: <20230408021752.862660-1-npiggin@gmail.com>
 MIME-Version: 1.0
-References: <CANEJEGvKRVGLYPmD3kujg6veq5KR7J+rAu6ni92wUz72KGtyBA@mail.gmail.com>
- <20230407194645.GA3814486@bhelgaas>
-In-Reply-To: <20230407194645.GA3814486@bhelgaas>
-From: Grant Grundler <grundler@chromium.org>
-Date: Fri, 7 Apr 2023 16:49:37 -0700
-Message-ID: <CANEJEGu6YMfPPbWsRCZ4tsLAo9mKUbijnd1VEKvbsk4Xe4VXhg@mail.gmail.com>
-Subject: Re: [PATCHv2 pci-next 2/2] PCI/AER: Rate limit the reporting of the
- correctable errors
-To: Bjorn Helgaas <helgaas@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,103 +78,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rajat Jain <rajatja@chromium.org>, Rajat Khandelwal <rajat.khandelwal@linux.intel.com>, Grant Grundler <grundler@chromium.org>, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Oliver O 'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[reposting in plain text mode]
+A later change moves the non-prom case to run at the virtual address
+earlier, which calls for virtual TOC and kernel base. Split these two
+calculations for prom and non-prom to make that change simpler.
 
-On Fri, Apr 7, 2023 at 12:46=E2=80=AFPM Bjorn Helgaas <helgaas@kernel.org> =
-wrote:
->
-> On Fri, Apr 07, 2023 at 11:53:27AM -0700, Grant Grundler wrote:
-> > On Thu, Apr 6, 2023 at 12:50=E2=80=AFPM Bjorn Helgaas <helgaas@kernel.o=
-rg> wrote:
-> > > On Fri, Mar 17, 2023 at 10:51:09AM -0700, Grant Grundler wrote:
-> > > > From: Rajat Khandelwal <rajat.khandelwal@linux.intel.com>
-> > > >
-> > > > There are many instances where correctable errors tend to inundate
-> > > > the message buffer. We observe such instances during thunderbolt PC=
-Ie
-> > > > tunneling.
-> > ...
->
-> > > >               if (info->severity =3D=3D AER_CORRECTABLE)
-> > > > -                     pci_info(dev, "   [%2d] %-22s%s\n", i, errmsg=
-,
-> > > > -                             info->first_error =3D=3D i ? " (First=
-)" : "");
-> > > > +                     pci_info_ratelimited(dev, "   [%2d] %-22s%s\n=
-", i, errmsg,
-> > > > +                                          info->first_error =3D=3D=
- i ? " (First)" : "");
-> > >
-> > > I don't think this is going to reliably work the way we want.  We hav=
-e
-> > > a bunch of pci_info_ratelimited() calls, and each caller has its own
-> > > ratelimit_state data.  Unless we call pci_info_ratelimited() exactly
-> > > the same number of times for each error, the ratelimit counters will
-> > > get out of sync and we'll end up printing fragments from error A mixe=
-d
-> > > with fragments from error B.
-> >
-> > Ok - what I'm reading between the lines here is the output should be
-> > emitted in one step, not multiple pci_info_ratelimited() calls. if the
-> > code built an output string (using sprintnf()), and then called
-> > pci_info_ratelimited() exactly once at the bottom, would that be
-> > sufficient?
-> >
-> > > I think we need to explicitly manage the ratelimiting ourselves,
-> > > similar to print_hmi_event_info() or print_extlog_rcd().  Then we can
-> > > have a *single* ratelimit_state, and we can check it once to determin=
-e
-> > > whether to log this correctable error.
-> >
-> > Is the rate limiting per call location or per device? From above, I
-> > understood rate limiting is "per call location".  If the code only
-> > has one call location, it should achieve the same goal, right?
->
-> Rate-limiting is per call location, so yes, if we only have one call
-> location, that would solve it.  It would also have the nice property
-> that all the output would be atomic so it wouldn't get mixed with
-> other stuff, and it might encourage us to be a little less wordy in
-> the output.
+Signed: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/head_64.S | 28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
 
-+1 to all of those reasons. Especially reducing the number of lines output.
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 1febb56ebaeb..5b2d607cd1e8 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -515,15 +515,6 @@ __start_initialization_multiplatform:
+ 	/* Zero r13 (paca) so early program check / mce don't use it */
+ 	li	r13,0
+ 
+-	/* Get TOC pointer (current runtime address) */
+-	bl	relative_toc
+-
+-	/* find out where we are now */
+-	bcl	20,31,$+4
+-0:	mflr	r26			/* r26 = runtime addr here */
+-	addis	r26,r26,(_stext - 0b)@ha
+-	addi	r26,r26,(_stext - 0b)@l	/* current runtime base addr */
+-
+ 	/*
+ 	 * Are we booted from a PROM Of-type client-interface ?
+ 	 */
+@@ -545,11 +536,30 @@ __start_initialization_multiplatform:
+ #else
+ 	bl	start_initialization_book3s
+ #endif /* CONFIG_PPC_BOOK3E_64 */
++
++	/* Get TOC pointer */
++	bl	relative_toc
++
++	/* find out where we are now */
++	bcl	20,31,$+4
++0:	mflr	r26			/* r26 = runtime addr here */
++	addis	r26,r26,(_stext - 0b)@ha
++	addi	r26,r26,(_stext - 0b)@l	/* current runtime base addr */
++
+ 	b	__after_prom_start
+ 
+ __REF
+ __boot_from_prom:
+ #ifdef CONFIG_PPC_OF_BOOT_TRAMPOLINE
++	/* Get TOC pointer */
++	bl	relative_toc
++
++	/* find out where we are now */
++	bcl	20,31,$+4
++0:	mflr	r26			/* r26 = runtime addr here */
++	addis	r26,r26,(_stext - 0b)@ha
++	addi	r26,r26,(_stext - 0b)@l	/* current runtime base addr */
++
+ 	/* Save parameters */
+ 	mr	r31,r3
+ 	mr	r30,r4
+-- 
+2.40.0
 
-I'm going to be out for the next week. If someone else (Rajat
-Kendalwal maybe?) wants to rework this to use one call location it
-should be fairly straight forward. If not, I'll tackle this when I'm
-back (in 2 weeks essentially).
-
->
-> But I don't think we need output in a single step; we just need a
-> single instance of ratelimit_state (or one for CPER path and another
-> for native AER path), and that can control all the output for a single
-> error.  E.g., print_hmi_event_info() looks like this:
->
->   static void print_hmi_event_info(...)
->   {
->     static DEFINE_RATELIMIT_STATE(rs, ...);
->
->     if (__ratelimit(&rs)) {
->       printk("%s%s Hypervisor Maintenance interrupt ...");
->       printk("%s Error detail: %s\n", ...);
->       printk("%s      HMER: %016llx\n", ...);
->     }
->   }
->
-> I think it's nice that the struct ratelimit_state is explicit and
-> there's no danger of breaking it when adding another printk later.
-
-True. But a single call to a "well documented" API is my preference
-(assuming this is my choice).
-
-> It *could* be per pci_dev, too, but I suspect it's not worth spending
-> 40ish bytes per device for the ratelimit data.
-
-Good - I don't think we need to make this per device - I had assumed
-it was but also currently don't see a need for this.
-
-cheers,
-grant
