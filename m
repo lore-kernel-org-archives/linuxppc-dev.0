@@ -4,50 +4,52 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33A9DC77B6C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:04:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7A60C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:05:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptxng5x79z3cLf
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:04:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ptxpc2PsWz3fkt
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:05:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pO/pIvD2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JTlRNgAr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pO/pIvD2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JTlRNgAr;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkt6DH2z3f3t
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkt6FvNz3fCk
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:30 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id B4B0460F57;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id C00B561592;
 	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05325C433D2;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13F5CC433EF;
 	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1680962548;
-	bh=NusFkGGWy7tIEkNWULQ6KBnE8wGN/lVCtwr0E9TzwQg=;
-	h=From:To:Cc:Subject:Date:From;
-	b=pO/pIvD2PjueXcAu2so/kjWoFvOlM5xiFp8zr3VFHPLpltcX9OBx6J2UF2ds5zytp
-	 VGv1Suoz542kqv9dBdu5X0C3E782Bf/1AdmkxLG6HU7jO/9ouYJV7PxtVw+u7WRrU4
-	 7D4fMbwS9Fm8i0wf1emUw+YSdBuv7nHxRRRiSAPWwu84BeQCX3p0C4oTMGsG3pB7gz
-	 yZ28di557tAyV8SYe8e8pneb9ljOtQuyx8m2ePhmZnbKE2U87z4bDvlEXhBm9DZqYZ
-	 goT6anqZyWlak2+LYC3D+jrOyZIDJBKl98PfA7SPmdSLl16LjOBCbLD2Nto+ZTOvHa
-	 JqkET6L+RqSTw==
+	bh=z4CMNIF+qP0p1YpfeYDlFb1xIAtUPldYnJb0Qxk6MbA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=JTlRNgAr6TjlIcgmsijbR4WXf7ZyxtKssulrtvr2jCkDNoKJTRgR9WpZejL5SFGbH
+	 0MdsufXtLcjQ2Ojiv1yUOYYT+j2kYkVceCybtLtuZBe7gU4lZRxpHE4D81TCR7p72q
+	 naKzPrvJPRNB+27A4b/2NezePV2LLg0iv0xY/LWJzMwfUb8Znxmf9mRXlDf9N2V+TG
+	 KaSx8wA4akLn9zUPLzOVUuWqO7syL16K5yDUBIkGANHcx50HIPoM4kJQD46zneXzBz
+	 fLhDcdWR/xKZU2v/MpkpZgvOxaMD1VQd0r1TcjP4ywsZmQiqosbnK5YwFWE7VB93mv
+	 cazH65j0kHJew==
 Received: by pali.im (Postfix)
-	id 795FC7B7; Sat,  8 Apr 2023 16:02:25 +0200 (CEST)
+	id CC2521C97; Sat,  8 Apr 2023 16:02:25 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v5 00/13] powerpc/85xx: p2020: Create one unified machine description
-Date: Sat,  8 Apr 2023 16:01:09 +0200
-Message-Id: <20230408140122.25293-1-pali@kernel.org>
+Subject: [PATCH v5 02/13] powerpc/85xx: mpc85xx_{ds/rdb} compact the call to mpic_alloc()
+Date: Sat,  8 Apr 2023 16:01:11 +0200
+Message-Id: <20230408140122.25293-3-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
+References: <20230408140122.25293-1-pali@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -66,79 +68,79 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch series unifies all P2020 boards and machine descriptions into
-one generic unified P2020 machine description. With this generic machine
-description, kernel can boot on any P2020-based board with correct DTS
-file.
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Tested on CZ.NIC Turris 1.1 board which has Freescale P2020 processor.
-Kernel during booting correctly detects P2020 and prints:
-[    0.000000] Hardware name: Turris 1.1 e500v2 0x80211051 Freescale P2020
+Reduce number of lines in the call to mpic_alloc().
 
-This patch series depends on another patch series "powerpc/fsl_uli1575: Cleanups":
-https://lore.kernel.org/linuxppc-dev/20230408132151.8902-1-pali@kernel.org/t/#u
-(it was split from this one in v5)
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Signed-off-by: Pali Rohár <pali@kernel.org>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c  | 18 ++++++------------
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 16 +++++-----------
+ 2 files changed, 11 insertions(+), 23 deletions(-)
 
-Changes in v5:
-* Split fsl_uli1575 patches to separate patch series as this one started to be too big.
-* Fix commit messages
-* Reduce includes
-* Rebase on top of powerpc/next (b0bbe5a2915201e3231e788d716d39dc54493b03)
-* Test all patches again on CZ.NIC Turris 1.1 board with P2020 processor
-
-Changes in v4:
-* Added several preparatory cleanup patchs
-* Minimised churn by not duplicating helpers at the first place
-* Split main patch in two
-* Dropped patchs 1 and 2
-* Untested beyond basic build test
-
-Changes in v3:
-* Use 'if (IS_ENABLED(CONFIG_PPC_I8259))' instead of '#ifdef CONFIG_PPC_I8259'
-* Simplify p2020_probe()
-* Patches generated by -M and -C git options
-
-Link to v2: https://lore.kernel.org/linuxppc-dev/20221224211425.14983-1-pali@kernel.org/
-
-Changes in v2:
-* Added patch "p2020: Move i8259 code into own function" (separated from the next one)
-* Renamed CONFIG_P2020 to CONFIG_PPC_P2020
-* Fixed descriptions
-
-Link to v1: https://lore.kernel.org/linuxppc-dev/20220819191557.28116-1-pali@kernel.org/
-
-Christophe Leroy (6):
-  powerpc/85xx: Remove DBG() macro
-  powerpc/85xx: mpc85xx_{ds/rdb} compact the call to mpic_alloc()
-  powerpc/85xx: mpc85xx_{ds/rdb} replace BUG_ON() by WARN_ON()
-  powerpc/85xx: mpc85xx_{ds/rdb} replace prink by pr_xxx macro
-  powerpc/85xx: Remove #ifdefs CONFIG_PPC_I8259 in mpc85xx_ds
-  powerpc/85xx: Remove #ifdef CONFIG_QUICC_ENGINE in mpc85xx_rdb
-
-Pali Rohár (7):
-  powerpc/85xx: p2020: Move all P2020 DS machine descriptions to p2020.c
-  powerpc/85xx: p2020: Move all P2020 RDB machine descriptions to
-    p2020.c
-  powerpc/85xx: mpc85xx_ds: Move i8259 code into own file
-  powerpc/85xx: p2020: Unify .setup_arch and .init_IRQ callbacks
-  powerpc/85xx: p2020: Define just one machine description
-  powerpc/85xx: p2020: Enable boards by new config option
-    CONFIG_PPC_P2020
-  powerpc: dts: turris1x.dts: Remove "fsl,P2020RDB-PC" compatible string
-
- arch/powerpc/boot/dts/turris1x.dts         |  2 +-
- arch/powerpc/platforms/85xx/Kconfig        | 22 +++++-
- arch/powerpc/platforms/85xx/Makefile       |  4 +-
- arch/powerpc/platforms/85xx/mpc85xx.h      |  6 ++
- arch/powerpc/platforms/85xx/mpc85xx_8259.c | 63 ++++++++++++++++
- arch/powerpc/platforms/85xx/mpc85xx_ds.c   | 87 +++-------------------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c  |  7 --
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c  | 63 +++-------------
- arch/powerpc/platforms/85xx/p2020.c        | 81 ++++++++++++++++++++
- 9 files changed, 191 insertions(+), 144 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/mpc85xx_8259.c
- create mode 100644 arch/powerpc/platforms/85xx/p2020.c
-
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 25edfe1b8ae1..c6016915264c 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -50,23 +50,17 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
+ void __init mpc85xx_ds_pic_init(void)
+ {
+ 	struct mpic *mpic;
++	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
+ #ifdef CONFIG_PPC_I8259
+ 	struct device_node *np;
+ 	struct device_node *cascade_node = NULL;
+ 	int cascade_irq;
+ #endif
+-	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP")) {
+-		mpic = mpic_alloc(NULL, 0,
+-			MPIC_NO_RESET |
+-			MPIC_BIG_ENDIAN |
+-			MPIC_SINGLE_DEST_CPU,
+-			0, 256, " OpenPIC  ");
+-	} else {
+-		mpic = mpic_alloc(NULL, 0,
+-			  MPIC_BIG_ENDIAN |
+-			  MPIC_SINGLE_DEST_CPU,
+-			0, 256, " OpenPIC  ");
+-	}
++
++	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP"))
++		flags |= MPIC_NO_RESET;
++
++	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
+ 
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index acc4145adcf7..c7ce8a79992d 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -32,18 +32,12 @@
+ void __init mpc85xx_rdb_pic_init(void)
+ {
+ 	struct mpic *mpic;
++	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
+ 
+-	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP")) {
+-		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
+-			MPIC_BIG_ENDIAN |
+-			MPIC_SINGLE_DEST_CPU,
+-			0, 256, " OpenPIC  ");
+-	} else {
+-		mpic = mpic_alloc(NULL, 0,
+-		  MPIC_BIG_ENDIAN |
+-		  MPIC_SINGLE_DEST_CPU,
+-		  0, 256, " OpenPIC  ");
+-	}
++	if (of_machine_is_compatible("fsl,MPC85XXRDB-CAMP"))
++		flags |= MPIC_NO_RESET;
++
++	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
+ 
+ 	BUG_ON(mpic == NULL);
+ 	mpic_init(mpic);
 -- 
 2.20.1
 
