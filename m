@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ED85DC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:07:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59F9AC77B6C
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 14:08:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PtxrT3Yx9z3fpn
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:07:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PtxsP6J3fz3flH
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:08:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UPnN8Gzz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d63wSgO8;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UPnN8Gzz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d63wSgO8;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkw5mzGz3fJd
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ptxkw5mSjz3cLC
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 00:02:32 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 590F96159C;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 4B5C76159A;
 	Sat,  8 Apr 2023 14:02:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A8D9C433A0;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 92FCCC433A1;
 	Sat,  8 Apr 2023 14:02:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1680962548;
-	bh=GGCC6nIysok7nRf7iQxTO/BAJu5Xzrmg55AbDqZKllk=;
+	bh=Rp++EnLZvDWAyB3q+nRICzltKHVA/IpPx8P+WV9axbQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=UPnN8GzzL8eSxC1PHevEiO0J6Y3trRJtHFRr9FNNO/ug6afpyJzXnxKCIObo0eB9Q
-	 ctTRyaNDi78kHf/33i0MfdM2rN88ZBkjsJwLtDKbtKcZBrYWQy2juJoTANT2tq9pP3
-	 /YrkOHisbFnduPcDzguSX27zC7gt6Xk4ZE1sOjwwfb3NfHvg4ut7+90Cle8rxI1xTq
-	 cLOQJCimaVkVJaeJEV9MwhI9f5ixfsfDqq0m5eXOzXOEtZHF+ex5q1fH9uuNvVSbcv
-	 g/w1lKEP5eDDq1WWIBX8uNTQaPJTyVwgKi/O2appN15WD/ynNPM4Ye5GJ9op11ObJY
-	 zj9bu1+1M8VGQ==
+	b=d63wSgO8NZTCjjxPXd+AmDEIQe+gyDYiMgcKB8PSi4WpJqpieDf5zMXaM0MXknU3H
+	 hNvoseYGoWP+XqUj9z05uG/IRYTB6bjtf++dRdJ0QWv9zcxbCiE3PIFrYxmI8pHKAK
+	 xEQt3+R4OuIta+Dtbh2cSfbrfRQTdau7nhXXoFCFrqRFh3FDBb0fZbH/jTvWF6Sn6u
+	 po2epwl+rSDUnJ62BpssBUkJ+s4DGZ3YbeQ8q+xOtkBkhs8PWLuXVyAmRNtfcXsh9N
+	 rAVMWtCNFp8jq7mZDr7D2FLJoAuhLu/djyHxdS/+tFCP03/vCA4rlxOH3xf93knNFp
+	 dLxyieFTLfNYw==
 Received: by pali.im (Postfix)
-	id A01CA20C8; Sat,  8 Apr 2023 16:02:26 +0200 (CEST)
+	id 66F7D20A8; Sat,  8 Apr 2023 16:02:26 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v5 06/13] powerpc/85xx: Remove #ifdef CONFIG_QUICC_ENGINE in mpc85xx_rdb
-Date: Sat,  8 Apr 2023 16:01:15 +0200
-Message-Id: <20230408140122.25293-7-pali@kernel.org>
+Subject: [PATCH v5 05/13] powerpc/85xx: Remove #ifdefs CONFIG_PPC_I8259 in mpc85xx_ds
+Date: Sat,  8 Apr 2023 16:01:14 +0200
+Message-Id: <20230408140122.25293-6-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20230408140122.25293-1-pali@kernel.org>
 References: <20230408140122.25293-1-pali@kernel.org>
@@ -70,38 +70,87 @@ Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@li
 
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-mpc85xx_qe_par_io_init() is a stub when CONFIG_QUICC_ENGINE is not set.
+All necessary items are declared all the time, no need to use
+a #ifdef CONFIG_PPC_I8259.
 
-CONFIG_UCC_GETH and CONFIG_SERIAL_QE depend on CONFIG_QUICC_ENGINE.
-
-Remove #ifdef CONFIG_QUICC_ENGINE
+Refactor CONFIG_PPC_I8259 actions into a dedicated init function.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c | 37 +++++++++++++-----------
+ 1 file changed, 20 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 64badacf126d..cdafecaecf56 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -57,7 +57,6 @@ static void __init mpc85xx_rdb_setup_arch(void)
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index d8d13438e18f..4ae300e76c2d 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -34,7 +34,6 @@
  
- 	fsl_pci_assign_primary();
+ #include "mpc85xx.h"
  
--#ifdef CONFIG_QUICC_ENGINE
- 	mpc85xx_qe_par_io_init();
- #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
- 	if (machine_is(p1025_rdb)) {
-@@ -90,7 +89,6 @@ static void __init mpc85xx_rdb_setup_arch(void)
- 
+-#ifdef CONFIG_PPC_I8259
+ static void mpc85xx_8259_cascade(struct irq_desc *desc)
+ {
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+@@ -45,29 +44,16 @@ static void mpc85xx_8259_cascade(struct irq_desc *desc)
  	}
- #endif
--#endif	/* CONFIG_QUICC_ENGINE */
- 
- 	pr_info("MPC85xx RDB board from Freescale Semiconductor\n");
+ 	chip->irq_eoi(&desc->irq_data);
  }
+-#endif	/* CONFIG_PPC_I8259 */
+ 
+-void __init mpc85xx_ds_pic_init(void)
++static void __init mpc85xx_8259_init(void)
+ {
+-	struct mpic *mpic;
+-	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
+-#ifdef CONFIG_PPC_I8259
+ 	struct device_node *np;
+ 	struct device_node *cascade_node = NULL;
+ 	int cascade_irq;
+-#endif
+ 
+-	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP"))
+-		flags |= MPIC_NO_RESET;
+-
+-	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
+-
+-	if (WARN_ON(!mpic))
++	if (!IS_ENABLED(CONFIG_PPC_I8259))
+ 		return;
+ 
+-	mpic_init(mpic);
+-
+-#ifdef CONFIG_PPC_I8259
+ 	/* Initialize the i8259 controller */
+ 	for_each_node_by_type(np, "interrupt-controller")
+ 	    if (of_device_is_compatible(np, "chrp,iic")) {
+@@ -92,7 +78,24 @@ void __init mpc85xx_ds_pic_init(void)
+ 	of_node_put(cascade_node);
+ 
+ 	irq_set_chained_handler(cascade_irq, mpc85xx_8259_cascade);
+-#endif	/* CONFIG_PPC_I8259 */
++}
++
++void __init mpc85xx_ds_pic_init(void)
++{
++	struct mpic *mpic;
++	int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU;
++
++	if (of_machine_is_compatible("fsl,MPC8572DS-CAMP"))
++		flags |= MPIC_NO_RESET;
++
++	mpic = mpic_alloc(NULL, 0, flags, 0, 256, " OpenPIC  ");
++
++	if (WARN_ON(!mpic))
++		return;
++
++	mpic_init(mpic);
++
++	mpc85xx_8259_init();
+ }
+ 
+ /*
 -- 
 2.20.1
 
