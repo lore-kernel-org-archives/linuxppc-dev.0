@@ -4,65 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E48DC77B61
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Apr 2023 23:26:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 869DFC77B61
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:10:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PvBFT3V9Yz3fZr
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 09:26:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PvCD92zw1z3fZp
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 10:10:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fq2XhpLb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U07AaPok;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=134.134.136.20; helo=mga02.intel.com; envelope-from=lkp@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fq2XhpLb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U07AaPok;
 	dkim-atps=neutral
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PvBDV49Sqz3cNJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 09:25:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1680996330; x=1712532330;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=24m5rVm+qs7G49gPwB0KlhA4Br9qDAP8yJ7H8Jh0RCE=;
-  b=fq2XhpLb+7Jh2ZC96DBPCJB6fR0zpf+ECvnl6NwoNG82NHPJPUwrda+j
-   uCCWnMdAXY1mTYxzToJpyiT51VO0sdcEvZMfdUpYdoavAhIX1qqq3XLIp
-   V1/7/e23WuXWi4qz18p0EtJ4s5nS4Heykj0MuPKYNzHfeKGrgY6SFa47G
-   Ry3NjuL1y28lHUSoPrHZ4xHl+u3bN82tR94FD6IsP6ZEpTJR0FJHJrwZa
-   U4hX6Fv5hMlgGx0p7PGiiBMeGXfI5WMP7cKoiqkkLP21YrRTEl4O+nURq
-   7N+00vCQRGXdl4yPKkWgmwiX6i8er8HSRCos/k9PHeesyWgT62wXozhJM
-   w==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="331836876"
-X-IronPort-AV: E=Sophos;i="5.98,330,1673942400"; 
-   d="scan'208";a="331836876"
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 08 Apr 2023 16:25:19 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10674"; a="687858471"
-X-IronPort-AV: E=Sophos;i="5.98,330,1673942400"; 
-   d="scan'208";a="687858471"
-Received: from lkp-server01.sh.intel.com (HELO b613635ddfff) ([10.239.97.150])
-  by orsmga002.jf.intel.com with ESMTP; 08 Apr 2023 16:25:17 -0700
-Received: from kbuild by b613635ddfff with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1plHvo-000UCT-1q;
-	Sat, 08 Apr 2023 23:25:16 +0000
-Date: Sun, 9 Apr 2023 07:24:55 +0800
-From: kernel test robot <lkp@intel.com>
-To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PvCC85NXpz3cjL
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 10:09:24 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 98E3360A77;
+	Sun,  9 Apr 2023 00:09:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CF9F2C4339B;
+	Sun,  9 Apr 2023 00:09:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1680998961;
+	bh=0pyF5BprYbz87qK2AZkPwODALXJFq6DUsJqadpHT440=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=U07AaPokjtBAc0C4wIr+iJMgavSe0ByRUzmmXqJlDdYCbUJSH38NDgqI0nNzbcz3w
+	 xRLhvM3KoZGuNoHiKe7j/w77n8Lk9Xv1kYOQhBICBAiUXPHqE/KEc5xYZ24P4253Dc
+	 T58A45KCBunC2OGxMpLLjAJXh2kS1yG3yXLDs4hmolj+wG/3ALNnhPKmje/Guspry4
+	 fqn3bKiQvC1+E2hZ8PGrOO7hpseGM2jWQa0s0HBgYTa0wslyDJ4b126Q+ouOU5pk0h
+	 Cntrs68Ij/Nek/GDWz8h6ISC7/NnTXnn0fM0V3Mt7UVtMQ34m/wfeXRUob+OoZLnU0
+	 fDa1zssTDuViQ==
+Received: by pali.im (Postfix)
+	id 3944F1C97; Sun,  9 Apr 2023 02:09:18 +0200 (CEST)
+From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 6/8] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575
- support
-Message-ID: <202304090737.4gZF6L8c-lkp@intel.com>
-References: <20230408154814.10400-7-pali@kernel.org>
+Subject: [PATCH v3 2/8] powerpc/85xx: mpc85xx_ds: Simplify mpc85xx_exclude_device() function
+Date: Sun,  9 Apr 2023 02:08:06 +0200
+Message-Id: <20230409000812.18904-3-pali@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20230409000812.18904-1-pali@kernel.org>
+References: <20230409000812.18904-1-pali@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230408154814.10400-7-pali@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,51 +64,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, oe-kbuild-all@lists.linux.dev
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Pali,
+Function mpc85xx_exclude_device() is installed and used only when
+pci_with_uli is fsl_pci_primary. So replace check for pci_with_uli by
+fsl_pci_primary in mpc85xx_exclude_device() and move pci_with_uli variable
+declaration into function mpc85xx_ds_uli_init() where it is used.
 
-kernel test robot noticed the following build errors:
+Signed-off-by: Pali Rohár <pali@kernel.org>
+---
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on powerpc/fixes linus/master v6.3-rc5 next-20230406]
-[If your patch is applied to the wrong git tree, kindly drop us a note.
-And when submitting patch, we suggest to use '--base' as documented in
-https://git-scm.com/docs/git-format-patch#_base_tree_information]
-
-url:    https://github.com/intel-lab-lkp/linux/commits/Pali-Roh-r/powerpc-fsl_uli1575-Misc-cleanup/20230408-235055
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-patch link:    https://lore.kernel.org/r/20230408154814.10400-7-pali%40kernel.org
-patch subject: [PATCH v2 6/8] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575 support
-config: powerpc-allmodconfig (https://download.01.org/0day-ci/archive/20230409/202304090737.4gZF6L8c-lkp@intel.com/config)
-compiler: powerpc-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/c6f089a50f49ce965f0f8ee3a2ab0126cb519366
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Pali-Roh-r/powerpc-fsl_uli1575-Misc-cleanup/20230408-235055
-        git checkout c6f089a50f49ce965f0f8ee3a2ab0126cb519366
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=powerpc SHELL=/bin/bash
-
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202304090737.4gZF6L8c-lkp@intel.com/
-
-All errors (new ones prefixed by >>):
-
-   powerpc-linux-ld: arch/powerpc/platforms/fsl_uli1575.o: in function `uli_exclude_device':
->> fsl_uli1575.c:(.text+0x36): undefined reference to `fsl_pci_primary'
->> powerpc-linux-ld: fsl_uli1575.c:(.text+0x3e): undefined reference to `fsl_pci_primary'
-   powerpc-linux-ld: arch/powerpc/platforms/fsl_uli1575.o: in function `uli_init':
->> fsl_uli1575.c:(.init.text+0x1e): undefined reference to `fsl_pci_primary'
->> powerpc-linux-ld: fsl_uli1575.c:(.init.text+0x7e): undefined reference to `fsl_pci_primary'
-
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index ed7b71d55b10..0c905a838942 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -108,12 +108,10 @@ void __init mpc85xx_ds_pic_init(void)
+ }
+ 
+ #ifdef CONFIG_PCI
+-static struct device_node *pci_with_uli;
+-
+ static int mpc85xx_exclude_device(struct pci_controller *hose,
+ 				   u_char bus, u_char devfn)
+ {
+-	if (hose->dn == pci_with_uli)
++	if (hose->dn == fsl_pci_primary)
+ 		return uli_exclude_device(hose, bus, devfn);
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+@@ -124,6 +122,7 @@ static void __init mpc85xx_ds_uli_init(void)
+ {
+ #ifdef CONFIG_PCI
+ 	struct device_node *node;
++	struct device_node *pci_with_uli;
+ 
+ 	/* See if we have a ULI under the primary */
+ 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.20.1
+
