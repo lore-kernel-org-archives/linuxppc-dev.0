@@ -4,49 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B2EBC7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:13:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 500AEC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:14:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PvCHt5JSQz3flq
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 10:13:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PvCJp5tGCz3fkW
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 10:14:18 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AulMtaPn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oL+sTbXS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AulMtaPn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=oL+sTbXS;
 	dkim-atps=neutral
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PvCC865q7z3fSf
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 10:09:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PvCCB50ZKz3fSm
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 10:09:26 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 9EDAC616A0;
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 33F24616B6;
+	Sun,  9 Apr 2023 00:09:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6AF80C4339E;
 	Sun,  9 Apr 2023 00:09:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3CE0C4339C;
-	Sun,  9 Apr 2023 00:09:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1680998961;
-	bh=Ycr7jTbAN7a67s9Ksm6I4CQ7mN9wdogyCtOnF9CVtvY=;
+	bh=1B1bdtjGi0qphccKaW9xvXzqnYHpNRSwmcqFmuJLGRY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=AulMtaPnot7iSuH/BDJhiEY+VL+V7T0C4+unKd1JklvdM23BUkPJ+AUJflkGMnTWM
-	 +TOpstz1T1+nzSJ5RbouVmYCNh6EsKFovnhs8BGlNCwg9A7V38WEK9g1yL5/kHBhzq
-	 IaAWSa49UxZTN66mbNOuJD3rcK/8ZnOcapQ3RDDqRoT694/iwXSy6Kvkaxx05q19aA
-	 gjHrcrzx7X3R4nHsLVeBE0sRB0/iWF+pq9SMHJrY2HYRds9kKJY9LZiVHut+loQ3cZ
-	 4q0fB3X3g18vcEu55rZRO4nbj6WBobay4JOKNmm4+hobYxMJbaM9aV1uu67yqxG0bE
-	 8h2RUnP/2uAdA==
+	b=oL+sTbXSdCweznn7Npv8YVUuK1KpdoGzqqK4xL61LuzJzJULj+zasB/Rp+Nh8H77O
+	 4I32hkqjHG+ejhR27pnXyOPQn+fCZuVUI95u8TOp7ZTINga3kcmbmSXn3Yc4w/MPbV
+	 49OVkUr5wP6/NRl3mjJhqig1UO5wjFdyZIkfXLmoPw3+dl0CSa5NpJu8TAmPsqpHIc
+	 XKMw9Qp4Y7VokscxJtrBf4obHW5k0ytXnsaIexR+g1Vmxiwi4JA3GUDUAhGEs9qILf
+	 5yDrPa2m7ghOyUSIP4bM4s7v2clKQEAPNDkNZ+xkROL0FQfbl/PafZpseGCYGlr6EE
+	 ysOhySnLLW9Ig==
 Received: by pali.im (Postfix)
-	id 64BB82047; Sun,  9 Apr 2023 02:09:18 +0200 (CEST)
+	id C63C920A8; Sun,  9 Apr 2023 02:09:18 +0200 (CEST)
 From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 3/8] powerpc/fsl_uli1575: Simplify uli_exclude_device() usage
-Date: Sun,  9 Apr 2023 02:08:07 +0200
-Message-Id: <20230409000812.18904-4-pali@kernel.org>
+Subject: [PATCH v3 5/8] powerpc/85xx: mpc85xx_rdb: Do not automatically select FSL_ULI1575
+Date: Sun,  9 Apr 2023 02:08:09 +0200
+Message-Id: <20230409000812.18904-6-pali@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20230409000812.18904-1-pali@kernel.org>
 References: <20230409000812.18904-1-pali@kernel.org>
@@ -68,101 +68,26 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Function uli_exclude_device() is called only from mpc86xx_exclude_device()
-and mpc85xx_exclude_device() functions. Both those functions are same, so
-merge its logic directly into the uli_exclude_device() function.
+Boards provided by CONFIG_MPC85xx_RDB option do not initialize
+fsl_uli1575.c driver. So remove explicit select dependency on it.
 
 Signed-off-by: Pali Rohár <pali@kernel.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_ds.c   | 13 +------------
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c | 13 +------------
- arch/powerpc/platforms/fsl_uli1575.c       |  4 +++-
- 3 files changed, 5 insertions(+), 25 deletions(-)
+ arch/powerpc/platforms/85xx/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 0c905a838942..581b5f0ef3be 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -107,17 +107,6 @@ void __init mpc85xx_ds_pic_init(void)
- #endif	/* CONFIG_PPC_I8259 */
- }
- 
--#ifdef CONFIG_PCI
--static int mpc85xx_exclude_device(struct pci_controller *hose,
--				   u_char bus, u_char devfn)
--{
--	if (hose->dn == fsl_pci_primary)
--		return uli_exclude_device(hose, bus, devfn);
--
--	return PCIBIOS_SUCCESSFUL;
--}
--#endif	/* CONFIG_PCI */
--
- static void __init mpc85xx_ds_uli_init(void)
- {
- #ifdef CONFIG_PCI
-@@ -132,7 +121,7 @@ static void __init mpc85xx_ds_uli_init(void)
- 		node = pci_with_uli;
- 
- 		if (pci_with_uli == fsl_pci_primary) {
--			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
-+			ppc_md.pci_exclude_device = uli_exclude_device;
- 			break;
- 		}
- 	}
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 3dbd396a0df5..645125cc8420 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -39,17 +39,6 @@
- #define DBG(fmt...) do { } while(0)
- #endif
- 
--#ifdef CONFIG_PCI
--static int mpc86xx_exclude_device(struct pci_controller *hose,
--				   u_char bus, u_char devfn)
--{
--	if (hose->dn == fsl_pci_primary)
--		return uli_exclude_device(hose, bus, devfn);
--
--	return PCIBIOS_SUCCESSFUL;
--}
--#endif /* CONFIG_PCI */
--
- 
- static void __init
- mpc86xx_hpcn_setup_arch(void)
-@@ -58,7 +47,7 @@ mpc86xx_hpcn_setup_arch(void)
- 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
-+	ppc_md.pci_exclude_device = uli_exclude_device;
- #endif
- 
- 	printk("MPC86xx HPCN board from Freescale Semiconductor\n");
-diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
-index a32f9cef7845..1350db0b935d 100644
---- a/arch/powerpc/platforms/fsl_uli1575.c
-+++ b/arch/powerpc/platforms/fsl_uli1575.c
-@@ -15,6 +15,8 @@
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
- 
-+#include <sysdev/fsl_pci.h>
-+
- #define ULI_PIRQA	0x08
- #define ULI_PIRQB	0x09
- #define ULI_PIRQC	0x0a
-@@ -344,7 +346,7 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, 0x5288, hpcd_final_uli5288);
- 
- int uli_exclude_device(struct pci_controller *hose, u_char bus, u_char devfn)
- {
--	if (bus == (hose->first_busno + 2)) {
-+	if (hose->dn == fsl_pci_primary && bus == (hose->first_busno + 2)) {
- 		/* exclude Modem controller */
- 		if ((PCI_SLOT(devfn) == 29) && (PCI_FUNC(devfn) == 1))
- 			return PCIBIOS_DEVICE_NOT_FOUND;
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index b92cb2b4d54d..a8ce6616fd0a 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -90,7 +90,6 @@ config MPC85xx_RDB
+ 	bool "Freescale P102x MBG/UTM/RDB and P2020 RDB"
+ 	select PPC_I8259
+ 	select DEFAULT_UIMAGE
+-	select FSL_ULI1575 if PCI
+ 	select SWIOTLB
+ 	help
+ 	  This option enables support for the P1020 MBG PC, P1020 UTM PC,
 -- 
 2.20.1
 
