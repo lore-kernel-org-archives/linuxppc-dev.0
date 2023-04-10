@@ -4,59 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B6BEC77B61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 12:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F708C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 13:45:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pw7WY4cQsz3fB4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 22:26:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O0SyOusV;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O0SyOusV;
-	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pw9GQ5dlZz3fXX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 23:45:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.255; helo=szxga08-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
+Received: from szxga08-in.huawei.com (szxga08-in.huawei.com [45.249.212.255])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pw7Vc3xJWz3cDt
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 22:26:00 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 8961961238
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 12:25:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EECAEC433EF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 12:25:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1681129556;
-	bh=R51FWEIp18MYl85q3yXscMHpWLTqVf59xo43B5BTt5E=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=O0SyOusVQBRKCu7SauLU1y+y0in9KxNntgye6BV+4KjVy6PwS1j1XW9blvPUVLNV+
-	 n+aO32Ij0LETQj14DnIIE+brcW1ag2+dqzsu7bgqRXYV2eKFASi0iOzHZkJcQX4gYB
-	 BJC6OUWkGzuqV2qSXH19/gcuB7e+1DEALsLhkfv4Tuy6mYcSJLbJouicxWAIdJFk9c
-	 V68iTcI/iJZUE/mC4OHPFVmwiexLHY+BWzoKlqwdN2UdyPXCMWTfzoYjSzuaX1DZgw
-	 ShHpK1GO+NodW20cOo0/dbyW4M840oCcf8nfB7+FtbcYxtfnKZmzeI17Yujb00rvaG
-	 4l4wqN7AEVpXA==
-Received: by mail-ot1-f54.google.com with SMTP id 6-20020a9d0106000000b006a177038dfeso15660387otu.7
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 05:25:55 -0700 (PDT)
-X-Gm-Message-State: AAQBX9f+wsjOZTUuhoIxp9qJ0T1y9vYQ3E220SRy7LOUW3lriocekCJO
-	mhu/NxWSx6ovP5lVEI0zmTgliltjtBPObi4gFZU=
-X-Google-Smtp-Source: AKy350bdkwU1ebLGE4JP+fBsICaK+Wcxmukh0nZJBXSPtPXvag5RVEDxxySCY496ivQn3tPbsueq8aLc/K0XaUBOVv8=
-X-Received: by 2002:a05:6830:130a:b0:69f:8da4:48d with SMTP id
- p10-20020a056830130a00b0069f8da4048dmr2677577otq.1.1681129555328; Mon, 10 Apr
- 2023 05:25:55 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pw9Fl67ZRz3cBP
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 23:44:53 +1000 (AEST)
+Received: from canpemm500009.china.huawei.com (unknown [172.30.72.56])
+	by szxga08-in.huawei.com (SkyGuard) with ESMTP id 4Pw99M0wYdz17RLS;
+	Mon, 10 Apr 2023 21:41:11 +0800 (CST)
+Received: from localhost.localdomain (10.50.163.32) by
+ canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.23; Mon, 10 Apr 2023 21:44:42 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <akpm@linux-foundation.org>, <linux-mm@kvack.org>,
+	<linux-arm-kernel@lists.infradead.org>, <x86@kernel.org>,
+	<catalin.marinas@arm.com>, <will@kernel.org>, <anshuman.khandual@arm.com>,
+	<linux-doc@vger.kernel.org>
+Subject: [PATCH v9 1/2] mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
+Date: Mon, 10 Apr 2023 21:43:51 +0800
+Message-ID: <20230410134352.4519-2-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20230410134352.4519-1-yangyicong@huawei.com>
+References: <20230410134352.4519-1-yangyicong@huawei.com>
 MIME-Version: 1.0
-References: <20230406-wundef-thread_shift_booke-v1-1-8deffa4d84f9@kernel.org>
-In-Reply-To: <20230406-wundef-thread_shift_booke-v1-1-8deffa4d84f9@kernel.org>
-From: Masahiro Yamada <masahiroy@kernel.org>
-Date: Mon, 10 Apr 2023 21:25:19 +0900
-X-Gmail-Original-Message-ID: <CAK7LNATPTw58VfMNQYG1dNvoggS3pa7gVdGDb8W0fgb0XahRZw@mail.gmail.com>
-Message-ID: <CAK7LNATPTw58VfMNQYG1dNvoggS3pa7gVdGDb8W0fgb0XahRZw@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/32: Include thread_info.h in head_booke.h
-To: Nathan Chancellor <nathan@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.163.32]
+X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
+ canpemm500009.china.huawei.com (7.192.105.203)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,78 +51,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, patches@lists.linux.dev, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
+Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, guojian@oppo.com, linux-riscv@lists.infradead.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, Jonathan.Cameron@Huawei.com, Barry Song <baohua@kernel.org>, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Apr 7, 2023 at 2:51=E2=80=AFAM Nathan Chancellor <nathan@kernel.org=
-> wrote:
->
-> When building with W=3D1 after commit 80b6093b55e3 ("kbuild: add -Wundef
-> to KBUILD_CPPFLAGS for W=3D1 builds"), the following warning occurs.
->
->   In file included from arch/powerpc/kvm/bookehv_interrupts.S:26:
->   arch/powerpc/kvm/../kernel/head_booke.h:20:6: warning: "THREAD_SHIFT" i=
-s not defined, evaluates to 0 [-Wundef]
->      20 | #if (THREAD_SHIFT < 15)
->         |      ^~~~~~~~~~~~
->
-> THREAD_SHIFT is defined in thread_info.h but it is not directly included
-> in head_booke.h, so it is possible for THREAD_SHIFT to be undefined. Add
-> the include to ensure that THREAD_SHIFT is always defined.
->
-> Reported-by: kernel test robot <lkp@intel.com>
-> Link: https://lore.kernel.org/202304050954.yskLdczH-lkp@intel.com/
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-> ---
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
+The entire scheme of deferred TLB flush in reclaim path rests on the
+fact that the cost to refill TLB entries is less than flushing out
+individual entries by sending IPI to remote CPUs. But architecture
+can have different ways to evaluate that. Hence apart from checking
+TTU_BATCH_FLUSH in the TTU flags, rest of the decision should be
+architecture specific.
 
-Reviewed-by: Masahiro Yamada <masahiroy@kernel.org>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+[https://lore.kernel.org/linuxppc-dev/20171101101735.2318-2-khandual@linux.vnet.ibm.com/]
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+[Rebase and fix incorrect return value type]
+Reviewed-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Reviewed-by: Anshuman Khandual <anshuman.khandual@arm.com>
+Reviewed-by: Barry Song <baohua@kernel.org>
+Reviewed-by: Xin Hao <xhao@linux.alibaba.com>
+Tested-by: Punit Agrawal <punit.agrawal@bytedance.com>
+---
+ arch/x86/include/asm/tlbflush.h | 12 ++++++++++++
+ mm/rmap.c                       |  9 +--------
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
-Thanks.
+diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
+index cda3118f3b27..8a497d902c16 100644
+--- a/arch/x86/include/asm/tlbflush.h
++++ b/arch/x86/include/asm/tlbflush.h
+@@ -240,6 +240,18 @@ static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long a)
+ 	flush_tlb_mm_range(vma->vm_mm, a, a + PAGE_SIZE, PAGE_SHIFT, false);
+ }
+ 
++static inline bool arch_tlbbatch_should_defer(struct mm_struct *mm)
++{
++	bool should_defer = false;
++
++	/* If remote CPUs need to be flushed then defer batch the flush */
++	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
++		should_defer = true;
++	put_cpu();
++
++	return should_defer;
++}
++
+ static inline u64 inc_mm_tlb_gen(struct mm_struct *mm)
+ {
+ 	/*
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 8632e02661ac..38ccb700748c 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -686,17 +686,10 @@ static void set_tlb_ubc_flush_pending(struct mm_struct *mm, bool writable)
+  */
+ static bool should_defer_flush(struct mm_struct *mm, enum ttu_flags flags)
+ {
+-	bool should_defer = false;
+-
+ 	if (!(flags & TTU_BATCH_FLUSH))
+ 		return false;
+ 
+-	/* If remote CPUs need to be flushed then defer batch the flush */
+-	if (cpumask_any_but(mm_cpumask(mm), get_cpu()) < nr_cpu_ids)
+-		should_defer = true;
+-	put_cpu();
+-
+-	return should_defer;
++	return arch_tlbbatch_should_defer(mm);
+ }
+ 
+ /*
+-- 
+2.24.0
 
-
-
-
-
-
-
-
-
-
-
->  arch/powerpc/kernel/head_booke.h | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_=
-booke.h
-> index 37d43c172676..b6b5b01a173c 100644
-> --- a/arch/powerpc/kernel/head_booke.h
-> +++ b/arch/powerpc/kernel/head_booke.h
-> @@ -5,6 +5,7 @@
->  #include <asm/ptrace.h>        /* for STACK_FRAME_REGS_MARKER */
->  #include <asm/kvm_asm.h>
->  #include <asm/kvm_booke_hv_asm.h>
-> +#include <asm/thread_info.h>   /* for THREAD_SHIFT */
->
->  #ifdef __ASSEMBLY__
->
->
-> ---
-> base-commit: b0bbe5a2915201e3231e788d716d39dc54493b03
-> change-id: 20230406-wundef-thread_shift_booke-e08d806ed656
->
-> Best regards,
-> --
-> Nathan Chancellor <nathan@kernel.org>
->
-
-
-
-
-
-
-
---=20
-Best Regards
-Masahiro Yamada
