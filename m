@@ -4,55 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35688C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 00:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B6BEC77B61
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 12:26:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PvCMb52bsz3fp8
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Apr 2023 10:16:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pw7WY4cQsz3fB4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 22:26:49 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tebSVYfP;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O0SyOusV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=pali@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=masahiroy@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tebSVYfP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=O0SyOusV;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PvCCB67zkz3fSp
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Apr 2023 10:09:26 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pw7Vc3xJWz3cDt
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 22:26:00 +1000 (AEST)
 Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 41DE1616CA;
-	Sun,  9 Apr 2023 00:09:22 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6BCA8C433A1;
-	Sun,  9 Apr 2023 00:09:21 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 8961961238
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 12:25:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EECAEC433EF
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 12:25:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1680998961;
-	bh=2pNvYVP5uD4qt+Qt22ZgPaAGgqS2r/yXjQJVNWR+Fmg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tebSVYfP4WEsAcRzEmIaUO0XgpWQUPsWSvb4C8/WChT7X/rWOHuS+lYy8NHWlObd+
-	 OyZEECT0HH0sAS/X3o/vm1OrDZ+2Mf5Dq1uTWBGeTz0ULYgK17HtmTpEtNvUyTStSe
-	 qrNOstV8zzNbvcboUbLRCGaRmjGBgc1096P2Ywg9612lJ3Df/S0UP2RVHBFTrPee1p
-	 ANVOQa36EvNKHccmmEuFZz7AXJppTEn1swq6/SvQaQ6wGkyV+5HgTwfZLFCS27H1Uv
-	 boLdXwA/J3G5E6073TBldVnO6bHVfWvkPlvctThRJq5a3rWZ2hppmQSZyAMenGfPjW
-	 74SOUVTfp416Q==
-Received: by pali.im (Postfix)
-	id 0A29B20C8; Sun,  9 Apr 2023 02:09:19 +0200 (CEST)
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 6/8] powerpc/fsl_uli1575: Allow to disable FSL_ULI1575 support
-Date: Sun,  9 Apr 2023 02:08:10 +0200
-Message-Id: <20230409000812.18904-7-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20230409000812.18904-1-pali@kernel.org>
-References: <20230409000812.18904-1-pali@kernel.org>
+	s=k20201202; t=1681129556;
+	bh=R51FWEIp18MYl85q3yXscMHpWLTqVf59xo43B5BTt5E=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=O0SyOusVQBRKCu7SauLU1y+y0in9KxNntgye6BV+4KjVy6PwS1j1XW9blvPUVLNV+
+	 n+aO32Ij0LETQj14DnIIE+brcW1ag2+dqzsu7bgqRXYV2eKFASi0iOzHZkJcQX4gYB
+	 BJC6OUWkGzuqV2qSXH19/gcuB7e+1DEALsLhkfv4Tuy6mYcSJLbJouicxWAIdJFk9c
+	 V68iTcI/iJZUE/mC4OHPFVmwiexLHY+BWzoKlqwdN2UdyPXCMWTfzoYjSzuaX1DZgw
+	 ShHpK1GO+NodW20cOo0/dbyW4M840oCcf8nfB7+FtbcYxtfnKZmzeI17Yujb00rvaG
+	 4l4wqN7AEVpXA==
+Received: by mail-ot1-f54.google.com with SMTP id 6-20020a9d0106000000b006a177038dfeso15660387otu.7
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 05:25:55 -0700 (PDT)
+X-Gm-Message-State: AAQBX9f+wsjOZTUuhoIxp9qJ0T1y9vYQ3E220SRy7LOUW3lriocekCJO
+	mhu/NxWSx6ovP5lVEI0zmTgliltjtBPObi4gFZU=
+X-Google-Smtp-Source: AKy350bdkwU1ebLGE4JP+fBsICaK+Wcxmukh0nZJBXSPtPXvag5RVEDxxySCY496ivQn3tPbsueq8aLc/K0XaUBOVv8=
+X-Received: by 2002:a05:6830:130a:b0:69f:8da4:48d with SMTP id
+ p10-20020a056830130a00b0069f8da4048dmr2677577otq.1.1681129555328; Mon, 10 Apr
+ 2023 05:25:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20230406-wundef-thread_shift_booke-v1-1-8deffa4d84f9@kernel.org>
+In-Reply-To: <20230406-wundef-thread_shift_booke-v1-1-8deffa4d84f9@kernel.org>
+From: Masahiro Yamada <masahiroy@kernel.org>
+Date: Mon, 10 Apr 2023 21:25:19 +0900
+X-Gmail-Original-Message-ID: <CAK7LNATPTw58VfMNQYG1dNvoggS3pa7gVdGDb8W0fgb0XahRZw@mail.gmail.com>
+Message-ID: <CAK7LNATPTw58VfMNQYG1dNvoggS3pa7gVdGDb8W0fgb0XahRZw@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/32: Include thread_info.h in head_booke.h
+To: Nathan Chancellor <nathan@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,36 +68,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: kernel test robot <lkp@intel.com>, patches@lists.linux.dev, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-ULI1575 PCIe south bridge exists only on some Freescale boards. Allow to
-disable CONFIG_FSL_ULI1575 symbol when it is not explicitly selected and
-only implied. This is achieved by marking symbol as visible by providing
-short description. Also adds dependency for this symbol to prevent enabling
-it on platforms on which driver does not compile.
+On Fri, Apr 7, 2023 at 2:51=E2=80=AFAM Nathan Chancellor <nathan@kernel.org=
+> wrote:
+>
+> When building with W=3D1 after commit 80b6093b55e3 ("kbuild: add -Wundef
+> to KBUILD_CPPFLAGS for W=3D1 builds"), the following warning occurs.
+>
+>   In file included from arch/powerpc/kvm/bookehv_interrupts.S:26:
+>   arch/powerpc/kvm/../kernel/head_booke.h:20:6: warning: "THREAD_SHIFT" i=
+s not defined, evaluates to 0 [-Wundef]
+>      20 | #if (THREAD_SHIFT < 15)
+>         |      ^~~~~~~~~~~~
+>
+> THREAD_SHIFT is defined in thread_info.h but it is not directly included
+> in head_booke.h, so it is possible for THREAD_SHIFT to be undefined. Add
+> the include to ensure that THREAD_SHIFT is always defined.
+>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Link: https://lore.kernel.org/202304050954.yskLdczH-lkp@intel.com/
+> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+> ---
 
-Signed-off-by: Pali Rohár <pali@kernel.org>
----
- arch/powerpc/platforms/Kconfig | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index d41dad227de8..608ac0290e3a 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -261,7 +261,9 @@ config CPM2
- 	  on it (826x, 827x, 8560).
- 
- config FSL_ULI1575
--	bool
-+	bool "ULI1575 PCIe south bridge support"
-+	depends on FSL_SOC_BOOKE || PPC_86xx
-+	select FSL_PCI
- 	select GENERIC_ISA_DMA
- 	help
- 	  Supports for the ULI1575 PCIe south bridge that exists on some
--- 
-2.20.1
+Reviewed-by: Masahiro Yamada <masahiroy@kernel.org>
 
+Thanks.
+
+
+
+
+
+
+
+
+
+
+
+>  arch/powerpc/kernel/head_booke.h | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_=
+booke.h
+> index 37d43c172676..b6b5b01a173c 100644
+> --- a/arch/powerpc/kernel/head_booke.h
+> +++ b/arch/powerpc/kernel/head_booke.h
+> @@ -5,6 +5,7 @@
+>  #include <asm/ptrace.h>        /* for STACK_FRAME_REGS_MARKER */
+>  #include <asm/kvm_asm.h>
+>  #include <asm/kvm_booke_hv_asm.h>
+> +#include <asm/thread_info.h>   /* for THREAD_SHIFT */
+>
+>  #ifdef __ASSEMBLY__
+>
+>
+> ---
+> base-commit: b0bbe5a2915201e3231e788d716d39dc54493b03
+> change-id: 20230406-wundef-thread_shift_booke-e08d806ed656
+>
+> Best regards,
+> --
+> Nathan Chancellor <nathan@kernel.org>
+>
+
+
+
+
+
+
+
+--=20
+Best Regards
+Masahiro Yamada
