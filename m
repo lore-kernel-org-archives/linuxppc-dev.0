@@ -4,32 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EF6FC76196
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 11:14:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA195C76196
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 11:28:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PwjsZ2th0z3cd9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 21:14:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pwjs231tjz3bfk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 21:13:57 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 587DED75;
-	Tue, 11 Apr 2023 04:14:10 -0700 (PDT)
-Received: from FVFF77S0Q05N (unknown [10.57.20.166])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 57B213F6C4;
-	Tue, 11 Apr 2023 04:13:24 -0700 (PDT)
-Date: Tue, 11 Apr 2023 12:13:21 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Uros Bizjak <ubizjak@gmail.com>
-Subject: Re: [PATCH v2 2/5] locking/generic: Wire up local{,64}_try_cmpxchg
-Message-ID: <ZDVA0a6QHaONg8AL@FVFF77S0Q05N>
-References: <20230405141710.3551-1-ubizjak@gmail.com>
- <20230405141710.3551-3-ubizjak@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PwkBC20xrz3cf6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 21:28:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=CS2NUHbs;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=CS2NUHbs;
+	dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pwk981DW5z3c7X
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 21:27:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
+	MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+	Content-ID:Content-Description:In-Reply-To:References;
+	bh=5ZqyIo2yPozy9BK+WevZ7XbxMmk32DVp4jnPgiud1w8=; b=CS2NUHbsxWHgEMwrtE3Ai397jJ
+	eXoVpzicm+RfmWnc3oR1P0YPKA4NK1qTUUhYXh1Bx8+hhT0ZArj5TeXoeMsj2Wxuka1omHAjGFdzx
+	j5Na+sxo7khLwW2anLjX1oh6PmqjFIaGugSYTdO/uO+/H+x8yCmlUVg6EXH9HC+lP1pYuhLif4TQW
+	kI/KfPyZUOfIy6svdLEK0YuOQolRPwaRZ+Upn9GMk+KJqTN0cCvL96zCQ3Z9h04uaIlILCIoWj/qE
+	B7QJ8lJLdyUZZOGRIWVDL5BaVBrA2AU0Rn/UQ2w6NjrPPYcnC5nqlVawWViqmcCOW+FqZya2e4xVg
+	mASJvUpA==;
+Received: from [2601:1c2:980:9ec0::2764] (helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
+	id 1plg5X-00EPbS-2C;
+	Mon, 10 Apr 2023 01:12:55 +0000
+From: Randy Dunlap <rdunlap@infradead.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] soc/fsl/qe: fix usb.c build errors
+Date: Sun,  9 Apr 2023 18:12:54 -0700
+Message-Id: <20230410011254.25675-1-rdunlap@infradead.org>
+X-Mailer: git-send-email 2.40.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230405141710.3551-3-ubizjak@gmail.com>
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -41,75 +55,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, loongarch@lists.linux.dev, linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: kernel test robot <lkp@intel.com>, Masahiro Yamada <masahiroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Kumar Gala <galak@kernel.crashing.org>, Leo Li <leoyang.li@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-arm-kernel@lists.infradead.org, Nicolas Schier <nicolas@fjasle.eu>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 05, 2023 at 04:17:07PM +0200, Uros Bizjak wrote:
-> Implement generic support for local{,64}_try_cmpxchg.
-> 
-> Redirect to the atomic_ family of functions when the target
-> does not provide its own local.h definitions.
-> 
-> For 64-bit targets, implement local64_try_cmpxchg and
-> local64_cmpxchg using typed C wrappers that call local_
-> family of functions and provide additional checking
-> of their input arguments.
-> 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Uros Bizjak <ubizjak@gmail.com>
+Fix build errors in soc/fsl/qe/usb.c when QUICC_ENGINE is not set.
+This happens when PPC_EP88XC is set, which selects CPM1 & CPM.
+When CPM is set, USB_FSL_QE can be set without QUICC_ENGINE
+being set. When USB_FSL_QE is set, QE_USB deafults to y, which
+causes build errors when QUICC_ENGINE is not set. Making
+QE_USB depend on QUICC_ENGINE prevents QE_USB from defaulting to y.
 
-Acked-by: Mark Rutland <mark.rutland@arm.com>
+Fixes these build errors:
 
-Mark.
+drivers/soc/fsl/qe/usb.o: in function `qe_usb_clock_set':
+usb.c:(.text+0x1e): undefined reference to `qe_immr'
+powerpc-linux-ld: usb.c:(.text+0x2a): undefined reference to `qe_immr'
+powerpc-linux-ld: usb.c:(.text+0xbc): undefined reference to `qe_setbrg'
+powerpc-linux-ld: usb.c:(.text+0xca): undefined reference to `cmxgcr_lock'
+powerpc-linux-ld: usb.c:(.text+0xce): undefined reference to `cmxgcr_lock'
 
-> ---
->  include/asm-generic/local.h   |  1 +
->  include/asm-generic/local64.h | 12 +++++++++++-
->  2 files changed, 12 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
-> index fca7f1d84818..7f97018df66f 100644
-> --- a/include/asm-generic/local.h
-> +++ b/include/asm-generic/local.h
-> @@ -42,6 +42,7 @@ typedef struct
->  #define local_inc_return(l) atomic_long_inc_return(&(l)->a)
->  
->  #define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
-> +#define local_try_cmpxchg(l, po, n) atomic_long_try_cmpxchg((&(l)->a), (po), (n))
->  #define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
->  #define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
->  #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
-> diff --git a/include/asm-generic/local64.h b/include/asm-generic/local64.h
-> index 765be0b7d883..14963a7a6253 100644
-> --- a/include/asm-generic/local64.h
-> +++ b/include/asm-generic/local64.h
-> @@ -42,7 +42,16 @@ typedef struct {
->  #define local64_sub_return(i, l) local_sub_return((i), (&(l)->a))
->  #define local64_inc_return(l)	local_inc_return(&(l)->a)
->  
-> -#define local64_cmpxchg(l, o, n) local_cmpxchg((&(l)->a), (o), (n))
-> +static inline s64 local64_cmpxchg(local64_t *l, s64 old, s64 new)
-> +{
-> +	return local_cmpxchg(&l->a, old, new);
-> +}
-> +
-> +static inline bool local64_try_cmpxchg(local64_t *l, s64 *old, s64 new)
-> +{
-> +	return local_try_cmpxchg(&l->a, (long *)old, new);
-> +}
-> +
->  #define local64_xchg(l, n)	local_xchg((&(l)->a), (n))
->  #define local64_add_unless(l, _a, u) local_add_unless((&(l)->a), (_a), (u))
->  #define local64_inc_not_zero(l)	local_inc_not_zero(&(l)->a)
-> @@ -81,6 +90,7 @@ typedef struct {
->  #define local64_inc_return(l)	atomic64_inc_return(&(l)->a)
->  
->  #define local64_cmpxchg(l, o, n) atomic64_cmpxchg((&(l)->a), (o), (n))
-> +#define local64_try_cmpxchg(l, po, n) atomic64_try_cmpxchg((&(l)->a), (po), (n))
->  #define local64_xchg(l, n)	atomic64_xchg((&(l)->a), (n))
->  #define local64_add_unless(l, _a, u) atomic64_add_unless((&(l)->a), (_a), (u))
->  #define local64_inc_not_zero(l)	atomic64_inc_not_zero(&(l)->a)
-> -- 
-> 2.39.2
-> 
+Fixes: 5e41486c408e ("powerpc/QE: add support for QE USB clocks routing")
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Reported-by: kernel test robot <lkp@intel.com>
+Link: https://lore.kernel.org/all/202301101500.pillNv6R-lkp@intel.com/
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Leo Li <leoyang.li@nxp.com>
+Cc: Masahiro Yamada <masahiroy@kernel.org>
+Cc: Nicolas Schier <nicolas@fjasle.eu>
+Cc: Qiang Zhao <qiang.zhao@nxp.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: Kumar Gala <galak@kernel.crashing.org>
+---
+v2: drop Anton Vorontsov <avorontsov@ru.mvista.com>; rebase/resend
+
+ drivers/soc/fsl/qe/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -- a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+--- a/drivers/soc/fsl/qe/Kconfig
++++ b/drivers/soc/fsl/qe/Kconfig
+@@ -62,6 +62,7 @@ config QE_TDM
+ 
+ config QE_USB
+ 	bool
++	depends on QUICC_ENGINE
+ 	default y if USB_FSL_QE
+ 	help
+ 	  QE USB Controller support
