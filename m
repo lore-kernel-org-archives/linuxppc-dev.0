@@ -4,40 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A41AFC77B61
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 13:46:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DAACC7619A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 05:00:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pw9HS1Q7dz3fn7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Apr 2023 23:46:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=<UNKNOWN>)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PwYZ32Tf1z3cd5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 15:00:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WAWFcrpE;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=kconsul@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WAWFcrpE;
+	dkim-atps=neutral
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pw9GK70GCz3fTr
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Apr 2023 23:45:29 +1000 (AEST)
-Received: from canpemm500009.china.huawei.com (unknown [172.30.72.56])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Pw99J6VlpznbV5;
-	Mon, 10 Apr 2023 21:41:08 +0800 (CST)
-Received: from localhost.localdomain (10.50.163.32) by
- canpemm500009.china.huawei.com (7.192.105.203) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.2507.23; Mon, 10 Apr 2023 21:44:40 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <akpm@linux-foundation.org>, <linux-mm@kvack.org>,
-	<linux-arm-kernel@lists.infradead.org>, <x86@kernel.org>,
-	<catalin.marinas@arm.com>, <will@kernel.org>, <anshuman.khandual@arm.com>,
-	<linux-doc@vger.kernel.org>
-Subject: [PATCH v9 0/2] arm64: support batched/deferred tlb shootdown during page reclamation/migration
-Date: Mon, 10 Apr 2023 21:43:50 +0800
-Message-ID: <20230410134352.4519-1-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PwYY51S0Vz3bjy
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 14:59:36 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33B2PDKq017265;
+	Tue, 11 Apr 2023 04:59:25 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=date : from : to : cc :
+ subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=pp1; bh=2gpbBAd0M/MqCf+Pbm/MQfvkVnmSgUR9efr7GxB9VeA=;
+ b=WAWFcrpEF2QCHx/GyB+sx+UKBknRPh9ITKGCQFb+K2X/al5XpR9UhuJjBSylLKT7nbTh
+ TqR5a4wWpVTd5cN2yXBy95cbruz5GTYrZcrNUv4LqHdvmXMY+L2xTSmwrgKpQ1QnnT6y
+ r/Fx66sKsmQLPrUL5h1KcOq9Miv0X6DamY/fnj2OXoLRDPoxjWEejdhFr83QXSBIc1VH
+ MZXUcIA/NDgZtCeBC9R3V7dZ+5IY/AR8qWMmvu8wflPitnUdcVZi2Jfje9xq6BSZ3aSb
+ IzMDdaHdCcsRKYO8zb/Nm4yfOJODUmRP0L8+067JHLnRAXMXazxh6AfYTFbJjqdLeYZN vw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pvr78bxhf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Apr 2023 04:59:25 +0000
+Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33B4lL7t027599;
+	Tue, 11 Apr 2023 04:59:24 GMT
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pvr78bxgv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Apr 2023 04:59:24 +0000
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+	by ppma06ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33ANUvQq029945;
+	Tue, 11 Apr 2023 04:59:22 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma06ams.nl.ibm.com (PPS) with ESMTPS id 3pu0m21egw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Apr 2023 04:59:22 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33B4xKPn53805348
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Apr 2023 04:59:20 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D3F52004B;
+	Tue, 11 Apr 2023 04:59:20 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B1E1E20043;
+	Tue, 11 Apr 2023 04:59:15 +0000 (GMT)
+Received: from li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com (unknown [9.43.76.117])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 11 Apr 2023 04:59:15 +0000 (GMT)
+Date: Tue, 11 Apr 2023 10:29:06 +0530
+From: Kautuk Consul <kconsul@linux.vnet.ibm.com>
+To: Sean Christopherson <seanjc@google.com>
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: book3s_hv_nested.c: improve branch
+ prediction for k.alloc
+Message-ID: <ZDTpGsT15s0iOrTJ@li-a450e7cc-27df-11b2-a85c-b5a9ac31e8ef.ibm.com>
+References: <20230407093147.3646597-1-kconsul@linux.vnet.ibm.com>
+ <ZDAeuL2fz1aEW6rz@debian.me>
+ <ZDA+WdiqB2931xHB@google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.50.163.32]
-X-ClientProxiedBy: dggems706-chm.china.huawei.com (10.3.19.183) To
- canpemm500009.china.huawei.com (7.192.105.203)
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ZDA+WdiqB2931xHB@google.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: GEJGaPIwa8_Xc3ACgks7q0lmRWZj7mxi
+X-Proofpoint-ORIG-GUID: rdhtw1J9ftrrFevA9ilDvYDcFt9GbHdF
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-11_01,2023-04-06_03,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
+ priorityscore=1501 phishscore=0 adultscore=0 suspectscore=0
+ impostorscore=0 malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0
+ mlxlogscore=841 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2303200000 definitions=main-2304110041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,114 +98,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wangkefeng.wang@huawei.com, darren@os.amperecomputing.com, peterz@infradead.org, yangyicong@hisilicon.com, punit.agrawal@bytedance.com, guojian@oppo.com, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, zhangshiming@oppo.com, lipeifeng@oppo.com, corbet@lwn.net, Barry Song <21cnbao@gmail.com>, linux-mips@vger.kernel.org, arnd@arndb.de, realmz6@gmail.com, openrisc@lists.librecores.org, prime.zeng@hisilicon.com, Jonathan.Cameron@Huawei.com, xhao@linux.alibaba.com, linux-kernel@vger.kernel.org, huzhanyuan@oppo.com, linuxppc-dev@lists.ozlabs.org
+Cc: Fabiano Rosas <farosas@linux.ibm.com>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Chao Peng <chao.p.peng@linux.intel.com>, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yicong Yang <yangyicong@hisilicon.com>
-
-Though ARM64 has the hardware to do tlb shootdown, the hardware
-broadcasting is not free.
-A simplest micro benchmark shows even on snapdragon 888 with only
-8 cores, the overhead for ptep_clear_flush is huge even for paging
-out one page mapped by only one process:
-5.36%  a.out    [kernel.kallsyms]  [k] ptep_clear_flush
-
-While pages are mapped by multiple processes or HW has more CPUs,
-the cost should become even higher due to the bad scalability of
-tlb shootdown.
-
-The same benchmark can result in 16.99% CPU consumption on ARM64
-server with around 100 cores according to Yicong's test on patch
-2/2.
-
-This patchset leverages the existing BATCHED_UNMAP_TLB_FLUSH by
-1. only send tlbi instructions in the first stage -
-	arch_tlbbatch_add_mm()
-2. wait for the completion of tlbi by dsb while doing tlbbatch
-	sync in arch_tlbbatch_flush()
-Testing on snapdragon shows the overhead of ptep_clear_flush
-is removed by the patchset. The micro benchmark becomes 5% faster
-even for one page mapped by single process on snapdragon 888.
-
-This support also optimize the page migration more than 50% with support
-of batched TLB flushing [*].
-
-[*] https://lore.kernel.org/linux-mm/20230213123444.155149-1-ying.huang@intel.com/
-
--v9:
-1. Using a runtime tunable to control batched TLB flush, per Catalin in v7.
-   Sorry for missing this on v8.
-Link: https://lore.kernel.org/all/20230329035512.57392-1-yangyicong@huawei.com/
-
--v8:
-1. Rebase on 6.3-rc4
-2. Tested the optimization on page migration and mentioned it in the commit
-3. Thanks the review from Anshuman.
-Link: https://lore.kernel.org/linux-mm/20221117082648.47526-1-yangyicong@huawei.com/
-
--v7:
-1. rename arch_tlbbatch_add_mm() to arch_tlbbatch_add_pending() as suggested, since it
-   takes an extra address for arm64, per Nadav and Anshuman. Also mentioned in the commit.
-2. add tags from Xin Hao, thanks.
-Link: https://lore.kernel.org/lkml/20221115031425.44640-1-yangyicong@huawei.com/
-
--v6:
-1. comment we don't defer TLB flush on platforms affected by ARM64_WORKAROUND_REPEAT_TLBI
-2. use cpus_have_const_cap() instead of this_cpu_has_cap()
-3. add tags from Punit, Thanks.
-4. default enable the feature when cpus >= 8 rather than > 8, since the original
-   improvement is observed on snapdragon 888 with 8 cores.
-Link: https://lore.kernel.org/lkml/20221028081255.19157-1-yangyicong@huawei.com/
-
--v5:
-1. Make ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH depends on EXPERT for this stage on arm64.
-2. Make a threshold of CPU numbers for enabling batched TLP flush on arm64
-Link: https://lore.kernel.org/linux-arm-kernel/20220921084302.43631-1-yangyicong@huawei.com/T/
-
--v4:
-1. Add tags from Kefeng and Anshuman, Thanks.
-2. Limit the TLB batch/defer on systems with >4 CPUs, per Anshuman
-3. Merge previous Patch 1,2-3 into one, per Anshuman
-Link: https://lore.kernel.org/linux-mm/20220822082120.8347-1-yangyicong@huawei.com/
-
--v3:
-1. Declare arch's tlbbatch defer support by arch_tlbbatch_should_defer() instead
-   of ARCH_HAS_MM_CPUMASK, per Barry and Kefeng
-2. Add Tested-by from Xin Hao
-Link: https://lore.kernel.org/linux-mm/20220711034615.482895-1-21cnbao@gmail.com/
-
--v2:
-1. Collected Yicong's test result on kunpeng920 ARM64 server;
-2. Removed the redundant vma parameter in arch_tlbbatch_add_mm()
-   according to the comments of Peter Zijlstra and Dave Hansen
-3. Added ARCH_HAS_MM_CPUMASK rather than checking if mm_cpumask
-   is empty according to the comments of Nadav Amit
-
-Thanks, Peter, Dave and Nadav for your testing or reviewing
-, and comments.
-
--v1:
-https://lore.kernel.org/lkml/20220707125242.425242-1-21cnbao@gmail.com/
-
-Anshuman Khandual (1):
-  mm/tlbbatch: Introduce arch_tlbbatch_should_defer()
-
-Barry Song (1):
-  arm64: support batched/deferred tlb shootdown during page
-    reclamation/migration
-
- .../features/vm/TLB/arch-support.txt          |  2 +-
- arch/arm64/Kconfig                            |  1 +
- arch/arm64/include/asm/tlbbatch.h             | 12 ++++
- arch/arm64/include/asm/tlbflush.h             | 33 ++++++++-
- arch/arm64/mm/flush.c                         | 69 +++++++++++++++++++
- arch/x86/include/asm/tlbflush.h               | 17 ++++-
- include/linux/mm_types_task.h                 |  4 +-
- mm/rmap.c                                     | 21 +++---
- 8 files changed, 139 insertions(+), 20 deletions(-)
- create mode 100644 arch/arm64/include/asm/tlbbatch.h
-
--- 
-2.24.0
-
+On 2023-04-07 09:01:29, Sean Christopherson wrote:
+> On Fri, Apr 07, 2023, Bagas Sanjaya wrote:
+> > On Fri, Apr 07, 2023 at 05:31:47AM -0400, Kautuk Consul wrote:
+> > > I used the unlikely() macro on the return values of the k.alloc
+> > > calls and found that it changes the code generation a bit.
+> > > Optimize all return paths of k.alloc calls by improving
+> > > branch prediction on return value of k.alloc.
+> 
+> Nit, this is improving code generation, not branch prediction.
+Sorry my mistake.
+> 
+> > What about below?
+> > 
+> > "Improve branch prediction on kmalloc() and kzalloc() call by using
+> > unlikely() macro to optimize their return paths."
+> 
+> Another nit, using unlikely() doesn't necessarily provide a measurable optimization.
+> As above, it does often improve code generation for the happy path, but that doesn't
+> always equate to improved performance, e.g. if the CPU can easily predict the branch
+> and/or there is no impact on the cache footprint.
+I see. I will submit a v2 of the patch with a better and more accurate
+description. Does anyone else have any comments before I do so ?
