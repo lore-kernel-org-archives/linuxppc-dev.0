@@ -4,54 +4,99 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1C154C77B6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 23:45:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB822C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Apr 2023 00:28:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Px2X61rRwz3ccg
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Apr 2023 09:45:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.43; helo=mail-ot1-f43.google.com; envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
-Received: from mail-ot1-f43.google.com (mail-ot1-f43.google.com [209.85.210.43])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Px3TN5k3Zz3f52
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Apr 2023 10:28:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=GuKX/iEP;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f400:7e8a::610; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=terry.bowman@amd.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=GuKX/iEP;
+	dkim-atps=neutral
+Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on20610.outbound.protection.outlook.com [IPv6:2a01:111:f400:7e8a::610])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Px2WX47Bpz3bhx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2023 09:44:55 +1000 (AEST)
-Received: by mail-ot1-f43.google.com with SMTP id bu14-20020a0568300d0e00b0069fab3f4cafso4671132otb.9
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 16:44:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20210112; t=1681256691; x=1683848691;
-        h=date:subject:message-id:references:in-reply-to:cc:to:from
-         :mime-version:content-transfer-encoding:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=bhO8R9GioOCOagQ6Y9fLjNmhaghaaAAsdr3nkk8G91Q=;
-        b=Cjazo24xp7++bcIkWiBu13idDNAHEKwF8D/DThTp7KBkPncZKsedvCP641u9NkMjDj
-         ipSYB7cOp7lZ5na/hHwqkXJsfiuGZTk80ALPfDFYvDj5PyZHb0t1CAHHCLn8DI9+R/5N
-         8IZblBZVR+Regm3tmsW/Qtcyz340/ntnsovFT6LO0L1JGT4QQwGjuA9986vVXLl5djzQ
-         Bp7Jz1SnftiWfmFB65g3G2UaJGKw2M1lg9J5BKAqD+L5zEZLQJpNlIJUJEVeRwpdBy4t
-         9vR2jPChDEJpyKxZn0iNxVpSH9fn/XT5vKGvCb4oGNBd+1luai+dzNFgq3+V5F0pS5IE
-         Qwfw==
-X-Gm-Message-State: AAQBX9e5wzrus7crMDOVzD2B5sJorgY7a6u1SO3jTHrM01Aw2GByZn1l
-	LnoRSicY6FiU9K0sg4ajkQ==
-X-Google-Smtp-Source: AKy350Y4GC3JdkRk79jMyBG3SpXIy4yOATtALC36XtJb/GoPcjog7NeXxd7pXFccoDWD6Pn4a81+Jg==
-X-Received: by 2002:a9d:7e98:0:b0:6a4:1980:2a93 with SMTP id m24-20020a9d7e98000000b006a419802a93mr294955otp.29.1681256691465;
-        Tue, 11 Apr 2023 16:44:51 -0700 (PDT)
-Received: from robh_at_kernel.org (66-90-144-107.dyn.grandenetworks.net. [66.90.144.107])
-        by smtp.gmail.com with ESMTPSA id m13-20020a0568301e6d00b0069faa14e99fsm5897068otr.10.2023.04.11.16.44.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 11 Apr 2023 16:44:50 -0700 (PDT)
-Received: (nullmailer pid 60808 invoked by uid 1000);
-	Tue, 11 Apr 2023 23:44:49 -0000
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PwtzR54ZYz3bgv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2023 04:05:03 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=M46oy+YV3e7UEe1zBeJwESept1jLMuX0htCKf7Z2bxJ6/s3cP2PIOGcxb4JFQiKrkxtSHHJrBmmz6mfSdo6TjoWDH/H1LC/eNGrn+L9mO/Z9n5MwBDXBbNcz5GLjHcChYxG/ONj0jjWiWjrAO9PSSC1nTLnzGBTPV28KRBX2TrzrpVyBMdoOluO8DxIq4djheEn06X4AjqJgjV2j2OmMvyNRjKE7vtlqQ+sKWlYV39rAFbMVmC/pau7/H9WueGNVP94ZXL6qOFPjo+XnDN4lRWRXsDZbYuaQrKrSRf4yhGE6f1Ch0fWD1BDFJ0htApfrMN9iRVYN7qqBW1xZqbo+2A==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=L4ZCRrCWSpGRon5DPUy2i9yAnHrELFU55+UIaeoiKNk=;
+ b=n2tpFdonLsYRsMPKB9iKtOPHh8TMrMw8EPDgenFmYFZ4FBdMi8DQqV+145mhf1TkddVqkpif6EASi9rMCH3jljTC9tEXS3GCAjojXT4FE8xQEewLyfcRq9b0mnO3XqW6zkuDTxL1RaVnwPKxzad2jnkVPNRsKrgs/5TwxW3v+HVwO4PntDoTd4r8+9O1UebAXljpvVQcwp782P4knHET1PbqS/DjZsU30OjktMP0OUnlzB3/FtQtwu0lhKgxSswguyJy09yyj0nSuqu/TNN8v2sa2boGSg8Aso2syh8ZnuAwGdDLTO7hU1OTch/6XZELn+KwxlmqAg2NQH5jSAaT/g==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=intel.com smtp.mailfrom=amd.com; dmarc=pass
+ (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
+ dkim=none (message not signed); arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=L4ZCRrCWSpGRon5DPUy2i9yAnHrELFU55+UIaeoiKNk=;
+ b=GuKX/iEP5UMHAlZgtoehfc5/yfO+DpYWb2dAuN3VF5yI3KRas25NVkTVxqLK82YczL+hzrnhmalaqPM5nvHcnMAJeZ8m+u35V43rdbMBkHFLHqCtA7PymcsUFbTPcf2RluibNGBO8zX35SrAGwzFsUgXCxxzLggYAgJFHRXwRvs=
+Received: from BN9P223CA0030.NAMP223.PROD.OUTLOOK.COM (2603:10b6:408:10b::35)
+ by BY5PR12MB4131.namprd12.prod.outlook.com (2603:10b6:a03:212::13) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.34; Tue, 11 Apr
+ 2023 18:04:37 +0000
+Received: from BN8NAM11FT105.eop-nam11.prod.protection.outlook.com
+ (2603:10b6:408:10b:cafe::4b) by BN9P223CA0030.outlook.office365.com
+ (2603:10b6:408:10b::35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.40 via Frontend
+ Transport; Tue, 11 Apr 2023 18:04:36 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
+Received: from SATLEXMB04.amd.com (165.204.84.17) by
+ BN8NAM11FT105.mail.protection.outlook.com (10.13.176.183) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.20.6298.26 via Frontend Transport; Tue, 11 Apr 2023 18:04:36 +0000
+Received: from ethanolx7ea3host.amd.com (10.180.168.240) by SATLEXMB04.amd.com
+ (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Tue, 11 Apr
+ 2023 13:04:35 -0500
+From: Terry Bowman <terry.bowman@amd.com>
+To: <alison.schofield@intel.com>, <vishal.l.verma@intel.com>,
+	<ira.weiny@intel.com>, <bwidawsk@kernel.org>, <dan.j.williams@intel.com>,
+	<dave.jiang@intel.com>, <Jonathan.Cameron@huawei.com>,
+	<linux-cxl@vger.kernel.org>
+Subject: [PATCH v3 5/6] PCI/AER: Forward RCH downstream port-detected errors to the CXL.mem dev handler
+Date: Tue, 11 Apr 2023 13:03:01 -0500
+Message-ID: <20230411180302.2678736-6-terry.bowman@amd.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20230411180302.2678736-1-terry.bowman@amd.com>
+References: <20230411180302.2678736-1-terry.bowman@amd.com>
 MIME-Version: 1.0
-From: Rob Herring <robh@kernel.org>
-To: Sean Anderson <sean.anderson@seco.com>
-In-Reply-To: <20230411184313.3679145-4-sean.anderson@seco.com>
-References: <20230411184313.3679145-1-sean.anderson@seco.com>
- <20230411184313.3679145-4-sean.anderson@seco.com>
-Message-Id: <168125645190.55087.12770846806127473997.robh@kernel.org>
-Subject: Re: [PATCH v13 03/15] dt-bindings: Convert gpio-mmio to yaml
-Date: Tue, 11 Apr 2023 18:44:49 -0500
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Originating-IP: [10.180.168.240]
+X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
+ (10.181.40.145)
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: BN8NAM11FT105:EE_|BY5PR12MB4131:EE_
+X-MS-Office365-Filtering-Correlation-Id: cfb8d8ab-f159-4f87-e6e8-08db3ab73643
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	0SGQNGoS+upoqTqw25eWvqc01KDWnJIhSbtrpBrny5SAnUnv0MsVG0IJBWafPX7dF1H5M887rhrOLFC2qMrVxyYGUWSet+Od+9IRQbrn2DPs9mP+g7JmvMoDd5CAPHHYdrhn/0/PlZDlLatMD9V5WeXZeLNuJ3DRvW9Qx1KrH0hQFuyB6uMT/MQAX2kn162lyrsw/o6hA9qtiRLUeSgpfV5eGfO3UbO4YlyCsJgiHkH8U3Nu9fNpkBEWNjSNtdJHL9v0pQab9X8pnxaKoSUbVIUa8ueh8GeV0j9B8qLpkPasXst4evuSswNSYeyYu8EWzcSmT8ctourzLRpNcW7eo3wupFY9YzwztnOf0Isqp2+NFdYqdQtM9JOXg9gkkQFVkqH9yXZ+Ewkq1/UUsWaKAfbIrdXkcAtKaJK5sIOawoelIRc0xozrDeB2P3RXmkUj9RApJxOPlZ8oEYQ61u0N2NZOfBusBcAORGPaTecs5DH3zHJI8FnDH3jEVhoq1amMtMYVO9A9fkKQjZIltrG/gYwNlbDhza8ZMqJysGI2/26NytRnLDMf5a2Abg/+RVa1a+Fd+EdZhwX2itgVIQH0/eBF3HZrKLqY7SrYJWJstBIs4DoGRgmRH6VKE3IiaE4G+PA8auXQM6QMpy3tcxmRTXJrVRn+ILH+vhUOb5pbB/gs9w+JJI4REJ2WAdK/DDjetARroK5aB32tmQF4mk2UOC/sJW9lwmKoYh0kOsnhRoE=
+X-Forefront-Antispam-Report: 	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(346002)(376002)(136003)(396003)(39860400002)(451199021)(46966006)(40470700004)(36840700001)(8936002)(966005)(40480700001)(41300700001)(40460700003)(7696005)(426003)(2616005)(336012)(83380400001)(47076005)(316002)(82310400005)(110136005)(82740400003)(54906003)(36860700001)(81166007)(356005)(36756003)(44832011)(6666004)(5660300002)(7416002)(16526019)(8676002)(4326008)(478600001)(186003)(86362001)(70206006)(1076003)(70586007)(26005)(2906002)(36900700001);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Apr 2023 18:04:36.6434
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: cfb8d8ab-f159-4f87-e6e8-08db3ab73643
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	BN8NAM11FT105.eop-nam11.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: BY5PR12MB4131
+X-Mailman-Approved-At: Wed, 12 Apr 2023 10:27:20 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,100 +108,165 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kishon Vijay Abraham I <kishon@kernel.org>, devicetree@vger.kernel.org, =?utf-8?q?Fern=C3=A1ndez_Rojas?= <noltari@gmail.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madalin Bucur <madalin.bucur@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, Jonas Gorski <jonas.gorski@gmail.com>, linux-gpio@vger.kernel.org, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Ioana Ciornei <ioana.ciornei@nxp.com>, linux-phy@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, Bartosz Golaszewski <brgl@bgdev.pl>, linux-arm-kernel@lists.infradead.org
+Cc: rrichter@amd.com, terry.bowman@amd.com, linux-pci@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, linux-kernel@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Robert Richter <rrichter@amd.com>
 
-On Tue, 11 Apr 2023 14:43:00 -0400, Sean Anderson wrote:
-> This is a generic binding for simple MMIO GPIO controllers. Although we
-> have a single driver for these controllers, they were previously spread
-> over several files. Consolidate them. The register descriptions are
-> adapted from the comments in the source. There is no set order for the
-> registers, and some registers may be omitted. Because of this, reg-names
-> is mandatory, and no order is specified.
-> 
-> Rename brcm,bcm6345-gpio to brcm,bcm63xx-gpio to reflect that bcm6345
-> has moved.
-> 
-> Signed-off-by: Sean Anderson <sean.anderson@seco.com>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> Linus or Bartosz, feel free to pick this up as the rest of this series
-> may not be merged any time soon.
-> 
-> Changes in v13:
-> - Fix references to brcm,bcm63xx-gpio.yaml (neé brcm,bcm6345-gpio)
-> 
-> Changes in v12:
-> - Put compatible first
-> - Keep gpio-controller to one line
-> - Add little-endian property
-> - Alphabetize compatibles
-> - Remove some comments
-> - Remove some examples with insufficient novelty
-> 
-> Changes in v11:
-> - Keep empty (or almost-empty) properties on a single line
-> - Don't use | unnecessarily
-> - Use gpio as the node name for examples
-> - Rename brcm,bcm6345-gpio.yaml to brcm,bcm63xx-gpio.yaml
-> 
-> Changes in v10:
-> - New
-> 
->  ...m6345-gpio.yaml => brcm,bcm63xx-gpio.yaml} |  16 +--
->  .../devicetree/bindings/gpio/gpio-mmio.yaml   | 117 ++++++++++++++++++
->  .../bindings/gpio/ni,169445-nand-gpio.txt     |  38 ------
->  .../devicetree/bindings/gpio/wd,mbl-gpio.txt  |  38 ------
->  .../mfd/brcm,bcm6318-gpio-sysctl.yaml         |   4 +-
->  .../mfd/brcm,bcm63268-gpio-sysctl.yaml        |   4 +-
->  .../mfd/brcm,bcm6328-gpio-sysctl.yaml         |   4 +-
->  .../mfd/brcm,bcm6358-gpio-sysctl.yaml         |   4 +-
->  .../mfd/brcm,bcm6362-gpio-sysctl.yaml         |   4 +-
->  .../mfd/brcm,bcm6368-gpio-sysctl.yaml         |   4 +-
->  10 files changed, 130 insertions(+), 103 deletions(-)
->  rename Documentation/devicetree/bindings/gpio/{brcm,bcm6345-gpio.yaml => brcm,bcm63xx-gpio.yaml} (78%)
->  create mode 100644 Documentation/devicetree/bindings/gpio/gpio-mmio.yaml
->  delete mode 100644 Documentation/devicetree/bindings/gpio/ni,169445-nand-gpio.txt
->  delete mode 100644 Documentation/devicetree/bindings/gpio/wd,mbl-gpio.txt
-> 
+In Restricted CXL Device (RCD) mode a CXL device is exposed as an
+RCiEP, but CXL downstream and upstream ports are not enumerated and
+not visible in the PCIe hierarchy. Protocol and link errors are sent
+to an RCEC.
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+Restricted CXL host (RCH) downstream port-detected errors are signaled
+as internal AER errors, either Uncorrectable Internal Error (UIE) or
+Corrected Internal Errors (CIE). The error source is the id of the
+RCEC. A CXL handler must then inspect the error status in various CXL
+registers residing in the dport's component register space (CXL RAS
+cap) or the dport's RCRB (AER ext cap). [1]
 
-yamllint warnings/errors:
+Errors showing up in the RCEC's error handler must be handled and
+connected to the CXL subsystem. Implement this by forwarding the error
+to all CXL devices below the RCEC. Since the entire CXL device is
+controlled only using PCIe Configuration Space of device 0, Function
+0, only pass it there [2]. These devices have the Memory Device class
+code set (PCI_CLASS_MEMORY_CXL, 502h) and the existing cxl_pci driver
+can implement the handler. In addition to errors directed to the CXL
+endpoint device, the handler must also inspect the CXL downstream
+port's CXL RAS and PCIe AER external capabilities that is connected to
+the device.
 
-dtschema/dtc warnings/errors:
-./Documentation/devicetree/bindings/gpio/brcm,bcm63xx-gpio.yaml: $id: relative path/filename doesn't match actual path or filename
-	expected: http://devicetree.org/schemas/gpio/brcm,bcm63xx-gpio.yaml#
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6318-gpio-sysctl.example.dtb: syscon@10000080: gpio@0: False schema does not allow {'compatible': ['brcm,bcm6318-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 50]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6318-gpio-sysctl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm63268-gpio-sysctl.example.dtb: syscon@100000c0: gpio@0: False schema does not allow {'compatible': ['brcm,bcm63268-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 52]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm63268-gpio-sysctl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6362-gpio-sysctl.example.dtb: syscon@10000080: gpio@0: False schema does not allow {'compatible': ['brcm,bcm6362-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 48]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6362-gpio-sysctl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6328-gpio-sysctl.example.dtb: syscon@10000080: gpio@0: False schema does not allow {'compatible': ['brcm,bcm6328-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 32]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6328-gpio-sysctl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6358-gpio-sysctl.example.dtb: syscon@fffe0080: gpio@0: False schema does not allow {'compatible': ['brcm,bcm6358-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 40]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6358-gpio-sysctl.yaml
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6368-gpio-sysctl.example.dtb: syscon@10000080: gpio@0: False schema does not allow {'compatible': ['brcm,bcm6368-gpio'], 'reg-names': ['dirout', 'dat'], 'reg': [[0, 8], [8, 8]], 'gpio-controller': True, 'gpio-ranges': [[1, 0, 0, 38]], '#gpio-cells': [[2]]}
-	From schema: /builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/mfd/brcm,bcm6368-gpio-sysctl.yaml
+Since CXL downstream port errors are signaled using internal errors,
+the handler requires those errors to be unmasked. This is subject of a
+follow-on patch.
 
-doc reference errors (make refcheckdocs):
+The reason for choosing this implementation is that a CXL RCEC device
+is bound to the AER port driver, but the driver does not allow it to
+register a custom specific handler to support CXL. Connecting the RCEC
+hard-wired with a CXL handler does not work, as the CXL subsystem
+might not be present all the time. The alternative to add an
+implementation to the portdrv to allow the registration of a custom
+RCEC error handler isn't worth doing it as CXL would be its only user.
+Instead, just check for an CXL RCEC and pass it down to the connected
+CXL device's error handler. With this approach the code can entirely
+be implemented in the PCIe AER driver and is independent of the CXL
+subsystem. The CXL driver only provides the handler.
 
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20230411184313.3679145-4-sean.anderson@seco.com
+[1] CXL 3.0 spec, 12.2.1.1 RCH Downstream Port-detected Errors
+[2] CXL 3.0 spec, 8.1.3 PCIe DVSEC for CXL Devices
 
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
+Co-developed-by: Terry Bowman <terry.bowman@amd.com>
+Signed-off-by: Robert Richter <rrichter@amd.com>
+Signed-off-by: Terry Bowman <terry.bowman@amd.com>
+Cc: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org
+---
+ drivers/pci/pcie/Kconfig |  8 ++++++
+ drivers/pci/pcie/aer.c   | 61 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 69 insertions(+)
 
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
+diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
+index 228652a59f27..b0dbd864d3a3 100644
+--- a/drivers/pci/pcie/Kconfig
++++ b/drivers/pci/pcie/Kconfig
+@@ -49,6 +49,14 @@ config PCIEAER_INJECT
+ 	  gotten from:
+ 	     https://git.kernel.org/cgit/linux/kernel/git/gong.chen/aer-inject.git/
+ 
++config PCIEAER_CXL
++	bool "PCI Express CXL RAS support"
++	default y
++	depends on PCIEAER && CXL_PCI
++	help
++	  This enables CXL error handling for Restricted CXL Hosts
++	  (RCHs).
++
+ #
+ # PCI Express ECRC
+ #
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 7a25b62d9e01..171a08fd8ebd 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -946,6 +946,65 @@ static bool find_source_device(struct pci_dev *parent,
+ 	return true;
+ }
+ 
++#ifdef CONFIG_PCIEAER_CXL
++
++static bool is_cxl_mem_dev(struct pci_dev *dev)
++{
++	/*
++	 * A CXL device is controlled only using PCIe Configuration
++	 * Space of device 0, Function 0.
++	 */
++	if (dev->devfn != PCI_DEVFN(0, 0))
++		return false;
++
++	/* Right now there is only a CXL.mem driver */
++	if ((dev->class >> 8) != PCI_CLASS_MEMORY_CXL)
++		return false;
++
++	return true;
++}
++
++static bool is_internal_error(struct aer_err_info *info)
++{
++	if (info->severity == AER_CORRECTABLE)
++		return info->status & PCI_ERR_COR_INTERNAL;
++
++	return info->status & PCI_ERR_UNC_INTN;
++}
++
++static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info);
++
++static int cxl_handle_error_iter(struct pci_dev *dev, void *data)
++{
++	struct aer_err_info *e_info = (struct aer_err_info *)data;
++
++	if (!is_cxl_mem_dev(dev))
++		return 0;
++
++	/* pci_dev_put() in handle_error_source() */
++	dev = pci_dev_get(dev);
++	if (dev)
++		handle_error_source(dev, e_info);
++
++	return 0;
++}
++
++static void cxl_handle_error(struct pci_dev *dev, struct aer_err_info *info)
++{
++	/*
++	 * CXL downstream port errors are signaled as RCEC internal
++	 * errors. Forward them to all CXL devices below the RCEC.
++	 */
++	if (pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC &&
++	    is_internal_error(info))
++		pcie_walk_rcec(dev, cxl_handle_error_iter, info);
++}
++
++#else
++static inline void cxl_handle_error(struct pci_dev *dev,
++				    struct aer_err_info *info) { }
++#endif
++
+ /**
+  * handle_error_source - handle logging error into an event log
+  * @dev: pointer to pci_dev data structure of error source device
+@@ -957,6 +1016,8 @@ static void handle_error_source(struct pci_dev *dev, struct aer_err_info *info)
+ {
+ 	int aer = dev->aer_cap;
+ 
++	cxl_handle_error(dev, info);
++
+ 	if (info->severity == AER_CORRECTABLE) {
+ 		/*
+ 		 * Correctable error does not need software intervention.
+-- 
+2.34.1
 
