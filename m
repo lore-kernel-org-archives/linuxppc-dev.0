@@ -4,46 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA195C76196
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 11:28:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3D2AC77B6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 11:36:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PwkBC20xrz3cf6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 21:28:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=CS2NUHbs;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=bombadil.20210309 header.b=CS2NUHbs;
-	dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pwk981DW5z3c7X
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 21:27:56 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
-	Content-ID:Content-Description:In-Reply-To:References;
-	bh=5ZqyIo2yPozy9BK+WevZ7XbxMmk32DVp4jnPgiud1w8=; b=CS2NUHbsxWHgEMwrtE3Ai397jJ
-	eXoVpzicm+RfmWnc3oR1P0YPKA4NK1qTUUhYXh1Bx8+hhT0ZArj5TeXoeMsj2Wxuka1omHAjGFdzx
-	j5Na+sxo7khLwW2anLjX1oh6PmqjFIaGugSYTdO/uO+/H+x8yCmlUVg6EXH9HC+lP1pYuhLif4TQW
-	kI/KfPyZUOfIy6svdLEK0YuOQolRPwaRZ+Upn9GMk+KJqTN0cCvL96zCQ3Z9h04uaIlILCIoWj/qE
-	B7QJ8lJLdyUZZOGRIWVDL5BaVBrA2AU0Rn/UQ2w6NjrPPYcnC5nqlVawWViqmcCOW+FqZya2e4xVg
-	mASJvUpA==;
-Received: from [2601:1c2:980:9ec0::2764] (helo=bombadil.infradead.org)
-	by bombadil.infradead.org with esmtpsa (Exim 4.96 #2 (Red Hat Linux))
-	id 1plg5X-00EPbS-2C;
-	Mon, 10 Apr 2023 01:12:55 +0000
-From: Randy Dunlap <rdunlap@infradead.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] soc/fsl/qe: fix usb.c build errors
-Date: Sun,  9 Apr 2023 18:12:54 -0700
-Message-Id: <20230410011254.25675-1-rdunlap@infradead.org>
-X-Mailer: git-send-email 2.40.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PwkMZ3WhNz3cjN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 21:36:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PwkM265ltz3bjj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 21:36:29 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 96259D75;
+	Tue, 11 Apr 2023 04:36:42 -0700 (PDT)
+Received: from FVFF77S0Q05N (unknown [10.57.20.166])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4DAD93F6C4;
+	Tue, 11 Apr 2023 04:35:53 -0700 (PDT)
+Date: Tue, 11 Apr 2023 12:35:50 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Subject: Re: [PATCH v2 0/5] locking: Introduce local{,64}_try_cmpxchg
+Message-ID: <ZDVGFhMwOtpxJtnQ@FVFF77S0Q05N>
+References: <20230405141710.3551-1-ubizjak@gmail.com>
+ <7360ffd2-a5aa-1373-8309-93e71ff36cbb@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7360ffd2-a5aa-1373-8309-93e71ff36cbb@intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,53 +41,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel test robot <lkp@intel.com>, Masahiro Yamada <masahiroy@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, Kumar Gala <galak@kernel.crashing.org>, Leo Li <leoyang.li@nxp.com>, Qiang Zhao <qiang.zhao@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-arm-kernel@lists.infradead.org, Nicolas Schier <nicolas@fjasle.eu>
+Cc: Ian Rogers <irogers@google.com>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, Jiaxun Yang <jiaxun.yang@flygoat.com>, linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, WANG Xuerui <kernel@xen0n.name>, Will Deacon <will@kernel.org>, linux-arch@vger.kernel.org, Jun Yi <yijun@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, Uros Bizjak <ubizjak@gmail.com>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Boqun Feng <boqun.feng@gmail.com>, Richard Henderson <richard.henderson@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Arnaldo Carvalho de Melo <acme@kernel.org>, loongarch@lists.linux.dev, Namhyung Kim <namhyung@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org, linux-perf-users@vger.kernel
+ .org, Jiri Olsa <jolsa@kernel.org>, linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fix build errors in soc/fsl/qe/usb.c when QUICC_ENGINE is not set.
-This happens when PPC_EP88XC is set, which selects CPM1 & CPM.
-When CPM is set, USB_FSL_QE can be set without QUICC_ENGINE
-being set. When USB_FSL_QE is set, QE_USB deafults to y, which
-causes build errors when QUICC_ENGINE is not set. Making
-QE_USB depend on QUICC_ENGINE prevents QE_USB from defaulting to y.
+On Wed, Apr 05, 2023 at 09:37:04AM -0700, Dave Hansen wrote:
+> On 4/5/23 07:17, Uros Bizjak wrote:
+> > Add generic and target specific support for local{,64}_try_cmpxchg
+> > and wire up support for all targets that use local_t infrastructure.
+> 
+> I feel like I'm missing some context.
+> 
+> What are the actual end user visible effects of this series?  Is there a
+> measurable decrease in perf overhead?  Why go to all this trouble for
+> perf?  Who else will use local_try_cmpxchg()?
 
-Fixes these build errors:
+Overall, the theory is that it can generate slightly better code (e.g. by
+reusing the flags on x86). In practice, that might be in the noise, but as
+demonstrated in prior postings the code generation is no worse than before.
 
-drivers/soc/fsl/qe/usb.o: in function `qe_usb_clock_set':
-usb.c:(.text+0x1e): undefined reference to `qe_immr'
-powerpc-linux-ld: usb.c:(.text+0x2a): undefined reference to `qe_immr'
-powerpc-linux-ld: usb.c:(.text+0xbc): undefined reference to `qe_setbrg'
-powerpc-linux-ld: usb.c:(.text+0xca): undefined reference to `cmxgcr_lock'
-powerpc-linux-ld: usb.c:(.text+0xce): undefined reference to `cmxgcr_lock'
+From my perspective, the more important part is that this aligns local_t with
+the other atomic*_t APIs, which all have ${atomictype}_try_cmpxchg(), and for
+consistency/legibility/maintainability it's nice to be able to use the same
+code patterns, e.g.
 
-Fixes: 5e41486c408e ("powerpc/QE: add support for QE USB clocks routing")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Reported-by: kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/all/202301101500.pillNv6R-lkp@intel.com/
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Leo Li <leoyang.li@nxp.com>
-Cc: Masahiro Yamada <masahiroy@kernel.org>
-Cc: Nicolas Schier <nicolas@fjasle.eu>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Kumar Gala <galak@kernel.crashing.org>
----
-v2: drop Anton Vorontsov <avorontsov@ru.mvista.com>; rebase/resend
+	${inttype} new, old = ${atomictype}_read(ptr);
+	do {
+		...
+		new = do_something_with(old);
+	} while (${atomictype}_try_cmpxvhg(ptr, &oldval, newval);
 
- drivers/soc/fsl/qe/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+> I'm all for improving things, and perf is an important user.  But, if
+> the goal here is improving performance, it would be nice to see at least
+> a stab at quantifying the performance delta.
 
-diff -- a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
---- a/drivers/soc/fsl/qe/Kconfig
-+++ b/drivers/soc/fsl/qe/Kconfig
-@@ -62,6 +62,7 @@ config QE_TDM
- 
- config QE_USB
- 	bool
-+	depends on QUICC_ENGINE
- 	default y if USB_FSL_QE
- 	help
- 	  QE USB Controller support
+IIUC, Steve's original request for local_try_cmpxchg() was a combination of a
+theoretical performance benefit and a more general preference to use
+try_cmpxchg() for consistency / better structure of the source code:
+
+  https://lore.kernel.org/lkml/20230301131831.6c8d4ff5@gandalf.local.home/
+
+I agree it'd be nice to have performance figures, but I think those would only
+need to demonstrate a lack of a regression rather than a performance
+improvement, and I think it's fairly clear from eyeballing the generated
+instructions that a regression isn't likely.
+
+Thanks,
+Mark.
