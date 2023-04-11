@@ -4,91 +4,45 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA9F3C7619A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 09:03:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF543C77B6F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 09:38:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PwfyX3Yyjz3f5l
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 19:03:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pwgl524VQz3cNM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 19:38:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tgfMUiCs;
+	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=IysLWq27;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sachinp@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tgfMUiCs;
-	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4PwfxT6nfPz3bY0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 19:02:37 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33B6WoGn017447;
-	Tue, 11 Apr 2023 09:02:23 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=content-type :
- mime-version : subject : from : in-reply-to : date : cc :
- content-transfer-encoding : message-id : references : to; s=pp1;
- bh=/9YOv71zL1nrd/HhdDDHs5nXwKJ3IA/QxmcaZVSFHdA=;
- b=tgfMUiCsHzjYbP+Shm1kKg1MMJFnhqDLK9+V/Ubb0P2p2CdJcxmoBge7eTNho0p0PV6e
- KcTPW4AeIEJye0J+8Oying00nn2568829ODlfKoRMCPBRlJ7NCp54b9pUyRdVxjSKrPC
- th1xJq44UL96pZmLRnCSxE09qD9kj6Zh1bHZtJLBuBp3xxuQMpFrt2bzY1O/YdWkGGgA
- KIVfWxVQ0xLMZ7kT/DpR5xoHbLHluA4LM8RwzwiRfD8UXN6fPzB0A306N9cMEdTNKaJz
- j3h/WTavi4DTUgu8ByDXioNiudjrgmJpWVhrrkRJDCasWwxRoF/nT6U9bXANeCB4trJk bA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pvr78h6cf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Apr 2023 09:02:23 +0000
-Received: from m0098421.ppops.net (m0098421.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33B8Upng013948;
-	Tue, 11 Apr 2023 09:02:23 GMT
-Received: from ppma04ams.nl.ibm.com (63.31.33a9.ip4.static.sl-reverse.com [169.51.49.99])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pvr78h6bp-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Apr 2023 09:02:22 +0000
-Received: from pps.filterd (ppma04ams.nl.ibm.com [127.0.0.1])
-	by ppma04ams.nl.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33B4B3uj026599;
-	Tue, 11 Apr 2023 09:02:21 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma04ams.nl.ibm.com (PPS) with ESMTPS id 3pu0m19juk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Apr 2023 09:02:20 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33B92Ieq17302156
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 11 Apr 2023 09:02:18 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B8A2720043;
-	Tue, 11 Apr 2023 09:02:18 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8B9D220040;
-	Tue, 11 Apr 2023 09:02:17 +0000 (GMT)
-Received: from smtpclient.apple (unknown [9.109.240.72])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 11 Apr 2023 09:02:17 +0000 (GMT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3731.500.231\))
-Subject: Re: [PATCH 3/4] cpuidle: pseries: Mark ->enter() functions as
- __cpuidle
-From: Sachin Sant <sachinp@linux.ibm.com>
-In-Reply-To: <20230406144535.3786008-3-mpe@ellerman.id.au>
-Date: Tue, 11 Apr 2023 14:32:06 +0530
-Content-Transfer-Encoding: 7bit
-Message-Id: <0BA7072D-9B38-4F5A-B8E4-BB57CC97C354@linux.ibm.com>
-References: <20230406144535.3786008-1-mpe@ellerman.id.au>
- <20230406144535.3786008-3-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-X-Mailer: Apple Mail (2.3731.500.231)
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: BvuAr5QX0LKRuthBsVJDr63AFEzfGAPU
-X-Proofpoint-ORIG-GUID: YzSZ8899gwS57Z6r8lh4hhlaxNuJioRf
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-11_04,2023-04-06_03,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
- priorityscore=1501 phishscore=0 adultscore=0 suspectscore=0
- impostorscore=0 malwarescore=0 bulkscore=0 mlxscore=0 spamscore=0
- mlxlogscore=740 lowpriorityscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2303200000 definitions=main-2304110080
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pwgk76JNsz3c9L
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Apr 2023 19:37:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=IysLWq27;
+	dkim-atps=neutral
+Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
+	id 4Pwgk52nX0z4xFd; Tue, 11 Apr 2023 19:37:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
+	s=201707; t=1681205869;
+	bh=ZqYO+3AAJ7KdoPIQv+9ft6lOTImzO3egTdFAE+QjTNs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=IysLWq276d8TOdhvNMHA8UHL/7Esa9zUf65Wv2wj0jsCkvxZ7sXNjFyQpiMqMMP3m
+	 mrjDO2oH3a7dFkzt7RbQLm8A8V8zHRnUtsqJEkhYPXf4wMkzs3dddakSFeynBf1z7l
+	 GN0ZRFKO2huqhQVH6QuQfy1SD0ZxnxvIo6avvYL9nFNPp3P9Fl5docy+dJijqbkDY5
+	 To6AzdLRgO9KwHmfl2I/TB754D7moWLFuTBBV2o+pnSc8PLaKs46iIj2A9dULu+iTU
+	 iALnuKiRbVy6By3+ACij14tqAwH2iqKKs5s1X4mTiEAbygIGaoxUgQ24elbSGqkLdG
+	 QgsXJ3bZp7/6Q==
+Date: Tue, 11 Apr 2023 19:37:45 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Joel Stanley <joel@jms.id.au>
+Subject: Re: [PATCH] KVM: PPC: Fix documentation for ppc mmu caps
+Message-ID: <ZDUqaUbakmKvNFXM@cleo>
+References: <20230411061446.26324-1-joel@jms.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20230411061446.26324-1-joel@jms.id.au>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,32 +54,16 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Nick Piggin <npiggin@gmail.com>, linux-pm@vger.kernel.org
+Cc: kvm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-> On 06-Apr-2023, at 8:15 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Tue, Apr 11, 2023 at 03:44:46PM +0930, Joel Stanley wrote:
+> The documentation mentions KVM_CAP_PPC_RADIX_MMU, but the defines in the
+> kvm headers spell it KVM_CAP_PPC_MMU_RADIX. Similarly with
+> KVM_CAP_PPC_MMU_HASH_V3.
 > 
-> Code in the idle path is not allowed to be instrumented because RCU is
-> disabled, see commit 0e985e9d2286 ("cpuidle: Add comments about
-> noinstr/__cpuidle usage").
-> 
-> Mark the cpuidle ->enter() callbacks as __cpuidle and use the
-> raw_local_irq_*() routines to ensure that is the case.
-> 
-> Reported-by: Sachin Sant <sachinp@linux.ibm.com>
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
+> Fixes: c92701322711 ("KVM: PPC: Book3S HV: Add userspace interfaces for POWER9 MMU")
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-Thanks for the patch. With this patch (and others from the series)
-applied, I no longer observe the reported kernel warning while running
-ftrace selftests.
-
-For this and other patches in the series
-
-Tested-by: Sachin Sant <sachinp@linux.ibm.com>
-
-- Sachin
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
