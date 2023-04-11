@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05180C77B6F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 15:11:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51313C7619A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Apr 2023 18:46:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pwq6z33HYz3ch5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Apr 2023 01:11:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pwvtv41pgz3ccn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Apr 2023 04:46:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qdxZZCtn;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qdxZZCtn;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=NsY9hj1e;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=NsY9hj1e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:7eaf::615; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe1a::321; helo=eur03-dba-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qdxZZCtn;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=qdxZZCtn;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=NsY9hj1e;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=NsY9hj1e;
 	dkim-atps=neutral
-Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03on20615.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eaf::615])
+Received: from EUR03-DBA-obe.outbound.protection.outlook.com (mail-dbaeur03hn20321.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe1a::321])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pwq5x3j63z2x9L
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2023 01:10:27 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pwvsr6rb0z3bjY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Apr 2023 04:45:20 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=leNIrRxjY8AsxVsKr1qlD3qC8pXD5zDwgwY/xiy22Ig=;
- b=qdxZZCtnfKeiY3cercJZf4f6baqUqypUOAOCF91k7UWCTp0hMvBCfkuKHX9Ltq/9w24WaabAtacStjNKdABDyUxck94I4FjjTVpR/MncDr4wPeirtuqaD0fwGMcQeJonyHy9wtgwzLoLTJJT29S6p7bpcFh0HtP2RoWDq7SoEaMcn+bDHA/Z+6aN3NSQM0AGfV0tv+R1RpQg4dsZmouGPZHEjj60Bn6i4M2MN5mxaTVK/ui5hT5OngS5K+NmXaj98+vo2korQHmPuhlSUTuBBtmZ/JpH/BiICzSbYj/aRXXTvQdMziMSgqNCnlPnzRgvHhf6cbXaoT/dgPTtvpgWOw==
-Received: from ZR0P278CA0007.CHEP278.PROD.OUTLOOK.COM (2603:10a6:910:16::17)
- by AS8PR03MB8004.eurprd03.prod.outlook.com (2603:10a6:20b:42b::9) with
+ bh=Qv1zXTjvA9ZGaObtt1TjejTod4QaRoQztRWwnCWrZJ4=;
+ b=NsY9hj1eph/aTxMbL/TDN8CTRt4e21p8DVuVZuV948RckcIUMq7mX+CLFp6XnPPGpXvTPGgI+N0CIMQoeus8V+/OcOnyt7OJK0uBgsQc7FXkc0Xlqzq0I5FvVor9CrLX5MOl5oAjrPP21IOYfLzfi4X0Pk11OhhSahx7b/7eWT0vioTATDDDeKPzSnNaVwbzCPQfR3QpBBqsQn0ZV4uRF5fVK3+xaFLAgNxkhOuhPiEzZ4+fXMmWTHl6XIDradaet7iloo2eQJQFf2BG/1/p+e3CnyVDX7Q2+33DTcSw/IaU/9VipiXPEbLPt0dLlnU6cv1bzvC/+dsrafnjyQxxdg==
+Received: from AS8PR04CA0045.eurprd04.prod.outlook.com (2603:10a6:20b:312::20)
+ by AS2PR03MB9648.eurprd03.prod.outlook.com (2603:10a6:20b:5e8::16) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.38; Tue, 11 Apr
- 2023 15:10:06 +0000
-Received: from VI1EUR05FT037.eop-eur05.prod.protection.outlook.com
- (2603:10a6:910:16:cafe::20) by ZR0P278CA0007.outlook.office365.com
- (2603:10a6:910:16::17) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.34; Tue, 11 Apr
+ 2023 18:45:02 +0000
+Received: from AM6EUR05FT047.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:20b:312:cafe::bb) by AS8PR04CA0045.outlook.office365.com
+ (2603:10a6:20b:312::20) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.40 via Frontend
- Transport; Tue, 11 Apr 2023 15:10:05 +0000
+ Transport; Tue, 11 Apr 2023 18:45:02 +0000
 X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.80)
  smtp.mailfrom=seco.com; dkim=pass (signature was verified)
  header.d=seco.com;dmarc=pass action=none header.from=seco.com;
@@ -44,86 +44,82 @@ Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
  20.160.56.80 as permitted sender) receiver=protection.outlook.com;
  client-ip=20.160.56.80; helo=inpost-eu.tmcas.trendmicro.com; pr=C
 Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.80) by
- VI1EUR05FT037.mail.protection.outlook.com (10.233.243.185) with Microsoft
+ AM6EUR05FT047.mail.protection.outlook.com (10.233.241.167) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6298.28 via Frontend Transport; Tue, 11 Apr 2023 15:10:05 +0000
-Received: from outmta (unknown [192.168.82.135])
-	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id 66F562008026E;
-	Tue, 11 Apr 2023 15:10:05 +0000 (UTC)
-Received: from EUR05-VI1-obe.outbound.protection.outlook.com (unknown [104.47.17.171])
-	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id B81B12008006F;
-	Tue, 11 Apr 2023 15:10:56 +0000 (UTC)
+ 15.20.6298.29 via Frontend Transport; Tue, 11 Apr 2023 18:45:02 +0000
+Received: from outmta (unknown [192.168.82.132])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id 986CA2008026E;
+	Tue, 11 Apr 2023 18:45:01 +0000 (UTC)
+Received: from EUR03-AM7-obe.outbound.protection.outlook.com (unknown [104.47.51.239])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id AAB8A20080078;
+	Tue, 11 Apr 2023 18:46:03 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=AwVoS54jmAoEPi1Cxp24Qec5yhDpnoaHzTgPzlRQhxALH1RkYAeQRXEGC0tsxvBYf5IrTn7UrpUqaMcF+lpkVqbuSN5Qhi+5apWfiDQb1CL4GmKKgckGjqpukf2fVMTdZMwRwOP8RGICDOVV+Crdv3fXsYprpz2Oy2sfcsE/85ogQ/0YrT/08WaduR/wNpTiDF255SMmhM9KjYqZvkfPgFlzEwoEK/cz9FhCXDv7jIZ2GCw+ERTnyq5DXLTs61hLi+ILDiq7dQBelTo14bEoG8dCeiW7MR0T56wu/zzF+mHaviqBWDWtnS/FtNaXcQuX8tNcFY6lAFDmksriV0tCDA==
+ b=H8RSt+6/O5fg6NUn/p/kJz4UGEVCO1JaSTEYbsLWaYUJwPbqSSG/ydjw3MxhBz2TblicdL/QS/02wbpr+RjT1+zbJ2CeZLj0Z3fE9WDerN8P3+D3DdEGR92nwg7R1FzB+KZSoFLkuk3Oy7aQnVaMCs1pbD5+40AzpUfUul6asEcrWNFKQJ487tyv8aHlhrsrZvdPlIoo2fABdHTUQIeV1oxhy5V+Qxpx2pTEV+BWbw3RM4BkX9K/cyf6nhUg0LyUJyaBqnSo7JzOPg9QABJsBPwee+wukRprJIZcqrpJxJbg7Nvg7yCawNhmdlds2oNujTGiYriD3KU1wdHQPBbAVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=leNIrRxjY8AsxVsKr1qlD3qC8pXD5zDwgwY/xiy22Ig=;
- b=CK4UL6/FRfk5FODYCqgaAkIh5X/q4BxqHXdMVn5jGLcOTYK1JeLM5GNed1ykOHB2c7fb8FaOZe5p16+oeAhnocJXzTYQGf8x8539Av3gGJqy12kss67MtFI1YUHKQ3hCua+xwFmK9GqyitbYp4QsxyxkDNUB+Mz03V5YkgkuHhib9JRReiIA8mUL8DsGMtXXbpOZmtplNYjg+643bWzoZqaqvjopJ1yk1Ki0oUuILYJwMO1ARU1ZiUvcRFPv3hlilfVLdfau3OnBDr3WS5H7r5aZku36pOEHmcveI2WUG3R8tOp6XTbZlayuc/NEeVY1GC/UyR/wy/qkxDJ7Q6KlIg==
+ bh=Qv1zXTjvA9ZGaObtt1TjejTod4QaRoQztRWwnCWrZJ4=;
+ b=D8OOSffnRkEae/AD8zQ+ZwkRsRc5K/Z4tIC7EW/l+qAUaQ7IJJyOB+acZrNc7rp14X29c3o1P7ssrzFK371O7Y6hf5yat8Ke2VohPzLqJCVLi57+voGWsU4sUx/5QrQUtxTxrG6IAHhGvnGDioy6v0Z5ncsL49sqhynnTlIB8Ji94lM1uOnl0lEGW1n2iW2oZoC2aw7fBNnhRr+ZBrcTsIR4G+pDjQuEAmv7a3TQRXZSH9cwZ1tjIwwvxqQ71OCxg1iPfWUr2JGvWhlWLQTwv01OS5M1HP7fQZi5WspJNGt1pf3RCS0DnBj5+77HLc4DT9IvfV29AVhUiiKF91BFyA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
  dkim=pass header.d=seco.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=leNIrRxjY8AsxVsKr1qlD3qC8pXD5zDwgwY/xiy22Ig=;
- b=qdxZZCtnfKeiY3cercJZf4f6baqUqypUOAOCF91k7UWCTp0hMvBCfkuKHX9Ltq/9w24WaabAtacStjNKdABDyUxck94I4FjjTVpR/MncDr4wPeirtuqaD0fwGMcQeJonyHy9wtgwzLoLTJJT29S6p7bpcFh0HtP2RoWDq7SoEaMcn+bDHA/Z+6aN3NSQM0AGfV0tv+R1RpQg4dsZmouGPZHEjj60Bn6i4M2MN5mxaTVK/ui5hT5OngS5K+NmXaj98+vo2korQHmPuhlSUTuBBtmZ/JpH/BiICzSbYj/aRXXTvQdMziMSgqNCnlPnzRgvHhf6cbXaoT/dgPTtvpgWOw==
+ bh=Qv1zXTjvA9ZGaObtt1TjejTod4QaRoQztRWwnCWrZJ4=;
+ b=NsY9hj1eph/aTxMbL/TDN8CTRt4e21p8DVuVZuV948RckcIUMq7mX+CLFp6XnPPGpXvTPGgI+N0CIMQoeus8V+/OcOnyt7OJK0uBgsQc7FXkc0Xlqzq0I5FvVor9CrLX5MOl5oAjrPP21IOYfLzfi4X0Pk11OhhSahx7b/7eWT0vioTATDDDeKPzSnNaVwbzCPQfR3QpBBqsQn0ZV4uRF5fVK3+xaFLAgNxkhOuhPiEzZ4+fXMmWTHl6XIDradaet7iloo2eQJQFf2BG/1/p+e3CnyVDX7Q2+33DTcSw/IaU/9VipiXPEbLPt0dLlnU6cv1bzvC/+dsrafnjyQxxdg==
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=seco.com;
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
- by AS8PR03MB6871.eurprd03.prod.outlook.com (2603:10a6:20b:29e::14) with
+ by DB4PR03MB9433.eurprd03.prod.outlook.com (2603:10a6:10:3fa::17) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.38; Tue, 11 Apr
- 2023 15:09:54 +0000
+ 2023 18:44:46 +0000
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::2226:eb03:a8c:a7e5]) by DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::2226:eb03:a8c:a7e5%2]) with mapi id 15.20.6277.035; Tue, 11 Apr 2023
- 15:09:54 +0000
-Message-ID: <3b707d1c-1120-274f-6cd6-b3283a334563@seco.com>
-Date: Tue, 11 Apr 2023 11:09:48 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
- Thunderbird/102.4.0
-Subject: Re: [PATCH v3 2/2] soc: fsl: qbman: Use raw spinlock for cgr_lock
-Content-Language: en-US
+ 18:44:46 +0000
 From: Sean Anderson <sean.anderson@seco.com>
-To: Crystal Wood <oss@buserror.net>, Li Yang <leoyang.li@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-References: <20230404145557.2356894-1-sean.anderson@seco.com>
- <20230404145557.2356894-2-sean.anderson@seco.com>
- <48dacc58c7c04ba8a005d8edd56744c8455f007e.camel@buserror.net>
- <d4737c45-2bbf-d364-9768-20baa46f6af4@seco.com>
-In-Reply-To: <d4737c45-2bbf-d364-9768-20baa46f6af4@seco.com>
-Content-Type: text/plain; charset=UTF-8
+To: Vinod Koul <vkoul@kernel.org>,
+	Kishon Vijay Abraham I <kishon@kernel.org>,
+	linux-phy@lists.infradead.org
+Subject: [PATCH v13 04/15] dt-bindings: gpio-mmio: Add compatible for QIXIS
+Date: Tue, 11 Apr 2023 14:43:01 -0400
+Message-Id: <20230411184313.3679145-5-sean.anderson@seco.com>
+X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
+In-Reply-To: <20230411184313.3679145-1-sean.anderson@seco.com>
+References: <20230411184313.3679145-1-sean.anderson@seco.com>
 Content-Transfer-Encoding: 8bit
-X-ClientProxiedBy: MN2PR10CA0016.namprd10.prod.outlook.com
- (2603:10b6:208:120::29) To DB9PR03MB8847.eurprd03.prod.outlook.com
+Content-Type: text/plain
+X-ClientProxiedBy: BL1PR13CA0350.namprd13.prod.outlook.com
+ (2603:10b6:208:2c6::25) To DB9PR03MB8847.eurprd03.prod.outlook.com
  (2603:10a6:10:3dd::13)
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|AS8PR03MB6871:EE_|VI1EUR05FT037:EE_|AS8PR03MB8004:EE_
-X-MS-Office365-Filtering-Correlation-Id: 51e4f0af-2b71-4287-6f58-08db3a9ed516
+X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|DB4PR03MB9433:EE_|AM6EUR05FT047:EE_|AS2PR03MB9648:EE_
+X-MS-Office365-Filtering-Correlation-Id: a21b3d78-5247-4a59-8b7f-08db3abcdbfd
 X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  Tb0jPIiwDRV+osQVFmAe3gKUHQlKvTPrIQ5mSJdKW7cfNMps22C4VS148UAJrobrjNk+DsBK4+6qgf0PxMB3ytwoQtF4SwiPbCW+QVHKvz0Ej2j5pLVxKfIvhnX5sdKl2+7ovr5AZPmmVNWjY2GF41SDaL9u0Bl5oVybp+BD04+8/owozcjJ5dVOyT/15cyUI3jHniJpCzo1ofZ0qmKa7/n7Gy5M4R9iAkqbdc2N36Z0J4OBgq2yKy9QLgRzy6py0p0rRwwJ/M7PIBJZYwMiLvCW6VioguEv59KmBXS0x3nlBtO5B+PSrt+URhq3fiN+w25H9sEg7xdnTIh5XdR7Ee7qkUFkva2Xi2theJVbgkSnvB0/dczSZHfYtNkW/Ia4rcoUb0wGlM6DETwTirEByig/bL+qYpKoPGbxML1P+rqoTeDgDJONCvd+tJTayctGcznbJ/j5fLxH8/QMNLLLbthK1wx9YaPuZDk0JPCZ22rxoskfs+HEd1Y2NIRYgOR90nleMZro3M3Y165qXWdVc8nIan0OdfXLAy1Pjo2kUZze7L6LuoTqAcnVPaoGL8PR7YVL38uxh6III1/s2pv3Z8o3PiRWDPeLWG/M9mtLssvFwrVetdmI8xcolaLikvRr7A26ZdfoNVFrKL8RoN3a6KyNSclEk9AB0E2VFuGfMC4gQJDAVG/EI4UMTxDHbj0n
-X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(376002)(346002)(136003)(39850400004)(396003)(366004)(451199021)(8936002)(52116002)(83380400001)(6666004)(66476007)(66556008)(86362001)(66946007)(110136005)(36756003)(478600001)(54906003)(186003)(316002)(8676002)(4326008)(6506007)(6512007)(53546011)(41300700001)(26005)(2616005)(31696002)(6486002)(31686004)(38350700002)(7416002)(2906002)(44832011)(38100700002)(5660300002)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR03MB6871
+X-Microsoft-Antispam-Message-Info-Original:  GOB5SfgvfsRnC5sCZqNxKGMqRNBV1HZcV7boJkMURNPVGYmcr+n1evpIf2yRpIWaOE52c3p0xnsQI3Vbx2OHmjjKGNsbS2gE/lcFvnrU0mV4bmxpSdNTBoOXPic4UTYCtIRGILdgOsL5jufzH0wxFzWhfXn/r2/+15w+V1FH9VZxSN4nyKkWQExzM8hVMu8qwOaWu7tgfJNNKf29+/PasxvAn4IPIZ1Peahoz9zYiB4LSEucbn+QhwhqXzoY+tPA9li88stGZ1rmLUT8WMb12ERvnivIwQAb+biINMMJgTah4IPtsaka1ur4moIfrvPxXpBLz0G77tJ69qsUZW7rG4rCVG5kCnXenC53qleb3X4F4ojaViA89JQhb+7VzxR3O+jSIL81XiPlS5ZYtLDJaRwu0gT8mFDvz7LUMREt6NTBSfjl7PTBkEiDx6wH8cEi76SfgktdjIqX7yK4NKODn5hoTYkJZpAitaY3fATQm3+4qDz+7cTTCUGXseOykuQ0PGWjHT5u9gZ7ARSquMp2qlf1sakpWoJqpA0SOy7t8AZ8p05hrl6VFlRIsVOw3OgSMTIHi0dGsjX5QiMcawtkhIbbvOGTB/58IXKMZ7PRQ1ZBfS1zXOmu2+KoOznxzW0J
+X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(366004)(39850400004)(396003)(136003)(376002)(346002)(451199021)(316002)(110136005)(38350700002)(38100700002)(54906003)(66556008)(66476007)(8676002)(66946007)(4326008)(86362001)(478600001)(186003)(2616005)(26005)(41300700001)(36756003)(6506007)(1076003)(6512007)(2906002)(83380400001)(44832011)(8936002)(6666004)(52116002)(5660300002)(7416002)(6486002);DIR:OUT;SFP:1101;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB4PR03MB9433
 X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  VI1EUR05FT037.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM6EUR05FT047.eop-eur05.prod.protection.outlook.com
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	3b52a49f-6cd7-49b4-67c8-08db3a9ece40
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	f81abcbb-af7c-4162-7cfd-08db3abcd26a
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	XhgQNpSmuiD85jmfBsxm/9NvLgdQAhGDHTfMHwfHvOeghsuj74yw834u7DR3Xe9g6eR0RpKawqnP7zzv2IZ4fUa4MyqVs+awrGzMotj1Bzhxgrhk5dww0srUHVcNGw750YpBaBgrbZaA0m1Vg5t/1KIfkXK9nBIura+WSscqL16yaBbLk3tFgXS0nBoJ6JapX8SFA2AVfA/15Iw4qkf4DiHgoZ2ca7CWvyb3WUuc5LT2kFhO4cT/8Kz2Tnr2PeRHta+3dszPvf/tpRjxXJw+PxTdvQu137aQLWK0MB+fMkH9PoeteKEMmTwQruONHPRrvL4ruMQ+DYtCXqFER/0L92UKVYVAZnfQMkygb0dV9xfw0o+ePI54gMrSgbQ+CetXJ6RtULH+rzX2Hg3Nkc1trMf8A5MTARfr9ZDQot1o+gH996yba5BGqJUa8/ll9jcqekB8peY6EZnvmeXTtXc4WN1vO3i9xEtmhjyEGZHDenkfUTEILNH+SEtcfHdFqBEMI1dsurcj68WHAJLV3ZnQdu4SPlLF0o7CxOVeifiasBO8kC9SEjsV+9di+3We3Pqoj93b61n+d219r/801e2PYGCuCa9zrPY6u5y0MHJg0BvzNkPDRS2NQIt7bmk2kh3mjz/eAG2nF1txV6/vLWTI+k8wpb+aNrY0Ou5GyEDTvCqHofcgwk8OQU9xKirRi3Mofnn3U7zyr+MIEQEmWdheypMB3VZMYUeye3oyOfJl/Srwpf+sJzRpPZMrS8xR6c2muBHQc8gvZrMFWy46dfXgEg==
-X-Forefront-Antispam-Report: 	CIP:20.160.56.80;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(376002)(346002)(136003)(39850400004)(396003)(451199021)(46966006)(40470700004)(36840700001)(8936002)(40460700003)(336012)(47076005)(83380400001)(6666004)(70206006)(86362001)(70586007)(110136005)(36756003)(478600001)(54906003)(186003)(316002)(8676002)(82310400005)(4326008)(6506007)(6512007)(53546011)(41300700001)(26005)(2616005)(40480700001)(31696002)(6486002)(31686004)(7416002)(36860700001)(2906002)(82740400003)(44832011)(34070700002)(7636003)(356005)(7596003)(5660300002)(43740500002);DIR:OUT;SFP:1101;
+X-Microsoft-Antispam-Message-Info: 	OjqYmjOwAocqB83K8/WG/Hk/qQx7i8DoBaLXVGMCZU5DqC7ZO5UQFES0VgBxrtoVEZihAnYhIVvUYQgJ4V4RmaMEwp6mbaaIS0zDiw64gCtq5pveKd+VVQ84sUJVKpcEjenIWFZOf77/O1gkskMC+OVWVgD+rq77GGJxViwQIYV3zQ8w2WBRRgdbfBBrSTI3Kr8ZEGdPhO0tfJ7xwn24V4rvsNMY1GtQ8pRQnUfcWhf7nToIcXWqp8r7j01H2adys8evgc+X2lV/xOE3yVJT3PzvdbdIf9CSLrpjtAWwMMDCBSU64feWJOk+6TO4Qy88z9FONgvf08uEVOEgkhQynr8PzY3qy/Hs+i9gte719IBtqWnjefFXH/BhpP9zlXpXr/htPNGSXXCtP2NBTByu7CDdnGD5qAYmYJ7wUAL7s5gPA5TS03e4ZJ2qS+74Ej6mMWCnQpJtuCfXUzPeIoWE0DL+dFCD2e2KbzZICr82eUW1OiKkRupxDfJe820Euo61ysCBBz+gHVxfRNaekBUSsHGz5TrvutC4pF0XwJn72d/awNkFQORVv5UqLwyAEFSCy/fFDQpU3Eba7FzuQnQQpcy+e5kVGuj7jnsYPEmwnklQXIbEazCvbmwmO/8rjBELkdLwMQb2vLL3lMkqMCtcQl3l7I/Hmn6g7HCxoygwTLH73W0xXirnWvXgx9q+jUpt+LKZAUU+UmA0c1XE4xB2cnW/UlUeXxsqCNvwijAEp3+7t8/MfMO+2rq1BPXYjddNNrCS1oOg9s8DgaT2dHHVsg==
+X-Forefront-Antispam-Report: 	CIP:20.160.56.80;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(136003)(396003)(346002)(376002)(39850400004)(5400799015)(451199021)(36840700001)(46966006)(40470700004)(110136005)(54906003)(36860700001)(7596003)(82740400003)(356005)(7636003)(336012)(82310400005)(2616005)(47076005)(316002)(83380400001)(478600001)(186003)(8676002)(86362001)(4326008)(7416002)(2906002)(70586007)(26005)(6512007)(34070700002)(70206006)(1076003)(6506007)(6666004)(44832011)(36756003)(5660300002)(40460700003)(40480700001)(8936002)(41300700001)(6486002)(12100799027);DIR:OUT;SFP:1501;
 X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Apr 2023 15:10:05.6537
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Apr 2023 18:45:02.1677
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 51e4f0af-2b71-4287-6f58-08db3a9ed516
+X-MS-Exchange-CrossTenant-Network-Message-Id: a21b3d78-5247-4a59-8b7f-08db3abcdbfd
 X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
 X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.80];Helo=[inpost-eu.tmcas.trendmicro.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	VI1EUR05FT037.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthSource: 	AM6EUR05FT047.eop-eur05.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS8PR03MB8004
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR03MB9648
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,60 +131,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Madalin Bucur <madalin.bucur@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Camelia Groza <camelia.groza@nxp.com>, "David S . Miller" <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Crystal,
+NXP has a "QIXIS" FPGA on several of their reference design boards. On
+the LS1088ARDB there are several registers which control GPIOs. These
+can be modeled with the MMIO GPIO driver.
 
-On 4/4/23 12:04, Sean Anderson wrote:
-> On 4/4/23 11:33, Crystal Wood wrote:
->> On Tue, 2023-04-04 at 10:55 -0400, Sean Anderson wrote:
->> 
->>> @@ -1456,11 +1456,11 @@ static void tqm_congestion_task(struct work_struct
->>> *work)
->>>         union qm_mc_result *mcr;
->>>         struct qman_cgr *cgr;
->>>  
->>> -       spin_lock_irq(&p->cgr_lock);
->>> +       raw_spin_lock_irq(&p->cgr_lock);
->>>         qm_mc_start(&p->p);
->>>         qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
->>>         if (!qm_mc_result_timeout(&p->p, &mcr)) {
->>> -               spin_unlock_irq(&p->cgr_lock);
->>> +               raw_spin_unlock_irq(&p->cgr_lock);
->> 
->> qm_mc_result_timeout() spins with a timeout of 10 ms which is very
->> inappropriate for a raw lock.  What is the actual expected upper bound?
-> 
-> Hm, maybe we can move this qm_mc stuff outside cgr_lock? In most other
-> places they're called without cgr_lock, which implies that its usage
-> here is meant to synchronize against some other function.
+Signed-off-by: Sean Anderson <sean.anderson@seco.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
 
-Do you have any suggestions here? I think this should really be handled
-in a follow-up patch. If you think this code is waiting too long in a raw
-spinlock, the existing code can wait just as long with IRQs disabled.
-This patch doesn't change existing system responsiveness.
+(no changes since v10)
 
---Sean
+Changes in v10:
+- New
 
->>>                 dev_crit(p->config->dev, "QUERYCONGESTION timeout\n");
->>>                 qman_p_irqsource_add(p, QM_PIRQ_CSCI);
->>>                 return;
->>> @@ -1476,7 +1476,7 @@ static void qm_congestion_task(struct work_struct
->>> *work)
->>>         list_for_each_entry(cgr, &p->cgr_cbs, node)
->>>                 if (cgr->cb && qman_cgrs_get(&c, cgr->cgrid))
->>>                         cgr->cb(p, cgr, qman_cgrs_get(&rr, cgr->cgrid));
->>> -       spin_unlock_irq(&p->cgr_lock);
->>> +       raw_spin_unlock_irq(&p->cgr_lock);
->>>         qman_p_irqsource_add(p, QM_PIRQ_CSCI);
->>>  }
->> 
->> The callback loop is also a bit concerning...
-> 
-> The callbacks (in .../dpaa/dpaa_eth.c and .../caam/qi.c) look OK. The
-> only thing which might take a bit is dpaa_eth_refill_bpools, which
-> allocates memory (from the atomic pool).
-> 
-> --Sean
+ .../devicetree/bindings/gpio/gpio-mmio.yaml        | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/gpio/gpio-mmio.yaml b/Documentation/devicetree/bindings/gpio/gpio-mmio.yaml
+index b394e058256e..5abf3dabcf39 100644
+--- a/Documentation/devicetree/bindings/gpio/gpio-mmio.yaml
++++ b/Documentation/devicetree/bindings/gpio/gpio-mmio.yaml
+@@ -18,10 +18,16 @@ description:
+ 
+ properties:
+   compatible:
+-    enum:
+-      - brcm,bcm6345-gpio
+-      - ni,169445-nand-gpio
+-      - wd,mbl-gpio # Western Digital MyBook Live memory-mapped GPIO controller
++    oneOf:
++      - enum:
++          - brcm,bcm6345-gpio
++          - ni,169445-nand-gpio
++          - wd,mbl-gpio # Western Digital MyBook Live memory-mapped GPIO controller
++      - items:
++          - enum:
++              - fsl,fpga-qixis-los-stat
++              - fsl,fpga-qixis-brdcfg9
++          - const: ni,169445-nand-gpio
+ 
+   big-endian: true
+ 
+-- 
+2.35.1.1320.gc452695387.dirty
+
