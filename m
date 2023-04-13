@@ -4,122 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E72DC77B6E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 16:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8818DC77B61
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 17:05:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Py4ZZ219hz3g72
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 02:21:10 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=njZFBiul;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=njZFBiul;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe02::32e; helo=eur01-db5-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=njZFBiul;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=njZFBiul;
-	dkim-atps=neutral
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com (mail-db5eur01hn032e.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe02::32e])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Py5Z153kgz3bTJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 03:05:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 218 seconds by postgrey-1.36 at boromir; Fri, 14 Apr 2023 03:05:13 AEST
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py4Gy2pwGz3fCk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 02:07:37 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=T7xV5Io7pBnAgP35FjW3L9tKCIkH6Y1KxJnYWFc56y4=;
- b=njZFBiulvSEJfRhnWwBfSrBJOZicKgQBFxKu7ji3+itBtNuSpoFUvze2wQxA6QG+fGlUOnWNbjmpxVJLUtxt8AI7DbNVr4nE58PaDmoMaOKlcjpesE0Wn+0pQqNwM1N/aizO1O5Oa6ZkqqBQAwDPsVPu8dZBfRg7+6/clyuk4c17WtQ/CkwwqiDu7v286yyqYBOeGF2vPdBUyGdcenSco9XhjINV2THs4Jk1KeFOSesN7A8PU8mqjDnMzr+YDZ1y0JY+LgcxyHGYYeGF88eSqvEdGp1LJwCElr0ONwEtLmqdTsD4woSTIb4oc1Ct3+lfwn9tcsMSYlRg1y9PwljBqQ==
-Received: from AM5PR1001CA0056.EURPRD10.PROD.OUTLOOK.COM
- (2603:10a6:206:15::33) by AM9PR03MB7899.eurprd03.prod.outlook.com
- (2603:10a6:20b:436::14) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.30; Thu, 13 Apr
- 2023 16:07:19 +0000
-Received: from AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
- (2603:10a6:206:15:cafe::73) by AM5PR1001CA0056.outlook.office365.com
- (2603:10a6:206:15::33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.32 via Frontend
- Transport; Thu, 13 Apr 2023 16:07:19 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.82)
- smtp.mailfrom=seco.com; dkim=pass (signature was verified)
- header.d=seco.com;dmarc=pass action=none header.from=seco.com;
-Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
- 20.160.56.82 as permitted sender) receiver=protection.outlook.com;
- client-ip=20.160.56.82; helo=inpost-eu.tmcas.trendmicro.com; pr=C
-Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.82) by
- AM6EUR05FT062.mail.protection.outlook.com (10.233.240.254) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6298.31 via Frontend Transport; Thu, 13 Apr 2023 16:07:17 +0000
-Received: from outmta (unknown [192.168.82.132])
-	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id ED39E2008026E;
-	Thu, 13 Apr 2023 16:07:16 +0000 (UTC)
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com (unknown [104.47.18.113])
-	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id 5796020080074;
-	Thu, 13 Apr 2023 16:08:22 +0000 (UTC)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=NvVcbGr85vRbh4TZQSYj3HY3S9LUsJLRt+Sp+JePkAcskP9u88uJzIouoG2/XyUwneV8fz5pjnU1Z/Z4c13B3yAknv9yoTEk6xhYWKS2xD0eudnhYHbpwMfv9VrkIZ3hs9VjQZ6pzbUR9fQmiFPTwsVGM+xG76VRSTEKeAeT6qs1PE/FfrBwPLWStvEfTFeV0s0H7j6GUuSsdi8A8WhJE3Ig8vdxrHb3Abc0iXHblsGKUqHUUsOu0C7RQuweZ2HqB3qlRaPvgR58UeoE8VEXAWgd9dcpYFw6Z2irHiQsrfhkLwHmSxiAIoQwxlcZ1wjcTrAR/GGBio1JlIDjOwShcQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=T7xV5Io7pBnAgP35FjW3L9tKCIkH6Y1KxJnYWFc56y4=;
- b=gUTlWJjoXznurURIh9b4CO328eFd64kroYwe94FAeFGof4ZwlvCszIMqwQ08J+AzhWIH6QKY0aFwrn3ybQvVVkazn44CTyFdHF2pnqyDwBVQTGksVFFwEDG7pm/6z3bZ6deEaGGLwr0E7isZzaWckXaaWS26ebSrkmQHVnHerMojifix1WVUDCn/kx2D0avM0qxmh3IZOQNqOQzYZkQWR4kJDdkp8K0B4fARzTjDQuZJnIuEoq4QXsWrW7Nvs0UZuTjSo8X+ZHVjkxQEKnVlMrZXHk4ruMIPmvt50cI9twKpnYrNoV2nDUl6xqCHU4rd6npGmaF5oAduUmWJ7nnV+A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
- dkim=pass header.d=seco.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=T7xV5Io7pBnAgP35FjW3L9tKCIkH6Y1KxJnYWFc56y4=;
- b=njZFBiulvSEJfRhnWwBfSrBJOZicKgQBFxKu7ji3+itBtNuSpoFUvze2wQxA6QG+fGlUOnWNbjmpxVJLUtxt8AI7DbNVr4nE58PaDmoMaOKlcjpesE0Wn+0pQqNwM1N/aizO1O5Oa6ZkqqBQAwDPsVPu8dZBfRg7+6/clyuk4c17WtQ/CkwwqiDu7v286yyqYBOeGF2vPdBUyGdcenSco9XhjINV2THs4Jk1KeFOSesN7A8PU8mqjDnMzr+YDZ1y0JY+LgcxyHGYYeGF88eSqvEdGp1LJwCElr0ONwEtLmqdTsD4woSTIb4oc1Ct3+lfwn9tcsMSYlRg1y9PwljBqQ==
-Authentication-Results-Original: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=seco.com;
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
- by AS2PR03MB9369.eurprd03.prod.outlook.com (2603:10a6:20b:57b::7) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.36; Thu, 13 Apr
- 2023 16:06:47 +0000
-Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::2226:eb03:a8c:a7e5]) by DB9PR03MB8847.eurprd03.prod.outlook.com
- ([fe80::2226:eb03:a8c:a7e5%2]) with mapi id 15.20.6298.030; Thu, 13 Apr 2023
- 16:06:47 +0000
-From: Sean Anderson <sean.anderson@seco.com>
-To: Vinod Koul <vkoul@kernel.org>,
-	Kishon Vijay Abraham I <kishon@kernel.org>,
-	linux-phy@lists.infradead.org
-Subject: [PATCH v14 08/15] phy: lynx10g: Enable by default on Layerscape
-Date: Thu, 13 Apr 2023 12:06:00 -0400
-Message-Id: <20230413160607.4128315-9-sean.anderson@seco.com>
-X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
-In-Reply-To: <20230413160607.4128315-1-sean.anderson@seco.com>
-References: <20230413160607.4128315-1-sean.anderson@seco.com>
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BL1P221CA0007.NAMP221.PROD.OUTLOOK.COM
- (2603:10b6:208:2c5::33) To DB9PR03MB8847.eurprd03.prod.outlook.com
- (2603:10a6:10:3dd::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py5YP5bDSz3c7S
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 03:05:13 +1000 (AEST)
+Received: from lhrpeml500005.china.huawei.com (unknown [172.18.147.207])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4Py5XC1KD8z67Qj6;
+	Fri, 14 Apr 2023 01:04:11 +0800 (CST)
+Received: from localhost (10.202.227.76) by lhrpeml500005.china.huawei.com
+ (7.191.163.240) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.23; Thu, 13 Apr
+ 2023 18:05:09 +0100
+Date: Thu, 13 Apr 2023 18:05:08 +0100
+From: Jonathan Cameron <Jonathan.Cameron@Huawei.com>
+To: Robert Richter <rrichter@amd.com>
+Subject: Re: [PATCH v3 6/6] PCI/AER: Unmask RCEC internal errors to enable
+ RCH downstream port error handling
+Message-ID: <20230413180508.00003f13@Huawei.com>
+In-Reply-To: <ZDgFv6AtCXkVl8IQ@rric.localdomain>
+References: <20230411180302.2678736-7-terry.bowman@amd.com>
+	<20230412212901.GA81099@bhelgaas>
+	<ZDgFv6AtCXkVl8IQ@rric.localdomain>
+Organization: Huawei Technologies Research and Development (UK) Ltd.
+X-Mailer: Claws Mail 4.1.0 (GTK 3.24.33; x86_64-w64-mingw32)
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|AS2PR03MB9369:EE_|AM6EUR05FT062:EE_|AM9PR03MB7899:EE_
-X-MS-Office365-Filtering-Correlation-Id: a283fb46-756d-4d36-5ad3-08db3c39272b
-X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  HHpdhUR1KQeJgOomWGMTQKGwqBtLhDmGVx2cI5+5HqgweXuy6M90/nniSIBQ+rRHx0vb5BBX7zaf4yfnyL83cazgcgT+NBbd6gVtPGUwRy4L7bAaQEGt86S5unJ6aNbHe5wzGlSmK6jniA46BAsF4MuOegnQaSrg63Dd8WwJM7RnN0r2XmCt1w1OY2ROJhkBoF7xpSXiEQI1JQ9xp0jxP/BI2FNxldISWiQFy2Fg5HBV0mw/xQcgG4p3QD/ZBBQIV1cVgvGlKpU8TT9mtlae0Cnf/V43aqQXk+A5bzjvRiGLVjUThvMQyP1gsvef5Iahlgs0LXa2h75I18hXGE+vZaVtJCWCPE3++rcrpHmPNDNkhmF1q0vvMH/gtr3Aqg7k3CjG7hzyDWvxFnu2GYB9B6Ospz45xvELE1HWvrQYb9R41N0OhZM/ArrSpn0IZux7rjzAMw/w6/UmsyWFQJZhhp2b45W+j6sa0YMOs6TVmB4EphR3ryzIib2Nr3k8iK7BfDee5Y1aS0XxeB2wkCDI10PdLAFzt8HAPEXNQCcgfVrW0iofC0pecBFrdbO3K3QR71oJOdUCgESqQJZUl7z3menmazOmtEkEgkYgqcJuy8/5RcN3dlAcqTlnZy5V+HkR
-X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(376002)(366004)(346002)(39850400004)(396003)(136003)(451199021)(478600001)(52116002)(6512007)(36756003)(38350700002)(2616005)(86362001)(38100700002)(4744005)(2906002)(316002)(6506007)(26005)(110136005)(186003)(1076003)(54906003)(5660300002)(44832011)(66946007)(6486002)(66476007)(6666004)(8936002)(41300700001)(66556008)(7416002)(8676002)(4326008);DIR:OUT;SFP:1101;
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AS2PR03MB9369
-X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	e9aa2809-233b-4e40-347c-08db3c39158e
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	Af2JxjVj8eWpCYDTAFm7n3ed/ctRlV/ru+s/Mfq63RwHawLnbS45CZxGQ+E/wyXkJqt/Ufw7ckmyWN+U8y30EGD2jlhCuWDVE01K1BU/eEm2YHfKVaZiCPMLqa21F34kAOCdgDirKpbxR8VW2VQgwkTgt+x+nw2EMEtC7qw/cPFbM5a8vfOXDXBGpyTpzPOgpWGEctPmQEFnAdnhXFZHoyC+YRO1Pvu7JxI3C/ej4NIQ2XwRs8cvIoz+W49CLSnyT+08P9AzHvhGzz+7ntq7Me1JEkqYT0LhNpybs0q9PnLVC02DklTHXxg3GmBshr9k/hf+jxz5rC6y1vbrPGrkxp/fzQwFt3DUzp9kwidFk8IBOoNArbzIrWQRsCu6rCABEX+mQYrl9US9CrLwP6lZ3cR/9wZQoXEa09qunVbwcShNzkN93RP/sIKNNeU3T1aewqaA2W1sGLozV1OXyOPLH6wr1lNGImY3ScvB15drsv9DD+wN7Qd3hvLcglEySmltgXocWZkvHFNUxCzH/EhskEtgeuM7gW492cDEzQ2RXRQjRO0v5qfjyC8zri2kM5AoKORzS2AXf1qkndMSi+wjeDdWvFmaSAZ9VpI727pQOmMZtbOQLTHiZPqnmCLul/f8twN6X8Kfiirx1YwnPfEC5SUWL0tq4OOJSyJpAw98eomcPX2vRgaLc3VNjZYaHk9x6RpzsxF5yJtG6F1RUDNj2Im3KMwbaqiv/f7Cfs59cicQgXSPJp9EpFLO4TpKufXz+qMZXwZki7L8DOvX+hQz8w==
-X-Forefront-Antispam-Report: 	CIP:20.160.56.82;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(376002)(136003)(346002)(39850400004)(396003)(5400799015)(451199021)(40470700004)(46966006)(36840700001)(2616005)(36860700001)(316002)(70586007)(70206006)(4326008)(47076005)(336012)(6486002)(478600001)(34070700002)(54906003)(110136005)(8936002)(8676002)(7636003)(7596003)(41300700001)(356005)(6666004)(7416002)(5660300002)(4744005)(2906002)(44832011)(82740400003)(186003)(6512007)(26005)(6506007)(1076003)(86362001)(36756003)(82310400005)(40460700003)(40480700001)(12100799027);DIR:OUT;SFP:1501;
-X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Apr 2023 16:07:17.0543
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: a283fb46-756d-4d36-5ad3-08db3c39272b
-X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.82];Helo=[inpost-eu.tmcas.trendmicro.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	AM6EUR05FT062.eop-eur05.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM9PR03MB7899
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.202.227.76]
+X-ClientProxiedBy: lhrpeml100004.china.huawei.com (7.191.162.219) To
+ lhrpeml500005.china.huawei.com (7.191.163.240)
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -131,36 +53,209 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>, Madalin Bucur <madalin.bucur@nxp.com>, Sean Anderson <sean.anderson@seco.com>, Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Camelia Alexandra Groza <camelia.groza@nxp.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Ioana Ciornei <ioana.ciornei@nxp.com>, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: alison.schofield@intel.com, dave.jiang@intel.com, Terry Bowman <terry.bowman@amd.com>, vishal.l.verma@intel.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-cxl@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, bhelgaas@google.com, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, bwidawsk@kernel.org, Oliver O'Halloran <oohall@gmail.com>, dan.j.williams@intel.com, ira.weiny@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The next few patches will break ethernet if the serdes is not enabled,
-so enable the serdes driver by default on Layerscape.
+On Thu, 13 Apr 2023 15:38:07 +0200
+Robert Richter <rrichter@amd.com> wrote:
 
-Signed-off-by: Sean Anderson <sean.anderson@seco.com>
----
+> On 12.04.23 16:29:01, Bjorn Helgaas wrote:
+> > On Tue, Apr 11, 2023 at 01:03:02PM -0500, Terry Bowman wrote:  
+> > > From: Robert Richter <rrichter@amd.com>
+> > > 
+> > > RCEC AER corrected and uncorrectable internal errors (CIE/UIE) are
+> > > disabled by default.  
+> > 
+> > "Disabled by default" just means "the power-up state of CIE/UIC is
+> > that they are masked", right?  It doesn't mean that Linux normally
+> > masks them.  
+> 
+> Yes, will change the wording here.
+> 
+> > > [1][2] Enable them to receive CXL downstream port
+> > > errors of a Restricted CXL Host (RCH).
+> > > 
+> > > [1] CXL 3.0 Spec, 12.2.1.1 - RCH Downstream Port Detected Errors
+> > > [2] PCIe Base Spec 6.0, 7.8.4.3 Uncorrectable Error Mask Register,
+> > >     7.8.4.6 Correctable Error Mask Register
+> > > 
+> > > Co-developed-by: Terry Bowman <terry.bowman@amd.com>
+> > > Signed-off-by: Robert Richter <rrichter@amd.com>
+> > > Signed-off-by: Terry Bowman <terry.bowman@amd.com>
+> > > Cc: "Oliver O'Halloran" <oohall@gmail.com>
+> > > Cc: Bjorn Helgaas <bhelgaas@google.com>
+> > > Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Cc: linux-pci@vger.kernel.org
+> > > ---
+> > >  drivers/pci/pcie/aer.c | 73 ++++++++++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 73 insertions(+)
+> > > 
+> > > diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> > > index 171a08fd8ebd..3973c731e11d 100644
+> > > --- a/drivers/pci/pcie/aer.c
+> > > +++ b/drivers/pci/pcie/aer.c
+> > > @@ -1000,7 +1000,79 @@ static void cxl_handle_error(struct pci_dev *dev, struct aer_err_info *info)
+> > >  		pcie_walk_rcec(dev, cxl_handle_error_iter, info);
+> > >  }
+> > >  
+> > > +static bool cxl_error_is_native(struct pci_dev *dev)
+> > > +{
+> > > +	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
+> > > +
+> > > +	if (pcie_ports_native)
+> > > +		return true;
+> > > +
+> > > +	return host->native_aer && host->native_cxl_error;
+> > > +}
+> > > +
+> > > +static int handles_cxl_error_iter(struct pci_dev *dev, void *data)
+> > > +{
+> > > +	int *handles_cxl = data;
+> > > +
+> > > +	*handles_cxl = is_cxl_mem_dev(dev) && cxl_error_is_native(dev);
+> > > +
+> > > +	return *handles_cxl;
+> > > +}
+> > > +
+> > > +static bool handles_cxl_errors(struct pci_dev *rcec)
+> > > +{
+> > > +	int handles_cxl = 0;
+> > > +
+> > > +	if (!rcec->aer_cap)
+> > > +		return false;
+> > > +
+> > > +	if (pci_pcie_type(rcec) == PCI_EXP_TYPE_RC_EC)
+> > > +		pcie_walk_rcec(rcec, handles_cxl_error_iter, &handles_cxl);
+> > > +
+> > > +	return !!handles_cxl;
+> > > +}
+> > > +
+> > > +static int __cxl_unmask_internal_errors(struct pci_dev *rcec)
+> > > +{
+> > > +	int aer, rc;
+> > > +	u32 mask;
+> > > +
+> > > +	/*
+> > > +	 * Internal errors are masked by default, unmask RCEC's here
+> > > +	 * PCI6.0 7.8.4.3 Uncorrectable Error Mask Register (Offset 08h)
+> > > +	 * PCI6.0 7.8.4.6 Correctable Error Mask Register (Offset 14h)
+> > > +	 */  
+> > 
+> > Unmasking internal errors doesn't have anything specific to do with
+> > CXL, so I don't think it should have "cxl" in the function name.
+> > Maybe something like "pci_aer_unmask_internal_errors()".  
+> 
+> Since it is static I renamed it to aer_unmask_internal_errors() and
+> also moved it to the beginning of the #ifdef block for easier later
+> reuse.
+> 
+> > 
+> > This also has nothing special to do with RCECs, so I think we should
+> > refer to the device as "dev" as is typical in this file.  
+> 
+> Changed.
+> 
+> > 
+> > I think this needs to check pcie_aer_is_native() as is done by
+> > pci_aer_clear_nonfatal_status() and other functions that write the AER
+> > Capability.  
+> 
+> Also added the check to aer_unmask_internal_errors(). There was a
+> check for native_* in handles_cxl_errors() already, but only for the
+> pci devs of the RCEC. I added a check of the RCEC there too.
+> 
+> > 
+> > With the exception of this function, this patch looks like all CXL
+> > code that maybe could be with other CXL code.  Would require making
+> > pcie_walk_rcec() available outside drivers/pci, I guess.  
+> 
+> Even this is CXL code, it implements AER support and fits better here
+> around AER code. Export of pcie_walk_rcec() (and others?) is not the
+> main issue here. CXL drivers can come as modules and would need to
+> register a hook at the aer handler.  This would add even more
+> complexity here. In contrast, current solution just adds two functions
+> for enablement and handling which are empty stubs if code is disabled.
+> 
+> I could move that code to aer_cxl.c similar to aer_inject.c. Since the
+> CXL part is small compared to the remaining aer code I left it in
+> aer.c. Also, it is guarded by #ifdef which additionally encapsulates
+> it.
+> 
 
-(no changes since v10)
+To throw another option in there (what Bjorn suggested IIRC for the more
+general case..) 
 
-Changes in v10:
-- New
+Just enable internal errors always.  No need to know if they are CXL
+or something else.
 
- drivers/phy/freescale/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+There will/might be fallout and it will be fun.
 
-diff --git a/drivers/phy/freescale/Kconfig b/drivers/phy/freescale/Kconfig
-index 6bebe00f5889..b396162dc859 100644
---- a/drivers/phy/freescale/Kconfig
-+++ b/drivers/phy/freescale/Kconfig
-@@ -54,6 +54,7 @@ config PHY_FSL_LYNX_10G
- 	depends on ARCH_LAYERSCAPE || PPC || COMPILE_TEST
- 	select GENERIC_PHY
- 	select REGMAP_MMIO
-+	default y if ARCH_LAYERSCAPE
- 	help
- 	  This adds support for the Lynx "SerDes" devices found on various QorIQ
- 	  SoCs. There may be up to four SerDes devices on each SoC, and each
--- 
-2.35.1.1320.gc452695387.dirty
+Jonathan
+
+> >   
+> > > +	aer = rcec->aer_cap;
+> > > +	rc = pci_read_config_dword(rcec, aer + PCI_ERR_UNCOR_MASK, &mask);
+> > > +	if (rc)
+> > > +		return rc;
+> > > +	mask &= ~PCI_ERR_UNC_INTN;
+> > > +	rc = pci_write_config_dword(rcec, aer + PCI_ERR_UNCOR_MASK, mask);
+> > > +	if (rc)
+> > > +		return rc;
+> > > +
+> > > +	rc = pci_read_config_dword(rcec, aer + PCI_ERR_COR_MASK, &mask);
+> > > +	if (rc)
+> > > +		return rc;
+> > > +	mask &= ~PCI_ERR_COR_INTERNAL;
+> > > +	rc = pci_write_config_dword(rcec, aer + PCI_ERR_COR_MASK, mask);
+> > > +
+> > > +	return rc;
+> > > +}
+> > > +
+> > > +static void cxl_unmask_internal_errors(struct pci_dev *rcec)  
+> 
+> Also renaming this to cxl_enable_rcec() to more generalize the
+> function.
+> 
+> > > +{
+> > > +	if (!handles_cxl_errors(rcec))
+> > > +		return;
+> > > +
+> > > +	if (__cxl_unmask_internal_errors(rcec))
+> > > +		dev_err(&rcec->dev, "cxl: Failed to unmask internal errors");
+> > > +	else
+> > > +		dev_dbg(&rcec->dev, "cxl: Internal errors unmasked");  
+> 
+> I am going to change this to a pci_info() for alignment with other
+> messages around:
+> 
+> [   14.200265] pcieport 0000:40:00.3: PME: Signaling with IRQ 44
+> [   14.213925] pcieport 0000:40:00.3: AER: cxl: Internal errors unmasked
+> [   14.228413] pcieport 0000:40:00.3: AER: enabled with IRQ 44
+> 
+> Plus, using pci_err() instead of dev_err().
+> 
+> > > +}
+> > > +
+> > >  #else
+> > > +static inline void cxl_unmask_internal_errors(struct pci_dev *dev) { }
+> > >  static inline void cxl_handle_error(struct pci_dev *dev,
+> > >  				    struct aer_err_info *info) { }
+> > >  #endif
+> > > @@ -1397,6 +1469,7 @@ static int aer_probe(struct pcie_device *dev)
+> > >  		return status;
+> > >  	}
+> > >  
+> > > +	cxl_unmask_internal_errors(port);
+> > >  	aer_enable_rootport(rpc);
+> > >  	pci_info(port, "enabled with IRQ %d\n", dev->irq);
+> > >  	return 0;
+> > > -- 
+> > > 2.34.1
+> > >   
+> 
+> Thanks for review,
+> 
+> -Robert
 
