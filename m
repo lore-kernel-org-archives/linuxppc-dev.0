@@ -4,87 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FA02C77B6E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 16:14:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4B72C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 16:15:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Py4QX6WqXz3fW8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 02:14:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Py4RV49LMz3fp0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 02:15:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=W+RYWp2+;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=W+RYWp2+;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nSz8JD2o;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nSz8JD2o;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:7eaf::308; helo=eur03-am7-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe0e::31a; helo=eur04-vi1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=W+RYWp2+;
-	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=W+RYWp2+;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nSz8JD2o;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=nSz8JD2o;
 	dkim-atps=neutral
-Received: from EUR03-AM7-obe.outbound.protection.outlook.com (mail-am7eur03hn20308.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eaf::308])
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com (mail-vi1eur04hn031a.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe0e::31a])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py4Gc0BmCz3fRr
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py4Gc6Fw5z3fRV
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 02:07:20 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Msa/ApeasZWDyIVGMQqmliC9DhgV10v70JxGPKM6HnM=;
- b=W+RYWp2+5UIZxObPPKeNxrxaDiLd+L2uIlwVIJFgntkaZUkJzZVFR/q5vji1+TNXpgqGhUB6oc7zu+7glm+XQEtRTUioWAwQdj0YqQcWQc2MYrvizXTwDsziE8m9Pmmif3t8tpORCCuViINr3PGhBUPCHg5dySOXMii7zEPfVMYD0xlhzPNNhUFITltnh/1K9Zk95X72x1iiEWrODyWS2hrPZjD9GYkFMRaRdjriPfwV8Lgd9rJDPzecKk8VarJZ9nuGeNthoE8Q0Gh+tM7JtpkVu99wd/ISRkuMTF9uTBAylOgHrvK2lU/v5B4XP0wpuuAyg5CZKsVzbCMHrIN/Cw==
-Received: from DU2PR04CA0054.eurprd04.prod.outlook.com (2603:10a6:10:234::29)
- by DB4PR03MB9506.eurprd03.prod.outlook.com (2603:10a6:10:3f6::5) with
+ bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
+ b=nSz8JD2oB9EW7YPFfb0rohANkA7PZl852TCy2tfOmNg6PUliC3xYoRAqBW1fG6hFkyUuEPCJlt+vqWfKKPRhw4CTfX1uMivp0dpRuQ6zem7cHvThNDOFU+tSqUWtn+gfZWVmrNb5tkT6iv34+6aWlTs+V8e9dmMtut7Nt5bpELWD5IiH1ZLEYWUKHtMzc7cw1dBYZgWTMDHTMp9D4QkrQfliZqwMbi6RW/MevU2igYhJiOF5gqHfMh3tgxyESkucHeYosn5mYKKC1RTT0Zkupe0HL/s4PcQXApACuf3s+LIgzQCzue8UDJ95Rhk1/FWHcN8zwDexuP0FZRDvxyzhGQ==
+Received: from AS9PR06CA0322.eurprd06.prod.outlook.com (2603:10a6:20b:45b::6)
+ by PA4PR03MB7024.eurprd03.prod.outlook.com (2603:10a6:102:e4::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.30; Thu, 13 Apr
- 2023 16:07:01 +0000
-Received: from DB8EUR05FT022.eop-eur05.prod.protection.outlook.com
- (2603:10a6:10:234:cafe::8c) by DU2PR04CA0054.outlook.office365.com
- (2603:10a6:10:234::29) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.30 via Frontend
- Transport; Thu, 13 Apr 2023 16:07:01 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.81)
+ 2023 16:07:02 +0000
+Received: from AM6EUR05FT048.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:20b:45b:cafe::dc) by AS9PR06CA0322.outlook.office365.com
+ (2603:10a6:20b:45b::6) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.32 via Frontend
+ Transport; Thu, 13 Apr 2023 16:07:02 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.84)
  smtp.mailfrom=seco.com; dkim=pass (signature was verified)
  header.d=seco.com;dmarc=pass action=none header.from=seco.com;
 Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
- 20.160.56.81 as permitted sender) receiver=protection.outlook.com;
- client-ip=20.160.56.81; helo=inpost-eu.tmcas.trendmicro.com; pr=C
-Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.81) by
- DB8EUR05FT022.mail.protection.outlook.com (10.233.238.212) with Microsoft
+ 20.160.56.84 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.160.56.84; helo=inpost-eu.tmcas.trendmicro.com; pr=C
+Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.84) by
+ AM6EUR05FT048.mail.protection.outlook.com (10.233.241.223) with Microsoft
  SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.6298.30 via Frontend Transport; Thu, 13 Apr 2023 16:07:00 +0000
-Received: from outmta (unknown [192.168.82.132])
-	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id B7BEB2008026E;
-	Thu, 13 Apr 2023 16:07:00 +0000 (UTC)
-Received: from EUR03-DBA-obe.outbound.protection.outlook.com (unknown [104.47.51.177])
-	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id 112F520080073;
-	Thu, 13 Apr 2023 16:08:14 +0000 (UTC)
+ 15.20.6298.32 via Frontend Transport; Thu, 13 Apr 2023 16:07:02 +0000
+Received: from outmta (unknown [192.168.82.133])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id EAC512008088C;
+	Thu, 13 Apr 2023 16:07:01 +0000 (UTC)
+Received: from EUR03-DBA-obe.outbound.protection.outlook.com (unknown [104.47.51.171])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id D30462008006F;
+	Thu, 13 Apr 2023 16:08:03 +0000 (UTC)
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Pe9gzG7f6IYN7fGQbTO2BGc1TauvbNShFOjHd0RTg6XiGuX/hNm5uuHi5Hnbl2lbVwY9ZoWrBZnvK1POU9LdEkKJ6sbNRgNRpfoMmN6gbE/ToGbGnunhWWkW0URsyo2C17U6zbgqd5bhcjBGyhtg1kZ5R8XazTRuPCkuJm3gqAKl1sm5SaCzKqfJ8OO4udgswfTdI8ybLMKCOpi01LtlklIAaqr2pYBOpIZGrt+ykd/CpBpDLWEluvSAjcwOl+t8PXNsnuIAgzAbpH4l4xDhi2YhIXmDT284pl/sjEPyeBCJ2k6Md/PoYtZAuzIhALAKIvaOEQdIPfJR47HGkFpDNA==
+ b=A44j8PjwpNj2qcQUOmNXr3x6aNy8aEcvqHjK6QOA+CV2rSqO6KJSnpXVrzOWZRKqAZcFpS7l8X4X/O5vJ8C/s+PA6L7L1Vx5UjLDtCghReLReV2YgQHZkHiDw8yUPToKQTZlutwv4dst54ml/tM64WDtZCRExVqV156pvLr+MSRP/fn7Y7c04bjeV5eraxBuB3Kgl/gRVtYaYUibZ3QqbFi6G9l0YOvX8Z8KDnuhgxjX4420DnbmYneBKBFgMd1lxVo8AnunmzXfYZG2Ig9v7YSwTQse6QcnvJaKdRD70HVxsLOzRUTdvF+O6++DnbuWl2gedv167OLhY2DJh1UTgA==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Msa/ApeasZWDyIVGMQqmliC9DhgV10v70JxGPKM6HnM=;
- b=aQRlbD4w82lNhLfnwN6UEoRlBOfybiLxjy3lDUSeSgk9FbYqv6Fn6UAIrpuPPxb0vwtxEaz1FeKXXlDQYKmx/xpPgJRoxI7c6dGhTZfQ/5DqH8kbgkBfD6XfQwL6nbtUMOtIoqPiOPksxj/vu5m4U/JOAedQUEMbdXyxm6XGlyJVVAjk4I/X2+7KcVv5oZW0YtySmNlaYaxWWtkpDKKYxZGD8CqwCcsC7SJEfuHUB9NbnsFYQ5ZSfcyd1xyNaZlrkPi2xzYl4DwGPUZlZQ2Qqev5Nu9iu54fH4Nd6Zck6fqoiR56A06IvGgl5tZ2J8UMUxygdGQFxPyQ2H4xux1p7w==
+ bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
+ b=aObiZOO4BHfstwqolwg4DIGi5eqtH24hCRJx/LQNZaFd6KRz7wK7ceomhTS2/SGaAEYGJn7g81066F+N5A1vjEQozqgCXY/zroZRs2h+/P6u4U0AbiIZgh9BQ3VvM62Eoqak6fDTRDOG5Cn0/Ck9s2TJWbW6zwQ8LvN+5Ur0T+aOXZn//3OhDzR5Gwox7G1AM13WCmVqp3jow/F2H8HMTXImr0KTCk7H/XPsgOID0PTMOMA3e0a3QodyWvGUOR9ve4FCh7JS6ApzLK330QJ4/cI0lpGqzG1tML8M1dNaVLKgVnpnI9v29BoBkwT8zN63iSyR3/VfVrq0nyJAQWG4KQ==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
  dkim=pass header.d=seco.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Msa/ApeasZWDyIVGMQqmliC9DhgV10v70JxGPKM6HnM=;
- b=W+RYWp2+5UIZxObPPKeNxrxaDiLd+L2uIlwVIJFgntkaZUkJzZVFR/q5vji1+TNXpgqGhUB6oc7zu+7glm+XQEtRTUioWAwQdj0YqQcWQc2MYrvizXTwDsziE8m9Pmmif3t8tpORCCuViINr3PGhBUPCHg5dySOXMii7zEPfVMYD0xlhzPNNhUFITltnh/1K9Zk95X72x1iiEWrODyWS2hrPZjD9GYkFMRaRdjriPfwV8Lgd9rJDPzecKk8VarJZ9nuGeNthoE8Q0Gh+tM7JtpkVu99wd/ISRkuMTF9uTBAylOgHrvK2lU/v5B4XP0wpuuAyg5CZKsVzbCMHrIN/Cw==
+ bh=vpZmh4r7VLUlTccmB8UP7KLEKxBYPMGpEwwLMpgpm6E=;
+ b=nSz8JD2oB9EW7YPFfb0rohANkA7PZl852TCy2tfOmNg6PUliC3xYoRAqBW1fG6hFkyUuEPCJlt+vqWfKKPRhw4CTfX1uMivp0dpRuQ6zem7cHvThNDOFU+tSqUWtn+gfZWVmrNb5tkT6iv34+6aWlTs+V8e9dmMtut7Nt5bpELWD5IiH1ZLEYWUKHtMzc7cw1dBYZgWTMDHTMp9D4QkrQfliZqwMbi6RW/MevU2igYhJiOF5gqHfMh3tgxyESkucHeYosn5mYKKC1RTT0Zkupe0HL/s4PcQXApACuf3s+LIgzQCzue8UDJ95Rhk1/FWHcN8zwDexuP0FZRDvxyzhGQ==
 Authentication-Results-Original: dkim=none (message not signed)
  header.d=none;dmarc=none action=none header.from=seco.com;
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
  by DB9PR03MB8325.eurprd03.prod.outlook.com (2603:10a6:10:37d::15) with
  Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.30; Thu, 13 Apr
- 2023 16:06:51 +0000
+ 2023 16:06:54 +0000
 Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::2226:eb03:a8c:a7e5]) by DB9PR03MB8847.eurprd03.prod.outlook.com
  ([fe80::2226:eb03:a8c:a7e5%2]) with mapi id 15.20.6298.030; Thu, 13 Apr 2023
- 16:06:51 +0000
+ 16:06:54 +0000
 From: Sean Anderson <sean.anderson@seco.com>
 To: Vinod Koul <vkoul@kernel.org>,
 	Kishon Vijay Abraham I <kishon@kernel.org>,
 	linux-phy@lists.infradead.org
-Subject: [PATCH v14 10/15] arm64: dts: ls1046ardb: Add serdes descriptions
-Date: Thu, 13 Apr 2023 12:06:02 -0400
-Message-Id: <20230413160607.4128315-11-sean.anderson@seco.com>
+Subject: [PATCH v14 12/15] arm64: dts: ls1088a: Prevent PCSs from probing as phys
+Date: Thu, 13 Apr 2023 12:06:04 -0400
+Message-Id: <20230413160607.4128315-13-sean.anderson@seco.com>
 X-Mailer: git-send-email 2.35.1.1320.gc452695387.dirty
 In-Reply-To: <20230413160607.4128315-1-sean.anderson@seco.com>
 References: <20230413160607.4128315-1-sean.anderson@seco.com>
@@ -94,32 +94,32 @@ X-ClientProxiedBy: BL1P221CA0007.NAMP221.PROD.OUTLOOK.COM
  (2603:10b6:208:2c5::33) To DB9PR03MB8847.eurprd03.prod.outlook.com
  (2603:10a6:10:3dd::13)
 MIME-Version: 1.0
-X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|DB9PR03MB8325:EE_|DB8EUR05FT022:EE_|DB4PR03MB9506:EE_
-X-MS-Office365-Filtering-Correlation-Id: 5d283758-1662-417a-22a3-08db3c391d98
+X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|DB9PR03MB8325:EE_|AM6EUR05FT048:EE_|PA4PR03MB7024:EE_
+X-MS-Office365-Filtering-Correlation-Id: 55e73caf-db75-4b20-006a-08db3c391e3e
 X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam-Untrusted: BCL:0;
-X-Microsoft-Antispam-Message-Info-Original:  bIVad8sahONUq2Wd5ii3NGRsZKBWV4Tw26o6Atp+HyFkAYKRBloHSx9F3Ex0jI9nL8sY7g6saWbqlNl/c9wIIBvMExZUVMi1m6c3KjgrIMiFfIaqNSJ/5gVpM6iG076v5ONtofutEWwp5/CA6TMMQQREGBA0tUrGca9c0XjzPNdu1pbjAYRlX+U198PcK1CfZ2E/kcTGc+6rwLPtNGVZ21dEQ/up6E0Qke3zqAN+OHfiIfMRmAOQaNMppNNNL20js8IrEgXsuEAzQ3I1S8zTuMTRtlZwjkCU64hUtYkArMVot4LZv9wYlvHglygrjahwpWPvCf4csSa1rcIR0SKQj0KRHdGH0D7F7827/4fCjL++JVhd+V9N4q8kJt6+csLSHKD8zg2U08G1BXLxXLiVQSQI+39A3rJO5yt2cbOAWZTm2mB69fZGVK8PO25bwfSQSZQTGAtBNmHY9bJCj7tAn5yL0y24qmYfoouPQb0ggtz1cfSmYQ8H8G3Cv8iT1SKL7EdsLyf78zGGVZUGWD4eqjGzJhJSif/WR7vvbSsqy0O70XlucmOY9z9Ny/p2eMKTTScVSY5iJGpK1VqekuPADqHdeujvjrITPAn/+uqzjVESLV6dpFjqNnQqfskCpVGw
+X-Microsoft-Antispam-Message-Info-Original:  tyUwaGmeEC7mWJkbSFzmP/1MZjhW40+CWn5b+ypngmXQKGfCZqCLf0WFDquWe2WNZsv6JvAL5LMdcdq4r75GWeusKoMCP60akJtUK2VJ2E+L5yE0Cx2xgJCYIMZb/W+cgtCXOOK7rgzQbPzFWtcKXXphKmlfSzq+cPAM1qWcR06TS0F+sEjHLzqfsZteRPj6NuSO/hITTSCAh/d4ydDr74ljqQxcIYcxUNN0idS/XhUV1G6NeIQpAfxtPzKgI+f5QLdoUaithru+W48UobZ9nWsPtpp+hEBoOhWU9BkkUoxT/FHcwAc05hZzlCYmqt7baQbI9/Bo6nRT5P6K+gyC2Ox8XWTzrXaVgY1r7jxLBeDqBvNoIAKQicSQWqlolAgT2AtbEImdTgIDeW30D+KLuBuQkQuzKgGqCuzWeVafkUwMlLs17Mu46mqNimYhRjAmRObQ3ifvHnf1ecTIf5+jkE5HhWYI7WxdA6IjN7QFl0YEFaJA67633eYsRsgACoEOocDOH1t3LwMLG3lmKF3hfAJQJIr4IHUTroiunTB3QeoMpz+MEJt+Ig4vJ0Gv1LLHc5MDk6dTOlWTng6OKe0rXLnQycecpgS2SHvgYrIGKF5ChC95D/BZTsMZ1decX7rq
 X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(136003)(396003)(346002)(376002)(39850400004)(366004)(451199021)(6666004)(52116002)(6486002)(66476007)(66556008)(66946007)(4326008)(36756003)(110136005)(2906002)(7416002)(44832011)(86362001)(41300700001)(5660300002)(8676002)(8936002)(316002)(38100700002)(38350700002)(478600001)(54906003)(6512007)(6506007)(1076003)(26005)(2616005)(186003)(83380400001);DIR:OUT;SFP:1101;
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB9PR03MB8325
 X-EOPAttributedMessage: 0
-X-MS-Exchange-Transport-CrossTenantHeadersStripped:  DB8EUR05FT022.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM6EUR05FT048.eop-eur05.prod.protection.outlook.com
 X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id-Prvs: 	f1bf2396-d911-48b7-0b10-08db3c39179b
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	2b03afed-a127-4ff4-f6bc-08db3c3919a9
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	8SIWQ7RJX4YQ4GBeWdNzDYuX2TTbkS0w63w7wnL2WIzrqGz+vu/vxwy3QtNP1LHXqRCuuD4rSq2XHb0TKIsvHhpHCY3cJB7sjcMRfZro9QShmJCDuj/4Ed8yd7HKvke4SF7aGLRXG3CNgjaRUDqLGB4mg+mhnHvHLVzTVjhW5TJ1iM4GnzzUpRHitf6tvzCNaJxnIM4N0LOZcReqJOyQ2rBeQoumZIxPwyD8zjSEI8PcCICuLDY+6P5i5nHFFnkDSicCjmMBe7vYx5iaAtQo/gUDqomdBW/CHmMR9swYeKm0iPnSvyPcZvW4WKQOYIiOB+9cjunwzYgObzdpx5PbUU2mwcKipXfwUJHJooD0YwpxYaJP5J0vY8+0YRplNHZ4uRi+YmOxif0vgnzq9Owk/NzP334a90qSV69P89l1R7FmQFjED5yu//QVw5jwxKz+06kajsimXSzZYF5rGAW9pnOJAPHgHHsDYNSB9EyumulPHVwYDYfCMcGi14UFCG54dDFZik2SjsoHl/gmTozNe5QLTE8SScyihJpeYscQpGhv83xIl6rII3sSgm8e9P2Dct4g3aQdxQBQQSorg4bXfjcmgfmhLDfGQTq8hGO+Yiuou2JEE91xJvT2/D3ZAAVm//cMrxfWtL3uJ8WYKKpw3NxctGg6m6uDlRz2VMwOFFugOHj55berW+Cm9jUEGwTB7iElsX5QkyjK1l/NqmMqjYhnRpimuMg1u+1g/Kf2ajw=
-X-Forefront-Antispam-Report: 	CIP:20.160.56.81;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(136003)(396003)(39850400004)(376002)(346002)(451199021)(5400799015)(36840700001)(46966006)(316002)(4326008)(82740400003)(70206006)(70586007)(2616005)(47076005)(336012)(5660300002)(41300700001)(34070700002)(44832011)(82310400005)(6666004)(36756003)(86362001)(6486002)(54906003)(40480700001)(6512007)(6506007)(26005)(186003)(1076003)(2906002)(83380400001)(7416002)(8676002)(8936002)(36860700001)(478600001)(356005)(7596003)(7636003)(110136005)(12100799027);DIR:OUT;SFP:1501;
+X-Microsoft-Antispam-Message-Info: 	2Yc4st1Rr8zCXg++UztLUnZFZ8p74UxQspcjt6YxTwrMqozpygyp3qL5VqqobBUT0eNMKjjjKoXn8rvzZcTczdtGBVKTJ+KKGMw7WsK3U7qciUiHLNPCx3xix13W9HKYv60mVG34Xb0kHaCF2ysNjbaNc1KURgbqGvlZFQFjNzlRoeABbxYDtZpdlxO4EsGdqfpG9xcc8Zmg4PY0+rY5vzfzaU7h0ddTN2V3OM5KdN58A19Y+5LdAyVDkJviAMa9hxM77jnXaUUsQTQB9Bc1QMIuQvpTX/9DBPxLIXJvFeoVuOEK30lCY6Pl639a4cinf7NyUb4Z0eQk+mnPTiUjzDvVgIsNoxx4NRutFAQrtdqlqvMa9RFUNo/YAam7DiDhIvO/Wn695A0olb7mufPxrsVFATqRG4feFz4gdsLgtoeOKsQAHgf77GtrwsKqigcGB07ztu43dfkzaxKsB9hRA6ScIUt/HaXNqDaz+F8ejOnUuCwGi+6hgzGJNt+wYm+9kRrcYtlusRzh5BsUl9azk0xEs5y09CegLqOoU3DtsqvjXm47yOed1xeJwXnE66DQnVDQsiaWaLzj5AClXZCD7VsO0wjO7xBCGYDtSgWG4YBa7j5EGpuS9T3UJL3QgrcdAa9rAELozf5HIvYzGk/ey2olKH/bPHWy6Q4OPPNXr3HHKF6+lp/yOXM/LG0Ix8yR2AVoqXCYbbsoJ0TTVzG/zcRZHCFHncBga1q4PHqCf+gMatMit26+HsFKJ8nh5CwGHTJzYwkmid1plPa2HsR9Ig==
+X-Forefront-Antispam-Report: 	CIP:20.160.56.84;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(396003)(376002)(136003)(346002)(39850400004)(5400799015)(451199021)(36840700001)(40470700004)(46966006)(316002)(83380400001)(34070700002)(41300700001)(110136005)(54906003)(82310400005)(86362001)(36860700001)(478600001)(336012)(70206006)(2616005)(8676002)(4326008)(70586007)(36756003)(82740400003)(6486002)(47076005)(356005)(2906002)(7636003)(7596003)(8936002)(186003)(44832011)(40460700003)(6512007)(26005)(1076003)(6506007)(5660300002)(40480700001)(6666004)(7416002)(12100799027);DIR:OUT;SFP:1501;
 X-OriginatorOrg: seco.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Apr 2023 16:07:00.9587
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Apr 2023 16:07:02.0614
  (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5d283758-1662-417a-22a3-08db3c391d98
+X-MS-Exchange-CrossTenant-Network-Message-Id: 55e73caf-db75-4b20-006a-08db3c391e3e
 X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.81];Helo=[inpost-eu.tmcas.trendmicro.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	DB8EUR05FT022.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.84];Helo=[inpost-eu.tmcas.trendmicro.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	AM6EUR05FT048.eop-eur05.prod.protection.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Anonymous
 X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB4PR03MB9506
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PA4PR03MB7024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -135,106 +135,103 @@ Cc: devicetree@vger.kernel.org, Krzysztof Kozlowski <krzysztof.kozlowski+dt@lina
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds appropriate descriptions for the macs which use the SerDes. The
-156.25MHz fixed clock is a crystal. The 100MHz clocks (there are
-actually 3) come from a Renesas 6V49205B at address 69 on i2c0. There is
-no driver for this device (and as far as I know all you can do with the
-100MHz clocks is gate them), so I have chosen to model it as a single
-fixed clock.
-
-Note: the SerDes1 lane numbering for the LS1046A is *reversed*.
-This means that Lane A (what the driver thinks is lane 0) uses pins
-SD1_TX3_P/N.
+The internal PCSs are not always accessible during boot (such as if the
+serdes has deselected the appropriate link mode). Give them appropriate
+compatible strings so they don't automatically (fail to) probe as
+genphys.
 
 Signed-off-by: Sean Anderson <sean.anderson@seco.com>
 
 ---
 
-(no changes since v10)
-
-Changes in v10:
-- Move serdes descriptions to SoC dtsi
-- Don't use /clocks
-- Use "descriptions" instead of "bindings"
-- Split off defconfig change into separate patch
-
-Changes in v9:
-- Fix name of phy mode node
-- phy-type -> fsl,phy
+(no changes since v8)
 
 Changes in v8:
-- Rename serdes phy handles to use _A, _B, etc. instead of _0, _1, etc.
-  This should help remind readers that the numbering corresponds to the
-  physical layout of the registers, and not the lane (pin) number.
+- New
 
-Changes in v6:
-- XGI.9 -> XFI.9
+ .../arm64/boot/dts/freescale/fsl-ls1088a.dtsi | 30 ++++++++++++-------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
 
-Changes in v4:
-- Convert to new bindings
-
- .../boot/dts/freescale/fsl-ls1046a-rdb.dts    | 26 +++++++++++++++++++
- 1 file changed, 26 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1046a-rdb.dts
-index 07f6cc6e354a..0d6dcfd1630a 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1046a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a-rdb.dts
-@@ -26,6 +26,24 @@ aliases {
- 	chosen {
- 		stdout-path = "serial0:115200n8";
- 	};
-+
-+	clk_100mhz: clock-100mhz {
-+		compatible = "fixed-clock";
-+		#clock-cells = <0>;
-+		clock-frequency = <100000000>;
-+	};
-+
-+	clk_156mhz: clock-156mhz {
-+		compatible = "fixed-clock";
-+		#clock-cells = <0>;
-+		clock-frequency = <156250000>;
-+	};
-+};
-+
-+&serdes1 {
-+	clocks = <&clk_100mhz>, <&clk_156mhz>;
-+	clock-names = "ref0", "ref1";
-+	status = "okay";
- };
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+index 59b401daad4d..bbc714f84577 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1088a.dtsi
+@@ -932,7 +932,8 @@ pcs_mdio1: mdio@8c07000 {
+ 			#size-cells = <0>;
+ 			status = "disabled";
  
- &duart0 {
-@@ -140,21 +158,29 @@ ethernet@e6000 {
- 	ethernet@e8000 {
- 		phy-handle = <&sgmii_phy1>;
- 		phy-connection-type = "sgmii";
-+		phys = <&serdes1_B>;
-+		phy-names = "serdes";
- 	};
+-			pcs1: ethernet-phy@0 {
++			pcs1: ethernet-pcs@0 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <0>;
+ 			};
+ 		};
+@@ -945,7 +946,8 @@ pcs_mdio2: mdio@8c0b000 {
+ 			#size-cells = <0>;
+ 			status = "disabled";
  
- 	ethernet@ea000 {
- 		phy-handle = <&sgmii_phy2>;
- 		phy-connection-type = "sgmii";
-+		phys = <&serdes1_A>;
-+		phy-names = "serdes";
- 	};
+-			pcs2: ethernet-phy@0 {
++			pcs2: ethernet-pcs@0 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <0>;
+ 			};
+ 		};
+@@ -958,19 +960,23 @@ pcs_mdio3: mdio@8c0f000 {
+ 			#size-cells = <0>;
+ 			status = "disabled";
  
- 	ethernet@f0000 { /* 10GEC1 */
- 		phy-handle = <&aqr106_phy>;
- 		phy-connection-type = "xgmii";
-+		phys = <&serdes1_D>;
-+		phy-names = "serdes";
- 	};
+-			pcs3_0: ethernet-phy@0 {
++			pcs3_0: ethernet-pcs@0 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <0>;
+ 			};
  
- 	ethernet@f2000 { /* 10GEC2 */
- 		phy-connection-type = "10gbase-r";
- 		managed = "in-band-status";
-+		phys = <&serdes1_C>;
-+		phy-names = "serdes";
- 	};
+-			pcs3_1: ethernet-phy@1 {
++			pcs3_1: ethernet-pcs@1 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <1>;
+ 			};
  
- 	mdio@fc000 {
+-			pcs3_2: ethernet-phy@2 {
++			pcs3_2: ethernet-pcs@2 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <2>;
+ 			};
+ 
+-			pcs3_3: ethernet-phy@3 {
++			pcs3_3: ethernet-pcs@3 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <3>;
+ 			};
+ 		};
+@@ -983,19 +989,23 @@ pcs_mdio7: mdio@8c1f000 {
+ 			#size-cells = <0>;
+ 			status = "disabled";
+ 
+-			pcs7_0: ethernet-phy@0 {
++			pcs7_0: ethernet-pcs@0 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <0>;
+ 			};
+ 
+-			pcs7_1: ethernet-phy@1 {
++			pcs7_1: ethernet-pcs@1 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <1>;
+ 			};
+ 
+-			pcs7_2: ethernet-phy@2 {
++			pcs7_2: ethernet-pcs@2 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <2>;
+ 			};
+ 
+-			pcs7_3: ethernet-phy@3 {
++			pcs7_3: ethernet-pcs@3 {
++				compatible = "fsl,lynx-pcs";
+ 				reg = <3>;
+ 			};
+ 		};
 -- 
 2.35.1.1320.gc452695387.dirty
 
