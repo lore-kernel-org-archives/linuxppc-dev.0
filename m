@@ -4,76 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 112C6C77B61
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 12:10:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 791E0C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 12:53:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pxz1J2p4Zz3fQh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 22:10:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PxzyW5J7jz3fTK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 22:53:07 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20221208.gappssmtp.com header.i=@ozlabs-ru.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=x3vx9Uo1;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ZXclSBnV;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=gqOA+P8s;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ozlabs.ru (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=64.147.123.18; helo=wnew4-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ozlabs-ru.20221208.gappssmtp.com header.i=@ozlabs-ru.20221208.gappssmtp.com header.a=rsa-sha256 header.s=20221208 header.b=x3vx9Uo1;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=ZXclSBnV;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=gqOA+P8s;
 	dkim-atps=neutral
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Received: from wnew4-smtp.messagingengine.com (wnew4-smtp.messagingengine.com [64.147.123.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pxz0J1Z4cz3fBF
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2023 22:09:33 +1000 (AEST)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-246fdb97191so247486a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2023 05:09:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ozlabs-ru.20221208.gappssmtp.com; s=20221208; t=1681387770; x=1683979770;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=fC7swCqsGSVufMz0OK23aCUiXDDf/Z3zzgbfOWg5le8=;
-        b=x3vx9Uo1rrzHddyhS+Ef+EuNqHBsOCAlNvJHJNluECyCUQuB4Vlvar1HUbh7xVFxW+
-         f974NDZu+MrmT0zvzITq1/HTGIr1eXXlVjuI9fifbL0LWfa40Fd7WWd2bJILbG+Oah+n
-         iHcNLw+hb29itvIl2rN/6DLkveIrEZfQ5KhIO0A+Ci7xUuw5UZE9eCpY6pQytFfh3mHY
-         ptDqRa8kSKcUH2M7qxRrNwuZUMo8lljnvjoZA5RKh/yakL2Fx8cxDykXY6RtfLAWZ6gN
-         HavOzWcCryPvT7PtDq2FDHT8qMUnVtm3SrKXPij4bKpeXTO4oEgdUkmd8NHBXIsLl1Nx
-         0Zjw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681387770; x=1683979770;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=fC7swCqsGSVufMz0OK23aCUiXDDf/Z3zzgbfOWg5le8=;
-        b=T1goKM0bIy3ty3HlkIs8ZowQpxFQX2XfY1++tAdGxeKVmRNS+5l/xX+7fWly87eGL7
-         IhBjSXYs6fD9epFA2CKWoz9jTbeki+eLsHyoueB5FYNHMs79BzzVqRMgcPvX7CR+Nyyl
-         CalVk3d898eyfBoJPKpEsA1S/MtTF/N6sBNm46wYnEDhiud6/1+Gc9swN8ot17f2xKJd
-         iBlLAgG5dWiPvf7nu4I8WsKG1XvMmEKbZCmJ+F5zFTCgRx9W+Qy42oofWFNP+p4+M45M
-         ylsgW7PF2ZYJ03umXrI+iEDv10qxd1MyEBz22iESkH9sdIGU+wB9d0aAf3kZ+SaIoOQN
-         wQww==
-X-Gm-Message-State: AAQBX9cCkKGSEqzxhGRZwIv/P3iscA5w8oGi/KqpIwvl1pzcMUGhCeEg
-	dEnB9VXgfTlq0NNVGxrePUUrwA==
-X-Google-Smtp-Source: AKy350ZCF3nJLzyOo/4fodCdTblbeeVhBN/n9MvGBg3lmPySenM5YKV7BN2lNGhcody9LlFr4Vwenw==
-X-Received: by 2002:a05:6a00:1a4d:b0:63b:1bc7:c703 with SMTP id h13-20020a056a001a4d00b0063b1bc7c703mr3290601pfv.10.1681387770184;
-        Thu, 13 Apr 2023 05:09:30 -0700 (PDT)
-Received: from [192.168.10.153] (ppp118-208-169-253.cbr-trn-nor-bras39.tpg.internode.on.net. [118.208.169.253])
-        by smtp.gmail.com with ESMTPSA id t26-20020aa7939a000000b0063b54ccc123sm870148pfe.196.2023.04.13.05.09.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 13 Apr 2023 05:09:29 -0700 (PDT)
-Message-ID: <2a80cb20-0c9f-2d0c-e951-c4f005f3e4b3@ozlabs.ru>
-Date: Thu, 13 Apr 2023 22:09:22 +1000
-MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Gecko/20100101
- Thunderbird/108.0
-Subject: Re: Probing nvme disks fails on Upstream kernels on powerpc Maxconfig
-To: Michael Ellerman <mpe@ellerman.id.au>,
- "Linux regression tracking (Thorsten Leemhuis)" <regressions@leemhuis.info>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <20230323095333.GI1005120@linux.vnet.ibm.com>
- <906d4d0e-b487-00a5-9399-7d1edc5e20a4@leemhuis.info>
- <87bkk2khl0.fsf@mpe.ellerman.id.au>
-Content-Language: en-US
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-In-Reply-To: <87bkk2khl0.fsf@mpe.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4PxzxR401Lz3bhx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2023 22:52:09 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailnew.west.internal (Postfix) with ESMTP id 5A7EC2B066F8;
+	Thu, 13 Apr 2023 08:52:03 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Thu, 13 Apr 2023 08:52:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm2; t=1681390322; x=1681397522; bh=NR
+	7qDHxvmrn4O6C7ghCGmkwcCMB9CqvbPSwmBqWhNIE=; b=ZXclSBnVVRa8vpoYG+
+	Nh7NGI1Sfo/+IhOueSX6qtWqFgLpX1O7kGpe874+9lPVAkHB/MzUC6Ip3Qt5J4S1
+	bo+Igz4vPJgrOb5hGwvGzYSyD9RAM686r7y8aQw66DlT4Mt340zXnCYSOX2rluiN
+	l6kWpyNhBIXZQ/WjHlR82CZljPrL2zeVzs/VKz/0NnIUPr0YWmnDYjaoDj48NIs+
+	UFfZMJaZFIZIs03gVqCq4iH3pg/lZtVMlR8XIkQ70K5m2tAxwHrPsotuz4IugI93
+	6XX70k3nZhX+AhqXZznQyr38x7nSAEkpDTOnIVRV2ikChkz1k3AGDfv3Jf0wEK6q
+	B4Qw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm3; t=1681390322; x=1681397522; bh=NR7qDHxvmrn4O
+	6C7ghCGmkwcCMB9CqvbPSwmBqWhNIE=; b=gqOA+P8sXOuT1JOfKkqGPELz//AFF
+	f2eiDN24y3pX47Aau9zsWL6E8P7Knx1xYRVsUHNfPuY3xLBDKbzMqkoi7VrJfZ+o
+	W2mfsUlFecf2kgDULdtR2hU7Te44ccwG0sZJJ62Vj9KlDW/g2YbNj73dSar7sZor
+	Lalym6dR+k04Z8y/YiYW1TKtaKYCSHw8QkHRYjo8Tdd4ZZV+YIE/S2VHOdNo6IMp
+	Z1kBRS94su8sb72OzoxxZQuCPo8irGFKsthakuC3qSU4fnAaIq/6lBOlIe4lj5le
+	uqmU2YzZXlg34GD8AxHkIBUzub0qWgTia98RBKzwE2Iz+p4RVnYEoo8Ig==
+X-ME-Sender: <xms:8fo3ZIGGcweoBIf29WNloFKKsICMp7uD7W3WGDtwvAzEbureoRK3kQ>
+    <xme:8fo3ZBVH6htlD2rv7m0KIlRDqt5H_xpJqhWk8H5XXhJ6hTi8Y46KqzYekT6ZEcvP-
+    iySV_XAsUXsef2fpLI>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrvdekkedgheekucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepffehueegteeihfegtefhjefgtdeugfegjeelheejueethfefgeeghfektdek
+    teffnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hrnhgusegrrhhnuggsrdguvg
+X-ME-Proxy: <xmx:8fo3ZCJ6WRNY0qBjN-s19TED1hDYTi9JrZ1EWdX72x5Uz5tiomDupw>
+    <xmx:8fo3ZKH4DvlQ_zzGPiQu2mlSLPVJsJocFs7o5u97ykj5S3RFQKqVIQ>
+    <xmx:8fo3ZOVGcI2r7KyDnkTbNlptbOhRxQn3piCwIrpYa2EmmVt1L7apJg>
+    <xmx:8vo3ZLLx-tSRguyqR96OdIBkL35NPK3OPhvrjBvWAq6rBkTuILKinq3Ygk0>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 3A89EB60086; Thu, 13 Apr 2023 08:52:01 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-334-g8c072af647-fm-20230330.001-g8c072af6
+Mime-Version: 1.0
+Message-Id: <66899d69-1339-4a61-8612-6f8e452b0b26@app.fastmail.com>
+In-Reply-To:  <OS0PR01MB5922EDAFCD6DA0313DB99C5E86989@OS0PR01MB5922.jpnprd01.prod.outlook.com>
+References: <20230327121317.4081816-1-arnd@kernel.org>
+ <20230327121317.4081816-22-arnd@kernel.org>
+ <OS0PR01MB5922EDAFCD6DA0313DB99C5E86989@OS0PR01MB5922.jpnprd01.prod.outlook.com>
+Date: Thu, 13 Apr 2023 14:51:40 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Biju Das" <biju.das.jz@bp.renesas.com>,
+ "Arnd Bergmann" <arnd@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 21/21] dma-mapping: replace custom code with generic implementation
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,75 +96,21 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: sachinp@linux.vnet.ibm.com, Linux kernel regressions list <regressions@lists.linux.dev>, linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Linus Walleij <linus.walleij@linaro.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Max Filippov <jcmvbkbc@gmail.com>, "Conor.Dooley" <conor.dooley@microchip.com>, guoren <guoren@kernel.org>, "linux-csky@vger.kernel.org" <linux-csky@vger.kernel.org>, "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>, "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, Will Deacon <will@kernel.org>, Christoph Hellwig <hch@lst.de>, Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>, Geert Uytterhoeven <geert@linux-m68k.org>, Vineet Gupta <vgupta@kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>, Brian Cain <bcain@quicinc.com>, "Lad,
+ Prabhakar" <prabhakar.mahadev-lad.rj@bp.renesas.com>, "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>, Paul Walmsley <paul.walmsley@sifive.com>, Stafford Horne <shorne@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Neil Armstrong <neil.armstrong@linaro.org>, Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>, "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>, "linux-oxnas@groups.io" <linux-oxnas@groups.io>, Robin Murphy <robin.murphy@arm.com>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Apr 13, 2023, at 14:13, Biju Das wrote:
+> Hi all,
+>
+> FYI, this patch breaks on RZ/G2L SMARC EVK board and Arnd will send V2 
+> for fixing this issue.
+>
+> [10:53] <biju> [    3.384408] Unable to handle kernel paging request at 
+> virtual address 000000004afb0080
 
+Right, sorry about this, I accidentally removed the 'phys_to_virt()'
+conversion on arm64.
 
-On 05/04/2023 15:45, Michael Ellerman wrote:
-> "Linux regression tracking (Thorsten Leemhuis)" <regressions@leemhuis.info> writes:
->> [CCing the regression list, as it should be in the loop for regressions:
->> https://docs.kernel.org/admin-guide/reporting-regressions.html]
->>
->> On 23.03.23 10:53, Srikar Dronamraju wrote:
->>>
->>> I am unable to boot upstream kernels from v5.16 to the latest upstream
->>> kernel on a maxconfig system. (Machine config details given below)
->>>
->>> At boot, we see a series of messages like the below.
->>>
->>> dracut-initqueue[13917]: Warning: dracut-initqueue: timeout, still waiting for following initqueue hooks:
->>> dracut-initqueue[13917]: Warning: /lib/dracut/hooks/initqueue/finished/devexists-\x2fdev\x2fdisk\x2fby-uuid\x2f93dc0767-18aa-467f-afa7-5b4e9c13108a.sh: "if ! grep -q After=remote-fs-pre.target /run/systemd/generator/systemd-cryptsetup@*.service 2>/dev/null; then
->>> dracut-initqueue[13917]:     [ -e "/dev/disk/by-uuid/93dc0767-18aa-467f-afa7-5b4e9c13108a" ]
->>> dracut-initqueue[13917]: fi"
->>
->> Alexey, did you look into this? This is apparently caused by a commit of
->> yours (see quoted part below) that Michael applied. Looks like it fell
->> through the cracks from here, but maybe I'm missing something.
-> 
-> Unfortunately Alexey is not working at IBM any more, so he won't have
-> access to any hardware to debug/test this.
-> 
-> Srikar are you debugging this? If not we'll have to find someone else to
-> look at it.
-
-Has this been fixed and I missed cc:? Anyway, without the full log, I 
-still see it is a huge guest so chances are the guest could not map all 
-RAM so instead it uses the biggest possible DDW with 2M pages. If that's 
-the case, this might help it:
-
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 614af78b3695..996acf245ae5 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -906,7 +906,7 @@ void *iommu_alloc_coherent(struct device *dev, 
-struct iommu_table *tbl,
-         unsigned int nio_pages, io_order;
-         struct page *page;
-
--       size = PAGE_ALIGN(size);
-+       size = _ALIGN(size, IOMMU_PAGE_SIZE(tbl));
-         order = get_order(size);
-
-         /*
-@@ -949,10 +949,9 @@ void iommu_free_coherent(struct iommu_table *tbl, 
-size_t size,
-         if (tbl) {
-                 unsigned int nio_pages;
-
--               size = PAGE_ALIGN(size);
-+               size = _ALIGN(size, IOMMU_PAGE_SIZE(tbl));
-                 nio_pages = size >> tbl->it_page_shift;
-                 iommu_free(tbl, dma_handle, nio_pages);
--               size = PAGE_ALIGN(size);
-                 free_pages((unsigned long)vaddr, get_order(size));
-         }
-
-
-And there may be other places where PAGE_SIZE is used instead of 
-IOMMU_PAGE_SIZE(tbl). Thanks,
-
-
--- 
-Alexey
+     Arnd
