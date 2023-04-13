@@ -4,96 +4,93 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9B07C77B6E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 13:39:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03E54C77B61
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 15:40:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Py10F1Lj6z3fSW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Apr 2023 23:39:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Py3g41cKVz3fTK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 01:40:00 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=PeECwd9+;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ay5h63PM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f400:7eaa::619; helo=nam11-dm6-obe.outbound.protection.outlook.com; envelope-from=robert.richter@amd.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ldufour@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=PeECwd9+;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Ay5h63PM;
 	dkim-atps=neutral
-Received: from NAM11-DM6-obe.outbound.protection.outlook.com (mail-dm6nam11on20619.outbound.protection.outlook.com [IPv6:2a01:111:f400:7eaa::619])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py0z61s9hz3fHL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Apr 2023 23:38:38 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=OZGMTJweU0b/zM6CpUf/dF9KQiFWOerWcMYnHGz0g1LwGvs43cIo0s2KTNHKKA7bQLQvO8kbQ9wenz/Efc6nnMzrxfwqu4vK59tWKp7tj1zOQEbxattjUceXGvyFw+/fdH2n4YRY0kf15PESw5OggmeLyGyYNblHQTfR0TkEt9768nl2wLG1hqRNOyonRWUsPdX8JylQOtun3YJ+xge/j3Tau4v02EObeURGFnNg+qw/s0TKwM0/X35yGL8KYvWl6ZP7IzRCiPjOfpdko9GAJfqH63lEYN2GaaPBzZF9GuRUZsA2sqIwoTzZm9qXiXvc/yWeDAu4l+vME6hJZC4uMg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=sB2lY+EppsWBuvXz0Ez1gJIr+PQsYM4F9O30TRgLBI0=;
- b=njp7k6C9H0qUO3aDBKlXd+8WwmuaEW55jLBqQQPOgy9NjZLqaiCWXcA1NKuUMRa6brSiaR302V9pNw17JAyNjWDx7albO/2/cebN0ine6zXFTN4PB61UYDsesIzKiwdxw+t33lcA2nCcQ99/6MSD3AzNO8Prdeq9Sdkv2Rtct1M8acDhHQEj8H3ys0zWSVE7w0GQ9/srkn2jyK5YYq//gpojsy0nF+QTWXM+DbxFrDBdr+GNTvq5SvxOlizWP2PEmjzuWiQrz89tNeR3FUiRA+p4ebd8sGe1EfnNsBluuA/oonshfdCFxZd4nYlmAwjzDbwvrrfdWurhjv8QOSGcYQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=kernel.org smtp.mailfrom=amd.com; dmarc=pass
- (p=quarantine sp=quarantine pct=100) action=none header.from=amd.com;
- dkim=none (message not signed); arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=sB2lY+EppsWBuvXz0Ez1gJIr+PQsYM4F9O30TRgLBI0=;
- b=PeECwd9+FAqu4pxQc0S89rod8ZNK0PZZLN/htkzDYlvQHrLz8hp1LQZIxtTxMQ/77CQdEs/1N6Oyexog7NSULsluh4JeAb8fFCLxpA1tHDAOaGEN/sVyqFt47akfAWbu+fXhBdATkq9QK2utO4zYRatruZ0T5tlLdX5s8vk95rc=
-Received: from BN0PR07CA0017.namprd07.prod.outlook.com (2603:10b6:408:141::31)
- by MN0PR12MB5762.namprd12.prod.outlook.com (2603:10b6:208:375::12) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6277.34; Thu, 13 Apr
- 2023 13:38:19 +0000
-Received: from BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
- (2603:10b6:408:141:cafe::1a) by BN0PR07CA0017.outlook.office365.com
- (2603:10b6:408:141::31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.32 via Frontend
- Transport; Thu, 13 Apr 2023 13:38:19 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=SATLEXMB04.amd.com; pr=C
-Received: from SATLEXMB04.amd.com (165.204.84.17) by
- BN8NAM11FT068.mail.protection.outlook.com (10.13.177.69) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.20.6298.32 via Frontend Transport; Thu, 13 Apr 2023 13:38:18 +0000
-Received: from rric.localdomain (10.180.168.240) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2375.34; Thu, 13 Apr
- 2023 08:38:15 -0500
-Date: Thu, 13 Apr 2023 15:38:07 +0200
-From: Robert Richter <rrichter@amd.com>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v3 6/6] PCI/AER: Unmask RCEC internal errors to enable
- RCH downstream port error handling
-Message-ID: <ZDgFv6AtCXkVl8IQ@rric.localdomain>
-References: <20230411180302.2678736-7-terry.bowman@amd.com>
- <20230412212901.GA81099@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Py3f35yKgz3bhZ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 01:39:07 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33DEieek027490;
+	Thu, 13 Apr 2023 15:38:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=message-id : date :
+ mime-version : subject : to : cc : references : from : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=PPWYk+uucwev98t+P0id/pYxU8rwnYMvsZud5Tu5b8A=;
+ b=Ay5h63PMJK0YyB5OWKjr44UmAnHmF4vJtSI8nAOlZvu6Q1iT2neSvKY5OQ4Q/dlKdPP9
+ 4VnGrG267a78GavuN/NsJQstgK+hHe9Z7edYhAsZn3cDuY3V9aZ44R1ZfmiuuXZNkgHl
+ 2Mm/IC8FPLX7X65UMw33ADSP19uw9oEvb9qorxa4iBLqAdQMfZRABFD5aYE3jcABxinR
+ YQ4KaOHUEHNJgeyAgSnUXgLq15OaEfYsf/vBwp2Izhryp8tsaEc6zsLyh3/ejlrgwm1z
+ FRLRLl3wp3sRedacREPrlDjNvvVMqGDSHNYNiMATOJIcjTAqn9KwUgPIwsYInIVW9Z1m Yw== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pxjn0efxd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Apr 2023 15:38:58 +0000
+Received: from m0098410.ppops.net (m0098410.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33DFTvbh015603;
+	Thu, 13 Apr 2023 15:38:58 GMT
+Received: from ppma04fra.de.ibm.com (6a.4a.5195.ip4.static.sl-reverse.com [149.81.74.106])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3pxjn0efu3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Apr 2023 15:38:58 +0000
+Received: from pps.filterd (ppma04fra.de.ibm.com [127.0.0.1])
+	by ppma04fra.de.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33D30tMM022915;
+	Thu, 13 Apr 2023 15:38:55 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma04fra.de.ibm.com (PPS) with ESMTPS id 3pu0jk2kwa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 13 Apr 2023 15:38:55 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33DFcq3V19399240
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 13 Apr 2023 15:38:52 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A34F62004B;
+	Thu, 13 Apr 2023 15:38:52 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0862420040;
+	Thu, 13 Apr 2023 15:38:52 +0000 (GMT)
+Received: from [9.171.52.192] (unknown [9.171.52.192])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 13 Apr 2023 15:38:51 +0000 (GMT)
+Message-ID: <0e668a82-3a3e-798a-8707-1a9b622b23b6@linux.ibm.com>
+Date: Thu, 13 Apr 2023 17:38:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20230412212901.GA81099@bhelgaas>
-X-Originating-IP: [10.180.168.240]
-X-ClientProxiedBy: SATLEXMB04.amd.com (10.181.40.145) To SATLEXMB04.amd.com
- (10.181.40.145)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BN8NAM11FT068:EE_|MN0PR12MB5762:EE_
-X-MS-Office365-Filtering-Correlation-Id: 971ff201-8f5a-48cf-6aeb-08db3c24579f
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	iAWb5Cu2UNvAF5W8dnwnlhFE7BxU9byyUrvyMd3iiMW+okY7vNV9AlvYIAX7Tb+CwtJ7UgCQJpGj5SNlkZ7wWX9RfIRphNraBGkHQ9sbDj2qBHmy1FXNVWjEBjU80PRhxCpR00BjWwtQ4CrOiCyMTQGNAxLyf/KAzJ+Tu2C+s+Aq5Ae6ueXhkIkNTBZz3ucL+MgU9wPXDwIxc0AANpMGiUkylq4CCQSQZ3e+fGTHBEs8Z49HgouOyF2GCyPwRXofB8OE4mprpmcAl7b7N6gXOZt42QGOsAvcPJnFfwSdau74Wt/PT9fJtgee10bBD7ZNnfKJhFcHJ40fmZzUiw4mfdExhhCcGKKnzly4Fcp5VCJ/pK+/JjYxubBxrA8qkGjccpCI90K0PLcNbPfKJI5jKleKXD2Fa5KehDcscFsls98bTvFfOA19wBn6no+nxjsVFumnuRJ+NR8cz84fQMd7XFhCbp4twHSvwDUHkD7UqxWw6OaSDRhftb7OZ3VIkXOyAqIM4kIlcaKRR1R+DEUKATPPsavoI49qkq34/kqPEjLa6l7UOn8s9Lo26e+vjT2PFiXvmw6kiQ/GJMwh+1nURGR3EOsjK9JlWq/hbOWwMJKhiIrWZLS/tp3JCbqwHALD9JdisXCZ9b2qcJ2UqGS6N/oubjJ9Sb3kzC3CcWgp5+IfOoSxiXzOUmGKfUoFVQi+WvXupDP8L5M+ZJLJMPxX3GNZjYAiBEzUA/liN6+lZW24doVTSfocz/b4QR2EbWwG1USN3F1GTAdL7wWGJFjiVg==
-X-Forefront-Antispam-Report: 	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:SATLEXMB04.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230028)(4636009)(396003)(136003)(39860400002)(346002)(376002)(451199021)(46966006)(36840700001)(40470700004)(8676002)(5660300002)(8936002)(55016003)(316002)(478600001)(7696005)(40480700001)(54906003)(7416002)(2906002)(6666004)(40460700003)(336012)(4326008)(6916009)(426003)(83380400001)(36860700001)(70586007)(26005)(70206006)(81166007)(186003)(53546011)(41300700001)(16526019)(47076005)(9686003)(356005)(82740400003)(82310400005)(36900700001)(309714004);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Apr 2023 13:38:18.9143
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 971ff201-8f5a-48cf-6aeb-08db3c24579f
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[SATLEXMB04.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource: 	BN8NAM11FT068.eop-nam11.prod.protection.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB5762
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0)
+ Gecko/20100101 Thunderbird/102.9.1
+Subject: Re: [PATCH 1/2] pseries/smp: export the smt level in the SYS FS.
+To: Michael Ellerman <mpe@ellerman.id.au>, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu
+References: <20230331153905.31698-1-ldufour@linux.ibm.com>
+ <20230331153905.31698-2-ldufour@linux.ibm.com>
+ <87ttxjaonc.fsf@mpe.ellerman.id.au>
+Content-Language: en-US
+From: Laurent Dufour <ldufour@linux.ibm.com>
+In-Reply-To: <87ttxjaonc.fsf@mpe.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: NuW4PTWJqgwELGpjrkxMY0oELzbUkR6m
+X-Proofpoint-GUID: BQKAgfVHcZqqSq2VvbVhyO8X6QnuuuyR
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-13_10,2023-04-13_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ priorityscore=1501 bulkscore=0 adultscore=0 mlxlogscore=999 malwarescore=0
+ spamscore=0 mlxscore=0 clxscore=1015 lowpriorityscore=0 phishscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304130139
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,194 +102,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alison.schofield@intel.com, dave.jiang@intel.com, Terry Bowman <terry.bowman@amd.com>, vishal.l.verma@intel.com, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, linux-cxl@vger.kernel.org, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, bhelgaas@google.com, Oliver O'Halloran <oohall@gmail.com>, Jonathan.Cameron@huawei.com, bwidawsk@kernel.org, dan.j.williams@intel.com, ira.weiny@intel.com
+Cc: nathanl@linux.ibm.com, msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12.04.23 16:29:01, Bjorn Helgaas wrote:
-> On Tue, Apr 11, 2023 at 01:03:02PM -0500, Terry Bowman wrote:
-> > From: Robert Richter <rrichter@amd.com>
-> > 
-> > RCEC AER corrected and uncorrectable internal errors (CIE/UIE) are
-> > disabled by default.
+On 13/04/2023 15:37:59, Michael Ellerman wrote:
+> Hi Laurent,
 > 
-> "Disabled by default" just means "the power-up state of CIE/UIC is
-> that they are masked", right?  It doesn't mean that Linux normally
-> masks them.
-
-Yes, will change the wording here.
-
-> > [1][2] Enable them to receive CXL downstream port
-> > errors of a Restricted CXL Host (RCH).
-> > 
-> > [1] CXL 3.0 Spec, 12.2.1.1 - RCH Downstream Port Detected Errors
-> > [2] PCIe Base Spec 6.0, 7.8.4.3 Uncorrectable Error Mask Register,
-> >     7.8.4.6 Correctable Error Mask Register
-> > 
-> > Co-developed-by: Terry Bowman <terry.bowman@amd.com>
-> > Signed-off-by: Robert Richter <rrichter@amd.com>
-> > Signed-off-by: Terry Bowman <terry.bowman@amd.com>
-> > Cc: "Oliver O'Halloran" <oohall@gmail.com>
-> > Cc: Bjorn Helgaas <bhelgaas@google.com>
-> > Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Cc: linux-pci@vger.kernel.org
-> > ---
-> >  drivers/pci/pcie/aer.c | 73 ++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 73 insertions(+)
-> > 
-> > diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> > index 171a08fd8ebd..3973c731e11d 100644
-> > --- a/drivers/pci/pcie/aer.c
-> > +++ b/drivers/pci/pcie/aer.c
-> > @@ -1000,7 +1000,79 @@ static void cxl_handle_error(struct pci_dev *dev, struct aer_err_info *info)
-> >  		pcie_walk_rcec(dev, cxl_handle_error_iter, info);
-> >  }
-> >  
-> > +static bool cxl_error_is_native(struct pci_dev *dev)
-> > +{
-> > +	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
-> > +
-> > +	if (pcie_ports_native)
-> > +		return true;
-> > +
-> > +	return host->native_aer && host->native_cxl_error;
-> > +}
-> > +
-> > +static int handles_cxl_error_iter(struct pci_dev *dev, void *data)
-> > +{
-> > +	int *handles_cxl = data;
-> > +
-> > +	*handles_cxl = is_cxl_mem_dev(dev) && cxl_error_is_native(dev);
-> > +
-> > +	return *handles_cxl;
-> > +}
-> > +
-> > +static bool handles_cxl_errors(struct pci_dev *rcec)
-> > +{
-> > +	int handles_cxl = 0;
-> > +
-> > +	if (!rcec->aer_cap)
-> > +		return false;
-> > +
-> > +	if (pci_pcie_type(rcec) == PCI_EXP_TYPE_RC_EC)
-> > +		pcie_walk_rcec(rcec, handles_cxl_error_iter, &handles_cxl);
-> > +
-> > +	return !!handles_cxl;
-> > +}
-> > +
-> > +static int __cxl_unmask_internal_errors(struct pci_dev *rcec)
-> > +{
-> > +	int aer, rc;
-> > +	u32 mask;
-> > +
-> > +	/*
-> > +	 * Internal errors are masked by default, unmask RCEC's here
-> > +	 * PCI6.0 7.8.4.3 Uncorrectable Error Mask Register (Offset 08h)
-> > +	 * PCI6.0 7.8.4.6 Correctable Error Mask Register (Offset 14h)
-> > +	 */
+> Laurent Dufour <ldufour@linux.ibm.com> writes:
+>> There is no SMT level recorded in the kernel neither in user space.
+>> Indeed there is no real constraint about that and mixed SMT levels are
+>> allowed and system is working fine this way.
+>>
+>> However when new CPU are added, the kernel is onlining all the threads
+>> which is leading to mixed SMT levels and confuse end user a bit.
+>>
+>> To prevent this exports a SMT level from the kernel so user space
+>> application like the energy daemon, could read it to adjust their settings.
+>> There is no action unless recording the value when a SMT value is written
+>> into the new sysfs entry. User space applications like ppc64_cpu should
+>> update the sysfs when changing the SMT level to keep the system consistent.
+>>
+>> Suggested-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/pseries.h |  3 ++
+>>  arch/powerpc/platforms/pseries/smp.c     | 39 ++++++++++++++++++++++++
+>>  2 files changed, 42 insertions(+)
 > 
-> Unmasking internal errors doesn't have anything specific to do with
-> CXL, so I don't think it should have "cxl" in the function name.
-> Maybe something like "pci_aer_unmask_internal_errors()".
-
-Since it is static I renamed it to aer_unmask_internal_errors() and
-also moved it to the beginning of the #ifdef block for easier later
-reuse.
-
+> There is a generic sysfs interface for smt in /sys/devices/system/cpu/smt
 > 
-> This also has nothing special to do with RCECs, so I think we should
-> refer to the device as "dev" as is typical in this file.
+> I think we should be enabling that on powerpc and then adapting it to
+> our needs, rather than adding a pseries specific file.
 
-Changed.
+Thanks Michael, I was not aware of this sysfs interface.
 
+> Currently the generic code is only aware of SMT on/off, so it would need
+> to be taught about SMT4 and 8 at least.
+
+Do you think we should limit our support to SMT4 and SMT8 only?
+
+> There are already hooks in the generic code to check the SMT level when
+> bringing CPUs up, see cpu_smt_allowed(), they may work for the pseries
+> hotplug case too, though maybe we need some additional logic.
 > 
-> I think this needs to check pcie_aer_is_native() as is done by
-> pci_aer_clear_nonfatal_status() and other functions that write the AER
-> Capability.
+> Wiring up the basic support is pretty straight forward, something like
+> the diff below.
 
-Also added the check to aer_unmask_internal_errors(). There was a
-check for native_* in handles_cxl_errors() already, but only for the
-pci devs of the RCEC. I added a check of the RCEC there too.
+I'll look into how to wire this up.
+Thanks a lot!
 
+> cheers
 > 
-> With the exception of this function, this patch looks like all CXL
-> code that maybe could be with other CXL code.  Would require making
-> pcie_walk_rcec() available outside drivers/pci, I guess.
-
-Even this is CXL code, it implements AER support and fits better here
-around AER code. Export of pcie_walk_rcec() (and others?) is not the
-main issue here. CXL drivers can come as modules and would need to
-register a hook at the aer handler.  This would add even more
-complexity here. In contrast, current solution just adds two functions
-for enablement and handling which are empty stubs if code is disabled.
-
-I could move that code to aer_cxl.c similar to aer_inject.c. Since the
-CXL part is small compared to the remaining aer code I left it in
-aer.c. Also, it is guarded by #ifdef which additionally encapsulates
-it.
-
 > 
-> > +	aer = rcec->aer_cap;
-> > +	rc = pci_read_config_dword(rcec, aer + PCI_ERR_UNCOR_MASK, &mask);
-> > +	if (rc)
-> > +		return rc;
-> > +	mask &= ~PCI_ERR_UNC_INTN;
-> > +	rc = pci_write_config_dword(rcec, aer + PCI_ERR_UNCOR_MASK, mask);
-> > +	if (rc)
-> > +		return rc;
-> > +
-> > +	rc = pci_read_config_dword(rcec, aer + PCI_ERR_COR_MASK, &mask);
-> > +	if (rc)
-> > +		return rc;
-> > +	mask &= ~PCI_ERR_COR_INTERNAL;
-> > +	rc = pci_write_config_dword(rcec, aer + PCI_ERR_COR_MASK, mask);
-> > +
-> > +	return rc;
-> > +}
-> > +
-> > +static void cxl_unmask_internal_errors(struct pci_dev *rcec)
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 0f123f1f62a1..a48576f1c579 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -260,6 +260,7 @@ config PPC
+>  	select HAVE_SYSCALL_TRACEPOINTS
+>  	select HAVE_VIRT_CPU_ACCOUNTING
+>  	select HAVE_VIRT_CPU_ACCOUNTING_GEN
+> +	select HOTPLUG_SMT			if HOTPLUG_CPU
+>  	select HUGETLB_PAGE_SIZE_VARIABLE	if PPC_BOOK3S_64 && HUGETLB_PAGE
+>  	select IOMMU_HELPER			if PPC64
+>  	select IRQ_DOMAIN
+> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+> index 8a4d4f4d9749..bd23ba716d23 100644
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -143,5 +143,8 @@ static inline int cpu_to_coregroup_id(int cpu)
+>  #endif
+>  #endif
+> 
+> +bool topology_is_primary_thread(unsigned int cpu);
+> +bool topology_smt_supported(void);
+> +
+>  #endif /* __KERNEL__ */
+>  #endif	/* _ASM_POWERPC_TOPOLOGY_H */
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 265801a3e94c..8619609809d5 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1769,4 +1769,20 @@ void __noreturn arch_cpu_idle_dead(void)
+>  	start_secondary_resume();
+>  }
+> 
+> +/**
+> + * topology_is_primary_thread - Check whether CPU is the primary SMT thread
+> + * @cpu:	CPU to check
+> + */
+> +bool topology_is_primary_thread(unsigned int cpu)
+> +{
+> +	return cpu == cpu_first_thread_sibling(cpu);
+> +}
+> +
+> +/**
+> + * topology_smt_supported - Check whether SMT is supported by the CPUs
+> + */
+> +bool topology_smt_supported(void)
+> +{
+> +	return threads_per_core > 1;
+> +}
+>  #endif
 
-Also renaming this to cxl_enable_rcec() to more generalize the
-function.
-
-> > +{
-> > +	if (!handles_cxl_errors(rcec))
-> > +		return;
-> > +
-> > +	if (__cxl_unmask_internal_errors(rcec))
-> > +		dev_err(&rcec->dev, "cxl: Failed to unmask internal errors");
-> > +	else
-> > +		dev_dbg(&rcec->dev, "cxl: Internal errors unmasked");
-
-I am going to change this to a pci_info() for alignment with other
-messages around:
-
-[   14.200265] pcieport 0000:40:00.3: PME: Signaling with IRQ 44
-[   14.213925] pcieport 0000:40:00.3: AER: cxl: Internal errors unmasked
-[   14.228413] pcieport 0000:40:00.3: AER: enabled with IRQ 44
-
-Plus, using pci_err() instead of dev_err().
-
-> > +}
-> > +
-> >  #else
-> > +static inline void cxl_unmask_internal_errors(struct pci_dev *dev) { }
-> >  static inline void cxl_handle_error(struct pci_dev *dev,
-> >  				    struct aer_err_info *info) { }
-> >  #endif
-> > @@ -1397,6 +1469,7 @@ static int aer_probe(struct pcie_device *dev)
-> >  		return status;
-> >  	}
-> >  
-> > +	cxl_unmask_internal_errors(port);
-> >  	aer_enable_rootport(rpc);
-> >  	pci_info(port, "enabled with IRQ %d\n", dev->irq);
-> >  	return 0;
-> > -- 
-> > 2.34.1
-> > 
-
-Thanks for review,
-
--Robert
