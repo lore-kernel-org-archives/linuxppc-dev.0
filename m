@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74AE3C77B72
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:32:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C73AC77B6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:33:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Pycp006n0z3ft0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:32:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Pycpw0CRtz3fx2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:33:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Xg8AthYz;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k5rrjRYc;
 	dkim-atps=neutral
-Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
+Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccp0FR4z3fFr
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccp3wF5z3fQg
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 23:24:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=Xg8AthYz;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=k5rrjRYc;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pyccn6F4yz4xKV;
-	Fri, 14 Apr 2023 23:24:57 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pyccp2mgLz4xKX;
+	Fri, 14 Apr 2023 23:24:58 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1681478697;
-	bh=IQ0QD49+RwlNoKa8C084SdeCWYiLr1IdrJSyRkspJJE=;
+	s=201909; t=1681478698;
+	bh=p2GUADRHnEQKxSCIPS4wT/1G1YCOTsiRyoWy5kPhI4Q=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=Xg8AthYzvW6tHHdIktFSaJm1M+P2ei9sZjrpztY0jhQBxTFMcIUSWkwOk+qzsXKyj
-	 9A7lDIAWIOXf/Ze/BHsMZmO20qgTodrx4iYHc++GP4/UZB3Yr1Cupun1DB1586wTGM
-	 8swd6obNb4S0//3VMGPQiR7XA/ONRYavylgOvUjCaLSSUzpAc2obz+OkeYjrmyhowq
-	 ljuCy6/2q9vuYaLRMIzcUOX8pJxJ8o05CtLZFQjYuvrgiH15H1N6FQtjUecS2qy085
-	 JWNhHy495/yi3W43+KD7U32gLcLa5YhhW+qCDSlc/vVJcZ+6rQwp/tKq60ckpN8ApN
-	 QYn33cjdolEsQ==
+	b=k5rrjRYcWSyXKkITYGffU2xd2kzF2CzpT4akfI115O8XV/Eeau6TaWV1efA6XRGSB
+	 B4Fx386btVbys3ghC+XxNUiI0wS7xkoikpqti8CN03LdRx++2THBi+G/r0MYQhuFMQ
+	 WqX4xk1SpBurYA7pAwf53+f/b/Gb5FQQKdzjA/Ch5nUQ9zQd/hiIRXepMo/KoqJxrX
+	 ia4qd1lGQzr5ajs/gnRgyntsgYi55yIkI8BvXDqSf2jrrQI3vCXzYjTnwNVzr4hsN3
+	 FIY6+77e9DbSUu4WeDdnzWDeWoE0CJLlr23zVI8T0/tY9Y1iYk+di3O5l2efh64+o2
+	 +MiB5msQ3q44g==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 10/32] powerpc/configs/64s: Enable common accounting options
-Date: Fri, 14 Apr 2023 23:23:53 +1000
-Message-Id: <20230414132415.821564-10-mpe@ellerman.id.au>
+Subject: [PATCH 11/32] powerpc/configs/64s: Enable NO_HZ_FULL
+Date: Fri, 14 Apr 2023 23:23:54 +1000
+Message-Id: <20230414132415.821564-11-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230414132415.821564-1-mpe@ellerman.id.au>
 References: <20230414132415.821564-1-mpe@ellerman.id.au>
@@ -61,31 +61,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These options are enabled by most distros.
+At least Fedora & SUSE enable it.
+
+VIRT_CPU_ACCOUNTING_GEN is selected so no longer needs to be in the
+defconfig.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/ppc64_defconfig | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/configs/ppc64_defconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 0e3b420aaa6e..ecad254eee6c 100644
+index ecad254eee6c..7e265cbbeaef 100644
 --- a/arch/powerpc/configs/ppc64_defconfig
 +++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -8,8 +8,13 @@ CONFIG_BPF_SYSCALL=y
+@@ -1,13 +1,12 @@
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+-# CONFIG_CONTEXT_TRACKING_USER_FORCE is not set
+ CONFIG_AUDIT=y
++CONFIG_NO_HZ_FULL=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BPF_SYSCALL=y
  CONFIG_BPF_JIT=y
  CONFIG_PREEMPT_VOLUNTARY=y
- CONFIG_VIRT_CPU_ACCOUNTING_GEN=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_BSD_PROCESS_ACCT_V3=y
+-CONFIG_VIRT_CPU_ACCOUNTING_GEN=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_BSD_PROCESS_ACCT_V3=y
  CONFIG_TASKSTATS=y
- CONFIG_TASK_DELAY_ACCT=y
-+CONFIG_TASK_XACCT=y
-+CONFIG_TASK_IO_ACCOUNTING=y
-+CONFIG_PSI=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT=18
 -- 
 2.39.2
 
