@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FE3CC77B72
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:40:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0934C77B6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:41:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PycyT180Sz3fq3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:40:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PyczP3knJz3g9t
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:41:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hGGuyp/I;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=GrXnrseU;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccv1bSRz3fTL
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccv5C94z3fT6
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 23:25:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=hGGuyp/I;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=GrXnrseU;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pyccv0jRQz4xN1;
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pyccv4Q7xz4xFd;
 	Fri, 14 Apr 2023 23:25:03 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
 	s=201909; t=1681478703;
-	bh=YGOYFRl3rrbA/EPs+QenrfhI7Gj23R5ghzpu7PW1ips=;
+	bh=WGjtStinLz6d1ypWIGoKc6r9HruuC7g8ng97aoe/LUQ=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=hGGuyp/ILAg78qRSKftnBGjsiSQs//+9wneSmtNPwkjHuOlNiMn1ELOGVSRjQV2jZ
-	 f8ObYYwf2itNCKTkxnbsC4yKM3I/mEpBaHlbXJrbi5BRc8VjUQsPJ1HKE5weXK8tY+
-	 hg8UFX4oK3gUEk9w6nrVFp0XZRopJEtcWqbQbXLSeDMEz/ynUzAEBrDrXqvi1Fzxqx
-	 YjbbWK4D0ZFwcptg2bn3Kk9JrrNozQsJeY8UAp8OfqiaOpFCJapfYqMuUOxo/xokNK
-	 DsOSwZUxIWYWGzWZ9Apkgnz5f50LljOpzJfNs+QxHLlpjVos3AJwsvjMoAzeTFO7B5
-	 kOvb9EcpYbWVA==
+	b=GrXnrseUd52OGiZHFYrh7dXfonFgzidNI99Ej+Y0ytsvk+57Ane9K48XFdEoFYQhK
+	 kVLuUAZZBNS4p6z7guGFBOIC7ABEP7EEc8h5dZ/WIf72lgdMbTcx8pFazCF50ySWT4
+	 DxT0PzqnIUAeBTNnS/ATh6qiJYLH0dKFldBZJxGEMbrSGD9FT7Jyaa91x8AVEQ3LAn
+	 P2j9+mcSJvFOzIHiAJf3j+gLiXZ+YGbews9j8oc3ugJfhHvoIBB4zoNiphNdFHIqa+
+	 5LwMdGk1W0tMH6jo7Hp84l4HzRmoMlQ0yoUZlKAxJt0MWTUfdIv0DyuOoybKb48sPP
+	 uYOUD1XkNIPwg==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 20/32] powerpc/configs/64s: Enable DEBUG_VM & other options
-Date: Fri, 14 Apr 2023 23:24:03 +1000
-Message-Id: <20230414132415.821564-20-mpe@ellerman.id.au>
+Subject: [PATCH 21/32] powerpc/configs/64s: Enable SCHEDSTATS
+Date: Fri, 14 Apr 2023 23:24:04 +1000
+Message-Id: <20230414132415.821564-21-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230414132415.821564-1-mpe@ellerman.id.au>
 References: <20230414132415.821564-1-mpe@ellerman.id.au>
@@ -61,43 +61,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Fedora enables DEBUG_VM, which has led to occasions where a VM_BUG_ON()
-is not caught by upstream testing, but rather is first found in Fedora,
-which is not how it's meant to be.
-
-PAGE_OWNER & PAGE_POISONING both need to be enabled on the kernel
-command line, so should not add much overhead in normal operation.
+Distros enable it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/ppc64_defconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/powerpc/configs/ppc64_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index c8b49e33fd81..3154f307bba6 100644
+index 3154f307bba6..2cee399d3abc 100644
 --- a/arch/powerpc/configs/ppc64_defconfig
 +++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -397,14 +397,20 @@ CONFIG_PRINTK_TIME=y
- CONFIG_PRINTK_CALLER=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_MAGIC_SYSRQ=y
-+CONFIG_PAGE_OWNER=y
-+CONFIG_PAGE_POISONING=y
- CONFIG_DEBUG_RODATA_TEST=y
-+CONFIG_DEBUG_WX=y
- CONFIG_DEBUG_STACK_USAGE=y
-+CONFIG_DEBUG_VM=y
-+# CONFIG_DEBUG_VM_PGTABLE is not set
+@@ -407,6 +407,7 @@ CONFIG_DEBUG_VM=y
  CONFIG_DEBUG_STACKOVERFLOW=y
  CONFIG_SOFTLOCKUP_DETECTOR=y
  CONFIG_HARDLOCKUP_DETECTOR=y
++CONFIG_SCHEDSTATS=y
  CONFIG_DEBUG_MUTEXES=y
  CONFIG_FUNCTION_TRACER=y
  CONFIG_LOCK_TORTURE_TEST=m
-+CONFIG_BUG_ON_DATA_CORRUPTION=y
- CONFIG_STACK_TRACER=y
- CONFIG_SCHED_TRACER=y
- CONFIG_FTRACE_SYSCALLS=y
 -- 
 2.39.2
 
