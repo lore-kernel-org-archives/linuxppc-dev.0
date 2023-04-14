@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30DD0C77B72
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:28:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C849C77B6E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 13:28:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4PychR59g4z3fd3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:28:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4PycjM6zW1z3bg1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Apr 2023 23:28:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T6ovXTno;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aFww6THq;
 	dkim-atps=neutral
 Received: from gandalf.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccl3Kytz3cMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Pyccl4Ctkz3f5P
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Apr 2023 23:24:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=T6ovXTno;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=aFww6THq;
 	dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pyccl2Xxbz4xFp;
-	Fri, 14 Apr 2023 23:24:55 +1000 (AEST)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4Pycck2TrYz4xFd;
+	Fri, 14 Apr 2023 23:24:54 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
-	s=201909; t=1681478695;
-	bh=6wx+Qtqpj8JOkLwbgfN5jOutj527fW38w9WFEI6JoZ4=;
+	s=201909; t=1681478694;
+	bh=iZGs6cwEvRT1tBZrz4yvKPMQLQbLjEfIejGL02VR8Fk=;
 	h=From:To:Subject:Date:In-Reply-To:References:From;
-	b=T6ovXTnoLfSHOPShcZOi1MlbzDzt64pAZzetQ3mz3/rnFrIjEpLClXJEJ4yGy+OE3
-	 DDT+GId8V2BrvIZA8yAh2nIWElPlQuEI+LTbi6/aThHMabdrk+qMzbOB+1NaIEsTHU
-	 XXl6S+XaeWwetLLo+4+CKmxBcHTtzN67TyBHhMRkfc4qmzn5CJYsTBcvcsSa1F8R83
-	 GNeVnmJgiaCJKnICZUf7r0U5cRVOl52VSELnVHaG2JORFL+WmGvv270jUoVgAEZyy/
-	 x/hN1CYdG8BXcyOo0HXg02lv553Z40kRksMx8Jhq1JtPt8x7bwRv54nljt+gpc2lUc
-	 O4BE2ir5S73rg==
+	b=aFww6THqyGpZ7xJRtSCQcWfdY9bCDWS7q29ev5nxdf/NGFtIJAN370fydQvoyR/Ux
+	 /wGTyfIqTJ0Z5Yxo5jEEurocwO3TPWWb7Q5AtkOPVJ+5NKT2+9qPgSu2y+Awq+0DkN
+	 phRu2r16GuEeWr8BGwUocWAvKOp2ASkg8cW2HdySQSTQAmlAtPKvK5pshl3QuvNRr3
+	 44ENLlk3XdirUlzW8E0hC9TZ5kT4Y79DdC53Fm9aVqNwRjRdXfU1wUUwYH4AqAcFF4
+	 upgRWkN17g10QRbTHcs4PPLL99J7pq4jpjrKHnkxzLFFiB4tzoCx8lz11I74y7+UCE
+	 NzJl1HH7XCj0A==
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 05/32] powerpc/configs/64s: Enable PAPR_SCM
-Date: Fri, 14 Apr 2023 23:23:48 +1000
-Message-Id: <20230414132415.821564-5-mpe@ellerman.id.au>
+Subject: [PATCH 03/32] powerpc/configs/64s: Drop IPV6 which is default y
+Date: Fri, 14 Apr 2023 23:23:46 +1000
+Message-Id: <20230414132415.821564-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230414132415.821564-1-mpe@ellerman.id.au>
 References: <20230414132415.821564-1-mpe@ellerman.id.au>
@@ -61,34 +61,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a powerpc specific driver so add the symbols required to enable
-it so it gets some build/boot test coverage.
+Since commit de551f2eb22a ("net: Build IPv6 into kernel by default"),
+IPV6 is default y.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/configs/ppc64_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/configs/ppc64_defconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 74477f89c108..d98fe52a5892 100644
+index 0a3a2fefb652..c4f3ce96d924 100644
 --- a/arch/powerpc/configs/ppc64_defconfig
 +++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -29,6 +29,7 @@ CONFIG_NR_CPUS=2048
- CONFIG_DTL=y
- CONFIG_PPC_SMLPAR=y
- CONFIG_IBMEBUS=y
-+CONFIG_PAPR_SCM=m
- CONFIG_PPC_SVM=y
- CONFIG_PPC_MAPLE=y
- CONFIG_PPC_PASEMI=y
-@@ -69,6 +70,7 @@ CONFIG_MEMORY_HOTPLUG=y
- CONFIG_MEMORY_HOTREMOVE=y
- CONFIG_KSM=y
- CONFIG_TRANSPARENT_HUGEPAGE=y
-+CONFIG_ZONE_DEVICE=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
+@@ -84,7 +84,6 @@ CONFIG_SYN_COOKIES=y
+ CONFIG_INET_AH=m
+ CONFIG_INET_ESP=m
+ CONFIG_INET_IPCOMP=m
+-CONFIG_IPV6=y
+ CONFIG_NETFILTER=y
+ # CONFIG_NETFILTER_ADVANCED is not set
+ CONFIG_BRIDGE=m
 -- 
 2.39.2
 
