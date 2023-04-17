@@ -4,65 +4,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3348C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 11:21:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0FA1C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 11:22:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1dfC1tZkz3gVY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 21:21:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1dg72LJTz3gXm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 21:22:27 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Sg9gXChN;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=bMzg27Gq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62a; helo=mail-pl1-x62a.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=Sg9gXChN;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=bMzg27Gq;
 	dkim-atps=neutral
-Received: from mail-pl1-x62a.google.com (mail-pl1-x62a.google.com [IPv6:2607:f8b0:4864:20::62a])
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0fQs037cz3cjW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 06:53:24 +1000 (AEST)
-Received: by mail-pl1-x62a.google.com with SMTP id i8so18359967plt.10
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:53:24 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0fQv2XZfz3cjY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 06:53:27 +1000 (AEST)
+Received: by mail-pl1-x636.google.com with SMTP id l21so9395312pla.5
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:53:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1681764803; x=1684356803;
+        d=gmail.com; s=20221208; t=1681764806; x=1684356806;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=M2PCFvKq9JWcIC4Exd9oDYO0v0PQOHyXRap+yEgbOb4=;
-        b=Sg9gXChNrNLShRRgfwOKl/OTTCvmKSrllpuIiui1MavGQQvyi4/hV9+QaVJ3t9hABY
-         7LNyY9zC8MZPe/8uyGF6BwZFFCebqKsRkCF7WD2/MczVElNAeTdXAZoU8m9zjTh6P7Zy
-         0Ui6eydpR2I1tZyrhRUO19d2JsU/fHL/oyFe81PNxO86Jxw/ya4bgHlBy023YgAYk0Ea
-         ro6AAOx594UY8fA/m7D7bEpjpZMo/caINuRe5NJsUpyuSeut+/oOBeuT5hXbXmkAYI67
-         Pav/++zqcV0Pbp5FUcdmVoTNUO7tgK9EwNCc3eK51W0dnm+P+Og2+jgMY/+82hRUmWz8
-         imHQ==
+        bh=1imWRfaXT28Tln454VWhUpR4BzNKR6UHESFdZqWEUY0=;
+        b=bMzg27GqJpInZYbq5g7DlCbGyMQLVTO8/WaIXUjb9+Y1sP2Yg8U4pzTwcvHRDHiFNW
+         xnksAVwNdJxrKURy2fgxnULAI227N9ToKvbiocqPRvOKs7RzP8ExmOpSZqrcqZUrdfu0
+         Ly3bYv1kY3GNKQVg3ZctvJCnyIezYAOXblSfIzPoK3U4x0lQOFf2Xm+WIvk4tnnJrN+1
+         YHPfjXznGMNehBha6m//o8BZSI/Chio1eErrXl3QeUgRmQPwnQk3cvQT2roiB3zkJZil
+         tzHED45+1PigKvsFpmle9q7jl79yHSt/NZKlZjrviShfr3b19IL3cewZ6zZfWBjcahF9
+         kN0Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681764803; x=1684356803;
+        d=1e100.net; s=20221208; t=1681764806; x=1684356806;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=M2PCFvKq9JWcIC4Exd9oDYO0v0PQOHyXRap+yEgbOb4=;
-        b=MuI9MZUavKXS3fBfl2ppxwSAHkZ4/NTU4yRAGjSZ7OwsDnRJMfc089n/srVtiA5YNU
-         oto6ArrF5XqC7T4bG3bypyjCWWgpWRhGa6/FTOC08Cl0Q5ls6wUhSoBDYv944mfUdItb
-         XAZwOHtSzFWSSuHq83En09yiquHG/tqGLN0yotUj/O/lq9teLJfJSPdk4MwUFFOYh2JS
-         sBxNGXqnSRR9ogaIFFqVCWEuimy06fHiRObiYu0z3epRYKV66CygyOnEEWT4jMREx52I
-         t4g1jKW1E+I8wOSu2J0q/NOWqsPkxtX1F24dZXmaxBrSl29ebJ6VcIY00P1tJtHnIY5s
-         4pqw==
-X-Gm-Message-State: AAQBX9cwxe93WvWD+JzehbLB90VHo+p1Dge21jJIFbpCEBRE5j+L+pbj
-	ehEsnCGAN/Ha9TuEvKs1pcY=
-X-Google-Smtp-Source: AKy350ZH2s2lfJdxSYj+T2S9Ef0UoYzkgLYY3eeGq1S7Q2hAbd0lFGX52BFTYQkOd2khPVGSck6LXA==
-X-Received: by 2002:a17:90a:e28f:b0:247:4200:7432 with SMTP id d15-20020a17090ae28f00b0024742007432mr11696070pjz.40.1681764802858;
-        Mon, 17 Apr 2023 13:53:22 -0700 (PDT)
+        bh=1imWRfaXT28Tln454VWhUpR4BzNKR6UHESFdZqWEUY0=;
+        b=JP+otLfVuO0e4nk1mpTrL2yx97rcULhPxg472vv6QrA/mJBqAqth27EBnOfcq5osBE
+         4P/26gkeLV1IOND6+VlfsG4TcQIiIvaD3jwLBJNYRgdRS6sCRtPWvYz7E+zLWTTyRaZN
+         0Imcntz6QNAFZLmDnPLC7mx6hM2vncRBzxcpJ0w6fRzBdj67kdAa2dHSIju2SY5k+AHK
+         zF903v7MTYgx3d9G3nFkYpRiY3eKVHH4SvWn6TYHlsPnuMVnMDjajLO+C7krrQxmz/21
+         vHG97OquPn6cIPr0MtWBYQBOdIoY6Xf3gsS7pUIDODXIEl9zUda27M7YQckjteDkcCMa
+         RIGw==
+X-Gm-Message-State: AAQBX9cZtu9Xc17PHPYkxbqhnI+zIcdzpIf6Clu2ktQSaNz0HKeirwpQ
+	hJqaQq+x1HscBe6BObYj5KY=
+X-Google-Smtp-Source: AKy350Z5+qBQNd0Z/JNfcMKaitdnDjfxbnOB0qE080qoviMZywL0T3VtP+5OcGBInDjHaerFJSFHYg==
+X-Received: by 2002:a17:90a:d142:b0:246:5fbb:43bf with SMTP id t2-20020a17090ad14200b002465fbb43bfmr15902207pjw.4.1681764805699;
+        Mon, 17 Apr 2023 13:53:25 -0700 (PDT)
 Received: from fedora.hsd1.ca.comcast.net ([2601:644:937f:7f20::c139])
-        by smtp.googlemail.com with ESMTPSA id h7-20020a17090ac38700b0022335f1dae2sm7609707pjt.22.2023.04.17.13.53.21
+        by smtp.googlemail.com with ESMTPSA id h7-20020a17090ac38700b0022335f1dae2sm7609707pjt.22.2023.04.17.13.53.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 17 Apr 2023 13:53:22 -0700 (PDT)
+        Mon, 17 Apr 2023 13:53:25 -0700 (PDT)
 From: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
 	Matthew Wilcox <willy@infradead.org>
-Subject: [PATCH 27/33] openrisc: Convert __pte_free_tlb() to use ptdescs
-Date: Mon, 17 Apr 2023 13:50:42 -0700
-Message-Id: <20230417205048.15870-28-vishal.moola@gmail.com>
+Subject: [PATCH 29/33] sh: Convert pte_free_tlb() to use ptdescs
+Date: Mon, 17 Apr 2023 13:50:44 -0700
+Message-Id: <20230417205048.15870-30-vishal.moola@gmail.com>
 X-Mailer: git-send-email 2.39.2
 In-Reply-To: <20230417205048.15870-1-vishal.moola@gmail.com>
 References: <20230417205048.15870-1-vishal.moola@gmail.com>
@@ -85,32 +85,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Part of the conversions to replace pgtable constructor/destructors with
-ptdesc equivalents.
+ptdesc equivalents. Also cleans up some spacing issues.
 
 Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
 ---
- arch/openrisc/include/asm/pgalloc.h | 8 ++++----
+ arch/sh/include/asm/pgalloc.h | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/openrisc/include/asm/pgalloc.h b/arch/openrisc/include/asm/pgalloc.h
-index b7b2b8d16fad..14e641686281 100644
---- a/arch/openrisc/include/asm/pgalloc.h
-+++ b/arch/openrisc/include/asm/pgalloc.h
-@@ -66,10 +66,10 @@ extern inline pgd_t *pgd_alloc(struct mm_struct *mm)
+diff --git a/arch/sh/include/asm/pgalloc.h b/arch/sh/include/asm/pgalloc.h
+index a9e98233c4d4..30e1823d2347 100644
+--- a/arch/sh/include/asm/pgalloc.h
++++ b/arch/sh/include/asm/pgalloc.h
+@@ -31,10 +31,10 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+ 	set_pmd(pmd, __pmd((unsigned long)page_address(pte)));
+ }
  
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm);
- 
--#define __pte_free_tlb(tlb, pte, addr)	\
--do {					\
--	pgtable_pte_page_dtor(pte);	\
--	tlb_remove_page((tlb), (pte));	\
+-#define __pte_free_tlb(tlb,pte,addr)			\
+-do {							\
+-	pgtable_pte_page_dtor(pte);			\
+-	tlb_remove_page((tlb), (pte));			\
 +#define __pte_free_tlb(tlb, pte, addr)				\
 +do {								\
 +	ptdesc_pte_dtor(page_ptdesc(pte));			\
 +	tlb_remove_page_ptdesc((tlb), (page_ptdesc(pte)));	\
  } while (0)
  
- #endif
+ #endif /* __ASM_SH_PGALLOC_H */
 -- 
 2.39.2
 
