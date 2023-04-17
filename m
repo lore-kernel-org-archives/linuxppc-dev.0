@@ -4,49 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B359AC77B76
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 13:15:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68FA9C77B76
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 13:32:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0SGB1sfGz3gKd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 23:15:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=<UNKNOWN>)
-X-Greylist: delayed 215 seconds by postgrey-1.36 at boromir; Mon, 17 Apr 2023 23:11:22 AEST
-Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0SfB6r1Lz3chk
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 23:32:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQLt+5h;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQLt+5h;
+	dkim-atps=neutral
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0S9k3lhzz3g4x
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 23:11:22 +1000 (AEST)
-Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
-          by outpost.zedat.fu-berlin.de (Exim 4.95)
-          with esmtps (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@zedat.fu-berlin.de>)
-          id 1poOUm-001XyT-HU; Mon, 17 Apr 2023 15:02:12 +0200
-Received: from p5b13a017.dip0.t-ipconnect.de ([91.19.160.23] helo=[192.168.178.81])
-          by inpost2.zedat.fu-berlin.de (Exim 4.95)
-          with esmtpsa (TLS1.3)
-          tls TLS_AES_256_GCM_SHA384
-          (envelope-from <glaubitz@physik.fu-berlin.de>)
-          id 1poOUm-003hGd-9V; Mon, 17 Apr 2023 15:02:12 +0200
-Message-ID: <3c188e948506dc97112dcc070cf16e36209c6cc5.camel@physik.fu-berlin.de>
-Subject: Re: [PATCH v3 16/19] arch/sh: Implement <asm/fb.h> with generic
- helpers
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-To: Thomas Zimmermann <tzimmermann@suse.de>, arnd@arndb.de, 
-	daniel.vetter@ffwll.ch, deller@gmx.de, javierm@redhat.com, 
-	gregkh@linuxfoundation.org
-Date: Mon, 17 Apr 2023 15:02:11 +0200
-In-Reply-To: <20230417125651.25126-17-tzimmermann@suse.de>
-References: <20230417125651.25126-1-tzimmermann@suse.de>
-	 <20230417125651.25126-17-tzimmermann@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0Sd94p3xz3c7S
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 23:31:41 +1000 (AEST)
+Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by dfw.source.kernel.org (Postfix) with ESMTPS id 0BA4E6249A
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:31:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 724EFC433D2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:31:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1681738296;
+	bh=Z1E7VRImbk5O8ynjKxbGEPL5/pNRjHf9QbC2IrDjeEw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=ApQLt+5hMKVQIvzY5fCsHXN1O9d66Vkqdbnf/xozhB9nuWuwLcZf/MN0ppBlfhFIt
+	 HQDUV2nEhzb6hm2lIFc6FOWsKV/xtHSrJDm16DGEKIk7rmSl1kCXD+7UtJki0cUM41
+	 8okXBMRnAHqFb3pXt6yy8HLqPKgBBH01IvciEYmbPaO9iX7on0mQpD89z1YsQnCqhL
+	 q322Ce5KqizgqcdNbLPtssnzKOay7XNC41dL/SlQYjEfg4XGzbmnPKW+wXhduIwJN+
+	 v6rbKR36oXKryWyC6KbHqtudzstgkxltXOwyhoC5jg1NY3BT/2BLRzyKhheW+Oby7i
+	 1ToU1aRNddTrw==
+Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-54c12009c30so524369237b3.9
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 06:31:36 -0700 (PDT)
+X-Gm-Message-State: AAQBX9f7jggBjp+ULOXaI9wJAbFWg0o4rgYEQvBqoHoN03uwcjAsGzvh
+	wWUi0TtGYj26PYvae2mo49DvGObOBeKCvbhDzA==
+X-Google-Smtp-Source: AKy350bviA6nMrYItp2UFoijYxMfOof9zLeZI1Waml/VUI/79m2nqsKw6eSDud+5a83sS7abqkKDxQ68edHzGfQfRRo=
+X-Received: by 2002:a81:b60c:0:b0:54c:a67:90b with SMTP id u12-20020a81b60c000000b0054c0a67090bmr9245222ywh.5.1681738295535;
+ Mon, 17 Apr 2023 06:31:35 -0700 (PDT)
+MIME-Version: 1.0
+References: <20230412224620.8909-1-tanure@linux.com> <20230412224620.8909-2-tanure@linux.com>
+In-Reply-To: <20230412224620.8909-2-tanure@linux.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 17 Apr 2023 08:31:24 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqL1L4EOpVm7nXbZ0t8-9wHVq4531MN4Csemi-4SBd=zig@mail.gmail.com>
+Message-ID: <CAL_JsqL1L4EOpVm7nXbZ0t8-9wHVq4531MN4Csemi-4SBd=zig@mail.gmail.com>
+Subject: Re: [PATCH v3 1/1] of: fdt: Scan /memreserve/ last
+To: Lucas Tanure <tanure@linux.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.48.0 
-MIME-Version: 1.0
-X-Original-Sender: glaubitz@physik.fu-berlin.de
-X-Originating-IP: 91.19.160.23
-X-ZEDAT-Hint: PO
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,65 +68,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, narmstrong@baylibre.com, martin.blumenstingl@googlemail.com, linux-kernel@vger.kernel.org, stefan@agner.ch, linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, Frank Rowand <frowand.list@gmail.com>, Mike Rapoport <rppt@kernel.org>, jbrunet@baylibre.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Thomas!
+On Wed, Apr 12, 2023 at 5:46=E2=80=AFPM Lucas Tanure <tanure@linux.com> wro=
+te:
+>
+> Change the order of scanning /memreserve/ and /reserved-memory node.
+> /reserved-memory node should go first, as it has a more updated
+> description of the memory regions and it can apply flags, like nomap.
+> Also, /memreserve/ should avoid reserving regions described in
+> /reserved-memory node.
 
-On Mon, 2023-04-17 at 14:56 +0200, Thomas Zimmermann wrote:
-> Replace the architecture's fbdev helpers with the generic
-> ones from <asm-generic/fb.h>. No functional changes.
->=20
-> v2:
-> 	* use default implementation for fb_pgprotect() (Arnd)
->=20
-> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-> Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-> Cc: Rich Felker <dalias@libc.org>
-> Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Please give some background details why we need to make this change.
+As-is, sounds like some theoretical issue. IOW, incorporate some of
+the details in the cover letter here. For single patches, you don't
+need a cover letter anyways.
+
+Powerpc folks, please comment and/or test. I worry there could be some
+subtle differences with this change.
+
+>
+> Signed-off-by: Lucas Tanure <tanure@linux.com>
 > ---
->  arch/sh/include/asm/fb.h | 15 +--------------
->  1 file changed, 1 insertion(+), 14 deletions(-)
->=20
-> diff --git a/arch/sh/include/asm/fb.h b/arch/sh/include/asm/fb.h
-> index 9a0bca2686fd..19df13ee9ca7 100644
-> --- a/arch/sh/include/asm/fb.h
-> +++ b/arch/sh/include/asm/fb.h
-> @@ -2,19 +2,6 @@
->  #ifndef _ASM_FB_H_
->  #define _ASM_FB_H_
-> =20
-> -#include <linux/fb.h>
-> -#include <linux/fs.h>
-> -#include <asm/page.h>
-> -
-> -static inline void fb_pgprotect(struct file *file, struct vm_area_struct=
- *vma,
-> -				unsigned long off)
-> -{
-> -	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
-> -}
-
-Looking at the macro in asm-generic/fb.h, fb_pgprotect() is being replaced =
-with
-a no-op function. Is that intentional? Can you briefly explain the backgrou=
-nd
-for this change?
-
-> -static inline int fb_is_primary_device(struct fb_info *info)
-> -{
-> -	return 0;
-> -}
-> +#include <asm-generic/fb.h>
-> =20
->  #endif /* _ASM_FB_H_ */
-
-Thanks,
-Adrian
-
---=20
- .''`.  John Paul Adrian Glaubitz
-: :' :  Debian Developer
-`. `'   Physicist
-  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
+>  drivers/of/fdt.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index d1a68b6d03b3..c28aedd7ae1f 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -635,6 +635,9 @@ void __init early_init_fdt_scan_reserved_mem(void)
+>         if (!initial_boot_params)
+>                 return;
+>
+> +       fdt_scan_reserved_mem();
+> +       fdt_reserve_elfcorehdr();
+> +
+>         /* Process header /memreserve/ fields */
+>         for (n =3D 0; ; n++) {
+>                 fdt_get_mem_rsv(initial_boot_params, n, &base, &size);
+> @@ -643,8 +646,6 @@ void __init early_init_fdt_scan_reserved_mem(void)
+>                 memblock_reserve(base, size);
+>         }
+>
+> -       fdt_scan_reserved_mem();
+> -       fdt_reserve_elfcorehdr();
+>         fdt_init_reserved_mem();
+>  }
+>
+> --
+> 2.40.0
+>
