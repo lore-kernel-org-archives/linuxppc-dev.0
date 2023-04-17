@@ -4,37 +4,32 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C0D5C6FD18
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 10:57:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28C92C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 10:58:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1d6d6Q8Xz3fTq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 20:57:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fintech.ru (client-ip=195.54.195.159; helo=exchange.fintech.ru; envelope-from=n.zhandarovich@fintech.ru; receiver=<UNKNOWN>)
-X-Greylist: delayed 85 seconds by postgrey-1.36 at boromir; Mon, 17 Apr 2023 23:34:55 AEST
-Received: from exchange.fintech.ru (exchange.fintech.ru [195.54.195.159])
-	(using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1d783wNxz3cLB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 20:58:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=softfail (domain owner discourages use of this host) smtp.mailfrom=gmail.com (client-ip=77.87.242.242; helo=harvie.cz; envelope-from=tomas.mudrunka@gmail.com; receiver=<UNKNOWN>)
+X-Greylist: delayed 383 seconds by postgrey-1.36 at boromir; Tue, 18 Apr 2023 02:25:12 AEST
+Received: from harvie.cz (harvie.cz [77.87.242.242])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0XTN66V2z3cTk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 02:25:11 +1000 (AEST)
+Received: from anemophobia.amit.cz (unknown [31.30.84.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0Shv4sbQz3bhD
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 23:34:55 +1000 (AEST)
-Received: from Ex16-01.fintech.ru (10.0.10.18) by exchange.fintech.ru
- (195.54.195.159) with Microsoft SMTP Server (TLS) id 14.3.498.0; Mon, 17 Apr
- 2023 16:32:46 +0300
-Received: from localhost (10.0.253.138) by Ex16-01.fintech.ru (10.0.10.18)
- with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2242.4; Mon, 17 Apr
- 2023 16:32:46 +0300
-From: Nikita Zhandarovich <n.zhandarovich@fintech.ru>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>
-Subject: [PATCH] ASoC: fsl_asrc_dma: fix potential null-ptr-deref
-Date: Mon, 17 Apr 2023 06:32:42 -0700
-Message-ID: <20230417133242.53339-1-n.zhandarovich@fintech.ru>
-X-Mailer: git-send-email 2.25.1
+	by harvie.cz (Postfix) with ESMTPSA id C72A61802BA;
+	Mon, 17 Apr 2023 18:18:41 +0200 (CEST)
+From: Tomas Mudrunka <tomas.mudrunka@gmail.com>
+To: danielwa@cisco.com
+Subject: Re: [PATCH 1/4] add generic builtin command line
+Date: Mon, 17 Apr 2023 18:18:18 +0200
+Message-Id: <20230417161818.2002082-1-tomas.mudrunka@gmail.com>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20190319232448.45964-2-danielwa@cisco.com>
+References: <20190319232448.45964-2-danielwa@cisco.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.0.253.138]
-X-ClientProxiedBy: Ex16-02.fintech.ru (10.0.10.19) To Ex16-01.fintech.ru
- (10.0.10.18)
 X-Mailman-Approved-At: Wed, 19 Apr 2023 20:57:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -47,50 +42,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Natalia Petrova <n.petrova@fintech.ru>, lvc-project@linuxtesting.org, Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev@lists.ozlabs.org, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>, Nikita Zhandarovich <n.zhandarovich@fintech.ru>, Fabio Estevam <festevam@gmail.com>, linux-kernel@vger.kernel.org
+Cc: christophe.leroy@c-s.fr, Tomas Mudrunka <tomas.mudrunka@gmail.com>, xe-linux-external@cisco.com, linux-kernel@vger.kernel.org, robh+dt@kernel.org, maksym.kokhan@globallogic.com, dwalker@fifo99.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-dma_request_slave_channel() may return NULL which will lead to
-NULL pointer dereference error in 'tmp_chan->private'.
-
-Correct this behaviour by, first, switching from deprecated function
-dma_request_slave_channel() to dma_request_chan(). Secondly, enable
-sanity check for the resuling value of dma_request_chan().
-Also, fix description that follows the enacted changes and that
-concerns the use of dma_request_slave_channel().
-
-Fixes: 706e2c881158 ("ASoC: fsl_asrc_dma: Reuse the dma channel if available in Back-End")
-Co-developed-by: Natalia Petrova <n.petrova@fintech.ru>
-Signed-off-by: Nikita Zhandarovich <n.zhandarovich@fintech.ru>
----
- sound/soc/fsl/fsl_asrc_dma.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 3b81a465814a..05a7d1588d20 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -209,14 +209,19 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 		be_chan = soc_component_to_pcm(component_be)->chan[substream->stream];
- 		tmp_chan = be_chan;
- 	}
--	if (!tmp_chan)
--		tmp_chan = dma_request_slave_channel(dev_be, tx ? "tx" : "rx");
-+	if (!tmp_chan) {
-+		tmp_chan = dma_request_chan(dev_be, tx ? "tx" : "rx");
-+		if (IS_ERR(tmp_chan)) {
-+			dev_err(dev, "failed to request DMA channel for Back-End\n");
-+			return -EINVAL;
-+		}
-+	}
- 
- 	/*
- 	 * An EDMA DEV_TO_DEV channel is fixed and bound with DMA event of each
- 	 * peripheral, unlike SDMA channel that is allocated dynamically. So no
- 	 * need to configure dma_request and dma_request2, but get dma_chan of
--	 * Back-End device directly via dma_request_slave_channel.
-+	 * Back-End device directly via dma_request_chan.
- 	 */
- 	if (!asrc->use_edma) {
- 		/* Get DMA request of Back-End */
+This seems quite useful. Can you please merge it?
