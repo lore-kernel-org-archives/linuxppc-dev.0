@@ -4,133 +4,200 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C9E5C77B70
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 15:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9135AC77B7A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 16:28:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0Vz558sWz3fLT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Apr 2023 01:17:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0XYH5NfGz3fS0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Apr 2023 02:28:35 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=b7Nw6r9w;
+	dkim=temperror header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=anMF1gf3;
+	dkim=pass (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=selector1 header.b=b8goBo4L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=windriver.com (client-ip=205.220.178.238; helo=mx0b-0064b401.pphosted.com; envelope-from=prvs=3471abd109=paul.gortmaker@windriver.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=cisco.com (client-ip=173.37.86.73; helo=rcdn-iport-2.cisco.com; envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=windriver.com header.i=@windriver.com header.a=rsa-sha256 header.s=PPS06212021 header.b=b7Nw6r9w;
+	dkim=temperror header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=iport header.b=anMF1gf3;
+	dkim=pass (1024-bit key; unprotected) header.d=cisco.com header.i=@cisco.com header.a=rsa-sha256 header.s=selector1 header.b=b8goBo4L;
 	dkim-atps=neutral
-X-Greylist: delayed 936 seconds by postgrey-1.36 at boromir; Tue, 18 Apr 2023 01:16:28 AEST
-Received: from mx0b-0064b401.pphosted.com (mx0b-0064b401.pphosted.com [205.220.178.238])
+X-Greylist: delayed 124 seconds by postgrey-1.36 at boromir; Tue, 18 Apr 2023 02:27:37 AEST
+Received: from rcdn-iport-2.cisco.com (rcdn-iport-2.cisco.com [173.37.86.73])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0Vy473jWz3cMr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 01:16:26 +1000 (AEST)
-Received: from pps.filterd (m0250811.ppops.net [127.0.0.1])
-	by mx0a-0064b401.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33HDmOdW015512;
-	Mon, 17 Apr 2023 15:00:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=windriver.com; h=date : from : to :
- cc : subject : message-id : references : content-type : in-reply-to :
- mime-version; s=PPS06212021;
- bh=JiFgLnV6XxoI/mu1S7aAYlTsq1r9nIeaPKZCfcwAszo=;
- b=b7Nw6r9wXJv9Blwec13uqryt1zSVlVIZXo8oZcQivh8AVC3FY0FNCjfMmVMSQ4MsduVY
- bJ2gu0qH6FPtKbRUKM9hAfP7jP21iWDTXbyal/+BSrtmW3phBAJMkHPpJRqaZtfUUwRf
- 3OQNkPAXsUFyb+oN87bKXpTOoVjy3FEMyzPIzTJlJqRZyXLKMGRZ9PvhJA/xGJoIn0Gl
- g/IznsEbI6QffUqMcQzqr6BVAt9jLuIG3YnSzM9zsafIaDxRrjf6/B54Co1g0qJrmeOc
- Cm7x4npmgTwWCe33c/R8nDSYIWtm/yEhUqRH2M+kFOC1B3OOlfeOUQbbRGidEoU6Eh++ HQ== 
-Received: from nam04-mw2-obe.outbound.protection.outlook.com (mail-mw2nam04lp2169.outbound.protection.outlook.com [104.47.73.169])
-	by mx0a-0064b401.pphosted.com (PPS) with ESMTPS id 3pyh53jvk9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Apr 2023 15:00:11 +0000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0XX90LhMz3cdn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 02:27:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=cisco.com; i=@cisco.com; l=204; q=dns/txt; s=iport;
+  t=1681748857; x=1682958457;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:content-id:content-transfer-encoding:
+   mime-version;
+  bh=dCZa6IxFFw9MibcNSgybwVByt151nRSFqaII++MsmSk=;
+  b=anMF1gf3nEHEZ5ofy/+YO+znvP4eoiNWy2DMpi40EcLLUOY28BjEU3wf
+   3VdY/KtRMAEqWwAIBoMmauRgIbgcrbCi+TOliibdVJpYlH8Z7El31xFvG
+   IsfqYvf/7vpKTwtmeH6e+hiEi2Trim9c0fINgTHDhRXVGxkGnbVOoBX5q
+   o=;
+X-IPAS-Result: =?us-ascii?q?A0BRAADYcT1kmJhdJa1aHAEBAQEBAQcBARIBAQQEAQFAJ?=
+ =?us-ascii?q?YEYBQEBCwGBW1JzWykSRogeA4UuiDaSIIs8gSUDVg8BAQENAQFEBAEBhQYCh?=
+ =?us-ascii?q?TsCJTYHDgECAgIBAQEBAwIDAQEBAQEBAwEBBQEBAQIBBwQUAQEBAQEBAQEeG?=
+ =?us-ascii?q?QUOECeFaA2GBAEBAQMSKAYBATcBDwIBCBgeEDIlAgQOJ4Jcgl0DAaEFAYE/A?=
+ =?us-ascii?q?oogeIE0gQGCCAEBBgQFnyEJFoErAZE6JxuBSUSEQD6CYgKFdIIumluBNHaBI?=
+ =?us-ascii?q?A6BPIEEAgkCEWuBEAhrgXlAAg1kCw5vgUmBToFcBAIUNg4OHDcDRB1AAws7O?=
+ =?us-ascii?q?j01FB8GVoEZJAUDCxUqRwQIOAYcNBECCA8SDwYmRAxCNzMTBlwBKQsOEQNNg?=
+ =?us-ascii?q?UYEL4FdBgEmJKMMlhStdgqDfqBtTRODVwESjGaYX5d3gk6lKAIEAgQFAg4BA?=
+ =?us-ascii?q?QaBagQvgVtwFYMiUhkPjiAZg1mPeXU9AgcLAQEDCYtFAQE?=
+IronPort-PHdr: A9a23:VC/rNBCnvZwk/904PVmjUyQVoBdPi9zP1kY98JErjfdJaqu8usikN
+ 03E7vIrh1jMDs3X6PNB3vLfqLuoGXcB7pCIrG0YfdRSWgUEh8Qbk01oAMOMBUDhav+/Ryc7B
+ 89FElRi+iLzKlBbTf73fEaauXiu9XgXExT7OxByI7H5E4jTgsCo3si5+obYZENDgz/uKb93J
+ Q+9+B3YrdJewZM3M7s40BLPvnpOdqxaxHg9I1WVkle06pK7/YVo9GJbvPdJyg==
+IronPort-Data: A9a23:9KI8wqsyWr/JsWKYG0esLdzHvefnVCZeMUV32f8akzHdYApBsoF/q
+ tZmKWmBO62OMzf0ed1yPouy9xsGu5ODmoQxTlNq+H00H3tAgMeUXt7xwmUckM+xwmwvaGo9s
+ q3yv/GZdJhcokf0/0vrav67xZVF/fngqoDUUIYoAQgsA141IMsdoUg7wbVh3tc32YHR7z6l4
+ LseneWOYDdJ5BYsWo4kw/rrRMRH5amaVJsw5zTSVNgT1LPsvyB94KE3ecldG0DFrrx8RYZWc
+ QpsIIaRpQs19z91Yj+sfy2SnkciGtY+NiDW4pZatjTLbhVq/kQPPqgH2PU0Lmpy1ROAlvVLz
+ shklKCoQxUWGY/Dl7FIO/VYO3kW0axu4rTLJz20ttaeihSAeHr3yPIoB0YzVWEa0r8oWicVq
+ rpJc3ZUM0rra+GemNpXTsFgj8IiIc30NasUu2prynfSCvNOrZXrH/mSvYQJhW1YasZmGfCGX
+ +QaLjVWazfaZEJBZBQtKokTk7L97pX4W2QI9A3KzUYt2EDXzQpswKD1O5/Zd8KiQcROgl3eo
+ XDC9m7iRBYAO7SiJSGt6HmggKrEmjn2HdtUH7yj/fksi1qWroAONPEIfRyWhKefg0ebYdRCA
+ m0o4iA8ko8Q+0P+G7ERQCaEiHKDuxcdXf9ZHOs79ByBx8LoD+CxWjdsotlpNYVOiSMmedA5/
+ gTWwI6xVFSDpJXQGC3NrO7Fxd+nEXFNdTdqWMMScecSDzDeTGwblBnDSJNoF7S4y4SzEjDry
+ DfMpy8771nysSLp//vnlbwkq2v8znQscuLTzl+JNo5CxlggDLNJn6TytTDmAQ9ode51tGWps
+ nkegNS55+sTF5yLnyHlaLxTTOj3uafVam2M3gQH83wdG9KFpiXLkWd4vW4WGauVGp1slcLBO
+ RWK4loBuPe/wlP7NP4fj32N5zQClPi8SouNugH8ZdtVaZ85bx6c4CxrfiatM5PFziARfVUEE
+ c7DK66EVC9CYYw+lWbeb7lGi9cDmHthrV4/sLimlXxLJ5LEOi7MIVrEWXPTBt0EAFSs+luOq
+ 44DZpXVlX2ykoTWO0HqzGLaFnhTRVATDpHtoMsRfemGSjeK0kl4YxMN6dvNo7BYopk=
+IronPort-HdrOrdr: A9a23:30Fq8q0fT9Q+URU+ANivPQqjBedxeYIsimQD101hICG9Lfbo7v
+ xGzc5rsyMc1gxhP03IwerwT5VoIUmskKKc4eEqTMiftJGPghruEGgQ1/qV/9SGIVy5ygc979
+ YlT0EaMqyJMbEUt7eI3ODVKadc/DDDytHduQ689QY1cegJUdAT0+4RMG/yeScaKGYpZPpJd+
+ v/l7E33QZIO05nG/hTbUN1IdQr0ue75K4OFiR2diLPhjP+8Q9AwYSKWyRw2C1uNw9n8PMHyy
+ zoggb57qKsv7WQ0RnHzVLe6JxQhZ/I1sZDLNbksLlPFhzcziKTIKhxUbyLuz445Mu17kwxrd
+ XKqxA8e+xu9nLqeH2vqxeF4Xi77N9u0Q6+9baruwq9nSXLfkNlNyOHv/MJTvLt0Tt9gDi76t
+ Ma44vWjesFMfqKplW12zGBbWAgqqPzmwt7rQbW5EYvBLf3r9Rq3N4i1VIQH5EaEC3g7oc7VO
+ FoEcHH/f5TNUiXdnbDowBUsZ+Rt1kIb1a7q3I5y4yo+ikTmGo8w1oTxcQZkHtF/JUhS4Nc7+
+ CBNqhzjrlBQsIfcKo4XY46MI6KI32IRQiJPHOZIFzhGq1CM3XRq4Tv6LFw4O2xYpQHwJY7hZ
+ yEWlJFsmw5fV7oFKS1rd922wGIRH/4USXmy8lY6ZQ8srrgRKDzOSnGU1wqm9vImYRQPiQaYY
+ f9BHt7OY6uEYK1I/cC4+TXYegeFUUj
+X-Talos-CUID: 9a23:6sIYrG8B78cUp7qIemiVvwk5P54De3T49nHNCm6EEWx7d5q3RlDFrQ==
+X-Talos-MUID: 9a23:D1M43wo9dtLpE0kNm6MezzVkbP9G4OOhMUcui5JZtZfHDw5rFjjI2Q==
+X-IronPort-Anti-Spam-Filtered: true
+Received: from rcdn-core-1.cisco.com ([173.37.93.152])
+  by rcdn-iport-2.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA; 17 Apr 2023 16:24:20 +0000
+Received: from rcdn-opgw-4.cisco.com (rcdn-opgw-4.cisco.com [72.163.7.165])
+	by rcdn-core-1.cisco.com (8.15.2/8.15.2) with ESMTPS id 33HGOKpk003066
+	(version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 16:24:20 GMT
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Received: from mail-bn8nam12lp2174.outbound.protection.outlook.com (HELO NAM12-BN8-obe.outbound.protection.outlook.com) ([104.47.55.174])
+  by rcdn-opgw-4.cisco.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2023 16:24:20 +0000
+Authentication-Results: rcdn-opgw-4.cisco.com; dkim=pass (signature verified) header.i=@cisco.com; spf=Pass smtp.mailfrom=danielwa@cisco.com; dmarc=pass (p=quarantine dis=none) d=cisco.com
+X-IronPort-AV: E=Sophos;i="5.99,204,1677542400"; 
+   d="scan'";a="237999"
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UsPcCH9oRftRAy9A4cYON5SAPeF/u6pBgg91U/hLr/fhJn4VyYT0z3nHN7yeZVpnso3C4+JV27wrpGWuHEYY6P568AXeYpVpdw/jh404hQ9SYNidoD9BW6jkOVttq6MGdT3EgMryhbOg5fTJx+g5Pp17DWVv0WLxWZBv1NrX1SI7OnxKsKzDlm6npOWjNxNat5ugfGxOwvAVVYo21MQ4qnTlcG2fW9lgCbL0aBtHzRH1fbpztMiLij9KLxTm32EHl+smPa/wCHhEObbXebHSUiTlCA/WXg/PqirAuVU4DcfGIntRl5+IXT6iGPB5TsZ4N9ryfDKjKxjs066+QfiJRQ==
+ b=gmCwtsZjmlrxRwxvmwO6oC+fpZMOsmxJ9yJ3gn0FJaXy9lI4txb1GpQEj2Jr92yUxDjaQ8QPfTNVzcyc+Ji6TUSzSaLz0DMoVLIMaLIU6X8OJ5967qV7y72ZousnRiQfvY4oCHreCF8ix52Jy0P8/iA/fi+Egq9iQaxmkVkY1rezrKKjGSVgE0OLtFI0PKB6Jsj+iNFQIQliTo4W99GRUOstW2qSSnvATJE7zLuoJSXAO/3d/FfdTj3v/9DUfpe7jM/WdTFJJRzq43D0lUpuJ3LTNYGoP6RlZlzvFaj/DfzERlBo3jyzV1n7vwL/L8ZCXSPYkHZTrHhDt614k6EhfQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=JiFgLnV6XxoI/mu1S7aAYlTsq1r9nIeaPKZCfcwAszo=;
- b=TLaHiRrPu+TzhFe6H/hO0pJC28yLwGQJaYQaHlpKbUvRxlzxOS45v4yvslvpvkGBQ24AhJGPPZBRnFZWMoWPwm9AQjplYTsyqXqyHKs/K+gj+XZVhe3lE9IJXhAe3bI1/pQSIWkYxu8bHcncKa9uaPk8YFI1km3AOJ0ElcBt2rp1ru27M+WNya7dFu0a4iYrxN66nxfomg/lYXlELoGvSFQbomIDis1I/gffro281qKsD6khtM3fgiD8r6XqNQnW+A6sTFo9BMBhOdYEoAr7A+XeBry58foQCnEzk2ugiaZSKEOarcNeKMCgSH/Bnjqcw3Qv1ncetEf2PGK3CkYG1g==
+ bh=dCZa6IxFFw9MibcNSgybwVByt151nRSFqaII++MsmSk=;
+ b=kf9so+XIX8Se/itDlIvLkVUjexMHZCJKHpnHnnmNVVvVaBp/PCV+sbn5aaLyZvioTUR5m1bPEQo6L2pXD7wC5vEJZKMR75r2ViAGOHBjNg1eDsKphtTievI5COHnvpdtxAl4kyE6WOFEvBfM4m6VeC9T7xvvy7Lg9GSdjFZjQFfHHB4idN5QFe5dpqlFZaf1gb7h1zprSyubULbWAuOpsJ3i0CgQzM69xfajuV5zei7sxFfp+z/mOZeGOpKMmXg6RDQK/RVK78BNty/X07D51HtFicH83V78ZYd5Y4uznfSN+f3nMj/Pw1OyNE0FmeThIIoCtZ5E8xao7gwV3hnIyA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=windriver.com; dmarc=pass action=none
- header.from=windriver.com; dkim=pass header.d=windriver.com; arc=none
-Received: from IA0PR11MB7378.namprd11.prod.outlook.com (2603:10b6:208:432::8)
- by PH7PR11MB8252.namprd11.prod.outlook.com (2603:10b6:510:1aa::14) with
+ smtp.mailfrom=cisco.com; dmarc=pass action=none header.from=cisco.com;
+ dkim=pass header.d=cisco.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cisco.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=dCZa6IxFFw9MibcNSgybwVByt151nRSFqaII++MsmSk=;
+ b=b8goBo4LtLJwG/C7du/WyVyuID3kGoASyiVTxpLn+g1GLoYPMDsyh7mCeY/dScfxhGB5kFzeDXEP3Sf6rdkj+cpAIRU7ak2cjS2qu7YmRCvWJshL1RSYs4RMPgZ+bsZHtfyDWV4bl/ex38PUZ+8PjBEc6eiYRQc6itIVxuxvovE=
+Received: from SJ0PR11MB5790.namprd11.prod.outlook.com (2603:10b6:a03:422::15)
+ by CH3PR11MB7201.namprd11.prod.outlook.com (2603:10b6:610:143::10) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.30; Mon, 17 Apr
- 2023 15:00:06 +0000
-Received: from IA0PR11MB7378.namprd11.prod.outlook.com
- ([fe80::61d5:7319:52f0:cc4b]) by IA0PR11MB7378.namprd11.prod.outlook.com
- ([fe80::61d5:7319:52f0:cc4b%4]) with mapi id 15.20.6298.045; Mon, 17 Apr 2023
- 15:00:06 +0000
-Date: Mon, 17 Apr 2023 11:00:02 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Leo Li <leoyang.li@nxp.com>
-Subject: Re: [RFC PATCH 0/4] Remove some e500/MPC85xx evaluation platforms
-Message-ID: <ZD1e8ujPlrCeYiuo@windriver.com>
-References: <20230221194637.28436-1-paul.gortmaker@windriver.com>
- <CADRPPNTyGPZOLwb5e20_FxwkpJ4ayt7VrgAEDgg7XqYSha3vMg@mail.gmail.com>
- <87o7nr9png.fsf@mpe.ellerman.id.au>
- <AM0PR04MB628965937FB711C2DA3A20FF8F999@AM0PR04MB6289.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AM0PR04MB628965937FB711C2DA3A20FF8F999@AM0PR04MB6289.eurprd04.prod.outlook.com>
-X-ClientProxiedBy: YT4PR01CA0220.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:eb::16) To IA0PR11MB7378.namprd11.prod.outlook.com
- (2603:10b6:208:432::8)
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.45; Mon, 17 Apr
+ 2023 16:24:17 +0000
+Received: from SJ0PR11MB5790.namprd11.prod.outlook.com
+ ([fe80::66a3:de62:35f4:ad97]) by SJ0PR11MB5790.namprd11.prod.outlook.com
+ ([fe80::66a3:de62:35f4:ad97%6]) with mapi id 15.20.6298.045; Mon, 17 Apr 2023
+ 16:24:17 +0000
+From: "Daniel Walker (danielwa)" <danielwa@cisco.com>
+To: Tomas Mudrunka <tomas.mudrunka@gmail.com>
+Subject: Re: [PATCH 1/4] add generic builtin command line
+Thread-Topic: [PATCH 1/4] add generic builtin command line
+Thread-Index: AQHZcUkOD6ppc7o7REqMkKuIthkl5Q==
+Date: Mon, 17 Apr 2023 16:24:16 +0000
+Message-ID: <20230417162415.GF1391488@zorba>
+References: <20190319232448.45964-2-danielwa@cisco.com>
+ <20230417161818.2002082-1-tomas.mudrunka@gmail.com>
+In-Reply-To: <20230417161818.2002082-1-tomas.mudrunka@gmail.com>
+Accept-Language: en-GB, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-Auto-Response-Suppress: DR, OOF, AutoReply
+X-MS-TNEF-Correlator: 
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: SJ0PR11MB5790:EE_|CH3PR11MB7201:EE_
+x-ms-office365-filtering-correlation-id: 4cfc4be6-55f8-4203-9a98-08db3f603097
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info:  q8mQhRQVLghGKd/wH8NYUjSGCfi0dNw8XC08Au6DqC5rCNVBx4weTW5+z8tVWJls0hgHLBI7elhXsIZ7gTebUPO9SZmlSfcj38GbZBrJ317DGdWGySiYRZN/KLtt1U56jNfleZxwgB88XtfDZ475DI0EnrQ/UBAN6tIGIzqR0DyFeY7cmSAJYM68JlkJnepaX2F3kvxBJCubsBHFtxH41CRVYS5JYC9+TDzB1XUudM1A4OoGj6nzJ7Q3HlKym+i830r5GUP+Cm6IYtAgJcGopd+vEedf2fc+U6ZYLn+gjKmNylAe2XN8oMR/tcND7y6O2bNPogy6tAm4qV3umUf2aNp7IXprjt9zg9yA3GTPYQb+hERLdqlESh3P270uyAHFbAm2ksKwwnH+alzy2BBmLTJInfmfJ8PSAvkIkjvQbEflC5gUg2V3BtJEtp4T+Zv25NXV4vzQEvfxBF6y8fdWOLWNKiVlyh5BpOEVw6ku6Mz92ZjIPLc+oswZ3Ue9erj6ocWpm2sJmNf+S68e3BZH/vXqA6vRpSDphWkP5TCPIaAS0yQnGHSkKkzThYDBQ4sDjd7XR2NLmphmUbtk+a4jXEQ5qNSeB4eCip6nVzSXY0iRISKOyujjCc2FP3CtROyqeLw/JU/4/B92BLAHas1zIg==
+x-forefront-antispam-report:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SJ0PR11MB5790.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(7916004)(396003)(376002)(366004)(346002)(39860400002)(136003)(451199021)(6486002)(478600001)(86362001)(71200400001)(558084003)(26005)(83380400001)(33656002)(107886003)(6506007)(186003)(6512007)(9686003)(1076003)(38100700002)(38070700005)(122000001)(33716001)(64756008)(6916009)(76116006)(66446008)(66946007)(66476007)(66556008)(316002)(2906002)(4326008)(8936002)(5660300002)(8676002)(41300700001)(54906003)(41533002);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0:  =?us-ascii?Q?tlmGXlvfmrI/RoC+yvY9p+QZ6Wqd2bdbE9HM4wWfZ6DqVsBp/dD0mMBzohk8?=
+ =?us-ascii?Q?10aQyxbkUG5eFyydMzmXbRFNuG/0j6AICpTYdn4iW8MViN2D6wF4GkQSMpMh?=
+ =?us-ascii?Q?OZ6tVH/ZP8YKIg+GvmZpWHHYK9xNlormSvbmK0Rf1hFw9ddnI28XZW4buWuY?=
+ =?us-ascii?Q?gKsqYlH7WYFDjSJYNRDODVYr2QmC+a0kG7sxWuDaHHDXk2Zq6nvG4o1v5tVJ?=
+ =?us-ascii?Q?qD5earixYaGb7HV/Q0S81DU/3Rn4iL8p5Q+N3/DUHhRx9xy+vNi5SBV0iZb7?=
+ =?us-ascii?Q?C/omLKiDArPWN/ztGoUk9v/ofU5nzw1wI+/Qw10oMFX0BLAb1duf/QMdun+q?=
+ =?us-ascii?Q?kMFStAmbeVdyFmQ3iv6KQPLSjA9iY3LfbyIicbfDFiYF6tGl8UNH1EzmnEel?=
+ =?us-ascii?Q?ERu4uniGUaGOeQTnT7yA4q2qcy7iozVT1WhJ0XxoEyh3YIwuXyoO/vVErdo0?=
+ =?us-ascii?Q?1DJ+R0kz8VfHxKTnx/oLUsrhncsCNfwkNFp7CNJZQscmr18RqdiRsM/07Ig5?=
+ =?us-ascii?Q?N7Ai3PSHboQMAej0hEjZmdLtxrBX9JWD6neQrqrQ9/XHnE91YPC6VwNJ/cjr?=
+ =?us-ascii?Q?Zdg/lk6HtGpnUdQewlOJXy8DOgYC91A/L/aXc9t3QeMMtloH/lYnH4YUU52V?=
+ =?us-ascii?Q?pxDjmrNrJ8PeboGLawsJZeIG8PD+wtt5hZB5WsZ3KiYY3GncoKdtkVwjlc4p?=
+ =?us-ascii?Q?CITvHiQkDthwKYs7AczEHCyy+1elUW7UQyPRsvbtuQdS68PpDTWMMGLVEBRK?=
+ =?us-ascii?Q?Vz+F4UiSHixUQLiV4MRLu8OhjUioZhehqYhxF9X4POcaqBdTKL4Pw/Xsejk4?=
+ =?us-ascii?Q?C3Fj9eL7Ca6Mz39bfeqX5dXKwTiQs9V3VSaIRg4yAPJQbKywvjdSD9Ds9QRt?=
+ =?us-ascii?Q?uMGi09Vu9yqViXEqKdp5TwXxoMjex0MsY/2+V8rRsmiRMZYXGeSJ3+CMEfTu?=
+ =?us-ascii?Q?evms0QWKdTysNfP2QExXc4T9YLbh4KNINW/WNLigMUtj1szUUODytI+SClgM?=
+ =?us-ascii?Q?chJDuvVoRY/642+L9DE7+sPX+5H51kjN3ygqAJzKp7yz2MleONKnwf8hlOPw?=
+ =?us-ascii?Q?hRvrL2JJVRqIH0HgTbxQyOyVpAiZupdVUaPoD+s303PpC2LdN0mWqEsnpNyA?=
+ =?us-ascii?Q?K7NIG8gFHaRk0p+7EJqGwCszvUaOpRbuZ+sPNkS677dMie7XRtE52HVpl5Fa?=
+ =?us-ascii?Q?KCKh419jLJOJGXkVbDgmfqasVlQ6C3U9bIkLdJ1no0DpS9BGTsZq8sPKXrVr?=
+ =?us-ascii?Q?r2eIgpHa0aJsGxhgnrDatYfbGGsxKAJZ1A75Ls5gEmj5QDNnZYI0NOBXUl6P?=
+ =?us-ascii?Q?Dwk4Kmr9qoqZn+crBor3Fyd0fM5+gxSad8MwdTfZ4T6cX3OqEEeh47Q1/AHb?=
+ =?us-ascii?Q?9+i7W+G3+Nj0orcsugLtV7MkoGOVujvAgXd4HInQKfvrmdun1D9y3x19hAJa?=
+ =?us-ascii?Q?pfShxXLYQ0mjfA1LSQBI46ToOuAuvBoPsOMx9s69Yw2Y/PYApgTetRQkI4MB?=
+ =?us-ascii?Q?vgDVZpqK5BRFidaOmlh8Eei6PgjH2GnLVCIxv8qLUl9d7fgXRSycVDQBG5/M?=
+ =?us-ascii?Q?zxHpALiql/dzq7hedgThFD8XBHw/38hZ2PeBrT77ZMS4eTkk9CL35ss1B5Ro?=
+ =?us-ascii?Q?+Q=3D=3D?=
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <4BBE78A48344874283E8B1EE5EC9FE58@namprd11.prod.outlook.com>
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: IA0PR11MB7378:EE_|PH7PR11MB8252:EE_
-X-MS-Office365-Filtering-Correlation-Id: 823e57f0-31fd-4242-a5ae-08db3f546e7c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	Ffe/uNBoVz/aSqUsWWzn6N9Z09VjWjdxCTLOaG++kZQp26NWR59Pqc6sQNKNHFKh/GvCw16HdsT9Nm6JNI2AsTmtRlkORx1Bg4Hp7IeBED8/72VFa893/Ngc5iDwNh0qvIxYrIYvlL11NIAbkuxsmK5rg6T0fWgRLncQ8pwp3sjW4BWAw15/8kyd1yZPKaCnz7ngMCNb/6QN2mvThISVrnTREkeDq8yR32DKGpA6AZkwW9oL3MGrFblU6xfMppGJPq0n5dUpF0K+kOnb6k/al0vOSGxtCt6AEV4+WCoejFBgKyIIGRf3Uy9U2KfjX9+X7/Utq0cfpq5HzLgninP21w+E2JiMwxsndgO/wX2yJCKCoUkfJUMLjqmyfLbNyBNRRZP22KCQFQwsEJbEHkteYkN+6SXc8pMAhv+y74EAeaRn8pCTMFyCAgZ46n+OHBuf62yyZJounZypXrxJRl93Hp/d+zwQk7PTGqTiQwtw4JvNjOXcCjBDDM1O/dnJHni6xaoqWMRHyQkNGW9wZRAbssx00kZnrCtVhpvFJD/hKbyyRdL7xNBlPGDG92W0H3W6
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:IA0PR11MB7378.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(376002)(39850400004)(396003)(366004)(346002)(136003)(451199021)(5660300002)(8936002)(54906003)(478600001)(6666004)(6916009)(41300700001)(83380400001)(8676002)(44832011)(4326008)(66556008)(6486002)(66476007)(66946007)(316002)(6506007)(26005)(6512007)(186003)(53546011)(2906002)(66899021)(2616005)(38100700002)(86362001)(36756003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?DZ8q8rTA4JG3UHhoTItzmJoQy/OHu4JZaHBaxn2fWxbZXHBF/ND6/TJrC5OI?=
- =?us-ascii?Q?qRtFb65O3BsdQ8vwNEAQU3ep7w/OvulK2Af22UxpVjmwiffOMsEynrzt7r5Y?=
- =?us-ascii?Q?VrK1TTkrXeZjuCUYmR2Bm/3eWT6qJx9L4VduRIoUppsJMwl2hny9Ks/SHj8+?=
- =?us-ascii?Q?XEbKT37D52iaXqXreu0A9e+UgIKLJyoIZKJ77Zbau2jTwQNtUB/zVt2saTyE?=
- =?us-ascii?Q?IODWgF49mv/ov9wnqKkMcYfGG9GayIyn6OUWGo+yJ9IcLLl04PfbUN27k7LL?=
- =?us-ascii?Q?Rbp3NNF/3SOsqtivU/8cAIV9P8JYGqwKt0p8WcPxzCT3cICG+bUUOyo0/Orm?=
- =?us-ascii?Q?qk1WT7uqk/qAn3lBxFlg+1gMSt6oAoUz+enCsLvM32Q7HVIr3wkxCC8eM0lb?=
- =?us-ascii?Q?ZYKyBc3h0H3cmaeE5GnnrboTVUszEgmZWvAJbH8LyoFIvVcIhl1n4nDB8m9g?=
- =?us-ascii?Q?EViZT3XzYrrMf1b4MXL7p2tUm3/tSARhLlU6VGvNA+7jlLIQk6Tz6HxSActP?=
- =?us-ascii?Q?dQUhrZAVHG4S+rcXyrt5UxlP0i9bThqKdN4JPi33VNoiz3oiMjodXef7MKUG?=
- =?us-ascii?Q?aWLJwI2tQqqFtGqaTYEhqsZgt/+aI7Z1LzdQTnOLWMeuetGRC4eHTkf8weUd?=
- =?us-ascii?Q?BuRYfyHzIdJX+IDFtYldCI9hTpj5Wk/MoWp+ScwMb8jQ+4KgP/Idb0JNM1Kq?=
- =?us-ascii?Q?tkBYQSROxAN+ANRdeqeMeU5BE2WXxdtnUv3/1R0FlFwHimzZzn6uDFtOYKSh?=
- =?us-ascii?Q?1t281ATXhmsw9buGVB38YtCCw65SyIJZ0CLYqjp1xvnybXcloq/wkmzzRkt7?=
- =?us-ascii?Q?ithXBo2HuKRdNEorpQcQ+8lQH58bTCuoMZRNr6YuLO+Kg3UmIQBkrpke4UEp?=
- =?us-ascii?Q?VIB07hjjQkIK+IQ9XVXPHF/XI4S3WJzSLzNbahumNfVQpB9+VOTRYLtm7gjT?=
- =?us-ascii?Q?cTsUNvsgybsvROxS9Xcw3n3SkcDbl/ZQO95LQlUF/y79a8L8CLItSQERimBB?=
- =?us-ascii?Q?E2dGWqpfC8wvhhyda3C2fuVOUeMmSC5IKWtahTOWX8EPfS4AqSGoXYuBwHV7?=
- =?us-ascii?Q?tLFfOthG21bnC8QkqJLUk06PKQLqOmu9VoSM9LrncEUAb0hLP8mMd1a/1DGa?=
- =?us-ascii?Q?97Ta9Hi4aDeSqzyG82aX5OoHI9u3hm1wccsS2hfJgGtcb3TT2J4h4WQnm/Rp?=
- =?us-ascii?Q?WJw2ztnKcj6f0l3qTCf63Zx1vRE82E4VAIRXJnVi5hV53V3PlwUYPM04yqxj?=
- =?us-ascii?Q?CXIz04zzMuoCx1RhYMdIvG8FLi+tewhLKlsl8dOUsMxGj+CwsSUrI8GSzXZX?=
- =?us-ascii?Q?06RNpzgsDD1WCocrgnAhB1eqAwJCwJlCZnAvV3uc+HZSfM5ZFbbk9kGl6nO/?=
- =?us-ascii?Q?Cg/A1cjY1WucCzfjv4J1CkVVDgfkR7DcasHiompjuD8G5n+Ov9FNvi2qZR9H?=
- =?us-ascii?Q?/yfjqhal6N0Oi+IVS7GziSpkcrB2mZs2dHk7M0IBwo/1yTi9juQhzH4k0z1y?=
- =?us-ascii?Q?WncsKDFTjOChkiU8sO/B57ZvyjAbApWT2SQhNL4rxnJmFbVRtCLT8Z1LnIAo?=
- =?us-ascii?Q?KurIV+nK7LjvZqtZ9ynxY7UtkMOIU7XJXp48BRJrs3WkqMOUvMmE14L5evfC?=
- =?us-ascii?Q?0Q=3D=3D?=
-X-OriginatorOrg: windriver.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 823e57f0-31fd-4242-a5ae-08db3f546e7c
-X-MS-Exchange-CrossTenant-AuthSource: IA0PR11MB7378.namprd11.prod.outlook.com
+X-OriginatorOrg: cisco.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 17 Apr 2023 15:00:06.8223
+X-MS-Exchange-CrossTenant-AuthSource: SJ0PR11MB5790.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4cfc4be6-55f8-4203-9a98-08db3f603097
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Apr 2023 16:24:16.7337
  (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 8ddb2873-a1ad-4a18-ae4e-4644631433be
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: AHnmtz0HhXsETnPlFB02OAgbfflhSI77+Mki3SOxTgNop6IPAsNOx4LPfQAlyOIih/bILVa31jNLfnPhRMLWkK+x6jwOihFMt8rPqErAr/4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH7PR11MB8252
-X-Proofpoint-GUID: jviO2qcv3iqYQqSEDYe3YbmMVgfXNdkI
-X-Proofpoint-ORIG-GUID: jviO2qcv3iqYQqSEDYe3YbmMVgfXNdkI
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-17_10,2023-04-17_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1011
- suspectscore=0 priorityscore=1501 mlxscore=0 adultscore=0 mlxlogscore=497
- impostorscore=0 bulkscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
- definitions=main-2304170134
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 5ae1af62-9505-4097-a69a-c1553ef7840e
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: KAoVtIGQw0jsRlcOjC3NhdZmONWOIoWBCP8sjUtxGQ7WIOL4Dc30xfQxP6vAyF8tbQUSgTozYhpeEjTUgJMcbw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH3PR11MB7201
+X-Outbound-SMTP-Client: 72.163.7.165, rcdn-opgw-4.cisco.com
+X-Outbound-Node: rcdn-core-1.cisco.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -142,69 +209,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Pali Roh??r <pali@kernel.org>, Scott Wood <oss@buserror.net>, Claudiu Manoil <claudiu.manoil@nxp.com>, Paul Mackerras <paulus@samba.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>, "xe-linux-external\(mailer list\)" <xe-linux-external@cisco.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "maksym.kokhan@globallogic.com" <maksym.kokhan@globallogic.com>, "dwalker@fifo99.com" <dwalker@fifo99.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[RE: [RFC PATCH 0/4] Remove some e500/MPC85xx evaluation platforms] On 14/04/2023 (Fri 23:29) Leo Li wrote:
+On Mon, Apr 17, 2023 at 06:18:18PM +0200, Tomas Mudrunka wrote:
+> This seems quite useful. Can you please merge it?
 
-> 
-> 
-> > -----Original Message-----
-> > From: Michael Ellerman <mpe@ellerman.id.au>
-> > Sent: Thursday, April 13, 2023 9:14 PM
-> > To: Leo Li <leoyang.li@nxp.com>; Paul Gortmaker
-> > <paul.gortmaker@windriver.com>
-> > Cc: Scott Wood <oss@buserror.net>; Paul Mackerras <paulus@samba.org>;
-> > Claudiu Manoil <claudiu.manoil@nxp.com>; linuxppc-dev@lists.ozlabs.org;
-> > Pali Roh??r <pali@kernel.org>
-> > Subject: Re: [RFC PATCH 0/4] Remove some e500/MPC85xx evaluation
-> > platforms
-> > 
-> > Li Yang <leoyang.li@nxp.com> writes:
-> > > On Tue, Feb 21, 2023 at 1:52???PM Paul Gortmaker
-> > > <paul.gortmaker@windriver.com> wrote:
-> > >>
-> > >> [This RFC is proposed for v6.4 and hence is based off linux-next.]
-> > >>
-> > >> In a similar theme to the e300/MPC83xx evaluation platform
-> > >> removal[1], this targets removal of some 13 --> 21 year old
-> > >> e500/MPC85xx evaluation boards that were produced in limited numbers
-> > >> and primarily made available to hardware/software developers to shape
-> > their own boards and BSPs.
-> > >
-> > > These e500 platforms are similar to the e300 platforms that they are
-> > > still being shipped, the targeting market probably caused it to have a
-> > > longer life cycle.
-> > >
-> > ...
-> > >
-> > > The difference here from the e300 platforms is that MPC8540ADS,
-> > > MPC8560ADS, MPC8548CDS, MPC8568-MDS are the only reference
-> > platforms
-> > > supplied by us for these SoCs.  We don't have a separation of
-> > > evaluation platforms vs product-like platforms like we did later.
-> > > That probably means even if they don't look like "hobbyist" friendly
-> > > they are more likely to be still in use.
-> > 
-> > OK. But what is the chance anyone is booting upstream kernels on them?
-> 
-> We do still have these parts shipped, which means that there are definitely active users of these silicons.  But it is really hard to say how many of they are running latest upstream kernel.  IMO, if the nature of the application is critical it is likely they will need to update the kernel to get all the security fixes.  And the reference board will be helpful as a starting point when they update the kernel.
+I need to re-send it before it can be merge. I'll try to update it soon.
 
-I think the right thing to do here with this series is to remove the
-super ancient 20+ year old MPC8540ADS and MPC8560ADS; and leave the
-slightly more modern ones for another day in the future.
-
-I don't think anyone can realistically argue against that?
-
-Paul.
---
-
-> 
-> > 
-> > I assume no one at NXP is testing upstream on those boards?
-> 
-> To be frank they are not included in the routine tests carried out by the development team now which is not ideal to me.  But I think the support team are probably willing to help on issues with latest kernel when needed.
-> 
-> Regards,
-> Leo
+Daniel
