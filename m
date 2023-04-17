@@ -4,69 +4,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D06DAC77B72
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 12:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2DDFC77B72
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 12:59:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0Rv622NGz3fVR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 22:58:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0Rw25X1gz3f8M
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 22:59:30 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=v+Bfnvmq;
-	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=o+ecwzmh;
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OFAhg0Hi;
+	dkim=fail reason="signature verification failed" header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=3QfJTC4K;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2001:67c:2178:6::1d; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.220.29; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=v+Bfnvmq;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=o+ecwzmh;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=OFAhg0Hi;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=3QfJTC4K;
 	dkim-atps=neutral
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [IPv6:2001:67c:2178:6::1d])
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.220.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0RsB68RXz3cK8
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 22:57:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0RsC1x9sz3cLh
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 22:57:03 +1000 (AEST)
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id C065F1FE0A;
-	Mon, 17 Apr 2023 12:56:58 +0000 (UTC)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 7430A1FE0B;
+	Mon, 17 Apr 2023 12:57:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1681736218; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	t=1681736220; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ru6aiAlGGFSk3oxv/WkNVYSAAxligUi0QSfc0txZ3k0=;
-	b=v+BfnvmqsA3hgoguS0rFKK5lGuftxV/k4xUjHEH1s6PaTBi+3H5qrzV0wa0wtZWBq0ms0M
-	AQ2Lf/ylSX+IsFEaN1xBPv3bk8m6BzDfj7XNON4V9dqmHXW0C6RbUWX8u5P25zWB+RYDWE
-	dH2j9/Zs85f9Tyno5ISJdBUcbtLmoZE=
+	bh=WKajgty5iZWWt850AXIEHEMEuS8AJ1Bf4fZT90DwiGQ=;
+	b=OFAhg0HiqBXGx1K+BTB5F3yFLBayKbzHmmIpQ8qo7FiUa2eZTcxEilU6EB+M7JoAe28Buu
+	qEBgpsOgvKB3/SYT0BaQFt+sh14QHRoYO3pKhdNmqElamxhyBlMgQ7G431uxi86KlQzt/O
+	16jI4z3QMw2sX186i/sPuB9MhV+AZes=
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1681736218;
+	s=susede2_ed25519; t=1681736220;
 	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
 	 mime-version:mime-version:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=ru6aiAlGGFSk3oxv/WkNVYSAAxligUi0QSfc0txZ3k0=;
-	b=o+ecwzmhPjA2vClp8xR25gbA+HiLYyTkJiI00+L2E/xobRIO9fas8/92VjSytQXil7eQY+
-	eccV3ufW+YMuTUDw==
+	bh=WKajgty5iZWWt850AXIEHEMEuS8AJ1Bf4fZT90DwiGQ=;
+	b=3QfJTC4KMalwxGhYMZd+QcYEVZuckAYYfy+YDg8oe2qMIlcTvxVf3+cbhstVCTBWR/AvDs
+	hKybsp2ESAdRQaBw==
 Received: from imap2.suse-dmz.suse.de (imap2.suse-dmz.suse.de [192.168.254.74])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (P-521) server-digest SHA512)
 	(No client certificate requested)
-	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 67F721391A;
-	Mon, 17 Apr 2023 12:56:58 +0000 (UTC)
+	by imap2.suse-dmz.suse.de (Postfix) with ESMTPS id 146C51391A;
+	Mon, 17 Apr 2023 12:57:00 +0000 (UTC)
 Received: from dovecot-director2.suse.de ([192.168.254.65])
 	by imap2.suse-dmz.suse.de with ESMTPSA
-	id EOqIGBpCPWToWwAAMHmgww
-	(envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 12:56:58 +0000
+	id kJE0BBxCPWToWwAAMHmgww
+	(envelope-from <tzimmermann@suse.de>); Mon, 17 Apr 2023 12:57:00 +0000
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: arnd@arndb.de,
 	daniel.vetter@ffwll.ch,
 	deller@gmx.de,
 	javierm@redhat.com,
 	gregkh@linuxfoundation.org
-Subject: [PATCH v3 01/19] fbdev: Prepare generic architecture helpers
-Date: Mon, 17 Apr 2023 14:56:33 +0200
-Message-Id: <20230417125651.25126-2-tzimmermann@suse.de>
+Subject: [PATCH v3 05/19] arch/ia64: Implement <asm/fb.h> with generic helpers
+Date: Mon, 17 Apr 2023 14:56:37 +0200
+Message-Id: <20230417125651.25126-6-tzimmermann@suse.de>
 X-Mailer: git-send-email 2.40.0
 In-Reply-To: <20230417125651.25126-1-tzimmermann@suse.de>
 References: <20230417125651.25126-1-tzimmermann@suse.de>
@@ -87,71 +87,46 @@ Cc: linux-arch@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ia64@vger.ker
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Generic implementations of fb_pgprotect() and fb_is_primary_device()
-have been in the source code for a long time. Prepare the header file
-to make use of them.
-
-Improve the code by using an inline function for fb_pgprotect()
-and by removing include statements. The default mode set by
-fb_pgprotect() is now writecombine, which is what most platforms
-want.
-
-Symbols are protected by preprocessor guards. Architectures that
-provide a symbol need to define a preprocessor token of the same
-name and value. Otherwise the header file will provide a generic
-implementation. This pattern has been taken from <asm/io.h>.
-
-v3:
-	* include the correct header files
-v2:
-	*  use writecombine mappings by default (Arnd)
+Replace the architecture's fb_is_primary_device() with the generic
+one from <asm-generic/fb.h>. No functional changes.
 
 Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/asm-generic/fb.h | 24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
+ arch/ia64/include/asm/fb.h | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/include/asm-generic/fb.h b/include/asm-generic/fb.h
-index f9f18101ed36..c8af99f5a535 100644
---- a/include/asm-generic/fb.h
-+++ b/include/asm-generic/fb.h
-@@ -1,13 +1,33 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+
- #ifndef __ASM_GENERIC_FB_H_
- #define __ASM_GENERIC_FB_H_
--#include <linux/fb.h>
+diff --git a/arch/ia64/include/asm/fb.h b/arch/ia64/include/asm/fb.h
+index 5f95782bfa46..0208f64a0da0 100644
+--- a/arch/ia64/include/asm/fb.h
++++ b/arch/ia64/include/asm/fb.h
+@@ -2,11 +2,12 @@
+ #ifndef _ASM_FB_H_
+ #define _ASM_FB_H_
  
--#define fb_pgprotect(...) do {} while (0)
-+/*
-+ * Only include this header file from your architecture's <asm/fb.h>.
-+ */
+-#include <linux/fb.h>
+-#include <linux/fs.h>
+ #include <linux/efi.h>
 +
-+#include <linux/mm_types.h>
-+#include <linux/pgtable.h>
-+
-+struct fb_info;
+ #include <asm/page.h>
+ 
 +struct file;
 +
-+#ifndef fb_pgprotect
-+#define fb_pgprotect fb_pgprotect
-+static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
-+				unsigned long off)
-+{
-+	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-+}
-+#endif
- 
-+#ifndef fb_is_primary_device
-+#define fb_is_primary_device fb_is_primary_device
- static inline int fb_is_primary_device(struct fb_info *info)
+ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 				unsigned long off)
  {
- 	return 0;
+@@ -15,10 +16,8 @@ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
+ 	else
+ 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
  }
-+#endif
++#define fb_pgprotect fb_pgprotect
  
- #endif /* __ASM_GENERIC_FB_H_ */
+-static inline int fb_is_primary_device(struct fb_info *info)
+-{
+-	return 0;
+-}
++#include <asm-generic/fb.h>
+ 
+ #endif /* _ASM_FB_H_ */
 -- 
 2.40.0
 
