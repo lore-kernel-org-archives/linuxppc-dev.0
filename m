@@ -4,59 +4,95 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68FA9C77B76
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 13:32:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6ABCC77B76
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 13:56:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0SfB6r1Lz3chk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 23:32:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q0TBK0DXMz3f47
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Apr 2023 23:56:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQLt+5h;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpU25hPl;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=nathanl@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQLt+5h;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LpU25hPl;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0Sd94p3xz3c7S
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 23:31:41 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id 0BA4E6249A
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:31:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 724EFC433D2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 13:31:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1681738296;
-	bh=Z1E7VRImbk5O8ynjKxbGEPL5/pNRjHf9QbC2IrDjeEw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=ApQLt+5hMKVQIvzY5fCsHXN1O9d66Vkqdbnf/xozhB9nuWuwLcZf/MN0ppBlfhFIt
-	 HQDUV2nEhzb6hm2lIFc6FOWsKV/xtHSrJDm16DGEKIk7rmSl1kCXD+7UtJki0cUM41
-	 8okXBMRnAHqFb3pXt6yy8HLqPKgBBH01IvciEYmbPaO9iX7on0mQpD89z1YsQnCqhL
-	 q322Ce5KqizgqcdNbLPtssnzKOay7XNC41dL/SlQYjEfg4XGzbmnPKW+wXhduIwJN+
-	 v6rbKR36oXKryWyC6KbHqtudzstgkxltXOwyhoC5jg1NY3BT/2BLRzyKhheW+Oby7i
-	 1ToU1aRNddTrw==
-Received: by mail-yw1-f180.google.com with SMTP id 00721157ae682-54c12009c30so524369237b3.9
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 06:31:36 -0700 (PDT)
-X-Gm-Message-State: AAQBX9f7jggBjp+ULOXaI9wJAbFWg0o4rgYEQvBqoHoN03uwcjAsGzvh
-	wWUi0TtGYj26PYvae2mo49DvGObOBeKCvbhDzA==
-X-Google-Smtp-Source: AKy350bviA6nMrYItp2UFoijYxMfOof9zLeZI1Waml/VUI/79m2nqsKw6eSDud+5a83sS7abqkKDxQ68edHzGfQfRRo=
-X-Received: by 2002:a81:b60c:0:b0:54c:a67:90b with SMTP id u12-20020a81b60c000000b0054c0a67090bmr9245222ywh.5.1681738295535;
- Mon, 17 Apr 2023 06:31:35 -0700 (PDT)
-MIME-Version: 1.0
-References: <20230412224620.8909-1-tanure@linux.com> <20230412224620.8909-2-tanure@linux.com>
-In-Reply-To: <20230412224620.8909-2-tanure@linux.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Mon, 17 Apr 2023 08:31:24 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqL1L4EOpVm7nXbZ0t8-9wHVq4531MN4Csemi-4SBd=zig@mail.gmail.com>
-Message-ID: <CAL_JsqL1L4EOpVm7nXbZ0t8-9wHVq4531MN4Csemi-4SBd=zig@mail.gmail.com>
-Subject: Re: [PATCH v3 1/1] of: fdt: Scan /memreserve/ last
-To: Lucas Tanure <tanure@linux.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q0T9G2sr1z3bm9
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Apr 2023 23:56:01 +1000 (AEST)
+Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33HDL8UX026524;
+	Mon, 17 Apr 2023 13:55:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : in-reply-to : references : date : message-id : content-type :
+ content-transfer-encoding : mime-version; s=pp1;
+ bh=hXLhGB5WkplO9R/sSuzFW8BNNFWz7FZ479Pyg4ibOYY=;
+ b=LpU25hPlW/HlbGEW5udDQ2kHT70m8dRKzgEQAV4ZBGZuKV1rtSbO+XO4OILP0+hpmz3w
+ /U6FklOvKYWyfmDDr+G3WcAww4NWm+00QoitBP1wn0h6tBwxafp4GfPHLGbVjl0Ui6Jj
+ IFDWj4yj6GcaU70brxkQt2Zyhi5nu4Al7beesxRhH3Mbq9arJNX7Q/KmsG4MSrT+d//5
+ XdpRmmrjneQB3zX56Qe7+AyQ7C1omGA5BstEhontwpYVrcFsXNbpBaBbxuMF2aDCU3yh
+ vmUbpixGe8dY8OCsRQmdt1Hm0CVYF/tUecwGTOKTDE2XjkbdszzCFd7WJePpVbwiFayY xg== 
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q16wugvb4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Apr 2023 13:55:58 +0000
+Received: from m0353722.ppops.net (m0353722.ppops.net [127.0.0.1])
+	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33HDMIc1031377;
+	Mon, 17 Apr 2023 13:55:58 GMT
+Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q16wugvav-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Apr 2023 13:55:58 +0000
+Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
+	by ppma03dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33HBdjFa013975;
+	Mon, 17 Apr 2023 13:55:57 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([9.208.129.113])
+	by ppma03dal.us.ibm.com (PPS) with ESMTPS id 3pykj6x042-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Apr 2023 13:55:57 +0000
+Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33HDtuj919464918
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 17 Apr 2023 13:55:56 GMT
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E964758067;
+	Mon, 17 Apr 2023 13:55:55 +0000 (GMT)
+Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE83058056;
+	Mon, 17 Apr 2023 13:55:55 +0000 (GMT)
+Received: from localhost (unknown [9.163.32.114])
+	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 17 Apr 2023 13:55:55 +0000 (GMT)
+From: Nathan Lynch <nathanl@linux.ibm.com>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Subject: Re: [PATCH] Revert "powerpc/rtas: Implement reentrant rtas call"
+In-Reply-To: <20230414142051.GH63923@kunlun.suse.cz>
+References: <20220907220111.223267-1-nathanl@linux.ibm.com>
+ <1d76891ee052112ee1547a4027e358d5cbcac23d.camel@gmail.com>
+ <871qskve2f.fsf@linux.ibm.com>
+ <cf845311ca7fcc0fded8db153499d9394f2add4e.camel@gmail.com>
+ <87y1uotlfa.fsf@linux.ibm.com>
+ <14e227181543ab45550ddf8e8fa1c53838361d61.camel@gmail.com>
+ <CMXFROL4N1OT.4DV7ZOHOP954@bobo> <87h717t24d.fsf@linux.ibm.com>
+ <20230414142051.GH63923@kunlun.suse.cz>
+Date: Mon, 17 Apr 2023 08:55:55 -0500
+Message-ID: <87bkjmsjdg.fsf@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: CNVrUVEw9bLjwrDeYg_IcPdHuRhTxSG4
+X-Proofpoint-ORIG-GUID: -vzX5YiOgfng5G8xoBg1yKjcWsmNIVrd
 Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-UnRewURL: 0 URL was un-rewritten
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-17_08,2023-04-17_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 mlxscore=0
+ lowpriorityscore=0 adultscore=0 spamscore=0 clxscore=1011 mlxlogscore=648
+ malwarescore=0 impostorscore=0 priorityscore=1501 phishscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
+ definitions=main-2304170122
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,56 +104,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, narmstrong@baylibre.com, martin.blumenstingl@googlemail.com, linux-kernel@vger.kernel.org, stefan@agner.ch, linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>, Frank Rowand <frowand.list@gmail.com>, Mike Rapoport <rppt@kernel.org>, jbrunet@baylibre.com
+Cc: Leonardo =?utf-8?Q?Br=C3=A1s?= <leobras.c@gmail.com>, linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Apr 12, 2023 at 5:46=E2=80=AFPM Lucas Tanure <tanure@linux.com> wro=
-te:
+Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+> On Fri, Sep 16, 2022 at 04:56:18PM -0500, Nathan Lynch wrote:
+>> "Nicholas Piggin" <npiggin@gmail.com> writes:
+>> > On Wed Sep 14, 2022 at 3:39 AM AEST, Leonardo Br=C3=A1s wrote:
+>> >> On Mon, 2022-09-12 at 14:58 -0500, Nathan Lynch wrote:
+>> >> > Leonardo Br=C3=A1s <leobras.c@gmail.com> writes:
+>> >> > > On Fri, 2022-09-09 at 09:04 -0500, Nathan Lynch wrote:
 >
-> Change the order of scanning /memreserve/ and /reserved-memory node.
-> /reserved-memory node should go first, as it has a more updated
-> description of the memory regions and it can apply flags, like nomap.
-> Also, /memreserve/ should avoid reserving regions described in
-> /reserved-memory node.
+>> >> > > > No, it means the premise of commit b664db8e3f97 ("powerpc/rtas:
+>> >> > > > Implement reentrant rtas call") change is incorrect. The "reent=
+rant"
+>> >> > > > property described in the spec applies only to the individual R=
+TAS
+>> >> > > > functions. The OS can invoke (for example) ibm,set-xive on mult=
+iple CPUs
+>> >> > > > simultaneously, but it must adhere to the more general requirem=
+ent to
+>> >> > > > serialize with other RTAS functions.
+>> >> > > >=20
+>> >> > >=20
+>> >> > > I see. Thanks for explaining that part!
+>> >> > > I agree: reentrant calls that way don't look as useful on Linux t=
+han I
+>> >> > > previously thought.
+>> >> > >=20
+>> >> > > OTOH, I think that instead of reverting the change, we could make=
+ use of the
+>> >> > > correct information and fix the current implementation. (This cou=
+ld help when we
+>> >> > > do the same rtas call in multiple cpus)
+>> >> >=20
+>> >> > Hmm I'm happy to be mistaken here, but I doubt we ever really need =
+to do
+>> >> > that. I'm not seeing the need.
+>> >> >=20
+>> >> > > I have an idea of a patch to fix this.=20
+>> >> > > Do you think it would be ok if I sent that, to prospect being an =
+alternative to
+>> >> > > this reversion?
+>> >> >=20
+>> >> > It is my preference, and I believe it is more common, to revert to =
+the
+>> >> > well-understood prior state, imperfect as it may be. The revert can=
+ be
+>> >> > backported to -stable and distros while development and review of
+>> >> > another approach proceeds.
+>> >>
+>> >> Ok then, as long as you are aware of the kdump bug, I'm good.
+>> >>
+>> >> FWIW:
+>> >> Reviewed-by: Leonardo Bras <leobras.c@gmail.com>
+>> >
+>> > A shame. I guess a reader/writer lock would not be much help because
+>> > the crash is probably more likely to hit longer running rtas calls?
+>> >
+>> > Alternative is just cheat and do this...?
+>> >
+>> > Thanks,
+>> > Nick
+>> >
+>> > diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+>> > index 693133972294..89728714a06e 100644
+>> > --- a/arch/powerpc/kernel/rtas.c
+>> > +++ b/arch/powerpc/kernel/rtas.c
+>> > @@ -26,6 +26,7 @@
+>> >  #include <linux/syscalls.h>
+>> >  #include <linux/of.h>
+>> >  #include <linux/of_fdt.h>
+>> > +#include <linux/panic.h>
+>> >=20=20
+>> >  #include <asm/interrupt.h>
+>> >  #include <asm/rtas.h>
+>> > @@ -97,6 +98,19 @@ static unsigned long lock_rtas(void)
+>> >  {
+>> >         unsigned long flags;
+>> >=20=20
+>> > +       if (atomic_read(&panic_cpu) =3D=3D raw_smp_processor_id()) {
+>> > +               /*
+>> > +                * Crash in progress on this CPU. Other CPUs should be
+>> > +                * stopped by now, so skip the lock in case it was bei=
+ng
+>> > +                * held, and is now needed for crashing e.g., kexec
+>> > +                * (machine_kexec_mask_interrupts) requires rtas calls.
+>> > +                *
+>> > +                * It's possible this could have caused rtas state
+>> > breakage
+>> > +                * but the alternative is deadlock.
+>> > +                */
+>> > +               return 0;
+>> > +       }
+>> > +
+>> >         local_irq_save(flags);
+>> >         preempt_disable();
+>> >         arch_spin_lock(&rtas.lock);
+>> > @@ -105,6 +119,9 @@ static unsigned long lock_rtas(void)
+>> >=20=20
+>> >  static void unlock_rtas(unsigned long flags)
+>> >  {
+>> > +       if (atomic_read(&panic_cpu) =3D=3D raw_smp_processor_id())
+>> > +               return;
+>> > +
+>> >         arch_spin_unlock(&rtas.lock);
+>> >         local_irq_restore(flags);
+>> >         preempt_enable();
+>>=20
+>> Looks correct.
+>>=20
+>> I wonder - would it be worth making the panic path use a separate
+>> "emergency" rtas_args buffer as well? If a CPU is actually "stuck" in
+>> RTAS at panic time, then leaving rtas.args untouched might make the
+>> ibm,int-off, ibm,set-xive, ibm,os-term, and any other RTAS calls we
+>> incur on the panic path more likely to succeed.
+>
+> Was some fix for the case of crashing in rtas merged?
+>
+> Looks like there is none unless I missed something.
 
-Please give some background details why we need to make this change.
-As-is, sounds like some theoretical issue. IOW, incorporate some of
-the details in the cover letter here. For single patches, you don't
-need a cover letter anyways.
+I'm not aware of any crashes in RTAS, but we do have an issue open to
+track the issue I think you're referring to:
 
-Powerpc folks, please comment and/or test. I worry there could be some
-subtle differences with this change.
+https://github.com/linuxppc/issues/issues/435
 
->
-> Signed-off-by: Lucas Tanure <tanure@linux.com>
-> ---
->  drivers/of/fdt.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index d1a68b6d03b3..c28aedd7ae1f 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -635,6 +635,9 @@ void __init early_init_fdt_scan_reserved_mem(void)
->         if (!initial_boot_params)
->                 return;
->
-> +       fdt_scan_reserved_mem();
-> +       fdt_reserve_elfcorehdr();
-> +
->         /* Process header /memreserve/ fields */
->         for (n =3D 0; ; n++) {
->                 fdt_get_mem_rsv(initial_boot_params, n, &base, &size);
-> @@ -643,8 +646,6 @@ void __init early_init_fdt_scan_reserved_mem(void)
->                 memblock_reserve(base, size);
->         }
->
-> -       fdt_scan_reserved_mem();
-> -       fdt_reserve_elfcorehdr();
->         fdt_init_reserved_mem();
->  }
->
-> --
-> 2.40.0
->
+No progress yet. AFAIK only XICS guests are exposed; XIVE doesn't use
+RTAS calls.
