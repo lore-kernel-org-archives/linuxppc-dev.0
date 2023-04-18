@@ -4,77 +4,67 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3E66C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 11:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A25EC6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 11:28:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1dmf44Kpz3gjw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 21:27:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1dnZ5WCNz3fRC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 21:28:02 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hdHpwVmF;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=fBPSS93a;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::112b; helo=mail-yw1-x112b.google.com; envelope-from=vishal.moola@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=hdHpwVmF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=fBPSS93a;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-yw1-x112b.google.com (mail-yw1-x112b.google.com [IPv6:2607:f8b0:4864:20::112b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1G5j4RC7z3ccv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2023 06:40:41 +1000 (AEST)
-Received: from pps.filterd (m0353722.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33IJNMZc026291;
-	Tue, 18 Apr 2023 20:40:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-transfer-encoding; s=pp1;
- bh=peXMO9MUetGAKE7znYwOGBo+oePluvtSEvJSG1JiRMI=;
- b=hdHpwVmF8E4eb9sfiUGeHIKw+KVQ/bF6ran7/RInB3KTqPPmy3g83s3DbNcy2oNxG1iS
- MFIneqlX1ThjlOsgXZH3mkIVQw1zEnCwb/VgziVgQieWSgZJNplYA5Cv8fOfk/lCxevE
- 7vTTPfQaKvfb51XY84w5S5zKZ3aI/iGy9rNEvdnYCn7j+Xpm6OhLNSLjvEybg7lNxYZW
- s3hL2HkyqhnCwtrucppFhtFcT1G4jVqBXYNEHy/B3hOnJLzEATsLhXSK3AwRJrb/R5rp
- Pul1PX1f6p3yPIUCrlurlzpXEzMj2Q18j/qLqPqUr0QrdlH+z686JTr0mWUtvtEacWtr QQ== 
-Received: from ppma01dal.us.ibm.com (83.d6.3fa9.ip4.static.sl-reverse.com [169.63.214.131])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q1q35nr0d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Apr 2023 20:40:33 +0000
-Received: from pps.filterd (ppma01dal.us.ibm.com [127.0.0.1])
-	by ppma01dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33IJ1oZF003683;
-	Tue, 18 Apr 2023 20:40:33 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([9.208.130.98])
-	by ppma01dal.us.ibm.com (PPS) with ESMTPS id 3pykj7yhxb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Apr 2023 20:40:32 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33IKeVZQ11010672
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 18 Apr 2023 20:40:32 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 911FA5804E;
-	Tue, 18 Apr 2023 20:40:31 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3F16B5803F;
-	Tue, 18 Apr 2023 20:40:31 +0000 (GMT)
-Received: from ltcd41-lp9.aus.stglabs.ibm.com (unknown [9.53.174.38])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 18 Apr 2023 20:40:31 +0000 (GMT)
-From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc/iommu: DMA address offset is incorrectly calculated with 2MB TCEs
-Date: Tue, 18 Apr 2023 15:44:01 -0500
-Message-Id: <20230418204401.13168-1-gbatra@linux.vnet.ibm.com>
-X-Mailer: git-send-email 2.35.3
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1HGV48jvz3cBK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2023 07:33:21 +1000 (AEST)
+Received: by mail-yw1-x112b.google.com with SMTP id 00721157ae682-54ee0b73e08so478581047b3.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 14:33:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20221208; t=1681853598; x=1684445598;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=fZ+faik75720SnLDzvntxl1cmAaRHsLQ7oOmPoVPf3o=;
+        b=fBPSS93aalbav0LUzUejRt2NjbHpBJmNsHVPRRbsF+jG5Nu8WjfWT+weSiXFGrkEbN
+         Bl+EcMNC7lpcawm/MuwqggHfJmNk7zAK9haLpnJV08P367c5YohyB4lPm9ubYCuINJZG
+         pmhBTFu6UKlSFmyU0QWGBEDpdg/7xojdmyIrq4CWcHgeoPLavovDZAMaCmQm5Tmi+PdF
+         awAr9pJ9qRfL4qAoU/GIaaVF0Yb/A9oc1EXdyleFSucNiyAMBSWiFjcubi/Cl7MqSDQT
+         LqfYl5LxNuy3TqKDTGZky+Cx6fyOI9+XqrTm2mW88NG+xvACaI/puCphU95FqO3MwFDd
+         on2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20221208; t=1681853598; x=1684445598;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fZ+faik75720SnLDzvntxl1cmAaRHsLQ7oOmPoVPf3o=;
+        b=EapKyg9q7cHMgXXiH0HfwqjuCF/9oYRapfwe+lBxy6ZpOATHiQS1tk7XpQUX3bP5w6
+         qFmN4wT/tcbE8Z/5EXYbGGErcKxS561Ka0ibvZkSn30JMJqOsipf+GFlh69abrdkkyha
+         rR6/lGgI4XyCjidNRX1oLTIlkG/DGjam4bHEWI/mX0vuBFtYijAX4fpl6ZQWd8GfDras
+         LFqBKsywwQTlFk79B85x8P5I75DQTw3EWhU818BTrqzy7S33qjjSgM5w15jjyqi0s+M7
+         4i4hNGtenLFqEUhwGsrj0HHi2SM+t5ZI/Joa4H25DbfSxUEXzHJNPu6wI+w5wzqYG0ma
+         AHrg==
+X-Gm-Message-State: AAQBX9cO/oODrQVXyj7OBeR/XvKNoiIySHpINvas7MeBV8Tmv8BLb2ag
+	nEA61BhMMMvp/H2bFj46yMLtWLN4DNFDNhuK/2Q=
+X-Google-Smtp-Source: AKy350Zg9/w1pIq1h9Mfl98gkIvdjlXYVLE/yxlCrmuaudFEJKPjKGaCNnj1KVCOnrcLYZjlnD0Q2KC4cnvL5HhzBhY=
+X-Received: by 2002:a81:8443:0:b0:54f:8af3:6488 with SMTP id
+ u64-20020a818443000000b0054f8af36488mr1215032ywf.23.1681853598073; Tue, 18
+ Apr 2023 14:33:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: kw7ex-bM21reZuAR6oqlyzMWDTFtiwEd
-X-Proofpoint-ORIG-GUID: kw7ex-bM21reZuAR6oqlyzMWDTFtiwEd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-18_15,2023-04-18_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011 adultscore=0
- malwarescore=0 spamscore=0 lowpriorityscore=0 mlxlogscore=952 bulkscore=0
- phishscore=0 mlxscore=0 impostorscore=0 suspectscore=0 priorityscore=1501
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
- definitions=main-2304180170
+References: <20230417205048.15870-1-vishal.moola@gmail.com>
+ <20230417205048.15870-2-vishal.moola@gmail.com> <da600570-51c7-8088-b46b-7524c9e66e5d@redhat.com>
+In-Reply-To: <da600570-51c7-8088-b46b-7524c9e66e5d@redhat.com>
+From: Vishal Moola <vishal.moola@gmail.com>
+Date: Tue, 18 Apr 2023 14:33:06 -0700
+Message-ID: <CAOzc2pwpRhNoFbdzdzuvrqbZdf2OsrTvBGs40QCZJjA5fS_q1A@mail.gmail.com>
+Subject: Re: [PATCH 01/33] s390: Use _pt_s390_gaddr for gmap address tracking
+To: David Hildenbrand <david@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-Mailman-Approved-At: Wed, 19 Apr 2023 20:57:19 +1000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,66 +77,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Greg Joyce <gjoyce@linux.vnet.ibm.com>, Gaurav Batra <gbatra@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Matthew Wilcox <willy@infradead.org>, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When DMA window is backed by 2MB TCEs, the DMA address for the mapped
-page should be the offset of the page relative to the 2MB TCE. The code
-was incorrectly setting the DMA address to the beginning of the TCE
-range.
+On Tue, Apr 18, 2023 at 8:45=E2=80=AFAM David Hildenbrand <david@redhat.com=
+> wrote:
+>
+> On 17.04.23 22:50, Vishal Moola (Oracle) wrote:
+> > s390 uses page->index to keep track of page tables for the guest addres=
+s
+> > space. In an attempt to consolidate the usage of page fields in s390,
+> > replace _pt_pad_2 with _pt_s390_gaddr to replace page->index in gmap.
+> >
+> > This will help with the splitting of struct ptdesc from struct page, as
+> > well as allow s390 to use _pt_frag_refcount for fragmented page table
+> > tracking.
+> >
+> > Since page->_pt_s390_gaddr aliases with mapping, ensure its set to NULL
+> > before freeing the pages as well.
+> >
+> > Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
+> > ---
+>
+> [...]
+>
+> > diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> > index 3fc9e680f174..2616d64c0e8c 100644
+> > --- a/include/linux/mm_types.h
+> > +++ b/include/linux/mm_types.h
+> > @@ -144,7 +144,7 @@ struct page {
+> >               struct {        /* Page table pages */
+> >                       unsigned long _pt_pad_1;        /* compound_head =
+*/
+> >                       pgtable_t pmd_huge_pte; /* protected by page->ptl=
+ */
+> > -                     unsigned long _pt_pad_2;        /* mapping */
+> > +                     unsigned long _pt_s390_gaddr;   /* mapping */
+> >                       union {
+> >                               struct mm_struct *pt_mm; /* x86 pgds only=
+ */
+> >                               atomic_t pt_frag_refcount; /* powerpc */
+>
+> The confusing part is, that these gmap page tables are not ordinary
+> process page tables that we would ordinarily place into this section
+> here. That's why they are also not allocated/freed using the typical
+> page table constructor/destructor ...
 
-Mellanox driver is reporting timeout trying to ENABLE_HCA for an SR-IOV
-ethernet port, when DMA window is backed by 2MB TCEs.
+I initially thought the same, so I was quite confused when I saw
+__gmap_segment_gaddr was using pmd_pgtable_page().
 
-Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+Although they are not ordinary process page tables, since we
+eventually want to move them out of struct page, I think shifting them
+to be in ptdescs, being a memory descriptor for page tables, makes
+the most sense.
 
-Reviewed-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/iommu.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index ee95937bdaf1..ca57526ce47a 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -517,7 +517,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 		/* Convert entry to a dma_addr_t */
- 		entry += tbl->it_offset;
- 		dma_addr = entry << tbl->it_page_shift;
--		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK(tbl));
-+		dma_addr |= (vaddr & ~IOMMU_PAGE_MASK(tbl));
- 
- 		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
- 			    npages, entry, dma_addr);
-@@ -904,6 +904,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
- 	unsigned int order;
- 	unsigned int nio_pages, io_order;
- 	struct page *page;
-+	int tcesize = (1 << tbl->it_page_shift);
- 
- 	size = PAGE_ALIGN(size);
- 	order = get_order(size);
-@@ -930,7 +931,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
- 	memset(ret, 0, size);
- 
- 	/* Set up tces to cover the allocated range */
--	nio_pages = size >> tbl->it_page_shift;
-+	nio_pages = IOMMU_PAGE_ALIGN(size, tbl) >> tbl->it_page_shift;
-+
- 	io_order = get_iommu_order(size, tbl);
- 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
- 			      mask >> tbl->it_page_shift, io_order, 0);
-@@ -938,7 +940,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
- 		free_pages((unsigned long)ret, order);
- 		return NULL;
- 	}
--	*dma_handle = mapping;
-+
-+	*dma_handle = mapping | ((u64)ret & (tcesize - 1));
- 	return ret;
- }
- 
--- 
-
+Another option is to leave pmd_pgtable_page() as is just for this case.
+Or we can revert commit 7e25de77bc5ea which uses the function here
+then figure out where these gmap pages table pages will go later.
