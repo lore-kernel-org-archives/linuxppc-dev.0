@@ -4,89 +4,128 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55E66C77B76
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Apr 2023 13:48:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F28BFC77B75
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Apr 2023 15:24:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q14yT6zHJz3fc8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Apr 2023 23:48:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q174l75jjz3cdn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 01:24:23 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qARhLlWa;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=QAzdf8lr;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=QAzdf8lr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=stefanb@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=seco.com (client-ip=2a01:111:f400:fe0d::62b; helo=eur04-he1-obe.outbound.protection.outlook.com; envelope-from=sean.anderson@seco.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qARhLlWa;
+	dkim=pass (2048-bit key; unprotected) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=QAzdf8lr;
+	dkim=pass (2048-bit key) header.d=seco.com header.i=@seco.com header.a=rsa-sha256 header.s=selector1 header.b=QAzdf8lr;
 	dkim-atps=neutral
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com (mail-he1eur04on062b.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe0d::62b])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q14sc0Kjtz3cf0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Apr 2023 23:44:35 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33IDZYqv023534;
-	Tue, 18 Apr 2023 13:44:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=pp1;
- bh=51cRZTu6UcwHcnS/YEaTbCAFxBFW4qP0HhtDLNdb/t8=;
- b=qARhLlWamqcSKP1ajprwbSEKilGJjFrq/fkD56J0IS+ttXYNUK9qHpkl8I/fA8Ynx3bW
- GzR6n7MkxFwUbP+YrJ4J8z7V2k1U7BfAo4A0jTgBocJjSwbTMqhgqdozX205hzSUfZNG
- CisApsTyjHDtid5HDDHPLb0e6EMswhYYSY7ccp7Bq/ktMtRwYj0uljFE2/lLYgxbq7RR
- /15WQuIIZGHrxGNSe/wGI8A/l/5XZGrxw4DbZ94j3G0AIV1TerZ3oX7mOaNWzty3gDZ2
- l/2pSH/lP/CIRVR3TM5PIPTaTOzSx9kA3b0TUh5s+xguHw6lGOWnlC8/dX9OrRDIzlww SA== 
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q1ntu4ntq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Apr 2023 13:44:20 +0000
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.17.1.5/8.17.1.5) with ESMTP id 33IDf3UV013921;
-	Tue, 18 Apr 2023 13:44:19 GMT
-Received: from ppma03dal.us.ibm.com (b.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.11])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q1ntu4nt7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Apr 2023 13:44:19 +0000
-Received: from pps.filterd (ppma03dal.us.ibm.com [127.0.0.1])
-	by ppma03dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33ID7nqm014077;
-	Tue, 18 Apr 2023 13:44:18 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([9.208.129.116])
-	by ppma03dal.us.ibm.com (PPS) with ESMTPS id 3pykj75fnq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Apr 2023 13:44:18 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33IDiGZK16122518
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 18 Apr 2023 13:44:16 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2CEA05805B;
-	Tue, 18 Apr 2023 13:44:16 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D48E858066;
-	Tue, 18 Apr 2023 13:44:14 +0000 (GMT)
-Received: from sbct-3.pok.ibm.com (unknown [9.47.158.153])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 18 Apr 2023 13:44:14 +0000 (GMT)
-From: Stefan Berger <stefanb@linux.ibm.com>
-To: kexec@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-integrity@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v9 3/4] of: kexec: Refactor IMA buffer related functions to make them reusable
-Date: Tue, 18 Apr 2023 09:44:08 -0400
-Message-Id: <20230418134409.177485-4-stefanb@linux.ibm.com>
-X-Mailer: git-send-email 2.39.1
-In-Reply-To: <20230418134409.177485-1-stefanb@linux.ibm.com>
-References: <20230418134409.177485-1-stefanb@linux.ibm.com>
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q173j0V88z3cdn
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2023 01:23:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AOUkxBIC2Cz5Gx0Qbx4hYV9qydLXls7EOVVO/fKWM24=;
+ b=QAzdf8lryAW5tqcwk802BOf2VjtQt0IYCwM8qLmBKvqoKZIbwtgYGd9L4zhJa2CrnY88SOiDchFjxT7sJMvHIzPzYbdwR0meTw57F8f6qJZ88gvHcsLEs1u/QwOIhPw701X2ewoMdj210nO8PVF/lJr/fcI7J6S4AahSlOjJX4E+tlUG3nCMKCYs10RC9sIgcmaDJIM7ThddJa/H1dx3UZ39FGCYbWLj5H2jJ0HEWO2JE5s7aw/xOg9qdLT1Y664e/UUQKO6lu2UU1eJEW4yu56u6hOUit3qgiKCdBb/pgFe5Q174WMrVpfc0FzyBbGuauC8VifHazTfD6colm6uNw==
+Received: from AM5PR1001CA0036.EURPRD10.PROD.OUTLOOK.COM (2603:10a6:206:2::49)
+ by DU0PR03MB9566.eurprd03.prod.outlook.com (2603:10a6:10:41e::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.45; Tue, 18 Apr
+ 2023 15:23:04 +0000
+Received: from AM6EUR05FT036.eop-eur05.prod.protection.outlook.com
+ (2603:10a6:206:2:cafe::50) by AM5PR1001CA0036.outlook.office365.com
+ (2603:10a6:206:2::49) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.47 via Frontend
+ Transport; Tue, 18 Apr 2023 15:23:04 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 20.160.56.86)
+ smtp.mailfrom=seco.com; dkim=pass (signature was verified)
+ header.d=seco.com;dmarc=pass action=none header.from=seco.com;
+Received-SPF: Pass (protection.outlook.com: domain of seco.com designates
+ 20.160.56.86 as permitted sender) receiver=protection.outlook.com;
+ client-ip=20.160.56.86; helo=inpost-eu.tmcas.trendmicro.com; pr=C
+Received: from inpost-eu.tmcas.trendmicro.com (20.160.56.86) by
+ AM6EUR05FT036.mail.protection.outlook.com (10.233.241.222) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.6319.20 via Frontend Transport; Tue, 18 Apr 2023 15:23:03 +0000
+Received: from outmta (unknown [192.168.82.140])
+	by inpost-eu.tmcas.trendmicro.com (Trend Micro CAS) with ESMTP id C28EE20080266;
+	Tue, 18 Apr 2023 15:23:03 +0000 (UTC)
+Received: from EUR05-AM6-obe.outbound.protection.outlook.com (unknown [104.47.18.104])
+	by repre.tmcas.trendmicro.com (Trend Micro CAS) with ESMTPS id 1595920080073;
+	Tue, 18 Apr 2023 15:24:03 +0000 (UTC)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AIx57jjBsUKOEsnjMmrjsQ+WfGJ63fpzkIziRSDe+MwFROyjGyaSndiW/idmo1VJbHpTppltfUDFT8vsZNf5JQIPhSmiX9y+B8rt4ASl4ySeg0AMkfSPf+RIu8FVExycdyI4o7vrPRY7lBu7x0HuL942JsBRqdA+qoBnMezoFNJx5PbWp0i5nH13EcVWV0mUWpqeBSzxyUJ47IkZm4x/3yqgwyHKBCbplAbSOeTI6oFuTaTNwEMjQeIkUINh56AE+SqA9+LbeRk1w1lZDmbom2mevToIg2Ry1dWNgLFUeFs5bhhaL5Mpbf2Qo/eBVQKfSD/eGPukMz+ZMyPKHDIcbg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=AOUkxBIC2Cz5Gx0Qbx4hYV9qydLXls7EOVVO/fKWM24=;
+ b=VqluJ23ydD/R4qtjxG0s7UFZ9WpGK7Gy8cfbJ9kd8vuTa4LjXJzYeMkjK0WJmVLfcOiOqXwwEhrCQqBAcy2ULSyXMN8Z+Ad1eZWrT2RVz8Rpf0A2yLbv2dYTxwzAWHi7l7IQZE5MEoRVv4f34WMSiRc9cGSgiCDXD0hx7dsP2AXlOAE6VM8o0XAiDnVtaQkZYD+yOGQ0u3QcrMl/Hf/D7l/c2EbqEPAVpl//Ftu4/U0z8lOiuESA/3S2yYeNlqXr9pGCpzeW9bbFXEjd+c/0n+wlWQstHuf6nXO4vlcIpBVYKMhsxT7Oq5gqyM4iO+X3ZVSYRCp9hh1OvQopA7bgcg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=seco.com; dmarc=pass action=none header.from=seco.com;
+ dkim=pass header.d=seco.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=seco.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=AOUkxBIC2Cz5Gx0Qbx4hYV9qydLXls7EOVVO/fKWM24=;
+ b=QAzdf8lryAW5tqcwk802BOf2VjtQt0IYCwM8qLmBKvqoKZIbwtgYGd9L4zhJa2CrnY88SOiDchFjxT7sJMvHIzPzYbdwR0meTw57F8f6qJZ88gvHcsLEs1u/QwOIhPw701X2ewoMdj210nO8PVF/lJr/fcI7J6S4AahSlOjJX4E+tlUG3nCMKCYs10RC9sIgcmaDJIM7ThddJa/H1dx3UZ39FGCYbWLj5H2jJ0HEWO2JE5s7aw/xOg9qdLT1Y664e/UUQKO6lu2UU1eJEW4yu56u6hOUit3qgiKCdBb/pgFe5Q174WMrVpfc0FzyBbGuauC8VifHazTfD6colm6uNw==
+Authentication-Results-Original: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=seco.com;
+Received: from DB9PR03MB8847.eurprd03.prod.outlook.com (2603:10a6:10:3dd::13)
+ by PAWPR03MB9788.eurprd03.prod.outlook.com (2603:10a6:102:2ef::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6298.45; Tue, 18 Apr
+ 2023 15:22:58 +0000
+Received: from DB9PR03MB8847.eurprd03.prod.outlook.com
+ ([fe80::2226:eb03:a8c:a7e5]) by DB9PR03MB8847.eurprd03.prod.outlook.com
+ ([fe80::2226:eb03:a8c:a7e5%2]) with mapi id 15.20.6298.045; Tue, 18 Apr 2023
+ 15:22:58 +0000
+Message-ID: <e9c2b2df-72e5-f0ab-728a-255e8b2e565d@seco.com>
+Date: Tue, 18 Apr 2023 11:22:50 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.4.0
+Subject: Re: [PATCH v3 2/2] soc: fsl: qbman: Use raw spinlock for cgr_lock
+Content-Language: en-US
+To: Crystal Wood <oss@buserror.net>, Li Yang <leoyang.li@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+References: <20230404145557.2356894-1-sean.anderson@seco.com>
+ <20230404145557.2356894-2-sean.anderson@seco.com>
+ <48dacc58c7c04ba8a005d8edd56744c8455f007e.camel@buserror.net>
+ <d4737c45-2bbf-d364-9768-20baa46f6af4@seco.com>
+ <3b707d1c-1120-274f-6cd6-b3283a334563@seco.com>
+ <497c92b50103a4ba3469cd41edbd967ee9bfb291.camel@buserror.net>
+From: Sean Anderson <sean.anderson@seco.com>
+In-Reply-To: <497c92b50103a4ba3469cd41edbd967ee9bfb291.camel@buserror.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Pwp111NWjBf_1uPsxdSi9TX58YRyvY5o
-X-Proofpoint-ORIG-GUID: qpJqY9r643D89DdQGiclnMF1hI8Argjt
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
- definitions=2023-04-18_09,2023-04-18_01,2023-02-09_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
- suspectscore=0 mlxscore=0 impostorscore=0 spamscore=0 priorityscore=1501
- phishscore=0 lowpriorityscore=0 adultscore=0 clxscore=1015 mlxlogscore=999
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2303200000
- definitions=main-2304180118
+X-ClientProxiedBy: BL1P221CA0029.NAMP221.PROD.OUTLOOK.COM
+ (2603:10b6:208:2c5::25) To DB9PR03MB8847.eurprd03.prod.outlook.com
+ (2603:10a6:10:3dd::13)
+MIME-Version: 1.0
+X-MS-TrafficTypeDiagnostic: 	DB9PR03MB8847:EE_|PAWPR03MB9788:EE_|AM6EUR05FT036:EE_|DU0PR03MB9566:EE_
+X-MS-Office365-Filtering-Correlation-Id: 268a86b5-78a6-4f95-9595-08db4020cdd0
+X-TrendMicro-CAS-OUT-LOOP-IDENTIFIER: 656f966764b7fb185830381c646b41a1
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam-Untrusted: BCL:0;
+X-Microsoft-Antispam-Message-Info-Original:  1Wr6hZqCtiCN2v95JDDW/2jvIccgo4m90ocBk4xxyiXXwYinT88Gov7cCTQUaLEwlWg2ur+2mMnwnPgpCoCa6+wE2oBu3KJQtnCXscTv2m3iK6S3N9DllPI9Hig6YscZEjWWS7Gz4OfW36sZ2UhoHK1SQ8a4ndPcPbJQiQXhvdpxEpkY4FCjEdG14G59CMEU8O2kaYnk7tHkPo+si97+pJJtv8v/nT8UjyatfR3BhaL6QmVbzVfDq3r8+4ChsAtw7ccoZRjgqbeeMdbQJNv2LqunTwhONYkPpBwbYvYoC5bf0bTXEQ0+IaKd5NsKXRjY4QRALXyGmKSI6+HFIPlbQvjIWY5fabCY2wOTRF52I2QfxtBXtVEE5Hh3Y3N7OSzDiYxIm+6WCQu1cSWSyqv+ilswtxH2hr4KLTb5GfUyBxWldXBXQh5EwB1s71X9r0D9W+lCSStwsxdqoYxdweWshRpMepc0wMkMsN4epUWcK1lNQp8TxmJyKq2DXJDtZGKBfoVg8E/cM2jIclTpDHquuWW8cxwFMkpvpKMwI9n2Ao5KW7l/xCFUe0jR0/G57eiq+9ZD9KtBSk8CMPgg4CxvDMonGAgRvaAeAmDaW+7LwSl9A3bYUZfxIjVQrjX4MoBRea9sWjDF9SwCKGGANv16cuTmzd2+jyCbVBWNgRQVCZAm4EM1mDHYAg2wXd93r1a8
+X-Forefront-Antispam-Report-Untrusted:  CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DB9PR03MB8847.eurprd03.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(366004)(346002)(136003)(39850400004)(376002)(396003)(451199021)(6506007)(86362001)(31696002)(26005)(83380400001)(6512007)(53546011)(36756003)(186003)(2906002)(44832011)(7416002)(31686004)(2616005)(6486002)(52116002)(5660300002)(38350700002)(38100700002)(6666004)(8676002)(8936002)(66476007)(478600001)(110136005)(54906003)(41300700001)(316002)(66556008)(66946007)(4326008)(43740500002)(45980500001);DIR:OUT;SFP:1101;
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAWPR03MB9788
+X-EOPAttributedMessage: 0
+X-MS-Exchange-Transport-CrossTenantHeadersStripped:  AM6EUR05FT036.eop-eur05.prod.protection.outlook.com
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-Correlation-Id-Prvs: 	6eadbde8-6ea6-460a-16ec-08db4020c8d7
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 	pfjckRU0hiSSlcw0wDNgOxyOT57yO27Ry4PepPYhDnQCM84aerifCG+Ztk7LwTIqnD16wR5xMchpP7p6Hs0Jk/Cf5b/kMIGC2SB9uOrA/NoFq/fQzKx1Zdj3k8Ym1Nn/atHMCf/GllVx7+M8J1MKaNz5E+p3IFFGT5rxATIeyEYB6Wxky9cdyc7k04z/cGpzcdKPoIUcnR0Cd8XISk1eBETysiFPAYYU9kMQgw+pEPlyUHDfulNoj7DbgVq4qEqBUgzCoP2VdWziEUsvxuCT7tVUzGR45pNdMK3KGZVdMGVv9soLU17In7+d4zyMOftgUpMUsko7MwPjqUUG/HIgp6ZXWpMIpJVEK/vByLvshLch8jwRq25M9PJwN0i4yjhFgL74G4KZrsGYXPC6JsmxKGn3I67uVhF0fyOVgHiEozFFtElkyBXKH2hEjvfyvyctrPwnM9eYcJdyW5YqAd+ELP8ZkzTU/EqgT1teiKD1V4CSC2Hv4XDmKc0rnQ85wK7gqldxUvTsnXCUD88O8v5x+5GAcXmbVldsrpte6PQLkgyhE23QI+akGjx3AyL5CLXe3xGpsPnqlq2Bah1G7cJY8MXped0Am3oZWAjXl5pFISiJF+jYmfQFt+tJTlGLtEp30qKdVhCuIklhjhLw1vOoDdQu46AW1EW0AG8uUzdxs3bg5/zvp8fmijVOtlMaO25Pp9oLfHKvs48+FcszQmJtD8lHuHArksLZIssW16RXgN1I3I2BtdnxJIzorHq+OheDqokeUiyhU2V0/7kN09hEYA==
+X-Forefront-Antispam-Report: 	CIP:20.160.56.86;CTRY:NL;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:inpost-eu.tmcas.trendmicro.com;PTR:inpost-eu.tmcas.trendmicro.com;CAT:NONE;SFS:(13230028)(396003)(346002)(136003)(39850400004)(376002)(451199021)(46966006)(40470700004)(36840700001)(36860700001)(2616005)(110136005)(6512007)(6506007)(26005)(6666004)(40480700001)(86362001)(54906003)(34070700002)(478600001)(31686004)(316002)(4326008)(83380400001)(336012)(186003)(6486002)(53546011)(47076005)(70206006)(70586007)(7596003)(356005)(7636003)(82740400003)(5660300002)(44832011)(7416002)(41300700001)(2906002)(40460700003)(8936002)(8676002)(31696002)(36756003)(82310400005)(43740500002);DIR:OUT;SFP:1101;
+X-OriginatorOrg: seco.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Apr 2023 15:23:03.8874
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 268a86b5-78a6-4f95-9595-08db4020cdd0
+X-MS-Exchange-CrossTenant-Id: bebe97c3-6438-442e-ade3-ff17aa50e733
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=bebe97c3-6438-442e-ade3-ff17aa50e733;Ip=[20.160.56.86];Helo=[inpost-eu.tmcas.trendmicro.com]
+X-MS-Exchange-CrossTenant-AuthSource: 	AM6EUR05FT036.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DU0PR03MB9566
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,232 +137,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Coiby Xu <coxu@redhat.com>, Nageswara R Sastry <rnsastry@linux.ibm.com>, nayna@linux.ibm.com, Mimi Zohar <zohar@linux.ibm.com>, Rob Herring <robh+dt@kernel.org>, nasastry@in.ibm.com, Frank Rowand <frowand.list@gmail.com>, Stefan Berger <stefanb@linux.ibm.com>
+Cc: Madalin Bucur <madalin.bucur@nxp.com>, Vladimir Oltean <vladimir.oltean@nxp.com>, Roy Pledge <roy.pledge@nxp.com>, linux-kernel@vger.kernel.org, Claudiu Manoil <claudiu.manoil@nxp.com>, Camelia Groza <camelia.groza@nxp.com>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Refactor IMA buffer related functions to make them reusable for carrying
-TPM logs across kexec.
+On 4/18/23 02:29, Crystal Wood wrote:
+> On Tue, 2023-04-11 at 11:09 -0400, Sean Anderson wrote:
+>> Hi Crystal,
+>> 
+>> On 4/4/23 12:04, Sean Anderson wrote:
+>> > On 4/4/23 11:33, Crystal Wood wrote:
+>> > > On Tue, 2023-04-04 at 10:55 -0400, Sean Anderson wrote:
+>> > > 
+>> > > > @@ -1456,11 +1456,11 @@ static void tqm_congestion_task(struct
+>> > > > work_struct
+>> > > > *work)
+>> > > >         union qm_mc_result *mcr;
+>> > > >         struct qman_cgr *cgr;
+>> > > >  
+>> > > > -       spin_lock_irq(&p->cgr_lock);
+>> > > > +       raw_spin_lock_irq(&p->cgr_lock);
+>> > > >         qm_mc_start(&p->p);
+>> > > >         qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
+>> > > >         if (!qm_mc_result_timeout(&p->p, &mcr)) {
+>> > > > -               spin_unlock_irq(&p->cgr_lock);
+>> > > > +               raw_spin_unlock_irq(&p->cgr_lock);
+>> > > 
+>> > > qm_mc_result_timeout() spins with a timeout of 10 ms which is very
+>> > > inappropriate for a raw lock.  What is the actual expected upper bound?
+>> > 
+>> > Hm, maybe we can move this qm_mc stuff outside cgr_lock? In most other
+>> > places they're called without cgr_lock, which implies that its usage
+>> > here is meant to synchronize against some other function.
+>> 
+>> Do you have any suggestions here? I think this should really be handled
+>> in a follow-up patch. If you think this code is waiting too long in a raw
+>> spinlock, the existing code can wait just as long with IRQs disabled.
+>> This patch doesn't change existing system responsiveness.
+> 
+> Well, AFAICT it expands the situations in which it happens from configuration
+> codepaths to stuff like congestion handling.  The proper fix would probably be
+> to use some mechanism other than smp_call_function_single() to run code on the
+> target cpu so that it can run with irqs enabled (or get confirmation that the
+> actual worst case is short enough),
 
-Signed-off-by: Stefan Berger <stefanb@linux.ibm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Frank Rowand <frowand.list@gmail.com>
-Cc: Mimi Zohar <zohar@linux.ibm.com>
-Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Tested-by: Nageswara R Sastry <rnsastry@linux.ibm.com>
-Tested-by: Coiby Xu <coxu@redhat.com>
+Well, we used to use a kthread/wait_for_completion before 96f413f47677
+("soc/fsl/qbman: fix issue in qman_delete_cgr_safe()"). The commit
+description there isn't very enlightening as to the actual bug, which is
+why I CC's Madalin earlier. To be honest, I'm not really familiar with
+the other options in the kernel.
 
----
-v6:
- - Add __init to get_kexec_buffer as suggested by Jonathan
+> but barring that I guess at least acknowledge the situation in a
+> comment?
 
-v5:
- - Rebased on Jonathan McDowell's commit "b69a2afd5afc x86/kexec: Carry
-   forward IMA measurement log on kexec"
-v4:
- - Move debug output into setup_buffer()
----
- drivers/of/kexec.c | 126 ++++++++++++++++++++++++++-------------------
- 1 file changed, 74 insertions(+), 52 deletions(-)
+Fine by me.
 
-diff --git a/drivers/of/kexec.c b/drivers/of/kexec.c
-index 1373d7e0a9b3..fa8c0c75adf9 100644
---- a/drivers/of/kexec.c
-+++ b/drivers/of/kexec.c
-@@ -117,45 +117,57 @@ static int do_get_kexec_buffer(const void *prop, int len, unsigned long *addr,
- }
- 
- #ifdef CONFIG_HAVE_IMA_KEXEC
--/**
-- * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-- * @addr:	On successful return, set to point to the buffer contents.
-- * @size:	On successful return, set to the buffer size.
-- *
-- * Return: 0 on success, negative errno on error.
-- */
--int __init ima_get_kexec_buffer(void **addr, size_t *size)
-+static int __init get_kexec_buffer(const char *name, unsigned long *addr,
-+				   size_t *size)
- {
- 	int ret, len;
--	unsigned long tmp_addr;
- 	unsigned long start_pfn, end_pfn;
--	size_t tmp_size;
- 	const void *prop;
- 
--	prop = of_get_property(of_chosen, "linux,ima-kexec-buffer", &len);
-+	prop = of_get_property(of_chosen, name, &len);
- 	if (!prop)
- 		return -ENOENT;
- 
--	ret = do_get_kexec_buffer(prop, len, &tmp_addr, &tmp_size);
-+	ret = do_get_kexec_buffer(prop, len, addr, size);
- 	if (ret)
- 		return ret;
- 
--	/* Do some sanity on the returned size for the ima-kexec buffer */
--	if (!tmp_size)
-+	/* Do some sanity on the returned size for the kexec buffer */
-+	if (!*size)
- 		return -ENOENT;
- 
- 	/*
- 	 * Calculate the PFNs for the buffer and ensure
- 	 * they are with in addressable memory.
- 	 */
--	start_pfn = PHYS_PFN(tmp_addr);
--	end_pfn = PHYS_PFN(tmp_addr + tmp_size - 1);
-+	start_pfn = PHYS_PFN(*addr);
-+	end_pfn = PHYS_PFN(*addr + *size - 1);
- 	if (!page_is_ram(start_pfn) || !page_is_ram(end_pfn)) {
--		pr_warn("IMA buffer at 0x%lx, size = 0x%zx beyond memory\n",
--			tmp_addr, tmp_size);
-+		pr_warn("%s buffer at 0x%lx, size = 0x%zx beyond memory\n",
-+			name, *addr, *size);
- 		return -EINVAL;
- 	}
- 
-+	return 0;
-+}
-+
-+/**
-+ * ima_get_kexec_buffer - get IMA buffer from the previous kernel
-+ * @addr:	On successful return, set to point to the buffer contents.
-+ * @size:	On successful return, set to the buffer size.
-+ *
-+ * Return: 0 on success, negative errno on error.
-+ */
-+int __init ima_get_kexec_buffer(void **addr, size_t *size)
-+{
-+	int ret;
-+	unsigned long tmp_addr;
-+	size_t tmp_size;
-+
-+	ret = get_kexec_buffer("linux,ima-kexec-buffer", &tmp_addr, &tmp_size);
-+	if (ret)
-+		return ret;
-+
- 	*addr = __va(tmp_addr);
- 	*size = tmp_size;
- 
-@@ -188,72 +200,82 @@ int __init ima_free_kexec_buffer(void)
- }
- #endif
- 
--/**
-- * remove_ima_buffer - remove the IMA buffer property and reservation from @fdt
-- *
-- * @fdt: Flattened Device Tree to update
-- * @chosen_node: Offset to the chosen node in the device tree
-- *
-- * The IMA measurement buffer is of no use to a subsequent kernel, so we always
-- * remove it from the device tree.
-- */
--static void remove_ima_buffer(void *fdt, int chosen_node)
-+static int remove_buffer(void *fdt, int chosen_node, const char *name)
- {
- 	int ret, len;
- 	unsigned long addr;
- 	size_t size;
- 	const void *prop;
- 
--	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
--		return;
--
--	prop = fdt_getprop(fdt, chosen_node, "linux,ima-kexec-buffer", &len);
-+	prop = fdt_getprop(fdt, chosen_node, name, &len);
- 	if (!prop)
--		return;
-+		return -ENOENT;
- 
- 	ret = do_get_kexec_buffer(prop, len, &addr, &size);
--	fdt_delprop(fdt, chosen_node, "linux,ima-kexec-buffer");
-+	fdt_delprop(fdt, chosen_node, name);
- 	if (ret)
--		return;
-+		return ret;
- 
- 	ret = fdt_find_and_del_mem_rsv(fdt, addr, size);
- 	if (!ret)
--		pr_debug("Removed old IMA buffer reservation.\n");
-+		pr_debug("Remove old %s buffer reserveration", name);
-+	return ret;
- }
- 
--#ifdef CONFIG_IMA_KEXEC
- /**
-- * setup_ima_buffer - add IMA buffer information to the fdt
-- * @image:		kexec image being loaded.
-- * @fdt:		Flattened device tree for the next kernel.
-- * @chosen_node:	Offset to the chosen node.
-+ * remove_ima_buffer - remove the IMA buffer property and reservation from @fdt
-  *
-- * Return: 0 on success, or negative errno on error.
-+ * @fdt: Flattened Device Tree to update
-+ * @chosen_node: Offset to the chosen node in the device tree
-+ *
-+ * The IMA measurement buffer is of no use to a subsequent kernel, so we always
-+ * remove it from the device tree.
-  */
--static int setup_ima_buffer(const struct kimage *image, void *fdt,
--			    int chosen_node)
-+static void remove_ima_buffer(void *fdt, int chosen_node)
-+{
-+	if (!IS_ENABLED(CONFIG_HAVE_IMA_KEXEC))
-+		return;
-+
-+	remove_buffer(fdt, chosen_node, "linux,ima-kexec-buffer");
-+}
-+
-+#ifdef CONFIG_IMA_KEXEC
-+static int setup_buffer(void *fdt, int chosen_node, const char *name,
-+			phys_addr_t addr, size_t size)
- {
- 	int ret;
- 
--	if (!image->ima_buffer_size)
-+	if (!size)
- 		return 0;
- 
- 	ret = fdt_appendprop_addrrange(fdt, 0, chosen_node,
--				       "linux,ima-kexec-buffer",
--				       image->ima_buffer_addr,
--				       image->ima_buffer_size);
-+				       name, addr, size);
- 	if (ret < 0)
- 		return -EINVAL;
- 
--	ret = fdt_add_mem_rsv(fdt, image->ima_buffer_addr,
--			      image->ima_buffer_size);
-+	ret = fdt_add_mem_rsv(fdt, addr, size);
- 	if (ret)
- 		return -EINVAL;
- 
--	pr_debug("IMA buffer at 0x%pa, size = 0x%zx\n",
--		 &image->ima_buffer_addr, image->ima_buffer_size);
-+	pr_debug("%s at 0x%pa, size = 0x%zx\n", name, &addr, size);
- 
- 	return 0;
-+
-+}
-+
-+/**
-+ * setup_ima_buffer - add IMA buffer information to the fdt
-+ * @image:		kexec image being loaded.
-+ * @fdt:		Flattened device tree for the next kernel.
-+ * @chosen_node:	Offset to the chosen node.
-+ *
-+ * Return: 0 on success, or negative errno on error.
-+ */
-+static int setup_ima_buffer(const struct kimage *image, void *fdt,
-+			    int chosen_node)
-+{
-+	return setup_buffer(fdt, chosen_node, "linux,ima-kexec-buffer",
-+			    image->ima_buffer_addr, image->ima_buffer_size);
- }
- #else /* CONFIG_IMA_KEXEC */
- static inline int setup_ima_buffer(const struct kimage *image, void *fdt,
--- 
-2.38.1
-
+--Sean
