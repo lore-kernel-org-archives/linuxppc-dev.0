@@ -4,121 +4,76 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D05E7C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 16:22:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C3A7C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 17:29:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1mK02SGVz3fk6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 02:22:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1nq70s2tz3fQd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 03:29:55 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cuMB1G29;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ZmsCl4VX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f400:fe5b::60d; helo=nam12-bn8-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmx.de (client-ip=212.227.17.21; helo=mout.gmx.net; envelope-from=deller@gmx.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=cuMB1G29;
+	dkim=pass (2048-bit key; secure) header.d=gmx.de header.i=deller@gmx.de header.a=rsa-sha256 header.s=s31663417 header.b=ZmsCl4VX;
 	dkim-atps=neutral
-Received: from NAM12-BN8-obe.outbound.protection.outlook.com (mail-bn8nam12on2060d.outbound.protection.outlook.com [IPv6:2a01:111:f400:fe5b::60d])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+X-Greylist: delayed 327 seconds by postgrey-1.36 at boromir; Thu, 20 Apr 2023 03:29:00 AEST
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1m5q2K7Kz3cDG
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 02:12:31 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=bSoZaH26hpPKl/Pr9HfKsvSVxC4WWb5q/ZSG1KvI+L9X2eBPHLQaF7f+r7+Ch30f+JA6y2hUELkXj3xampnnMPoAT+bvhM30d2Pq/CpYrdnO+aqUIi/Emlw7o4fMsDu+pfzRd0nrYLaHGyrYL7eTfiskK3QBM4dJnzsM4RVumk1qxYx/3xd0rromER7Nf+Ji+u+t4dqRpniFTdnb/uOY9idW3FZgTU6TfbJOUwTH7+Bt0OYFm1XIEtjAp64dUEVCbk2ePQBQKOxp6SUYsLOp4JSV78NK1p/R21sU6LklsOje4hbru9/GQwV58i2rVFUakxWE5v9hUqnvyYEksToaNA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=HVLxJR9iE/gNszq8p/v3CUol3et1BHp7qOc/SpwCcY4=;
- b=NjXKG8jSc/ycOBFWcXpvYCAvn1VWmGuozXIJ3ZxGD+zVRvU5zdysa8VJciF5ATFB2xZOVoQqqXyDxrpOupxXL1TatDtdokmLeejoTD0udZOlk2mziIE3oMgQYomrcX8x/wM3Xawbmz+fv88xY8/oMhqIB2erq22sxsNXJO6JFCL+dGWe79ezxInHsM7N9bF8z6hbTXhNlWSjjRxGfVRZTIUyhmX48zsKfwUvyTE5/yzJgj24RdB6a3fdQj5Q5a7KPOb60kPRC+C6fgLT+0wDrECqcOI3O+cK3TvxIe5GE53e6/GpGxdZ+vi9veNLq/IKsvSF6qsg9xR3ztFiuYkw5g==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=HVLxJR9iE/gNszq8p/v3CUol3et1BHp7qOc/SpwCcY4=;
- b=cuMB1G29RHRkNaRsjQJqnI4Cz5+tMg25uqtYrGOqG+eTnfn/TPSVT6KvYs6bLxxRG52Laa9aBz6+zjrLUlGU3ukUP8gZ0no6RcqzJzSh6+KQXJAypV+L/C8jzbyeHsKh6ljbbKtvdsT0RTPKtGvf0ikCssHLc7OdkkHBDRQvxo4IGhFvMhPKH924u42NojyJeMDPMUFeW/rYZKHz1nc4ubcCJ3U/Mu2yoBFaME3CUpxtGtuQgHOkmmwrVbmlFZhhvH78WOwTl/rFOIP++11HMYyJgHcisotiY159EgyroPDfTwkYAu9FElBJUZSCqPJPY8F3fRApMLOqMsluCqAeNg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com (2603:10b6:408:176::16)
- by MN0PR12MB6342.namprd12.prod.outlook.com (2603:10b6:208:3c1::9) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.6319.20; Wed, 19 Apr
- 2023 16:12:09 +0000
-Received: from LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::f7a7:a561:87e9:5fab]) by LV2PR12MB5869.namprd12.prod.outlook.com
- ([fe80::f7a7:a561:87e9:5fab%6]) with mapi id 15.20.6319.020; Wed, 19 Apr 2023
- 16:12:09 +0000
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Lu Baolu <baolu.lu@linux.intel.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	David Woodhouse <dwmw2@infradead.org>,
-	iommu@lists.linux.dev,
-	Joerg Roedel <joro@8bytes.org>,
-	Len Brown <lenb@kernel.org>,
-	linux-acpi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Will Deacon <will@kernel.org>
-Subject: [PATCH 04/11] iommu: Simplify the __iommu_group_remove_device() flow
-Date: Wed, 19 Apr 2023 13:11:50 -0300
-Message-Id: <4-v1-8aecc628b904+2f42-iommu_probe_jgg@nvidia.com>
-In-Reply-To: <0-v1-8aecc628b904+2f42-iommu_probe_jgg@nvidia.com>
-References: 
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: BYAPR11CA0082.namprd11.prod.outlook.com
- (2603:10b6:a03:f4::23) To LV2PR12MB5869.namprd12.prod.outlook.com
- (2603:10b6:408:176::16)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1np41LtXz3cdr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 03:28:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.de; s=s31663417;
+	t=1681925334; i=deller@gmx.de;
+	bh=C5yrQi1O5H/ZJ6i2wZhc9S+TYhhPSe8koYmOSkrsxpg=;
+	h=X-UI-Sender-Class:Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=ZmsCl4VXvitbCRVdUkBdlfI2alparlkCERuNbgnY7uFetwUgClkeBi4gOjmBAqd8K
+	 rxkZFLoL7KBGe43vgpDjJhI9Tk+3toIQtbOPE0A5czZXGzMHog6tWDlNydgRDVeQxI
+	 18gI+1YqhcLDEMfNUMmqT273oEXsIpfSy4N+QeUQcrJBNlZ7DsCkzGpHT4p7Nkf0KQ
+	 vniRppU4X1gtB6DtcBD0fr1qcYEOp2Lht8plYj1fD8q3Oc6iaUvKUUDcu/gK4JEzO5
+	 9evkgKh2Nk7bDEHYASQWUUZ9+P3pZ7S4rgxMSnALNFLfWEg4xT6ndfwpUZ8Cr+CwD7
+	 wBa1i16YR47Qg==
+X-UI-Sender-Class: 724b4f7f-cbec-4199-ad4e-598c01a50d3a
+Received: from [192.168.20.60] ([94.134.144.134]) by mail.gmx.net (mrgmx104
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 1MatVb-1qRYCj0P8t-00cRzi; Wed, 19
+ Apr 2023 19:22:54 +0200
+Message-ID: <b1f90fa4-85c7-e785-ba14-f32962f87d5e@gmx.de>
+Date: Wed, 19 Apr 2023 19:22:50 +0200
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: LV2PR12MB5869:EE_|MN0PR12MB6342:EE_
-X-MS-Office365-Filtering-Correlation-Id: 95adde55-8713-47fb-8dd6-08db40f0d3ec
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 	BBZoPp7TrYeU/TDsk3Btwqzskm1LCTkZ5Uh43rrAXn0k3aX6hUAKzzozUWxo5iAXJiBHsEHTBeXsJgym3tLlzKiipp/bLMQDfx1BIspBVdxuLzBhd5FmeKEx8wZBiJ/Q+1Jvs6Ldh+aDLg9qnSh88SXpaekcDcnvQAeg05VLOWgyTvTKyNxPLQC82UZN4ub2ZWTD05EXKmovTRBKyfKg1jBIgiVxO+fNHtPi3+VOzjXEAZ5rgxqQlt429I2oRktYUYGyaM/FXj0e4pdi20My4K3aZguD3KNq0SkDKQ9GR4qamMOiJJjMtthKKL4cvddYDPyeS30t+QCnWE1aDaIlwKiJ/9AVCB1t2pYo4aXlM5Q4ItboNTLdqNBTHyK4nr1ShYBP4Gd4SNc3sPUawZmENw7RQlZaAT16+9BUnhaNL3drNxUmqIMNcy2V23k+Pa2lJTeXmTHPfhxjUne2fY3YbFFYfHv8pgAeWbu+AWzmDjsL3OD9zrf2Xf9U6dfrYGcd5ktiD2BCl7kEbpOIqt90KJZys0Okfllu96cYRw2ffTOM+a+PQennPMKI4vOYPHPXn8k20P9n+IFABV/0dW5BwMqg9CHC+rWokyZMSi4DnS3x+Epqi0a6QqGGx8OZ8IMk
-X-Forefront-Antispam-Report: 	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:LV2PR12MB5869.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230028)(4636009)(396003)(376002)(39860400002)(366004)(346002)(136003)(451199021)(6666004)(6486002)(478600001)(110136005)(86362001)(36756003)(2616005)(83380400001)(107886003)(6512007)(186003)(6506007)(26005)(38100700002)(316002)(921005)(66946007)(66476007)(66556008)(2906002)(8676002)(5660300002)(8936002)(7416002)(41300700001)(4326008)(54906003)(4216001);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0: 	=?us-ascii?Q?8wVFQ7a1CNmKpJjLBfHyfUvUGdJoaIUBqGbsUlxA0GBTpL+bDbeA0mTL07Jo?=
- =?us-ascii?Q?u8vg0PRK9ML+oSNAASaEYpIa/qzP6rJy3s9PSlGAgUw5Ad8Ug2aOBTb6Xt50?=
- =?us-ascii?Q?wAQy2kY+6Rfdd8NXhYwZ598QoJejcpbU+2EXsMUrM3Biu7svA8m0nkj0YrXC?=
- =?us-ascii?Q?YDJx7Ovq5ui8kgPyOSqKMCp7uXTOtMIrol1uhGEVJkflIb5gRAj0eOrHhdYl?=
- =?us-ascii?Q?qrAJ1Qui3JsDP6US4ID1/s7nTouQPUr7YYBA64LNP2TFpgbnbG5zJFffn6MW?=
- =?us-ascii?Q?IQfHPeCGf1lAnBQod2r3rQOg9/eh65vkRC1Ltj40MZxTsZU45gRMCygzaw8H?=
- =?us-ascii?Q?7q8iZ0qEy4pfOp76QZD9wL5sFLin8aAhA4vwc1FgEvFlkzG90LvzMUehp/E2?=
- =?us-ascii?Q?vHuhVJWmM13jGJnO2ovAcKlwHX3g8LJ9FJm/dKDzcn4yslSrXnQm14xcPFUb?=
- =?us-ascii?Q?tIF+Q/8tz2NVISakDJc+joUMy3sHWzH9dmbP5CXMVUnGpGKfPBV1jsYHSmmz?=
- =?us-ascii?Q?+JkNwCLROcQKCnXJtXowVn9KjWrNd89781rrAudAkXV7NrpLZVUSM9zQYg3j?=
- =?us-ascii?Q?bTR6ouLlpVstjlx9gL9E3ZX5dIh7B87MzhkejoRhfK/Q17BQ8rEF7oj3k7bG?=
- =?us-ascii?Q?f7oDvGmK4Z1Fe07z0ufUXPcK660nTAB2PshhhhVuQaDihs7dKKWBDMxTgdwp?=
- =?us-ascii?Q?gzNdeLBpeQVoeE9zeqYRuJVfKvIMglhOvoyY5qZHaxzW6ezzwVLg/HDZQXa3?=
- =?us-ascii?Q?P1lChCBD0Wl/lf+kdF7gN0JJwaPNCZMBi3+AE51l5pOnBkcN8lq/nCtGpMRV?=
- =?us-ascii?Q?kRxqXLMzXd+8/ijVUJKtPgDZ80ba3c9P36iSFnsaMxwk4U1eytE03OETWUFi?=
- =?us-ascii?Q?sX+xuvnm1opT1j6FAIiDdi98rLNT+NzsjVUdOB18jFFkPZdQFALC9yyMYyg/?=
- =?us-ascii?Q?+VR8+1WUnvlpk7Teom2oBa1JWWYfWhxkk5xSXbF8pWN9XTSqdyRgHRJ/J89Q?=
- =?us-ascii?Q?5C3VdaEp+eAFoxjAqscepvC2Fvy7a1muNCYE64HBMNHxyqdKa1hGk0VIJUKz?=
- =?us-ascii?Q?tsgwvbS+7wri2+GGW6iRtk8V6IicdUOMBmmu9EhYzq3QPQtVteSHVyuF3Iuj?=
- =?us-ascii?Q?UhIe6dVtOh0ZThMokx0LwfoPvP6B+karWG36cudIyUao/rUI0VWKc1lqpx4W?=
- =?us-ascii?Q?NN2UnwpF45zyrdBRVTSuODmYUZlzD9bqwLRJCqEUPPt4jL7E5gc1Ap5a25yG?=
- =?us-ascii?Q?ZCOgKUC0toG78J0zqrifkayk/yqgiSwWOltKhb1OgNRc8CdqVczOtb4UZFFH?=
- =?us-ascii?Q?XGLD5Bgo+RyhEkx9jvMTLG9yDlJ6E8CXO8p4GJhr8pA75MqwX5k9aSYoAfaa?=
- =?us-ascii?Q?/yYbe1sOOIVehQcbHkGTovq5gdK+77iPCmJcv0dvZ7JkaHnqHEBkUpC9uFQY?=
- =?us-ascii?Q?iXo5S5IJGUiCatEFmN6J4q7ZfoIudotaXiNOUZMBimYTbIgynve4lewKS0sc?=
- =?us-ascii?Q?esil7FLnixl8G6PyRuBj0V6gpJfYcrJzm27Grz+g2ZhMIpg6jxBYOvVvJ4in?=
- =?us-ascii?Q?CKXBGJENk6DgA+g/GELG6Iheg9LRwZSOdO6HUM8N?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 95adde55-8713-47fb-8dd6-08db40f0d3ec
-X-MS-Exchange-CrossTenant-AuthSource: LV2PR12MB5869.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 19 Apr 2023 16:12:09.6011
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: xU7OcIT4vOODPbjpMoHGKnhV8W2dgwgLIyihO+B8INO7QnnuIZ59LSEcNkB101IG
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN0PR12MB6342
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101
+ Thunderbird/102.8.0
+Subject: Re: [PATCH v3 00/19] arch: Consolidate <asm/fb.h>
+Content-Language: en-US
+To: Thomas Zimmermann <tzimmermann@suse.de>, Arnd Bergmann <arnd@arndb.de>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Javier Martinez Canillas <javierm@redhat.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+References: <20230417125651.25126-1-tzimmermann@suse.de>
+ <1641007d-7953-426a-a3de-ca9c90f6c5a9@app.fastmail.com>
+ <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
+From: Helge Deller <deller@gmx.de>
+In-Reply-To: <5fa98536-a4b0-7b71-7342-9ba05158062f@suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-Provags-ID: V03:K1:H9qZXkCOPDN+3vsO7z+9ttDKPCRSFaiF/4cDmiO5ovofGlBxTzT
+ kMlRPG3r4Q6KYGeHBb//fU40kwtmWj1gVkdx7p7FELLCFOD5Nql8qYPGjnWefhzsS88zNIK
+ xaqD2s84khdceDbFsitlOpU2HidQYYXlykQQ9SD+p1IgyfdLRLZnqUmFoBDr2Oq3uB/Hpmu
+ vy6bniwylk05WNGd4sCJg==
+UI-OutboundReport: notjunk:1;M01:P0:JkuuhQTF31w=;L+yIwDUJ+AXwy27/xZlNldQZIxM
+ ZndB806O4sJYo7gNJlDnQvJOJ3qya+xdPNud87tENN/4Wtbco1yfPL/qNys1opwGEGvkEeq8F
+ nCiQYohKL5+TvZLCZQ5qjIPml/dGguzb5CIZmkr6fzC/X0jrXlMm8pmzmz7SqA1JTsTyI92zA
+ rbXUd38iqhnoIrCKtupAcPi+nrmdP/dAkRtta6PfNzgAK35JT/3QlwC7Fw6FVx4Tv3hBCP0Ab
+ KmvHEAzslBFQ+wM4h8sM0PF6OyDCoCKU4vaRcmbZ4s7eJRS85nImghPCaY+CtG2yQ+W+ldTvC
+ M7+uODp8Jz6Zbf/GVuqDcwc3FCx2mPYZGdCD5MXlIv16W1ozCpaI11s0GhKbbhcKcMRWTT9J/
+ Vy+6Eqf5QOF3rNPy0pdw5SwERbIcSyG6rnGDIB4r6H/x1Fg7lpI9WkmGs3NMXdDzr53//56MO
+ NYBE3NMvNMjQlpw8D4cpOrkWNb3BEXdCj00Bdy/uZjoVnGyX649xC586ABXlMzYRJEb/ubSum
+ SHUD6SCHykIGSurFcOUQw75QsrwBzULu28EgOXg54OyO58RtajmZMqPwNzcTxBJ9Za8oaGWmw
+ 5jDRcxg9X+kyt1IPIsthIycfCg3lhSIZUA24lF3sFWUijWtyzbDOygnDweU05unOizKPuV7a4
+ k3npJ6ZxkiX1KrLjOUIYlW8yobiXQ1c9YIEKGkDvJiPBNS0GAQhIEYTx2XbHs1TtdqRnDpXng
+ eK6ViZlYIlX8PfwqN0liN4mjYEVcTPb+CHTKCIQDCZAuIHgU3n5MdzsKScm47eUCtttEyG5jo
+ 9Hih5943EzjVlq/m4Hmbxpyzr54KHjNOIf02GnLFzxU/RHG223/15lVZB64R/5eMlAFwOc2F8
+ VQz2VKfk1RpNaUFdCkt+i28hqSxoHKc2XhxcD409x6EubflhzhyrDFbWHdrvUbipNZIfj3JbG
+ pemUaXlsB5VMSk2TadDPs1wT6r0=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,170 +85,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kevin Tian <kevin.tian@intel.com>, Nicolin Chen <nicolinc@nvidia.com>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-m68k@lists.linux-m68k.org, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of returning the struct group_device and then later freeing it, do
-the entire free under the group->mutex and defer only putting the
-iommu_group.
+Hi Thomas,
 
-It is safe to remove the sysfs_links and free memory while holding that
-mutex.
+> Am 17.04.23 um 16:12 schrieb Arnd Bergmann:>> On Mon, Apr 17, 2023, at 1=
+4:56, Thomas Zimmermann wrote:
+>>> Various architectures provide <asm/fb.h> with helpers for fbdev
+>>> framebuffer devices. Share the contained code where possible. There
+>>> is already <asm-generic/fb.h>, which implements generic (as in
+>>> 'empty') functions of the fbdev helpers. The header was added in
+>>> commit aafe4dbed0bf ("asm-generic: add generic versions of common
+>>> headers"), but never used.
+>>>
+>>> Each per-architecture header file declares and/or implements fbdev
+>>> helpers and defines a preprocessor token for each. The generic
+>>> header then provides the remaining helpers. It works like the I/O
+>>> helpers in <asm/io.h>.
+>>
+>> Looks all good to me,
+>>
+>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+>
+> Thanks a lot. I know that Helge wants to test the PARISC changes, so
+> I'll keep this series pending for a bit longer. I'd like to merge the
+> patches through the DRM tree, if no one objects.
 
-Move the sanity assert of the group status into
-__iommu_group_free_device().
+Yes, patch is good and I've tested it on parisc. Thanks!
 
-The next patch will improve upon this and consolidate the group put and
-the mutex into __iommu_group_remove_device().
+You may add:
+Acked-by: Helge Deller <deller@gmx.de>
+to the series and take it through the drm tree.
 
-__iommu_group_free_device() is close to being the paired undo of
-iommu_group_add_device(), following patches will improve on that.
-
-Signed-off-by: Jason Gunthorpe <jgg@nvidia.com>
----
- drivers/iommu/iommu.c | 83 ++++++++++++++++++++-----------------------
- 1 file changed, 39 insertions(+), 44 deletions(-)
-
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index e08856c17121d8..471f19f7de8c4a 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -466,32 +466,8 @@ int iommu_probe_device(struct device *dev)
- 
- }
- 
--/*
-- * Remove a device from a group's device list and return the group device
-- * if successful.
-- */
--static struct group_device *
--__iommu_group_remove_device(struct iommu_group *group, struct device *dev)
--{
--	struct group_device *device;
--
--	lockdep_assert_held(&group->mutex);
--	for_each_group_device(group, device) {
--		if (device->dev == dev) {
--			list_del(&device->list);
--			return device;
--		}
--	}
--
--	return NULL;
--}
--
--/*
-- * Release a device from its group and decrements the iommu group reference
-- * count.
-- */
--static void __iommu_group_release_device(struct iommu_group *group,
--					 struct group_device *grp_dev)
-+static void __iommu_group_free_device(struct iommu_group *group,
-+				      struct group_device *grp_dev)
- {
- 	struct device *dev = grp_dev->dev;
- 
-@@ -500,16 +476,45 @@ static void __iommu_group_release_device(struct iommu_group *group,
- 
- 	trace_remove_device_from_group(group->id, dev);
- 
-+	/*
-+	 * If the group has become empty then ownership must have been
-+	 * released, and the current domain must be set back to NULL or
-+	 * the default domain.
-+	 */
-+	if (list_empty(&group->devices))
-+		WARN_ON(group->owner_cnt ||
-+			group->domain != group->default_domain);
-+
- 	kfree(grp_dev->name);
- 	kfree(grp_dev);
- 	dev->iommu_group = NULL;
--	iommu_group_put(group);
- }
- 
--static void iommu_release_device(struct device *dev)
-+/*
-+ * Remove the iommu_group from the struct device. The attached group must be put
-+ * by the caller after releaseing the group->mutex.
-+ */
-+static void __iommu_group_remove_device(struct device *dev)
- {
- 	struct iommu_group *group = dev->iommu_group;
- 	struct group_device *device;
-+
-+	lockdep_assert_held(&group->mutex);
-+	for_each_group_device(group, device) {
-+		if (device->dev != dev)
-+			continue;
-+
-+		list_del(&device->list);
-+		__iommu_group_free_device(group, device);
-+		/* Caller must put iommu_group */
-+		return;
-+	}
-+	WARN(true, "Corrupted iommu_group device_list");
-+}
-+
-+static void iommu_release_device(struct device *dev)
-+{
-+	struct iommu_group *group = dev->iommu_group;
- 	const struct iommu_ops *ops;
- 
- 	if (!dev->iommu || !group)
-@@ -518,16 +523,7 @@ static void iommu_release_device(struct device *dev)
- 	iommu_device_unlink(dev->iommu->iommu_dev, dev);
- 
- 	mutex_lock(&group->mutex);
--	device = __iommu_group_remove_device(group, dev);
--
--	/*
--	 * If the group has become empty then ownership must have been released,
--	 * and the current domain must be set back to NULL or the default
--	 * domain.
--	 */
--	if (list_empty(&group->devices))
--		WARN_ON(group->owner_cnt ||
--			group->domain != group->default_domain);
-+	__iommu_group_remove_device(dev);
- 
- 	/*
- 	 * release_device() must stop using any attached domain on the device.
-@@ -543,8 +539,8 @@ static void iommu_release_device(struct device *dev)
- 		ops->release_device(dev);
- 	mutex_unlock(&group->mutex);
- 
--	if (device)
--		__iommu_group_release_device(group, device);
-+	/* Pairs with the get in iommu_group_add_device() */
-+	iommu_group_put(group);
- 
- 	module_put(ops->owner);
- 	dev_iommu_free(dev);
-@@ -1103,7 +1099,6 @@ EXPORT_SYMBOL_GPL(iommu_group_add_device);
- void iommu_group_remove_device(struct device *dev)
- {
- 	struct iommu_group *group = dev->iommu_group;
--	struct group_device *device;
- 
- 	if (!group)
- 		return;
-@@ -1111,11 +1106,11 @@ void iommu_group_remove_device(struct device *dev)
- 	dev_info(dev, "Removing from iommu group %d\n", group->id);
- 
- 	mutex_lock(&group->mutex);
--	device = __iommu_group_remove_device(group, dev);
-+	__iommu_group_remove_device(dev);
- 	mutex_unlock(&group->mutex);
- 
--	if (device)
--		__iommu_group_release_device(group, device);
-+	/* Pairs with the get in iommu_group_add_device() */
-+	iommu_group_put(group);
- }
- EXPORT_SYMBOL_GPL(iommu_group_remove_device);
- 
--- 
-2.40.0
-
+Helge
