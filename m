@@ -4,55 +4,77 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FDD1C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 14:36:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7390EC6FD18
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Apr 2023 15:27:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1jyY05Rcz3f4C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 00:36:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q1l5r5Pyzz3fRH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 01:27:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OKKeavw9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WIde/pNc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OKKeavw9;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=WIde/pNc;
 	dkim-atps=neutral
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1jxc6PFrz3c38
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 00:35:16 +1000 (AEST)
-Received: from smtp.kernel.org (relay.kernel.org [52.25.139.140])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by dfw.source.kernel.org (Postfix) with ESMTPS id F13DB60B88;
-	Wed, 19 Apr 2023 14:35:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0F2F1C433D2;
-	Wed, 19 Apr 2023 14:35:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1681914914;
-	bh=sBYbUiJ6GlCWj4lYqLlaskm6OAopEbc4bQC5luPU9Tg=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=OKKeavw9KAKCyJMFID/gsexph94AvBnlqXJYcXH8ScMbhtZRBm/XzDjUamvrscn/t
-	 lANg4Ig3Te4XIhTywIcanyOf0gdNLui07r9YSDxXwHHcizz7wYdUMimUisEQPCW/23
-	 WUB3ETEuam2/O71qFvPHRLhTZpJpYqDEQxCDZiaaCGn3tPN954phonD8c/xtOLzIru
-	 vs1kpvSYFr0JcIH5xwQRmgs7lkDCW4I9qVMuMupi6bq0UnxRcLK2urzhE69QvPoZ5u
-	 stDFtMNvNMyomVbDSe/XFbJmTDRhtP6RaMFYB1M2xewMzPslHBcyl+kEtV/lmE+CLn
-	 9a/JSMhue0uTA==
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, 
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-In-Reply-To: <c167c16a535049d56f817bbede9c9f6f0a0f4c68.1681626553.git.christophe.jaillet@wanadoo.fr>
-References: <c167c16a535049d56f817bbede9c9f6f0a0f4c68.1681626553.git.christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH] ASoC: fsl: Simplify an error message
-Message-Id: <168191491177.87831.11926959447891085887.b4-ty@kernel.org>
-Date: Wed, 19 Apr 2023 15:35:11 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1l4q1Vs4z3c7d
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 01:26:34 +1000 (AEST)
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.17.1.19/8.17.1.19) with ESMTP id 33JEZxp6034942;
+	Wed, 19 Apr 2023 15:26:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-transfer-encoding; s=pp1;
+ bh=wLNPvVRGxg8hpkzo7WwsYUTm8PK8gZi/YR+4Q12n04Q=;
+ b=WIde/pNcdxWKiSeyGtWLs2wR2k0uK22GWhxa9O6OVbi5ZqNCoxN9w9id2tjfzocyi042
+ 3OhI2M1LH0h0wvY+SZy5yfhX4hY0+x5deombzGV6VtcI77KmM/YRJsOAwLWTui+f3Cxo
+ Fl/uUJfFMuQ7FRaBqH1mdhikEoo+06IBV96r/tiIIJcCK5arxQJgrnvFNco3BdL8bQyt
+ j4tLTO3KoMqLtQ2JDT5qtOY4pR7UzxR4AAti6hyIDczjxmTvcqDN8r3PsRiUjSz05VNj
+ yImZIyvKhwBjo4yStUvhy1lygf2wslplfv3ouFbgmyVCq15c+n4EZGsUsqRKVFAFGB60 Eg== 
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 3q2apn1kvs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 19 Apr 2023 15:26:26 +0000
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+	by ppma02dal.us.ibm.com (8.17.1.19/8.17.1.19) with ESMTP id 33JE2MUc026556;
+	Wed, 19 Apr 2023 15:26:25 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([9.208.129.119])
+	by ppma02dal.us.ibm.com (PPS) with ESMTPS id 3q1uxdfn41-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 19 Apr 2023 15:26:25 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 33JFQOA223134776
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 19 Apr 2023 15:26:24 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5312E5805F;
+	Wed, 19 Apr 2023 15:26:24 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F15805805A;
+	Wed, 19 Apr 2023 15:26:23 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.24.27.252])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 19 Apr 2023 15:26:23 +0000 (GMT)
+From: Gaurav Batra <gbatra@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc/iommu: DMA address offset is incorrectly calculated with 2MB TCEs
+Date: Wed, 19 Apr 2023 10:26:23 -0500
+Message-Id: <20230419152623.26439-1-gbatra@linux.vnet.ibm.com>
+X-Mailer: git-send-email 2.39.2 (Apple Git-143)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.13-dev-00303
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: JQjm7dxg65jGEiIWsFPzrjeVjofGVsyt
+X-Proofpoint-GUID: JQjm7dxg65jGEiIWsFPzrjeVjofGVsyt
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.254,Aquarius:18.0.942,Hydra:6.0.573,FMLib:17.11.170.22
+ definitions=2023-04-19_10,2023-04-18_01,2023-02-09_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 phishscore=0
+ suspectscore=0 priorityscore=1501 mlxlogscore=995 adultscore=0
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 bulkscore=0 malwarescore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2303200000 definitions=main-2304190131
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,41 +86,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Greg Joyce <gjoyce@linux.vnet.ibm.com>, Gaurav Batra <gbatra@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 16 Apr 2023 08:29:34 +0200, Christophe JAILLET wrote:
-> dev_err_probe() already display the error code. There is no need to
-> duplicate it explicitly in the error message.
-> 
-> 
+When DMA window is backed by 2MB TCEs, the DMA address for the mapped
+page should be the offset of the page relative to the 2MB TCE. The code
+was incorrectly setting the DMA address to the beginning of the TCE
+range.
 
-Applied to
+Mellanox driver is reporting timeout trying to ENABLE_HCA for an SR-IOV
+ethernet port, when DMA window is backed by 2MB TCEs.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+Fixes: 3872731187141d5d0a5c4fb30007b8b9ec36a44d
+Signed-off-by: Gaurav Batra <gbatra@linux.vnet.ibm.com>
 
-Thanks!
+Reviewed-by: Greg Joyce <gjoyce@linux.vnet.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/iommu.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-[1/1] ASoC: fsl: Simplify an error message
-      commit: 574399f4c997ad71fab95dd875a9ff55424f9a3d
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index ee95937bdaf1..ca57526ce47a 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -517,7 +517,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 		/* Convert entry to a dma_addr_t */
+ 		entry += tbl->it_offset;
+ 		dma_addr = entry << tbl->it_page_shift;
+-		dma_addr |= (s->offset & ~IOMMU_PAGE_MASK(tbl));
++		dma_addr |= (vaddr & ~IOMMU_PAGE_MASK(tbl));
+ 
+ 		DBG("  - %lu pages, entry: %lx, dma_addr: %lx\n",
+ 			    npages, entry, dma_addr);
+@@ -904,6 +904,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 	unsigned int order;
+ 	unsigned int nio_pages, io_order;
+ 	struct page *page;
++	int tcesize = (1 << tbl->it_page_shift);
+ 
+ 	size = PAGE_ALIGN(size);
+ 	order = get_order(size);
+@@ -930,7 +931,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 	memset(ret, 0, size);
+ 
+ 	/* Set up tces to cover the allocated range */
+-	nio_pages = size >> tbl->it_page_shift;
++	nio_pages = IOMMU_PAGE_ALIGN(size, tbl) >> tbl->it_page_shift;
++
+ 	io_order = get_iommu_order(size, tbl);
+ 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
+ 			      mask >> tbl->it_page_shift, io_order, 0);
+@@ -938,7 +940,8 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+ 		free_pages((unsigned long)ret, order);
+ 		return NULL;
+ 	}
+-	*dma_handle = mapping;
++
++	*dma_handle = mapping | ((u64)ret & (tcesize - 1));
+ 	return ret;
+ }
+ 
+-- 
 
