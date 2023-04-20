@@ -4,70 +4,89 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FDC8C77B7F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 11:07:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A28E4C77B73
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 12:23:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q2FH930Qdz3fTd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 21:07:17 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q2Gyw5yBNz3f5Q
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 22:23:20 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=mzt7zUu9;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=UXWrJ2EE;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Hf7YZCJ1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=vernon2gm@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=66.111.4.29; helo=out5-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20221208 header.b=mzt7zUu9;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm2 header.b=UXWrJ2EE;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=Hf7YZCJ1;
 	dkim-atps=neutral
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com [66.111.4.29])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q1hb163fMz3cJG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2023 23:34:05 +1000 (AEST)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-63d4595d60fso6953582b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Apr 2023 06:34:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20221208; t=1681911243; x=1684503243;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=PxKBdJz6P62xw3o1oOHy6gvL/UmSXqmJ0vRsGDHfXz4=;
-        b=mzt7zUu9/LUJvSIPaNj+nC+ArFvk3Wmz36d7P4hExfQnu/+5EJ/luadmhJCFNiq8eA
-         5mamh3uH/3u0VIJzJy4W31TNXYt1DvfBn6ZHGOaQZO/LaodxyaE7yMJE8BXQrMBetDD1
-         or6ct0PxWqhNSzFTI7QUR0GNkBsKZpZ79DqaN9iIdwxdDsEv8FenNeci7+RSvuikuLAT
-         68J4r2aw28njQbzjpScT2QNoBA3X+SSSqlRvn9uiCaccB9t2Uwb/G4C4D/IZDIaojb9q
-         azW1GR2HjveVXh0qkoLiSeS/y+b+MPHfKKr5FHg+1Fk7e61fzU4VCdWEM74x3aiYuZwi
-         ZxNA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20221208; t=1681911243; x=1684503243;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=PxKBdJz6P62xw3o1oOHy6gvL/UmSXqmJ0vRsGDHfXz4=;
-        b=f4fj6SM4MtsS7oGXDiOdbi/VrzP6I2N6L99+qOe5XrPUCDi5LZkva/5dGgzdZY9yIO
-         pbXvHU1GrlRVOv9+NSxPMZnlnFf5Dkg9P321IVuwRDlT2XI32mUXa+NcSKwfANlHpzma
-         N13M8oEICUx9DEiAvQW5lUe8OoPqZ++E9XCP+O/VppjEtLM9xYUmU4YrIfUTMHsJze+K
-         Xs14KlRYZu31PJGNsM48mpHUXu7MLctwfn1GNM8b5NV20zXdE3lnPgy04ePdZPp7bm3d
-         qCWugOlQnjxdOBco9qQ3zwPGWRm3cIFgIZ7KxBomNblMW+RI1ZDvc3WHjJGFe9pBBewo
-         tz4w==
-X-Gm-Message-State: AAQBX9eQVTcNP59EvUbO+xkNzxMIU/q+musByaF8YzJvNDvMPci/3XHn
-	HMS29nbC2PlMtt65Mf+kClE=
-X-Google-Smtp-Source: AKy350YIBnQaE7WQxRLYlOkzgJwtc2fN5JwvE5Bu5492IB3LxeDfFswMVcmvTtBOzAP11iX9vi1kMA==
-X-Received: by 2002:a17:90a:c095:b0:247:4e73:cbdd with SMTP id o21-20020a17090ac09500b002474e73cbddmr2798673pjs.9.1681911242426;
-        Wed, 19 Apr 2023 06:34:02 -0700 (PDT)
-Received: from vernon-pc ([114.231.52.113])
-        by smtp.gmail.com with ESMTPSA id fv5-20020a17090b0e8500b0023b4d4ca3a9sm1392755pjb.50.2023.04.19.06.33.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Apr 2023 06:34:02 -0700 (PDT)
-Date: Wed, 19 Apr 2023 21:33:54 +0800
-From: Vernon Yang <vernon2gm@gmail.com>
-To: Vishal Moola <vishal.moola@gmail.com>
-Subject: Re: [PATCH 4/33] mm: add utility functions for ptdesc
-Message-ID: <ZD/syK8RYO9FZ6ks@vernon-pc>
-References: <20230417205048.15870-1-vishal.moola@gmail.com>
- <20230417205048.15870-5-vishal.moola@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20230417205048.15870-5-vishal.moola@gmail.com>
-X-Mailman-Approved-At: Thu, 20 Apr 2023 21:06:30 +1000
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q2Gxt3NSkz3cBK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 22:22:25 +1000 (AEST)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.47])
+	by mailout.nyi.internal (Postfix) with ESMTP id D55065C01A9;
+	Thu, 20 Apr 2023 08:22:19 -0400 (EDT)
+Received: from imap51 ([10.202.2.101])
+  by compute6.internal (MEProxy); Thu, 20 Apr 2023 08:22:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-type:content-type:date:date:from:from:in-reply-to
+	:in-reply-to:message-id:mime-version:references:reply-to:sender
+	:subject:subject:to:to; s=fm2; t=1681993339; x=1682079739; bh=sZ
+	ONUP6h+SJJnBCxfgbuzzXtSUZFZ3CJUwyCTkmq7Xg=; b=UXWrJ2EEvSiy24KMbi
+	fOpjxO35+cBmgDE7F6QvpjvJAcc23bJlf2c6pqZRu5zeqK/HhqTkzQ+AbklUI5r1
+	vV4RktufQbcODh2x1HBkLgxMMrQGKIKQAw8/PMXttqcziirs1IJenx5RmmTFrAMl
+	/8Y45X2c1rk1vHeLI0bgaxK/bHqFaL6fTf6EA6BNC1vlPOcyrNaRpdCfYl4AUcLb
+	uXhKGvOFaUZyhA57UzjmEoBCxxyncuaERsVmjWAbCYJjm6hDOaWQjNb2cK3Nnk6a
+	pZIAguRdayXwLnrrMIf8uZasj/QpiZ0pMq2GgHa8ap55jaPF4G0DAXX1tX/z7wO2
+	QKXA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-type:content-type:date:date
+	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
+	:message-id:mime-version:references:reply-to:sender:subject
+	:subject:to:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+	:x-sasl-enc; s=fm3; t=1681993339; x=1682079739; bh=sZONUP6h+SJJn
+	BCxfgbuzzXtSUZFZ3CJUwyCTkmq7Xg=; b=Hf7YZCJ1hzUf+3hn6Y3OxxyMZgL8i
+	PN/hgEMQ5V0XaWicdiNtSvmHWbgNanzjnZ+YZ5arE5hBWFFYPyGfSVFckEA3wa0U
+	y7U6nsAR5/qkpd6sZFRm1CIy1ubMvDFjqQWsbA3AJVbBpB8Y0EFIrTJtH1UAhhMB
+	kOMfeDIlbqXzEzGjZxVd8/xuJ9X13FEjEHB8dj84RQ6GL+IY5Zfd6O1oRgAnNYRX
+	uSA/bjY0JIjxLpWqg4Pk13mLPaK5OX0NXk3YfsaGKetfAhBTeEY8fTxgQucu17rt
+	xejm00Egbcf/Ymh/+Jj1/ngFyhUpbyU0E9FoLcz3HBDBbJPRmWWaiyYHQ==
+X-ME-Sender: <xms:ey5BZI7NI8R3UM7swGYU65cfll0oLLl7jJkR3kQPgqZSjCKfqgDT4g>
+    <xme:ey5BZJ41ypjuCPWmB-_ULfXWacdRdJfku9BgPPhlIC7U76U5Lu0Cu77YjPm9YEh4E
+    dd-9LrkRSzT6-bHDqs>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedvhedrfedtvddghedtucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepofgfggfkjghffffhvfevufgtsehttdertderredtnecuhfhrohhmpedftehr
+    nhguuceuvghrghhmrghnnhdfuceorghrnhgusegrrhhnuggsrdguvgeqnecuggftrfgrth
+    htvghrnhepvefhffeltdegheeffffhtdegvdehjedtgfekueevgfduffettedtkeekueef
+    hedunecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiiigvpe
+    dunecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggv
+X-ME-Proxy: <xmx:ey5BZHcgTSP7afLL2Ly7HJa4kgBCh5FOot5NhfcpWOpNEaavFDFsJA>
+    <xmx:ey5BZNIombeMEXIsHXza8yedFKUPJgDUrLZp30tcja3zOvsg158BXA>
+    <xmx:ey5BZMLRvsDvBxiF3PAoHk_uIaZscCP7T6FX8JZoVJ5JqBzfN2LA0g>
+    <xmx:ey5BZKwd9vOyIog2uaUSb4za4BGatTv8tQEB_Re3wJ6lH5JCurK72g>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.nyi.internal (Postfix, from userid 501)
+	id 06C07B60086; Thu, 20 Apr 2023 08:22:18 -0400 (EDT)
+X-Mailer: MessagingEngine.com Webmail Interface
+User-Agent: Cyrus-JMAP/3.9.0-alpha0-372-g43825cb665-fm-20230411.003-g43825cb6
+Mime-Version: 1.0
+Message-Id: <747af785-963b-45e5-9d7b-d361951ea3fc@app.fastmail.com>
+In-Reply-To:  <CA+G9fYsdMioe4+DEgeh38aTeaY3YaN_s_c0GFjPHhuPWfxyetA@mail.gmail.com>
+References:  <CA+G9fYsdMioe4+DEgeh38aTeaY3YaN_s_c0GFjPHhuPWfxyetA@mail.gmail.com>
+Date: Thu, 20 Apr 2023 14:21:58 +0200
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Naresh Kamboju" <naresh.kamboju@linaro.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ "open list" <linux-kernel@vger.kernel.org>, lkft-triage@lists.linaro.org,
+ "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+ Netdev <netdev@vger.kernel.org>
+Subject: Re: next: powerpc: gpio_mdio.c:(.text+0x13c): undefined reference to
+ `__of_mdiobus_register'
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,140 +98,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux-um@lists.infradead.org, linux-mips@vger.kernel.org, linux-csky@vger.kernel.org, linux-mm@kvack.org, linux-m68k@lists.linux-m68k.org, Matthew Wilcox <willy@infradead.org>, loongarch@lists.linux.dev, sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Rob Herring <robh@kernel.org>, Anders Roxell <anders.roxell@linaro.org>, Andrew Donnellan <ajd@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>, "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Apr 17, 2023 at 01:50:19PM -0700, Vishal Moola wrote:
-> Introduce utility functions setting the foundation for ptdescs. These
-> will also assist in the splitting out of ptdesc from struct page.
+On Thu, Apr 20, 2023, at 12:57, Naresh Kamboju wrote:
+> Following build failures noticed on Linux next-20230419 for powerpc.
 >
-> ptdesc_alloc() is defined to allocate new ptdesc pages as compound
-> pages. This is to standardize ptdescs by allowing for one allocation
-> and one free function, in contrast to 2 allocation and 2 free functions.
+> Regressions found on powerpc:
+>  - build/gcc-8-defconfig
+>  - build/clang-16-defconfig
+>  - build/gcc-12-defconfig
+>  - build/clang-nightly-defconfig
 >
-> Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
-> ---
->  include/asm-generic/tlb.h | 11 ++++++++++
->  include/linux/mm.h        | 44 +++++++++++++++++++++++++++++++++++++++
->  include/linux/pgtable.h   | 13 ++++++++++++
->  3 files changed, 68 insertions(+)
 >
-> diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-> index b46617207c93..6bade9e0e799 100644
-> --- a/include/asm-generic/tlb.h
-> +++ b/include/asm-generic/tlb.h
-> @@ -481,6 +481,17 @@ static inline void tlb_remove_page(struct mmu_gather *tlb, struct page *page)
->  	return tlb_remove_page_size(tlb, page, PAGE_SIZE);
->  }
+> Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
 >
-> +static inline void tlb_remove_ptdesc(struct mmu_gather *tlb, void *pt)
-> +{
-> +	tlb_remove_table(tlb, pt);
-> +}
-> +
-> +/* Like tlb_remove_ptdesc, but for page-like page directories. */
-> +static inline void tlb_remove_page_ptdesc(struct mmu_gather *tlb, struct ptdesc *pt)
-> +{
-> +	tlb_remove_page(tlb, ptdesc_page(pt));
-> +}
-> +
->  static inline void tlb_change_page_size(struct mmu_gather *tlb,
->  						     unsigned int page_size)
->  {
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index b18848ae7e22..ec3cbe2fa665 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -2744,6 +2744,45 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
->  }
->  #endif /* CONFIG_MMU */
->
-> +static inline struct ptdesc *virt_to_ptdesc(const void *x)
-> +{
-> +	return page_ptdesc(virt_to_head_page(x));
-> +}
-> +
-> +static inline void *ptdesc_to_virt(struct ptdesc *pt)
-> +{
-> +	return page_to_virt(ptdesc_page(pt));
-> +}
-> +
-> +static inline void *ptdesc_address(struct ptdesc *pt)
-> +{
-> +	return folio_address(ptdesc_folio(pt));
-> +}
-> +
-> +static inline bool ptdesc_is_reserved(struct ptdesc *pt)
-> +{
-> +	return folio_test_reserved(ptdesc_folio(pt));
-> +}
-> +
-> +static inline struct ptdesc *ptdesc_alloc(gfp_t gfp, unsigned int order)
-> +{
-> +	struct page *page = alloc_pages(gfp | __GFP_COMP, order);
-> +
-> +	return page_ptdesc(page);
-> +}
-> +
-> +static inline void ptdesc_free(struct ptdesc *pt)
-> +{
-> +	struct page *page = ptdesc_page(pt);
-> +
-> +	__free_pages(page, compound_order(page));
-> +}
-> +
-> +static inline void ptdesc_clear(void *x)
-> +{
-> +	clear_page(x);
-> +}
-> +
->  #if USE_SPLIT_PTE_PTLOCKS
->  #if ALLOC_SPLIT_PTLOCKS
->  void __init ptlock_cache_init(void);
-> @@ -2970,6 +3009,11 @@ static inline void mark_page_reserved(struct page *page)
->  	adjust_managed_page_count(page, -1);
->  }
->
-> +static inline void free_reserved_ptdesc(struct ptdesc *pt)
-> +{
-> +	free_reserved_page(ptdesc_page(pt));
-> +}
-> +
->  /*
->   * Default method to free all the __init memory into the buddy system.
->   * The freed pages will be poisoned with pattern "poison" if it's within
-> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> index 7cc6ea057ee9..7cd803aa38eb 100644
-> --- a/include/linux/pgtable.h
-> +++ b/include/linux/pgtable.h
-> @@ -97,6 +97,19 @@ TABLE_MATCH(ptl, ptl);
->  #undef TABLE_MATCH
->  static_assert(sizeof(struct ptdesc) <= sizeof(struct page));
->
-> +#define ptdesc_page(pt)			(_Generic((pt),			\
-> +	const struct ptdesc *:		(const struct page *)(pt),	\
-> +	struct ptdesc *:		(struct page *)(pt)))
-> +
-> +#define ptdesc_folio(pt)		(_Generic((pt),			\
-> +	const struct ptdesc *:		(const struct folio *)(pt),	\
-> +	struct ptdesc *:		(struct folio *)(pt)))
-> +
-> +static inline struct ptdesc *page_ptdesc(struct page *page)
-> +{
-> +	return (struct ptdesc *)page;
-> +}
+> Build log:
+> --------
+> powerpc64le-linux-gnu-ld: arch/powerpc/platforms/pasemi/gpio_mdio.o:
+> in function `gpio_mdio_probe':
+> gpio_mdio.c:(.text+0x13c): undefined reference to `__of_mdiobus_register'
+> powerpc64le-linux-gnu-ld: drivers/net/phy/phy_device.o: in function `phy_probe':
+> phy_device.c:(.text+0x56ac): undefined reference to
+> `devm_led_classdev_register_ext'
+> powerpc64le-linux-gnu-ld: drivers/net/ethernet/pasemi/pasemi_mac.o: in
+> function `pasemi_mac_open':
+> pasemi_mac.c:(.text+0x19ac): undefined reference to `of_phy_connect'
+> make[2]: *** [scripts/Makefile.vmlinux:35: vmlinux] Error 1
 
-Hi Vishal,
+Same bug as the other one:
 
-I'm a little curious, why is the page_ptdesc() using inline functions instead of macro?
-If this is any magic, please tell me, thank you very much.
+https://lore.kernel.org/all/20230420084624.3005701-1-arnd@kernel.org/
 
-> +
->  /*
->   * A page table page can be thought of an array like this: pXd_t[PTRS_PER_PxD]
->   *
->
-> --
-> 2.39.2
->
+      Arnd
