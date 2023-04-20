@@ -4,60 +4,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00FC5C77B73
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 10:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF604C77B72
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 10:51:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [IPv6:::1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Q2DwX24xVz3f5M
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 20:51:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Q2DxS1R3fz3fWn
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Apr 2023 20:51:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Pun8GlzU;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eG7O2EVx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.55.52.88; helo=mga01.intel.com; envelope-from=mika.westerberg@linux.intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Pun8GlzU;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=eG7O2EVx;
 	dkim-atps=neutral
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q2Dvb2T8pz3chl
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 20:50:18 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Q2DwT3NSbz3fSn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Apr 2023 20:51:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1681987819; x=1713523819;
+  t=1681987865; x=1713523865;
   h=date:from:to:cc:subject:message-id:references:
    mime-version:in-reply-to;
-  bh=KmE64Zj6fg+JjmPyFrX4JWdvnkdBVGIAbEnhh9TTANI=;
-  b=Pun8GlzUevWjchaKUskD/wvJZUuW4LrLH4uU1sfgODdKF5P2f7h1CRnk
-   l6bZ7x3zcF+fBb3IT8f4KvWdCCqc/CiBt/Y8BB9qgc2/Ip0IBv/Qa6acb
-   8f+0/AG0PvlgBxKMzS2kwXJuevGIGcXXzzPza/xZnreZ7CfYA66V+QiTy
-   /ajUDUw2P04iJBFwhYI690tABA7UJyDMK+dVI3M4uXCRTEvkG11dEz6T0
-   o2zWIPJ7uTyPnczsOEj2u6B9dmS6gnXeYD5F95qEUC/B04B4/wiWdvMUR
-   QUqhuS52EieXTkv14AV08Kf7KQHYa7GwjPSyCwjVyUVWQ/DBHSaqYGQmx
-   g==;
-X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="373596344"
+  bh=VQeRmgq2CDJ+tcP+P+IQ5uUOrFT2lqNUDOdu5qsJP4E=;
+  b=eG7O2EVxfmIBIvIGnq4HXBsBAJDEFv6ujZ0/kl9H2NaoY5VwKQ/QLCxq
+   KRy/r6AdLIPWLXU6ftphIvXTsI6B2GW02GAEjK5lIWbL9I6v9C/CH59Bu
+   cC7vCi1Vhq1lET0YctE14WjGVryxQzVUSs7Zcg9IqMrLdsSDU1dKzOtZa
+   k0iLQwkOD6fmFKHKOTtmScF+RwR+OWLQNt4F0tI6U72luCj4f1MBFlHCS
+   G7L4arFPzfVaV6a7W+5fES8odZ9enO6vCT0D7MvcoEENdVLuMFAICGSzU
+   HRJHaEXYqOUYeA4CDBZDEWzvAhR72tRsw9C3S51Su02GCqF59qvBzT2Ei
+   A==;
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="373596459"
 X-IronPort-AV: E=Sophos;i="5.99,212,1677571200"; 
-   d="scan'208";a="373596344"
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Apr 2023 03:50:12 -0700
+   d="scan'208";a="373596459"
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Apr 2023 03:51:02 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="803299501"
+X-IronPort-AV: E=McAfee;i="6600,9927,10685"; a="756465504"
 X-IronPort-AV: E=Sophos;i="5.99,212,1677571200"; 
-   d="scan'208";a="803299501"
+   d="scan'208";a="756465504"
 Received: from black.fi.intel.com ([10.237.72.28])
-  by fmsmga002.fm.intel.com with ESMTP; 20 Apr 2023 03:50:08 -0700
+  by fmsmga008.fm.intel.com with ESMTP; 20 Apr 2023 03:51:00 -0700
 Received: by black.fi.intel.com (Postfix, from userid 1001)
-	id A04B721E7; Thu, 20 Apr 2023 13:50:13 +0300 (EEST)
-Date: Thu, 20 Apr 2023 13:50:13 +0300
+	id 51AAE21E7; Thu, 20 Apr 2023 13:51:05 +0300 (EEST)
+Date: Thu, 20 Apr 2023 13:51:05 +0300
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
 To: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Subject: Re: [PATCH v2 3/4] PCI/AER: Disable AER interrupt on suspend
-Message-ID: <20230420105013.GN66750@black.fi.intel.com>
+Subject: Re: [PATCH v2 4/4] PCI/DPC: Disable DPC interrupt during suspend
+Message-ID: <20230420105105.GO66750@black.fi.intel.com>
 References: <20230420015830.309845-1-kai.heng.feng@canonical.com>
- <20230420015830.309845-3-kai.heng.feng@canonical.com>
+ <20230420015830.309845-4-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20230420015830.309845-3-kai.heng.feng@canonical.com>
+In-Reply-To: <20230420015830.309845-4-kai.heng.feng@canonical.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,14 +73,17 @@ Cc: sathyanarayanan.kuppuswamy@linux.intel.com, linux-pci@vger.kernel.org, Mahes
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev" <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Apr 20, 2023 at 09:58:29AM +0800, Kai-Heng Feng wrote:
+On Thu, Apr 20, 2023 at 09:58:30AM +0800, Kai-Heng Feng wrote:
 > PCIe service that shares IRQ with PME may cause spurious wakeup on
 > system suspend.
+> 
+> Since AER is conditionally disabled in previous patch, also apply the
+> same logic to disable DPC which depends on AER to work.
 > 
 > PCIe Base Spec 5.0, section 5.2 "Link State Power Management" states
 > that TLP and DLLP transmission is disabled for a Link in L2/L3 Ready
 > (D3hot), L2 (D3cold with aux power) and L3 (D3cold), so we don't lose
-> much here to disable AER during system suspend.
+> much here to disable DPC during system suspend.
 > 
 > This is very similar to previous attempts to suspend AER and DPC [1],
 > but with a different reason.
